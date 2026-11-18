@@ -17,6 +17,7 @@
 """The song wizard's Tunes panel: a tune for each kind of section, opened in the pattern editor on a draft of the set and kept as the person's own."""
 
 from llamatron.composition.file_format import Row
+from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE
 from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -31,6 +32,8 @@ A_KIND = 'verse'
 ANOTHER_GENRE = 'blues'
 # The degree a test writes on a tune's first step, and another for a second edit.
 A_DEGREE = 7
+# How the row shows the take after the first.
+SECOND_TAKE_SHOWN = 2
 
 
 class TestWizardTunes(WizardTest):
@@ -116,6 +119,32 @@ class TestWizardTunes(WizardTest):
         self.assertTrue(self.choices().tune_is_own(A_KIND))
         await self.press(keybindings.WizardPage.CLEAR, keybindings.ConfirmDialog.YES)
         self.assertFalse(self.choices().tune_is_own(A_KIND))
+
+    async def test_t_writes_a_new_take_of_the_tune_under_the_cursor_alone_and_the_row_says_which_take(self):
+        choices = self.choices()
+        other = next(kind for kind in choices.tune_kinds() if kind != A_KIND)
+        first = choices.tune_pattern(A_KIND)
+        others = choices.tune_pattern(other)
+        await self.select_field(self.label())
+        await self.press(keybindings.WizardPage.NEW_TAKE)
+        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
+        self.assertNotEqual(choices.tune_pattern(A_KIND)[Row.DEGREE], first[Row.DEGREE])
+        self.assertEqual(choices.tune_pattern(other), others)
+        self.assertIn(marks.MSG_WIZARD_TUNE_TAKE_SHOWN.format(name=choices.tune_pattern_name(A_KIND), take=SECOND_TAKE_SHOWN), self.text())
+        self.assertTrue(self.wizard().has_choices_to_lose())
+
+    async def test_a_new_take_of_an_edited_tune_asks_first_and_no_keeps_the_notes(self):
+        await self.open_tune()
+        self.change_first_step()
+        await self.press(Key.ESCAPE)
+        await self.select_field(self.label())
+        await self.press(keybindings.WizardPage.NEW_TAKE)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        await self.press(Key.ENTER)
+        self.assertTrue(self.choices().tune_is_own(A_KIND))
+        await self.press(keybindings.WizardPage.NEW_TAKE, keybindings.ConfirmDialog.YES)
+        self.assertFalse(self.choices().tune_is_own(A_KIND))
+        self.assertEqual(self.choices().tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
 
     async def test_the_set_cannot_be_saved_opened_or_exported_while_a_tune_is_edited(self):
         await self.open_tune()

@@ -472,6 +472,7 @@ ENTER or Tab moves into the settings, and ESC or Tab moves back to the tree.
 Genre: choose a genre and a subgenre first. The key, the scale, the tempo and the form then take what the subgenre usually has, and each can be changed.
 Composition: Chords, the chord progression; Melody, the melody style of the tunes; Hooks, whether the song has a hook.
 Tunes: the tune of each kind of section. ENTER edits its notes in the pattern editor; edited notes are yours, and no choice changes them.
+A new take, in the legend on a tune, writes that tune again and leaves the rest of the song.
 Form: the sections the song plays, in order, listed under Form in the tree. On a section, I inserts a section before it, A adds one at the end, C copies it, Bksp removes it
 and M moves it, and its settings choose its kind, how many bars it lasts and who plays in it.
 Apply: ENTER on the Apply button makes the song and shows Arrange. Undo then takes the whole song away again.

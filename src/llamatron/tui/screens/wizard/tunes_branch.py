@@ -57,7 +57,10 @@ class TunesBranch(Branch):
 
         def shown():
             name = choices.tune_pattern_name(kind) or marks.MSG_WIZARD_NO_TUNE_SHOWN
-            return marks.MSG_WIZARD_TUNE_EDITED.format(name=name) if own else name
+            if own:
+                return marks.MSG_WIZARD_TUNE_EDITED.format(name=name)
+            take = choices.tune_take(kind)
+            return marks.MSG_WIZARD_TUNE_TAKE_SHOWN.format(name=name, take=take + 1) if take else name
 
         def give_back():
             question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=kind)
@@ -66,12 +69,35 @@ class TunesBranch(Branch):
         return Field(label=labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind), value=shown, enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT,
                      clear=give_back if own else None, clear_what=legends.MSG_TUNE_USUAL_WHAT)
 
+    def kind_under_cursor(self):
+        """Return the kind of section whose tune the cursor is on, the first where the cursor is in the tree, or None for a song with no tune."""
+        kinds = self.kinds()
+        label = self.page().label_under_cursor()
+        return next((kind for kind in kinds if labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind) == label), kinds[0] if kinds else None)
+
+    def takes(self):
+        """A new take writes another tune for the kind under the cursor alone, asking first where the tune was edited by hand."""
+        kind = self.kind_under_cursor()
+        if kind is None:
+            return None
+        choices = self.choices()
+        page = self.page()
+
+        def take(_=None):
+            page.choosing(lambda kind: choices.new_tune_take(kind))(kind)
+            page.say(messages.MSG_WIZARD_TUNE_TAKEN.format(take=choices.tune_take(kind) + 1, kind=kind))
+
+        def ask_or_take():
+            if not choices.tune_is_own(kind):
+                take()
+                return
+            question = messages.MSG_WIZARD_TUNE_TAKE_QUESTION.format(kind=kind)
+            page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_TAKE_TITLE, messages=[question], starts_on_no=True), then=take)
+        return ask_or_take
+
     def listens(self):
         """Listen plays the tune's player alone in the first section of the kind under the cursor."""
-        choices = self.choices()
-        kinds = self.kinds()
-        if not kinds:
+        kind = self.kind_under_cursor()
+        if kind is None:
             return None
-        label = self.page().label_under_cursor()
-        kind = next((kind for kind in kinds if labels.MSG_WIZARD_KIND_TUNE_LABEL.format(kind=kind) == label), kinds[0])
-        return messages.MSG_WIZARD_LISTEN_TUNE, choices.tune_place(kind), choices.tune_player()
+        return messages.MSG_WIZARD_LISTEN_TUNE, self.choices().tune_place(kind), self.choices().tune_player()

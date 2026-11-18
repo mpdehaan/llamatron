@@ -25,6 +25,7 @@ dice is kept with them and never shown.
 import copy
 import functools
 import random
+import zlib
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
@@ -43,7 +44,7 @@ from llamatron.macro_composer.arranger import (
 )
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import hook_kinds, line_edits, phrasing
-from llamatron.macro_composer.arranger import KICK as KICK_PIECE, OWN_TUNES
+from llamatron.macro_composer.arranger import KICK as KICK_PIECE, OWN_TUNES, TAKEN_TUNES
 from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
@@ -231,6 +232,12 @@ OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 # The key of the answer kept of a kind of section's tune in the set the choices make.
 TUNE_MADE_ANSWER = 'tune made'
+# Which take of its tune each kind of section has, kept with the song's extras, the first take being the tune the choices write;
+# the seed another take is drawn from; and the key of the answer kept of a take's pattern.
+TUNE_TAKES = 'tune_takes'
+FIRST_TUNE_TAKE = 0
+TUNE_TAKE_SEED = '{seed} {kind} tune take {take}'
+TUNE_TAKEN_ANSWER = 'tune taken'
 STAGES_ANSWER = 'stages'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
@@ -641,6 +648,7 @@ class WizardChoices:
             # A player's loudness is one genre's player's.
             self._extras.pop(DYNAMICS, None)
             self._extras.pop(LOUDNESS_OF, None)
+            self._extras.pop(TUNE_TAKES, None)
             self._forget_band()
 
     def subgenres(self):
@@ -2439,7 +2447,11 @@ class WizardChoices:
         return self._song_picks(name)
 
     def _song_picks(self, name):
-        return data_laid_over(under=self._picks_chosen(name), over=self._extras_with_sections())
+        picks = data_laid_over(under=self._picks_chosen(name), over=self._extras_with_sections())
+        # The takes are kept as numbers; the arranger is handed the tune each number draws.
+        picks.pop(TUNE_TAKES, None)
+        taken = self._taken_tunes()
+        return {**picks, TAKEN_TUNES: taken} if taken else picks
 
     def _extras_with_sections(self):
         """The song's extras, the plan in them holding what each section of the form was given of its own, by place."""
@@ -3008,6 +3020,50 @@ class WizardChoices:
         if slot is None:
             return None, None
         return slot.get_pattern_name(), setlist.get_pattern(slot.get_pattern_name()).to_data()
+
+    def tune_take(self, kind):
+        """Return which take of its tune a kind of section has: the first, the tune the choices write, or a later one asked for."""
+        return self._extras.get(TUNE_TAKES, {}).get(kind, FIRST_TUNE_TAKE)
+
+    def new_tune_take(self, kind):
+        """Have another tune written for a kind of section, the rest of the song left as it was. Notes written by hand for the kind
+        are given up for it."""
+        if self.tune_place(kind) is None:
+            raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
+        self._extras.setdefault(TUNE_TAKES, {})[kind] = self.tune_take(kind) + 1
+        own = self._extras.get(OWN_TUNES, {})
+        own.pop(kind, None)
+        if not own:
+            self._extras.pop(OWN_TUNES, None)
+        self._answers = {}
+
+    def _taken_tunes(self):
+        """The pattern of each kind of section whose tune is a later take and not written by hand, by kind."""
+        takes = self._extras.get(TUNE_TAKES, {})
+        own = self._extras.get(OWN_TUNES, {})
+        taken = {}
+        for kind in sorted(takes):
+            if kind not in own and takes[kind] != FIRST_TUNE_TAKE:
+                pattern = self._remembered(key=(TUNE_TAKEN_ANSWER, kind), compute=lambda kind=kind: self._tune_taken(kind=kind, take=takes[kind]))
+                if pattern is not None:
+                    taken[kind] = pattern
+        return taken
+
+    def _tune_taken(self, *, kind, take):
+        """The tune another take draws for a kind of section: the kind's tune in the song these choices would make from a seed of
+        the take's own, with the same chords and no tune of another take or written by hand, or None where that song has none."""
+        other = WizardChoices.from_data(self.to_data())
+        other._extras.pop(TUNE_TAKES, None)
+        other._extras.pop(OWN_TUNES, None)
+        trait = self.progression_trait()
+        drawn = self.progressions_by_chance()[:1]
+        if trait is not None and drawn:
+            other.set_way(trait=trait, value=drawn[0])
+        other.set_seed(zlib.crc32(TUNE_TAKE_SEED.format(seed=self._seed, kind=kind, take=take).encode()) % (LAST_SEED + 1))
+        try:
+            return other._found_tune_in_made(kind)[1]
+        except (ValueError, IndexError, KeyError, SongFileError):
+            return None
 
     def set_tune_pattern(self, *, kind, pattern):
         """Keep a pattern's data as a kind of section's own tune, or forget the person's own with None, so that the choices write the
