@@ -365,6 +365,7 @@ MSG_WIZARD_FORM_QUESTIONS_WHAT = 'answer'
 MSG_WIZARD_NEW_HOOK_WHAT = 'new hook'
 MSG_USUAL_ROW_WHAT = 'usual row'
 MSG_TUNE_USUAL_WHAT = "wizard's notes"
+MSG_WIZARD_FROM_GENRE_WHAT = 'from genre'
 MSG_WIZARD_EDIT_NOTES_WHAT = 'edit notes'
 MSG_REGENERATE_WHAT = 'regenerate'
 MSG_WRITE_RIFF_WHAT = 'write riff'

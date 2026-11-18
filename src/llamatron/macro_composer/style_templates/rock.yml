@@ -613,6 +613,9 @@ melody:
     line_bars: 2
     span: 4
     smart: {moves: 2, steps: 2, after_leap: 2, phrase: 4, leaning: 5, notes: 4, surprise: 3}
+    # How the hook and the body of its chorus are written (hook_writing.py): a behavior, and gauges from 0 to 9.
+    hook_writing: {behavior: arch, gauges: {catchiness: 7, simplicity: 7, leap: 4, height: 8, hold: 7, bounce: 2}}
+    body_writing: {gauges: {sameness: 6, space: 5, lift: 6, resolve: 6, call_and_answer: 6}}
     home: {degree: 3}
     ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 5}, {degree: 6}]
     by_scale_type: {minor: {home: {degree: 1}, ladder: [{degree: 1}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 7}]}}

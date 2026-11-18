@@ -1277,21 +1277,21 @@ class TestWizardComposition(WizardTest):
         await self.create()
         self.assertEqual(WizardChoices.from_data(self.document.song().get_wizard_choices()).hook_notes(), hook)
 
-    async def test_new_hook_makes_another_hook_and_goes_with_the_hook(self):
+    async def test_regenerate_writes_another_hook_and_the_picture_goes_with_the_hook(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
         await self.go_to_hook_panel()
         first = choices.hook_notes()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels_text.MSG_WIZARD_NEW_MAIN_HOOK_BUTTON)
-        await self.press(Key.ENTER)
+        await self.select_field(labels_text.MSG_WIZARD_REGENERATE_BUTTON)
+        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         self.assertNotEqual(choices.hook_notes(), first)
         for line in picture_of(hook=choices.hook_notes(), width=A_WIDE_PANEL):
             self.assertIn(line, self.text())
         await self.press(keybindings.WizardPage.TO_TREE)
         choices.set_hook(False)
         await self.press(Key.DOWN, Key.UP)
-        self.assertNotIn(labels_text.MSG_WIZARD_NEW_MAIN_HOOK_BUTTON, self.text())
+        self.assertNotIn(labels_text.MSG_WIZARD_REGENERATE_BUTTON, self.text())
 
     async def test_the_hooks_picture_goes_with_the_hook(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
@@ -1372,8 +1372,20 @@ class TestWizardComposition(WizardTest):
         names = [branch.name() for _, branch in self.wizard().rows()]
         start = names.index(labels_text.MSG_WIZARD_MELODY_BRANCH) + 1
         kinds = self.choices().tune_kinds()
-        self.assertEqual(names[start:start + len(kinds) + 4],
-                         [labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), labels_text.MSG_WIZARD_RIFFS_BRANCH, labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH, labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
+        # The melodies are a group of their own, open from the start, the hook's panel first in it.
+        self.assertEqual(names[start:start + len(kinds) + 5],
+                         [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), labels_text.MSG_WIZARD_RIFFS_BRANCH, labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH,
+                          labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
+
+    async def test_the_melodies_group_closes_over_its_panels_and_opens_again(self):
+        await self.choose(genre=A_GENRE_WITH_RHYTHMS)
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_MELODIES_BRANCH)
+        self.assertIn(labels_text.MSG_WIZARD_HOOKS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
+        await self.press(Key.LEFT)
+        self.assertNotIn(labels_text.MSG_WIZARD_HOOKS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
+        self.assertIn(labels_text.MSG_WIZARD_RIFFS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
+        await self.press(Key.RIGHT)
+        self.assertIn(labels_text.MSG_WIZARD_HOOKS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
 
     async def go_to_the_drums(self):
         choices = self.choices()

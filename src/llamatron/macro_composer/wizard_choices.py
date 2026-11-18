@@ -44,14 +44,14 @@ from llamatron.macro_composer.arranger import (
     arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
 )
 from llamatron.macro_composer.composer import composed
-from llamatron.macro_composer import band, hook_kinds, line_edits, phrasing, tune_fit
+from llamatron.macro_composer import band, hook_writing, line_edits, phrasing, tune_fit
 from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
                                                TUNE_PHRASING, in_octaves_of)
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
 from llamatron.macro_composer.melody import (ANSWER, BY_KIND, GAUGE_AFTER_LEAP, GAUGE_LEANING, GAUGE_MOVES, GAUGE_PHRASE, GAUGE_STEPS, GAUGE_SURPRISE, HEIGHT, HEIGHTS, HIGH, HOME as MELODY_HOME,
-                                             HOOK_KIND, HOOK_NOTES, HOOKS, LADDER as MELODY_LADDER, LINE, LINE_BUSY, LINE_NOTES, MAIN_HOOK, MELODY_ASKS, MIDDLE, PLACEMENT, PLACEMENTS, REPEATS, REPEATS_SOME,
+                                             HOOK_NOTES, HOOKS, LADDER as MELODY_LADDER, LINE, LINE_BUSY, LINE_NOTES, MAIN_HOOK, MELODY_ASKS, MIDDLE, PLACEMENT, PLACEMENTS, REPEATS, REPEATS_SOME,
                                              REPEATS_WAYS, SECOND_HOOK, SPAN, SUNG_BY, SUNG_IN, TAG_TAKE, placement_of, plan_with_hook_placed)
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
 from llamatron.macro_composer.riffs import (BAR_COUNTS, BETWEEN_WAYS, FIRST_TAKE as FIRST_RIFF_TAKE, IN_FULL, MOVES_WHOLE, MUTED_ROOTS, NOTES_WAYS, RIFF, RIFF_BAR_COUNT, RIFF_BARS,
@@ -131,6 +131,10 @@ GAUGES_KEPT = 'melody_gauges'
 MELODY_SETTINGS_KEPT = 'melody_settings'
 HOOK_KEPT = 'hook'
 HOOK_TAKE_KEPT = 'hook_take'
+# The melody styles whose lines are their own throughout, a chorus's body included.
+ENGINES_OF_THEIR_OWN = (SERIAL, EVOLVING)
+# What a song chose of how its hook and its chorus's body are written, over its genre's: a behavior and gauges.
+WRITING_KEPT = 'melody_writing'
 # What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
 PIECE_SOUNDS_KEPT = 'piece_sounds'
 PLAYER_GAUGES_KEPT = 'player_gauges'
@@ -442,7 +446,6 @@ LAST_DEGREE_OF_SCALE = 7
 PLAN_ANSWER = 'plan'
 ENERGY_ANSWER = 'energies'
 # The parts of a hook's kind and what each may be.
-HOOK_PARTS = {hook_kinds.CONTOUR: hook_kinds.CONTOURS, hook_kinds.RHYTHM: tuple(hook_kinds.RHYTHMS), hook_kinds.DETAIL: hook_kinds.DETAILS}
 # What a song file lays over the song's picks, as a song keeps it.
 EXTRAS_KEPT = 'song'
 STAGES_KEPT = 'stages'
@@ -566,7 +569,7 @@ SECONDS_IN_MINUTE = 60
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_stages', '_hook_take', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of', '_picks_kept', '_variant')
+    __slots__ = ('_extras', '_stages', '_hook_take', '_writing', '_rows', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_ways', '_levels', '_own_gauges', '_beside', '_without', '_sections', '_melody', '_hook', '_sounds', '_band_sounds', '_guitarists', '_pieces_off', '_break', '_break_cut', '_gauges', '_piece_sounds', '_fills', '_quiet_notes', '_melody_settings', '_answers', '_answers_of', '_picks_kept', '_variant')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -597,6 +600,8 @@ class WizardChoices:
         # Whether the song has a hook, or None while the genre says.
         self._hook = None
         self._hook_take = FIRST_HOOK_TAKE
+        # What the song chose of how its hook and its chorus's body are written, each a behavior or gauges moved from the genre's.
+        self._writing = {}
         # The sounds chosen: the band's, one of BAND_SOUNDS, which every player follows, and each player's own General MIDI sound, which overrides it.
         self._band_sounds = USUAL_SOUNDS
         self._sounds = {}
@@ -662,6 +667,7 @@ class WizardChoices:
                 (self._set_kept_melody, [dict(style=data[MELODY_STYLE])] if data.get(MELODY_STYLE) else []),
                 (self._set_kept_hook, [dict(on=data[HOOK_KEPT])] if isinstance(data.get(HOOK_KEPT), bool) else []),
                 (self._set_kept_hook_take, [dict(take=data[HOOK_TAKE_KEPT])] if data.get(HOOK_TAKE_KEPT) else []),
+                (self._set_kept_writing, [dict(kept=data[WRITING_KEPT])] if isinstance(data.get(WRITING_KEPT), dict) else []),
                 (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(GAUGES_KEPT) or {}).items()]),
                 (self._set_kept_player_row, [dict(role=role, name=name, values=values) for role, rows in (data.get(PLAYER_ROWS_KEPT) or {}).items() for name, values in rows.items()]
                  if isinstance(data.get(PLAYER_ROWS_KEPT), dict) and all(isinstance(rows, dict) for rows in data[PLAYER_ROWS_KEPT].values()) else []),
@@ -683,7 +689,7 @@ class WizardChoices:
                 PLAYER_ROWS_KEPT: {role: {name: list(row) for name, row in rows.items()} for role, rows in self._rows.items() if rows} or None,
                 BESIDE_KEPT: dict(self._beside) if self._beside is not None else None,
                 OWN_SECTIONS: [own_copy_of(entry) for entry in self._sections] if self._sections is not None else None,
-                MELODY_STYLE: self._melody, HOOK_KEPT: self._hook, HOOK_TAKE_KEPT: self._hook_take or None, SOUNDS_KEPT: dict(self._sounds) or None,
+                MELODY_STYLE: self._melody, HOOK_KEPT: self._hook, HOOK_TAKE_KEPT: self._hook_take or None, WRITING_KEPT: copy.deepcopy(self._writing) or None, SOUNDS_KEPT: dict(self._sounds) or None,
                 BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != USUAL_SOUNDS else None,
                 GUITARISTS_KEPT: self._guitarists if self._guitarists != TWO_GUITARISTS else None,
                 PIECES_OFF_KEPT: list(self._pieces_off) or None, FILLS_KEPT: self._fills, QUIET_NOTES_KEPT: None if self._quiet_notes else False,
@@ -711,6 +717,7 @@ class WizardChoices:
             self._melody = None
             self._hook = None
             self._hook_take = FIRST_HOOK_TAKE
+            self._writing = {}
             # A plan is one genre's: its energies and its joins are the genre's own.
             self._extras.pop(PLAN_OF_SONG, None)
             self._extras.pop(MELODY, None)
@@ -1807,7 +1814,8 @@ class WizardChoices:
     def _song_melody(self):
         """Return what the song says of its melody over the genre's habits: the smart style's gauges where one was moved, and
         the settings set of the style in use; a setting of another style is kept and says nothing."""
-        said = {}
+        said = {hook_writing.HOOK_WRITING: {hook_writing.BEHAVIOR: self.get_hook_behavior(), hook_writing.GAUGES: {name: self.get_hook_gauge(name) for name in hook_writing.HOOK_GAUGES}},
+                hook_writing.BODY_WRITING: {hook_writing.GAUGES: {name: self.get_body_gauge(name) for name in hook_writing.BODY_GAUGES}}}
         if self._melody in GAUGED_STYLES and self._gauges:
             said[SMART] = {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}
         own = {name: value for name, value in self._melody_settings.items() if name in MELODY_SETTINGS_OF[self._melody]}
@@ -2261,6 +2269,108 @@ class WizardChoices:
     def get_hook_take(self):
         """Return which take of the hook the song has: the first, or a later one asked for with a new hook."""
         return self._hook_take
+
+    # How the hook and the body of its chorus are written: a behavior and gauges, the genre's until the song moves one.
+
+    def writes_hook(self):
+        """Return whether the song's hook is written by a behavior and gauges: a song with a hook whose bar is counted in eighths."""
+        return self.is_ready() and self.can_have_hook() and self.has_hook() and not self._melody_habits()[GRID] % hook_writing.UNITS
+
+    def genre_hook_behavior(self):
+        return hook_writing.hook_ways(self._melody_habits())[0]
+
+    def get_hook_behavior(self):
+        return self._writing.get(hook_writing.HOOK_WRITING, {}).get(hook_writing.BEHAVIOR, self.genre_hook_behavior())
+
+    def set_hook_behavior(self, behavior):
+        """Choose the way the hook is written; the genre's own way gives the choice back to the genre."""
+        if behavior not in hook_writing.BEHAVIORS:
+            raise ValueError(errors.ERR_WIZARD_HOOK_BEHAVIOR.format(value=behavior, choices=', '.join(hook_writing.BEHAVIORS)))
+        self._keep_writing(part=hook_writing.HOOK_WRITING, field=hook_writing.BEHAVIOR, value=None if behavior == self.genre_hook_behavior() else behavior)
+
+    def hook_gauges(self):
+        """Return the hook's gauges that change a hook written the way the song's is."""
+        return list(hook_writing.HOOK_GAUGES_OF[self.get_hook_behavior()]) if self.writes_hook() else []
+
+    def genre_hook_gauge(self, name):
+        return hook_writing.hook_ways(self._melody_habits())[1][name]
+
+    def get_hook_gauge(self, name):
+        return self._writing.get(hook_writing.HOOK_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_hook_gauge(name))
+
+    def set_hook_gauge(self, *, name, position):
+        """Move one of the hook's gauges, or give the gauge back to the genre with None."""
+        self._set_writing_gauge(part=hook_writing.HOOK_WRITING, names=hook_writing.HOOK_GAUGES, name=name, position=position, usual=self.genre_hook_gauge)
+
+    def writes_body(self):
+        """Return whether the lines of the chorus that are no hook are written by the body's gauges: where the hook is written and its section has such lines."""
+        return self.writes_hook() and self._melody not in ENGINES_OF_THEIR_OWN and self._body_entries() != []
+
+    def is_body_of_hook(self, kind):
+        """Return whether a kind of section is the one that holds the hook, in a song whose hook is written by its gauges: its panel
+        then holds where the hook sits and the gauges of its other lines."""
+        return self.writes_body() and kind == self._main_hook_kind()
+
+    def _body_entries(self):
+        """The lines of the hook's section that are no hook, each with whether a hook follows it and whether it closes the section."""
+        kind = self._main_hook_kind()
+        plan = [] if kind is None else self._hook_plan(kind)
+        return [(entry, place + 1 < len(plan) and bool(plan[place + 1].get(HOOK)), place + 1 == len(plan)) for place, entry in enumerate(plan) if not entry.get(HOOK) and not entry.get(ANSWER)]
+
+    def body_gauges(self):
+        """Return the gauges of the chorus's body that change the song as it stands: Call and answer only where a line of the body
+        returns, and Resolve only where a line's ending is not already decided by its place or by its answering."""
+        if not self.writes_body():
+            return []
+        entries = self._body_entries()
+        returns = any(entry.get(VARIED) for entry, _, _ in entries)
+        # A line that leads to a hook ends open and the section's last line ends on the home note, whatever Resolve says.
+        answers = self.get_body_gauge(hook_writing.CALL_AND_ANSWER) >= hook_writing.ANSWERS_FROM
+        free = any(not leads and not closes and not (answers and entry.get(VARIED)) for entry, leads, closes in entries)
+        needed = {hook_writing.CALL_AND_ANSWER: returns, hook_writing.RESOLVE: free}
+        return [name for name in hook_writing.BODY_GAUGES if needed.get(name, True)]
+
+    def genre_body_gauge(self, name):
+        return hook_writing.body_ways(self._melody_habits())[name]
+
+    def get_body_gauge(self, name):
+        return self._writing.get(hook_writing.BODY_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_body_gauge(name))
+
+    def set_body_gauge(self, *, name, position):
+        """Move one of the gauges of the chorus's body, or give the gauge back to the genre with None."""
+        self._set_writing_gauge(part=hook_writing.BODY_WRITING, names=hook_writing.BODY_GAUGES, name=name, position=position, usual=self.genre_body_gauge)
+
+    def writing_gauge_is_moved(self, *, part, name):
+        """Return whether the song moved a gauge of its hook or of its chorus's body from where the genre has it."""
+        return name in self._writing.get(part, {}).get(hook_writing.GAUGES, {})
+
+    def _set_writing_gauge(self, *, part, names, name, position, usual):
+        if name not in names or (position is not None and not hook_writing.is_position(position)):
+            raise ValueError(errors.ERR_WIZARD_WRITING_GAUGE.format(name=name, low=hook_writing.LOWEST, high=hook_writing.HIGHEST, value=position))
+        gauges = dict(self._writing.get(part, {}).get(hook_writing.GAUGES, {}))
+        gauges.pop(name, None)
+        if position is not None and position != usual(name):
+            gauges[name] = position
+        self._keep_writing(part=part, field=hook_writing.GAUGES, value=gauges or None)
+
+    def _keep_writing(self, *, part, field, value):
+        kept = self._writing.setdefault(part, {})
+        kept.pop(field, None)
+        if value is not None:
+            kept[field] = value
+        if not kept:
+            del self._writing[part]
+        self._answers = {}
+
+    def _set_kept_writing(self, *, kept):
+        """Take what a song kept of how its hook and its chorus's body are written, each part through its setter."""
+        hook = kept.get(hook_writing.HOOK_WRITING) or {}
+        if hook.get(hook_writing.BEHAVIOR) is not None:
+            self.set_hook_behavior(hook[hook_writing.BEHAVIOR])
+        for name, position in (hook.get(hook_writing.GAUGES) or {}).items():
+            self.set_hook_gauge(name=name, position=position)
+        for name, position in ((kept.get(hook_writing.BODY_WRITING) or {}).get(hook_writing.GAUGES) or {}).items():
+            self.set_body_gauge(name=name, position=position)
 
     def new_hook(self):
         """Have another hook made, every other line of the song left as it was."""
@@ -3227,27 +3337,11 @@ class WizardChoices:
             del self._plan()[PHRASING_WAYS]
         self._answers = {}
 
-    def hook_kind(self):
-        """Return the kind of the song's hook, its contour, its rhythm and its odd detail by the fields of hook_kinds.py: the
-        take's, with whatever part was chosen over it."""
-        self._plan()
-        return {**hook_kinds.kind_of(seed=self._seed, take=self._hook_take), **self._extras.get(MELODY, {}).get(HOOK_KIND, {})}
-
-    def hook_parts(self):
-        """Return the parts of the hook's kind that can be chosen now: the contour, and under any contour but the long note, which is one
-        held note with neither, the rhythm and the odd detail."""
-        if not self.counts_in_four():
-            return []
-        return [part for part in HOOK_PARTS if part == hook_kinds.CONTOUR or self.hook_kind()[hook_kinds.CONTOUR] != hook_kinds.LONG_NOTE]
-
     def counts_in_four(self):
         """Return whether the song is in four with a tune written in eighths, where a hook is of a kind and a tune's lines breathe: both
         are written for a bar of eight eighths, which a shuffle's bar of triplets is not."""
         in_four = str(picked(style=self._style(), song=self.song_picks(PREVIEW_NAME)).get(METER, COMMON_TIME)) == COMMON_TIME
         return in_four and not self._melody_habits()[GRID] % phrasing.EIGHTHS_IN_BAR
-
-    def hook_part_is_chosen(self, part):
-        return part in self._extras.get(MELODY, {}).get(HOOK_KIND, {})
 
     # The hook's notes, the wizard's until a person writes them by hand.
 
@@ -4049,18 +4143,6 @@ class WizardChoices:
         if line_edits.steps_of(line) != steps or all(REST in note for note in line):
             raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=line))
         return copy.deepcopy(line)
-
-    def set_hook_part(self, *, part, value):
-        """Choose the hook's contour, rhythm or odd detail, or give the part back to the take with None."""
-        self._plan()
-        offered = HOOK_PARTS.get(part)
-        if offered is None or (value is not None and value not in offered):
-            raise ValueError(errors.ERR_WIZARD_HOOK_PART.format(part=part, value=value))
-        chosen = self._extras.setdefault(MELODY, {}).setdefault(HOOK_KIND, {})
-        chosen.pop(part, None)
-        if value is not None:
-            chosen[part] = value
-        self._answers = {}
 
     def _song_plan(self):
         """The plan of the song as the choices stand."""

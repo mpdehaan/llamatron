@@ -35,13 +35,13 @@ from llamatron.generators.phrasing import BREATHS, JOINS, RISES
 from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.support.version import VERSION
-from llamatron.macro_composer import hook_kinds, line_edits, phrasing
+from llamatron.macro_composer import hook_writing, line_edits, phrasing
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.phrasing import LINE_BREATH, LONGEST_BREATH, NO_BREATH
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, MOST_DYNAMICS
 from llamatron.macro_composer.riffs import RIFF_BAR_COUNT, RIFF_NOTES
-from llamatron.macro_composer.wizard_choices import (ATONAL, RIFF_SETTINGS, HOOK_PARTS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
+from llamatron.macro_composer.wizard_choices import (ATONAL, RIFF_SETTINGS, LINE_BREATHES, ONE_PLAYER_FIRST, PHRASING_OFFERED, USUAL_PIECE_NOTE, BAND_SOUNDS, FEWEST_FILLS, FILLS_TRAITS, LEAST_BUSY, MOST_BUSY, MOST_FILLS, ONE_GUITARIST_COUNT,
                                                      USUAL_SOUNDS, WizardChoices, genre_names)
 
 A_NAME = 'a_song'
@@ -90,7 +90,9 @@ SONG_PLAN = 'song plan'
 CONTRAST = 'contrast'
 PHRASING = 'phrasing'
 PHRASING_WAY = 'how the lines breathe'
-HOOK_PART = "a part of the hook's kind"
+HOOK_BEHAVIOR = "the hook's behavior"
+HOOK_GAUGE = "a gauge of the hook"
+BODY_GAUGE = "a gauge of the chorus's body"
 # A degree is changed among the first few of the scale, which every scale has.
 DEGREES_TRIED = 5
 HOOK_LINE = "the hook's notes written by hand"
@@ -197,6 +199,22 @@ def first_degree_changed(pattern):
     step = next(place for place, degree in enumerate(degrees) if degree is not None)
     degrees[step] = degrees[step] % DEGREES_TRIED + 1
     return {**pattern, Row.DEGREE: degrees}
+
+
+def first_sounding_step(line):
+    """The step a line's first note starts on, after any rest the line opens with."""
+    step = 0
+    for note in line:
+        if not line_edits.is_rest(note):
+            return step
+        step += line_edits.length_of(note)
+    return step
+
+
+def far_end(position):
+    """The end of a gauge's scale farther from a position."""
+    middle = (hook_writing.LOWEST + hook_writing.HIGHEST) / 2
+    return hook_writing.LOWEST if position > middle else hook_writing.HIGHEST
 
 
 def every_choice(choices):
@@ -322,16 +340,20 @@ def every_choice(choices):
                 for value in offered:
                     if value != phrasing.USUAL_WAYS[name]:
                         yield PHRASING_WAY, (name, value), lambda made, name=name, value=value: made.set_phrasing_way(name=name, value=value), [planned]
-        if choices.can_have_hook() and choices.has_hook() and under_plan.counts_in_four():
-            for part, offered in HOOK_PARTS.items():
-                for value in offered:
-                    if value != under_plan.hook_kind()[part]:
-                        # A long note has neither a rhythm nor a detail to choose, so those are held under another contour.
-                        first = planned if part == hook_kinds.CONTOUR else both(first=planned, then=lambda made: made.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT))
-                        yield HOOK_PART, (part, value), lambda made, part=part, value=value: made.set_hook_part(part=part, value=value), [first]
+    if choices.writes_hook():
+        # How the hook is written: every other behavior, and each gauge of the song's behavior moved to the end of its scale farther away.
+        for behavior in hook_writing.BEHAVIORS:
+            if behavior != choices.get_hook_behavior():
+                yield HOOK_BEHAVIOR, behavior, lambda made, behavior=behavior: made.set_hook_behavior(behavior), [nothing_first]
+        for name in choices.hook_gauges():
+            position = far_end(choices.get_hook_gauge(name))
+            yield HOOK_GAUGE, (name, position), lambda made, name=name, position=position: made.set_hook_gauge(name=name, position=position), [nothing_first]
+        for name in choices.body_gauges():
+            position = far_end(choices.get_body_gauge(name))
+            yield BODY_GAUGE, (name, position), lambda made, name=name, position=position: made.set_body_gauge(name=name, position=position), [nothing_first]
     if choices.can_have_hook() and choices.has_hook() and choices.hook_line() is not None:
-        # The hook's notes written by hand: its first note moved a note of the scale up.
-        yield HOOK_LINE, 'first note up', lambda made: made.set_hook_line(line_edits.moved(line=made.hook_line(), step=0, by=1)), [nothing_first]
+        # The hook's notes written by hand: its first note, which a rest may come before, moved a note of the scale up.
+        yield HOOK_LINE, 'first note up', lambda made: made.set_hook_line(line_edits.moved(line=made.hook_line(), step=first_sounding_step(made.hook_line()), by=1)), [nothing_first]
     if choices.can_have_song_plan():
         # What a section of a planned song is given of its own, each held under a plan: the second section, which a section follows.
         under_plan = fresh_with_plan(choices)

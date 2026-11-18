@@ -411,6 +411,8 @@ MSG_SOUND_NOTE_ROW = 'Note   {note}'
 MSG_SOUND_NOTE_TYPED = 'Note   {text}_'
 MSG_WIZARD_GAUGE_FULL = '█'
 MSG_WIZARD_GAUGE_EMPTY = '░'
+# tui/screens/wizard/branch.py: a gauge of a melody's writing, a block for each position above the lowest, and then its number.
+MSG_WIZARD_WRITING_GAUGE_SHOWN = '{gauge}  {place}'
 MSG_WIZARD_LENGTH_SHOWN = '{length}  ({form})'
 MSG_WIZARD_FORM_SHOWN = '{form}: {count} sections'
 # The Chords panel: a progression with its numerals, the key its chords are spelled in, a kind of section's chords, and what follows a chord's root.

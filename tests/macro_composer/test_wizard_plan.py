@@ -21,12 +21,12 @@ import random
 import unittest
 
 from llamatron.composition.file_format import SceneSetting, Section
-from llamatron.macro_composer import hook_kinds, phrasing
+from llamatron.macro_composer import hook_writing, phrasing
 from llamatron.macro_composer.notation import REST, STEPS
 from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, LEAVES, STOPS
 from llamatron.macro_composer.song_plan import ENERGY, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST
-from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, HOOK_PARTS, LEAVES_AS_JOIN, OWN_WITHOUT_PLAN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WizardChoices, chords_as_text, chords_from_text
+from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, LAST_CHORUSES, NO, PRE_CHORUS, PRE_CHORUSES, SOLO, SOLO_COUNTS, SOLOS, VERSES_FIRST, YES, LEAVES_AS_JOIN, OWN_WITHOUT_PLAN, PHRASING_OFFERED, SHAPE_OF_SECTION, MINOR, WRITING_KEPT, WizardChoices, chords_as_text, chords_from_text
 from llamatron.composition import limits
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
@@ -91,7 +91,7 @@ class TestWizardSongPlan(unittest.TestCase):
 
     def test_the_plan_s_settings_are_refused_without_a_plan(self):
         choices = chosen(plan=False)
-        for asked in (choices.get_contrast, choices.has_phrasing, choices.hook_kind, choices.energies, choices.said_of_sections):
+        for asked in (choices.get_contrast, choices.has_phrasing, choices.energies, choices.said_of_sections):
             with self.assertRaisesRegex(ValueError, errors.ERR_WIZARD_NO_SONG_PLAN):
                 asked()
 
@@ -127,21 +127,22 @@ class TestWizardSongPlan(unittest.TestCase):
         choices = chosen()
         choices.set_contrast(A_HIGH_CONTRAST)
         choices.set_phrasing(False)
-        choices.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
+        choices.set_hook_behavior(hook_writing.CHANT)
         again = WizardChoices.from_data(choices.to_data())
         self.assertTrue(again.has_song_plan())
         self.assertEqual(again.get_contrast(), A_HIGH_CONTRAST)
         self.assertFalse(again.has_phrasing())
-        self.assertEqual(again.hook_kind(), choices.hook_kind())
+        self.assertEqual(again.get_hook_behavior(), hook_writing.CHANT)
         self.assertEqual(again.made_setlist(name=A_NAME, version=VERSION).to_data(), choices.made_setlist(name=A_NAME, version=VERSION).to_data())
 
     def test_switching_the_plan_off_or_choosing_another_genre_drops_it(self):
         choices = chosen()
-        choices.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
+        choices.set_hook_behavior(hook_writing.CHANT)
         choices.set_song_plan(False)
         self.assertFalse(choices.has_song_plan())
         choices.set_song_plan(True)
-        self.assertFalse(choices.hook_part_is_chosen(hook_kinds.CONTOUR))
+        # How the hook is written is the song's, with a plan or without one, and one genre's.
+        self.assertEqual(choices.get_hook_behavior(), hook_writing.CHANT)
         choices.set_genre(AN_UNPLANNED_GENRE)
         choices.set_subgenre(choices.subgenres()[0])
         self.assertFalse(choices.has_song_plan())
@@ -183,55 +184,78 @@ class TestWizardPhrasing(unittest.TestCase):
 
 
 class TestWizardHookKind(unittest.TestCase):
-    """The hook's kind: the wizard's pick, and each part chosen over it."""
+    """How the hook is written: a behavior and gauges, the genre's until the song moves one."""
 
     __slots__ = ()
 
-    def test_the_kind_is_the_take_s_until_a_part_is_chosen_and_goes_back_to_it(self):
+    def test_the_behavior_and_each_gauge_are_the_genre_s_until_chosen_and_go_back_to_it(self):
         choices = chosen()
-        picked = choices.hook_kind()
-        self.assertEqual(picked, hook_kinds.kind_of(seed=A_SEED, take=choices.get_hook_take()))
-        for part, offered in HOOK_PARTS.items():
-            other = next(value for value in offered if value != picked[part])
-            self.assertFalse(choices.hook_part_is_chosen(part))
-            choices.set_hook_part(part=part, value=other)
-            self.assertTrue(choices.hook_part_is_chosen(part))
-            self.assertEqual(choices.hook_kind()[part], other)
-            choices.set_hook_part(part=part, value=None)
-            self.assertEqual(choices.hook_kind(), picked)
+        usual = choices.genre_hook_behavior()
+        other = next(behavior for behavior in hook_writing.BEHAVIORS if behavior != usual)
+        choices.set_hook_behavior(other)
+        self.assertEqual(choices.get_hook_behavior(), other)
+        choices.set_hook_behavior(usual)
+        self.assertEqual(choices.to_data().get(WRITING_KEPT), None)
+        for name in choices.hook_gauges():
+            position = choices.genre_hook_gauge(name)
+            moved = hook_writing.LOWEST if position != hook_writing.LOWEST else hook_writing.HIGHEST
+            self.assertFalse(choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name))
+            choices.set_hook_gauge(name=name, position=moved)
+            self.assertTrue(choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name))
+            self.assertEqual(choices.get_hook_gauge(name), moved)
+            choices.set_hook_gauge(name=name, position=None)
+            self.assertEqual(choices.get_hook_gauge(name), position)
+        self.assertEqual(choices.to_data().get(WRITING_KEPT), None)
 
-    def test_a_part_chosen_stays_through_a_new_hook(self):
+    def test_a_behavior_and_a_gauge_chosen_stay_through_a_new_hook_and_are_kept_with_the_song(self):
         choices = chosen()
-        choices.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
+        choices.set_hook_behavior(hook_writing.CHANT)
+        choices.set_hook_gauge(name=hook_writing.HOLD, position=hook_writing.LOWEST)
+        choices.set_body_gauge(name=hook_writing.SPACE, position=hook_writing.HIGHEST)
         choices.new_hook()
-        self.assertEqual(choices.hook_kind()[hook_kinds.CONTOUR], hook_kinds.CHANT)
+        again = WizardChoices.from_data(choices.to_data())
+        self.assertEqual(again.get_hook_behavior(), hook_writing.CHANT)
+        self.assertEqual(again.get_hook_gauge(hook_writing.HOLD), hook_writing.LOWEST)
+        self.assertEqual(again.get_body_gauge(hook_writing.SPACE), hook_writing.HIGHEST)
+        self.assertEqual(again.hook_notes(), choices.hook_notes())
 
-    def test_a_chosen_contour_is_the_hook_the_song_plays(self):
+    def test_each_behavior_is_another_hook_and_each_take_of_one_another(self):
         choices = chosen()
         hooks = set()
-        for contour in hook_kinds.CONTOURS:
-            choices.set_hook_part(part=hook_kinds.CONTOUR, value=contour)
+        for behavior in hook_writing.BEHAVIORS:
+            choices.set_hook_behavior(behavior)
             hooks.add(repr(choices.hook_notes()))
-        self.assertEqual(len(hooks), len(hook_kinds.CONTOURS))
+        self.assertEqual(len(hooks), len(hook_writing.BEHAVIORS))
+        before = choices.hook_notes()
+        choices.new_hook()
+        self.assertNotEqual(choices.hook_notes(), before)
 
-    def test_what_is_not_a_part_or_not_offered_is_refused(self):
+    def test_a_behavior_shows_only_the_gauges_that_change_its_hook(self):
+        choices = chosen()
+        for behavior in hook_writing.BEHAVIORS:
+            choices.set_hook_behavior(behavior)
+            self.assertEqual(choices.hook_gauges(), list(hook_writing.HOOK_GAUGES_OF[behavior]))
+        choices.set_hook_behavior(hook_writing.CHANT)
+        self.assertNotIn(hook_writing.LEAP, choices.hook_gauges())
+
+    def test_what_is_no_behavior_no_gauge_or_off_the_scale_is_refused(self):
         choices = chosen()
         with self.assertRaises(ValueError):
-            choices.set_hook_part(part=NOT_A_PART, value=hook_kinds.CHANT)
+            choices.set_hook_behavior(NOT_A_PART)
         with self.assertRaises(ValueError):
-            choices.set_hook_part(part=hook_kinds.CONTOUR, value=NOT_A_PART)
+            choices.set_hook_gauge(name=NOT_A_PART, position=hook_writing.LOWEST)
+        for position in (hook_writing.LOWEST - 1, hook_writing.HIGHEST + 1, True):
+            with self.assertRaises(ValueError):
+                choices.set_hook_gauge(name=hook_writing.HOLD, position=position)
+            with self.assertRaises(ValueError):
+                choices.set_body_gauge(name=hook_writing.SPACE, position=position)
 
-    def test_a_long_note_has_neither_a_rhythm_nor_a_detail(self):
-        choices = chosen()
-        choices.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.LONG_NOTE)
-        self.assertEqual(choices.hook_parts(), [hook_kinds.CONTOUR])
-        choices.set_hook_part(part=hook_kinds.CONTOUR, value=hook_kinds.CHANT)
-        self.assertEqual(choices.hook_parts(), list(HOOK_PARTS))
-
-    def test_a_song_not_in_four_has_no_kinds_and_no_phrasing(self):
+    def test_a_song_not_in_four_has_no_gauges_and_no_phrasing(self):
         choices = chosen(subgenre=A_SUBGENRE_IN_SIX)
         self.assertFalse(choices.counts_in_four())
-        self.assertEqual(choices.hook_parts(), [])
+        self.assertFalse(choices.writes_hook())
+        self.assertEqual(choices.hook_gauges(), [])
+        self.assertEqual(choices.body_gauges(), [])
         self.assertTrue(chosen().counts_in_four())
 
 
