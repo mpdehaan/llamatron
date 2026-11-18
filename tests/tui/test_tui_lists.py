@@ -356,16 +356,28 @@ class TestGeneratorsPage(UITest):
         mark = marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK
         return labels.MSG_GROUP_HEADING.format(mark=mark, name=generator_page_of_kind(kind).label, count=len(self.document.song().get_generator_names(kind)))
 
-    async def test_it_lists_every_generator_under_its_types_heading_and_enter_opens_its_editor(self):
+    async def open_page_on_the_arp(self):
+        """Open the Generators page and put the cursor on the set's arpeggiator, which opens its type."""
+        await self.press(keybindings.MainPage.GENERATORS)
+        self.app.screen.put_cursor_on(kind=GeneratorKind.ARP, name=UP)
+        await self.settle()
+        return self.app.screen
+
+    async def test_every_type_the_set_has_gets_a_heading_and_each_starts_closed(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
         held = [kind for kind in NAMED_GENERATORS if self.document.song().get_generator_names(kind)]
         self.assertEqual(len(page.generators()), sum(len(self.document.song().get_generator_names(kind)) for kind in held))
-        headings = [cells[0] for what, cells in page.rows() if what.name is None]
-        for kind in held:
-            self.assertIn(self.heading(kind=kind), headings)
+        self.assertEqual([cells[0] for _, cells in page.rows()][:-1], [self.heading(kind=kind, closed=True) for kind in page.kinds()])
+        self.assertEqual(set(page.kinds()), set(held))
+        self.assertIsNone(page.current())
+        self.assertEqual(page.place, 0)
+
+    async def test_a_heading_opens_its_type_and_enter_on_a_generator_opens_its_editor(self):
+        await self.press(keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE))
         self.assertIn(self.heading(kind=GeneratorKind.ARP), self.text())
-        self.assertEqual(page.current(), (GeneratorKind.ARP, UP))
+        await self.press(Key.DOWN)
+        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, UP))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ArpEditor)
 
@@ -380,20 +392,19 @@ class TestGeneratorsPage(UITest):
         self.assertIn(first, arps)
         self.assertEqual(arps, sorted(arps, key=str.casefold))
 
-    async def test_a_heading_closes_and_opens_its_type_and_stays_closed_when_the_page_opens_again(self):
-        await self.press(keybindings.MainPage.GENERATORS, Key.UP)
-        self.assertIsNone(self.app.screen.current())
-        await self.press(first_key(keybindings.GeneratorsPage.TOGGLE_TYPE))
-        self.assertIn(self.heading(kind=GeneratorKind.ARP, closed=True), self.text())
-        self.assertNotIn((GeneratorKind.ARP, UP), [what[1:] for what, _ in self.app.screen.rows()])
-        await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS)
-        self.assertIn(self.heading(kind=GeneratorKind.ARP, closed=True), self.text())
-        await self.press(Key.UP, Key.UP, Key.ENTER)
+    async def test_an_open_type_stays_open_when_the_page_opens_again_and_in_the_file_and_is_no_unsaved_change(self):
+        before = self.document.setlist().to_data()
+        await self.press(keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE), Key.ESCAPE, keybindings.MainPage.GENERATORS)
         self.assertIn(self.heading(kind=GeneratorKind.ARP), self.text())
+        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, UP))
+        self.assertEqual(self.document.setlist().get_open_generator_types(), [GeneratorKind.ARP])
+        self.assertEqual(self.document.setlist().to_data(), before)
+        await self.press(Key.UP, Key.ENTER)
+        self.assertIn(self.heading(kind=GeneratorKind.ARP, closed=True), self.text())
+        self.assertEqual(self.document.setlist().get_open_generator_types(), [])
 
     async def test_page_down_and_page_up_jump_between_the_headings(self):
-        await self.press(keybindings.MainPage.GENERATORS)
-        page = self.app.screen
+        page = await self.open_page_on_the_arp()
         await self.press(forward_key(keybindings.GeneratorsPage.NEXT_TYPE))
         self.assertIsNone(page.current())
         second = page.place
@@ -406,21 +417,17 @@ class TestGeneratorsPage(UITest):
         await self.press(*[Key.DOWN] * len(self.app.screen.rows()), Key.ENTER)
         self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
 
-    async def test_adding_asks_the_kind_names_it_and_opens_it(self):
+    async def test_adding_asks_the_kind_names_it_opens_it_and_opens_its_type(self):
         name = await self.add_generator(Section.ARPS)
         self.assertIsInstance(self.app.screen, ArpEditor)
         self.assertEqual(self.arp(name).get_order(), written_name(ChordOrder.UP))
         await self.press(Key.ESCAPE)
         self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, name))
-
-    async def test_adding_into_a_closed_type_opens_it(self):
-        await self.press(keybindings.MainPage.GENERATORS, Key.UP, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE), Key.ESCAPE)
-        name = await self.add_generator(Section.ARPS)
-        await self.press(Key.ESCAPE)
-        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, name))
+        self.assertTrue(self.document.setlist().is_generator_type_open(GeneratorKind.ARP))
 
     async def test_a_generator_in_a_chain_cannot_be_deleted_and_an_unused_one_can(self):
-        await self.press(keybindings.MainPage.GENERATORS, Key.BACKSPACE)
+        await self.open_page_on_the_arp()
+        await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(CHAIN_NAMED, self.text())
         await self.press(Key.ENTER, Key.ESCAPE)
@@ -429,7 +436,8 @@ class TestGeneratorsPage(UITest):
         self.assertNotIn(name, self.document.song().get_generator_names(GeneratorKind.ARP))
 
     async def test_renaming_updates_its_chains_and_keeps_the_cursor_on_it(self):
-        await self.press(keybindings.MainPage.GENERATORS, keybindings.GeneratorsPage.RENAME)
+        await self.open_page_on_the_arp()
+        await self.press(keybindings.GeneratorsPage.RENAME)
         self.app.screen.value = CLIMB
         await self.press(Key.ENTER)
         self.assertEqual(self.chain_steps(NAMED)[0], (GeneratorKind.ARP, CLIMB))

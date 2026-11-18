@@ -95,8 +95,6 @@ class LlamatronApp(App, inherit_bindings=False):
         self.open_field_sections = set()
         # The headings open in the picker of a new generator's type, kept for the session.
         self.open_generator_groups = set()
-        # The types of generator whose headings are closed on the Generators page, kept until the tracker closes.
-        self.closed_generator_types = set()
         self.on_roll = True
         # Whether Arrange shows its details view (R), kept for the session like the choice of the roll.
         self.shows_arrange_details = False

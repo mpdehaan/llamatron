@@ -220,7 +220,7 @@ N renames the chain, and every clip using it follows.
 HELP_GENERATORS_PAGE = """
 Every generator of the set, under a heading for its type, the types and the generators under each sorted by name. Chains run them on clips, scenes and tracks, in the order each chain lists them.
 
-Space or ENTER on a heading opens and closes its type, and PgUp and PgDn jump between the headings.
+Every type is closed until opened. Space or ENTER on a heading opens and closes its type, and PgUp and PgDn jump between the headings.
 ENTER edits the selected generator. A adds one, asking which type under headings that Space opens, and opens it. N renames it, C copies it, and Bksp deletes it once nothing uses it.
 / searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
 """

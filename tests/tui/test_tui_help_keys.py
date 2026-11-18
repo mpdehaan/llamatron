@@ -263,7 +263,8 @@ class KeyTour(UITest):
         await self.press(Key.ESCAPE)
         await self.walk()
         # The Generators page lists every generator, each opening its editor; an arp's Offsets field opens the offsets editor.
-        await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS)
+        # Every type starts closed, so the first is opened for the walk to reach a generator's row.
+        await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE))
         await self.walk()
         for kind, name in self.app.screen.generators():
             await self.press(Key.ESCAPE, keybindings.MainPage.GENERATORS)

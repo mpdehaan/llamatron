@@ -57,7 +57,7 @@ class GeneratorsPage(ListPage):
 
     def __init__(self, holder):
         super().__init__(holder)
-        # The page opens with the cursor on its first generator, where one shows, so that ENTER edits at once, as on every list.
+        # The page opens with the cursor on the first generator showing, so that ENTER edits at once, or on the first heading when every type is closed.
         self.place = self.first_generator_place()
 
     # The rows.
@@ -79,11 +79,12 @@ class GeneratorsPage(ListPage):
         return sorted(self.document().names_of(NAMED_GENERATORS[kind]), key=name_order)
 
     def is_closed(self, kind):
-        return kind in self.holder.closed_generator_types
+        """Return whether a type is closed, as every type is until opened; the set keeps which are open, so that the page comes back as it was left."""
+        return not self.document().setlist().is_generator_type_open(kind)
 
     def rows_depend_on(self):
         """Return what the rows depend on besides the set: which types are closed, and a search, which looks inside every type."""
-        return (tuple(sorted(self.holder.closed_generator_types)), self.searching)
+        return (tuple(self.is_closed(kind) for kind in self.kinds()), self.searching)
 
     def rows(self):
         rows = []
@@ -132,7 +133,7 @@ class GeneratorsPage(ListPage):
 
     def put_cursor_on(self, *, kind, name):
         """Put the cursor on a generator's row, opening its type if the type is closed."""
-        self.holder.closed_generator_types.discard(kind)
+        self.document().show_generator_type(kind=kind, opened=True)
         self.restore_place(Listed(GENERATOR, kind, name))
 
     # The keys, by what the cursor is on.
@@ -152,13 +153,9 @@ class GeneratorsPage(ListPage):
         return [*result, self.bind(self.KEYS.NEXT_TYPE, action=self.jump_type)]
 
     def toggle_type(self):
-        """Open or close the type whose heading the cursor is on, kept until the tracker closes."""
+        """Open or close the type whose heading the cursor is on, which the set keeps."""
         kind = self.listed().kind
-        closed = self.holder.closed_generator_types
-        if kind in closed:
-            closed.discard(kind)
-        else:
-            closed.add(kind)
+        self.document().show_generator_type(kind=kind, opened=self.is_closed(kind))
 
     def jump_type(self, direction):
         """Move the cursor to the next type's heading, or the one before, staying put past the last or the first."""
