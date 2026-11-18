@@ -287,10 +287,14 @@ clouds; generate and test, with motif development and counterpoint last.
   than `MUCH_DENSER` times the notes a bar of the part the player last played, its notes keep a share of their loudness, so that
   what the player adds up to rises `LARGEST_STEP` times at most, never less than `LEAST_KEPT`; a part as dense as the one before
   keeps that part's trade; a player who comes in, a part of under a note a bar, and whoever carries a melody
-  (`melody_players`) are left alone; the closed hat, the open hat and the ride are one player. Measured by playing the song
-  (`measured`), which takes about four times as long as writing it, so the wizard's own comparisons of what a choice writes, and
-  the tests that make a great many songs, ask `written_setlist` and `written_for_trial`. The trade is each clip's own swell, the
-  scene's lowered. `internal_tools/loudness_steps.sh` reports the step into every subgenre's first chorus; `tests/macro_composer/test_loudness_steps.py`.
+  (`melody_players`) are left alone; the closed hat, the open hat and the ride are one player. Nothing is played to make a
+  song (the user's rule: the wizard never plays the song): the trade counts each part from what is written (`counted`), the
+  pattern's notes and chords and what the generators of the clip's chains make of them, a Guitarify's strokes times the strings
+  held, each chord for as long as the chord lasts, and an arp's steps a bar. The count is near, not exact; `measured` takes the
+  same sums from the song as played, for the report and a test to hold the count against, and a test fails if making a song
+  plays one. A new generator that makes more notes of a note is added to `clip_count`. The trade is each clip's own swell, the
+  scene's lowered. `internal_tools/loudness_steps.sh` reports the step into every subgenre's first chorus, as written
+  (`written_setlist`) and as made; `tests/macro_composer/test_loudness_steps.py`.
   A rising section, such as a pre-chorus, ends its climb at the loudness of the section it leads to (`SongPlan._arrives_at`).
 - `src/llamatron/macro_composer/hook_kinds.py` holds only the rhythms and the two contours a tag is made of; the hook's old kinds, a contour, a rhythm and a detail, are gone.
 - A tune that returns note for note is one part, in a planned song, and a part beside the tune is drawn by the section's kind

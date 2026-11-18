@@ -22,12 +22,18 @@ as loud. A player trades: where a player's part grows much denser than the part 
 is played a little softer, so that what the player adds up to rises by a set share and no more. A player who comes in is
 left alone, and so is whoever carries a melody, which has to stay on top.
 
-What a player adds up to is measured from the song as played: the loudness of every note the player sounds, for each bar.
-The drummer's timekeeping cymbals, the closed hat, the open hat and the ride, count as one player, since the drummer moves
-from one to another. The trade is written as each clip's own swell, the scene's swell lowered.
+What a player adds up to is the loudness of every note the player sounds, for each bar. The trade counts it from what is
+written, without playing anything (counted): a clip's pattern says how many notes are written and how loud, and the
+generators of the clip's chains that make more notes of a note, a Guitarify's strokes and strings and an arp's steps, say
+how many each note becomes. The count is near, never exact, and near is enough to tell a part twice as dense. The same sums
+taken from the song as played (measured) are for a report to hold the count against, never for making a song, which has to
+stay quick. The drummer's timekeeping cymbals, the closed hat, the open hat and the ride, count as one player, since the
+drummer moves from one to another. The trade is written as each clip's own swell, the scene's swell lowered.
 """
 
-from llamatron.composition.file_format import Shape, ShapePart
+from llamatron.composition import defaults
+from llamatron.composition.checks import time_length
+from llamatron.composition.file_format import FIXED_CHORDS, ChordSymbol, GeneratorKind, Row, Shape, ShapePart, Stroke
 from llamatron.composition.shapes import UNCHANGED, shape_setting
 from llamatron.macro_composer.breaks import HAT, OPEN, RIDE
 from llamatron.music.chord import Chord
@@ -49,6 +55,14 @@ AS_DENSE = 0.9
 LEAST_KEPT = 0.7
 WHOLE = 100
 A_SEED = 0
+# How many notes a written note becomes where nothing says: a chord with no table of its own has three notes.
+USUAL_CHORD_NOTES = 3
+# What a guitar sounds of a power chord: the root, the fifth and the root above.
+POWER_CHORD_STRINGS = 3
+# The strokes that sound nothing, and the ones that sound every string held; any other stroke sounds one string.
+SILENT_STROKES = (Stroke.NOTHING,)
+WHOLE_STROKES = (Stroke.DOWN, Stroke.UP, Stroke.MUTE, Stroke.STAB)
+ONE_NOTE = 1
 NOTES = 0
 LOUDNESS = 1
 KEPT = 2
@@ -81,9 +95,93 @@ def clip_sums(clip):
     return notes, loudness
 
 
+def chord_notes(symbol):
+    """How many notes a step sounds as written: one, or its chord's."""
+    if symbol is None:
+        return ONE_NOTE
+    return len(FIXED_CHORDS[symbol].value) + 1 if symbol in FIXED_CHORDS else USUAL_CHORD_NOTES
+
+
+def strings_held(*, symbol, settings):
+    """About how many strings a Guitarify holds down for a step: one for a single note, three for a power chord, and for any
+    other chord every string the guitar is given."""
+    if symbol is None:
+        return ONE_NOTE
+    return POWER_CHORD_STRINGS if symbol == ChordSymbol.POWER else settings.get_strings()
+
+
+def lasting(*, steps, count):
+    """How many steps each of a pattern's notes lasts: until the note after, the last until the pattern's end."""
+    return [after - step for step, after in zip(steps, [*steps[1:], count])]
+
+
+def strummed(*, symbols, lasts, settings, bar_length):
+    """About how many notes a bar a Guitarify makes of a pattern's steps: its bar of strokes, each a whole stroke of the strings
+    held, one string, or nothing, over the chords written, each chord for as long as the chord lasts."""
+    held = sum(strings_held(symbol=symbol, settings=settings) * steps for symbol, steps in zip(symbols, lasts)) / sum(lasts)
+    strokes = settings.get_bar()
+    sounded = sum(0 if stroke in SILENT_STROKES else held if stroke in WHOLE_STROKES else ONE_NOTE for stroke in strokes)
+    return sounded * float(bar_length / (time_length(settings.get_cell()) * len(strokes)))
+
+
+def clip_count(*, song, slot, bar_length):
+    """About how many notes a bar a clip sounds, and how loud a note of its pattern is written, from the pattern and the clip's
+    chains alone: (notes a bar, loudness of a note), or None for a clip that sounds nothing."""
+    pattern = song.get_pattern(slot.get_pattern_name())
+    steps = pattern.get_note_steps()
+    if not steps:
+        return None
+    symbols = [pattern.get_value(row=Row.CHORD, step=step) for step in steps]
+    written = [pattern.get_value(row=Row.VELOCITY, step=step) for step in steps]
+    loudness = sum(defaults.DEFAULT_VELOCITY if velocity is None else velocity for velocity in written) / len(written)
+    bars = float(pattern.get_steps() * (pattern.get_step_size() or song.get_step_size()) / bar_length)
+    notes = sum(chord_notes(symbol) for symbol in symbols) / bars
+    for name in slot.get_chain_names():
+        for step in song.get_chain(name).get_steps():
+            if step.kind == GeneratorKind.GUITARIFY:
+                notes = strummed(symbols=symbols, lasts=lasting(steps=steps, count=pattern.get_steps()), settings=song.get_generator_settings(kind=step.kind, name=step.name), bar_length=bar_length)
+            elif step.kind == GeneratorKind.ARP:
+                notes = float(bar_length / time_length(song.get_generator_settings(kind=step.kind, name=step.name).get_step()))
+    return notes, loudness
+
+
+def counted(*, song):
+    """What each player adds up to in each scene of a song, counted from what is written: a list, one for a scene, of {player:
+    (notes a bar, loudness a bar)}, leaving out a muted track and a player who sounds nothing. A clip that plays once through a
+    longer scene counts for the share of the scene the clip lasts."""
+    bar_length = song.get_time_signature().bar_length()
+    scenes = []
+    for scene in song.get_scenes():
+        swell = scene.get_shape(Shape.SWELL)
+        share = (swell.start + swell.end) / (2 * WHOLE) if swell else 1
+        players = {}
+        for track in scene.get_track_names():
+            slot = scene.get_clip_slot(track)
+            found = None if song.get_track(track).is_muted() else clip_count(song=song, slot=slot, bar_length=bar_length)
+            if found is None:
+                continue
+            notes = found[NOTES] * (1 if slot.loops() else lasting_share(song=song, scene=scene, slot=slot))
+            so_far = players.get(player_of(track), (0, 0))
+            players[player_of(track)] = (so_far[NOTES] + notes, so_far[LOUDNESS] + notes * found[LOUDNESS] * share)
+        scenes.append(players)
+    return scenes
+
+
+def pattern_length(*, song, slot):
+    """How long a clip's pattern lasts played through as often as the clip repeats it, in whole notes."""
+    pattern = song.get_pattern(slot.get_pattern_name())
+    return pattern.get_steps() * (pattern.get_step_size() or song.get_step_size()) * (slot.get_repeat() or 1)
+
+
+def lasting_share(*, song, scene, slot):
+    """The share of a scene a clip that does not loop lasts: its length against the longest such clip of the scene."""
+    longest = max(pattern_length(song=song, slot=scene.get_clip_slot(track)) for track in scene.get_track_names() if not scene.get_clip_slot(track).loops())
+    return float(pattern_length(song=song, slot=slot) / longest)
+
+
 def measured(*, song, seed=A_SEED):
-    """What each player adds up to in each scene of a song, as played: a list, one for a scene, of {player: (notes a bar,
-    loudness a bar)}, leaving out a muted track and a player who sounds nothing."""
+    """What each player adds up to in each scene of a song, as played: the sums counted() gives, taken from every note sounded.
+    Playing takes several times as long as writing the song, so this is for a report and a test to hold the count against."""
     grid = SongRenderer(song, seed=seed).render()
     bar_length = grid.get_time_signature().bar_length()
     scenes = []
@@ -132,7 +230,7 @@ def trades(*, scenes, kept=()):
 
 def with_trades(*, song, kept=()):
     """Write a song's trades into the song: each clip of a player who trades gets a swell of its own, its scene's lowered."""
-    for scene, shares in zip(song.get_scenes(), trades(scenes=measured(song=song), kept=kept)):
+    for scene, shares in zip(song.get_scenes(), trades(scenes=counted(song=song), kept=kept)):
         of_scene = scene.get_shape(Shape.SWELL)
         for track in scene.get_track_names():
             share = shares.get(player_of(track))

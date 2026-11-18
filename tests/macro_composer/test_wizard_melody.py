@@ -46,7 +46,7 @@ def chosen():
 
 
 def patterns(choices):
-    return choices.written_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
 
 
 class TestPlanAsAsked(unittest.TestCase):
