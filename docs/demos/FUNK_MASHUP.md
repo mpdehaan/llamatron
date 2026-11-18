@@ -22,5 +22,5 @@ entry is the bass alone over the kick; Bach's last chords end it.
 
 | ties | tempo changes |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of toccata_and_funk -->

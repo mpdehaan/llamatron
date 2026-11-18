@@ -21,5 +21,5 @@ step, and every part follows.
 
 | chords | arps | ratchets | chains | grabs | ties | grooves | key changes | registers | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CHAINS.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 21_look_ma_no_notes -->

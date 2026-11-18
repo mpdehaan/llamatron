@@ -88,6 +88,81 @@ FEATURE_COLUMNS = [
     ('euclid', ['euclids']),
     ('feel', ['glides', 'shortens', 'rushes', 'drags']),
 ]
+# Where each feature is explained, as a link from a page of docs/demos/: what a demo's checkmark opens. A feature with no page
+# of its own to point at is left out, and its checkmark is plain.
+PATTERNS_DOC = '../PATTERNS.md'
+CHORDS_DOC = PATTERNS_DOC + '#chords'
+TIES_DOC = PATTERNS_DOC + '#ties'
+PROBABILITY_DOC = PATTERNS_DOC + '#glide-and-probability'
+ADVANCED_ROWS_DOC = PATTERNS_DOC + '#advanced'
+CCS_DOC = PATTERNS_DOC + '#ccs'
+DIRECTIONS_DOC = PATTERNS_DOC + '#play-directions'
+CLIP_SETTINGS_DOC = '../CLIPS.md#clip-settings'
+MORPHING_DOC = '../CLIPS.md#morphing'
+GRABBING_DOC = '../CLIPS.md#grabbing-notes'
+SCENE_SETTINGS_DOC = '../SCENES.md#scene-settings'
+SECTION_SHAPES_DOC = '../SCENES.md#section-shapes'
+TRACK_SETTINGS_DOC = '../TRACKS.md#track-settings'
+REGISTERS_DOC = '../REGISTERS.md'
+GROOVES_DOC = '../GROOVES.md'
+CHAINS_DOC = '../CHAINS.md'
+GENERATOR_DOC = '../generators/{page}.md'
+FEATURE_LINKS = {
+    'chords': CHORDS_DOC,
+    'arps': GENERATOR_DOC.format(page='ARPEGGIATOR'),
+    'ratchets': ADVANCED_ROWS_DOC,
+    'ratchet offsets': ADVANCED_ROWS_DOC,
+    'AutoRatchets': GENERATOR_DOC.format(page='AUTORATCHET'),
+    'chains': CHAINS_DOC,
+    'grab steps': GRABBING_DOC,
+    'grab track': GRABBING_DOC,
+    'hockets': GENERATOR_DOC.format(page='HOCKET'),
+    'guitarifies': GENERATOR_DOC.format(page='GUITARIFY'),
+    'follow chords': GENERATOR_DOC.format(page='FOLLOW_CHORDS'),
+    'phrasings': GENERATOR_DOC.format(page='PHRASING'),
+    'morphs': MORPHING_DOC,
+    'pattern direction': DIRECTIONS_DOC,
+    'clip direction': DIRECTIONS_DOC,
+    'ties': TIES_DOC,
+    'probability': PROBABILITY_DOC,
+    'song groove': GROOVES_DOC,
+    'scene groove': GROOVES_DOC,
+    'track groove': GROOVES_DOC,
+    'own grooves': GROOVES_DOC,
+    'scene scale': SCENE_SETTINGS_DOC,
+    'clip scale': CLIP_SETTINGS_DOC,
+    'scene tempo': SCENE_SETTINGS_DOC,
+    'tempo ramps': SCENE_SETTINGS_DOC,
+    'CC rows': CCS_DOC,
+    'slides': CCS_DOC,
+    'track CC numbers': TRACK_SETTINGS_DOC,
+    'register note rows': REGISTERS_DOC,
+    'register velocity rows': REGISTERS_DOC,
+    'register adds': REGISTERS_DOC,
+    'register sets': REGISTERS_DOC,
+    'register resets': REGISTERS_DOC,
+    'registers section': REGISTERS_DOC,
+    'conditions': REGISTERS_DOC,
+    'register binding': REGISTERS_DOC,
+    'clip shapes': SECTION_SHAPES_DOC,
+    'scene shapes': SECTION_SHAPES_DOC,
+    'Densities': GENERATOR_DOC.format(page='DENSITY'),
+    'Swells': GENERATOR_DOC.format(page='SWELL'),
+    'Articulates': GENERATOR_DOC.format(page='ARTICULATE'),
+    'progressions': GENERATOR_DOC.format(page='PROGRESSION'),
+    'voice leadings': GENERATOR_DOC.format(page='VOICE_LEADING'),
+    'inversions': CHORDS_DOC,
+    'strums': GENERATOR_DOC.format(page='STRUM'),
+    'euclids': GENERATOR_DOC.format(page='EUCLID'),
+    'glides': GENERATOR_DOC.format(page='GLIDE'),
+    'shortens': GENERATOR_DOC.format(page='SHORTEN'),
+    'rushes': GENERATOR_DOC.format(page='RUSH'),
+    'drags': GENERATOR_DOC.format(page='DRAG'),
+}
+USED_LINK = '[{mark}]({link})'
+# The Tutorial Demos page's table of what a demo is the first to use, written after the demo's section.
+NEW_FEATURES_TITLE = '**New Features Introduced**'
+LINK_ANCHOR = '#'
 SET_HEADING = 'set'
 DESCRIPTION_HEADING = 'plays'
 GENRE_HEADING = 'genre'
@@ -331,12 +406,50 @@ def genre_page(genre):
     return re.sub(NOT_A_NAME_CHARACTER, NAME_JOIN, genre.replace(APOSTROPHE, NOTHING)).strip(NAME_JOIN).upper() + PAGE_SUFFIX
 
 
-def feature_table(cells):
-    """Return a one-row Markdown table of the features a set's cells mark as used, or a sentence when it uses none."""
-    used = [heading for (heading, _), cell in zip(FEATURE_COLUMNS, cells[len(LEFT_HEADINGS) + len(NUMBER_HEADINGS):]) if cell == USED]
-    if not used:
+def used_mark(*, names, used):
+    """Return the checkmark of a feature column for a set that uses it, linked to the page that explains the first of the
+    column's features the set uses, or plain when used is not known or no page explains the feature."""
+    link = next((FEATURE_LINKS[name] for name in names if name in (used or ()) and name in FEATURE_LINKS), None)
+    return USED if link is None else USED_LINK.format(mark=USED, link=link)
+
+
+def feature_table(cells, *, used=None, only=None):
+    """Return a one-row Markdown table of the features a set's cells mark as used, or a sentence when it uses none. used is the
+    features the set uses, by their names in demo_features, which links each checkmark to the page that explains the feature;
+    only keeps the columns of those headings."""
+    columns = [(heading, names) for (heading, names), cell in zip(FEATURE_COLUMNS, cells[len(LEFT_HEADINGS) + len(NUMBER_HEADINGS):])
+               if cell == USED and (only is None or heading in only)]
+    if not columns:
         return [NO_FEATURES]
-    return [markdown_line(used), markdown_line([MARKDOWN_CENTER] * len(used)), markdown_line([USED] * len(used))]
+    headings = [heading for heading, _ in columns]
+    return [markdown_line(headings), markdown_line([MARKDOWN_CENTER] * len(columns)), markdown_line([used_mark(names=names, used=used) for _, names in columns])]
+
+
+def columns_used(cells):
+    """Return the headings of the feature columns a set's cells mark as used."""
+    return [heading for (heading, _), cell in zip(FEATURE_COLUMNS, cells[len(LEFT_HEADINGS) + len(NUMBER_HEADINGS):]) if cell == USED]
+
+
+def new_features(*, paths, rows):
+    """Return, for each learning demo by its file's name, the headings of the feature columns it is the first to use, in the
+    numbered order the demos are learnt in."""
+    seen = set()
+    new = {}
+    for path, row in zip(paths, rows):
+        if pathlib.Path(path).parent.name != LEARNING:
+            continue
+        used = columns_used(row)
+        new[pathlib.Path(path).name] = [heading for heading in used if heading not in seen]
+        seen.update(used)
+    return new
+
+
+def with_new_features(*, section, cells, used, new):
+    """Return a Tutorial Demos section with the table of the features its demo is the first to use after it, each checkmark
+    linked to the page that explains the feature; a demo that introduces none is left as it is."""
+    if not new:
+        return section
+    return LINE.join([section, NOTHING, NEW_FEATURES_TITLE, NOTHING, *feature_table(cells, used=used, only=new)])
 
 
 def starting_key_and_tempo(path):
@@ -352,7 +465,7 @@ def starting_key_and_tempo(path):
     return KEY_TEXT.format(root=scale.get_root(), kind=scale.get_kind().replace(KIND_WORD_JOIN, KIND_WORD_SPACE)), tempo
 
 
-def demo_summary(*, path, cells, links):
+def demo_summary(*, path, cells, links, used=None):
     """Return the lines of one demo's summary on its genre's page: its file, starting key and tempo, length, scenes, tracks and video, then the features it uses."""
     _, _, _, length, scenes, tracks = cells[:len(LEFT_HEADINGS) + len(NUMBER_HEADINGS)]
     shown = pathlib.Path(path).as_posix()
@@ -360,7 +473,7 @@ def demo_summary(*, path, cells, links):
     facts = FACTS_LINE.format(path=shown, link=GITHUB_FILE.format(path=shown), key=key, tempo=tempo, length=length, scenes=scenes, tracks=tracks)
     if file_stem(path) in links:
         facts += FACTS_VIDEO.format(url=links[file_stem(path)])
-    return [facts, NOTHING, *feature_table(cells)]
+    return [facts, NOTHING, *feature_table(cells, used=used)]
 
 
 def index_lines(*, paths):
@@ -387,7 +500,7 @@ def folder_line(*, title, page, paths):
     return markdown_line([SET_LINK.format(name=title, link=DEMO_PAGE_LINK.format(page=page)), str(len(paths))])
 
 
-def with_summaries(*, texts, paths, rows, links):
+def with_summaries(*, texts, paths, rows, links, used=None):
     """Return each genre page's text with every demo's summary written between its markers, and the problems: each demo whose page lacks its section."""
     problems = []
     for path, row in zip(paths, rows):
@@ -398,7 +511,7 @@ def with_summaries(*, texts, paths, rows, links):
         if start not in text or end not in text[text.index(start):]:
             problems.append(MSG_NO_SECTION.format(stem=file_stem(path), page=page, start=start, end=end))
             continue
-        texts[page] = with_table(text=text, table=demo_summary(path=path, cells=row, links=links), start=start, end=end)
+        texts[page] = with_table(text=text, table=demo_summary(path=path, cells=row, links=links, used=(used or {}).get(path)), start=start, end=end)
     return texts, problems
 
 
@@ -446,7 +559,7 @@ def sorted_page(text):
     return page_text(intro=intro, sections=sorted(sections, key=lambda section: bare_name(section_file(section))))
 
 
-def folder_page(*, texts, paths, folder, intro, in_order=False):
+def folder_page(*, texts, paths, folder, intro, in_order=False, extras=None):
     """Return a page made of one folder's demos: each one's section, copied from its genre page without the summary's markers,
     in the order given (the Tutorial Demos page's numbered order) or else by the demo's name."""
     sections = {}
@@ -457,13 +570,21 @@ def folder_page(*, texts, paths, folder, intro, in_order=False):
     names = [pathlib.Path(path).name for path in in_folder(paths=paths, folder=folder)]
     if not in_order:
         names = sorted(names, key=bare_name)
-    ordered = [sections[name] for name in names if name in sections]
+    extras = extras or {}
+    ordered = [extras[name](sections[name]) if name in extras else sections[name] for name in names if name in sections]
     return page_text(intro=intro.rstrip(), sections=ordered)
 
 
-def tutorial_page(*, texts, paths):
-    """Return the Tutorial Demos page: the learning demos, in the numbered order."""
-    return folder_page(texts=texts, paths=paths, folder=LEARNING, intro=TUTORIAL_INTRO, in_order=True)
+def tutorial_page(*, texts, paths, rows=None, used=None):
+    """Return the Tutorial Demos page: the learning demos, in the numbered order, each followed by the features it is the first
+    to use when the demos' rows are given."""
+    extras = {}
+    if rows is not None:
+        new = new_features(paths=paths, rows=rows)
+        cells = {pathlib.Path(path).name: row for path, row in zip(paths, rows)}
+        used_by = {pathlib.Path(path).name: found for path, found in (used or {}).items()}
+        extras = {name: (lambda section, name=name: with_new_features(section=section, cells=cells[name], used=used_by.get(name), new=new[name])) for name in new}
+    return folder_page(texts=texts, paths=paths, folder=LEARNING, intro=TUTORIAL_INTRO, in_order=True, extras=extras)
 
 
 def write_docs(*, features, check_only):
@@ -474,9 +595,10 @@ def write_docs(*, features, check_only):
     text = DEMOS_DOCUMENT.read_text(encoding=FILE_ENCODING)
     updated = with_table(text=text, table=index_lines(paths=paths))
     pages = {path.name: path.read_text(encoding=FILE_ENCODING) for path in DEMO_PAGES.glob(STAR + PAGE_SUFFIX)}
-    written, problems = with_summaries(texts=dict(pages), paths=paths, rows=rows, links=links)
+    used = {path: features.features_used(path) for path in paths}
+    written, problems = with_summaries(texts=dict(pages), paths=paths, rows=rows, links=links, used=used)
     written = {name: page if name in FOLDER_PAGES else sorted_page(page) for name, page in written.items()}
-    written[TUTORIAL_PAGE] = tutorial_page(texts=written, paths=paths)
+    written[TUTORIAL_PAGE] = tutorial_page(texts=written, paths=paths, rows=rows, used=used)
     written[OTHER_PAGE] = folder_page(texts=written, paths=paths, folder=OTHER, intro=OTHER_INTRO)
     for problem in problems:
         print(problem, file=sys.stderr)

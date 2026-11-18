@@ -41,7 +41,6 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | Page | What it covers |
 | --- | --- |
 | [About Demos](docs/DEMOS.md) | Opening and playing the example sets, and the pages that describe them. |
-| [Listening to the Demos](docs/LISTENING_TO_DEMOS.md) | Every demo as a WAV file, made and played with no synthesizer. |
 | [Tutorial Demos](docs/demos/TUTORIAL.md) | The learning demos, in the order to learn them. |
 | [Blues](docs/demos/BLUES.md) | The blues demo songs. |
 | [Children's](docs/demos/CHILDRENS.md) | The children's demo songs. |

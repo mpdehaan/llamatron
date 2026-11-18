@@ -19,5 +19,5 @@ answers; the bass figure, the guitar's line, the horn stabs, the solos and the d
 
 | chords | ties |
 | :---: | :---: |
-| ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of lagos_fugue -->

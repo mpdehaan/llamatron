@@ -23,7 +23,7 @@ playing, so the demo shows what its Shape and Strokes sections do to the same ki
 
 | chords | chains | guitarify | key changes | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) |
 <!-- end of the generated summary of 23_guitarify -->
 
 <a id="hello_world"></a>
@@ -39,7 +39,7 @@ real-time MIDI (`docs/MIDI_SETUP.md`), and record it first (`docs/RECORDING.md`)
 
 | chords |
 | :---: |
-| ✓ |
+| [✓](../PATTERNS.md#chords) |
 <!-- end of the generated summary of 01_hello_world -->
 
 <a id="scale"></a>
@@ -53,5 +53,5 @@ the order of the scale picker. Use it to preview a scale before choosing one. Th
 
 | key changes |
 | :---: |
-| ✓ |
+| [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of 04_scale -->

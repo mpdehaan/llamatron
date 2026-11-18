@@ -39,6 +39,13 @@ HELLO_WORLD_TRACKS = '2'
 CHORDS_COLUMN = 'chords'
 REGISTERS_COLUMN = 'registers'
 HEADING_LINES = 2
+LEARNING_FOLDER = 'examples/learning'
+# How many of the learning demos the test of what each introduces reads.
+DEMOS_TRIED = 4
+A_SECTION = '## A Demo: `01_a_demo.yml`'
+HEADING_MARK = '#'
+ANCHOR_JOIN = '-'
+ANCHOR_KEPT = ' -'
 
 
 def load_script():
@@ -164,3 +171,57 @@ class TestDemoSummary(unittest.TestCase):
     def test_a_genre_names_its_page(self):
         self.assertEqual(self.tool.genre_page(HIP_HOP), HIP_HOP_PAGE)
         self.assertEqual(self.tool.genre_page(CHILDRENS), CHILDRENS_PAGE)
+
+
+class TestFeatureLinks(unittest.TestCase):
+    """Each checkmark links to the page that explains its feature, and the Tutorial Demos page says what each demo is the first to use."""
+
+    def setUp(self):
+        self.tool = load_script()
+        self.features = self.tool.load_features()
+
+    def test_every_link_names_a_feature_a_page_that_exists_and_a_heading_of_that_page(self):
+        known = {name for name, _ in self.features.FEATURES}
+        for name, link in self.tool.FEATURE_LINKS.items():
+            self.assertIn(name, known)
+            page, _, anchor = link.partition(self.tool.LINK_ANCHOR)
+            path = (self.tool.DEMO_PAGES / page).resolve()
+            self.assertTrue(path.is_file(), link)
+            if anchor:
+                headings = [as_anchor(line) for line in path.read_text(encoding=self.tool.FILE_ENCODING).splitlines() if line.startswith(HEADING_MARK)]
+                self.assertIn(anchor, headings, link)
+
+    def test_every_feature_a_column_marks_has_a_link(self):
+        for _, names in self.tool.FEATURE_COLUMNS:
+            for name in names:
+                self.assertIn(name, self.tool.FEATURE_LINKS)
+
+    def test_a_checkmark_links_to_the_first_feature_of_its_column_the_set_uses_and_is_plain_when_what_is_used_is_not_known(self):
+        heading, names = next((heading, names) for heading, names in self.tool.FEATURE_COLUMNS if len(names) > 1)
+        last = names[-1]
+        self.assertEqual(self.tool.used_mark(names=names, used={last}), self.tool.USED_LINK.format(mark=self.tool.USED, link=self.tool.FEATURE_LINKS[last]))
+        self.assertEqual(self.tool.used_mark(names=names, used=set(names)), self.tool.USED_LINK.format(mark=self.tool.USED, link=self.tool.FEATURE_LINKS[names[0]]))
+        self.assertEqual(self.tool.used_mark(names=names, used=None), self.tool.USED)
+
+    def test_a_learning_demo_introduces_only_what_no_demo_before_it_used_and_the_page_shows_a_linked_table_after_it(self):
+        paths = [str(path) for path in sorted(pathlib.Path(LEARNING_FOLDER).glob(self.tool.STAR + self.tool.SET_SUFFIX))][:DEMOS_TRIED]
+        rows = self.tool.rows_for(paths=paths, features=self.features)
+        new = self.tool.new_features(paths=paths, rows=rows)
+        seen = []
+        for path, row in zip(paths, rows):
+            used = self.tool.columns_used(row)
+            self.assertEqual(new[pathlib.Path(path).name], [heading for heading in used if heading not in seen])
+            seen += used
+        first = pathlib.Path(paths[0]).name
+        self.assertTrue(new[first])
+        section = self.tool.with_new_features(section=A_SECTION, cells=rows[0], used=self.features.features_used(paths[0]), new=new[first])
+        self.assertTrue(section.startswith(A_SECTION))
+        self.assertIn(self.tool.NEW_FEATURES_TITLE, section)
+        self.assertIn(self.tool.USED_LINK.format(mark=self.tool.USED, link=self.tool.FEATURE_LINKS[CHORDS_COLUMN]), section)
+        self.assertEqual(self.tool.with_new_features(section=A_SECTION, cells=rows[0], used=None, new=[]), A_SECTION)
+
+
+def as_anchor(heading):
+    """Return the anchor a Markdown heading gets: its words in lower case, joined with dashes, without its marks."""
+    words = ''.join(letter for letter in heading.lstrip(HEADING_MARK).strip().lower() if letter.isalnum() or letter in ANCHOR_KEPT)
+    return words.replace(' ', ANCHOR_JOIN)

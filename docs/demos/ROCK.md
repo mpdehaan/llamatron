@@ -27,7 +27,7 @@ chords, each line answered by the brass; a guitar solo, a breakdown and a last c
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of aliens_counting -->
 
 <a id="annandale"></a>
@@ -43,7 +43,7 @@ between sections; a guitar solo over the verse.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of annandale -->
 
 <a id="gain_distance_pedestrian"></a>
@@ -59,7 +59,7 @@ solo; a long ending of two slide guitars on flat VII, IV and I.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of gain_distance_pedestrian -->
 
 <a id="green_men"></a>
@@ -74,7 +74,7 @@ bars and answered for two; a chorus on IV I V I; a solo over the chorus chords.
 
 | chains | guitarify | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of green_men -->
 
 <a id="know_your_slang"></a>
@@ -90,7 +90,7 @@ jangling, with a chorus of its own.
 
 | chords | chains | guitarify | ties | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of know_your_slang -->
 
 <a id="not_werewolves"></a>
@@ -106,7 +106,7 @@ right hand; the verse two chords a bar on vi I, V I, vi V, IV I; a ballad in the
 
 | chords | chains | ties | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of not_werewolves -->
 
 <a id="spot_over_there"></a>
@@ -122,7 +122,7 @@ third higher.
 
 | chords | chains | guitarify | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of spot_over_there -->
 
 <a id="training_montage"></a>
@@ -138,7 +138,7 @@ chorus twice.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of training_montage -->
 
 <a id="volcano"></a>
@@ -156,7 +156,7 @@ opening run once more, a last dive and a last chord. It stays out of that solo's
 
 | chords | arps | ratchets | chains | ties | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of volcano -->
 
 <a id="why_say_it_again"></a>
@@ -172,5 +172,5 @@ i; a bridge of long notes; a coda of scratching guitar.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| ✓ | ✓ | ✓ | ✓ |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of why_say_it_again -->
