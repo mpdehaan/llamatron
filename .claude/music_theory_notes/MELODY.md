@@ -73,3 +73,24 @@ How a singer or a wind player delivers a line, which a tune written by rule lack
   where it fits, a long note before a strong beat, never by a count of lines, and is off unless the style is syncopated.
 - Shaping a line (its loudness and its joining) is a different thing from a ramp over a whole clip or section: the first knows
   where lines end.
+
+## How a Writer Thinks About a Song's Melodies
+
+From a review asked for before the song wizard's melody panels were redrawn. (practice)
+
+- A song has several melodies, one for each kind of section: the verse's, the chorus's, the pre-chorus's, the bridge's. These are
+  different melodies, each written for contrast. "The same melody developed" means a later verse against the first, a last chorus
+  lifted, or an instrument stating the verse's melody. A countermelody is a second, lesser line against the main one; a solo is a
+  freer line over a section's chords. Nobody thinks of "the melody" as one object with one setting.
+- What a writer decides, most important first: who carries it; where the hook sits; how busy it is and where it rests; how high
+  and how wide it goes, the highest note once, in the chorus; how much it repeats; and, for experts only, how it sits on the chords.
+- Decided once for the song: who carries it, the overall range, the character of the line, the general busyness, how much the
+  sections share. Decided for a section: its height against the others, its busyness, where its peak falls, how much it repeats,
+  and whether the carrier rests or hands the melody to another player.
+- The sections relate: the chorus higher, on longer notes, simpler and more repeated; the verse lower, busier and narrower; the
+  pre-chorus climbing; the bridge somewhere new. A shared motif often ties them.
+- With no singer the melody is the head or theme, more distinctive in rhythm, and often passed between players. A riff is not a
+  melody to players: short, repeated, low or middle, part of the groove. A riff may still be the song's identity.
+- What a person does with a written melody, in order of worth: hear it, alone and with the band; ask for another version of one
+  section's; keep a phrase and rewrite around it; change who plays it or its octave; edit notes by hand, which few do.
+- A program should not ask about intervals, scale degrees, shares of chord notes or contours drawn bar by bar.
