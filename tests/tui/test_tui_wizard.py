@@ -112,7 +112,7 @@ class WizardTest(UITest):
         more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_GENRE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
-        # The subgenre is chosen on the panel under Genre, and the cursor goes back to Genre, where the tests go on from.
+        # The subgenre is chosen on its own panel, and the cursor goes back to Genre, where the tests go on from.
         await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_GENRE_BRANCH)
@@ -174,7 +174,36 @@ class TestWizardPage(WizardTest):
         await self.press(Key.UP)
         self.assertEqual(self.wizard().tree_place, GENRE_PLACE)
         await self.press(*[Key.DOWN] * (CREATE_PLACE + 1))
-        self.assertEqual(self.wizard().tree_place, CREATE_PLACE)
+        self.assertEqual(self.wizard().tree_place, len(self.wizard().rows()) - 1)
+        self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_CREATE_BRANCH)
+
+    async def test_the_subgenre_is_a_top_part_of_the_tree_after_the_genre(self):
+        names = [branch.name() for depth, branch in self.wizard().rows() if not depth]
+        self.assertEqual(names[:2], [labels_text.MSG_WIZARD_GENRE_BRANCH, labels_text.MSG_WIZARD_SUBGENRE_BRANCH])
+
+    async def test_a_locked_part_shows_nothing_under_it_and_right_and_enter_say_what_to_choose_first(self):
+        wizard = self.wizard()
+        self.assertTrue(all(not depth for depth, _ in wizard.rows()))
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
+        before = len(wizard.rows())
+        await self.press(Key.RIGHT)
+        self.assertEqual(len(wizard.rows()), before)
+        self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
+        await self.press(Key.DOWN, keybindings.WizardPage.INTO_FIELDS)
+        self.assertFalse(wizard.in_fields)
+        self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        self.assertFalse(wizard.in_fields)
+        self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE, self.text())
+
+    async def test_choosing_the_genre_and_the_subgenre_unlocks_every_part(self):
+        await self.choose_genre_and_subgenre()
+        wizard = self.wizard()
+        self.assertTrue(all(branch.refusal() is None for _, branch in wizard.rows()))
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
+        await self.press(Key.RIGHT)
+        self.assertTrue(any(depth for depth, _ in wizard.rows()))
 
     async def test_enter_and_tab_move_into_the_fields_and_esc_and_tab_move_back(self):
         for into, back in ((Key.ENTER, Key.ESCAPE), (Key.TAB, Key.TAB)):

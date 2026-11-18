@@ -25,7 +25,6 @@ from llamatron.tui.drawing import NOTHING
 from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
-from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
 
 # How the Change Genre question words each kind of thing lost and kept.
 LOST_SHOWN = {
@@ -39,16 +38,12 @@ KEPT_SHOWN = {KEPT_OWN_TUNES: messages.MSG_CHANGE_GENRE_OWN_TUNES, KEPT_OWN_RIFF
 
 
 class GenreBranch(Branch):
-    """The genre and the subgenre, and what follows from them."""
+    """The genre, and what follows from the genre and the subgenre chosen after it."""
 
     __slots__ = ()
 
     def name(self):
         return labels.MSG_WIZARD_GENRE_BRANCH
-
-    def children(self):
-        # The subgenre and its own settings are a panel under the genre.
-        return [SubgenreBranch(page=self.page())]
 
     def set_genre(self, genre):
         """Choose a genre, asking first where another genre would give up what was chosen by hand: the question counts what is lost
