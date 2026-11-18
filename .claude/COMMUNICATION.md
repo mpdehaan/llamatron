@@ -200,16 +200,15 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   item of the running sequence, with the rule it chose and the alternative, so that the user
   can answer "1 is wrong". The user dislikes assumptions being made at all, so fewer, asked
   earlier, is the rule.
-- **The professor's review** (the user's rule, after a generator was designed from what the old code did and not from what the
-  musical idea means). Before designing anything with a musical side, Claude reads the subject's file in
-  `.claude/music_theory_notes/`. The reply that proposes the design opens the proposal with a short section, "The professor's
-  review", written as an expert teacher of music would judge it: what the musical idea means to players, what real players do,
-  what the proposal leaves out and why, and whether a musician would want the feature at all. That section is Claude's own
-  writing. The professor as a fresh agent, one that sees only the proposal and critiques it as a strict professor of music, is
-  consulted only when the user says to, for the thing the user names: never on Claude's own initiative, and never to give an
-  opinion on each open question unless the user asks for that (the user's rule). When one is consulted, the reply says where
-  that agent disagreed. What is learnt goes into the notes. Claude
-  brings musicality up itself, in every design discussion, and never waits to be asked.
+- **The professor is consulted only when the user asks** (the user's rule). Before designing anything with a musical side, Claude
+  still reads the subject's file in `.claude/music_theory_notes/`, and brings musicality up itself. But no reply carries a section
+  called "The professor's review", written by Claude or by an agent, and no agent is asked to judge a proposal as a professor of
+  music, unless the user says to in that conversation, for the thing the user names: never on Claude's own initiative, and never to
+  give an opinion on each open question. The professor judges by what players of traditional instruments do, and llamatron is also
+  for strange and chaotic electronic music, in the manner of the hardware sequencers it takes after, where a feature that makes a
+  pattern less predictable is wanted for that very reason: a proposal for the registers, Conditional Execution or anything of that
+  kind is never judged by whether a band would play so, and is never tamed to line up with the bar unless the user asks. When the
+  professor is consulted, the reply says where that agent disagreed, and what is learnt goes into the notes.
 - **The professor's advice is weighed on the music alone** (the user's rule). The song wizard, the MacroComposer and the style
   templates are a discrete feature from the rest of the application. Where the professor's advice differs from how one of those
   works today, how it works today is never a reason against the advice. Claude checks the advice against the evidence (the
