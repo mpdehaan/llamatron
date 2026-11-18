@@ -166,7 +166,8 @@ SHOTS = [
     Shot(name='wizard_player', wizard=WIZARD_PLAYER, keys=[]),
     Shot(name='wizard_chords', wizard=labels.MSG_WIZARD_CHORDS_BRANCH, keys=[]),
     Shot(name='wizard_melody', wizard=labels.MSG_WIZARD_MELODY_BRANCH, keys=[]),
-    Shot(name='wizard_tunes', wizard=labels.MSG_WIZARD_TUNES_BRANCH, keys=[]),
+    # The first kind of section's heading opened, to show the tune and who plays it.
+    Shot(name='wizard_tunes', wizard=labels.MSG_WIZARD_TUNES_BRANCH, keys=[keybindings.WizardPage.INTO_FIELDS, Key.DOWN, keybindings.FieldPage.TOGGLE]),
     Shot(name='wizard_hooks', wizard=labels.MSG_WIZARD_HOOKS_BRANCH, keys=[]),
     Shot(name='wizard_form', wizard=labels.MSG_WIZARD_FORM_BRANCH, keys=[]),
     Shot(name='wizard_section', wizard=WIZARD_SECTION, keys=[]),
