@@ -27,7 +27,7 @@ import functools
 import random
 import zlib
 
-from llamatron.composition.file_format import PatternSetting, Section
+from llamatron.composition.file_format import PatternSetting, Section, SectionKind
 from llamatron.composition.generator_settings import PHRASING_DEFAULTS, MusicianSetting, MusicianSettings, PhrasingSettings
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
@@ -51,7 +51,8 @@ from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
 from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
 from llamatron.macro_composer.melody import (ANSWER, BY_KIND, GAUGE_AFTER_LEAP, GAUGE_LEANING, GAUGE_MOVES, GAUGE_PHRASE, GAUGE_STEPS, GAUGE_SURPRISE, HEIGHT, HEIGHTS, HIGH, HOME as MELODY_HOME,
-                                             HOOK_KIND, HOOK_NOTES, LADDER as MELODY_LADDER, LINE, LINE_BUSY, LINE_NOTES, MELODY_ASKS, MIDDLE, REPEATS, REPEATS_SOME, REPEATS_WAYS, SPAN)
+                                             HOOK_KIND, HOOK_NOTES, HOOKS, LADDER as MELODY_LADDER, LINE, LINE_BUSY, LINE_NOTES, MAIN_HOOK, MELODY_ASKS, MIDDLE, PLACEMENT, PLACEMENTS, REPEATS, REPEATS_SOME,
+                                             REPEATS_WAYS, SECOND_HOOK, SPAN, SUNG_BY, SUNG_IN, TAG_TAKE, placement_of, plan_with_hook_placed)
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
 from llamatron.macro_composer.riffs import (BAR_COUNTS, BETWEEN_WAYS, FIRST_TAKE as FIRST_RIFF_TAKE, IN_FULL, MOVES_WHOLE, MUTED_ROOTS, NOTES_WAYS, RIFF, RIFF_BAR_COUNT, RIFF_BARS,
                                             RIFF_BETWEEN, RIFF_KINDS, RIFF_NOTES, RIFF_ROLES, RIFF_TAKE, RIFF_UNDER_TUNE, RIFF_WITH_CHORDS, SINGLE_NOTES, UNDER_TUNE_WAYS, WITH_CHORDS_WAYS,
@@ -255,7 +256,12 @@ KEPT_OWN_TUNES = 'tunes written by hand'
 KEPT_OWN_RIFFS = 'riffs written by hand'
 # The extras of a song that are settings of one genre's band and song, which another genre gives up.
 MELODY_CHOSEN = 'melody_chosen'
-EXTRAS_OF_ONE_GENRE = (PLAN_OF_SONG, MELODY, GROOVE, DYNAMICS, LOUDNESS_OF, TUNE_BY, TUNE_BY_SONG, MELODY_CHOSEN)
+# What a person chose of the song's hooks: where the main hook sits among its section's lines, and the second hook, where it is
+# sung and which take it is.
+HOOKS_CHOSEN = 'hooks_chosen'
+# The kinds of section a second hook may be sung in, in the order offered: at the end of the section before the chorus, in the
+# section after it, and in the song's last section.
+EXTRAS_OF_ONE_GENRE = (PLAN_OF_SONG, MELODY, GROOVE, DYNAMICS, LOUDNESS_OF, TUNE_BY, TUNE_BY_SONG, MELODY_CHOSEN, HOOKS_CHOSEN)
 STAGES_ANSWER = 'stages'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
@@ -379,6 +385,7 @@ WAYS_WITH_SETUP_BARS = (DRUMS_FIRST, DRUM_FILL_IN, ONE_PLAYER_FIRST, LAYERS, OUT
 # A song that slows down ends at this share of its tempo.
 SLOWED_TO = (2, 3)
 OUTRO_KIND = 'outro'
+SECOND_HOOK_KINDS = (SectionKind.PRE_CHORUS, SectionKind.POST_CHORUS, OUTRO_KIND)
 START_KEPT = 'starts'
 END_KEPT = 'ends'
 FIRST_PLAYER_KEPT = 'first_player'
@@ -2094,12 +2101,112 @@ class WizardChoices:
         that kind's lines it is, counted from 1. None where the song can have no hook."""
         if not self.can_have_hook():
             return None
-        sections = self._style()[SECTIONS]
         for kind in self.section_kinds_in_form():
-            for count, entry in enumerate(sections[kind].get(PLAN, [])):
+            for count, entry in enumerate(self._hook_plan(kind)):
                 if entry.get(HOOK):
                     return kind, count + 1
         return None
+
+    def _hook_plan(self, kind):
+        """A kind of section's plan of lines as the genre has it, the hook placed among them where the song chose its place."""
+        plan = self._style()[SECTIONS].get(kind, {}).get(PLAN, [])
+        placement = self._extras.get(HOOKS_CHOSEN, {}).get(PLACEMENT)
+        return plan_with_hook_placed(plan=plan, placement=placement) if placement and kind == self._main_hook_kind() else plan
+
+    def _main_hook_kind(self):
+        """The kind of section that says the main hook: the first in the form whose plan marks a line as one, or None."""
+        sections = self._style()[SECTIONS]
+        return next((kind for kind in self.section_kinds_in_form() if any(entry.get(HOOK) for entry in sections[kind].get(PLAN, []))), None)
+
+    # Where the main hook sits among the lines of its section, which the genre says until a person chooses.
+
+    def hook_placements_offered(self):
+        """Return the places the main hook can sit among its chorus's lines, where the chorus is of four lines in a shape that has a
+        name; none elsewhere, as in a verse that ends on its refrain, where the hook has one place."""
+        if not self.can_have_hook() or not self.has_hook() or self._main_hook_kind() != SectionKind.CHORUS or self.genre_hook_placement() is None:
+            return []
+        return list(PLACEMENTS)
+
+    def genre_hook_placement(self):
+        """Return where the genre places the hook among its section's lines, or None for a plan of no named shape."""
+        kind = self._main_hook_kind()
+        return None if kind is None else placement_of(self._style()[SECTIONS][kind].get(PLAN, []))
+
+    def get_hook_placement(self):
+        chosen = self._extras.get(HOOKS_CHOSEN, {}).get(PLACEMENT)
+        return chosen if chosen in self.hook_placements_offered() else self.genre_hook_placement()
+
+    def set_hook_placement(self, placement):
+        """Choose where the main hook sits among its chorus's lines; the genre's own place is asked for by its name."""
+        if placement not in self.hook_placements_offered():
+            raise ValueError(errors.ERR_WIZARD_HOOK_PLACEMENT.format(value=placement))
+        self._keep_hook_chosen(field=PLACEMENT, value=None if placement == self.genre_hook_placement() else placement)
+
+    def _keep_hook_chosen(self, *, field, value):
+        chosen = self._extras.setdefault(HOOKS_CHOSEN, {})
+        chosen.pop(field, None)
+        if value is not None:
+            chosen[field] = value
+        if not chosen:
+            del self._extras[HOOKS_CHOSEN]
+        self._answers = {}
+
+    # The second hook: a short tag, unlike the main hook, sung in another kind of section by the melody's player.
+
+    def second_hook_kinds(self):
+        """Return the kinds of section the song's second hook can be sung in: those of the form that can carry a tag, where the song
+        has a main hook, a player for its melody, and a bar a tag can be written in."""
+        if not self.can_have_hook() or not self.has_hook() or self.tune_player() is None or not self.counts_in_four():
+            return []
+        in_form = self.section_kinds_in_form()
+        return [kind for kind in SECOND_HOOK_KINDS if kind in in_form and kind != self._main_hook_kind()]
+
+    def _second_hook_kept(self):
+        kept = self._extras.get(HOOKS_CHOSEN, {}).get(SECOND_HOOK)
+        return kept if isinstance(kept, dict) and kept.get(SUNG_IN) in self.second_hook_kinds() else None
+
+    def has_second_hook(self):
+        return self._second_hook_kept() is not None
+
+    def get_second_hook_kind(self):
+        """Return the kind of section the second hook is sung in, or None while the song has none."""
+        kept = self._second_hook_kept()
+        return None if kept is None else kept[SUNG_IN]
+
+    def get_second_hook_take(self):
+        kept = self._second_hook_kept()
+        return FIRST_HOOK_TAKE if kept is None else kept.get(TAG_TAKE, FIRST_HOOK_TAKE)
+
+    def set_second_hook(self, kind):
+        """Give the song a second hook sung in a kind of section, or take the second hook away with None."""
+        if kind is not None and kind not in self.second_hook_kinds():
+            raise ValueError(errors.ERR_WIZARD_SECOND_HOOK.format(value=kind))
+        self._keep_hook_chosen(field=SECOND_HOOK, value=None if kind is None else {SUNG_IN: kind, TAG_TAKE: self.get_second_hook_take()})
+
+    def new_second_hook(self):
+        """Have another second hook made, every other line of the song left as it was."""
+        if not self.has_second_hook():
+            raise ValueError(errors.ERR_WIZARD_SECOND_HOOK.format(value=None))
+        self._keep_hook_chosen(field=SECOND_HOOK, value={SUNG_IN: self.get_second_hook_kind(), TAG_TAKE: self.get_second_hook_take() + 1})
+
+    def second_hook_scene(self):
+        """Return the place in the form of the first section that sings the second hook, or None."""
+        kind = self.get_second_hook_kind()
+        return None if kind is None else next((place for place, of_place in enumerate(self.section_kinds_in_form()) if of_place == kind), None)
+
+    def _hook_picks(self):
+        """What the arranger is handed of the song's hooks: the main hook's kind of section and its place among the lines, and the
+        second hook with its singer."""
+        if not self.is_ready() or not self._extras.get(HOOKS_CHOSEN):
+            return {}
+        hooks = {}
+        placement = self._extras[HOOKS_CHOSEN].get(PLACEMENT)
+        if placement in PLACEMENTS and self._main_hook_kind() is not None:
+            hooks[MAIN_HOOK] = {SUNG_IN: self._main_hook_kind(), PLACEMENT: placement}
+        second = self._extras[HOOKS_CHOSEN].get(SECOND_HOOK)
+        if isinstance(second, dict) and second.get(SUNG_IN) in SECOND_HOOK_KINDS and self.tune_player() is not None:
+            hooks[SECOND_HOOK] = {SUNG_IN: second[SUNG_IN], SUNG_BY: self.tune_player(), TAG_TAKE: second.get(TAG_TAKE, FIRST_HOOK_TAKE)}
+        return {HOOKS: hooks} if hooks else {}
 
     def usual_hook(self):
         """Return whether the genre's songs have a hook unless a person says otherwise."""
@@ -2122,9 +2229,8 @@ class WizardChoices:
         player = self.tune_player()
         if not self.can_have_hook() or not self.has_hook() or player is None:
             return None, None
-        sections = self._style()[SECTIONS]
-        kind = next(kind for kind in self.section_kinds_in_form() if any(entry.get(HOOK) for entry in sections[kind].get(PLAN, [])))
-        line = next(place for place, entry in enumerate(sections[kind][PLAN]) if entry.get(HOOK))
+        kind = self._main_hook_kind()
+        line = next(place for place, entry in enumerate(self._hook_plan(kind)) if entry.get(HOOK))
         part = arranged(style=self._style(), song=self.song_picks(kind))[PARTS].get(composer_text.MSG_PART_OF_SECTION.format(kind, player))
         return (None, None) if part is None or LINES not in part else (part, line)
 
@@ -2589,8 +2695,9 @@ class WizardChoices:
         picks = data_laid_over(under=self._picks_chosen(name), over=self._extras_with_sections())
         # The riffs are kept as the panels show them; the arranger is handed each riff with who plays it where. A song with no
         # riff of its own asks for none, where the arranger would else take the genre's.
-        for kept in (RIFF_BOOK, RIFFS_KNOWN, RIFFS_PLAYED, MELODY_CHOSEN):
+        for kept in (RIFF_BOOK, RIFFS_KNOWN, RIFFS_PLAYED, MELODY_CHOSEN, HOOKS_CHOSEN):
             picks.pop(kept, None)
+        picks.update(self._hook_picks())
         picks.setdefault(RIFF, {})
         riffs = [*picks.get(MORE_RIFFS, []), *self._riffs_arranged()]
         if riffs:
@@ -3407,6 +3514,10 @@ class WizardChoices:
         """Return what the song says of its melodies in one field: the genre's own until another is chosen."""
         chosen = self._extras.get(MELODY_CHOSEN, {}).get(field)
         return chosen if chosen in MELODY_WAYS[field] else USUAL_MELODY_WAYS[field]
+
+    def genre_melody_way(self, field):
+        """Return the genre's own value of a field of the whole song's melodies."""
+        return USUAL_MELODY_WAYS[field]
 
     def set_melody_way(self, *, field, value):
         """Choose how busy the song's melodies are, how wide they range or how much they repeat; the genre's own is asked for by its name."""

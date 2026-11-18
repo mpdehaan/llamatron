@@ -70,11 +70,12 @@ class FieldPage(Page):
         return shown
 
     def is_open(self, heading):
-        return heading.label in self.app.open_field_sections
+        # A heading that starts open is closed by the same toggle that opens another.
+        return (heading.label in self.app.open_field_sections) != heading.starts_open
 
-    def heading(self, *, label, is_set, said=None):
-        """Return a section's heading, closed until opened and remembered open or closed for the session; said() is what it shows after its name, where that is not the mark of a value inside."""
-        return Heading(label=label, is_set=is_set, toggle=lambda: self.toggle_section(label), said=said)
+    def heading(self, *, label, is_set, said=None, starts_open=False):
+        """Return a section's heading, closed until opened, or open until closed, and remembered for the session; said() is what it shows after its name, where that is not the mark of a value inside."""
+        return Heading(label=label, is_set=is_set, toggle=lambda: self.toggle_section(label), said=said, starts_open=starts_open)
 
     def heading_over_cursor(self):
         """Return the label of the heading the cursor is on or under, or None where the cursor is above every heading."""
@@ -105,11 +106,34 @@ class FieldPage(Page):
         # A row is come to at its first cell.
         self.cell = 0
         first_button = self.first_button_place()
+        if self.buttons_stacked():
+            # Buttons too wide for one row stand one under another, and Up and Down go through them as through the fields.
+            self.place = cursor_moved(place=self.place, name=name, count=len(fields))
+            return
         if self.place >= first_button:
             if name == Key.UP and first_button:
                 self.place = first_button - 1
             return
         self.place = cursor_moved(place=self.place, name=name, count=min(first_button + 1, len(fields)))
+
+    def buttons_stacked(self):
+        """Return whether the page's buttons were last drawn one under another, a row of them being wider than the page."""
+        return getattr(self, 'stacked_buttons', False)
+
+    def row_of_buttons(self, *, buttons, selected, width):
+        """Return the lines of the page's buttons: boxed in one row where the row fits the width, and otherwise one a line, each
+        in brackets, the selected one marked and bold."""
+        row = [Text(INDENT) + line for line in button_row(buttons=[(button.key_name, button.label) for button in buttons], selected=selected)]
+        self.stacked_buttons = width is not None and max(line.cell_len for line in row) > width
+        if not self.stacked_buttons:
+            return row
+        lines = []
+        for place, button in enumerate(buttons):
+            line = Text(no_wrap=True)
+            line.append(cursor_mark(place == selected))
+            line.append(marks.MSG_STACKED_BUTTON.format(name=button.label), style=Style.BOLD if place == selected else Style.PLAIN)
+            lines.append(line)
+        return lines
 
     def cell_field(self):
         """Return what the keys act on: the field under the cursor, or, in a row of cells, the cell the cursor is on."""
@@ -164,7 +188,7 @@ class FieldPage(Page):
         name = next((item for item in self.fields() if isinstance(item, NameField)), None)
         if name is not None:
             result.append(self.bind(self.KEYS.RENAME, action=name.rename))
-        if isinstance(field, Button):
+        if isinstance(field, Button) and not self.buttons_stacked():
             result.append(self.bind(self.KEYS.ALONG_BUTTONS, action=self.move_along_buttons, wants_key=True))
         if any(isinstance(item, Heading) for item in self.fields()):
             result.append(self.bind(self.KEYS.SECTION, action=self.jump_section))
@@ -217,10 +241,10 @@ class FieldPage(Page):
             # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
             first_button = self.first_button_place()
             lines.append(Text(NOTHING))
+            row = self.row_of_buttons(buttons=buttons, selected=self.place - first_button, width=width)
             if self.place >= first_button:
-                selected = len(lines) + 1
-            row = button_row(buttons=[(button.key_name, button.label) for button in buttons], selected=self.place - first_button)
-            lines += [Text(INDENT) + line for line in row]
+                selected = len(lines) + (self.place - first_button if self.buttons_stacked() else 1)
+            lines += row
         notes = self.notes(width)
         if notes:
             lines += [Text(NOTHING), *notes]

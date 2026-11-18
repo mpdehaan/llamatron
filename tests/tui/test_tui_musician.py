@@ -61,6 +61,7 @@ class TestMusicianEditor(UITest):
         await self.pick(choice)
 
     async def test_the_page_shows_every_field_of_a_pitched_player(self):
+        await self.choose(label=labels.MSG_TUNE_FROM_LABEL, choice=LEAD)
         shown = self.text()
         for label in (
             labels.MSG_MUSICIAN_INSTRUMENT_LABEL, labels.MSG_CHORDS_FROM_LABEL, labels.MSG_TUNE_FROM_LABEL, labels.MSG_MUSICIAN_ACTIVITY_LABEL, labels.MSG_MUSICIAN_LOUDNESS_LABEL,
@@ -77,6 +78,7 @@ class TestMusicianEditor(UITest):
         self.assertEqual(self.musician().to_data(), {MusicianSetting.INSTRUMENT: musician.BACKING_ORGAN})
 
     async def test_an_instruments_own_habits_show_where_from_and_are_left_out_of_the_file(self):
+        await self.choose(label=labels.MSG_TUNE_FROM_LABEL, choice=LEAD)
         await self.choose(label=labels.MSG_MUSICIAN_INSTRUMENT_LABEL, choice=musician.LEAD_ORGAN)
         self.assertEqual(self.musician().get_own(MusicianSetting.GIVES_WAY), musician.IN_THE_GAPS)
         self.assertEqual(self.musician().get_own(MusicianSetting.NOTES), musician.HELD_NOTES)
@@ -94,12 +96,22 @@ class TestMusicianEditor(UITest):
         self.assertEqual(self.musician().get_own(MusicianSetting.NOTES), musician.HELD_NOTES)
         await self.choose(label=labels.MSG_MUSICIAN_NOTES_LABEL, choice=labels.MSG_MUSICIAN_INSTRUMENT_CHOICE)
         self.assertNotIn(MusicianSetting.NOTES, self.musician().to_data())
+        await self.choose(label=labels.MSG_TUNE_FROM_LABEL, choice=LEAD)
         await self.choose(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, choice=musician.GIVES_WAY_OFTEN)
         await self.select_field(labels.MSG_MUSICIAN_GIVES_WAY_LABEL)
         await self.press(keybindings.MusicianEditor.CLEAR)
         self.assertNotIn(MusicianSetting.GIVES_WAY, self.musician().to_data())
 
+    async def test_giving_way_shows_only_once_the_melodys_track_is_named(self):
+        self.assertNotIn(labels.MSG_MUSICIAN_GIVES_WAY_LABEL, self.text())
+        await self.choose(label=labels.MSG_TUNE_FROM_LABEL, choice=LEAD)
+        self.assertIn(labels.MSG_MUSICIAN_GIVES_WAY_LABEL, self.text())
+        await self.select_field(labels.MSG_TUNE_FROM_LABEL)
+        await self.press(keybindings.MusicianEditor.CLEAR)
+        self.assertNotIn(labels.MSG_MUSICIAN_GIVES_WAY_LABEL, self.text())
+
     async def test_the_habits_lists_start_with_the_instruments_own(self):
+        await self.choose(label=labels.MSG_TUNE_FROM_LABEL, choice=LEAD)
         for label, choices in ((labels.MSG_MUSICIAN_GIVES_WAY_LABEL, musician.GIVES_WAY), (labels.MSG_MUSICIAN_NOTES_LABEL, musician.NOTE_LENGTHS)):
             await self.select_field(label)
             await self.press(Key.ENTER)

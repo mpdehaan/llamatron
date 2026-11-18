@@ -106,11 +106,7 @@ class TestWizardPlan(WizardTest):
         self.assertIn(labels.MSG_WIZARD_PHRASING_LABEL, self.text())
 
     async def open_kind(self):
-        """Open the hook's group of details where it is closed, so that the hook's parts show."""
-        wizard = self.wizard()
-        if labels.MSG_WIZARD_GROUP_HOOK not in self.app.open_field_sections:
-            wizard.toggle_section(labels.MSG_WIZARD_GROUP_HOOK)
-            await self.press(Key.DOWN, Key.UP)
+        """The hook's parts show under the Main Hook heading, which starts open."""
 
     async def test_the_hooks_panel_shows_the_kind_only_under_a_plan_and_marks_the_wizard_s_pick(self):
         await self.choose()

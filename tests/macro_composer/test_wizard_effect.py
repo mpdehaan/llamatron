@@ -83,6 +83,9 @@ PART_IN_KIND = 'what a player plays in a kind of section'
 HOOK = 'hook'
 PLAYER_ROW = 'player row'
 NEW_HOOK = 'new hook'
+HOOK_PLACEMENT = "the hook's place among its lines"
+SECOND_HOOK_CHOICE = 'second hook'
+NEW_SECOND_HOOK = 'new second hook'
 SONG_PLAN = 'song plan'
 CONTRAST = 'contrast'
 PHRASING = 'phrasing'
@@ -299,6 +302,12 @@ def every_choice(choices):
         yield HOOK, not choices.has_hook(), lambda made: made.set_hook(not made.has_hook()), [nothing_first]
     if choices.can_have_hook() and choices.has_hook():
         yield NEW_HOOK, choices.get_hook_take() + 1, lambda made: made.new_hook(), [nothing_first]
+        for placement in choices.hook_placements_offered():
+            if placement != choices.get_hook_placement():
+                yield HOOK_PLACEMENT, placement, lambda made, placement=placement: made.set_hook_placement(placement), [nothing_first]
+        for kind in choices.second_hook_kinds():
+            yield SECOND_HOOK_CHOICE, kind, lambda made, kind=kind: made.set_second_hook(kind), [nothing_first]
+            yield NEW_SECOND_HOOK, kind, lambda made: made.new_second_hook(), [lambda made, kind=kind: made.set_second_hook(kind)]
     if choices.can_have_song_plan():
         # A planned song, and under a plan its contrast, its phrasing and each part of the hook's kind.
         def planned(made):

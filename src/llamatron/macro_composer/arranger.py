@@ -37,8 +37,8 @@ from llamatron.macro_composer import band, characters
 from llamatron.macro_composer import drum_solo
 from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, DRAWN_ANEW as WAYS_DRAWN_ANEW, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
 from llamatron.macro_composer.joins import DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS, drum_tail, pieces_of_tail, with_tail
-from llamatron.macro_composer.melody import (ANSWER, ANSWER_RHYTHMS, BY_KIND, ENGINE, FIRST_HOOK_TAKE, GRID, HEIGHT, HOOK, HOOK_TAKE, LINE, LINE_BUSY, MELODY_ASKS, REPEATS, RHYTHMS, SPAN, has_hook,
-                                             plan_as_asked, sketched)
+from llamatron.macro_composer.melody import (ANSWER, ANSWER_RHYTHMS, BY_KIND, ENGINE, FIRST_HOOK_TAKE, GRID, HEIGHT, HOOK, HOOK_TAKE, HOOKS, LINE, LINE_BUSY, MAIN_HOOK, MELODY_ASKS, PLACEMENT, REPEATS, RHYTHMS,
+                                             SECOND_HOOK, SPAN, SUNG_BY, SUNG_IN, TAG_TAKE, has_hook, plan_as_asked, plan_with_hook_placed, plan_with_tag, sketched)
 from llamatron.macro_composer.loudness import NORMAL, USUAL_DYNAMICS, drum_levels, in_proportion, note_levels, scaled, spread, with_own
 from llamatron.macro_composer.notation import ACCENT, ACCIDENTAL, DEGREE, DRUM, FLAT, GHOST, HITS, KIT, LINES, LOUD, NONE, OCTAVE, REST, SHARP, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, CHORD, clamped, drum_rows
 from llamatron.macro_composer.players import player_name
@@ -120,6 +120,8 @@ PLAYS = 'plays'
 PLAN = 'plan'
 CHORDS = 'chords'
 HELD = 'held'
+# A line of a tag lasts so many bars, as a line of any melody does.
+BARS_IN_A_TAG_LINE = 2
 LINES_GIVEN = 'tunes'
 # The fields of a song's picks.
 STYLE = 'style'
@@ -876,6 +878,16 @@ def section_of(*, name, style, song):
     if kind not in style[SECTIONS] and not of_song:
         raise ValueError(errors.ERR_NO_SUCH_SECTION.format(name))
     section = {**style[SECTIONS].get(kind, {}), **of_song, KIND: kind}
+    # The song's hooks: the main one placed among the lines of the kind of section that says it, and the tag sung in its kind,
+    # by its singer, who then plays there.
+    hooks = song.get(HOOKS, {})
+    main = hooks.get(MAIN_HOOK, {})
+    if main.get(SUNG_IN) == kind and main.get(PLACEMENT) and section.get(PLAN):
+        section[PLAN] = plan_with_hook_placed(plan=section[PLAN], placement=main[PLACEMENT])
+    second = hooks.get(SECOND_HOOK, {})
+    if second.get(SUNG_IN) == kind and not section.get(HELD):
+        section[PLAN] = plan_with_tag(plan=section.get(PLAN, []), lines=section.get(BARS, BARS_IN_A_TAG_LINE) // BARS_IN_A_TAG_LINE)
+        section[PLAYS] = list(dict.fromkeys([*section.get(PLAYS, []), second[SUNG_BY]]))
     asks = song.get(MELODY_ASKS)
     if asks and section.get(PLAN):
         # What the song asks of its melodies is laid over the plan: for the whole song, and for this kind of section.
@@ -1188,7 +1200,7 @@ def arranged(*, style, song):
                 given = section.get(LINES_GIVEN, {}).get(role[ROLE])
                 return given or sketched(habits={**habits_of(habits=habits, player=here[role[ROLE]]), **role.get(HABITS, {}), **song.get(ROLE_HABITS, {}).get(role[ROLE], {}), **song.get(MELODY, {})}, plan=section[PLAN], chords=chords, scale_type=scale_type, seed=song.get(SEED, 0),
                                          answers=bool(role.get(ANSWERS)), engine=song.get(MELODY_ENGINE, role.get(ENGINE)), voice=role.get(VOICE), letters=line_letters(plans=plans, answers=bool(role.get(ANSWERS))),
-                                         hook=has_a_hook, hook_take=song.get(HOOK_TAKE, FIRST_HOOK_TAKE))
+                                         hook=has_a_hook, hook_take=song.get(HOOK_TAKE, FIRST_HOOK_TAKE), tag_take=song.get(HOOKS, {}).get(SECOND_HOOK, {}).get(TAG_TAKE, FIRST_HOOK_TAKE))
             # The player who has the tune in the section, if any: a player of lines who answers nobody.
             tune_role = next((other for other, other_entry in pitched if FIGURE not in other_entry and not other.get(ANSWERS) and other[ROLE] in section[PLAYS]), None)
             for role, entry in pitched:
