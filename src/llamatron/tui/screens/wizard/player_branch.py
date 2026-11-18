@@ -26,7 +26,7 @@ from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, 
 from llamatron.macro_composer.wizard_choices import FEWEST_ROW_CELLS, MOST_ROW_CELLS, FEWEST_FILLS, FILLS_TRAITS, HIGHEST_PLACE, LEAST_BUSY, LOWEST_PLACE, MOST_BUSY, MOST_FILLS
 from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
-from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField, Toggle
+from llamatron.tui.screens.shared.field import Button, Cells, ChoiceField, Field, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch, gauge_shown
 
 # A field is worth showing once there is more than one way to choose.
@@ -75,7 +75,20 @@ class PlayerBranch(Branch):
             # The drums: a row for each piece of the kit the song plays.
             fields += [self.piece_row(piece) for piece in choices.pieces()]
         # The player's levels come last, under a heading that opens and closes, which hides every field after it while closed.
-        return [*fields, *self.loudness_fields()]
+        # The button that opens the player's Musician is a button, and so comes after every setting.
+        return [*fields, *self.loudness_fields(), *self.musician_fields()]
+
+    def musician_fields(self):
+        """Return the button that opens the player's Musician, the generator that plays the player's clips as a player of the band would, where the genre's songs have them.
+        A Musician the person changed says so, and Bksp gives the player back the one players are given."""
+        choices = self.choices()
+        page = self.page()
+        role = self._role
+        if not choices.is_ready() or not choices.has_musicians():
+            return []
+        own = choices.player_musician(role) is not None
+        return [Button(label=labels.MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON if own else labels.MSG_WIZARD_EDIT_PLAYER_BUTTON, key_name=legends.KeyName.ENTER, enter=lambda: page.edit_player(role), enter_what=legends.What.EDIT,
+                       clear=(lambda: page.choosing(lambda _: choices.set_player_musician(role=role, settings=None))(None)) if own else None, clear_what=legends.MSG_FROM_GENRE_WHAT)]
 
     def dynamics_fields(self):
         """Return the Dynamics gauge: how far the player's loud and soft notes lie from the normal ones, where that is heard."""

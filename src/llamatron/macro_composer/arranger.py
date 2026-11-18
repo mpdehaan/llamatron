@@ -33,7 +33,7 @@ from fractions import Fraction
 
 from llamatron.macro_composer.breaks import BREAKS, LEAST_CUT, MOST_CUT, cut_up
 from llamatron.macro_composer.characters import ADDS, BUSY, FILL, FILL_EVERY, GUITARIFY_OF_PLAYER, SAYS, TIMING, UNEVEN, VARIES, character_of, held_to, label_of, level_of
-from llamatron.macro_composer import characters
+from llamatron.macro_composer import band, characters
 from llamatron.macro_composer import drum_solo
 from llamatron.macro_composer.interplay import ANSWERS as ANSWERS_EVERY_LINE, DRAWN_ANEW as WAYS_DRAWN_ANEW, USUAL_BUSY as USUAL_BESIDE_BUSY, WAITS, WAYS as WAYS_BESIDE, UnderLead
 from llamatron.macro_composer.joins import DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS, drum_tail, pieces_of_tail, with_tail
@@ -175,6 +175,8 @@ HOME_CHORDS = {(4, 7): ChordSymbol.MAJOR, (3, 7): ChordSymbol.MINOR, (3, 6): Cho
 FOLLOWS_THE_CHORDS = {GeneratorKind.FOLLOW_CHORDS: composer_text.MSG_FOLLOW_CHORDS_NAME}
 # How the tune is delivered, where a song says: the settings of the one Phrasing its tune's clips then run.
 TUNE_PHRASING = 'tune_phrasing'
+# The song's own musicians, the settings of a Musician by the player whose clips it plays, in place of the one the player is given.
+MUSICIANS = 'musicians'
 MUTED_TRACKS = 'muted_tracks'
 # The General MIDI sound of the chords track's instrument, a piano, heard only when a person unmutes the track.
 CHORDS_GUIDE_SOUND = 1
@@ -1298,6 +1300,21 @@ def arranged(*, style, song):
         # The tune is delivered as a player would deliver it, by one Phrasing every clip of the tune runs after its timing.
         generators[Section.PHRASINGS] = {composer_text.MSG_TUNE_PHRASING_NAME: dict(song[TUNE_PHRASING])}
         chains[composer_text.MSG_TUNE_PHRASING_NAME] = [{GeneratorKind.PHRASING: composer_text.MSG_TUNE_PHRASING_NAME}]
+    if style[GENRE] not in band.GENRES_WITHOUT_MUSICIANS:
+        # Each player's clips are played by the player's Musician, first in their chains, and every piece of the kit by the drummer's.
+        usual_tune = next((role[ROLE] for role, entry in pitched if FIGURE not in entry and not role.get(ANSWERS)), None)
+        tune_track = song.get(TUNE_BY_SONG, usual_tune)
+        members = [band.BandMember(track=role[ROLE], player=role.get(PLAYER), backing=FIGURE in entry, answers=bool(role.get(ANSWERS)), sound=instruments.get(tracks[role[ROLE]])) for role, entry in pitched]
+        musicians, musician_of = band.band_of(members=members, drummer=drummer_role(roles), drum_tracks=drum_tracks, tune_track=tune_track if tune_track in tracks else None, own=song.get(MUSICIANS, {}))
+        heard = set()
+        for scene in form:
+            for track, clip in scene[PLAY].items():
+                if track in musician_of:
+                    clip = {PART: clip} if isinstance(clip, str) else clip
+                    scene[PLAY][track] = {**clip, CHAINS: [musician_of[track], *clip.get(CHAINS, [])]}
+                    heard.add(musician_of[track])
+        generators[Section.MUSICIANS] = {name: settings for name, settings in musicians.items() if name in heard}
+        chains.update({name: [{GeneratorKind.MUSICIAN: name}] for name in heard})
     if progressions:
         generators[PROGRESSIONS] = progressions
     if any(role.get(VOICE_LEADING) for role, _ in pitched):

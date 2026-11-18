@@ -40,6 +40,8 @@ MSG_CHORDS_TRACK = 'CHORDS'
 MSG_CHORDS_INSTRUMENT = 'chords guide'
 MSG_FOLLOW_CHORDS_NAME = 'follow chords'
 MSG_TUNE_PHRASING_NAME = 'tune phrasing'
+# What the Musician of a player, and the chain that runs it, is called.
+MSG_MUSICIAN_NAME = '{} player'
 MSG_REPEATED_SCENE = '{} {}'
 
 # macro_composer/song_plan.py: what a planned section says of itself in the song's notes.

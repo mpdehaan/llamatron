@@ -601,6 +601,10 @@ class SongRenderer:
             self._chord_sources[key] = ChordSource(clip)
         return self._chord_sources[key]
 
+    def _plays_drums(self, *, scene, track):
+        """Return whether a track's clip in a written-out scene plays a drum pattern."""
+        return self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name()).is_drum()
+
     def tune_heard(self, *, scene, track, source, counting):
         """Return when the tune sounds on the track a musician reads it from, in a written-out scene, after that track's own chains, or None when the track plays nothing there, is no track of the song or is the musician's own.
 
@@ -639,7 +643,9 @@ class SongRenderer:
         if step.kind == GeneratorKind.MUSICIAN:
             signature = self._song.get_time_signature()
             surroundings = Surroundings(
-                section=scene.get_scene().get_section(), chords=self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting),
+                section=scene.get_scene().get_section(),
+                # A drum pattern's notes are drums, which no chord moves, whoever is said to play them.
+                chords=None if self._plays_drums(scene=scene, track=track) else self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting),
                 tune=self.tune_heard(scene=scene, track=track, source=settings.get_tune_from(), counting=counting),
             )
             return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=signature.bar_length(), beat=signature.beat_length(), surroundings=surroundings, seed=seed)

@@ -28,7 +28,7 @@ import random
 import zlib
 
 from llamatron.composition.file_format import PatternSetting, Row, Section
-from llamatron.composition.generator_settings import PHRASING_DEFAULTS, PhrasingSettings
+from llamatron.composition.generator_settings import PHRASING_DEFAULTS, MusicianSetting, MusicianSettings, PhrasingSettings
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
 from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
@@ -44,8 +44,8 @@ from llamatron.macro_composer.arranger import (
     arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
 )
 from llamatron.macro_composer.composer import composed
-from llamatron.macro_composer import hook_kinds, line_edits, phrasing, tune_fit
-from llamatron.macro_composer.arranger import KICK as KICK_PIECE, MORE_RIFFS, NOBODY, OWN_TUNES, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG, TUNE_PHRASING
+from llamatron.macro_composer import band, hook_kinds, line_edits, phrasing, tune_fit
+from llamatron.macro_composer.arranger import GENRE as GENRE_OF_STYLE, KICK as KICK_PIECE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_TUNES, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG, TUNE_PHRASING
 from llamatron.macro_composer.players import BASS as BASS_PLAYER
 from llamatron.macro_composer.notation import NONE as NO_HIT
 from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
@@ -3003,6 +3003,38 @@ class WizardChoices:
             self._extras.pop(TUNE_PHRASING, None)
             if kept:
                 self._extras[TUNE_PHRASING] = kept
+        self._answers = {}
+
+    # The musicians: each player's clips are played by a Musician generator, the one the player is given or the person's own.
+
+    def has_musicians(self):
+        """Return whether the genre's songs give each player a Musician."""
+        return self._genre is not None and self._style()[GENRE_OF_STYLE] not in band.GENRES_WITHOUT_MUSICIANS
+
+    def musician_name(self, role):
+        """Return what the Musician of a player is called in the song made."""
+        return band.musician_name(role)
+
+    def player_musician(self, role):
+        """Return the settings of the Musician the person gave a player, or None where the player has the one players are given."""
+        own = self._extras.get(MUSICIANS, {}).get(role)
+        return None if own is None else dict(own)
+
+    def set_player_musician(self, *, role, settings):
+        """Give a player a Musician of the person's own, its settings by name, or None for the one players are given. The tracks the
+        Musician reads are the song's to say and are not kept. Settings no Musician has, or values a setting cannot take, are refused."""
+        kept = dict(self._extras.get(MUSICIANS, {}))
+        if settings is None:
+            kept.pop(role, None)
+        else:
+            try:
+                given = {name: value for name, value in dict(settings).items() if name not in (MusicianSetting.TUNE_FROM, MusicianSetting.CHORDS_FROM)}
+                kept[role] = MusicianSettings.from_data(data=given, where=band.musician_name(role)).to_data()
+            except (SongFileError, TypeError, ValueError) as problem:
+                raise ValueError(errors.ERR_WIZARD_MUSICIAN.format(value=settings, problem=problem)) from None
+        self._extras.pop(MUSICIANS, None)
+        if kept:
+            self._extras[MUSICIANS] = kept
         self._answers = {}
 
     def has_phrasing(self):
