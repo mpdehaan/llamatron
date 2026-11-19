@@ -20,6 +20,7 @@ internal_tools/sort_imports.py says what the order is and rewrites a file that i
 the rule on small sources and hold every file of the project to the tool.
 """
 
+import ast
 import importlib.util
 import pathlib
 import textwrap
@@ -56,6 +57,15 @@ class TestImportOrder(unittest.TestCase):
             source = path.read_text(encoding=FILE_ENCODING)
             if self.tool.sorted_source(source=source, tools=tools) not in (source, None):
                 found.append(self.tool.OUT_OF_ORDER.format(path=path.relative_to(ROOT).as_posix()))
+        self.assertEqual(found, [])
+
+    def test_every_file_with_imports_at_its_top_level_opens_with_some_so_that_none_is_passed_over(self):
+        # A second string under the docstring once hid a file's imports from the sort.
+        found = []
+        for path in self.tool.python_files():
+            tree = ast.parse(path.read_text(encoding=FILE_ENCODING))
+            if not self.tool.opening_imports(tree) and any(isinstance(node, (ast.Import, ast.ImportFrom)) for node in tree.body):
+                found.append(path.relative_to(ROOT).as_posix())
         self.assertEqual(found, [])
 
     def test_the_libraries_come_first_then_the_project_each_by_module_with_names_in_order_and_one_line_a_module(self):

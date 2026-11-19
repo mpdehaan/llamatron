@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The notes a Hocket hands a clip, which the exporters' timing adds to the clip's own (exporters/timing.py)."""
 """Keyswitches as a render carries them: the slots a step asks for, and the notes a clip sends for them.
 
 A keyswitch is a note a plugin reads as an order to change how it plays. A

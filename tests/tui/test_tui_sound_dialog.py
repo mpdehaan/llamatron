@@ -13,31 +13,25 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Instruments page, the instrument editor, the Instrument field on the track editor and the main screen's Real Time switch."""
 """The Sound dialog: General MIDI's families as rows, each opening a flyout of its sounds, the search of every sound, and a sound tried with L."""
 
 import unittest
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import PatternSetting, Row
-from llamatron.composition import limits
-from llamatron.strings import errors, labels, legends, marks
 from llamatron.exporters import midi_arrangement
-from llamatron.realtime import fluidsynth
-from llamatron.realtime import timeline
 from llamatron.music.note import NoteName
-from llamatron.tui import keybindings
+from llamatron.realtime import fluidsynth, timeline
+from llamatron.strings import errors, labels, legends, marks
+from llamatron.tui import drawing, keybindings, note_names, pattern_preview
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
+from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
-from llamatron.tui import note_names
 from llamatron.tui.note_names import note_shown, note_typed
-from llamatron.tui import pattern_preview
 from llamatron.tui.pattern_preview import trial_pattern
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_families, sound_text
 from llamatron.tui.screens.shared import sound_trial
-from llamatron.tui.screens.shared.sound_trial import SoundTrial, hits_of, run_of
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box
+from llamatron.tui.screens.shared.sound_trial import hits_of, run_of, SoundTrial
 from tests.tui import test_tui_playback
 from tests.tui.test_tui_playback import PatternPreviewTest
 
