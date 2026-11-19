@@ -38,14 +38,14 @@ class PlayerBranch(Branch):
         self._role = role
 
     def name(self):
-        return self.choices().role_title(self._role)
+        return self.get_choices().role_title(self._role)
 
     def key(self):
         # The player's own name, since what a player is called can follow how the player plays.
         return self._role
 
     def fields(self):
-        choices = self.choices()
+        choices = self.get_choices()
         traits = choices.role_traits(self._role)
         # A player of notes plays one way, called Plays; the drums have a way for each of their parts, each called by the part's name.
         fields = [self.way_field(trait=trait, label=labels.MSG_WIZARD_PLAYS_LABEL if len(traits) == 1 else trait.capitalize()) for trait in traits]
@@ -66,7 +66,7 @@ class PlayerBranch(Branch):
             fields = [*self.break_fields(), *fields]
             fields += [*self.fill_pattern_fields(), self.fills_field()]
             if choices.has_quiet_notes() or not choices.plays_quiet_notes():
-                fields.append(Toggle(label=labels.MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.page().choosing(choices.set_quiet_notes)))
+                fields.append(Toggle(label=labels.MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.get_page().choosing(choices.set_quiet_notes)))
             # The drums: a row for each piece of the kit the song plays.
             fields += [self.piece_row(piece) for piece in choices.pieces()]
         # The player's levels come last, under a heading that opens and closes, which hides every field after it while closed.
@@ -76,8 +76,8 @@ class PlayerBranch(Branch):
     def musician_fields(self):
         """Return the button that opens the player's Musician, the generator that plays the player's clips as a player of the band would, where the genre's songs have them.
         A Musician the person changed says so, and Bksp gives the player back the one players are given."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         role = self._role
         if not choices.is_ready() or not choices.has_musicians():
             return []
@@ -87,8 +87,8 @@ class PlayerBranch(Branch):
 
     def dynamics_fields(self):
         """Return the Dynamics gauge: how far the player's loud and soft notes lie from the normal ones, where that is heard."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         role = self._role
         if not choices.has_dynamics(role):
             return []
@@ -100,8 +100,8 @@ class PlayerBranch(Branch):
     def loudness_fields(self):
         """Return the player's levels under the Loudness heading, a velocity for each level the song plays, the genre's until the song
         chooses its own; the drummer's are the whole kit's. The levels are worked out only while the heading is open."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         role = self._role
         if not choices.has_loudness(role):
             return []
@@ -123,8 +123,8 @@ class PlayerBranch(Branch):
     def person_fields(self):
         """Return the fields of the player as a person in the band: where the player comes in, where the player lays out, and how strongly the player answers
         to Energy. The first two say which sections the player plays, and read as the person's own where the sections were changed one by one."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         role = self._role
 
         def refusing(setter):
@@ -152,8 +152,8 @@ class PlayerBranch(Branch):
 
     def piece_setter(self, piece):
         """Return what switches a piece of the kit on or off, refusing to switch off the last."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
 
         def set_on(on):
             try:
@@ -163,26 +163,26 @@ class PlayerBranch(Branch):
         return set_on
 
     def way_field(self, *, trait, label):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         return ChoiceField(page=page, label=label, choices=choices.ways(role=self._role, trait=trait), current=choices.get_way(trait),
                            set=page.choosing(lambda value: choices.set_way(trait=trait, value=value)))
 
     def sound_field(self):
         """Return the Sound field: the band's sound for the player, marked as the band's, or the player's own, chosen from a list."""
-        choices = self.choices()
+        choices = self.get_choices()
         role = self._role
 
         def shown():
             name = choices.sound_name(choices.get_sound(role))
             return name if choices.has_own_sound(role) else marks.MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=name)
-        return Field(label=labels.MSG_WIZARD_SOUND_LABEL, value=shown, enter=lambda: self.page().pick_sound(role), enter_what=legends.What.CHOOSE)
+        return Field(label=labels.MSG_WIZARD_SOUND_LABEL, value=shown, enter=lambda: self.get_page().pick_sound(role), enter_what=legends.What.CHOOSE)
 
     def beside_fields(self):
         """Return the fields of the player who answers the tune: Role, the genre's plan section by section or one thing in every section, and
         how busy the fills are, a number stepped or typed, drawn as a horizontal gauge."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         ways = choices.ways_beside()
         busy = choices.get_fills_busy()
         gauge = marks.MSG_WIZARD_GAUGE_FULL * busy + marks.MSG_WIZARD_GAUGE_EMPTY * (interplay.MOST_BUSY - busy)
@@ -194,8 +194,8 @@ class PlayerBranch(Branch):
     def piece_row(self, piece):
         """Return the row of a piece of the kit, two cells side by side: whether the piece plays, switched with Space, and what
         the piece sounds as, chosen from a list: its own drum, another drum of the kit, or a General MIDI sound on a note."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
 
         def shown():
             sound = choices.piece_sound(piece)
@@ -217,8 +217,8 @@ class PlayerBranch(Branch):
     def break_fields(self):
         """Return the Break field where the song may play a break, and under it, while one is chosen, how far it is cut up:
         a number stepped or typed, drawn as a horizontal gauge that is empty for the break as written."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         breaks = choices.breaks()
         if not breaks:
             return []
@@ -233,26 +233,26 @@ class PlayerBranch(Branch):
 
     def fill_pattern_fields(self):
         """Return the field for what the drums' fill is, where the genre has more than one, since one is nothing to choose."""
-        choices = self.choices()
+        choices = self.get_choices()
         trait = choices.song_trait(wizard_choices.FILLS_TRAITS)
         if trait is None or len(choices.song_ways(trait)) < A_CHOICE:
             return []
-        return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_FILLS_LABEL, choices=choices.song_ways(trait), current=choices.get_way(trait),
-                            set=self.page().choosing(lambda value: choices.set_way(trait=trait, value=value)))]
+        return [ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_FILLS_LABEL, choices=choices.song_ways(trait), current=choices.get_way(trait),
+                            set=self.get_page().choosing(lambda value: choices.set_way(trait=trait, value=value)))]
 
     def fills_field(self):
         """Return the field for how often a fill comes: a number stepped or typed, drawn as a horizontal gauge that is empty at
         never, beside the words for the position."""
-        choices = self.choices()
+        choices = self.get_choices()
         position = choices.get_fills()
         gauge = marks.MSG_WIZARD_GAUGE_FULL * (position - wizard_choices.FEWEST_FILLS) + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_choices.MOST_FILLS - position)
-        return NumberField(page=self.page(), label=labels.MSG_WIZARD_DRUM_FILLS_LABEL, number=position, shown=marks.MSG_WIZARD_FILLS_SHOWN.format(gauge=gauge, often=labels.MSG_WIZARD_FILLS_COME[position - wizard_choices.FEWEST_FILLS]),
-                           lowest=wizard_choices.FEWEST_FILLS, highest=wizard_choices.MOST_FILLS, set=self.page().choosing(choices.set_fills))
+        return NumberField(page=self.get_page(), label=labels.MSG_WIZARD_DRUM_FILLS_LABEL, number=position, shown=marks.MSG_WIZARD_FILLS_SHOWN.format(gauge=gauge, often=labels.MSG_WIZARD_FILLS_COME[position - wizard_choices.FEWEST_FILLS]),
+                           lowest=wizard_choices.FEWEST_FILLS, highest=wizard_choices.MOST_FILLS, set=self.get_page().choosing(choices.set_fills))
 
     def busy_field(self):
         """Return the Busy field: a number stepped or typed, drawn as a horizontal Busy gauge beside the number."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         level = choices.get_busy(self._role)
         gauge = marks.MSG_WIZARD_GAUGE_FULL * level + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_choices.MOST_BUSY - level)
         # A player whose gauges were moved is no longer the preset, and the field says so until a level is chosen again.
@@ -262,7 +262,7 @@ class PlayerBranch(Branch):
 
     def row_field(self, name):
         """Return the field of one of the player's rows of numbers: the row shown, the genre's own marked so, and Enter opening the row to edit."""
-        choices = self.choices()
+        choices = self.get_choices()
         row = marks.MSG_WIZARD_ROW_SEPARATOR.join(str(value) for value in choices.get_player_row(role=self._role, name=name))
         own = choices.player_row_is_own(role=self._role, name=name)
         shown = (marks.MSG_WIZARD_ROW_SHOWN if own else marks.MSG_WIZARD_GENRE_ROW_SHOWN).format(row=row)
@@ -270,8 +270,8 @@ class PlayerBranch(Branch):
 
     def edit_row(self, name):
         """Open a row of the player's in the Row dialog, and keep the row the dialog answers with."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         lowest, highest = choices.row_limits(name)
         dialog = RowDialog(title=messages.MSG_WIZARD_ROW_TITLE.format(row=labels.MSG_WIZARD_ROW_LABELS[name], player=self.name()), values=choices.get_player_row(role=self._role, name=name),
                            lowest=lowest, highest=highest, fewest=wizard_choices.FEWEST_ROW_CELLS, most=wizard_choices.MOST_ROW_CELLS, usual=choices.genre_row(role=self._role, name=name))
@@ -279,8 +279,8 @@ class PlayerBranch(Branch):
 
     def player_gauge_field(self, gauge):
         """Return the field of one of the player's own gauges: a number stepped or typed, drawn as a horizontal gauge beside the number."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = choices.get_player_gauge(role=self._role, gauge=gauge)
         drawn = marks.MSG_WIZARD_GAUGE_FULL * (place - characters.LOWEST) + marks.MSG_WIZARD_GAUGE_EMPTY * (characters.HIGHEST - place)
         return NumberField(page=page, label=labels.MSG_WIZARD_PLAYER_GAUGE_LABELS[gauge], number=place, shown=marks.MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place),

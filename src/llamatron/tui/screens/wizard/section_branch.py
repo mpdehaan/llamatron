@@ -45,8 +45,8 @@ def fade_field(*, branch, place, field):
     """Return a field of a section's fade, named for the fade's way: the switch, Fade in where the section opens the song and
     Fade out where the section closes it; the level, the velocity the fade starts from or ends at; or the
     bars the fade takes, the first of the section for a fade in and the last for a fade out. The level and the bars show what a fade takes until they are given, and Bksp gives each back."""
-    choices = branch.choices()
-    page = branch.page()
+    choices = branch.get_choices()
+    page = branch.get_page()
     label = labels.MSG_WIZARD_FADE_LABELS[choices.fade_way(place)][field]
     own = choices.section_own(place=place, field=field)
 
@@ -78,11 +78,11 @@ class SectionBranch(Branch):
         return SECTION_KEY.format(number=self._place + FIRST_SECTION_NUMBER, name=self.name())
 
     def name(self):
-        return self.choices().section_labels()[self._place]
+        return self.get_choices().section_labels()[self._place]
 
     def fields(self):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self._place
         kinds = choices.section_kinds()
         fields = [ChoiceField(page=page, label=labels.MSG_WIZARD_KIND_LABEL, choices=kinds, current=choices.section_kind(place),
@@ -112,7 +112,7 @@ class SectionBranch(Branch):
         """Return the field that says how many of the section's lines a person gave notes, a breath or an early note of their own, in
         a song made before tunes were patterns; Bksp gives every line back to the wizard. A tune's notes are now edited on the
         panel of its kind of section, so a section with no such line has no such field."""
-        choices = self.choices()
+        choices = self.get_choices()
         place = self._place
         own = {count: line[wizard_choices.LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[wizard_choices.LINE_OWN]}
         if not own:
@@ -123,18 +123,18 @@ class SectionBranch(Branch):
                 for field in given:
                     choices.set_section_line(place=place, line=count, field=field, value=None)
         return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: marks.MSG_LINES_COUNT_OWN.format(count=len(choices.section_lines(place)), own=len(own)),
-                      clear=lambda: self.page().choosing(give_back)(None), clear_what=legends.MSG_TUNE_USUAL_WHAT)]
+                      clear=lambda: self.get_page().choosing(give_back)(None), clear_what=legends.MSG_TUNE_USUAL_WHAT)]
 
     def has_own_lines(self):
-        return any(line[wizard_choices.LINE_OWN] for line in self.choices().section_lines(self._place))
+        return any(line[wizard_choices.LINE_OWN] for line in self.get_choices().section_lines(self._place))
 
     def has_own_role(self):
-        choices = self.choices()
+        choices = self.get_choices()
         return choices.section_has_role(self._place) and choices.section_role_is_own(self._place)
 
     def own_checker(self, of_group):
         """Return what says whether the section was given anything of its own for a group's fields."""
-        choices = self.choices()
+        choices = self.get_choices()
         return lambda: any(choices.section_own(place=self._place, field=field) is not None for field in of_group)
 
     # A section's lines, one by one, in the Lines dialog.
@@ -143,8 +143,8 @@ class SectionBranch(Branch):
 
     def own_setter(self, field):
         """Return what gives the section a value of its own for a field, None giving the field back, and says why where the song cannot take it."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self._place
 
         def set_own(value):
@@ -155,8 +155,8 @@ class SectionBranch(Branch):
         return set_own
 
     def own_field(self, field):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self._place
         if field in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER):
             return self.fade_field(field)
@@ -193,8 +193,8 @@ class SectionBranch(Branch):
     def role_field(self):
         """Return the field of what the answering player does in the section: the plan's, marked as the plan's, until the section is given
         its own from a list, and Bksp gives the section back to the plan."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self._place
         ways = choices.ways_beside()
         way = choices.section_role(place)
@@ -209,8 +209,8 @@ class SectionBranch(Branch):
 
     def plays_setter(self, role):
         """Return what has a player play in the section or sit it out, refusing to leave the section with nobody."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self._place
 
         def set_plays(on):
@@ -227,23 +227,23 @@ class SectionBranch(Branch):
 
     def add(self, kind):
         """Put a new section of a kind at the end of the form, as A does on any row of a list."""
-        self.choices().add_section(place=len(self.choices().form_sections()), kind=kind)
+        self.get_choices().add_section(place=len(self.get_choices().form_sections()), kind=kind)
 
     def insert(self, kind):
         """Put a new section of a kind before this one, as insert does on Arrange."""
-        self.choices().add_section(place=self._place, kind=kind)
+        self.get_choices().add_section(place=self._place, kind=kind)
 
     def kinds_to_add(self):
-        return self.choices().section_kinds()
+        return self.get_choices().section_kinds()
 
     def is_listed(self):
         return True
 
     def copy(self):
-        self.choices().copy_section(self._place)
+        self.get_choices().copy_section(self._place)
 
     def remove(self):
-        self.choices().remove_section(self._place)
+        self.get_choices().remove_section(self._place)
 
     def move(self, offset):
-        return self.choices().move_section(place=self._place, offset=offset)
+        return self.get_choices().move_section(place=self._place, offset=offset)

@@ -34,7 +34,7 @@ class SongWaysBranch(Branch):
     __slots__ = ()
 
     def refusal(self):
-        return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+        return None if self.get_choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def traits(self):
         """Return each field's label with the traits it may stand for, the first the genre has being the one chosen."""
@@ -42,8 +42,8 @@ class SongWaysBranch(Branch):
 
     def way_fields(self):
         """Return a field for each trait the genre has more than one way of, since one way is nothing to choose."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         fields = []
         for label, traits in self.traits():
             trait = choices.song_trait(traits)
@@ -52,14 +52,14 @@ class SongWaysBranch(Branch):
         return fields
 
     def way_setter(self, trait):
-        choices = self.choices()
-        return self.page().choosing(lambda value: choices.set_way(trait=trait, value=value))
+        choices = self.get_choices()
+        return self.get_page().choosing(lambda value: choices.set_way(trait=trait, value=value))
 
     def fields(self):
-        return self.way_fields() if self.choices().is_ready() else []
+        return self.way_fields() if self.get_choices().is_ready() else []
 
     def notes(self, width):
         """Say so where the subgenre leaves nothing to choose, so that an empty branch explains itself."""
-        if self.choices().is_ready() and not self.fields():
+        if self.get_choices().is_ready() and not self.fields():
             return [Text(drawing.INDENT + messages.MSG_WIZARD_NOTHING_TO_CHOOSE, style=Style.DIM)]
         return []

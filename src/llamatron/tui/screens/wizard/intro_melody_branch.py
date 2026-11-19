@@ -54,7 +54,7 @@ class IntroMelodyBranch(Branch):
 
     def summary(self):
         """Return how many parts the intro has, where it has more than one, or who says the hook in it."""
-        choices = self.choices()
+        choices = self.get_choices()
         parts = choices.intro_parts()
         if len(parts) > 1:
             return marks.MSG_WIZARD_COUNT_SHOWN.format(count=len(parts))
@@ -68,22 +68,22 @@ class IntroMelodyBranch(Branch):
 
     def place_of(self, number):
         """Return the place in the form of a part by its number, or None where the intro has no such part."""
-        parts = self.choices().intro_parts()
+        parts = self.get_choices().intro_parts()
         return parts[number - FIRST_PART] if number is not None and FIRST_PART <= number <= len(parts) else None
 
     def part_under_cursor(self):
         """Return the number of the part whose heading the cursor is on or under, or None where the cursor is on a button or above the parts."""
-        page = self.page()
+        page = self.get_page()
         if not page.in_fields or isinstance(page.field(), Button):
             return None
         heading = page.heading_over_cursor()
-        return next((number for number, _ in enumerate(self.choices().intro_parts(), start=FIRST_PART) if self.part_label(number) == heading), None)
+        return next((number for number, _ in enumerate(self.get_choices().intro_parts(), start=FIRST_PART) if self.part_label(number) == heading), None)
 
     def part_marked(self):
         """Return the number of the part the buttons act on: the part the cursor is on or in, else the part the cursor was last
         on, else the first part somebody says the hook in, else the first; None where the intro has no part."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         parts = choices.intro_parts()
         if not parts:
             return None
@@ -96,7 +96,7 @@ class IntroMelodyBranch(Branch):
         return parts.index(with_melody) + FIRST_PART if with_melody in parts else FIRST_PART
 
     def fields(self):
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready():
             return []
         fields = [*self.start_fields()]
@@ -107,8 +107,8 @@ class IntroMelodyBranch(Branch):
 
     def start_fields(self):
         """Return the field of how the song starts, which makes the intro's parts; parts a person changed read as the person's own."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         if not choices.starts():
             return []
 
@@ -122,8 +122,8 @@ class IntroMelodyBranch(Branch):
 
     def part_heading(self, *, number, place):
         """Return a part's heading, which says the part's bars, who plays and who says the hook, and opens onto the part's fields; Bksp deletes the part, after asking."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         label = self.part_label(number)
 
         def said():
@@ -136,8 +136,8 @@ class IntroMelodyBranch(Branch):
 
     def part_fields(self, place):
         """Return a part's fields: its bars, who says the hook in it, its fade in, and a switch for each player of the band."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         lengths = choices.bars_offered(place)
         if len(lengths) > 1:
             bars = ChoiceField(page=page, label=labels.MSG_WIZARD_BARS_LABEL, choices=lengths, names=[str(count) for count in lengths], current=choices.section_bars(place),
@@ -160,7 +160,7 @@ class IntroMelodyBranch(Branch):
 
     def refusing(self, setter):
         """Return a setter made through the page, which says why on the status line where the song cannot take the value."""
-        page = self.page()
+        page = self.get_page()
 
         def set_value(value):
             try:
@@ -172,7 +172,7 @@ class IntroMelodyBranch(Branch):
     def buttons(self):
         """Return the buttons, which act on the marked part: its melody's notes in the pattern editor, its melody's player alone,
         and the part with the band; and the button that adds a part."""
-        page = self.page()
+        page = self.get_page()
         return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=self.edit_notes, enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=self.give_back, clear_what=legends.MSG_TUNE_USUAL_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=self.listen_alone, enter_what=legends.MSG_LISTEN_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=lambda: page.listen_to(self.heard_with_band()), enter_what=legends.MSG_LISTEN_WHAT),
@@ -183,26 +183,26 @@ class IntroMelodyBranch(Branch):
         number = self.part_marked()
         place = self.place_of(number)
         if place is None:
-            self.page().refuse(errors.ERR_WIZARD_NO_PART)
+            self.get_page().refuse(errors.ERR_WIZARD_NO_PART)
             return None
-        if self.choices().intro_melody_player(place) is None:
-            self.page().refuse(errors.ERR_WIZARD_PART_NO_MELODY.format(number=number))
+        if self.get_choices().intro_melody_player(place) is None:
+            self.get_page().refuse(errors.ERR_WIZARD_PART_NO_MELODY.format(number=number))
             return None
         return place
 
     def edit_notes(self):
         place = self.melody_place()
         if place is not None:
-            self.page().edit_intro(place=place)
+            self.get_page().edit_intro(place=place)
 
     def listen_alone(self):
         if self.melody_place() is not None:
-            self.page().listen_to(self.listens())
+            self.get_page().listen_to(self.listens())
 
     def give_back(self):
         """Give the marked part's notes edited by hand back to the wizard, after a question."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self.place_of(self.part_marked())
         if place is None or not choices.intro_is_own(place=place):
             return
@@ -210,8 +210,8 @@ class IntroMelodyBranch(Branch):
         page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True), then=page.choosing(lambda _: choices.set_intro_pattern(place=place, pattern=None)))
 
     def add_part(self):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         try:
             page.choosing(lambda _: choices.add_intro_part())(None)
         except ValueError as problem:
@@ -220,8 +220,8 @@ class IntroMelodyBranch(Branch):
         page.say(messages.MSG_WIZARD_PART_ADDED.format(number=len(choices.intro_parts())))
 
     def remove_part(self, number):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self.place_of(number)
 
         def removed(_=None):
@@ -237,7 +237,7 @@ class IntroMelodyBranch(Branch):
 
     def field_keys(self):
         """Return the list's key: A adds a part. Asking for the keys also marks the part the cursor is on, which the buttons then act on."""
-        page = self.page()
+        page = self.get_page()
         self.part_marked()
         return [page.bind(page.KEYS.ADD, action=self.add_part)]
 
@@ -246,7 +246,7 @@ class IntroMelodyBranch(Branch):
 
     def listens(self):
         """Listen plays the melody's player alone in the marked part, or nothing where nobody says the hook there."""
-        choices = self.choices()
+        choices = self.get_choices()
         number = self.part_marked()
         place = self.place_of(number)
         if place is None or choices.intro_melody_player(place) is None:
@@ -261,7 +261,7 @@ class IntroMelodyBranch(Branch):
 
     def notes(self, width):
         """Return the line under the buttons that says which part the buttons act on and whose its notes are, or how to give the part a melody."""
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready():
             return []
         number = self.part_marked()

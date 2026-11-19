@@ -30,11 +30,11 @@ class SubgenreBranch(Branch):
         return labels.MSG_WIZARD_SUBGENRE_BRANCH
 
     def refusal(self):
-        return None if self.choices().get_genre() is not None else errors.ERR_WIZARD_CHOOSE_GENRE
+        return None if self.get_choices().get_genre() is not None else errors.ERR_WIZARD_CHOOSE_GENRE
 
     def fields(self):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         if choices.get_genre() is None:
             return []
         subgenres = choices.subgenres()
@@ -55,8 +55,8 @@ class SubgenreBranch(Branch):
 
     def variant_field(self):
         """Return the field of the kind of song the subgenre makes, whose picker says what each kind is; choosing one says so too."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         kinds = choices.variants()
 
         def chosen(kind):

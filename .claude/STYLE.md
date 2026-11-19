@@ -19,6 +19,7 @@ kept by reading.
 | Every file's opening imports are sorted: the libraries, one blank line, then the project's, each group by module, each line's names in order, one line a module. | `tests/rules/test_import_order.py`, with `internal_tools/sort_imports.sh --write` to sort a file |
 | A package imports only packages below it, only a package's front doors are imported from outside it, and a page imports no other page and of the model only its vocabulary; the crossings that existed when the rule was made are listed, and the list only shrinks. | `tests/rules/test_layers.py`, with `internal_tools/layers.sh` and `tests/rules/layer_exceptions.py` |
 | No function or method carries a type hint, on a parameter or on what it returns. | `tests/rules/test_no_type_hints.py` |
+| A method that only returns what its object holds is named `get_x`, or `is_x`, `has_x` or `can_x` for yes or no; the few that keep a plain name are listed, with why. | `tests/rules/test_getter_names.py` |
 | Each screen lists its keys once, in `keys()`, so no key works without being shown in the legend or the F1 dialog, and every page's help fits an 80 by 24 console. | `tests/tui/test_tui_keys_shown.py`, `tests/tui/test_tui_help.py` |
 | A screen's method is never named after one Textual has, like `render` or `remove`. | `tests/tui/test_tui_look.py` |
 | Every key a page's help names is bound on that page, so help can't go on naming a key that moved. | `tests/tui/test_tui_help_keys.py` |
@@ -95,6 +96,8 @@ accessors show its contract. `Note`, `Chord`, `Scale`, `Rest`, `Degree`, `Held` 
 the user says otherwise, through such setters. `Document` makes every change through the objects'
 setters and never touches an object's data, and neither does any page; every page reads the set
 through `document.get_setlist()` and the current song through `document.song()`.
+
+**A name says whether a method hands back what is held.** A method that returns a stored value is `get_x()`, and one that stores a value is `set_x()`, in every package, the text UI included, so that a method named otherwise is known to work something out or to have an effect: `document.get_setlist()` hands back the set the document holds, `document.song()` finds the current song. A yes or no that is held is `is_x`, `has_x` or `can_x`, or a verb that says it, as `loops()` does. The exceptions are a question that other classes answer by working something out, whose name is the question's, listed in `tests/rules/test_getter_names.py`.
 
 **Every class declares `__slots__`**, so none can be added by mistake, and each class in a
 hierarchy declares its own, even `()`. Dataclasses use `@dataclass(slots=True, kw_only=True)`. The

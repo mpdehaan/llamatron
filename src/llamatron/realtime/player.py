@@ -188,7 +188,7 @@ class Player:
             play.start = start
             play.loops = play.preview or score.loops(scene=new_scene, track=new_track)
             if not play.cut:
-                play.end = start + score.scene_seconds(new_scene)
+                play.end = start + score.get_scene_seconds(new_scene)
             self._sender.add(score.events_from(scene=new_scene, track=new_track, start=start, tag=play.tag, after=max(at, start)))
         self._moments = [moment._replace(scene=scene_map[moment.scene], tracks=tuple(track_map[track] for track in moment.tracks if track_map.get(track) is not None))
                          for moment in self._moments if scene_map.get(moment.scene) is not None]
@@ -225,7 +225,7 @@ class Player:
                 planned.add(key)
                 self._plan(time=play.end, kind=SCENE_DONE, scene=play.scene)
             clip_end = self._score.clip_end(scene=play.scene, track=play.track)
-            if clip_end is not None and self._score.follow_action(scene=play.scene, track=play.track) == FollowAction.NEXT and play.start + clip_end > now:
+            if clip_end is not None and self._score.get_follow_action(scene=play.scene, track=play.track) == FollowAction.NEXT and play.start + clip_end > now:
                 self._plan(time=play.start + clip_end, kind=CLIP_DONE, scene=play.scene, tracks=(play.track,))
 
     # Launching and stopping, by hand.
@@ -388,7 +388,7 @@ class Player:
         scenes = self.playing_scenes()
         if not scenes:
             return None
-        return self._score.scene_start(scenes[0]) + self.scene_elapsed(scenes[0])
+        return self._score.get_scene_start(scenes[0]) + self.scene_elapsed(scenes[0])
 
     # The plan.
 
@@ -397,9 +397,9 @@ class Player:
         heapq.heappush(self._moments, Moment(time, kind, self._count, scene, tuple(tracks), forever))
 
     def _launch_scene(self, *, scene, at):
-        for track in self._score.tracks():
+        for track in self._score.get_tracks():
             self._start_play(scene=scene, track=track, at=at, alone=False)
-        self._plan(time=at + self._score.scene_seconds(scene), kind=SCENE_DONE, scene=scene)
+        self._plan(time=at + self._score.get_scene_seconds(scene), kind=SCENE_DONE, scene=scene)
 
     def _start_play(self, *, scene, track, at, alone, forever=False, preview=False):
         """Queue one clip's events from a moment on its track, cutting what the track plays then, and cut where a play already queued ahead on the track starts."""
@@ -412,7 +412,7 @@ class Player:
             elif old.start > at:
                 next_start = old.start if next_start is None else min(next_start, old.start)
         self._play_count += 1
-        end = at + self._score.scene_seconds(scene)
+        end = at + self._score.get_scene_seconds(scene)
         loops = forever or self._score.loops(scene=scene, track=track)
         play = Play(scene=scene, track=track, start=at, end=end, tag=Tag(scene, track, self._play_count), alone=alone, loops=loops, preview=preview)
         self._plays.append(play)
@@ -424,7 +424,7 @@ class Player:
             self._plan(time=end, kind=SCENE_DONE, scene=scene)
         # A clip whose Advance is "Next" sends its start the moment its own repeats end.
         clip_end = self._score.clip_end(scene=scene, track=track)
-        if clip_end is not None and self._score.follow_action(scene=scene, track=track) == FollowAction.NEXT:
+        if clip_end is not None and self._score.get_follow_action(scene=scene, track=track) == FollowAction.NEXT:
             self._plan(time=at + clip_end, kind=CLIP_DONE, scene=scene, tracks=(track,))
 
     def _clip_done(self, *, scene, track, at):
@@ -453,10 +453,10 @@ class Player:
         done = not all(play.loops for play in plays)
         last_scene = scene + 1 >= self._score.scene_count()
         for play in plays:
-            if play.loops and not (done and last_scene and self._score.follow_action(scene=scene, track=play.track) != FollowAction.OFF):
+            if play.loops and not (done and last_scene and self._score.get_follow_action(scene=scene, track=play.track) != FollowAction.OFF):
                 self._start_play(scene=scene, track=play.track, at=at, alone=play.alone, forever=True, preview=play.preview)
         if done:
-            starts = [play.track for play in plays if self._score.follow_action(scene=scene, track=play.track) != FollowAction.OFF]
+            starts = [play.track for play in plays if self._score.get_follow_action(scene=scene, track=play.track) != FollowAction.OFF]
             self._send_starts(scene=scene, at=at, tracks=starts)
 
     def _send_starts(self, *, scene, at, tracks):

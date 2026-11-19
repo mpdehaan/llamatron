@@ -43,13 +43,13 @@ class RiffAssignBranch(RiffsBranch):
 
     def summary(self):
         """Return how many riffs the players know between them, or None where the song has no riff."""
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready() or not choices.riff_names():
             return None
         return str(sum(len(choices.riffs_known_by(role)) for role in choices.riff_instruments()))
 
     def fields(self):
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready():
             return []
         fields = []
@@ -64,13 +64,13 @@ class RiffAssignBranch(RiffsBranch):
     def for_width(self):
         """Return how wide the FOR column is: as wide as its widest value on the panel, the name of a player a riff was written
         for, and no narrower than its heading, so that the column after it starts at one place on every row, as a table's."""
-        choices = self.choices()
+        choices = self.get_choices()
         written_for = [choices.role_title(choices.riff_written_for(riff)) for role in choices.riff_instruments() for riff in choices.riffs_known_by(role)]
         return max(len(name) for name in [labels.MSG_WIZARD_RIFF_FOR_COLUMN, *written_for])
 
     def known_field(self, *, role, riff):
         """Return the row of a riff a player knows: who the riff was written for and the kinds of section the player plays it in; Bksp takes the riff from the player."""
-        choices = self.choices()
+        choices = self.get_choices()
 
         def shown():
             return marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=choices.role_title(choices.riff_written_for(riff)), width=self.for_width(), used=listed(choices.kinds_playing(role=role, riff=riff))).rstrip()
@@ -78,13 +78,13 @@ class RiffAssignBranch(RiffsBranch):
 
     def field_keys(self):
         """Return the list's key: A gives the player of the heading another of the song's riffs."""
-        page = self.page()
+        page = self.get_page()
         return [page.bind(page.KEYS.ADD, action=lambda: self.give(self.role_under_cursor()))] if self.role_under_cursor() is not None else []
 
     def give(self, role):
         """Offer the song's riffs a player does not know, and have the player know the one picked."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         title = choices.role_title(role)
         offered = choices.riffs_to_give(role)
         if not offered:
@@ -99,8 +99,8 @@ class RiffAssignBranch(RiffsBranch):
 
     def take(self, *, role, riff):
         """Take a riff from a player, asking first where the player plays it."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         title = choices.role_title(role)
         used = choices.kinds_playing(role=role, riff=riff)
 

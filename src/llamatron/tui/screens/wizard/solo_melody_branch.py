@@ -54,18 +54,18 @@ class SoloMelodyBranch(Branch):
 
     def place(self):
         """Return the solo's place in the form, or None once the song has fewer solos."""
-        places = self.choices().solo_places()
+        places = self.get_choices().solo_places()
         return places[self._number - FIRST_SOLO] if self._number - FIRST_SOLO < len(places) else None
 
     def summary(self):
         """Return whether the solo's notes were edited by hand, or who plays the solo."""
-        choices = self.choices()
+        choices = self.get_choices()
         if self.place() is None:
             return None
         return labels.MSG_WIZARD_NOTES_EDITED if choices.solo_is_own(self.place()) else choices.role_title(choices.solo_player())
 
     def fields(self):
-        choices = self.choices()
+        choices = self.get_choices()
         place = self.place()
         if place is None:
             return []
@@ -75,8 +75,8 @@ class SoloMelodyBranch(Branch):
 
     def buttons(self):
         """Return the buttons that open the solo's notes in the pattern editor and that hear the solo, its player alone and with the band."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self.place()
 
         def give_back():
@@ -92,8 +92,8 @@ class SoloMelodyBranch(Branch):
 
     def regenerate(self):
         """Have this solo written again, with nothing kept of the old one and the song's other solos left alone, after asking."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         place = self.place()
         name = messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_choices.SOLO)
 
@@ -109,7 +109,7 @@ class SoloMelodyBranch(Branch):
         """Listen plays the solo's player alone in the solo."""
         if self.place() is None:
             return None
-        return messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_choices.SOLO), self.place(), self.choices().solo_player()
+        return messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_choices.SOLO), self.place(), self.get_choices().solo_player()
 
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the solo."""
@@ -117,7 +117,7 @@ class SoloMelodyBranch(Branch):
 
     def notes(self, width):
         """Return the line under the buttons that says whose the solo's notes are: the wizard's, or edited by hand."""
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready() or self.place() is None:
             return []
         return [Text(drawing.INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.solo_is_own(self.place()) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
