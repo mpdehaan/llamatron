@@ -569,8 +569,11 @@ class Pattern(PatternNotes, LlamaData):
         self._steps *= 2
 
     @notes_change
-    def splice(self, *, other, before=False):
-        """Add another pattern's steps after its own last step, or before its first; the other is not changed."""
+    def splice(self, *, other, at=None):
+        """Add another pattern's steps after its own last step, or before the step at a place, 0 for before its first; the other is not changed."""
+        at = self._steps if at is None else at
+        if not is_whole_number_from(value=at, lowest=0, highest=self._steps):
+            raise InvalidValue(errors.ERR_PATTERN_NO_SUCH_STEP.format(step=at, steps=self._steps))
         if self._steps + other.get_steps() > limits.MAX_STEPS or other.is_drum() != self.is_drum():
             raise InvalidValue(errors.ERR_PATTERN_CANNOT_INTERLEAVE)
         for row in PATTERN_ROWS:
@@ -581,7 +584,7 @@ class Pattern(PatternNotes, LlamaData):
             own = own or _blank_row(row=row, steps=self._steps)
             others = others or _blank_row(row=row, steps=other.get_steps())
             taken = [own_step_value(value) for value in others]
-            self._rows[row] = [*taken, *own] if before else [*own, *taken]
+            self._rows[row] = [*own[:at], *taken, *own[at:]]
         self._steps += other.get_steps()
 
     def _row_values(self, row):

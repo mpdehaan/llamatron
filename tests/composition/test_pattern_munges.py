@@ -149,8 +149,12 @@ class TestInterleaving(unittest.TestCase):
         self.assertEqual(other.get_steps(), len(OTHER_DEGREES))
         with self.assertRaises(InvalidValue):
             pattern.splice(other=pattern_of(degrees=[None], drum=True))
-        pattern.splice(other=pattern_of(degrees=[8]), before=True)
+        pattern.splice(other=pattern_of(degrees=[8]), at=0)
         self.assertEqual(pattern.get_row(Row.DEGREE), [8, 1, 2, *OTHER_DEGREES])
+        pattern.splice(other=pattern_of(degrees=[4, 4]), at=THIRD)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [8, 1, 4, 4, 2, *OTHER_DEGREES])
+        with self.assertRaises(InvalidValue):
+            pattern.splice(other=pattern_of(degrees=[4]), at=pattern.get_steps() + 1)
 
     def test_a_drum_pattern_and_a_pattern_of_notes_are_refused(self):
         pattern = pattern_of()
