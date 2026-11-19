@@ -100,19 +100,20 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## ClipPage
 
-- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `Bksp` use pattern name · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Pattern field**: `ESC` back · `↑↓` select · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Scale field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` use the scene scale · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Chains field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Repeat field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Direction field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` use the pattern's · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Velocity field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` leave blank · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Grab track field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` no grab · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Advance field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the   field, the    field, the     field, the      field**: `ESC` back · `↑↓` select · `←→` move · `ENTER` choose · `Bksp` clear · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Play button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` listen · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
-- **the Stop button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` stop · `PgUp/PgDn` next section · `F2` rename · `J` jump to pattern · `L` listen
+- **the Name field**: `ESC` back · `↑↓` select · `ENTER` rename · `Bksp` use pattern name · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Patterns field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` remove · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `M` move pattern · `J` jump to pattern · `L` listen
+- **the  field**: `ESC` back · `↑↓` select · `ENTER` add · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Scale field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` use the scene scale · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Chains field**: `ESC` back · `↑↓` select · `ENTER` edit · `Bksp` no chain · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Pattern order field, the Advance field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Step direction field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `Bksp` use the pattern's · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Repeat field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Velocity field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` leave blank · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Grab track field**: `ESC` back · `↑↓` select · `ENTER` choose · `Bksp` no grab · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the   field, the    field, the     field, the      field**: `ESC` back · `↑↓` select · `←→` move · `ENTER` choose · `Bksp` clear · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Play button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` listen · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **the Stop button**: `ESC` back · `↑↓` select · `←→` select · `ENTER` stop · `PgUp/PgDn` next section · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 
 ## DensityEditor
 
@@ -483,7 +484,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArticulateEditor: dec (the Start field, the End field, the Over field, the Then field, the Restart field)
 - AutoRatchetEditor: dec (the Restart field)
 - ChordsEditor: dec (anywhere)
-- ClipPage: dec (the Repeat field, the Direction field, the Velocity field, the Advance field)
+- ClipPage: dec (the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Velocity field)
 - DensityEditor: dec (the Start field, the End field, the Over field, the Then field, the Restart field)
 - DragEditor: dec (the Step field, the Drag amount field, the Restart field)
 - DriftEditor: dec (the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
@@ -523,7 +524,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArticulateEditor: inc (the Start field, the End field, the Over field, the Then field, the Restart field)
 - AutoRatchetEditor: inc (the Restart field)
 - ChordsEditor: inc (anywhere)
-- ClipPage: inc (the Repeat field, the Direction field, the Velocity field, the Advance field)
+- ClipPage: inc (the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Velocity field)
 - DensityEditor: inc (the Start field, the End field, the Over field, the Then field, the Restart field)
 - DragEditor: inc (the Step field, the Drag amount field, the Restart field)
 - DriftEditor: inc (the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
@@ -560,6 +561,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: add (a row, the + row)
 - ChainListPage: add (a row, the + row)
 - ChainsPage: add (a row, the + row)
+- ClipPage: add pattern (the Name field, the Patterns field, the  field, the Scale field, the Chains field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - GeneratorsPage: add (the + row, a row)
 - GroovesPage: add (a row, the + row)
 - InstrumentsPage: add (a row, the + row)
@@ -606,9 +608,10 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainsPage: erase (while searching)
 - ChordsEditor: clear (anywhere)
 - ClipPage: use pattern name (the Name field)
+- ClipPage: remove (the Patterns field)
 - ClipPage: use the scene scale (the Scale field)
 - ClipPage: no chain (the Chains field)
-- ClipPage: use the pattern's (the Direction field)
+- ClipPage: use the pattern's (the Step direction field)
 - ClipPage: leave blank (the Velocity field)
 - ClipPage: no grab (the Grab track field)
 - ClipPage: clear (the   field, the    field, the     field, the      field)
@@ -745,8 +748,9 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainsPage: keep (while searching)
 - ChordsEditor: choose (anywhere)
 - ClipPage: rename (the Name field)
-- ClipPage: choose (the Pattern field, the Scale field, the Direction field, the Grab track field, the Advance field, the   field, the    field, the     field, the      field)
-- ClipPage: edit (the Chains field, the Repeat field, the Velocity field)
+- ClipPage: edit (the Patterns field, the Chains field, the Repeat field, the Velocity field)
+- ClipPage: add (the  field)
+- ClipPage: choose (the Scale field, the Pattern order field, the Advance field, the Step direction field, the Grab track field, the   field, the    field, the     field, the      field)
 - ClipPage: listen (the Play button)
 - ClipPage: stop (the Stop button)
 - DensityEditor: rename (the Name field)
@@ -868,7 +872,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainsPage: back (a row, the + row)
 - ChainsPage: CANCEL (while searching)
 - ChordsEditor: back (anywhere)
-- ClipPage: back (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Direction field, the Velocity field, the Grab track field, the Advance field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
+- ClipPage: back (the Name field, the Patterns field, the  field, the Scale field, the Chains field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - DensityEditor: back (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DragEditor: back (the Name field, the Step field, the Drag amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DragStepsEditor: back (anywhere)
@@ -929,7 +933,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArpEditor: rename (the Name field, the Step field, the Order field, the Octave jump field, the Restart field, the Octave range field, the Offsets field, the Seed field, the AX+= per note field, the BX+= per note field, the CX+= per note field, the DX+= per note field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ArticulateEditor: rename (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - AutoRatchetEditor: rename (the Name field, the Counts field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
-- ClipPage: rename (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Direction field, the Velocity field, the Grab track field, the Advance field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
+- ClipPage: rename (the Name field, the Patterns field, the  field, the Scale field, the Chains field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - DensityEditor: rename (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DragEditor: rename (the Name field, the Step field, the Drag amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DriftEditor: rename (the Name field, the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
@@ -988,7 +992,7 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `J`
 
 - ArrangePage: jump to pattern (a clip)
-- ClipPage: jump to pattern (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Direction field, the Velocity field, the Grab track field, the Advance field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
+- ClipPage: jump to pattern (the Name field, the Patterns field, the  field, the Scale field, the Chains field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 
 ## `K`
 
@@ -997,7 +1001,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## `L`
 
-- ClipPage: listen (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Direction field, the Velocity field, the Grab track field, the Advance field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
+- ClipPage: listen (the Name field, the Patterns field, the  field, the Scale field, the Chains field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - PatternEditor: listen (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the accent row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the stop_c2 row, the stop_c3 row, the stop_c4 row, the stop_c5 row, the restart_c1 row, the restart_c2 row, the restart_c3 row, the restart_c4 row, the restart_c5 row, the mute_c2 row, the mute_c3 row, the mute_c4 row, the mute_c5 row, the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the stop_when row, the restart_when row, the mute_when row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row, the stop_c1 row, the mute_c1 row)
 - PatternsPage: listen (a pattern, a pattern in no group)
 - WizardPage: listen (the Joins heading, the Kind field)
@@ -1010,6 +1014,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: move (a row)
 - ChainListPage: move (a row)
 - ChainsPage: move (a row)
+- ClipPage: move pattern (the Patterns field)
 - GroovesPage: move (a row)
 - InstrumentsPage: move (a row)
 - MainPage: IMPORT MIDI (anywhere)
@@ -1051,7 +1056,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArticulateEditor: next section (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - AutoRatchetEditor: next section (the Name field, the Counts field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ChainStatementsPage: next section (the Bypass Generators When heading, the   field, the    field, the     field, the      field)
-- ClipPage: next section (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Direction field, the Velocity field, the Grab track field, the Advance field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
+- ClipPage: next section (the Name field, the Patterns field, the  field, the Scale field, the Chains field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - DensityEditor: next section (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DragEditor: next section (the Name field, the Step field, the Drag amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - EuclidEditor: next section (the Name field, the Hits field, the Steps field, the Rotate field, the Step field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
@@ -1254,7 +1259,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainListPage: select (a row, the + row, while searching)
 - ChainStatementsPage: select (the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ChainsPage: select (a row, the + row, while searching)
-- ClipPage: select (the Name field, the Pattern field, the Scale field, the Chains field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Direction field, the Velocity field, the Grab track field, the Advance field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
+- ClipPage: select (the Name field, the Patterns field, the  field, the Scale field, the Chains field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - DensityEditor: select (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DragEditor: select (the Name field, the Step field, the Drag amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DriftEditor: select (the Name field, the Every field, the Steps to B field, the Direction field, the Restart field, the Seed field, the AX+= field, the BX+= field, the CX+= field, the DX+= field, the Vel+= field, the Prob ± field, the Degree + field, the Degree random field, the Scale prob field, the Root prob field, the Scale field, the Root field)
@@ -1295,7 +1300,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **ArticulateEditor**: Name, Start, End, Over, Then, Restart
 - **AutoRatchetEditor**: Name, Counts, Restart
 - **ChainStatementsPage**: [Bypass Generators When],  ,   ,    ,     
-- **ClipPage**: Name, Pattern, Scale, Chains, Repeat, Loop, Direction, Velocity, Grab track, Advance, [Strum], Strum direction, Strum spread, Strum fade, Strum loose timing, Strum upstrokes, [Velocity Ramp In], Velocity in start, Velocity in end, Velocity in over, [Velocity Ramp Out], Velocity out start, Velocity out end, Velocity out over, [Density], Density start, Density end, Density over, Density then, [Articulate], Articulate start, Articulate end, Articulate over, Articulate then, [Set Registers], AX =, BX =, CX =, DX =, [Increment Registers], AX +=, BX +=, CX +=, DX +=, [Bypass Generators When],  ,   ,    ,     , [Skip Playback When],      ,       ,        ,         , (Play), (Stop)
+- **ClipPage**: Name, Patterns, , Scale, Chains, Pattern order, Step direction, Repeat, Loop, Velocity, Grab track, Advance, [Strum], Strum direction, Strum spread, Strum fade, Strum loose timing, Strum upstrokes, [Velocity Ramp In], Velocity in start, Velocity in end, Velocity in over, [Velocity Ramp Out], Velocity out start, Velocity out end, Velocity out over, [Density], Density start, Density end, Density over, Density then, [Articulate], Articulate start, Articulate end, Articulate over, Articulate then, [Set Registers], AX =, BX =, CX =, DX =, [Increment Registers], AX +=, BX +=, CX +=, DX +=, [Bypass Generators When],  ,   ,    ,     , [Skip Playback When],      ,       ,        ,         , (Play), (Stop)
 - **DensityEditor**: Name, Start, End, Over, Then, Restart
 - **DragEditor**: Name, Step, Drag amount, Steps, Restart
 - **DriftEditor**: Name, Every, Steps to B, Direction, Seed, Restart, AX+=, BX+=, CX+=, DX+=, Vel+=, Prob ±, Degree +, Degree random, Scale, Scale prob, Root, Root prob

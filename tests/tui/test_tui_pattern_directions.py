@@ -34,7 +34,7 @@ LEAD = 'lead'
 EMPTY_STEP = 2
 DIRECTION_PENDULUM = 'Direction pendulum'
 TUNE_D = 'tune d'
-DIRECTION = 'Direction'
+DIRECTION = labels.MSG_DIRECTION_LABEL
 
 
 class TestDirectionsAndGrab(UITest):

@@ -183,3 +183,13 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
 - The clip page's `L` (`ClipPage.LISTEN`, or `STOP_LISTENING` while the clip plays) and its
   Play and Stop buttons, after the Advance field, listen to the clip (`.claude/features/REALTIME_PLAYBACK.md`).
 
+
+## The clip page's list of patterns
+
+The clip page shows the clip's patterns as rows (`PatternRow` in `tui/screens/arrange/clip_page.py`), always a list, even of one,
+with a `+` row under them. `A` (or ENTER on `+`) opens Add Pattern, a picker of two choices: an existing pattern, from a picker
+that leaves out patterns of the other kind (drum or notes), or a new blank pattern, its name filled in with the track's name and
+the next number, in the track's group. Bksp takes a row out of the list and refuses on the last. `M` picks a row up (the page's
+own move mode: only CARRY and DROP work, one undo step a move). ENTER on a row, or `J`, opens that pattern. Pattern order and
+Step direction (the clip's Direction, renamed on the page only) come before Repeat. `ClipSlot.get_display_name` gives Arrange
+`riff-a +3` for a clip of several patterns with no name.

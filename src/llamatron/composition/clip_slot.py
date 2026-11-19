@@ -26,7 +26,7 @@ setting names something the song holds.
 
 from llamatron.composition.checks import check_keys, check_name, reading
 from llamatron.composition import defaults, limits
-from llamatron.strings import errors
+from llamatron.strings import errors, marks
 from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOICES, DIRECTIONS, PATTERN_ORDERS, VELOCITY_SETTINGS, ClipSlotSetting, PatternOrder, Section
 from llamatron.composition.llama_data import own_copy, LlamaData, settings_by_name, written_settings
 from llamatron.composition.invalid_value import InvalidValue
@@ -163,8 +163,13 @@ class ClipSlot(LlamaData):
         return self._settings[ClipSlotSetting.NAME]
 
     def get_display_name(self):
-        """Return the name the clip shows and exports as: its own, or its pattern's."""
-        return self.get_name() or self.get_pattern_name()
+        """Return the name the clip shows and exports as: its own, or its pattern's, with a count of the patterns after the first when it plays several."""
+        if self.get_name():
+            return self.get_name()
+        names = self.get_pattern_names()
+        if len(names) == 1:
+            return names[0]
+        return marks.MSG_CLIP_PATTERNS_COUNTED.format(name=names[0], more=len(names) - 1)
 
     def get_pattern_names(self):
         """Return the patterns it plays, in order, laid end to end as one long pattern."""

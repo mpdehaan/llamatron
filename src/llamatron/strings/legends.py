@@ -118,6 +118,8 @@ MSG_EDIT_CLIP_WHAT = 'edit clip'
 # The piano roll's [ and ], which drag a note's end: Shrink and stretch, where every other value steps dec and inc.
 MSG_SHRINK_WHAT = 'shrink'
 MSG_STRETCH_WHAT = 'stretch'
+MSG_ADD_PATTERN_WHAT = 'add pattern'
+MSG_MOVE_PATTERN_WHAT = 'move pattern'
 MSG_OPEN_PATTERN_WHAT = 'jump to pattern'
 MSG_COPY_CLIP_WHAT = 'copy clip'
 MSG_DELETE_CLIP_WHAT = 'delete clip'

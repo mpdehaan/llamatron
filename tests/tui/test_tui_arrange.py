@@ -21,7 +21,9 @@ from llamatron.composition import defaults, limits
 from llamatron.composition.scene import TempoRamp
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.composition.file_format import (
+    PATTERN_ORDERS,
     RESET_BEHAVIORS,
+    PatternOrder,
     REGISTER_ADD_ROWS,
     FOLLOW_ACTION_CHOICES,
     FollowAction,
@@ -40,7 +42,7 @@ from llamatron.tui.screens.arrange.arrange_drawing import CELL_WIDTH, CLIP_BAR, 
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.drawing import Box, NOTHING, SPACE, Style
 from llamatron.tui.screens.generators.chain_list_page import ChainListPage
-from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.arrange.clip_page import AddRow, ClipPage, PatternRow
 from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -93,7 +95,9 @@ INTRO = 'intro'
 LENGTH = 'Length'
 SCALE = 'Scale'
 TEMPO = 'Tempo'
-DIRECTION = 'Direction'
+DIRECTION = labels_text.MSG_DIRECTION_LABEL
+LEAD_1 = 'lead-1'
+ONE_MORE = 1
 
 
 # How the control keys are shown in a legend, each with a + of its own.
@@ -455,6 +459,84 @@ class TestClipPage(UITest):
     def follow_action_text(self):
         return next(field.value() for field in self.page.fields() if field.label == labels_text.MSG_FOLLOW_ACTION_LABEL)
 
+    def patterns(self):
+        return self.clip_slot().get_pattern_names()
+
+    def pattern_rows(self):
+        return [field.value() for field in self.page.fields() if isinstance(field, PatternRow)]
+
+    async def test_the_patterns_are_a_list_with_an_add_row_even_for_one_pattern(self):
+        self.assertEqual(self.pattern_rows(), self.patterns())
+        self.assertEqual(len(self.patterns()), ONE_MORE)
+        self.assertEqual(self.labels().count(labels_text.MSG_PATTERNS_LABEL), ONE_MORE)
+        self.assertEqual([field.value() for field in self.page.fields() if isinstance(field, AddRow)], [marks.MSG_ADD_ROW])
+        # A blank line stands between the list's + row and the settings after it.
+        lines = [line.strip() for line in self.text().splitlines()]
+        add = next(place for place, line in enumerate(lines) if line.endswith(marks.MSG_ADD_ROW) and len(line) <= len(marks.MSG_ADD_ROW) + 2)
+        self.assertIn(labels_text.MSG_PATTERNS_LABEL, lines[add - 1])
+        self.assertEqual(lines[add + 1], NOTHING)
+
+    async def test_adding_an_existing_pattern_puts_it_last_and_bksp_takes_one_out_but_never_the_last(self):
+        first = self.patterns()
+        await self.press(keybindings.ClipPage.ADD_PATTERN)
+        self.assertIn(labels_text.MSG_ADD_PATTERN_TITLE, self.text())
+        await self.press(Key.ENTER)
+        await self.type(OTHER)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.patterns(), [*first, OTHER])
+        self.assertEqual(self.pattern_rows(), [*first, OTHER])
+        # The pattern taken out of the list is still a pattern of the set.
+        await self.select_field(labels_text.MSG_PATTERNS_LABEL)
+        await self.press(keybindings.FieldPage.CLEAR)
+        self.assertEqual(self.patterns(), [OTHER])
+        self.assertTrue(self.document.song().has_pattern(first[0]))
+        await self.press(keybindings.FieldPage.CLEAR)
+        self.assertEqual(self.patterns(), [OTHER])
+        self.assertIn(errors.ERR_CLIP_NEEDS_A_PATTERN, self.text())
+
+    async def test_a_new_pattern_is_named_for_the_track_made_blank_and_added(self):
+        first = self.patterns()
+        await self.press(keybindings.ClipPage.ADD_PATTERN, Key.DOWN, Key.ENTER)
+        self.assertIsInstance(self.app.screen, PromptDialog)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.patterns(), [*first, LEAD_1])
+        self.assertEqual(self.document.setlist().get_pattern(LEAD_1).get_group(), LEAD)
+        await self.press(keybindings.Page.UNDO)
+        self.assertEqual(self.patterns(), first)
+        self.assertFalse(self.document.song().has_pattern(LEAD_1))
+
+    async def test_move_carries_a_pattern_along_the_list_as_one_undo_step(self):
+        first = self.patterns()[0]
+        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.PATTERNS, value=[first, OTHER, first])
+        self.document.record_edit()
+        await self.select_field(labels_text.MSG_PATTERNS_LABEL)
+        await self.press(keybindings.ClipPage.MOVE_PATTERN)
+        self.assertIn(marks.MSG_MOVING_OPEN + first + marks.MSG_MOVING_CLOSE, self.text())
+        await self.press(forward_key(keybindings.ClipPage.CARRY), forward_key(keybindings.ClipPage.CARRY), forward_key(keybindings.ClipPage.CARRY))
+        await self.press(keybindings.ClipPage.DROP)
+        self.assertEqual(self.patterns(), [OTHER, first, first])
+        await self.press(keybindings.Page.UNDO)
+        self.assertEqual(self.patterns(), [first, OTHER, first])
+
+    async def test_pattern_order_steps_through_the_orders_and_stops_at_the_ends(self):
+        await self.select_field(labels_text.MSG_PATTERN_ORDER_LABEL)
+        self.assertEqual(self.clip_slot().get_pattern_order(), PatternOrder.FORWARD)
+        await self.press(keybindings.FieldPage.LESS)
+        self.assertEqual(self.clip_slot().get_pattern_order(), PatternOrder.FORWARD)
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.clip_slot().get_pattern_order(), PATTERN_ORDERS[1])
+        for _ in PATTERN_ORDERS:
+            await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.clip_slot().get_pattern_order(), PatternOrder.FIRST_THEN_RANDOM)
+        self.assertIn(labels_text.MSG_PATTERN_ORDER_NAMES[PatternOrder.FIRST_THEN_RANDOM], self.text())
+
+    async def test_arrange_counts_the_patterns_after_the_first(self):
+        first = self.patterns()[0]
+        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.PATTERNS, value=[first, OTHER, first])
+        self.document.record_edit()
+        await self.press(Key.ESCAPE)
+        self.assertIn(marks.MSG_CLIP_PATTERNS_COUNTED.format(name=first, more=2), self.text())
+
     async def test_the_scale_field_gives_the_clip_a_scale_of_its_own_and_takes_it_away(self):
         self.document.add_scale(name=CLIP_SCALE, root=CLIP_SCALE_ROOT, kind=CLIP_SCALE_KIND)
         self.document.record_edit()
@@ -498,7 +580,7 @@ class TestClipPage(UITest):
     async def test_p_opens_the_pattern_from_any_field_with_this_pages_crumbs_before_the_pattern_and_esc_comes_back_to_the_field(self):
         # The page has one pattern, so P works wherever the triangle is, and the crumbs say the way back.
         scene = self.document.song().get_scenes()[0].get_name()
-        for label in (labels_text.MSG_PATTERN_LABEL, labels_text.MSG_REPEAT_LABEL):
+        for label in (labels_text.MSG_PATTERNS_LABEL, labels_text.MSG_REPEAT_LABEL):
             with self.subTest(label=label):
                 await self.select_field(label)
                 self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.ClipPage.OPEN_PATTERN)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_OPEN_PATTERN_WHAT), self.text())
@@ -655,15 +737,19 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.assertIn('Remove the grab from another clip in this scene first.', self.text())
         self.assertIsNone(self.clip_slot().get_grab_track())
 
+    def notes_text(self):
+        return NEW_LINE.join(line.plain for line in self.page.notes(self.app.size.width))
+
     async def test_says_when_the_grab_track_has_no_grab_steps_to_change(self):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=DRUMS)
         self.page.draw()
         await self.pilot.pause()
-        self.assertIn(THIS_PATTERN_HAS_NONE_YET, self.text())
+        # The notes stand under the settings, below what a small console shows until the cursor goes down the page.
+        self.assertIn(THIS_PATTERN_HAS_NONE_YET, self.notes_text())
         self.document.set_step_value(name=TUNE, row=Row.GRAB, step=0, value=True)
         self.page.draw()
         await self.pilot.pause()
-        self.assertNotIn(THIS_PATTERN_HAS_NONE_YET, self.text())
+        self.assertNotIn(THIS_PATTERN_HAS_NONE_YET, self.notes_text())
         render_song(self.document.song())
 
     async def test_the_grid_marks_them(self):
