@@ -27,4 +27,5 @@ examples/**/*.wav
 .claude/QUEUE.md
 # Claude's plan and status for the refactoring, kept on this computer only: no status of work or list of planned work is in the repository.
 .claude/features/REFACTORING.md
+.claude/DESIGNS.md
 .claude/features/REFACTORING_LOG.md
