@@ -26,6 +26,10 @@ from llamatron.composition import limits
 from llamatron.composition.file_format import Operator, PatternSetting, RegisterName, Row, StatementPart, StepStatement
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import Pattern
+from llamatron.music import midi
+from llamatron.support.rational import Rational
+
+SIXTEENTH = Rational(1, 16)
 
 HERE = 'a test'
 STEPS = 8
@@ -40,6 +44,9 @@ LOW = 20
 HIGH = 100
 A_STATEMENT = {StatementPart.REGISTER: RegisterName.AX, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: 1}
 FIFTH = 4
+FOURTH = 4
+HALF_STEP = '1/32'
+TRIES = 20
 
 
 def pattern_of(*, degrees=None, drum=None, **rows):
@@ -229,3 +236,85 @@ class TestSmoothing(unittest.TestCase):
         pattern.smooth_register_sets(RegisterName.AX)
         self.assertEqual(pattern.get_row(Row.AX_SET)[:FIFTH + 1], [0, 2, 4, 6, 8])
         self.assertEqual(pattern.get_row(Row.BX_SET), sets)
+
+
+class TestMungesOfNotes(unittest.TestCase):
+
+    def test_steps_next_to_each_other_at_one_pitch_become_one_long_note(self):
+        pattern = pattern_of(degrees=[1, 1, 1, 2, None, 2, 2, 3], **{Row.GATE: [HALF_STEP, None, None, None, None, None, None, None], Row.VELOCITY: VELOCITIES})
+        pattern.join_repeated_notes()
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, None, None, 2, None, 2, None, 3])
+        self.assertEqual(pattern.get_row(Row.TIE), [False, True, True, False, False, False, True, False])
+        # The joined note lasts through its ties, and the notes it took in leave nothing of their own.
+        self.assertIsNone(pattern.get_value(row=Row.GATE, step=0))
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [10, None, None, 40, 50, 60, None, 80])
+
+    def test_notes_an_octave_apart_are_not_joined(self):
+        pattern = pattern_of(degrees=[1, 1], **{Row.OCTAVE: [3, 4]})
+        pattern.join_repeated_notes()
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 1])
+
+    def test_a_long_note_becomes_a_note_on_every_step_it_covered(self):
+        pattern = pattern_of(degrees=[1, None, None, 2, None, None, None, 3], **{Row.TIE: [False, True, True, False, False, False, False, False], Row.GATE: [None, None, None, QUARTER, None, None, None, None], Row.VELOCITY: [10, None, None, 40, None, None, None, 80]})
+        pattern.divide_long_notes(step_size=SIXTEENTH)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 1, 1, 2, 2, 2, 2, 3])
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [10, 10, 10, 40, 40, 40, 40, 80])
+        self.assertFalse(any(pattern.get_row(Row.TIE)))
+        self.assertFalse(any(pattern.get_row(Row.GATE)))
+        # Joining them again gives the long notes back, as ties.
+        pattern.join_repeated_notes()
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, None, None, 2, None, None, None, 3])
+
+    def test_a_random_rhythm_keeps_the_notes_in_order_with_their_ties_and_every_rest(self):
+        degrees = [1, None, 2, None, None, 3, None, None]
+        ties = [False, True, False, False, False, False, False, False]
+        for _ in range(TRIES):
+            pattern = pattern_of(degrees=degrees, **{Row.TIE: ties})
+            pattern.randomize_rhythm()
+            now = pattern.get_row(Row.DEGREE)
+            self.assertEqual([degree for degree in now if degree is not None], [1, 2, 3])
+            self.assertEqual(len(now), len(degrees))
+            self.assertTrue(pattern.get_value(row=Row.TIE, step=now.index(1) + 1))
+            self.assertEqual(sum(pattern.get_row(Row.TIE)), 1)
+
+    def test_the_pitches_are_reversed_and_shuffled_on_the_same_rhythm(self):
+        pattern = pattern_of(degrees=[1, None, 2, 3], **{Row.OCTAVE: [3, None, 4, 5], Row.VELOCITY: [10, None, 30, 40]})
+        pattern.reverse_pitches()
+        self.assertEqual(pattern.get_row(Row.DEGREE), [3, None, 2, 1])
+        self.assertEqual(pattern.get_row(Row.OCTAVE), [5, None, 4, 3])
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [10, None, 30, 40])
+        pattern.randomize_pitches()
+        self.assertEqual(sorted(degree for degree in pattern.get_row(Row.DEGREE) if degree is not None), [1, 2, 3])
+        self.assertIsNone(pattern.get_value(row=Row.DEGREE, step=1))
+        self.assertEqual(sorted(zip(pattern.get_row(Row.DEGREE)[2:], pattern.get_row(Row.OCTAVE)[2:]))[0][1] in (3, 4, 5), True)
+
+    def test_every_so_many_steps_is_made_a_rest_and_keeps_what_a_rest_holds(self):
+        pattern = pattern_of(**{Row.CC1: VELOCITIES})
+        pattern.clear_every(FOURTH)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 2, 3, None, 5, 6, 7, None])
+        self.assertEqual(pattern.get_row(Row.CC1), VELOCITIES)
+        for wrong in (0, STEPS + 1):
+            with self.assertRaises(InvalidValue):
+                pattern.clear_every(wrong)
+
+    def test_a_transpose_moves_every_note_and_refuses_drums_and_notes_too_low(self):
+        pattern = pattern_of(degrees=[2, None, 4])
+        pattern.transpose(3)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [5, None, 7])
+        pattern.transpose(-4)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, None, 3])
+        with self.assertRaises(InvalidValue):
+            pattern.transpose(-1)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, None, 3])
+        with self.assertRaises(InvalidValue):
+            pattern_of(degrees=[None], drum=True).transpose(1)
+
+    def test_humanize_moves_each_typed_velocity_within_its_limits_and_leaves_a_blank(self):
+        for _ in range(TRIES):
+            pattern = pattern_of(degrees=[1, 2, 3, 4], **{Row.VELOCITY: [midi.MIN_VELOCITY, None, HIGH, midi.MAX_VELOCITY]})
+            pattern.humanize_velocity(FOURTH)
+            low, blank, middle, high = pattern.get_row(Row.VELOCITY)
+            self.assertIsNone(blank)
+            self.assertTrue(midi.MIN_VELOCITY <= low <= midi.MIN_VELOCITY + FOURTH)
+            self.assertTrue(HIGH - FOURTH <= middle <= HIGH + FOURTH)
+            self.assertTrue(midi.MAX_VELOCITY - FOURTH <= high <= midi.MAX_VELOCITY)

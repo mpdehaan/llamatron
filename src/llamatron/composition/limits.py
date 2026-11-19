@@ -118,6 +118,8 @@ MAX_TRANSPOSE = 24
 # The editor's limits for a pattern's size, its ratchets and how far a ratchet slice can move, which
 # the file doesn't check: a file can hold more, but the editor offers these.
 MAX_STEPS = 4096
+# The most scale steps a munge moves a pattern's notes up or down at once: four octaves of a seven-note scale.
+MAX_MUNGE_TRANSPOSE = 28
 MAX_RATCHET = 16
 MAX_RATCHET_OFFSET = 24
 

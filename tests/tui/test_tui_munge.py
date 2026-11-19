@@ -41,6 +41,7 @@ THIRD = 2
 TWO = '2'
 TOO_MANY = '6'
 NOT_A_NUMBER = 'many'
+FAR_DOWN = '-9'
 # The one step of the pattern called other holds degree 5.
 OTHER_DEGREE = 5
 # What the pattern's parts are called when the pattern is split, and when split again.
@@ -155,6 +156,46 @@ class TestMunge(UITest):
         await self.press(Key.RIGHT, Key.RIGHT)
         await munge(test=self, choice=Munge.ROLL_RIGHT_AT_CURSOR)
         self.assertIn(errors.ERR_NOTHING_AFTER, self.text())
+
+    async def test_the_munges_of_notes(self):
+        await munge(test=self, choice=Munge.REVERSE_PITCHES)
+        self.assertEqual(self.row(), [5, 4, 3, 2, 1])
+        await munge(test=self, choice=Munge.TRANSPOSE)
+        self.assertIn(messages.MSG_TRANSPOSE_PROMPT, self.text())
+        await self.type(TWO)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.row(), [7, 6, 5, 4, 3])
+        await munge(test=self, choice=Munge.TRANSPOSE)
+        await self.type(FAR_DOWN)
+        await self.press(Key.ENTER)
+        self.assertIn(errors.ERR_TRANSPOSE_TOO_LOW.format(lowest=limits.MIN_DEGREE), self.text())
+        self.assertEqual(self.row(), [7, 6, 5, 4, 3])
+        await munge(test=self, choice=Munge.CLEAR_EVERY)
+        self.assertIn(messages.MSG_CLEAR_EVERY_PROMPT, self.text())
+        await self.type(TWO)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.row(), [7, None, 5, None, 3])
+        await munge(test=self, choice=Munge.RANDOMIZE_RHYTHM)
+        self.assertEqual([degree for degree in self.row() if degree is not None], [7, 5, 3])
+        await munge(test=self, choice=Munge.RANDOMIZE_PITCHES)
+        self.assertEqual(sorted(degree for degree in self.row() if degree is not None), [3, 5, 7])
+        await munge(test=self, choice=Munge.HUMANIZE_VELOCITY)
+        self.assertIn(messages.MSG_HUMANIZE_PROMPT, self.text())
+        await self.type(TOO_MANY)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+
+    async def test_the_legato_munges_and_the_crop(self):
+        await munge(test=self, choice=Munge.CROP)
+        self.assertEqual(self.row(), ROWS[Row.DEGREE][:1])
+        await munge(test=self, choice=Munge.CROP)
+        self.assertIn(errors.ERR_NOTHING_TO_CROP, self.text())
+        await munge(test=self, choice=Munge.MIRROR)
+        await munge(test=self, choice=Munge.JOIN_NOTES)
+        self.assertEqual(self.row(), [1, None])
+        self.assertEqual(self.row(row=Row.TIE), [False, True])
+        await munge(test=self, choice=Munge.DIVIDE_NOTES)
+        self.assertEqual(self.row(), [1, 1])
 
     async def test_the_mirror_doubles_the_pattern(self):
         await munge(test=self, choice=Munge.MIRROR)
