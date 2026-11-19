@@ -24,7 +24,7 @@ exceptions but the ones written here, and they come before every other rule in t
   else under `/private/tmp` or `/tmp`, and not the memory folder under the user's home.
   A second standing exception, confirmed by the user: Claude may write demo sets for the user to listen to in the folder
   `/tmp/llamatron_demos`, and nowhere else under `/tmp`, without asking.
-- **No status of work and no list of planned work goes into source control, without exception.** What is done, what is partly done, what is next, a queue, a plan's steps and their state, and anything that records a conversation with the user are kept in files git ignores (`.claude/QUEUE.md`, `.claude/features/REFACTORING.md`, `.claude/features/REFACTORING_LOG.md`), never committed, and a commit message says what the code does, never where a plan stands. How a feature that exists is built may be recorded in the repository's notes freely.
+- **No status of work and no list of planned work goes into source control, without exception.** What is done, what is partly done, what is next, a queue, a plan's steps and their state, and anything that records a conversation with the user are kept in files git ignores (`.claude/QUEUE.md`, `.claude/DESIGNS.md`, `.claude/features/WIZARD_DESIGNS.md`, `.claude/features/REFACTORING.md`, `.claude/features/REFACTORING_LOG.md`), never committed, and a commit message says what the code does, never where a plan stands. How a feature that exists is built may be recorded in the repository's notes freely.
 - **Claude makes no new file in `.claude/` of its own accord.** Claude keeps up the files that are there, and may suggest a new one when the user and Claude discuss taking notes; a new file is made only once the user agrees.
 
 ## Project
@@ -34,7 +34,7 @@ llamatron is a text UI that helps people compose electronic music in MIDI, for A
 ## Where everything is
 
 - `.claude/PRINCIPLES.md`: the goals the user judges the work by, which decide a close call the rules don't settle.
-- `.claude/DESIGNS.md` and `.claude/features/WIZARD_DESIGNS.md`: the designs agreed with the user and not yet built, the second the arranger's and the song wizard's. The first is Claude's own, kept on this computer only and ignored by git, as the queue is. Neither is imported: read the part at hand before building it.
+- `.claude/DESIGNS.md` and `.claude/features/WIZARD_DESIGNS.md`: the designs agreed with the user and not yet built, the second the arranger's and the song wizard's. Both are Claude's own, kept on this computer only and ignored by git, as the queue is. Neither is imported: read the part at hand before building it.
 - `.claude/QUEUE.md`: the order the agreed work is built in, Claude's own list, kept on this computer only and ignored by git (the user's choice).
 - `.claude/STYLE.md`: every rule for the code and the documents, with its reason and the test that enforces it.
 - `.claude/TESTING.md`: how the tests are run, what a change must come with, how tests are written and where each kind lives.
