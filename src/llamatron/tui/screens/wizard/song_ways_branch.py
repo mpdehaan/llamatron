@@ -46,14 +46,14 @@ class SongWaysBranch(Branch):
         page = self.get_page()
         fields = []
         for label, traits in self.traits():
-            trait = choices.song_trait(traits)
-            if trait is not None and len(choices.song_ways(trait)) >= A_CHOICE:
-                fields.append(ChoiceField(page=page, label=label, choices=choices.song_ways(trait), current=choices.get_way(trait), set=self.way_setter(trait)))
+            trait = choices.get_band().song_trait(traits)
+            if trait is not None and len(choices.get_band().song_ways(trait)) >= A_CHOICE:
+                fields.append(ChoiceField(page=page, label=label, choices=choices.get_band().song_ways(trait), current=choices.get_band().get_way(trait), set=self.way_setter(trait)))
         return fields
 
     def way_setter(self, trait):
         choices = self.get_choices()
-        return self.get_page().choosing(lambda value: choices.set_way(trait=trait, value=value))
+        return self.get_page().choosing(lambda value: choices.get_band().set_way(trait=trait, value=value))
 
     def fields(self):
         return self.way_fields() if self.get_choices().is_ready() else []

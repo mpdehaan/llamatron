@@ -82,8 +82,8 @@ class FormBranch(Branch):
         if choices.ends():
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_ENDS_LABEL, choices=choices.ends(), current=end or choices.ends()[0], shown=None if end is not None else labels.MSG_WIZARD_OWN_START, set=staging(choices.set_end)))
         if (start in wizard_limits.WAYS_WITH_FIRST_PLAYER or end in wizard_limits.WAYS_WITH_FIRST_PLAYER) and len(choices.first_players()) > 1:
-            titles = {choices.role_title(role): role for role in choices.first_players()}
-            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_FIRST_PLAYER_LABEL, choices=list(titles), current=choices.role_title(choices.get_first_player()), set=staging(lambda title: choices.set_first_player(titles[title]))))
+            titles = {choices.get_band().role_title(role): role for role in choices.first_players()}
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_FIRST_PLAYER_LABEL, choices=list(titles), current=choices.get_band().role_title(choices.get_first_player()), set=staging(lambda title: choices.set_first_player(titles[title]))))
         if start in wizard_limits.WAYS_WITH_SETUP_BARS or end in wizard_limits.WAYS_WITH_SETUP_BARS:
             bars = {str(count): count for count in choices.setup_bars_offered()}
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_SETUP_BARS_LABEL, choices=list(bars), current=str(choices.get_setup_bars()), set=staging(lambda count: choices.set_setup_bars(bars[count]))))

@@ -49,7 +49,7 @@ class SectionPlayersBranch(Branch):
     def kind_is_set(self, kind):
         """Return whether anybody plays other than the genre says in a kind of section: a riff, another player's melody, or a rest from the melody."""
         choices = self.get_choices()
-        own = choices.tune_player()
+        own = choices.get_band().tune_player()
         for role in choices.section_players(kind):
             part = choices.section_part(kind=kind, role=role)
             usual = part == wizard_limits.ACCOMPANIMENT if role != own else part != wizard_limits.RESTS_PART or kind not in choices.get_tunes().tune_kinds()
@@ -79,4 +79,4 @@ class SectionPlayersBranch(Branch):
                 page.choosing(lambda value: choices.set_section_part(kind=kind, role=role, part=value))(part)
             except ValueError as problem:
                 page.refuse(str(problem))
-        return ChoiceField(page=page, label=choices.role_title(role), choices=choices.section_parts_offered(kind=kind, role=role), current=choices.section_part(kind=kind, role=role), set=chosen)
+        return ChoiceField(page=page, label=choices.get_band().role_title(role), choices=choices.section_parts_offered(kind=kind, role=role), current=choices.section_part(kind=kind, role=role), set=chosen)

@@ -82,12 +82,12 @@ class RiffChoices(ChoicesPart):
         trial = self._choices.trial_for_riffs()
         trial.clear_answers()
         trial.get_riffs().play_nowhere()
-        trial.set_extra(name=riffs_values.RIFF, value={riffs_values.RIFF_ROLES: self._choices.roles_in(), riffs_values.RIFF_KINDS: self._choices.section_kinds()})
+        trial.set_extra(name=riffs_values.RIFF, value={riffs_values.RIFF_ROLES: self._choices.get_band().roles_in(), riffs_values.RIFF_KINDS: self._choices.section_kinds()})
         try:
             parts = arranged(style=self._choices.style(), song=trial.song_picks(wizard_limits.PREVIEW_NAME))[arranger.PARTS]
         except (ValueError, KeyError, SongFileError):
             return []
-        return [role for role in self._choices.roles_in() if composer_text.MSG_PART_OF_SECTION.format(role, riffs_values.RIFF) in parts]
+        return [role for role in self._choices.get_band().roles_in() if composer_text.MSG_PART_OF_SECTION.format(role, riffs_values.RIFF) in parts]
 
     def riff_instruments(self):
         """Return the players of the band a riff can be written for, by name: those whose part in the song is a figure, never the drummer."""
@@ -211,7 +211,7 @@ class RiffChoices(ChoicesPart):
         copied = copy.deepcopy(entry)
         copied[arranger.NAME] = naming.copy_name(name=riff, taken=self._riff_names_taken())
         if copied.get(arranger.RIFF_OWN) is not None:
-            copied[arranger.RIFF_OWN] = in_octaves_of(pattern=copied[arranger.RIFF_OWN], by=self._choices.role_named(role)[tune_notation.OCTAVE] - self._choices.role_named(entry[arranger.RIFF_FOR])[tune_notation.OCTAVE], group=role)
+            copied[arranger.RIFF_OWN] = in_octaves_of(pattern=copied[arranger.RIFF_OWN], by=self._choices.get_band().role_named(role)[tune_notation.OCTAVE] - self._choices.get_band().role_named(entry[arranger.RIFF_FOR])[tune_notation.OCTAVE], group=role)
         copied[arranger.RIFF_FOR] = role
         self._keep_riff(copied)
         return copied[arranger.NAME]
@@ -341,7 +341,7 @@ class RiffChoices(ChoicesPart):
         played = self.riffs_played()
         arranged_riffs = []
         for entry in self._riffs():
-            for role in self._choices.roles_in():
+            for role in self._choices.get_band().roles_in():
                 kinds = [kind for kind, by in played.items() if by.get(role) == entry[arranger.NAME] and self._choices.section_part(kind=kind, role=role) == entry[arranger.NAME]]
                 if kinds:
                     arranged_riffs.append({**copy.deepcopy(entry), riffs_values.RIFF_ROLES: [role], riffs_values.RIFF_KINDS: kinds})

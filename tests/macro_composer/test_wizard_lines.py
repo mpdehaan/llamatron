@@ -67,7 +67,7 @@ class TestWizardLines(unittest.TestCase):
             lines = choices.section_lines(A_VERSE)
             self.assertTrue(lines)
             for line in lines:
-                self.assertEqual(line[wizard_limits.LINE_PLAYER], choices.tune_player())
+                self.assertEqual(line[wizard_limits.LINE_PLAYER], choices.get_band().tune_player())
                 self.assertEqual(line_edits.steps_of(line[melody.LINE_NOTES]) % choices.tune_steps_in_bar(), 0)
                 self.assertEqual(line[wizard_limits.LINE_OWN], {})
             # The first line is a new idea, and so breathes; a line that says an idea again does not.

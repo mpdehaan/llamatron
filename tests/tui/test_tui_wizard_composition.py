@@ -86,7 +86,7 @@ class CompositionTest(WizardTest):
         self.assertEqual(page.heading_over_cursor(), heading)
 
     def title(self, role):
-        return self.choices().role_title(role)
+        return self.choices().get_band().role_title(role)
 
     def change_first_step(self):
         """Write another degree on the first step of the pattern the editor shows, as a key in the editor would."""
@@ -308,7 +308,7 @@ class TestWizardIntroMelody(CompositionTest):
         choices = self.choices()
         await self.open_part(number)
         await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
-        await self.pick(choices.role_title(choices.intro_hook_players()[0]))
+        await self.pick(choices.get_band().role_title(choices.intro_hook_players()[0]))
 
     async def test_the_panel_has_how_the_song_starts_a_heading_for_each_part_and_buttons_that_say_how_to_give_a_part_a_melody(self):
         choices = self.choices()
@@ -402,7 +402,7 @@ class TestWizardSoloMelody(CompositionTest):
                                                labels.MSG_WIZARD_LISTEN_BUTTON,
                                                labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
         shown = self.text()
-        self.assertIn(choices.role_title(choices.get_solos().solo_player()), shown)
+        self.assertIn(choices.get_band().role_title(choices.get_solos().solo_player()), shown)
         self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
         what, heard_at, track = self.wizard().branch().listens()
         self.assertEqual((heard_at, track), (place, choices.get_solos().solo_player()))
@@ -468,15 +468,15 @@ class TestWizardHooks(CompositionTest):
     async def test_listen_plays_whoever_plays_the_melody_in_the_hooks_section_and_never_a_player_with_no_clip_there(self):
         choices = self.choices()
         what, scene, player = self.wizard().branch().listens()
-        self.assertEqual((scene, player), (choices.get_hook().hook_scene(), choices.tune_player()))
-        other = next(role for role in choices.get_tunes().tune_players_offered() if role != choices.tune_player())
+        self.assertEqual((scene, player), (choices.get_hook().hook_scene(), choices.get_band().tune_player()))
+        other = next(role for role in choices.get_tunes().tune_players_offered() if role != choices.get_band().tune_player())
         choices.get_tunes().set_tune_played_by(other)
         await self.press(Key.DOWN, Key.UP)
         what, scene, player = self.wizard().branch().listens()
         self.assertEqual(player, other)
         setlist, name = choices.made_for_listening()
         self.assertTrue(setlist.get_song(name).get_scenes()[scene].has_clip_slot(player))
-        self.assertFalse(setlist.get_song(name).get_scenes()[scene].has_clip_slot(choices.tune_player()))
+        self.assertFalse(setlist.get_song(name).get_scenes()[scene].has_clip_slot(choices.get_band().tune_player()))
 
     async def test_edit_opens_the_whole_section_in_the_pattern_editor_and_edited_notes_are_the_sections_own(self):
         choices = self.choices()
@@ -550,9 +550,9 @@ class TestWizardHooks(CompositionTest):
         choices.get_hook().set_second_hook(choices.get_hook().second_hook_kinds()[0])
         await self.press(Key.DOWN, Key.UP)
         await self.select_field(labels.MSG_WIZARD_SUNG_IN_LABEL)
-        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_HOOK, choices.get_hook().hook_scene(), choices.tune_player()))
+        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_HOOK, choices.get_hook().hook_scene(), choices.get_band().tune_player()))
         await self.select_field(labels.MSG_WIZARD_SECOND_SUNG_IN_LABEL)
-        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_SECOND_HOOK, choices.get_hook().second_hook_scene(), choices.tune_player()))
+        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_SECOND_HOOK, choices.get_hook().second_hook_scene(), choices.get_band().tune_player()))
 
 
 class TestWizardRiffs(CompositionTest):

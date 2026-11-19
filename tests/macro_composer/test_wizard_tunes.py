@@ -56,7 +56,7 @@ def rewritten(pattern):
 def tunes_played(*, choices, kind):
     """Return the name of the pattern the tune's player plays in each section of a kind, in the set the choices make."""
     setlist, name = choices.made_for_listening()
-    player = choices.tune_player()
+    player = choices.get_band().tune_player()
     scenes = setlist.get_song(name).get_scenes()
     return [scene.get_clip_slot(player).get_pattern_name() for place, scene in enumerate(scenes) if choices.section_kind(place) == kind and scene.has_clip_slot(player)]
 
@@ -207,17 +207,17 @@ class TestWhoPlaysTheTune(unittest.TestCase):
 
     def test_the_genres_player_has_the_tune_until_another_is_chosen_and_the_bass_and_the_drums_are_not_offered(self):
         choices = chosen()
-        self.assertEqual(choices.get_tunes().tune_played_by(), choices.tune_player())
+        self.assertEqual(choices.get_tunes().tune_played_by(), choices.get_band().tune_player())
         offered = choices.get_tunes().tune_players_offered()
-        self.assertIn(choices.tune_player(), offered)
-        self.assertTrue(set(offered) < set(choices.roles_in()))
+        self.assertIn(choices.get_band().tune_player(), offered)
+        self.assertTrue(set(offered) < set(choices.get_band().roles_in()))
         for kind in choices.get_tunes().tune_kinds():
             self.assertIsNone(choices.get_tunes().tune_played_by_in(kind))
-            self.assertEqual(choices.get_tunes().tune_player_in(kind), choices.tune_player())
+            self.assertEqual(choices.get_tunes().tune_player_in(kind), choices.get_band().tune_player())
 
     def test_the_songs_player_plays_every_tune_in_place_of_the_usual_part_and_the_genres_player_rests(self):
         choices = chosen()
-        usual = choices.tune_player()
+        usual = choices.get_band().tune_player()
         other = next(role for role in choices.get_tunes().tune_players_offered() if role != usual)
         tune = choices.get_tunes().tune_pattern(A_KIND)
         choices.get_tunes().set_tune_played_by(other)
@@ -232,7 +232,7 @@ class TestWhoPlaysTheTune(unittest.TestCase):
 
     def test_a_kind_of_section_takes_a_player_of_its_own_or_nobody_and_the_other_kinds_go_by_the_song(self):
         choices = chosen()
-        usual = choices.tune_player()
+        usual = choices.get_band().tune_player()
         other = next(role for role in choices.get_tunes().tune_players_offered() if role != usual)
         another_kind = next(kind for kind in choices.get_tunes().tune_kinds() if kind != A_KIND)
         choices.get_tunes().set_tune_played_by_in(kind=A_KIND, role=other)
@@ -253,9 +253,9 @@ class TestWhoPlaysTheTune(unittest.TestCase):
 
     def test_what_is_chosen_is_kept_refused_when_no_such_player_and_given_up_with_the_genre_or_the_player(self):
         choices = chosen()
-        usual = choices.tune_player()
+        usual = choices.get_band().tune_player()
         other = next(role for role in choices.get_tunes().tune_players_offered() if role != usual)
-        for refused in (NOT_A_KIND, next(role for role in choices.roles_in() if role not in choices.get_tunes().tune_players_offered())):
+        for refused in (NOT_A_KIND, next(role for role in choices.get_band().roles_in() if role not in choices.get_tunes().tune_players_offered())):
             with self.assertRaises(ValueError):
                 choices.get_tunes().set_tune_played_by(refused)
             with self.assertRaises(ValueError):
@@ -267,7 +267,7 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         read = WizardChoices.from_data(choices.to_data())
         self.assertEqual(read.get_tunes().tune_played_by(), other)
         self.assertEqual(read.get_tunes().tune_played_by_in(A_KIND), arranger.NOBODY)
-        choices.set_role_in(role=other, on=False)
+        choices.get_band().set_role_in(role=other, on=False)
         self.assertEqual(choices.get_tunes().tune_played_by(), usual)
         choices.set_genre(ANOTHER_GENRE)
         choices.set_genre(A_GENRE)

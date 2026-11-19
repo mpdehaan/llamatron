@@ -214,7 +214,7 @@ class TestWizardSectionPlayers(unittest.TestCase):
 
     def test_the_melodys_player_has_the_melody_and_another_player_takes_it_in_one_kind_of_section(self):
         choices = chosen()
-        singer = choices.tune_player()
+        singer = choices.get_band().tune_player()
         self.assertEqual(choices.section_part(kind=A_VERSE, role=singer), wizard_limits.MELODY_PART)
         taker = next(role for role in choices.section_players(A_VERSE) if role != singer and wizard_limits.MELODY_PART in choices.section_parts_offered(kind=A_VERSE, role=role))
         before = patterns(choices)

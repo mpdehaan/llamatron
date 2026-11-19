@@ -62,7 +62,7 @@ class RiffsBranch(Branch):
     def player_heading(self, *, role, count, columns):
         """Return a player's heading: how many it holds while closed, and the columns' names while open."""
         page = self.get_page()
-        title = self.get_choices().role_title(role)
+        title = self.get_choices().get_band().role_title(role)
         return page.heading(label=title, is_set=lambda: bool(count), said=lambda: columns if title in page.app.open_field_sections and count else marks.MSG_WIZARD_COUNT_SHOWN.format(count=count))
 
     def riff_field(self, riff):
@@ -79,7 +79,7 @@ class RiffsBranch(Branch):
         """Return the player whose heading the cursor is on or under, or None."""
         choices = self.get_choices()
         heading = self.get_page().heading_over_cursor()
-        return next((role for role in choices.get_riffs().riff_instruments() if choices.role_title(role) == heading), None)
+        return next((role for role in choices.get_riffs().riff_instruments() if choices.get_band().role_title(role) == heading), None)
 
     def riff_under_cursor(self):
         """Return the riff whose row the cursor is on, or None."""
@@ -100,7 +100,7 @@ class RiffsBranch(Branch):
         """Ask how a new riff for a player is drawn, write it, and put the cursor on it."""
         choices = self.get_choices()
         page = self.get_page()
-        title = choices.role_title(role)
+        title = choices.get_band().role_title(role)
 
         def written(settings):
             if settings is None:
@@ -117,7 +117,7 @@ class RiffsBranch(Branch):
     def show(self, *, role, riff):
         """Open a player's heading and put the cursor on a riff under it."""
         page = self.get_page()
-        page.app.open_field_sections.add(self.get_choices().role_title(role))
+        page.app.open_field_sections.add(self.get_choices().get_band().role_title(role))
         page.go_to_field(riff)
 
     def rename(self, riff):
@@ -139,8 +139,8 @@ class RiffsBranch(Branch):
             role = players[place]
             made = page.choosing(lambda player: choices.get_riffs().copy_riff(riff=riff, role=player))(role)
             self.show(role=role, riff=made)
-            page.say(messages.MSG_WIZARD_RIFF_COPIED.format(riff=riff, copy=made, player=choices.role_title(role)))
-        page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_COPY_RIFF_TITLE.format(riff=riff), options=[choices.role_title(role) for role in players], current=players.index(choices.get_riffs().riff_written_for(riff))), then=copied)
+            page.say(messages.MSG_WIZARD_RIFF_COPIED.format(riff=riff, copy=made, player=choices.get_band().role_title(role)))
+        page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_COPY_RIFF_TITLE.format(riff=riff), options=[choices.get_band().role_title(role) for role in players], current=players.index(choices.get_riffs().riff_written_for(riff))), then=copied)
 
     def regenerate(self, riff):
         """Have other notes written for a riff, with nothing kept of the old ones, after asking."""

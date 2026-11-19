@@ -63,7 +63,7 @@ class SoundChoices(ChoicesPart):
 
     def has_sound(self, role):
         """Return whether a player's sound can be chosen: a player of notes, never the drums, whose kit the grooves are written for."""
-        return not self._choices.role_named(role).get(arranger.DRUMS)
+        return not self._choices.get_band().role_named(role).get(arranger.DRUMS)
 
     def usual_sound(self, role):
         """Return the General MIDI sound a player usually plays with: what the genre has stand in for the player in the subgenre,
@@ -75,7 +75,7 @@ class SoundChoices(ChoicesPart):
     def _way_sound(self, role):
         """Return the General MIDI sound a player's way of playing has, which the arranger gives the player unless the song says another."""
         style = self._choices.style()
-        entry = values_of(style=style, trait=self._choices.role_named(role)[arranger.TRAIT])[self._choices.get_way(self._choices.role_named(role)[arranger.TRAIT])]
+        entry = values_of(style=style, trait=self._choices.get_band().role_named(role)[arranger.TRAIT])[self._choices.get_band().get_way(self._choices.get_band().role_named(role)[arranger.TRAIT])]
         return style[arranger.SOUNDS][entry[arranger.SOUND]]
 
     def get_band_sounds(self):
@@ -119,7 +119,7 @@ class SoundChoices(ChoicesPart):
         """Return the genre's own sounds that suit a player, each a General MIDI number: the sounds of the ways the player can play."""
         style = self._choices.style()
         found = []
-        for entry in values_of(style=style, trait=self._choices.role_named(role)[arranger.TRAIT]).values():
+        for entry in values_of(style=style, trait=self._choices.get_band().role_named(role)[arranger.TRAIT]).values():
             if arranger.SOUND in entry and style[arranger.SOUNDS][entry[arranger.SOUND]] not in found:
                 found.append(style[arranger.SOUNDS][entry[arranger.SOUND]])
         for stands_in in style.get(wizard_limits.STAND_INS, {}).get(role, {}).values():
@@ -134,4 +134,4 @@ class SoundChoices(ChoicesPart):
 
     def sounds_of_song(self):
         """Return the sounds the song chooses itself, by player: each player in the band whose sound is not its way's usual one."""
-        return {role: self.get_sound(role) for role in self._choices.roles_in() if self.has_sound(role) and self._choices.role_can_play(role) and self.get_sound(role) != self._way_sound(role)}
+        return {role: self.get_sound(role) for role in self._choices.get_band().roles_in() if self.has_sound(role) and self._choices.get_band().role_can_play(role) and self.get_sound(role) != self._way_sound(role)}

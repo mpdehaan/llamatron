@@ -44,7 +44,7 @@ class SoloChoices(ChoicesPart):
         """The genre's answering player while in the band, who plays the solos whether or not the player also answers the tune,
         and whether or not the band shows the player apart: a band with one guitarist shows its two guitar players as one."""
         role = next((entry[arranger.ROLE] for entry in self._choices.style()[arranger.ROLES] if entry.get(arranger.ANSWERS)), None) if self._choices.is_ready() else None
-        return role if role is not None and role in self._choices.roles_in() else None
+        return role if role is not None and role in self._choices.get_band().roles_in() else None
 
     def solo_player(self):
         """Return who plays the song's solos, or None where the song has none."""
@@ -128,7 +128,7 @@ class SoloChoices(ChoicesPart):
         trait = self._choices.progression_trait()
         drawn = self._choices.progressions_by_chance()[:1]
         if trait is not None and drawn:
-            other.set_way(trait=trait, value=drawn[0])
+            other.get_band().set_way(trait=trait, value=drawn[0])
         other.set_seed(zlib.crc32(wizard_limits.SOLO_TAKE_SEED.format(seed=self._choices.get_seed(), number=number, take=take).encode()) % (wizard_limits.LAST_SEED + 1))
         try:
             place = next(place for place in other.get_solos().solo_places() if other.get_solos()._solo_number_at(place) == number)
