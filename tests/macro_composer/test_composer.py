@@ -23,7 +23,7 @@ import unittest.mock
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import composer, decomposer, notation, shaping
 from llamatron.support.safe_yaml import load_safely
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 FILE_ENCODING = 'utf-8'
 # Demos of three feels: dance music with a sung lead, a shanty in a minor key, and swung jazz.
@@ -230,7 +230,7 @@ class TestDemosAsInputs(unittest.TestCase):
         for path in DEMOS:
             with self.subTest(path=path):
                 given = decomposer.decomposed(read(path))
-                made = Setlist.from_data(data=composer.composed(given=given, version=VERSION)).to_data()
+                made = Setlist.from_data(data=composer.composed(given=given, version=version.VERSION)).to_data()
                 self.assertTrue(decomposer.same_music(one=made, other=Setlist.read_file(path).to_data()))
 
     def test_a_demos_parts_are_tunes_and_hits_and_none_is_left_as_written(self):

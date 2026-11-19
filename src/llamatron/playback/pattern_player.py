@@ -19,7 +19,8 @@
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from llamatron.support.length import ZERO, Length
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
 from llamatron.support.rational import Rational
 from llamatron.composition.checks import written_length
 from llamatron.composition.conditions import is_true
@@ -34,8 +35,9 @@ from llamatron.playback.drift import NO_EFFECTS
 from llamatron.music import midi
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
-from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE, SHARP_NAMES
-from llamatron.music.sound import CHORD, KIND, LENGTH, MIDI, NOTES, REST, Sound
+from llamatron.music import note as note_values
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
 from llamatron.grid.keyswitch import SwitchedSlots
@@ -318,13 +320,13 @@ class PatternPlayer:
                 sound = _with_tensions(chord=sound, tensions=values[Row.TENSION])
             slices.append(Sound.inverted(sound, values[Row.INVERSION]))
         if not heard:
-            return [Sound.rest(piece[LENGTH]) for piece in slices]
+            return [Sound.rest(piece[sound_values.LENGTH]) for piece in slices]
         probability = _value_or(value=values[Row.PROBABILITY], default=defaults.DEFAULT_PROBABILITY)
         if effects is not None and effects.probability:
             probability = max(min(probability + effects.probability, limits.MAX_PROBABILITY), limits.MIN_PROBABILITY)
         if probability >= limits.MAX_PROBABILITY or counting:
             return slices
-        return [piece if _rolls_under(rolls=rolls, probability=probability) else Sound.rest(piece[LENGTH]) for piece in slices]
+        return [piece if _rolls_under(rolls=rolls, probability=probability) else Sound.rest(piece[sound_values.LENGTH]) for piece in slices]
 
     def _grabbed_sound(self, *, number_grabbed, chord, length, velocity, glide, shift, drum, where):
         """Return a grabbed note, moved along this clip's scale, or by half steps for drums, with the step's chord built on it.
@@ -332,7 +334,7 @@ class PatternPlayer:
         A note moved outside the MIDI range stays where it was grabbed. chord is the symbol on
         the step's Chord row, or None for a step that plays the one note.
         """
-        note = Sound.note(length=length, midi=number_grabbed, velocity=velocity, glide=glide, name=SHARP_NAMES[number_grabbed % midi.HALF_STEPS_PER_OCTAVE])
+        note = Sound.note(length=length, midi=number_grabbed, velocity=velocity, glide=glide, name=note_values.SHARP_NAMES[number_grabbed % midi.HALF_STEPS_PER_OCTAVE])
         try:
             root = along_scale(note=note, steps=shift, scale=None if drum else self._scale)
         except ValueError:
@@ -381,7 +383,7 @@ class PatternPlayer:
         # Moving by a whole octave's worth of notes is the same as moving the octave, so a big
         # move, like four registers can make, starts from an octave in the MIDI range.
         octaves, shift = divmod(shift, self._notes_per_octave(drum))
-        octave = max(MIN_OCTAVE, min(octave + octaves, MAX_OCTAVE))
+        octave = max(note_values.MIN_OCTAVE, min(octave + octaves, note_values.MAX_OCTAVE))
         try:
             return attempt(octave)
         except ValueError as error:
@@ -399,7 +401,7 @@ class PatternPlayer:
         if drum or self._scale_name is None:
             return midi.HALF_STEPS_PER_OCTAVE
         if self._scale_size is None:
-            self._scale_size = len(self._scene_scale_at(MIN_OCTAVE).get_type().value)
+            self._scale_size = len(self._scene_scale_at(note_values.MIN_OCTAVE).get_type().value)
         return self._scale_size
 
     def _degree_sound(self, *, values, length, velocity, glide, octave, shift, where, effects=None):
@@ -422,13 +424,13 @@ class PatternPlayer:
 def _with_tensions(*, chord, tensions):
     """Return a chord with its tensions added, each its half steps above the chord's first note, the root; a single note has none, and a
     tension the chord already holds or that would leave the MIDI range is left out."""
-    if chord[KIND] != CHORD:
+    if chord[sound_values.KIND] != sound_values.CHORD:
         return chord
-    notes = list(chord[NOTES])
+    notes = list(chord[sound_values.NOTES])
     root = notes[0]
-    held = {note[MIDI] for note in notes}
+    held = {note[sound_values.MIDI] for note in notes}
     for tension in tensions:
-        if root[MIDI] + TENSIONS[tension] in held:
+        if root[sound_values.MIDI] + TENSIONS[tension] in held:
             continue
         try:
             notes.append(Sound.half_step(root, TENSIONS[tension]))
@@ -463,13 +465,13 @@ def _tied_to(*, sounding, end):
     there's no note to hold.
     """
     start, pieces = sounding
-    total = pieces[0][LENGTH] if len(pieces) == 1 else Length.total([piece[LENGTH] for piece in pieces])
+    total = pieces[0][sound_values.LENGTH] if len(pieces) == 1 else Length.total([piece[sound_values.LENGTH] for piece in pieces])
     extra = Length.subtract(end, Length.add(start, total))
     last = pieces[-1]
-    if extra == ZERO or last[KIND] == REST:
+    if extra == length_values.ZERO or last[sound_values.KIND] == sound_values.REST:
         return sounding
     if Length.is_positive(extra):
-        return (start, [*pieces[:-1], Sound.lasting(last, Length.add(last[LENGTH], extra))])
+        return (start, [*pieces[:-1], Sound.lasting(last, Length.add(last[sound_values.LENGTH], extra))])
     span = Length.shared(Length.subtract(end, start), len(pieces))
     return (start, [Sound.lasting(piece, span) for piece in pieces])
 
@@ -506,16 +508,16 @@ def _in_sequence(*, sounding, length, step_length):
     dropped is silence until the next note, since there is no sound to hold.
     """
     positions = []
-    now = ZERO
+    now = length_values.ZERO
     count = len(sounding)
     for place, (start, played) in enumerate(sounding):
         following = sounding[place + 1][START] if place + 1 < count else length
         if Length.less(now, start):
             positions += _rests(start=now, end=start, step_length=step_length)
-        gate = played[0][LENGTH] if len(played) == 1 else Length.total([piece[LENGTH] for piece in played])
+        gate = played[0][sound_values.LENGTH] if len(played) == 1 else Length.total([piece[sound_values.LENGTH] for piece in played])
         gap = Length.subtract(following, start)
         if Length.less(gap, gate):
-            if len(played) == 1 and played[0][KIND] == REST:
+            if len(played) == 1 and played[0][sound_values.KIND] == sound_values.REST:
                 # Probability dropped the note, so there is nothing to hold over the next note: its steps are silent.
                 positions += _rests(start=start, end=following, step_length=step_length)
             else:
@@ -544,7 +546,7 @@ def _rests(*, start, end, step_length):
     step_end = Length.times(step_length, Length.whole_times(start, step_length) + 1)
     while Length.less(now, end):
         piece_end = step_end if Length.less(step_end, end) else end
-        rests.append((REST, Length.subtract(piece_end, now)))
+        rests.append((sound_values.REST, Length.subtract(piece_end, now)))
         now = piece_end
         step_end = Length.add(step_end, step_length)
     return rests

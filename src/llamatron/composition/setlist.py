@@ -31,7 +31,7 @@ import os
 
 import yaml
 
-from llamatron.support.files import FILE_ENCODING, WRITE_TEXT
+from llamatron.support import files
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.chain import Chain
 from llamatron.composition.checks import TOP_OF_FILE, check_keys, is_whole_number, reading, written_length
@@ -56,9 +56,10 @@ from llamatron.composition.groove import FACTORY_GROOVE_NAMES, Groove, check_gro
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song import Song, started_song
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.music.note import ROOT_NAMES
+from llamatron.music import note
 from llamatron.music.scale import ScaleType
-from llamatron.support.version import VERSION, is_version, version_numbers
+from llamatron.support import version as version_values
+from llamatron.support.version import is_version, version_numbers
 from llamatron.support.revised import notes_change
 
 
@@ -141,7 +142,7 @@ def new_setlist():
     song = started_song(scale=DEFAULT_SCALE)
     song[Section.SCENES][0][SceneSetting.TRACKS] = {first_track: {ClipSlotSetting.PATTERN: first_pattern}}
     return {
-        Section.SCALES: {DEFAULT_SCALE: {ScaleSetting.ROOT: ROOT_NAMES[0], ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
+        Section.SCALES: {DEFAULT_SCALE: {ScaleSetting.ROOT: note.ROOT_NAMES[0], ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
         SetlistSetting.STEP_SIZE: defaults.DEFAULT_STEP_SIZE,
         SetlistSetting.DEFAULT_OCTAVE: defaults.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: defaults.DEFAULT_DRUM_OCTAVE,
         SetlistSetting.OCTAVE_LABELS: defaults.DEFAULT_OCTAVE_LABELS,
@@ -195,11 +196,11 @@ class Setlist(LlamaData):
 
     def write_file(self, path):
         """Write the set to a file, making any directories it needs. Every saved file records the version that wrote it."""
-        self.set_version(VERSION)
+        self.set_version(version_values.VERSION)
         directory = os.path.dirname(path)
         if directory:
             os.makedirs(directory, exist_ok=True)
-        with open(path, WRITE_TEXT, encoding=FILE_ENCODING) as file:
+        with open(path, files.WRITE_TEXT, encoding=files.FILE_ENCODING) as file:
             file.write(dump_setlist(self._file_data()))
 
     def _file_data(self):
@@ -1098,7 +1099,7 @@ def _file_data(path):
     never run code.
     """
     try:
-        with open(path, encoding=FILE_ENCODING) as file:
+        with open(path, encoding=files.FILE_ENCODING) as file:
             return load_safely(file)
     except OSError as error:
         raise SongFileError(errors.ERR_CANT_READ.format(path=path, reason=error.strerror)) from error

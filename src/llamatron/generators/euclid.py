@@ -19,8 +19,10 @@ import math
 
 from llamatron.composition.euclid import rhythm
 from llamatron.generators.base import ClipGenerator
-from llamatron.music.sound import KIND, LENGTH, REST, Sound
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
+from llamatron.support import length
+from llamatron.support.length import Length
 
 
 class EuclidMask(ClipGenerator):
@@ -40,9 +42,9 @@ class EuclidMask(ClipGenerator):
 
     def _generate(self, clip):
         result = []
-        now = ZERO
+        now = length.ZERO
         for sound in clip.resolved_sounds():
-            hit = sound[KIND] == REST or self.is_hit(Length.rational(now))
-            result.append(sound if hit else Sound.rest(sound[LENGTH]))
-            now = Length.add(now, sound[LENGTH])
+            hit = sound[sound_values.KIND] == sound_values.REST or self.is_hit(Length.rational(now))
+            result.append(sound if hit else Sound.rest(sound[sound_values.LENGTH]))
+            now = Length.add(now, sound[sound_values.LENGTH])
         return result, clip.get_length()

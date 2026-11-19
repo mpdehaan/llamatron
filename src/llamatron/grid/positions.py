@@ -22,9 +22,11 @@ The positions are sounds, the tuples of music/sound.py, and every length here is
 whole numbers (support/length.py), since this is done for every note of a render.
 """
 
-from llamatron.support.length import FINEST_LENGTH, ZERO, Length
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
 from llamatron.support.rational import Rational
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTES, PARTS, PHRASE, REST, Sound
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 
 
 
@@ -35,17 +37,17 @@ def exact_length(length):
     would fall just short of a quarter note and leave a tiny extra note or rest. A length
     that's already an exact fraction is returned as it is.
     """
-    if type(length) is Rational and length.denominator <= FINEST_LENGTH:
+    if type(length) is Rational and length.denominator <= length_values.FINEST_LENGTH:
         return length
-    return Rational(length).limit_denominator(FINEST_LENGTH)
+    return Rational(length).limit_denominator(length_values.FINEST_LENGTH)
 
 
 def cut_position(*, position, length):
     """Return a position that lasts no longer than length."""
-    if Length.at_most(position[LENGTH], length):
+    if Length.at_most(position[sound_values.LENGTH], length):
         return position
-    if position[KIND] == CHORD:
-        return Sound.chord([cut_position(position=note, length=length) for note in position[NOTES]])
+    if position[sound_values.KIND] == sound_values.CHORD:
+        return Sound.chord([cut_position(position=note, length=length) for note in position[sound_values.NOTES]])
     # A held sound only has its place cut. Its sound is cut where the clip ends, when it's played.
     return Sound.with_length(position, length)
 
@@ -58,9 +60,9 @@ def fit_to_length(*, positions, length):
         if not Length.is_positive(remaining):
             break
         result.append(cut_position(position=position, length=remaining))
-        remaining = Length.subtract(remaining, Length.shorter(position[LENGTH], remaining))
+        remaining = Length.subtract(remaining, Length.shorter(position[sound_values.LENGTH], remaining))
     if Length.is_positive(remaining):
-        result.append((REST, remaining))
+        result.append((sound_values.REST, remaining))
     return result
 
 
@@ -69,43 +71,43 @@ def piece_of(*, position, offset, length):
 
     A piece that is the whole position is the position itself.
     """
-    own = position[LENGTH]
-    if offset == ZERO and Length.at_most(own, length):
+    own = position[sound_values.LENGTH]
+    if offset == length_values.ZERO and Length.at_most(own, length):
         return position
-    kind = position[KIND]
-    if kind == REST:
-        return (REST, length)
-    if kind == HELD or kind == PHRASE:
+    kind = position[sound_values.KIND]
+    if kind == sound_values.REST:
+        return (sound_values.REST, length)
+    if kind == sound_values.HELD or kind == sound_values.PHRASE:
         rest_of_sound = sound_from(held=position, offset=offset)
         if rest_of_sound is None:
-            return (REST, length)
+            return (sound_values.REST, length)
         kind_left, sound_left = rest_of_sound
         return (kind_left, Length.shorter(Length.subtract(own, offset), length), sound_left)
-    if kind == CHORD:
-        pieces = [piece_of(position=note, offset=offset, length=length) for note in position[NOTES] if Length.less(offset, note[LENGTH])]
-        return Sound.chord(pieces) if pieces else (REST, length)
+    if kind == sound_values.CHORD:
+        pieces = [piece_of(position=note, offset=offset, length=length) for note in position[sound_values.NOTES] if Length.less(offset, note[sound_values.LENGTH])]
+        return Sound.chord(pieces) if pieces else (sound_values.REST, length)
     return Sound.with_length(position, Length.shorter(Length.subtract(own, offset), length))
 
 
 def sound_from(*, held, offset):
     """Return what's left of a held sound or phrase from offset into it, as its kind and what it holds, or None if it's over by then."""
-    if held[KIND] == HELD:
-        sound = held[HELD_SOUND]
-        remaining = [note[LENGTH] for note in _notes_of(sound) if Length.less(offset, note[LENGTH])]
+    if held[sound_values.KIND] == sound_values.HELD:
+        sound = held[sound_values.HELD_SOUND]
+        remaining = [note[sound_values.LENGTH] for note in _notes_of(sound) if Length.less(offset, note[sound_values.LENGTH])]
         if not remaining:
             return None
         piece = piece_of(position=sound, offset=offset, length=Length.subtract(Length.longest(remaining), offset))
-        return None if piece[KIND] == REST else (HELD, piece)
+        return None if piece[sound_values.KIND] == sound_values.REST else (sound_values.HELD, piece)
     parts = []
-    start = ZERO
-    for part in held[PARTS]:
-        end = Length.add(start, part[LENGTH])
+    start = length_values.ZERO
+    for part in held[sound_values.PARTS]:
+        end = Length.add(start, part[sound_values.LENGTH])
         if Length.less(offset, end):
             parts.append(part if Length.at_most(offset, start) else piece_of(position=part, offset=Length.subtract(offset, start), length=Length.subtract(end, offset)))
         start = end
-    return (PHRASE, tuple(parts)) if parts else None
+    return (sound_values.PHRASE, tuple(parts)) if parts else None
 
 
 def _notes_of(sound):
     """Return the notes of a note or chord."""
-    return sound[NOTES] if sound[KIND] == CHORD else [sound]
+    return sound[sound_values.NOTES] if sound[sound_values.KIND] == sound_values.CHORD else [sound]

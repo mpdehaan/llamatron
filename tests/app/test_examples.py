@@ -32,7 +32,8 @@ from tests.support.rendering import PIECES, is_demo, render_file
 from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
-from llamatron.support.example_sets import BY_GENRE, example_sets, folder_of_example, genre_folder
+from llamatron.support import example_sets as example_sets_values
+from llamatron.support.example_sets import example_sets, folder_of_example, genre_folder
 from tests.support.song_testing import pitches
 
 SONG = 'song'
@@ -94,7 +95,7 @@ class TestExamples(unittest.TestCase):
 
     def test_every_homage_is_in_the_folder_of_its_genre(self):
         for path in self.paths:
-            if folder_of_example(path) != BY_GENRE:
+            if folder_of_example(path) != example_sets_values.BY_GENRE:
                 continue
             with self.subTest(path=path):
                 genres = Setlist.read_file(path).get_genres()

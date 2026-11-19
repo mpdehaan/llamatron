@@ -34,7 +34,7 @@ from rich.style import Style as RichStyle
 from rich.text import Text
 
 from llamatron.composition.checks import fraction_text
-from llamatron.music.note import SHARP_NAMES
+from llamatron.music import note as note_values
 from llamatron.strings import marks, visualizers
 from llamatron.tui.components.title_card import TITLE_BLUE
 from llamatron.tui.key_table import cursor_moved
@@ -469,4 +469,4 @@ class SceneView:
 
     def note_name(self, pitch):
         """Return a pitch's name with its octave in the set's octave labels."""
-        return SHARP_NAMES[pitch % HALF_STEPS_PER_OCTAVE] + str(self._document.setlist().shown_octave(pitch // HALF_STEPS_PER_OCTAVE))
+        return note_values.SHARP_NAMES[pitch % HALF_STEPS_PER_OCTAVE] + str(self._document.setlist().shown_octave(pitch // HALF_STEPS_PER_OCTAVE))

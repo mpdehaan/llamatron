@@ -37,7 +37,8 @@ that takes the clip's note_length:
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held, is_phrase, phrase
 from llamatron.music import midi as midi_numbers
-from llamatron.music.note import FLAT_NAMES, FLAT_SIGN, MAX_OCTAVE, MIN_OCTAVE, SEMITONES_ABOVE_C, SHARP_NAMES, Degree, Note, Rest
+from llamatron.music import note as note_values
+from llamatron.music.note import Degree, Note, Rest
 from llamatron.strings import errors
 from llamatron.support.length import Length
 
@@ -84,8 +85,8 @@ class Sound:
     @staticmethod
     def named_note(*, name, octave, length, velocity, glide):
         """Return the note a name and an octave spell, or raise what a Note would for one outside the octaves or the MIDI range."""
-        midi = octave * midi_numbers.HALF_STEPS_PER_OCTAVE + SEMITONES_ABOVE_C[name]
-        if MIN_OCTAVE <= octave <= MAX_OCTAVE and midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
+        midi = octave * midi_numbers.HALF_STEPS_PER_OCTAVE + note_values.SEMITONES_ABOVE_C[name]
+        if note_values.MIN_OCTAVE <= octave <= note_values.MAX_OCTAVE and midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
             return (NOTE, length, midi, velocity, glide, name)
         # The class says what is wrong with the note, in the words it always has.
         return Sound.of(Note(name=name, octave_number=octave, length=_as_number(length), velocity=velocity, glide=glide))
@@ -145,7 +146,7 @@ class Sound:
         kind = sound[KIND]
         if kind == NOTE:
             name = sound[NAME]
-            octave = (sound[MIDI] - SEMITONES_ABOVE_C[name]) // midi_numbers.HALF_STEPS_PER_OCTAVE
+            octave = (sound[MIDI] - note_values.SEMITONES_ABOVE_C[name]) // midi_numbers.HALF_STEPS_PER_OCTAVE
             return Note(name=name, octave_number=octave, length=_as_number(sound[LENGTH]), velocity=sound[VELOCITY], glide=sound[GLIDE])
         if kind == REST:
             return Rest(Length.rational(sound[LENGTH]))
@@ -201,7 +202,7 @@ class Sound:
         """
         midi = note[MIDI] + steps
         if midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
-            names = FLAT_NAMES if note[NAME].endswith(FLAT_SIGN) else SHARP_NAMES
+            names = note_values.FLAT_NAMES if note[NAME].endswith(note_values.FLAT_SIGN) else note_values.SHARP_NAMES
             return (NOTE, note[LENGTH], midi, note[VELOCITY], note[GLIDE], names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
         return Sound.of(Sound.position(note).half_step(steps))
 

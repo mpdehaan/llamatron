@@ -18,7 +18,7 @@
 from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT
 from llamatron.composition.instrument import NO_KEYSWITCH
 from llamatron.music import midi
-from llamatron.music.note import SHARP_NAMES
+from llamatron.music import note as note_values
 from llamatron.strings import marks
 
 # The room a slot's note takes at the right of its row, in both keyswitch dialogs.
@@ -27,7 +27,7 @@ KEYSWITCH_NOTE_WIDTH = 12
 
 def keyswitch_note_text(*, setlist, note):
     """Return a keyswitch's MIDI note as the tracker writes it, its name in the set's octave labels and its number, like C0 (24)."""
-    name = SHARP_NAMES[note % midi.HALF_STEPS_PER_OCTAVE] + str(setlist.shown_octave(note // midi.HALF_STEPS_PER_OCTAVE))
+    name = note_values.SHARP_NAMES[note % midi.HALF_STEPS_PER_OCTAVE] + str(setlist.shown_octave(note // midi.HALF_STEPS_PER_OCTAVE))
     return marks.MSG_KEYSWITCH_NOTE.format(name=name, number=note)
 
 

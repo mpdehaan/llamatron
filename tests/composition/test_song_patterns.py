@@ -46,7 +46,7 @@ from llamatron.composition.file_format import (
     SetlistSetting,
 )
 from llamatron.composition import limits
-from llamatron.support.version import VERSION
+from llamatron.support import version as version_values
 from llamatron.composition.song_file_error import SongFileError
 from tests.support.song_testing import BASIC, LEAD, ROWS, X, build, clip, lead, lead_data, lead_song, pat, pitches, with_parts
 
@@ -99,7 +99,7 @@ class TestPatterns(unittest.TestCase):
         self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [60])
 
     def test_a_file_saved_since_the_numbering_changed_or_without_a_version_is_read_as_it_is(self):
-        for version in [LLAMATRON_OCTAVES_SINCE, VERSION, None]:
+        for version in [LLAMATRON_OCTAVES_SINCE, version_values.VERSION, None]:
             with self.subTest(version=version):
                 data = with_parts(patterns={X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}])
                 if version is not None:

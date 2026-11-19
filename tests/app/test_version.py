@@ -25,7 +25,8 @@ import yaml
 from llamatron.composition.file_format import Section, SetlistSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.document import Document
-from llamatron.support.version import VERSION, is_version, version_numbers
+from llamatron.support import version
+from llamatron.support.version import is_version, version_numbers
 from tests.support.rendering import dump_song_data, song_from_data, song_from_file
 
 # A version older than any llamatron that writes files with a version, standing in for a song
@@ -40,8 +41,8 @@ WRITE_TEXT = 'w'
 class TestVersion(unittest.TestCase):
 
     def test_the_version_is_three_whole_numbers(self):
-        self.assertTrue(is_version(VERSION))
-        self.assertEqual(len(version_numbers(VERSION)), 3)
+        self.assertTrue(is_version(version.VERSION))
+        self.assertEqual(len(version_numbers(version.VERSION)), 3)
 
     def test_versions_compare_number_by_number_not_as_decimals(self):
         self.assertGreater(version_numbers('1.0.10'), version_numbers('1.0.9'))
@@ -60,12 +61,12 @@ class TestVersion(unittest.TestCase):
             Document().save(path=path)
             with open(path) as file:
                 text = file.read()
-            self.assertTrue(text.startswith(f'version: {VERSION}\n'))
-            self.assertEqual(yaml.safe_load(text)[SetlistSetting.VERSION], VERSION)
+            self.assertTrue(text.startswith(f'version: {version.VERSION}\n'))
+            self.assertEqual(yaml.safe_load(text)[SetlistSetting.VERSION], version.VERSION)
             song_from_file(path)
 
     def test_saving_a_song_from_an_older_version_updates_its_version(self):
-        self.assertLess(version_numbers(OLDER_VERSION), version_numbers(VERSION))
+        self.assertLess(version_numbers(OLDER_VERSION), version_numbers(version.VERSION))
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, SONG_FILE)
             with open(path, WRITE_TEXT) as file:
@@ -73,7 +74,7 @@ class TestVersion(unittest.TestCase):
             document = Document.load(path)
             document.save()
             with open(path) as file:
-                self.assertEqual(yaml.safe_load(file)[SetlistSetting.VERSION], VERSION)
+                self.assertEqual(yaml.safe_load(file)[SetlistSetting.VERSION], version.VERSION)
 
     def test_a_song_file_with_a_bad_version_is_refused(self):
         with self.assertRaisesRegex(SongFileError, 'version must be three integers'):

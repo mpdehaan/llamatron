@@ -20,7 +20,7 @@ from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.composition.file_format import DRIFT_DIRECTIONS, DRIFT_VERSIONS, DriftValue, GeneratorKind, Section
 from llamatron.composition.generator_settings import DRIFT_NUMBERS, DriftSetting, MAX_STEPS_TO_B, MIN_STEPS_TO_B, versioned
-from llamatron.music.note import ROOT_NAMES
+from llamatron.music import note
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.key_table import cursor_moved
@@ -134,7 +134,7 @@ class DriftEditor(ShowsNamedItem, FieldPage):
 
     def choices_of(self, value):
         """Return what a scale or root override can be: the song's scales by name, or the roots."""
-        return sorted_names(self.document().song().get_scale_names()) if value == DriftValue.SCALE else list(ROOT_NAMES)
+        return sorted_names(self.document().song().get_scale_names()) if value == DriftValue.SCALE else list(note.ROOT_NAMES)
 
     def pick_choice(self, *, setting, value, current):
         options = [marks.MSG_NONE_SHOWN, *self.choices_of(value)]

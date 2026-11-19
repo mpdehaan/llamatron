@@ -32,7 +32,8 @@ from pathlib import Path
 import yaml
 
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.support.safe_yaml import SAFE_LOADER, load_safely, uses_c_parser
+from llamatron.support import safe_yaml
+from llamatron.support.safe_yaml import load_safely, uses_c_parser
 from tests.support.rendering import render_file
 from llamatron.tui.document import Document
 from llamatron.support.example_sets import example_sets
@@ -80,8 +81,8 @@ class TestYamlSafety(unittest.TestCase):
         self.assertEqual(importers, sorted(YAML_MODULES))
 
     def test_the_loader_in_use_is_one_of_the_safe_ones(self):
-        self.assertIn(SAFE_LOADER, SAFE_LOADERS)
-        self.assertEqual(uses_c_parser(), SAFE_LOADER is not yaml.SafeLoader)
+        self.assertIn(safe_yaml.SAFE_LOADER, SAFE_LOADERS)
+        self.assertEqual(uses_c_parser(), safe_yaml.SAFE_LOADER is not yaml.SafeLoader)
 
     def test_load_safely_refuses_to_run_code(self):
         with self.assertRaises(yaml.YAMLError):

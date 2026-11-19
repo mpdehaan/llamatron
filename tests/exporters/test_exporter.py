@@ -40,7 +40,7 @@ from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.exports import EXPORT_KINDS, EXPORTERS, EXPORT_KINDS_IN_HELP, EXPORT_LABELS
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.strings import errors
-from llamatron.support.files import FILE_ENCODING, WRITE_TEXT
+from llamatron.support import files
 
 EXPORT = 'my_set_tune'
 SUBFOLDER = 'out'
@@ -89,7 +89,7 @@ class ManyNotes(WritesManyFiles, Exporter):
 
 
 def write(*, path, text):
-    with open(path, WRITE_TEXT, encoding=FILE_ENCODING) as file:
+    with open(path, files.WRITE_TEXT, encoding=files.FILE_ENCODING) as file:
         file.write(text)
 
 

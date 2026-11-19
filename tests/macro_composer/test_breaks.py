@@ -25,7 +25,7 @@ from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer import arranger, breaks
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, KIT, LOUD, NONE, NOTE_NAMES, NOTES_IN_OCTAVE, OCTAVE, SOFT, STEPS, VELOCITY
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE, WizardChoices
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 ROCK = 'rock'
 ROCK_KIND = 'british invasion'
@@ -74,7 +74,7 @@ def wizard(*, genre=ROCK, subgenre=ROCK_KIND, seed=SEED):
 
 
 def patterns_of(choices):
-    return choices.made_setlist(name=SONG_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
 
 
 class TestBreaks(unittest.TestCase):
@@ -327,7 +327,7 @@ class TestKitPieceSounds(unittest.TestCase):
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual((again.piece_sound(breaks.KICK), again.piece_note(breaks.KICK)), (A_SOUND, A_NOTE))
         self.assertEqual(patterns_of(again), patterns_of(choices))
-        data = again.made_setlist(name=SONG_NAME, version=VERSION).to_data()
+        data = again.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()
         self.assertEqual(data[Section.INSTRUMENTS][composer_text.MSG_PIECE_INSTRUMENT.format(breaks.KICK)][InstrumentSetting.GM_SOUND], A_SOUND)
         # Another sound keeps the note chosen, and the piece's own name gives it its drum back.
         choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND + 1)

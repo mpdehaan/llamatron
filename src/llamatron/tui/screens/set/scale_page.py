@@ -23,7 +23,8 @@ from rich.text import Text
 
 from llamatron.composition.file_format import ScaleKind, Section
 from llamatron.composition.named_scale import note_names, SCALE_TYPE_NAMES
-from llamatron.music.note import FLAT_NAMES, NoteName, ROOT_NAMES, SHARP_NAMES
+from llamatron.music import note
+from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.tui.components.keyboard import Keyboard
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
@@ -97,7 +98,7 @@ def kind_pages():
 
 def root_grid():
     """Return the keyboard as a grid of places in ROOT_NAMES, with None where a key has no flat."""
-    return [[None if name is None else ROOT_NAMES.index(name) for name in row] for row in ROOT_KEYBOARD]
+    return [[None if name is None else note.ROOT_NAMES.index(name) for name in row] for row in ROOT_KEYBOARD]
 
 
 class ScalePage(ShowsNamedItem, FieldPage):
@@ -133,13 +134,13 @@ class ScalePage(ShowsNamedItem, FieldPage):
     def step_root(self, offset):
         """Move the root up or down a half step, keeping flats flat and anything else sharp."""
         root = self.root()
-        names = FLAT_NAMES if root in FLAT_NAMES and root not in SHARP_NAMES else SHARP_NAMES
+        names = note.FLAT_NAMES if root in note.FLAT_NAMES and root not in note.SHARP_NAMES else note.SHARP_NAMES
         self.set_root(stepped(values=names, current=root, offset=offset))
 
     def pick_root(self):
         """Choose the root on a keyboard."""
-        place = ROOT_NAMES.index(self.root())
-        self.ask(dialog=GridChoiceDialog(title=messages.MSG_ROOT_TITLE, options=ROOT_NAMES, grid=root_grid(), current=place), then=lambda chosen: self.set_root(ROOT_NAMES[chosen]))
+        place = note.ROOT_NAMES.index(self.root())
+        self.ask(dialog=GridChoiceDialog(title=messages.MSG_ROOT_TITLE, options=note.ROOT_NAMES, grid=root_grid(), current=place), then=lambda chosen: self.set_root(note.ROOT_NAMES[chosen]))
 
     def pick_kind(self):
         """Choose the kind from its pages, with the notes of the one under the cursor shown underneath."""

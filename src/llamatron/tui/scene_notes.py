@@ -40,7 +40,7 @@ from llamatron.composition.setlist import Setlist
 from llamatron.composition.shapes import shape_settings
 from llamatron.composition.strum import strum_settings
 from llamatron.exporters.timing import timed_events
-from llamatron.music.note import FLAT_NAMES, SEMITONES_ABOVE_C, SHARP_NAMES
+from llamatron.music import note as note_values
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import marks
 
@@ -221,8 +221,8 @@ def letter_spelled(scale):
     names = []
     for place, step in enumerate(shape):
         letter = LETTERS[(start + place) % len(LETTERS)]
-        wanted = (SEMITONES_ABOVE_C[root] + step) % HALF_STEPS_PER_OCTAVE
-        name = next((name for name in [*SHARP_NAMES, *FLAT_NAMES] if name[0] == letter and SEMITONES_ABOVE_C[name] % HALF_STEPS_PER_OCTAVE == wanted), None)
+        wanted = (note_values.SEMITONES_ABOVE_C[root] + step) % HALF_STEPS_PER_OCTAVE
+        name = next((name for name in [*note_values.SHARP_NAMES, *note_values.FLAT_NAMES] if name[0] == letter and note_values.SEMITONES_ABOVE_C[name] % HALF_STEPS_PER_OCTAVE == wanted), None)
         if name is None:
             return None
         names.append(name)
@@ -232,13 +232,13 @@ def letter_spelled(scale):
 def spelled(*, pitch_class, scale):
     """Return a pitch class's name as the scale spells it: its own note's name when the scale has it, and otherwise with flats when the scale spells any note with one, or sharps."""
     if scale is None:
-        return SHARP_NAMES[pitch_class]
+        return note_values.SHARP_NAMES[pitch_class]
     names = letter_spelled(scale) or scale.get_note_names()
     for name in names:
-        if SEMITONES_ABOVE_C[name] % HALF_STEPS_PER_OCTAVE == pitch_class:
+        if note_values.SEMITONES_ABOVE_C[name] % HALF_STEPS_PER_OCTAVE == pitch_class:
             return name
-    flats = any(name in FLAT_NAMES and name not in SHARP_NAMES for name in names)
-    return (FLAT_NAMES if flats else SHARP_NAMES)[pitch_class]
+    flats = any(name in note_values.FLAT_NAMES and name not in note_values.SHARP_NAMES for name in names)
+    return (note_values.FLAT_NAMES if flats else note_values.SHARP_NAMES)[pitch_class]
 
 
 def chord_texts(*, root, symbol, scale, bass=None):
@@ -249,7 +249,7 @@ def chord_texts(*, root, symbol, scale, bass=None):
     if scale is None:
         return name, NO_SYMBOL
     shape = scale.get_half_steps()
-    above = (root - SEMITONES_ABOVE_C[scale.get_root()]) % HALF_STEPS_PER_OCTAVE
+    above = (root - note_values.SEMITONES_ABOVE_C[scale.get_root()]) % HALF_STEPS_PER_OCTAVE
     accidental = NO_SYMBOL
     if above not in shape:
         above = (above + 1) % HALF_STEPS_PER_OCTAVE

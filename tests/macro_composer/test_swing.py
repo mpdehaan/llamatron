@@ -22,7 +22,7 @@ from llamatron.macro_composer import arranger
 from llamatron.macro_composer.arranger import GROOVE, NO_GROOVE
 from llamatron.macro_composer.wizard_choices import SWINGS, WizardChoices
 from llamatron.strings import errors
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from tests.support.ui_testing import fixed_text
 
 SONG_NAME = 'a_song'
@@ -51,7 +51,7 @@ def chosen(*, genre=ROCK, subgenre=ROCK_AND_ROLL):
 
 def groove_of(choices):
     """The groove of the song the choices make, or None for a song with none."""
-    return choices.made_setlist(name=SONG_NAME, version=VERSION).get_song(SONG_NAME).to_data().get(GROOVE)
+    return choices.made_setlist(name=SONG_NAME, version=version.VERSION).get_song(SONG_NAME).to_data().get(GROOVE)
 
 
 class TestSwing(unittest.TestCase):

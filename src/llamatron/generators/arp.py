@@ -19,10 +19,12 @@ from enum import Enum, auto
 from llamatron.generators.base import ClipGenerator
 from llamatron.grid.positions import fit_to_length
 from llamatron.music import midi
-from llamatron.support.length import ZERO, Length
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
 from llamatron.support.random_source import random_source
 from llamatron.music.note import _check_length
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTE, NOTES, PARTS, PHRASE, Sound
+from llamatron.music import sound
+from llamatron.music.sound import Sound
 from llamatron.strings import errors
 
 # How many steps an arpeggiator's offsets can have, as on a groovebox.
@@ -105,7 +107,7 @@ def along_scale(*, note, steps, scale):
     if scale is None:
         return Sound.half_step(note, steps)
     shape = scale.get_type().value
-    above_root = note[MIDI] - scale.get_root().get_midi_number()
+    above_root = note[sound.MIDI] - scale.get_root().get_midi_number()
     octaves, within = divmod(above_root, midi.HALF_STEPS_PER_OCTAVE)
     place = _scale_note_at_or_below(shape=shape, half_steps=within)
     extra = within - shape[place]
@@ -121,8 +123,8 @@ def _scale_note_at_or_below(*, shape, half_steps):
 def _lowest_to_highest(chord):
     """Return a chord's notes from lowest to highest, with each pitch only once."""
     by_pitch = {}
-    for note in chord[NOTES]:
-        by_pitch.setdefault(note[MIDI], note)
+    for note in chord[sound.NOTES]:
+        by_pitch.setdefault(note[sound.MIDI], note)
     return [by_pitch[midi_number] for midi_number in sorted(by_pitch)]
 
 
@@ -203,17 +205,17 @@ class Arp(ClipGenerator):
             generator.setstate(self._start_state)
         original = clip.resolved_sounds()
         self._adds = []
-        positions = self._arpeggiate(positions=original, generator=generator, scale=clip.get_scale(), start=ZERO)
+        positions = self._arpeggiate(positions=original, generator=generator, scale=clip.get_scale(), start=length_values.ZERO)
         if clip.get_length() is None:
             self._random_state = None if self._seed is None else generator.getstate()
             return positions, None
 
         wanted = Length.exact(clip.get_length())
-        total = Length.total([position[LENGTH] for position in positions])
+        total = Length.total([position[sound.LENGTH] for position in positions])
         while positions and Length.less(total, wanted):
             more = self._arpeggiate(positions=original, generator=generator, scale=clip.get_scale(), start=total)
             positions += more
-            total = Length.add(total, Length.total([position[LENGTH] for position in more]))
+            total = Length.add(total, Length.total([position[sound.LENGTH] for position in more]))
         self._adds = [(time, adds) for time, adds in self._adds if Length.less(time, wanted)]
         self._random_state = None if self._seed is None else generator.getstate()
         return fit_to_length(positions=positions, length=wanted), clip.get_length()
@@ -226,27 +228,27 @@ class Arp(ClipGenerator):
         result = []
         now = start
         for position in positions:
-            kind = position[KIND]
-            if kind == HELD or kind == PHRASE:
+            kind = position[sound.KIND]
+            if kind == sound.HELD or kind == sound.PHRASE:
                 result.append(self._arpeggiate_held(held=position, generator=generator, scale=scale, start=now))
-            elif kind == CHORD or (kind == NOTE and self._plays_single_notes()):
+            elif kind == sound.CHORD or (kind == sound.NOTE and self._plays_single_notes()):
                 result += self._arpeggiate_chord(chord=position, generator=generator, scale=scale, start=now)
             else:
                 result.append(position)
-            now = Length.add(now, position[LENGTH])
+            now = Length.add(now, position[sound.LENGTH])
         return result
 
     def _arpeggiate_held(self, *, held, generator, scale, start):
         """Return a held sound arpeggiated across its own length, still held in the same place."""
-        parts = held[PARTS] if held[KIND] == PHRASE else [held[HELD_SOUND]]
-        return Sound.phrase(self._arpeggiate(positions=parts, generator=generator, scale=scale, start=start), held[LENGTH])
+        parts = held[sound.PARTS] if held[sound.KIND] == sound.PHRASE else [held[sound.HELD_SOUND]]
+        return Sound.phrase(self._arpeggiate(positions=parts, generator=generator, scale=scale, start=start), held[sound.LENGTH])
 
     def _arpeggiate_chord(self, *, chord, generator, scale, start):
-        notes = self._climb(_lowest_to_highest(chord) if chord[KIND] == CHORD else [chord])
+        notes = self._climb(_lowest_to_highest(chord) if chord[sound.KIND] == sound.CHORD else [chord])
         pattern = self._pattern(notes)
         result = []
         step = Length.exact(self._step)
-        remaining = chord[LENGTH]
+        remaining = chord[sound.LENGTH]
         index = 0
         place = 0
         now = start

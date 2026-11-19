@@ -29,7 +29,7 @@ from llamatron.macro_composer.song_plan import (ALLOWS, APPROACH, BIG, BY_PLACE,
                                                 PHRASING, PLAN_OF_SONG, PLAYS, QUIETEST, SCENE_SETTINGS, SECTION_PLAN, SETUP, SHAPES, STAGE_LINE, STAGED, SCENE_VELOCITY, SCENE_VELOCITY_IN_START,
                                                 SongPlan, level_at, loudness_at)
 from llamatron.macro_composer.wizard_choices import SHAPE_OF_SECTION, SHAPE_USUAL, WizardChoices
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 ROCK = 'rock'
 ARENA = 'arena rock'
@@ -376,7 +376,7 @@ class TestDrumSolo(unittest.TestCase):
 
     def test_a_drum_solo_in_another_meter_is_the_drummer_alone(self):
         given = arranger.arranged(style=arranger.style_named(ROCK), song=song(template=BALLAD, form=[VERSE, DRUM_SOLO, CHORUS, ENDING], plan=False))
-        Setlist.from_data(data=composer.composed(given=given, version=VERSION))
+        Setlist.from_data(data=composer.composed(given=given, version=version.VERSION))
 
 
 class TestPhrasing(unittest.TestCase):
@@ -406,4 +406,4 @@ class TestPhrasing(unittest.TestCase):
             for seed in SEEDS:
                 with self.subTest(template=template, seed=seed):
                     given = arranger.arranged(style=style, song=song(template=template, seed=seed))
-                    Setlist.from_data(data=composer.composed(given=given, version=VERSION))
+                    Setlist.from_data(data=composer.composed(given=given, version=version.VERSION))

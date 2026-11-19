@@ -68,9 +68,9 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS, VELOCITY, LOWEST_VELOCITY, HIGHEST_VELOCITY
 from llamatron.macro_composer.melody import ARTICULATION, CHROMATIC, DEFAULT_EVOLVE, DEFAULT_LENGTHS, ENGINE, LENGTHS, LOUDNESS, PARTS_OF_A_LENGTH, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, FIRST_HOOK_TAKE, GRID, HIGHEST_GAUGE, HOOK, HOOK_TAKE, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
-from llamatron.music.note import ROOT_NAMES, SEMITONES_ABOVE_C
+from llamatron.music import note as note_values
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.version import VERSION as A_VERSION
+from llamatron.support import version as version_values
 from llamatron.strings import errors
 
 # The fields of the choices as a song keeps them.
@@ -522,7 +522,7 @@ def melody_works(*, genre, subgenre, style, variant=None):
     choices.take_variant(variant)
     choices.set_seed(FIRST_SEED)
     try:
-        Setlist.from_data(data=composed(given=arranged(style=style_of(genre), song={**choices.song_picks(subgenre), MELODY_ENGINE: style}), version=A_VERSION))
+        Setlist.from_data(data=composed(given=arranged(style=style_of(genre), song={**choices.song_picks(subgenre), MELODY_ENGINE: style}), version=version_values.VERSION))
     except (ValueError, IndexError, KeyError, SongFileError):
         return False
     return True
@@ -566,7 +566,7 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
             FORM: [kind], SECTIONS: {kind: {KIND: kind, BARS: bars, **({} if plays is None else {PLAYS: list(plays)})}}}
     try:
         given = arranged(style=style, song=song)
-        made = Setlist.from_data(data=composed(given=given, version=A_VERSION)).get_song(kind)
+        made = Setlist.from_data(data=composed(given=given, version=version_values.VERSION)).get_song(kind)
         seconds = sum(float(scene.seconds) for scene in SongRenderer(made).estimate())
     except (ValueError, SongFileError):
         return False
@@ -893,7 +893,7 @@ class WizardChoices:
         return self._root
 
     def set_root(self, root):
-        if root not in ROOT_NAMES:
+        if root not in note_values.ROOT_NAMES:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_ROOT.format(value=root))
         self._root = root
 
@@ -1164,7 +1164,7 @@ class WizardChoices:
         trial = self._copied_for_trial()
         trial._own_entries()[place][BARS] = bars
         try:
-            trial.written_setlist(name=self._entry(place)[KIND], version=A_VERSION)
+            trial.written_setlist(name=self._entry(place)[KIND], version=version_values.VERSION)
         except (ValueError, SongFileError):
             return False
         return True
@@ -1414,7 +1414,7 @@ class WizardChoices:
             if end is not None:
                 self._stages[END_KEPT] = end
             self._answers = {}
-            self.written_setlist(name=PREVIEW_NAME, version=A_VERSION)
+            self.written_setlist(name=PREVIEW_NAME, version=version_values.VERSION)
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
             self._sections, self._stages = before
             self._answers = {}
@@ -2046,7 +2046,7 @@ class WizardChoices:
 
     def root_half_steps(self):
         """Return the song's root as half steps above C, within an octave."""
-        return SEMITONES_ABOVE_C[self._root] % NOTES_IN_OCTAVE
+        return note_values.SEMITONES_ABOVE_C[self._root] % NOTES_IN_OCTAVE
 
     def scale_half_steps(self):
         """Return the notes of the song's scale as half steps above its root, the major scale's where the melody engines know none for the scale type."""
@@ -3367,7 +3367,7 @@ class WizardChoices:
             return chords_from_text(chords_as_text(value) if isinstance(value, list) else value)
         if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and limits.MIN_TEMPO <= value <= limits.MAX_TEMPO:
             return value
-        if field == ROOT_OF_PLACE and value in ROOT_NAMES:
+        if field == ROOT_OF_PLACE and value in note_values.ROOT_NAMES:
             return value
         if field == TYPE_OF_PLACE and value in SCALE_TYPES:
             return value
@@ -3476,7 +3476,7 @@ class WizardChoices:
             del entry[OWN_OF_SECTION]
         self._answers = {}
         try:
-            self.written_setlist(name=PREVIEW_NAME, version=A_VERSION)
+            self.written_setlist(name=PREVIEW_NAME, version=version_values.VERSION)
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
             self._sections = before
             self._answers = {}
@@ -4577,7 +4577,7 @@ class WizardChoices:
 
     def made_for_listening(self):
         """Return the set these choices make, to be heard and thrown away, with its one song's name."""
-        return self.made_setlist(name=PREVIEW_NAME, version=A_VERSION), PREVIEW_NAME
+        return self.made_setlist(name=PREVIEW_NAME, version=version_values.VERSION), PREVIEW_NAME
 
     def _patterns_played(self):
         """The patterns the song plays, straight from the writer, for a question that asks only whether a choice changes the
@@ -4585,7 +4585,7 @@ class WizardChoices:
         out, as the set made leaves it out. Choices the writer cannot make a song of are answered from the set, which tries
         the other progressions drawn."""
         try:
-            data = composed(given=arranged(style=self._style(), song=self.song_picks(PREVIEW_NAME)), version=A_VERSION)
+            data = composed(given=arranged(style=self._style(), song=self.song_picks(PREVIEW_NAME)), version=version_values.VERSION)
         except (ValueError, IndexError, KeyError, SongFileError):
             return self._written_for_trial()[0].to_data()[Section.PATTERNS]
         scenes = data[set_writer.SONGS][PREVIEW_NAME][set_writer.SCENES]
@@ -4596,7 +4596,7 @@ class WizardChoices:
         """The set these choices write, with its one song's name, for a question that is answered by making the song: whether
         a song can be made, or whether a choice changes its notes. No such question needs the players' trades of loudness,
         which change no note, so none pays for them."""
-        return self.written_setlist(name=PREVIEW_NAME, version=A_VERSION), PREVIEW_NAME
+        return self.written_setlist(name=PREVIEW_NAME, version=version_values.VERSION), PREVIEW_NAME
 
     def hook_scene(self):
         """Return the place in the form of the first section that says the hook, or None."""

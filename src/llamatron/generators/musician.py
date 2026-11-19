@@ -31,7 +31,8 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.parts import parts_of
 from llamatron.music import midi
-from llamatron.music.sound import DEGREE, KIND, Sound
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 from llamatron.support.rational import Rational
 
 EIGHTH = Rational(1, 8)
@@ -439,4 +440,4 @@ def _settled(*, sounds, scale):
     """Return a clip's sounds with each degree settled as its note in the clip's scale, where the clip has one."""
     if scale is None:
         return list(sounds)
-    return [Sound.settled(sound, scale) if sound[KIND] == DEGREE else sound for sound in sounds]
+    return [Sound.settled(sound, scale) if sound[sound_values.KIND] == sound_values.DEGREE else sound for sound in sounds]

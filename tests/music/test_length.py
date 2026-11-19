@@ -19,7 +19,8 @@ import itertools
 import unittest
 from fractions import Fraction
 
-from llamatron.support.length import FINEST_LENGTH, ZERO, Length
+from llamatron.support import length
+from llamatron.support.length import Length
 from llamatron.support.rational import Rational
 
 # A sweep of values: the lengths a song uses, thirds, sevenths, negatives and zero.
@@ -36,7 +37,7 @@ WHOLE_NUMBERS = range(-3, 4)
 HALF = (1, 2)
 THIRD = (1, 3)
 # A length finer than any a song has, as a float's rounding error is.
-TOO_FINE = Rational(1, FINEST_LENGTH * 3)
+TOO_FINE = Rational(1, length.FINEST_LENGTH * 3)
 
 
 def pairs():
@@ -81,7 +82,7 @@ class TestLengthAgreesWithFraction(unittest.TestCase):
         self.assertSame(pair=Length.total([twelfth, twelfth, twelfth]), fraction=Fraction(1, 4))
 
     def test_a_number_finer_than_any_length_is_tidied_and_only_of_takes_it_as_it_is(self):
-        self.assertEqual(Length.exact(TOO_FINE), ZERO)
+        self.assertEqual(Length.exact(TOO_FINE), length.ZERO)
         self.assertEqual(Length.of(TOO_FINE), (TOO_FINE.numerator, TOO_FINE.denominator))
 
     def test_a_pair_becomes_the_rational_that_says_it(self):
@@ -144,7 +145,7 @@ class TestLengthAgreesWithFraction(unittest.TestCase):
                     self.assertSame(pair=Length.total([pair for pair, _ in some]), fraction=sum(fraction for _, fraction in some))
 
     def test_the_total_of_none_is_no_time_at_all(self):
-        self.assertEqual(Length.total([]), ZERO)
+        self.assertEqual(Length.total([]), length.ZERO)
 
     def test_whether_a_length_is_longer_than_nothing(self):
         for pair, fraction in pairs():

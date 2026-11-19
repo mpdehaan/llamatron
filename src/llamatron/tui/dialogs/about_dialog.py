@@ -22,7 +22,8 @@ from rich.text import Text
 
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import NOTHING, wrapped
-from llamatron.support.version import BUILD_DATE, BUILD_TIME, build_year, VERSION
+from llamatron.support import version
+from llamatron.support.version import build_year
 from llamatron.strings import about
 from llamatron.tui import keybindings
 
@@ -90,7 +91,7 @@ class AboutDialog(Dialog):
         words = [
             *cow_saying(self.shown_name),
             about.MSG_ABOUT_POWERED,
-            about.MSG_ABOUT_VERSION.format(version=VERSION, date=BUILD_DATE, time=BUILD_TIME),
+            about.MSG_ABOUT_VERSION.format(version=version.VERSION, date=version.BUILD_DATE, time=version.BUILD_TIME),
             about.MSG_ABOUT_WEB,
             about.MSG_ABOUT_BLOG,
             about.MSG_ABOUT_MORE.format(site=about.MSG_SITE),

@@ -19,8 +19,9 @@
 from bisect import bisect_right
 
 from llamatron.exporters.timing import as_note, clip_end
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTES, PARTS, PHRASE, REST
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.support import length
+from llamatron.support.length import Length
 
 HALF_STEPS_PER_OCTAVE = 12
 
@@ -49,23 +50,23 @@ def _chords_by_start(clip):
     sounds = clip.resolved_sounds()
     end = clip_end(clip=clip, positions=sounds)
     chords = {}
-    start = ZERO
+    start = length.ZERO
     for sound in sounds:
         _place_chord(sound=sound, start=start, end=end, scale=clip.get_scale(), chords=chords)
-        start = Length.add(start, sound[LENGTH])
+        start = Length.add(start, sound[sound_values.LENGTH])
     return chords
 
 
 def _place_chord(*, sound, start, end, scale, chords):
     """Note the chord a sound starting at a time gives, and those a held phrase's parts give one after another."""
-    kind = sound[KIND]
-    if kind == HELD:
-        _place_chord(sound=sound[HELD_SOUND], start=start, end=end, scale=scale, chords=chords)
-    elif kind == PHRASE:
-        for part in sound[PARTS]:
+    kind = sound[sound_values.KIND]
+    if kind == sound_values.HELD:
+        _place_chord(sound=sound[sound_values.HELD_SOUND], start=start, end=end, scale=scale, chords=chords)
+    elif kind == sound_values.PHRASE:
+        for part in sound[sound_values.PARTS]:
             _place_chord(sound=part, start=start, end=end, scale=scale, chords=chords)
-            start = Length.add(start, part[LENGTH])
-    elif kind != REST:
+            start = Length.add(start, part[sound_values.LENGTH])
+    elif kind != sound_values.REST:
         time = Length.rational(start)
         if time < end:
             chords.setdefault(time, _chord_of(sound=sound, scale=scale))
@@ -73,6 +74,6 @@ def _place_chord(*, sound, start, end, scale, chords):
 
 def _chord_of(*, sound, scale):
     """Return a note's or a chord's root as a MIDI number, and its notes within an octave."""
-    notes = sound[NOTES] if sound[KIND] == CHORD else [sound]
-    numbers = [as_note(position=note, scale=scale)[MIDI] for note in notes]
+    notes = sound[sound_values.NOTES] if sound[sound_values.KIND] == sound_values.CHORD else [sound]
+    numbers = [as_note(position=note, scale=scale)[sound_values.MIDI] for note in notes]
     return numbers[0], frozenset(number % HALF_STEPS_PER_OCTAVE for number in numbers)

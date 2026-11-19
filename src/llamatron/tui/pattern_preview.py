@@ -44,7 +44,7 @@ from llamatron.composition.scene import Scene
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.track import Track
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES
-from llamatron.music.note import SHARP_NAMES
+from llamatron.music import note
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
 from llamatron.realtime.timeline import Route
@@ -69,7 +69,7 @@ TRIAL_VELOCITY = 100
 def trial_pattern(*, numbers, step_size):
     """Return the data of a pattern that plays some MIDI notes one after another, a step each, written as a drum pattern's
     notes are, by name and octave, so that no scale moves them."""
-    names = [SHARP_NAMES[number % NOTES_IN_OCTAVE] for number in numbers]
+    names = [note.SHARP_NAMES[number % NOTES_IN_OCTAVE] for number in numbers]
     return {PatternSetting.STEPS: len(numbers), PatternSetting.STEP_SIZE: step_size, PatternSetting.DRUM: True,
             Row.DEGREE: [name[0] for name in names], Row.ACCIDENTAL: [name[1:] or None for name in names],
             Row.OCTAVE: [number // NOTES_IN_OCTAVE for number in numbers], Row.VELOCITY: [TRIAL_VELOCITY] * len(numbers)}

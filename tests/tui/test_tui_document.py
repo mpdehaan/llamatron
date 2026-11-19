@@ -1010,10 +1010,10 @@ class TestPickerLayouts(unittest.TestCase):
         self.assertEqual(GridChoiceDialog(title=PICK, options=[A, B, C], grid=None, current=1, pages=[(ONE_2, [[0, 1]]), (TWO_2, [[1, 2]])]).page, 0)
 
     def test_the_keyboard_holds_every_root_once(self):
-        from llamatron.music.note import ROOT_NAMES
+        from llamatron.music import note as note_values
         from llamatron.tui.screens.set.scale_page import ROOT_KEYBOARD
         flat = [name for row in ROOT_KEYBOARD for name in row if name]
-        self.assertEqual(sorted(flat), sorted(ROOT_NAMES))
+        self.assertEqual(sorted(flat), sorted(note_values.ROOT_NAMES))
 
     def test_scale_notes(self):
         from llamatron.tui.screens.set.scale_page import scale_label, scale_notes

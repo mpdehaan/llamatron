@@ -18,8 +18,9 @@
 
 from bisect import bisect_right
 
-from llamatron.music.sound import CHORD, DEGREE, HELD, HELD_SOUND, KIND, LENGTH, NOTE, PARTS, PHRASE
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.support import length
+from llamatron.support.length import Length
 
 
 class TuneSource:
@@ -41,21 +42,21 @@ class TuneSource:
 def _stretches_of(clip):
     """Return when each note or chord of a clip starts and stops, in whole notes from the clip's start."""
     stretches = []
-    start = ZERO
+    start = length.ZERO
     for sound in clip.resolved_sounds():
         _place_stretch(sound=sound, start=start, stretches=stretches)
-        start = Length.add(start, sound[LENGTH])
+        start = Length.add(start, sound[sound_values.LENGTH])
     return stretches
 
 
 def _place_stretch(*, sound, start, stretches):
     """Note the stretch a sound starting at a time sounds for, and those of a phrase's parts one after another; a held sound sounds as long as itself, past its place."""
-    kind = sound[KIND]
-    if kind == HELD:
-        _place_stretch(sound=sound[HELD_SOUND], start=start, stretches=stretches)
-    elif kind == PHRASE:
-        for part in sound[PARTS]:
+    kind = sound[sound_values.KIND]
+    if kind == sound_values.HELD:
+        _place_stretch(sound=sound[sound_values.HELD_SOUND], start=start, stretches=stretches)
+    elif kind == sound_values.PHRASE:
+        for part in sound[sound_values.PARTS]:
             _place_stretch(sound=part, start=start, stretches=stretches)
-            start = Length.add(start, part[LENGTH])
-    elif kind in (NOTE, CHORD, DEGREE):
-        stretches.append((Length.rational(start), Length.rational(Length.add(start, sound[LENGTH]))))
+            start = Length.add(start, part[sound_values.LENGTH])
+    elif kind in (sound_values.NOTE, sound_values.CHORD, sound_values.DEGREE):
+        stretches.append((Length.rational(start), Length.rational(Length.add(start, sound[sound_values.LENGTH]))))

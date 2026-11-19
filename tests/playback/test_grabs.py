@@ -28,7 +28,8 @@ from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.chord import Chord
 from llamatron.music import midi
-from llamatron.music.note import MAX_OCTAVE, NoteName
+from llamatron.music import note as note_values
+from llamatron.music.note import NoteName
 from llamatron.strings import errors
 from tests.support.song_testing import LEAD, X, clip, pat, pitches, with_parts
 
@@ -128,7 +129,7 @@ class TestGrab(unittest.TestCase):
 
     def test_a_note_of_the_chord_above_the_midi_range_is_left_out(self):
         # The bass plays the highest note there is, so the chord has nothing to add.
-        bass = pat([5, 1], octave=[MAX_OCTAVE])
+        bass = pat([5, 1], octave=[note_values.MAX_OCTAVE])
         riff = pat([1, QUARTER], grab=[True], chord=[ChordSymbol.MAJOR])
         self.assertEqual(self.sounding(self.lead(riff=riff, bass=bass).get_notes()[0]), [midi.MAX_MIDI_NUMBER])
 

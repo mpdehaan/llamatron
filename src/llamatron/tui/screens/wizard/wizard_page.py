@@ -37,7 +37,7 @@ from llamatron.strings import errors, help as help_text, labels, macro_composer 
 from llamatron.macro_composer.notation import KIT
 from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
 from llamatron.support.memory import Memory, StaleAnswer
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.document import Document
@@ -722,7 +722,7 @@ class WizardPage(FieldPage):
         """Make the song from the choices and the seed the run drew when it started, add it to the set with all it uses as one
         change, and show Arrange on it."""
         try:
-            made = self._choices.made_setlist(name=self._song_name, version=VERSION)
+            made = self._choices.made_setlist(name=self._song_name, version=version.VERSION)
         except (ValueError, SongFileError) as problem:
             # A form of the song's own can ask for what the genre's parts cannot fill, which is said and nothing made.
             self.to_tree()

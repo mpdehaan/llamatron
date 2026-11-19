@@ -27,7 +27,7 @@ from llamatron.macro_composer.loudness_steps import AS_DENSE, NOTES, ONE_NOTE, P
 from llamatron.macro_composer.song_plan import CHORUS
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.support.rational import Rational
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'a_song'
 A_SEED = 11
@@ -169,19 +169,19 @@ class TestTheWizardsSong(unittest.TestCase):
 
     def test_the_song_as_written_holds_no_trade_and_the_song_made_does(self):
         choices = arena_rock()
-        self.assertEqual(self.clips_with_a_velocity(choices.written_setlist(name=A_NAME, version=VERSION)), [])
-        self.assertTrue(self.clips_with_a_velocity(choices.made_setlist(name=A_NAME, version=VERSION)))
+        self.assertEqual(self.clips_with_a_velocity(choices.written_setlist(name=A_NAME, version=version.VERSION)), [])
+        self.assertTrue(self.clips_with_a_velocity(choices.made_setlist(name=A_NAME, version=version.VERSION)))
 
     def test_the_step_into_the_chorus_is_smaller_in_the_song_made(self):
         choices = arena_rock()
-        written = chorus_step(choices.written_setlist(name=A_NAME, version=VERSION))
-        made = chorus_step(choices.made_setlist(name=A_NAME, version=VERSION))
+        written = chorus_step(choices.written_setlist(name=A_NAME, version=version.VERSION))
+        made = chorus_step(choices.made_setlist(name=A_NAME, version=version.VERSION))
         self.assertGreater(written, LARGEST_STEP)
         self.assertLess(made, written)
 
     def test_a_traded_clip_plays_at_its_scenes_loudness_lowered_and_no_melody_trades(self):
         choices = arena_rock()
-        setlist = choices.made_setlist(name=A_NAME, version=VERSION)
+        setlist = choices.made_setlist(name=A_NAME, version=version.VERSION)
         song = setlist.get_song(A_NAME)
         melodies = choices.melody_players()
         for scene_name, track in self.clips_with_a_velocity(setlist):
@@ -193,7 +193,7 @@ class TestTheWizardsSong(unittest.TestCase):
             self.assertGreaterEqual(own.level, round(of_scene.level * LEAST_KEPT))
 
     def test_the_count_from_what_is_written_is_near_what_is_played(self):
-        song = arena_rock().written_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+        song = arena_rock().written_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)
         for counted, played in zip(loudness_steps.counted(song=song), loudness_steps.measured(song=song)):
             self.assertEqual(set(counted), set(played))
             for player, sums in played.items():
@@ -201,11 +201,11 @@ class TestTheWizardsSong(unittest.TestCase):
 
     def test_no_song_is_played_to_make_a_song(self):
         with unittest.mock.patch.object(loudness_steps, 'SongRenderer', side_effect=AssertionError):
-            arena_rock().made_setlist(name=A_NAME, version=VERSION)
+            arena_rock().made_setlist(name=A_NAME, version=version.VERSION)
 
     def test_the_same_choices_make_the_same_trades(self):
         choices = arena_rock()
-        self.assertEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), WizardChoices.from_data(choices.to_data()).made_setlist(name=A_NAME, version=VERSION).to_data())
+        self.assertEqual(choices.made_setlist(name=A_NAME, version=version.VERSION).to_data(), WizardChoices.from_data(choices.to_data()).made_setlist(name=A_NAME, version=version.VERSION).to_data())
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ import unittest
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer.melody import ANSWER, HEIGHT, HIGH, HIGHER, HOOK, LINE, LINE_BUSY, LOW, LOWER, MIDDLE, REPEATS, REPEATS_A_LITTLE, REPEATS_A_LOT, REPEATS_SOME, VARIED, plan_as_asked
 from llamatron.macro_composer.wizard_choices import ATONAL, MELODY_BUSY, MELODY_RANGE, MELODY_SPARSE, MELODY_WIDE, SMOOTH, USUAL_MELODY_WAYS, WizardChoices
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'made'
 A_SEED = 11
@@ -46,7 +46,7 @@ def chosen():
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
 
 
 class TestPlanAsAsked(unittest.TestCase):

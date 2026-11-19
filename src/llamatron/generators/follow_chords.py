@@ -29,8 +29,10 @@ and before the first chord, or with no track to follow, nothing moves.
 
 from llamatron.generators.arp import along_scale
 from llamatron.generators.base import ClipGenerator
-from llamatron.music.sound import CHORD, DEGREE, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTE, NOTES, PARTS, PHRASE, Sound
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
+from llamatron.support import length
+from llamatron.support.length import Length
 
 HALF_STEPS_PER_OCTAVE = 12
 # The half steps above a chord's root that its third, its fifth and its seventh can be, by the place above a figure's root, counted in notes of the scale from 0, that is the figure's.
@@ -53,32 +55,32 @@ class FollowChords(ClipGenerator):
         if self._chords is None or scale is None:
             return list(clip.resolved_sounds()), clip.get_length()
         result = []
-        now = ZERO
+        now = length.ZERO
         for sound in clip.resolved_sounds():
             result.append(self._moved(sound=sound, start=now, scale=scale))
-            now = Length.add(now, sound[LENGTH])
+            now = Length.add(now, sound[sound_values.LENGTH])
         return result, clip.get_length()
 
     def _moved(self, *, sound, start, scale):
         """Return a sound moved to the chord playing as it starts, each part of a phrase to the chord playing as the part starts."""
-        kind = sound[KIND]
-        if kind == DEGREE:
+        kind = sound[sound_values.KIND]
+        if kind == sound_values.DEGREE:
             return self._moved(sound=Sound.settled(sound, scale), start=start, scale=scale)
-        if kind == HELD:
-            return (HELD, sound[LENGTH], self._moved(sound=sound[HELD_SOUND], start=start, scale=scale))
-        if kind == PHRASE:
+        if kind == sound_values.HELD:
+            return (sound_values.HELD, sound[sound_values.LENGTH], self._moved(sound=sound[sound_values.HELD_SOUND], start=start, scale=scale))
+        if kind == sound_values.PHRASE:
             parts = []
-            for part in sound[PARTS]:
+            for part in sound[sound_values.PARTS]:
                 parts.append(self._moved(sound=part, start=start, scale=scale))
-                start = Length.add(start, part[LENGTH])
-            return (PHRASE, sound[LENGTH], tuple(parts))
+                start = Length.add(start, part[sound_values.LENGTH])
+            return (sound_values.PHRASE, sound[sound_values.LENGTH], tuple(parts))
         chord = self._chords.chord_at(Length.rational(start))
         if chord is None:
             return sound
-        if kind == NOTE:
+        if kind == sound_values.NOTE:
             return _to_chord(note=sound, chord=chord, scale=scale)
-        if kind == CHORD:
-            return Sound.chord([_to_chord(note=note, chord=chord, scale=scale) for note in sound[NOTES]])
+        if kind == sound_values.CHORD:
+            return Sound.chord([_to_chord(note=note, chord=chord, scale=scale) for note in sound[sound_values.NOTES]])
         return sound
 
 
@@ -109,11 +111,11 @@ def _as_the_chord_has_it(*, note, moved, chord, scale):
     nothing of it, and one with two leaves the note as moved.
     """
     root, held = chord
-    above, extra = _place_in(midi=note[MIDI], scale=scale)
+    above, extra = _place_in(midi=note[sound_values.MIDI], scale=scale)
     if extra or above not in KINDS_OF_CHORD_NOTE or len(scale.get_type().value) != PLACED_SCALE_SIZE:
         return moved
     kind = KINDS_OF_CHORD_NOTE[above]
-    own = (moved[MIDI] - root) % HALF_STEPS_PER_OCTAVE
+    own = (moved[sound_values.MIDI] - root) % HALF_STEPS_PER_OCTAVE
     has = [interval for interval in kind if (root + interval) % HALF_STEPS_PER_OCTAVE in held]
     if own not in kind or own in has or len(has) != 1:
         return moved

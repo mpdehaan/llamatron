@@ -23,7 +23,7 @@ from llamatron.macro_composer import line_edits
 from llamatron.macro_composer.line_edits import HIGHEST_PLACE, LOWEST_PLACE, NOTES_IN_SCALE, found, moved, place_of, steps_of, stretched, tidied, toggled
 from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, OCTAVE, REST, SHARP, STEPS, STRESS, ARRIVAL
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'made'
 A_SEED = 11
@@ -114,7 +114,7 @@ class TestWizardHookNotes(unittest.TestCase):
 
     def made(self, choices):
         """The music of the song made: its patterns."""
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
 
     def test_the_wizard_s_own_line_written_back_is_the_same_hook_and_the_same_song(self):
         choices = self.chosen()

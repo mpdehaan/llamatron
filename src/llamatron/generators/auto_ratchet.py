@@ -17,7 +17,8 @@
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.grid.positions import fit_to_length
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTES, PARTS, PHRASE, REST, Sound
+from llamatron.music import sound
+from llamatron.music.sound import Sound
 from llamatron.support.length import Length
 from llamatron.strings import errors
 
@@ -27,9 +28,9 @@ UNCHANGED = 1
 
 def divide(*, position, times):
     """Return a position that lasts 1/times as long."""
-    if position[KIND] == CHORD:
-        return Sound.chord([divide(position=note, times=times) for note in position[NOTES]])
-    return Sound.with_length(position, Length.shared(position[LENGTH], times))
+    if position[sound.KIND] == sound.CHORD:
+        return Sound.chord([divide(position=note, times=times) for note in position[sound.NOTES]])
+    return Sound.with_length(position, Length.shared(position[sound.LENGTH], times))
 
 
 def _check_counts(counts):
@@ -88,10 +89,10 @@ class AutoRatchet(ClipGenerator):
         """Return positions with each note or chord chopped by the next count, and rests left as they are."""
         result = []
         for position in positions:
-            kind = position[KIND]
-            if kind == REST:
+            kind = position[sound.KIND]
+            if kind == sound.REST:
                 result.append(position)
-            elif kind == HELD or kind == PHRASE:
+            elif kind == sound.HELD or kind == sound.PHRASE:
                 result.append(self._ratcheted_held(held=position, counts=counts))
             else:
                 result += _chopped(position=position, count=next(counts))
@@ -99,8 +100,8 @@ class AutoRatchet(ClipGenerator):
 
     def _ratcheted_held(self, *, held, counts):
         """Return a held sound with its notes chopped, still held in the same place."""
-        parts = held[PARTS] if held[KIND] == PHRASE else [held[HELD_SOUND]]
-        return Sound.phrase(self._ratcheted(positions=parts, counts=counts), held[LENGTH])
+        parts = held[sound.PARTS] if held[sound.KIND] == sound.PHRASE else [held[sound.HELD_SOUND]]
+        return Sound.phrase(self._ratcheted(positions=parts, counts=counts), held[sound.LENGTH])
 
 
 def _chopped(*, position, count):

@@ -24,9 +24,11 @@ import llamatron
 from llamatron.music.chord import Chord, ChordType
 from llamatron.music.held import Held, phrase
 from llamatron.music import midi
-from llamatron.music.note import FIRST_DEGREE, MAX_OCTAVE, MIN_OCTAVE, SEMITONES_ABOVE_C, Degree, Note, NoteName, Rest
+from llamatron.music import note as note_values
+from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.music.sound import CHORD, DEGREE, HELD, NOTE, PHRASE, REST, Sound
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 from llamatron.strings import errors
 from llamatron.support.length import Length
 from llamatron.support.rational import Rational
@@ -40,12 +42,12 @@ VELOCITIES = [None, 1, midi.MAX_VELOCITY]
 # How far a note is moved by half steps, both ways, past an octave and past the MIDI range.
 HALF_STEPS = [-130, -13, -12, -1, 0, 1, 5, 12, 25, 130]
 # The degrees, the scale notes moved and the half steps added that a pattern's steps ask a scale for.
-DEGREES = range(FIRST_DEGREE, FIRST_DEGREE + 16)
+DEGREES = range(note_values.FIRST_DEGREE, note_values.FIRST_DEGREE + 16)
 SCALE_NOTES = [-9, -1, 0, 1, 7]
 ADDED_HALF_STEPS = [-1, 0, 1, 60, 130]
 ROOTS = [NoteName.C, NoteName.B_FLAT, NoteName.F_SHARP]
 # The highest octave has no notes above G, so the roots stop an octave below it.
-ROOT_OCTAVES = [MIN_OCTAVE, 4, MAX_OCTAVE - 1]
+ROOT_OCTAVES = [note_values.MIN_OCTAVE, 4, note_values.MAX_OCTAVE - 1]
 # Something that is no position of a clip.
 NOT_A_POSITION = 'C4'
 # The modules a render runs for every note, which make sounds and never the classes.
@@ -69,8 +71,8 @@ C_MAJOR = Scale(root=Note(name=NoteName.C, octave_number=4, length=QUARTER), typ
 def every_note():
     """Return a note of every spelling in a low, a middle and a high octave, with every kind of length and velocity."""
     notes = []
-    for place, name in enumerate(SEMITONES_ABOVE_C):
-        for octave in (MIN_OCTAVE + 1, 5, MAX_OCTAVE - 1):
+    for place, name in enumerate(note_values.SEMITONES_ABOVE_C):
+        for octave in (note_values.MIN_OCTAVE + 1, 5, note_values.MAX_OCTAVE - 1):
             length = LENGTHS[place % len(LENGTHS)]
             velocity = VELOCITIES[place % len(VELOCITIES)]
             notes.append(Note(name=name, octave_number=octave, length=length, velocity=velocity, glide=bool(place % 2)))
@@ -83,7 +85,7 @@ def every_position():
     degree = Degree(number=3, length=EIGHTH, octave=1, scale_notes=2, half_steps=-1)
     return [
         *every_note(), Rest(QUARTER), Rest(THIRD), chord, Chord([C4, Note(name=NoteName.E, octave_number=4)]),
-        degree, Degree(number=FIRST_DEGREE), Held(sound=C4, length=EIGHTH), Held(sound=chord, length=EIGHTH),
+        degree, Degree(number=note_values.FIRST_DEGREE), Held(sound=C4, length=EIGHTH), Held(sound=chord, length=EIGHTH),
         Held(sound=degree, length=EIGHTH), Held(sound=phrase([C4, Rest(EIGHTH), chord, degree, Held(sound=E4, length=EIGHTH)]), length=EIGHTH),
     ]
 
@@ -138,8 +140,8 @@ class TestSoundsAndPositions(unittest.TestCase):
 
     def test_each_kind_of_position_is_its_kind_of_sound(self):
         kinds = {
-            NOTE: C4, REST: Rest(QUARTER), CHORD: Chord([C4, E4]), DEGREE: Degree(number=2),
-            HELD: Held(sound=C4, length=EIGHTH), PHRASE: Held(sound=phrase([C4, E4]), length=EIGHTH),
+            sound_values.NOTE: C4, sound_values.REST: Rest(QUARTER), sound_values.CHORD: Chord([C4, E4]), sound_values.DEGREE: Degree(number=2),
+            sound_values.HELD: Held(sound=C4, length=EIGHTH), sound_values.PHRASE: Held(sound=phrase([C4, E4]), length=EIGHTH),
         }
         for kind, position in kinds.items():
             with self.subTest(position=position):
@@ -168,8 +170,8 @@ class TestSoundsAreMadeAsTheClassesMakeThem(unittest.TestCase):
     """Each way the render makes or copies a sound gives what the class gives, and refuses what the class refuses in the same words."""
 
     def test_a_note_from_its_name_and_octave(self):
-        for name in SEMITONES_ABOVE_C:
-            for octave in range(MIN_OCTAVE - 1, MAX_OCTAVE + 2):
+        for name in note_values.SEMITONES_ABOVE_C:
+            for octave in range(note_values.MIN_OCTAVE - 1, note_values.MAX_OCTAVE + 2):
                 with self.subTest(name=name, octave=octave):
                     expected = problem(lambda: Note(name=name, octave_number=octave, length=QUARTER, velocity=64, glide=True))
                     found = problem(lambda: Sound.named_note(name=name, octave=octave, length=Length.exact(QUARTER), velocity=64, glide=True))
@@ -250,9 +252,9 @@ class TestAScalesSoundIsItsNote(unittest.TestCase):
         self.assertEqual(said(Sound.position(sound)), said(C_MAJOR.note_at(degree=3, scale_notes=0, half_steps=0, length=None)))
 
     def test_the_ends_of_the_midi_range_are_notes(self):
-        lowest = Scale(root=Note(name=NoteName.C, octave_number=MIN_OCTAVE, length=QUARTER), typ=ScaleType.MAJOR)
-        self.assertEqual(Sound.position(lowest.sound_at(degree=FIRST_DEGREE, scale_notes=0, half_steps=0, length=(1, 4))).get_midi_number(), midi.MIN_MIDI_NUMBER)
-        highest = lowest.sound_at(degree=FIRST_DEGREE, scale_notes=0, half_steps=midi.MAX_MIDI_NUMBER, length=(1, 4))
+        lowest = Scale(root=Note(name=NoteName.C, octave_number=note_values.MIN_OCTAVE, length=QUARTER), typ=ScaleType.MAJOR)
+        self.assertEqual(Sound.position(lowest.sound_at(degree=note_values.FIRST_DEGREE, scale_notes=0, half_steps=0, length=(1, 4))).get_midi_number(), midi.MIN_MIDI_NUMBER)
+        highest = lowest.sound_at(degree=note_values.FIRST_DEGREE, scale_notes=0, half_steps=midi.MAX_MIDI_NUMBER, length=(1, 4))
         self.assertEqual(Sound.position(highest).get_midi_number(), midi.MAX_MIDI_NUMBER)
 
 

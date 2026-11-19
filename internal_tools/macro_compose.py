@@ -35,7 +35,7 @@ from llamatron.macro_composer.arranger import STYLE, arranged, style_named
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer.decomposer import decomposed, same_music
 from llamatron.support.safe_yaml import load_safely
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 FILE_ENCODING = 'utf-8'
 WRITE_TEXT = 'w'
@@ -65,7 +65,7 @@ def read(path):
 
 
 def compose_file(*, source, out):
-    Setlist.from_data(data=composed(given=read(source), version=VERSION)).write_file(str(out))
+    Setlist.from_data(data=composed(given=read(source), version=version.VERSION)).write_file(str(out))
     print(MSG_COMPOSED.format(source, out))
 
 
@@ -76,7 +76,7 @@ def arrange_file(*, source, out, keep_input):
     if keep_input:
         with open(keep_input, WRITE_TEXT, encoding=FILE_ENCODING) as file:
             file.write(LEGEND + yaml.safe_dump(given, sort_keys=False, width=LINE_WIDTH, default_flow_style=None, allow_unicode=True))
-    Setlist.from_data(data=composed(given=given, version=VERSION)).write_file(str(out))
+    Setlist.from_data(data=composed(given=given, version=version.VERSION)).write_file(str(out))
     print(MSG_ARRANGED.format(source, song[STYLE], out))
 
 
@@ -90,7 +90,7 @@ def decompose_file(*, source, out):
 
 def composes_to(*, source, set_file):
     """Whether the input composes to the set file's music, each read back through the program so that both are written the same way."""
-    made = Setlist.from_data(data=composed(given=read(source), version=VERSION)).to_data()
+    made = Setlist.from_data(data=composed(given=read(source), version=version.VERSION)).to_data()
     kept = Setlist.read_file(str(set_file)).to_data()
     return same_music(one=made, other=kept)
 

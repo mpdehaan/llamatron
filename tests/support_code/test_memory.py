@@ -17,7 +17,8 @@
 
 import unittest
 
-from llamatron.support.memory import MAX_ANSWERS, Memory, StaleAnswer
+from llamatron.support import memory as memory_values
+from llamatron.support.memory import Memory, StaleAnswer
 from llamatron.support.revised import ChangeMark
 
 QUESTION = 'question'
@@ -98,17 +99,17 @@ class TestMemory(unittest.TestCase):
 
     def test_a_full_memory_forgets_everything_and_goes_on(self):
         counted = Counted(FIRST_ANSWER)
-        for number in range(MAX_ANSWERS):
+        for number in range(memory_values.MAX_ANSWERS):
             self.memory.remembered(key=number, on=(self.thing,), compute=counted.compute)
-        self.assertEqual(self.memory.count(), MAX_ANSWERS)
+        self.assertEqual(self.memory.count(), memory_values.MAX_ANSWERS)
         # Under the limit every answer was kept: asking for the first again works nothing out.
         self.memory.remembered(key=0, on=(self.thing,), compute=counted.compute)
-        self.assertEqual(counted.times, MAX_ANSWERS)
+        self.assertEqual(counted.times, memory_values.MAX_ANSWERS)
         # The answer that would go past the limit empties the memory first, and is then kept itself.
-        self.assertEqual(self.memory.remembered(key=MAX_ANSWERS, on=(self.thing,), compute=counted.compute), FIRST_ANSWER)
+        self.assertEqual(self.memory.remembered(key=memory_values.MAX_ANSWERS, on=(self.thing,), compute=counted.compute), FIRST_ANSWER)
         self.assertEqual(self.memory.count(), 1)
         self.memory.remembered(key=0, on=(self.thing,), compute=counted.compute)
-        self.assertEqual(counted.times, MAX_ANSWERS + 2)
+        self.assertEqual(counted.times, memory_values.MAX_ANSWERS + 2)
 
 
 class TestAMemoryThatChecksItself(unittest.TestCase):

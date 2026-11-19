@@ -28,7 +28,8 @@ from llamatron.composition.file_format import (
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.generators.arp import ChordOrder, MAX_OFFSETS, OctaveJump
-from llamatron.music.note import NoteName, SHARP_NAMES
+from llamatron.music import note
+from llamatron.music.note import NoteName
 from llamatron.tui.components.keyboard import Keyboard, KEY_WIDTH as KEYBOARD_KEY_WIDTH
 from llamatron.music.scale import ScaleType
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -210,9 +211,9 @@ class TestScalePage(UITest):
         lines = Keyboard(root=NoteName.C_SHARP, half_steps=ScaleType.MAJOR.value).lines()
         self.assertEqual(lines[0].count(marks.MSG_KEY_IN_SCALE), 10)
         self.assertEqual(lines[1].count(marks.MSG_KEY_IN_SCALE), 4)
-        self.assertNotIn(SHARP_NAMES[0].center(KEYBOARD_KEY_WIDTH), lines[2])
-        self.assertNotIn(SHARP_NAMES[2].center(KEYBOARD_KEY_WIDTH), lines[2])
-        self.assertIn(SHARP_NAMES[4].center(KEYBOARD_KEY_WIDTH), lines[2])
+        self.assertNotIn(note.SHARP_NAMES[0].center(KEYBOARD_KEY_WIDTH), lines[2])
+        self.assertNotIn(note.SHARP_NAMES[2].center(KEYBOARD_KEY_WIDTH), lines[2])
+        self.assertIn(note.SHARP_NAMES[4].center(KEYBOARD_KEY_WIDTH), lines[2])
 
     async def test_the_scale_page_renames_the_scale_and_what_uses_it(self):
         self.document.set_scene_scale(index=0, name=DEFAULT_SCALE)

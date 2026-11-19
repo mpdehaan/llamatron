@@ -22,7 +22,7 @@ from llamatron.macro_composer.arranger import CHORDS
 from llamatron.macro_composer.joins import LEAVES
 from llamatron.macro_composer.song_plan import ENERGY, FADE_LEVEL, FADE_OVER, FADED, FADES, LOUDEST_FADE_LEVEL, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
 from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
-from llamatron.music.note import ROOT_NAMES
+from llamatron.music import note
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle, gauge_shown
 from llamatron.tui.screens.wizard.branch import Branch
@@ -35,7 +35,7 @@ FIRST_SECTION_NUMBER = 1
 
 # The numbers a section can be given of its own, each with its range, and the choices of each field chosen from a list.
 NUMBERS_OF_SECTION = {ENERGY: (LOWEST_ENERGY, HIGHEST_ENERGY), TEMPO_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO), TEMPO_END_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO)}
-CHOICES_OF_SECTION = {LEAVES: list(LEAVES_AS_JOIN), SETUP: [NOT_AT_ALL], ROOT_OF_PLACE: list(ROOT_NAMES), TYPE_OF_PLACE: list(SCALE_TYPES)}
+CHOICES_OF_SECTION = {LEAVES: list(LEAVES_AS_JOIN), SETUP: [NOT_AT_ALL], ROOT_OF_PLACE: list(note.ROOT_NAMES), TYPE_OF_PLACE: list(SCALE_TYPES)}
 
 
 # The groups of what a section is given of its own, in the order they show, each with its fields in order.

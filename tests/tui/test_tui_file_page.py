@@ -34,7 +34,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from llamatron.tui import keybindings
 
 SET_FILE = 'my_set.yml'
@@ -91,7 +91,7 @@ class TestFilePage(UITest):
         self.assertEqual((setlist.get_title(), setlist.get_author()), (RAIN_ON_THE_BRIDGE, SOMEONE))
         self.document.save(path='song.yml')
         with open('song.yml') as file:
-            self.assertTrue(file.read().startswith(f'version: {VERSION}\ntitle: Rain on the Bridge\nauthor: Someone\n'))
+            self.assertTrue(file.read().startswith(f'version: {version.VERSION}\ntitle: Rain on the Bridge\nauthor: Someone\n'))
         self.assertEqual(Document.load('song.yml').setlist().get_title(), RAIN_ON_THE_BRIDGE)
         await self.press(Key.BACKSPACE)
         self.assertEqual(self.document.setlist().get_author(), NO_TEXT)

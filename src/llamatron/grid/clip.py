@@ -19,7 +19,8 @@
 import re
 from itertools import count
 
-from llamatron.support.length import ZERO, Length
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
 from llamatron.composition.groove import Groove
 from llamatron.composition.checks import check_clip_length, check_loop, check_name, check_scale, check_time_signature_override
 from llamatron.grid.control import Control
@@ -27,7 +28,8 @@ from llamatron.grid.positions import exact_length, fit_to_length, piece_of
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held
 from llamatron.music.note import Degree, Note, Rest
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTES, PARTS, PHRASE, REST, Sound
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 from llamatron.strings import errors, reprs
 
 # The shorthand a clip's list accepts: each dash is a quarter note of rest, and a note is its name and octave.
@@ -264,18 +266,18 @@ class Clip:
 
     def _filled(self, sound):
         """Return a sound with its missing lengths filled in, or the sound itself if none were missing."""
-        kind = sound[KIND]
-        if kind == PHRASE:
-            parts = [self._filled(part) for part in sound[PARTS]]
-            return sound if _same_objects(first=parts, second=sound[PARTS]) else (PHRASE, sound[LENGTH], tuple(parts))
-        if kind == HELD:
-            filled = self._filled(sound[HELD_SOUND])
-            return sound if filled is sound[HELD_SOUND] else (HELD, sound[LENGTH], filled)
-        if sound[LENGTH] is not None:
+        kind = sound[sound_values.KIND]
+        if kind == sound_values.PHRASE:
+            parts = [self._filled(part) for part in sound[sound_values.PARTS]]
+            return sound if _same_objects(first=parts, second=sound[sound_values.PARTS]) else (sound_values.PHRASE, sound[sound_values.LENGTH], tuple(parts))
+        if kind == sound_values.HELD:
+            filled = self._filled(sound[sound_values.HELD_SOUND])
+            return sound if filled is sound[sound_values.HELD_SOUND] else (sound_values.HELD, sound[sound_values.LENGTH], filled)
+        if sound[sound_values.LENGTH] is not None:
             # A rest, or a note, degree or chord with every length of its own, which is nearly every position of a rendered clip.
             return sound
-        if kind == CHORD:
-            return Sound.chord([self._filled(note) for note in sound[NOTES]])
+        if kind == sound_values.CHORD:
+            return Sound.chord([self._filled(note) for note in sound[sound_values.NOTES]])
         return Sound.with_length(sound, self._note_length_for(sound))
 
     def _note_length_for(self, sound):
@@ -286,16 +288,16 @@ class Clip:
 
     def _resolved_length(self, sound):
         """Return how long a sound lasts once its missing lengths are filled in, as a pair, without building anything."""
-        kind = sound[KIND]
-        if kind == HELD or kind == PHRASE:
+        kind = sound[sound_values.KIND]
+        if kind == sound_values.HELD or kind == sound_values.PHRASE:
             # What it holds is checked for missing lengths too, as resolving it would.
-            for part in sound[PARTS] if kind == PHRASE else [sound[HELD_SOUND]]:
+            for part in sound[sound_values.PARTS] if kind == sound_values.PHRASE else [sound[sound_values.HELD_SOUND]]:
                 self._resolved_length(part)
-            return sound[LENGTH]
-        if sound[LENGTH] is not None:
-            return sound[LENGTH]
-        if kind == CHORD:
-            return Length.longest([self._resolved_length(note) for note in sound[NOTES]])
+            return sound[sound_values.LENGTH]
+        if sound[sound_values.LENGTH] is not None:
+            return sound[sound_values.LENGTH]
+        if kind == sound_values.CHORD:
+            return Length.longest([self._resolved_length(note) for note in sound[sound_values.NOTES]])
         return self._note_length_for(sound)
 
     def played_notes(self):
@@ -328,12 +330,12 @@ class Clip:
         first = Length.of(start)
         last = Length.of(end)
         sounds = []
-        sound_start = ZERO
+        sound_start = length_values.ZERO
         for sound in self.played_sounds():
             if not Length.less(sound_start, last):
                 # Everything from here on starts after the section ends.
                 break
-            sound_end = Length.add(sound_start, sound[LENGTH])
+            sound_end = Length.add(sound_start, sound[sound_values.LENGTH])
             if Length.at_most(first, sound_start) and Length.at_most(sound_end, last):
                 # A position that lies wholly inside the section is kept as it is.
                 sounds.append(sound)
@@ -344,7 +346,7 @@ class Clip:
                     sounds.append(piece_of(position=sound, offset=Length.subtract(piece_start, sound_start), length=Length.subtract(piece_end, piece_start)))
             sound_start = sound_end
         if Length.less(sound_start, last):
-            sounds.append((REST, Length.subtract(last, Length.longer(sound_start, first))))
+            sounds.append((sound_values.REST, Length.subtract(last, Length.longer(sound_start, first))))
         controls = [item.moved_by(-start) for item in self._controls if start <= item.get_time() < end]
         return Clip(name=self._name, sounds=sounds, scale=self._scale, note_length=self._note_length, controls=controls)
 

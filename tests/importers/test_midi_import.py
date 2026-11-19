@@ -44,7 +44,8 @@ from llamatron.music.scale import ScaleType
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors, importing
 from llamatron.support.rational import Rational
-from llamatron.support.example_sets import BY_GENRE, OTHER, LEARNING, SET_FOLDERS, example_sets, folder_of_example
+from llamatron.support import example_sets as example_sets_values
+from llamatron.support.example_sets import example_sets, folder_of_example
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SAMPLE_MIDI_FILES = os.path.join(ROOT, 'examples', 'midi', '*.mid')
@@ -173,18 +174,18 @@ def examples_in(folder):
 class TestRoundTripOfTheShowcase(unittest.TestCase):
 
     def test_every_learning_demo_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=examples_in(LEARNING))
+        check_round_trips(test=self, paths=examples_in(example_sets_values.LEARNING))
 
 
 class TestRoundTripOfTheAdvancedDemos(unittest.TestCase):
 
     def test_every_other_demo_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=examples_in(OTHER))
+        check_round_trips(test=self, paths=examples_in(example_sets_values.OTHER))
 
 
 def homages_in_turn(*, turn):
     """Return every third homage, starting at the turn given: the homages are too many for one class's time, so three classes share them."""
-    return examples_in(BY_GENRE)[turn::CLASSES_OF_HOMAGES]
+    return examples_in(example_sets_values.BY_GENRE)[turn::CLASSES_OF_HOMAGES]
 
 
 class TestRoundTripOfTheHomages(unittest.TestCase):
@@ -194,7 +195,7 @@ class TestRoundTripOfTheHomages(unittest.TestCase):
 
     def test_the_three_classes_hold_every_homage_once(self):
         shared = [path for turn in range(CLASSES_OF_HOMAGES) for path in homages_in_turn(turn=turn)]
-        self.assertEqual(sorted(shared), sorted(examples_in(BY_GENRE)))
+        self.assertEqual(sorted(shared), sorted(examples_in(example_sets_values.BY_GENRE)))
 
 
 class TestRoundTripOfTheHomagesSecondTurn(unittest.TestCase):
@@ -215,7 +216,7 @@ class TestRoundTripOfTheLongestExample(unittest.TestCase):
         check_round_trips(test=self, paths=[path for path in example_sets(root=ROOT) if os.path.basename(path) == LONGEST_EXAMPLE])
 
     def test_every_example_is_in_one_round_trip_class(self):
-        checked = [path for folder in SET_FOLDERS for path in examples_in(folder)] + [path for path in example_sets(root=ROOT) if os.path.basename(path) == LONGEST_EXAMPLE]
+        checked = [path for folder in example_sets_values.SET_FOLDERS for path in examples_in(folder)] + [path for path in example_sets(root=ROOT) if os.path.basename(path) == LONGEST_EXAMPLE]
         self.assertEqual(sorted(checked), sorted(example_sets(root=ROOT)))
 
 

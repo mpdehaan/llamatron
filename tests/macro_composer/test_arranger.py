@@ -28,7 +28,7 @@ from llamatron.strings import macro_composer as composer_text
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import arranger, band, composer, loudness, melody, notation, players
 from llamatron.support.safe_yaml import load_safely
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 FILE_ENCODING = 'utf-8'
 STYLE_TEMPLATES = arranger.STYLE_TEMPLATES
@@ -234,7 +234,7 @@ class TestStyleTemplates(unittest.TestCase):
             for template in style[arranger.TEMPLATES]:
                 song = {**a_song(template=template), arranger.STYLE: style[arranger.NAME], arranger.FORM: list(style[arranger.SECTIONS])}
                 with self.subTest(path=path, template=template):
-                    made = Setlist.from_data(data=composer.composed(given=arranger.arranged(style=style, song=song), version=VERSION))
+                    made = Setlist.from_data(data=composer.composed(given=arranger.arranged(style=style, song=song), version=version.VERSION))
                     scenes = len(made.get_songs()[0].get_scenes())
                     self.assertGreater(scenes, 0)
                     self.assertLessEqual(scenes, len(style[arranger.SECTIONS]))
@@ -257,7 +257,7 @@ class TestStyleTemplates(unittest.TestCase):
                 for form in arranger.forms_of(style=style, song={arranger.TEMPLATE: template}):
                     song = {**a_song(template=template), arranger.STYLE: style[arranger.NAME], arranger.FORM: form[arranger.NAME]}
                     with self.subTest(path=path, template=template, form=form[arranger.NAME]):
-                        made = Setlist.from_data(data=composer.composed(given=arranger.arranged(style=style, song=song), version=VERSION))
+                        made = Setlist.from_data(data=composer.composed(given=arranger.arranged(style=style, song=song), version=version.VERSION))
                         self.assertGreater(len(made.get_songs()[0].get_scenes()), 0)
 
 
@@ -371,7 +371,7 @@ class TestArranged(unittest.TestCase):
 
     def test_the_chords_track_is_muted_in_the_set_made(self):
         given = arranger.arranged(style=self.style, song=a_song())
-        setlist = Setlist.from_data(data=composer.composed(given=given, version=VERSION))
+        setlist = Setlist.from_data(data=composer.composed(given=given, version=version.VERSION))
         song = setlist.get_songs()[0]
         self.assertEqual([name for name in song.get_track_names() if song.get_track(name).is_muted()], [composer_text.MSG_CHORDS_TRACK])
 
@@ -409,7 +409,7 @@ class TestArranged(unittest.TestCase):
         made = self.chords_written(given=given, section=SOLO)
         self.assertEqual(made[Row.DEGREE], [1, 1, 4, 5])
         self.assertEqual(made[PatternSetting.STEP_SIZE], arranger.half_bar_of(arranger.COMMON_TIME))
-        Setlist.from_data(data=composer.composed(given=given, version=VERSION))
+        Setlist.from_data(data=composer.composed(given=given, version=version.VERSION))
 
     def test_more_shared_bars_than_a_progression_holds_are_played_a_chord_a_bar(self):
         long = [*[1] * (limits.MAX_PROGRESSION_CHORDS // 2), [1, 5]]

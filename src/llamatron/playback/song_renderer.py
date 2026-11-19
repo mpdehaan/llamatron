@@ -29,7 +29,7 @@ from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Ram
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.musician import Surroundings
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND
+from llamatron.music import sound as sound_values
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.support.random_source import random_source
 from llamatron.playback.chord_source import ChordSource
@@ -911,4 +911,4 @@ def _grab_loop(*, waiting, track):
 
 def _chords_in(clip):
     """Return how many chords a finished clip plays, a held one too, which a strum's down up counts."""
-    return sum(1 for sound in clip.get_sounds() if sound[KIND] == CHORD or (sound[KIND] == HELD and sound[HELD_SOUND][KIND] == CHORD))
+    return sum(1 for sound in clip.get_sounds() if sound[sound_values.KIND] == sound_values.CHORD or (sound[sound_values.KIND] == sound_values.HELD and sound[sound_values.HELD_SOUND][sound_values.KIND] == sound_values.CHORD))

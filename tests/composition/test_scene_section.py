@@ -22,7 +22,7 @@ from llamatron.composition.file_format import SECTION_KINDS, SceneSetting, Secti
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from tests.support.rendering import render_song, song_from_data
 from tests.support.song_testing import LEAD, clip, lead_data, pitches
 from tests.support.ui_testing import fixed_text
@@ -86,7 +86,7 @@ class TestSceneSection(unittest.TestCase):
         choices.set_genre('rock')
         choices.set_subgenre('hard rock')
         choices.set_seed(A_SEED)
-        scenes = choices.made_setlist(name=SONG_NAME, version=VERSION).get_song(SONG_NAME).get_scenes()
+        scenes = choices.made_setlist(name=SONG_NAME, version=version.VERSION).get_song(SONG_NAME).get_scenes()
         sections = [scene.get_section() for scene in scenes]
         self.assertIn(SectionKind.VERSE, sections)
         self.assertIn(SectionKind.CHORUS, sections)

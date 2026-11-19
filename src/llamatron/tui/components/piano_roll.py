@@ -38,7 +38,7 @@ from llamatron.tui.components.chord_row import pick_chord
 from llamatron.tui.components.keyswitch_row import pick_keyswitches
 from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
 from llamatron.music import midi
-from llamatron.music.note import ROOT_NAMES
+from llamatron.music import note as note_values
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved, BindsKeys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -229,7 +229,7 @@ class PianoRoll(BindsKeys):
         """
         song = self.document().song()
         octave = max((str(song.shown_octave(number)) for number in (limits.MIN_OCTAVE, limits.MAX_OCTAVE)), key=len)
-        notes = [marks.MSG_ROLL_OCTAVE_ONLY.format(octave=octave), *[name + octave for name in ROOT_NAMES]]
+        notes = [marks.MSG_ROLL_OCTAVE_ONLY.format(octave=octave), *[name + octave for name in note_values.ROOT_NAMES]]
         return max(len(labels.MSG_ROLL_ROW_LABEL.format(note=note, degree=self.size())) for note in notes)
 
     def starts_an_octave(self, pitch):
