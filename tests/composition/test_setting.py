@@ -24,8 +24,8 @@ from llamatron.composition import chain, clip_slot, file_format, generator_setti
 from llamatron.composition.clip_slot import FIRST_MORPH_STYLE, MORPH_STYLES, ClipSlot
 from llamatron.composition.checks import listed
 from llamatron.composition.file_format import (
-    BYPASS_WHEN, DIRECTIONS, OCTAVE_LABEL_CHOICES, ChainSetting, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section,
-    SetlistSetting, SongSetting, TrackSetting,
+    BYPASS_WHEN, DIRECTIONS, OCTAVE_LABEL_CHOICES, VELOCITY_SETTINGS, ChainSetting, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section,
+    SetlistSetting, SongSetting, TrackSetting, VelocitySetting,
 )
 from llamatron.composition.file_format import DRIFT_VERSIONS, DriftValue
 from llamatron.composition.file_format import GuitarifySetting
@@ -99,6 +99,12 @@ SETTING_CLASS_ENDING = 'Setting'
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.
 # The setting every generator has, described once for them all and named by no generator's own class of names.
 SHARED_BY_GENERATORS = {BYPASS_WHEN}
+
+def without_velocity(settings):
+    """Return a scene's or a clip's settings without the velocity settings, which the two share and VelocitySetting names."""
+    return {name: setting for name, setting in settings.items() if name not in VELOCITY_SETTINGS}
+
+
 DESCRIBED = [
     (SetlistSetting, setlist.SETTINGS, ()),
     (SongSetting, song.SETTINGS, ()),
@@ -109,8 +115,10 @@ DESCRIBED = [
     (TrackSetting, track.SETTINGS, ()),
     (PatternSetting, pattern.SETTINGS, (PatternSetting.STEPS,)),
     # chain is only read, from a file saved before a clip held a list of chains.
-    (ClipSlotSetting, clip_slot.SETTINGS, (ClipSlotSetting.CHAIN,)),
-    (SceneSetting, scene.SETTINGS, (SceneSetting.TRACKS,)),
+    (ClipSlotSetting, without_velocity(clip_slot.SETTINGS), (ClipSlotSetting.CHAIN,)),
+    (SceneSetting, without_velocity(scene.SETTINGS), (SceneSetting.TRACKS,)),
+    # A scene and a clip hold the same velocity settings, under the same names.
+    (VelocitySetting, {name: scene.SETTINGS[name] for name in VELOCITY_SETTINGS}, ()),
     # A chain's steps are its generators, read one by one.
     (ChainSetting, {ChainSetting.BYPASS_WHEN: chain.BYPASS_WHEN}, (ChainSetting.STEPS,)),
     (RegisterSetting, register.SETTINGS, ()),

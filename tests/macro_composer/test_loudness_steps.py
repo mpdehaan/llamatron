@@ -19,7 +19,7 @@
 import unittest
 import unittest.mock
 
-from llamatron.composition.file_format import FIXED_CHORDS, ChordSymbol, GuitarifySetting, Shape, Stroke
+from llamatron.composition.file_format import FIXED_CHORDS, ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
 from llamatron.composition.generator_settings import GuitarifySettings
 from llamatron.macro_composer import loudness_steps
 from llamatron.macro_composer.breaks import HAT, OPEN, RIDE
@@ -163,14 +163,14 @@ class TestTheCount(unittest.TestCase):
 class TestTheWizardsSong(unittest.TestCase):
     """The song the wizard makes holds the trades, and the song as written holds none."""
 
-    def clips_with_a_swell(self, setlist):
+    def clips_with_a_velocity(self, setlist):
         song = setlist.get_song(A_NAME)
-        return [(scene.get_name(), track) for scene in song.get_scenes() for track in scene.get_track_names() if scene.get_clip_slot(track).get_shape(Shape.SWELL) is not None]
+        return [(scene.get_name(), track) for scene in song.get_scenes() for track in scene.get_track_names() if scene.get_clip_slot(track).get_velocity_settings()[VelocitySetting.LEVEL] is not None]
 
     def test_the_song_as_written_holds_no_trade_and_the_song_made_does(self):
         choices = arena_rock()
-        self.assertEqual(self.clips_with_a_swell(choices.written_setlist(name=A_NAME, version=VERSION)), [])
-        self.assertTrue(self.clips_with_a_swell(choices.made_setlist(name=A_NAME, version=VERSION)))
+        self.assertEqual(self.clips_with_a_velocity(choices.written_setlist(name=A_NAME, version=VERSION)), [])
+        self.assertTrue(self.clips_with_a_velocity(choices.made_setlist(name=A_NAME, version=VERSION)))
 
     def test_the_step_into_the_chorus_is_smaller_in_the_song_made(self):
         choices = arena_rock()
@@ -184,12 +184,13 @@ class TestTheWizardsSong(unittest.TestCase):
         setlist = choices.made_setlist(name=A_NAME, version=VERSION)
         song = setlist.get_song(A_NAME)
         melodies = choices.melody_players()
-        for scene_name, track in self.clips_with_a_swell(setlist):
+        for scene_name, track in self.clips_with_a_velocity(setlist):
             scene = [scene for scene in song.get_scenes() if scene.get_name() == scene_name][0]
-            own = scene.get_clip_slot(track).get_shape(Shape.SWELL)
+            own = scene.get_clip_slot(track).get_velocity(scene)
+            of_scene = scene.get_velocity()
             self.assertNotIn(track, melodies)
-            self.assertLess(own.end, scene.get_shape(Shape.SWELL).end)
-            self.assertGreaterEqual(own.end, round(scene.get_shape(Shape.SWELL).end * LEAST_KEPT))
+            self.assertLess(own.level, of_scene.level)
+            self.assertGreaterEqual(own.level, round(of_scene.level * LEAST_KEPT))
 
     def test_the_count_from_what_is_written_is_near_what_is_played(self):
         song = arena_rock().written_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)

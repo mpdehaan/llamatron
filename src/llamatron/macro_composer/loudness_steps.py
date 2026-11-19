@@ -28,13 +28,13 @@ generators of the clip's chains that make more notes of a note, a Guitarify's st
 how many each note becomes. The count is near, never exact, and near is enough to tell a part twice as dense. The same sums
 taken from the song as played (measured) are for a report to hold the count against, never for making a song, which has to
 stay quick. The drummer's timekeeping cymbals, the closed hat, the open hat and the ride, count as one player, since the
-drummer moves from one to another. The trade is written as each clip's own swell, the scene's swell lowered.
+drummer moves from one to another. The trade is written as each clip's own velocity, the scene's velocity lowered.
 """
 
 from llamatron.composition import defaults
 from llamatron.composition.checks import time_length
-from llamatron.composition.file_format import FIXED_CHORDS, ChordSymbol, GeneratorKind, Row, Shape, ShapePart, Stroke
-from llamatron.composition.shapes import UNCHANGED, shape_setting
+from llamatron.composition.file_format import FIXED_CHORDS, VELOCITY_SETTINGS, ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
+from llamatron.composition.velocity_ramps import AS_WRITTEN, BAR_COUNTS
 from llamatron.macro_composer.breaks import HAT, OPEN, RIDE
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held
@@ -152,8 +152,7 @@ def counted(*, song):
     bar_length = song.get_time_signature().bar_length()
     scenes = []
     for scene in song.get_scenes():
-        swell = scene.get_shape(Shape.SWELL)
-        share = (swell.start + swell.end) / (2 * WHOLE) if swell else 1
+        share = scene.get_velocity().typical() / WHOLE
         players = {}
         for track in scene.get_track_names():
             slot = scene.get_clip_slot(track)
@@ -229,16 +228,18 @@ def trades(*, scenes, kept=()):
 
 
 def with_trades(*, song, kept=()):
-    """Write a song's trades into the song: each clip of a player who trades gets a swell of its own, its scene's lowered."""
+    """Write a song's trades into the song: each clip of a player who trades gets a velocity of its own, its scene's lowered, and each end its scene's ramps give lowered the same."""
     for scene, shares in zip(song.get_scenes(), trades(scenes=counted(song=song), kept=kept)):
-        of_scene = scene.get_shape(Shape.SWELL)
+        of_scene = scene.get_velocity_settings()
         for track in scene.get_track_names():
             share = shares.get(player_of(track))
             if share is None:
                 continue
             slot = scene.get_clip_slot(track)
-            for part, percent in ((ShapePart.START, of_scene.start if of_scene else UNCHANGED), (ShapePart.END, of_scene.end if of_scene else UNCHANGED)):
-                slot.set_shape_setting(name=shape_setting(shape=Shape.SWELL, part=part), value=round(percent * share))
+            for name in VELOCITY_SETTINGS:
+                percent = AS_WRITTEN if name == VelocitySetting.LEVEL and of_scene[name] is None else of_scene[name]
+                if name not in BAR_COUNTS and percent is not None:
+                    slot.set_velocity_setting(name=name, value=round(percent * share))
 
 
 def whole_band(players):

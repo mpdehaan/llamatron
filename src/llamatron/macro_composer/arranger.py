@@ -48,7 +48,7 @@ from llamatron.macro_composer.shaping import COMPOUND_BEAT, SIMPLE_BEAT, is_comp
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.checks import in_whole_notes
-from llamatron.composition.file_format import SECTION_KINDS, ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section
+from llamatron.composition.file_format import SECTION_KINDS, ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.composition.generator_settings import FollowChordsSetting
 from llamatron.composition.named_scale import scale_type_called
 from llamatron.composition import limits
@@ -1341,6 +1341,11 @@ def arranged(*, style, song):
             own_scale = scene_settings[SCALE]
             scene_settings[SCALE] = SCALE_NAME.format(own_scale[ROOT], own_scale[TYPE].capitalize())
             more_scales[scene_settings[SCALE]] = {ROOT: own_scale[ROOT], TYPE: own_scale[TYPE]}
+        # A section that climbs or fades with no bars said does so across all of its bars.
+        if VelocitySetting.IN_START in scene_settings:
+            scene_settings.setdefault(VelocitySetting.IN_OVER, bars)
+        if VelocitySetting.OUT_END in scene_settings:
+            scene_settings.setdefault(VelocitySetting.OUT_OVER, bars)
         if SceneSetting.TEMPO_IN_END in scene_settings:
             # A section that moves to another tempo by its end ramps across all of its bars.
             scene_settings.setdefault(SceneSetting.TEMPO_IN_OVER, bars)

@@ -20,7 +20,7 @@ from rich.text import Text
 
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.composition.file_format import RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, SHAPES, RampPart, Section, shape_setting
+from llamatron.composition.file_format import PLACED_SHAPES, RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, RampPart, Section, shape_setting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
@@ -31,6 +31,7 @@ from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.generators.shape_fields import shape_section
+from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.tui.screens.shared.statements import FIRST_TABLE, register_fields, statement_section
 from llamatron.tui import themes
 from llamatron.tui import keybindings
@@ -163,6 +164,7 @@ class ScenePage(FieldPage):
         song_tempo = plain_number(self.document().song().get_tempo())
         tempo = self.tempo()
         repeat = scene.get_repeat()
+        own_velocity, velocity_above, store_velocity = self.velocity_values()
         return [
             NameField(value=lambda: scene.get_name() or NOTHING, rename=self.rename),
             self.section_field(),
@@ -172,6 +174,7 @@ class ScenePage(FieldPage):
                 page=self, label=labels.MSG_TEMPO_LABEL, number=tempo, start=song_tempo, shown=self.tempo_text(), lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO,
                 set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
             ),
+            velocity_field(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
             NumberField(
                 page=self, label=labels.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT,
                 set=lambda number: self.document().set_scene_repeat(index=self.index, repeat=number),
@@ -181,9 +184,15 @@ class ScenePage(FieldPage):
             Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().set_scene_launch_together(index=self.index, value=on)),
             chains_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().set_scene_chains(index=self.index, names=names)),
             *[field for way in RAMP_WAYS for field in self.tempo_ramp_section(way)],
-            *[field for shape in SHAPES for field in self.shape_section(shape)],
+            *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
+            *[field for shape in PLACED_SHAPES for field in self.shape_section(shape)],
             *self.register_sections(),
         ]
+
+    def velocity_values(self):
+        """Return what the velocity fields read the scene's own velocity settings with, what gives a blank one from above, which nothing does for a scene, and what keeps one."""
+        scene = self.scene()
+        return scene.get_setting, lambda name: None, lambda name, value: self.document().set_scene_velocity_setting(index=self.index, name=name, value=value)
 
     def register_sections(self):
         """Return the scene's sections about the registers: what it sets them to as it first starts, what it adds every time it plays, and the statements that bypass the generators of its clips."""

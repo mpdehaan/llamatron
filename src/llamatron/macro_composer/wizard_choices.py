@@ -3274,24 +3274,22 @@ class WizardChoices:
 
     def fade_fields(self, place):
         """Return the fields of a section's fade, in the order shown: the switch where the section can fade, and while it is on,
-        the level the fade starts from or ends at, and for a fade in, the bars the fade takes."""
+        the level the fade starts from or ends at, and the bars the fade takes, the first of the section for a fade in and the last for a fade out."""
         way = self.fade_way(place)
         if way is None:
             return []
         if not self._entry(place).get(OWN_OF_SECTION, {}).get(FADES):
             return [FADES]
-        return [FADES, FADE_LEVEL, FADE_OVER] if way == FADE_IN else [FADES, FADE_LEVEL]
+        return [FADES, FADE_LEVEL, FADE_OVER]
 
     def _with_fade_way(self, *, place, own):
-        """What a section says of its own, with whether its fade is a fade in and the bars a fade in takes, never more than the section has."""
+        """What a section says of its own, with whether its fade is a fade in and the bars the fade takes, never more than the section has."""
         if not own.get(FADES):
             return {field: value for field, value in own.items() if field not in (FADES, FADE_LEVEL, FADE_OVER)}
         if self.fade_way(place) is None:
             # A section that fades was moved to where none does.
             return {field: value for field, value in own.items() if field not in (FADES, FADE_LEVEL, FADE_OVER)}
-        if self.fade_way(place) == FADE_OUT:
-            return {field: value for field, value in own.items() if field != FADE_OVER}
-        return {**own, FADES_IN: True, FADE_OVER: min(own.get(FADE_OVER, self.section_bars(place)), self.section_bars(place))}
+        return {**own, **({FADES_IN: True} if self.fade_way(place) == FADE_IN else {}), FADE_OVER: min(own.get(FADE_OVER, self.section_bars(place)), self.section_bars(place))}
 
     def section_shapes(self, place):
         """Return the shapes a section's lines may take besides its kind's own, by name."""

@@ -27,12 +27,13 @@ setting names something the song holds.
 from llamatron.composition.checks import check_keys, check_name, reading
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOICES, DIRECTIONS, ClipSlotSetting, Section
+from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOICES, DIRECTIONS, VELOCITY_SETTINGS, ClipSlotSetting, Section
 from llamatron.composition.llama_data import own_copy, LlamaData, settings_by_name, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
 from llamatron.composition.shapes import shape_settings, shape_values
+from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
@@ -83,6 +84,7 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.GRAB_TRACK, check=_check_grab_track_name, needs_song=True),
     Choice(name=ClipSlotSetting.FOLLOW_ACTION, choices=FOLLOW_ACTION_CHOICES, default=LEFT_OUT, error=errors.ERR_BAD_FOLLOW_ACTION),
     Checked(name=ClipSlotSetting.SCALE, check=_check_scale_name, needs_song=True),
+    *velocity_setting_descriptions(),
     *shape_settings(),
     *strum_settings(),
     register_values_setting(ClipSlotSetting.SET_REGISTERS),
@@ -163,8 +165,23 @@ class ClipSlot(LlamaData):
             SETTINGS[name].check(value)
         self._settings[name] = value
 
+    def get_velocity_settings(self):
+        """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
+        return {name: self._settings[name] for name in VELOCITY_SETTINGS}
+
+    def get_velocity(self, scene):
+        """Return how loud the clip plays in its scene, as a Velocity: its own settings over the scene's, field by field."""
+        return velocity_of(scene_settings=scene.get_velocity_settings(), clip_settings=self.get_velocity_settings())
+
+    @notes_change
+    def set_velocity_setting(self, *, name, value):
+        """Set one of its velocity settings by its file name, or None to leave it blank."""
+        if value is not None:
+            SETTINGS[name].check(value)
+        self._settings[name] = value
+
     def get_shape(self, shape):
-        """Return how a shape, Density, Swell or Articulate, runs over the clip, or None when the clip sets neither its start nor its end and takes its scene's."""
+        """Return how a shape, Density or Articulate, runs over the clip, or None when the clip sets neither its start nor its end and takes its scene's."""
         return shape_values(settings=self._settings, shape=shape)
 
     @notes_change

@@ -34,7 +34,7 @@ import sys
 
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import (
-    BYPASS_WHEN, NAMED_GENERATORS, SHAPES, SHAPE_PARTS, shape_setting,
+    BYPASS_WHEN, NAMED_GENERATORS, PLACED_SHAPES, SHAPE_PARTS, VELOCITY_SETTINGS, shape_setting,
     CC_REGISTER_SETTINGS,
     CC_ROWS,
     STATEMENT_ROWS, StepStatement,
@@ -155,7 +155,7 @@ def uses_another_time_signature(data):
 
 # Each feature a set can use, in the order the table lists them, with how to tell from a set's data.
 # Every setting of a shape a scene or a clip can hold, like density_start.
-SHAPE_SETTINGS = [shape_setting(shape=shape, part=part) for shape in SHAPES for part in SHAPE_PARTS]
+SHAPE_SETTINGS = [shape_setting(shape=shape, part=part) for shape in PLACED_SHAPES for part in SHAPE_PARTS]
 
 FEATURES = [
     ('gates', any_pattern_row(Row.GATE)),
@@ -190,6 +190,8 @@ FEATURES = [
     ('clip chain', any_clip_slot_setting(ClipSlotSetting.CHAINS)),
     ('scene chains', any_scene_setting(SceneSetting.CHAINS)),
     ('track chains', any_track_setting(TrackSetting.CHAINS)),
+    ('scene velocity', lambda data: any(any_scene_setting(setting)(data) for setting in VELOCITY_SETTINGS)),
+    ('clip velocity', lambda data: any(any_clip_slot_setting(setting)(data) for setting in VELOCITY_SETTINGS)),
     ('clip shapes', lambda data: any(any_clip_slot_setting(setting)(data) for setting in SHAPE_SETTINGS)),
     ('scene shapes', lambda data: any(any_scene_setting(setting)(data) for setting in SHAPE_SETTINGS)),
     ('morphs', any_clip_slot_setting(ClipSlotSetting.MORPH_TO)),

@@ -21,7 +21,7 @@ from rich.text import Text
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages
 from llamatron.composition.clip_slot import MORPH_STYLES
-from llamatron.composition.file_format import SHAPES, shape_setting, strum_setting, FOLLOW_ACTION_CHOICES, ClipSlotSetting, DIRECTIONS, Section
+from llamatron.composition.file_format import PLACED_SHAPES, shape_setting, strum_setting, FOLLOW_ACTION_CHOICES, ClipSlotSetting, DIRECTIONS, Section
 from llamatron.playback.song_renderer import GRAB_ARROW
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -37,6 +37,7 @@ from llamatron.tui.screens.shared.shared import columns, scene_name
 from llamatron.tui.uses import loop_error_lines
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.generators.shape_fields import shape_section
+from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.tui.screens.shared.statements import FIRST_TABLE, SECOND_TABLE, register_fields, statement_section
 from llamatron.tui.screens.generators.strum_fields import strum_section
 from llamatron.tui import themes
@@ -200,6 +201,7 @@ class ClipPage(FieldPage):
     def fields(self):
         clip_slot = self.clip_slot()
         repeat = clip_slot.get_repeat()
+        own_velocity, velocity_above, store_velocity = self.velocity_values()
         result = [
             NameField(value=self.name_text, rename=self.rename, clear=lambda: self.clear(ClipSlotSetting.NAME), clear_what=legends.MSG_USE_PATTERN_NAME_WHAT),
             Field(label=labels_text.MSG_PATTERN_LABEL, value=clip_slot.get_pattern_name, adjust=None,
@@ -220,11 +222,13 @@ class ClipPage(FieldPage):
             if clip_slot.get_morph_target():
                 result.append(Field(label=labels_text.MSG_MORPH_DIRECTION_LABEL, value=self.morph_style, adjust=self.step_style, enter=lambda: self.step_style(1), enter_what=legends.What.NEXT))
         result += [
+            velocity_field(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
             Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=lambda: clip_slot.get_grab_track() or marks.MSG_NONE_SHOWN, adjust=None, enter=self.pick_grab_track, enter_what=legends.What.CHOOSE,
                   clear=lambda: self.clear(ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
             self.follow_action_field(),
             *self.strum_section(),
-            *[field for shape in SHAPES for field in self.shape_section(shape)],
+            *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
+            *[field for shape in PLACED_SHAPES for field in self.shape_section(shape)],
             *self.register_sections(),
             # Real-time playback's buttons, which do what L does, drawn below the settings after a blank line as every page's buttons are.
             Button(label=labels_text.MSG_PLAY_LABEL, key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT),
@@ -242,6 +246,12 @@ class ClipPage(FieldPage):
             inherited=marks.MSG_FROM_TRACK_SHOWN.format(value=taken),
             store=lambda part, value: self.document().set_clip_strum_setting(index=self.index, track=self.track, part=part, value=value),
         )
+
+    def velocity_values(self):
+        """Return what the velocity fields read the clip's own velocity settings with, what gives a blank one from its scene, and what keeps one."""
+        clip_slot = self.clip_slot()
+        scene = self.document().song().get_scenes()[self.index]
+        return clip_slot.get_setting, scene.get_setting, lambda name, value: self.document().set_clip_velocity_setting(index=self.index, track=self.track, name=name, value=value)
 
     def register_sections(self):
         """Return the clip's sections about the registers: what it sets them to as it launches, what it adds every time its pattern starts over, and the statements that bypass its generators, and that make it sit out."""

@@ -29,9 +29,9 @@ from llamatron.playback.step_order import StepOrder
 from llamatron.support.random_source import random_source
 from llamatron.composition import limits
 from llamatron.composition.conditions import any_true
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Shape, TrackSetting
+from llamatron.composition.file_format import PLACED_SHAPES, ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
-from llamatron.playback.shapes import reshaped
+from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, reshaped
 from llamatron.generators.euclid import EuclidMask
 from llamatron.composition.checks import in_whole_notes
 from llamatron.grid.clip import Clip
@@ -215,7 +215,7 @@ class ClipSlotPlayer:
         return self._song.get_pattern(self._clip_slot.get_pattern_name()).is_drum()
 
     def _shaped(self, clip, *, passes):
-        """Return the clip with its Density, Swell and Articulate applied: the last generator of each kind its chains name, else the clip's own, else its scene's. A generator its statements bypass is not named."""
+        """Return the clip with its Density, Swell and Articulate applied: the last generator of each kind its chains name, else the clip's own Density or Articulate, else its scene's, and with the velocity of the clip and its scene. A generator its statements bypass is not named."""
         named = {}
         for chain in self._renderer.chains_of(scene=self._scene, track=self._track_name):
             for step in self._song.get_chain(chain).get_steps():
@@ -231,19 +231,44 @@ class ClipSlotPlayer:
                 restart = settings.get_restart()
                 span = self._renderer.run_span(scene=self._scene, restart=restart, clip_length=clip_length)
                 shapes[shape] = (settings.get_shape(), span, self._renderer.run_offset(scene=self._scene, restart=restart))
-            elif self._clip_slot.get_shape(shape) is not None:
+            elif shape in PLACED_SHAPES and self._clip_slot.get_shape(shape) is not None:
                 shapes[shape] = (self._clip_slot.get_shape(shape), clip_length, NO_OFFSET)
-            elif self._scene.get_scene().get_shape(shape) is not None:
+            elif shape in PLACED_SHAPES and self._scene.get_scene().get_shape(shape) is not None:
                 shapes[shape] = (self._scene.get_scene().get_shape(shape), scene_length, NO_OFFSET)
-        if not shapes:
+        velocity = self._placed_velocity(clip_length=clip_length, scene_length=scene_length)
+        if not shapes and velocity is None:
             return clip
         signature = self._song.get_time_signature()
         shapes = {shape: (_in_whole_notes(values=values, bar=signature.bar_length()), span, offset) for shape, (values, span, offset) in shapes.items()}
         sounds = reshaped(
-            sounds=clip.resolved_sounds(), density=shapes.get(Shape.DENSITY), swell=shapes.get(Shape.SWELL), articulate=shapes.get(Shape.ARTICULATE),
+            sounds=clip.resolved_sounds(), density=shapes.get(Shape.DENSITY), swell=shapes.get(Shape.SWELL), articulate=shapes.get(Shape.ARTICULATE), velocity=velocity,
             span=clip_length, bar=signature.bar_length(), beat=signature.beat_length(),
         )
         return Clip(name=clip.get_name(), sounds=sounds, scale=clip.get_scale(), length=clip.get_length(), note_length=clip.get_note_length(), controls=clip.get_controls())
+
+    def _placed_velocity(self, *, clip_length, scene_length):
+        """Return how loud the clip plays over its time, as a PlacedVelocity, or None where every note plays as written.
+
+        A ramp whose bars the scene gives counts them across the scene's whole play, every repeat
+        together. A ramp whose bars the clip gives counts them over the clip's own play: from the
+        clip's start, and back from its end, which for a looping clip is its scene's end.
+        """
+        velocity = self._clip_slot.get_velocity(self._scene.get_scene())
+        if velocity.changes_nothing():
+            return None
+        bar = self._song.get_time_signature().bar_length()
+        before = self._renderer.run_offset(scene=self._scene, restart=Restart.ON_NEW_SCENE)
+        ramp_in = velocity.ramp_in
+        if ramp_in is not None:
+            ramp_in = PlacedRamp(ramp_in.start, ramp_in.end, ramp_in.over * bar, NO_OFFSET if ramp_in.of_clip else -before)
+        ramp_out = velocity.ramp_out
+        if ramp_out is not None:
+            if ramp_out.of_clip:
+                end = scene_length if self._renderer.fills_its_scene(scene=self._scene, track=self._track_name) else clip_length
+            else:
+                end = self._renderer.run_span(scene=self._scene, restart=Restart.ON_NEW_SCENE, clip_length=clip_length) - before
+            ramp_out = PlacedRamp(ramp_out.start, ramp_out.end, ramp_out.over * bar, end - ramp_out.over * bar)
+        return PlacedVelocity(velocity.level, ramp_in, ramp_out)
 
     def _switch_notes(self, *, switched, end):
         """Return the keyswitch notes the clip sends before it ends, SwitchNotes in time order: each slot's note in the track's instrument, cut at the clip's end.

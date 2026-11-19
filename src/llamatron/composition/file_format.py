@@ -304,10 +304,6 @@ class ClipSlotSetting:
     DENSITY_END = 'density_end'
     DENSITY_OVER = 'density_over'
     DENSITY_THEN = 'density_then'
-    SWELL_START = 'swell_start'
-    SWELL_END = 'swell_end'
-    SWELL_OVER = 'swell_over'
-    SWELL_THEN = 'swell_then'
     ARTICULATE_START = 'articulate_start'
     ARTICULATE_END = 'articulate_end'
     ARTICULATE_OVER = 'articulate_over'
@@ -355,10 +351,6 @@ class SceneSetting:
     DENSITY_END = 'density_end'
     DENSITY_OVER = 'density_over'
     DENSITY_THEN = 'density_then'
-    SWELL_START = 'swell_start'
-    SWELL_END = 'swell_end'
-    SWELL_OVER = 'swell_over'
-    SWELL_THEN = 'swell_then'
     ARTICULATE_START = 'articulate_start'
     ARTICULATE_END = 'articulate_end'
     ARTICULATE_OVER = 'articulate_over'
@@ -388,6 +380,31 @@ class RampPart:
 
 RAMP_WAYS = (RampWay.IN, RampWay.OUT)
 RAMP_PARTS = (RampPart.START, RampPart.END, RampPart.OVER)
+
+
+class VelocitySetting:
+    """How loud a scene or a clip plays its notes, each a percentage of the velocity written: a level that holds, and a ramp in and a ramp out that start from the level and return to it."""
+
+    LEVEL = 'velocity'
+    IN_START = 'velocity_in_start'
+    IN_END = 'velocity_in_end'
+    IN_OVER = 'velocity_in_over'
+    OUT_START = 'velocity_out_start'
+    OUT_END = 'velocity_out_end'
+    OUT_OVER = 'velocity_out_over'
+
+
+# The name a file gives each part of each velocity ramp of a scene or a clip.
+VELOCITY_RAMP_SETTINGS = {
+    (RampWay.IN, RampPart.START): VelocitySetting.IN_START,
+    (RampWay.IN, RampPart.END): VelocitySetting.IN_END,
+    (RampWay.IN, RampPart.OVER): VelocitySetting.IN_OVER,
+    (RampWay.OUT, RampPart.START): VelocitySetting.OUT_START,
+    (RampWay.OUT, RampPart.END): VelocitySetting.OUT_END,
+    (RampWay.OUT, RampPart.OVER): VelocitySetting.OUT_OVER,
+}
+# Every velocity setting a scene or a clip holds, in the order a file writes them.
+VELOCITY_SETTINGS = (VelocitySetting.LEVEL, *VELOCITY_RAMP_SETTINGS.values())
 # The name a file gives each part of each tempo ramp of a scene.
 TEMPO_RAMP_SETTINGS = {
     (RampWay.IN, RampPart.START): SceneSetting.TEMPO_IN_START,
@@ -1137,6 +1154,8 @@ class Shape:
 
 
 SHAPES = [Shape.DENSITY, Shape.SWELL, Shape.ARTICULATE]
+# The shapes a scene or a clip holds of its own: how loud is said by the scene's and the clip's velocity and velocity ramps, and by a Swell generator.
+PLACED_SHAPES = [Shape.DENSITY, Shape.ARTICULATE]
 
 
 class ShapePart:

@@ -143,20 +143,22 @@ class TestShapeSectionsOnTheScenePage(UITest):
         return [field.label for field in self.page.shown_fields()]
 
     async def test_a_section_opens_and_closes_and_its_fields_show_only_while_open(self):
-        start = labels_text.MSG_SHAPE_FIELD_LABELS[ShapePart.START].format(shape=labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
-        self.assertIn(heading_text(shape=Shape.SWELL, is_open=False), self.text())
+        start = labels_text.MSG_SHAPE_FIELD_LABELS[ShapePart.START].format(shape=labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
+        self.assertIn(heading_text(shape=Shape.ARTICULATE, is_open=False), self.text())
+        # How loud a scene plays is its velocity and velocity ramps, so the Scene page has no Swell section.
+        self.assertNotIn(labels_text.MSG_SHAPE_NAMES[Shape.SWELL], self.labels())
         self.assertNotIn(start, self.labels())
-        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
+        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
         await self.press(keybindings.FieldPage.TOGGLE)
-        self.assertIn(heading_text(shape=Shape.SWELL, is_open=True), self.text())
+        self.assertIn(heading_text(shape=Shape.ARTICULATE, is_open=True), self.text())
         self.assertIn(start, self.labels())
         await self.select_field(start)
         await self.press(keybindings.FieldPage.LESS)
-        self.assertEqual(self.document.song().get_scenes()[0].get_shape(Shape.SWELL).start, FULL - 1)
-        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
+        self.assertEqual(self.document.song().get_scenes()[0].get_shape(Shape.ARTICULATE).start, FULL - 1)
+        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
         await self.press(Key.ENTER)
         self.assertNotIn(start, self.labels())
-        self.assertIn(heading_text(shape=Shape.SWELL, is_open=False), self.text())
+        self.assertIn(heading_text(shape=Shape.ARTICULATE, is_open=False), self.text())
         self.assertIn(marks.MSG_SECTION_SET, self.text())
 
     async def test_pgdn_and_pgup_jump_between_the_headings(self):
@@ -165,13 +167,15 @@ class TestShapeSectionsOnTheScenePage(UITest):
         await self.press(down)
         self.assertIsInstance(self.page.field(), Heading)
         self.assertEqual(self.page.field().label, labels_text.MSG_TEMPO_RAMP_SECTIONS[RampWay.IN])
-        # Past the two tempo ramps to the shapes.
+        # Past the two tempo ramps and the two velocity ramps to the shapes.
+        await self.press(down, down)
+        self.assertEqual(self.page.field().label, labels_text.MSG_VELOCITY_RAMP_SECTIONS[RampWay.IN])
         await self.press(down, down)
         self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
-        await self.press(down, down)
+        await self.press(down)
         self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
         await self.press(up)
-        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.SWELL])
+        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
 
     async def test_pgdn_stops_at_the_last_heading(self):
         headings = [field.label for field in self.page.fields() if isinstance(field, Heading)]

@@ -309,17 +309,23 @@ and long every bar, and a register bound to CC 74 opens the filter as the notes 
 
 An original piece in three in the manner of Ravel's Bolero: one tune and one snare rhythm,
 nine scenes of one unbroken crescendo from soft to full force, climbing evenly in loudness, without one velocity
-changed in a pattern. Each scene's Swell starts where the one before ended, the first three
+changed in a pattern. Each scene's Velocity Ramp In starts where the scene before ended, the first three
 scenes keep the same instruments so that only the loudness climbs, and in the last the timpani
 run through a Swell generator that accents every downbeat. Use velocity-sensitive instruments to
 hear it.
 
 [`examples/learning/16_bolero_swell.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/16_bolero_swell.yml) · C major · 72 BPM · 3:00 · 9 scenes · 7 tracks
 
-| chords | chains | ties | shapes |
-| :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#section-shapes) |
+| chords | chains | ties | velocity | shapes |
+| :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/SWELL.md) |
 <!-- end of the generated summary of 16_bolero_swell -->
+
+**New Features Introduced**
+
+| velocity |
+| :---: |
+| [✓](../SCENES.md#scene-settings) |
 
 <a id="complex_gifts_chain"></a>
 ## Chains: `17_complex_gifts_chain.yml`

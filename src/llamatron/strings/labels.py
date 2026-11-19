@@ -74,6 +74,13 @@ MSG_TEMPO_RAMP_LABELS = {
     (RampWay.IN, RampPart.START): 'Tempo in start', (RampWay.IN, RampPart.END): 'Tempo in end', (RampWay.IN, RampPart.OVER): 'Tempo in over',
     (RampWay.OUT, RampPart.START): 'Tempo out start', (RampWay.OUT, RampPart.END): 'Tempo out end', (RampWay.OUT, RampPart.OVER): 'Tempo out over',
 }
+# How loud a scene or a clip plays, and its ramps in and out, on the Scene page and the clip page (velocity_fields.py).
+MSG_VELOCITY_PERCENT_LABEL = 'Velocity'
+MSG_VELOCITY_RAMP_SECTIONS = {RampWay.IN: 'Velocity Ramp In', RampWay.OUT: 'Velocity Ramp Out'}
+MSG_VELOCITY_RAMP_LABELS = {
+    (RampWay.IN, RampPart.START): 'Velocity in start', (RampWay.IN, RampPart.END): 'Velocity in end', (RampWay.IN, RampPart.OVER): 'Velocity in over',
+    (RampWay.OUT, RampPart.START): 'Velocity out start', (RampWay.OUT, RampPart.END): 'Velocity out end', (RampWay.OUT, RampPart.OVER): 'Velocity out over',
+}
 MSG_REPEAT_LABEL = 'Repeat'
 MSG_PATTERN_LABEL = 'Pattern'
 MSG_CHAINS_LABEL = 'Chains'

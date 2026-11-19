@@ -20,9 +20,12 @@ position keeps its place, so a dropped note becomes a rest of the same length, a
 note is held past its place but never past where the track's next note starts. The percentage at
 a moment comes from the shape's start, end, over and then (percent_at). Which shape a clip
 follows is the last generator of the kind its chains name, else the clip's own, else its scene's.
+How loud a scene and a clip play, their velocity and its ramps in and out, scales every note's
+velocity besides (velocity_percent_at), after a Swell generator's.
 """
 
 import math
+from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.composition.file_format import ShapeThen
@@ -45,6 +48,38 @@ PLAYS_ABOVE = {BAR_START: 0, BAR_MIDDLE: Rational(25, 4), ON_A_BEAT: Rational(25
 ACCENTED = ON_A_BEAT
 HALF = 2
 QUARTER = 4
+
+
+class PlacedRamp(NamedTuple):
+    """A velocity ramp placed on a clip: the percentages it starts from and reaches, how long it lasts and when it begins, both in whole notes, the time counted from the clip's start."""
+
+    start: int
+    end: int
+    span: object
+    begins: object
+
+
+class PlacedVelocity(NamedTuple):
+    """How loud a clip plays over its time: the percentage that holds, and its ramp in and ramp out, each a PlacedRamp or None."""
+
+    level: int
+    ramp_in: object
+    ramp_out: object
+
+
+def velocity_percent_at(*, velocity, time):
+    """Return the percentage of its written velocity a note plays at, at a time from its clip's start: inside the ramp in, on its way from start to end; inside the ramp out, the same; and the level anywhere else. Where the two overlap the ramp in wins."""
+    ramp = velocity.ramp_in
+    if ramp is not None:
+        place = time - ramp.begins
+        if place < ramp.span:
+            return ramp.start + (ramp.end - ramp.start) * place / ramp.span
+    ramp = velocity.ramp_out
+    if ramp is not None:
+        place = time - ramp.begins
+        if place >= 0:
+            return ramp.start + (ramp.end - ramp.start) * min(place / ramp.span, 1)
+    return velocity.level
 
 
 def percent_at(*, values, time, span):
@@ -81,8 +116,8 @@ def plays_at(*, density, level):
     return density >= FULL or (level in PLAYS_ABOVE and density > PLAYS_ABOVE[level])
 
 
-def reshaped(*, sounds, density=None, swell=None, articulate=None, span, bar, beat):
-    """Return a clip's sounds reshaped by the shapes given, each (ShapeValues, the span its whole ramp covers, how far into that span the clip starts) or None.
+def reshaped(*, sounds, density=None, swell=None, articulate=None, velocity=None, span, bar, beat):
+    """Return a clip's sounds reshaped by the shapes given, each (ShapeValues, the span its whole ramp covers, how far into that span the clip starts) or None, and by its velocity, a PlacedVelocity or None.
 
     span is the clip's length, which a note's lengthening never reaches past.
     """
@@ -107,6 +142,8 @@ def reshaped(*, sounds, density=None, swell=None, articulate=None, span, bar, be
             if level <= ACCENTED:
                 scale += swell[0].accent * scale / FULL
             sound = _with_velocity(sound=sound, scale=scale)
+        if velocity is not None:
+            sound = _with_velocity(sound=sound, scale=velocity_percent_at(velocity=velocity, time=time))
         if articulate is not None:
             later = [starts[other] for other in sounding if other > place]
             room = Length.subtract(later[0] if later else Length.exact(span), starts[place])

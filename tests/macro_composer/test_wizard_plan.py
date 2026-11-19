@@ -21,7 +21,7 @@ import random
 import copy
 import unittest
 
-from llamatron.composition.file_format import Row, SceneSetting, Section
+from llamatron.composition.file_format import Row, SceneSetting, Section, VelocitySetting
 from llamatron.macro_composer import hook_writing, phrasing
 from llamatron.macro_composer.notation import REST, STEPS
 from llamatron.macro_composer.arranger import CHORDS
@@ -446,7 +446,9 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         choices.set_section_own(place=A_VERSE, field=RISES, value=True)
         self.assertIn(composer_text.MSG_PLAN_LEAVES_TAIL.format(BUILD), choices.said_of_sections()[A_VERSE])
         scene = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
-        self.assertLess(scene[SceneSetting.SWELL_START], scene[SceneSetting.SWELL_END])
+        self.assertLess(scene[VelocitySetting.IN_START], scene[VelocitySetting.LEVEL])
+        # The climb takes every bar of the section.
+        self.assertEqual(scene[VelocitySetting.IN_OVER], choices.section_bars(A_VERSE))
 
     def test_the_hook_is_said_in_the_intro_by_whoever_is_chosen_and_by_nobody_until_then(self):
         choices = chosen()
