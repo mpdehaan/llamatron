@@ -74,7 +74,7 @@ class TestDemoSummary(unittest.TestCase):
 
     def test_the_hello_world_row_reads_as_the_set_does_with_a_check_mark_for_a_feature_used_and_nothing_for_one_not(self):
         row = self.tool.summary_row(path=HELLO_WORLD, features=self.features)
-        self.assertEqual(self.cell(row=row, heading=self.tool.DESCRIPTION_HEADING), Document.load(HELLO_WORLD).setlist().get_description())
+        self.assertEqual(self.cell(row=row, heading=self.tool.DESCRIPTION_HEADING), Document.load(HELLO_WORLD).get_setlist().get_description())
         self.assertEqual(self.cell(row=row, heading=self.tool.LENGTH_HEADING), clock(HELLO_WORLD_SECONDS))
         self.assertEqual(self.cell(row=row, heading=self.tool.SCENES_HEADING), HELLO_WORLD_SCENES)
         self.assertEqual(self.cell(row=row, heading=self.tool.TRACKS_HEADING), HELLO_WORLD_TRACKS)
@@ -144,7 +144,7 @@ class TestDemoSummary(unittest.TestCase):
         self.assertLess(text.index(self.tool.MARKER_START), text.index(self.tool.MARKER_END))
         overview = text[text.index(self.tool.MARKER_START):text.index(self.tool.MARKER_END)]
         # The page lists no demo: it links the Tutorial Demos page and each genre's page, and each demo's summary, on its genre's page, holds its key, its tempo and the marks of the features it uses.
-        self.assertNotIn(Document.load(HELLO_WORLD).setlist().get_description(), overview)
+        self.assertNotIn(Document.load(HELLO_WORLD).get_setlist().get_description(), overview)
         self.assertNotIn(self.tool.USED, overview)
         self.assertIn(self.tool.DEMO_PAGE_LINK.format(page=self.tool.TUTORIAL_PAGE), overview)
         page = self.tool.DEMO_PAGES / self.tool.genre_page(self.tool.genre_of(HELLO_WORLD))

@@ -104,7 +104,7 @@ KEY_EVENT = 'llamatron.tutorial.runner.key_event'
 
 def comparable_data(setlist):
     """Return a set's data as a tutorial can be held to it: with every default filled in as the tracker fills them, without what it never writes, and without the rows the roll writes its own way."""
-    data = {setting: value for setting, value in Document(setlist=setlist, path=None).setlist().to_data().items() if setting not in NOT_BUILT}
+    data = {setting: value for setting, value in Document(setlist=setlist, path=None).get_setlist().to_data().items() if setting not in NOT_BUILT}
     for song in data.get(Section.SONGS, {}).values():
         song[Section.TRACKS] = {name: without_instrument(track) for name, track in song.get(Section.TRACKS, {}).items()}
     data[Section.PATTERNS] = {name: {row: values for row, values in pattern.items() if row not in ROLL_ROWS} for name, pattern in data.get(Section.PATTERNS, {}).items()}
@@ -175,7 +175,7 @@ class TutorialTest(UITest):
             await self.pilot.pause()
         if self.app.driven.problem is not None:
             raise self.app.driven.problem
-        return self.app.get_document().setlist()
+        return self.app.get_document().get_setlist()
 
     def said(self):
         return [text for _, text in self.app.driven.narrator.said]
@@ -187,7 +187,7 @@ class TutorialTest(UITest):
                 raise self.app.driven.problem or AssertionError(self.said())
             await asyncio.sleep(A_MOMENT)
             await self.pilot.pause()
-        return self.app.get_document().setlist()
+        return self.app.get_document().get_setlist()
 
 
 def opened_before(*, said, text):
@@ -229,7 +229,7 @@ class TestHelloWorldTutorial(TutorialTest):
         # A new set's song, track and scene are there already, and are renamed to the demo's.
         for kind in (narration.MSG_A_SONG, narration.MSG_A_TRACK, narration.MSG_A_SCENE):
             self.assertIn(narration.MSG_NARRATE_RENAMING.format(kind=kind), said)
-        self.assertEqual(self.app.caption_strip().text(), parts(text=narration.MSG_NARRATE_QUITTING, width=self.app.size.width)[-1])
+        self.assertEqual(self.app.get_caption_strip().get_text(), parts(text=narration.MSG_NARRATE_QUITTING, width=self.app.size.width)[-1])
         self.assertGreater(self.app.driven.pressed, 0)
         self.assertIsNone(self.app.get_document().get_path())
         self.assertEqual(self.app.driven.report()[-1], narration.MSG_TUTORIAL_KEYS.format(count=self.app.driven.pressed, seconds=self.app.driven.ended_at - self.app.driven.started_at))
@@ -287,7 +287,7 @@ class TestTutorialPlays(TutorialTest):
         self.assertFalse(self.exited)
         self.clock.advance(FAR_AHEAD)
         self.app.transport.tick()
-        self.app.transport.player().sender().send_due()
+        self.app.transport.get_player().get_sender().send_due()
         self.assertFalse(self.app.transport.is_playing())
         note_ons = [data for _, data in self.outputs[PORT].sent if data[0] & KIND_MASK == timeline.NOTE_ON]
         self.assertGreater(len(note_ons), 0)

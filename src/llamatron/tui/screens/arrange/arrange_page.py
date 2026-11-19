@@ -157,7 +157,7 @@ class ArrangePage(Page):
 
     def real_time_on(self):
         """Return whether the set's Real Time switch is on, which is when the page has its play buttons and the corner."""
-        return self.document().setlist().is_real_time()
+        return self.document().get_setlist().is_real_time()
 
     def scenes(self):
         return self.document().song().get_scenes()
@@ -287,7 +287,7 @@ class ArrangePage(Page):
         self.confirm(title=messages.MSG_FRACTURE_TITLE, lines=[messages.MSG_FRACTURE_QUESTION], then=self.fracture)
 
     def fracture(self):
-        copies = self.document().change(self.document().setlist().fracture, self.document().song())
+        copies = self.document().change(self.document().get_setlist().fracture, self.document().song())
         self.say(messages.MSG_FRACTURED.format(count=len(copies)) if copies else messages.MSG_NOTHING_TO_FRACTURE)
 
     def toggle_details(self):
@@ -427,13 +427,13 @@ class ArrangePage(Page):
 
     def shown_modes(self):
         """Return the visualizer modes the key steps through, every mode but those the set hides, in order."""
-        hidden = self.document().setlist().get_hidden_visualizers()
+        hidden = self.document().get_setlist().get_hidden_visualizers()
         return [mode for mode in modes.MODES if mode.OPTION not in hidden]
 
     def first_mode(self):
         """Return the mode the visualizer key shows first: the song's choice, else the set's, when it isn't hidden, and otherwise the first shown."""
         shown = self.shown_modes()
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         chosen = mode_called(setlist.visualizer_for(self.document().song()) or drawing.NOTHING)
         return chosen if chosen in shown else shown[0]
 
@@ -462,7 +462,7 @@ class ArrangePage(Page):
 
     def show_visualizer(self, mode):
         """Show a visualizer mode over the clip area, drawing a frame every FRAME_SECONDS while it shows."""
-        self.visualizer = mode.made_for(hidden=self.document().setlist().get_hidden_visualizers())
+        self.visualizer = mode.made_for(hidden=self.document().get_setlist().get_hidden_visualizers())
         self._visualizer_began = time.monotonic()
         if self._frame_timer is None:
             self._frame_timer = self.set_interval(FRAME_SECONDS, self.draw)
@@ -606,7 +606,7 @@ class ArrangePage(Page):
     def with_inset(self, *, screen, width, height):
         """Return the screen with Scene View's Inset Window laid over it."""
         inner_width, inner_height = inside_size(width=width, height=height)
-        title = marks.MSG_SCENE_VIEW_TITLE.format(scene=scene_name(scene=self.scenes()[self.inset.index()], index=self.inset.index()))
+        title = marks.MSG_SCENE_VIEW_TITLE.format(scene=scene_name(scene=self.scenes()[self.inset.get_index()], index=self.inset.get_index()))
         closing = marks.MSG_SCENE_VIEW_CLOSING.format(key=self.KEYS.CLOSE_INSET.name, what=self.KEYS.CLOSE_INSET.what)
         return drawn_over(screen=screen, width=width, height=height, title=title, inside=self.inset.lines(width=inner_width, height=inner_height),
                           colour=self.inset.border_colour(), closing=closing)
@@ -805,7 +805,7 @@ class ArrangePage(Page):
             return
         if clips:
             message.append(messages.MSG_ALSO_DELETES_CLIPS.format(count=clips))
-        grabbing = grabbers(song=document.song(), song_name=document.current_song_name(), track=name)
+        grabbing = grabbers(song=document.song(), song_name=document.get_current_song_name(), track=name)
         if grabbing:
             message.append(messages.MSG_GRABBERS_STOP.format(count=len(grabbing)))
         self.confirm_delete(lines=message, then=lambda: document.delete_named(section=Section.TRACKS, name=name))
@@ -840,7 +840,7 @@ class ArrangePage(Page):
         self.document().add_clip_slot(index=self.row, track=track, pattern=name)
         if not drum:
             # The pattern is written for a scale as large as the one its clip plays under.
-            self.document().change(self.document().setlist().get_pattern(name).set_scale_length, self.document().scale_length_for_pattern(name))
+            self.document().change(self.document().get_setlist().get_pattern(name).set_scale_length, self.document().scale_length_for_pattern(name))
         self.open_pattern(self.document().clip_slot(index=self.row, track=track))
 
     def open_pattern(self, clip_slot):

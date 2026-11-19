@@ -62,7 +62,7 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
     The document has a revision of its own, which moves with every change to the set and every
     change of the current song, so an answer worked out from anything in the set is remembered
     `on=(document,)`. An answer that no pattern's own contents can change, like what uses a scale
-    or which scales a pattern plays under, is remembered `on=(document.outside_patterns(),)`, which
+    or which scales a pattern plays under, is remembered `on=(document.get_outside_patterns(),)`, which
     typing into a pattern leaves alone, and an answer about one pattern's contents names that
     pattern.
     """
@@ -98,7 +98,7 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         self._continues = False
         self._history.reset(self._snapshot())
 
-    def setlist(self):
+    def get_setlist(self):
         """Return the set. Pages read it through this, and change it only through this document's methods."""
         return self._setlist
 
@@ -106,7 +106,7 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         """Return the current song, which the Arrange, Tracks and Registers pages work on and X exports."""
         return self._setlist.get_song(self._current)
 
-    def current_song_name(self):
+    def get_current_song_name(self):
         return self._current
 
     def select_song(self, name):
@@ -135,11 +135,11 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         if not inside_a_pattern:
             self._outside_patterns.note_change()
 
-    def outside_patterns(self):
+    def get_outside_patterns(self):
         """Return what an answer is remembered on when no pattern's own contents can change it: its revision moves with every change but one inside a pattern."""
         return self._outside_patterns
 
-    def memory(self):
+    def get_memory(self):
         """Return the one memory of what was worked out from the set, which the pages and their parts keep their own answers in too."""
         return self._memory
 

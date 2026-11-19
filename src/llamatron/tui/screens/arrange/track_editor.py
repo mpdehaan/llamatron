@@ -88,7 +88,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
 
     def pick_instrument(self):
         """Choose the instrument the track plays through in real time, from the set's, or none."""
-        instruments = sorted_names(self.document().setlist().get_instrument_names())
+        instruments = sorted_names(self.document().get_setlist().get_instrument_names())
         self.pick(title=labels.MSG_INSTRUMENT_LABEL, values=[None, *instruments], shown=[marks.MSG_NONE_SHOWN, *instruments], current=self.track().get_instrument_name(), then=self.set_instrument)
 
     def set_instrument(self, instrument):

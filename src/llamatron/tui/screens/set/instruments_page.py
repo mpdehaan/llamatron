@@ -35,7 +35,7 @@ class InstrumentsPage(NamedListPage):
     columns = ((labels.Column.SELECT_INSTRUMENT, None, Align.LEFT), (labels.Column.DEVICE, 36, Align.LEFT), (labels.Column.CHANNEL, 3, Align.RIGHT), (labels.Column.USED, 4, Align.RIGHT))
 
     def rows(self):
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         return [
             (name, [name, setlist.get_instrument(name).get_device() or marks.MSG_NO_DEVICE_SHOWN, setlist.get_instrument(name).get_channel(), len(self.uses(name))])
             for name in self.names()

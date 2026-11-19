@@ -40,10 +40,10 @@ class SongPage(FieldPage):
 
     def crumb_trail(self):
         # The current song can be renamed here and by an undo, so the crumb is read each time.
-        return (labels.Crumb.SONGS, self.document().current_song_name())
+        return (labels.Crumb.SONGS, self.document().get_current_song_name())
 
     def caption(self):
-        return labels.MSG_EDITING_CAPTION.format(what=labels.MSG_CAPTION_WORDS[Section.SONGS].upper(), name=self.document().current_song_name())
+        return labels.MSG_EDITING_CAPTION.format(what=labels.MSG_CAPTION_WORDS[Section.SONGS].upper(), name=self.document().get_current_song_name())
 
     def duration(self):
         return self.document().lengths().song_seconds()
@@ -55,7 +55,7 @@ class SongPage(FieldPage):
         document = self.document()
         song = self.song()
         return [
-            NameField(value=document.current_song_name, rename=self.rename),
+            NameField(value=document.get_current_song_name, rename=self.rename),
             NumberField(
                 page=self, label=labels.MSG_TEMPO_LABEL, number=int(song.get_tempo()), shown=marks.MSG_TEMPO_SHOWN.format(tempo=tempo_text(song.get_tempo())),
                 typed=tempo_text(song.get_tempo()), lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=lambda tempo: document.change(document.song().set_tempo, tempo),
@@ -89,7 +89,7 @@ class SongPage(FieldPage):
     def rename(self):
         """Rename the current song, which the Songs page's N does too, and put the new name in the crumbs."""
         document = self.document()
-        name = document.current_song_name()
+        name = document.get_current_song_name()
 
         def renamed(new):
             document.rename_named(section=Section.SONGS, old=name, new=new)
@@ -131,7 +131,7 @@ class SongPage(FieldPage):
 
     def preview_instruments(self):
         """Return what the Preview instrument field chooses among: none, which is the pattern's own track, then the set's instruments by name."""
-        return [None, *sorted_names(self.document().setlist().get_instrument_names())]
+        return [None, *sorted_names(self.document().get_setlist().get_instrument_names())]
 
     def step_preview_instrument(self, offset):
         """Move to the next or previous instrument, stopping at both ends."""

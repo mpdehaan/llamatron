@@ -41,7 +41,7 @@ class RevisionClock:
         self._latest += 1
         return self._latest
 
-    def latest(self):
+    def get_latest(self):
         return self._latest
 
 
@@ -51,7 +51,7 @@ _CLOCK = RevisionClock()
 
 def latest_revision():
     """Return the last revision handed out, which moves whenever anything at all changes or is made."""
-    return _CLOCK.latest()
+    return _CLOCK.get_latest()
 
 
 class Revised:
@@ -64,7 +64,7 @@ class Revised:
 
     __slots__ = ('_revision',)
 
-    def revision(self):
+    def get_revision(self):
         """Return this object's revision: a number no other object has, different after every change to this one."""
         return self._revision
 

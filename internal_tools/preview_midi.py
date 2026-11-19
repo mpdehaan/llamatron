@@ -111,7 +111,7 @@ def review_row(*, path, features):
     used = features.features_used(path)
     named = [name for name, _ in features.FEATURES if name in used]
     return REVIEW_ROW.format(
-        set=features.short_name(path), genre=GENRE_JOIN.join(document.setlist().get_genres()), plays=document.setlist().get_description() or NO_DESCRIPTION,
+        set=features.short_name(path), genre=GENRE_JOIN.join(document.get_setlist().get_genres()), plays=document.get_setlist().get_description() or NO_DESCRIPTION,
         length=UNKNOWN_LENGTH if seconds is None else clock(seconds), features=FEATURE_JOIN.join(named),
     )
 

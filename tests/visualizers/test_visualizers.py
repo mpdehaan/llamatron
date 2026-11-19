@@ -216,7 +216,7 @@ class TestCycle(unittest.TestCase):
             cycle.frame(width=WIDTH, height=HEIGHT, now=number * cycle_values.CYCLE_SECONDS)
             names.append(cycle.shown_name())
         self.assertEqual(names, [mode.NAME for mode in cycle_values.CYCLE_ORDER] + [cycle_values.CYCLE_ORDER[0].NAME])
-        self.assertIsInstance(cycle.showing(), cycle_values.CYCLE_ORDER[0])
+        self.assertIsInstance(cycle.get_showing(), cycle_values.CYCLE_ORDER[0])
 
     def test_the_programs_order_holds_every_mode_once(self):
         self.assertEqual(sorted(mode.NAME for mode in cycle_values.CYCLE_ORDER), sorted(mode.NAME for mode in cycle_values.CYCLED))
@@ -224,7 +224,7 @@ class TestCycle(unittest.TestCase):
     def test_every_cycle_of_one_run_keeps_the_same_order(self):
         first = Cycle()
         second = Cycle()
-        self.assertIs(type(first.showing()), type(second.showing()))
+        self.assertIs(type(first.get_showing()), type(second.get_showing()))
 
     def test_a_shuffle_gives_orders_of_their_own_from_different_seeds(self):
         orders = {shuffled(modes=cycle_values.CYCLED, chooser=random.Random(seed)) for seed in range(SHUFFLES_TRIED)}
@@ -235,9 +235,9 @@ class TestCycle(unittest.TestCase):
     def test_within_a_cycle_it_stays_on_the_same_mode(self):
         cycle = Cycle()
         cycle.frame(width=WIDTH, height=HEIGHT, now=0.0)
-        showing = cycle.showing()
+        showing = cycle.get_showing()
         cycle.frame(width=WIDTH, height=HEIGHT, now=cycle_values.CYCLE_SECONDS / 2)
-        self.assertIs(cycle.showing(), showing)
+        self.assertIs(cycle.get_showing(), showing)
 
 
 class TestPixels(unittest.TestCase):

@@ -75,8 +75,8 @@ class TestWizardListening(PlaybackTest):
     async def let_the_preview_play(self, seconds):
         self.clock.advance(seconds)
         self.preview().tick()
-        if self.preview().player() is not None:
-            self.preview().player().sender().send_due()
+        if self.preview().get_player() is not None:
+            self.preview().get_player().get_sender().send_due()
         self.app.screen.draw()
         await self.pilot.pause()
 
@@ -162,8 +162,8 @@ class TestWizardListening(PlaybackTest):
         self.assertIsNone(self.preview().playing())
 
     async def test_the_tracker_s_own_set_is_left_alone(self):
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.go_to(FIRST_SECTION)
         await self.press(keybindings.WizardPage.LISTEN)
         await self.let_the_preview_play(A_WHILE)
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)

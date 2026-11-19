@@ -80,7 +80,7 @@ class TestLengthBar(unittest.TestCase):
         self.assertEqual(bar.draw(amount=3, total=None), drawing.SPACE * WIDTH)
         self.assertEqual(bar.draw(amount=3, total=0), drawing.SPACE * WIDTH)
         self.assertEqual(bar.blank(), drawing.SPACE * WIDTH)
-        self.assertEqual(bar.width(), WIDTH)
+        self.assertEqual(bar.get_width(), WIDTH)
 
 
 class TestFrame(unittest.TestCase):

@@ -94,7 +94,7 @@ accessors show its contract. `Note`, `Chord`, `Scale`, `Rest`, `Degree`, `Held` 
 `TimeSignature` are immutable. Fields on the composition objects and the grid are editable unless
 the user says otherwise, through such setters. `Document` makes every change through the objects'
 setters and never touches an object's data, and neither does any page; every page reads the set
-through `document.setlist()` and the current song through `document.song()`.
+through `document.get_setlist()` and the current song through `document.song()`.
 
 **Every class declares `__slots__`**, so none can be added by mistake, and each class in a
 hierarchy declares its own, even `()`. Dataclasses use `@dataclass(slots=True, kw_only=True)`. The
@@ -233,7 +233,7 @@ never again for every row, cell or key. Everything a set file stores carries a r
 (`support/revised.py`), which every method that changes the object moves by being written under
 `@notes_change`, and one `Memory` (`support/memory.py`), held by the document, keeps each answer
 with the revisions of what it came from: `Document.remembered(key=, on=, compute=)`, where `on`
-is the document for anything in the set, `document.outside_patterns()` for what no pattern's own
+is the document for anything in the set, `document.get_outside_patterns()` for what no pattern's own
 contents can change (what uses an item, which scales a pattern plays under), or the objects
 themselves (a pattern and the set whose step size it takes, for the notes covering each step).
 So typing into a pattern leaves what is known about everything else alone. An answer that leaves

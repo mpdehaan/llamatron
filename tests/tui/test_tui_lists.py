@@ -390,15 +390,15 @@ class TestGeneratorsPage(UITest):
         self.assertEqual(arps, sorted(arps, key=str.casefold))
 
     async def test_an_open_type_stays_open_when_the_page_opens_again_and_in_the_file_and_is_no_unsaved_change(self):
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.press(keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE), Key.ESCAPE, keybindings.MainPage.GENERATORS)
         self.assertIn(self.heading(kind=GeneratorKind.ARP), self.text())
         self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, UP))
-        self.assertEqual(self.document.setlist().get_open_generator_types(), [GeneratorKind.ARP])
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().get_open_generator_types(), [GeneratorKind.ARP])
+        self.assertEqual(self.document.get_setlist().to_data(), before)
         await self.press(Key.UP, Key.ENTER)
         self.assertIn(self.heading(kind=GeneratorKind.ARP, closed=True), self.text())
-        self.assertEqual(self.document.setlist().get_open_generator_types(), [])
+        self.assertEqual(self.document.get_setlist().get_open_generator_types(), [])
 
     async def test_page_down_and_page_up_jump_between_the_headings(self):
         page = await self.open_page_on_the_arp()
@@ -420,7 +420,7 @@ class TestGeneratorsPage(UITest):
         self.assertEqual(self.arp(name).get_order(), written_name(ChordOrder.UP))
         await self.press(Key.ESCAPE)
         self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, name))
-        self.assertTrue(self.document.setlist().is_generator_type_open(GeneratorKind.ARP))
+        self.assertTrue(self.document.get_setlist().is_generator_type_open(GeneratorKind.ARP))
 
     async def test_a_generator_in_a_chain_cannot_be_deleted_and_an_unused_one_can(self):
         await self.open_page_on_the_arp()
@@ -870,7 +870,7 @@ class TestChainEditor(UITest):
         self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS)])
 
     async def test_each_step_shows_its_generators_name_then_its_kind_and_a_repeat_is_numbered_on_screen_only(self):
-        self.document.change(self.document.setlist().get_chain(NAMED).add_step, kind=GeneratorKind.ARP, name=UP, setlist=self.document.setlist())
+        self.document.change(self.document.get_setlist().get_chain(NAMED).add_step, kind=GeneratorKind.ARP, name=UP, setlist=self.document.get_setlist())
         self.document.record_edit()
         await self.press(Key.DOWN)
         texts = [row[1][0] for row in self.app.screen.rows()]
@@ -914,7 +914,7 @@ class TestMoveModeOnALists(UITest):
     """Move mode on a list page: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it."""
 
     def names(self):
-        return self.document.setlist().get_chain_names()
+        return self.document.get_setlist().get_chain_names()
 
     def carried_line(self):
         return next(line for line in self.text().splitlines() if marks.MSG_MOVING_OPEN in line and marks.MSG_MOVING_CLOSE in line)

@@ -420,12 +420,12 @@ class PianoRoll(BindsKeys):
     @on_a_note
     def toggle_grab(self, start):
         """Mark the note under the cursor to take its note from the clip's grab track, or unmark it."""
-        self.document().change(self.document().setlist().get_pattern(self.name()).set_value, row=Row.GRAB, step=start, value=not self.grabs(start))
+        self.document().change(self.document().get_setlist().get_pattern(self.name()).set_value, row=Row.GRAB, step=start, value=not self.grabs(start))
 
     @on_a_note
     def erase(self, start):
         """Take out the note under the cursor with the ties that held it."""
-        self.document().change(self.document().setlist().get_pattern(self.name()).clear_sound, start)
+        self.document().change(self.document().get_setlist().get_pattern(self.name()).clear_sound, start)
 
     def pick_entry_size(self):
         """Open a picker of the pattern's entry size: the song's first, then the step sizes, on what the pattern has now."""
@@ -434,5 +434,5 @@ class PianoRoll(BindsKeys):
         place = choices.index(written) if written in choices else 0
         self.editor.ask(
             dialog=ChoiceDialog(title=labels.MSG_ENTRY_SIZE_LABEL, options=[labels.MSG_SONG_ENTRY_SIZE_CHOICE, *file_format.STEP_SIZE_CHOICES], current=place),
-            then=lambda chosen: self.document().change(self.document().setlist().get_pattern(self.name()).set_entry_size, choices[chosen]),
+            then=lambda chosen: self.document().change(self.document().get_setlist().get_pattern(self.name()).set_entry_size, choices[chosen]),
         )

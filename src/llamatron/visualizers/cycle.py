@@ -88,7 +88,7 @@ class Cycle(Visualizer):
     def shown_name(self):
         return self._showing.shown_name()
 
-    def showing(self):
+    def get_showing(self):
         """Return the mode showing now."""
         return self._showing
 

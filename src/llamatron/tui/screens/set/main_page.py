@@ -191,11 +191,11 @@ class MainPage(Page):
     def toggle_real_time(self):
         """Turn real-time playback on or off, which needs an instrument to play through, and say which on the status line."""
         document = self.document()
-        if not document.setlist().get_instrument_names():
+        if not document.get_setlist().get_instrument_names():
             self.tell(errors.ERR_NO_INSTRUMENTS_TITLE, errors.ERR_ADD_INSTRUMENT_FIRST)
             return
-        on = not document.setlist().is_real_time()
-        document.change(document.setlist().set_real_time, on)
+        on = not document.get_setlist().is_real_time()
+        document.change(document.get_setlist().set_real_time, on)
         if not on and self.app.transport.is_playing():
             # Arrange shows no stop with Real Time off, so turning it off stops what plays, which was once a bug.
             self.app.transport.stop_all()
@@ -312,7 +312,7 @@ class MainPage(Page):
 
     def count(self, item):
         """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Arrange and the actions."""
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         name = cell_name(item)
         if name == labels_text.PageName.REAL_TIME:
             return marks.MSG_REAL_TIME_ON_MARK if setlist.is_real_time() else marks.MSG_REAL_TIME_OFF_MARK
@@ -343,7 +343,7 @@ class MainPage(Page):
     def shown_name(self, item):
         """Return the name drawn on a cell: its own, but Arrange/Play on the Arrange cell while the set's Real Time switch is on,
         so that the cell says where a song is played."""
-        if item.binding is self.KEYS.ARRANGE and self.document().setlist().is_real_time():
+        if item.binding is self.KEYS.ARRANGE and self.document().get_setlist().is_real_time():
             return labels_text.PageName.ARRANGE_PLAY
         return cell_name(item)
 

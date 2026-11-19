@@ -73,7 +73,7 @@ class GeneratorsPage(ListPage):
 
     def kinds(self):
         """Return the kinds of generator the set has any of, sorted by what the tracker calls each."""
-        held = {kind for kind, _ in self.document().setlist().ordered_generators()}
+        held = {kind for kind, _ in self.document().get_setlist().ordered_generators()}
         return sorted(held, key=lambda kind: name_order(generator_page_of_kind(kind).label))
 
     def names_of_kind(self, kind):
@@ -81,7 +81,7 @@ class GeneratorsPage(ListPage):
 
     def is_closed(self, kind):
         """Return whether a type is closed, as every type is until opened; the set keeps which are open, so that the page comes back as it was left."""
-        return not self.document().setlist().is_generator_type_open(kind)
+        return not self.document().get_setlist().is_generator_type_open(kind)
 
     def rows_depend_on(self):
         """Return what the rows depend on besides the set: which types are closed, and a search, which looks inside every type."""

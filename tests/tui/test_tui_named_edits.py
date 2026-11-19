@@ -54,8 +54,8 @@ def a_document():
 def names_of(*, document, section):
     """Return the names of a section's own items, in the section's order: the song's for its tracks, the set's otherwise."""
     if section == Section.GROOVES:
-        return document.setlist().get_own_groove_names()
-    owner = document.song() if section in sections.SONG_SECTIONS else document.setlist()
+        return document.get_setlist().get_own_groove_names()
+    owner = document.song() if section in sections.SONG_SECTIONS else document.get_setlist()
     return owner.get_item_names(section)
 
 
@@ -143,14 +143,14 @@ class TestWhatDiffersByKind(unittest.TestCase):
     def test_the_current_song_stays_current_when_it_is_renamed(self):
         document = a_document()
         document.rename_named(section=Section.SONGS, old=names_text.MSG_DEFAULT_SONG_NAME, new=RENAMED)
-        self.assertEqual(document.current_song_name(), RENAMED)
+        self.assertEqual(document.get_current_song_name(), RENAMED)
         self.assertEqual(document.song().get_track_names(), [ui_testing.LEAD, ui_testing.DRUMS])
 
     def test_renaming_another_song_leaves_the_current_one_current(self):
         document = a_document()
         document.add_song(SECOND_SONG)
         document.rename_named(section=Section.SONGS, old=names_text.MSG_DEFAULT_SONG_NAME, new=RENAMED)
-        self.assertEqual(document.current_song_name(), SECOND_SONG)
+        self.assertEqual(document.get_current_song_name(), SECOND_SONG)
 
     def test_the_last_song_cannot_be_deleted(self):
         document = a_document()
@@ -164,28 +164,28 @@ class TestWhatDiffersByKind(unittest.TestCase):
         document.add_song(SECOND_SONG)
         document.add_song(THIRD_SONG)
         document.delete_named(section=Section.SONGS, name=THIRD_SONG)
-        self.assertEqual(document.current_song_name(), SECOND_SONG)
+        self.assertEqual(document.get_current_song_name(), SECOND_SONG)
 
     def test_deleting_the_first_song_while_current_makes_the_next_one_current(self):
         document = a_document()
         document.add_song(SECOND_SONG)
         document.select_song(names_text.MSG_DEFAULT_SONG_NAME)
         document.delete_named(section=Section.SONGS, name=names_text.MSG_DEFAULT_SONG_NAME)
-        self.assertEqual(document.current_song_name(), SECOND_SONG)
+        self.assertEqual(document.get_current_song_name(), SECOND_SONG)
 
     def test_deleting_another_song_leaves_the_current_one_current(self):
         document = a_document()
         document.add_song(SECOND_SONG)
         document.delete_named(section=Section.SONGS, name=names_text.MSG_DEFAULT_SONG_NAME)
-        self.assertEqual(document.current_song_name(), SECOND_SONG)
+        self.assertEqual(document.get_current_song_name(), SECOND_SONG)
 
     def test_a_factory_groove_is_copied_into_the_sets_own_grooves(self):
         document = a_document()
-        taken = document.setlist().get_groove_names()
+        taken = document.get_setlist().get_groove_names()
         new = document.copy_named(section=Section.GROOVES, name=FactoryGroove.SWING_58)
         self.assertEqual(new, copy_name(name=FactoryGroove.SWING_58, taken=taken))
-        self.assertEqual(document.setlist().get_own_groove_names(), [A_GROOVE, new])
-        self.assertEqual(document.setlist().get_groove(new).to_data(), document.setlist().get_groove(FactoryGroove.SWING_58).to_data())
+        self.assertEqual(document.get_setlist().get_own_groove_names(), [A_GROOVE, new])
+        self.assertEqual(document.get_setlist().get_groove(new).to_data(), document.get_setlist().get_groove(FactoryGroove.SWING_58).to_data())
 
     def test_a_copied_track_stands_right_after_the_track_with_its_clips(self):
         document = a_document()
@@ -202,9 +202,9 @@ class TestWhatDiffersByKind(unittest.TestCase):
 
     def test_a_copy_of_a_chain_or_a_scene_name_does_not_touch_the_other_sections(self):
         document = a_document()
-        patterns = document.setlist().get_pattern_names()
+        patterns = document.get_setlist().get_pattern_names()
         document.copy_named(section=Section.CHAINS, name=ui_testing.NAMED)
-        self.assertEqual(document.setlist().get_pattern_names(), patterns)
+        self.assertEqual(document.get_setlist().get_pattern_names(), patterns)
         self.assertEqual(document.song().get_scene(FIRST_SCENE).get_name(), ui_testing.ONE)
 
 

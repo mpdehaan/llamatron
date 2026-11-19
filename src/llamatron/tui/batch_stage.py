@@ -79,11 +79,11 @@ class BatchStage:
         self._last = None
         self._step = None
 
-    def head(self):
+    def get_head(self):
         """Return where the pulse's head is round its track, as a share of a lap."""
         return self._head
 
-    def direction(self):
+    def get_direction(self):
         """Return which way the pulse goes round: 1 clockwise, -1 not."""
         return self._direction
 

@@ -134,9 +134,9 @@ class TestPulse(unittest.TestCase):
     def test_a_change_of_scene_turns_the_pulse_round_and_takes_the_next_colour(self):
         stage, _ = stage_at(PLAYING, scene=0)
         self.assertEqual(stage.colour(PLAYING), batch_stage.FRAME_COLOURS[0])
-        before = stage.direction()
+        before = stage.get_direction()
         stage_at(PLAYING + 0.1, stage=stage, scene=1)
-        self.assertEqual(stage.direction(), -before)
+        self.assertEqual(stage.get_direction(), -before)
         self.assertEqual(stage.colour(PLAYING + 10), batch_stage.FRAME_COLOURS[1])
 
 
@@ -189,10 +189,10 @@ class TestStage(unittest.TestCase):
         stage.move_pulse(now=now, seconds_per_beat=SECONDS_PER_BEAT, scene=None)
         moves = []
         for number in range(PULSE_FRAMES):
-            before = stage.head()
+            before = stage.get_head()
             now += FRAME * (UNEVEN_LONG if number % 2 else UNEVEN_SHORT)
             stage.move_pulse(now=now, seconds_per_beat=SECONDS_PER_BEAT, scene=None)
-            moves.append((stage.head() - before) % 1.0)
+            moves.append((stage.get_head() - before) % 1.0)
         settled = moves[PULSE_FRAMES // 2:]
         lap_seconds = batch_stage.FRAME_LAP_BARS * QUARTERS * SECONDS_PER_BEAT
         self.assertAlmostEqual(sum(settled) / len(settled), FRAME / lap_seconds, delta=FRAME / lap_seconds / 10)

@@ -141,7 +141,7 @@ class SceneView:
         self._cells = CellPainter()
         self.place_cursor()
 
-    def index(self):
+    def get_index(self):
         """Return the place of the scene it shows."""
         return self._index
 
@@ -164,11 +164,11 @@ class SceneView:
         """Return the window's border colour, which says which view shows: purple as written, blue as played."""
         return WRITTEN_COLOUR if self._written else PLAYED_COLOUR
 
-    def cursor_column(self):
+    def get_cursor_column(self):
         """Return the sixteenth the cursor is on, counted from the scene's start."""
         return self._column
 
-    def zoom(self):
+    def get_zoom(self):
         """Return how many cells wide each sixteenth is drawn."""
         return self._zoom
 
@@ -205,7 +205,7 @@ class SceneView:
                 return None
         return self._notes[self._written]
 
-    def problem(self):
+    def get_problem(self):
         """Return why the scene can't be shown, or None."""
         return self._problem
 
@@ -390,7 +390,7 @@ class SceneView:
         characters = [SPACE] * LABEL_COLUMNS
         styles = [None] * LABEL_COLUMNS
         if key % HALF_STEPS_PER_OCTAVE == 0:
-            octave = self._document.setlist().shown_octave(key // HALF_STEPS_PER_OCTAVE)
+            octave = self._document.get_setlist().shown_octave(key // HALF_STEPS_PER_OCTAVE)
             for place, character in enumerate(visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=octave)[:NOTE_LABEL_COLUMN]):
                 characters[place] = character
                 styles[place] = self._cells.style_of(colour=LABEL_COLOUR)
@@ -426,7 +426,7 @@ class SceneView:
     def sidebar_lines(self):
         """Return the sidebar's lines in full: each track that plays in the scene, by its name and number in its colour, then its clip's details in the scene and its own, as Arrange's details view shows them, stock in red for none."""
         song = self._document.song()
-        setlist = self._document.setlist()
+        setlist = self._document.get_setlist()
         scene = song.get_scenes()[self._index]
         lines = []
         for place, name in enumerate(song.get_track_names()):
@@ -471,4 +471,4 @@ class SceneView:
 
     def note_name(self, pitch):
         """Return a pitch's name with its octave in the set's octave labels."""
-        return note_values.SHARP_NAMES[pitch % HALF_STEPS_PER_OCTAVE] + str(self._document.setlist().shown_octave(pitch // HALF_STEPS_PER_OCTAVE))
+        return note_values.SHARP_NAMES[pitch % HALF_STEPS_PER_OCTAVE] + str(self._document.get_setlist().shown_octave(pitch // HALF_STEPS_PER_OCTAVE))

@@ -45,7 +45,7 @@ class TestNewPatternDialog(UITest):
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = NEW
         await self.press(Key.ENTER)
-        return self.document.setlist().get_pattern(NEW)
+        return self.document.get_setlist().get_pattern(NEW)
 
     async def test_it_shows_its_title_and_rows_and_starts_on_a_scale_of_seven_notes(self):
         shown = self.text()
@@ -84,12 +84,12 @@ class TestNewPatternDialog(UITest):
         self.assertEqual(self.dialog.values()[0], str(limits.NEW_PATTERN_SCALE_LENGTH))
 
     async def test_the_cancel_button_and_escape_make_nothing(self):
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.press(Key.DOWN, Key.DOWN, Key.RIGHT, keybindings.NewPatternDialog.PRESS)
         self.assertIsInstance(self.app.screen, PatternsPage)
         await self.press(keybindings.PatternsPage.ADD, Key.ESCAPE)
         self.assertIsInstance(self.app.screen, PatternsPage)
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
 
     async def test_the_cursor_stops_at_the_buttons_and_at_the_top(self):
         await self.press(Key.UP)
@@ -130,11 +130,11 @@ class TestScaleLengthInTheTracker(UITest):
         await self.open_patterns_on(ui_testing.TUNE)
         await self.press(Key.ENTER)
         size = self.document.scale_size(self.document.pattern_scale(ui_testing.TUNE))
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_scale_length, size)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_scale_length, size)
         await self.press(Key.RIGHT)
         self.assertNotIn(fixed_text(labels.MSG_WRITTEN_FOR).strip(), self.text())
         other = PENTATONIC if size != PENTATONIC else limits.MAX_SCALE_LENGTH
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_scale_length, other)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_scale_length, other)
         await self.press(Key.RIGHT)
         self.assertIn(labels.MSG_WRITTEN_FOR.format(scale=WARNING_ALONE, length=other).strip(), self.text())
         self.assertEqual(self.document.scales_unsuited_to_pattern(ui_testing.TUNE), self.document.scales_of_pattern(ui_testing.TUNE))

@@ -174,7 +174,7 @@ class Transport:
 
     def problem(self, *, track=None):
         """Return why nothing can play, or None when it can: the switch, the instruments, their devices, and the scenes that never end. With a track, which a listening page picks an instrument for, no track needs one yet."""
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         song = self.document().song()
         if not setlist.is_real_time():
             return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_REAL_TIME_OFF])
@@ -198,13 +198,13 @@ class Transport:
     def has_a_device(self, track):
         """Return whether a track of the current song plays through an instrument that has a device."""
         name = self.document().song().get_track(track).get_instrument_name()
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         return name is not None and setlist.has_item(section=Section.INSTRUMENTS, name=name) and setlist.get_instrument(name).has_device()
 
     def missing_devices(self):
         """Return (instrument, device) for each instrument whose MIDI port this computer doesn't list now. FluidSynth is no port, and the tracker starts it."""
         connected = set(output_port_names())
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         return [(name, setlist.get_instrument(name).get_device()) for name in setlist.get_instrument_names()
                 if setlist.get_instrument(name).has_device() and not setlist.get_instrument(name).uses_fluidsynth()
                 and setlist.get_instrument(name).get_device() not in connected]
@@ -220,7 +220,7 @@ class Transport:
         others in turn among the unmuted tracks through FluidSynth, and its instrument's sound as the program,
         none for a drum track or an instrument with no sound, as that export does.
         """
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         song = self.document().song()
         routes = {}
         melodic = 0
@@ -242,7 +242,7 @@ class Transport:
     def channels_in_use(self):
         """Return the (device, channel) pairs the set's instruments use, on the devices connected now, each once, and FluidSynth's channels while it runs."""
         connected = set(output_port_names())
-        setlist = self.document().setlist()
+        setlist = self.document().get_setlist()
         pairs = set()
         for name in setlist.get_instrument_names():
             instrument = setlist.get_instrument(name)
@@ -319,7 +319,7 @@ class Transport:
 
     def may_play(self):
         """Return whether anything may go on playing: the set's Real Time switch is on."""
-        return self.document().setlist().is_real_time()
+        return self.document().get_setlist().is_real_time()
 
     def is_previewing(self):
         """Return whether what plays is a listening page's preview, which stops when its page is left."""
@@ -374,7 +374,7 @@ class Transport:
         return None if self._player is None else self._player.song_position()
 
     def song_seconds(self):
-        return None if self._player is None else self._player.score().song_seconds()
+        return None if self._player is None else self._player.get_score().song_seconds()
 
     def heard(self, *, since):
         """Return the clock's time now and what the visualizer hears since an earlier time, or None for now alone (visualizers/heard.py): each note that started since then or still sounds, by its track's place in the song, and the beat. Nothing plays, and it is silence at no time."""
@@ -419,7 +419,7 @@ class Transport:
                 )
         return None
 
-    def player(self):
+    def get_player(self):
         """Return the player, for the tests."""
         return self._player
 
@@ -435,32 +435,32 @@ class Transport:
         routes = self.routes(instead=instead)
         key = (id(song), tuple(sorted(routes.items())))
         self._remember_song(song=song, instead=instead)
-        if self._player is None or self._score_revision != document.revision() or self._score_key != key:
+        if self._player is None or self._score_revision != document.get_revision() or self._score_key != key:
             score = Score(song=song, routes=routes, seed=self._seed)
             sender = self._sender_for(sorted({route.port for route in routes.values()}))
-            if self._player is None or self._player.sender() is not sender:
+            if self._player is None or self._player.get_sender() is not sender:
                 self._player = Player(score=score, sender=sender, now=self._now)
             else:
                 self._player.set_score(score)
-            self._score_revision = document.revision()
+            self._score_revision = document.get_revision()
             self._score_key = key
         return self._player
 
     def _remember_song(self, *, song, instead):
         """Remember what plays, and its scenes and tracks as they are, to find them again after an edit."""
         self._song = song
-        self._song_name = None if self._song_is_copy else self.document().current_song_name()
+        self._song_name = None if self._song_is_copy else self.document().get_current_song_name()
         self._instead = instead
         self._scenes = list(song.get_scenes())
         self._tracks = {name: song.get_track(name) for name in song.get_track_names()}
-        self._seen_revision = self.document().revision()
+        self._seen_revision = self.document().get_revision()
         self._changed_at = None
 
     def _playing_song(self):
         """Return the song that plays, after an edit: the copy a listening page made, or the current song while it is the one launched, or None when another song was made current."""
         if self._song_is_copy:
             return self._song
-        if self.document().current_song_name() != self._song_name:
+        if self.document().get_current_song_name() != self._song_name:
             return None
         return self.document().song()
 
@@ -472,7 +472,7 @@ class Transport:
             # Another song was made current, so what plays stops at once, since nothing on screen could show or stop it any more.
             self.stop_all()
             return
-        revision = self.document().revision()
+        revision = self.document().get_revision()
         if revision == self._score_revision:
             return
         now = self._clock.now()

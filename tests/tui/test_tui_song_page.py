@@ -151,7 +151,7 @@ class TestSongPage(UITest):
         self.app.screen.value = SECOND_SONG
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song_names(), [SECOND_SONG])
-        self.assertEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
         self.assertEqual(self.app.screen.crumbs, (labels_text.Crumb.SONGS, SECOND_SONG))
         self.assertTrue(self.document.is_dirty())
 
@@ -279,7 +279,7 @@ class TestSongsPage(UITest):
         await self.type(SECOND_SONG)
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song_names(), [names_text.MSG_DEFAULT_SONG_NAME, SECOND_SONG])
-        self.assertEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
         self.assertEqual(self.document.song().get_track_names(), [FIRST_TRACK])
         await self.press(Key.ESCAPE, keybindings.MainPage.PATTERNS)
         self.assertIn(labels_text.MSG_SONG_CRUMB.format(song=SECOND_SONG), self.song_line())
@@ -288,16 +288,16 @@ class TestSongsPage(UITest):
         self.document.add_song(SECOND_SONG)
         self.document.select_song(names_text.MSG_DEFAULT_SONG_NAME)
         await self.press(Key.DOWN, Key.SPACE)
-        self.assertEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
         await self.press(Key.UP, Key.ENTER)
         self.assertIsInstance(self.app.screen, SongPage)
-        self.assertEqual(self.document.current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(self.document.get_current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
 
     async def test_copying_and_renaming(self):
         await self.press(keybindings.SongsPage.COPY)
         self.assertEqual(len(self.document.song_names()), 2)
         copy = self.document.song_names()[1]
-        self.assertEqual(self.document.setlist().get_song(copy).get_track_names(), [LEAD, DRUMS])
+        self.assertEqual(self.document.get_setlist().get_song(copy).get_track_names(), [LEAD, DRUMS])
         await self.press(keybindings.SongsPage.RENAME)
         self.app.screen.value = SECOND_SONG
         await self.press(Key.ENTER)
@@ -314,7 +314,7 @@ class TestSongsPage(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertEqual(self.document.song_names(), [names_text.MSG_DEFAULT_SONG_NAME])
-        self.assertEqual(self.document.current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(self.document.get_current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
 
     async def test_songs_share_the_patterns_and_have_their_own_tracks(self):
         self.document.add_song(SECOND_SONG)

@@ -224,7 +224,7 @@ def or_stock(lines):
 
 def details_layout(*, document, least_width, name_room, detail_room, track_name_room):
     """Return the current song's details and the room they need, each column at least least_width, wide enough for each clip's name and name_room more, each detail and detail_room more, and the track's name and track_name_room more."""
-    setlist = document.setlist()
+    setlist = document.get_setlist()
     song = document.song()
     names = document.track_names()
     scenes = song.get_scenes()

@@ -155,33 +155,33 @@ class TestRevisions(unittest.TestCase):
     def test_no_two_things_share_a_revision_and_a_change_takes_a_new_one(self):
         first = ChangeMark()
         second = ChangeMark()
-        self.assertNotEqual(first.revision(), second.revision())
-        before = first.revision()
+        self.assertNotEqual(first.get_revision(), second.get_revision())
+        before = first.get_revision()
         first.note_change()
-        self.assertGreater(first.revision(), before)
-        self.assertNotEqual(first.revision(), second.revision())
-        self.assertEqual(latest_revision(), first.revision())
+        self.assertGreater(first.get_revision(), before)
+        self.assertNotEqual(first.get_revision(), second.get_revision())
+        self.assertEqual(latest_revision(), first.get_revision())
 
     def test_a_copy_has_a_revision_of_its_own(self):
         pattern = Pattern(steps=STEPS, rows={})
-        self.assertNotEqual(pattern.copy().revision(), pattern.revision())
+        self.assertNotEqual(pattern.copy().get_revision(), pattern.get_revision())
 
     def test_a_setter_moves_its_objects_revision_and_no_other(self):
         pattern = Pattern(steps=STEPS, rows={})
         other = Pattern(steps=STEPS, rows={})
-        before = pattern.revision()
-        untouched = other.revision()
+        before = pattern.get_revision()
+        untouched = other.get_revision()
         pattern.set_value(row=Row.DEGREE, step=0, value=1)
-        self.assertGreater(pattern.revision(), before)
-        self.assertEqual(other.revision(), untouched)
+        self.assertGreater(pattern.get_revision(), before)
+        self.assertEqual(other.get_revision(), untouched)
 
     def test_reading_moves_nothing(self):
         pattern = Pattern(steps=STEPS, rows={})
-        before = pattern.revision()
+        before = pattern.get_revision()
         pattern.get_steps()
         pattern.to_data()
         pattern.get_value(row=Row.DEGREE, step=0)
-        self.assertEqual(pattern.revision(), before)
+        self.assertEqual(pattern.get_revision(), before)
 
     def test_a_setter_that_refuses_its_value_still_raises(self):
         scale = NamedScale(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))

@@ -171,7 +171,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         self.assertIsInstance(self.app.screen, MainPage)
         document = self.app.get_document()
         self.assertEqual(document.get_path(), SAMPLE)
-        self.assertEqual(document.setlist().get_default_octave(), limits.MIN_OCTAVE)
+        self.assertEqual(document.get_setlist().get_default_octave(), limits.MIN_OCTAVE)
         self.assertTrue(document.is_dirty())
         self.assertIn(marks.MSG_UNSAVED_CHANGES_MARK, self.title_line())
         self.assertIn(messages.MSG_OPENED.format(path=SAMPLE), self.text())
@@ -215,7 +215,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         await self.press(keybindings.CorrectionsDialog.YES, keybindings.MainPage.FILE)
         await self.select_field(labels.MSG_PROTECTED_LABEL)
         await self.press(Key.ENTER, keybindings.Page.UNDO)
-        self.assertFalse(self.app.get_document().setlist().is_protected())
+        self.assertFalse(self.app.get_document().get_setlist().is_protected())
         self.assertTrue(self.app.get_document().is_dirty())
 
     async def test_a_file_with_a_problem_nothing_can_correct_is_refused_in_a_message_as_before(self):
@@ -253,7 +253,7 @@ class TestStartingTheTrackerOnSuchAFile(CorrectionsTest):
         self.assertTrue(self.app.get_document().is_dirty())
         header = self.title_line()
         self.assertIn(labels.MSG_SET_CRUMB.format(file=SAMPLE), header)
-        self.assertIn(labels.MSG_SONG_CRUMB.format(song=self.offered.current_song_name()), self.song_line())
+        self.assertIn(labels.MSG_SONG_CRUMB.format(song=self.offered.get_current_song_name()), self.song_line())
         self.assertIn(marks.MSG_UNSAVED_CHANGES_MARK, header)
 
     async def test_no_leaves_a_new_set_with_no_file(self):

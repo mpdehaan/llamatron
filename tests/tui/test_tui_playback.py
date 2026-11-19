@@ -193,7 +193,7 @@ class PlaybackTest(UITest):
     def give_lead_an_instrument(self, *, device=SYNTH_PORT):
         """Add an instrument on a device, which turns Real Time on, and give the lead track it."""
         self.document.add_instrument(SYNTH)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, device)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, device)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
 
     def transport(self):
@@ -203,7 +203,7 @@ class PlaybackTest(UITest):
         """Move the clock on, tick the transport as its timer would, send what is due and redraw the page."""
         self.clock.advance(seconds)
         self.transport().tick()
-        self.transport().player().sender().send_due()
+        self.transport().get_player().get_sender().send_due()
         self.app.screen.draw()
         await self.pilot.pause()
 
@@ -224,10 +224,10 @@ class TestFluidSynthPlayback(PlaybackTest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.document.add_instrument(FLUID)
-        self.document.change(self.document.setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
-        self.document.change(self.document.setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
         self.document.add_instrument(DRUM_KIT)
-        self.document.change(self.document.setlist().get_instrument(DRUM_KIT).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.get_setlist().get_instrument(DRUM_KIT).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
         self.document.set_track_instrument(name=ui_testing.DRUMS, instrument=DRUM_KIT)
         self.document.change(self.document.song().get_track(ui_testing.DRUMS).set_drum, True)
@@ -242,10 +242,10 @@ class TestFluidSynthPlayback(PlaybackTest):
         self.assertEqual(routes[ui_testing.LEAD].program, VIOLIN_PROGRAM)
 
     def test_the_instruments_own_channel_is_ignored_and_a_muted_track_takes_no_channel(self):
-        self.document.change(self.document.setlist().get_instrument(FLUID).set_channel, midi_arrangement.MELODIC_CHANNEL_BYTES[5] + 1)
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_channel, midi_arrangement.MELODIC_CHANNEL_BYTES[5] + 1)
         self.assertEqual(self.transport().routes()[ui_testing.LEAD].channel, midi_arrangement.MELODIC_CHANNEL_BYTES[0])
         self.document.change(self.document.song().get_track(ui_testing.DRUMS).set_drum, False)
-        self.document.change(self.document.setlist().get_instrument(DRUM_KIT).set_gm_sound, None)
+        self.document.change(self.document.get_setlist().get_instrument(DRUM_KIT).set_gm_sound, None)
         routes = self.transport().routes()
         self.assertEqual([routes[ui_testing.LEAD].channel, routes[ui_testing.DRUMS].channel], midi_arrangement.MELODIC_CHANNEL_BYTES[:2])
         self.assertIsNone(routes[ui_testing.DRUMS].program)
@@ -312,7 +312,7 @@ class TestArrangePlayback(PlaybackTest):
         self.give_lead_an_instrument()
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.let_time_pass(BRIEFLY)
-        self.document.change(self.document.setlist().set_real_time, False)
+        self.document.change(self.document.get_setlist().set_real_time, False)
         await self.let_time_pass(BRIEFLY)
         self.assertFalse(self.transport().is_playing())
 
@@ -323,7 +323,7 @@ class TestArrangePlayback(PlaybackTest):
         self.assertNotIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_PLAY_MARK), self.text())
 
     async def test_with_real_time_on_but_no_instrument_space_tells_what_is_missing(self):
-        self.document.change(self.document.setlist().set_real_time, True)
+        self.document.change(self.document.get_setlist().set_real_time, True)
         await self.press(*CORNER_KEYS)
         self.assertTrue(self.page.on_corner())
         self.assertIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_PLAY_MARK), self.text())
@@ -335,17 +335,17 @@ class TestArrangePlayback(PlaybackTest):
 
     async def test_an_instrument_no_track_uses_and_a_device_not_connected_are_told_too(self):
         self.document.add_instrument(SYNTH)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, SYNTH_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, SYNTH_PORT)
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         self.assertIn(errors.ERR_CANT_PLAY_TITLE, self.text())
         self.assert_told(errors.ERR_NO_TRACK_HAS_AN_INSTRUMENT)
         await self.press(Key.ENTER)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, None)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, None)
         await self.press(keybindings.ArrangePage.PLAY_SONG)
         self.assert_told(errors.ERR_NO_TRACK_HAS_A_DEVICE)
         await self.press(Key.ENTER)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, UNPLUGGED_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, UNPLUGGED_PORT)
         await self.press(keybindings.ArrangePage.PLAY_SONG)
         self.assert_told(errors.ERR_DEVICE_NOT_CONNECTED.format(instrument=SYNTH, device=UNPLUGGED_PORT))
         await self.press(Key.ENTER)
@@ -354,7 +354,7 @@ class TestArrangePlayback(PlaybackTest):
     async def test_real_time_off_is_told_when_a_page_plays_without_the_switch(self):
         # The main screen's switch is checked first, so a set whose instruments are ready still says to turn it on.
         self.give_lead_an_instrument()
-        self.document.change(self.document.setlist().set_real_time, False)
+        self.document.change(self.document.get_setlist().set_real_time, False)
         self.page.draw()
         await self.pilot.pause()
         self.assertIsNotNone(self.transport().problem())
@@ -503,7 +503,7 @@ class TestArrangePlayback(PlaybackTest):
         await self.press(keybindings.Page.SILENCE)
         self.assertIn(messages.MSG_SILENCED.format(channels=ONE_CHANNEL, devices=ONE_DEVICE), self.text())
         self.assertFalse(self.transport().is_playing())
-        self.assertEqual(self.transport().player().sender().sounding(), [])
+        self.assertEqual(self.transport().get_player().get_sender().sounding(), [])
 
     async def test_ctrl_t_with_no_connected_device_says_there_is_nothing_to_silence(self):
         self.give_lead_an_instrument(device=UNPLUGGED_PORT)
@@ -537,8 +537,8 @@ class TestLiveEditing(PlaybackTest):
         for _ in range(round(seconds / LIVE_STEP)):
             self.clock.advance(LIVE_STEP)
             self.transport().tick()
-            if self.transport().player() is not None:
-                self.transport().player().sender().send_due()
+            if self.transport().get_player() is not None:
+                self.transport().get_player().get_sender().send_due()
             sent = self.note_ons(SYNTH_PORT)
             self.heard += [(round(self.clock.now() - self.started, 2), data[1]) for data in sent[len(self.counted):]]
             self.counted = sent
@@ -551,7 +551,7 @@ class TestLiveEditing(PlaybackTest):
         self.started = self.clock.now()
         self.counted = []
         await self.play_for(LIVE_STEP)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=EDITED_DEGREE)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=EDITED_DEGREE)
 
     def second_notes(self):
         """Return the pitch of the second note of each pass, by the pass: the note heard from half a second into the pass on, each noted at the clock's step after it fell due."""
@@ -574,9 +574,9 @@ class TestLiveEditing(PlaybackTest):
 
     async def test_digits_typed_one_after_another_are_heard_once_they_settle(self):
         await self.start_and_edit(LiveResponsiveness.ASAP)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=THIRD_DEGREE)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=THIRD_DEGREE)
         await self.play_for(LIVE_STEP)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=EDITED_DEGREE)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=EDITED_DEGREE)
         await self.play_for(SONG_SECONDS)
         self.assertEqual(self.second_notes(), [FIFTH, FIFTH, FIFTH])
 
@@ -621,14 +621,14 @@ class TestLiveEditing(PlaybackTest):
         self.assertFalse(self.transport().is_playing())
 
     async def test_the_plays_random_parts_are_kept_through_an_edit(self):
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.PROBABILITY, step=0, value=HALF_CHANCE)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.PROBABILITY, step=0, value=HALF_CHANCE)
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        before = self.transport().player().score().events(scene=FIRST_INDEX, track=ui_testing.LEAD)
+        before = self.transport().get_player().get_score().events(scene=FIRST_INDEX, track=ui_testing.LEAD)
         self.started = self.clock.now()
         self.counted = []
-        self.document.change(self.document.setlist().get_pattern(ui_testing.OTHER).set_value, row=Row.DEGREE, step=0, value=EDITED_DEGREE)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.OTHER).set_value, row=Row.DEGREE, step=0, value=EDITED_DEGREE)
         await self.play_for(LIVE_STEP * 3)
-        after = self.transport().player().score().events(scene=FIRST_INDEX, track=ui_testing.LEAD)
+        after = self.transport().get_player().get_score().events(scene=FIRST_INDEX, track=ui_testing.LEAD)
         self.assertEqual([(event.seconds, event.number) for event in before], [(event.seconds, event.number) for event in after])
 
 
@@ -674,7 +674,7 @@ class TestClipPagePlayback(PlaybackTest):
     async def test_a_track_without_an_instrument_asks_which_to_listen_through(self):
         self.give_lead_an_instrument()
         self.document.add_instrument(DRUM_MACHINE)
-        self.document.change(self.document.setlist().get_instrument(DRUM_MACHINE).set_device, DRUM_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(DRUM_MACHINE).set_device, DRUM_PORT)
         await self.open_clip(track_steps=2)
         await self.press(keybindings.ClipPage.LISTEN)
         self.assertIn(messages.MSG_LISTEN_INSTRUMENT_TITLE, self.text())
@@ -693,7 +693,7 @@ class TestClipPagePlayback(PlaybackTest):
         self.assert_told(errors.ERR_REAL_TIME_OFF)
 
     async def test_with_real_time_off_the_clip_plays_through_general_midi_and_l_again_stops(self):
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
         await self.open_clip(track_steps=1)
         await self.press(keybindings.ClipPage.LISTEN)
         self.assertIn(messages.MSG_LISTENING_GENERAL_MIDI.format(name=ui_testing.TUNE), self.text())
@@ -701,7 +701,7 @@ class TestClipPagePlayback(PlaybackTest):
         preview = self.app.pattern_preview()
         self.clock.advance(A_MOMENT)
         preview.tick()
-        preview.player().sender().send_due()
+        preview.get_player().get_sender().send_due()
         # The lead's clip plays General MIDI's piano, on the preview's channel.
         sent = [list(data) for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
         self.assertIn([timeline.PROGRAM_CHANGE | pattern_preview.PREVIEW_CHANNEL_BYTE, pattern_preview.PIANO_PROGRAM], sent)
@@ -716,7 +716,7 @@ class TestClipPagePlayback(PlaybackTest):
         preview = self.app.pattern_preview()
         self.clock.advance(A_MOMENT)
         preview.tick()
-        preview.player().sender().send_due()
+        preview.get_player().get_sender().send_due()
         self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE])
         await self.press(Key.ESCAPE)
         self.assertIsNone(preview.playing_clip())
@@ -731,15 +731,15 @@ class PatternPreviewTest(PlaybackTest):
     def name_a_preview_instrument(self, *, device=SYNTH_PORT):
         """Add an instrument on a device, which turns Real Time on, and make it the song's Preview instrument."""
         self.document.add_instrument(SYNTH)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, device)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, device)
         self.document.change(self.document.song().set_preview_instrument_name, SYNTH)
 
     async def let_the_preview_play(self, seconds):
         """Move the clock on, tick the preview as its timer would, send what is due and redraw the page."""
         self.clock.advance(seconds)
         self.preview().tick()
-        if self.preview().player() is not None:
-            self.preview().player().sender().send_due()
+        if self.preview().get_player() is not None:
+            self.preview().get_player().get_sender().send_due()
         self.app.screen.draw()
         await self.pilot.pause()
 
@@ -762,7 +762,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
 
     async def test_l_plays_the_pattern_at_once_through_the_preview_instrument_and_l_again_stops(self):
         self.name_a_preview_instrument()
-        revision_before = self.document.revision()
+        revision_before = self.document.get_revision()
         await self.open_pattern(ui_testing.TUNE)
         await self.press(keybindings.PatternEditor.LISTEN)
         # Nothing is asked: the status line says the scale, the first of the scales the pattern's clips play in.
@@ -772,7 +772,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.let_the_preview_play(A_MOMENT)
         self.assertEqual(len(self.note_ons(SYNTH_PORT)), 1)
         # The clip it plays belongs to a copy of the set: the set is untouched, and the song's transport plays nothing.
-        self.assertEqual(self.document.revision(), revision_before)
+        self.assertEqual(self.document.get_revision(), revision_before)
         self.assertFalse(self.transport().is_playing())
         await self.press(keybindings.PatternEditor.STOP_LISTENING)
         self.assertIn(messages.MSG_STOPPED, self.text())
@@ -798,8 +798,8 @@ class TestPatternEditorPlayback(PatternPreviewTest):
 
     async def test_a_preview_instrument_through_fluidsynth_sends_its_sound(self):
         self.document.add_instrument(FLUID)
-        self.document.change(self.document.setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
-        self.document.change(self.document.setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
         self.document.change(self.document.song().set_preview_instrument_name, FLUID)
         await self.open_pattern(ui_testing.TUNE)
         await self.press(keybindings.PatternEditor.LISTEN)
@@ -838,16 +838,16 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.assertIsNone(self.preview().playing_pattern())
         # General MIDI is no silent substitute: FluidSynth was never started.
         self.assertEqual(self.fluidsynth.starts, 0)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, None)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, None)
         await self.press(keybindings.PatternEditor.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=SYNTH), self.words_shown())
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.fluidsynth_installed = False
         await self.press(keybindings.PatternEditor.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=SYNTH), self.words_shown())
 
     async def test_it_plays_with_real_time_off(self):
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
         await self.open_pattern(ui_testing.TUNE)
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
@@ -857,7 +857,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
     async def test_the_preview_plays_beside_a_song_played_from_arrange_and_stopping_it_leaves_the_song(self):
         self.give_lead_an_instrument()
         self.document.add_instrument(DRUM_MACHINE)
-        self.document.change(self.document.setlist().get_instrument(DRUM_MACHINE).set_device, DRUM_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(DRUM_MACHINE).set_device, DRUM_PORT)
         self.document.change(self.document.song().set_preview_instrument_name, DRUM_MACHINE)
         await self.press(keybindings.MainPage.ARRANGE, *CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.let_time_pass(BRIEFLY)
@@ -878,7 +878,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.open_pattern(ui_testing.TUNE)
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=FIRST_INDEX, value=EDITED_DEGREE)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=FIRST_INDEX, value=EDITED_DEGREE)
         heard_before = len(self.note_ons(SYNTH_PORT))
         for _ in range(PASSES_HEARD * TICKS_A_PASS):
             await self.let_the_preview_play(TUNE_SECONDS / TICKS_A_PASS)
@@ -908,7 +908,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.assertEqual(self.page.playing_step(), SECOND_INDEX)
         await self.press(keybindings.PatternEditor.STOP_LISTENING)
         # Played backward, the last step comes first: the tune's first note, on its first step, is not heard at the start, and the read head runs right to left.
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_direction, Direction.REVERSE_B)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_direction, Direction.REVERSE_B)
         heard_before = len(self.note_ons(SYNTH_PORT))
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
@@ -918,7 +918,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.assertEqual(self.page.playing_step(), LAST_TUNE_STEP - 1)
         # A direction that chooses its steps as it goes has no read head.
         await self.press(keybindings.PatternEditor.STOP_LISTENING)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_direction, Direction.RANDOM)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_direction, Direction.RANDOM)
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
         self.assertIsNone(self.page.playing_step())
@@ -951,7 +951,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
 
     async def test_a_song_whose_track_has_the_previews_channel_is_stopped_before_the_preview_plays(self):
         self.document.add_instrument(FLUID)
-        self.document.change(self.document.setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
         preview = self.preview()
         # The lead plays on FluidSynth's first channel, not the preview's, so nothing is shared.
@@ -1062,7 +1062,7 @@ class LaunchTest(PlaybackTest):
         if not self.DRUMS_LOOP:
             self.document.set_clip_slot_setting(index=FIRST_INDEX, track=ui_testing.DRUMS, setting=ClipSlotSetting.LOOP, value=False)
         self.document.add_instrument(SYNTH)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, SYNTH_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, SYNTH_PORT)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
         app = super().make_app()
         app.launch = self.LAUNCH
@@ -1125,7 +1125,7 @@ class TestAutoplayLaunch(LaunchTest):
         self.assertFalse(self.transport().is_playing())
         await self.wait_until_playing()
         self.check_order((SHOWED, ArrangePage), (PLAYED, None))
-        self.assertTrue(self.app.autoplay_started())
+        self.assertTrue(self.app.has_autoplay_started())
         self.assertIn(marks.MSG_SONG_BUTTON.format(mark=marks.MSG_STOP_MARK), self.text())
         # The header keeps its save mark, unsaved for a test's song with no file: only a launch for recording leaves it off.
         self.assertIn(marks.MSG_UNSAVED_MARK, self.text())
@@ -1389,7 +1389,7 @@ class TestBatchVideoLaunch(LaunchTest):
         # Each change is waited for as it happens, since fixed waits overshoot on a machine busy with the rest of the suite.
         await self.wait_until(lambda: isinstance(self.app.screen, ArrangePage))
         page = self.app.screen
-        self.assertIs(self.app.staged(), page)
+        self.assertIs(self.app.is_staged(), page)
         self.assertIn(Box.DOUBLE_TOP_LEFT, self.text())
         self.assertFalse(self.transport().is_playing())
         await self.wait_until(self.transport().is_playing)

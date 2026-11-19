@@ -464,7 +464,7 @@ class SongRenderer:
                         raise
                     continue
             values = self._timelines[number].end_values()
-            turned = self._timelines[number].end_turned()
+            turned = self._timelines[number].get_end_turned()
         return self._timelines[scene.get_number()]
 
     def _cutting_of(self, name):
@@ -518,7 +518,7 @@ class SongRenderer:
         guess = random_source(GUESS_SEED)
         alone = RegisterTimeline(registers=self._registers, start=start, changes=[own] if own else [], chooser=guess, turned=turned)
         self._guesses[number] = lambda track: RegisterSolo(
-            place=self._track_place(track), registers=self._registers, start=alone.end_values(), chooser=guess, turned=alone.end_turned(),
+            place=self._track_place(track), registers=self._registers, start=alone.end_values(), chooser=guess, turned=alone.get_end_turned(),
         )
         # Until the first play is in, the scene is taken to last as long as the clips nothing can cut.
         self._lengths[number] = max(fixed, default=NO_LENGTH)

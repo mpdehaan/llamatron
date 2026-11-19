@@ -104,23 +104,23 @@ class PreviewSet:
     def real(self):
         return self._holder.get_document()
 
-    def revision(self):
-        return self.real().revision()
+    def get_revision(self):
+        return self.real().get_revision()
 
-    def current_song_name(self):
-        return self.real().current_song_name()
+    def get_current_song_name(self):
+        return self.real().get_current_song_name()
 
-    def setlist(self):
-        if self._revision != self.revision():
+    def get_setlist(self):
+        if self._revision != self.get_revision():
             self._copy()
         return self._setlist
 
     def song(self):
-        return self.setlist().get_song(self.current_song_name())
+        return self.get_setlist().get_song(self.get_current_song_name())
 
     def track(self):
         """Return the name of the track that plays: the one made for the pattern, or the clip's own."""
-        self.setlist()
+        self.get_setlist()
         return self._track
 
     def scene(self):
@@ -129,18 +129,18 @@ class PreviewSet:
 
     def scale(self):
         """Return the name of the scale the pattern plays in, or None for none, as a drum pattern has."""
-        self.setlist()
+        self.get_setlist()
         return self._scale
 
     def _copy(self):
         real = self.real()
         if self._clip is not None:
-            self._setlist = Setlist.from_data(data=real.setlist().to_data())
+            self._setlist = Setlist.from_data(data=real.get_setlist().to_data())
             self._track = self._clip[1]
-            self._revision = real.revision()
+            self._revision = real.get_revision()
             return
-        name = real.current_song_name()
-        data = real.setlist().to_data()
+        name = real.get_current_song_name()
+        data = real.get_setlist().to_data()
         song_data = data[Section.SONGS][name]
         song_data[Section.SCENES] = []
         # An edit is heard at the pattern's next pass, whatever the song's own Live response.
@@ -165,7 +165,7 @@ class PreviewSet:
         self._setlist = setlist
         self._track = track
         self._scale = scales[0] if scales else None
-        self._revision = real.revision()
+        self._revision = real.get_revision()
 
 
     def _copy_trial(self, *, setlist, song):
@@ -183,7 +183,7 @@ class PreviewSet:
         self._setlist = setlist
         self._track = track
         self._scale = None
-        self._revision = self.real().revision()
+        self._revision = self.real().get_revision()
 
 
 class PatternPreview(Transport):
@@ -226,7 +226,7 @@ class PatternPreview(Transport):
         name = self.instrument_of(pattern)
         if name is None:
             return None
-        instrument = self.real().setlist().get_instrument(name)
+        instrument = self.real().get_setlist().get_instrument(name)
         if not instrument.has_device():
             return errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=name)
         if instrument.uses_fluidsynth():
@@ -241,7 +241,7 @@ class PatternPreview(Transport):
         if self.real().song().get_pattern(pattern).is_drum():
             return False
         name = self.instrument_of(pattern)
-        if name is not None and not self.real().setlist().get_instrument(name).uses_fluidsynth():
+        if name is not None and not self.real().get_setlist().get_instrument(name).uses_fluidsynth():
             return False
         return any((route.port, route.channel) == (fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE) for route in routes.values())
 
@@ -268,7 +268,7 @@ class PatternPreview(Transport):
             program, _ = self._trial
             if not self._fluidsynth_installed():
                 # Without FluidSynth a sound is tried on the song's Preview instrument, which plays the notes in whatever sound the device has.
-                instrument = real.setlist().get_instrument(real.song().get_preview_instrument_name())
+                instrument = real.get_setlist().get_instrument(real.song().get_preview_instrument_name())
                 return Route(instrument.get_device(), instrument.get_channel() - transport.CHANNEL_OFFSET)
             return Route(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False) if program is None else Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, program, keyswitches=False)
         if self._clip is not None:
@@ -278,7 +278,7 @@ class PatternPreview(Transport):
         name = self.instrument_of(self._pattern)
         if name is None:
             return Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
-        instrument = real.setlist().get_instrument(name)
+        instrument = real.get_setlist().get_instrument(name)
         if instrument.uses_fluidsynth():
             sound = instrument.get_gm_sound()
             return Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
@@ -321,7 +321,7 @@ class PatternPreview(Transport):
         name = real.song().get_preview_instrument_name()
         if name is None:
             return errors.ERR_NOTHING_TO_TRY_A_SOUND_WITH
-        instrument = real.setlist().get_instrument(name)
+        instrument = real.get_setlist().get_instrument(name)
         if not instrument.has_device():
             return errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=name)
         if instrument.uses_fluidsynth():
@@ -392,7 +392,7 @@ class PatternPreview(Transport):
             index, track = self._clip
             return index >= len(song.get_scenes()) or not song.has_item(section=Section.TRACKS, name=track) or song.get_scenes()[index].get_clip_slot(track) is None
         name = song.get_preview_instrument_name()
-        return not song.has_pattern(self._pattern) or (name is not None and not real.setlist().has_instrument(name))
+        return not song.has_pattern(self._pattern) or (name is not None and not real.get_setlist().has_instrument(name))
 
     # What is playing.
 

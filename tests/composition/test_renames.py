@@ -101,7 +101,7 @@ def rename_everything(*, document, sections=RENAMED_SECTIONS):
     renamed = {}
     for section in sections:
         # The set holds the shared sections and the songs, and the current song its own tracks.
-        owner = document.song() if section in sections_values.SONG_SECTIONS else document.setlist()
+        owner = document.song() if section in sections_values.SONG_SECTIONS else document.get_setlist()
         for name in owner.get_item_names(section):
             new = RENAMED.format(name=name)
             if section == Section.SONGS:
@@ -118,17 +118,17 @@ def song_with_every_reference():
     document = Document()
     document.add_scale(name=OTHER, root=NoteName.F, kind=scale_type_name(ScaleType.MINOR))
     document.add_pattern(name=TUNE, steps=STEPS)
-    document.change(document.setlist().get_pattern(TUNE).set_value, row=Row.DEGREE, step=FIRST, value=DEGREE)
+    document.change(document.get_setlist().get_pattern(TUNE).set_value, row=Row.DEGREE, step=FIRST, value=DEGREE)
     document.add_pattern(name=ANSWER, steps=STEPS)
-    document.change(document.setlist().get_pattern(ANSWER).set_value, row=Row.DEGREE, step=FIRST, value=DEGREE)
-    document.change(document.setlist().get_pattern(ANSWER).set_value, row=Row.GRAB, step=FIRST, value=True)
+    document.change(document.get_setlist().get_pattern(ANSWER).set_value, row=Row.DEGREE, step=FIRST, value=DEGREE)
+    document.change(document.get_setlist().get_pattern(ANSWER).set_value, row=Row.GRAB, step=FIRST, value=True)
     document.add_track(LEAD)
     document.add_track(BASS)
     document.add_generator(section=Section.ARPS, name=CLIMBER)
     document.add_generator(section=Section.AUTO_RATCHETS, name=ROLLS)
     document.add_chain(NAMED)
-    document.change(document.setlist().get_chain(NAMED).add_step, kind=GeneratorKind.ARP, name=CLIMBER, setlist=document.setlist())
-    document.change(document.setlist().get_chain(NAMED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=ROLLS, setlist=document.setlist())
+    document.change(document.get_setlist().get_chain(NAMED).add_step, kind=GeneratorKind.ARP, name=CLIMBER, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(NAMED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=ROLLS, setlist=document.get_setlist())
     document.add_scene(index=FIRST, name=VERSE)
     document.add_clip_slot(index=FIRST, track=LEAD, pattern=TUNE)
     document.set_clip_slot_repeat(index=FIRST, track=LEAD, repeat=TWO_REPEATS)
@@ -139,7 +139,7 @@ def song_with_every_reference():
     document.add_scene(index=SECOND, name=CHORUS)
     document.change(document.song().get_scene(SECOND).set_scale_name, name=OTHER, song=document.song())
     document.add_groove(SHUFFLE)
-    document.change(document.setlist().get_groove(SHUFFLE).set_cell, step=SECOND, value=SWING)
+    document.change(document.get_setlist().get_groove(SHUFFLE).set_cell, step=SECOND, value=SWING)
     document.change(document.song().set_groove_name, SHUFFLE)
     document.change(document.song().get_scene(SECOND).set_groove_choice, choice=SHUFFLE, song=document.song())
     document.change(document.song().get_track(BASS).set_groove_choice, choice=SHUFFLE, song=document.song())
@@ -155,7 +155,7 @@ class TestRenamesFollowEveryReference(unittest.TestCase):
         self.renamed = rename_everything(document=self.document)
 
     def test_the_set_still_reads_back_as_a_file(self):
-        data = self.document.setlist().to_data()
+        data = self.document.get_setlist().to_data()
         self.assertEqual(Setlist.from_data(data=data).to_data(), data)
 
     def test_the_song_plays_the_same_notes(self):
@@ -182,16 +182,16 @@ class TestRenamesFollowEveryReference(unittest.TestCase):
 
     def test_the_uses_the_tracker_lists_follow_too(self):
         new_tune = self.renamed[Section.PATTERNS, TUNE]
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.PATTERNS, name=new_tune)), TUNE_USES)
         self.assertEqual(uses_of(setlist=setlist, section=Section.PATTERNS, name=TUNE), [])
-        self.assertEqual(len(grabbers(song=self.document.song(), song_name=self.document.current_song_name(), track=self.renamed[Section.TRACKS, LEAD])), ONE_USE)
+        self.assertEqual(len(grabbers(song=self.document.song(), song_name=self.document.get_current_song_name(), track=self.renamed[Section.TRACKS, LEAD])), ONE_USE)
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.ARPS, name=self.renamed[Section.ARPS, CLIMBER])), ONE_USE)
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.SCALES, name=self.renamed[Section.SCALES, OTHER])), ONE_USE)
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.GROOVES, name=self.renamed[Section.GROOVES, SHUFFLE])), GROOVE_USES)
 
     def test_old_names_are_gone_from_the_file(self):
-        data = self.document.setlist().to_data()
+        data = self.document.get_setlist().to_data()
         # A pattern's group is text of its own, which names no track even where a new set's group is spelled like its first track.
         data[Section.PATTERNS] = {name: {setting: value for setting, value in pattern.items() if setting != PatternSetting.GROUP} for name, pattern in data[Section.PATTERNS].items()}
         text = str(data)
@@ -209,8 +209,8 @@ class TestEveryExampleSurvivesRenamingEverything(unittest.TestCase):
                 document = Document.load(path)
                 before = played(render_song(document.song(), seed=SEED))
                 rename_everything(document=document, sections=SECTIONS_THAT_LEAVE_THE_NOTES_ALONE)
-                reloaded = Setlist.from_data(data=document.setlist().to_data())
-                self.assertEqual(played(render_song(reloaded.get_song(document.current_song_name()), seed=SEED)), before)
+                reloaded = Setlist.from_data(data=document.get_setlist().to_data())
+                self.assertEqual(played(render_song(reloaded.get_song(document.get_current_song_name()), seed=SEED)), before)
 
 
 def constants_of(holder):
@@ -229,8 +229,8 @@ def song_with_one_name_for_everything():
     document.add_generator(section=Section.ARPS, name=SHARED)
     document.add_generator(section=Section.AUTO_RATCHETS, name=SHARED)
     document.add_chain(SHARED)
-    document.change(document.setlist().get_chain(SHARED).add_step, kind=GeneratorKind.ARP, name=SHARED, setlist=document.setlist())
-    document.change(document.setlist().get_chain(SHARED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=SHARED, setlist=document.setlist())
+    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.ARP, name=SHARED, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=SHARED, setlist=document.get_setlist())
     document.add_groove(SHARED)
     document.add_scene(index=FIRST, name=SHARED)
     document.change(document.song().get_scene(FIRST).set_scale_name, name=SHARED, song=document.song())
@@ -257,7 +257,7 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
 
     def test_a_rename_follows_the_section_and_not_the_name_alone(self):
         document = song_with_one_name_for_everything()
-        setlist = document.setlist()
+        setlist = document.get_setlist()
         setlist.rename_item(section=Section.SCALES, old=SHARED, new=RENAMED_SCALE)
         scene = document.song().get_scene(FIRST)
         clip = scene.get_clip_slot(BASS)
@@ -274,15 +274,15 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         scene = document.song().get_scene(FIRST)
         naming = scene.get_clip_slot(BASS)
         other = scene.get_clip_slot(SHARED)
-        chain = document.setlist().get_chain(SHARED)
+        chain = document.get_setlist().get_chain(SHARED)
         kept = other.kept_data()
-        revisions = (other.revision(), chain.revision(), scene.revision(), document.song().revision())
-        was = naming.revision()
-        document.setlist().rename_item(section=Section.PATTERNS, old=SHARED, new=ANSWER)
+        revisions = (other.get_revision(), chain.get_revision(), scene.get_revision(), document.song().get_revision())
+        was = naming.get_revision()
+        document.get_setlist().rename_item(section=Section.PATTERNS, old=SHARED, new=ANSWER)
         self.assertEqual(naming.get_pattern_name(), ANSWER)
-        self.assertNotEqual(naming.revision(), was)
+        self.assertNotEqual(naming.get_revision(), was)
         # The clip that plays another pattern, the chain, the scene's own settings and the song's are as they were.
-        self.assertEqual((other.revision(), chain.revision(), scene.revision(), document.song().revision()), revisions)
+        self.assertEqual((other.get_revision(), chain.get_revision(), scene.get_revision(), document.song().get_revision()), revisions)
         self.assertIs(other.kept_data(), kept)
 
     def test_a_renamed_tracks_clip_keeps_its_place_and_grabs_follow(self):
@@ -311,7 +311,7 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         self.assertFalse(clip.names_item(section=Section.SCALES, name=SHARED))
         self.assertTrue(scene.names_item(section=Section.SCALES, name=SHARED))
         self.assertTrue(scene.names_item(section=Section.GROOVES, name=SHARED))
-        chain = document.setlist().get_chain(SHARED)
+        chain = document.get_setlist().get_chain(SHARED)
         self.assertTrue(chain.names_item(section=Section.ARPS, name=SHARED))
         self.assertTrue(chain.names_item(section=Section.AUTO_RATCHETS, name=SHARED))
         self.assertFalse(chain.names_item(section=Section.ARPS, name=TUNE))
@@ -327,29 +327,29 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         document = song_with_one_name_for_everything()
         song = document.song()
         self.assertTrue(song.names_item(section=Section.GROOVES, name=defaults.DEFAULT_GROOVE))
-        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE), uses_of(setlist=Document().setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE))
+        self.assertEqual(uses_of(setlist=document.get_setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE), uses_of(setlist=Document().get_setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE))
         document.change(document.song().set_groove_name, SHARED)
         self.assertFalse(song.names_item(section=Section.GROOVES, name=defaults.DEFAULT_GROOVE))
         self.assertTrue(song.names_item(section=Section.GROOVES, name=SHARED))
-        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE), [])
+        self.assertEqual(uses_of(setlist=document.get_setlist(), section=Section.GROOVES, name=defaults.DEFAULT_GROOVE), [])
 
     def test_uses_are_listed_songs_first_then_scenes_tracks_clips_and_chains(self):
         document = song_with_every_reference()
-        song_name = document.current_song_name()
-        uses = uses_of(setlist=document.setlist(), section=Section.GROOVES, name=SHUFFLE)
+        song_name = document.get_current_song_name()
+        uses = uses_of(setlist=document.get_setlist(), section=Section.GROOVES, name=SHUFFLE)
         self.assertEqual(len(uses), GROOVE_USES)
         self.assertIn(song_name, uses[FIRST])
         self.assertIn(CHORUS, uses[SECOND])
         self.assertIn(BASS, uses[-1])
         # Nothing names a song, and nothing in a set names a track but the clips of the track's own song.
-        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.SONGS, name=song_name), [])
+        self.assertEqual(uses_of(setlist=document.get_setlist(), section=Section.SONGS, name=song_name), [])
         self.assertEqual(len(grabbers(song=document.song(), song_name=song_name, track=LEAD)), ONE_USE)
 
     def test_in_every_example_what_uses_an_item_is_what_its_rename_changes(self):
         shared = [section for section in sections_values.SETLIST_SECTIONS if section != Section.SONGS]
         for path in EXAMPLES:
             document = Document.load(path)
-            setlist = document.setlist()
+            setlist = document.get_setlist()
             for section in shared:
                 for name in setlist.get_item_names(section):
                     with self.subTest(path=path, section=section, name=name):

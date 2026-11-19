@@ -136,7 +136,7 @@ class RegisterTimeline:
             self._values.append(dict(values))
         self._turned = turned.names()
 
-    def end_turned(self):
+    def get_end_turned(self):
         """Return the names of the registers that reverse and are counting the other way once the scene is over, which the next scene starts with."""
         return self._turned
 

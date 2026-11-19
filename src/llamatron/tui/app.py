@@ -181,10 +181,10 @@ class LlamatronApp(App, inherit_bindings=False):
         self.transport.close()
         super().exit(*arguments, **named)
 
-    def status_line(self):
+    def get_status_line(self):
         return self._status_line
 
-    def caption_strip(self):
+    def get_caption_strip(self):
         return self._caption_strip
 
     def show_caption_strip(self, strip):
@@ -359,7 +359,7 @@ class LlamatronApp(App, inherit_bindings=False):
         arrange.stage.start_song(at=time.monotonic())
         self._autoplay(arrange)
 
-    def staged(self):
+    def is_staged(self):
         """Return the Arrange page a batch video's stage is on, or None, for the tests."""
         return self._staged
 
@@ -401,7 +401,7 @@ class LlamatronApp(App, inherit_bindings=False):
         self.push_screen(Splash(seconds=self.launch.splash_seconds))
         self.set_timer(self.launch.splash_seconds + self.launch.hold_seconds, self.exit)
 
-    def autoplay_started(self):
+    def has_autoplay_started(self):
         """Return whether the launch's play has begun, for the tests."""
         return self._autoplay_started
 

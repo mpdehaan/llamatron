@@ -73,7 +73,7 @@ class TestPreviewVisualizer(unittest.TestCase):
         self.assertEqual(launch.visualizer, modes.MODES[0].OPTION)
         self.assertTrue(launch.quit_when_finished)
         self.assertFalse(launch.for_recording)
-        self.assertTrue(document.setlist().is_real_time())
+        self.assertTrue(document.get_setlist().is_real_time())
 
 
 if __name__ == '__main__':

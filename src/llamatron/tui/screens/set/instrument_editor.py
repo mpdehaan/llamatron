@@ -59,7 +59,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
     RENAME_PROMPT = messages.MSG_RENAME_INSTRUMENT_PROMPT
 
     def instrument(self):
-        return self.document().setlist().get_instrument(self.item)
+        return self.document().get_setlist().get_instrument(self.item)
 
     def devices(self):
         """Return FluidSynth, then the ports this computer has now, sorted, and the instrument's own device among them even when it has gone, so that it can be seen and kept. A tracker's own FluidSynth port isn't offered, since FluidSynth is chosen as itself."""
@@ -85,18 +85,18 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         self.set_gm_sound(None if sound <= NO_SOUND_PLACE else min(sound, limits.MAX_GM_SOUND))
 
     def set_gm_sound(self, sound):
-        self.document().change(self.document().setlist().get_instrument(self.item).set_gm_sound, sound)
+        self.document().change(self.document().get_setlist().get_instrument(self.item).set_gm_sound, sound)
 
     def set_device(self, device):
-        self.document().change(self.document().setlist().get_instrument(self.item).set_device, device)
+        self.document().change(self.document().get_setlist().get_instrument(self.item).set_device, device)
 
     def page_keys(self):
         return [self.bind(self.KEYS.KEYSWITCH_MAP, action=self.open_keyswitch_map)]
 
     def open_keyswitch_map(self):
         """Open the Keyswitch Map, whose ten slots go into the instrument together on OK, as one undo step."""
-        dialog = KeyswitchMapDialog(title=messages.MSG_KEYSWITCH_MAP_TITLE.format(instrument=self.item), keyswitches=self.instrument().get_keyswitches(), setlist=self.document().setlist())
-        self.ask(dialog=dialog, then=lambda keyswitches: self.document().change(self.document().setlist().get_instrument(self.item).set_keyswitches, keyswitches))
+        dialog = KeyswitchMapDialog(title=messages.MSG_KEYSWITCH_MAP_TITLE.format(instrument=self.item), keyswitches=self.instrument().get_keyswitches(), setlist=self.document().get_setlist())
+        self.ask(dialog=dialog, then=lambda keyswitches: self.document().change(self.document().get_setlist().get_instrument(self.item).set_keyswitches, keyswitches))
 
     def default_velocity_field(self):
         """Return the Default velocity field: what a step with no velocity typed plays at on the instrument's tracks, the loudest until set."""
@@ -115,7 +115,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
             page=self, label=labels.MSG_KEYSWITCH_LEAD_LABEL, number=instrument.get_keyswitch_lead(), lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD,
             shown=marks.MSG_KEYSWITCH_LEAD_SHOWN.format(milliseconds=instrument.get_keyswitch_lead()),
             title=messages.MSG_KEYSWITCH_LEAD_PROMPT.format(lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD),
-            set=lambda milliseconds: self.document().change(self.document().setlist().get_instrument(self.item).set_keyswitch_lead, milliseconds or None),
+            set=lambda milliseconds: self.document().change(self.document().get_setlist().get_instrument(self.item).set_keyswitch_lead, milliseconds or None),
         )
 
     def channel_field(self):
@@ -126,7 +126,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         return NumberField(
             page=self, label=labels.MSG_CHANNEL_LABEL, number=instrument.get_channel(), lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL,
             title=messages.MSG_CHANNEL_PROMPT.format(lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL),
-            set=lambda channel: self.document().change(self.document().setlist().get_instrument(self.item).set_channel, channel),
+            set=lambda channel: self.document().change(self.document().get_setlist().get_instrument(self.item).set_channel, channel),
         )
 
     def fields(self):

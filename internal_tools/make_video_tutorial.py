@@ -221,7 +221,7 @@ def run(*, path, driver, audio_device, pace, play, save_to, go, video=True, wind
     for line in app.driven.report():
         print(LINE.format(text=line))
     if save_to is not None:
-        app.get_document().setlist().write_file(save_to)
+        app.get_document().get_setlist().write_file(save_to)
         print(SAVED.format(path=save_to))
     if capture is not None:
         if code != SUCCESS or not os.path.exists(video_path(path)):

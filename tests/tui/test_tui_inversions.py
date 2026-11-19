@@ -66,22 +66,22 @@ class TestInversionRow(UITest):
         self.assertNotIn(marks.MSG_NOTE_HOLLOW, self.text())
         self.assertNotIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR, self.text())
         # An inversion with no chord lifts nothing: one note has no inversion.
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.INVERSION, step=FIRST_STEP, value=1)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.INVERSION, step=FIRST_STEP, value=1)
         self.assertFalse(roll.root_is_lifted(FIRST_STEP))
         # With a chord, the written note doesn't sound where it is drawn: its bar is hollow, medium under the cursor and light once the cursor has left.
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
         self.assertTrue(roll.root_is_lifted(FIRST_STEP))
         self.editor.draw()
         self.assertIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR * grid_drawing.CELL_WIDTH, self.text())
         await self.press(Key.RIGHT)
         self.assertIn(marks.MSG_NOTE_HOLLOW * grid_drawing.CELL_WIDTH, self.text())
         # Root position again, and the bar is solid.
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.INVERSION, step=FIRST_STEP, value=None)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.INVERSION, step=FIRST_STEP, value=None)
         self.editor.draw()
         self.assertNotIn(marks.MSG_NOTE_HOLLOW, self.text())
 
     async def test_a_chord_cycles_through_the_inversions_and_back(self):
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
         await self.go_to_the_row()
         await self.press(keybindings.CycleRow.NEXT)
         self.assertEqual(self.inversion(), 1)

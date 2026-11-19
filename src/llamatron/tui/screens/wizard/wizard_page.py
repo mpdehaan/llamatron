@@ -267,7 +267,7 @@ class WizardPage(FieldPage):
         """Open the pattern editor on a pattern of a draft of the set the choices make. When the editor closes, keep() is given the
         pattern's data if it changed, and the status line says kept or unchanged."""
         def pattern_of(draft):
-            return draft.setlist().get_pattern(name).to_data() if draft.setlist().has_pattern(name) else None
+            return draft.get_setlist().get_pattern(name).to_data() if draft.get_setlist().has_pattern(name) else None
         self.open_in_draft(setlist=setlist, read=pattern_of, screen=lambda: PatternEditor(holder=self.holder, name=name, opened_from=self), keep=keep, kept=kept, unchanged=unchanged)
 
     def open_in_draft(self, *, setlist, read, screen, keep, kept, unchanged):
@@ -408,7 +408,7 @@ class WizardPage(FieldPage):
         # what Apply makes: a run from the last settings keeps the settings and never the seed.
         self._choices.draw_seed()
         document = self.document()
-        self._song_name = document.current_song_name() if self.replaces() else new_name(word=names.MSG_NEW_SONG_WORD, taken=document.song_names())
+        self._song_name = document.get_current_song_name() if self.replaces() else new_name(word=names.MSG_NEW_SONG_WORD, taken=document.song_names())
 
     def replaces(self):
         """Return whether Create replaces the current song, where otherwise a song is added."""

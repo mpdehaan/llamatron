@@ -34,7 +34,7 @@ def listen(*, page, index, track, song=None, name):
     transport = page.app.transport
     preview = page.app.pattern_preview()
     # With the set's Real Time switch off, the clip plays through General MIDI in FluidSynth, where FluidSynth is installed.
-    if song is None and not page.document().setlist().is_real_time() and preview.general_midi_is_installed():
+    if song is None and not page.document().get_setlist().is_real_time() and preview.general_midi_is_installed():
         refusal = transport.try_play(lambda: preview.play_clip_of_song(index=index, track=track)).refusal
         if refusal is not None:
             page.tell(errors.ERR_CANT_PLAY_TITLE, refusal)
@@ -45,7 +45,7 @@ def listen(*, page, index, track, song=None, name):
     if problem is not None:
         page.tell(problem.title, *problem.lines)
         return
-    setlist = page.document().setlist()
+    setlist = page.document().get_setlist()
     instrument = page.document().song().get_track(track).get_instrument_name()
     said = messages.MSG_LISTENING.format(name=name, track=track)
     what = messages.MSG_CLIP_ON_TRACK.format(name=name, track=track)

@@ -48,6 +48,6 @@ def silent_instrument_lines(*, setlist, installed, connected):
 
 def warn_of_silent_instruments(*, page, document):
     """Tell in a dialog over the page which of the set's instruments will not sound here, if any."""
-    lines = silent_instrument_lines(setlist=document.setlist(), installed=page.app.transport.fluidsynth_installed(), connected=set(page.app.transport.output_port_names()))
+    lines = silent_instrument_lines(setlist=document.get_setlist(), installed=page.app.transport.fluidsynth_installed(), connected=set(page.app.transport.output_port_names()))
     if lines:
         page.tell(errors.ERR_SILENT_INSTRUMENTS_TITLE, *lines)

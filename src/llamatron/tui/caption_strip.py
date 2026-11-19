@@ -48,7 +48,7 @@ class CaptionStrip:
     def show(self, text):
         self._text = text
 
-    def text(self):
+    def get_text(self):
         return self._text
 
     def lines(self, width):

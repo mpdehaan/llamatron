@@ -57,7 +57,7 @@ def offer_import(*, page, path):
     except UNREADABLE as problem:
         page.tell(errors.ERR_CANT_IMPORT_TITLE, errors.ERR_CANT_READ_MIDI.format(file=name, problem=problem))
         return
-    dialog = ImportDialog(midi_import=midi_import, setlist=page.document().setlist(), song_name=os.path.splitext(name)[0])
+    dialog = ImportDialog(midi_import=midi_import, setlist=page.document().get_setlist(), song_name=os.path.splitext(name)[0])
     page.ask(dialog=dialog, then=lambda imported: finish_import(page=page, imported=imported))
 
 

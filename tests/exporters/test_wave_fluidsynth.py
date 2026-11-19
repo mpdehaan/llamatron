@@ -75,8 +75,8 @@ def song_with_instruments():
     document = a_song()
     for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, OTHER_PORT)):
         document.add_instrument(name)
-        document.change(document.setlist().get_instrument(name).set_device, device)
-    document.change(document.setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
+        document.change(document.get_setlist().get_instrument(name).set_device, device)
+    document.change(document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
     document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
     document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)
     return document

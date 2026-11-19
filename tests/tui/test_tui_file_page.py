@@ -77,7 +77,7 @@ class TestFilePage(UITest):
         # The loose settings alphabetically, then the Notes & Octaves and Visualizers sections.
         labels = [field.label for field in self.app.screen.fields()]
         self.assertEqual(labels[:6], [AUTHOR, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_PROTECTED_LABEL, TITLE])
-        self.assertEqual(self.document.setlist().get_title(), setlist_values.NO_TEXT)
+        self.assertEqual(self.document.get_setlist().get_title(), setlist_values.NO_TEXT)
         await self.select_field(TITLE)
         await self.press(Key.ENTER)
         await self.type('Rain on the Bridge')
@@ -86,19 +86,19 @@ class TestFilePage(UITest):
         await self.press(Key.ENTER)
         await self.type('Someone')
         await self.press(Key.ENTER)
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         self.assertEqual((setlist.get_title(), setlist.get_author()), (RAIN_ON_THE_BRIDGE, SOMEONE))
         self.document.save(path='song.yml')
         with open('song.yml') as file:
             self.assertTrue(file.read().startswith(f'version: {version.VERSION}\ntitle: Rain on the Bridge\nauthor: Someone\n'))
-        self.assertEqual(Document.load('song.yml').setlist().get_title(), RAIN_ON_THE_BRIDGE)
+        self.assertEqual(Document.load('song.yml').get_setlist().get_title(), RAIN_ON_THE_BRIDGE)
         await self.press(Key.BACKSPACE)
-        self.assertEqual(self.document.setlist().get_author(), setlist_values.NO_TEXT)
+        self.assertEqual(self.document.get_setlist().get_author(), setlist_values.NO_TEXT)
 
     async def test_step_size_offers_only_the_allowed_values(self):
         await self.select_field(STEP_SIZE)
         await self.press(key_of(binding=keybindings.FilePage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.document.setlist().get_step_size(), Fraction(1, 8))
+        self.assertEqual(self.document.get_setlist().get_step_size(), Fraction(1, 8))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options, file_format.STEP_SIZE_CHOICES)
@@ -154,16 +154,16 @@ class TestFilePage(UITest):
         self.assertFalse(self.document.is_dirty())
 
     async def test_a_protected_set_offers_a_copy_and_the_file_page_turns_protection_off(self):
-        self.assertFalse(self.document.setlist().is_protected())
+        self.assertFalse(self.document.get_setlist().is_protected())
         await self.select_field(labels_text.MSG_PROTECTED_LABEL)
         self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.SPACE_ENTER), self.text())
         await self.press(Key.ENTER)
-        self.assertTrue(self.document.setlist().is_protected())
+        self.assertTrue(self.document.get_setlist().is_protected())
         # Space toggles too, like ENTER.
         await self.press(Key.SPACE)
-        self.assertFalse(self.document.setlist().is_protected())
+        self.assertFalse(self.document.get_setlist().is_protected())
         await self.press(Key.SPACE)
-        self.assertTrue(self.document.setlist().is_protected())
+        self.assertTrue(self.document.get_setlist().is_protected())
         self.document.save(path='demo.yml')
         self.document.change(self.document.song().set_tempo, OTHER_TEMPO)
         await self.press(Key.CTRL_S)
@@ -175,11 +175,11 @@ class TestFilePage(UITest):
         await self.press(Key.ENTER)
         self.assertNotEqual(Document.load('demo.yml').song().get_tempo(), OTHER_TEMPO)
         self.assertEqual(Document.load('copy.yml').song().get_tempo(), OTHER_TEMPO)
-        self.assertFalse(Document.load('copy.yml').setlist().is_protected())
+        self.assertFalse(Document.load('copy.yml').get_setlist().is_protected())
         self.assertEqual(self.document.get_path(), 'copy.yml')
         self.assertFalse(self.document.is_dirty())
         # Saying no leaves everything as it was. Protecting a set is kept by saving it to a new file.
-        self.document.change(self.document.setlist().set_protected, True)
+        self.document.change(self.document.get_setlist().set_protected, True)
         self.document.save(path='second.yml')
         self.document.change(self.document.song().set_tempo, OTHER_TEMPO + 1)
         await self.press(Key.CTRL_S, keybindings.ConfirmDialog.NO)
@@ -192,7 +192,7 @@ class TestFilePage(UITest):
         self.assertEqual(Document.load('second.yml').song().get_tempo(), OTHER_TEMPO + 1)
 
     async def test_saving_a_protected_set_under_its_own_name_is_refused_in_a_dialog(self):
-        self.document.change(self.document.setlist().set_protected, True)
+        self.document.change(self.document.get_setlist().set_protected, True)
         self.document.save(path='demo.yml')
         # Unchanged, a protected set still gets the dialog rather than the status line.
         await self.press(Key.CTRL_S)

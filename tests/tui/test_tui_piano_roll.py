@@ -258,10 +258,10 @@ class TestPlacingNotes(RollTest):
         self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=EIGHTH, whose=marks.MSG_FROM_SONG_SHOWN), self.text())
 
     async def test_esc_in_the_entry_size_picker_changes_nothing(self):
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.press(keybindings.PianoRoll.ENTRY_SIZE, Key.DOWN, Key.DOWN, Key.ESCAPE)
         self.assertIs(self.app.screen, self.editor)
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
 
     async def test_the_legend_shows_the_entry_size_key_and_the_brackets_that_drag(self):
         self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.PianoRoll.ENTRY_SIZE)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_ENTRY_SIZE_WHAT), self.text())
@@ -363,7 +363,7 @@ class TestPlacingNotes(RollTest):
     async def test_a_note_shorter_than_a_step_fills_part_of_its_cell_and_so_does_a_gates_last_step(self):
         # E's gate of a step and a half runs through the divider into half of step 3's cell.
         columns = filled_columns(HALF_A_STEP)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.GATE, step=E_STEP, value=THREE_SIXTEENTHS)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.GATE, step=E_STEP, value=THREE_SIXTEENTHS)
         self.document.changed()
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertIn(marks.MSG_NOTE_CELL + marks.MSG_NOTE_EDGE + marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}'))
@@ -456,7 +456,7 @@ class TestShapingNotes(RollTest):
         self.assertIn(errors.ERR_NO_NOTE_HERE, self.text())
 
     async def test_a_grab_on_an_empty_step_from_a_file_sits_on_the_root(self):
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.GRAB, step=EMPTY_STEP, value=True)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.GRAB, step=EMPTY_STEP, value=True)
         self.document.changed()
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertEqual(self.roll.pitch_of(EMPTY_STEP), C_PITCH)
@@ -503,7 +503,7 @@ class TestChordsOnTheRoll(RollTest):
 
     async def test_a_scale_chords_other_notes_are_thin_lines_on_their_degrees(self):
         # The C on step 1 as a scale triad: lines on E and G, over that step alone, and the C itself stays solid.
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
         await self.press(Key.RIGHT, Key.LEFT)
         e_line = self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}')
         self.assertIn(self.ghost(), e_line)
@@ -516,7 +516,7 @@ class TestChordsOnTheRoll(RollTest):
         # C minor in C major: Eb is drawn on a D# row between D and E, which exists for it, and G on its own row.
         sharp_row = f'{NoteName.D_SHARP}{SHOWN_OCTAVE}'
         self.assertNotIn(ui_testing.ROW_SHOWN.format(label=sharp_row), self.text())
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertIn(self.ghost(), self.roll_line(sharp_row))
         self.assertIn(self.ghost(), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
@@ -524,7 +524,7 @@ class TestChordsOnTheRoll(RollTest):
             self.assertNotIn(self.ghost(), self.roll_line(label))
         # The row's label is the note alone, the rows around it keep their degrees, and the row goes with the chord.
         self.assertIn(labels.MSG_ROLL_ROW_LABEL.format(note=f'{NoteName.D}{SHOWN_OCTAVE}', degree=D_DEGREE), self.text())
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=None)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=None)
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertNotIn(ui_testing.ROW_SHOWN.format(label=sharp_row), self.text())
 
@@ -546,7 +546,7 @@ class TestChordsOnTheRoll(RollTest):
 
     async def test_space_on_a_row_between_two_degrees_writes_the_degree_below_sharpened(self):
         # The C minor chord's Eb puts a D# row on the roll, two rows above C; a note drawn there on step 4 is degree 2 with a sharp.
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
         await self.press(Key.RIGHT, Key.RIGHT, Key.RIGHT, Key.UP, Key.UP, keybindings.PianoRoll.PLACE)
         self.assertEqual(self.roll.pitch, D_SHARP_PITCH)
         self.assertEqual((self.value(row=Row.DEGREE, step=LAST_STEP), self.value(row=Row.ACCIDENTAL, step=LAST_STEP)), (D_DEGREE, Accidental.SHARP))
@@ -560,21 +560,21 @@ class TestChordsOnTheRoll(RollTest):
 
     async def test_a_ghost_runs_through_the_dividers_as_far_as_its_note_does(self):
         # A C on step 3 held by a tie on step 4, as a scale fifth: the G's hollow bar covers both steps in one piece.
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=EMPTY_STEP, value=1)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.TIE, step=LAST_STEP, value=True)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=EMPTY_STEP, value=chord_value(ChordSymbol.SCALE_FIFTH))
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=EMPTY_STEP, value=1)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.TIE, step=LAST_STEP, value=True)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=EMPTY_STEP, value=chord_value(ChordSymbol.SCALE_FIFTH))
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertIn(marks.MSG_GHOST_LINE * (grid_drawing.CELL_WIDTH * 2 + 1), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
 
     async def test_a_named_chord_has_no_ghosts_when_the_scale_is_not_known_and_a_scale_chord_still_has(self):
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
         self.document.add_scale(name=SECOND_SCALE, root=NoteName.D, kind=scale_type_name(ScaleType.MINOR))
         self.document.add_clip_slot(index=SCENE_TWO, track=ui_testing.LEAD, pattern=ui_testing.TUNE)
         self.document.change(self.document.song().get_scene(SCENE_TWO).set_scale_name, name=SECOND_SCALE, song=self.document.song())
         await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.PATTERNS, Key.ENTER)
         self.assertIn(fixed_text(labels.MSG_SEVERAL_SCALES), self.text())
         self.assertFalse(self.rows_with_ghosts())
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertTrue(self.rows_with_ghosts())
 

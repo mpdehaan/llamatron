@@ -41,7 +41,7 @@ class LengthBar:
         self._width = width
         self._hatched = hatched
 
-    def width(self):
+    def get_width(self):
         return self._width
 
     def blank(self):

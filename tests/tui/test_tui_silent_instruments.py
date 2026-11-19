@@ -46,7 +46,7 @@ def with_instruments(document, *, keys_device=GONE_PORT):
     """Give the lead a FluidSynth instrument and the drums one on a MIDI port, and add an instrument nothing plays through, on a port that has gone."""
     for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, keys_device), (UNUSED, GONE_PORT)):
         document.add_instrument(name)
-        document.change(document.setlist().get_instrument(name).set_device, device)
+        document.change(document.get_setlist().get_instrument(name).set_device, device)
     document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
     document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)
     return document
@@ -55,7 +55,7 @@ def with_instruments(document, *, keys_device=GONE_PORT):
 class TestSilentInstrumentLines(unittest.TestCase):
 
     def setUp(self):
-        self.setlist = with_instruments(a_song()).setlist()
+        self.setlist = with_instruments(a_song()).get_setlist()
 
     def test_fluidsynth_not_installed_and_a_port_not_connected_are_each_told(self):
         lines = silent_instrument_lines(setlist=self.setlist, installed=False, connected=set())
@@ -70,8 +70,8 @@ class TestSilentInstrumentLines(unittest.TestCase):
 
     def test_fluidsynth_is_told_once_however_many_instruments_use_it(self):
         document = with_instruments(a_song())
-        document.change(document.setlist().get_instrument(KEYS).set_device, file_format.FLUIDSYNTH_DEVICE)
-        self.assertEqual(silent_instrument_lines(setlist=document.setlist(), installed=False, connected=set()), [errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND])
+        document.change(document.get_setlist().get_instrument(KEYS).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.assertEqual(silent_instrument_lines(setlist=document.get_setlist(), installed=False, connected=set()), [errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND])
 
 
 class SilentInstrumentsTest(UITest):
@@ -107,7 +107,7 @@ class TestSilentInstrumentsWhenTheTrackerStarts(SilentInstrumentsTest):
         self.assert_told(errors.ERR_DEVICE_WILL_NOT_SOUND.format(instrument=KEYS, device=GONE_PORT))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
-        setlist = self.app.get_document().setlist()
+        setlist = self.app.get_document().get_setlist()
         self.assertEqual(setlist.get_instrument(FLUID).get_device(), file_format.FLUIDSYNTH_DEVICE)
         self.assertEqual(setlist.get_instrument(KEYS).get_device(), GONE_PORT)
         self.assertFalse(self.app.get_document().is_dirty())

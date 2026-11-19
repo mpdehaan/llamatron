@@ -49,7 +49,7 @@ class TestPlusRow(UITest):
             await self.press(Key.ESCAPE)
 
     async def test_down_past_the_last_row_goes_to_it_and_up_from_the_top_stays_there(self):
-        names = self.document.setlist().get_chain_names()
+        names = self.document.get_setlist().get_chain_names()
         await self.press(keybindings.MainPage.CHAINS, Key.UP)
         self.assertEqual(self.app.screen.current(), names[0])
         await self.press(*[Key.DOWN] * len(names))
@@ -66,9 +66,9 @@ class TestPlusRow(UITest):
         self.assertIsInstance(self.app.screen, PromptDialog)
 
     async def test_backspace_and_copy_do_nothing_on_it(self):
-        names = self.document.setlist().get_chain_names()
+        names = self.document.get_setlist().get_chain_names()
         await self.press(keybindings.MainPage.CHAINS, *[Key.DOWN] * len(names), Key.BACKSPACE, keybindings.ChainsPage.COPY, keybindings.ChainsPage.MOVE)
-        self.assertEqual(self.document.setlist().get_chain_names(), names)
+        self.assertEqual(self.document.get_setlist().get_chain_names(), names)
         self.assertIsInstance(self.app.screen, ChainsPage)
 
     async def test_lists_that_cannot_add_have_none(self):
@@ -129,15 +129,15 @@ class TestSettingArrows(UITest):
         # Real-time playback alone reads it, and a set that never sets it writes nothing, so the demos stay as they are.
         await self.press(keybindings.MainPage.FILE)
         await self.select_field(labels.MSG_DEFAULT_FOLLOW_ACTION_LABEL)
-        self.assertEqual(self.document.setlist().get_default_follow_action(), FollowAction.WITH_SCENE)
-        self.assertNotIn(SetlistSetting.DEFAULT_FOLLOW_ACTION, self.document.setlist().to_data())
+        self.assertEqual(self.document.get_setlist().get_default_follow_action(), FollowAction.WITH_SCENE)
+        self.assertNotIn(SetlistSetting.DEFAULT_FOLLOW_ACTION, self.document.get_setlist().to_data())
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.press(Key.DOWN, Key.ENTER)
-        self.assertEqual(self.document.setlist().get_default_follow_action(), FollowAction.NEXT)
-        self.assertEqual(self.document.setlist().to_data()[SetlistSetting.DEFAULT_FOLLOW_ACTION], FollowAction.NEXT)
+        self.assertEqual(self.document.get_setlist().get_default_follow_action(), FollowAction.NEXT)
+        self.assertEqual(self.document.get_setlist().to_data()[SetlistSetting.DEFAULT_FOLLOW_ACTION], FollowAction.NEXT)
         await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.document.setlist().get_default_follow_action(), FollowAction.OFF)
+        self.assertEqual(self.document.get_setlist().get_default_follow_action(), FollowAction.OFF)
 
     async def test_octave_labels_are_chosen_from_a_list(self):
         await self.press(keybindings.MainPage.FILE)

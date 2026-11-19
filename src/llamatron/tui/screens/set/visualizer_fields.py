@@ -36,7 +36,7 @@ def visualizer_field(*, page, current, set_name, first):
 def hidden_visualizers_field(*, page):
     """Return the field of the modes left out of the visualizer key: their names, or (none), and Enter opening a list where each
     can be picked: one field rather than a section of toggles."""
-    setlist = page.document().setlist()
+    setlist = page.document().get_setlist()
 
     def shown():
         hidden = setlist.get_hidden_visualizers()
@@ -45,7 +45,7 @@ def hidden_visualizers_field(*, page):
     def pick():
         def chosen(names):
             for name in file_format.VISUALIZER_NAMES:
-                page.document().change(page.document().setlist().set_visualizer_hidden, name=name, hidden=name in names)
+                page.document().change(page.document().get_setlist().set_visualizer_hidden, name=name, hidden=name in names)
         dialog = PickManyDialog(title=labels.MSG_HIDE_VISUALIZERS_LABEL, options=list(file_format.VISUALIZER_NAMES), names=[mode_called(name).NAME for name in file_format.VISUALIZER_NAMES],
                                 picked=setlist.get_hidden_visualizers())
         page.ask(dialog=dialog, then=chosen)

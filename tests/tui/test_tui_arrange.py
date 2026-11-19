@@ -319,9 +319,9 @@ class TestArrangePage(UITest):
         every = [name for item in self.page.key_table() for name in item.keys]
         for name in (*keys_values.SHIFT_UP_DOWN, *keys_values.SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.press(*keys_values.SHIFT_UP_DOWN, *keys_values.SHIFT_LEFT_RIGHT)
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
         self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.M) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_MOVE_SCENE_WHAT), self.text())
         await self.press(Key.UP, Key.RIGHT)
         self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.M) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_MOVE_TRACK_WHAT), self.text())
@@ -504,7 +504,7 @@ class TestClipPage(UITest):
         self.assertIsInstance(self.app.screen, PromptDialog)
         await self.press(Key.ENTER)
         self.assertEqual(self.patterns(), [*first, LEAD_1])
-        self.assertEqual(self.document.setlist().get_pattern(LEAD_1).get_group(), LEAD)
+        self.assertEqual(self.document.get_setlist().get_pattern(LEAD_1).get_group(), LEAD)
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.patterns(), first)
         self.assertFalse(self.document.song().has_pattern(LEAD_1))
@@ -560,9 +560,9 @@ class TestClipPage(UITest):
         # No (default) choice; a clip that sets nothing shows the File page's Default follow action, saying it comes from the set.
         self.assertIsNone(self.clip_slot().get_written_follow_action())
         self.assertEqual(self.follow_action_text(), marks.MSG_FROM_SET_SHOWN.format(value=labels_text.MSG_FOLLOW_ACTION_NAMES[FollowAction.WITH_SCENE]))
-        self.document.change(self.document.setlist().set_default_follow_action, FollowAction.OFF)
+        self.document.change(self.document.get_setlist().set_default_follow_action, FollowAction.OFF)
         self.assertEqual(self.follow_action_text(), marks.MSG_FROM_SET_SHOWN.format(value=labels_text.MSG_FOLLOW_ACTION_NAMES[FollowAction.OFF]))
-        self.document.change(self.document.setlist().set_default_follow_action, FollowAction.WITH_SCENE)
+        self.document.change(self.document.get_setlist().set_default_follow_action, FollowAction.WITH_SCENE)
         self.assertIsNone(self.clip_slot().get_written_follow_action())
         await self.select_field(labels_text.MSG_FOLLOW_ACTION_LABEL)
         await self.press(Key.ENTER)
@@ -740,7 +740,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         await self.pilot.pause()
         # The notes stand under the settings, below what a small console shows until the cursor goes down the page.
         self.assertIn(THIS_PATTERN_HAS_NONE_YET, self.notes_text())
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.GRAB, step=0, value=True)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.GRAB, step=0, value=True)
         self.page.draw()
         await self.pilot.pause()
         self.assertNotIn(THIS_PATTERN_HAS_NONE_YET, self.notes_text())
@@ -1010,8 +1010,8 @@ class TestRegistersPage(UITest):
 
     async def test_a_lower_allowed_inc_max_brings_the_adds_within_it_and_undo_brings_them_back(self):
         add_row = file_format.REGISTER_ADD_ROWS[RegisterName.AX]
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=add_row, step=0, value=BIG_ADD)
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=add_row, step=1, value=-BIG_ADD)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=add_row, step=0, value=BIG_ADD)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=add_row, step=1, value=-BIG_ADD)
         self.document.record_edit()
         await self.select_field(self.label(name=RegisterName.AX, what=labels_text.MSG_REGISTER_ALLOWED_INC_MAX_FIELD))
         await self.press(Key.ENTER)

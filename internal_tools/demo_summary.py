@@ -298,7 +298,7 @@ def unknown_features(features):
 def played_seconds(document):
     """Return how long every song of the set plays, added up, or None if any can't be worked out."""
     total = 0
-    for name in document.setlist().get_song_names():
+    for name in document.get_setlist().get_song_names():
         document.select_song(name)
         seconds = document.lengths().song_seconds()
         if seconds is None:
@@ -310,7 +310,7 @@ def played_seconds(document):
 def summary_row(*, path, features):
     """Return one set's cells, as text, in the order of the headings."""
     document = Document.load(path)
-    setlist = document.setlist()
+    setlist = document.get_setlist()
     used = features.features_used(path)
     cells = [
         features.short_name(path),
@@ -414,7 +414,7 @@ def videos(*, path=None):
 
 def genre_of(path):
     """Return the genre a set's page of demos is named after: its first song's genre, or NO_GENRE."""
-    genres = Document.load(path).setlist().get_genres()
+    genres = Document.load(path).get_setlist().get_genres()
     return genres[0] if genres else NO_GENRE
 
 
