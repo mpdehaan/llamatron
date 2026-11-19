@@ -840,8 +840,7 @@ class ArrangePage(Page):
     def blank_pattern(self):
         """Make a blank pattern named after the cursor's track, a drum pattern on a drum track, put a clip of it in the empty cell and open it."""
         track = self.track()
-        taken = self.document().song().get_pattern_names()
-        name = new_name(word=track, taken=taken)
+        name = self.document().new_name(section=Section.PATTERNS, word=track)
         # A pattern made on a clip goes in the group named after the clip's track.
         drum = self.document().song().get_track(track).is_drum()
         self.document().add_pattern(name=name, group=track, drum=drum)

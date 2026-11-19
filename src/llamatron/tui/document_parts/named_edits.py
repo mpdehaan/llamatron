@@ -27,7 +27,7 @@ starts with something else, so each kind keeps its own add.
 from llamatron.composition import sections
 from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.naming import copy_name
+from llamatron.composition.naming import copy_name, new_name
 from llamatron.strings import errors
 
 # The place of the song before a deleted one, which becomes current, and the first place, for when the first song was deleted.
@@ -54,6 +54,10 @@ class NamedEdits:
         if section == Section.GROOVES:
             return self._setlist.get_groove_names()
         return self.owner_of(section).get_item_names(section)
+
+    def new_name(self, *, section, word):
+        """Return the name a new item of a section is given: the word, a dash and the number after the highest in use among the section's names."""
+        return new_name(word=word, taken=self.names_of(section))
 
     def has_named(self, *, section, name):
         """Return whether a section has an item of a name, a factory groove among the grooves."""

@@ -17,7 +17,6 @@
 """The Instruments page: every MIDI device and channel that a track can play through in real time."""
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.naming import new_name
 from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
@@ -48,8 +47,7 @@ class InstrumentsPage(NamedListPage):
 
     def add(self):
         """Add an instrument with no device yet, numbered like new tracks and scenes, and open it."""
-        taken = self.names()
-        name = new_name(word=names.MSG_NEW_INSTRUMENT_WORD, taken=taken)
+        name = self.new_name(names.MSG_NEW_INSTRUMENT_WORD)
         self.document().add_instrument(name)
         self.put_cursor_on(name)
         self.show_page(InstrumentEditor(holder=self.holder, name=name))

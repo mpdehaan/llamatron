@@ -244,7 +244,7 @@ class PatternsPage(NamedListPage):
             self.new_groups = [made for made in self.new_groups if made != group]
             self.put_cursor_on(text)
             self.show_page(PatternEditor(holder=self.holder, name=text))
-        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=new_name(word=names_text.MSG_NEW_PATTERN_WORD, taken=patterns), max_length=limits.MAX_NAME_LENGTH), then=named)
+        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=self.new_name(names_text.MSG_NEW_PATTERN_WORD), max_length=limits.MAX_NAME_LENGTH), then=named)
 
     def rename(self):
         name = self.listed().name

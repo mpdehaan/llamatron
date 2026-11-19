@@ -21,7 +21,7 @@ from rich.text import Text
 
 from llamatron.composition import clip_slot as clip_slot_values, defaults, file_format, limits
 from llamatron.composition.file_format import ClipSlotSetting, Section, shape_setting, strum_setting
-from llamatron.composition.naming import new_name, words
+from llamatron.composition.naming import words
 from llamatron.playback import song_renderer
 from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
 from llamatron.tui import drawing, keybindings, themes
@@ -168,7 +168,7 @@ class ClipPage(FieldPage):
 
     def ask_new_pattern(self):
         """Ask for a new pattern's name, filled in with the track's name and the next free number, make it blank and add it to the list."""
-        suggested = new_name(word=self.track, taken=self.document().song().get_pattern_names())
+        suggested = self.document().new_name(section=Section.PATTERNS, word=self.track)
         self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=suggested, max_length=limits.MAX_NAME_LENGTH), then=self.add_new)
 
     def add_new(self, text):

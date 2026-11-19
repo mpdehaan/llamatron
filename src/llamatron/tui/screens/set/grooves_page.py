@@ -18,7 +18,6 @@
 from llamatron.composition import groove
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import is_factory_groove
-from llamatron.composition.naming import new_name
 from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
@@ -64,8 +63,7 @@ class GroovesPage(NamedListPage):
 
     def add(self):
         """Add a straight groove, numbered like new tracks and scenes, and open it."""
-        taken = self.names()
-        name = new_name(word=names.MSG_NEW_GROOVE_WORD, taken=taken)
+        name = self.new_name(names.MSG_NEW_GROOVE_WORD)
         self.document().add_groove(name)
         self.put_cursor_on(name)
         self.show_page(GrooveEditor(holder=self.holder, name=name))
