@@ -359,6 +359,8 @@ MSG_KEYSWITCH_SLOT_NAMED = 'slot {slot}'
 MSG_KEYSWITCH_SEPARATOR = ', '
 MSG_KEYSWITCH_SLOT_ROW = '{slot:>2}   {toggle}   '
 # tui/dialogs/keyswitch_map_dialog.py: a slot's row in an instrument's Keyswitch Map, its number before its name and note.
+# A note cell of the Keyswitch Map as drawn, before the picker's mark: the note, or (none).
+MSG_KEYSWITCH_NOTE_CELL = '{note} '
 MSG_KEYSWITCH_MAP_ROW = ' {slot:>2}  '
 # tui/screens/set/instrument_editor.py: how many of an instrument's keyswitch slots hold anything, and its keyswitch lead.
 MSG_KEYSWITCH_LEAD_SHOWN = '{milliseconds} ms'

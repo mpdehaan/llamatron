@@ -223,6 +223,8 @@ class Column:
     """The headings of the lists' columns."""
 
     NAME = 'NAME'
+    # tui/dialogs/keyswitch_map_dialog.py: the note each slot sends.
+    NOTE = 'NOTE'
     TYPE = 'TYPE'
     # tui/dialogs/chord_dialog.py: the Chord dialog's four lists.
     SELECT_QUALITY = 'SELECT QUALITY'
