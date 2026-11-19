@@ -23,15 +23,16 @@ are checked again when a chain makes the generator, since settings can be built 
 
 from llamatron.composition import corrections, euclid, file_format, guitar_bars, limits, shapes as shapes_values
 from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, is_whole_number, is_whole_number_from, listed, number, reading, time_length
-from llamatron.composition.conditions import statements_setting, with_statement
+from llamatron.composition.conditions import statements_setting
 from llamatron.composition.euclid import euclid_part_settings, euclid_values
 from llamatron.composition.file_format import Accidental, Approach, ChordColor, DriftValue, EuclidPart, GeneratorKind, GuitarifySetting, NamedRhythm, RegisterName, Restart, Section, Shape, shape_setting, ShapePart, SingleNotes, StrumDirection, StrumPart, Tuning
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import LlamaData, or_default, own_copy
+from llamatron.composition.llama_data import HoldsSettings, or_default, own_copy
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, Text, WholeNumber
 from llamatron.composition.shapes import shape_part_settings, shape_values, ShapeValues
 from llamatron.composition.strum import strum_part_settings, strum_values
+from llamatron.composition.traits import BypassedWhen
 from llamatron.generators import arp, musician, phrasing
 from llamatron.generators.arp import _check_offsets, Arp, ChordOrder, OctaveJump
 from llamatron.generators.auto_ratchet import AutoRatchet
@@ -199,7 +200,7 @@ def _check_counts(value):
         raise InvalidValue(errors.ERR_GENERATOR_NOT_A_LIST.format(name=AutoRatchetSetting.COUNTS, value=value))
 
 
-class GeneratorSettings(LlamaData):
+class GeneratorSettings(BypassedWhen, HoldsSettings):
     """The settings of one named generator, kept as the file writes them until a chain uses them.
 
     Each subclass says which generator it makes, describes each setting it allows once
@@ -207,8 +208,9 @@ class GeneratorSettings(LlamaData):
     something other than what the file writes.
     """
 
-    __slots__ = ('_settings',)
+    __slots__ = ()
 
+    BYPASS_SETTING = file_format.BYPASS_WHEN
     GENERATOR = None
     SETTINGS = {}
     REQUIRED = []
@@ -240,19 +242,23 @@ class GeneratorSettings(LlamaData):
     def to_data(self):
         return own_copy(self._settings)
 
-    def _written(self, name):
-        """Return a setting as the file writes it, or None if the file leaves it out."""
+    def get_written(self, name):
+        """Return a setting as the file writes it, or None if the file leaves it out. Only what is written is held, in the order written."""
         return self._settings.get(name) if isinstance(self._settings, dict) else None
 
     def copy(self):
         return type(self)(self.to_data())
 
-    @notes_change
     def set_setting(self, *, name, value):
-        """Set one setting by its file name, checking it as reading a file does, or None to leave it out.
+        """Set one setting by its file name, checking it as reading a file does, or None to leave it out."""
+        self.set_written(name=name, value=value)
+
+    @notes_change
+    def set_written(self, *, name, value, song=None):
+        """Store one setting by its file name, checking it as reading a file does, or None to leave it out.
 
         The settings are a table, one description each, so one generic setter checks them all
-        the same way.
+        the same way. No setting of a generator names anything of a song, so song is not read.
         """
         if not isinstance(self._settings, dict):
             raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=self._settings))
@@ -264,18 +270,9 @@ class GeneratorSettings(LlamaData):
             self.SETTINGS[name].check(value)
             self._settings[name] = own_copy(value)
 
-    def get_bypass_when(self):
-        """Return the statements about the registers that, while any is true as a clip's pattern starts over, bypass the generator for that pass."""
-        return own_copy(self._written(file_format.BYPASS_WHEN) or [])
-
-    @notes_change
-    def set_bypass_statement(self, *, place, statement):
-        """Write the statement at a place of its table, add one just past the last, or remove one with None."""
-        self.set_setting(name=file_format.BYPASS_WHEN, value=with_statement(statements=self._written(file_format.BYPASS_WHEN), place=place, statement=statement))
-
     def get_restart(self):
         """Return when the generator starts over, every clip unless set."""
-        return self._written(file_format.GENERATOR_RESTART) or Restart.EVERY_CLIP
+        return self.get_written(file_format.GENERATOR_RESTART) or Restart.EVERY_CLIP
 
     def make_generator(self, *, where, default_seed, default_step=None, bar=None, continuation=None, tempo=None):
         """Return the generator these settings describe, or raise SongFileError if they're wrong.
@@ -340,34 +337,34 @@ class ArpSettings(GeneratorSettings):
     # Each setting as the file writes it, or None when the file leaves it out, for the tracker to show.
 
     def get_step(self):
-        return self._written(ArpSetting.STEP)
+        return self.get_written(ArpSetting.STEP)
 
     def get_order(self):
-        return self._written(ArpSetting.ORDER)
+        return self.get_written(ArpSetting.ORDER)
 
     def get_seed(self):
-        return self._written(ArpSetting.SEED)
+        return self.get_written(ArpSetting.SEED)
 
     def get_octave_range(self):
-        return self._written(ArpSetting.OCTAVE_RANGE)
+        return self.get_written(ArpSetting.OCTAVE_RANGE)
 
     def get_octave_jump(self):
-        return self._written(ArpSetting.OCTAVE_JUMP)
+        return self.get_written(ArpSetting.OCTAVE_JUMP)
 
     def get_offsets(self):
-        offsets = self._written(ArpSetting.OFFSETS)
+        offsets = self.get_written(ArpSetting.OFFSETS)
         return None if offsets is None else list(offsets)
 
     def get_note_add(self, register):
         """Return how much each note the arp plays adds to a register, or None for nothing."""
-        return self._written(ARP_NOTE_ADDS[register])
+        return self.get_written(ARP_NOTE_ADDS[register])
 
     def get_step_adds(self, register):
         """Return what each step of the offsets adds to a register, one a step with None for nothing, or None when the arp has no offsets."""
         offsets = self.get_offsets()
         if offsets is None:
             return None
-        adds = self._written(ARP_STEP_ADDS[register]) or []
+        adds = self.get_written(ARP_STEP_ADDS[register]) or []
         return [adds[place] if place < len(adds) else None for place in range(len(offsets))]
 
     def adds_to_registers(self):
@@ -436,7 +433,7 @@ class AutoRatchetSettings(GeneratorSettings):
 
     def get_counts(self):
         """Return its counts as the file writes them, or None when the file leaves them out."""
-        counts = self._written(AutoRatchetSetting.COUNTS)
+        counts = self.get_written(AutoRatchetSetting.COUNTS)
         return None if counts is None else list(counts)
 
     @classmethod
@@ -528,28 +525,28 @@ class ProgressionSettings(GeneratorSettings):
         return values
 
     def get_every(self):
-        return self._written(ProgressionSetting.EVERY)
+        return self.get_written(ProgressionSetting.EVERY)
 
     def get_chords(self):
-        return list(self._written(ProgressionSetting.CHORDS) or NEW_PROGRESSION_CHORDS)
+        return list(self.get_written(ProgressionSetting.CHORDS) or NEW_PROGRESSION_CHORDS)
 
     def get_accidentals(self):
-        return _lined_up(values=self._written(ProgressionSetting.ACCIDENTALS), count=len(self.get_chords()))
+        return _lined_up(values=self.get_written(ProgressionSetting.ACCIDENTALS), count=len(self.get_chords()))
 
     def get_inversions(self):
-        return _lined_up(values=self._written(ProgressionSetting.INVERSIONS), count=len(self.get_chords()))
+        return _lined_up(values=self.get_written(ProgressionSetting.INVERSIONS), count=len(self.get_chords()))
 
     def get_scales(self):
         """Return the scale type each chord borrows, or None for the clip's own."""
-        return _lined_up(values=self._written(ProgressionSetting.SCALES), count=len(self.get_chords()))
+        return _lined_up(values=self.get_written(ProgressionSetting.SCALES), count=len(self.get_chords()))
 
     def get_qualities(self):
         """Return each chord's named quality, a chord symbol, or None for the chord its scale builds."""
-        return _lined_up(values=self._written(ProgressionSetting.QUALITIES), count=len(self.get_chords()))
+        return _lined_up(values=self.get_written(ProgressionSetting.QUALITIES), count=len(self.get_chords()))
 
     def get_tensions(self):
         """Return each chord's tensions as a tuple, lowest first, or None for none."""
-        return [None if value is None else tuple(tension for tension in file_format.TENSIONS if tension in value) for value in _lined_up(values=self._written(ProgressionSetting.TENSIONS), count=len(self.get_chords()))]
+        return [None if value is None else tuple(tension for tension in file_format.TENSIONS if tension in value) for value in _lined_up(values=self.get_written(ProgressionSetting.TENSIONS), count=len(self.get_chords()))]
 
 
 def _lined_up(*, values, count):
@@ -606,13 +603,13 @@ class VoiceLeadingSettings(GeneratorSettings):
         return values
 
     def get_lowest_octave(self):
-        return or_default(value=self._written(VoiceLeadingSetting.LOWEST_OCTAVE), default=DEFAULT_VOICING_LOWEST_OCTAVE)
+        return or_default(value=self.get_written(VoiceLeadingSetting.LOWEST_OCTAVE), default=DEFAULT_VOICING_LOWEST_OCTAVE)
 
     def get_highest_octave(self):
-        return or_default(value=self._written(VoiceLeadingSetting.HIGHEST_OCTAVE), default=DEFAULT_VOICING_HIGHEST_OCTAVE)
+        return or_default(value=self.get_written(VoiceLeadingSetting.HIGHEST_OCTAVE), default=DEFAULT_VOICING_HIGHEST_OCTAVE)
 
     def keeps_root_in_bass(self):
-        return bool(self._written(VoiceLeadingSetting.ROOT_IN_BASS))
+        return bool(self.get_written(VoiceLeadingSetting.ROOT_IN_BASS))
 
 
 # What a Guitarify does with each setting left out: both halves on, a standard guitar held in the open position with no capo, single
@@ -697,63 +694,63 @@ class GuitarifySettings(GeneratorSettings):
 
     def shapes(self):
         """Return whether the Shape half is on, which it is unless switched off."""
-        return self._written(GuitarifySetting.SHAPE) is not False
+        return self.get_written(GuitarifySetting.SHAPE) is not False
 
     def strikes(self):
         """Return whether the Strokes half is on, which it is unless switched off."""
-        return self._written(GuitarifySetting.STROKES) is not False
+        return self.get_written(GuitarifySetting.STROKES) is not False
 
     def lets_ring(self):
-        return bool(self._written(GuitarifySetting.LET_RING))
+        return bool(self.get_written(GuitarifySetting.LET_RING))
 
     def get_tuning(self):
-        return self._written(GuitarifySetting.TUNING) or Tuning.STANDARD
+        return self.get_written(GuitarifySetting.TUNING) or Tuning.STANDARD
 
     def get_position(self):
-        return or_default(value=self._written(GuitarifySetting.POSITION), default=DEFAULT_GUITAR_POSITION)
+        return or_default(value=self.get_written(GuitarifySetting.POSITION), default=DEFAULT_GUITAR_POSITION)
 
     def get_capo(self):
-        return or_default(value=self._written(GuitarifySetting.CAPO), default=DEFAULT_GUITAR_CAPO)
+        return or_default(value=self.get_written(GuitarifySetting.CAPO), default=DEFAULT_GUITAR_CAPO)
 
     def get_strings(self):
-        return or_default(value=self._written(GuitarifySetting.STRINGS), default=DEFAULT_GUITAR_STRINGS)
+        return or_default(value=self.get_written(GuitarifySetting.STRINGS), default=DEFAULT_GUITAR_STRINGS)
 
     def get_single_notes(self):
-        return self._written(GuitarifySetting.SINGLE_NOTES) or SingleNotes.LEAVE
+        return self.get_written(GuitarifySetting.SINGLE_NOTES) or SingleNotes.LEAVE
 
     def get_color(self):
-        return self._written(GuitarifySetting.COLOR) or ChordColor.AS_WRITTEN
+        return self.get_written(GuitarifySetting.COLOR) or ChordColor.AS_WRITTEN
 
     def get_approach(self):
-        return self._written(GuitarifySetting.APPROACH) or Approach.OFF
+        return self.get_written(GuitarifySetting.APPROACH) or Approach.OFF
 
     def get_bar(self):
         """Return the stroke of each cell, the default bar's unless written."""
-        return list(self._written(GuitarifySetting.BAR) or guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].strokes)
+        return list(self.get_written(GuitarifySetting.BAR) or guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].strokes)
 
     def get_accents(self):
         """Return whether each cell is accented, as long as the bar: the default bar's while the bar is unwritten, and none where a written bar has none."""
-        if self._written(GuitarifySetting.BAR) is None and self._written(GuitarifySetting.ACCENTS) is None:
+        if self.get_written(GuitarifySetting.BAR) is None and self.get_written(GuitarifySetting.ACCENTS) is None:
             return list(guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].accents)
         count = len(self.get_bar())
-        return (list(self._written(GuitarifySetting.ACCENTS) or []) + [False] * count)[:count]
+        return (list(self.get_written(GuitarifySetting.ACCENTS) or []) + [False] * count)[:count]
 
     def get_cell(self):
         """Return how long a cell lasts, as a file writes it: the default bar's unless written."""
-        return self._written(GuitarifySetting.CELL) or guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].cell
+        return self.get_written(GuitarifySetting.CELL) or guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].cell
 
     def get_spread(self):
-        return or_default(value=self._written(GuitarifySetting.SPREAD), default=DEFAULT_GUITAR_SPREAD)
+        return or_default(value=self.get_written(GuitarifySetting.SPREAD), default=DEFAULT_GUITAR_SPREAD)
 
     def get_fade(self):
-        return or_default(value=self._written(GuitarifySetting.FADE), default=DEFAULT_GUITAR_FADE)
+        return or_default(value=self.get_written(GuitarifySetting.FADE), default=DEFAULT_GUITAR_FADE)
 
     def get_loose_timing(self):
-        return or_default(value=self._written(GuitarifySetting.LOOSE_TIMING), default=DEFAULT_GUITAR_LOOSE_TIMING)
+        return or_default(value=self.get_written(GuitarifySetting.LOOSE_TIMING), default=DEFAULT_GUITAR_LOOSE_TIMING)
 
     def get_upstroke(self):
         """Return how many of the top strings an upstroke catches, or EVERY_STRING for all."""
-        return or_default(value=self._written(GuitarifySetting.UPSTROKE), default=DEFAULT_GUITAR_UPSTROKE)
+        return or_default(value=self.get_written(GuitarifySetting.UPSTROKE), default=DEFAULT_GUITAR_UPSTROKE)
 
 
 class StrumSettings(GeneratorSettings):
@@ -774,11 +771,11 @@ class StrumSettings(GeneratorSettings):
         return cls({StrumPart.DIRECTION: StrumDirection.BY_THE_BEAT})
 
     def get_strum_setting(self, part):
-        return self._written(part)
+        return self.get_written(part)
 
     def get_strum(self):
         """Return how it strums, by the beat when its direction is blank."""
-        return strum_values(lambda part: self._written(part) if part != StrumPart.DIRECTION else self._written(part) or StrumDirection.BY_THE_BEAT)
+        return strum_values(lambda part: self.get_written(part) if part != StrumPart.DIRECTION else self.get_written(part) or StrumDirection.BY_THE_BEAT)
 
 
 class EuclidSettings(GeneratorSettings):
@@ -809,10 +806,10 @@ class EuclidSettings(GeneratorSettings):
         return {EuclidPart.HITS: mask.hits, EuclidPart.STEPS: mask.steps, EuclidPart.ROTATE: mask.rotate, EuclidPart.STEP: step or default_step}
 
     def get_euclid_setting(self, part):
-        return self._written(part)
+        return self.get_written(part)
 
     def get_euclid(self):
-        return euclid_values(self._written)
+        return euclid_values(self.get_written)
 
 
 def _check_hits_fit(*, hits, steps):
@@ -873,10 +870,10 @@ class StepRowSettings(GeneratorSettings):
         return cls({StepRowSetting.STEPS: list(NEW_STEP_ROW)})
 
     def get_steps(self):
-        return [bool(value) for value in (self._written(StepRowSetting.STEPS) or NEW_STEP_ROW)]
+        return [bool(value) for value in (self.get_written(StepRowSetting.STEPS) or NEW_STEP_ROW)]
 
     def get_step(self):
-        return self._written(StepRowSetting.STEP)
+        return self.get_written(StepRowSetting.STEP)
 
     def step_length(self, *, default_step, bar):
         """Return how long each step is, in whole notes."""
@@ -904,10 +901,10 @@ class GlideSettings(StepRowSettings):
 
     def get_written_glide_amount(self):
         """Return the glide amount as the file writes it, or None when it's left out."""
-        return self._written(StepRowSetting.GLIDE_AMOUNT)
+        return self.get_written(StepRowSetting.GLIDE_AMOUNT)
 
     def get_glide_amount(self):
-        written = self._written(StepRowSetting.GLIDE_AMOUNT)
+        written = self.get_written(StepRowSetting.GLIDE_AMOUNT)
         return DEFAULT_GLIDE_AMOUNT if written is None else number(written)
 
 
@@ -926,7 +923,7 @@ class ShortenSettings(StepRowSettings):
         return {StepRowSetting.SHORTEN: self.get_shorten()}
 
     def get_shorten(self):
-        return or_default(value=self._written(StepRowSetting.SHORTEN), default=DEFAULT_SHORTEN)
+        return or_default(value=self.get_written(StepRowSetting.SHORTEN), default=DEFAULT_SHORTEN)
 
 
 class MovingRowSettings(StepRowSettings):
@@ -946,7 +943,7 @@ class MovingRowSettings(StepRowSettings):
     )
 
     def get_amount(self):
-        return or_default(value=self._written(StepRowSetting.AMOUNT), default=self.DEFAULT_AMOUNT)
+        return or_default(value=self.get_written(StepRowSetting.AMOUNT), default=self.DEFAULT_AMOUNT)
 
 
 class RushSettings(MovingRowSettings):
@@ -1021,20 +1018,20 @@ class DriftSettings(GeneratorSettings):
 
     def get_every(self):
         """Return how often it triggers, as the file writes it, or None for one bar of the song it plays in."""
-        return self._written(DriftSetting.EVERY)
+        return self.get_written(DriftSetting.EVERY)
 
     def get_steps_to_b(self):
-        return self._written(DriftSetting.STEPS_TO_B) or DEFAULT_STEPS_TO_B
+        return self.get_written(DriftSetting.STEPS_TO_B) or DEFAULT_STEPS_TO_B
 
     def get_direction(self):
-        return self._written(DriftSetting.DIRECTION) or file_format.DRIFT_DIRECTIONS[0]
+        return self.get_written(DriftSetting.DIRECTION) or file_format.DRIFT_DIRECTIONS[0]
 
     def get_seed(self):
-        return self._written(DriftSetting.SEED)
+        return self.get_written(DriftSetting.SEED)
 
     def get_value(self, *, version, value):
         """Return one version's value as the file writes it, or None when the version leaves it out."""
-        return self._written(versioned(version=version, value=value))
+        return self.get_written(versioned(version=version, value=value))
 
     def adds_to_registers(self):
         """Return whether either version adds to a register at its triggers."""
@@ -1060,9 +1057,9 @@ class ShapeSettings(GeneratorSettings):
 
     def get_shape(self):
         """Return its shape's values, its start and end 100% when left blank."""
-        written = {shape_setting(shape=self.SHAPE, part=part): self._written(part) for part in file_format.SHAPE_PARTS}
+        written = {shape_setting(shape=self.SHAPE, part=part): self.get_written(part) for part in file_format.SHAPE_PARTS}
         values = shape_values(settings=written, shape=self.SHAPE)
-        accent = self._written(ShapeSetting.ACCENT) or shapes_values.NO_ACCENT
+        accent = self.get_written(ShapeSetting.ACCENT) or shapes_values.NO_ACCENT
         if values is None:
             return ShapeValues(shapes_values.UNCHANGED, shapes_values.UNCHANGED, written[shape_setting(shape=self.SHAPE, part=ShapePart.OVER)],
                                written[shape_setting(shape=self.SHAPE, part=ShapePart.THEN)] or file_format.SHAPE_THENS[0], accent)
@@ -1131,7 +1128,7 @@ class HocketSettings(GeneratorSettings):
 
     def get_source(self):
         """Return the name of the track whose notes it shares out, or None for none."""
-        return self._written(HocketSetting.SOURCE)
+        return self.get_written(HocketSetting.SOURCE)
 
     def names_item(self, *, section, name):
         return section == Section.TRACKS and self.get_source() == name
@@ -1167,7 +1164,7 @@ class FollowChordsSettings(GeneratorSettings):
 
     def get_chords_from(self):
         """Return the name of the track whose chords it follows, or None for none."""
-        return self._written(FollowChordsSetting.CHORDS_FROM)
+        return self.get_written(FollowChordsSetting.CHORDS_FROM)
 
     def names_item(self, *, section, name):
         return section == Section.TRACKS and self.get_chords_from() == name
@@ -1217,7 +1214,7 @@ class PhrasingSettings(GeneratorSettings):
 
     def get_own(self, name):
         """Return one of the Phrasing's settings, or what the Phrasing does with the setting left out."""
-        return or_default(value=self._written(name), default=PHRASING_DEFAULTS[name])
+        return or_default(value=self.get_written(name), default=PHRASING_DEFAULTS[name])
 
     def generator_for(self, *, where, bar):
         """Return the Phrasing of one clip, whose bars are of a length."""
@@ -1305,26 +1302,26 @@ class MusicianSettings(GeneratorSettings):
     def get_own(self, name):
         """Return one of the musician's settings, or what the musician does with the setting left out, which for how the musician gives way and holds its notes is the instrument's."""
         if name == MusicianSetting.GIVES_WAY:
-            return or_default(value=self._written(name), default=self.musician_class().USUAL_GIVES_WAY)
+            return or_default(value=self.get_written(name), default=self.musician_class().USUAL_GIVES_WAY)
         if name == MusicianSetting.NOTES:
-            return or_default(value=self._written(name), default=self.musician_class().USUAL_NOTES)
-        return or_default(value=self._written(name), default=MUSICIAN_DEFAULTS[name])
+            return or_default(value=self.get_written(name), default=self.musician_class().USUAL_NOTES)
+        return or_default(value=self.get_written(name), default=MUSICIAN_DEFAULTS[name])
 
     def follows_instrument(self, name):
         """Return whether a setting is left to the instrument: how the musician gives way or holds its notes, with nothing written for it."""
-        return self._written(name) is None
+        return self.get_written(name) is None
 
     def get_chords_from(self):
         """Return the name of the track whose chords the musician follows, or None for none."""
-        return self._written(MusicianSetting.CHORDS_FROM)
+        return self.get_written(MusicianSetting.CHORDS_FROM)
 
     def get_tune_from(self):
         """Return the name of the track that carries the tune the musician plays round, or None for none."""
-        return self._written(MusicianSetting.TUNE_FROM)
+        return self.get_written(MusicianSetting.TUNE_FROM)
 
     def get_section_own(self, *, section, name):
         """Return what a kind of section says of its own for one setting, or None where it says nothing."""
-        return (self._written(MusicianSetting.BY_SECTION) or {}).get(section, {}).get(name)
+        return (self.get_written(MusicianSetting.BY_SECTION) or {}).get(section, {}).get(name)
 
     def get_for(self, *, section, name):
         """Return whether the musician plays in a kind of section, or how the part is played there: the section's own, or else playing it whole."""
@@ -1334,7 +1331,7 @@ class MusicianSettings(GeneratorSettings):
     @notes_change
     def set_section_own(self, *, section, name, value):
         """Set what a kind of section says of its own for one setting, checked as a file's is, or None for what a section does unasked."""
-        by_section = own_copy(self._written(MusicianSetting.BY_SECTION) or {})
+        by_section = own_copy(self.get_written(MusicianSetting.BY_SECTION) or {})
         own = by_section.setdefault(section, {})
         if value is None:
             own.pop(name, None)
@@ -1363,7 +1360,7 @@ class MusicianSettings(GeneratorSettings):
         return self.musician_class()(
             bar=bar, beat=beat, surroundings=surroundings, activity=self.get_own(MusicianSetting.ACTIVITY), loudness=self.get_own(MusicianSetting.LOUDNESS),
             looseness=self.get_own(MusicianSetting.LOOSENESS), gives_way=self.get_own(MusicianSetting.GIVES_WAY), accents=self.get_own(MusicianSetting.ACCENTS),
-            notes=self.get_own(MusicianSetting.NOTES), range=self.get_own(MusicianSetting.RANGE), by_section=own_copy(self._written(MusicianSetting.BY_SECTION) or {}), seed=seed,
+            notes=self.get_own(MusicianSetting.NOTES), range=self.get_own(MusicianSetting.RANGE), by_section=own_copy(self.get_written(MusicianSetting.BY_SECTION) or {}), seed=seed,
         )
 
 

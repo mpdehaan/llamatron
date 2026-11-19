@@ -27,13 +27,14 @@ setting names something the song holds.
 from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import check_keys, check_name, reading
-from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
+from llamatron.composition.conditions import register_values_setting, statements_setting, with_statement
 from llamatron.composition.file_format import ClipSlotSetting, PatternOrder, Section, strum_setting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.strum import strum_settings, strum_values
+from llamatron.composition.traits import RunsChains, SetsRegisters
 from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.generators.blend import BlendMode
 from llamatron.strings import errors, marks
@@ -104,7 +105,7 @@ SETTINGS = described(
 )
 
 
-class ClipSlot(HoldsSettings):
+class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     """A pattern to play, and how: its chain, repeats or loop, direction, morph and grab, and its own name if it has one.
 
     Settings the file leaves out are kept as None, meaning their defaults. A clip with no name of
@@ -115,6 +116,9 @@ class ClipSlot(HoldsSettings):
     __slots__ = ()
 
     SETTINGS = SETTINGS
+    CHAINS_SETTING = ClipSlotSetting.CHAINS
+    SET_REGISTERS_SETTING = ClipSlotSetting.SET_REGISTERS
+    ADD_REGISTERS_SETTING = ClipSlotSetting.ADD_REGISTERS
 
     # A clip names the pattern it plays and the one it morphs to, the chain it runs and the track it grabs from.
     REFERENCES = {
@@ -213,10 +217,6 @@ class ClipSlot(HoldsSettings):
         """Set one part of a shape by its file name, like density_start, or None to leave it out."""
         self.set_written(name=name, value=value)
 
-    def get_chain_names(self):
-        """Return the names of the chains it runs, in order, before its scene's and its track's; none when it runs none."""
-        return list(self._settings[ClipSlotSetting.CHAINS] or [])
-
     def loops(self):
         return bool(self._settings[ClipSlotSetting.LOOP])
 
@@ -276,13 +276,6 @@ class ClipSlot(HoldsSettings):
         self._settings[ClipSlotSetting.PATTERNS] = list(names)
 
     @notes_change
-    def set_chain_names(self, *, names, song):
-        """Send its notes through chains, by name, in order, or none for an empty list."""
-        if names:
-            SETTINGS[ClipSlotSetting.CHAINS].check(list(names), song=song)
-        self._settings[ClipSlotSetting.CHAINS] = list(names) if names else None
-
-    @notes_change
     def set_loop(self, loop):
         """Make it loop until its scene ends, or not, which is left out of the file."""
         SETTINGS[ClipSlotSetting.LOOP].check(loop)
@@ -336,35 +329,14 @@ class ClipSlot(HoldsSettings):
         """Give it one of the song's scales of its own, which wins over its scene's and its song's, or None to take theirs."""
         self.set_written(name=ClipSlotSetting.SCALE, value=name, song=song)
 
-    def get_register_sets(self):
-        """Return what it sets registers to as it launches, a value for each register it sets."""
-        return dict(self._settings[ClipSlotSetting.SET_REGISTERS] or {})
-
-    def get_register_adds(self):
-        """Return what it adds to registers every time its pattern starts over, an amount for each register it adds to."""
-        return dict(self._settings[ClipSlotSetting.ADD_REGISTERS] or {})
-
     def get_statements(self, name):
         """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its generators or the one that makes it sit out."""
         return own_copy(self._settings[name] or [])
 
-    def set_register_set(self, *, register, value):
-        """Make it set a register to a value as it launches, or None to leave the register alone."""
-        self._set_checked(name=ClipSlotSetting.SET_REGISTERS, value=with_register_value(values=self._settings[ClipSlotSetting.SET_REGISTERS], register=register, value=value))
-
-    @notes_change
-    def set_register_add(self, *, register, value):
-        """Make it add an amount to a register every time its pattern starts over, or None to add nothing."""
-        self._set_checked(name=ClipSlotSetting.ADD_REGISTERS, value=with_register_value(values=self._settings[ClipSlotSetting.ADD_REGISTERS], register=register, value=value or None))
-
     @notes_change
     def set_statement(self, *, name, place, statement):
         """Write the statement at a place of one of its tables, add one just past the last, or remove one with None."""
-        self._set_checked(name=name, value=with_statement(statements=self._settings[name], place=place, statement=statement))
-
-    def _set_checked(self, *, name, value):
-        """Keep a setting's new value once its description allows it, None leaving the setting out."""
-        self.set_written(name=name, value=value)
+        self.set_written(name=name, value=with_statement(statements=self._settings[name], place=place, statement=statement))
 
     def set_follow_action(self, advance):
         """Set what it sends down in real-time playback when its scene is done, or None to take the set's default."""
