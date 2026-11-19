@@ -209,6 +209,8 @@ MSG_KEYSWITCH_PICKED_NOTE = 'Note    {note}'
 MSG_KEYSWITCH_PICKED_OCTAVE = 'Octave  {octave}'
 MSG_KEYSWITCH_LEAD_PROMPT = 'Keyswitch lead in milliseconds ({lowest} to {highest})'
 MSG_KEYSWITCH_SEVERAL_INSTRUMENTS = 'This pattern plays on more than one instrument.'
+# The hint over the rows while the cursor is in the Keyswitch section, when one instrument's Keyswitch Map names the rows.
+MSG_KEYSWITCH_SECTION_HINT = 'Keyswitch: the slots of the Keyswitch Map of ({instrument})'
 MSG_KEYSWITCH_NO_INSTRUMENT = 'No instrument plays this pattern.'
 # tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
 # What the description line calls the sound of a step marked to grab, whose note is whatever the other track played.

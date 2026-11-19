@@ -22,15 +22,19 @@ them, the same one the piano roll opens, and Bksp clears them. A step with no no
 
 from llamatron.composition.file_format import Row
 from llamatron.strings import marks, messages
-from llamatron.tui.components.pattern_row import PatternRow
+from llamatron.composition.instrument import NO_KEYSWITCH
+from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
 from llamatron.tui.drawing import NOTHING
-from llamatron.tui.keyswitch_text import keyswitch_note_text, keyswitches_of
+from llamatron.tui.keyswitch_text import keyswitch_note_text, keyswitches_of, slot_name
 from llamatron.tui import keybindings
+
+# What the rows view calls the row of one slot.
+SLOT_ROW_NAME = 'keyswitch slot {slot}'
 
 
 def pick_keyswitches(*, editor, step):
-    """Open the dialog that picks a step's keyswitches on a step of the pattern editor, and store what it answers on the step's Keyswitch row: the Keyswitch row's Enter and the roll's keyswitch key."""
+    """Open the dialog that picks a step's keyswitches on a step of the pattern editor, and store what it answers on the step's Keyswitch row: the roll's keyswitch key."""
     instrument, said = editor.keyswitch_instrument()
     setlist = editor.document().setlist()
     keyswitches = keyswitches_of(instrument)
@@ -43,19 +47,48 @@ def pick_keyswitches(*, editor, step):
     editor.ask(dialog=dialog, then=lambda slots: editor.set_value(value=slots or None, row=Row.KEYSWITCH, step=step))
 
 
-class KeyswitchRow(PatternRow):
-    """Enter opens the dialog that picks the step's keyswitches, and Bksp clears them."""
+def slot_row_name(slot):
+    """Return what the rows view calls a slot's row, which is no row of a pattern's file: every slot's row reads and writes the one Keyswitch row."""
+    return SLOT_ROW_NAME.format(slot=slot)
 
-    KEYS = keybindings.KeyswitchRow
 
-    __slots__ = ()
+def slot_rows(editor):
+    """Return the slots the Keyswitch section has a row for, and the hint that says where they come from.
 
-    def keys(self):
-        return [
-            self.bind(self.KEYS.CHOOSE, action=lambda: pick_keyswitches(editor=self.editor, step=self.editor.step)),
-            self.bind(self.KEYS.CLEAR, action=lambda: self.set_value(None)),
-        ]
+    When one instrument is known to play the pattern, the slots are those its Keyswitch Map
+    gives a name or a note, and any other slot a step already uses. Otherwise only the slots
+    the steps use, by number, and the hint says why.
+    """
+    instrument, said = editor.keyswitch_instrument()
+    used = {slot for step in range(editor.pattern().get_steps()) for slot in editor.value(row=Row.KEYSWITCH, step=step) or ()}
+    if instrument is None:
+        return sorted(used), said
+    mapped = {slot for slot, keyswitch in enumerate(instrument.get_keyswitches()) if keyswitch != NO_KEYSWITCH}
+    return sorted(mapped | used), messages.MSG_KEYSWITCH_SECTION_HINT.format(instrument=said)
 
-    def cell_text(self, *, step):
-        value = self.value(step=step)
-        return NOTHING if not value else str(len(value))
+
+class KeyswitchSlotRow(ToggleRow):
+    """One slot's row in the Keyswitch section: a dot on each step that plays its note with the slot's keyswitch, switched with Space or Enter.
+
+    Its name is the Keyswitch row's, the one row of the file that holds every slot of a step,
+    so that everything that asks the cursor's row reads that row.
+    """
+
+    KEYS = keybindings.KeyswitchSlotRow
+
+    __slots__ = ('slot',)
+
+    def __init__(self, *, editor, slot):
+        super().__init__(editor=editor, name=Row.KEYSWITCH)
+        self.slot = slot
+
+    def label(self):
+        return slot_name(keyswitches=keyswitches_of(self.editor.keyswitch_instrument()[0]), slot=self.slot)
+
+    def value(self, *, step=None):
+        return self.slot in (self.editor.value(row=Row.KEYSWITCH, step=step) or ())
+
+    def set_value(self, value):
+        slots = set(self.editor.value(row=Row.KEYSWITCH) or ())
+        slots = slots | {self.slot} if value else slots - {self.slot}
+        self.editor.set_value(value=sorted(slots) or None, row=Row.KEYSWITCH)

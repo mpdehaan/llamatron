@@ -160,7 +160,7 @@ class TestSections(UITest):
         await self.press(Key.DOWN)
         self.assertEqual((self.editor.row_name(), self.editor.step), (Row.ACCIDENTAL, 1))
         self.assertIn(Box.BAR + SPACE + section_label(RowSection.BASICS, open_=True), self.text())
-        await self.press(Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN)
+        await self.press(Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN)
         self.assertIn(self.heading_shown(RowSection.CC), self.text())
 
     async def test_the_label_column_is_as_wide_as_the_widest_row_whether_its_section_is_open_or_not(self):

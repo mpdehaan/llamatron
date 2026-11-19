@@ -178,9 +178,10 @@ Degree and Octave stay at the top, and under them the rows come in sections that
 
 Basics and Timing start open, and the editor remembers which sections are open, for every pattern, for as long as it runs. When the open rows don't fit the screen, they scroll to keep the cursor's row in view. The sections, in the order a step works them out, are:
 
-- **Basics:** #/b, Velocity, Accent, Keyswitch;
+- **Basics:** #/b, Velocity, Accent;
 - **Chord:** Chord, Tension, Scale, Inversion;
 - **Timing:** Tie, Gate, Dot, Glide;
+- **Keyswitch:** a row for each slot of the instrument's Keyswitch Map;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
 - **CCs:** CC 1 to CC 4, Slide;
 - **Reg. Mod:** the rows that change the registers;
@@ -203,7 +204,7 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 | Velocity | 1 to 127. A blank step plays at the Default velocity of the track that plays the pattern, 127 unless the track or its instrument says otherwise. | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
 | Accent | `●` makes the step louder by the Accent of the track that plays the pattern, added to the step's velocity, typed or default, and stopping at 127. A blank is off. See [Tracks](TRACKS.md). | `Space` or `ENTER` toggles, `Bksp` turns it off |
 | Glide | `●` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` or `ENTER` toggles, `Bksp` turns it off |
-| Keyswitch | Which of the instrument's keyswitch slots the step's note is played with. A cell is blank for none and otherwise shows how many are on. See Keyswitches below. | `ENTER` to choose, `Bksp` clears |
+| Keyswitch section, a row for each slot | Whether the step's note is played with that slot of the instrument's Keyswitch Map. See Keyswitches below. | `Space` or `ENTER` toggles, `Bksp` clears |
 
 When the scale is known, the Degree gauge is as tall as the scale, five rows for a pentatonic scale and seven for a major one, and a degree can't go past it: `]` at the top and `[` at the bottom stay where they are, and the status line says `top of C_major: change the octave on the Octave row`, since the gauge and the Octave row together make the note. A file can hold a degree past the scale's top, such as 9 in a seven-note scale; the editor shows and plays it as degree 2 an octave higher, and writes it back within the scale when nudged. When the scale isn't known, the gauge has seven numbered rows, any degree up to the largest scale the pattern plays in can be typed, and a degree above the rows fills the gauge and marks its number with `▲`.
 
@@ -282,7 +283,9 @@ Drum patterns have no Chord row.
 
 ### Keyswitches
 
-A step can name keyswitches, the notes that change how a plugin plays, from the ten slots of its instrument's Keyswitch Map, which [Instruments](INSTRUMENTS.md) describes. `ENTER` on the Keyswitch row, or `K` on the piano roll, opens a dialog of the ten slots, numbered 0 to 9:
+A step can name keyswitches, the notes that change how a plugin plays, from the ten slots of its instrument's Keyswitch Map, which [Instruments](INSTRUMENTS.md) describes. In the rows, the Keyswitch section has a row for each slot the instrument's Keyswitch Map gives a name or a note, labeled with the slot's name, and each step's cell is a toggle: `Space` or `ENTER` turns the slot on for the step's note, and `Bksp` turns the slot off. A step may have several slots on. The rows are the instrument's when the instrument is known for certain, as described below; otherwise the section has a row, labeled by number, for each slot a step already uses, and the line over the rows says why.
+
+On the piano roll, `K` opens a dialog of the ten slots, numbered 0 to 9:
 
 | Key | What it does |
 | --- | --- |

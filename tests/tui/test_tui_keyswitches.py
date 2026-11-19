@@ -23,16 +23,17 @@ from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks, messages
 from llamatron.music import midi
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
+from llamatron.tui.components.keyswitch_row import slot_row_name
 from llamatron.tui.dialogs.keyswitch_map_dialog import BUTTONS_PLACE, NAME_CELL, NOTE_CELL, KeyswitchMapDialog, first_note_offered
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import NOTHING, Style, cursor_mark
-from llamatron.tui.keys import DIGITS, Key
+from llamatron.tui.drawing import Style, cursor_mark
+from llamatron.tui.keys import RowSection, DIGITS, Key
 from llamatron.tui.keyswitch_text import keyswitch_note_text
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern.roll_drawing import TOP_PITCH_LINE
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui import keybindings
-from tests.support.pattern_editor_testing import PatternEditorTest
+from tests.support.pattern_editor_testing import PatternEditorTest, open_section
 
 VIOLIN = 'violin'
 CELLO = 'cello'
@@ -234,21 +235,60 @@ class TestKeyswitchMap(UITest):
 
 
 class TestKeyswitchRow(PatternEditorTest):
+    """The Keyswitch section of the rows view, a row for each slot, and the dialog the piano roll opens on the same steps."""
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.go_to_row(Row.KEYSWITCH)
+    def slot_row(self, slot):
+        return self.editor.rows_view.row_for(slot_row_name(slot))
+
+    def section_rows(self):
+        return self.editor.rows_view.section_rows(RowSection.KEYSWITCH)
 
     async def open_dialog(self):
-        await self.press(keybindings.KeyswitchRow.CHOOSE)
+        # The dialog is the piano roll's: Tab goes to the roll the first time, and the editor stays there.
+        if self.editor.view() is not self.editor.roll:
+            await self.press(keybindings.PatternEditor.TO_ROLL)
+        await self.press(keybindings.PianoRoll.KEYSWITCH)
         self.assertIsInstance(self.app.screen, KeyswitchDialog)
         return self.app.screen
 
-    async def test_the_row_is_in_basics_and_a_step_with_no_note_takes_none(self):
-        self.assertIn(labels.MSG_ROW_LABELS[Row.KEYSWITCH], self.text())
-        row = self.editor.row_for(Row.KEYSWITCH)
+    async def test_the_section_has_a_row_for_each_slot_the_instrument_maps_named_by_the_slot(self):
+        add_violin(self.document)
+        self.document.record_edit()
+        self.assertEqual(self.section_rows(), [slot_row_name(SUSTAIN_SLOT), slot_row_name(STACCATO_SLOT)])
+        self.assertEqual([self.slot_row(slot).label() for slot in (SUSTAIN_SLOT, STACCATO_SLOT)], [SUSTAIN, STACCATO])
+        await open_section(test=self, section=RowSection.KEYSWITCH)
+        await self.press(Key.DOWN, Key.DOWN)
+        self.assertIn(STACCATO, self.text())
+        self.assertIn(messages.MSG_KEYSWITCH_SECTION_HINT.format(instrument=VIOLIN), self.text())
+
+    async def test_a_slots_row_is_a_toggle_on_each_step_and_a_step_with_no_note_takes_none(self):
+        add_violin(self.document)
+        self.document.record_edit()
+        await open_section(test=self, section=RowSection.KEYSWITCH)
+        await self.press(Key.DOWN, Key.DOWN)
+        row = self.editor.rows_view.current_row()
+        self.assertEqual(row.slot, STACCATO_SLOT)
         self.assertEqual(row.cell_lines(step=EMPTY_STEP), [marks.MSG_BLOCKED_CELL])
-        self.assertEqual(row.cell_lines(step=FIRST_STEP), [NOTHING])
+        self.assertEqual(row.cell_lines(step=FIRST_STEP), [marks.MSG_TOGGLE_OFF])
+        await self.press(keybindings.KeyswitchSlotRow.TOGGLE)
+        self.assertEqual(self.value(row=Row.KEYSWITCH), (STACCATO_SLOT,))
+        self.assertEqual(row.cell_lines(step=FIRST_STEP), [marks.MSG_TOGGLE_ON])
+        # The other slot's row adds to the same step, and each row switches only its own slot off.
+        await self.press(Key.UP, keybindings.KeyswitchSlotRow.TOGGLE)
+        self.assertEqual(self.value(row=Row.KEYSWITCH), (SUSTAIN_SLOT, STACCATO_SLOT))
+        await self.press(keybindings.KeyswitchSlotRow.CLEAR)
+        self.assertEqual(self.value(row=Row.KEYSWITCH), (STACCATO_SLOT,))
+        await self.press(keybindings.Page.UNDO, keybindings.Page.UNDO, keybindings.Page.UNDO)
+        self.assertIsNone(self.value(row=Row.KEYSWITCH))
+
+    async def test_with_no_one_instrument_the_rows_are_the_slots_the_steps_use_by_number_and_the_hint_says_why(self):
+        self.assertEqual(self.section_rows(), [])
+        self.document.set_step_value(name=TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[STACCATO_SLOT])
+        self.document.record_edit()
+        self.assertEqual(self.section_rows(), [slot_row_name(STACCATO_SLOT)])
+        self.assertEqual(self.slot_row(STACCATO_SLOT).label(), marks.MSG_KEYSWITCH_SLOT_NAMED.format(slot=STACCATO_SLOT))
+        await open_section(test=self, section=RowSection.KEYSWITCH)
+        self.assertIn(messages.MSG_KEYSWITCH_NO_INSTRUMENT, self.text())
 
     async def test_space_and_the_digits_turn_slots_on_and_enter_stores_them_as_one_undo_step(self):
         dialog = await self.open_dialog()
@@ -260,7 +300,6 @@ class TestKeyswitchRow(PatternEditorTest):
         self.assertIsNone(self.value(row=Row.KEYSWITCH))
         await self.press(PICK.DONE)
         self.assertEqual(self.value(row=Row.KEYSWITCH), (0, 3))
-        self.assertEqual(self.editor.row_for(Row.KEYSWITCH).cell_lines(step=FIRST_STEP), [str(2)])
         await self.press(keybindings.Page.UNDO)
         self.assertIsNone(self.value(row=Row.KEYSWITCH))
 
@@ -280,11 +319,6 @@ class TestKeyswitchRow(PatternEditorTest):
         self.assertEqual(self.value(row=Row.KEYSWITCH), (0,))
         await self.open_dialog()
         await self.press(PICK.FLIP, PICK.DONE)
-        self.assertIsNone(self.value(row=Row.KEYSWITCH))
-
-    async def test_bksp_clears_the_steps_keyswitches(self):
-        self.document.set_step_value(name=TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[STACCATO_SLOT])
-        await self.press(keybindings.KeyswitchRow.CLEAR)
         self.assertIsNone(self.value(row=Row.KEYSWITCH))
 
     async def test_with_no_instrument_the_slots_go_by_number_and_the_dialog_says_why(self):

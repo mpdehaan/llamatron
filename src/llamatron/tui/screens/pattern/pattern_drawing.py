@@ -26,7 +26,6 @@ from rich.text import Text
 from llamatron.composition.file_format import Row
 from llamatron.tui.drawing import Align, Box, fit, SPACE, Style
 from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH, GridDrawing
-from llamatron.strings import labels as labels_text
 
 # The lines around the rows: the two header lines, the top rule, the Step row, the bottom rule and the description.
 LINES_AROUND_GRID = 6
@@ -68,7 +67,7 @@ class PatternDrawing(GridDrawing):
     def header_extra(self):
         """Return the second header line's cells after Time: the hint of the section the cursor is in, where one has something to say, and otherwise the scale."""
         rows = self.rows()
-        return [labels_text.MSG_SECTION_HINTS.get(rows.section_of(rows.row_name()), self.scale_header())]
+        return [rows.section_hint(rows.section_of(rows.row_name())) or self.scale_header()]
 
     # How tall everything is.
 

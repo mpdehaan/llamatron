@@ -844,15 +844,6 @@ class ChordRow(PatternRow):
     IN_LEGEND = IN_HELP
 
 
-class KeyswitchRow(PatternRow):
-    """The Keyswitch row: Enter opens the dialog that picks the step's keyswitches, and Bksp clears them."""
-
-    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
-    IN_HELP = [CHOOSE, CLEAR]
-    IN_LEGEND = IN_HELP
-
-
 class TensionRow(ChordRow):
     """The Tension row: Enter opens the Chord dialog, Space goes to the next single tension, and [ and ] step through them."""
 
@@ -872,6 +863,10 @@ class ToggleRow(PatternRow):
 
 class AccentRow(ToggleRow):
     """The Accent row."""
+
+
+class KeyswitchSlotRow(ToggleRow):
+    """A row of the Keyswitch section, one slot of the instrument's Keyswitch Map."""
 
 
 class GlideRow(ToggleRow):
