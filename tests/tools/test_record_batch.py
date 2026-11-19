@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 
 import record_batch  # noqa: E402
 from record_batch import has_a_video, least_used, mode_for, most_takes, pairings, plan, record_all, recorder  # noqa: E402
-from llamatron.composition.setlist import file_stem  # noqa: E402
+from llamatron.composition.setlist_reader import file_stem  # noqa: E402
 from llamatron.visualizers.modes import mode_options  # noqa: E402
 from llamatron.support.example_sets import example_sets  # noqa: E402
 

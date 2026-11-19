@@ -41,7 +41,7 @@ kept by reading.
 | No remembered answer outlives a change to what it was worked out from. | every memory checks itself in the tracker's tests, `tests/support_code/test_memory.py` |
 | Every name the tracker makes up is made by `composition/naming.py`: nothing else numbers a name (`.claude/UX.md`, "Names the tracker makes"). | `tests/rules/test_naming.py`, with the rule itself tested by `tests/composition/test_naming.py` |
 | YAML is read only through `safe_yaml.load_safely`, and no other module names a loader. | `tests/rules/test_yaml_safety.py` |
-| Only `composition/setlist.py`, `composition/setlist_writer.py` and `support/safe_yaml.py` import `yaml`: in memory the set is objects, and YAML is touched only at the file. | `tests/rules/test_yaml_safety.py` |
+| Only `composition/setlist_reader.py`, `composition/setlist_writer.py` and `support/safe_yaml.py` import `yaml`: in memory the set is objects, and YAML is touched only at the file. | `tests/rules/test_yaml_safety.py` |
 | No module that renders (`playback/`, `generators/`, `grid/positions.py`, `exporters/timing.py`) imports `Note`, `Rest`, `Chord`, `Degree` or `Held`: a render makes sounds, the tuples of `music/sound.py`. | `tests/music/test_sound.py` |
 | Speedups and refactorings leave every exported file byte for byte the same. | `internal_tools/compare_exports.py`, run before and after |
 

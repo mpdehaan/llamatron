@@ -24,7 +24,8 @@ import os
 
 from llamatron.composition import defaults
 from llamatron.composition.file_format import Section
-from llamatron.composition.setlist import as_setlist_data, Setlist
+from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist_reader import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import names

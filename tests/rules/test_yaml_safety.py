@@ -51,7 +51,7 @@ WRITE_TEXT = 'w'
 # The program's modules that may import yaml: reading a file, writing one, and the loader. In
 # memory the set is objects, and nothing between key presses parses or dumps YAML
 # (.claude/STYLE.md, "Performance matters"), so no other module under src/ gets to import it.
-YAML_MODULES = ('composition/setlist.py', 'composition/setlist_writer.py', 'support/safe_yaml.py')
+YAML_MODULES = ('composition/setlist_reader.py', 'composition/setlist_writer.py', 'support/safe_yaml.py')
 IMPORTS_YAML = re.compile(r'^\s*(import yaml\b|from yaml\b)')
 FILE_ENCODING = 'utf-8'
 

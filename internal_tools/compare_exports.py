@@ -55,7 +55,8 @@ import sys
 import tempfile
 
 from llamatron.composition.file_format import SetlistSetting
-from llamatron.composition.setlist import file_stem, Setlist
+from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist_reader import file_stem
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exports import export_name

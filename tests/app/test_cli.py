@@ -32,7 +32,8 @@ import yaml
 from llamatron import cli as cli_values
 from llamatron.cli import main
 from llamatron.composition.file_format import Row
-from llamatron.composition.setlist import file_stem, Setlist
+from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist_reader import file_stem
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import exports, midi_arrangement, midi_messages

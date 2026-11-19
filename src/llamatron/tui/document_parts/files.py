@@ -21,7 +21,8 @@ import io
 import os
 
 from llamatron.composition.file_format import SetlistSetting
-from llamatron.composition.setlist import file_stem, Setlist
+from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist_reader import file_stem
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.exports import earlier_export, export_name, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.playback.song_renderer import SongRenderer
