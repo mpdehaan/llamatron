@@ -110,6 +110,15 @@ class TestRollsAndShuffles(unittest.TestCase):
         pattern.roll(STEPS)
         self.assertEqual(pattern.get_row(Row.DEGREE), DEGREES)
 
+    def test_a_roll_at_a_step_turns_one_side_of_it_by_one_step(self):
+        pattern = pattern_of(degrees=[1, 2, 3, 4, 5])
+        pattern.roll_through(THIRD)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [2, 3, 1, 4, 5])
+        pattern.roll_from(THIRD)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [2, 3, 5, 1, 4])
+        with self.assertRaises(InvalidValue):
+            pattern.roll_from(pattern.get_steps())
+
     def test_a_shuffle_from_a_step_leaves_the_steps_before_it(self):
         pattern = pattern_of()
         pattern.shuffle_from(THIRD)

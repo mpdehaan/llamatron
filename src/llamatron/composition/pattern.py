@@ -506,6 +506,18 @@ class Pattern(PatternNotes, LlamaData):
         """Turn the pattern so many steps to the left, or to the right when negative: a step pushed off one end comes in at the other."""
         self.take_steps([(step + steps) % self._steps for step in range(self._steps)])
 
+    def roll_through(self, step):
+        """Turn a step and every step before it one step to the left among themselves: the first step comes in at the step's place."""
+        self._check_step(step)
+        order = list(range(self._steps))
+        self.take_steps([*order[1:step + 1], FIRST_STEP, *order[step + 1:]])
+
+    def roll_from(self, step):
+        """Turn a step and every step after it one step to the right among themselves: the last step comes in at the step's place."""
+        self._check_step(step)
+        order = list(range(self._steps))
+        self.take_steps([*order[:step], order[-1], *order[step:-1]])
+
     def shuffle_from(self, step):
         """Put a step and every step after it in a random order among themselves."""
         self._check_step(step)

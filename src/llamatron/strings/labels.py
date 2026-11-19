@@ -573,6 +573,7 @@ MSG_MUNGE_CHOICES = [
     'roll left (N)', 'roll right (N)', 'clear chords',
     'mirror', 'interleave (pattern)', 'smooth CCs', 'smooth velocity', 'smooth AX=', 'smooth BX=', 'smooth CX=', 'smooth DX=',
     'splice (pattern)', 'splice before (pattern)', 'split into new patterns (steps)', 'splice (pattern, cursor)',
+    'roll left (cursor)', 'roll right (cursor)',
 ]
 # The clip page's extra choice, for a clip that follows its pattern's direction.
 MSG_PATTERN_DIRECTION_OPTION = '(pattern)'

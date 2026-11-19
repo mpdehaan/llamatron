@@ -150,6 +150,7 @@ These keys work throughout the rows view:
 | reverse | Reverse the whole pattern |
 | reverse after step (cursor) | Reverse every step after the cursor |
 | reverse before step (cursor) | Reverse every step before the cursor |
+| roll left (cursor), roll right (cursor) | Turn one side of the cursor by one step, asking nothing: roll left turns the cursor's step and the steps before it, A B C becoming B C A, and roll right turns the cursor's step and the steps after it, C D E F G H becoming H C D E F G |
 | roll left (N), roll right (N) | Asks how many steps and turns the pattern that far: a step pushed off one end comes in at the other. Rolling A B C D E F G H left 3 gives D E F G H A B C |
 | smooth AX=, smooth BX=, smooth CX=, smooth DX= | On the row that sets the register, fill the blank steps between two values from a straight line between them |
 | smooth CCs | The same on each of CC 1 to CC 4: 20, blank, blank, blank, 100 becomes 20, 40, 60, 80, 100. The Slide row makes a finer sweep as the pattern plays; smooth CCs writes the values where they can be seen and changed |
