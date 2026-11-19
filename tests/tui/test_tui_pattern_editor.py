@@ -466,7 +466,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
     async def test_the_rules_are_dim_with_a_plain_joint_where_a_beat_edge_crosses(self):
         # The beat edges are bold double bars down the rows and the rules are dim, so the joint where they cross is plain, between the two, and breaks neither line.
         drawing = self.editor.drawing
-        rules = (drawing.top_rule(first=0, last=self.editor.steps()), drawing.inner_rule(first=0, last=self.editor.steps()), drawing.bottom_rule(first=0, last=self.editor.steps()))
+        rules = (drawing.top_rule(first=0, last=self.editor.step_count()), drawing.inner_rule(first=0, last=self.editor.step_count()), drawing.bottom_rule(first=0, last=self.editor.step_count()))
         beat_joints = (Box.DOUBLE_TOP_TEE, Box.DOUBLE_CROSS, Box.DOUBLE_BOTTOM_TEE)
         for rule, joint in zip(rules, beat_joints):
             self.assertIn(joint, rule.plain)
@@ -487,10 +487,10 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         await self.press(*[Key.UP] * len(self.editor.rows_view.reachable()))
         blocked_rows = [Row.OCTAVE, *[row for section in (*keys.OPEN_AT_START, RowSection.CHORD) for row in pattern_rows.SECTIONS[section] if row != Row.TIE]]
         rows = [*self.editor.rows_view.pinned_rows(), *self.editor.rows_view.scrolled_rows()]
-        blocked_cells = [(row.name, step) for row in rows for step in range(self.editor.steps()) if row.cell_lines(step=step) == [marks.MSG_BLOCKED_CELL]]
+        blocked_cells = [(row.name, step) for row in rows for step in range(self.editor.step_count()) if row.cell_lines(step=step) == [marks.MSG_BLOCKED_CELL]]
         self.assertEqual(len(blocked_cells), 2 * len(blocked_rows) + 2 + 2 + 2)
-        self.assertEqual([step for name, step in blocked_cells if name == Row.TENSION], list(range(self.editor.steps())))
-        self.assertEqual([step for name, step in blocked_cells if name == Row.INVERSION], list(range(self.editor.steps())))
+        self.assertEqual([step for name, step in blocked_cells if name == Row.TENSION], list(range(self.editor.step_count())))
+        self.assertEqual([step for name, step in blocked_cells if name == Row.INVERSION], list(range(self.editor.step_count())))
         self.assertEqual([step for name, step in blocked_cells if name == Row.TIE], [0, 1])
         # The cursor can sit on a blocked cell, where the row's keys leave the legend.
         await self.press(Key.RIGHT, Key.RIGHT)

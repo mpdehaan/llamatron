@@ -143,7 +143,7 @@ class TestRearrangingAPattern(UITest):
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         song = self.document.song()
         self.assertEqual(song.get_pattern(LONG_PATTERN).to_data(), song.get_pattern(BEAT).to_data())
-        self.assertEqual(self.editor.steps(), 2)
+        self.assertEqual(self.editor.step_count(), 2)
         self.assertIn('│ Note', self.text())
 
     async def test_a_loaded_copy_is_separate(self):

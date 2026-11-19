@@ -43,7 +43,7 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
     def values(self):
         return self.settings().get_steps()
 
-    def steps(self):
+    def step_count(self):
         return len(self.values())
 
     def keys(self):
@@ -52,9 +52,9 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
             self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.TOGGLE, action=self.toggle),
         ]
-        if self.steps() < limits.MAX_STEP_ROW:
+        if self.step_count() < limits.MAX_STEP_ROW:
             result.append(self.bind(self.KEYS.INSERT_STEP, action=self.insert))
-        if self.steps() > limits.MIN_STEP_ROW:
+        if self.step_count() > limits.MIN_STEP_ROW:
             result.append(self.bind(self.KEYS.REMOVE_STEP, action=self.remove_step))
         return result
 

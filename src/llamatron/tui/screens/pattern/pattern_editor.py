@@ -283,7 +283,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         """Return whether a step plays something: a degree, or a grab, which opens the note rows on the step too."""
         return self.pattern().has_sound(self.step if step is None else step)
 
-    def steps(self):
+    def step_count(self):
         return self.pattern().get_steps()
 
     def clamp(self):
@@ -347,7 +347,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         if self.has_roll():
             result.append(self.bind(view.other_view_binding(), action=self.toggle_roll))
         # The view binds I and D, since the rows' legend lists them and the roll's keeps to drawing. On a drum pattern's Note row, the letter D is a note.
-        result += view.step_keys(can_remove=self.steps() > 1 and not view.takes_note_letters())
+        result += view.step_keys(can_remove=self.step_count() > 1 and not view.takes_note_letters())
         result += [
             self.bind(self.KEYS.RESIZE, action=self.ask_steps),
             self.bind(self.KEYS.MUNGE, action=self.munge),
@@ -382,7 +382,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def jump_end(self, direction):
         """Go to the first step, which Home does, or the last, which End does."""
-        self.step = 0 if direction == key_table.STEP_BACK else self.steps() - 1
+        self.step = 0 if direction == key_table.STEP_BACK else self.step_count() - 1
 
     # What the rows share when they edit a step.
 
@@ -445,7 +445,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         """Do one of the munge dialog's choices. A rearranging leaves the cursor on its step, so that choosing the same way again undoes it."""
         name = self.item
         document = self.document()
-        last = self.steps() - 1
+        last = self.step_count() - 1
         if choice == Munge.REVERSE_AFTER:
             if self.step >= last:
                 self.refuse(errors.ERR_NOTHING_AFTER)
@@ -457,17 +457,17 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 return
             document.change(document.get_setlist().get_pattern(name).reverse_before, self.step)
         elif choice == Munge.REVERSE:
-            if self.steps() < 2:
+            if self.step_count() < 2:
                 self.refuse(errors.ERR_ONE_STEP)
                 return
             document.change(document.get_setlist().get_pattern(name).reverse)
         elif choice == Munge.PIVOT:
-            if self.steps() < 2:
+            if self.step_count() < 2:
                 self.refuse(errors.ERR_NOTHING_TO_PIVOT)
                 return
             self.step = document.change(document.get_setlist().get_pattern(name).pivot_around, self.step)
         elif choice in (Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE):
-            if self.steps() < 2:
+            if self.step_count() < 2:
                 self.refuse(errors.ERR_ONE_STEP)
                 return
             if choice == Munge.RANDOMIZE:
@@ -488,7 +488,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 return
             document.change(document.get_setlist().get_pattern(name).set_steps, self.step + 1)
         elif choice == Munge.CLEAR_EVERY:
-            self.ask_number(title=messages.MSG_CLEAR_EVERY_PROMPT, low=limits.MIN_STEPS, high=self.steps(), way=Pattern.clear_every, named=EVERY)
+            self.ask_number(title=messages.MSG_CLEAR_EVERY_PROMPT, low=limits.MIN_STEPS, high=self.step_count(), way=Pattern.clear_every, named=EVERY)
         elif choice == Munge.HUMANIZE_VELOCITY:
             self.ask_number(title=messages.MSG_HUMANIZE_PROMPT, low=midi.MIN_VELOCITY, high=midi.MAX_VELOCITY, way=Pattern.humanize_velocity, named=MOST)
         elif choice == Munge.ROLL_LEFT_AT_CURSOR:
@@ -504,7 +504,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         elif choice in (Munge.ROLL_LEFT, Munge.ROLL_RIGHT):
             self.ask_roll(left=choice == Munge.ROLL_LEFT)
         elif choice == Munge.MIRROR:
-            if self.grown_too_long(self.steps() * 2):
+            if self.grown_too_long(self.step_count() * 2):
                 return
             document.munge_pattern(name=name, way=Pattern.mirror)
         elif choice == Munge.SPLIT:
@@ -523,9 +523,9 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         """
         before = choice in (Munge.COPY_BEFORE_TO_END, Munge.COPY_BEFORE_TO_START)
         first = 0 if before else self.step
-        last = self.step if before else self.steps() - 1
+        last = self.step if before else self.step_count() - 1
         copied = last - first + 1
-        if self.grown_too_long(self.steps() + copied):
+        if self.grown_too_long(self.step_count() + copied):
             return
         to_start = choice in (Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START)
         self.document().munge_pattern(name=self.item, way=Pattern.repeat_at_start if to_start else Pattern.repeat_at_end, first=first, last=last)
@@ -547,11 +547,11 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
         def chosen(place):
             other = self.document().song().get_pattern(others[place])
-            added = self.steps() if choice == Munge.INTERLEAVE else other.get_steps()
+            added = self.step_count() if choice == Munge.INTERLEAVE else other.get_steps()
             if other.is_drum() != self.is_drum():
                 self.refuse(errors.ERR_INTERLEAVE_DRUM_MISMATCH)
                 return
-            if self.grown_too_long(self.steps() + added):
+            if self.grown_too_long(self.step_count() + added):
                 return
             if choice == Munge.INTERLEAVE:
                 self.document().munge_pattern(name=self.item, way=Pattern.interleave, other=other)
@@ -566,7 +566,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def ask_split(self):
         """Ask how many steps each new pattern has, make new patterns of the pattern's steps, so many each, and say which were made; the pattern itself is left as it is."""
-        most = self.steps() - 1
+        most = self.step_count() - 1
         if most < FIRST_ROLL:
             self.refuse(errors.ERR_ONE_STEP)
             return
@@ -609,7 +609,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         if scale is None:
             self.refuse(errors.ERR_MUNGE_NO_SCALE)
             return
-        if len([step for step in range(self.steps()) if self.pattern().starts_chord(step)]) < FEWEST_CHORDS_TO_LEAD:
+        if len([step for step in range(self.step_count()) if self.pattern().starts_chord(step)]) < FEWEST_CHORDS_TO_LEAD:
             self.refuse(errors.ERR_VOICE_LEADING_NEEDS_CHORDS)
             return
         self.document().munge_pattern(name=self.item, way=Pattern.apply_voice_leading, scale=scale, default_octave=self.default_octave(), octaves=octaves)
@@ -639,8 +639,8 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             except ValueError:
                 self.refuse(errors.ERR_TYPED_NOT_AN_INTEGER.format(text=text))
                 return
-            if not FIRST_ROLL <= steps <= self.steps():
-                self.refuse(errors.ERR_ROLL_OUT_OF_RANGE.format(low=FIRST_ROLL, high=self.steps()))
+            if not FIRST_ROLL <= steps <= self.step_count():
+                self.refuse(errors.ERR_ROLL_OUT_OF_RANGE.format(low=FIRST_ROLL, high=self.step_count()))
                 return
             self.document().munge_pattern(name=self.item, way=Pattern.roll, steps=steps if left else -steps)
         self.ask_text(title=messages.MSG_ROLL_LEFT_PROMPT if left else messages.MSG_ROLL_RIGHT_PROMPT, value=drawing.NOTHING, then=answered)
@@ -683,7 +683,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.confirm(title=messages.MSG_SHORTEN_TITLE, lines=[question], then=lambda: self.document().change(self.document().get_setlist().get_pattern(self.item).set_steps, steps))
             else:
                 self.document().change(self.document().get_setlist().get_pattern(self.item).set_steps, steps)
-        self.ask_text(title=messages.MSG_STEPS_PROMPT, value=self.steps(), then=answered)
+        self.ask_text(title=messages.MSG_STEPS_PROMPT, value=self.step_count(), then=answered)
 
     def toggle_drum(self):
         """Switch between drum and note patterns, always asking first, since the rows change and any notes go."""

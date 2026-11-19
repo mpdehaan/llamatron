@@ -42,4 +42,4 @@ class TieRow(ToggleRow):
         return self.is_note(step=step)
 
     def tied(self, step):
-        return 0 <= step < self.editor.steps() and bool(self.value(step=step))
+        return 0 <= step < self.editor.step_count() and bool(self.value(step=step))

@@ -43,7 +43,7 @@ class StepEditor(Page):
         # The digits typed so far into the cursor's cell, so that 1 and then 2 makes 12.
         self.typed = drawing.NOTHING
 
-    def steps(self):
+    def step_count(self):
         """Return how many steps there are."""
         raise NotImplementedError
 
@@ -56,11 +56,11 @@ class StepEditor(Page):
 
     def move_step(self, name):
         """Move the cursor's step with an arrow, stopping at the first and the last step."""
-        self.step = cursor_moved(place=self.step, name=name, count=self.steps())
+        self.step = cursor_moved(place=self.step, name=name, count=self.step_count())
 
     def keep_step(self):
         """Keep the cursor on a step there is, since a removed step or an undo can leave the cursor past the last."""
-        self.step = max(min(self.step, self.steps() - 1), 0)
+        self.step = max(min(self.step, self.step_count() - 1), 0)
 
     def typed_number(self, *, digit, low, high):
         """Return the number made by another digit, or just that digit if the number would be out of range, or None if neither fits.
@@ -82,7 +82,7 @@ class StepEditor(Page):
 
         shown is how many steps fit across the screen.
         """
-        count = self.steps()
+        count = self.step_count()
         self.first_step = max(min(self.first_step, count - shown), 0)
         if self.step < self.first_step:
             self.first_step = self.step
@@ -92,7 +92,7 @@ class StepEditor(Page):
 
     def steps_shown_text(self, *, first, last):
         """Return which steps are on screen, with a mark on each side that has more, or nothing when every step is on screen."""
-        count = self.steps()
+        count = self.step_count()
         if last - first >= count:
             return drawing.NOTHING
         return self.STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE if first > 0 else drawing.NOTHING, first=first + 1, last=last, after=marks.MSG_MORE_AFTER if last < count else drawing.NOTHING)

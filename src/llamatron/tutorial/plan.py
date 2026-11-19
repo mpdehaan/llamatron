@@ -514,7 +514,7 @@ class TutorialPlan:
             scale_length = limits.NEW_PATTERN_SCALE_LENGTH if wanted.is_drum() else wanted.get_scale_length()
             yield from self.add_to_group(name=name, group=self.group_wanted(name), scale_length=scale_length)
         self.expect(PatternEditor)
-        if wanted.get_steps() != self.editor().steps():
+        if wanted.get_steps() != self.editor().step_count():
             yield from self.press(keybindings.PatternEditor.RESIZE)
             yield from self.answer_prompt(wanted.get_steps())
             # Cutting steps that hold something asks first.

@@ -337,8 +337,8 @@ class TestArrowsAndTheMark(UITest):
         editor = self.app.screen
         await self.press(Key.LEFT, Key.UP)
         self.assertEqual((editor.step, editor.rows_view.row), (0, 0))
-        await self.press(*[Key.RIGHT] * editor.steps(), *[Key.DOWN] * len(editor.rows_view.reachable()))
-        self.assertEqual((editor.step, editor.rows_view.row), (editor.steps() - 1, len(editor.rows_view.reachable()) - 1))
+        await self.press(*[Key.RIGHT] * editor.step_count(), *[Key.DOWN] * len(editor.rows_view.reachable()))
+        self.assertEqual((editor.step, editor.rows_view.row), (editor.step_count() - 1, len(editor.rows_view.reachable()) - 1))
         await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GROOVES, keybindings.GroovesPage.ADD, Key.LEFT)
         self.assertEqual(self.app.screen.step, 0)
         await self.press(*[Key.RIGHT] * len(self.app.screen.cells()))
