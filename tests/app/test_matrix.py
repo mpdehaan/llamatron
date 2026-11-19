@@ -26,7 +26,7 @@ from llamatron.grid.clip import Clip
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.clip_column import ClipColumn
-from llamatron.exporters.midi_messages import NOTE_ON_MESSAGE
+from llamatron.exporters import midi_messages
 
 # Names the tests give to their own things, and other values they use.
 A = 'A'
@@ -69,7 +69,7 @@ class TestMatrix(unittest.TestCase):
                     played = [
                         message.note
                         for message in midi_file.tracks[0]
-                        if message.type == NOTE_ON_MESSAGE
+                        if message.type == midi_messages.NOTE_ON_MESSAGE
                     ]
                     self.assertEqual(played, [48, 50, 52, 53, 55, 57, 59, 60])
                     # Eight quarter notes at 120 bpm last four seconds.

@@ -47,7 +47,7 @@ import numpy
 
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.fields import Discs, blurred, ripple_step
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.visualizers.warp import Rotozoom
 from llamatron.strings import visualizers
@@ -163,7 +163,7 @@ class LavaLamp(Visualizer):
         down = HALF + DRIFT_REACH * math.sin(self._motion * speeds[(track + 3) % len(speeds)] * 0.8 + track * DRIFT_PHASE * 1.7)
         return int(down * (self._rows - 1)), int(across * (self._columns - 1))
 
-    def pixels(self, *, now, heard=SILENCE):
+    def pixels(self, *, now, heard=heard_values.SILENCE):
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
         self._last = now
         self._motion += seconds * heard.tempo_factor() * DRIFT_SPEED

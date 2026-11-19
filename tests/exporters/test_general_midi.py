@@ -23,8 +23,9 @@ from llamatron.composition.file_format import ClipSlotSetting, InstrumentSetting
 from llamatron.composition.instrument import Instrument
 from llamatron.composition import limits
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES, MidiGeneralMidi
-from llamatron.exporters.midi_messages import PROGRAM_CHANGE_MESSAGE
+from llamatron.exporters import midi_arrangement
+from llamatron.exporters.midi_arrangement import MidiGeneralMidi
+from llamatron.exporters import midi_messages
 from llamatron.playback.song_renderer import SongRenderer
 from tests.support.rendering import song_from_data, setlist_from_data
 from tests.playback.test_registers import pattern, song
@@ -70,7 +71,7 @@ def channels(track):
 
 
 def programs(track):
-    return [message.program for message in track if message.type == PROGRAM_CHANGE_MESSAGE]
+    return [message.program for message in track if message.type == midi_messages.PROGRAM_CHANGE_MESSAGE]
 
 
 class TestGeneralMidi(unittest.TestCase):
@@ -79,25 +80,25 @@ class TestGeneralMidi(unittest.TestCase):
         tracks = exported(data_with(tracks=[('lead', False, False, PIANO), ('drums', True, False, KIT)],
                                     instruments={PIANO: {InstrumentSetting.GM_SOUND: FLUTE}, KIT: {InstrumentSetting.GM_SOUND: limits.MIN_GM_SOUND}}))
         self.assertEqual(programs(tracks[0]), [FLUTE - limits.MIN_GM_SOUND])
-        self.assertEqual(channels(tracks[0]), {MELODIC_CHANNEL_BYTES[0]})
+        self.assertEqual(channels(tracks[0]), {midi_arrangement.MELODIC_CHANNEL_BYTES[0]})
         self.assertEqual(programs(tracks[1]), [], 'a drum track plays the kit channel 10 has, so it sends no program')
-        self.assertEqual(channels(tracks[1]), {DRUM_CHANNEL_BYTE})
+        self.assertEqual(channels(tracks[1]), {midi_arrangement.DRUM_CHANNEL_BYTE})
 
     def test_a_track_with_no_sound_sends_no_program(self):
         tracks = exported(data_with(tracks=[('lead', False, False, QUIET), ('pad', False, False, None)], instruments={QUIET: {}}))
         self.assertEqual([programs(track) for track in tracks], [[], []])
-        self.assertEqual([channels(track) for track in tracks], [{MELODIC_CHANNEL_BYTES[0]}, {MELODIC_CHANNEL_BYTES[1]}])
+        self.assertEqual([channels(track) for track in tracks], [{midi_arrangement.MELODIC_CHANNEL_BYTES[0]}, {midi_arrangement.MELODIC_CHANNEL_BYTES[1]}])
 
     def test_a_muted_track_is_left_out_and_takes_no_channel(self):
         tracks = exported(data_with(tracks=[('ghost SILENT', False, True, None), ('lead', False, False, None)], instruments={}))
         self.assertEqual([track.name for track in tracks], ['lead'])
-        self.assertEqual(channels(tracks[0]), {MELODIC_CHANNEL_BYTES[0]})
+        self.assertEqual(channels(tracks[0]), {midi_arrangement.MELODIC_CHANNEL_BYTES[0]})
 
     def test_the_channels_go_round_again_after_the_fifteenth_melodic_track(self):
-        many = [('track {number}'.format(number=number), False, False, None) for number in range(len(MELODIC_CHANNEL_BYTES) + 1)]
+        many = [('track {number}'.format(number=number), False, False, None) for number in range(len(midi_arrangement.MELODIC_CHANNEL_BYTES) + 1)]
         tracks = exported(data_with(tracks=many, instruments={}))
-        self.assertEqual(channels(tracks[-1]), {MELODIC_CHANNEL_BYTES[0]})
-        self.assertNotIn({DRUM_CHANNEL_BYTE}, [channels(track) for track in tracks])
+        self.assertEqual(channels(tracks[-1]), {midi_arrangement.MELODIC_CHANNEL_BYTES[0]})
+        self.assertNotIn({midi_arrangement.DRUM_CHANNEL_BYTE}, [channels(track) for track in tracks])
 
     def test_the_file_reads_back_as_a_multi_track_file(self):
         grid = SongRenderer(song_from_data(data_with(tracks=[('lead', False, False, None)], instruments={}))).render()

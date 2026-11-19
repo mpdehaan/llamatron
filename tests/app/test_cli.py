@@ -30,10 +30,12 @@ from unittest import mock
 import mido
 import yaml
 
-from llamatron.visualizers.modes import MODES
+from llamatron.visualizers import modes
 from llamatron.cli import MADE_SET_NAME, OPTION_BATCH, OPTION_OUT, OPTION_SEED, OPTION_WIZARD, main
-from llamatron.exporters.midi_arrangement import MULTI_TRACK_FILE, SONG_FILE, STEM_FILE
-from llamatron.exporters.exports import EXPORTERS, export_name
+from llamatron.exporters import midi_messages
+from llamatron.exporters import midi_arrangement
+from llamatron.exporters import exports
+from llamatron.exporters.exports import export_name
 from llamatron.exporters.exports import ExportKind
 from llamatron.composition.file_format import Row
 from llamatron.composition.setlist import Setlist, file_stem
@@ -56,7 +58,7 @@ SEED_A = '5'
 SEED_B = '6'
 READ_BYTES = 'rb'
 # The kinds exported here: all but the WAV, which plays the song through FluidSynth, a program this computer may not have, and which test_wave_fluidsynth.py tests with a stand-in.
-EXPORTED_HERE = [kind for kind in EXPORTERS if kind != ExportKind.WAV]
+EXPORTED_HERE = [kind for kind in exports.EXPORTERS if kind != ExportKind.WAV]
 OUT = 'out'
 VALID_YAML = 'valid YAML'
 WRITE_TEXT = 'w'
@@ -214,11 +216,11 @@ class TestCli(unittest.TestCase):
             self.assertTrue(launch.autoplay and launch.quit_when_finished and launch.for_recording)
             self.assertEqual(launch.max_seconds, 30)
         with mock.patch('llamatron.tui.app.LlamatronApp') as app:
-            self.assertEqual(self.run_exactly(self.song, '--visualizer', MODES[0].OPTION)[0], 0)
+            self.assertEqual(self.run_exactly(self.song, '--visualizer', modes.MODES[0].OPTION)[0], 0)
             launch = app.call_args.kwargs[LAUNCH_ARGUMENT]
-            self.assertEqual(launch.visualizer, MODES[0].OPTION)
+            self.assertEqual(launch.visualizer, modes.MODES[0].OPTION)
             self.assertTrue(launch.autoplay)
-        for arguments in [['--autoplay'], ['--autoplay-quit-when-finished'], ['--launch-for-recording'], ['--max-seconds', '30'], ['--visualizer', MODES[0].OPTION]]:
+        for arguments in [['--autoplay'], ['--autoplay-quit-when-finished'], ['--launch-for-recording'], ['--max-seconds', '30'], ['--visualizer', modes.MODES[0].OPTION]]:
             with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
                 code, _, stderr = self.run_exactly(*arguments)
                 self.assertEqual(code, 2)
@@ -327,15 +329,15 @@ class TestCli(unittest.TestCase):
 
     def test_to_midi_writes_one_file_with_a_tempo_track_and_a_track_per_track(self):
         self.run_cli('--to', ExportKind.MIDI_FILE)
-        name = SONG_FILE.format(name=EXPORT)
+        name = midi_arrangement.SONG_FILE.format(name=EXPORT)
         self.assertEqual(os.listdir(self.out), [name])
         midi = mido.MidiFile(os.path.join(self.out, name))
-        self.assertEqual(midi.type, MULTI_TRACK_FILE)
+        self.assertEqual(midi.type, midi_messages.MULTI_TRACK_FILE)
         self.assertEqual([track.name for track in midi.tracks], [EXPORT, LEAD, KICK])
 
     def test_to_stems_writes_a_file_per_track_numbered_from_1(self):
         self.run_cli('--to', ExportKind.STEMS)
-        expected = [STEM_FILE.format(name=EXPORT, number=1, track=LEAD), STEM_FILE.format(name=EXPORT, number=2, track=KICK)]
+        expected = [midi_arrangement.STEM_FILE.format(name=EXPORT, number=1, track=LEAD), midi_arrangement.STEM_FILE.format(name=EXPORT, number=2, track=KICK)]
         self.assertEqual(sorted(os.listdir(self.out)), expected)
 
     def test_replacing_stems_keeps_a_clip_tree_in_the_same_folder(self):

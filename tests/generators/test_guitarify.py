@@ -30,7 +30,7 @@ from llamatron.composition import guitar_bars
 from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from llamatron.generators.guitarify import APPROACH_LENGTH, FOURTH_BELOW, SQUEAL_ABOVE, MUTE_LENGTH, MUTE_VELOCITY, MUTED_BASS_VELOCITY, OPEN_STRINGS, REACH, SHORT_LENGTH, STRUM_TICKS, UNACCENTED_VELOCITY
+from llamatron.generators import guitarify
 from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.rational import Rational
@@ -59,7 +59,7 @@ MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240000
 
 def delay(*, spread, strings):
     """Return how long after a stroke its string that many strings on starts, at the tests' tempo, on the grid a strum's strings start on."""
-    return Rational(round(Rational(spread * strings * TEMPO, MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE) * STRUM_TICKS), STRUM_TICKS)
+    return Rational(round(Rational(spread * strings * TEMPO, MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE) * guitarify.STRUM_TICKS), guitarify.STRUM_TICKS)
 
 
 # How long after a stroke its second and its third string start, with the spread a Guitarify has unless set.
@@ -141,18 +141,18 @@ class TestShape(unittest.TestCase):
                 played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.POSITION: position}))
                 self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
                 for pitch in played:
-                    self.assertTrue(any(position <= pitch - string < position + REACH for string in OPEN_STRINGS[Tuning.STANDARD]), pitch)
+                    self.assertTrue(any(position <= pitch - string < position + guitarify.REACH for string in guitarify.OPEN_STRINGS[Tuning.STANDARD]), pitch)
 
     def test_a_capo_raises_the_open_strings(self):
         capo = 3
         played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.CAPO: capo}))
         self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
-        self.assertGreaterEqual(min(played), OPEN_STRINGS[Tuning.STANDARD][0] + capo)
+        self.assertGreaterEqual(min(played), guitarify.OPEN_STRINGS[Tuning.STANDARD][0] + capo)
 
     def test_fewer_strings_are_the_highest_ones(self):
         played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.STRINGS: generator_settings.MIN_GUITAR_STRINGS}))
         self.assertLessEqual(len(played), generator_settings.MIN_GUITAR_STRINGS)
-        self.assertGreaterEqual(min(played), OPEN_STRINGS[Tuning.STANDARD][-generator_settings.MIN_GUITAR_STRINGS])
+        self.assertGreaterEqual(min(played), guitarify.OPEN_STRINGS[Tuning.STANDARD][-generator_settings.MIN_GUITAR_STRINGS])
         self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
 
     def test_a_tuning_changes_the_strings(self):
@@ -162,7 +162,7 @@ class TestShape(unittest.TestCase):
         self.assertGreater(min(pitches(guitar(settings=SHAPE_ONLY, rows=rows))), LOW_D)
 
     def test_every_tuning_plays_the_whole_chord_one_note_a_string(self):
-        for tuning, strings in OPEN_STRINGS.items():
+        for tuning, strings in guitarify.OPEN_STRINGS.items():
             with self.subTest(tuning=tuning):
                 played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.TUNING: tuning}))
                 self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
@@ -220,26 +220,26 @@ class TestStrokes(unittest.TestCase):
 
     def test_a_muted_stroke_is_short_and_quiet(self):
         played = events(guitar(settings=bar([Stroke.MUTE], cell=WHOLE, **{GuitarifySetting.SPREAD: NO_SPREAD})))
-        self.assertEqual([(event.end - event.start, event.velocity) for event in played], [(WHOLE_NOTE * MUTE_LENGTH, round(VELOCITY * MUTE_VELOCITY))] * 3)
+        self.assertEqual([(event.end - event.start, event.velocity) for event in played], [(WHOLE_NOTE * guitarify.MUTE_LENGTH, round(VELOCITY * guitarify.MUTE_VELOCITY))] * 3)
 
     def test_a_stab_is_every_string_at_full_loudness_and_stops_short_even_when_left_to_ring(self):
         for let_ring in (False, True):
             with self.subTest(let_ring=let_ring):
                 played = events(guitar(settings=bar([Stroke.STAB], cell=WHOLE, **{GuitarifySetting.SPREAD: NO_SPREAD, GuitarifySetting.LET_RING: let_ring})))
-                self.assertEqual([(event.end - event.start, event.velocity) for event in played], [(WHOLE_NOTE * SHORT_LENGTH, VELOCITY)] * 3)
+                self.assertEqual([(event.end - event.start, event.velocity) for event in played], [(WHOLE_NOTE * guitarify.SHORT_LENGTH, VELOCITY)] * 3)
 
     def test_a_muted_bass_is_the_lowest_string_short_and_a_little_soft(self):
         played = events(guitar(settings=bar([Stroke.MUTED_BASS], cell=WHOLE, **{GuitarifySetting.LET_RING: True})))
-        self.assertEqual([(event.midi_number, event.end - event.start, event.velocity) for event in played], [(C, WHOLE_NOTE * SHORT_LENGTH, round(VELOCITY * MUTED_BASS_VELOCITY))])
+        self.assertEqual([(event.midi_number, event.end - event.start, event.velocity) for event in played], [(C, WHOLE_NOTE * guitarify.SHORT_LENGTH, round(VELOCITY * guitarify.MUTED_BASS_VELOCITY))])
 
     def test_an_accented_muted_bass_is_at_full_loudness_and_the_others_no_softer_for_the_accent(self):
         played = events(guitar(settings=bar([Stroke.MUTED_BASS, Stroke.MUTED_BASS], accents=[True, False], cell=HALF)))
-        self.assertEqual([event.velocity for event in played], [VELOCITY, round(VELOCITY * MUTED_BASS_VELOCITY)])
+        self.assertEqual([event.velocity for event in played], [VELOCITY, round(VELOCITY * guitarify.MUTED_BASS_VELOCITY)])
 
     def test_a_squeal_is_one_high_note_short_and_never_softened(self):
         played = events(guitar(settings=bar([Stroke.DOWN, Stroke.SQUEAL], accents=[True, False], cell=HALF, **{GuitarifySetting.SPREAD: NO_SPREAD})))
         squeal = played[-1]
-        self.assertEqual((squeal.midi_number, squeal.end - squeal.start, squeal.velocity), (C + SQUEAL_ABOVE, HALF_NOTE * SHORT_LENGTH, VELOCITY))
+        self.assertEqual((squeal.midi_number, squeal.end - squeal.start, squeal.velocity), (C + guitarify.SQUEAL_ABOVE, HALF_NOTE * guitarify.SHORT_LENGTH, VELOCITY))
 
     def test_the_bass_the_alternate_bass_and_single_strings(self):
         data = guitar(settings=bar([Stroke.BASS, Stroke.ALT_BASS, Stroke.STRING_1, Stroke.STRING_2]))
@@ -267,7 +267,7 @@ class TestStrokes(unittest.TestCase):
 
     def test_where_a_bar_has_accents_the_other_strokes_are_softer(self):
         data = guitar(settings=bar([Stroke.BASS, Stroke.BASS], accents=[True, False], cell='1/2'))
-        self.assertEqual([event.velocity for event in events(data)], [VELOCITY, round(VELOCITY * UNACCENTED_VELOCITY)])
+        self.assertEqual([event.velocity for event in events(data)], [VELOCITY, round(VELOCITY * guitarify.UNACCENTED_VELOCITY)])
         plain = guitar(settings=bar([Stroke.BASS, Stroke.BASS], cell='1/2'))
         self.assertEqual([event.velocity for event in events(plain)], [VELOCITY, VELOCITY])
 
@@ -350,7 +350,7 @@ class TestSingleNoteChoices(unittest.TestCase):
     def test_an_octave_a_third_above_and_a_double_stop(self):
         self.assertEqual(self.single(SingleNotes.OCTAVE), [C, C + midi.HALF_STEPS_PER_OCTAVE])
         self.assertEqual(self.single(SingleNotes.THIRD_ABOVE), [C, E])
-        self.assertEqual(self.single(SingleNotes.DOUBLE_STOP), [C - FOURTH_BELOW, C])
+        self.assertEqual(self.single(SingleNotes.DOUBLE_STOP), [C - guitarify.FOURTH_BELOW, C])
 
 
 class TestChordColor(unittest.TestCase):
@@ -381,10 +381,10 @@ class TestApproach(unittest.TestCase):
         self.assertEqual(self.played(Approach.OFF), [(Rational(0), C, WHOLE_NOTE), (WHOLE_NOTE, D, WHOLE_NOTE)])
 
     def test_a_new_note_is_reached_from_a_fret_below_and_the_first_is_not(self):
-        self.assertEqual(self.played(Approach.FROM_BELOW), [(Rational(0), C, WHOLE_NOTE), (WHOLE_NOTE, D - 1, APPROACH_LENGTH), (WHOLE_NOTE + APPROACH_LENGTH, D, WHOLE_NOTE - APPROACH_LENGTH)])
+        self.assertEqual(self.played(Approach.FROM_BELOW), [(Rational(0), C, WHOLE_NOTE), (WHOLE_NOTE, D - 1, guitarify.APPROACH_LENGTH), (WHOLE_NOTE + guitarify.APPROACH_LENGTH, D, WHOLE_NOTE - guitarify.APPROACH_LENGTH)])
 
     def test_from_above(self):
-        self.assertEqual(self.played(Approach.FROM_ABOVE)[1], (WHOLE_NOTE, D + 1, APPROACH_LENGTH))
+        self.assertEqual(self.played(Approach.FROM_ABOVE)[1], (WHOLE_NOTE, D + 1, guitarify.APPROACH_LENGTH))
 
 
 class TestReadyMadeBars(unittest.TestCase):

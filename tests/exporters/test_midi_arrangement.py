@@ -26,23 +26,9 @@ import mido
 
 from llamatron.music.note import Note
 from llamatron.music.time_signature import TimeSignature
-from llamatron.exporters.midi_arrangement import (
-    MidiSong,
-    MidiStems,
-    MULTI_TRACK_FILE,
-    SINGLE_TRACK_FILE,
-    SONG_FILE,
-    STEM_FILE,
-)
-from llamatron.exporters.midi_messages import (
-    CONTROL_CHANGE_MESSAGE,
-    END_OF_TRACK_META,
-    TIME_SIGNATURE_META,
-    NOTE_OFF_MESSAGE,
-    NOTE_ON_MESSAGE,
-    TEMPO_META,
-    TICKS_PER_BEAT,
-)
+from llamatron.exporters import midi_messages
+from llamatron.exporters import midi_arrangement
+from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.control import Control
@@ -90,19 +76,19 @@ WRITE_TEXT = 'w'
 
 
 def beat(number):
-    return number * TICKS_PER_BEAT
+    return number * midi_messages.TICKS_PER_BEAT
 
 
 def on(*, note, at):
-    return (NOTE_ON_MESSAGE, note, beat(at))
+    return (midi_messages.NOTE_ON_MESSAGE, note, beat(at))
 
 
 def off(*, note, at):
-    return (NOTE_OFF_MESSAGE, note, beat(at))
+    return (midi_messages.NOTE_OFF_MESSAGE, note, beat(at))
 
 
 def tempo(*, bpm, at):
-    return (TEMPO_META, bpm, beat(at))
+    return (midi_messages.TEMPO_META, bpm, beat(at))
 
 
 def end(at):
@@ -115,11 +101,11 @@ def read_track(track):
     tick = 0
     for message in track:
         tick += message.time
-        if message.type in (NOTE_ON_MESSAGE, NOTE_OFF_MESSAGE):
+        if message.type in (midi_messages.NOTE_ON_MESSAGE, midi_messages.NOTE_OFF_MESSAGE):
             result.append((message.type, message.note, tick))
-        elif message.type == TEMPO_META:
-            result.append((TEMPO_META, round(mido.tempo2bpm(message.tempo)), tick))
-        elif message.type == END_OF_TRACK_META:
+        elif message.type == midi_messages.TEMPO_META:
+            result.append((midi_messages.TEMPO_META, round(mido.tempo2bpm(message.tempo)), tick))
+        elif message.type == midi_messages.END_OF_TRACK_META:
             result.append((END, NO_NUMBER, tick))
     return result
 
@@ -130,7 +116,7 @@ def control_changes(track):
     tick = 0
     for message in track:
         tick += message.time
-        if message.type == CONTROL_CHANGE_MESSAGE:
+        if message.type == midi_messages.CONTROL_CHANGE_MESSAGE:
             result.append((message.control, message.value, tick))
     return result
 
@@ -167,11 +153,11 @@ class ArrangementTestCase(unittest.TestCase):
         return os.path.join(self.directory, filename)
 
     def stem_name(self, *, number, track):
-        return STEM_FILE.format(name=SONG_NAME, number=number, track=track)
+        return midi_arrangement.STEM_FILE.format(name=SONG_NAME, number=number, track=track)
 
     def song_file(self):
         export(MidiSong(directory=self.directory, grid=self.grid))
-        return mido.MidiFile(self.path(SONG_FILE.format(name=SONG_NAME)))
+        return mido.MidiFile(self.path(midi_arrangement.SONG_FILE.format(name=SONG_NAME)))
 
     def stems(self):
         """Export the stems and return them in track order, as mido files."""
@@ -184,7 +170,7 @@ class TestMidiSong(ArrangementTestCase):
 
     def test_one_file_holds_a_tempo_track_and_a_track_per_unmuted_track(self):
         midi = self.song_file()
-        self.assertEqual(midi.type, MULTI_TRACK_FILE)
+        self.assertEqual(midi.type, midi_messages.MULTI_TRACK_FILE)
         self.assertEqual([track.name for track in midi.tracks], [SONG_NAME, BASS, LEAD])
 
     def test_every_track_ends_at_the_end_of_the_song(self):
@@ -197,7 +183,7 @@ class TestMidiSong(ArrangementTestCase):
         tracks = [self.song_file().tracks[TEMPO_TRACK], *[stem.tracks[0] for stem in self.stems()]]
         for track in tracks:
             with self.subTest(track=track.name):
-                signatures = [(message.numerator, message.denominator, message.clocks_per_click, message.time) for message in track if message.type == TIME_SIGNATURE_META]
+                signatures = [(message.numerator, message.denominator, message.clocks_per_click, message.time) for message in track if message.type == midi_messages.TIME_SIGNATURE_META]
                 self.assertEqual(signatures, [(6, 8, DOTTED_QUARTER_CLOCKS, 0)])
 
     def test_the_tempo_track_changes_tempo_where_the_second_scene_starts(self):
@@ -234,12 +220,12 @@ class TestMidiSong(ArrangementTestCase):
         for _ in range(2):
             grid.set_clip(row=grid.add_row(ClipRow()), column=track, clip=Clip(notes=[C4]))
         export(MidiSong(directory=self.directory, grid=grid))
-        midi = mido.MidiFile(self.path(SONG_FILE.format(name=SONG_NAME)))
+        midi = mido.MidiFile(self.path(midi_arrangement.SONG_FILE.format(name=SONG_NAME)))
         self.assertEqual(read_track(midi.tracks[TEMPO_TRACK]), [tempo(bpm=SONG_TEMPO, at=0), end(2)])
 
     def test_an_existing_file_stops_the_export_with_a_warning(self):
         os.makedirs(self.directory)
-        path = self.path(SONG_FILE.format(name=SONG_NAME))
+        path = self.path(midi_arrangement.SONG_FILE.format(name=SONG_NAME))
         with open(path, WRITE_TEXT) as file:
             file.write(AN_EXISTING_FILE)
         printed = export(MidiSong(directory=self.directory, grid=self.grid))
@@ -253,15 +239,15 @@ class TestMidiSong(ArrangementTestCase):
             file.write(AN_EXISTING_FILE)
         printed = export(MidiSong(directory=self.directory, grid=self.grid))
         self.assertEqual(printed, '')
-        self.assertEqual(sorted(os.listdir(self.directory)), [AN_EXISTING_FILE, SONG_FILE.format(name=SONG_NAME)])
+        self.assertEqual(sorted(os.listdir(self.directory)), [AN_EXISTING_FILE, midi_arrangement.SONG_FILE.format(name=SONG_NAME)])
 
     def test_the_name_is_the_directory_unless_given(self):
         export(MidiSong(directory=self.directory, grid=self.grid, name=GIVEN_NAME))
         export(MidiStems(directory=self.directory, grid=self.grid, name=GIVEN_NAME))
         self.assertEqual(sorted(os.listdir(self.directory)), [
-            SONG_FILE.format(name=GIVEN_NAME),
-            STEM_FILE.format(name=GIVEN_NAME, number=FIRST_STEM, track=BASS),
-            STEM_FILE.format(name=GIVEN_NAME, number=FIRST_STEM + 1, track=LEAD),
+            midi_arrangement.SONG_FILE.format(name=GIVEN_NAME),
+            midi_arrangement.STEM_FILE.format(name=GIVEN_NAME, number=FIRST_STEM, track=BASS),
+            midi_arrangement.STEM_FILE.format(name=GIVEN_NAME, number=FIRST_STEM + 1, track=LEAD),
         ])
 
     def test_bad_arguments_are_refused(self):
@@ -280,21 +266,21 @@ class TestMidiStems(ArrangementTestCase):
     def test_every_stem_is_a_single_track_file_the_length_of_the_song(self):
         for midi, name in zip(self.stems(), [BASS, LEAD]):
             with self.subTest(track=name):
-                self.assertEqual(midi.type, SINGLE_TRACK_FILE)
+                self.assertEqual(midi.type, midi_messages.SINGLE_TRACK_FILE)
                 self.assertEqual(len(midi.tracks), 1)
                 self.assertEqual(midi.tracks[0].name, name)
                 self.assertEqual(read_track(midi.tracks[0])[-1], end(SONG_BEATS))
 
     def test_every_stem_carries_the_tempo_changes(self):
         for midi in self.stems():
-            tempos = [event for event in read_track(midi.tracks[0]) if event[0] == TEMPO_META]
+            tempos = [event for event in read_track(midi.tracks[0]) if event[0] == midi_messages.TEMPO_META]
             self.assertEqual(tempos, [tempo(bpm=SONG_TEMPO, at=0), tempo(bpm=SECOND_SCENE_TEMPO, at=FIRST_SCENE_BEATS)])
 
     def test_stems_play_what_the_song_files_tracks_play(self):
         song = self.song_file()
         for stem, track in zip(self.stems(), song.tracks[FIRST_SOUNDING_TRACK:]):
             with self.subTest(track=track.name):
-                notes = [event for event in read_track(stem.tracks[0]) if event[0] != TEMPO_META]
+                notes = [event for event in read_track(stem.tracks[0]) if event[0] != midi_messages.TEMPO_META]
                 self.assertEqual(notes, read_track(track))
                 self.assertEqual(control_changes(stem.tracks[0]), control_changes(track))
 

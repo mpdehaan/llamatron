@@ -25,7 +25,7 @@ import random
 
 from llamatron.visualizers.digital_rain import DigitalRain
 from llamatron.visualizers.fireworks import Fireworks
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.hypercube import Hypercube
 from llamatron.visualizers.laser_llama import LaserLlama
 from llamatron.visualizers.lava_lamp import LavaLamp
@@ -92,7 +92,7 @@ class Cycle(Visualizer):
         """Return the mode showing now."""
         return self._showing
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if self._since is None:
             self._since = now
         if now - self._since >= CYCLE_SECONDS:

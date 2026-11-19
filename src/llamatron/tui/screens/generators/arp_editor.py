@@ -22,7 +22,8 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import ArpSetting, written_name
-from llamatron.generators.arp import MAX_OCTAVE_RANGE, MIN_OCTAVE_RANGE, OctaveJump
+from llamatron.generators import arp as arp_values
+from llamatron.generators.arp import OctaveJump
 from llamatron.composition.naming import words
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
@@ -66,7 +67,7 @@ class ArpEditor(ShowsNamedItem, FieldPage):
         self.document().set_generator_setting(section=Section.ARPS, name=self.item, setting=setting, value=value)
 
     def set_range(self, octaves):
-        self.set_value(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == MIN_OCTAVE_RANGE else octaves)
+        self.set_value(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == arp_values.MIN_OCTAVE_RANGE else octaves)
 
     def set_jump(self, jump):
         self.set_value(setting=ArpSetting.OCTAVE_JUMP, value=None if jump == JUMPS[0] else jump)
@@ -80,14 +81,14 @@ class ArpEditor(ShowsNamedItem, FieldPage):
         arp = self.arp()
         step = arp.get_step()
         order = arp.get_order() or DEFAULT_ORDER
-        octaves = arp.get_octave_range() or MIN_OCTAVE_RANGE
+        octaves = arp.get_octave_range() or arp_values.MIN_OCTAVE_RANGE
         jump = arp.get_octave_jump() or JUMPS[0]
         seed = arp.get_seed()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(page=self, label=labels.MSG_STEP_LABEL, written=step, first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.set_value(setting=ArpSetting.STEP, value=value)),
             ChoiceField(page=self, label=labels.MSG_ORDER_LABEL, choices=ORDERS, current=order, set=lambda value: self.set_value(setting=ArpSetting.ORDER, value=value)),
-            NumberField(page=self, label=labels.MSG_OCTAVE_RANGE_LABEL, number=octaves, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE, set=self.set_range),
+            NumberField(page=self, label=labels.MSG_OCTAVE_RANGE_LABEL, number=octaves, lowest=arp_values.MIN_OCTAVE_RANGE, highest=arp_values.MAX_OCTAVE_RANGE, set=self.set_range),
             ChoiceField(page=self, label=labels.MSG_OCTAVE_JUMP_LABEL, choices=JUMPS, current=jump, names=[words(name) for name in JUMPS], shown=words(jump), set=self.set_jump),
             Field(label=labels.MSG_OFFSETS_LABEL, value=lambda: offsets_text(arp.get_offsets()), adjust=None, enter=self.edit_offsets, enter_what=legends.What.EDIT,
                   clear=lambda: self.set_value(setting=ArpSetting.OFFSETS, value=None), clear_what=legends.What.REMOVE),

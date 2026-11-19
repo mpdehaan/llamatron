@@ -34,7 +34,8 @@ import argparse
 import sys
 import wave
 
-from llamatron.exporters.wave_level import PEAK_DECIBELS, normalize_wave
+from llamatron.exporters import wave_level
+from llamatron.exporters.wave_level import normalize_wave
 from llamatron.strings import errors
 
 # What it says of each file: the program's own refusal of a file that isn't 16-bit, and what it did.
@@ -43,7 +44,7 @@ SILENT = '{path}: silent, left as it is'
 NORMALIZED = '{path}: peak moved by {change:+.1f} dB to {target:.1f} dB'
 
 
-def normalize(path, *, peak_decibels=PEAK_DECIBELS):
+def normalize(path, *, peak_decibels=wave_level.PEAK_DECIBELS):
     """Normalize the WAV file in place, through exporters/wave_level.py, which the WAV export uses too, and return what was done, in words."""
     change = normalize_wave(path, peak_decibels=peak_decibels)
     if change is None:

@@ -15,10 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The visualizer's modes, in the order its key steps through them, and the clips come back after the last."""
 
-from llamatron.visualizers.cycle import CYCLED, Cycle
+from llamatron.visualizers import cycle
+from llamatron.visualizers.cycle import Cycle
 
 # Every mode the key steps through, the mode of modes last.
-MODES = (*CYCLED, Cycle)
+MODES = (*cycle.CYCLED, Cycle)
 
 
 def mode_options():

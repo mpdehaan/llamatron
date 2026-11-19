@@ -35,7 +35,7 @@ import numpy
 
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.fields import blurred
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
@@ -120,7 +120,7 @@ class Hypercube(Visualizer):
         # How far along an edge each of its points is, from 0 to 1, as many as the height asks for.
         self._along = numpy.linspace(0.0, 1.0, max(int(self._rows * POINTS_PER_CELL), 2))[:, None]
 
-    def pixels(self, *, now, heard=SILENCE):
+    def pixels(self, *, now, heard=heard_values.SILENCE):
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
         self._last = now
         self.hear(heard)

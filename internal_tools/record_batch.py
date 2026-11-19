@@ -41,7 +41,8 @@ from llamatron.composition.setlist import file_stem
 from llamatron.support.safe_yaml import load_safely
 from llamatron.tui.document import Document
 from llamatron.visualizers.cycle import Cycle
-from llamatron.visualizers.modes import MODES, mode_options
+from llamatron.visualizers import modes
+from llamatron.visualizers.modes import mode_options
 from llamatron.support.example_sets import example_sets
 
 PAIRINGS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'visualizer_pairings.yml')
@@ -52,7 +53,7 @@ READ_TEXT = 'r'
 SUCCESS = 0
 FAILURE = 1
 # The mode of modes is given only by name, never chosen for a set the pairings lack.
-CHOSEN_FROM = [mode.OPTION for mode in MODES if mode is not Cycle]
+CHOSEN_FROM = [mode.OPTION for mode in modes.MODES if mode is not Cycle]
 LIST_SEPARATOR = ', '
 NOTHING = ''
 PLAN_LINE = '  {number:2}  {stem:30} {mode:14} {length}'

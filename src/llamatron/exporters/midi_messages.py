@@ -26,7 +26,8 @@ from typing import NamedTuple
 
 import mido
 
-from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_events, keyswitch_events
+from llamatron.exporters import timing
+from llamatron.exporters.timing import control_events, keyswitch_events
 from llamatron.music.time_signature import TimeSignature
 
 TICKS_PER_BEAT = 480
@@ -86,7 +87,7 @@ class MidiEvent(NamedTuple):
 
 def ticks(length):
     """Convert a fraction of a whole note into MIDI ticks, rounding once, so that times never drift."""
-    return round(length * BEATS_PER_WHOLE_NOTE * TICKS_PER_BEAT)
+    return round(length * timing.BEATS_PER_WHOLE_NOTE * TICKS_PER_BEAT)
 
 
 def midi_text(text):

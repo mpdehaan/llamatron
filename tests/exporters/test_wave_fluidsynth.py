@@ -35,8 +35,8 @@ import numpy
 from llamatron.composition import file_format
 from llamatron.exporters import wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
-from llamatron.exporters.exports import EXPORT_KINDS, EXPORT_LABELS
-from llamatron.exporters.wave_fluidsynth import MIDI_FILE, WaveFluidSynth
+from llamatron.exporters import exports
+from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors, labels, messages
@@ -138,7 +138,7 @@ class TestWaveFluidSynth(unittest.TestCase):
         self.assertEqual([message.program for message in lead if message.type == PROGRAM_CHANGE], [VIOLIN - 1])
         self.assertFalse(os.path.exists(render.midi_folder))
         self.assertEqual(os.listdir(self.folder), [WaveFluidSynth.FILE.format(name=NAME)])
-        self.assertNotIn(MIDI_FILE, os.listdir(self.folder))
+        self.assertNotIn(wave_fluidsynth.MIDI_FILE, os.listdir(self.folder))
 
     def test_the_wav_file_is_normalized_to_a_peak_one_decibel_below_full_scale(self):
         exporter = self.exporter()
@@ -190,8 +190,8 @@ class TestWaveExportInTheTracker(UITest):
     async def choose_wav(self):
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options[EXPORT_KINDS.index(ExportKind.WAV)], labels.MSG_EXPORT_CHOICES[EXPORT_KINDS.index(ExportKind.WAV)])
-        await self.press(*([Key.DOWN] * EXPORT_KINDS.index(ExportKind.WAV)), Key.ENTER)
+        self.assertEqual(self.app.screen.options[exports.EXPORT_KINDS.index(ExportKind.WAV)], labels.MSG_EXPORT_CHOICES[exports.EXPORT_KINDS.index(ExportKind.WAV)])
+        await self.press(*([Key.DOWN] * exports.EXPORT_KINDS.index(ExportKind.WAV)), Key.ENTER)
 
     async def test_the_note_is_shown_first_and_yes_exports(self):
         with mock.patch(TRACKER_INSTALLED, return_value=True), mock.patch(INSTALLED, return_value=True), \
@@ -202,7 +202,7 @@ class TestWaveExportInTheTracker(UITest):
             self.assertIn(messages.MSG_WAV_EXPORT_NOTE, self.app.screen.messages)
             await self.press(keybindings.ConfirmDialog.YES)
         self.assertIn(fixed_text(messages.MSG_EXPORTED), self.text())
-        self.assertIn(EXPORT_LABELS[ExportKind.WAV], self.text())
+        self.assertIn(exports.EXPORT_LABELS[ExportKind.WAV], self.text())
         self.assertTrue(os.path.exists(WaveFluidSynth.FILE.format(name=NAME)))
 
     async def test_no_writes_nothing(self):

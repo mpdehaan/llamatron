@@ -40,7 +40,8 @@ from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.tune_source import TuneSource
 from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
-from llamatron.playback.registers import NOT_TURNED, RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
+from llamatron.playback import registers as registers_values
+from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
 from llamatron.playback.written_scene import WrittenScene
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
@@ -444,7 +445,7 @@ class SongRenderer:
         """
         values = starting_values(self._registers)
         # The registers that reverse and are counting the other way, which a reset puts back to counting forward.
-        turned = NOT_TURNED
+        turned = registers_values.NOT_TURNED
         for written in self._scenes[:self._scenes.index(scene) + 1]:
             number = written.get_number()
             if number not in self._timelines:

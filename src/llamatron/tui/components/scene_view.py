@@ -42,7 +42,8 @@ from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, effective_values, scene_notes
 from llamatron.tui.screens.arrange.arrange_details import ADD_CHAIN, clip_details, or_stock, track_details
 from llamatron.visualizers.cells import CellPainter
-from llamatron.visualizers.piano_roll import DRUM_ROWS, drum_lane
+from llamatron.visualizers import piano_roll
+from llamatron.visualizers.piano_roll import drum_lane
 
 # Each column of the roll is a sixteenth note, in whole notes, drawn as many cells wide as the zoom, from FEWEST_CELLS to MOST_CELLS.
 COLUMNS_PER_WHOLE = 16
@@ -222,7 +223,7 @@ class SceneView:
         """Return the drum lanes, top first, when a drum plays in the scene, which stay at the foot of the roll while the keys above them scroll."""
         notes = self.notes()
         if notes and any(note.drum for note in notes.notes):
-            return [(LANE, lane) for lane in range(DRUM_ROWS - 1, -1, -1)]
+            return [(LANE, lane) for lane in range(piano_roll.DRUM_ROWS - 1, -1, -1)]
         return []
 
     def columns(self):

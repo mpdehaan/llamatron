@@ -24,7 +24,8 @@ itself in. Quit is Q on the main screen alone, and lives here because it asks th
 import os
 
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.exporters.exports import EXPORT_KINDS, EXPORT_LABELS, ExportKind
+from llamatron.exporters import exports
+from llamatron.exporters.exports import ExportKind
 from llamatron.tui.silent_instruments import fluidsynth_installed, warn_of_silent_instruments
 from llamatron.tui.document import Document
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -258,7 +259,7 @@ def export(page):
 def choose_export(page):
     """Ask which kind of export to write for the current song, and write it."""
     title = messages_text.MSG_EXPORT_TITLE.format(name=page.document().current_song_name())
-    page.ask(dialog=ChoiceDialog(title=title, options=labels.MSG_EXPORT_CHOICES), then=lambda place: export_chosen(page, to=EXPORT_KINDS[place]))
+    page.ask(dialog=ChoiceDialog(title=title, options=labels.MSG_EXPORT_CHOICES), then=lambda place: export_chosen(page, to=exports.EXPORT_KINDS[place]))
 
 
 def export_chosen(page, *, to):
@@ -301,7 +302,7 @@ def write_export(page, *, to):
         page.tell(errors.ERR_CANT_EXPORT_TITLE, str(error))
         return
     # The status line says where it went, as it does for saving, rather than a dialog to dismiss.
-    page.say(messages_text.MSG_EXPORTED.format(name=EXPORT_LABELS[to], path=path))
+    page.say(messages_text.MSG_EXPORTED.format(name=exports.EXPORT_LABELS[to], path=path))
 
 
 # Quitting, which asks only when there are changes to lose.

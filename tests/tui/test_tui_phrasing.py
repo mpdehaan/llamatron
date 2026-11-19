@@ -18,7 +18,7 @@
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import PhrasingSetting
-from llamatron.generators.phrasing import BIG_RISE, BREATHS, DEEP_BREATH, FLOWING_NOTES, JOINS, QUICK_BREATH, RISES
+from llamatron.generators import phrasing as phrasing_values
 from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -54,7 +54,7 @@ class TestPhrasingEditor(UITest):
         for label in (labels.MSG_PHRASING_LINE_LABEL, labels.MSG_PHRASING_BREATH_LABEL, labels.MSG_PHRASING_RISE_LABEL, labels.MSG_PHRASING_NOTES_LABEL):
             self.assertIn(label, shown)
         self.assertIn(labels.MSG_PHRASING_LINE_NAMES[generator_settings.DEFAULT_LINE_BARS], shown)
-        self.assertIn(QUICK_BREATH, shown)
+        self.assertIn(phrasing_values.QUICK_BREATH, shown)
 
     async def test_the_line_is_stepped_through_its_lengths_and_stops_at_each_end(self):
         await self.select_field(labels.MSG_PHRASING_LINE_LABEL)
@@ -68,28 +68,28 @@ class TestPhrasingEditor(UITest):
     async def test_the_breath_is_stepped_and_the_rise_and_the_notes_are_chosen_from_their_lists(self):
         await self.select_field(labels.MSG_PHRASING_BREATH_LABEL)
         await self.press(keybindings.PhrasingEditor.MORE)
-        self.assertEqual(self.phrasing().get_own(PhrasingSetting.BREATH), DEEP_BREATH)
+        self.assertEqual(self.phrasing().get_own(PhrasingSetting.BREATH), phrasing_values.DEEP_BREATH)
         await self.select_field(labels.MSG_PHRASING_RISE_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(list(self.app.screen.options), list(RISES))
-        await self.pick(BIG_RISE)
-        self.assertEqual(self.phrasing().get_own(PhrasingSetting.RISE_AND_FALL), BIG_RISE)
+        self.assertEqual(list(self.app.screen.options), list(phrasing_values.RISES))
+        await self.pick(phrasing_values.BIG_RISE)
+        self.assertEqual(self.phrasing().get_own(PhrasingSetting.RISE_AND_FALL), phrasing_values.BIG_RISE)
         await self.select_field(labels.MSG_PHRASING_NOTES_LABEL)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), list(JOINS))
-        await self.pick(FLOWING_NOTES)
-        self.assertEqual(self.phrasing().get_own(PhrasingSetting.NOTES), FLOWING_NOTES)
+        self.assertEqual(list(self.app.screen.options), list(phrasing_values.JOINS))
+        await self.pick(phrasing_values.FLOWING_NOTES)
+        self.assertEqual(self.phrasing().get_own(PhrasingSetting.NOTES), phrasing_values.FLOWING_NOTES)
 
     async def test_the_breaths_list_holds_its_three_words(self):
         await self.select_field(labels.MSG_PHRASING_BREATH_LABEL)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), list(BREATHS))
+        self.assertEqual(list(self.app.screen.options), list(phrasing_values.BREATHS))
 
     async def test_a_value_put_back_to_what_a_phrasing_starts_with_is_left_out_of_the_file(self):
         await self.select_field(labels.MSG_PHRASING_BREATH_LABEL)
         await self.press(keybindings.PhrasingEditor.MORE)
-        self.assertEqual(self.phrasing().to_data(), {PhrasingSetting.BREATH: DEEP_BREATH})
+        self.assertEqual(self.phrasing().to_data(), {PhrasingSetting.BREATH: phrasing_values.DEEP_BREATH})
         await self.press(keybindings.PhrasingEditor.LESS)
-        self.assertEqual(self.phrasing().get_own(PhrasingSetting.BREATH), QUICK_BREATH)
+        self.assertEqual(self.phrasing().get_own(PhrasingSetting.BREATH), phrasing_values.QUICK_BREATH)
         self.assertEqual(self.phrasing().to_data(), {})

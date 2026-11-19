@@ -43,7 +43,7 @@ from llamatron.composition.naming import copy_name, default_scale_name, is_defau
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song import Song
 from llamatron.music.time_signature import TimeSignature
-from llamatron.importers.steps import TIED
+from llamatron.importers import steps as steps_values
 
 FIRST_BAR_NUMBER = 1
 NO_REPEAT = 1
@@ -71,7 +71,7 @@ def pattern_data(*, pattern, set_step_size):
     rows = {row: [None] * count for row in (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.GATE, Row.VELOCITY)}
     ties = [False] * count
     for place, step in enumerate(steps):
-        if step == TIED:
+        if step == steps_values.TIED:
             ties[place] = True
         elif step is not None:
             rows[Row.DEGREE][place] = step.degree

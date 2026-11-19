@@ -44,7 +44,8 @@ from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
-from llamatron.generators.arp import MAX_OCTAVE_RANGE, Arp, ChordOrder
+from llamatron.generators import arp as arp_values
+from llamatron.generators.arp import Arp, ChordOrder
 from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.generators.blend import BlendMode
 from llamatron.music.note import NoteName
@@ -91,7 +92,7 @@ UNKNOWN_COUNT_IN_CHAIN = 'chain (x), auto_ratchet: unknown setting (count)'
 WRONG_ARP_SETTINGS = [
     {ArpSetting.ORDER: 'sideways'},
     {ArpSetting.SEED: 'seven'},
-    {ArpSetting.OCTAVE_RANGE: MAX_OCTAVE_RANGE + 1},
+    {ArpSetting.OCTAVE_RANGE: arp_values.MAX_OCTAVE_RANGE + 1},
     {ArpSetting.OCTAVE_JUMP: 'never'},
     {ArpSetting.OFFSETS: 'up'},
     {ArpSetting.STEP: 'long'},

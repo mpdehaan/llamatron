@@ -28,7 +28,8 @@ from pathlib import Path
 
 from llamatron.music.chord import Chord
 from llamatron.music.note import Degree, Note, NoteName, Rest
-from llamatron.exporters.ableton_project import DEFAULT_TEMPLATE, AbletonProject, Attribute, ElementPath, Tag
+from llamatron.exporters import ableton_project
+from llamatron.exporters.ableton_project import AbletonProject, Attribute, ElementPath, Tag
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.music.time_signature import TimeSignature
 from llamatron.grid.clip import Clip
@@ -79,7 +80,7 @@ SONG = 'song'
 
 
 def template_root():
-    with open(DEFAULT_TEMPLATE, READ_BYTES) as file:
+    with open(ableton_project.DEFAULT_TEMPLATE, READ_BYTES) as file:
         return ET.fromstring(gzip.decompress(file.read()))
 
 
@@ -658,8 +659,8 @@ class TestFields(unittest.TestCase):
         self.assertEqual(project.get_template(), 'other.als')
 
     def test_template_defaults_to_the_one_installed_with_the_code(self):
-        self.assertEqual(AbletonProject(directory=OUTPUT, grid=ClipGrid()).get_template(), DEFAULT_TEMPLATE)
-        self.assertIsInstance(DEFAULT_TEMPLATE, Path)
+        self.assertEqual(AbletonProject(directory=OUTPUT, grid=ClipGrid()).get_template(), ableton_project.DEFAULT_TEMPLATE)
+        self.assertIsInstance(ableton_project.DEFAULT_TEMPLATE, Path)
 
     def test_rejects_invalid_values(self):
         for directory in ['', None, 1]:

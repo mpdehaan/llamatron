@@ -41,13 +41,16 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition import limits
 from llamatron.strings import errors, messages
-from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES
-from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT, FluidSynth, is_installed
-from llamatron.visualizers.heard import REFERENCE_SECONDS_PER_BEAT, SILENCE, Heard, HeardNote
+from llamatron.exporters import midi_arrangement
+from llamatron.realtime import fluidsynth as fluidsynth_values
+from llamatron.realtime.fluidsynth import FluidSynth, is_installed
+from llamatron.visualizers import heard as heard_values
+from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.realtime.engine import MonotonicClock
 from llamatron.realtime.outputs import output_port_names
 from llamatron.playback.step_order import walk_order
-from llamatron.realtime.player import QUARTERS_PER_WHOLE, Player
+from llamatron.realtime import player as player_values
+from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
 from llamatron.realtime.timeline import Route
@@ -68,7 +71,7 @@ def step_sounding(*, elapsed, quarter, step_size, steps, direction):
     order = walk_order(count=steps, direction=direction)
     if order is None:
         return None
-    step_seconds = float(step_size) * QUARTERS_PER_WHOLE * quarter
+    step_seconds = float(step_size) * player_values.QUARTERS_PER_WHOLE * quarter
     return order[int(elapsed / step_seconds) % len(order)]
 
 
@@ -179,7 +182,7 @@ class Transport:
 
     def uses_fluidsynth(self, *, instead=None):
         """Return whether some track of the current song plays through FluidSynth."""
-        return any(route.port == FLUIDSYNTH_PORT for route in self.routes(instead=instead).values())
+        return any(route.port == fluidsynth_values.FLUIDSYNTH_PORT for route in self.routes(instead=instead).values())
 
     def routes(self, *, instead=None):
         """Return each track's Route, by the track's name, for the tracks whose instrument has a device. instead maps a track to an instrument to play through for one preview.
@@ -200,10 +203,10 @@ class Transport:
             if not instrument.uses_fluidsynth():
                 routes[track] = Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
             elif song.get_track(track).is_drum():
-                routes[track] = Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False)
+                routes[track] = Route(fluidsynth_values.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False)
             elif not song.get_track(track).is_muted():
                 sound = instrument.get_gm_sound()
-                routes[track] = Route(FLUIDSYNTH_PORT, MELODIC_CHANNEL_BYTES[melodic % len(MELODIC_CHANNEL_BYTES)], None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
+                routes[track] = Route(fluidsynth_values.FLUIDSYNTH_PORT, midi_arrangement.MELODIC_CHANNEL_BYTES[melodic % len(midi_arrangement.MELODIC_CHANNEL_BYTES)], None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
                 melodic += 1
         return routes
 
@@ -217,7 +220,7 @@ class Transport:
             if instrument.has_device() and not instrument.uses_fluidsynth() and instrument.get_device() in connected:
                 pairs.add((instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET))
         if self._fluidsynth.is_running():
-            pairs |= {(route.port, route.channel) for route in self.routes().values() if route.port == FLUIDSYNTH_PORT}
+            pairs |= {(route.port, route.channel) for route in self.routes().values() if route.port == fluidsynth_values.FLUIDSYNTH_PORT}
         return sorted(pairs)
 
     # Playing.
@@ -347,7 +350,7 @@ class Transport:
     def heard(self, *, since):
         """Return the clock's time now and what the visualizer hears since an earlier time, or None for now alone (visualizers/heard.py): each note that started since then or still sounds, by its track's place in the song, and the beat. Nothing plays, and it is silence at no time."""
         if self._player is None or not self._player.is_playing():
-            return None, SILENCE
+            return None, heard_values.SILENCE
         now, heard = self._player.heard(since=since)
         song = self.document().song()
         places = {name: place for place, name in enumerate(song.get_track_names())}
@@ -358,7 +361,7 @@ class Transport:
             drum = song.get_track(track).is_drum()
             notes += [HeardNote(places[track], note.number, note.velocity, True, drum) for note in started]
             notes += [HeardNote(places[track], note.number, note.velocity, False, drum) for note in held]
-        seconds_per_beat = self._player.seconds_per_quarter() or REFERENCE_SECONDS_PER_BEAT
+        seconds_per_beat = self._player.seconds_per_quarter() or heard_values.REFERENCE_SECONDS_PER_BEAT
         position = self._player.song_position() or 0.0
         return now, Heard(notes=tuple(notes), seconds_per_beat=seconds_per_beat, beats=position / seconds_per_beat, names=tuple(song.get_track_names()))
 
@@ -484,8 +487,8 @@ class Transport:
 
     def _sender_for(self, ports):
         """Return the sender, started on the ports, starting another when the ports it opened aren't these, or when FluidSynth was started again and its port is new."""
-        if FLUIDSYNTH_PORT in ports and self._fluidsynth.ensure_running() and self._sender is not None and FLUIDSYNTH_PORT in self._ports:
-            self._ports = [port for port in self._ports if port != FLUIDSYNTH_PORT]
+        if fluidsynth_values.FLUIDSYNTH_PORT in ports and self._fluidsynth.ensure_running() and self._sender is not None and fluidsynth_values.FLUIDSYNTH_PORT in self._ports:
+            self._ports = [port for port in self._ports if port != fluidsynth_values.FLUIDSYNTH_PORT]
         if self._sender is not None and set(ports) - set(self._ports):
             self.stop_all()
             self._sender.close()

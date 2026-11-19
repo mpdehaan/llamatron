@@ -37,7 +37,8 @@ from typing import NamedTuple
 
 from llamatron.composition.checks import fraction_text
 from llamatron.composition import limits
-from llamatron.exporters.timing import SLIDE_STEP, value_on_the_way
+from llamatron.exporters import timing
+from llamatron.exporters.timing import value_on_the_way
 from llamatron.importers.keys import degree_of, drum_note_of
 from llamatron.support.rational import Rational
 
@@ -221,13 +222,13 @@ def slides_astray(*, voice, start, end, step_size, controls):
                 finish = (pass_start + following) * step_size
                 target = controls[following].values[lane]
                 times, values = held[voice.lanes[lane]]
-                now = begin + SLIDE_STEP
+                now = begin + timing.SLIDE_STEP
                 while now < finish:
                     found = bisect_right(times, now)
                     if not found or values[found - 1] != value_on_the_way(start=begin, value=value, end=finish, target=target, now=now):
                         count += 1
                         break
-                    now += SLIDE_STEP
+                    now += timing.SLIDE_STEP
     return count
 
 
@@ -259,7 +260,7 @@ def on_a_slide(*, controls, lane, place, value, step_size):
     if end is None:
         return False
     time = (place - start) * step_size
-    if not (time / SLIDE_STEP).is_whole():
+    if not (time / timing.SLIDE_STEP).is_whole():
         return False
     ramped = value_on_the_way(start=Rational(0), value=controls[start].values[lane], end=(end - start) * step_size, target=controls[end].values[lane], now=time)
     return ramped == value

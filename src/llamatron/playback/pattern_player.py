@@ -29,7 +29,7 @@ from llamatron.strings import errors
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Row, StepStatement
 from llamatron.composition.named_scale import NamedScale
-from llamatron.playback.drift import NO_EFFECTS
+from llamatron.playback import drift
 from llamatron.music import midi
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
@@ -253,7 +253,7 @@ class PatternPlayer:
                 velocity_added += _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
-            effects = NO_EFFECTS
+            effects = drift.NO_EFFECTS
             if self._drifts is not None:
                 play, names, scene_start, origins = self._drifts
                 effects = play.effects(names=names, time=scene_start + start + slot * step_size, origins=origins)

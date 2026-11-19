@@ -32,11 +32,12 @@ from llamatron.composition.file_format import ClipSlotSetting, Direction, LiveRe
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.screens.arrange.arrange_page import SCENE_COLUMN
-from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES
-from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
+from llamatron.exporters import midi_arrangement
+from llamatron.realtime import fluidsynth
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE, Route
+from llamatron.realtime import timeline
+from llamatron.realtime.timeline import Route
 from llamatron.composition.checks import listed
 from llamatron.tui.uses import looping_scenes
 from llamatron.strings import about, errors, labels, legends, marks, messages
@@ -58,7 +59,7 @@ from llamatron.tui.text import clock
 from llamatron.tui.keys import Key
 from llamatron.tui.transport import Transport
 from tests.support.ui_testing import a_song, BEAT, DRUMS, LEAD, OTHER, TUNE, UITest, fixed_text, key_name
-from llamatron.visualizers.modes import MODES
+from llamatron.visualizers import modes
 
 SYNTH = 'synth'
 SYNTH_PORT = 'IAC Driver Bus 1'
@@ -210,7 +211,7 @@ class PlaybackTest(UITest):
         await self.pilot.pause()
 
     def note_ons(self, port):
-        return [data for _, data in self.outputs[port].sent if data[0] & KIND_MASK == NOTE_ON]
+        return [data for _, data in self.outputs[port].sent if data[0] & KIND_MASK == timeline.NOTE_ON]
 
     def words_shown(self):
         """Return the screen's text as one line of single spaces, with the dialogs' sides taken out, since a dialog wraps a long message."""
@@ -237,23 +238,23 @@ class TestFluidSynthPlayback(PlaybackTest):
 
     def test_a_drum_track_plays_on_channel_10_and_the_others_in_turn_with_their_sound(self):
         routes = self.transport().routes()
-        self.assertEqual(routes[DRUMS].port, FLUIDSYNTH_PORT)
-        self.assertEqual(routes[DRUMS].channel, DRUM_CHANNEL_BYTE)
+        self.assertEqual(routes[DRUMS].port, fluidsynth.FLUIDSYNTH_PORT)
+        self.assertEqual(routes[DRUMS].channel, midi_arrangement.DRUM_CHANNEL_BYTE)
         self.assertIsNone(routes[DRUMS].program)
-        self.assertEqual(routes[LEAD].channel, MELODIC_CHANNEL_BYTES[0])
+        self.assertEqual(routes[LEAD].channel, midi_arrangement.MELODIC_CHANNEL_BYTES[0])
         self.assertEqual(routes[LEAD].program, VIOLIN_PROGRAM)
 
     def test_the_instruments_own_channel_is_ignored_and_a_muted_track_takes_no_channel(self):
-        self.document.set_instrument_channel(name=FLUID, channel=MELODIC_CHANNEL_BYTES[5] + 1)
-        self.assertEqual(self.transport().routes()[LEAD].channel, MELODIC_CHANNEL_BYTES[0])
+        self.document.set_instrument_channel(name=FLUID, channel=midi_arrangement.MELODIC_CHANNEL_BYTES[5] + 1)
+        self.assertEqual(self.transport().routes()[LEAD].channel, midi_arrangement.MELODIC_CHANNEL_BYTES[0])
         self.document.set_track_drum(name=DRUMS, drum=False)
         self.document.set_instrument_gm_sound(name=DRUM_KIT, sound=None)
         routes = self.transport().routes()
-        self.assertEqual([routes[LEAD].channel, routes[DRUMS].channel], MELODIC_CHANNEL_BYTES[:2])
+        self.assertEqual([routes[LEAD].channel, routes[DRUMS].channel], midi_arrangement.MELODIC_CHANNEL_BYTES[:2])
         self.assertIsNone(routes[DRUMS].program)
         self.document.set_track_mute(name=LEAD, muted=True)
         self.assertNotIn(LEAD, self.transport().routes())
-        self.assertEqual(self.transport().routes()[DRUMS].channel, MELODIC_CHANNEL_BYTES[0])
+        self.assertEqual(self.transport().routes()[DRUMS].channel, midi_arrangement.MELODIC_CHANNEL_BYTES[0])
 
     async def test_playing_starts_fluidsynth_first_and_sends_each_tracks_sound_before_its_notes(self):
         self.assertFalse(self.fluidsynth.running)
@@ -261,11 +262,11 @@ class TestFluidSynthPlayback(PlaybackTest):
         self.assertTrue(self.transport().is_playing())
         self.assertEqual(self.fluidsynth.starts, 1)
         await self.let_time_pass(A_MOMENT)
-        sent = [data for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
-        lead = MELODIC_CHANNEL_BYTES[0]
-        self.assertEqual(sent[0], [PROGRAM_CHANGE | lead, VIOLIN_PROGRAM])
-        self.assertIn([NOTE_ON | DRUM_CHANNEL_BYTE], [data[:1] for data in sent if data[0] & KIND_MASK == NOTE_ON])
-        self.assertNotIn(PROGRAM_CHANGE | DRUM_CHANNEL_BYTE, [data[0] for data in sent])
+        sent = [data for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
+        lead = midi_arrangement.MELODIC_CHANNEL_BYTES[0]
+        self.assertEqual(sent[0], [timeline.PROGRAM_CHANGE | lead, VIOLIN_PROGRAM])
+        self.assertIn([timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE], [data[:1] for data in sent if data[0] & KIND_MASK == timeline.NOTE_ON])
+        self.assertNotIn(timeline.PROGRAM_CHANGE | midi_arrangement.DRUM_CHANNEL_BYTE, [data[0] for data in sent])
         # Playing again uses the FluidSynth already running.
         await self.press(keybindings.ArrangePage.STOP_PLAYING, keybindings.ArrangePage.PLAY_SONG)
         self.assertEqual(self.fluidsynth.starts, 1)
@@ -281,7 +282,7 @@ class TestFluidSynthPlayback(PlaybackTest):
     async def test_ctrl_t_silences_fluidsynths_channels_while_it_runs_and_quitting_ends_it(self):
         self.assertEqual(self.transport().channels_in_use(), [])
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        self.assertEqual(self.transport().channels_in_use(), sorted([(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE), (FLUIDSYNTH_PORT, MELODIC_CHANNEL_BYTES[0])]))
+        self.assertEqual(self.transport().channels_in_use(), sorted([(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE), (fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.MELODIC_CHANNEL_BYTES[0])]))
         self.transport().close()
         self.assertFalse(self.fluidsynth.running)
         self.assertEqual(self.fluidsynth.stops, 1)
@@ -705,9 +706,9 @@ class TestClipPagePlayback(PlaybackTest):
         preview.tick()
         preview.player().sender().send_due()
         # The lead's clip plays General MIDI's piano, on the preview's channel.
-        sent = [list(data) for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
-        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], sent)
-        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | PREVIEW_CHANNEL_BYTE])
+        sent = [list(data) for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
+        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], sent)
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | PREVIEW_CHANNEL_BYTE])
         await self.press(keybindings.ClipPage.STOP_LISTENING)
         self.assertFalse(self.page.is_listening())
         self.assertIn(messages.MSG_STOPPED, self.text())
@@ -719,7 +720,7 @@ class TestClipPagePlayback(PlaybackTest):
         self.clock.advance(A_MOMENT)
         preview.tick()
         preview.player().sender().send_due()
-        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | DRUM_CHANNEL_BYTE])
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE])
         await self.press(Key.ESCAPE)
         self.assertIsNone(preview.playing_clip())
 
@@ -794,9 +795,9 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
         self.assertEqual(self.fluidsynth.starts, 1)
-        sent = [data for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
-        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], [list(data) for data in sent])
-        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | PREVIEW_CHANNEL_BYTE])
+        sent = [data for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
+        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], [list(data) for data in sent])
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | PREVIEW_CHANNEL_BYTE])
 
     async def test_a_preview_instrument_through_fluidsynth_sends_its_sound(self):
         self.document.add_instrument(FLUID)
@@ -806,8 +807,8 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.open_pattern(TUNE)
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
-        sent = [list(data) for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
-        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, VIOLIN_PROGRAM], sent)
+        sent = [list(data) for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
+        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, VIOLIN_PROGRAM], sent)
 
     async def test_a_drum_pattern_plays_general_midis_drum_kit_whatever_the_preview_instrument(self):
         self.name_a_preview_instrument()
@@ -816,7 +817,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         # A drum pattern has no scale to say.
         self.assertIn(messages.MSG_LISTENING_TO_PATTERN.format(name=BEAT), self.text())
         await self.let_the_preview_play(A_MOMENT)
-        self.assertEqual([data[0] for data in self.note_ons(FLUIDSYNTH_PORT)], [NOTE_ON | DRUM_CHANNEL_BYTE])
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE])
         self.assertNotIn(SYNTH_PORT, self.outputs)
 
     async def test_without_a_preview_instrument_or_fluidsynth_listen_is_not_offered(self):
@@ -853,7 +854,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.open_pattern(TUNE)
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
-        self.assertEqual(len(self.note_ons(FLUIDSYNTH_PORT)), 1)
+        self.assertEqual(len(self.note_ons(fluidsynth.FLUIDSYNTH_PORT)), 1)
         self.assertEqual(self.preview().playing_pattern(), TUNE)
 
     async def test_the_preview_plays_beside_a_song_played_from_arrange_and_stopping_it_leaves_the_song(self):
@@ -958,7 +959,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         preview = self.preview()
         # The lead plays on FluidSynth's first channel, not the preview's, so nothing is shared.
         self.assertFalse(preview.shares_a_channel_with(pattern=TUNE, routes=self.transport().routes()))
-        shared = {LEAD: Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE)}
+        shared = {LEAD: Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE)}
         self.assertTrue(preview.shares_a_channel_with(pattern=TUNE, routes=shared))
         # A drum pattern chooses no sound, and a Preview instrument on a device of its own uses no FluidSynth channel.
         self.assertFalse(preview.shares_a_channel_with(pattern=BEAT, routes=shared))
@@ -1153,12 +1154,12 @@ class TestAutoplayQuitLaunch(LaunchTest):
 class TestVisualizerLaunch(LaunchTest):
     """--visualizer: the tracker opens on Arrange with that visualizer mode over the clip area, and plays the song from the top, the one way Arrange opens on one."""
 
-    LAUNCH = Launch(visualizer=MODES[0].OPTION, lead_in_seconds=A_MOMENT)
+    LAUNCH = Launch(visualizer=modes.MODES[0].OPTION, lead_in_seconds=A_MOMENT)
 
     async def test_it_opens_on_arrange_with_the_mode_showing_and_plays(self):
         page = self.app.screen
         self.assertIsInstance(page, ArrangePage)
-        self.assertIsInstance(page.visualizer, MODES[0])
+        self.assertIsInstance(page.visualizer, modes.MODES[0])
         await self.wait_until_playing()
 
 
@@ -1261,7 +1262,7 @@ class TestRecordingBoxesThePlayingScene(LaunchTest):
         await self.wait_until_playing()
         page = self.app.screen
         self.assertEqual(page.playing_scene(), FIRST_INDEX)
-        for mode in (None, MODES[0]()):
+        for mode in (None, modes.MODES[0]()):
             with self.subTest(mode=mode):
                 if mode is not None:
                     page.show_visualizer(mode)
@@ -1280,7 +1281,7 @@ class TestRecordingBoxesThePlayingScene(LaunchTest):
 
     async def test_only_a_recording_nobody_performs_boxes_the_playing_scene(self):
         self.assertTrue(self.LAUNCH.boxes_playing_scene())
-        self.assertTrue(Launch(batch_video=True, visualizer=MODES[0].OPTION).boxes_playing_scene())
+        self.assertTrue(Launch(batch_video=True, visualizer=modes.MODES[0].OPTION).boxes_playing_scene())
         self.assertFalse(Launch(for_recording=True, interactive=True).boxes_playing_scene())
         self.assertFalse(Launch(autoplay=True).boxes_playing_scene())
         self.assertFalse(Launch().announce)
@@ -1339,7 +1340,7 @@ class TestRecordingAnnouncesScenes(LaunchTest):
         await self.wait_until(self.shows(ArrangePage))
         await self.wait_until_playing()
         page = self.app.screen
-        page.show_visualizer(MODES[0]())
+        page.show_visualizer(modes.MODES[0]())
         size = self.app.size
         drawn = NEW_LINE.join(line.plain for line in page.body(width=size.width, height=size.height))
         self.assertIn(self.announcement(FIRST_INDEX), drawn)
@@ -1380,7 +1381,7 @@ class TestBatchVideoLaunch(LaunchTest):
     """A batch video: the title, then Arrange under the stage with READY, then the song with the visualizer in the frame, and black at the end with no splash, then the tracker quits."""
 
     LAUNCH = Launch(
-        batch_video=True, visualizer=MODES[0].OPTION, title_seconds=TITLE_ON_A_BUSY_MACHINE, ready_seconds=READY_ON_A_BUSY_MACHINE, alternate=False, lead_out_seconds=A_MOMENT,
+        batch_video=True, visualizer=modes.MODES[0].OPTION, title_seconds=TITLE_ON_A_BUSY_MACHINE, ready_seconds=READY_ON_A_BUSY_MACHINE, alternate=False, lead_out_seconds=A_MOMENT,
         hold_seconds=A_MOMENT,
     )
 
@@ -1408,7 +1409,7 @@ class TestDemoNameScrollsAfterTheTitle(LaunchTest):
     """A recording of an example: the title, then the demo's name crossing the screen in the title's place, then Arrange and the song as ever."""
 
     LAUNCH = Launch(
-        batch_video=True, visualizer=MODES[0].OPTION, title_seconds=A_MOMENT, ready_seconds=A_MOMENT, alternate=False, lead_out_seconds=A_MOMENT,
+        batch_video=True, visualizer=modes.MODES[0].OPTION, title_seconds=A_MOMENT, ready_seconds=A_MOMENT, alternate=False, lead_out_seconds=A_MOMENT,
         hold_seconds=A_MOMENT, scroll_text=SCROLLED_WORDS, scroll_seconds=TITLE_ON_A_BUSY_MACHINE,
     )
 
@@ -1430,7 +1431,7 @@ class TestRecordingVisualizerLaunch(LaunchTest):
     """A take of a visualizer mode: the splash first, then Arrange with the mode over the clip area, playing."""
 
     LAUNCH = Launch(
-        quit_when_finished=True, for_recording=True, visualizer=MODES[-1].OPTION, splash_seconds=SPLASH_IN_TEST, lead_in_seconds=A_MOMENT,
+        quit_when_finished=True, for_recording=True, visualizer=modes.MODES[-1].OPTION, splash_seconds=SPLASH_IN_TEST, lead_in_seconds=A_MOMENT,
         lead_out_seconds=A_MOMENT,
     )
 
@@ -1439,7 +1440,7 @@ class TestRecordingVisualizerLaunch(LaunchTest):
     async def test_after_the_splash_arrange_shows_the_mode_and_plays(self):
         await self.wait_until(self.shows(ArrangePage))
         page = self.app.screen
-        self.assertIsInstance(page.visualizer, MODES[-1])
+        self.assertIsInstance(page.visualizer, modes.MODES[-1])
         await self.wait_until_playing()
         self.check_order((SHOWED, Splash), (SHOWED, ArrangePage), (PLAYED, None))
 

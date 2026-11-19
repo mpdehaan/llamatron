@@ -28,7 +28,8 @@ from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.visualizers.cycle import Cycle
-from llamatron.visualizers.modes import MODES, mode_called, mode_options
+from llamatron.visualizers import modes
+from llamatron.visualizers.modes import mode_called, mode_options
 
 GONE = 'tunnel'
 NOT_A_LIST = 'plasma'
@@ -94,7 +95,7 @@ class TestArrangeVisualizerChoices(UITest):
 
     async def test_the_key_shows_the_songs_choice_first_else_the_sets_else_the_first(self):
         await self.press(keybindings.ArrangePage.VISUALIZER)
-        self.assertIs(self.showing(), MODES[0])
+        self.assertIs(self.showing(), modes.MODES[0])
         await self.press(Key.ESCAPE)
         self.document.set_visualizer(SPECTRUM)
         await self.press(keybindings.ArrangePage.VISUALIZER)
@@ -105,20 +106,20 @@ class TestArrangeVisualizerChoices(UITest):
         self.assertIs(self.showing(), mode_called(PIANO_ROLL))
 
     async def test_brackets_step_through_the_modes_going_round_and_skip_the_hidden(self):
-        self.document.set_visualizer_hidden(name=MODES[1].OPTION, hidden=True)
+        self.document.set_visualizer_hidden(name=modes.MODES[1].OPTION, hidden=True)
         await self.press(keybindings.ArrangePage.VISUALIZER)
-        self.assertIs(self.showing(), MODES[0])
+        self.assertIs(self.showing(), modes.MODES[0])
         await self.press(forward_key(keybindings.ArrangePage.STEP_VISUALIZER))
-        self.assertIs(self.showing(), MODES[2])
+        self.assertIs(self.showing(), modes.MODES[2])
         await self.press(back_key(keybindings.ArrangePage.STEP_VISUALIZER))
         await self.press(back_key(keybindings.ArrangePage.STEP_VISUALIZER))
-        self.assertIs(self.showing(), MODES[-1])
+        self.assertIs(self.showing(), modes.MODES[-1])
 
     async def test_a_hidden_choice_is_passed_over_and_with_every_mode_hidden_the_key_says_so(self):
         self.document.set_visualizer(SPECTRUM)
         self.document.set_visualizer_hidden(name=SPECTRUM, hidden=True)
         await self.press(keybindings.ArrangePage.VISUALIZER)
-        self.assertIs(self.showing(), MODES[0])
+        self.assertIs(self.showing(), modes.MODES[0])
         await self.press(Key.ESCAPE)
         for name in file_format.VISUALIZER_NAMES:
             self.document.set_visualizer_hidden(name=name, hidden=True)

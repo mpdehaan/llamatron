@@ -24,7 +24,8 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.exporters.exports import earlier_export, shown_export_path, EXPORT_LABELS, ExportKind
+from llamatron.exporters import exports
+from llamatron.exporters.exports import earlier_export, shown_export_path, ExportKind
 from llamatron.tui.document import Document
 from llamatron.tui.uses import LOOP_ERRORS_SHOWN
 from llamatron.strings import errors, labels, messages, names
@@ -73,7 +74,7 @@ class TestExporting(UITest):
     async def test_the_live_set_is_first_and_says_where_it_went_on_the_status_line(self):
         await self.press(Key.CTRL_X, Key.ENTER)
         self.assertNotIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(messages.MSG_EXPORTED.format(name=EXPORT_LABELS[ExportKind.ABLETON], path=LIVE_SET), self.text())
+        self.assertIn(messages.MSG_EXPORTED.format(name=exports.EXPORT_LABELS[ExportKind.ABLETON], path=LIVE_SET), self.text())
         self.assertTrue(os.path.exists(LIVE_SET))
 
     async def test_an_unsaved_set_is_saved_first_and_then_exported(self):

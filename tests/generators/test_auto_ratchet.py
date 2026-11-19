@@ -28,7 +28,7 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters.midi_messages import NOTE_OFF_MESSAGE, NOTE_ON_MESSAGE
+from llamatron.exporters import midi_messages
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_grid import ClipGrid
@@ -72,7 +72,7 @@ def rendered(clip):
     result = []
     for message in midi_file.tracks[0]:
         tick += message.time
-        if message.type in (NOTE_ON_MESSAGE, NOTE_OFF_MESSAGE):
+        if message.type in (midi_messages.NOTE_ON_MESSAGE, midi_messages.NOTE_OFF_MESSAGE):
             result.append((message.type, message.note, tick))
     return result
 
@@ -195,23 +195,23 @@ class TestLazyValues(unittest.TestCase):
 
     def test_degrees_follow_the_scale_at_render(self):
         clip = stutter([2], [Degree(number=3, length=QUARTER)])
-        self.assertEqual([m[1] for m in rendered(clip) if m[0] == NOTE_ON_MESSAGE], [52, 52])
+        self.assertEqual([m[1] for m in rendered(clip) if m[0] == midi_messages.NOTE_ON_MESSAGE], [52, 52])
 
 
 class TestRendering(unittest.TestCase):
 
     def test_chopped_notes_are_adjacent_with_no_rests(self):
         self.assertEqual(rendered(stutter([1, 4], [C, D])), [
-            (NOTE_ON_MESSAGE, 48, 0), (NOTE_OFF_MESSAGE, 48, 480),
-            (NOTE_ON_MESSAGE, 50, 480), (NOTE_OFF_MESSAGE, 50, 600),
-            (NOTE_ON_MESSAGE, 50, 600), (NOTE_OFF_MESSAGE, 50, 720),
-            (NOTE_ON_MESSAGE, 50, 720), (NOTE_OFF_MESSAGE, 50, 840),
-            (NOTE_ON_MESSAGE, 50, 840), (NOTE_OFF_MESSAGE, 50, 960),
+            (midi_messages.NOTE_ON_MESSAGE, 48, 0), (midi_messages.NOTE_OFF_MESSAGE, 48, 480),
+            (midi_messages.NOTE_ON_MESSAGE, 50, 480), (midi_messages.NOTE_OFF_MESSAGE, 50, 600),
+            (midi_messages.NOTE_ON_MESSAGE, 50, 600), (midi_messages.NOTE_OFF_MESSAGE, 50, 720),
+            (midi_messages.NOTE_ON_MESSAGE, 50, 720), (midi_messages.NOTE_OFF_MESSAGE, 50, 840),
+            (midi_messages.NOTE_ON_MESSAGE, 50, 840), (midi_messages.NOTE_OFF_MESSAGE, 50, 960),
         ])
 
     def test_next_note_starts_when_it_did_before(self):
-        before = [m for m in rendered(Clip(notes=[C, D, E])) if m[1] == 52 and m[0] == NOTE_ON_MESSAGE]
-        after = [m for m in rendered(stutter([3, 5, 1], [C, D, E])) if m[1] == 52 and m[0] == NOTE_ON_MESSAGE]
+        before = [m for m in rendered(Clip(notes=[C, D, E])) if m[1] == 52 and m[0] == midi_messages.NOTE_ON_MESSAGE]
+        after = [m for m in rendered(stutter([3, 5, 1], [C, D, E])) if m[1] == 52 and m[0] == midi_messages.NOTE_ON_MESSAGE]
         self.assertEqual(after, before)
 
     def test_total_duration_stays_the_same(self):
@@ -221,7 +221,7 @@ class TestRendering(unittest.TestCase):
 
     def test_counts_that_do_not_divide_ticks_evenly_still_end_on_time(self):
         last = rendered(stutter([7], [C]))[-1]
-        self.assertEqual(last, (NOTE_OFF_MESSAGE, 48, 480))
+        self.assertEqual(last, (midi_messages.NOTE_OFF_MESSAGE, 48, 480))
 
 
 class TestClipDetails(unittest.TestCase):

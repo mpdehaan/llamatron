@@ -32,7 +32,7 @@ from llamatron.composition.file_format import Row
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.generators import musician
-from llamatron.generators.phrasing import BREATHS, JOINS, RISES
+from llamatron.generators import phrasing as phrasing_values
 from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
 from llamatron.support import version
@@ -174,7 +174,7 @@ def fresh(*, genre, subgenre):
         choices.set_way(trait=trait, value=choices.get_way(trait))
     return choices
 # Every value each setting of a Phrasing takes.
-PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: generator_settings.LINES_IN_BARS, PhrasingSetting.BREATH: BREATHS, PhrasingSetting.RISE_AND_FALL: RISES, PhrasingSetting.NOTES: JOINS}
+PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: generator_settings.LINES_IN_BARS, PhrasingSetting.BREATH: phrasing_values.BREATHS, PhrasingSetting.RISE_AND_FALL: phrasing_values.RISES, PhrasingSetting.NOTES: phrasing_values.JOINS}
 
 
 def song_of(choices):

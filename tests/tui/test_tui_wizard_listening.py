@@ -16,7 +16,7 @@
 
 """The song wizard's Listen: a part of the song as it would be made, heard through FluidSynth's stand-in and thrown away."""
 
-from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
+from llamatron.realtime import fluidsynth
 from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -81,7 +81,7 @@ class TestWizardListening(PlaybackTest):
         await self.pilot.pause()
 
     def channels_heard(self):
-        return {data[0] & CHANNEL_MASK for data in self.note_ons(FLUIDSYNTH_PORT)}
+        return {data[0] & CHANNEL_MASK for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)}
 
     async def test_a_melody_is_heard_alone_with_no_drums_under_it_again_and_again_and_stops(self):
         await self.go_to_hook()
@@ -89,7 +89,7 @@ class TestWizardListening(PlaybackTest):
         self.assertIn(messages.MSG_WIZARD_LISTENING.format(what=self.hook_heard()), self.text())
         self.assertEqual(self.preview().playing(), self.hook_heard())
         await self.let_the_preview_play(A_WHILE)
-        self.assertTrue(self.note_ons(FLUIDSYNTH_PORT))
+        self.assertTrue(self.note_ons(fluidsynth.FLUIDSYNTH_PORT))
         # The melody's player and nobody else: the drums are heard with Listen With Band.
         self.assertEqual(len(self.channels_heard()), THE_MELODY_ALONE)
         self.assertNotIn(DRUM_CHANNEL_BYTE, self.channels_heard())

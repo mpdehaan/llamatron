@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """What every visualizer mode is: a name, and the frame it draws for an area at a moment."""
 
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.pixels import PixelPainter, pixel_size
 
 
@@ -37,7 +37,7 @@ class Visualizer:
         self._painter = PixelPainter()
         self._size = None
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         """Return the lines that draw the frame for an area width columns by height rows, at a moment in seconds, from what it hears (heard.py)."""
         size = pixel_size(width=width, height=height)
         if size != self._size:
@@ -59,6 +59,6 @@ class Visualizer:
     def resized(self, *, columns, rows):
         """Start again for an area of this many big pixels, columns by rows."""
 
-    def pixels(self, *, now, heard=SILENCE):
+    def pixels(self, *, now, heard=heard_values.SILENCE):
         """Return the frame's big pixels at a moment, from what it hears: an array of rows by columns by three channels, red, green and blue, from 0 to 255."""
         raise NotImplementedError

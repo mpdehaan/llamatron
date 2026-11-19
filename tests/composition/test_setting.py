@@ -42,7 +42,7 @@ from llamatron.composition import corrections
 from llamatron.composition.setting import Checked, Choice, Flag, Setting, Text, WholeNumber, check_settings, described
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
-from llamatron.generators.arp import MAX_OCTAVE_RANGE
+from llamatron.generators import arp
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 
@@ -468,7 +468,7 @@ class TestReadingAndSettingAgree(unittest.TestCase):
         )
 
     def test_a_generator(self):
-        for name, value in [(ArpSetting.OCTAVE_RANGE, MAX_OCTAVE_RANGE + 1), (ArpSetting.ORDER, NOT_A_DIRECTION), (ArpSetting.SEED, NOT_A_NUMBER)]:
+        for name, value in [(ArpSetting.OCTAVE_RANGE, arp.MAX_OCTAVE_RANGE + 1), (ArpSetting.ORDER, NOT_A_DIRECTION), (ArpSetting.SEED, NOT_A_NUMBER)]:
             with self.subTest(name=name):
                 self.assert_same_refusal(
                     read=lambda: ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, name: value}, where=HERE),
@@ -509,7 +509,7 @@ class TestAChoiceKeepsItsFileNames(unittest.TestCase):
         self.assertEqual(scene.SETTINGS[SceneSetting.REPEAT].nearest(limits.MIN_REPEAT - 1), limits.MIN_REPEAT)
         self.assertEqual(setlist.SETTINGS[SetlistSetting.DEFAULT_OCTAVE].nearest(limits.MAX_OCTAVE + 1), limits.MAX_OCTAVE)
         self.assertEqual(register.SETTINGS[RegisterSetting.MAXIMUM].nearest(limits.MAX_REGISTER_VALUE + 1), limits.MAX_REGISTER_VALUE)
-        self.assertEqual(ArpSettings.SETTINGS[ArpSetting.OCTAVE_RANGE].nearest(MAX_OCTAVE_RANGE + 1), MAX_OCTAVE_RANGE)
+        self.assertEqual(ArpSettings.SETTINGS[ArpSetting.OCTAVE_RANGE].nearest(arp.MAX_OCTAVE_RANGE + 1), arp.MAX_OCTAVE_RANGE)
 
 
 if __name__ == '__main__':

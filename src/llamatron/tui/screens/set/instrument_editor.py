@@ -19,7 +19,7 @@
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
 from llamatron.music import midi
-from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT_PREFIX
+from llamatron.realtime import fluidsynth
 from llamatron.realtime.outputs import output_port_names
 from llamatron.composition import defaults, limits
 from llamatron.strings import help as help_text, labels, legends, marks, messages
@@ -72,7 +72,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
 
     def devices(self):
         """Return FluidSynth, then the ports this computer has now, sorted, and the instrument's own device among them even when it has gone, so that it can be seen and kept. A tracker's own FluidSynth port isn't offered, since FluidSynth is chosen as itself."""
-        names = {name for name in output_port_names() if not name.startswith(FLUIDSYNTH_PORT_PREFIX)}
+        names = {name for name in output_port_names() if not name.startswith(fluidsynth.FLUIDSYNTH_PORT_PREFIX)}
         if self.instrument().has_device() and not self.instrument().uses_fluidsynth():
             names.add(self.instrument().get_device())
         names.discard(file_format.FLUIDSYNTH_DEVICE)

@@ -38,8 +38,9 @@ from llamatron.composition.file_format import (
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
-from llamatron.exporters.midi_messages import NOTE_ON_MESSAGE
-from llamatron.exporters.exports import EXPORT_KINDS, ExportKind
+from llamatron.exporters import midi_messages
+from llamatron.exporters import exports
+from llamatron.exporters.exports import ExportKind
 from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.strings import names as names_text
 from llamatron.tui.document import Document
@@ -118,7 +119,7 @@ def mary():
 def played(path):
     """Return the names of the notes in a MIDI file, in the order they start, ignoring octaves."""
     messages = [message for track in mido.MidiFile(path).tracks for message in track]
-    return [NAMES[m.note % 12] for m in messages if m.type == NOTE_ON_MESSAGE and m.velocity > 0]
+    return [NAMES[m.note % 12] for m in messages if m.type == midi_messages.NOTE_ON_MESSAGE and m.velocity > 0]
 
 
 class InAFolder(unittest.TestCase):
@@ -192,7 +193,7 @@ class TestTypedInTheUI(UITest):
         for name in FIRST_VERSE:
             await self.press(str(DEGREES[name]), Key.RIGHT)
         # X asks what to export from any page, and the clips kind gives one file for the one clip.
-        await self.press(keybindings.PatternEditor.EXPORT, *([Key.DOWN] * EXPORT_KINDS.index(ExportKind.CLIP_TREE)), Key.ENTER, Key.ENTER)
+        await self.press(keybindings.PatternEditor.EXPORT, *([Key.DOWN] * exports.EXPORT_KINDS.index(ExportKind.CLIP_TREE)), Key.ENTER, Key.ENTER)
         files = glob.glob(self.document.export_path(ExportKind.CLIP_TREE))
         self.assertEqual(len(files), 1)
         self.assertEqual(played(files[0]), FIRST_VERSE)

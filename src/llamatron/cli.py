@@ -43,7 +43,8 @@ import sys
 from llamatron.composition.setlist import Setlist, file_stem
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.exporters.exports import EXPORT_KINDS_IN_HELP, ExportKind, export_name, make_exporter, shown_export_path, remove_earlier_export
+from llamatron.exporters import exports
+from llamatron.exporters.exports import ExportKind, export_name, make_exporter, shown_export_path, remove_earlier_export
 from llamatron.strings import cli, errors
 from llamatron.visualizers.modes import mode_options
 from llamatron.tui.launch import Launch, start_screen_wanted
@@ -84,7 +85,7 @@ OPTION_SEPARATOR = ', '
 def _arguments(argv):
     parser = argparse.ArgumentParser(prog=PROGRAM, description=cli.MSG_HELP_DESCRIPTION)
     parser.add_argument(SET_ARGUMENT, nargs=ONE_OR_NONE, help=cli.MSG_HELP_SET)
-    parser.add_argument(OPTION_TO, nargs=ONE_OR_NONE, const=DEFAULT_KIND, choices=EXPORT_KINDS_IN_HELP, help=cli.MSG_HELP_TO)
+    parser.add_argument(OPTION_TO, nargs=ONE_OR_NONE, const=DEFAULT_KIND, choices=exports.EXPORT_KINDS_IN_HELP, help=cli.MSG_HELP_TO)
     parser.add_argument(OPTION_OUT, help=cli.MSG_HELP_OUT)
     parser.add_argument(OPTION_TEMPLATE, help=cli.MSG_HELP_TEMPLATE)
     parser.add_argument(OPTION_REPLACE, action=STORE_TRUE, help=cli.MSG_HELP_REPLACE)

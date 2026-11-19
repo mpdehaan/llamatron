@@ -32,9 +32,8 @@ import os
 import mido
 
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles, WritesOneFile
-from llamatron.exporters.midi_messages import (
-    FIRST_TICK, MULTI_TRACK_FILE, SINGLE_TRACK_FILE, TICKS_PER_BEAT, clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event,
-)
+from llamatron.exporters import midi_messages
+from llamatron.exporters.midi_messages import clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event
 from llamatron.exporters.timing import timed_events
 from llamatron.composition import limits
 from llamatron.strings import names as names_text
@@ -77,7 +76,7 @@ class _Arrangement(Exporter):
 
     def conductor_events(self):
         """Return what every file starts with: the song's time signature, then the tempo and its changes."""
-        return [time_signature_event(tick=FIRST_TICK, signature=self._grid.get_time_signature()), *self.tempo_events()]
+        return [time_signature_event(tick=midi_messages.FIRST_TICK, signature=self._grid.get_time_signature()), *self.tempo_events()]
 
     def tempo_events(self):
         """Return a tempo change wherever the tempo differs from the one before, at a scene's start or at a beat of a scene's tempo ramp, and always at the start."""
@@ -122,7 +121,7 @@ class MidiSong(WritesOneFile, _Arrangement):
         tracks = [midi_track(name=self.get_name(), events=self.conductor_events(), end=end)]
         for track in self.sounding_tracks():
             tracks.append(midi_track(name=track.get_name() or NO_NAME, events=self.track_events(track), end=end))
-        return mido.MidiFile(type=MULTI_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=tracks)
+        return mido.MidiFile(type=midi_messages.MULTI_TRACK_FILE, ticks_per_beat=midi_messages.TICKS_PER_BEAT, tracks=tracks)
 
 
 class MidiGeneralMidi(WritesOneFile, _Arrangement):
@@ -169,7 +168,7 @@ class MidiGeneralMidi(WritesOneFile, _Arrangement):
             # A drum track's sound is the drum kit channel 10 plays, so no program change is sent there.
             program = None if sound is None or track.is_drum() else sound - limits.MIN_GM_SOUND
             tracks.append(midi_track(name=track.get_name() or NO_NAME, events=self.track_events(track), end=end, channel=channel, program=program))
-        return mido.MidiFile(type=MULTI_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=tracks)
+        return mido.MidiFile(type=midi_messages.MULTI_TRACK_FILE, ticks_per_beat=midi_messages.TICKS_PER_BEAT, tracks=tracks)
 
 
 class MidiStems(WritesManyFiles, _Arrangement):
@@ -206,5 +205,5 @@ class MidiStems(WritesManyFiles, _Arrangement):
         """Return one track as a mido file of type 0, with the tempo changes, its notes and CC values, ending at the song's end."""
         events = self.conductor_events() + self.track_events(track)
         midi = midi_track(name=track.get_name() or NO_NAME, events=events, end=self.end_tick())
-        return mido.MidiFile(type=SINGLE_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=[midi])
+        return mido.MidiFile(type=midi_messages.SINGLE_TRACK_FILE, ticks_per_beat=midi_messages.TICKS_PER_BEAT, tracks=[midi])
 

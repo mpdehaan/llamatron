@@ -27,8 +27,9 @@ from llamatron.music.chord import Chord
 from llamatron.music.note import Note, NoteName, Rest
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters.midi_messages import NOTE_ON_MESSAGE
-from llamatron.exporters.timing import GLIDE_OVERLAP, timed_events
+from llamatron.exporters import midi_messages
+from llamatron.exporters import timing
+from llamatron.exporters.timing import timed_events
 from tests.support.rendering import render_data, song_from_data
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, ChordSymbol, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
@@ -276,7 +277,7 @@ class TestStepRows(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             ClipTree(directory=directory, grid=lead_song([1, QUARTER], rows={Row.VELOCITY: [40]})).export()
             played = mido.MidiFile(os.path.join(directory, os.listdir(directory)[0]))
-        self.assertEqual([m.velocity for m in played.tracks[0] if m.type == NOTE_ON_MESSAGE], [40])
+        self.assertEqual([m.velocity for m in played.tracks[0] if m.type == midi_messages.NOTE_ON_MESSAGE], [40])
 
     def test_ratchet_slices_a_note_in_the_same_time(self):
         found = lead([1, SIXTEENTH], rows={Row.RATCHET: [2]})
@@ -375,7 +376,7 @@ class TestStepRows(unittest.TestCase):
 
     def test_glide_runs_into_the_next_note(self):
         events, _ = timed_events(clip=lead([1, QUARTER], [3, QUARTER], rows={Row.GLIDE: [True, False]}), scale=None)
-        self.assertEqual(events[0][1], Fraction(1, 4) + GLIDE_OVERLAP)
+        self.assertEqual(events[0][1], Fraction(1, 4) + timing.GLIDE_OVERLAP)
         self.assertEqual(events[1][1], Fraction(1, 2))
 
     def test_glide_to_a_rest_or_the_same_pitch_or_the_end_does_nothing(self):
@@ -391,4 +392,4 @@ class TestStepRows(unittest.TestCase):
     def test_only_the_last_ratchet_slice_glides(self):
         events, _ = timed_events(clip=lead([1, QUARTER], [3, QUARTER], rows={Row.RATCHET: [2, None], Row.GLIDE: [True, False]}), scale=None)
         self.assertEqual(events[0][1], Fraction(1, 8))
-        self.assertEqual(events[1][1], Fraction(1, 4) + GLIDE_OVERLAP)
+        self.assertEqual(events[1][1], Fraction(1, 4) + timing.GLIDE_OVERLAP)

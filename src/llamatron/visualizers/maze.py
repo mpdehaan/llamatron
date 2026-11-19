@@ -27,9 +27,10 @@ import random
 
 import numpy
 
-from llamatron.visualizers.cells import SPACE, CellPainter
+from llamatron.visualizers import cells
+from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import track_colour, vivid
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -151,7 +152,7 @@ class Maze(Visualizer):
             line = []
             for column in range(self._columns):
                 if not self._walls[row, column]:
-                    line.append(SPACE)
+                    line.append(cells.SPACE)
                     continue
                 sides = (padded[row, column + 1], padded[row + 2, column + 1], padded[row + 1, column], padded[row + 1, column + 2])
                 line.append(WALL_JOINS[tuple(int(side) for side in sides)])
@@ -162,7 +163,7 @@ class Maze(Visualizer):
         """Return how many walkers there are: one for each track that has played."""
         return len(self._walkers)
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if not width or not height:
             return []
         if (height, width) != (self._rows, self._columns):

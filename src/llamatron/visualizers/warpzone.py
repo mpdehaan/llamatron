@@ -29,9 +29,10 @@ import math
 
 import numpy
 
-from llamatron.visualizers.cells import BRAILLE_COLUMNS, BRAILLE_ROWS, CellPainter
+from llamatron.visualizers import cells
+from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -108,11 +109,11 @@ class WarpZone(Visualizer):
         inside = numpy.hypot(down, across) <= BALL_RADIUS
         self._disc = numpy.stack([down[inside], across[inside]], axis=1)
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if not width or not height:
             return []
-        rows = height * BRAILLE_ROWS
-        columns = width * BRAILLE_COLUMNS
+        rows = height * cells.BRAILLE_ROWS
+        columns = width * cells.BRAILLE_COLUMNS
         if (rows, columns) != (self._rows, self._columns):
             self._rows, self._columns = rows, columns
             for ball in self._balls.values():
@@ -214,4 +215,4 @@ class WarpZone(Visualizer):
         inside = (rows >= 0) & (rows < self._rows) & (columns >= 0) & (columns < self._columns)
         rows, columns = rows[inside], columns[inside]
         dots[rows, columns] = True
-        numpy.maximum.at(colours, (rows // BRAILLE_ROWS, columns // BRAILLE_COLUMNS), numpy.tile(numpy.asarray(colour, dtype=numpy.int32), (len(rows), 1)))
+        numpy.maximum.at(colours, (rows // cells.BRAILLE_ROWS, columns // cells.BRAILLE_COLUMNS), numpy.tile(numpy.asarray(colour, dtype=numpy.int32), (len(rows), 1)))

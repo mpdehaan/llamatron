@@ -18,7 +18,7 @@
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import PhrasingSetting
-from llamatron.generators.phrasing import BREATHS, JOINS, RISES
+from llamatron.generators import phrasing as phrasing_values
 from llamatron.strings import help as help_text
 from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
@@ -58,7 +58,7 @@ class PhrasingEditor(ShowsNamedItem, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             self.choice(label=labels.MSG_PHRASING_LINE_LABEL, setting=PhrasingSetting.LINE_BARS, choices=generator_settings.LINES_IN_BARS, names=[labels.MSG_PHRASING_LINE_NAMES[bars] for bars in generator_settings.LINES_IN_BARS]),
-            self.choice(label=labels.MSG_PHRASING_BREATH_LABEL, setting=PhrasingSetting.BREATH, choices=BREATHS),
-            self.choice(label=labels.MSG_PHRASING_RISE_LABEL, setting=PhrasingSetting.RISE_AND_FALL, choices=RISES),
-            self.choice(label=labels.MSG_PHRASING_NOTES_LABEL, setting=PhrasingSetting.NOTES, choices=JOINS),
+            self.choice(label=labels.MSG_PHRASING_BREATH_LABEL, setting=PhrasingSetting.BREATH, choices=phrasing_values.BREATHS),
+            self.choice(label=labels.MSG_PHRASING_RISE_LABEL, setting=PhrasingSetting.RISE_AND_FALL, choices=phrasing_values.RISES),
+            self.choice(label=labels.MSG_PHRASING_NOTES_LABEL, setting=PhrasingSetting.NOTES, choices=phrasing_values.JOINS),
         ]

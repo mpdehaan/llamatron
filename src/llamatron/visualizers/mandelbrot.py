@@ -28,10 +28,12 @@ import math
 
 import numpy
 
-from llamatron.visualizers.colour import Limiter, TRACK_COLOURS, note_colour
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import colour as colour_values
+from llamatron.visualizers.colour import Limiter, note_colour
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.lava_lamp import derezzed
-from llamatron.visualizers.plasma import PALETTE_SIZE, palette_of
+from llamatron.visualizers import plasma
+from llamatron.visualizers.plasma import palette_of
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -57,7 +59,7 @@ PLAYING_BRIGHTNESS = 1.0
 ENERGY_PER_NOTE = 0.3
 ENERGY_RISE_PER_SECOND = 1.5
 ENERGY_KEPT_PER_SECOND = 0.35
-QUIET_COLOURS = (TRACK_COLOURS[1], TRACK_COLOURS[4], TRACK_COLOURS[0], TRACK_COLOURS[2])
+QUIET_COLOURS = (colour_values.TRACK_COLOURS[1], colour_values.TRACK_COLOURS[4], colour_values.TRACK_COLOURS[0], colour_values.TRACK_COLOURS[2])
 # The limiter.
 MEAN_LEVEL = 110.0
 CEILING = 235
@@ -97,7 +99,7 @@ class Mandelbrot(Visualizer):
         # Each fine pixel's place from the middle, as a share of the area's height, pixels being square.
         self._offsets = ((across - (self._columns - 1) / 2) + 1j * (down - (self._rows - 1) / 2)) / max(self._rows, 1)
 
-    def pixels(self, *, now, heard=SILENCE):
+    def pixels(self, *, now, heard=heard_values.SILENCE):
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
         self._last = now
         self.hear(heard)
@@ -111,7 +113,7 @@ class Mandelbrot(Visualizer):
         turn = complex(math.cos(TURN_SPEED * self._time), math.sin(TURN_SPEED * self._time))
         escapes = escape_times(self._offsets * height * turn + FOCUS)
         outside = escapes >= 0
-        places = ((escapes / MOST_ITERATIONS * PALETTE_REPEATS + self._phase) % 1.0 * (PALETTE_SIZE - 1)).astype(numpy.intp)
+        places = ((escapes / MOST_ITERATIONS * PALETTE_REPEATS + self._phase) % 1.0 * (plasma.PALETTE_SIZE - 1)).astype(numpy.intp)
         brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * self._energy
         picture = numpy.where(outside[:, :, None], self._palette[places] * brightness, 0).astype(numpy.int32)
         small = derezzed(fine=picture, factor=SUPERSAMPLE)

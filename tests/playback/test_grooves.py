@@ -29,7 +29,7 @@ from llamatron.composition.groove import FactoryGroove, Groove, new_groove
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.exporters.clip_tree import MIDI_SUFFIX
+from llamatron.exporters import clip_tree
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.timing import control_events, timed_events
 from llamatron.support.rational import Rational
@@ -247,7 +247,7 @@ class TestGrooveTiming(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             directory = os.path.join(folder, LATE)
             MidiSong(directory=directory, grid=grid).export()
-            midi = mido.MidiFile(os.path.join(directory, LATE + MIDI_SUFFIX))
+            midi = mido.MidiFile(os.path.join(directory, LATE + clip_tree.MIDI_SUFFIX))
             starts = []
             for track in midi.tracks:
                 tick = 0

@@ -28,9 +28,10 @@ import random
 
 import numpy
 
-from llamatron.visualizers.cells import SPACE, CellPainter
+from llamatron.visualizers import cells
+from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import track_colour, vivid
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -106,7 +107,7 @@ class Pipes(Visualizer):
         """Start the area empty at a size, every pipe to start again."""
         self._rows = rows
         self._columns = columns
-        self._characters = [[SPACE] * columns for _ in range(rows)]
+        self._characters = [[cells.SPACE] * columns for _ in range(rows)]
         self._owners = numpy.full((rows, columns), -1, dtype=numpy.int32)
         self._ages = numpy.zeros((rows, columns))
         self._pipes = {}
@@ -116,7 +117,7 @@ class Pipes(Visualizer):
         """Return whether the area is fading to start again, for the tests."""
         return self._fading is not None
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if not width or not height:
             return []
         if (height, width) != (self._rows, self._columns):

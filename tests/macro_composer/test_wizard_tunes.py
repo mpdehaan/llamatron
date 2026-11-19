@@ -21,7 +21,7 @@ import unittest
 from llamatron.composition.file_format import GeneratorKind, PatternSetting, Row
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import PhrasingSetting
-from llamatron.generators.phrasing import DEEP_BREATH
+from llamatron.generators import phrasing
 from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
@@ -280,12 +280,12 @@ class TestTunePhrasing(unittest.TestCase):
     def test_a_tune_is_delivered_by_a_phrasing_as_one_starts_until_its_settings_are_chosen_or_it_is_switched_off(self):
         choices = chosen()
         self.assertEqual(choices.tune_phrasing(), {})
-        choices.set_tune_phrasing({PhrasingSetting.BREATH: DEEP_BREATH, PhrasingSetting.NOTES: generator_settings.PHRASING_DEFAULTS[PhrasingSetting.NOTES]})
-        self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
-        self.assertEqual(WizardChoices.from_data(choices.to_data()).tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
+        choices.set_tune_phrasing({PhrasingSetting.BREATH: phrasing.DEEP_BREATH, PhrasingSetting.NOTES: generator_settings.PHRASING_DEFAULTS[PhrasingSetting.NOTES]})
+        self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: phrasing.DEEP_BREATH})
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).tune_phrasing(), {PhrasingSetting.BREATH: phrasing.DEEP_BREATH})
         setlist, name = choices.made_for_listening()
         made = setlist.get_song(name).get_generator_settings(kind=GeneratorKind.PHRASING, name=composer_text.MSG_TUNE_PHRASING_NAME)
-        self.assertEqual(made.to_data(), {PhrasingSetting.BREATH: DEEP_BREATH})
+        self.assertEqual(made.to_data(), {PhrasingSetting.BREATH: phrasing.DEEP_BREATH})
         choices.set_tune_phrasing(False)
         self.assertIsNone(choices.tune_phrasing())
         self.assertIsNone(WizardChoices.from_data(choices.to_data()).tune_phrasing())
@@ -294,7 +294,7 @@ class TestTunePhrasing(unittest.TestCase):
 
     def test_settings_no_phrasing_has_are_refused_and_nothing_changes(self):
         choices = chosen()
-        for wrong in ({PhrasingSetting.BREATH: NOT_A_KIND}, {NOT_A_KIND: DEEP_BREATH}):
+        for wrong in ({PhrasingSetting.BREATH: NOT_A_KIND}, {NOT_A_KIND: phrasing.DEEP_BREATH}):
             with self.assertRaises(ValueError):
                 choices.set_tune_phrasing(wrong)
         self.assertEqual(choices.tune_phrasing(), {})

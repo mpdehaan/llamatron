@@ -25,7 +25,7 @@ from llamatron.strings import errors, help as help_text, labels as labels_text, 
 from llamatron.composition import clip_slot as clip_slot_values
 from llamatron.composition import file_format
 from llamatron.composition.file_format import shape_setting, strum_setting, ClipSlotSetting, Section
-from llamatron.playback.song_renderer import GRAB_ARROW
+from llamatron.playback import song_renderer
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.composition.naming import new_name, words
@@ -260,7 +260,7 @@ class ClipPage(FieldPage):
             other = tracks[item - 1]
             circle = self.document().grab_circle(index=self.index, track=self.track, other=other)
             if circle:
-                self.tell(errors.ERR_CIRCULAR_GRAB_TITLE, errors.ERR_GRAB_CIRCLE.format(track=other, circle=GRAB_ARROW.join(circle)), errors.ERR_REMOVE_OTHER_GRAB)
+                self.tell(errors.ERR_CIRCULAR_GRAB_TITLE, errors.ERR_GRAB_CIRCLE.format(track=other, circle=song_renderer.GRAB_ARROW.join(circle)), errors.ERR_REMOVE_OTHER_GRAB)
                 return
             self.set_value(setting=ClipSlotSetting.GRAB_TRACK, value=other)
         self.ask(dialog=ChoiceDialog(title=labels_text.MSG_GRAB_TRACK_LABEL, options=options, current=options.index(current) if current in options else 0), then=chosen)

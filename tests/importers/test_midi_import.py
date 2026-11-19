@@ -38,8 +38,9 @@ from llamatron.importers.comparison import round_trip
 from llamatron.importers.keys import Key, degree_of, drum_note_of, key_of_notes, key_of_signature
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
 from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
-from llamatron.importers.cutting import CONTROL_TOLERANCE
-from llamatron.importers.voices import MOD_WHEEL, SUSTAIN, VOLUME, voices_of
+from llamatron.importers import cutting
+from llamatron.importers import voices as voices_values
+from llamatron.importers.voices import voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.music.scale import ScaleType
 from llamatron.playback.song_renderer import SongRenderer
@@ -386,36 +387,36 @@ class TestControls(unittest.TestCase):
     def test_a_set_that_sweeps_every_cc_the_import_takes_plays_back_exactly(self):
         trip = round_trip(midi_file=exported(CC_SWEEPS), choices=ImportChoices(song_name='sweeps'))
         self.assertTrue(trip.comparison.is_same(), trip.comparison)
-        self.assertEqual([(difference.number, difference.largest) for difference in trip.comparison.controls], [(MOD_WHEEL, 0), (VOLUME, 0), (SUSTAIN, 0), (VOLUME, 0), (FILTER, 0)])
+        self.assertEqual([(difference.number, difference.largest) for difference in trip.comparison.controls], [(voices_values.MOD_WHEEL, 0), (voices_values.VOLUME, 0), (voices_values.SUSTAIN, 0), (voices_values.VOLUME, 0), (FILTER, 0)])
         tracks = trip.imported.song.song[Section.TRACKS]
-        self.assertEqual([settings.get(TrackSetting.CC) for settings in tracks.values()], [[MOD_WHEEL, VOLUME, SUSTAIN, None], [VOLUME, FILTER, None, None]])
+        self.assertEqual([settings.get(TrackSetting.CC) for settings in tracks.values()], [[voices_values.MOD_WHEEL, voices_values.VOLUME, voices_values.SUSTAIN, None], [voices_values.VOLUME, FILTER, None, None]])
 
     def test_the_mod_wheel_volume_and_sustain_come_first_and_the_most_sent_others_fill_the_lanes(self):
-        controls = [(0, SUSTAIN, 127), (0, EXPRESSION, 90), (SIXTEENTH * 4, EXPRESSION, 80), (0, MOD_WHEEL, 10), (0, VOLUME, 100), (0, REVERB, 40)]
+        controls = [(0, voices_values.SUSTAIN, 127), (0, EXPRESSION, 90), (SIXTEENTH * 4, EXPRESSION, 80), (0, voices_values.MOD_WHEEL, 10), (0, voices_values.VOLUME, 100), (0, REVERB, 40)]
         imported = MidiImport(midi_file=midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]), controls)])).imported(
             setlist=Setlist.new(), choices=ImportChoices(song_name='tune'))
-        self.assertEqual(imported.song.song[Section.TRACKS]['lead'][TrackSetting.CC], [MOD_WHEEL, VOLUME, SUSTAIN, EXPRESSION])
+        self.assertEqual(imported.song.song[Section.TRACKS]['lead'][TrackSetting.CC], [voices_values.MOD_WHEEL, voices_values.VOLUME, voices_values.SUSTAIN, EXPRESSION])
         self.assertIn(importing.MSG_WARN_CONTROLS_LEFT_OUT.format(count=1, numbers=REVERB), imported.warnings)
 
     def test_with_import_ccs_off_none_come_in_and_the_dialog_says_so(self):
-        controls = [(0, MOD_WHEEL, 10), (SIXTEENTH * 4, MOD_WHEEL, 20)]
+        controls = [(0, voices_values.MOD_WHEEL, 10), (SIXTEENTH * 4, voices_values.MOD_WHEEL, 20)]
         imported = MidiImport(midi_file=midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]), controls)])).imported(
             setlist=Setlist.new(), choices=ImportChoices(song_name='tune', controls=False))
         self.assertNotIn(TrackSetting.CC, imported.song.song[Section.TRACKS]['lead'])
-        self.assertIn(importing.MSG_WARN_CONTROLS_OFF.format(count=2, numbers=MOD_WHEEL), imported.warnings)
+        self.assertIn(importing.MSG_WARN_CONTROLS_OFF.format(count=2, numbers=voices_values.MOD_WHEEL), imported.warnings)
 
     def test_a_parts_ccs_go_to_its_first_track_alone(self):
         notes = [(0, 4, pitch) for pitch in C_MAJOR_TRIAD]
-        imported = MidiImport(midi_file=midi_of(tracks=[('keys', 0, notes, [(0, MOD_WHEEL, 64)])])).imported(
+        imported = MidiImport(midi_file=midi_of(tracks=[('keys', 0, notes, [(0, voices_values.MOD_WHEEL, 64)])])).imported(
             setlist=Setlist.new(), choices=ImportChoices(song_name='tune', chords=False))
         lanes = [settings.get(TrackSetting.CC) for settings in imported.song.song[Section.TRACKS].values()]
-        self.assertEqual(lanes, [[MOD_WHEEL, None, None, None], None, None])
+        self.assertEqual(lanes, [[voices_values.MOD_WHEEL, None, None, None], None, None])
 
     def test_a_recorded_sweep_comes_within_the_tolerance_and_the_import_says_it_moved(self):
-        controls = [(tick, MOD_WHEEL, tick // RECORDED_RISE) for tick in range(0, SIXTEENTH * SIXTEENTHS_IN_A_BAR, RECORDED_TICKS)]
+        controls = [(tick, voices_values.MOD_WHEEL, tick // RECORDED_RISE) for tick in range(0, SIXTEENTH * SIXTEENTHS_IN_A_BAR, RECORDED_TICKS)]
         trip = round_trip(midi_file=midi_of(tracks=[('lead', 0, melody(pitches=C_MAJOR_SCALE[:4]), controls)]), choices=ImportChoices(song_name='tune'))
         largest, _ = trip.comparison.largest_control_difference()
-        self.assertLessEqual(largest, CONTROL_TOLERANCE)
+        self.assertLessEqual(largest, cutting.CONTROL_TOLERANCE)
         self.assertTrue(any(importing.MSG_WARN_CONTROLS_MOVED.split(COUNT_FIELD)[1] in warning for warning in trip.imported.warnings))
 
 

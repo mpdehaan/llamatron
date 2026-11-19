@@ -30,7 +30,8 @@ from llamatron.composition import limits
 from llamatron.composition.shapes import ShapeValues
 from llamatron.exporters.timing import timed_events
 from llamatron.music import midi
-from llamatron.playback.shapes import BAR_MIDDLE, BAR_START, FINER, ON_A_BEAT, ON_AN_EIGHTH, ON_A_SIXTEENTH, percent_at, plays_at, strength
+from llamatron.playback import shapes
+from llamatron.playback.shapes import percent_at, plays_at, strength
 from llamatron.support.rational import Rational
 from llamatron.composition.song_file_error import SongFileError
 from tests.support.rendering import render_data, setlist_from_data
@@ -129,19 +130,19 @@ class TestStrength(unittest.TestCase):
 
     def test_every_place_of_a_bar_of_sixteenths(self):
         found = [strength(time=Rational(step, STEPS), bar=BAR, beat=BEAT) for step in range(STEPS)]
-        self.assertEqual(found[0], BAR_START)
-        self.assertEqual(found[8], BAR_MIDDLE)
-        self.assertEqual([found[4], found[12]], [ON_A_BEAT, ON_A_BEAT])
-        self.assertEqual({found[step] for step in (2, 6, 10, 14)}, {ON_AN_EIGHTH})
-        self.assertEqual({found[step] for step in range(1, STEPS, 2)}, {ON_A_SIXTEENTH})
+        self.assertEqual(found[0], shapes.BAR_START)
+        self.assertEqual(found[8], shapes.BAR_MIDDLE)
+        self.assertEqual([found[4], found[12]], [shapes.ON_A_BEAT, shapes.ON_A_BEAT])
+        self.assertEqual({found[step] for step in (2, 6, 10, 14)}, {shapes.ON_AN_EIGHTH})
+        self.assertEqual({found[step] for step in range(1, STEPS, 2)}, {shapes.ON_A_SIXTEENTH})
 
     def test_a_triplet_is_finer_and_plays_only_at_full_density(self):
-        self.assertEqual(strength(time=Rational(1, 12), bar=BAR, beat=BEAT), FINER)
-        self.assertFalse(plays_at(density=FULL - 1, level=FINER))
-        self.assertTrue(plays_at(density=FULL, level=FINER))
+        self.assertEqual(strength(time=Rational(1, 12), bar=BAR, beat=BEAT), shapes.FINER)
+        self.assertFalse(plays_at(density=FULL - 1, level=shapes.FINER))
+        self.assertTrue(plays_at(density=FULL, level=shapes.FINER))
 
     def test_the_next_bar_starts_strong_again(self):
-        self.assertEqual(strength(time=Rational(1), bar=BAR, beat=BEAT), BAR_START)
+        self.assertEqual(strength(time=Rational(1), bar=BAR, beat=BEAT), shapes.BAR_START)
 
 
 class TestDensity(unittest.TestCase):

@@ -53,8 +53,9 @@ import heapq
 from typing import NamedTuple
 
 from llamatron.composition.file_format import FollowAction, LiveResponsiveness
-from llamatron.realtime.engine import BEFORE_EVERYTHING
-from llamatron.realtime.timeline import NOTE_OFF, NO_VELOCITY, Playing, Tag
+from llamatron.realtime import engine
+from llamatron.realtime import timeline
+from llamatron.realtime.timeline import Playing, Tag
 from llamatron.support.rational import Rational
 
 # How far ahead moments are turned into queued events. A tick comes many times a second, so a moment is never missed, and half a second
@@ -170,7 +171,7 @@ class Player:
                 self._cut(play=play, at=max(at, now), score=old)
                 continue
             if play.start >= at:
-                self._sender.drop(tag=play.tag, after=BEFORE_EVERYTHING)
+                self._sender.drop(tag=play.tag, after=engine.BEFORE_EVERYTHING)
                 start = play.start
             elif at >= play.end:
                 # The edit is heard only from the play's end, where whether it loops still decides what comes next.
@@ -210,7 +211,7 @@ class Player:
     def _end_notes_across(self, *, play, at, score, scene, track):
         """Send a note off at a moment for every note of a play, by the score it was queued from, that started before it and sounds across it."""
         notes = score.sounding_across(scene=scene, track=track, elapsed=at - play.start)
-        self._sender.add([Playing(Rational(0), at, port, channel, NOTE_OFF, number, NO_VELOCITY, play.tag) for port, channel, number in notes])
+        self._sender.add([Playing(Rational(0), at, port, channel, timeline.NOTE_OFF, number, timeline.NO_VELOCITY, play.tag) for port, channel, number in notes])
 
     def _plan_ends_again(self, now):
         """Plan again when each playing clip's scene and repeats end, by the score as it is now, forgetting the ends planned by the score before."""
@@ -489,7 +490,7 @@ class Player:
 
     def _drop(self, play):
         """Forget a play that hasn't started, and its queued events."""
-        self._sender.drop(tag=play.tag, after=BEFORE_EVERYTHING)
+        self._sender.drop(tag=play.tag, after=engine.BEFORE_EVERYTHING)
         self._plays.remove(play)
 
     def _cut(self, *, play, at, score=None):
@@ -500,6 +501,6 @@ class Player:
         else:
             self._sender.drop(tag=play.tag, after=at)
             notes = score.sounding_across(scene=play.scene, track=play.track, elapsed=at - play.start)
-            self._sender.add([Playing(Rational(0), at, port, channel, NOTE_OFF, number, NO_VELOCITY, play.tag) for port, channel, number in notes])
+            self._sender.add([Playing(Rational(0), at, port, channel, timeline.NOTE_OFF, number, timeline.NO_VELOCITY, play.tag) for port, channel, number in notes])
         play.end = min(play.end, at)
         play.cut = True

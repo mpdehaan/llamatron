@@ -27,11 +27,16 @@ import numpy
 from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.visualizers.lava_lamp import LavaLamp, derezzed
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.visualizers.modes import MODES, mode_called, mode_options
-from llamatron.visualizers.cycle import CYCLE_ORDER, CYCLE_SECONDS, CYCLED, Cycle, shuffled
-from llamatron.visualizers.llamas import ENERGY_RISE_PER_SECOND, SIZE_HOLD_SECONDS, Llamas, mirrored
-from llamatron.visualizers.spectrum import CAP_HANG_SECONDS, Spectrum
-from llamatron.visualizers.pixels import FULL_BLOCK, PIXEL_COLUMNS, PixelPainter, pixel_size
+from llamatron.visualizers import modes
+from llamatron.visualizers.modes import mode_called, mode_options
+from llamatron.visualizers import cycle as cycle_values
+from llamatron.visualizers.cycle import Cycle, shuffled
+from llamatron.visualizers import llamas as llamas_values
+from llamatron.visualizers.llamas import Llamas, mirrored
+from llamatron.visualizers import spectrum as spectrum_values
+from llamatron.visualizers.spectrum import Spectrum
+from llamatron.visualizers import pixels as pixels_values
+from llamatron.visualizers.pixels import PixelPainter, pixel_size
 
 WIDTH = 56
 SHUFFLES_TRIED = 10
@@ -61,7 +66,7 @@ MOST_CHANGE_PER_FRAME = 6.0
 # No channel of any mode passes this, short of white, the brightest modes' own ceilings being under it.
 CEILING = 240
 # The modes drawn in big pixels, each of which answers pixels(); the others draw their own text.
-PIXEL_MODES = [mode for mode in MODES if mode.pixels is not Visualizer.pixels]
+PIXEL_MODES = [mode for mode in modes.MODES if mode.pixels is not Visualizer.pixels]
 LOW_PITCH = 36
 HIGH_PITCH = 90
 SPACE = ' '
@@ -74,18 +79,18 @@ BAR_STRIDE = 3
 class TestModes(unittest.TestCase):
 
     def test_every_mode_has_a_name_on_screen_and_on_the_command_line_and_is_found_by_it(self):
-        self.assertTrue(MODES)
-        for mode in MODES:
+        self.assertTrue(modes.MODES)
+        for mode in modes.MODES:
             self.assertTrue(mode.NAME)
             self.assertIs(mode_called(mode.OPTION), mode)
-        self.assertEqual(mode_options(), [mode.OPTION for mode in MODES])
+        self.assertEqual(mode_options(), [mode.OPTION for mode in modes.MODES])
         self.assertIsNone(mode_called(NO_SUCH))
 
 
 class TestFrames(unittest.TestCase):
 
     def test_a_frame_fills_the_area_it_is_given_line_for_line(self):
-        for mode in MODES:
+        for mode in modes.MODES:
             lines = mode().frame(width=WIDTH, height=HEIGHT, now=A_MOMENT)
             self.assertEqual(len(lines), HEIGHT)
             self.assertTrue(all(line.cell_len == WIDTH for line in lines))
@@ -162,7 +167,7 @@ class TestSpectrum(unittest.TestCase):
     def test_a_bar_falls_after_its_note_and_its_cap_hangs_above_it_a_moment(self):
         spectrum = self.started()
         lifted = self.heights(spectrum, notes=(HeardNote(0, MIDDLE_C, FULL_VELOCITY, True, False),), now=FRAME_SECONDS)
-        later = self.heights(spectrum, now=FRAME_SECONDS + CAP_HANG_SECONDS / 2)
+        later = self.heights(spectrum, now=FRAME_SECONDS + spectrum_values.CAP_HANG_SECONDS / 2)
         self.assertLess(sum(later), sum(lifted))
         self.assertTrue(any(later))
 
@@ -196,14 +201,14 @@ class TestLlamas(unittest.TestCase):
         self.assertEqual(mirrored(drawing), ('o)',))
 
     def test_a_llama_that_plays_on_grows_but_never_twice_within_its_hold(self):
-        llamas, _ = self.played(tracks=1, frames=int(SIZE_HOLD_SECONDS / FRAME_SECONDS * 2.5))
+        llamas, _ = self.played(tracks=1, frames=int(llamas_values.SIZE_HOLD_SECONDS / FRAME_SECONDS * 2.5))
         llama = llamas.llama_of(0)
         self.assertGreater(llama.size, 0)
-        self.assertLess(llama.since_resize, SIZE_HOLD_SECONDS * 2)
+        self.assertLess(llama.since_resize, llamas_values.SIZE_HOLD_SECONDS * 2)
 
     def test_a_note_raises_a_llamas_energy_only_gently(self):
         llamas, _ = self.played(tracks=1, frames=2)
-        self.assertLessEqual(llamas.llama_of(0).energy, ENERGY_RISE_PER_SECOND * FRAME_SECONDS + TOLERANCE)
+        self.assertLessEqual(llamas.llama_of(0).energy, llamas_values.ENERGY_RISE_PER_SECOND * FRAME_SECONDS + TOLERANCE)
 
 
 class TestCycle(unittest.TestCase):
@@ -212,14 +217,14 @@ class TestCycle(unittest.TestCase):
     def test_it_moves_on_to_the_next_mode_every_cycle_in_the_programs_order_and_says_which(self):
         cycle = Cycle()
         names = []
-        for number in range(len(CYCLED) + 1):
-            cycle.frame(width=WIDTH, height=HEIGHT, now=number * CYCLE_SECONDS)
+        for number in range(len(cycle_values.CYCLED) + 1):
+            cycle.frame(width=WIDTH, height=HEIGHT, now=number * cycle_values.CYCLE_SECONDS)
             names.append(cycle.shown_name())
-        self.assertEqual(names, [mode.NAME for mode in CYCLE_ORDER] + [CYCLE_ORDER[0].NAME])
-        self.assertIsInstance(cycle.showing(), CYCLE_ORDER[0])
+        self.assertEqual(names, [mode.NAME for mode in cycle_values.CYCLE_ORDER] + [cycle_values.CYCLE_ORDER[0].NAME])
+        self.assertIsInstance(cycle.showing(), cycle_values.CYCLE_ORDER[0])
 
     def test_the_programs_order_holds_every_mode_once(self):
-        self.assertEqual(sorted(mode.NAME for mode in CYCLE_ORDER), sorted(mode.NAME for mode in CYCLED))
+        self.assertEqual(sorted(mode.NAME for mode in cycle_values.CYCLE_ORDER), sorted(mode.NAME for mode in cycle_values.CYCLED))
 
     def test_every_cycle_of_one_run_keeps_the_same_order(self):
         first = Cycle()
@@ -227,16 +232,16 @@ class TestCycle(unittest.TestCase):
         self.assertIs(type(first.showing()), type(second.showing()))
 
     def test_a_shuffle_gives_orders_of_their_own_from_different_seeds(self):
-        orders = {shuffled(modes=CYCLED, chooser=random.Random(seed)) for seed in range(SHUFFLES_TRIED)}
+        orders = {shuffled(modes=cycle_values.CYCLED, chooser=random.Random(seed)) for seed in range(SHUFFLES_TRIED)}
         self.assertGreater(len(orders), 1)
         for order in orders:
-            self.assertEqual(sorted(mode.NAME for mode in order), sorted(mode.NAME for mode in CYCLED))
+            self.assertEqual(sorted(mode.NAME for mode in order), sorted(mode.NAME for mode in cycle_values.CYCLED))
 
     def test_within_a_cycle_it_stays_on_the_same_mode(self):
         cycle = Cycle()
         cycle.frame(width=WIDTH, height=HEIGHT, now=0.0)
         showing = cycle.showing()
-        cycle.frame(width=WIDTH, height=HEIGHT, now=CYCLE_SECONDS / 2)
+        cycle.frame(width=WIDTH, height=HEIGHT, now=cycle_values.CYCLE_SECONDS / 2)
         self.assertIs(cycle.showing(), showing)
 
 
@@ -244,12 +249,12 @@ class TestPixels(unittest.TestCase):
 
     def test_a_big_pixel_is_two_columns_of_one_row_and_a_run_of_one_colour_is_one_piece(self):
         pixels = numpy.array([[RED, RED, BLUE]])
-        line = PixelPainter().lines(pixels=pixels, width=len(pixels[0]) * PIXEL_COLUMNS, height=1)[0]
-        self.assertEqual(line.plain, FULL_BLOCK * (len(pixels[0]) * PIXEL_COLUMNS))
+        line = PixelPainter().lines(pixels=pixels, width=len(pixels[0]) * pixels_values.PIXEL_COLUMNS, height=1)[0]
+        self.assertEqual(line.plain, pixels_values.FULL_BLOCK * (len(pixels[0]) * pixels_values.PIXEL_COLUMNS))
         self.assertEqual(len(line.spans), 2)
 
     def test_the_area_holds_whole_pixels(self):
-        self.assertEqual(pixel_size(width=ODD_WIDTH, height=HEIGHT), (ODD_WIDTH // PIXEL_COLUMNS, HEIGHT))
+        self.assertEqual(pixel_size(width=ODD_WIDTH, height=HEIGHT), (ODD_WIDTH // pixels_values.PIXEL_COLUMNS, HEIGHT))
 
     def test_derezzing_averages_each_block_of_fine_pixels(self):
         fine = numpy.zeros((2, 2, CHANNELS), dtype=numpy.int32)

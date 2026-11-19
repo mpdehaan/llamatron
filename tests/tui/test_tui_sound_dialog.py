@@ -22,9 +22,9 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import PatternSetting, Row
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, legends, marks
-from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE
-from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
-from llamatron.realtime.timeline import NOTE_ON, PROGRAM_CHANGE
+from llamatron.exporters import midi_arrangement
+from llamatron.realtime import fluidsynth
+from llamatron.realtime import timeline
 from llamatron.music.note import NoteName
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
@@ -208,10 +208,10 @@ class TestSoundDialog(PatternPreviewTest):
         sound = limits.MIN_GM_SOUND + 1
         self.assertEqual(self.preview().playing_sound(), sound)
         self.play_through()
-        sent = [list(data) for _, data in self.outputs[FLUIDSYNTH_PORT].sent]
-        self.assertIn([PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, sound - limits.MIN_GM_SOUND], sent)
-        self.assertEqual([data[1] for data in self.note_ons(FLUIDSYNTH_PORT)], run_of())
-        self.assertEqual({data[0] for data in self.note_ons(FLUIDSYNTH_PORT)}, {NOTE_ON | PREVIEW_CHANNEL_BYTE})
+        sent = [list(data) for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
+        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, sound - limits.MIN_GM_SOUND], sent)
+        self.assertEqual([data[1] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], run_of())
+        self.assertEqual({data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)}, {timeline.NOTE_ON | PREVIEW_CHANNEL_BYTE})
         # Played once: the run does not come round again.
         self.assertIsNone(self.preview().playing_sound())
         # The set is untouched by the trial.
@@ -251,7 +251,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.assertEqual(self.preview().playing_sound(), limits.MIN_GM_SOUND)
         self.play_through()
         self.assertEqual([data[1] for data in self.note_ons(SYNTH_PORT)], run_of())
-        self.assertNotIn(PROGRAM_CHANGE, [data[0] & KIND_MASK for _, data in self.outputs[SYNTH_PORT].sent])
+        self.assertNotIn(timeline.PROGRAM_CHANGE, [data[0] & KIND_MASK for _, data in self.outputs[SYNTH_PORT].sent])
         self.assertEqual(self.fluidsynth.starts, 0)
 
     async def test_a_preview_instrument_that_cannot_sound_says_why(self):
@@ -272,8 +272,8 @@ class TestSoundDialog(PatternPreviewTest):
         await self.press(Key.ESCAPE)
         self.preview().play_sound(numbers=hits_of(A_DRUM), step_size=HITS_STEP, sound=None, key=A_DRUM)
         self.play_through()
-        self.assertEqual([list(data[:2]) for data in self.note_ons(FLUIDSYNTH_PORT)], [[NOTE_ON | DRUM_CHANNEL_BYTE, A_DRUM]] * HITS)
-        self.assertNotIn(PROGRAM_CHANGE | DRUM_CHANNEL_BYTE, [data[0] for _, data in self.outputs[FLUIDSYNTH_PORT].sent])
+        self.assertEqual([list(data[:2]) for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [[timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE, A_DRUM]] * HITS)
+        self.assertNotIn(timeline.PROGRAM_CHANGE | midi_arrangement.DRUM_CHANNEL_BYTE, [data[0] for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent])
 
 
 class TestNoteNames(unittest.TestCase):
@@ -380,4 +380,4 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
             if self.preview().player() is None:
                 break
             self.preview().player().sender().send_due()
-        self.assertEqual([data[1] for data in self.note_ons(FLUIDSYNTH_PORT)], hits_of(C_SHARP))
+        self.assertEqual([data[1] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], hits_of(C_SHARP))

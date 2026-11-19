@@ -24,7 +24,7 @@ from pathlib import Path
 
 import llamatron
 from llamatron.cli import main
-from llamatron.exporters.ableton_project import DEFAULT_TEMPLATE
+from llamatron.exporters import ableton_project
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -40,13 +40,13 @@ class TestPackaging(unittest.TestCase):
         return ast.literal_eval(next(k.value for k in self.setup_settings() if k.arg == name))
 
     def test_the_template_is_inside_the_package(self):
-        self.assertTrue(DEFAULT_TEMPLATE.is_file())
-        self.assertTrue(DEFAULT_TEMPLATE.is_relative_to(Path(llamatron.__file__).parent))
+        self.assertTrue(ableton_project.DEFAULT_TEMPLATE.is_file())
+        self.assertTrue(ableton_project.DEFAULT_TEMPLATE.is_relative_to(Path(llamatron.__file__).parent))
 
     def test_setup_includes_the_template(self):
         patterns = self.setting('package_data')['llamatron']
         folder = Path(llamatron.__file__).parent
-        self.assertTrue(any(DEFAULT_TEMPLATE in folder.glob(pattern) for pattern in patterns))
+        self.assertTrue(any(ableton_project.DEFAULT_TEMPLATE in folder.glob(pattern) for pattern in patterns))
 
     def test_setup_adds_the_llamatron_command(self):
         self.assertEqual(self.setting('entry_points'), {'console_scripts': ['llamatron = llamatron.cli:main']})

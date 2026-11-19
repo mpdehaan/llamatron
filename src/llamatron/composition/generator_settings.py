@@ -39,7 +39,8 @@ from llamatron.composition.setting import Checked, Choice, Flag, Text, WholeNumb
 from llamatron.support.rational import Rational
 from llamatron.generators import musician
 from llamatron.generators.follow_chords import FollowChords
-from llamatron.generators.phrasing import BREATHS, JOINS, LITTLE_RISE, NOTES_AS_WRITTEN, QUICK_BREATH, RISES, Phrasing
+from llamatron.generators import phrasing
+from llamatron.generators.phrasing import Phrasing
 from llamatron.generators.progression import Progression
 from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.generators.guitarify import Guitarify
@@ -50,7 +51,8 @@ from llamatron.generators.glide import Glide
 from llamatron.generators.shorten import Shorten
 from llamatron.composition import euclid
 from llamatron.composition.euclid import euclid_part_settings, euclid_values
-from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, MIN_OFFSETS, Arp, ChordOrder, OctaveJump, _check_offsets
+from llamatron.generators import arp
+from llamatron.generators.arp import Arp, ChordOrder, OctaveJump, _check_offsets
 from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.support.revised import notes_change
 
@@ -183,11 +185,11 @@ def _check_arp_offsets(value):
 
 def _nearest_offsets(offsets):
     """Return offsets with each one further than the arp allows at the furthest it does, or NO_NEAREST_VALUE unless they're the right number of whole numbers and silent steps."""
-    if not isinstance(offsets, list) or not MIN_OFFSETS <= len(offsets) <= MAX_OFFSETS:
+    if not isinstance(offsets, list) or not arp.MIN_OFFSETS <= len(offsets) <= arp.MAX_OFFSETS:
         return corrections.NO_NEAREST_VALUE
     if not all(offset is None or is_whole_number(offset) for offset in offsets):
         return corrections.NO_NEAREST_VALUE
-    return [offset if offset is None else min(max(offset, -MAX_OFFSET), MAX_OFFSET) for offset in offsets]
+    return [offset if offset is None else min(max(offset, -arp.MAX_OFFSET), arp.MAX_OFFSET) for offset in offsets]
 
 
 def _is_step_add(value):
@@ -196,8 +198,8 @@ def _is_step_add(value):
 
 def _check_step_adds(value):
     """Refuse a row of adds under the offsets unless it is a list of 1 to 16 adds or blanks."""
-    if not isinstance(value, list) or not MIN_OFFSETS <= len(value) <= MAX_OFFSETS or not all(_is_step_add(add) for add in value):
-        raise InvalidValue(errors.ERR_GENERATOR_BAD_STEP_ADDS.format(most=MAX_OFFSETS, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
+    if not isinstance(value, list) or not arp.MIN_OFFSETS <= len(value) <= arp.MAX_OFFSETS or not all(_is_step_add(add) for add in value):
+        raise InvalidValue(errors.ERR_GENERATOR_BAD_STEP_ADDS.format(most=arp.MAX_OFFSETS, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
 
 
 def _check_counts(value):
@@ -323,7 +325,7 @@ class ArpSettings(GeneratorSettings):
         Checked(name=ArpSetting.STEP, check=time_length),
         Choice(name=ArpSetting.ORDER, choices=sorted(ORDERS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         WholeNumber(name=ArpSetting.SEED, error=errors.ERR_GENERATOR_NOT_INTEGER),
-        WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE, error=errors.ERR_GENERATOR_BAD_OCTAVE_RANGE),
+        WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=arp.MAX_OCTAVE_RANGE, error=errors.ERR_GENERATOR_BAD_OCTAVE_RANGE),
         Choice(name=ArpSetting.OCTAVE_JUMP, choices=sorted(OCTAVE_JUMPS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Checked(name=ArpSetting.OFFSETS, check=_check_arp_offsets, nearest=_nearest_offsets),
         *[WholeNumber(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_GENERATOR_BAD_ADD) for name in ARP_NOTE_ADDS.values()],
@@ -1196,8 +1198,8 @@ class PhrasingSetting:
 LINES_IN_BARS = (1, 2, 4)
 DEFAULT_LINE_BARS = 2
 PHRASING_DEFAULTS = {
-    PhrasingSetting.LINE_BARS: DEFAULT_LINE_BARS, PhrasingSetting.BREATH: QUICK_BREATH, PhrasingSetting.RISE_AND_FALL: LITTLE_RISE,
-    PhrasingSetting.NOTES: NOTES_AS_WRITTEN,
+    PhrasingSetting.LINE_BARS: DEFAULT_LINE_BARS, PhrasingSetting.BREATH: phrasing.QUICK_BREATH, PhrasingSetting.RISE_AND_FALL: phrasing.LITTLE_RISE,
+    PhrasingSetting.NOTES: phrasing.NOTES_AS_WRITTEN,
 }
 
 
@@ -1212,9 +1214,9 @@ class PhrasingSettings(GeneratorSettings):
     GENERATOR = Phrasing
     SETTINGS = described(
         Choice(name=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.BREATH, choices=BREATHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=RISES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.NOTES, choices=JOINS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.BREATH, choices=phrasing.BREATHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=phrasing.RISES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.NOTES, choices=phrasing.JOINS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
     )
 
     @classmethod
