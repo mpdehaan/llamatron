@@ -419,7 +419,7 @@ HELP_PATTERN_EDITOR = """
 Each column is a step, as long as the step size. Tab switches between the piano roll and the rows. Home/End jump to the ends.
 Roll: Space or ENTER draws a note of the entry size (E picks); [ and ] drag its end, X splits it, . sharpens or flattens it, G grabs, Bksp erases it, H picks its chord, K its keyswitches.
 Rows: Degree is a gauge: digits set it, [ and ] nudge it, as they adjust every number, Bksp empties the step. The rows under Octave come in sections headed by a row marked + (closed) or - (open): Space or ENTER opens or closes it, PgUp/PgDn jump between them.
-Basics: #/b, Velocity, Keyswitch. Chord: Chord, Tension, Scale (ENTER picks), Inv. Timing: Tie (Space after a note holds it), Gate (ENTER types one), Dot (d, t), Glide. Advanced: Probability, Ratchet, Ratchet Offset, Grab. CCs and Slide work on rests too. Reg. Apply uses the registers; Reg. Mod adds to them.
+Basics: #/b, Velocity, Keyswitch. Chord: Chord, Tension, Scale (ENTER picks), Inv. Timing: Tie (Space after a note holds it), Gate (ENTER types one), Dot (d, t), Glide. Advanced: Probability, Ratchet, Ratchet Offset, Grab. CCs and Slide work on rests too. Use Registers uses the registers; Set Registers sets them.
 S sizes the pattern, and on the rows I inserts a step and D removes one. M munges it. R reconfigures it: load over, step size, time signature, drum on or off, direction, rename. L plays it at once, again and again, and stops it.
 """
 

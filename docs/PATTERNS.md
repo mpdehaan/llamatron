@@ -184,8 +184,8 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 - **Keyswitch:** a row for each slot of the instrument's Keyswitch Map;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
 - **CCs:** CC 1 to CC 4, Slide;
-- **Reg. Mod:** the rows that change the registers;
-- **Reg. Apply:** the rows that use the registers;
+- **Set Registers:** the rows that change the registers;
+- **Use Registers:** the rows that use the registers;
 - **Stop When, Restart When, Mute When:** a statement about the registers on each step, which stops the clip, starts the pattern over or mutes the step.
 
 ### Basic and Timing Rows
@@ -331,11 +331,11 @@ CC rows and Slide can be set on a rest, so a sweep can carry on through silence.
 
 In a Live set, each CC becomes a clip envelope, and Live draws a slide as a straight line. In MIDI files, a slide is sent as a new value every 1/64 note.
 
-## Reg. Mod and Reg. Apply
+## Set Registers and Use Registers
 
 The song has four registers, AX, BX, CX and DX: numbers the whole song shares, which pattern steps change and use as the song plays. Their settings are on the [Registers](REGISTERS.md) page. They're for changes that build up from bar to bar, like a note that climbs each time a riff comes round, or a fade.
 
-The `Reg. Mod` section holds the rows that change the registers, and `Reg. Apply` the rows that use them.
+The `Set Registers` section holds the rows that change the registers, and `Use Registers` the rows that use them.
 
 ![The pattern editor on the register rows](screenshots/pattern_editor_registers.svg)
 

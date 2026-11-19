@@ -542,7 +542,7 @@ MSG_ROW_LABELS = {
 # The sections of rows under Octave, each a row of the grid: its name after a mark saying whether it's closed (+) or open (-), chosen over triangles, which were hard to tell apart at a distance.
 MSG_SECTION_NAMES = {
     RowSection.BASICS: 'Basics', RowSection.CHORD: 'Chord', RowSection.TIMING: 'Timing', RowSection.KEYSWITCH: 'Keyswitch', RowSection.ADVANCED: 'Advanced', RowSection.CC: 'CCs',
-    RowSection.REGISTER_MOD: 'Reg. Mod', RowSection.REGISTER_APPLY: 'Reg. Apply', RowSection.STOP_WHEN: 'Stop When',
+    RowSection.REGISTER_MOD: 'Set Registers', RowSection.REGISTER_APPLY: 'Use Registers', RowSection.STOP_WHEN: 'Stop When',
     RowSection.RESTART_WHEN: 'Restart When', RowSection.MUTE_WHEN: 'Mute When',
 }
 MSG_SECTION_LABEL = '{mark} {name}'
@@ -550,8 +550,8 @@ MSG_SECTION_LABEL = '{mark} {name}'
 MSG_SECTION_HINTS = {
     RowSection.ADVANCED: "Advanced: Grab plays the Grab track's last note",
     RowSection.CC: "CCs: the track sets each row's CC number",
-    RowSection.REGISTER_MOD: 'Reg. Mod: = sets, then += adds, even on an empty step',
-    RowSection.REGISTER_APPLY: 'Reg. Apply: +Note and +Vel add (+) or subtract (-) a register',
+    RowSection.REGISTER_MOD: 'Set Registers: = sets, then += adds, even on an empty step',
+    RowSection.REGISTER_APPLY: 'Use Registers: +Note and +Vel add (+) or subtract (-) a register',
     RowSection.STOP_WHEN: 'Stop When: the clip is done at a step whose statement is true',
     RowSection.RESTART_WHEN: 'Restart When: the pattern starts over at a step whose statement is true',
     RowSection.MUTE_WHEN: 'Mute When: a step whose statement is true does not sound',
