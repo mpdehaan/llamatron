@@ -16,6 +16,7 @@
 
 """What every page of one generator shares: its settings, found one way, and a value stored one way."""
 
+from llamatron.tui.screens.shared.field import NumberField
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
 
@@ -34,3 +35,15 @@ class GeneratorEditor(ShowsNamedItem):
     def store(self, *, setting, value):
         """Keep one setting by its file name, checked as reading a file checks it, or None to leave it out of the file."""
         self.document().change(self.settings().set_setting, name=setting, value=value)
+
+    def number_field(self, *, label, setting, current, default, shown=None):
+        """Return a field for a whole number of the generator, by the setting's file name.
+
+        The range is the setting's own, said once where the setting is described. A number that is the
+        default is left out of the file, and so is one cleared.
+        """
+        described = self.settings().SETTINGS[setting]
+        return NumberField(
+            page=self, label=label, number=current, lowest=described.get_lowest(), highest=described.get_highest(), shown=shown,
+            set=lambda number: self.store(setting=setting, value=None if number == default else number), clear=lambda: self.store(setting=setting, value=None),
+        )

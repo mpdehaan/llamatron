@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Drag editor: a Drag's name, step, amount, row of steps and Restart."""
 
-from llamatron.composition import generator_settings, limits
+from llamatron.composition import generator_settings
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.strings import help as help_text, labels, messages
@@ -35,5 +35,4 @@ class DragEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_DRAG_LABEL)
 
     def amount_fields(self):
-        return [self.percent_field(label=labels.MSG_DRAG_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.settings().get_amount(), default=generator_settings.DEFAULT_DRAG,
-                                   lowest=generator_settings.NO_RUSH_OR_DRAG, highest=limits.MAX_RUSH_OR_DRAG)]
+        return [self.number_field(label=labels.MSG_DRAG_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.settings().get_amount(), default=generator_settings.DEFAULT_DRAG)]

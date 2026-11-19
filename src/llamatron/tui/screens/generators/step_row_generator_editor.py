@@ -20,7 +20,7 @@ from llamatron.strings import labels, legends, marks
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
-from llamatron.tui.screens.shared.field import Field, NameField, NumberField
+from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
@@ -41,10 +41,6 @@ class StepRowGeneratorEditor(GeneratorEditor, FieldPage):
     def amount_fields(self):
         """Return the fields of the generator's own amounts."""
         raise NotImplementedError
-
-    def percent_field(self, *, label, setting, current, default, lowest, highest):
-        return NumberField(page=self, label=label, number=current, lowest=lowest, highest=highest,
-                           set=lambda number: self.store(setting=setting, value=None if number == default else number), clear=lambda: self.store(setting=setting, value=None))
 
     def fields(self):
         generator = self.settings()
