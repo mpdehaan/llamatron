@@ -348,10 +348,6 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
                 if clip_slot.names_item(section=Section.TRACKS, name=track):
                     clip_slot.clear_grab()
 
-    def get_setting(self, name):
-        """Return one of its shape settings as the file writes it, like density_start, or None when it's left blank."""
-        return self._settings[name]
-
     def get_velocity_settings(self):
         """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
         return {name: self._settings[name] for name in file_format.VELOCITY_SETTINGS}
@@ -360,17 +356,9 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         """Return how loud the scene plays its clips, as a Velocity, before any clip's own."""
         return velocity_of(scene_settings=self.get_velocity_settings())
 
-    def set_velocity_setting(self, *, name, value):
-        """Set one of its velocity settings by its file name, or None to leave it blank."""
-        self.set_written(name=name, value=value)
-
     def get_shape(self, shape):
         """Return how a shape, Density or Articulate, runs over the scene, or None when the scene sets neither its start nor its end."""
         return shape_values(settings=self._settings, shape=shape)
-
-    def set_shape_setting(self, *, name, value):
-        """Set one part of a shape by its file name, like density_start, or None to leave it out."""
-        self.set_written(name=name, value=value)
 
     def get_groove_choice(self):
         """Return the groove it chooses by name, False for no groove in this scene whatever the song chooses, or None to take the song's."""

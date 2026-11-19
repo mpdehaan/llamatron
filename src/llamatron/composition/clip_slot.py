@@ -184,10 +184,6 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
         """Return the first pattern it plays, which is the only one of a clip with one pattern, and what such a clip goes by."""
         return self._settings[ClipSlotSetting.PATTERNS][0]
 
-    def get_setting(self, name):
-        """Return one of its shape settings as the file writes it, like density_start, or None when it's left blank."""
-        return self._settings[name]
-
     def get_strum(self):
         """Return how the clip strums its chords, or None when its Direction is blank and it takes its track's."""
         return strum_values(lambda part: self._settings[strum_setting(part)])
@@ -205,17 +201,9 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
         """Return how loud the clip plays in its scene, as a Velocity: its own settings over the scene's, field by field."""
         return velocity_of(scene_settings=scene.get_velocity_settings(), clip_settings=self.get_velocity_settings())
 
-    def set_velocity_setting(self, *, name, value):
-        """Set one of its velocity settings by its file name, or None to leave it blank."""
-        self.set_written(name=name, value=value)
-
     def get_shape(self, shape):
         """Return how a shape, Density or Articulate, runs over the clip, or None when the clip sets neither its start nor its end and takes its scene's."""
         return shape_values(settings=self._settings, shape=shape)
-
-    def set_shape_setting(self, *, name, value):
-        """Set one part of a shape by its file name, like density_start, or None to leave it out."""
-        self.set_written(name=name, value=value)
 
     def loops(self):
         return bool(self._settings[ClipSlotSetting.LOOP])

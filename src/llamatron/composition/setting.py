@@ -151,6 +151,14 @@ class WholeNumber(Setting):
         if type(value) is not int or (self._lowest is not None and value < self._lowest) or (self._highest is not None and value > self._highest):
             raise InvalidValue(self._error.format(name=self._name, value=value, lowest=self._lowest, highest=self._highest, most=self._highest))
 
+    def get_lowest(self):
+        """Return the lowest number allowed, or None where there is no lowest."""
+        return self._lowest
+
+    def get_highest(self):
+        """Return the highest number allowed, or None where there is no highest."""
+        return self._highest
+
     def nearest(self, value):
         """Return the end of the range nearest a whole number outside it. Anything that isn't a whole number has no nearest value."""
         if not is_whole_number(value):
@@ -176,6 +184,14 @@ class Choice(Setting):
     def check(self, value, *, song=None):
         if value not in self._choices:
             raise InvalidValue(self._error.format(name=self._name, value=value, choices=listed(self._choices)))
+
+    def get_choices(self):
+        """Return the choices allowed, in the order a picker lists them."""
+        return list(self._choices)
+
+    def get_default(self):
+        """Return the choice a wrong choice falls back to, or LEFT_OUT where that is leaving the setting out."""
+        return self._default
 
     def nearest(self, value):
         return self._default

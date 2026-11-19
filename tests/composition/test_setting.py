@@ -238,6 +238,23 @@ class TestChoice(unittest.TestCase):
         self.assertIs(Choice(name=COLOUR, choices=COLOURS, default=corrections.LEFT_OUT, error=BAD_CHOICE).nearest(GREEN), corrections.LEFT_OUT)
 
 
+class TestWhatASettingSaysOfItself(unittest.TestCase):
+    """A description answers its range and its choices, so that a page builds a field from the setting and repeats no limit."""
+
+    def test_a_whole_number_says_its_ends_and_none_where_it_has_no_end(self):
+        speed = WholeNumber(name=SPEED, lowest=LOWEST, highest=HIGHEST, error=BAD_NUMBER)
+        self.assertEqual((speed.get_lowest(), speed.get_highest()), (LOWEST, HIGHEST))
+        open_ended = WholeNumber(name=SPEED, lowest=LOWEST, error=BAD_NUMBER)
+        self.assertIsNone(open_ended.get_highest())
+
+    def test_a_choice_says_its_choices_in_order_and_its_default_and_its_list_is_its_own(self):
+        colour = Choice(name=COLOUR, choices=[RED, BLUE, GREEN], default=BLUE, error=BAD_CHOICE)
+        self.assertEqual(colour.get_choices(), [RED, BLUE, GREEN])
+        self.assertEqual(colour.get_default(), BLUE)
+        colour.get_choices().append(SPEED)
+        self.assertEqual(colour.get_choices(), [RED, BLUE, GREEN])
+
+
 class TestText(unittest.TestCase):
 
     def test_it_takes_text_and_refuses_the_rest(self):

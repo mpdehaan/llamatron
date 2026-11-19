@@ -211,10 +211,10 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
         song = next(iter(setlist_from_data(lead_of()).get_songs()))
         scene = song.get_scenes()[0]
         with self.assertRaises(ValueError):
-            scene.set_velocity_setting(name=VelocitySetting.LEVEL, value=limits.MAX_VELOCITY_PERCENT + 1)
+            scene.set_written(name=VelocitySetting.LEVEL, value=limits.MAX_VELOCITY_PERCENT + 1)
         with self.assertRaises(ValueError):
-            scene.get_clip_slot(test_registers.LEAD).set_velocity_setting(name=VelocitySetting.IN_OVER, value=limits.MIN_RAMP_BARS - 1)
-        scene.set_velocity_setting(name=VelocitySetting.LEVEL, value=HALF)
-        scene.set_velocity_setting(name=VelocitySetting.LEVEL, value=None)
+            scene.get_clip_slot(test_registers.LEAD).set_written(name=VelocitySetting.IN_OVER, value=limits.MIN_RAMP_BARS - 1)
+        scene.set_written(name=VelocitySetting.LEVEL, value=HALF)
+        scene.set_written(name=VelocitySetting.LEVEL, value=None)
         self.assertTrue(scene.get_velocity().changes_nothing())
 

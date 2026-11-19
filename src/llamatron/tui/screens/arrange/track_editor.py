@@ -120,20 +120,12 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         own = track.get_default_velocity()
         above = self.document().song().default_velocity_of(track)
         shown = None if own is not None else marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=above) if self.document().song().instrument_of(track) is not None else above
-        return NumberField(
-            page=self, label=labels.MSG_DEFAULT_VELOCITY_LABEL, number=own, start=above, shown=shown, typed=above, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY,
-            set=lambda number: self.document().change(self.document().song().get_track(self.item).set_default_velocity, number),
-            clear=lambda: self.document().change(self.document().song().get_track(self.item).set_default_velocity, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
-        )
+        return self.setting_number_field(label=labels.MSG_DEFAULT_VELOCITY_LABEL, holder=self.track(), name=TrackSetting.DEFAULT_VELOCITY, start=above, shown=shown, typed=above, clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
 
     def accent_field(self):
         """Return the Accent field: what a step with its Accent on adds to its velocity on the track, on top of its instrument's accent."""
         accent = self.track().get_accent()
-        return NumberField(
-            page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT,
-            set=lambda number: self.document().change(self.document().song().get_track(self.item).set_accent, number),
-            clear=lambda: self.document().change(self.document().song().get_track(self.item).set_accent, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
-        )
+        return self.setting_number_field(label=labels.MSG_ACCENT_LABEL, holder=self.track(), name=TrackSetting.ACCENT, in_effect=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
 
     def instrument_field(self):
         return Field(label=labels.MSG_INSTRUMENT_LABEL, value=lambda: self.track().get_instrument_name() or marks.MSG_NONE_SHOWN, adjust=None, enter=self.pick_instrument, enter_what=legends.What.CHOOSE,
