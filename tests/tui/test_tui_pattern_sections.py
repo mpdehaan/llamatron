@@ -164,11 +164,12 @@ class TestSections(UITest):
         await self.press(Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN)
         self.assertIn(self.heading_shown(RowSection.CC), self.text())
 
-    async def test_the_label_column_is_as_wide_as_the_widest_row_whether_its_section_is_open_or_not(self):
+    async def test_the_label_column_is_as_wide_as_the_widest_row_or_heading_whether_its_section_is_open_or_not(self):
         width = self.editor.drawing.label_width()
         await open_section(test=self, section=RowSection.ADVANCED)
         self.assertEqual(self.editor.drawing.label_width(), width)
-        self.assertEqual(width, len(labels_text.MSG_ROW_LABELS[Row.RATCHET_OFFSET]) + 2)
+        widest_heading = max(len(section_label(section, open_=True)) for section in labels_text.MSG_SECTION_NAMES)
+        self.assertEqual(width, max(len(labels_text.MSG_ROW_LABELS[Row.RATCHET_OFFSET]), widest_heading) + 2)
 
     async def test_the_open_sections_stay_for_other_patterns_and_under_the_roll(self):
         await open_section(test=self, section=RowSection.ADVANCED)

@@ -343,7 +343,7 @@ row says which, and a reply says which too.
 | the pattern editor | the page that edits one pattern, in either view | `PatternEditor` |
 | the roll, the piano roll | the pattern editor's piano roll view | `PianoRoll`, `RollDrawing`, `editor.roll` |
 | the rows, the editor, the grid | the pattern editor's rows view, which Tab's legend calls `to editor` | `PatternRows`, `PatternDrawing`, `editor.rows_view` |
-| sections, the accordion | the headings `+ Basics` to `+ Reg. Mod` in the rows view | `SectionRow`, `SECTIONS`, `RowSection` |
+| sections, the accordion | the headings `+ Basics` to `+ Set Registers` in the rows view | `SectionRow`, `SECTIONS`, `RowSection` |
 | the pinned rows | Degree and Octave, which stay at the top of the rows view | `PINNED_ROWS` |
 | the Degree gauge | the vertical Degree gauge in the rows view, a bar on each step rising to the step's degree | `DegreeRow` |
 | the offsets gauge | the vertical offsets gauge in the offsets editor, a bar on each step rising or falling from the zero line | `SignedGauge`, `OffsetsEditor` |

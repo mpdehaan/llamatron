@@ -103,8 +103,8 @@ roll or the rows.
   the rows beneath scroll (`pinned_rows()`, `scrolled_rows()`, `scrolled_row()`).
 - The rows under the pinned ones come in sections (`SECTIONS`, keyed by `RowSection` in
   `tui/keys.py`): Basics (#/b, Chord, Inversion, Velocity), Timing (Tie, Gate, Dot, Glide), Advanced
-  (Probability, Ratchet, Ratchet Offset, Grab), CCs (the CC rows and Slide), Reg. Mod (the `=` rows, `SetRow`,
-  then `+=`, `AddRow`), Reg. Apply (`+Note` and `+Vel`), then Stop When, Restart When and Mute When (`StatementRow`, five rows `c1` to `c5` each, one statement a step, written whole through `Document.set_step_statement`; ENTER picks a part, Space and `[` `]` step, stopping at the ends, Bksp clears the statement; every Restart When row is blocked on step 1), in the order a step
+  (Probability, Ratchet, Ratchet Offset, Grab), CCs (the CC rows and Slide), Set Registers (the `=` rows, `SetRow`,
+  then `+=`, `AddRow`), Use Registers (`+Note` and `+Vel`), then Stop When, Restart When and Mute When (`StatementRow`, five rows `c1` to `c5` each, one statement a step, written whole through `Document.set_step_statement`; ENTER picks a part, Space and `[` `]` step, stopping at the ends, Bksp clears the statement; every Restart When row is blocked on step 1), in the order a step
   works them out (the user's choice). `SetRow`'s number line starts at blank just below the current
   song's register Minimum; `AddRow` stops at `Document.allowed_inc_max` and says so . A drum pattern leaves out the rows whose description says it has none (`is_in_drum_patterns()`).
 - Each section is headed by a `SectionRow` (`tui/components/section_row.py`), labelled

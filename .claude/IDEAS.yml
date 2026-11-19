@@ -346,6 +346,16 @@
   text: |
     A key on the Arrange page, the hide key, opens a dialog that lists the song's tracks and lets a person hide and show each one, so that tracks a person does not need to see, such as a muted chords track or other guide tracks, take no room on the Arrange page. A hidden track still plays and is still followed, as before; hiding changes only what Arrange draws. How many tracks are hidden has to be shown somewhere on the Arrange page, so that nobody forgets tracks are there. To discuss before building: where the count shows, whether the choice is kept in the set file or only for the session, what the cursor does at a hidden track, and whether Scene View, the details view and the exports show hidden tracks. For the code: a setting of the track or of the song, the Arrange page's drawing and cursor skipping hidden columns, a new dialog, and the key's binding in tui/keybindings.py.
 
+- title: "Modulators that grow: a ramp of amplitude"
+  priority: 5
+  text: |
+    A modulator (XMod, WMod, YMod, ZMod, agreed in .claude/DESIGNS.md under "Modulators") could be given a ramp, so that its wave
+    starts small and widens to the full swing between its Minimum and Maximum over a length of time, as an LFO's depth is faded in.
+    A Set Modulators value on a step can name a value outside the swing the ramp allows at that moment; the user's thinking is that
+    the ramp then moves on far enough to allow that value, the full swing where needed, rather than clipping the value. Still to
+    decide: how the ramp's length is given (bars, like the Rate, or seconds), whether a scene's reset starts the ramp over, and where
+    the setting goes on the Modulators page. Built after the modulators themselves.
+
 - title: "Code a person can work on without Claude"
   priority: 6
   text: |
