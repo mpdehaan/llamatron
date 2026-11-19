@@ -426,3 +426,12 @@ The user's design, mockup by mockup; `.claude/format/FILE_RULES.md`, "Instrument
   no drum pattern, opens a picker, "(any)" first and then 5 to 12. Where a scale the pattern plays under has another number of notes (`Document.scales_unsuited_to_pattern`), the
   header says so after the scale, `Scale A Minor Pentatonic, written for 7`. `tests/composition/test_scale_length.py` and
   `tests/tui/test_tui_new_pattern_dialog.py` test it.
+
+## The Keyswitch section
+
+The rows view has a section `+ Keyswitch` after Timing (`RowSection.KEYSWITCH`). The file's one Keyswitch row, a tuple of slots a
+step, is shown as a toggle row for each slot (`KeyswitchSlotRow` in `tui/components/keyswitch_row.py`): the rows view names each
+`keyswitch slot N` (`slot_row_name`, `SLOT_OF_ROW`), while the row object's own name stays `Row.KEYSWITCH`, so that whatever asks
+the cursor's row reads the real row. `slot_rows(editor)` chooses the slots: with one instrument known (`keyswitch_instrument`),
+those its map gives a name or a note, and any a step uses; otherwise only the slots the steps use, by number, the section's hint
+saying why. The heading shows even with no rows. The dialog of ten slots is opened from the piano roll alone.

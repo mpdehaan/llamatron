@@ -161,6 +161,8 @@ class RowSection:
     # Not 'chord', which is the Chord row's own name.
     CHORD = 'chord_section'
     TIMING = 'timing'
+    # Not 'keyswitch', which is the Keyswitch row's own name.
+    KEYSWITCH = 'keyswitch_section'
     ADVANCED = 'advanced'
     CC = 'cc'
     REGISTER_MOD = 'register_mod'
