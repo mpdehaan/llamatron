@@ -38,12 +38,13 @@ from llamatron.strings import errors, help as help_text, labels, macro_composer 
 from llamatron.support import version
 from llamatron.support.memory import Memory, StaleAnswer
 from llamatron.tui import drawing, keybindings, themes
+from llamatron.tui.cursor import key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.document import Document
 from llamatron.tui.drawing import Box, cursor_mark, Style
-from llamatron.tui.key_table import cursor_moved
+from llamatron.tui.key_table import cursor_moved, first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
@@ -173,6 +174,16 @@ class WizardPage(FieldPage):
             self.say(messages.MSG_WIZARD_TUNES_FITTED.format(kinds=listed(kinds)))
         question = messages.MSG_WIZARD_FIT_TUNE_QUESTION.format(kinds=listed(kinds))
         self.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_FIT_TUNE_TITLE, messages=[question, messages.MSG_WIZARD_FIT_TUNE_SAYS]), then=fit)
+
+    def panel_under_cursor(self):
+        """Return the name of the wizard panel the tree's cursor is on."""
+        return self.branch().name()
+
+    def key_toward_panel(self, name):
+        """Return the key that brings the tree's cursor nearer the wizard panel of a name, the first of that name the tree shows, or None when the cursor is on it and in the tree."""
+        if self.in_fields:
+            return first_key(self.KEYS.TO_TREE)
+        return key_between(here=self.tree_place, there=place_of(screen=self, names=[branch.name() for _, branch in self.rows()], target=name))
 
     def label_under_cursor(self):
         """Return the label of the field the cursor is on, or None in the tree or on a field with no label."""

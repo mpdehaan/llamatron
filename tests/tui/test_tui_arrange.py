@@ -22,6 +22,7 @@ from llamatron.composition.scene import TempoRamp
 from llamatron.generators.blend import BlendMode
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.tui import drawing, keybindings, keys as keys_values
+from llamatron.tui.cursor import NoSuchPlace
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -30,7 +31,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange import arrange_drawing, arrange_page
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage, ArrangePlace
 from llamatron.tui.screens.arrange.clip_page import AddRow, ClipPage, PatternRow
 from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.screens.generators.chain_list_page import ChainListPage
@@ -100,6 +101,27 @@ class TestArrangePage(UITest):
 
     def scenes(self):
         return [scene.get_name() for scene in self.document.song().get_scenes()]
+
+    async def test_the_cursor_is_steered_to_a_clip_a_scene_and_a_track_by_name_and_says_what_it_is_on(self):
+        tracks = self.document.track_names()
+        last_scene = self.scenes()[-1]
+        await self.go_to_clip(scene=last_scene, track=tracks[-1])
+        self.assertTrue(self.page.on_clip_slot())
+        self.assert_cursor_on(ArrangePlace(scene=len(self.scenes()) - 1, track=tracks[-1]))
+        await self.go_to_track(tracks[0])
+        self.assertTrue(self.page.on_track_name())
+        self.assert_cursor_on(ArrangePlace(track=tracks[0]))
+        await self.go_to_scene(self.scenes()[0])
+        self.assertTrue(self.page.on_scene_name())
+        self.assert_cursor_on(ArrangePlace(scene=0))
+        # From the + row, which has the scene column alone, the way to a clip leaves upward first.
+        await self.press(*[Key.DOWN] * len(self.scenes()))
+        self.assertTrue(self.page.on_plus_row())
+        self.assert_cursor_on(None)
+        await self.go_to_clip(scene=0, track=tracks[0])
+        self.assert_cursor_on(ArrangePlace(scene=0, track=tracks[0]))
+        with self.assertRaises(NoSuchPlace):
+            self.page.key_toward(ArrangePlace(scene=len(self.scenes()), track=tracks[0]))
 
     async def test_a_scene_crumb_says_it_is_a_scene(self):
         # Scenes have no list page of their own, so the crumb under ARRANGE says what it leads to.

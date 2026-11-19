@@ -158,6 +158,17 @@ class TestWizardPage(WizardTest):
         await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES)
         self.assertIsInstance(self.app.screen, SongsPage)
 
+    async def test_the_tree_is_steered_to_a_wizard_panel_by_its_name_from_the_tree_and_from_a_panels_fields(self):
+        names = [branch.name() for _, branch in self.wizard().rows()]
+        await self.go_to_panel(names[-1])
+        self.assertEqual(self.wizard().panel_under_cursor(), names[-1])
+        await self.go_to_panel(names[0])
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
+        self.assertTrue(self.wizard().in_fields)
+        await self.go_to_panel(names[1])
+        self.assertFalse(self.wizard().in_fields)
+        self.assertEqual(self.wizard().panel_under_cursor(), names[1])
+
     async def test_f5_in_the_wizard_says_the_wizard_is_open(self):
         await self.press(keybindings.Page.WIZARD)
         self.assertIsInstance(self.wizard(), WizardPage)

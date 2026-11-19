@@ -43,6 +43,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.key_table import every_key, first_key, key_event
 from llamatron.tui.keys import Key, Steps
 import llamatron.tui.screens
+from llamatron.tui.screens.arrange.arrange_page import ArrangePlace
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.shared import page as page_values
 from llamatron.tui.screens.shared.field import Button
@@ -463,6 +464,34 @@ class UITest(unittest.IsolatedAsyncioTestCase):
                 return
             await self.press(key)
         self.fail(MSG_NEVER_REACHED.format(target=target))
+
+    async def go_to_clip(self, *, scene, track):
+        """Move Arrange's cursor to the clip a track plays in a scene, the scene named or counted from 0."""
+        await UITest.go_to(self, ArrangePlace(scene=self.scene_place(scene), track=track))
+
+    async def go_to_scene(self, scene):
+        """Move Arrange's cursor to a scene's name, the scene named or counted from 0."""
+        await UITest.go_to(self, ArrangePlace(scene=self.scene_place(scene)))
+
+    async def go_to_track(self, track):
+        """Move Arrange's cursor to a track's name in the header."""
+        await UITest.go_to(self, ArrangePlace(track=track))
+
+    def scene_place(self, scene):
+        """Return a scene's place in the current song, given its name or its place."""
+        if isinstance(scene, int):
+            return scene
+        return [each.get_name() for each in self.app.screen.document().song().get_scenes()].index(scene)
+
+    async def go_to_panel(self, name):
+        """Move the song wizard's tree cursor to the wizard panel of a name."""
+        wizard = self.app.screen
+        for _ in range(MOST_MOVES):
+            key = wizard.key_toward_panel(name)
+            if key is None:
+                return
+            await self.press(key)
+        self.fail(MSG_NEVER_REACHED.format(target=name))
 
     def assert_cursor_on(self, target):
         """Check that the screen's cursor is on what is named, as go_to() names it."""
