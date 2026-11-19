@@ -33,6 +33,7 @@ the song. ArrangeDrawing (arrange_drawing.py) draws the grid from them.
 
 from rich.text import Text
 import time
+from typing import NamedTuple
 
 from llamatron.composition.file_format import ClipSlotSetting, Section
 from llamatron.composition.naming import new_name
@@ -41,6 +42,7 @@ from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.inset_window import drawn_over, inside_size
 from llamatron.tui.components.scene_view import SceneView
 from llamatron.tui.components.stage_drawing import frame_box, inside_of, visualizer_area
+from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import laid_over, padded, Style
@@ -102,6 +104,12 @@ def announced(*, lines, text, inside):
     shown[row] = laid_over(line=lines[row], start=start, piece=piece)
     return shown
 
+
+class ArrangePlace(NamedTuple):
+    """A place Arrange's cursor can be: a clip, by its scene's place and its track's name; a scene's name, with no track; a track's name, with no scene; the corner, with neither."""
+
+    scene: int = None
+    track: str = None
 
 class ArrangePage(Page):
 
@@ -199,6 +207,30 @@ class ArrangePage(Page):
 
     def track(self):
         return self.tracks()[self.track_place()]
+
+    def under_cursor(self):
+        """Return what the cursor is on, as an ArrangePlace: a clip, a scene's name, a track's name or the corner. None on either +."""
+        if self.on_plus_row() or self.on_track_plus():
+            return None
+        return ArrangePlace(scene=None if self.on_header() else self.row, track=self.track() if self.in_a_track_column() else None)
+
+    def key_toward(self, target):
+        """Return the arrow that brings the cursor nearer an ArrangePlace, or None when the cursor is on it.
+
+        The + row has the scene column alone, so the cursor leaves it upward first; from the header it goes down to
+        the scene's row before going along it, since the header's scene column is reached only while Real Time is on.
+        """
+        if target.track is not None and target.track not in self.tracks():
+            raise NoSuchPlace(screen=self, target=target)
+        if target.scene is not None and not HEADER_ROW < target.scene < len(self.scenes()):
+            raise NoSuchPlace(screen=self, target=target)
+        row = HEADER_ROW if target.scene is None else target.scene
+        column = SCENE_COLUMN if target.track is None else self.tracks().index(target.track) + FIRST_TRACK_COLUMN
+        if self.on_plus_row():
+            return Key.UP
+        if self.on_header() and row != HEADER_ROW:
+            return Key.DOWN
+        return key_between(here=self.column, there=column, back=Key.LEFT, forward=Key.RIGHT) or key_between(here=self.row, there=row)
 
     def clamp(self):
         self.row = max(min(self.row, len(self.scenes())), HEADER_ROW)
