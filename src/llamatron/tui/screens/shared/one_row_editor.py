@@ -81,7 +81,7 @@ class OneRowEditor(StepGrid, StepEditor):
         """Return the keys the page has beyond the row's own."""
         return []
 
-    def steps(self):
+    def step_count(self):
         return len(self.values())
 
     def value_here(self):
@@ -96,9 +96,9 @@ class OneRowEditor(StepGrid, StepEditor):
                 self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
                 self.bind(self.KEYS.TYPE, action=self.type_digit, wants_key=True),
             ]
-            if self.steps() < self.MOST_STEPS:
+            if self.step_count() < self.MOST_STEPS:
                 result.append(self.bind(self.INSERT, action=self.insert))
-            if self.steps() > self.FEWEST_STEPS:
+            if self.step_count() > self.FEWEST_STEPS:
                 result.append(self.bind(self.REMOVE, action=self.remove_step))
             result += self.more_keys()
         return result

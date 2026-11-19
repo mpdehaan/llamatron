@@ -303,7 +303,7 @@ class TestTieRow(UITest):
         render_song(self.document.song())
 
     async def test_shortening_past_a_tie_asks_first(self):
-        last = self.editor.steps() - 1
+        last = self.editor.step_count() - 1
         await self.press(*[Key.RIGHT] * last, Key.SPACE)
         await self.press(keybindings.PatternEditor.RESIZE)
         self.app.screen.value = str(last)

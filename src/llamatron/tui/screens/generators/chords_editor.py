@@ -103,7 +103,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
         name = song.get_scale_name()
         return None if name is None else song.get_named_scale(name)
 
-    def steps(self):
+    def step_count(self):
         return len(self.settings().get_chords())
 
     def keys(self):
@@ -121,9 +121,9 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
                 self.bind(self.KEYS.CHOOSE, action=self.pick_chord), self.bind(self.KEYS.NEXT_CHOICE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
                 self.bind(self.KEYS.CLEAR, action=lambda: self.changed_here(row=self.edited_row, value=None)),
             ]
-        if self.steps() < limits.MAX_PROGRESSION_CHORDS:
+        if self.step_count() < limits.MAX_PROGRESSION_CHORDS:
             result.append(self.bind(self.KEYS.INSERT_STEP, action=self.add_step))
-        if self.steps() > limits.MIN_PROGRESSION_CHORDS:
+        if self.step_count() > limits.MIN_PROGRESSION_CHORDS:
             result.append(self.bind(self.KEYS.REMOVE_STEP, action=self.remove_step_here))
         result.append(self.bind(self.KEYS.PICK, action=self.pick_progression))
         return result

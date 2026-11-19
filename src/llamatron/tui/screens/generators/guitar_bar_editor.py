@@ -60,7 +60,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
     def accents(self):
         return self.settings().get_accents()
 
-    def steps(self):
+    def step_count(self):
         return len(self.strokes())
 
     def store(self, *, strokes, accents, cell=None):
@@ -74,9 +74,9 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
             self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
             self.bind(self.KEYS.ACCENT, action=self.accent),
         ]
-        if self.steps() < generator_settings.MAX_GUITAR_BAR:
+        if self.step_count() < generator_settings.MAX_GUITAR_BAR:
             result.append(self.bind(self.KEYS.INSERT_CELL, action=self.insert))
-        if self.steps() > FEWEST_CELLS:
+        if self.step_count() > FEWEST_CELLS:
             result.append(self.bind(self.KEYS.REMOVE_CELL, action=self.remove_cell))
         return [*result, self.bind(self.KEYS.CELL_LENGTH, action=self.next_cell_length), self.bind(self.KEYS.READY_BARS, action=self.pick_ready_bar)]
 

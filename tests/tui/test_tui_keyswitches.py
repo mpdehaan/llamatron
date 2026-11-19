@@ -385,7 +385,7 @@ class TestKeyswitchesOnTheRoll(UITest):
     def top_row(self):
         """Return the roll's top row as drawn, the line under the header's lines, the step numbers and the heading's rule."""
         drawing = self.editor.roll_drawing
-        first, last = self.editor.first_step, self.editor.first_step + self.editor.steps()
+        first, last = self.editor.first_step, self.editor.first_step + self.editor.step_count()
         return drawing.grid_lines(first=first, last=last, pitches=drawing.pitches_shown(self.app.size.height))[roll_drawing.TOP_PITCH_LINE]
 
     async def test_the_key_opens_the_dialog_for_the_note_on_the_cursors_step_whatever_the_row(self):

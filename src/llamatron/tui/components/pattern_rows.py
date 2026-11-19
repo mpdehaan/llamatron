@@ -260,6 +260,6 @@ class PatternRows(BindsKeys):
         """Move the cursor a step or a row, stopping at the pattern's ends and the first and last row."""
         editor = self.editor
         if name in STEP_ARROWS:
-            editor.step = cursor_moved(place=editor.step, name=name, count=max(editor.steps(), 1))
+            editor.step = cursor_moved(place=editor.step, name=name, count=max(editor.step_count(), 1))
         else:
             self.row = cursor_moved(place=self.row, name=name, count=len(self.reachable()))

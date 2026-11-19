@@ -360,7 +360,7 @@ class PianoRoll(BindsKeys):
             rows = self.rows()
             self.pitch = rows[cursor_moved(place=rows.index(self.pitch), name=name, count=len(rows))]
         else:
-            editor.step = cursor_moved(place=editor.step, name=name, count=editor.steps())
+            editor.step = cursor_moved(place=editor.step, name=name, count=editor.step_count())
 
     def place_or_erase(self):
         """Draw a note of the entry size at the cursor, or take out the note already under the cursor, from any of the cells the note covers, exactly as Bksp does."""
