@@ -17,6 +17,8 @@
 """The Document's edits to the current song: its settings, tracks, scenes, registers and clips, and which groove each chooses."""
 
 
+from types import MethodType
+
 from llamatron.composition.clip_slot import ClipSlot, FIRST_MORPH_STYLE
 from llamatron.composition.file_format import ClipSlotSetting, RegisterSetting, Section
 from llamatron.composition.invalid_value import InvalidValue
@@ -26,6 +28,26 @@ from llamatron.composition.scene import Scene
 from llamatron.composition.track import Track
 from llamatron.composition.naming import copy_name
 
+
+# What a setter that takes a name of the song, or several, calls what it is given.
+ONE_NAME = 'name'
+MANY_NAMES = 'names'
+# The clip slot settings that are set by handing the setter the value alone.
+CLIP_SLOT_SETTERS = {
+    ClipSlotSetting.NAME: ClipSlot.set_name,
+    ClipSlotSetting.PATTERN_ORDER: ClipSlot.set_pattern_order,
+    ClipSlotSetting.REPEAT: ClipSlot.set_repeat,
+    ClipSlotSetting.DIRECTION: ClipSlot.set_direction,
+    ClipSlotSetting.MORPH_STYLE: ClipSlot.set_morph_style,
+    ClipSlotSetting.FOLLOW_ACTION: ClipSlot.set_follow_action,
+}
+# The clip slot settings that name things of the song: each setter, and what it calls the value, checked against the song.
+CLIP_SLOT_NAME_SETTERS = {
+    ClipSlotSetting.PATTERN: (ClipSlot.set_pattern_name, ONE_NAME),
+    ClipSlotSetting.PATTERNS: (ClipSlot.set_pattern_names, MANY_NAMES),
+    ClipSlotSetting.CHAINS: (ClipSlot.set_chain_names, MANY_NAMES),
+    ClipSlotSetting.SCALE: (ClipSlot.set_scale_name, ONE_NAME),
+}
 
 
 class SongEdits:
@@ -329,35 +351,20 @@ class SongEdits:
         """Set one setting of a clip slot by its file name, or None to leave it out and use its default."""
         clip_slot = self.clip_slot(index=index, track=track)
         song = self.song()
-        if setting == ClipSlotSetting.NAME:
-            self._change(clip_slot.set_name, value)
-        elif setting == ClipSlotSetting.PATTERN:
-            self._change(clip_slot.set_pattern_name, name=value, song=song)
-        elif setting == ClipSlotSetting.PATTERNS:
-            self._change(clip_slot.set_pattern_names, names=value, song=song)
-        elif setting == ClipSlotSetting.PATTERN_ORDER:
-            self._change(clip_slot.set_pattern_order, value)
-        elif setting == ClipSlotSetting.CHAINS:
-            self._change(clip_slot.set_chain_names, names=value, song=song)
+        if setting in CLIP_SLOT_SETTERS:
+            self._change(MethodType(CLIP_SLOT_SETTERS[setting], clip_slot), value)
+        elif setting in CLIP_SLOT_NAME_SETTERS:
+            setter, named = CLIP_SLOT_NAME_SETTERS[setting]
+            self._change(MethodType(setter, clip_slot), song=song, **{named: value})
         elif setting == ClipSlotSetting.CHAIN:
             # One chain by name, as a file from before lists of chains held it.
             self._change(clip_slot.set_chain_names, names=None if value is None else [value], song=song)
         elif setting == ClipSlotSetting.LOOP:
             self._change(clip_slot.set_loop, bool(value))
-        elif setting == ClipSlotSetting.REPEAT:
-            self._change(clip_slot.set_repeat, value)
-        elif setting == ClipSlotSetting.DIRECTION:
-            self._change(clip_slot.set_direction, value)
         elif setting == ClipSlotSetting.MORPH_TO:
             self.set_clip_slot_morph_target(index=index, track=track, pattern=value)
-        elif setting == ClipSlotSetting.MORPH_STYLE:
-            self._change(clip_slot.set_morph_style, value)
         elif setting == ClipSlotSetting.GRAB_TRACK:
             self._change(clip_slot.set_grab_track, name=value, song=song, own_track=track)
-        elif setting == ClipSlotSetting.FOLLOW_ACTION:
-            self._change(clip_slot.set_follow_action, value)
-        elif setting == ClipSlotSetting.SCALE:
-            self._change(clip_slot.set_scale_name, name=value, song=song)
 
     def set_clip_slot_repeat(self, *, index, track, repeat):
         """Set how many times a clip plays. Going back to once drops its morph, which runs across repeats."""
