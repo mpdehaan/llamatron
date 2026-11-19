@@ -45,7 +45,7 @@ from llamatron.tui.keys import Key, Steps
 import llamatron.tui.screens
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.shared import page as page_values
-from llamatron.tui.screens.shared.field import Button, Heading
+from llamatron.tui.screens.shared.field import Button
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.page import Page
@@ -248,6 +248,9 @@ def screen_text(app):
 
 # What the typing helper says when a test types with nothing open to type into.
 NOTHING_TAKES_TEXT = 'typing {text!r} would press the keys of {screen}, which takes no text'
+# The most keys a walk to a named place may take, so that a walk that can never arrive fails rather than hangs.
+MOST_MOVES = 400
+MSG_NEVER_REACHED = 'the cursor never reached {target}'
 
 class UITest(unittest.IsolatedAsyncioTestCase):
     """Runs the real program with no terminal, pressing keys."""
@@ -445,48 +448,27 @@ class UITest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(dialog.options[dialog.cursor.get_place()], option)
             await self.press(Key.ENTER)
             return
-        # The cursor stops at the ends of a picker, so the option is walked to from where the picker opened, up or down.
-        distance = dialog.options.index(option) - dialog.cursor.get_place()
-        await self.press(*[Key.DOWN if distance > 0 else Key.UP] * abs(distance), Key.ENTER)
+        await UITest.go_to(self, option)
+        await self.press(Key.ENTER)
+
+    async def go_to(self, target):
+        """Move the screen's cursor to what is named: a field or a button by its label, a list's row by what it lists, a picker's option by what it says.
+
+        The screen says which key leads there (key_toward), so a test names where it wants to be and
+        never counts presses, and a page that gains a field or a row breaks no test that does not care.
+        """
+        for _ in range(MOST_MOVES):
+            key = self.app.screen.key_toward(target)
+            if key is None:
+                return
+            await self.press(key)
+        self.fail(MSG_NEVER_REACHED.format(target=target))
+
+    def assert_cursor_on(self, target):
+        """Check that the screen's cursor is on what is named, as go_to() names it."""
+        self.assertEqual(self.app.screen.under_cursor(), target)
 
     async def select_field(self, label):
-        """Move a settings page's cursor to the field with this label, wherever the page puts it, among the fields that show, which leave out a closed section's."""
-        screen = self.app.screen
-        if hasattr(screen, 'move_in_grid'):
-            # The Registers page is a grid: the cell is reached with Down and Up, then Right and Left.
-            columns = len(screen.fields()) // len(file_format.REGISTER_NAMES)
-            row, column = divmod([field.label for field in screen.fields()].index(label), columns)
-            here_row, here_column = divmod(screen.cursor.get_place(), columns)
-            await self.press(*([Key.DOWN] * (row - here_row) if row > here_row else [Key.UP] * (here_row - row)))
-            await self.press(*([Key.RIGHT] * (column - here_column) if column > here_column else [Key.LEFT] * (here_column - column)))
-            return
-        if hasattr(screen, 'shown_fields') and label not in [field.label for field in screen.shown_fields()]:
-            # The field is in a closed section, so the section is opened first, as a person would.
-            heading = None
-            for field in (screen.every_field() if hasattr(screen, 'every_field') else screen.fields()):
-                if isinstance(field, Heading):
-                    heading = field
-                if field.label == label:
-                    break
-            if heading is not None and not screen.is_open(heading):
-                await self.select_field(heading.label)
-                await self.press(Key.ENTER)
-                screen = self.app.screen
-        labels = [field.label for field in (screen.shown_fields() if hasattr(screen, 'shown_fields') else screen.fields())]
-        target = labels.index(label)
-        first_button = screen.first_button_place() if hasattr(screen, 'first_button_place') else len(labels)
-        # The buttons are a row under the settings: Down reaches the first and Left and Right move along them,
-        # and Up from any of them goes back to the last setting.
-        if screen.cursor.get_place() >= first_button and target < first_button:
-            await self.press(*[Key.UP] * (screen.cursor.get_place() - first_button + 1 if hasattr(screen, 'buttons_stacked') and screen.buttons_stacked() else 1))
-        if target >= first_button:
-            if screen.cursor.get_place() < first_button:
-                await self.press(*[Key.DOWN] * (first_button - screen.cursor.get_place()))
-            offset = target - screen.cursor.get_place()
-            # Buttons too wide for a row stand one under another, and Down and Up go through them.
-            stacked = hasattr(screen, 'buttons_stacked') and screen.buttons_stacked()
-            forward, back = (Key.DOWN, Key.UP) if stacked else (Key.RIGHT, Key.LEFT)
-            await self.press(*([forward] * offset if offset > 0 else [back] * -offset))
-            return
-        offset = target - screen.cursor.get_place()
-        await self.press(*([Key.DOWN] * offset if offset > 0 else [Key.UP] * -offset))
+        """Move a settings page's cursor to the field with this label, wherever the page puts it, opening its section first where that is closed."""
+        await UITest.go_to(self, label)
+

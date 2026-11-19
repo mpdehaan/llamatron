@@ -21,7 +21,7 @@ from rich.text import Text
 from llamatron.composition import limits
 from llamatron.strings import errors, marks, messages
 from llamatron.tui import drawing, keybindings
-from llamatron.tui.cursor import Cursor, Search, shown_around
+from llamatron.tui.cursor import Cursor, key_between, place_of, Search, shown_around
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import cursor_mark, fit, Style
 from llamatron.tui.screens.shared.page import Page
@@ -158,6 +158,14 @@ class ListPage(Page):
     def current(self):
         rows = self.remembered_rows()
         return rows[self.cursor.get_place()][0] if rows and 0 <= self.cursor.get_place() < len(rows) else None
+
+    def under_cursor(self):
+        """Return what the cursor's row is, as current() does: None on the + row."""
+        return self.current()
+
+    def key_toward(self, target):
+        """Return the key that brings the cursor nearer the row that is the target, or None when the cursor is on it."""
+        return key_between(here=self.cursor.get_place(), there=place_of(screen=self, names=self.row_names(), target=target))
 
     def move_cursor(self, name):
         self.cursor.move_among(name=name, places=self.matches())

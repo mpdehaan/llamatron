@@ -46,7 +46,6 @@ from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs import new_pattern_dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.key_table import first_key
@@ -108,16 +107,6 @@ def step_value(*, pattern, row, step):
 def without_clips(scene_data):
     """Return a scene's data without its clips, which are built on their own."""
     return {setting: value for setting, value in scene_data.items() if setting != SceneSetting.TRACKS}
-
-
-def grid_place(*, dialog, place):
-    """Return the page, row and column of an option in a grid picker's pages."""
-    for page, cells in enumerate(dialog.page_cells):
-        for row in range(len(cells)):
-            for column in range(len(cells[row])):
-                if dialog.option_at(row=row, column=column, cells=cells) == place:
-                    return page, row, column
-    raise TutorialStuck(place)
 
 
 class TutorialStuck(Exception):
@@ -317,33 +306,26 @@ class TutorialPlan:
         """Move a picker's cursor to the option at a place in its whole list, and press Enter: Up and Down through a list, and the arrows and Tab through a grid."""
         dialog = self.screen()
         for _ in range(MOST_MOVES):
-            if dialog.cursor.get_place() == place:
+            key = dialog.key_toward_place(place)
+            if key is None:
                 yield from self.press(keybindings.ChoiceDialog.CHOOSE)
                 return
-            yield from self.press(self.towards_option(dialog=dialog, place=place))
+            yield from self.press(key)
         raise TutorialStuck(dialog.title)
 
-    def towards_option(self, *, dialog, place):
-        """Return the key that brings a picker's cursor nearer an option."""
-        if not isinstance(dialog, GridChoiceDialog):
-            return Key.UP if place < dialog.cursor.get_place() else Key.DOWN
-        page, target_row, target_column = grid_place(dialog=dialog, place=place)
-        if page != dialog.page:
-            return Key.TAB
-        row, column = dialog.where()
-        if target_row != row:
-            return Key.UP if target_row < row else Key.DOWN
-        return Key.LEFT if target_column < column else Key.RIGHT
+    def go_to(self, target):
+        """Move the screen's cursor to what is named, a field by its label or a row by what it lists, pressing the keys the screen says lead there."""
+        screen = self.screen()
+        for _ in range(MOST_MOVES):
+            key = screen.key_toward(target)
+            if key is None:
+                return
+            yield from self.press(key)
+        raise TutorialStuck(target)
 
     def select_field(self, label):
         """Move a settings page's cursor to the field with a label."""
-        page = self.screen()
-        for _ in range(MOST_MOVES):
-            labels = [field.label for field in page.fields()]
-            if labels[page.cursor.get_place()] == label:
-                return
-            yield from self.press(Key.UP if labels.index(label) < page.cursor.get_place() else Key.DOWN)
-        raise TutorialStuck(label)
+        yield from self.go_to(label)
 
     def set_field(self, *, label, answer):
         """Press Enter on a field and answer what opens: the text typed into a prompt, or the option chosen from a picker."""
@@ -364,13 +346,7 @@ class TutorialPlan:
 
     def go_to_list_row(self, key):
         """Move a list page's cursor to the row keyed by a name."""
-        page = self.screen()
-        for _ in range(MOST_MOVES):
-            if page.current() == key:
-                return
-            keys = page.row_names()
-            yield from self.press(Key.UP if keys.index(key) < page.cursor.get_place() else Key.DOWN)
-        raise TutorialStuck(key)
+        yield from self.go_to(key)
 
     # The song and the scales.
 
