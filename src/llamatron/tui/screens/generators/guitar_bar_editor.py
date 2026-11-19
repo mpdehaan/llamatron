@@ -75,9 +75,9 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         """Keep the bar, its accents and, where given, its cell's length, as one change."""
         document = self.document()
         length = self.guitar().get_cell() if cell is None else cell
-        document.set_generator_setting(section=self.SECTION, name=self.item, setting=GuitarifySetting.BAR, value=list(strokes))
-        document.set_generator_setting(section=self.SECTION, name=self.item, setting=GuitarifySetting.ACCENTS, value=list(accents))
-        document.set_generator_setting(section=self.SECTION, name=self.item, setting=GuitarifySetting.CELL, value=length)
+        document.change(document.generator(section=self.SECTION, name=self.item).set_setting, name=GuitarifySetting.BAR, value=list(strokes))
+        document.change(document.generator(section=self.SECTION, name=self.item).set_setting, name=GuitarifySetting.ACCENTS, value=list(accents))
+        document.change(document.generator(section=self.SECTION, name=self.item).set_setting, name=GuitarifySetting.CELL, value=length)
 
     def keys(self):
         self.keep_step()

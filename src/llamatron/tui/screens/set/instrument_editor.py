@@ -98,10 +98,10 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         self.set_gm_sound(None if sound <= NO_SOUND_PLACE else min(sound, limits.MAX_GM_SOUND))
 
     def set_gm_sound(self, sound):
-        self.document().set_instrument_gm_sound(name=self.item, sound=sound)
+        self.document().change(self.document().setlist().get_instrument(self.item).set_gm_sound, sound)
 
     def set_device(self, device):
-        self.document().set_instrument_device(name=self.item, device=device)
+        self.document().change(self.document().setlist().get_instrument(self.item).set_device, device)
 
     def page_keys(self):
         return [self.bind(self.KEYS.KEYSWITCH_MAP, action=self.open_keyswitch_map)]
@@ -109,15 +109,15 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
     def open_keyswitch_map(self):
         """Open the Keyswitch Map, whose ten slots go into the instrument together on OK, as one undo step."""
         dialog = KeyswitchMapDialog(title=messages.MSG_KEYSWITCH_MAP_TITLE.format(instrument=self.item), keyswitches=self.instrument().get_keyswitches(), setlist=self.document().setlist())
-        self.ask(dialog=dialog, then=lambda keyswitches: self.document().set_instrument_keyswitches(name=self.item, keyswitches=keyswitches))
+        self.ask(dialog=dialog, then=lambda keyswitches: self.document().change(self.document().setlist().get_instrument(self.item).set_keyswitches, keyswitches))
 
     def default_velocity_field(self):
         """Return the Default velocity field: what a step with no velocity typed plays at on the instrument's tracks, the loudest until set."""
         velocity = self.instrument().get_default_velocity()
         return NumberField(
             page=self, label=labels.MSG_DEFAULT_VELOCITY_LABEL, number=velocity, start=defaults.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY,
-            set=lambda number: self.document().set_instrument_default_velocity(name=self.item, velocity=number),
-            clear=lambda: self.document().set_instrument_default_velocity(name=self.item, velocity=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+            set=lambda number: self.document().change(self.document().setlist().get_instrument(self.item).set_default_velocity, number),
+            clear=lambda: self.document().change(self.document().setlist().get_instrument(self.item).set_default_velocity, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
         )
 
     def accent_field(self):
@@ -125,8 +125,8 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         accent = self.instrument().get_accent()
         return NumberField(
             page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT,
-            set=lambda number: self.document().set_instrument_accent(name=self.item, accent=number),
-            clear=lambda: self.document().set_instrument_accent(name=self.item, accent=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+            set=lambda number: self.document().change(self.document().setlist().get_instrument(self.item).set_accent, number),
+            clear=lambda: self.document().change(self.document().setlist().get_instrument(self.item).set_accent, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
         )
 
     def lead_field(self):
@@ -136,7 +136,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
             page=self, label=labels.MSG_KEYSWITCH_LEAD_LABEL, number=instrument.get_keyswitch_lead(), lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD,
             shown=marks.MSG_KEYSWITCH_LEAD_SHOWN.format(milliseconds=instrument.get_keyswitch_lead()),
             title=messages.MSG_KEYSWITCH_LEAD_PROMPT.format(lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD),
-            set=lambda milliseconds: self.document().set_instrument_keyswitch_lead(name=self.item, milliseconds=milliseconds or None),
+            set=lambda milliseconds: self.document().change(self.document().setlist().get_instrument(self.item).set_keyswitch_lead, milliseconds or None),
         )
 
     def channel_field(self):
@@ -147,7 +147,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         return NumberField(
             page=self, label=labels.MSG_CHANNEL_LABEL, number=instrument.get_channel(), lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL,
             title=messages.MSG_CHANNEL_PROMPT.format(lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL),
-            set=lambda channel: self.document().set_instrument_channel(name=self.item, channel=channel),
+            set=lambda channel: self.document().change(self.document().setlist().get_instrument(self.item).set_channel, channel),
         )
 
     def fields(self):

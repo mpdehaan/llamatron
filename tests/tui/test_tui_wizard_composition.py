@@ -91,7 +91,7 @@ class CompositionTest(WizardTest):
     def change_first_step(self):
         """Write another degree on the first step of the pattern the editor shows, as a key in the editor would."""
         editor = self.app.screen
-        editor.document().set_step_value(name=editor.item, row=Row.DEGREE, step=0, value=A_DEGREE)
+        editor.document().change(editor.document().setlist().get_pattern(editor.item).set_value, row=Row.DEGREE, step=0, value=A_DEGREE)
 
     def field_labels(self):
         return [getattr(field, LABEL, None) for field in self.wizard().shown_fields()]

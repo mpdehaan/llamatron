@@ -119,20 +119,20 @@ class ChainEditor(ShowsNamedItem, ListPage):
 
     def add(self):
         def chosen(*, kind, name):
-            self.document().add_chain_step(chain=self.item, kind=kind, name=name)
+            self.document().change(self.document().setlist().get_chain(self.item).add_step, kind=kind, name=name, setlist=self.document().setlist())
             self.place = len(self.steps()) - 1
         self.pick_generator(title=messages.MSG_ADD_TO_CHAIN_TITLE, then=chosen)
 
     def change(self):
         place = self.current()
-        self.pick_generator(title=messages.MSG_CHANGE_STEP_TITLE, then=lambda kind, name: self.document().set_chain_step(chain=self.item, place=place, kind=kind, name=name))
+        self.pick_generator(title=messages.MSG_CHANGE_STEP_TITLE, then=lambda kind, name: self.document().change(self.document().setlist().get_chain(self.item).set_step, place=place, kind=kind, name=name, setlist=self.document().setlist()))
 
     def copy(self):
-        self.document().copy_chain_step(chain=self.item, place=self.place)
+        self.document().change(self.document().setlist().get_chain(self.item).copy_step, self.place)
         self.place += 1
 
     def remove_step(self):
-        self.document().remove_chain_step(chain=self.item, place=self.place)
+        self.document().change(self.document().setlist().get_chain(self.item).remove_step, self.place)
         self.clamp()
 
     def shift(self, offset):

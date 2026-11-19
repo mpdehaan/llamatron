@@ -106,7 +106,7 @@ class TestMunge(UITest):
         self.assertEqual(self.row(), [3, 4, 5, 1, 2, 3, 4, 5])
 
     async def test_a_copy_that_would_pass_the_most_steps_is_refused(self):
-        self.document.set_steps(name=LONG, steps=limits.MAX_STEPS)
+        self.document.change(self.document.setlist().get_pattern(LONG).set_steps, limits.MAX_STEPS)
         await self.press(Key.RIGHT)
         for choice in (Munge.COPY_BEFORE_TO_END, Munge.MIRROR):
             with self.subTest(choice=choice):
@@ -196,8 +196,8 @@ class TestMunge(UITest):
         for choice in (Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES):
             await munge(test=self, choice=choice)
             self.assertIn(errors.ERR_VOICE_LEADING_NEEDS_CHORDS, self.text())
-        self.document.set_step_value(name=LONG, row=Row.CHORD, step=THIRD, value=ChordSymbol.SCALE_TRIAD)
-        self.document.set_step_value(name=LONG, row=Row.INVERSION, step=THIRD, value=FIRST_INVERSION)
+        self.document.change(self.document.setlist().get_pattern(LONG).set_value, row=Row.CHORD, step=THIRD, value=ChordSymbol.SCALE_TRIAD)
+        self.document.change(self.document.setlist().get_pattern(LONG).set_value, row=Row.INVERSION, step=THIRD, value=FIRST_INVERSION)
         await munge(test=self, choice=Munge.VOICE_LEADING)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertNotIn(errors.ERR_VOICE_LEADING_NEEDS_CHORDS, self.text())

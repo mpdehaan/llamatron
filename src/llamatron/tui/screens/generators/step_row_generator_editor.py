@@ -46,7 +46,7 @@ class StepRowGeneratorEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=self.KIND, name=self.item)
 
     def store(self, *, setting, value):
-        self.document().set_generator_setting(section=self.SECTION, name=self.item, setting=setting, value=value)
+        self.document().change(self.document().generator(section=self.SECTION, name=self.item).set_setting, name=setting, value=value)
 
     def amount_fields(self):
         """Return the fields of the generator's own amounts."""

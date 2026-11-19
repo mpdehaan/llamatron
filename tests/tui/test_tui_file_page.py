@@ -165,7 +165,7 @@ class TestFilePage(UITest):
         await self.press(Key.SPACE)
         self.assertTrue(self.document.setlist().is_protected())
         self.document.save(path='demo.yml')
-        self.document.set_tempo(OTHER_TEMPO)
+        self.document.change(self.document.song().set_tempo, OTHER_TEMPO)
         await self.press(Key.CTRL_S)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_PROTECTED_TITLE, self.text())
@@ -179,9 +179,9 @@ class TestFilePage(UITest):
         self.assertEqual(self.document.get_path(), 'copy.yml')
         self.assertFalse(self.document.is_dirty())
         # Saying no leaves everything as it was. Protecting a set is kept by saving it to a new file.
-        self.document.set_protected(True)
+        self.document.change(self.document.setlist().set_protected, True)
         self.document.save(path='second.yml')
-        self.document.set_tempo(OTHER_TEMPO + 1)
+        self.document.change(self.document.song().set_tempo, OTHER_TEMPO + 1)
         await self.press(Key.CTRL_S, keybindings.ConfirmDialog.NO)
         self.assertTrue(self.document.is_dirty())
         self.assertEqual(Document.load('second.yml').song().get_tempo(), OTHER_TEMPO)
@@ -192,7 +192,7 @@ class TestFilePage(UITest):
         self.assertEqual(Document.load('second.yml').song().get_tempo(), OTHER_TEMPO + 1)
 
     async def test_saving_a_protected_set_under_its_own_name_is_refused_in_a_dialog(self):
-        self.document.set_protected(True)
+        self.document.change(self.document.setlist().set_protected, True)
         self.document.save(path='demo.yml')
         # Unchanged, a protected set still gets the dialog rather than the status line.
         await self.press(Key.CTRL_S)
@@ -226,7 +226,7 @@ class TestFilePage(UITest):
         self.app.screen.value = 'tune.yml'
         await self.press(Key.ENTER)
         other = Document.load('tune.yml')
-        other.set_tempo(OTHER_TEMPO)
+        other.change(other.song().set_tempo, OTHER_TEMPO)
         other.save()
         await self.select_field(STEP_SIZE)
         await self.press(keybindings.FilePage.MORE)
@@ -309,7 +309,7 @@ class TestFilePageEdges(UITest):
         self.assertIsInstance(self.app.screen, OpenPage)
 
     async def test_choosing_a_scale_needs_one_first(self):
-        self.document.set_scale_name(None)
+        self.document.change(self.document.song().set_scale_name, None)
         for name in self.document.song().get_scale_names():
             self.document.delete_named(section=Section.SCALES, name=name)
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)

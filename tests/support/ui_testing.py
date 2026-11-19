@@ -330,7 +330,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     def empty_the_arrangement(self):
         """Delete every scene and then every track, through the document, as a page would."""
         for index in reversed(range(len(self.document.song().get_scenes()))):
-            self.document.delete_scene(index)
+            self.document.change(self.document.song().remove_scene, index)
         for name in self.document.song().get_track_names():
             self.document.delete_named(section=Section.TRACKS, name=name)
 
@@ -356,7 +356,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         self.document.add_pattern(name=name, steps=steps)
         for row, values in rows.items():
             for step, value in enumerate(values):
-                self.document.set_step_value(name=name, row=row, step=step, value=value)
+                self.document.change(self.document.setlist().get_pattern(name).set_value, row=row, step=step, value=value)
 
     def delete_every_generator(self):
         """Delete every arp and AutoRatchet, which the chains must have stopped using first."""

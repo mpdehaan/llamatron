@@ -44,7 +44,7 @@ class EuclidEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=GeneratorKind.EUCLID, name=self.item)
 
     def store(self, *, part, value):
-        self.document().set_generator_setting(section=Section.EUCLIDS, name=self.item, setting=part, value=value)
+        self.document().change(self.document().generator(section=Section.EUCLIDS, name=self.item).set_setting, name=part, value=value)
 
     def fields(self):
         return [NameField(value=lambda: self.item, rename=self.rename), *euclid_fields(page=self, value=self.euclid().get_euclid_setting, store=lambda part, value: self.store(part=part, value=value), prefixed=False), restart_field(self)]

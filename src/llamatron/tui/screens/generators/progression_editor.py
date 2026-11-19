@@ -62,7 +62,7 @@ class ProgressionEditor(ShowsNamedItem, FieldPage):
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(
                 page=self, label=labels.MSG_EVERY_LABEL, written=progression.get_every(), first=file_format.ONE_BAR_WRITTEN,
-                store=lambda value: self.document().set_generator_setting(section=Section.PROGRESSIONS, name=self.item, setting=ProgressionSetting.EVERY, value=value),
+                store=lambda value: self.document().change(self.document().generator(section=Section.PROGRESSIONS, name=self.item).set_setting, name=ProgressionSetting.EVERY, value=value),
             ),
             Field(label=labels.MSG_CHORDS_LABEL, value=lambda: numerals_text(progression=progression, scale=song_scale(self.document().song())), adjust=None,
                   enter=lambda: self.show_page(ChordsEditor(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),

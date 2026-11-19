@@ -42,7 +42,7 @@ class HocketEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=GeneratorKind.HOCKET, name=self.item)
 
     def store_source(self, source):
-        self.document().set_generator_setting(section=Section.HOCKETS, name=self.item, setting=HocketSetting.SOURCE, value=source)
+        self.document().change(self.document().generator(section=Section.HOCKETS, name=self.item).set_setting, name=HocketSetting.SOURCE, value=source)
 
     def sources(self):
         """Return the tracks the source can be: the current song's, sorted, and the Hocket's own source among them even when the song has no such track, so that it is seen and kept."""

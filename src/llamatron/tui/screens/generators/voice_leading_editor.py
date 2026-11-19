@@ -44,7 +44,7 @@ class VoiceLeadingEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=self.item)
 
     def store(self, *, setting, value):
-        self.document().set_generator_setting(section=Section.VOICE_LEADINGS, name=self.item, setting=setting, value=value)
+        self.document().change(self.document().generator(section=Section.VOICE_LEADINGS, name=self.item).set_setting, name=setting, value=value)
 
     def fields(self):
         voicing = self.voicing()

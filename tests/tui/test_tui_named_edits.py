@@ -117,7 +117,7 @@ class TestEveryNamedSectionIsEditedTheSameWay(unittest.TestCase):
                 document = a_document()
                 document.copy_named(section=section, name=names_of(document=document, section=section)[FIRST_PLACE])
                 document.move_named(section=section, place=FIRST_PLACE, offset=DOWN_ONE)
-                document.sort_named(section)
+                document.change(document.owner_of(section).sort_items, section)
                 names = names_of(document=document, section=section)
                 self.assertEqual(names, sorted(names, key=str.casefold))
 

@@ -162,7 +162,7 @@ class TestRecordDemo(unittest.TestCase):
 
     def test_a_dash_keeps_a_tracks_own_instrument_and_a_track_with_none_stays_silent(self):
         self.document.add_instrument(OWN)
-        self.document.set_instrument_device(name=OWN, device=OWN_PORT)
+        self.document.change(self.document.setlist().get_instrument(OWN).set_device, OWN_PORT)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=OWN)
         with contextlib.redirect_stdout(io.StringIO()) as said:
             self.tool.assign_tracks(document=self.document, channels=[None, None], port=PORT)
@@ -412,7 +412,7 @@ class TestRecordDemo(unittest.TestCase):
 
     def give_lead_fluidsynth(self):
         self.document.add_instrument(FLUID)
-        self.document.set_instrument_device(name=FLUID, device=file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
 
     def test_with_fluidsynth_the_sets_own_instruments_play_into_the_recorded_device_with_no_port(self):

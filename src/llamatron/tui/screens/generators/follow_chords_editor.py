@@ -42,7 +42,7 @@ class FollowChordsEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=self.item)
 
     def store_chords_from(self, track):
-        self.document().set_generator_setting(section=Section.FOLLOW_CHORDS, name=self.item, setting=FollowChordsSetting.CHORDS_FROM, value=track)
+        self.document().change(self.document().generator(section=Section.FOLLOW_CHORDS, name=self.item).set_setting, name=FollowChordsSetting.CHORDS_FROM, value=track)
 
     def tracks(self):
         """Return the tracks that can be followed: the current song's, sorted, and the one followed among them even when the song has no such track, so that it is seen and kept."""

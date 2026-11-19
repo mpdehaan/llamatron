@@ -33,7 +33,7 @@ class PatternEdits:
     """The changes the pattern editor makes, each through the pattern's own setters, and what the editor asks about a pattern on every row and cell.
 
     It holds no data of its own: it works on what Document keeps, through `self._setlist`,
-    `self.song()` and `self._change(method, ...)`, which makes one change through an object's own
+    `self.song()` and `self.change(method, ...)`, which makes one change through an object's own
     method and notes it.
     Answers are kept through `self.remembered(key=, on=, compute=)` until what they came from changes.
     """
@@ -51,13 +51,10 @@ class PatternEdits:
         if steps is None:
             steps = self.song().steps_in_a_bar() or NEW_PATTERN_STEPS
         made = Pattern(steps=steps, rows={}, group=group, drum=True if drum else None, scale_length=None if drum else scale_length)
-        self._change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=made)
+        self.change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=made)
 
     def pattern_scale_length(self, name):
         return self._pattern(name).get_scale_length()
-
-    def set_pattern_scale_length(self, *, name, scale_length):
-        self._change(self._pattern(name).set_scale_length, scale_length)
 
     def scale_length_for_pattern(self, name):
         """Return the scale length a pattern would take from the one scale it plays under, or None where it plays under several or the scale is of a size no scale length says."""
@@ -77,44 +74,12 @@ class PatternEdits:
     def pattern_group(self, name):
         return self._pattern(name).get_group()
 
-    def set_pattern_group(self, *, name, group):
-        self._change(self._pattern(name).set_group, group)
-
-    def rename_pattern_group(self, *, old, new):
-        self._change(self._setlist.rename_pattern_group, old=old, new=new)
-
-    def ungroup_patterns(self, group):
-        self._change(self._setlist.ungroup_patterns, group)
-
-    def copy_pattern_group(self, *, group, new):
-        """Copy a whole group under a new name and return the copies' names, or raise ValueError when a copy's name would be too long."""
-        return self._change(self._setlist.copy_pattern_group, group=group, new=new)
-
-    def split_pattern(self, *, name, steps):
-        """Make new patterns of a pattern's steps, so many each, and return their names, or raise ValueError when a name would be too long."""
-        return self._change(self._setlist.split_pattern, name=name, steps=steps)
-
-    def fracture_song(self):
-        """Give every clip of the current song a pattern of its own, and return the names of the copies made."""
-        return self._change(self._setlist.fracture, self.song())
-
     def show_pattern_group(self, *, group, closed):
         """Show a group closed or open on the Patterns page, which is no change to the set: nothing to undo and nothing to save."""
         self._setlist.show_pattern_group(group=group, closed=closed)
 
     def step_value(self, *, name, row, step):
         return self._pattern(name).get_value(row=row, step=step)
-
-    def set_step_value(self, *, name, row, step, value):
-        self._change(self._pattern(name).set_value, row=row, step=step, value=value)
-
-    def set_step_statement(self, *, name, kind, step, statement):
-        """Give a step of a pattern a statement of a kind about the registers, or None to take the step's away."""
-        self._change(self._pattern(name).set_statement, kind=kind, step=step, statement=statement)
-
-    def clear_sound(self, *, name, step):
-        """Empty a step, which keeps only its CC values, since they don't need a note."""
-        self._change(self._pattern(name).clear_sound, step)
 
     # Notes as the piano roll handles them: by the steps they cover, through ties or a gate. The pattern knows how
     # (composition/pattern_notes.py); the document adds the pattern's step size and entry size, which the set may give it.
@@ -157,7 +122,7 @@ class PatternEdits:
 
     def place_note(self, *, name, step, degree, octave, accidental=None):
         """Draw a note of the pattern's entry size on a step, cutting the note it lands in."""
-        self._change(
+        self.change(
             self._pattern(name).draw_note, step=step, degree=degree, octave=octave, accidental=accidental,
             length=self.entry_size(name), step_size=self._step_size(name),
         )
@@ -185,7 +150,7 @@ class PatternEdits:
         start = self._note_start(name=name, step=step)
         if start is None:
             return False
-        self._change(self._pattern(name).cycle_accidental, start)
+        self.change(self._pattern(name).cycle_accidental, start)
         return True
 
     def pattern_octave_range(self, name):
@@ -220,35 +185,6 @@ class PatternEdits:
         """Return how many steps from a position onward hold a note or a CC value."""
         return self._pattern(name).steps_with_anything_from(steps)
 
-    def set_steps(self, *, name, steps):
-        """Change how many steps a pattern has, cutting them or adding empty steps at the end."""
-        self._change(self._pattern(name).set_steps, steps)
-
-    def insert_step(self, *, name, step):
-        self._change(self._pattern(name).insert_step, step)
-
-    def remove_step(self, *, name, step):
-        self._change(self._pattern(name).remove_step, step)
-
-    def set_drum(self, *, name, drum):
-        """Change a pattern's type, which clears the notes because they mean something else."""
-        self._change(self._pattern(name).set_drum, drum)
-
-    def set_direction(self, *, name, direction):
-        self._change(self._pattern(name).set_direction, direction)
-
-    def set_step_size(self, *, name, step_size):
-        """Give a pattern its own step size, or None to use the set's."""
-        self._change(self._pattern(name).set_step_size, step_size)
-
-    def set_pattern_time_signature(self, *, name, time_signature):
-        """Give a pattern its own time signature, written like 6/8, or None to use the song's."""
-        self._change(self._pattern(name).set_time_signature, time_signature)
-
-    def set_pattern_entry_size(self, *, name, entry_size):
-        """Give a pattern its own entry size, written like 1/8, or None to use the song's."""
-        self._change(self._pattern(name).set_entry_size, entry_size)
-
     def entry_size(self, name):
         """Return how long a note placed on a pattern's piano roll lasts, in whole notes."""
         return self.song().entry_size_for(self._pattern(name))
@@ -258,37 +194,17 @@ class PatternEdits:
         entry_size = self._pattern(name).get_written_entry_size()
         return None if entry_size is None else str(entry_size)
 
-    def reverse_after(self, *, name, step):
-        """Reverse every step after this one."""
-        self._change(self._pattern(name).reverse_after, step)
-
-    def reverse_before(self, *, name, step):
-        """Reverse every step before this one."""
-        self._change(self._pattern(name).reverse_before, step)
-
-    def reverse_steps(self, name):
-        """Reverse the whole pattern, and return where a step ends up."""
-        self._change(self._pattern(name).reverse)
-
-    def pivot_around(self, *, name, step):
-        """Swap what's before this step with what's after it, and return where the step ends up."""
-        return self._change(self._pattern(name).pivot_around, step)
-
-    def shuffle_steps(self, name):
-        """Put the steps in a random order, drawn from the program's own random stream rather than any seed."""
-        self._change(self._pattern(name).shuffle)
-
     def divide_long_notes(self, name):
         """Make a note of every step a pattern's long notes cover, by the step size the pattern plays at."""
-        self._change(self._pattern(name).divide_long_notes, step_size=self._step_size(name))
+        self.change(self._pattern(name).divide_long_notes, step_size=self._step_size(name))
 
     def munge_pattern(self, *, name, way, **named):
         """Change a pattern as one of the Munge dialog's choices does: way is the method of Pattern that makes the edit, called with what is named, and what it returns is returned."""
-        return self._change(MethodType(way, self._pattern(name)), **named)
+        return self.change(MethodType(way, self._pattern(name)), **named)
 
     def load_over(self, *, name, other):
         """Replace a pattern's contents with a copy of another's, keeping its name."""
-        self._change(self._setlist.replace_item, section=Section.PATTERNS, name=name, item=self._pattern(other).copy())
+        self.change(self._setlist.replace_item, section=Section.PATTERNS, name=name, item=self._pattern(other).copy())
 
     def has_grab_steps(self, name):
         """Return whether a pattern has any steps marked to grab."""

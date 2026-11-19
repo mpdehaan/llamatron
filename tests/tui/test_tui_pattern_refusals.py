@@ -73,7 +73,7 @@ class TestPatternEditorRefusals(UITest):
     async def test_load_over_needs_another_pattern(self):
         # Only one pattern can stay, so the scenes that play the others go first, as a person would have to delete them.
         for index in reversed(range(len(self.document.song().get_scenes()))):
-            self.document.delete_scene(index)
+            self.document.change(self.document.song().remove_scene, index)
         for name in self.document.song().get_pattern_names():
             if name != TUNE:
                 self.document.delete_named(section=Section.PATTERNS, name=name)
@@ -158,7 +158,7 @@ class TestPatternEditorRefusals(UITest):
         self.assertEqual(self.document.step_value(name=OTHER, row=Row.OCTAVE, step=0), self.document.song().get_default_octave() + 1)
 
     async def test_a_long_pattern_draws_one_grid_and_says_which_steps_show(self):
-        self.document.set_steps(name=TUNE, steps=LONG)
+        self.document.change(self.document.setlist().get_pattern(TUNE).set_steps, LONG)
         await self.open(TUNE)
         self.assertEqual(self.text().count(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE])), 1)
         shown = self.app.screen.drawing.steps_shown(self.SIZE[0])

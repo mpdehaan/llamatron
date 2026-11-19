@@ -131,7 +131,7 @@ class TestGroovesPage(UITest):
 
     async def test_a_groove_in_use_cannot_be_deleted(self):
         await self.press(keybindings.GroovesPage.ADD, Key.ESCAPE)
-        self.document.set_track_groove(name=ui_testing.DRUMS, choice=GROOVE_1)
+        self.document.change(self.document.song().get_track(ui_testing.DRUMS).set_groove_choice, choice=GROOVE_1, song=self.document.song())
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(messages.MSG_USE_SONG_TRACK.format(song=THE_SONG, track=ui_testing.DRUMS), self.text())
@@ -175,7 +175,7 @@ class TestGrooveEditor(UITest):
     async def test_the_name_is_shown_and_n_renames_it_everywhere(self):
         self.assertIn(marks.MSG_GROOVE_NAME_SHOWN.format(label=labels.MSG_NAME_LABEL, name=GROOVE_1).strip(), self.text())
         await self.press(Key.ESCAPE)
-        self.document.set_track_groove(name=ui_testing.DRUMS, choice=GROOVE_1)
+        self.document.change(self.document.song().get_track(ui_testing.DRUMS).set_groove_choice, choice=GROOVE_1, song=self.document.song())
         await self.press(Key.ENTER, keybindings.GrooveEditor.RENAME)
         self.app.screen.value = SHUFFLE
         await self.press(Key.ENTER)

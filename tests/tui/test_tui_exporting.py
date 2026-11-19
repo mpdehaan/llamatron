@@ -155,7 +155,7 @@ class TestExporting(UITest):
 
     def loop_every_clip_in_scene(self, *, index, name):
         """Name a scene and set its one clip to loop, so that the scene would never end."""
-        self.document.set_scene_name(index=index, name=name)
+        self.document.change(self.document.song().get_scene(index).set_name, name)
         self.document.set_clip_slot_setting(index=index, track=LEAD, setting=ClipSlotSetting.LOOP, value=True)
 
     def dialog_words(self):
