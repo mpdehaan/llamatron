@@ -30,10 +30,11 @@ from textual.widgets import Static
 
 from llamatron.composition import limits
 from llamatron.composition.naming import is_taken
-from llamatron.strings import errors, help as help_text, labels, marks as marks_text
+from llamatron.strings import errors, help as help_text, labels, marks as marks_text, messages as messages_text
 from llamatron.tui import caption_strip, drawing, keybindings
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -264,6 +265,17 @@ class Page(BindsKeys, Screen):
         values = list(values)
         place = values.index(current) if current in values else 0
         self.ask(dialog=ChoiceDialog(title=title, options=list(values if shown is None else shown), current=place), then=lambda chosen: then(values[chosen]))
+
+    def confirm(self, *, title, lines, then, starts_on_no=False, deletes=False):
+        """Ask a question that yes or no answers, and run a function on yes alone.
+
+        starts_on_no is for a question whose yes is easy to give by accident, and deletes for one about deleting, whose title is drawn as a warning.
+        """
+        self.ask(dialog=ConfirmDialog(title=title, messages=list(lines), starts_on_no=starts_on_no, deletes=deletes), then=lambda _: then())
+
+    def confirm_delete(self, *, lines, then):
+        """Ask whether to delete something, under the one title every deletion is asked under, and run a function on yes alone."""
+        self.confirm(title=messages_text.MSG_DELETE_TITLE, lines=lines, then=then)
 
     def tell(self, title, *lines):
         self.app.push_screen(MessageDialog(title=title, messages=list(lines)))

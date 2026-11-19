@@ -44,7 +44,6 @@ from llamatron.tui.components.scene_view import SceneView
 from llamatron.tui.components.stage_drawing import frame_box, inside_of, visualizer_area
 from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import laid_over, padded, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
@@ -291,7 +290,7 @@ class ArrangePage(Page):
 
     def ask_to_fracture(self):
         """Ask before giving every clip of the song a pattern of its own, which a finished song wants so that its sections can be edited apart."""
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_FRACTURE_TITLE, messages=[messages.MSG_FRACTURE_QUESTION]), then=lambda _: self.fracture())
+        self.confirm(title=messages.MSG_FRACTURE_TITLE, lines=[messages.MSG_FRACTURE_QUESTION], then=self.fracture)
 
     def fracture(self):
         copies = self.document().change(self.document().setlist().fracture, self.document().song())
@@ -707,7 +706,7 @@ class ArrangePage(Page):
         message = [messages.MSG_DELETE_SCENE_QUESTION.format(name=scene_name(scene=scene, index=self.row))]
         if count:
             message.append(messages.MSG_ALSO_DELETES_CLIPS.format(count=count))
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=lambda _: self.document().change(self.document().song().remove_scene, self.row))
+        self.confirm_delete(lines=message, then=lambda: self.document().change(self.document().song().remove_scene, self.row))
 
     # Move mode: M on a scene's name, a track's name or a clip picks it up, the arrows carry it, a clip only into an
     # empty cell, and Enter, Esc or M drops it where it is. The box around it is green while it's carried.
@@ -816,7 +815,7 @@ class ArrangePage(Page):
         grabbing = grabbers(song=document.song(), song_name=document.current_song_name(), track=name)
         if grabbing:
             message.append(messages.MSG_GRABBERS_STOP.format(count=len(grabbing)))
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=lambda _: document.delete_named(section=Section.TRACKS, name=name))
+        self.confirm_delete(lines=message, then=lambda: document.delete_named(section=Section.TRACKS, name=name))
 
     def shift_track(self, offset):
         """Move the cursor's track one place left or right, the cursor going with it."""
@@ -868,4 +867,4 @@ class ArrangePage(Page):
     def delete_clip(self):
         track = self.track()
         row = self.row
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=[messages.MSG_DELETE_CLIP_QUESTION.format(track=track)]), then=lambda _: self.document().change(self.document().song().get_scene(row).remove_clip_slot, track))
+        self.confirm_delete(lines=[messages.MSG_DELETE_CLIP_QUESTION.format(track=track)], then=lambda: self.document().change(self.document().song().get_scene(row).remove_clip_slot, track))
