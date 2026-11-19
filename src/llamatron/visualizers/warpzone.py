@@ -34,7 +34,6 @@ from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 # A ball: its speed as a share of the area's height a second at 120 a minute, its radius in dots, how it starts off by track, and how bright at rest and playing.
 BALL_SPEED = 0.16
@@ -89,7 +88,7 @@ class Ring:
 class WarpZone(Visualizer):
     """Balls bouncing at the tempo's speed, sending out fine rings as their tracks play, in Braille."""
 
-    __slots__ = ('_rows', '_columns', '_balls', '_rings', '_last', '_cells', '_disc')
+    __slots__ = ('_rows', '_columns', '_balls', '_rings', '_cells', '_disc')
 
     NAME = visualizers.MSG_WARPZONE
     OPTION = 'warpzone'
@@ -98,7 +97,6 @@ class WarpZone(Visualizer):
         super().__init__()
         self._balls = {}
         self._rings = []
-        self._last = None
         self._cells = CellPainter()
         self._rows = 0
         self._columns = 0
@@ -116,8 +114,7 @@ class WarpZone(Visualizer):
             self._rows, self._columns = rows, columns
             for ball in self._balls.values():
                 ball.place = numpy.clip(ball.place, 0, [rows - 1, columns - 1])
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self.hear(heard=heard, now=now)
         self.move(seconds=seconds * heard.tempo_factor(), energy_seconds=seconds)
         dots = numpy.zeros((rows, columns), dtype=bool)

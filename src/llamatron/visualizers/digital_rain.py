@@ -34,7 +34,6 @@ from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 LOWEST_PITCH = 24
 HIGHEST_PITCH = 96
@@ -70,7 +69,7 @@ BEATS_PER_SECOND_AT_120 = 2.0
 class DigitalRain(Visualizer):
     """Green ones and zeros falling, a stream for each note."""
 
-    __slots__ = ('_cells', '_chooser', '_rows', '_columns', '_glyphs', '_streams', '_last', '_energy', '_target', '_owed')
+    __slots__ = ('_cells', '_chooser', '_rows', '_columns', '_glyphs', '_streams', '_energy', '_target', '_owed')
 
     NAME = visualizers.MSG_DIGITAL_RAIN
     OPTION = 'digital_rain'
@@ -85,7 +84,6 @@ class DigitalRain(Visualizer):
         self._glyphs = []
         # Each stream is a row of: its column, its head's row, its speed in rows a beat, its tail's length in rows and its brightness.
         self._streams = numpy.zeros((0, 5))
-        self._last = None
         self._energy = 0.0
         self._target = 0.0
         self._owed = 0.0
@@ -106,8 +104,7 @@ class DigitalRain(Visualizer):
             return []
         if (height, width) != (self._rows, self._columns):
             self.cleared(rows=height, columns=width)
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
         self.fall_quietly(seconds)
         rise = ENERGY_RISE_PER_SECOND * seconds

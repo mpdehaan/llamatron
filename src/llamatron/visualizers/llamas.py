@@ -61,7 +61,6 @@ SHRINK_BELOW = 0.2
 SIZE_HOLD_SECONDS = 2.0
 # Colours are rounded to steps of this, out of 255, so that styles are reused.
 COLOUR_STEP = 8
-LONGEST_FRAME_SECONDS = 0.2
 SPACE = ' '
 WHOLE = 255
 
@@ -91,7 +90,7 @@ class Llama:
 class Llamas(Visualizer):
     """A parade of ASCII llamas, one for each track that plays."""
 
-    __slots__ = ('_llamas', '_last', '_motion', '_styles', '_drawings')
+    __slots__ = ('_llamas', '_motion', '_styles', '_drawings')
 
     NAME = visualizers.MSG_LLAMAS
     OPTION = 'llamas'
@@ -99,7 +98,6 @@ class Llamas(Visualizer):
     def __init__(self):
         super().__init__()
         self._llamas = {}
-        self._last = None
         self._motion = 0.0
         self._styles = {}
         self._drawings = {(size, facing): (mirrored(drawing) if facing > 0 else drawing) for size, drawing in enumerate(SIZES) for facing in (1, -1)}
@@ -115,8 +113,7 @@ class Llamas(Visualizer):
     def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if not width or not height:
             return []
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         tempo = heard.tempo_factor()
         self._motion += seconds * tempo
         self.hear(heard=heard, width=width, height=height)

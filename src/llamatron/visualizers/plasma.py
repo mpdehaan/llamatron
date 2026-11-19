@@ -37,7 +37,6 @@ from llamatron.visualizers.visualizer import Visualizer
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 # The waves: how many waves fit across the area for each, and how fast each moves, in radians a second at 120 a minute.
 ACROSS_WAVES = 1.6
@@ -93,7 +92,7 @@ def palette_of(colours):
 class Plasma(Visualizer):
     """Sine waves drifting in the playing tracks' colours."""
 
-    __slots__ = ('_rows', '_columns', '_grid', '_edges', '_time', '_last', '_nudge', '_energy', '_target', '_colours', '_palette', '_limiter')
+    __slots__ = ('_rows', '_columns', '_grid', '_edges', '_time', '_nudge', '_energy', '_target', '_colours', '_palette', '_limiter')
 
     NAME = visualizers.MSG_PLASMA
     OPTION = 'plasma'
@@ -102,7 +101,6 @@ class Plasma(Visualizer):
     def __init__(self):
         super().__init__()
         self._time = 0.0
-        self._last = None
         self._nudge = 0.0
         self._energy = 0.0
         self._target = 0.0
@@ -123,8 +121,7 @@ class Plasma(Visualizer):
         self._edges = (1.0 + EDGE_BOOST * reach)[:, :, None]
 
     def pixels(self, *, now, heard=heard_values.SILENCE):
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
         rise = ENERGY_RISE_PER_SECOND * seconds
         self._energy += max(-rise, min(rise, self._target - self._energy))

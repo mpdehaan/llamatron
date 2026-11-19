@@ -54,8 +54,7 @@ from llamatron.visualizers.warp import Rotozoom
 # The derez: how much finer the simulation is than the big pixels, each way, and the colour steps the big pixels are rounded to.
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
-# Time: the longest a frame may count as, so that a stall doesn't jump everything, and the frame the per-frame amounts are reckoned at.
-LONGEST_FRAME_SECONDS = 0.2
+# Time: the frame the per-frame amounts are reckoned at.
 REFERENCE_FRAME_SECONDS = 0.05
 # The water: how many steps it takes a frame, and how quickly its waves die away (a larger shift, slower).
 WAVE_STEPS = 2
@@ -124,7 +123,7 @@ class Blob:
 class LavaLamp(Visualizer):
     """Drifting blobs of colour, one for each track that plays, rippling the water they float in."""
 
-    __slots__ = ('_rows', '_columns', '_water', '_water_before', '_colour', '_blobs', '_motion', '_last', '_discs', '_rotozoom', '_limiter', '_places')
+    __slots__ = ('_rows', '_columns', '_water', '_water_before', '_colour', '_blobs', '_motion', '_discs', '_rotozoom', '_limiter', '_places')
 
     NAME = visualizers.MSG_LAVA_LAMP
     OPTION = 'lava_lamp'
@@ -138,7 +137,6 @@ class LavaLamp(Visualizer):
         )
         self._blobs = {}
         self._motion = 0.0
-        self._last = None
         self.resized(columns=0, rows=0)
 
     def resized(self, *, columns, rows):
@@ -163,8 +161,7 @@ class LavaLamp(Visualizer):
         return int(down * (self._rows - 1)), int(across * (self._columns - 1))
 
     def pixels(self, *, now, heard=heard_values.SILENCE):
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self._motion += seconds * heard.tempo_factor() * DRIFT_SPEED
         self.hear(heard)
         self.settle(seconds)

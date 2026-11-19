@@ -33,7 +33,6 @@ from llamatron.visualizers.colour import track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 # How a note moves a walker: the steps it adds for the softest and the loudest note, and how many steps a walker takes a second at 120 a minute.
 FEWEST_STEPS = 1
@@ -116,7 +115,7 @@ class Walker:
 class Maze(Visualizer):
     """A maze in box characters, threaded by a walker for each track."""
 
-    __slots__ = ('_rows', '_columns', '_walls', '_corridors', '_wall_characters', '_trodden', '_ages', '_owners', '_walkers', '_last', '_chooser', '_fading', '_cells')
+    __slots__ = ('_rows', '_columns', '_walls', '_corridors', '_wall_characters', '_trodden', '_ages', '_owners', '_walkers', '_chooser', '_fading', '_cells')
 
     NAME = visualizers.MSG_MAZE
     OPTION = 'maze'
@@ -124,7 +123,6 @@ class Maze(Visualizer):
     def __init__(self):
         super().__init__()
         self._chooser = random.Random(SEED)
-        self._last = None
         self._cells = CellPainter()
         self._rows = 0
         self._columns = 0
@@ -166,8 +164,7 @@ class Maze(Visualizer):
             return []
         if (height, width) != (self._rows, self._columns):
             self.made(rows=height, columns=width)
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self._ages += seconds
         if self._fading is not None:
             self._fading += seconds

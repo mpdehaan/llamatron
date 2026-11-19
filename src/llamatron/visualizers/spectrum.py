@@ -54,8 +54,6 @@ CAP_CHARACTER = '▀'
 CAP_COLOUR = (200, 200, 210)
 # The colours up a bar's height, from the bottom, as WinAmp's were, kept under the ceiling so they never glare.
 GRADIENT = ((40, 190, 80), (230, 205, 50), (225, 70, 45))
-# The longest a frame may count as, so that a stall doesn't drop every bar at once.
-LONGEST_FRAME_SECONDS = 0.2
 # A bar's top, by how many eighths of its top row it fills.
 EIGHTHS = ' ▁▂▃▄▅▆▇█'
 FULL_ROW = 8
@@ -78,14 +76,13 @@ def gradient_colour(height):
 class Spectrum(Visualizer):
     """Bars of bands of pitches, rising with the notes heard and falling after, with caps that hang and drop."""
 
-    __slots__ = ('_levels', '_targets', '_caps', '_cap_ages', '_last', '_row_styles', '_cap_style')
+    __slots__ = ('_levels', '_targets', '_caps', '_cap_ages', '_row_styles', '_cap_style')
 
     NAME = visualizers.MSG_SPECTRUM
     OPTION = 'spectrum'
 
     def __init__(self):
         super().__init__()
-        self._last = None
         self._row_styles = {}
         self._cap_style = Style(color=Color.from_rgb(*CAP_COLOUR))
         self.resized(columns=0, rows=0)
@@ -110,8 +107,7 @@ class Spectrum(Visualizer):
             self.reset(bands=bands_across(width))
         if not width or not height:
             return []
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
         self.settle(seconds)
         return self.drawn(width=width, height=height)

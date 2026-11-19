@@ -34,7 +34,6 @@ from llamatron.visualizers.colour import track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 # How a note grows a pipe: the cells it adds for the softest and the loudest note, and how many cells a pipe lays a second at 120 a minute.
 FEWEST_CELLS = 1
@@ -86,7 +85,7 @@ class Pipe:
 class Pipes(Visualizer):
     """A pipe for each track, laid in box characters as its notes play."""
 
-    __slots__ = ('_rows', '_columns', '_pipes', '_characters', '_owners', '_ages', '_last', '_chooser', '_fading', '_cells')
+    __slots__ = ('_rows', '_columns', '_pipes', '_characters', '_owners', '_ages', '_chooser', '_fading', '_cells')
 
     NAME = visualizers.MSG_PIPES
     OPTION = 'pipes'
@@ -94,7 +93,6 @@ class Pipes(Visualizer):
     def __init__(self):
         super().__init__()
         self._pipes = {}
-        self._last = None
         self._chooser = random.Random(SEED)
         self._fading = None
         self._cells = CellPainter()
@@ -120,8 +118,7 @@ class Pipes(Visualizer):
             return []
         if (height, width) != (self._rows, self._columns):
             self.cleared(rows=height, columns=width)
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         if self._fading is not None:
             self._fading += seconds
             if self._fading >= FADE_SECONDS:

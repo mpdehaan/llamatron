@@ -37,7 +37,6 @@ from llamatron.visualizers.colour import note_colour, track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 # The stars: how many, how fast they come, as a share of their depth a second at 120 a minute, how near they come before they start again far off, their colour, and how many a note tints.
 STARS = 160
@@ -88,7 +87,7 @@ class Polygon:
 class Mystify(Visualizer):
     """Polygons bouncing with trails over a starfield, in Braille."""
 
-    __slots__ = ('_rows', '_columns', '_polygons', '_stars', '_star_colours', '_chooser', '_last', '_cells')
+    __slots__ = ('_rows', '_columns', '_polygons', '_stars', '_star_colours', '_chooser', '_cells')
 
     NAME = visualizers.MSG_MYSTIFY
     OPTION = 'mystify'
@@ -97,7 +96,6 @@ class Mystify(Visualizer):
         super().__init__()
         self._polygons = {}
         self._chooser = random.Random(SEED)
-        self._last = None
         self._cells = CellPainter()
         self._stars = numpy.array([[self._chooser.uniform(-1, 1), self._chooser.uniform(-1, 1), self._chooser.uniform(NEAREST, 1)] for _ in range(STARS)])
         self._star_colours = numpy.tile(numpy.array(STAR_COLOUR, dtype=float), (STARS, 1))
@@ -113,8 +111,7 @@ class Mystify(Visualizer):
             return []
         self._rows = height * cells.BRAILLE_ROWS
         self._columns = width * cells.BRAILLE_COLUMNS
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         tempo = heard.tempo_factor()
         self.hear(heard)
         self.fly(seconds * tempo)

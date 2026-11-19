@@ -38,7 +38,6 @@ from llamatron.visualizers.visualizer import Visualizer
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
-LONGEST_FRAME_SECONDS = 0.2
 REFERENCE_FRAME_SECONDS = 0.05
 SEED = 1
 LOWEST_PITCH = 28
@@ -97,7 +96,7 @@ class Rocket:
 class Fireworks(Visualizer):
     """Rockets for notes, bursting into sparks that fall and fade with trails."""
 
-    __slots__ = ('_rows', '_columns', '_picture', '_rockets', '_places', '_speeds', '_colours', '_ages', '_lives', '_last', '_chooser', '_limiter', '_launched')
+    __slots__ = ('_rows', '_columns', '_picture', '_rockets', '_places', '_speeds', '_colours', '_ages', '_lives', '_chooser', '_limiter', '_launched')
 
     NAME = visualizers.MSG_FIREWORKS
     OPTION = 'fireworks'
@@ -106,7 +105,6 @@ class Fireworks(Visualizer):
         super().__init__()
         self._rockets = []
         self._launched = 0
-        self._last = None
         self._chooser = random.Random(SEED)
         self._limiter = Limiter(
             mean_level=MEAN_LEVEL, ceiling=CEILING, rise_per_second=MEAN_RISE_PER_SECOND, fall_per_second=MEAN_FALL_PER_SECOND, most_gain=MOST_GAIN,
@@ -128,8 +126,7 @@ class Fireworks(Visualizer):
         return len(self._ages)
 
     def pixels(self, *, now, heard=heard_values.SILENCE):
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self.launch(heard=heard, now=now)
         kept = int(WHOLE_KEPT * (KEPT / WHOLE_KEPT) ** (seconds / REFERENCE_FRAME_SECONDS)) if seconds else KEPT
         self._picture = (self._picture * kept) >> KEPT_SHIFT

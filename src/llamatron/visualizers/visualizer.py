@@ -18,6 +18,9 @@
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.pixels import pixel_size, PixelPainter
 
+# The longest a frame is taken to have lasted, in seconds, however late it comes.
+LONGEST_FRAME_SECONDS = 0.2
+
 
 class Visualizer:
     """One mode of the visualizer, which draws a frame for an area of terminal columns and rows at a moment, in seconds since it began.
@@ -26,7 +29,7 @@ class Visualizer:
     the terminal is resized, so it starts again for an area of another size (resized).
     """
 
-    __slots__ = ('_painter', '_size')
+    __slots__ = ('_painter', '_size', '_last')
 
     # What the mode is called on screen and on the command line, and whether it goes dark when nothing plays, as most do.
     NAME = None
@@ -36,6 +39,7 @@ class Visualizer:
     def __init__(self):
         self._painter = PixelPainter()
         self._size = None
+        self._last = None
 
     def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         """Return the lines that draw the frame for an area width columns by height rows, at a moment in seconds, from what it hears (heard.py)."""
@@ -55,6 +59,15 @@ class Visualizer:
     def shown_name(self):
         """Return the name of what the mode shows now, which the page shows for a while when it changes: the mode's own, or for a mode of modes, the one showing."""
         return self.NAME
+
+    def seconds_since_last_frame(self, now):
+        """Return the seconds from the frame before this one to now, none for the first frame and never more than LONGEST_FRAME_SECONDS, and take now as the last frame's moment.
+
+        A frame that comes late, as after the page was covered, moves the picture on as one long frame would and no further, so that nothing jumps.
+        """
+        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
+        self._last = now
+        return seconds
 
     def resized(self, *, columns, rows):
         """Start again for an area of this many big pixels, columns by rows."""

@@ -36,7 +36,6 @@ from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 LOWEST_PITCH = 28
 HIGHEST_PITCH = 100
@@ -102,7 +101,7 @@ class Beam:
 class LaserLlama(Visualizer):
     """A neon sunset over a rushing grid, and a llama firing lasers to the notes."""
 
-    __slots__ = ('_rows', '_columns', '_grid', '_backdrop', '_stars', '_scroll', '_llama', '_facing', '_beams', '_last', '_limiter', '_cells', '_chooser')
+    __slots__ = ('_rows', '_columns', '_grid', '_backdrop', '_stars', '_scroll', '_llama', '_facing', '_beams', '_limiter', '_cells', '_chooser')
 
     NAME = visualizers.MSG_LASER_LLAMA
     OPTION = 'laser_llama'
@@ -119,7 +118,6 @@ class LaserLlama(Visualizer):
         self._llama = 0.2
         self._facing = 1
         self._beams = []
-        self._last = None
         self._rows = 0
         self._columns = 0
 
@@ -139,8 +137,7 @@ class LaserLlama(Visualizer):
         if not width or not height:
             return []
         self.sized(width=width, height=height)
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         tempo = heard.tempo_factor()
         self._scroll += GRID_SPEED * tempo * seconds
         drawing = visualizers.MSG_LASER_LLAMA_DRAWING if self._facing > 0 else mirrored_drawing(visualizers.MSG_LASER_LLAMA_DRAWING)
