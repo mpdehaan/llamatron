@@ -25,14 +25,14 @@ from llamatron.composition import corrections, euclid, file_format, guitar_bars,
 from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, is_whole_number, is_whole_number_from, listed, number, reading, time_length
 from llamatron.composition.conditions import statements_setting
 from llamatron.composition.euclid import euclid_part_settings, euclid_values
-from llamatron.composition.file_format import Accidental, Approach, ChordColor, DriftValue, EuclidPart, GeneratorKind, GuitarifySetting, NamedRhythm, RegisterName, Restart, Section, Shape, shape_setting, ShapePart, SingleNotes, StrumDirection, StrumPart, Tuning
+from llamatron.composition.file_format import Accidental, Approach, ChordColor, DriftValue, EuclidPart, GeneratorKind, GuitarifySetting, NamedRhythm, RegisterName, Restart, Section, Shape, shape_setting, ShapePart, SingleNotes, Stroke, StrumDirection, StrumPart, Tuning
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, or_default, own_copy
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, Text, WholeNumber
 from llamatron.composition.shapes import shape_part_settings, shape_values, ShapeValues
 from llamatron.composition.strum import strum_part_settings, strum_values
-from llamatron.composition.traits import BypassedWhen
+from llamatron.composition.traits import BypassedWhen, HasCells
 from llamatron.generators import arp, musician, phrasing
 from llamatron.generators.arp import _check_offsets, Arp, ChordOrder, OctaveJump
 from llamatron.generators.auto_ratchet import AutoRatchet
@@ -304,7 +304,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         return values
 
 
-class ArpSettings(GeneratorSettings):
+class ArpSettings(HasCells, GeneratorSettings):
     """An arpeggiator's settings: its step length, order, seed, octave range and jump, and offsets."""
 
     __slots__ = ()
@@ -385,13 +385,13 @@ class ArpSettings(GeneratorSettings):
 
     # Editing the offsets one step at a time, as the offsets editor does.
 
-    def set_offset(self, *, step, offset):
+    def set_cell(self, *, step, value):
         """Set one step of the offsets, where None is a silent step."""
         offsets = self._offsets_to_change(step)
-        offsets[step] = offset
+        offsets[step] = value
         self.set_setting(name=ArpSetting.OFFSETS, value=offsets)
 
-    def insert_offset(self, step):
+    def insert_cell(self, step):
         """Add a step that leaves the note where it is, before a step of the offsets, or at the end."""
         offsets = self.get_offsets()
         if offsets is None or not is_whole_number_from(value=step, lowest=0, highest=len(offsets)):
@@ -403,7 +403,7 @@ class ArpSettings(GeneratorSettings):
             if any(adds):
                 self.set_setting(name=ARP_STEP_ADDS[register], value=adds[:step] + [None] + adds[step:])
 
-    def remove_offset(self, step):
+    def remove_cell(self, step):
         offsets = self._offsets_to_change(step)
         rows = {register: self.get_step_adds(register) for register in file_format.REGISTER_NAMES}
         offsets.pop(step)
@@ -648,7 +648,7 @@ def _guitar_flag(name):
     return Flag(name=name, error=errors.ERR_GUITARIFY_NOT_TRUE_OR_FALSE.format(name=name))
 
 
-class GuitarifySettings(GeneratorSettings):
+class GuitarifySettings(HasCells, GeneratorSettings):
     """A Guitarify's settings: Shape and the strokes, each half with a switch, every setting left out for its default."""
 
     __slots__ = ()
@@ -723,6 +723,32 @@ class GuitarifySettings(GeneratorSettings):
 
     def get_approach(self):
         return self.get_written(GuitarifySetting.APPROACH) or Approach.OFF
+
+    # Editing the bar one cell at a time, as its editor does: the bar, its accents and the cell's length are written together, so that a bar edited is a bar written in full.
+
+    def set_bar(self, *, strokes, accents, cell=None):
+        """Keep the bar's strokes and accents and, where given, its cell's length."""
+        length = self.get_cell() if cell is None else cell
+        self.set_setting(name=GuitarifySetting.BAR, value=list(strokes))
+        self.set_setting(name=GuitarifySetting.ACCENTS, value=list(accents))
+        self.set_setting(name=GuitarifySetting.CELL, value=length)
+
+    def set_cell(self, *, step, value):
+        """Give one cell of the bar a stroke."""
+        strokes = self.get_bar()
+        strokes[step] = value
+        self.set_bar(strokes=strokes, accents=self.get_accents())
+
+    def insert_cell(self, step):
+        """Add a cell with no stroke and no accent before a cell of the bar."""
+        strokes = self.get_bar()
+        accents = self.get_accents()
+        self.set_bar(strokes=strokes[:step] + [Stroke.NOTHING] + strokes[step:], accents=accents[:step] + [False] + accents[step:])
+
+    def remove_cell(self, step):
+        strokes = self.get_bar()
+        accents = self.get_accents()
+        self.set_bar(strokes=strokes[:step] + strokes[step + 1:], accents=accents[:step] + accents[step + 1:])
 
     def get_bar(self):
         """Return the stroke of each cell, the default bar's unless written."""
@@ -857,7 +883,7 @@ def _check_glide_amount(value):
 STEP_ROW_SETTINGS = (Checked(name=StepRowSetting.STEPS, check=_check_step_row), Checked(name=StepRowSetting.STEP, check=time_length), RESTART_SETTING)
 
 
-class StepRowSettings(GeneratorSettings):
+class StepRowSettings(HasCells, GeneratorSettings):
     """What a Glide's, a Shorten's, a Rush's and a Drag's settings share: a row of on-or-off steps from each clip's start, each step as long as its step, the clip's pattern's step size unless set."""
 
     __slots__ = ()
@@ -874,6 +900,23 @@ class StepRowSettings(GeneratorSettings):
 
     def get_step(self):
         return self.get_written(StepRowSetting.STEP)
+
+    # Editing the row one step at a time, as its editor does.
+
+    def set_cell(self, *, step, value):
+        """Turn one step of the row on or off."""
+        steps = self.get_steps()
+        steps[step] = bool(value)
+        self.set_setting(name=StepRowSetting.STEPS, value=steps)
+
+    def insert_cell(self, step):
+        """Add a step that is off before a step of the row."""
+        steps = self.get_steps()
+        self.set_setting(name=StepRowSetting.STEPS, value=steps[:step] + [False] + steps[step:])
+
+    def remove_cell(self, step):
+        steps = self.get_steps()
+        self.set_setting(name=StepRowSetting.STEPS, value=steps[:step] + steps[step + 1:])
 
     def step_length(self, *, default_step, bar):
         """Return how long each step is, in whole notes."""

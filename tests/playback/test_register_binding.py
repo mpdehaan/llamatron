@@ -271,9 +271,9 @@ class TestArpAdds(unittest.TestCase):
 
     def test_inserting_and_removing_an_offset_keeps_the_step_adds_lined_up(self):
         settings = ArpSettings({ArpSetting.STEP: SIXTEENTH, ArpSetting.OFFSETS: [0, 0], generator_settings.ARP_STEP_ADDS[test_registers.AX]: [ADDED, None]})
-        settings.insert_offset(0)
+        settings.insert_cell(0)
         self.assertEqual(settings.get_step_adds(test_registers.AX), [None, ADDED, None])
-        settings.remove_offset(1)
+        settings.remove_cell(1)
         self.assertEqual(settings.get_step_adds(test_registers.AX), [None, None])
         self.assertNotIn(generator_settings.ARP_STEP_ADDS[test_registers.AX], settings.to_data())
 

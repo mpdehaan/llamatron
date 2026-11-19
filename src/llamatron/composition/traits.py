@@ -84,3 +84,24 @@ class SetsRegisters:
     def set_register_add(self, *, register, value):
         """Make it add an amount to a register every time it plays, or None or 0 to add nothing."""
         self.set_written(name=self.ADD_REGISTERS_SETTING, value=with_register_value(values=self.get_written(self.ADD_REGISTERS_SETTING), register=register, value=value or None))
+
+
+class HasCells:
+    """Something that holds a row of cells edited one at a time: a groove's amounts, an arp's offsets, a step row's steps, a Guitarify's bar of strokes.
+
+    Each says what a cell holds and how few and how many it can have; an editor of one row asks all of them the same three things.
+    """
+
+    __slots__ = ()
+
+    def set_cell(self, *, step, value):
+        """Give the cell at a step a value."""
+        raise NotImplementedError
+
+    def insert_cell(self, step):
+        """Add a cell before a step, holding what a new cell holds."""
+        raise NotImplementedError
+
+    def remove_cell(self, step):
+        """Take the cell at a step out."""
+        raise NotImplementedError

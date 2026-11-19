@@ -73,7 +73,7 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
         return [self.bind(self.KEYS.CELL_LENGTH, action=self.next_cell_length), self.bind(self.KEYS.RENAME, action=self.rename)]
 
     def set_value(self, value):
-        self.document().change(self.document().setlist().get_groove(self.item).set_cell, step=self.step, amount=value)
+        self.document().change(self.document().setlist().get_groove(self.item).set_cell, step=self.step, value=value)
 
     def add_step(self):
         self.document().change(self.document().setlist().get_groove(self.item).insert_cell, self.step)

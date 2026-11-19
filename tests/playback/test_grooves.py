@@ -137,17 +137,17 @@ class TestGrooveFiles(unittest.TestCase):
 
     def test_a_factory_groove_cannot_be_changed_through_the_set(self):
         setlist = Setlist.new()
-        setlist.get_groove(FactoryGroove.SWING_58).set_cell(step=0, amount=limits.MAX_GROOVE_AMOUNT)
+        setlist.get_groove(FactoryGroove.SWING_58).set_cell(step=0, value=limits.MAX_GROOVE_AMOUNT)
         self.assertEqual(setlist.get_groove(FactoryGroove.SWING_58).get_cells()[0], groove_values.STRAIGHT)
 
     def test_editing_a_groove_checks_its_cells(self):
         groove = new_groove()
-        groove.set_cell(step=1, amount=limits.MAX_GROOVE_AMOUNT)
+        groove.set_cell(step=1, value=limits.MAX_GROOVE_AMOUNT)
         self.assertEqual(groove.get_cells()[1], limits.MAX_GROOVE_AMOUNT)
         with self.assertRaises(InvalidValue):
-            groove.set_cell(step=1, amount=limits.MAX_GROOVE_AMOUNT + 1)
+            groove.set_cell(step=1, value=limits.MAX_GROOVE_AMOUNT + 1)
         with self.assertRaises(InvalidValue):
-            groove.set_cell(step=groove_values.GROOVE_CELLS, amount=0)
+            groove.set_cell(step=groove_values.GROOVE_CELLS, value=0)
         groove.insert_cell(0)
         self.assertEqual(len(groove.get_cells()), groove_values.GROOVE_CELLS + 1)
         for _ in range(limits.MAX_GROOVE_CELLS):
