@@ -24,7 +24,7 @@ from llamatron.composition.euclid import euclid_settings, euclid_values
 from llamatron.composition.file_format import euclid_setting, Section, strum_setting, TrackSetting
 from llamatron.composition.groove import check_groove_choice
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import LlamaData, or_default, own_copy, written_settings
+from llamatron.composition.llama_data import HoldsSettings, or_default, own_copy
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.music import midi
@@ -78,14 +78,16 @@ SETTINGS = described(
 )
 
 
-class Track(LlamaData):
+class Track(HoldsSettings):
     """A track's settings: whether it's a drum track, whether it's muted, its transpose, octave range, CC numbers, groove and instrument, and the registers bound to its CC lanes and its velocity.
 
     A setting the file leaves out is kept as None and means its default, so that saving writes
     back only what was set.
     """
 
-    __slots__ = ('_settings',)
+    __slots__ = ()
+
+    SETTINGS = SETTINGS
 
     # A track names the groove it chooses.
     REFERENCES = {Section.GROOVES: (TrackSetting.GROOVE,), Section.INSTRUMENTS: (TrackSetting.INSTRUMENT,), Section.CHAINS: (TrackSetting.CHAINS,)}
@@ -119,9 +121,6 @@ class Track(LlamaData):
             _check_octave_order(lowest=data.get(TrackSetting.LOWEST_OCTAVE, limits.MIN_OCTAVE), highest=data.get(TrackSetting.HIGHEST_OCTAVE, limits.MAX_OCTAVE))
             return cls(**{name: data.get(name) for name in SETTINGS})
 
-    def to_data(self):
-        return written_settings(self._settings)
-
     def is_drum(self):
         return bool(self._settings[TrackSetting.DRUM])
 
@@ -147,19 +146,13 @@ class Track(LlamaData):
         """Return its accent as the file holds it, or None for the default."""
         return self._settings[TrackSetting.ACCENT]
 
-    @notes_change
     def set_default_velocity(self, velocity):
         """Set the velocity a step with none typed plays at, or None to take the instrument's."""
-        if velocity is not None:
-            SETTINGS[TrackSetting.DEFAULT_VELOCITY].check(velocity)
-        self._settings[TrackSetting.DEFAULT_VELOCITY] = velocity
+        self.set_written(name=TrackSetting.DEFAULT_VELOCITY, value=velocity)
 
-    @notes_change
     def set_accent(self, accent):
         """Set what an accented step adds to its velocity, or None for the default."""
-        if accent is not None:
-            SETTINGS[TrackSetting.ACCENT].check(accent)
-        self._settings[TrackSetting.ACCENT] = accent
+        self.set_written(name=TrackSetting.ACCENT, value=accent)
 
     def get_lowest_octave(self):
         """Return the lowest octave the track's instrument plays, the bottom of the MIDI range unless set."""
@@ -191,12 +184,9 @@ class Track(LlamaData):
         """Return the name of the instrument real-time playback sends it to, or None for none, which leaves the track out."""
         return self._settings[TrackSetting.INSTRUMENT]
 
-    @notes_change
     def set_instrument_name(self, *, name, song):
         """Send it to an instrument of the set by name in real-time playback, or None for none."""
-        if name is not None:
-            SETTINGS[TrackSetting.INSTRUMENT].check(name, song=song)
-        self._settings[TrackSetting.INSTRUMENT] = name
+        self.set_written(name=TrackSetting.INSTRUMENT, value=name, song=song)
 
     @notes_change
     def set_groove_choice(self, *, choice, song):
@@ -231,12 +221,9 @@ class Track(LlamaData):
         """Return the register a note with no velocity of its own plays at, or None for none."""
         return self._settings[TrackSetting.VELOCITY_REGISTER]
 
-    @notes_change
     def set_velocity_register(self, register):
         """Bind the velocity to a register by name, or None to bind it to nothing."""
-        if register is not None:
-            SETTINGS[TrackSetting.VELOCITY_REGISTER].check(register)
-        self._settings[TrackSetting.VELOCITY_REGISTER] = register
+        self.set_written(name=TrackSetting.VELOCITY_REGISTER, value=register)
 
     def get_strum_setting(self, part):
         """Return one part of the track's strum as the file writes it, like its spread, or None when it's blank."""
@@ -246,13 +233,10 @@ class Track(LlamaData):
         """Return how the track strums its chords, or None when its Direction is blank."""
         return strum_values(self.get_strum_setting)
 
-    @notes_change
     def set_strum_setting(self, *, part, value):
         """Set one part of the track's strum, or None to leave it blank."""
         name = strum_setting(part)
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     def get_euclid_setting(self, part):
         """Return one part of the track's Euclidean mask as the file writes it, or None when it's blank."""
@@ -262,13 +246,10 @@ class Track(LlamaData):
         """Return the track's Euclidean mask, or None when its hits are blank."""
         return euclid_values(self.get_euclid_setting)
 
-    @notes_change
     def set_euclid_setting(self, *, part, value):
         """Set one part of the track's Euclidean mask, or None to leave it blank."""
         name = euclid_setting(part)
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     def get_statements(self, name):
         """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its clips' generators or the one that makes its clips sit out."""

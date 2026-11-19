@@ -38,7 +38,7 @@ from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, R
 from llamatron.composition.groove import check_groove_name, factory_groove, Groove, is_factory_groove
 from llamatron.composition.instrument import Instrument
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import data_as_kept, data_built_anew, LlamaData, or_default, own_copy, written_settings
+from llamatron.composition.llama_data import data_as_kept, data_built_anew, HoldsSettings, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
@@ -148,7 +148,7 @@ def new_setlist():
 GENERATOR_KINDS_OF_SECTIONS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
 
 
-class Setlist(LlamaData):
+class Setlist(HoldsSettings):
     """The set the user composes: its settings, named scales, patterns, generators and chains, and its songs.
 
     Settings the file leaves out are kept as None and mean their defaults, and so do sections it
@@ -156,7 +156,9 @@ class Setlist(LlamaData):
     name, and the set looks the names up; each song does the same for what it shares.
     """
 
-    __slots__ = ('_settings', '_sections', '_closed_groups', '_open_types')
+    __slots__ = ('_sections', '_closed_groups', '_open_types')
+
+    SETTINGS = SETTINGS
 
     def __init__(self):
         self.note_change()

@@ -29,7 +29,7 @@ from llamatron.composition.file_format import GeneratorKind, SceneSetting, Secti
 from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import data_as_kept, data_built_anew, LlamaData, or_default, own_copy, written_settings
+from llamatron.composition.llama_data import data_as_kept, data_built_anew, HoldsSettings, or_default, own_copy, written_settings
 from llamatron.composition.named_items import moved_in_list, NamedItems
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
@@ -127,14 +127,16 @@ def started_song(*, scale=None):
 WHOLE_STEPS = 1
 
 
-class Song(LlamaData):
+class Song(HoldsSettings):
     """One song: its settings, registers, tracks and scenes, reading what it shares from its setlist.
 
     Settings the file leaves out are kept as None and mean their defaults, and so do sections it
     leaves out, so that saving writes back only what was there.
     """
 
-    __slots__ = ('_setlist', '_settings', '_sections', '_scenes')
+    __slots__ = ('_setlist', '_sections', '_scenes')
+
+    SETTINGS = SETTINGS
 
     # A song names its own scale, groove and preview instrument. Its scenes and tracks name things too, and are its referring parts.
     REFERENCES = {Section.SCALES: (SongSetting.SCALE,), Section.GROOVES: (SongSetting.GROOVE,), Section.INSTRUMENTS: (SongSetting.PREVIEW_INSTRUMENT,)}
