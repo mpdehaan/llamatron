@@ -757,7 +757,9 @@ class DegreeRow(PatternRow):
     # The digits bound, and their name, are the degrees of the scale: 1-7 in a scale of seven notes.
     DEGREE = (DIGITS, legends.KeyName.DIGITS, legends.MSG_DEGREE_WHAT)
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
-    IN_HELP = [NOTE, DEGREE, PatternRow.LESS, PatternRow.MORE, CLEAR]
+    # Space puts a note on an empty step, the first degree, and takes the note off a step that has one.
+    TOGGLE_NOTE = (Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
+    IN_HELP = [NOTE, DEGREE, PatternRow.LESS, PatternRow.MORE, TOGGLE_NOTE, CLEAR]
     IN_LEGEND = IN_HELP
 
 
