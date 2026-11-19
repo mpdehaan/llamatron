@@ -180,18 +180,18 @@ class SetEdits:
 
     def set_arp_offset(self, *, name, step, offset):
         """Set one step of an arp's offsets, where None is a silent step."""
-        self.change(self.generator(section=Section.ARPS, name=name).set_offset, step=step, offset=offset)
+        self.change(self.generator(section=Section.ARPS, name=name).set_cell, step=step, value=offset)
 
     def insert_arp_offset(self, *, name, step):
         """Add a step of 0 before a step of an arp's offsets."""
-        self.change(self.generator(section=Section.ARPS, name=name).insert_offset, step)
+        self.change(self.generator(section=Section.ARPS, name=name).insert_cell, step)
 
     def set_arp_step_add(self, *, name, register, step, add):
         """Set what one step of an arp's offsets adds to a register, where None or 0 adds nothing."""
         self.change(self.generator(section=Section.ARPS, name=name).set_step_add, register=register, step=step, add=add)
 
     def remove_arp_offset(self, *, name, step):
-        self.change(self.generator(section=Section.ARPS, name=name).remove_offset, step)
+        self.change(self.generator(section=Section.ARPS, name=name).remove_cell, step)
 
     def _chain(self, name):
         return self._setlist.get_chain(name)

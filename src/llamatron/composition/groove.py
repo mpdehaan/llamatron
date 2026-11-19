@@ -36,6 +36,7 @@ from llamatron.composition.file_format import GrooveSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import LlamaData, or_default
 from llamatron.composition.setting import Checked, described, Length
+from llamatron.composition.traits import HasCells
 from llamatron.strings import errors
 from llamatron.support.rational import Rational
 from llamatron.support.revised import notes_change
@@ -73,7 +74,7 @@ class FactoryGroove:
     PUSH = 'push'
 
 
-class Groove(LlamaData):
+class Groove(HasCells, LlamaData):
     """A row of timing amounts, each a percentage of the cell's length, and how long a cell is."""
 
     __slots__ = ('_cells', '_cell_length')
@@ -138,11 +139,11 @@ class Groove(LlamaData):
     # Editing, which the groove editor does one cell at a time.
 
     @notes_change
-    def set_cell(self, *, step, amount):
+    def set_cell(self, *, step, value):
         self._check_step(step)
-        if not is_whole_number_from(value=amount, lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT):
-            raise InvalidValue(errors.ERR_BAD_GROOVE_AMOUNT.format(lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT, value=amount))
-        self._cells[step] = amount
+        if not is_whole_number_from(value=value, lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT):
+            raise InvalidValue(errors.ERR_BAD_GROOVE_AMOUNT.format(lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT, value=value))
+        self._cells[step] = value
 
     @notes_change
     def insert_cell(self, step):

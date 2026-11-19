@@ -26,7 +26,7 @@ which replaces the strokes, the accents and the cell's length together.
 from rich.text import Text
 
 from llamatron.composition import file_format, generator_settings, guitar_bars
-from llamatron.composition.file_format import GeneratorKind, GuitarifySetting, Section, Stroke
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, key_table, keybindings
@@ -73,11 +73,7 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
 
     def store(self, *, strokes, accents, cell=None):
         """Keep the bar, its accents and, where given, its cell's length, as one change."""
-        document = self.document()
-        length = self.guitar().get_cell() if cell is None else cell
-        document.change(document.generator(section=self.SECTION, name=self.item).set_setting, name=GuitarifySetting.BAR, value=list(strokes))
-        document.change(document.generator(section=self.SECTION, name=self.item).set_setting, name=GuitarifySetting.ACCENTS, value=list(accents))
-        document.change(document.generator(section=self.SECTION, name=self.item).set_setting, name=GuitarifySetting.CELL, value=length)
+        self.document().change(self.guitar().set_bar, strokes=strokes, accents=accents, cell=cell)
 
     def keys(self):
         self.keep_step()
@@ -97,9 +93,7 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
 
     def nudge(self, direction):
         """Step the cursor's stroke to the one before or after, stopping at both ends."""
-        strokes = self.strokes()
-        strokes[self.step] = stepped(values=list(file_format.STROKES), current=strokes[self.step], offset=direction)
-        self.store(strokes=strokes, accents=self.accents())
+        self.document().change(self.guitar().set_cell, step=self.step, value=stepped(values=list(file_format.STROKES), current=self.strokes()[self.step], offset=direction))
 
     def accent(self):
         accents = self.accents()
@@ -107,14 +101,10 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         self.store(strokes=self.strokes(), accents=accents)
 
     def insert(self):
-        strokes = self.strokes()
-        accents = self.accents()
-        self.store(strokes=strokes[:self.step] + [Stroke.NOTHING] + strokes[self.step:], accents=accents[:self.step] + [False] + accents[self.step:])
+        self.document().change(self.guitar().insert_cell, self.step)
 
     def remove_cell(self):
-        strokes = self.strokes()
-        accents = self.accents()
-        self.store(strokes=strokes[:self.step] + strokes[self.step + 1:], accents=accents[:self.step] + accents[self.step + 1:])
+        self.document().change(self.guitar().remove_cell, self.step)
         self.keep_step()
 
     def next_cell_length(self):

@@ -139,7 +139,7 @@ def song_with_every_reference():
     document.add_scene(index=SECOND, name=CHORUS)
     document.change(document.song().get_scene(SECOND).set_scale_name, name=OTHER, song=document.song())
     document.add_groove(SHUFFLE)
-    document.change(document.setlist().get_groove(SHUFFLE).set_cell, step=SECOND, amount=SWING)
+    document.change(document.setlist().get_groove(SHUFFLE).set_cell, step=SECOND, value=SWING)
     document.change(document.song().set_groove_name, SHUFFLE)
     document.change(document.song().get_scene(SECOND).set_groove_choice, choice=SHUFFLE, song=document.song())
     document.change(document.song().get_track(BASS).set_groove_choice, choice=SHUFFLE, song=document.song())

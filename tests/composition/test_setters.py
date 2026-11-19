@@ -403,14 +403,14 @@ class TestGeneratorSettings(SetterTestCase):
         self.assertNotIn(ArpSetting.OCTAVE_RANGE, self.arp.to_data())
 
     def test_offsets_are_edited_a_step_at_a_time(self):
-        self.assertRefused(self.arp, self.arp.set_offset, step=FIRST, offset=AN_OFFSET)
+        self.assertRefused(self.arp, self.arp.set_cell, step=FIRST, value=AN_OFFSET)
         self.arp.set_setting(name=ArpSetting.OFFSETS, value=[AN_OFFSET])
-        self.arp.insert_offset(FIRST)
+        self.arp.insert_cell(FIRST)
         self.assertEqual(self.arp.get_offsets(), [generator_settings.NO_OFFSET, AN_OFFSET])
-        self.arp.set_offset(step=FIRST, offset=ANOTHER_OFFSET)
-        self.assertRefused(self.arp, self.arp.set_offset, step=PAST_THE_OFFSETS, offset=AN_OFFSET)
-        self.arp.remove_offset(FIRST)
-        self.arp.remove_offset(FIRST)
+        self.arp.set_cell(step=FIRST, value=ANOTHER_OFFSET)
+        self.assertRefused(self.arp, self.arp.set_cell, step=PAST_THE_OFFSETS, value=AN_OFFSET)
+        self.arp.remove_cell(FIRST)
+        self.arp.remove_cell(FIRST)
         self.assertIsNone(self.arp.get_offsets())
 
     def test_auto_ratchet_counts_are_checked(self):

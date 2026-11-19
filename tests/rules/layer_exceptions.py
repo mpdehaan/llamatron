@@ -194,7 +194,6 @@ ALLOWED = {
         'tui/screens/generators/shorten_editor.py imports tui.screens.generators.shorten_steps_editor',
         'tui/screens/generators/shorten_editor.py imports tui.screens.generators.step_row_generator_editor',
         'tui/screens/generators/shorten_steps_editor.py imports tui.screens.generators.step_row_editor',
-        'tui/screens/generators/step_row_editor.py imports composition.generator_settings',
         'tui/screens/generators/step_row_editor.py imports composition.limits',
         'tui/screens/generators/step_row_generator_editor.py imports composition.generator_settings',
         'tui/screens/generators/step_row_generator_editor.py imports tui.screens.generators.restart_field',

@@ -24,7 +24,6 @@ video, as in the offsets editor, and the line above the grid says what a step th
 from rich.text import Text
 
 from llamatron.composition import limits
-from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
@@ -55,9 +54,6 @@ class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
     def steps(self):
         return len(self.values())
 
-    def store(self, values):
-        self.document().change(self.document().generator(section=self.SECTION, name=self.item).set_setting, name=StepRowSetting.STEPS, value=values)
-
     def keys(self):
         self.keep_step()
         result = [
@@ -75,17 +71,13 @@ class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
 
     def toggle(self):
         """Turn the cursor's step on or off."""
-        values = self.values()
-        values[self.step] = not values[self.step]
-        self.store(values)
+        self.document().change(self.generator().set_cell, step=self.step, value=not self.values()[self.step])
 
     def insert(self):
-        values = self.values()
-        self.store(values[:self.step] + [False] + values[self.step:])
+        self.document().change(self.generator().insert_cell, self.step)
 
     def remove_step(self):
-        values = self.values()
-        self.store(values[:self.step] + values[self.step + 1:])
+        self.document().change(self.generator().remove_cell, self.step)
         self.keep_step()
 
     def body(self, *, width, height):

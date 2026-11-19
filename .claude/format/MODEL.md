@@ -325,3 +325,5 @@ variant only under its subgenre. `Song.get_style_name()` and `Setlist.get_genres
 which the demos' pages and folders are named by. `tests/composition/test_genres.py` holds the lists to the style templates.
 
 A set file's reading is `composition/setlist_reader.py`, beside the writer: the file and its YAML (`file_data`), an older file's layout brought to the one written now (`as_a_set_is_written`, `holds_one_song`, `as_setlist_data`), the view's state a file holds, `file_stem`, and `read_corrected`, the loop that applies corrections until the data reads. `Setlist` builds itself from data in the layout written now and knows nothing of files but `read_file` and `write_file`, which hand over to the reader and the writer.
+
+`HasCells` (`composition/traits.py`) is what holds a row of cells edited one at a time: `set_cell(step=, value=)`, `insert_cell(step)` and `remove_cell(step)` on `Groove`, `ArpSettings` (its offsets), `StepRowSettings` (its steps) and `GuitarifySettings` (its bar of strokes, written with its accents and its cell's length by `set_bar`).
