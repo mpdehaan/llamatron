@@ -123,6 +123,10 @@ MSG_LOOP_ON_SHOWN = 'on'
 MSG_LOOP_OFF_SHOWN = 'off'
 MSG_ONE_STEP_SHOWN = '(one step)'
 MSG_CLIP_NAMED_FOR_PATTERN = '(pattern: {pattern})'
+# A clip of several patterns on Arrange: its first pattern and how many more follow.
+MSG_CLIP_PATTERNS_COUNTED = '{name} +{more}'
+MSG_ADD_ROW = '+'
+MSG_EACH_PATTERN_DIRECTION_SHOWN = '(each pattern)'
 MSG_PATTERN_DIRECTION_SHOWN = '{direction} (from pattern)'
 
 # tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares

@@ -20,7 +20,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 
 from llamatron.composition.file_format import (
     STATEMENT_ROWS, ResetBehavior, DriftValue, FollowAction, LiveResponsiveness, NamedProgression, Shape, ShapePart, EuclidPart, NamedRhythm, Restart, Section, StrumDirection, StrumPart, UpstrokeStrings, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ChordSymbol, Direction, GateModifier, OctaveLabels, RegisterSetting, Row,
-    Approach, ChordColor, RampPart, RampWay, ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
+    Approach, ChordColor, PatternOrder, RampPart, RampWay, ScaleKind, ReadyBar, SingleNotes, Stroke, Tuning,
 )
 from llamatron.tui.keys import RowSection
 
@@ -82,10 +82,24 @@ MSG_VELOCITY_RAMP_LABELS = {
     (RampWay.OUT, RampPart.START): 'Velocity out start', (RampWay.OUT, RampPart.END): 'Velocity out end', (RampWay.OUT, RampPart.OVER): 'Velocity out over',
 }
 MSG_REPEAT_LABEL = 'Repeat'
+MSG_PATTERNS_LABEL = 'Patterns'
+MSG_PATTERN_ORDER_LABEL = 'Pattern order'
+MSG_ADD_PATTERN_TITLE = 'Add Pattern'
+MSG_ADD_PATTERN_CHOICES = ['Choose an existing pattern', 'New pattern']
+# What the clip page calls each order a clip plays its patterns in, in the order of PATTERN_ORDERS.
+MSG_PATTERN_ORDER_NAMES = {
+    PatternOrder.FORWARD: 'forward',
+    PatternOrder.REVERSE_A: 'reverse a',
+    PatternOrder.REVERSE_B: 'reverse b',
+    PatternOrder.ALTERNATE: 'alternate',
+    PatternOrder.PENDULUM: 'pendulum',
+    PatternOrder.RANDOM: 'random',
+    PatternOrder.FIRST_THEN_RANDOM: 'first, then random',
+}
 MSG_PATTERN_LABEL = 'Pattern'
 MSG_CHAINS_LABEL = 'Chains'
 MSG_LOOP_LABEL = 'Loop'
-MSG_DIRECTION_LABEL = 'Direction'
+MSG_DIRECTION_LABEL = 'Step direction'
 MSG_MORPH_TO_LABEL = 'Morph to'
 MSG_MORPH_DIRECTION_LABEL = 'Morph direction'
 MSG_GRAB_TRACK_LABEL = 'Grab track'

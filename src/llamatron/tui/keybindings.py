@@ -338,10 +338,15 @@ class ClipPage(FieldPage):
     """The clip page: the settings keys, and J, which jumps to the clip's pattern in the pattern editor from any field, since the page has one pattern."""
 
     OPEN_PATTERN = (Key.J, legends.KeyName.J, legends.MSG_OPEN_PATTERN_WHAT)
+    # The clip's list of patterns: A adds one, and M picks up the pattern under the cursor, which Up and Down carry and ENTER, ESC or M drops.
+    ADD_PATTERN = (Key.A, legends.KeyName.A, legends.MSG_ADD_PATTERN_WHAT)
+    MOVE_PATTERN = (Key.M, legends.KeyName.M, legends.MSG_MOVE_PATTERN_WHAT)
+    CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
+    DROP = (MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     # Real-time playback: L plays the clip as its scene would, looping until stopped, and L again stops it, with the Play and Stop buttons below the fields doing the same.
     LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
-    IN_HELP = [*FieldPage.IN_HELP, OPEN_PATTERN, LISTEN, STOP_LISTENING]
+    IN_HELP = [FieldPage.IN_HELP[0], DROP, *FieldPage.IN_HELP[1:], CARRY, ADD_PATTERN, MOVE_PATTERN, OPEN_PATTERN, LISTEN, STOP_LISTENING]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 

@@ -16,17 +16,19 @@
 
 """The Clip page: one clip: what it plays, how many times, and whether it morphs into another pattern."""
 
+from dataclasses import dataclass
+
 from rich.text import Text
 
 from llamatron.composition import defaults, limits
-from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages
+from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
 from llamatron.composition.clip_slot import MORPH_STYLES
-from llamatron.composition.file_format import PLACED_SHAPES, shape_setting, strum_setting, FOLLOW_ACTION_CHOICES, ClipSlotSetting, DIRECTIONS, Section
+from llamatron.composition.file_format import PLACED_SHAPES, PATTERN_ORDERS, shape_setting, strum_setting, FOLLOW_ACTION_CHOICES, ClipSlotSetting, DIRECTIONS, Section
 from llamatron.playback.song_renderer import GRAB_ARROW
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.composition.clip_slot import FIRST_MORPH_STYLE
-from llamatron.composition.naming import words
+from llamatron.composition.naming import new_name, words
 from llamatron.tui.text import clock, sorted_names
 from llamatron.tui.drawing import NOTHING, Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NameField, NumberField, Toggle
@@ -43,6 +45,21 @@ from llamatron.tui.screens.generators.strum_fields import strum_section
 from llamatron.tui import themes
 from llamatron.tui import keybindings
 
+EXISTING_PATTERN = 0
+ONE_PATTERN = 1
+
+
+@dataclass(slots=True, kw_only=True)
+class PatternRow(Field):
+    """One pattern of a clip's list on the clip page: place is its place in the list."""
+
+    place: int = 0
+
+
+@dataclass(slots=True, kw_only=True)
+class AddRow(Field):
+    """The + row under a clip's list of patterns, which adds one."""
+
 
 class ClipPage(FieldPage):
     """One clip: what it plays, how many times, and whether it morphs into another pattern."""
@@ -56,6 +73,9 @@ class ClipPage(FieldPage):
     def __init__(self, *, holder, index, track):
         super().__init__(holder)
         self.index = index
+        # Move mode: whether M has picked up the pattern under the cursor, and whether it has been carried yet, so that one move is one undo step.
+        self.moving = False
+        self.carried = False
         self.track = track
 
     def still_exists(self):
@@ -81,7 +101,10 @@ class ClipPage(FieldPage):
 
     def page_keys(self):
         listening = self.bind(self.KEYS.STOP_LISTENING, action=self.stop) if self.is_listening() else self.bind(self.KEYS.LISTEN, action=self.listen)
-        return [self.bind(self.KEYS.OPEN_PATTERN, action=self.open_pattern), listening]
+        result = [self.bind(self.KEYS.ADD_PATTERN, action=self.add_pattern)]
+        if isinstance(self.field(), PatternRow):
+            result.append(self.bind(self.KEYS.MOVE_PATTERN, action=self.start_moving))
+        return [*result, self.bind(self.KEYS.OPEN_PATTERN, action=self.open_pattern), listening]
 
     def is_listening(self):
         """Return whether the clip plays on its own: through its track's instrument, or through General MIDI while Real Time is off."""
@@ -96,7 +119,108 @@ class ClipPage(FieldPage):
 
     def open_pattern(self):
         """Open the pattern editor on the clip's pattern, from any field, with this page's crumbs before the pattern's, so that Esc comes back here."""
-        self.show_page(PatternEditor(holder=self.holder, name=self.clip_slot().get_pattern_name(), opened_from=self, track=self.track))
+        row = self.field()
+        self.open_pattern_at(row.place if isinstance(row, PatternRow) else 0)
+
+    def open_pattern_at(self, place):
+        """Open the pattern editor on one pattern of the clip's list."""
+        self.show_page(PatternEditor(holder=self.holder, name=self.clip_slot().get_pattern_names()[place], opened_from=self, track=self.track))
+
+    def keys(self):
+        if self.moving:
+            return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]
+        return super().keys()
+
+    def start_moving(self):
+        self.moving = True
+        self.carried = False
+        self.say_moving()
+
+    def say_moving(self):
+        self.say(messages.MSG_MOVING.format(what=messages.MSG_MOVING_ROW.format(name=self.clip_slot().get_pattern_names()[self.field().place])))
+
+    def carry(self, offset):
+        """Carry the picked-up pattern one place up or down its list, every carry of one move making one undo step."""
+        names = self.clip_slot().get_pattern_names()
+        place = self.field().place
+        to = place + offset
+        if not 0 <= to < len(names):
+            return
+        if self.carried:
+            self.document().continue_edit()
+        self.carried = True
+        names[place], names[to] = names[to], names[place]
+        self.set_value(setting=ClipSlotSetting.PATTERNS, value=names)
+        self.place += offset
+        self.say_moving()
+
+    def drop(self):
+        self.moving = False
+
+    def add_pattern(self):
+        """Ask whether to add a pattern the song has or a new one, and put it at the end of the clip's list."""
+        def chosen(choice):
+            if choice == EXISTING_PATTERN:
+                self.pick_pattern(title=labels_text.MSG_PATTERN_LABEL, current=None, then=self.add_named, same_kind=True)
+            else:
+                self.ask_new_pattern()
+        self.ask(dialog=ChoiceDialog(title=labels_text.MSG_ADD_PATTERN_TITLE, options=labels_text.MSG_ADD_PATTERN_CHOICES), then=chosen)
+
+    def add_named(self, name):
+        self.set_value(setting=ClipSlotSetting.PATTERNS, value=[*self.clip_slot().get_pattern_names(), name])
+
+    def ask_new_pattern(self):
+        """Ask for a new pattern's name, filled in with the track's name and the next free number, make it blank and add it to the list."""
+        suggested = new_name(word=self.track, taken=self.document().song().get_pattern_names())
+        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=suggested, max_length=limits.MAX_NAME_LENGTH), then=self.add_new)
+
+    def add_new(self, text):
+        name = text.strip()
+        document = self.document()
+        if not name:
+            return
+        if document.song().has_pattern(name):
+            self.refuse(errors.ERR_NAME_TAKEN.format(label=names_text.MSG_PATTERN_WORD, name=name))
+            return
+        first = document.song().get_pattern(self.clip_slot().get_pattern_name())
+        document.add_pattern(name=name, group=self.track, drum=first.is_drum(), scale_length=first.get_scale_length())
+        document.continue_edit()
+        self.add_named(name)
+
+    def remove_pattern(self, place):
+        """Take a pattern out of the clip's list, which deletes no pattern; the last one stays, since a clip plays something."""
+        names = self.clip_slot().get_pattern_names()
+        if len(names) == ONE_PATTERN:
+            self.refuse(errors.ERR_CLIP_NEEDS_A_PATTERN)
+            return
+        del names[place]
+        self.set_value(setting=ClipSlotSetting.PATTERNS, value=names)
+
+    def pattern_rows(self):
+        """Return the clip's list of patterns as rows, the first with the list's label, and the + row that adds one."""
+        names = self.clip_slot().get_pattern_names()
+        rows = [
+            PatternRow(
+                label=labels_text.MSG_PATTERNS_LABEL if place == 0 else NOTHING, place=place, adjust=None,
+                value=lambda name=name, place=place: marks.MSG_MOVING_OPEN + name + marks.MSG_MOVING_CLOSE if self.is_carrying(place) else name,
+                enter=lambda place=place: self.open_pattern_at(place), enter_what=legends.What.EDIT,
+                clear=lambda place=place: self.remove_pattern(place), clear_what=legends.What.REMOVE,
+            ) for place, name in enumerate(names)
+        ]
+        return [*rows, AddRow(label=NOTHING, value=lambda: marks.MSG_ADD_ROW, adjust=None, enter=self.add_pattern, enter_what=legends.What.ADD)]
+
+    def ends_a_list(self, field):
+        return isinstance(field, AddRow)
+
+    def is_carrying(self, place):
+        row = self.field()
+        return self.moving and isinstance(row, PatternRow) and row.place == place
+
+    def pattern_order_field(self):
+        return ChoiceField(page=self, label=labels_text.MSG_PATTERN_ORDER_LABEL, choices=PATTERN_ORDERS, current=self.clip_slot().get_pattern_order(),
+                           names=[labels_text.MSG_PATTERN_ORDER_NAMES[order] for order in PATTERN_ORDERS],
+                           shown=labels_text.MSG_PATTERN_ORDER_NAMES[self.clip_slot().get_pattern_order()],
+                           set=lambda order: self.set_value(setting=ClipSlotSetting.PATTERN_ORDER, value=order))
 
     def set_value(self, *, setting, value):
         """Set one of the clip's settings, or None to leave it out and use its default."""
@@ -105,9 +229,13 @@ class ClipPage(FieldPage):
     def clear(self, setting):
         self.set_value(setting=setting, value=None)
 
-    def pick_pattern(self, *, title, current, then):
-        """Ask for one of the song's patterns, starting on the current one, and pass its name to then."""
-        patterns = sorted_names(self.document().song().get_pattern_names())
+    def pick_pattern(self, *, title, current, then, same_kind=False):
+        """Ask for one of the song's patterns, starting on the current one, and pass its name to then. same_kind leaves out the patterns that cannot share the clip's list: drum patterns for a clip of notes, and the other way round."""
+        song = self.document().song()
+        patterns = sorted_names(song.get_pattern_names())
+        if same_kind:
+            drum = song.get_pattern(self.clip_slot().get_pattern_name()).is_drum()
+            patterns = [name for name in patterns if song.get_pattern(name).is_drum() == drum]
         place = patterns.index(current) if current in patterns else 0
         self.ask(dialog=ChoiceDialog(title=title, options=patterns, current=place), then=lambda item: then(patterns[item]))
 
@@ -180,6 +308,8 @@ class ClipPage(FieldPage):
         direction = self.clip_slot().get_direction()
         if direction:
             return words(direction)
+        if len(self.clip_slot().get_pattern_names()) > ONE_PATTERN:
+            return marks.MSG_EACH_PATTERN_DIRECTION_SHOWN
         pattern = self.document().song().get_pattern(self.clip_slot().get_pattern_name())
         return marks.MSG_PATTERN_DIRECTION_SHOWN.format(direction=words(pattern.get_direction()))
 
@@ -204,16 +334,16 @@ class ClipPage(FieldPage):
         own_velocity, velocity_above, store_velocity = self.velocity_values()
         result = [
             NameField(value=self.name_text, rename=self.rename, clear=lambda: self.clear(ClipSlotSetting.NAME), clear_what=legends.MSG_USE_PATTERN_NAME_WHAT),
-            Field(label=labels_text.MSG_PATTERN_LABEL, value=clip_slot.get_pattern_name, adjust=None,
-                  enter=lambda: self.pick_pattern(title=labels_text.MSG_PATTERN_LABEL, current=clip_slot.get_pattern_name(), then=lambda name: self.set_value(setting=ClipSlotSetting.PATTERN, value=name)), enter_what=legends.What.CHOOSE),
+            *self.pattern_rows(),
             Field(label=labels_text.MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=legends.What.CHOOSE,
                   clear=lambda: self.clear(ClipSlotSetting.SCALE), clear_what=legends.MSG_USE_SCENE_SCALE_WHAT),
             chains_field(page=self, names=lambda: self.clip_slot().get_chain_names(),
                          store=lambda names: self.set_value(setting=ClipSlotSetting.CHAINS, value=names or None)),
-            NumberField(page=self, label=labels_text.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_CLIP_REPEAT, set=self.set_repeat),
-            Toggle(label=labels_text.MSG_LOOP_LABEL, on=clip_slot.loops(), set=self.set_loop, shown_on=marks.MSG_LOOP_ON_SHOWN, shown_off=marks.MSG_LOOP_OFF_SHOWN),
+            self.pattern_order_field(),
             Field(label=labels_text.MSG_DIRECTION_LABEL, value=self.direction_text, adjust=self.step_direction, enter=self.pick_direction, enter_what=legends.What.CHOOSE,
                   clear=lambda: self.clear(ClipSlotSetting.DIRECTION), clear_what=legends.MSG_USE_PATTERN_DIRECTION_WHAT),
+            NumberField(page=self, label=labels_text.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_CLIP_REPEAT, set=self.set_repeat),
+            Toggle(label=labels_text.MSG_LOOP_LABEL, on=clip_slot.loops(), set=self.set_loop, shown_on=marks.MSG_LOOP_ON_SHOWN, shown_off=marks.MSG_LOOP_OFF_SHOWN),
         ]
         if repeat > defaults.DEFAULT_REPEAT:
             result.append(Field(label=labels_text.MSG_MORPH_TO_LABEL, value=lambda: clip_slot.get_morph_target() or marks.MSG_NONE_SHOWN, adjust=None,
@@ -308,7 +438,7 @@ class ClipPage(FieldPage):
             lines.append(Text(messages.MSG_LOOP_NOTE, style=Style.DIM))
         elif clip_slot.get_repeat() == defaults.DEFAULT_REPEAT:
             lines.append(Text(messages.MSG_MORPH_HINT_NOTE, style=Style.DIM))
-        if clip_slot.get_grab_track() is not None and not self.document().has_grab_steps(clip_slot.get_pattern_name()):
+        if clip_slot.get_grab_track() is not None and not any(self.document().has_grab_steps(name) for name in clip_slot.get_pattern_names()):
             lines.append(Text(messages.MSG_GRAB_HINT_NOTE, style=Style.DIM))
         problem = document.lengths().scene_problem(self.index)
         if problem:

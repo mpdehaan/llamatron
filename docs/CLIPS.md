@@ -13,12 +13,13 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 | Setting | What it does |
 | --- | --- |
 | Name | A name of the clip's own, shown on the grid and used for the clip in Live and in the clip tree's file names. Without one, the clip goes by its pattern's name. `Bksp` clears it. |
-| Pattern | The pattern the clip plays. `J` jumps to the pattern in the pattern editor from any row of the page, and `ESC` comes back. |
+| Patterns | The patterns the clip plays, one after another, as one long pattern (see Pattern Lists below). A clip of 1 pattern is a list of 1. `A`, or `ENTER` on the `+` row, adds a pattern; `Bksp` takes the pattern under the cursor out of the list, which deletes no pattern; `M` picks the pattern up, the arrows carry it and `ENTER` drops it; `ENTER` or `J` opens the pattern in the pattern editor, and `ESC` comes back. |
 | Scale | A scale of the clip's own, which wins over the scene's and the song's, so that one track can play in another key or mode. `ENTER` picks one, and `Bksp` goes back to the scene's, shown with where it comes from, such as `A Minor (from scene)`. |
 | Chains | The chains of generators the clip runs, in order. `ENTER` opens the list, where `A` adds a chain, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own chains first, then its scene's, then its track's. See [Chains](CHAINS.md). |
-| Repeat | How many times the clip plays, from 1 to 9999, before staying silent while the scene's other clips finish. |
+| Pattern order | Which pattern of the list comes next, each pass through the list (see Pattern Lists below). |
+| Step direction | Overrides the play direction of the steps inside each pattern of the list, and of the pattern the clip morphs to. `Bksp` goes back to each pattern's own direction, shown as `forward (from pattern)` or the like, or `(each pattern)` for a list of several. |
+| Repeat | How many times the clip plays its whole list of patterns, from 1 to 9999, before staying silent while the scene's other clips finish. |
 | Loop | Plays the clip until the scene's longest clip that doesn't loop is done. `Space` or `ENTER` toggles it. |
-| Direction | Overrides the play direction of the clip's pattern, and of the pattern it morphs to. `Bksp` goes back to the patterns' own, shown as `forward (from pattern)` or the like. |
 | Morph to | With Repeat above 1, a second pattern to change into across the repeats. |
 | Morph direction | `left`, `right` or `middle`: where the change sweeps in from. |
 | Velocity | How loud the clip plays, as a percentage of each note's written velocity, over its scene's Velocity. Blank takes the scene's, shown as `80% (from scene)`, or 100%. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
@@ -30,6 +31,24 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 | + Set Registers, + Increment Registers | Sections, closed until opened, that set each register to a value as the clip starts and add an amount every time the clip's pattern starts over. See [Set Registers and Increment Registers](REGISTERS.md#set-registers-and-increment-registers). |
 | + Bypass Generators When, + Skip Playback When | Sections of statements about the registers, read each time the clip's pattern starts over: the first lets a pass go by the clip's generators untouched, and the second makes the clip sit a pass out. See [Conditional Execution](REGISTERS.md#conditional-execution). |
 | Play, Stop | Buttons under the settings, which do what `L` (Listen) does: play the clip in real time as its scene would, with its chains, grabs, scale and direction, again and again until `L` is pressed again or Stop is. When the clip's track has no instrument, a list asks which of the set's instruments to listen through, for this listening alone. While the Real Time switch is off, the clip plays through General MIDI in [FluidSynth](FLUIDSYNTH.md) instead, the piano, or the drum kit for drums. See [Playing Live](PLAYING_LIVE.md). |
+
+## Pattern Lists
+
+A riff-based song is often a few bars said in different orders: the riff three times and then an answer, or three bars of a beat and a fill. A clip's list of patterns writes that down directly. The patterns play one after another as one long pattern, each at its own step size and in its own direction, and Repeat counts passes through the whole list. A pattern may be in a list more than once, and is named, never copied, so a change to the pattern is heard everywhere the pattern is listed. Drum patterns and patterns of notes never share a list. On Arrange, a clip of several patterns shows its first pattern and a count of the others, such as `riff-a +3`.
+
+Pattern order chooses which pattern comes next. Every order plays every entry of the list once a pass, so a pass always lasts the same time. The names are the pattern directions, each meaning for whole patterns what the direction means for steps. For a list of `a`, `b`, `c`:
+
+| Pattern order | First pass | Second pass |
+| --- | --- | --- |
+| forward | a b c | a b c |
+| reverse a | a c b | a c b |
+| reverse b | c b a | c b a |
+| alternate | a b c | c b a |
+| pendulum | a b c | b a c |
+| random | drawn | drawn again |
+| first, then random | a, then the others drawn | a, then drawn again |
+
+A Restart When or Stop When statement on a step of any pattern in the list acts on the whole list: the list starts over, or the clip stops.
 
 ## Morphing
 

@@ -105,6 +105,10 @@ class FieldPage(Page):
         if ahead:
             self.place = ahead[0] if direction == STEP_FORWARD else ahead[-1]
 
+    def ends_a_list(self, field):
+        """Return whether a field is the last row of a list among the settings, which leaves a blank line after it. No field is, unless the page says so."""
+        return False
+
     def field(self):
         fields = self.shown_fields()
         self.place = max(min(self.place, len(fields) - 1), 0)
@@ -249,6 +253,8 @@ class FieldPage(Page):
             lines.append(line)
             # A page that starts with its thing's Name leaves a blank line before its other settings.
             if place == 0 and field.label == labels_text.MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
+                lines.append(Text(NOTHING))
+            elif self.ends_a_list(field):
                 lines.append(Text(NOTHING))
         if buttons:
             # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
