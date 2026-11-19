@@ -639,34 +639,34 @@ class TestWizardSounds(unittest.TestCase):
 
     def test_the_drums_have_no_sound_to_choose(self):
         choices = self.rock()
-        drums = [role for role in choices.roles() if not choices.has_sound(role)]
+        drums = [role for role in choices.roles() if not choices.get_sounds().has_sound(role)]
         self.assertTrue(drums)
         with self.assertRaises(ValueError):
-            choices.set_sound(role=drums[0], sound=1)
+            choices.get_sounds().set_sound(role=drums[0], sound=1)
 
     def test_the_usual_sounds_change_nothing_and_each_other_kind_moves_a_player_and_is_made(self):
         choices = self.rock()
         usual = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS]
-        self.assertEqual(choices.get_band_sounds(), wizard_limits.USUAL_SOUNDS)
-        self.assertEqual(choices.get_sound(A_BASS), choices.usual_sound(A_BASS))
+        self.assertEqual(choices.get_sounds().get_band_sounds(), wizard_limits.USUAL_SOUNDS)
+        self.assertEqual(choices.get_sounds().get_sound(A_BASS), choices.get_sounds().usual_sound(A_BASS))
         any_moved = False
         for sounds in wizard_limits.BAND_SOUNDS[1:]:
-            choices.set_band_sounds(sounds)
-            moved = [role for role in choices.roles_in() if choices.has_sound(role) and choices.get_sound(role) != choices.usual_sound(role)]
+            choices.get_sounds().set_band_sounds(sounds)
+            moved = [role for role in choices.roles_in() if choices.get_sounds().has_sound(role) and choices.get_sounds().get_sound(role) != choices.get_sounds().usual_sound(role)]
             # A band already of the kind chosen, as an electric rock band, keeps its sounds and makes the same song.
             self.assertEqual(choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS] != usual, bool(moved), sounds)
             any_moved = any_moved or bool(moved)
             for role in moved:
-                self.assertEqual(self.sound_made(choices=choices, role=role), choices.get_sound(role))
+                self.assertEqual(self.sound_made(choices=choices, role=role), choices.get_sounds().get_sound(role))
         self.assertTrue(any_moved)
 
     def test_a_sound_already_of_the_kind_chosen_stays(self):
         choices = self.rock()
         for sounds in wizard_limits.BAND_SOUNDS[1:]:
-            choices.set_band_sounds(sounds)
+            choices.get_sounds().set_band_sounds(sounds)
             for role in choices.roles_in():
-                if choices.has_sound(role) and choices.usual_sound(role) in wizard_limits.KEPT_BY[sounds]:
-                    self.assertEqual(choices.get_sound(role), choices.usual_sound(role))
+                if choices.get_sounds().has_sound(role) and choices.get_sounds().usual_sound(role) in wizard_limits.KEPT_BY[sounds]:
+                    self.assertEqual(choices.get_sounds().get_sound(role), choices.get_sounds().usual_sound(role))
 
     def test_every_kind_of_sounds_makes_a_song_that_plays_in_every_subgenre(self):
         for place in range(len(genre_names())):
@@ -674,47 +674,47 @@ class TestWizardSounds(unittest.TestCase):
                 choices = chosen(genre=place, subgenre=subgenre)
                 choices.set_seed(A_SEED)
                 for sounds in wizard_limits.BAND_SOUNDS[1:]:
-                    choices.set_band_sounds(sounds)
+                    choices.get_sounds().set_band_sounds(sounds)
                     with self.subTest(subgenre=choices.get_subgenre(), sounds=sounds):
                         SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
 
     def test_a_players_own_sound_overrides_the_bands_and_none_follows_the_band_again(self):
         choices = self.rock()
-        choices.set_band_sounds(wizard_limits.BAND_SOUNDS[1])
-        band = choices.get_sound(A_BASS)
-        choices.set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
-        self.assertTrue(choices.has_own_sound(A_BASS))
+        choices.get_sounds().set_band_sounds(wizard_limits.BAND_SOUNDS[1])
+        band = choices.get_sounds().get_sound(A_BASS)
+        choices.get_sounds().set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
+        self.assertTrue(choices.get_sounds().has_own_sound(A_BASS))
         self.assertEqual(self.sound_made(choices=choices, role=A_BASS), limits.MAX_GM_SOUND)
-        choices.set_band_sounds(wizard_limits.BAND_SOUNDS[2])
-        self.assertEqual(choices.get_sound(A_BASS), limits.MAX_GM_SOUND)
-        choices.set_band_sounds(wizard_limits.BAND_SOUNDS[1])
-        choices.set_sound(role=A_BASS, sound=None)
-        self.assertEqual(choices.get_sound(A_BASS), band)
+        choices.get_sounds().set_band_sounds(wizard_limits.BAND_SOUNDS[2])
+        self.assertEqual(choices.get_sounds().get_sound(A_BASS), limits.MAX_GM_SOUND)
+        choices.get_sounds().set_band_sounds(wizard_limits.BAND_SOUNDS[1])
+        choices.get_sounds().set_sound(role=A_BASS, sound=None)
+        self.assertEqual(choices.get_sounds().get_sound(A_BASS), band)
 
     def test_a_sound_that_plays_no_notes_or_is_no_sound_is_refused(self):
         choices = self.rock()
         for refused in (0, limits.MAX_GM_SOUND + 1, True, NOT_A_NUMBER):
             with self.assertRaises(ValueError):
-                choices.set_sound(role=A_BASS, sound=refused)
+                choices.get_sounds().set_sound(role=A_BASS, sound=refused)
         with self.assertRaises(ValueError):
-            choices.set_band_sounds(NOT_A_CHOICE)
+            choices.get_sounds().set_band_sounds(NOT_A_CHOICE)
 
     def test_the_genres_sounds_for_a_player_are_the_sounds_of_the_ways_the_player_plays(self):
         choices = self.rock()
-        self.assertIn(choices.usual_sound(A_BASS), choices.genre_sounds(A_BASS))
-        self.assertTrue(choices.sound_name(choices.usual_sound(A_BASS)))
+        self.assertIn(choices.get_sounds().usual_sound(A_BASS), choices.get_sounds().genre_sounds(A_BASS))
+        self.assertTrue(choices.get_sounds().sound_name(choices.get_sounds().usual_sound(A_BASS)))
 
     def test_the_sounds_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
         choices = self.rock()
         self.assertNotIn(wizard_limits.SOUNDS_KEPT, choices.to_data())
-        choices.set_band_sounds(wizard_limits.BAND_SOUNDS[-1])
-        choices.set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
+        choices.get_sounds().set_band_sounds(wizard_limits.BAND_SOUNDS[-1])
+        choices.get_sounds().set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.to_data(), choices.to_data())
-        self.assertEqual(again.get_sound(A_BASS), limits.MAX_GM_SOUND)
+        self.assertEqual(again.get_sounds().get_sound(A_BASS), limits.MAX_GM_SOUND)
         again.set_subgenre(again.subgenres()[1])
-        self.assertEqual(again.get_band_sounds(), wizard_limits.USUAL_SOUNDS)
-        self.assertFalse(again.has_own_sound(A_BASS))
+        self.assertEqual(again.get_sounds().get_band_sounds(), wizard_limits.USUAL_SOUNDS)
+        self.assertFalse(again.get_sounds().has_own_sound(A_BASS))
 
 
 class TestWizardGuitarists(unittest.TestCase):
@@ -881,7 +881,7 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
             choices = chosen(genre=place)
             choices.set_seed(A_SEED)
             for role in choices.roles():
-                if not choices.has_sound(role):
+                if not choices.get_sounds().has_sound(role):
                     for trait in choices.role_traits(role):
                         for way in choices.ways(role=role, trait=trait):
                             choices.set_way(trait=trait, value=way)
@@ -1311,12 +1311,12 @@ class TestWizardStandIns(unittest.TestCase):
                 choices.set_seed(A_SEED)
                 number = style[arranger.SOUNDS][sound]
                 with self.subTest(subgenre=subgenre):
-                    self.assertEqual(choices.get_sound(role), number)
-                    self.assertFalse(choices.has_own_sound(role))
+                    self.assertEqual(choices.get_sounds().get_sound(role), number)
+                    self.assertFalse(choices.get_sounds().has_own_sound(role))
                     self.assertEqual(len(choices.ways(role=role, trait=role)), 1)
-                    self.assertIn(number, choices.genre_sounds(role))
+                    self.assertIn(number, choices.get_sounds().genre_sounds(role))
                     self.assertIn(number, self.sounds_made(choices))
-        choices.set_sound(role=role, sound=A_SOUND_OF_NO_STYLE)
+        choices.get_sounds().set_sound(role=role, sound=A_SOUND_OF_NO_STYLE)
         self.assertIn(A_SOUND_OF_NO_STYLE, self.sounds_made(choices))
 
     def sounds_made(self, choices):

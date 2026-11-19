@@ -187,7 +187,7 @@ class TestWizardBreak(unittest.TestCase):
     """The wizard's choice of a break and of how far it is cut up."""
 
     def drums(self, choices):
-        return next(role for role in choices.roles() if not choices.has_sound(role))
+        return next(role for role in choices.roles() if not choices.get_sounds().has_sound(role))
 
     def test_a_song_in_common_time_with_drums_is_offered_every_break_and_starts_with_none(self):
         choices = wizard()
