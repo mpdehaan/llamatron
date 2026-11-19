@@ -909,7 +909,7 @@ MSG_WIZARD_SECTION_ORIGINS = {'shape': 'from genre', 'rises': 'from plan', 'ener
 MSG_WIZARD_VALUE_FROM = '{value} ({origin})'
 # A fade's fields, named for its way: a section that opens the song fades in, and one that closes the song fades out.
 MSG_WIZARD_FADE_LABELS = {'in': {'fades': 'Fade in', 'fade_level': 'Fade from', 'fade_over': 'Fade over'}, 'out': {'fades': 'Fade out', 'fade_level': 'Fade to', 'fade_over': 'Fade over'}}
-MSG_WIZARD_FADE_VELOCITY = 'velocity {value}'
+MSG_WIZARD_FADE_VELOCITY = '{value}%'
 # tui/screens/wizard/intro_melody_branch.py: the intro's parts.
 MSG_WIZARD_INTRO_PART = 'Part {number}'
 MSG_WIZARD_PART_MELODY_LABEL = 'Melody'
