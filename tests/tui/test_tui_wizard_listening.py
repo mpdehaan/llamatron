@@ -59,7 +59,7 @@ class TestWizardListening(PlaybackTest):
         await self.press(Key.DOWN, Key.UP)
 
     def hook_kind(self):
-        kind, _ = self.app.screen.get_choices().hook_line_place()
+        kind, _ = self.app.screen.get_choices().get_hook().hook_line_place()
         return kind
 
     def hook_heard(self):
@@ -102,7 +102,7 @@ class TestWizardListening(PlaybackTest):
     async def test_a_part_that_is_no_melody_is_heard_over_the_drums_and_a_player_with_no_clip_is_refused(self):
         choices = self.app.screen.get_choices()
         setlist, name = choices.made_for_listening()
-        scene = choices.hook_scene()
+        scene = choices.get_hook().hook_scene()
         self.preview().play_line(setlist=setlist, name=name, index=scene, track=choices.tune_player(), what=A_PART)
         await self.let_the_preview_play(A_WHILE)
         self.assertEqual(len(self.channels_heard()), A_PLAYER_AND_THE_DRUMS)

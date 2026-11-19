@@ -106,32 +106,32 @@ class TestWizardPlan(WizardTest):
         await self.go_to_hook_writing()
         choices = self.choices()
         shown = self.text()
-        self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY), shown)
-        for name in choices.hook_gauges():
+        self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.get_hook().genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY), shown)
+        for name in choices.get_hook().hook_gauges():
             self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], shown)
 
     async def test_stepping_a_gauge_moves_it_the_picture_follows_and_the_delete_key_gives_it_back(self):
         await self.choose()
         await self.go_to_hook_writing()
         choices = self.choices()
-        before = choices.hook_notes()
-        usual = choices.genre_hook_gauge(hook_writing.SIMPLICITY)
+        before = choices.get_hook().hook_notes()
+        usual = choices.get_hook().genre_hook_gauge(hook_writing.SIMPLICITY)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.SIMPLICITY])
         less = key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)
         for _ in range(usual - hook_writing.LOWEST):
             await self.press(less)
-        self.assertEqual(choices.get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
-        self.assertNotEqual(choices.hook_notes(), before)
+        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
+        self.assertNotEqual(choices.get_hook().hook_notes(), before)
         await self.press(less)
-        self.assertEqual(choices.get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
+        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
         await self.press(keybindings.FieldPage.CLEAR)
-        self.assertEqual(choices.get_hook_gauge(hook_writing.SIMPLICITY), usual)
-        self.assertEqual(choices.hook_notes(), before)
+        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), usual)
+        self.assertEqual(choices.get_hook().hook_notes(), before)
 
     async def test_choosing_a_behavior_leaves_only_its_gauges(self):
         await self.choose()
-        self.choices().set_hook_behavior(hook_writing.CHANT)
+        self.choices().get_hook().set_hook_behavior(hook_writing.CHANT)
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hook_writing()
         self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.HOLD], self.text())

@@ -46,19 +46,19 @@ class HooksBranch(Branch):
     def summary(self):
         """Return the kind of section that sings the main hook, or None for a song that can have no hook."""
         choices = self.get_choices()
-        place = choices.hook_line_place() if choices.is_ready() else None
+        place = choices.get_hook().hook_line_place() if choices.is_ready() else None
         if place is None:
             return None
-        return place[0] if choices.has_hook() else labels.MSG_WIZARD_NOBODY
+        return place[0] if choices.get_hook().has_hook() else labels.MSG_WIZARD_NOBODY
 
     def fields(self):
         choices = self.get_choices()
         page = self.get_page()
-        if not choices.is_ready() or not choices.can_have_hook():
+        if not choices.is_ready() or not choices.get_hook().can_have_hook():
             return []
         fields = [page.heading(label=labels.MSG_WIZARD_MAIN_HOOK_HEADING, is_set=self.main_is_set, starts_open=True), *self.main_fields()]
-        if choices.has_hook() and (choices.second_hook_kinds() or choices.has_second_hook()):
-            fields += [page.heading(label=labels.MSG_WIZARD_SECOND_HOOK_HEADING, is_set=choices.has_second_hook, starts_open=True), *self.second_fields()]
+        if choices.get_hook().has_hook() and (choices.get_hook().second_hook_kinds() or choices.get_hook().has_second_hook()):
+            fields += [page.heading(label=labels.MSG_WIZARD_SECOND_HOOK_HEADING, is_set=choices.get_hook().has_second_hook, starts_open=True), *self.second_fields()]
         return fields + self.buttons()
 
     def main_is_set(self):
@@ -69,50 +69,50 @@ class HooksBranch(Branch):
         a genre whose songs have no hook unless asked has the switch that asks first."""
         choices = self.get_choices()
         page = self.get_page()
-        switch = [] if choices.usual_hook() and choices.has_hook() else [Toggle(label=labels.MSG_WIZARD_MAIN_HOOK_LABEL, on=choices.has_hook(), set=page.choosing(choices.set_hook))]
-        if not choices.has_hook():
+        switch = [] if choices.get_hook().usual_hook() and choices.get_hook().has_hook() else [Toggle(label=labels.MSG_WIZARD_MAIN_HOOK_LABEL, on=choices.get_hook().has_hook(), set=page.choosing(choices.get_hook().set_hook))]
+        if not choices.get_hook().has_hook():
             return switch
-        sung_in = Field(label=labels.MSG_WIZARD_SUNG_IN_LABEL, value=lambda: choices.hook_line_place()[0])
+        sung_in = Field(label=labels.MSG_WIZARD_SUNG_IN_LABEL, value=lambda: choices.get_hook().hook_line_place()[0])
         fields = [*switch, sung_in, *self.bars_fields()]
-        if choices.hook_is_own():
+        if choices.get_hook().hook_is_own():
             # A hook written by hand in a song made before melodies were patterns is the person's, and Bksp gives the wizard's back.
-            return [*fields, Field(label=labels.MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN, clear=lambda: page.choosing(lambda nothing: choices.set_hook_line(None))(None),
+            return [*fields, Field(label=labels.MSG_WIZARD_HOOK_NOTES_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_NOTES_OWN, clear=lambda: page.choosing(lambda nothing: choices.get_hook().set_hook_line(None))(None),
                                    clear_what=legends.MSG_TUNE_USUAL_WHAT)]
         return fields
 
     def bars_fields(self):
         """Return the field that says which bars of its section are the hook."""
-        bars = self.get_choices().hook_bars()
+        bars = self.get_choices().get_hook().hook_bars()
         return [] if bars is None else [Field(label=labels.MSG_WIZARD_HOOK_BARS_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_BARS.format(first=bars[0], last=bars[1]))]
 
     def second_fields(self):
         """Return the second hook's fields: its switch, and while the song has one, the kind of section that sings it."""
         choices = self.get_choices()
         page = self.get_page()
-        kinds = choices.second_hook_kinds()
-        switch = Toggle(label=labels.MSG_WIZARD_SECOND_HOOK_LABEL, on=choices.has_second_hook(), set=page.choosing(lambda on: choices.set_second_hook(kinds[0] if on else None)))
-        if not choices.has_second_hook():
+        kinds = choices.get_hook().second_hook_kinds()
+        switch = Toggle(label=labels.MSG_WIZARD_SECOND_HOOK_LABEL, on=choices.get_hook().has_second_hook(), set=page.choosing(lambda on: choices.get_hook().set_second_hook(kinds[0] if on else None)))
+        if not choices.get_hook().has_second_hook():
             return [switch]
-        return [switch, ChoiceField(page=page, label=labels.MSG_WIZARD_SECOND_SUNG_IN_LABEL, choices=kinds, current=choices.get_second_hook_kind(), set=page.choosing(choices.set_second_hook))]
+        return [switch, ChoiceField(page=page, label=labels.MSG_WIZARD_SECOND_SUNG_IN_LABEL, choices=kinds, current=choices.get_hook().get_second_hook_kind(), set=page.choosing(choices.get_hook().set_second_hook))]
 
     def buttons(self):
         """Return the buttons that hear the hook under the cursor's heading and that have each hook made again."""
         choices = self.get_choices()
         page = self.get_page()
-        if not choices.has_hook():
+        if not choices.get_hook().has_hook():
             return []
-        kind = choices.hook_kind()
+        kind = choices.get_hook().hook_kind()
         buttons = []
         if choices.tune_player_in(kind) is not None:
             # The hook's notes are its section's: the editor opens on the whole section.
             buttons.append(Button(label=labels.MSG_WIZARD_EDIT_KIND_NOTES_BUTTON.format(kind=kind.capitalize()), enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT))
-        if not choices.hook_is_own() and not choices.tune_is_own(kind):
+        if not choices.get_hook().hook_is_own() and not choices.tune_is_own(kind):
             # Notes written by hand are never written over by another hook.
             buttons.append(Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT))
         buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT))
         buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=lambda: page.listen_to(self.heard_with_band()), enter_what=legends.MSG_LISTEN_WHAT))
-        if choices.has_second_hook():
-            buttons.append(Button(label=labels.MSG_WIZARD_NEW_SECOND_HOOK_BUTTON, enter=lambda: page.choosing(lambda nothing: choices.new_second_hook())(None), enter_what=legends.MSG_WIZARD_NEW_HOOK_WHAT))
+        if choices.get_hook().has_second_hook():
+            buttons.append(Button(label=labels.MSG_WIZARD_NEW_SECOND_HOOK_BUTTON, enter=lambda: page.choosing(lambda nothing: choices.get_hook().new_second_hook())(None), enter_what=legends.MSG_WIZARD_NEW_HOOK_WHAT))
         return buttons
 
     def regenerate(self):
@@ -122,7 +122,7 @@ class HooksBranch(Branch):
         name = messages.MSG_WIZARD_HOOK_NAME
 
         def written(_):
-            page.choosing(lambda nothing: choices.new_hook())(None)
+            page.choosing(lambda nothing: choices.get_hook().new_hook())(None)
             page.say(messages.MSG_WIZARD_REGENERATED.format(name=name))
         page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True), then=written)
 
@@ -143,10 +143,10 @@ class HooksBranch(Branch):
         unless the cursor is on the second hook. The player is whoever plays the melody in that kind of section, which the song
         may give to another player than the genre's; a section nobody plays the melody in has nothing to listen to."""
         choices = self.get_choices()
-        if not choices.is_ready() or not choices.can_have_hook() or not choices.has_hook():
+        if not choices.is_ready() or not choices.get_hook().can_have_hook() or not choices.get_hook().has_hook():
             return None
-        second = self.on_second_hook() and choices.has_second_hook()
-        scene = choices.second_hook_scene() if second else choices.hook_scene()
+        second = self.on_second_hook() and choices.get_hook().has_second_hook()
+        scene = choices.get_hook().second_hook_scene() if second else choices.get_hook().hook_scene()
         player = None if scene is None else choices.tune_player_in(choices.section_kind(scene))
         if player is None:
             return None
@@ -157,19 +157,19 @@ class HooksBranch(Branch):
         stand, with the hook's bars in a frame, under which bars those are and whose the notes are. Where the section's notes cannot
         be drawn so, the hook's own two bars are drawn alone."""
         choices = self.get_choices()
-        if not choices.is_ready() or not choices.can_have_hook():
+        if not choices.is_ready() or not choices.get_hook().can_have_hook():
             return []
-        hook = choices.hook_notes()
-        kind = choices.hook_kind()
-        section = choices.hook_section_notes()
-        bars = choices.hook_bars()
+        hook = choices.get_hook().hook_notes()
+        kind = choices.get_hook().hook_kind()
+        section = choices.get_hook().hook_section_notes()
+        bars = choices.get_hook().hook_bars()
         if hook is None and section is None:
             return []
-        if choices.hook_is_own():
+        if choices.get_hook().hook_is_own():
             made = messages.MSG_WIZARD_HOOK_OWN
         else:
             made = messages.MSG_WIZARD_NOTES_BY_HAND if choices.tune_is_own(kind) else messages.MSG_WIZARD_HOOK_MADE
-        if hook is not None and (section is None or bars is None or choices.hook_is_own()):
+        if hook is not None and (section is None or bars is None or choices.get_hook().hook_is_own()):
             return [*(Text(drawing.INDENT + line) for line in picture_of(hook=hook, width=width)), Text(drawing.INDENT + made, style=Style.DIM)]
         said = messages.MSG_WIZARD_HOOK_IS_BARS.format(first=bars[0], last=bars[1], kind=kind)
         # The two lines that say which bars and whose notes come first, so that a tall picture never pushes them off the page.

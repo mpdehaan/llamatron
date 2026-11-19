@@ -107,12 +107,12 @@ class WizardTest(UITest):
 
     async def go_to_hook_writing(self):
         """Move the tree's cursor to the melody's panel of the section that says the hook, which holds how the hook is written."""
-        await self.go_to_named_branch(self.choices().hook_kind().capitalize())
+        await self.go_to_named_branch(self.choices().get_hook().hook_kind().capitalize())
 
     def hook_picture(self):
         """The Hooks panel's picture as the page draws it: the whole section that says the hook, with the hook's bars in a frame."""
         choices = self.choices()
-        return [line.plain.strip() for line in self.wizard().branch().remarks(A_WIDE_PANEL)], picture_of(hook=choices.hook_section_notes(), width=A_WIDE_PANEL, lit=choices.hook_bars())
+        return [line.plain.strip() for line in self.wizard().branch().remarks(A_WIDE_PANEL)], picture_of(hook=choices.get_hook().hook_section_notes(), width=A_WIDE_PANEL, lit=choices.get_hook().hook_bars())
 
     async def choose_genre_and_subgenre(self):
         """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""
@@ -1334,35 +1334,35 @@ class TestWizardComposition(WizardTest):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
         await self.go_to_hook_panel()
-        hook = choices.hook_notes()
+        hook = choices.get_hook().hook_notes()
         shown = self.text()
         drawn, picture = self.hook_picture()
         for line in picture:
             self.assertIn(line.strip(), drawn)
         # The section's notes hold the hook's, in the hook's bars.
-        first = choices.hook_bars()[0]
+        first = choices.get_hook().hook_bars()[0]
         start = (first - 1) * hook[1]
-        self.assertEqual([note for note in choices.hook_section_notes()[2] if start <= note[0] < start + hook[0]], [(start + at, length, pitch) for at, length, pitch in hook[2]])
+        self.assertEqual([note for note in choices.get_hook().hook_section_notes()[2] if start <= note[0] < start + hook[0]], [(start + at, length, pitch) for at, length, pitch in hook[2]])
         self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
         for _, _, pitch in hook[2]:
             self.assertIn(note_shown(pitch), shown)
         await self.create()
-        self.assertEqual(WizardChoices.from_data(self.document.song().get_wizard_choices()).hook_notes(), hook)
+        self.assertEqual(WizardChoices.from_data(self.document.song().get_wizard_choices()).get_hook().hook_notes(), hook)
 
     async def test_regenerate_writes_another_hook_and_the_picture_goes_with_the_hook(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
         await self.go_to_hook_panel()
-        first = choices.hook_notes()
+        first = choices.get_hook().hook_notes()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.hook_notes(), first)
+        self.assertNotEqual(choices.get_hook().hook_notes(), first)
         drawn, picture = self.hook_picture()
         for line in picture:
             self.assertIn(line.strip(), drawn)
         await self.press(keybindings.WizardPage.TO_TREE)
-        choices.set_hook(False)
+        choices.get_hook().set_hook(False)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(labels_text.MSG_WIZARD_REGENERATE_BUTTON, self.text())
 
@@ -1386,7 +1386,7 @@ class TestWizardComposition(WizardTest):
         choices = self.choices()
         await self.go_to_hook_panel()
         self.assertIn(marks.MSG_WIZARD_HOOK_CELL, self.text())
-        choices.set_hook(False)
+        choices.get_hook().set_hook(False)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(marks.MSG_WIZARD_HOOK_CELL, self.text())
 
@@ -1404,15 +1404,15 @@ class TestWizardComposition(WizardTest):
     async def test_a_genre_with_a_hook_has_no_switch_and_a_song_without_one_is_given_it_on_the_hooks_panel(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
-        self.assertTrue(choices.has_hook())
+        self.assertTrue(choices.get_hook().has_hook())
         await self.go_to_hook_panel()
         self.assertNotIn(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL, self.text())
-        choices.set_hook(False)
+        choices.get_hook().set_hook(False)
         await self.press(Key.DOWN, Key.UP)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL)
         await self.press(Key.SPACE)
-        self.assertTrue(choices.has_hook())
+        self.assertTrue(choices.get_hook().has_hook())
         self.assertNotIn(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL, self.text())
 
     async def test_the_progression_starts_on_any_and_is_left_to_chance_again_from_the_field(self):

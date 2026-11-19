@@ -44,11 +44,11 @@ class MelodiesBranch(Branch):
         choices = self.get_choices()
         if not choices.is_ready():
             return []
-        hook = [HooksBranch(page=page)] if choices.can_have_hook() else []
+        hook = [HooksBranch(page=page)] if choices.get_hook().can_have_hook() else []
         # The intro comes last: its melody is the hook, said before anybody sings, so it is made from the melodies above it. The
         # panel is there whenever the Hook panel is, whoever can say the hook in the intro just now, so that a change to the form,
         # which is under this group in the tree, never moves the rows above the cursor.
-        intro = [IntroMelodyBranch(page=page)] if choices.can_have_hook() else []
+        intro = [IntroMelodyBranch(page=page)] if choices.get_hook().can_have_hook() else []
         # A solo is its player's, never the tune's player's, so each solo has a panel of its own after the sections' melodies.
         solos = [SoloMelodyBranch(page=page, number=number) for number, _ in enumerate(choices.solo_places(), start=solo_melody_branch.FIRST_SOLO)]
         return [*hook, *(SectionMelodyBranch(page=page, kind=kind) for kind in choices.tune_kinds()), *solos, *intro]

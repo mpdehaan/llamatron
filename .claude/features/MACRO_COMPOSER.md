@@ -146,7 +146,7 @@ clouds; generate and test, with motif development and counterpoint last.
   bar and each second bar after; the bars between are an answer (`answer_bar`), walked under the peak as the smart engine
   walks. A varied hook changes only its last note (`varied_hook`). `Hooked` wraps the writer, any engine of `ENGINES`: hook
   lines go to the maker, and every other line of every section is the writer's, held under `hook_floor()` unless marked
-  `higher` (`held_under`), so the hook's top is the song's. The wizard's Hook switch (`WizardChoices.has_hook`, `set_hook`,
+  `higher` (`held_under`), so the hook's top is the song's. The wizard's Hook switch (`HookChoices.has_hook`, `set_hook`,
   `can_have_hook`, which is false where the form marks no hook or nobody carries a tune there) is on the Hooks branch, under Composition, for now.
   `TestHooks` holds each property on forty seeds.
 - **The smart engine** (`Smart` in `melody.py`, the user's design after discussion): a tune that follows what a listener expects.
@@ -415,7 +415,7 @@ clouds; generate and test, with motif development and counterpoint last.
 ## The Wizard's Choices
 
 - `src/llamatron/macro_composer/wizard_limits.py` holds every number, list and name the wizard's choices are held to and kept under, and no behaviour: the choices, each part of them and the wizard's pages name a limit through it, `wizard_limits.FEWEST_FILLS`.
-- The choices have parts, each a class that holds what was chosen of one thing of the song and is reached through the choices (`ChoicesPart` in `src/llamatron/macro_composer/choices_part.py`): `get_kit()` is the drum kit's, `KitChoices` in `src/llamatron/macro_composer/kit_choices.py`, with the pieces, what each sounds as, the fills, the quiet notes and the break, so a page writes `choices.get_kit().set_fills(position)`. A part says what a song keeps of it (`to_data`), takes that back (`read`), goes back to what the subgenre gives (`reset`) and says what it adds to the song made; it asks the choices only for what every part shares (`style()`, `picks()`, `roles()`, `remembered()`).
+- The choices have parts, each a class that holds what was chosen of one thing of the song and is reached through the choices (`ChoicesPart` in `src/llamatron/macro_composer/choices_part.py`): `get_kit()` is the drum kit's, `KitChoices` in `src/llamatron/macro_composer/kit_choices.py`, with the pieces, what each sounds as, the fills, the quiet notes and the break, so a page writes `choices.get_kit().set_fills(position)`. `get_hook()` is the hook's, `HookChoices` in `src/llamatron/macro_composer/hook_choices.py`: whether the song has one, its take, where it sits, the second hook, the hook's notes written by hand, and how the hook and its chorus's body are written. What a part lays over the song's picks under a name goes through the choices' `get_extra(name)` and `set_extra(name=, value=)`. A part says what a song keeps of it (`to_data`), takes that back (`read`), goes back to what the subgenre gives (`reset`) and says what it adds to the song made; it asks the choices only for what every part shares (`style()`, `picks()`, `roles()`, `remembered()`).
 - `WizardChoices` (`src/llamatron/macro_composer/wizard_choices.py`) holds one run of the song wizard: the genre, a style
   template by its file's name and shown by its title; the subgenre, one of the template's kinds; the key's root and scale
   type; the tempo; the form, one of the forms the template suggests for the kind; and the seed. Each setter refuses what it
