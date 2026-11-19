@@ -127,22 +127,22 @@ class TestWizardSongPlan(unittest.TestCase):
         choices = chosen()
         choices.set_contrast(A_HIGH_CONTRAST)
         choices.set_phrasing(False)
-        choices.set_hook_behavior(hook_writing.CHANT)
+        choices.get_hook().set_hook_behavior(hook_writing.CHANT)
         again = WizardChoices.from_data(choices.to_data())
         self.assertTrue(again.has_song_plan())
         self.assertEqual(again.get_contrast(), A_HIGH_CONTRAST)
         self.assertFalse(again.has_phrasing())
-        self.assertEqual(again.get_hook_behavior(), hook_writing.CHANT)
+        self.assertEqual(again.get_hook().get_hook_behavior(), hook_writing.CHANT)
         self.assertEqual(again.made_setlist(name=A_NAME, version=version.VERSION).to_data(), choices.made_setlist(name=A_NAME, version=version.VERSION).to_data())
 
     def test_switching_the_plan_off_or_choosing_another_genre_drops_it(self):
         choices = chosen()
-        choices.set_hook_behavior(hook_writing.CHANT)
+        choices.get_hook().set_hook_behavior(hook_writing.CHANT)
         choices.set_song_plan(False)
         self.assertFalse(choices.has_song_plan())
         choices.set_song_plan(True)
         # How the hook is written is the song's, with a plan or without one, and one genre's.
-        self.assertEqual(choices.get_hook_behavior(), hook_writing.CHANT)
+        self.assertEqual(choices.get_hook().get_hook_behavior(), hook_writing.CHANT)
         choices.set_genre(AN_UNPLANNED_GENRE)
         choices.set_subgenre(choices.subgenres()[0])
         self.assertFalse(choices.has_song_plan())
@@ -190,74 +190,74 @@ class TestWizardHookKind(unittest.TestCase):
 
     def test_the_behavior_and_each_gauge_are_the_genre_s_until_chosen_and_go_back_to_it(self):
         choices = chosen()
-        usual = choices.genre_hook_behavior()
+        usual = choices.get_hook().genre_hook_behavior()
         other = next(behavior for behavior in hook_writing.BEHAVIORS if behavior != usual)
-        choices.set_hook_behavior(other)
-        self.assertEqual(choices.get_hook_behavior(), other)
-        choices.set_hook_behavior(usual)
+        choices.get_hook().set_hook_behavior(other)
+        self.assertEqual(choices.get_hook().get_hook_behavior(), other)
+        choices.get_hook().set_hook_behavior(usual)
         self.assertEqual(choices.to_data().get(wizard_limits.WRITING_KEPT), None)
-        for name in choices.hook_gauges():
-            position = choices.genre_hook_gauge(name)
+        for name in choices.get_hook().hook_gauges():
+            position = choices.get_hook().genre_hook_gauge(name)
             moved = hook_writing.LOWEST if position != hook_writing.LOWEST else hook_writing.HIGHEST
-            self.assertFalse(choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name))
-            choices.set_hook_gauge(name=name, position=moved)
-            self.assertTrue(choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name))
-            self.assertEqual(choices.get_hook_gauge(name), moved)
-            choices.set_hook_gauge(name=name, position=None)
-            self.assertEqual(choices.get_hook_gauge(name), position)
+            self.assertFalse(choices.get_hook().writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name))
+            choices.get_hook().set_hook_gauge(name=name, position=moved)
+            self.assertTrue(choices.get_hook().writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name))
+            self.assertEqual(choices.get_hook().get_hook_gauge(name), moved)
+            choices.get_hook().set_hook_gauge(name=name, position=None)
+            self.assertEqual(choices.get_hook().get_hook_gauge(name), position)
         self.assertEqual(choices.to_data().get(wizard_limits.WRITING_KEPT), None)
 
     def test_a_behavior_and_a_gauge_chosen_stay_through_a_new_hook_and_are_kept_with_the_song(self):
         choices = chosen()
-        choices.set_hook_behavior(hook_writing.CHANT)
-        choices.set_hook_gauge(name=hook_writing.HOLD, position=hook_writing.LOWEST)
-        choices.set_body_gauge(name=hook_writing.SPACE, position=hook_writing.HIGHEST)
-        choices.new_hook()
+        choices.get_hook().set_hook_behavior(hook_writing.CHANT)
+        choices.get_hook().set_hook_gauge(name=hook_writing.HOLD, position=hook_writing.LOWEST)
+        choices.get_hook().set_body_gauge(name=hook_writing.SPACE, position=hook_writing.HIGHEST)
+        choices.get_hook().new_hook()
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_hook_behavior(), hook_writing.CHANT)
-        self.assertEqual(again.get_hook_gauge(hook_writing.HOLD), hook_writing.LOWEST)
-        self.assertEqual(again.get_body_gauge(hook_writing.SPACE), hook_writing.HIGHEST)
-        self.assertEqual(again.hook_notes(), choices.hook_notes())
+        self.assertEqual(again.get_hook().get_hook_behavior(), hook_writing.CHANT)
+        self.assertEqual(again.get_hook().get_hook_gauge(hook_writing.HOLD), hook_writing.LOWEST)
+        self.assertEqual(again.get_hook().get_body_gauge(hook_writing.SPACE), hook_writing.HIGHEST)
+        self.assertEqual(again.get_hook().hook_notes(), choices.get_hook().hook_notes())
 
     def test_each_behavior_is_another_hook_and_each_take_of_one_another(self):
         choices = chosen()
         hooks = set()
         for behavior in hook_writing.BEHAVIORS:
-            choices.set_hook_behavior(behavior)
-            hooks.add(repr(choices.hook_notes()))
+            choices.get_hook().set_hook_behavior(behavior)
+            hooks.add(repr(choices.get_hook().hook_notes()))
         self.assertEqual(len(hooks), len(hook_writing.BEHAVIORS))
-        before = choices.hook_notes()
-        choices.new_hook()
-        self.assertNotEqual(choices.hook_notes(), before)
+        before = choices.get_hook().hook_notes()
+        choices.get_hook().new_hook()
+        self.assertNotEqual(choices.get_hook().hook_notes(), before)
 
     def test_a_behavior_shows_only_the_gauges_that_change_its_hook(self):
         choices = chosen()
         for behavior in hook_writing.BEHAVIORS:
-            choices.set_hook_behavior(behavior)
-            self.assertEqual(choices.hook_gauges(), list(hook_writing.HOOK_GAUGES_OF[behavior]))
-        choices.set_hook_behavior(hook_writing.CHANT)
-        self.assertNotIn(hook_writing.LEAP, choices.hook_gauges())
-        choices.set_hook_behavior(hook_writing.LADDER)
-        self.assertIn(hook_writing.LEAP, choices.hook_gauges())
+            choices.get_hook().set_hook_behavior(behavior)
+            self.assertEqual(choices.get_hook().hook_gauges(), list(hook_writing.HOOK_GAUGES_OF[behavior]))
+        choices.get_hook().set_hook_behavior(hook_writing.CHANT)
+        self.assertNotIn(hook_writing.LEAP, choices.get_hook().hook_gauges())
+        choices.get_hook().set_hook_behavior(hook_writing.LADDER)
+        self.assertIn(hook_writing.LEAP, choices.get_hook().hook_gauges())
 
     def test_what_is_no_behavior_no_gauge_or_off_the_scale_is_refused(self):
         choices = chosen()
         with self.assertRaises(ValueError):
-            choices.set_hook_behavior(NOT_A_PART)
+            choices.get_hook().set_hook_behavior(NOT_A_PART)
         with self.assertRaises(ValueError):
-            choices.set_hook_gauge(name=NOT_A_PART, position=hook_writing.LOWEST)
+            choices.get_hook().set_hook_gauge(name=NOT_A_PART, position=hook_writing.LOWEST)
         for position in (hook_writing.LOWEST - 1, hook_writing.HIGHEST + 1, True):
             with self.assertRaises(ValueError):
-                choices.set_hook_gauge(name=hook_writing.HOLD, position=position)
+                choices.get_hook().set_hook_gauge(name=hook_writing.HOLD, position=position)
             with self.assertRaises(ValueError):
-                choices.set_body_gauge(name=hook_writing.SPACE, position=position)
+                choices.get_hook().set_body_gauge(name=hook_writing.SPACE, position=position)
 
     def test_a_song_not_in_four_has_no_gauges_and_no_phrasing(self):
         choices = chosen(subgenre=A_SUBGENRE_IN_SIX)
         self.assertFalse(choices.counts_in_four())
-        self.assertFalse(choices.writes_hook())
-        self.assertEqual(choices.hook_gauges(), [])
-        self.assertEqual(choices.body_gauges(), [])
+        self.assertFalse(choices.get_hook().writes_hook())
+        self.assertEqual(choices.get_hook().hook_gauges(), [])
+        self.assertEqual(choices.get_hook().body_gauges(), [])
         self.assertTrue(chosen().counts_in_four())
 
 
@@ -557,7 +557,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
     def test_nobody_can_say_the_hook_in_an_intro_without_a_plan_or_a_hook(self):
         self.assertEqual(chosen(plan=False).intro_hook_players(), [])
         choices = chosen()
-        choices.set_hook(False)
+        choices.get_hook().set_hook(False)
         self.assertEqual(choices.intro_hook_players(), [])
 
 
@@ -612,7 +612,7 @@ class TestWizardListeningPlaces(unittest.TestCase):
     def test_the_hook_s_section_says_the_hook_and_the_tune_s_has_the_tune_s_player(self):
         choices = chosen(plan=False)
         kinds = choices.section_kinds_in_form()
-        self.assertEqual(kinds[choices.hook_scene()], 'chorus')
+        self.assertEqual(kinds[choices.get_hook().hook_scene()], 'chorus')
         self.assertIn(choices.tune_player(), choices.section_plays(choices.tune_scene()))
         setlist, name = choices.made_for_listening()
         self.assertEqual(len(setlist.get_song(name).get_scenes()), len(kinds))

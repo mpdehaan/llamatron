@@ -65,19 +65,19 @@ class SectionMelodyBranch(Branch):
         choices = self.get_choices()
         kind = self._kind
         fields = []
-        if choices.is_body_of_hook(kind):
+        if choices.get_hook().is_body_of_hook(kind):
             # The chorus that holds the hook is written around it: where the hook sits among its lines, and the gauges of the lines between.
-            fields = [*self.placement_fields(), *(self.body_gauge_field(name) for name in choices.body_gauges())]
+            fields = [*self.placement_fields(), *(self.body_gauge_field(name) for name in choices.get_hook().body_gauges())]
         elif melody.HEIGHT in choices.section_melody_fields(kind):
             fields.append(self.own_field(field=melody.HEIGHT, label=labels.MSG_WIZARD_HEIGHT_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=melody.HEIGHT), usual=choices.genre_height_in(kind), origin=labels.MSG_WIZARD_USUAL_MELODY))
-        if wizard_limits.MELODY_BUSY in choices.section_melody_fields(kind) and not choices.is_body_of_hook(kind):
+        if wizard_limits.MELODY_BUSY in choices.section_melody_fields(kind) and not choices.get_hook().is_body_of_hook(kind):
             fields.append(self.own_field(field=wizard_limits.MELODY_BUSY, label=labels.MSG_WIZARD_SECTION_BUSY_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=wizard_limits.MELODY_BUSY), usual=choices.get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
         return fields + self.hook_fields() + self.buttons()
 
     def says_the_hook(self):
         """Return whether this kind of section is the one that says the song's hook, in a song whose hook is written by its gauges."""
         choices = self.get_choices()
-        return choices.can_have_hook() and choices.has_hook() and choices.writes_hook() and not choices.hook_is_own() and choices.hook_kind() == self._kind
+        return choices.get_hook().can_have_hook() and choices.get_hook().has_hook() and choices.get_hook().writes_hook() and not choices.get_hook().hook_is_own() and choices.get_hook().hook_kind() == self._kind
 
     def hook_fields(self):
         """Return the fields of how the hook is written, under a heading, in the section that says the hook: its behavior, the
@@ -86,38 +86,38 @@ class SectionMelodyBranch(Branch):
             return []
         choices = self.get_choices()
         page = self.get_page()
-        usual = choices.genre_hook_behavior()
+        usual = choices.get_hook().genre_hook_behavior()
         values = list(hook_writing.BEHAVIORS)
         names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == usual else value for value in values]
-        now = choices.get_hook_behavior()
-        behavior = ChoiceField(page=page, label=labels.MSG_WIZARD_BEHAVIOR_LABEL, choices=values, names=names, current=now, shown=names[values.index(now)], set=page.choosing(choices.set_hook_behavior))
-        return [page.heading(label=labels.MSG_WIZARD_HOOK_HEADING, is_set=self.hook_is_set, starts_open=True), behavior, *(self.hook_gauge_field(name) for name in choices.hook_gauges())]
+        now = choices.get_hook().get_hook_behavior()
+        behavior = ChoiceField(page=page, label=labels.MSG_WIZARD_BEHAVIOR_LABEL, choices=values, names=names, current=now, shown=names[values.index(now)], set=page.choosing(choices.get_hook().set_hook_behavior))
+        return [page.heading(label=labels.MSG_WIZARD_HOOK_HEADING, is_set=self.hook_is_set, starts_open=True), behavior, *(self.hook_gauge_field(name) for name in choices.get_hook().hook_gauges())]
 
     def hook_is_set(self):
         choices = self.get_choices()
-        return choices.get_hook_behavior() != choices.genre_hook_behavior() or any(choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name) for name in choices.hook_gauges())
+        return choices.get_hook().get_hook_behavior() != choices.get_hook().genre_hook_behavior() or any(choices.get_hook().writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name) for name in choices.get_hook().hook_gauges())
 
     def hook_gauge_field(self, name):
         choices = self.get_choices()
-        return self.writing_gauge_field(label=labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], position=choices.get_hook_gauge(name), moved=choices.writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name),
-                                        set_position=lambda position: choices.set_hook_gauge(name=name, position=position))
+        return self.writing_gauge_field(label=labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], position=choices.get_hook().get_hook_gauge(name), moved=choices.get_hook().writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name),
+                                        set_position=lambda position: choices.get_hook().set_hook_gauge(name=name, position=position))
 
     def placement_fields(self):
         """Return the field of where the hook sits among the chorus's lines, the genre's own place said to be so, where the chorus has such places."""
         choices = self.get_choices()
-        offered = choices.hook_placements_offered()
+        offered = choices.get_hook().hook_placements_offered()
         if not offered:
             return []
-        usual = choices.genre_hook_placement()
+        usual = choices.get_hook().genre_hook_placement()
         names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == usual else value for value in offered]
-        now = choices.get_hook_placement()
+        now = choices.get_hook().get_hook_placement()
         return [ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_PLACEMENT_LABEL, choices=offered, names=names, current=now, shown=names[offered.index(now)],
-                            set=self.get_page().choosing(choices.set_hook_placement))]
+                            set=self.get_page().choosing(choices.get_hook().set_hook_placement))]
 
     def body_gauge_field(self, name):
         choices = self.get_choices()
-        return self.writing_gauge_field(label=labels.MSG_WIZARD_BODY_GAUGE_LABELS[name], position=choices.get_body_gauge(name), moved=choices.writing_gauge_is_moved(part=hook_writing.BODY_WRITING, name=name),
-                                        set_position=lambda position: choices.set_body_gauge(name=name, position=position))
+        return self.writing_gauge_field(label=labels.MSG_WIZARD_BODY_GAUGE_LABELS[name], position=choices.get_hook().get_body_gauge(name), moved=choices.get_hook().writing_gauge_is_moved(part=hook_writing.BODY_WRITING, name=name),
+                                        set_position=lambda position: choices.get_hook().set_body_gauge(name=name, position=position))
 
     def own_field(self, *, field, label, ways, usual, origin):
         """Return a field of the kind's own melody: one list of the field's values in their order, the value the genre or the song

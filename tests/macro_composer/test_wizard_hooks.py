@@ -94,32 +94,32 @@ class TestWizardHookPlacement(unittest.TestCase):
 
     def test_a_chorus_of_a_named_shape_offers_every_placement_and_starts_at_the_genres(self):
         choices = chosen()
-        self.assertEqual(choices.hook_placements_offered(), list(melody.PLACEMENTS))
-        self.assertEqual(choices.get_hook_placement(), choices.genre_hook_placement())
-        self.assertEqual(choices.genre_hook_placement(), melody.FIRST_LINES)
+        self.assertEqual(choices.get_hook().hook_placements_offered(), list(melody.PLACEMENTS))
+        self.assertEqual(choices.get_hook().get_hook_placement(), choices.get_hook().genre_hook_placement())
+        self.assertEqual(choices.get_hook().genre_hook_placement(), melody.FIRST_LINES)
 
     def test_a_genre_whose_hook_is_no_choruss_offers_no_placement(self):
         choices = WizardChoices()
         choices.set_genre(A_GENRE_WITH_NO_CHORUS_HOOK)
         choices.set_subgenre(choices.subgenres()[0])
-        self.assertEqual(choices.hook_placements_offered(), [])
+        self.assertEqual(choices.get_hook().hook_placements_offered(), [])
 
     def test_a_placement_moves_the_hook_line_changes_the_chorus_and_is_kept(self):
         choices = chosen()
         before = parts(choices)
-        first_notes = choices.hook_notes()
-        choices.set_hook_placement(melody.LAST_LINE)
-        self.assertEqual(choices.hook_line_place(), (SectionKind.CHORUS, 4))
+        first_notes = choices.get_hook().hook_notes()
+        choices.get_hook().set_hook_placement(melody.LAST_LINE)
+        self.assertEqual(choices.get_hook().hook_line_place(), (SectionKind.CHORUS, 4))
         self.assertNotEqual(parts(choices), before)
-        self.assertEqual(choices.hook_notes()[0], first_notes[0])
-        self.assertEqual(WizardChoices.from_data(choices.to_data()).get_hook_placement(), melody.LAST_LINE)
-        choices.set_hook_placement(melody.FIRST_LINES)
+        self.assertEqual(choices.get_hook().hook_notes()[0], first_notes[0])
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).get_hook().get_hook_placement(), melody.LAST_LINE)
+        choices.get_hook().set_hook_placement(melody.FIRST_LINES)
         self.assertEqual(parts(choices), before)
-        self.assertEqual(choices.hook_line_place(), (SectionKind.CHORUS, 1))
+        self.assertEqual(choices.get_hook().hook_line_place(), (SectionKind.CHORUS, 1))
 
     def test_a_placement_nobody_offers_is_refused(self):
         with self.assertRaises(ValueError):
-            chosen().set_hook_placement(NOT_A_PLACEMENT)
+            chosen().get_hook().set_hook_placement(NOT_A_PLACEMENT)
 
 
 class TestWizardSecondHook(unittest.TestCase):
@@ -131,17 +131,17 @@ class TestWizardSecondHook(unittest.TestCase):
 
     def test_a_song_has_no_second_hook_until_given_one_and_offers_the_kinds_its_form_has(self):
         choices = chosen()
-        self.assertFalse(choices.has_second_hook())
-        self.assertEqual(choices.second_hook_kinds(), [SectionKind.PRE_CHORUS])
+        self.assertFalse(choices.get_hook().has_second_hook())
+        self.assertEqual(choices.get_hook().second_hook_kinds(), [SectionKind.PRE_CHORUS])
         plain = chosen(subgenre=A_SUBGENRE)
-        self.assertEqual(plain.second_hook_kinds(), [])
+        self.assertEqual(plain.get_hook().second_hook_kinds(), [])
         plain.set_end(wizard_limits.OUTRO_THEN_CHORD)
-        self.assertEqual(plain.second_hook_kinds(), [wizard_limits.OUTRO_KIND])
+        self.assertEqual(plain.get_hook().second_hook_kinds(), [wizard_limits.OUTRO_KIND])
 
     def test_a_second_hook_in_the_pre_chorus_is_its_last_line_the_same_bar_twice_and_changes_no_other_section(self):
         choices = chosen()
         before = parts(choices)
-        choices.set_second_hook(SectionKind.PRE_CHORUS)
+        choices.get_hook().set_second_hook(SectionKind.PRE_CHORUS)
         made = parts(choices)
         self.assertEqual([name for name in made if made[name] != before.get(name)], [composer_text.MSG_PART_OF_SECTION.format(SectionKind.PRE_CHORUS, choices.tune_player())])
         tag = self.tag_part(choices=choices, kind=SectionKind.PRE_CHORUS)[LINES][-1]
@@ -152,14 +152,14 @@ class TestWizardSecondHook(unittest.TestCase):
     def test_a_second_hook_in_the_outro_has_the_melodys_player_play_there_every_line_the_tag(self):
         choices = chosen(subgenre=A_SUBGENRE)
         choices.set_end(wizard_limits.OUTRO_THEN_CHORD)
-        choices.set_second_hook(wizard_limits.OUTRO_KIND)
+        choices.get_hook().set_second_hook(wizard_limits.OUTRO_KIND)
         lines = self.tag_part(choices=choices, kind=wizard_limits.OUTRO_KIND)[LINES]
         self.assertTrue(all(line == lines[0] for line in lines))
         self.assertNotIn(choices.tune_player(), choices.style()[arranger.SECTIONS][wizard_limits.OUTRO_KIND][arranger.PLAYS])
 
     def test_the_tags_top_is_under_the_main_hooks(self):
         choices = chosen()
-        choices.set_second_hook(SectionKind.PRE_CHORUS)
+        choices.get_hook().set_second_hook(SectionKind.PRE_CHORUS)
         tag = self.tag_part(choices=choices, kind=SectionKind.PRE_CHORUS)
         chorus = self.tag_part(choices=choices, kind=SectionKind.CHORUS)
 
@@ -169,27 +169,27 @@ class TestWizardSecondHook(unittest.TestCase):
 
     def test_another_second_hook_is_another_tag_and_the_song_is_kept_with_it(self):
         choices = chosen()
-        choices.set_second_hook(SectionKind.PRE_CHORUS)
+        choices.get_hook().set_second_hook(SectionKind.PRE_CHORUS)
         first = self.tag_part(choices=choices, kind=SectionKind.PRE_CHORUS)
-        choices.new_second_hook()
+        choices.get_hook().new_second_hook()
         self.assertNotEqual(self.tag_part(choices=choices, kind=SectionKind.PRE_CHORUS), first)
         kept = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(kept.get_second_hook_kind(), SectionKind.PRE_CHORUS)
-        self.assertEqual(kept.get_second_hook_take(), choices.get_second_hook_take())
+        self.assertEqual(kept.get_hook().get_second_hook_kind(), SectionKind.PRE_CHORUS)
+        self.assertEqual(kept.get_hook().get_second_hook_take(), choices.get_hook().get_second_hook_take())
         self.assertEqual(parts(kept), parts(choices))
 
     def test_taking_the_second_hook_away_gives_the_song_back_and_a_kind_not_offered_is_refused(self):
         choices = chosen()
         before = parts(choices)
-        choices.set_second_hook(SectionKind.PRE_CHORUS)
-        choices.set_second_hook(None)
+        choices.get_hook().set_second_hook(SectionKind.PRE_CHORUS)
+        choices.get_hook().set_second_hook(None)
         self.assertEqual(parts(choices), before)
         with self.assertRaises(ValueError):
-            choices.set_second_hook(SectionKind.BRIDGE)
+            choices.get_hook().set_second_hook(SectionKind.BRIDGE)
         with self.assertRaises(ValueError):
-            choices.new_second_hook()
+            choices.get_hook().new_second_hook()
 
     def test_a_song_with_a_second_hook_is_made(self):
         choices = chosen()
-        choices.set_second_hook(SectionKind.PRE_CHORUS)
+        choices.get_hook().set_second_hook(SectionKind.PRE_CHORUS)
         choices.made_for_listening()

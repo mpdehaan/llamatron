@@ -317,16 +317,16 @@ def every_choice(choices):
             for name in chosen.player_rows(role):
                 row = far_row(choices=chosen, role=role, name=name)
                 yield PLAYER_ROW, (character, role, name), lambda made, role=role, name=name, row=row: made.set_player_row(role=role, name=name, values=row), [first]
-    if choices.can_have_hook():
-        yield HOOK, not choices.has_hook(), lambda made: made.set_hook(not made.has_hook()), [nothing_first]
-    if choices.can_have_hook() and choices.has_hook():
-        yield NEW_HOOK, choices.get_hook_take() + 1, lambda made: made.new_hook(), [nothing_first]
-        for placement in choices.hook_placements_offered():
-            if placement != choices.get_hook_placement():
-                yield HOOK_PLACEMENT, placement, lambda made, placement=placement: made.set_hook_placement(placement), [nothing_first]
-        for kind in choices.second_hook_kinds():
-            yield SECOND_HOOK_CHOICE, kind, lambda made, kind=kind: made.set_second_hook(kind), [nothing_first]
-            yield NEW_SECOND_HOOK, kind, lambda made: made.new_second_hook(), [lambda made, kind=kind: made.set_second_hook(kind)]
+    if choices.get_hook().can_have_hook():
+        yield HOOK, not choices.get_hook().has_hook(), lambda made: made.get_hook().set_hook(not made.get_hook().has_hook()), [nothing_first]
+    if choices.get_hook().can_have_hook() and choices.get_hook().has_hook():
+        yield NEW_HOOK, choices.get_hook().get_hook_take() + 1, lambda made: made.get_hook().new_hook(), [nothing_first]
+        for placement in choices.get_hook().hook_placements_offered():
+            if placement != choices.get_hook().get_hook_placement():
+                yield HOOK_PLACEMENT, placement, lambda made, placement=placement: made.get_hook().set_hook_placement(placement), [nothing_first]
+        for kind in choices.get_hook().second_hook_kinds():
+            yield SECOND_HOOK_CHOICE, kind, lambda made, kind=kind: made.get_hook().set_second_hook(kind), [nothing_first]
+            yield NEW_SECOND_HOOK, kind, lambda made: made.get_hook().new_second_hook(), [lambda made, kind=kind: made.get_hook().set_second_hook(kind)]
     if choices.can_have_song_plan():
         # A planned song, and under a plan its contrast, its phrasing and each part of the hook's kind.
         def planned(made):
@@ -341,20 +341,20 @@ def every_choice(choices):
                 for value in offered:
                     if value != phrasing.USUAL_WAYS[name]:
                         yield PHRASING_WAY, (name, value), lambda made, name=name, value=value: made.set_phrasing_way(name=name, value=value), [planned]
-    if choices.writes_hook():
+    if choices.get_hook().writes_hook():
         # How the hook is written: every other behavior, and each gauge of the song's behavior moved to the end of its scale farther away.
         for behavior in hook_writing.BEHAVIORS:
-            if behavior != choices.get_hook_behavior():
-                yield HOOK_BEHAVIOR, behavior, lambda made, behavior=behavior: made.set_hook_behavior(behavior), [nothing_first]
-        for name in choices.hook_gauges():
-            position = far_end(choices.get_hook_gauge(name))
-            yield HOOK_GAUGE, (name, position), lambda made, name=name, position=position: made.set_hook_gauge(name=name, position=position), [nothing_first]
-        for name in choices.body_gauges():
-            position = far_end(choices.get_body_gauge(name))
-            yield BODY_GAUGE, (name, position), lambda made, name=name, position=position: made.set_body_gauge(name=name, position=position), [nothing_first]
-    if choices.can_have_hook() and choices.has_hook() and choices.hook_line() is not None:
+            if behavior != choices.get_hook().get_hook_behavior():
+                yield HOOK_BEHAVIOR, behavior, lambda made, behavior=behavior: made.get_hook().set_hook_behavior(behavior), [nothing_first]
+        for name in choices.get_hook().hook_gauges():
+            position = far_end(choices.get_hook().get_hook_gauge(name))
+            yield HOOK_GAUGE, (name, position), lambda made, name=name, position=position: made.get_hook().set_hook_gauge(name=name, position=position), [nothing_first]
+        for name in choices.get_hook().body_gauges():
+            position = far_end(choices.get_hook().get_body_gauge(name))
+            yield BODY_GAUGE, (name, position), lambda made, name=name, position=position: made.get_hook().set_body_gauge(name=name, position=position), [nothing_first]
+    if choices.get_hook().can_have_hook() and choices.get_hook().has_hook() and choices.get_hook().hook_line() is not None:
         # The hook's notes written by hand: its first note, which a rest may come before, moved a note of the scale up.
-        yield HOOK_LINE, 'first note up', lambda made: made.set_hook_line(line_edits.moved(line=made.hook_line(), step=first_sounding_step(made.hook_line()), by=1)), [nothing_first]
+        yield HOOK_LINE, 'first note up', lambda made: made.get_hook().set_hook_line(line_edits.moved(line=made.get_hook().hook_line(), step=first_sounding_step(made.get_hook().hook_line()), by=1)), [nothing_first]
     if choices.can_have_song_plan():
         # What a section of a planned song is given of its own, each held under a plan: the second section, which a section follows.
         under_plan = fresh_with_plan(choices)

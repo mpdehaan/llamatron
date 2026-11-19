@@ -1133,42 +1133,42 @@ class TestWizardMelodyGauges(unittest.TestCase):
 
     def test_a_song_has_a_hook_where_the_genre_says_until_switched_and_the_switch_is_kept(self):
         choices = self.rock()
-        self.assertTrue(choices.can_have_hook())
-        self.assertTrue(choices.usual_hook())
-        self.assertTrue(choices.has_hook())
+        self.assertTrue(choices.get_hook().can_have_hook())
+        self.assertTrue(choices.get_hook().usual_hook())
+        self.assertTrue(choices.get_hook().has_hook())
         with_hook = self.patterns(choices)
-        choices.set_hook(False)
-        self.assertFalse(choices.has_hook())
+        choices.get_hook().set_hook(False)
+        self.assertFalse(choices.get_hook().has_hook())
         self.assertNotEqual(self.patterns(choices), with_hook)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertFalse(again.has_hook())
+        self.assertFalse(again.get_hook().has_hook())
         self.assertEqual(self.patterns(again), self.patterns(choices))
-        choices.set_hook(True)
+        choices.get_hook().set_hook(True)
         self.assertEqual(self.patterns(choices), with_hook)
         self.assertNotIn(wizard_limits.HOOK_KEPT, choices.to_data())
 
     def test_the_hooks_notes_are_read_from_the_song_as_chosen_and_follow_every_choice(self):
         choices = self.rock()
-        steps, steps_in_bar, notes = choices.hook_notes()
+        steps, steps_in_bar, notes = choices.get_hook().hook_notes()
         self.assertEqual(steps % steps_in_bar, 0)
         self.assertTrue(notes)
         for start, length, pitch in notes:
             self.assertGreaterEqual(start, 0)
             self.assertLessEqual(start + length, steps)
             self.assertIn((pitch - choices.root_half_steps()) % NOTES_IN_AN_OCTAVE, choices.scale_half_steps())
-        self.assertEqual(WizardChoices.from_data(choices.to_data()).hook_notes(), choices.hook_notes())
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).get_hook().hook_notes(), choices.get_hook().hook_notes())
         choices.set_root(ANOTHER_ROOT)
-        self.assertNotEqual(choices.hook_notes()[2], notes)
+        self.assertNotEqual(choices.get_hook().hook_notes()[2], notes)
         choices.set_seed(ANOTHER_SEED)
-        self.assertNotEqual(choices.hook_notes(), (steps, steps_in_bar, notes))
+        self.assertNotEqual(choices.get_hook().hook_notes(), (steps, steps_in_bar, notes))
 
     def test_a_new_hook_changes_the_hook_and_no_other_part_and_is_kept(self):
         choices = self.rock()
         before = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[arranger.PARTS]
-        first = choices.hook_notes()
-        choices.new_hook()
-        self.assertEqual(choices.get_hook_take(), 1)
-        self.assertNotEqual(choices.hook_notes(), first)
+        first = choices.get_hook().hook_notes()
+        choices.get_hook().new_hook()
+        self.assertEqual(choices.get_hook().get_hook_take(), 1)
+        self.assertNotEqual(choices.get_hook().hook_notes(), first)
         after = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[arranger.PARTS]
         changed = [part for part in before if before[part] != after[part]]
         self.assertTrue(changed)
@@ -1178,38 +1178,38 @@ class TestWizardMelodyGauges(unittest.TestCase):
         for part in changed:
             self.assertTrue(any(part.startswith(kind) for kind in with_hook), part)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_hook_take(), 1)
-        self.assertEqual(again.hook_notes(), choices.hook_notes())
+        self.assertEqual(again.get_hook().get_hook_take(), 1)
+        self.assertEqual(again.get_hook().hook_notes(), choices.get_hook().hook_notes())
 
     def test_a_new_hook_is_refused_without_a_hook_and_a_new_genre_goes_back_to_the_first_take(self):
         choices = self.rock()
-        choices.new_hook()
-        choices.set_hook(False)
+        choices.get_hook().new_hook()
+        choices.get_hook().set_hook(False)
         with self.assertRaises(ValueError):
-            choices.new_hook()
+            choices.get_hook().new_hook()
         choices.set_genre(ANOTHER_GENRE)
-        self.assertEqual(choices.get_hook_take(), 0)
+        self.assertEqual(choices.get_hook().get_hook_take(), 0)
         # A take kept that is no take is left out, as any kept choice that no longer holds is.
         for take in (-1, True, NOT_A_NUMBER):
-            self.assertEqual(WizardChoices.from_data({**self.rock().to_data(), wizard_limits.HOOK_TAKE_KEPT: take}).get_hook_take(), 0)
+            self.assertEqual(WizardChoices.from_data({**self.rock().to_data(), wizard_limits.HOOK_TAKE_KEPT: take}).get_hook().get_hook_take(), 0)
 
     def test_a_song_with_no_hook_has_no_hook_notes(self):
         choices = self.rock()
-        choices.set_hook(False)
-        self.assertIsNone(choices.hook_notes())
+        choices.get_hook().set_hook(False)
+        self.assertIsNone(choices.get_hook().hook_notes())
         for genre in genre_names():
             other = chosen(genre=genre_names().index(genre))
-            if not other.can_have_hook():
-                self.assertIsNone(other.hook_notes(), genre)
+            if not other.get_hook().can_have_hook():
+                self.assertIsNone(other.get_hook().hook_notes(), genre)
 
     def test_a_genre_whose_sections_mark_a_hook_has_none_until_asked_and_a_genre_with_none_refuses(self):
         for genre in genre_names():
             choices = chosen(genre=genre_names().index(genre))
-            if not choices.can_have_hook():
-                self.assertFalse(choices.has_hook(), genre)
+            if not choices.get_hook().can_have_hook():
+                self.assertFalse(choices.get_hook().has_hook(), genre)
                 with self.assertRaises(ValueError):
-                    choices.set_hook(True)
-            self.assertEqual(choices.usual_hook(), genre in GENRES_WITH_A_HOOK, genre)
+                    choices.get_hook().set_hook(True)
+            self.assertEqual(choices.get_hook().usual_hook(), genre in GENRES_WITH_A_HOOK, genre)
 
     def test_the_gauges_show_only_while_the_melody_style_is_smart(self):
         choices = self.rock()
