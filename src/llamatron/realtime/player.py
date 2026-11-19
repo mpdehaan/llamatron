@@ -44,7 +44,7 @@ Everything is decided ahead of time: the player keeps the moments to come in a h
 tick, expands the ones due within the next LOOKAHEAD_SECONDS into events queued with the sender, so
 that the sender, which may be in another process, never waits for the tracker. At one time the
 follow actions' work comes before a launch by hand, so that the human's launch is what plays. The
-sender is anything with the engine's methods: start, add, drop, stop_tag and stop_all. The player
+sender is anything with the engine's methods: start, add, forget, stop_tag and stop_all. The player
 reads nothing but the score and a clock that gives the sender's seconds, so the tests drive it on a
 stepped clock with no time passing.
 """
@@ -170,7 +170,7 @@ class Player:
                 self._cut(play=play, at=max(at, now), score=old)
                 continue
             if play.start >= at:
-                self._sender.drop(tag=play.tag, after=engine.BEFORE_EVERYTHING)
+                self._sender.forget(tag=play.tag, after=engine.BEFORE_EVERYTHING)
                 start = play.start
             elif at >= play.end:
                 # The edit is heard only from the play's end, where whether it loops still decides what comes next.
@@ -179,7 +179,7 @@ class Player:
                 play.loops = play.preview or score.loops(scene=new_scene, track=new_track)
                 continue
             else:
-                self._sender.drop(tag=play.tag, after=at)
+                self._sender.forget(tag=play.tag, after=at)
                 self._end_notes_across(play=play, at=at, score=old, scene=old_scene, track=old_track)
                 whole = old.whole_at(scene=old_scene, elapsed=at - play.start)
                 start = at - score.seconds_at(scene=new_scene, whole=whole)
@@ -406,7 +406,7 @@ class Player:
         next_start = None
         for old in self._plays_on(track):
             if old.start == at:
-                self._drop(old)
+                self._forget(old)
             elif old.start < at < old.end:
                 self._cut(play=old, at=at)
             elif old.start > at:
@@ -479,7 +479,7 @@ class Player:
         """End every play at a moment, now or ahead, and forget every moment to come, for a scene launched by hand."""
         for play in list(self._plays):
             if play.start >= at:
-                self._drop(play)
+                self._forget(play)
             elif play.end > at:
                 self._cut(play=play, at=at)
         self._moments = []
@@ -487,9 +487,9 @@ class Player:
     def _plays_on(self, track):
         return [play for play in self._plays if play.track == track]
 
-    def _drop(self, play):
+    def _forget(self, play):
         """Forget a play that hasn't started, and its queued events."""
-        self._sender.drop(tag=play.tag, after=engine.BEFORE_EVERYTHING)
+        self._sender.forget(tag=play.tag, after=engine.BEFORE_EVERYTHING)
         self._plays.remove(play)
 
     def _cut(self, *, play, at, score=None):
@@ -498,7 +498,7 @@ class Player:
         if at <= self._now():
             self._sender.stop_tag(play.tag)
         else:
-            self._sender.drop(tag=play.tag, after=at)
+            self._sender.forget(tag=play.tag, after=at)
             notes = score.sounding_across(scene=play.scene, track=play.track, elapsed=at - play.start)
             self._sender.add([Playing(Rational(0), at, port, channel, timeline.NOTE_OFF, number, timeline.NO_VELOCITY, play.tag) for port, channel, number in notes])
         play.end = min(play.end, at)

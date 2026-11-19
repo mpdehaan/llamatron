@@ -19,14 +19,14 @@ Reference notes for Claude, one of `.claude/features/`: the engine and the Realt
 - `PlaybackEngine` (`realtime/engine.py`) holds the events still to send in a heap, sends each
   when its time comes (`send_due`), remembers which notes are sounding, and silences on
   `stop_tag` (that tag's sounding notes) and `stop_all` (every sounding note, then CC 123 and
-  CC 120 on every channel used). `drop(tag=, after=)` forgets a clip's events from a time on,
+  CC 120 on every channel used). `forget(tag=, after=)` forgets a clip's events from a time on,
   which is how an edit while playing replaces the passes not yet started. It reads a `Clock`
   and writes to `MidiOutput`s and nothing else: a `SteppedClock` and `RecordingOutput`s drive
   it in tests with no time passing, and `MonotonicClock` and `RtMidiOutput` in the process.
 - `RealtimeMIDISenderProcess` (`realtime/sender_process.py`), the Realtime Sender Process, runs
   the engine in a spawned process, since a thread drifts by the interpreter's switch interval
   while the screen draws and a process measured within 0.11 ms. The tracker's side sends
-  `start`, `add`, `drop`, `stop_tag`, `stop_all` and `close` over a pipe. The process sleeps in
+  `start`, `add`, `forget`, `stop_tag`, `stop_all` and `close` over a pipe. The process sleeps in
   half-millisecond slices until 1.5 ms before the next event and spins to the moment, since
   sleep is loose on macOS. With `recording=True` it opens `RecordingOutput`s and `close`
   returns when the timeline started and every message sent, which the suite's short lag test

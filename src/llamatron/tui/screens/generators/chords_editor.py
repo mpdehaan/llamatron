@@ -124,7 +124,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
         if self.steps() < limits.MAX_PROGRESSION_CHORDS:
             result.append(self.bind(self.KEYS.INSERT_STEP, action=self.add_step))
         if self.steps() > limits.MIN_PROGRESSION_CHORDS:
-            result.append(self.bind(self.KEYS.REMOVE_STEP, action=self.drop_step))
+            result.append(self.bind(self.KEYS.REMOVE_STEP, action=self.remove_step_here))
         result.append(self.bind(self.KEYS.PICK, action=self.pick_progression))
         return result
 
@@ -188,7 +188,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
     def add_step(self):
         self.store([values[:self.step] + [INSERTED_DEGREE if row == CHORD_ROW else None] + values[self.step:] for row, values in enumerate(self.rows())])
 
-    def drop_step(self):
+    def remove_step_here(self):
         self.store([values[:self.step] + values[self.step + 1:] for values in self.rows()])
         self.keep_step()
 

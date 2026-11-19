@@ -42,7 +42,7 @@ class OneRowEditor(StepGrid, StepEditor):
     A page of this kind names CELL_WIDTH, how wide a cell is drawn; MOST, the largest number
     either side of zero; MOST_STEPS and FEWEST_STEPS, how long the row can be; and INSERT and
     REMOVE, its own bindings for inserting and removing a step. The page answers values(), and
-    changes the row through set_value(value), add_step() and drop_step(), each at the cursor.
+    changes the row through set_value(value), add_step() and remove_step_here(), each at the cursor.
     """
 
     KEYS = keybindings.OneRowEditor
@@ -65,7 +65,7 @@ class OneRowEditor(StepGrid, StepEditor):
         """Insert a step at the cursor."""
         raise NotImplementedError
 
-    def drop_step(self):
+    def remove_step_here(self):
         """Remove the cursor's step."""
         raise NotImplementedError
 
@@ -124,5 +124,5 @@ class OneRowEditor(StepGrid, StepEditor):
         self.add_step()
 
     def remove_step(self):
-        self.drop_step()
+        self.remove_step_here()
         self.keep_step()

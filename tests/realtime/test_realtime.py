@@ -244,7 +244,7 @@ class TestPlaybackEngine(unittest.TestCase):
             note(seconds=2.0, number=A_FIFTH_UP, tag=SCENE_TWO),
         ])
         self.engine.send_due()
-        self.engine.drop(tag=SCENE_ONE, after=1.5)
+        self.engine.forget(tag=SCENE_ONE, after=1.5)
         self.assertEqual([(event.seconds, event.tag) for event in self.engine.pending()], [(1.0, SCENE_ONE), (2.0, SCENE_TWO)])
         self.assertEqual(self.engine.sounding(), [(PORT, 0, MIDDLE_C)])
 
