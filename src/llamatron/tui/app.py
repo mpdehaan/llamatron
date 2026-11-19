@@ -95,6 +95,8 @@ class LlamatronApp(App, inherit_bindings=False):
         self.open_field_sections = set()
         # The headings open in the picker of a new generator's type, kept for the session.
         self.open_generator_groups = set()
+        # The headings open in the pattern editor's Munge dialog, kept for the session.
+        self.open_munge_groups = set()
         self.on_roll = True
         # Whether Arrange shows its details view (R), kept for the session like the choice of the roll.
         self.shows_arrange_details = False

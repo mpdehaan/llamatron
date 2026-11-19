@@ -48,6 +48,7 @@ from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -102,9 +103,31 @@ class Munge:
     SPLIT = 27
 
 
+# The heading each munge is listed under.
+MUNGE_GROUPS = {
+    labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.CLEAR_CHORDS],
+    labels.MungeGroup.COPY: [Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START, Munge.MIRROR],
+    labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLIT],
+    labels.MungeGroup.REARRANGE: [
+        Munge.REVERSE_AFTER, Munge.REVERSE_BEFORE, Munge.REVERSE, Munge.PIVOT, Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE, Munge.ROLL_LEFT, Munge.ROLL_RIGHT,
+    ],
+    labels.MungeGroup.SMOOTH: [Munge.SMOOTH_CCS, Munge.SMOOTH_VELOCITY, Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX],
+}
+
+
+def munge_name(choice):
+    """Return what the munge dialog calls a choice."""
+    return labels.MSG_MUNGE_CHOICES[choice]
+
+
+def munge_groups():
+    """Return the munge dialog's headings, sorted by name, each with its choices sorted by name, whatever is added."""
+    return [(heading, sorted(MUNGE_GROUPS[heading], key=lambda choice: munge_name(choice).lower())) for heading in sorted(MUNGE_GROUPS)]
+
+
 def munges_in_order():
-    """Return the munge dialog's choices, each as its place in MSG_MUNGE_CHOICES, sorted by name, the order the dialog lists them in whatever is added."""
-    return sorted(range(len(labels.MSG_MUNGE_CHOICES)), key=lambda choice: labels.MSG_MUNGE_CHOICES[choice].lower())
+    """Return every munge in the order the dialog holds them: heading by heading, which is the place the dialog answers with."""
+    return [choice for _, choices in munge_groups() for choice in choices]
 
 
 # The scale lengths a pattern can be written for, in the order the picker lists them after any.
@@ -390,9 +413,10 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         )
 
     def munge(self):
-        """Offer the ways of rearranging, copying and clearing the steps, sorted by name, and do the chosen one."""
+        """Offer the ways of rearranging, copying and clearing the steps, under headings that open and close, and do the chosen one."""
+        groups = [(heading, [munge_name(choice) for choice in choices]) for heading, choices in munge_groups()]
         order = munges_in_order()
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_MUNGE_TITLE, options=[labels.MSG_MUNGE_CHOICES[choice] for choice in order]), then=lambda place: self.munge_as(order[place]))
+        self.ask(dialog=GroupedChoiceDialog(title=messages.MSG_MUNGE_TITLE, groups=groups, opened=self.holder.open_munge_groups), then=lambda place: self.munge_as(order[place]))
 
     def munge_as(self, choice):
         """Do one of the munge dialog's choices. A rearranging leaves the cursor on its step, so that choosing the same way again undoes it."""

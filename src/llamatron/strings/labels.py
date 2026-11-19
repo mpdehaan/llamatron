@@ -556,6 +556,15 @@ MSG_STEP_HEADING = ' Step'
 # A CC row's label says the CC number the tracks playing the pattern send on that lane, off for a lane that sends nothing, or ? when the tracks differ.
 MSG_CC_ROW_LABEL = '{label} ({number})'
 MSG_DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet'}
+# The headings the munge dialog lists its choices under.
+class MungeGroup:
+    CLEAR = 'Clear'
+    COPY = 'Copy'
+    OTHER_PATTERNS = 'Other Patterns'
+    REARRANGE = 'Rearrange'
+    SMOOTH = 'Smooth'
+
+
 MSG_MUNGE_CHOICES = [
     'reverse after step', 'reverse before step', 'reverse', 'pivot around step', 'randomize',
     'copy all at/before cursor to end', 'copy all at/after cursor to end', 'copy all at/before cursor before start', 'copy all at/after cursor before start',
