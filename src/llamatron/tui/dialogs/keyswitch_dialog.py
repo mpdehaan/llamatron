@@ -25,7 +25,7 @@ nothing until the instrument gives it one."""
 
 from rich.text import Text
 
-from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT, KEYSWITCH_SLOTS
+from llamatron.composition import file_format
 from llamatron.strings import labels, marks
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
@@ -43,10 +43,10 @@ class KeyswitchDialog(PickManyDialog):
     """Answers with the slots picked, in order, an empty list for none, or None when cancelled."""
 
     KEYS = keybindings.KeyswitchDialog
-    SHOWN = KEYSWITCH_SLOT_COUNT
+    SHOWN = file_format.KEYSWITCH_SLOT_COUNT
 
     def __init__(self, *, title, heading, names, notes, picked):
-        super().__init__(title=title, options=list(KEYSWITCH_SLOTS), names=names, picked=picked)
+        super().__init__(title=title, options=list(file_format.KEYSWITCH_SLOTS), names=names, picked=picked)
         # The line over the slots, the instrument's name or why none is named, and each slot's note as text, nothing where it has none.
         self.said = heading
         self.notes = notes

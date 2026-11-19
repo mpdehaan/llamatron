@@ -26,7 +26,7 @@ from tests.support.ui_testing import STRUMMER, BREATHES, FOLLOWS, PICKED, TRADE,
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.strings import errors, marks
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import NOTHING
@@ -380,7 +380,7 @@ class TestArticulateEditorShowsItsArticulate(NamedItemChecks, UITest):
 class TestScalePageShowsItsScale(NamedItemChecks, UITest):
 
     PAGE = ScalePage
-    FIRST = DEFAULT_SCALE
+    FIRST = setlist.DEFAULT_SCALE
 
 
 class TestTrackEditorShowsItsTrack(NamedItemChecks, UITest):

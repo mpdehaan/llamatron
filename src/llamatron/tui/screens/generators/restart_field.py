@@ -15,12 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Restart field every generator's editor ends its own settings with: when the generator starts over, every clip, on new scene or whole song."""
 
-from llamatron.composition.file_format import GENERATOR_RESTART, NAMED_GENERATORS, RESTARTS, Restart
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Restart
 from llamatron.strings import labels
 from llamatron.tui.screens.shared.field import ChoiceField
 
 # Each named section's generator kind, the other way round from NAMED_GENERATORS.
-KINDS_BY_SECTION = {section: kind for kind, section in NAMED_GENERATORS.items()}
+KINDS_BY_SECTION = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
 
 
 def restart_field(page):
@@ -28,7 +29,7 @@ def restart_field(page):
     settings = page.document().song().get_generator_settings(kind=KINDS_BY_SECTION[page.SECTION], name=page.item)
     current = settings.get_restart()
     return ChoiceField(
-        page=page, label=labels.MSG_RESTART_LABEL, choices=RESTARTS, current=current, names=[labels.MSG_RESTART_NAMES[choice] for choice in RESTARTS],
+        page=page, label=labels.MSG_RESTART_LABEL, choices=file_format.RESTARTS, current=current, names=[labels.MSG_RESTART_NAMES[choice] for choice in file_format.RESTARTS],
         shown=labels.MSG_RESTART_NAMES[current],
-        set=lambda chosen: page.document().set_generator_setting(section=page.SECTION, name=page.item, setting=GENERATOR_RESTART, value=None if chosen == Restart.EVERY_CLIP else chosen),
+        set=lambda chosen: page.document().set_generator_setting(section=page.SECTION, name=page.item, setting=file_format.GENERATOR_RESTART, value=None if chosen == Restart.EVERY_CLIP else chosen),
     )

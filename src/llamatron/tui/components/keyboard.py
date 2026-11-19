@@ -26,7 +26,7 @@ key outside it, so that the dialog draws the chord's keys filled and the scale's
 colour. chord_keys() says which keys a chord's notes are, from its root up.
 """
 
-from llamatron.composition.named_scale import SPELLING_OCTAVE
+from llamatron.composition import named_scale
 from llamatron.music import midi
 from llamatron.music import note
 from llamatron.music.note import Note
@@ -93,7 +93,7 @@ class Keyboard:
         self.chord = set(chord)
 
     def root_pitch_class(self):
-        return Note(name=self.root, octave_number=SPELLING_OCTAVE).get_midi_number() % midi.HALF_STEPS_PER_OCTAVE
+        return Note(name=self.root, octave_number=named_scale.SPELLING_OCTAVE).get_midi_number() % midi.HALF_STEPS_PER_OCTAVE
 
     def pitch_classes(self):
         """Return the half steps above C of every note in the scale."""

@@ -25,10 +25,8 @@ cover that path, and tests/playback/test_registers.py the path every other scene
 import unittest
 
 from llamatron.composition import limits
-from llamatron.composition.file_format import (
-    REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, STATEMENT_PARTS, STATEMENT_ROWS, ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting,
-    StatementPart, StepStatement,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting, StatementPart, StepStatement
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song_file_error import SongFileError
@@ -60,14 +58,14 @@ def parity(operator):
 def statements(*, kind, at, steps=STEPS):
     """Return the five rows of a kind of statement for a pattern, holding a statement on each step named in at."""
     rows = {}
-    for row, part in zip(STATEMENT_ROWS[kind], STATEMENT_PARTS):
+    for row, part in zip(file_format.STATEMENT_ROWS[kind], file_format.STATEMENT_PARTS):
         rows[row] = [at[step].get(part) if step in at else None for step in range(steps)]
     return rows
 
 
 def adds(*, at, steps=STEPS, amount=ONE):
     """Return AX's += row adding an amount on one step."""
-    return {REGISTER_ADD_ROWS[AX]: [amount if step == at else 0 for step in range(steps)]}
+    return {file_format.REGISTER_ADD_ROWS[AX]: [amount if step == at else 0 for step in range(steps)]}
 
 
 def clip_of(*, rows, repeat=REPEATS, loop=False, registers=None, beside=None):
@@ -98,12 +96,12 @@ class TestMuteWhen(unittest.TestCase):
 
     def test_a_muted_step_is_silent_and_still_changes_the_registers(self):
         every = {step: parity(Operator.ODD) for step in range(STEPS)}
-        rows = {**statements(kind=StepStatement.MUTE, at=every), REGISTER_ADD_ROWS[AX]: [ONE] * STEPS}
+        rows = {**statements(kind=StepStatement.MUTE, at=every), file_format.REGISTER_ADD_ROWS[AX]: [ONE] * STEPS}
         # AX reads 0, 1, 2, 3 as the steps are reached, since each mute is read before its step adds.
         self.assertEqual(len(pitches(clip_of(rows=rows, repeat=ONE))), STEPS // 2)
 
     def test_a_statement_is_read_before_the_steps_own_set(self):
-        rows = {**statements(kind=StepStatement.MUTE, at={FIRST: comparing(operator=Operator.SAME, value=STOPS_AT)}), REGISTER_SET_ROWS[AX]: [STOPS_AT, None, None, None]}
+        rows = {**statements(kind=StepStatement.MUTE, at={FIRST: comparing(operator=Operator.SAME, value=STOPS_AT)}), file_format.REGISTER_SET_ROWS[AX]: [STOPS_AT, None, None, None]}
         self.assertEqual(len(pitches(clip_of(rows=rows, repeat=ONE))), STEPS)
 
     def test_a_scene_with_only_mutes_plays_as_long_as_it_did(self):
@@ -135,7 +133,7 @@ class TestStopWhen(unittest.TestCase):
         self.assertEqual(len(pitches(clip_of(rows=rows))), REPEATS * STEPS)
 
     def test_the_stopping_step_never_makes_its_own_changes(self):
-        rows = {**self.stopping(stop_on=FIRST, add_on=FIRST), REGISTER_NOTE_ROWS[AX]: [RegisterUse.ADD] * STEPS}
+        rows = {**self.stopping(stop_on=FIRST, add_on=FIRST), file_format.REGISTER_NOTE_ROWS[AX]: [RegisterUse.ADD] * STEPS}
         # AX is 1 through the first pass and 2 through the second, and the third pass stops before its first step adds.
         self.assertEqual(pitches(clip_of(rows=rows)), scale_notes([1] * STEPS + [STOPS_AT] * STEPS))
 
@@ -144,7 +142,7 @@ class TestStopWhen(unittest.TestCase):
         self.assertEqual(len(pitches(data)), STEPS + THIRD)
 
     def test_a_clip_stops_on_what_a_track_to_its_left_adds(self):
-        driver = pattern(STEPS, **{REGISTER_ADD_ROWS[AX]: [ONE] * STEPS})
+        driver = pattern(STEPS, **{file_format.REGISTER_ADD_ROWS[AX]: [ONE] * STEPS})
         rows = statements(kind=StepStatement.STOP, at={step: comparing(operator=Operator.AT_LEAST, value=STOPS_AT + 1) for step in range(STEPS)})
         # The driver's add on a step is made before the lead reads on the same step, so the lead hears two steps and stops on the third.
         data = clip_of(rows=rows, loop=True, beside=driver)
@@ -172,7 +170,7 @@ class TestRestartWhen(unittest.TestCase):
         self.assertEqual(len(pitches(data, track=DRIVER)), STEPS * 3)
 
     def test_the_restarting_step_never_makes_its_own_changes(self):
-        rows = {**statements(kind=StepStatement.RESTART, at={THIRD: comparing(operator=Operator.LESS, value=STOPS_AT)}), REGISTER_ADD_ROWS[AX]: [0, 0, ONE, 0]}
+        rows = {**statements(kind=StepStatement.RESTART, at={THIRD: comparing(operator=Operator.LESS, value=STOPS_AT)}), file_format.REGISTER_ADD_ROWS[AX]: [0, 0, ONE, 0]}
         # The third step would add, and it restarts instead for as long as AX is under 2, which is then for every repeat.
         self.assertEqual(len(pitches(clip_of(rows=rows, repeat=3))), 3 * THIRD)
 
@@ -212,12 +210,12 @@ class TestStatementsOnAPattern(unittest.TestCase):
             self.made().set_statement(kind=StepStatement.RESTART, step=FIRST, statement=parity(Operator.ODD))
 
     def test_half_a_statement_in_a_file_is_no_statement(self):
-        rows = {STATEMENT_ROWS[StepStatement.MUTE][FIRST]: [AX, None, None, None]}
+        rows = {file_format.STATEMENT_ROWS[StepStatement.MUTE][FIRST]: [AX, None, None, None]}
         self.assertIsNone(read(pattern(STEPS, **rows)).get_statement(kind=StepStatement.MUTE, step=FIRST))
 
     def test_a_row_refuses_what_is_no_part_of_a_statement(self):
         with self.assertRaises(SongFileError):
-            read(pattern(STEPS, **{STATEMENT_ROWS[StepStatement.MUTE][SECOND]: [DRIVER, None, None, None]}))
+            read(pattern(STEPS, **{file_format.STATEMENT_ROWS[StepStatement.MUTE][SECOND]: [DRIVER, None, None, None]}))
 
 
 class TestAStopThatNeverComes(unittest.TestCase):

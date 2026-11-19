@@ -16,7 +16,8 @@
 
 """The Registers page: the settings of the song's four registers, AX to DX."""
 
-from llamatron.composition.file_format import RESET_BEHAVIORS, REGISTER_NAMES, RegisterSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import RegisterSetting
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
@@ -49,7 +50,7 @@ class RegistersPage(FieldPage):
     def fields(self):
         """Return every register's settings, register by register, each in the grid's order of columns."""
         result = []
-        for name in REGISTER_NAMES:
+        for name in file_format.REGISTER_NAMES:
             result += self.register_fields(name)
         return result
 
@@ -64,9 +65,9 @@ class RegistersPage(FieldPage):
         numbers = {setting: self.number_field(name=name, setting=setting, what=what, value=values[setting]) for setting, what in labels.MSG_REGISTER_NUMBER_FIELDS}
         result = []
         result.append(ChoiceField(
-            page=self, label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_RESET_BEHAVIOR_FIELD), choices=RESET_BEHAVIORS, current=register.get_reset_behavior(),
-            names=[labels.MSG_RESET_BEHAVIOR_NAMES[choice] for choice in RESET_BEHAVIORS], shown=labels.MSG_RESET_BEHAVIOR_NAMES[register.get_reset_behavior()],
-            set=lambda choice: self.change(name=name, setting=RegisterSetting.RESET_BEHAVIOR, value=None if choice == RESET_BEHAVIORS[0] else choice),
+            page=self, label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_RESET_BEHAVIOR_FIELD), choices=file_format.RESET_BEHAVIORS, current=register.get_reset_behavior(),
+            names=[labels.MSG_RESET_BEHAVIOR_NAMES[choice] for choice in file_format.RESET_BEHAVIORS], shown=labels.MSG_RESET_BEHAVIOR_NAMES[register.get_reset_behavior()],
+            set=lambda choice: self.change(name=name, setting=RegisterSetting.RESET_BEHAVIOR, value=None if choice == file_format.RESET_BEHAVIORS[0] else choice),
         ))
         reset = Toggle(
             label=labels.MSG_REGISTER_FIELD_LABEL.format(name=name, what=labels.MSG_REGISTER_RESET_EACH_SCENE_FIELD), on=register.resets_each_scene(),
@@ -101,7 +102,7 @@ class RegistersPage(FieldPage):
         """Move the cursor a register up or down or a setting left or right, stopping at every edge."""
         row, column = divmod(self.place, GRID_COLUMNS)
         if name in (Key.UP, Key.DOWN):
-            row = cursor_moved(place=row, name=name, count=len(REGISTER_NAMES))
+            row = cursor_moved(place=row, name=name, count=len(file_format.REGISTER_NAMES))
         else:
             column = cursor_moved(place=column, name=name, count=GRID_COLUMNS)
         self.place = row * GRID_COLUMNS + column
@@ -111,13 +112,13 @@ class RegistersPage(FieldPage):
         video as in the other grids, and under it the cursor's setting in full."""
         fields = self.fields()
         self.field()
-        cells = [[fields[row * GRID_COLUMNS + column].value() for column in range(GRID_COLUMNS)] for row in range(len(REGISTER_NAMES))]
-        widths = [max(len(labels.MSG_REGISTER_COLUMNS[column]), *(len(str(cells[row][column])) for row in range(len(REGISTER_NAMES)))) + CELL_PADDING for column in range(GRID_COLUMNS)]
+        cells = [[fields[row * GRID_COLUMNS + column].value() for column in range(GRID_COLUMNS)] for row in range(len(file_format.REGISTER_NAMES))]
+        widths = [max(len(labels.MSG_REGISTER_COLUMNS[column]), *(len(str(cells[row][column])) for row in range(len(file_format.REGISTER_NAMES)))) + CELL_PADDING for column in range(GRID_COLUMNS)]
         heading = Text(SPACE * NAME_WIDTH, style=Style.BOLD, no_wrap=True)
         for column, name in enumerate(labels.MSG_REGISTER_COLUMNS):
             heading.append(padded(name.ljust(widths[column] - CELL_PADDING)), style=Style.BOLD)
         lines = [Text(NOTHING), heading]
-        for row, register in enumerate(REGISTER_NAMES):
+        for row, register in enumerate(file_format.REGISTER_NAMES):
             line = Text(no_wrap=True)
             line.append(cursor_mark(self.place // GRID_COLUMNS == row) + register.ljust(NAME_WIDTH - len(cursor_mark(False))), style=Style.BOLD)
             for column in range(GRID_COLUMNS):

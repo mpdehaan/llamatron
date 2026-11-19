@@ -24,8 +24,9 @@ song that sets none of it plays as it always has.
 
 from typing import NamedTuple
 
-from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.file_format import PLACED_SHAPES, SHAPE_THENS, Shape, ShapePart, shape_setting
+from llamatron.composition import corrections
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Shape, ShapePart, shape_setting
 from llamatron.composition.checks import time_length
 from llamatron.composition import limits
 from llamatron.strings import errors
@@ -55,13 +56,13 @@ def shape_part_settings(*, shape, named):
         WholeNumber(name=named(ShapePart.START), lowest=lowest, highest=highest, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=named(ShapePart.END), lowest=lowest, highest=highest, error=errors.ERR_BAD_SHAPE_PERCENT),
         Checked(name=named(ShapePart.OVER), check=time_length),
-        Choice(name=named(ShapePart.THEN), choices=SHAPE_THENS, default=LEFT_OUT, error=errors.ERR_BAD_SHAPE_THEN),
+        Choice(name=named(ShapePart.THEN), choices=file_format.SHAPE_THENS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_SHAPE_THEN),
     ]
 
 
 def shape_settings():
     """Return the descriptions of every shape's settings a scene or a clip holds, like density_start, in the order a file writes them."""
-    return [setting for shape in PLACED_SHAPES for setting in shape_part_settings(shape=shape, named=lambda part, shape=shape: shape_setting(shape=shape, part=part))]
+    return [setting for shape in file_format.PLACED_SHAPES for setting in shape_part_settings(shape=shape, named=lambda part, shape=shape: shape_setting(shape=shape, part=part))]
 
 
 def shape_values(*, settings, shape, accent=NO_ACCENT):
@@ -72,5 +73,5 @@ def shape_values(*, settings, shape, accent=NO_ACCENT):
         return None
     return ShapeValues(
         UNCHANGED if start is None else start, UNCHANGED if end is None else end, settings.get(shape_setting(shape=shape, part=ShapePart.OVER)),
-        settings.get(shape_setting(shape=shape, part=ShapePart.THEN)) or SHAPE_THENS[0], accent,
+        settings.get(shape_setting(shape=shape, part=ShapePart.THEN)) or file_format.SHAPE_THENS[0], accent,
     )

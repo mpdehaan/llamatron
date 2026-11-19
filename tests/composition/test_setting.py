@@ -21,15 +21,12 @@ import inspect
 import unittest
 
 from llamatron.composition import chain, clip_slot, file_format, generator_settings, groove, instrument, named_scale, pattern, register, scene, setlist, song, track
-from llamatron.composition.clip_slot import FIRST_MORPH_STYLE, MORPH_STYLES, ClipSlot
+from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.checks import listed
-from llamatron.composition.file_format import (
-    BYPASS_WHEN, DIRECTIONS, OCTAVE_LABEL_CHOICES, VELOCITY_SETTINGS, ChainSetting, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section,
-    SetlistSetting, SongSetting, TrackSetting, VelocitySetting,
-)
-from llamatron.composition.file_format import DRIFT_VERSIONS, DriftValue
+from llamatron.composition.file_format import ChainSetting, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
+from llamatron.composition.file_format import DriftValue
 from llamatron.composition.file_format import GuitarifySetting
-from llamatron.composition.generator_settings import GENERATOR_SETTINGS, MusicianSetting, MusicianSettings, FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
+from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings, FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.composition.groove import Groove, new_groove
 from llamatron.composition.instrument import Instrument
 from llamatron.music import midi
@@ -41,7 +38,7 @@ from llamatron.composition.pattern import Pattern
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
 from llamatron.composition.setlist import Setlist
-from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE
+from llamatron.composition import corrections
 from llamatron.composition.setting import Checked, Choice, Flag, Setting, Text, WholeNumber, check_settings, described
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
@@ -98,11 +95,11 @@ SETTING_CLASS_ENDING = 'Setting'
 # Each class of setting names, the descriptions of those settings, and the names that aren't settings with a
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.
 # The setting every generator has, described once for them all and named by no generator's own class of names.
-SHARED_BY_GENERATORS = {BYPASS_WHEN}
+SHARED_BY_GENERATORS = {file_format.BYPASS_WHEN}
 
 def without_velocity(settings):
     """Return a scene's or a clip's settings without the velocity settings, which the two share and VelocitySetting names."""
-    return {name: setting for name, setting in settings.items() if name not in VELOCITY_SETTINGS}
+    return {name: setting for name, setting in settings.items() if name not in file_format.VELOCITY_SETTINGS}
 
 
 DESCRIBED = [
@@ -118,7 +115,7 @@ DESCRIBED = [
     (ClipSlotSetting, without_velocity(clip_slot.SETTINGS), (ClipSlotSetting.CHAIN, ClipSlotSetting.PATTERN)),
     (SceneSetting, without_velocity(scene.SETTINGS), (SceneSetting.TRACKS,)),
     # A scene and a clip hold the same velocity settings, under the same names.
-    (VelocitySetting, {name: scene.SETTINGS[name] for name in VELOCITY_SETTINGS}, ()),
+    (VelocitySetting, {name: scene.SETTINGS[name] for name in file_format.VELOCITY_SETTINGS}, ()),
     # A chain's steps are its generators, read one by one.
     (ChainSetting, {ChainSetting.BYPASS_WHEN: chain.BYPASS_WHEN}, (ChainSetting.STEPS,)),
     (RegisterSetting, register.SETTINGS, ()),
@@ -179,7 +176,7 @@ class TestFlag(unittest.TestCase):
             self.assertEqual(str(refused.exception), BAD_FLAG.format(name=SPEED, value=value))
 
     def test_nothing_is_near_a_wrong_value(self):
-        self.assertIs(self.flag.nearest(1), NO_NEAREST_VALUE)
+        self.assertIs(self.flag.nearest(1), corrections.NO_NEAREST_VALUE)
 
 
 class TestWholeNumber(unittest.TestCase):
@@ -205,7 +202,7 @@ class TestWholeNumber(unittest.TestCase):
     def test_nothing_is_near_what_is_not_a_whole_number(self):
         for value in NOT_WHOLE_NUMBERS:
             with self.subTest(value=value):
-                self.assertIs(self.number.nearest(value), NO_NEAREST_VALUE)
+                self.assertIs(self.number.nearest(value), corrections.NO_NEAREST_VALUE)
 
     def test_a_range_with_no_highest_has_only_a_lowest_end(self):
         number = WholeNumber(name=SPEED, lowest=LOWEST, error=BAD_NUMBER)
@@ -242,7 +239,7 @@ class TestChoice(unittest.TestCase):
         self.assertEqual(self.choice.nearest(GREEN), RED)
 
     def test_a_default_can_be_to_leave_the_setting_out(self):
-        self.assertIs(Choice(name=COLOUR, choices=COLOURS, default=LEFT_OUT, error=BAD_CHOICE).nearest(GREEN), LEFT_OUT)
+        self.assertIs(Choice(name=COLOUR, choices=COLOURS, default=corrections.LEFT_OUT, error=BAD_CHOICE).nearest(GREEN), corrections.LEFT_OUT)
 
 
 class TestText(unittest.TestCase):
@@ -255,7 +252,7 @@ class TestText(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(InvalidValue) as refused:
                 text.check(value)
             self.assertEqual(str(refused.exception), BAD_TEXT.format(name=COLOUR, value=value))
-        self.assertIs(text.nearest(ODD_NUMBER), NO_NEAREST_VALUE)
+        self.assertIs(text.nearest(ODD_NUMBER), corrections.NO_NEAREST_VALUE)
 
 
 class TestChecked(unittest.TestCase):
@@ -265,7 +262,7 @@ class TestChecked(unittest.TestCase):
         checked.check(EVEN_NUMBER)
         with self.assertRaisesRegex(InvalidValue, ODD):
             checked.check(ODD_NUMBER)
-        self.assertIs(checked.nearest(ODD_NUMBER), NO_NEAREST_VALUE)
+        self.assertIs(checked.nearest(ODD_NUMBER), corrections.NO_NEAREST_VALUE)
 
     def test_a_function_that_needs_the_song_is_given_it(self):
         checked = Checked(name=SPEED, check=refuse_unless_the_song, needs_song=True)
@@ -325,13 +322,13 @@ class TestEverySettingIsDescribedOnce(unittest.TestCase):
                 self.assertEqual(set(settings) - SHARED_BY_GENERATORS, names_in(names) - set(others) - SHARED_BY_GENERATORS)
 
     def test_every_generator_keeps_the_statements_that_bypass_it(self):
-        for kind, settings in GENERATOR_SETTINGS.items():
+        for kind, settings in generator_settings.GENERATOR_SETTINGS.items():
             with self.subTest(kind=kind):
-                self.assertIn(BYPASS_WHEN, settings.SETTINGS)
+                self.assertIn(file_format.BYPASS_WHEN, settings.SETTINGS)
 
     def test_a_drifts_other_settings_are_each_version_of_each_value(self):
         own = {value for name, value in vars(DriftSetting).items() if not name.startswith('_')}
-        versions = {versioned(version=version, value=value) for version in DRIFT_VERSIONS for value in names_in(DriftValue)}
+        versions = {versioned(version=version, value=value) for version in file_format.DRIFT_VERSIONS for value in names_in(DriftValue)}
         self.assertEqual(set(DriftSettings.SETTINGS) - own - SHARED_BY_GENERATORS, versions)
 
     def test_every_description_is_a_setting_under_its_own_name(self):
@@ -487,22 +484,22 @@ class TestAChoiceKeepsItsFileNames(unittest.TestCase):
     """The choices a description lists are the names a file writes, so a right value is taken as it always was."""
 
     def test_every_direction_is_taken_by_a_pattern_and_a_clip(self):
-        for direction in DIRECTIONS:
+        for direction in file_format.DIRECTIONS:
             with self.subTest(direction=direction):
                 pattern.SETTINGS[PatternSetting.DIRECTION].check(direction)
                 clip_slot.SETTINGS[ClipSlotSetting.DIRECTION].check(direction)
 
     def test_every_morph_style_and_octave_label_is_taken(self):
-        for style in MORPH_STYLES:
+        for style in clip_slot.MORPH_STYLES:
             clip_slot.SETTINGS[ClipSlotSetting.MORPH_STYLE].check(style)
-        for labels in OCTAVE_LABEL_CHOICES:
+        for labels in file_format.OCTAVE_LABEL_CHOICES:
             setlist.SETTINGS[SetlistSetting.OCTAVE_LABELS].check(labels)
 
     def test_a_wrong_choice_falls_back_to_the_default(self):
-        self.assertIs(pattern.SETTINGS[PatternSetting.DIRECTION].nearest(NOT_A_DIRECTION), LEFT_OUT)
-        self.assertIs(clip_slot.SETTINGS[ClipSlotSetting.DIRECTION].nearest(NOT_A_DIRECTION), LEFT_OUT)
-        self.assertIs(setlist.SETTINGS[SetlistSetting.OCTAVE_LABELS].nearest(NOT_OCTAVE_LABELS), LEFT_OUT)
-        self.assertEqual(clip_slot.SETTINGS[ClipSlotSetting.MORPH_STYLE].nearest(NOT_A_NAME), FIRST_MORPH_STYLE)
+        self.assertIs(pattern.SETTINGS[PatternSetting.DIRECTION].nearest(NOT_A_DIRECTION), corrections.LEFT_OUT)
+        self.assertIs(clip_slot.SETTINGS[ClipSlotSetting.DIRECTION].nearest(NOT_A_DIRECTION), corrections.LEFT_OUT)
+        self.assertIs(setlist.SETTINGS[SetlistSetting.OCTAVE_LABELS].nearest(NOT_OCTAVE_LABELS), corrections.LEFT_OUT)
+        self.assertEqual(clip_slot.SETTINGS[ClipSlotSetting.MORPH_STYLE].nearest(NOT_A_NAME), clip_slot.FIRST_MORPH_STYLE)
 
     def test_a_number_out_of_range_has_the_nearest_end(self):
         self.assertEqual(track.SETTINGS[TrackSetting.TRANSPOSE].nearest(limits.MAX_TRANSPOSE + 1), limits.MAX_TRANSPOSE)

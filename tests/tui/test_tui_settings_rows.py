@@ -19,7 +19,7 @@
 from fractions import Fraction
 
 from tests.support.ui_testing import UITest
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.composition import defaults
 from llamatron.strings import labels, marks
 from llamatron.composition.file_format import FollowAction, OctaveLabels, Section, SetlistSetting
@@ -105,7 +105,7 @@ class TestSettingArrows(UITest):
         await self.press(Key.LEFT)
         self.assertIsNone(self.document.song().get_scale_name())
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_scale_name(), DEFAULT_SCALE)
+        self.assertEqual(self.document.song().get_scale_name(), setlist.DEFAULT_SCALE)
         await self.press(Key.DOWN, Key.RIGHT)
         self.assertEqual(self.document.song().get_seed(), 1)
 

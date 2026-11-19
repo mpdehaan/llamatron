@@ -16,7 +16,8 @@
 """The Grooves page: the factory grooves every set has, then the set's own, which songs, scenes and tracks choose by name."""
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.groove import FACTORY_GROOVE_NAMES, is_factory_groove
+from llamatron.composition import groove
+from llamatron.composition.groove import is_factory_groove
 from llamatron.tui.drawing import Align
 from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
@@ -56,7 +57,7 @@ class GroovesPage(NamedListPage):
 
     def own_place(self):
         """Return the selected groove's place among the set's own grooves, which come after the factory ones."""
-        return self.place - len(FACTORY_GROOVE_NAMES)
+        return self.place - len(groove.FACTORY_GROOVE_NAMES)
 
     def open_item(self):
         self.show_page(GrooveEditor(holder=self.holder, name=self.current()))

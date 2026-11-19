@@ -32,9 +32,8 @@ the statements are usually written against.
 
 from llamatron.composition import limits
 from llamatron.composition.checks import is_whole_number, listed
-from llamatron.composition.file_format import (
-    ARITHMETIC_OPERATORS, COMPARING_OPERATORS, DIVIDING_OPERATORS, OPERATORS, PARITY_OPERATORS, REGISTER_NAMES, RESULT_COMPARISONS, Operator, StatementPart,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Operator, StatementPart
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked
 from llamatron.strings import errors
@@ -77,9 +76,9 @@ WORKED_OUT = {
 
 def parts_of(operator):
     """Return the parts a statement with an operator holds after it, in order: none for odd and even, a value for a comparison, and a value, a comparison and what to compare with for a sum."""
-    if operator in PARITY_OPERATORS:
+    if operator in file_format.PARITY_OPERATORS:
         return ()
-    return ARITHMETIC_PARTS if operator in ARITHMETIC_OPERATORS else COMPARING_PARTS
+    return ARITHMETIC_PARTS if operator in file_format.ARITHMETIC_OPERATORS else COMPARING_PARTS
 
 
 def new_statement(register):
@@ -90,10 +89,10 @@ def new_statement(register):
 def with_operator(*, statement, operator):
     """Return a statement given another operator, keeping each part the new operator still takes and filling in the rest, so that no statement is left half written."""
     changed = {StatementPart.REGISTER: statement[StatementPart.REGISTER], StatementPart.OPERATOR: operator}
-    starting = {StatementPart.VALUE: NEW_DIVISOR if operator in DIVIDING_OPERATORS else NEW_NUMBER, StatementPart.COMPARISON: Operator.SAME, StatementPart.AGAINST: NEW_NUMBER}
+    starting = {StatementPart.VALUE: NEW_DIVISOR if operator in file_format.DIVIDING_OPERATORS else NEW_NUMBER, StatementPart.COMPARISON: Operator.SAME, StatementPart.AGAINST: NEW_NUMBER}
     for part in parts_of(operator):
         changed[part] = statement.get(part, starting[part])
-    if operator in DIVIDING_OPERATORS and changed[StatementPart.VALUE] == ZERO:
+    if operator in file_format.DIVIDING_OPERATORS and changed[StatementPart.VALUE] == ZERO:
         changed[StatementPart.VALUE] = starting[StatementPart.VALUE]
     return changed
 
@@ -104,7 +103,7 @@ def _is_number(value):
 
 def _check_number(*, name, part, value):
     """Refuse what a statement works with unless it is a register's name or an integer within the limits."""
-    if value not in REGISTER_NAMES and not _is_number(value):
+    if value not in file_format.REGISTER_NAMES and not _is_number(value):
         raise InvalidValue(errors.ERR_STATEMENT_BAD_NUMBER.format(
             name=name, part=part, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, value=value))
 
@@ -113,22 +112,22 @@ def check_statement(*, name, statement):
     """Refuse one statement unless it is one of the three shapes, whole."""
     if not isinstance(statement, dict) or not set(statement) <= set(EVERY_PART):
         raise InvalidValue(errors.ERR_BAD_STATEMENT.format(name=name, value=statement))
-    if statement.get(StatementPart.REGISTER) not in REGISTER_NAMES:
-        raise InvalidValue(errors.ERR_STATEMENT_BAD_REGISTER.format(name=name, names=listed(REGISTER_NAMES), value=statement.get(StatementPart.REGISTER)))
+    if statement.get(StatementPart.REGISTER) not in file_format.REGISTER_NAMES:
+        raise InvalidValue(errors.ERR_STATEMENT_BAD_REGISTER.format(name=name, names=listed(file_format.REGISTER_NAMES), value=statement.get(StatementPart.REGISTER)))
     operator = statement.get(StatementPart.OPERATOR)
-    if operator not in OPERATORS:
-        raise InvalidValue(errors.ERR_STATEMENT_BAD_OPERATOR.format(name=name, choices=listed(OPERATORS), value=operator))
+    if operator not in file_format.OPERATORS:
+        raise InvalidValue(errors.ERR_STATEMENT_BAD_OPERATOR.format(name=name, choices=listed(file_format.OPERATORS), value=operator))
     wanted = parts_of(operator)
     for part in ARITHMETIC_PARTS:
         if part in statement and part not in wanted:
             raise InvalidValue(errors.ERR_STATEMENT_EXTRA_PART.format(name=name, operator=operator, part=part, value=statement[part]))
     if StatementPart.VALUE in wanted:
         _check_number(name=name, part=StatementPart.VALUE, value=statement.get(StatementPart.VALUE))
-        if operator in DIVIDING_OPERATORS and statement[StatementPart.VALUE] == ZERO:
+        if operator in file_format.DIVIDING_OPERATORS and statement[StatementPart.VALUE] == ZERO:
             raise InvalidValue(errors.ERR_STATEMENT_DIVIDES_BY_ZERO.format(name=name))
     if StatementPart.COMPARISON in wanted:
-        if statement.get(StatementPart.COMPARISON) not in RESULT_COMPARISONS:
-            raise InvalidValue(errors.ERR_STATEMENT_BAD_COMPARISON.format(name=name, choices=listed(RESULT_COMPARISONS), value=statement.get(StatementPart.COMPARISON)))
+        if statement.get(StatementPart.COMPARISON) not in file_format.RESULT_COMPARISONS:
+            raise InvalidValue(errors.ERR_STATEMENT_BAD_COMPARISON.format(name=name, choices=listed(file_format.RESULT_COMPARISONS), value=statement.get(StatementPart.COMPARISON)))
         _check_number(name=name, part=StatementPart.AGAINST, value=statement.get(StatementPart.AGAINST))
 
 
@@ -158,24 +157,24 @@ def register_values_setting(name):
     """Return the description of a setting that gives some of the registers an integer each: what to set them to, or what to add to them."""
     def check(value):
         right = isinstance(value, dict) and all(
-            register in REGISTER_NAMES and is_whole_number(amount) and limits.MIN_REGISTER_VALUE <= amount <= limits.MAX_REGISTER_VALUE
+            register in file_format.REGISTER_NAMES and is_whole_number(amount) and limits.MIN_REGISTER_VALUE <= amount <= limits.MAX_REGISTER_VALUE
             for register, amount in value.items())
         if not right:
             raise InvalidValue(errors.ERR_BAD_REGISTER_VALUES.format(
-                name=name, names=listed(REGISTER_NAMES), lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
+                name=name, names=listed(file_format.REGISTER_NAMES), lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
     return Checked(name=name, check=check)
 
 
 def with_register_value(*, values, register, value):
     """Return what a setting of register values holds once one register is given a value, or None for the register to be left out; None when nothing is left."""
-    if register not in REGISTER_NAMES:
-        raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(REGISTER_NAMES)))
+    if register not in file_format.REGISTER_NAMES:
+        raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(file_format.REGISTER_NAMES)))
     held = dict(values or {})
     if value is None:
         held.pop(register, None)
     else:
         held[register] = value
-    return {name: held[name] for name in REGISTER_NAMES if name in held} or None
+    return {name: held[name] for name in file_format.REGISTER_NAMES if name in held} or None
 
 
 def with_statement(*, statements, place, statement):
@@ -196,19 +195,19 @@ def with_statement(*, statements, place, statement):
 
 def _number(*, written, values):
     """Return what a statement works with as an integer: a register's value, or the number written."""
-    return values[written] if written in REGISTER_NAMES else written
+    return values[written] if written in file_format.REGISTER_NAMES else written
 
 
 def is_true(*, statement, values):
     """Return whether one statement holds for the registers' values."""
     held = values[statement[StatementPart.REGISTER]]
     operator = statement[StatementPart.OPERATOR]
-    if operator in PARITY_OPERATORS:
+    if operator in file_format.PARITY_OPERATORS:
         return (held % PARITY != NO_REMAINDER) == (operator == Operator.ODD)
     value = _number(written=statement[StatementPart.VALUE], values=values)
-    if operator in COMPARING_OPERATORS:
+    if operator in file_format.COMPARING_OPERATORS:
         return COMPARED[operator](held, value)
-    if operator in DIVIDING_OPERATORS and value == ZERO:
+    if operator in file_format.DIVIDING_OPERATORS and value == ZERO:
         return True
     against = _number(written=statement[StatementPart.AGAINST], values=values)
     return COMPARED[statement[StatementPart.COMPARISON]](WORKED_OUT[operator](held, value), against)

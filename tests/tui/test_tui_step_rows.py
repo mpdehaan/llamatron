@@ -17,7 +17,7 @@
 
 from tests.support.ui_testing import CLIPS, LAZY, PUSH, SLIDES, UITest
 from llamatron.composition.file_format import Section, GeneratorKind
-from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN, NEW_STEP_ROW
+from llamatron.composition import generator_settings
 from llamatron.composition import limits
 from llamatron.strings import labels
 from llamatron.tui.keys import Key
@@ -40,7 +40,7 @@ class TestGlideAdded(UITest):
 
     async def test_a_new_one_has_its_first_step_on(self):
         name = await self.add_generator(Section.GLIDES)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=name).get_steps(), NEW_STEP_ROW)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=name).get_steps(), generator_settings.NEW_STEP_ROW)
 
 
 class TestGlideEditor(UITest):
@@ -61,7 +61,7 @@ class TestShortenEditor(UITest):
         self.assertIsInstance(self.app.screen, ShortenEditor)
         await self.select_field(labels.MSG_SHORTEN_LABEL)
         await self.press(keybindings.ShortenEditor.LESS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=CLIPS).get_shorten(), DEFAULT_SHORTEN - 1)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=CLIPS).get_shorten(), generator_settings.DEFAULT_SHORTEN - 1)
 
 
 class TestRushEditor(UITest):
@@ -70,7 +70,7 @@ class TestRushEditor(UITest):
         await self.open_generator(section=Section.RUSHES)
         self.assertIsInstance(self.app.screen, RushEditor)
         await self.select_field(labels.MSG_RUSH_AMOUNT_LABEL)
-        await self.press(*[keybindings.RushEditor.MORE] * (limits.MAX_RUSH_OR_DRAG - DEFAULT_RUSH + MORE_THAN_ENOUGH))
+        await self.press(*[keybindings.RushEditor.MORE] * (limits.MAX_RUSH_OR_DRAG - generator_settings.DEFAULT_RUSH + MORE_THAN_ENOUGH))
         self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=PUSH).get_amount(), limits.MAX_RUSH_OR_DRAG)
 
 
@@ -81,7 +81,7 @@ class TestDragEditor(UITest):
         self.assertIsInstance(self.app.screen, DragEditor)
         await self.select_field(labels.MSG_DRAG_AMOUNT_LABEL)
         await self.press(keybindings.DragEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=LAZY).get_amount(), DEFAULT_DRAG + 1)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=LAZY).get_amount(), generator_settings.DEFAULT_DRAG + 1)
 
 
 class TestGlideStepsEditor(UITest):

@@ -24,10 +24,8 @@ pass with two notes is one the generator ran on.
 import unittest
 
 from llamatron.composition import conditions, limits
-from llamatron.composition.file_format import (
-    BYPASS_WHEN, REGISTER_NOTE_ROWS, ResetBehavior, ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName,
-    RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ResetBehavior, ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
 from llamatron.composition.generator_settings import AutoRatchetSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import scale_type_name
@@ -81,7 +79,7 @@ def song(*, clip=None, scene=None, track=None, chain=None, generator=None, chain
     return {
         Section.SCALES: {MAIN: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}}, SongSetting.SCALE: MAIN,
         Section.PATTERNS: {X: {
-            PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: STEP_SIZE, Row.DEGREE: [1], Row.OCTAVE: [OCTAVE], REGISTER_NOTE_ROWS[AX]: [RegisterUse.ADD],
+            PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: STEP_SIZE, Row.DEGREE: [1], Row.OCTAVE: [OCTAVE], file_format.REGISTER_NOTE_ROWS[AX]: [RegisterUse.ADD],
         }},
         Section.AUTO_RATCHETS: {TWICE: {AutoRatchetSetting.COUNTS: [RATCHETS], **(generator or {})}},
         Section.CHAINS: {DOUBLED: steps if chain is None else {ChainSetting.STEPS: steps, **chain}},
@@ -161,7 +159,7 @@ class TestStatements(unittest.TestCase):
 
     def refused(self, table):
         with self.assertRaises(InvalidValue):
-            conditions.statements_setting(BYPASS_WHEN).check(table)
+            conditions.statements_setting(file_format.BYPASS_WHEN).check(table)
 
     def test_what_a_table_refuses(self):
         self.refused([statement(AX, Operator.DIVIDED_BY, 0, Operator.SAME, 0)])
@@ -180,7 +178,7 @@ class TestStatements(unittest.TestCase):
     def test_a_changed_operator_keeps_what_it_can_and_never_divides_by_zero(self):
         first = conditions.new_statement(AX)
         divided = conditions.with_operator(statement=first, operator=Operator.DIVIDED_BY)
-        conditions.check_statement(name=BYPASS_WHEN, statement=divided)
+        conditions.check_statement(name=file_format.BYPASS_WHEN, statement=divided)
         self.assertEqual(conditions.parts_of(Operator.EVEN), ())
         parity = conditions.with_operator(statement=divided, operator=Operator.EVEN)
         self.assertEqual(parity, statement(AX, Operator.EVEN))
@@ -254,7 +252,7 @@ class TestBypassingGenerators(unittest.TestCase):
         self.assertEqual(heard(song(clip=self.COUNTING, chained=True)), notes_at(self.EVERY_PASS_TWICE))
 
     def test_a_statement_on_the_generator(self):
-        data = song(clip=self.COUNTING, chained=True, generator={BYPASS_WHEN: self.TABLE})
+        data = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: self.TABLE})
         self.assertEqual(heard(data), notes_at(self.ODD_PASSES_ONCE))
 
     def test_a_statement_on_the_chain(self):
@@ -269,13 +267,13 @@ class TestBypassingGenerators(unittest.TestCase):
             self.assertEqual(heard(data), notes_at(self.ODD_PASSES_ONCE))
 
     def test_a_statement_true_on_every_pass_and_on_none(self):
-        always = song(clip=self.COUNTING, chained=True, generator={BYPASS_WHEN: [statement(AX, Operator.MORE, 0)]})
-        never = song(clip=self.COUNTING, chained=True, generator={BYPASS_WHEN: [statement(AX, Operator.LESS, 0)]})
+        always = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.MORE, 0)]})
+        never = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.LESS, 0)]})
         self.assertEqual(heard(always), notes_at([1, 2, 3, 4]))
         self.assertEqual(heard(never), notes_at(self.EVERY_PASS_TWICE))
 
     def test_a_chain_and_a_generator_keep_their_statements_through_a_save(self):
-        data = song(chained=True, chain={ChainSetting.BYPASS_WHEN: self.TABLE}, generator={BYPASS_WHEN: self.TABLE})
+        data = song(chained=True, chain={ChainSetting.BYPASS_WHEN: self.TABLE}, generator={file_format.BYPASS_WHEN: self.TABLE})
         setlist = setlist_from_data(data)
         self.assertEqual(setlist.get_chain(DOUBLED).get_bypass_when(), self.TABLE)
         self.assertEqual(setlist.get_chain(DOUBLED).to_data()[ChainSetting.BYPASS_WHEN], self.TABLE)

@@ -25,8 +25,9 @@ note, or on the lowest C for an empty map. Nothing changes in the set until OK.
 
 from rich.text import Text
 
-from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT
-from llamatron.composition.instrument import NO_KEYSWITCH, Keyswitch
+from llamatron.composition import file_format
+from llamatron.composition import instrument
+from llamatron.composition.instrument import Keyswitch
 from llamatron.composition import limits
 from llamatron.strings import labels, marks, messages
 from llamatron.music import midi
@@ -41,7 +42,7 @@ from llamatron.tui.keyswitch_text import KEYSWITCH_NOTE_WIDTH, keyswitch_note_te
 from llamatron.tui import keybindings
 
 # The place of the row of buttons, under the last slot, and the buttons' places in the order of MSG_OK_CANCEL_BUTTONS.
-BUTTONS_PLACE = KEYSWITCH_SLOT_COUNT
+BUTTONS_PLACE = file_format.KEYSWITCH_SLOT_COUNT
 OK = 0
 CANCEL = 1
 BUTTON_BINDINGS = (keybindings.KeyswitchMapDialog.OK, keybindings.KeyswitchMapDialog.CANCEL)
@@ -127,7 +128,7 @@ class KeyswitchMapDialog(Dialog):
         return self.keyswitches[self.place]
 
     def clear(self):
-        self.keyswitches[self.place] = NO_KEYSWITCH
+        self.keyswitches[self.place] = instrument.NO_KEYSWITCH
 
     def rename(self):
         """Ask for the slot's name over the map, an empty answer leaving the slot without one."""
@@ -193,7 +194,7 @@ class KeyswitchMapDialog(Dialog):
         buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         return [
             self.heading_line(width),
-            *[self.slot_line(slot=slot, width=width) for slot in range(KEYSWITCH_SLOT_COUNT)],
+            *[self.slot_line(slot=slot, width=width) for slot in range(file_format.KEYSWITCH_SLOT_COUNT)],
             Text(NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else None),
         ]
 

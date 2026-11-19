@@ -38,7 +38,7 @@ from typing import NamedTuple
 
 from llamatron.support.ordered_data import same_in_order
 from llamatron.composition.file_format import ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
-from llamatron.composition.sections import SETLIST_SECTIONS, SONG_SECTIONS
+from llamatron.composition import sections
 from llamatron.composition.naming import is_default_scale_name
 from llamatron.strings import errors, messages
 from llamatron.support.memory import StaleAnswer
@@ -164,7 +164,7 @@ def describe_change(*, leaving, arriving):
     The names come from the snapshot being left first, so that undoing an added track names the
     track that goes away, and undoing a deleted one names the track that comes back.
     """
-    for section in SETLIST_SECTIONS:
+    for section in sections.SETLIST_SECTIONS:
         name = _differing_name(section=section, leaving=leaving.data, arriving=arriving.data)
         if name is None:
             continue
@@ -190,7 +190,7 @@ def _describe_song_change(*, leaving, arriving):
     """Return words for the first difference inside one song: a track, a register, a scene or a setting."""
     if leaving is None or arriving is None:
         return messages.MSG_CHANGED_WORDS[Section.SONGS]
-    for section in SONG_SECTIONS:
+    for section in sections.SONG_SECTIONS:
         name = _differing_name(section=section, leaving=leaving, arriving=arriving)
         if name is not None:
             return messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[section], name=name)
@@ -232,7 +232,7 @@ def renamed_items(*, leaving, arriving):
     changes with them. Tracks and scenes are looked at in the song that's current on arrival.
     """
     renames = {}
-    for section in SETLIST_SECTIONS:
+    for section in sections.SETLIST_SECTIONS:
         _add_renames(renames, section=section, leaving=leaving.data, arriving=arriving.data)
     song_before = (leaving.data.get(Section.SONGS) or {}).get(arriving.song)
     song_after = (arriving.data.get(Section.SONGS) or {}).get(arriving.song)

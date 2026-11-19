@@ -20,23 +20,8 @@ from tests.support.ui_testing import KEY_SHOWN, UITest, fixed_text, back_key, fo
 from llamatron.composition import defaults, limits
 from llamatron.composition.scene import TempoRamp
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
-from llamatron.composition.file_format import (
-    PATTERN_ORDERS,
-    RESET_BEHAVIORS,
-    PatternOrder,
-    REGISTER_ADD_ROWS,
-    FOLLOW_ACTION_CHOICES,
-    FollowAction,
-    ClipSlotSetting,
-    Direction,
-    REGISTER_NAMES,
-    RampPart,
-    RampWay,
-    RegisterName,
-    RegisterSetting,
-    Row,
-    Section,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import PatternOrder, FollowAction, ClipSlotSetting, Direction, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
 from llamatron.generators.blend import BlendMode
 from llamatron.tui.screens.arrange.arrange_drawing import CELL_WIDTH, CLIP_BAR, SCENE_BAR, SCENE_BAR_COLUMN, SCENE_WIDTH
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -48,12 +33,11 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
-from llamatron.composition.file_format import SECTION_KINDS
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.arrange.arrange_page import MOVING_CLIP, MOVING_SCENE
 from llamatron.tui import keybindings
@@ -524,8 +508,8 @@ class TestClipPage(UITest):
         await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(self.clip_slot().get_pattern_order(), PatternOrder.FORWARD)
         await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.clip_slot().get_pattern_order(), PATTERN_ORDERS[1])
-        for _ in PATTERN_ORDERS:
+        self.assertEqual(self.clip_slot().get_pattern_order(), file_format.PATTERN_ORDERS[1])
+        for _ in file_format.PATTERN_ORDERS:
             await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.clip_slot().get_pattern_order(), PatternOrder.FIRST_THEN_RANDOM)
         self.assertIn(labels_text.MSG_PATTERN_ORDER_NAMES[PatternOrder.FIRST_THEN_RANDOM], self.text())
@@ -563,7 +547,7 @@ class TestClipPage(UITest):
         await self.select_field(labels_text.MSG_FOLLOW_ACTION_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, [labels_text.MSG_FOLLOW_ACTION_NAMES[choice] for choice in FOLLOW_ACTION_CHOICES])
+        self.assertEqual(self.app.screen.options, [labels_text.MSG_FOLLOW_ACTION_NAMES[choice] for choice in file_format.FOLLOW_ACTION_CHOICES])
         await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
         self.assertEqual(self.clip_slot().get_written_follow_action(), FollowAction.OFF)
         self.assertEqual(self.follow_action_text(), labels_text.MSG_FOLLOW_ACTION_NAMES[FollowAction.OFF])
@@ -820,20 +804,20 @@ class TestScenePage(UITest):
         self.assertIn(marks.MSG_NONE_SHOWN, next(line for line in self.text().split(NEW_LINE) if labels_text.MSG_SCENE_SECTION_LABEL in line))
         await self.go_to(labels_text.MSG_SCENE_SECTION_LABEL)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.scene().get_section(), SECTION_KINDS[0])
+        self.assertEqual(self.scene().get_section(), file_format.SECTION_KINDS[0])
         await self.press(Key.ENTER)
         # The list is longer than a small console, so its first kinds are looked for.
-        for kind in SECTION_KINDS[:FIRST_WORDS]:
+        for kind in file_format.SECTION_KINDS[:FIRST_WORDS]:
             self.assertIn(kind, self.text())
         await self.press(Key.DOWN, Key.ENTER)
-        self.assertEqual(self.scene().get_section(), SECTION_KINDS[1])
-        await self.press(*[key_of(binding=keybindings.ScenePage.LESS, key=Key.LEFT_BRACKET)] * len(SECTION_KINDS))
+        self.assertEqual(self.scene().get_section(), file_format.SECTION_KINDS[1])
+        await self.press(*[key_of(binding=keybindings.ScenePage.LESS, key=Key.LEFT_BRACKET)] * len(file_format.SECTION_KINDS))
         self.assertIsNone(self.scene().get_section())
 
     async def test_scale_can_be_set_and_cleared(self):
         await self.go_to(SCALE)
         await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.scene().get_scale_name(), DEFAULT_SCALE)
+        self.assertEqual(self.scene().get_scale_name(), setlist.DEFAULT_SCALE)
         await self.press(Key.BACKSPACE)
         self.assertIsNone(self.scene().get_scale_name())
 
@@ -908,7 +892,7 @@ class TestScenesAndClipsEdges(UITest):
         self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(RampWay.OUT)), (None, TempoRamp(None, 120, limits.MIN_RAMP_BARS)))
 
     async def test_choosing_the_songs_scale_clears_the_scenes(self):
-        self.document.set_scene_scale(index=0, name=DEFAULT_SCALE)
+        self.document.set_scene_scale(index=0, name=setlist.DEFAULT_SCALE)
         page = await self.scene_page()
         await self.go_to(page, SCALE)
         await self.press(Key.ENTER)
@@ -963,7 +947,7 @@ class TestRegistersPage(UITest):
     async def test_it_opens_from_the_main_screen_with_every_register(self):
         self.assertIsInstance(self.page, RegistersPage)
         labels = [field.label for field in self.page.fields()]
-        for name in REGISTER_NAMES:
+        for name in file_format.REGISTER_NAMES:
             for _, what in labels_text.MSG_REGISTER_NUMBER_FIELDS:
                 self.assertIn(self.label(name=name, what=what), labels)
             for what in (labels_text.MSG_REGISTER_RESET_BEHAVIOR_FIELD, labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD, labels_text.MSG_REGISTER_ALLOWED_INC_MAX_FIELD):
@@ -971,14 +955,14 @@ class TestRegistersPage(UITest):
 
     async def test_it_is_a_grid_the_arrows_move_over_stopping_at_every_edge(self):
         # A row for each register and a column for each setting, the cursor stopping at every edge.
-        columns = len(self.page.fields()) // len(REGISTER_NAMES)
+        columns = len(self.page.fields()) // len(file_format.REGISTER_NAMES)
         await self.press(Key.UP, Key.LEFT)
         self.assertEqual(self.page.place, 0)
         await self.press(Key.DOWN, Key.RIGHT)
         self.assertEqual(self.page.place, columns + 1)
-        await self.press(*[Key.DOWN] * len(REGISTER_NAMES), *[Key.RIGHT] * columns)
+        await self.press(*[Key.DOWN] * len(file_format.REGISTER_NAMES), *[Key.RIGHT] * columns)
         self.assertEqual(self.page.place, len(self.page.fields()) - 1)
-        self.assertEqual(self.page.field().label, self.label(name=REGISTER_NAMES[-1], what=labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD))
+        self.assertEqual(self.page.field().label, self.label(name=file_format.REGISTER_NAMES[-1], what=labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD))
         for heading in labels_text.MSG_REGISTER_COLUMNS:
             self.assertIn(heading, self.text())
 
@@ -1008,10 +992,10 @@ class TestRegistersPage(UITest):
     async def test_reset_behavior_steps_through_its_choices_and_reset_each_scene_toggles(self):
         await self.select_field(self.label(name=RegisterName.CX, what=labels_text.MSG_REGISTER_RESET_BEHAVIOR_FIELD))
         await self.press(key_of(binding=keybindings.RegistersPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), RESET_BEHAVIORS[1])
-        self.assertIn(labels_text.MSG_RESET_BEHAVIOR_NAMES[RESET_BEHAVIORS[1]], self.text())
+        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), file_format.RESET_BEHAVIORS[1])
+        self.assertIn(labels_text.MSG_RESET_BEHAVIOR_NAMES[file_format.RESET_BEHAVIORS[1]], self.text())
         await self.press(key_of(binding=keybindings.RegistersPage.LESS, key=Key.LEFT_BRACKET))
-        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), RESET_BEHAVIORS[0])
+        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), file_format.RESET_BEHAVIORS[0])
         self.assertNotIn(Section.REGISTERS, self.document.song().to_data())
         await self.select_field(self.label(name=RegisterName.CX, what=labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD))
         await self.press(Key.ENTER)
@@ -1020,7 +1004,7 @@ class TestRegistersPage(UITest):
         self.assertFalse(self.register(RegisterName.CX).resets_each_scene())
 
     async def test_a_lower_allowed_inc_max_brings_the_adds_within_it_and_undo_brings_them_back(self):
-        add_row = REGISTER_ADD_ROWS[RegisterName.AX]
+        add_row = file_format.REGISTER_ADD_ROWS[RegisterName.AX]
         self.document.set_step_value(name=TUNE, row=add_row, step=0, value=BIG_ADD)
         self.document.set_step_value(name=TUNE, row=add_row, step=1, value=-BIG_ADD)
         self.document.record_edit()

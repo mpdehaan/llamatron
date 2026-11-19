@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Progression editor page: one progression's name, how long each chord lasts, and its chords, which Enter opens in the chord editor."""
 
-from llamatron.composition.file_format import ONE_BAR_WRITTEN, GeneratorKind, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.progressions import roman_numeral
 from llamatron.strings import help as help_text, labels, legends, marks, messages
@@ -60,7 +61,7 @@ class ProgressionEditor(ShowsNamedItem, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(
-                page=self, label=labels.MSG_EVERY_LABEL, written=progression.get_every(), first=ONE_BAR_WRITTEN,
+                page=self, label=labels.MSG_EVERY_LABEL, written=progression.get_every(), first=file_format.ONE_BAR_WRITTEN,
                 store=lambda value: self.document().set_generator_setting(section=Section.PROGRESSIONS, name=self.item, setting=ProgressionSetting.EVERY, value=value),
             ),
             Field(label=labels.MSG_CHORDS_LABEL, value=lambda: numerals_text(progression=progression, scale=song_scale(self.document().song())), adjust=None,

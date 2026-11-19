@@ -21,7 +21,7 @@ what it makes so that it sits among what the set has.
 
 import re
 
-from llamatron.composition.named_scale import MEMBER_WORD_GAP, WORD_GAP
+from llamatron.composition import named_scale
 from llamatron.strings import names
 
 # The number a duplicate of a name with no number gets: the name the user picked counts as the first, and is never renamed.
@@ -42,12 +42,12 @@ TRAILING_NUMBER = re.compile(rf'^(?P<{BASE_GROUP}>.+?)(?P<{JOINT_GROUP}>[\s_-]+|
 
 def words(name):
     """Return a name the file writes with underscores, like reverse_a, as words for the screen."""
-    return str(name).replace(MEMBER_WORD_GAP, WORD_GAP)
+    return str(name).replace(named_scale.MEMBER_WORD_GAP, named_scale.WORD_GAP)
 
 
 def suggested_word(text):
     """Return text as the tracker writes a name it makes up itself: lowercase, an underscore where a space would be."""
-    return str(text).strip().lower().replace(WORD_GAP, MEMBER_WORD_GAP)
+    return str(text).strip().lower().replace(named_scale.WORD_GAP, named_scale.MEMBER_WORD_GAP)
 
 
 def same_name(*, one, other):
@@ -140,4 +140,4 @@ def name_in_copied_group(*, name, old, new):
     the old group's name where that was at the front, and joined with an underscore otherwise; nothing else of the name changes."""
     if old and name.lower().startswith(old.lower()):
         return new + name[len(old):]
-    return new + MEMBER_WORD_GAP + name
+    return new + named_scale.MEMBER_WORD_GAP + name

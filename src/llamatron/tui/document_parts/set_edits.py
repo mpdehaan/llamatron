@@ -25,10 +25,11 @@ from llamatron.composition.chain import Chain
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import new_groove
 from llamatron.composition.instrument import Instrument
-from llamatron.composition.generator_settings import GENERATOR_SETTINGS, ProgressionSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.music import note
 from llamatron.composition.named_scale import NamedScale, scale_type_name
-from llamatron.composition.sections import GENERATOR_KINDS
+from llamatron.composition import sections
 from llamatron.importers.writing import add_imported
 from llamatron.composition.naming import default_scale_name, is_default_scale_name, words
 from llamatron.strings import marks
@@ -197,12 +198,12 @@ class SetEdits:
     # Arps and chains.
 
     def _generator(self, *, section, name):
-        return self._setlist.get_generator_settings(kind=GENERATOR_KINDS[section], name=name)
+        return self._setlist.get_generator_settings(kind=sections.GENERATOR_KINDS[section], name=name)
 
     def add_generator(self, *, section, name):
         """Add an arp or an AutoRatchet with the settings a new one starts with."""
-        kind = GENERATOR_KINDS[section]
-        settings = GENERATOR_SETTINGS[kind].new()
+        kind = sections.GENERATOR_KINDS[section]
+        settings = generator_settings.GENERATOR_SETTINGS[kind].new()
         self._change(self._setlist.add_item, section=section, name=name, item=settings)
 
     def set_generator_setting(self, *, section, name, setting, value):

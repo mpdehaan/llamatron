@@ -30,7 +30,7 @@ through exactly the same changes.
 from bisect import bisect_right
 from typing import NamedTuple
 
-from llamatron.composition.file_format import REGISTER_NAMES
+from llamatron.composition import file_format
 
 # What a step sees while a clip is only played to find its changes.
 NO_VALUE = 0
@@ -65,7 +65,7 @@ def starting_values(registers):
 
     registers is the song's Register for each name.
     """
-    return {name: registers[name].get_default() for name in REGISTER_NAMES}
+    return {name: registers[name].get_default() for name in file_format.REGISTER_NAMES}
 
 
 def with_resets(*, values, registers, names):
@@ -294,7 +294,7 @@ def scene_change(*, sets, adds):
 
 def no_values():
     """Return a value of nothing for every register."""
-    return dict.fromkeys(REGISTER_NAMES, NO_VALUE)
+    return dict.fromkeys(file_format.REGISTER_NAMES, NO_VALUE)
 
 
 def _moment_of(change):

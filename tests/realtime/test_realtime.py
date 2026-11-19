@@ -34,7 +34,7 @@ import mido
 
 from llamatron.composition.file_format import ClipSlotSetting, FollowAction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist as setlist_values
 from llamatron.music import note as note_values
 from llamatron.music.scale import ScaleType
 from llamatron.composition.setlist import Setlist
@@ -344,8 +344,8 @@ def player_song(*, follow_actions=(), launch_apart=(), loops=(), steps=4):
             HIGH: {PatternSetting.STEPS: steps, PatternSetting.STEP_SIZE: QUARTER, Row.DEGREE: [1, 2, 3, 4][:steps], Row.OCTAVE: [6, 6, 6, 6][:steps]},
             LOW: {PatternSetting.STEPS: steps, PatternSetting.STEP_SIZE: QUARTER, Row.DEGREE: [1, None, 1, None][:steps], Row.OCTAVE: [3, None, 3, None][:steps]},
         },
-        Section.SCALES: {DEFAULT_SCALE: {ScaleSetting.ROOT: note_values.ROOT_NAMES[0], ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
-        SongSetting.SCALE: DEFAULT_SCALE, Section.TRACKS: {LEAD: {}, BASS: {}}, Section.SCENES: scenes,
+        Section.SCALES: {setlist_values.DEFAULT_SCALE: {ScaleSetting.ROOT: note_values.ROOT_NAMES[0], ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
+        SongSetting.SCALE: setlist_values.DEFAULT_SCALE, Section.TRACKS: {LEAD: {}, BASS: {}}, Section.SCENES: scenes,
     }
     return song_from_data(data)
 

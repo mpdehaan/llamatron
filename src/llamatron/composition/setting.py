@@ -29,8 +29,10 @@ A check that spans two settings, like a track's lowest octave not being above it
 written out in the class, after its settings have each been checked.
 """
 
-from llamatron.composition.checks import NO_LENGTH, is_true_or_false, is_whole_number, is_written_length, listed, positive_length, written_length
-from llamatron.composition.corrections import NO_NEAREST_VALUE, Correction
+from llamatron.composition import checks
+from llamatron.composition.checks import is_true_or_false, is_whole_number, is_written_length, listed, positive_length, written_length
+from llamatron.composition import corrections
+from llamatron.composition.corrections import Correction
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.strings import errors
 
@@ -76,7 +78,7 @@ class Setting:
 
     def nearest(self, value):
         """Return the allowed value nearest a wrong one, LEFT_OUT when that is the setting's default, or NO_NEAREST_VALUE when nothing allowed is near it."""
-        return NO_NEAREST_VALUE
+        return corrections.NO_NEAREST_VALUE
 
     def problem_with(self, value):
         """Return what is wrong with a value, in the words the check refuses it with, or None if nothing is."""
@@ -101,7 +103,7 @@ class Setting:
         """Return the correction that puts the nearest allowed value in a file's data, or None when the value there has none."""
         found = data[self._name]
         used = self.nearest(found)
-        if used is NO_NEAREST_VALUE:
+        if used is corrections.NO_NEAREST_VALUE:
             return None
         return Correction(holder=data, key=self._name, name=self._name, found=found, used=used)
 
@@ -153,7 +155,7 @@ class WholeNumber(Setting):
     def nearest(self, value):
         """Return the end of the range nearest a whole number outside it. Anything that isn't a whole number has no nearest value."""
         if not is_whole_number(value):
-            return NO_NEAREST_VALUE
+            return corrections.NO_NEAREST_VALUE
         if self._lowest is not None and value < self._lowest:
             return self._lowest
         if self._highest is not None and value > self._highest:
@@ -200,8 +202,8 @@ class Length(Setting):
 
     def nearest(self, value):
         """Return the longest allowed length for a length that is longer. Anything that isn't a length has no nearest value, and neither has a length of nothing, since no length is the shortest."""
-        if not is_written_length(value) or positive_or_nothing(value) <= NO_LENGTH:
-            return NO_NEAREST_VALUE
+        if not is_written_length(value) or positive_or_nothing(value) <= checks.NO_LENGTH:
+            return corrections.NO_NEAREST_VALUE
         return self._most if positive_or_nothing(value) > self._most else value
 
 
@@ -210,7 +212,7 @@ def positive_or_nothing(value):
     try:
         return positive_length(value)
     except InvalidValue:
-        return NO_LENGTH
+        return checks.NO_LENGTH
 
 
 class Checked(Setting):
@@ -229,7 +231,7 @@ class Checked(Setting):
         self._nearest = nearest
 
     def nearest(self, value):
-        return NO_NEAREST_VALUE if self._nearest is None else self._nearest(value)
+        return corrections.NO_NEAREST_VALUE if self._nearest is None else self._nearest(value)
 
     def check(self, value, *, song=None):
         if self._needs_song:

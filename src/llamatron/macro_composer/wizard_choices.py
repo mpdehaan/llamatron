@@ -28,7 +28,8 @@ import random
 import zlib
 
 from llamatron.composition.file_format import PatternSetting, Section, SectionKind
-from llamatron.composition.generator_settings import PHRASING_DEFAULTS, MusicianSetting, MusicianSettings, PhrasingSettings
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings, PhrasingSettings
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
 from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
@@ -3677,7 +3678,7 @@ class WizardChoices:
             self._extras[TUNE_PHRASING] = False
         else:
             try:
-                given = {name: value for name, value in dict(settings or {}).items() if value != PHRASING_DEFAULTS.get(name, value) or name not in PHRASING_DEFAULTS}
+                given = {name: value for name, value in dict(settings or {}).items() if value != generator_settings.PHRASING_DEFAULTS.get(name, value) or name not in generator_settings.PHRASING_DEFAULTS}
                 kept = PhrasingSettings.from_data(data=given, where=composer_text.MSG_TUNE_PHRASING_NAME).to_data()
             except (SongFileError, TypeError, ValueError) as problem:
                 raise ValueError(errors.ERR_WIZARD_TUNE_PHRASING.format(value=settings, problem=problem)) from None

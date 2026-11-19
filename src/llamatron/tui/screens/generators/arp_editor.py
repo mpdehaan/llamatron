@@ -18,8 +18,10 @@
 
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
-from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Section
-from llamatron.composition.generator_settings import ARP_NOTE_ADDS, ArpSetting, NO_OFFSET, written_name
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MIN_OCTAVE_RANGE, OctaveJump
 from llamatron.composition.naming import words
 from llamatron.strings import help as help_text, labels, legends, marks, messages
@@ -71,7 +73,7 @@ class ArpEditor(ShowsNamedItem, FieldPage):
 
     def edit_offsets(self):
         if self.arp().get_offsets() is None:
-            self.set_value(setting=ArpSetting.OFFSETS, value=[NO_OFFSET] * DEFAULT_OFFSET_STEPS)
+            self.set_value(setting=ArpSetting.OFFSETS, value=[generator_settings.NO_OFFSET] * DEFAULT_OFFSET_STEPS)
         self.show_page(OffsetsEditor(holder=self.holder, name=self.item))
 
     def fields(self):
@@ -94,14 +96,14 @@ class ArpEditor(ShowsNamedItem, FieldPage):
                 set=lambda number: self.set_value(setting=ArpSetting.SEED, value=number),
                 clear=lambda: self.set_value(setting=ArpSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
             ),
-            *[self.note_add_field(register) for register in REGISTER_NAMES],
+            *[self.note_add_field(register) for register in file_format.REGISTER_NAMES],
             restart_field(self),
         ]
 
     def note_add_field(self, register):
         """Return the field for what every note the arp plays adds to a register, within the current song's Allowed Inc Max, nothing being left out of the file."""
         most = self.document().song().get_register(register).get_allowed_inc_max()
-        setting = ARP_NOTE_ADDS[register]
+        setting = generator_settings.ARP_NOTE_ADDS[register]
         return NumberField(
             page=self, label=labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register), number=self.arp().get_note_add(register) or NO_ADD, lowest=-most, highest=most,
             set=lambda number: self.set_value(setting=setting, value=number or None), clear=lambda: self.set_value(setting=setting, value=None),

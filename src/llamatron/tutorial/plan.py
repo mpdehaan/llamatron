@@ -33,11 +33,12 @@ the plan knows still builds the rest.
 
 from llamatron.composition.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.naming import new_name
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
+from llamatron.composition import row_descriptions
 from llamatron.composition import limits
 from llamatron.strings import labels as labels_text, names as names_text, narration
 from llamatron.tui import keybindings
-from llamatron.tui.components.chord_row import CHORD_SYMBOLS, ChordRow, chord_text
+from llamatron.composition import file_format
+from llamatron.tui.components.chord_row import ChordRow, chord_text
 from llamatron.tui.components.cycle_row import CycleRow
 from llamatron.tui.components.gate_row import GateRow
 from llamatron.tui.components.number_row import NumberRow
@@ -86,7 +87,7 @@ CELL_PAGES = {
 # The seconds the tutorial waits once the song has played, before it goes back to the main screen and quits.
 AFTER_THE_SONG_SECONDS = 2.0
 # The rows the plan sets in the rows view: every row but the two the piano roll writes.
-ROWS_SET_IN_THE_ROWS_VIEW = [name for name in ROW_DESCRIPTIONS if name not in (Row.DEGREE, Row.OCTAVE)]
+ROWS_SET_IN_THE_ROWS_VIEW = [name for name in row_descriptions.ROW_DESCRIPTIONS if name not in (Row.DEGREE, Row.OCTAVE)]
 # How many times the plan may press an arrow towards one place before it gives up, since a cursor that never arrives would loop for ever.
 MOST_MOVES = 400
 # Where a binding keeps the words its legend gives it.
@@ -101,7 +102,7 @@ STARTER_PATTERN = names_text.MSG_NEW_PATTERN_NAME.format(number=1)
 def step_value(*, pattern, row, step):
     """Return a step's value on a row, a row the pattern leaves out reading as its blank, so that a row of all falses equals one not written."""
     value = pattern.get_value(row=row, step=step)
-    return ROW_DESCRIPTIONS[row].blank() if value is None else value
+    return row_descriptions.ROW_DESCRIPTIONS[row].blank() if value is None else value
 
 
 def without_clips(scene_data):
@@ -553,7 +554,7 @@ class TutorialPlan:
         yield Say(narration.MSG_NARRATE_PATTERN_ROWS.format(name=name))
         yield from self.set_rows(wanted)
         for setting in wanted.to_data():
-            if setting not in ROW_DESCRIPTIONS and setting not in self.document().setlist().get_pattern(name).to_data():
+            if setting not in row_descriptions.ROW_DESCRIPTIONS and setting not in self.document().setlist().get_pattern(name).to_data():
                 self.left_out.append(narration.MSG_LEFT_OUT_PATTERN_SETTING.format(setting=setting, name=name))
 
     def group_wanted(self, name):
@@ -708,7 +709,7 @@ class TutorialPlan:
     def set_rows(self, wanted):
         """In the rows view, set every row but Degree and Octave where the target's step differs from the pattern's."""
         for row in ROWS_SET_IN_THE_ROWS_VIEW:
-            if wanted.is_drum() and not ROW_DESCRIPTIONS[row].is_in_drum_patterns():
+            if wanted.is_drum() and not row_descriptions.ROW_DESCRIPTIONS[row].is_in_drum_patterns():
                 continue
             for step in range(wanted.get_steps()):
                 value = step_value(pattern=wanted, row=row, step=step)
@@ -744,7 +745,7 @@ class TutorialPlan:
         if isinstance(component, ToggleRow):
             yield from self.press(keybindings.ToggleRow.TOGGLE)
         elif isinstance(component, ChordRow):
-            options = [None, *CHORD_SYMBOLS]
+            options = [None, *file_format.CHORD_SYMBOLS]
             presses = (options.index(chord_text(value)) - options.index(chord_text(component.value()))) % len(options)
             for _ in range(presses):
                 yield from self.press(keybindings.ChordRow.NEXT)

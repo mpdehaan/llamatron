@@ -16,7 +16,8 @@
 
 """The instrument editor: one instrument's name, MIDI device or FluidSynth, channel and General MIDI sound."""
 
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section
 from llamatron.music import midi
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT_PREFIX
 from llamatron.realtime.outputs import output_port_names
@@ -74,8 +75,8 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         names = {name for name in output_port_names() if not name.startswith(FLUIDSYNTH_PORT_PREFIX)}
         if self.instrument().has_device() and not self.instrument().uses_fluidsynth():
             names.add(self.instrument().get_device())
-        names.discard(FLUIDSYNTH_DEVICE)
-        return [FLUIDSYNTH_DEVICE, *sorted_names(names)]
+        names.discard(file_format.FLUIDSYNTH_DEVICE)
+        return [file_format.FLUIDSYNTH_DEVICE, *sorted_names(names)]
 
     def pick_device(self):
         devices = self.devices()

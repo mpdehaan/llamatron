@@ -31,7 +31,7 @@ from llamatron.exporters.exports import ExportKind
 from tests.support.rendering import PIECES, is_demo, render_file
 from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import Setlist
-from llamatron.composition.generator_settings import GENERATOR_SETTINGS
+from llamatron.composition import generator_settings
 from llamatron.support import example_sets as example_sets_values
 from llamatron.support.example_sets import example_sets, folder_of_example, genre_folder
 from tests.support.song_testing import pitches
@@ -113,7 +113,7 @@ class TestExamples(unittest.TestCase):
             with open(path) as file:
                 for chain in (yaml.safe_load(file).get(Section.CHAINS) or {}).values():
                     used |= {next(iter(step)) for step in chain}
-        self.assertEqual(set(GENERATOR_SETTINGS) - used, set())
+        self.assertEqual(set(generator_settings.GENERATOR_SETTINGS) - used, set())
 
     def test_every_example_since_the_rule_lasts_two_to_four_minutes(self):
         # A new example runs from two to four minutes unless it is named for another length.

@@ -27,7 +27,8 @@ from unittest import mock
 
 from rich.text import Text
 
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.screens.arrange.arrange_page import SCENE_COLUMN
@@ -225,10 +226,10 @@ class TestFluidSynthPlayback(PlaybackTest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.document.add_instrument(FLUID)
-        self.document.set_instrument_device(name=FLUID, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_device(name=FLUID, device=file_format.FLUIDSYNTH_DEVICE)
         self.document.set_instrument_gm_sound(name=FLUID, sound=VIOLIN)
         self.document.add_instrument(DRUM_KIT)
-        self.document.set_instrument_device(name=DRUM_KIT, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_device(name=DRUM_KIT, device=file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=LEAD, instrument=FLUID)
         self.document.set_track_instrument(name=DRUMS, instrument=DRUM_KIT)
         self.document.set_track_drum(name=DRUMS, drum=True)
@@ -799,7 +800,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
 
     async def test_a_preview_instrument_through_fluidsynth_sends_its_sound(self):
         self.document.add_instrument(FLUID)
-        self.document.set_instrument_device(name=FLUID, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_device(name=FLUID, device=file_format.FLUIDSYNTH_DEVICE)
         self.document.set_instrument_gm_sound(name=FLUID, sound=VIOLIN)
         self.document.set_preview_instrument_name(FLUID)
         await self.open_pattern(TUNE)
@@ -842,7 +843,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.document.set_instrument_device(name=SYNTH, device=None)
         await self.press(keybindings.PatternEditor.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=SYNTH), self.words_shown())
-        self.document.set_instrument_device(name=SYNTH, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_device(name=SYNTH, device=file_format.FLUIDSYNTH_DEVICE)
         self.fluidsynth_installed = False
         await self.press(keybindings.PatternEditor.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=SYNTH), self.words_shown())
@@ -952,7 +953,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
 
     async def test_a_song_whose_track_has_the_previews_channel_is_stopped_before_the_preview_plays(self):
         self.document.add_instrument(FLUID)
-        self.document.set_instrument_device(name=FLUID, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_device(name=FLUID, device=file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=LEAD, instrument=FLUID)
         preview = self.preview()
         # The lead plays on FluidSynth's first channel, not the preview's, so nothing is shared.

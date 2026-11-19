@@ -31,8 +31,9 @@ from llamatron.playback.step_order import StepOrder
 from llamatron.support.random_source import random_source
 from llamatron.composition import limits
 from llamatron.composition.conditions import any_true
-from llamatron.composition.file_format import PLACED_SHAPES, ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
-from llamatron.composition.generator_settings import GENERATOR_SETTINGS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
+from llamatron.composition import generator_settings
 from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, reshaped
 from llamatron.generators.euclid import EuclidMask
 from llamatron.composition.checks import in_whole_notes
@@ -173,7 +174,7 @@ class ClipSlotPlayer:
             for step in written.get_steps():
                 # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
-                if GENERATOR_SETTINGS[step.kind].GENERATOR is not None and not (step.kind in KINDS_MOVING_PITCHES and self._plays_drums()):
+                if generator_settings.GENERATOR_SETTINGS[step.kind].GENERATOR is not None and not (step.kind in KINDS_MOVING_PITCHES and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
                     times[(step.kind, step.name)] = key[-1] + 1
                     generator = self._renderer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=chain, index=index, key=key, counting=counting)
@@ -234,9 +235,9 @@ class ClipSlotPlayer:
                 restart = settings.get_restart()
                 span = self._renderer.run_span(scene=self._scene, restart=restart, clip_length=clip_length)
                 shapes[shape] = (settings.get_shape(), span, self._renderer.run_offset(scene=self._scene, restart=restart))
-            elif shape in PLACED_SHAPES and self._clip_slot.get_shape(shape) is not None:
+            elif shape in file_format.PLACED_SHAPES and self._clip_slot.get_shape(shape) is not None:
                 shapes[shape] = (self._clip_slot.get_shape(shape), clip_length, NO_OFFSET)
-            elif shape in PLACED_SHAPES and self._scene.get_scene().get_shape(shape) is not None:
+            elif shape in file_format.PLACED_SHAPES and self._scene.get_scene().get_shape(shape) is not None:
                 shapes[shape] = (self._scene.get_scene().get_shape(shape), scene_length, NO_OFFSET)
         velocity = self._placed_velocity(clip_length=clip_length, scene_length=scene_length)
         if not shapes and velocity is None:

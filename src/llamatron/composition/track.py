@@ -23,8 +23,9 @@ from llamatron.composition.euclid import euclid_settings, euclid_values
 from llamatron.composition.checks import reading, check_keys, is_whole_number_from
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.file_format import euclid_setting, strum_setting, CC_REGISTER_SETTINGS, CC_ROWS, REGISTER_NAMES, Section, TrackSetting
+from llamatron.composition import corrections
+from llamatron.composition import file_format
+from llamatron.composition.file_format import euclid_setting, strum_setting, Section, TrackSetting
 from llamatron.composition.groove import check_groove_choice
 from llamatron.music import midi
 from llamatron.composition.llama_data import LlamaData, or_default, own_copy, written_settings
@@ -37,19 +38,19 @@ from llamatron.support.revised import notes_change
 
 def _no_cc_numbers():
     """Return the CC numbers of a track that sends no CC values: none for every lane."""
-    return [None] * len(CC_ROWS)
+    return [None] * len(file_format.CC_ROWS)
 
 
 def _is_cc_number_list(numbers):
     """Return whether numbers has a CC number, or None for a lane that sends nothing, for every CC lane."""
-    return isinstance(numbers, list) and len(numbers) == len(CC_ROWS) and all(
+    return isinstance(numbers, list) and len(numbers) == len(file_format.CC_ROWS) and all(
         number is None or is_whole_number_from(value=number, lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER) for number in numbers
     )
 
 
 def _check_cc_numbers(numbers):
     if not _is_cc_number_list(numbers):
-        raise InvalidValue(errors.ERR_BAD_CC_NUMBERS.format(lanes=len(CC_ROWS), lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER, value=numbers))
+        raise InvalidValue(errors.ERR_BAD_CC_NUMBERS.format(lanes=len(file_format.CC_ROWS), lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER, value=numbers))
 
 
 def _check_instrument_name(*, value, song):
@@ -67,8 +68,8 @@ SETTINGS = described(
     Checked(name=TrackSetting.CC, check=_check_cc_numbers),
     Checked(name=TrackSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Checked(name=TrackSetting.INSTRUMENT, check=_check_instrument_name, needs_song=True),
-    *[Choice(name=name, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER) for name in CC_REGISTER_SETTINGS],
-    Choice(name=TrackSetting.VELOCITY_REGISTER, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER),
+    *[Choice(name=name, choices=file_format.REGISTER_NAMES, default=corrections.LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER) for name in file_format.CC_REGISTER_SETTINGS],
+    Choice(name=TrackSetting.VELOCITY_REGISTER, choices=file_format.REGISTER_NAMES, default=corrections.LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER),
     WholeNumber(name=TrackSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
     WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
@@ -212,7 +213,7 @@ class Track(LlamaData):
 
     def get_cc_registers(self):
         """Return the register each CC lane is bound to, in lane order, or None for a lane that isn't bound."""
-        return [self._settings[name] for name in CC_REGISTER_SETTINGS]
+        return [self._settings[name] for name in file_format.CC_REGISTER_SETTINGS]
 
     def binds_registers(self):
         """Return whether any CC lane or the velocity is bound to a register."""
@@ -221,9 +222,9 @@ class Track(LlamaData):
     @notes_change
     def set_cc_register(self, *, lane, register):
         """Bind one of the four CC lanes to a register by name, or None to bind it to nothing."""
-        if not is_whole_number_from(value=lane, lowest=0, highest=len(CC_ROWS) - 1):
-            raise InvalidValue(errors.ERR_NO_SUCH_LANE.format(lane=lane, last=len(CC_ROWS) - 1))
-        name = CC_REGISTER_SETTINGS[lane]
+        if not is_whole_number_from(value=lane, lowest=0, highest=len(file_format.CC_ROWS) - 1):
+            raise InvalidValue(errors.ERR_NO_SUCH_LANE.format(lane=lane, last=len(file_format.CC_ROWS) - 1))
+        name = file_format.CC_REGISTER_SETTINGS[lane]
         if register is not None:
             SETTINGS[name].check(register)
         self._settings[name] = register
@@ -319,8 +320,8 @@ class Track(LlamaData):
     @notes_change
     def set_cc_number(self, *, lane, number):
         """Set the CC number one of the four lanes sends, or None for a lane that sends nothing."""
-        if not is_whole_number_from(value=lane, lowest=0, highest=len(CC_ROWS) - 1):
-            raise InvalidValue(errors.ERR_NO_SUCH_LANE.format(lane=lane, last=len(CC_ROWS) - 1))
+        if not is_whole_number_from(value=lane, lowest=0, highest=len(file_format.CC_ROWS) - 1):
+            raise InvalidValue(errors.ERR_NO_SUCH_LANE.format(lane=lane, last=len(file_format.CC_ROWS) - 1))
         numbers = self.get_cc_numbers()
         numbers[lane] = number
         SETTINGS[TrackSetting.CC].check(numbers)

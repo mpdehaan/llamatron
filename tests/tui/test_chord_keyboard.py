@@ -20,7 +20,8 @@
 import unittest
 
 from llamatron.composition.chords import spelled_chord
-from llamatron.composition.file_format import CHORD_SYMBOLS, ChordSymbol
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ChordSymbol
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.music import note
 from llamatron.music.note import NoteName
@@ -65,7 +66,7 @@ class TestChordKeys(unittest.TestCase):
     def test_every_chord_on_every_root_has_a_key_for_each_of_its_notes(self):
         for root in note.ROOT_NAMES:
             scale = NamedScale(root=root, kind=MAJOR)
-            for symbol in CHORD_SYMBOLS:
+            for symbol in file_format.CHORD_SYMBOLS:
                 with self.subTest(root=root, symbol=symbol):
                     notes = spelled_chord(scale=scale, degree=FIRST_DEGREE, symbol=symbol).notes
                     keys = chord_keys(note_names=notes)

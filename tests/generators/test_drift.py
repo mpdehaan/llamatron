@@ -21,9 +21,8 @@ Each test plays clips of four quarter-note steps, a bar of
 
 import unittest
 
-from llamatron.composition.file_format import (
-    REGISTER_NOTE_ROWS, ClipSlotSetting, DriftDirection, GeneratorKind, RegisterSetting, Row, SceneSetting, Section,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, DriftDirection, GeneratorKind, RegisterSetting, Row, SceneSetting, Section
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import DriftValue, DriftVersion
 from llamatron.composition.generator_settings import DriftSetting, versioned
@@ -130,7 +129,7 @@ class TestWhatADriftDoes(unittest.TestCase):
         self.assertEqual(pitches(data), pitches(data))
 
     def test_its_adds_join_the_registers_once_a_trigger_however_many_clips_name_it(self):
-        rows = {REGISTER_NOTE_ROWS[AX]: [1] * STEPS}
+        rows = {file_format.REGISTER_NOTE_ROWS[AX]: [1] * STEPS}
         data = drifting(drift={a(DriftValue.AX_ADD): 1, b(DriftValue.AX_ADD): 1}, rows=rows, tracks=(LEAD, OTHER))
         data[Section.REGISTERS] = {AX: {RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE, RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE}}
         self.assertEqual(per_bar(pitches(data)), scale_notes([1, 2, 3, 4]))

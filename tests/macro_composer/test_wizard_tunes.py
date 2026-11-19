@@ -19,7 +19,8 @@
 import unittest
 
 from llamatron.composition.file_format import GeneratorKind, PatternSetting, Row
-from llamatron.composition.generator_settings import PHRASING_DEFAULTS, PhrasingSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators.phrasing import DEEP_BREATH
 from llamatron.macro_composer.arranger import NOBODY
 from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, WizardChoices
@@ -279,7 +280,7 @@ class TestTunePhrasing(unittest.TestCase):
     def test_a_tune_is_delivered_by_a_phrasing_as_one_starts_until_its_settings_are_chosen_or_it_is_switched_off(self):
         choices = chosen()
         self.assertEqual(choices.tune_phrasing(), {})
-        choices.set_tune_phrasing({PhrasingSetting.BREATH: DEEP_BREATH, PhrasingSetting.NOTES: PHRASING_DEFAULTS[PhrasingSetting.NOTES]})
+        choices.set_tune_phrasing({PhrasingSetting.BREATH: DEEP_BREATH, PhrasingSetting.NOTES: generator_settings.PHRASING_DEFAULTS[PhrasingSetting.NOTES]})
         self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
         self.assertEqual(WizardChoices.from_data(choices.to_data()).tune_phrasing(), {PhrasingSetting.BREATH: DEEP_BREATH})
         setlist, name = choices.made_for_listening()

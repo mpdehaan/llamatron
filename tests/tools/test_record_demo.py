@@ -26,7 +26,8 @@ import unittest
 from unittest import mock
 
 from llamatron.composition.checks import listed
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, ClipSlotSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting
 from llamatron.realtime.fluidsynth import AUDIO_DEVICE_VARIABLE
 from llamatron.music import midi
 from llamatron.strings import about, errors
@@ -410,7 +411,7 @@ class TestRecordDemo(unittest.TestCase):
 
     def give_lead_fluidsynth(self):
         self.document.add_instrument(FLUID)
-        self.document.set_instrument_device(name=FLUID, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_device(name=FLUID, device=file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=LEAD, instrument=FLUID)
 
     def test_with_fluidsynth_the_sets_own_instruments_play_into_the_recorded_device_with_no_port(self):

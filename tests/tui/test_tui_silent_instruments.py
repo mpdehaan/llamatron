@@ -19,7 +19,7 @@
 import unittest
 from unittest import mock
 
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE
+from llamatron.composition import file_format
 from llamatron.strings import errors
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -43,7 +43,7 @@ A_LONG_TIME = 600
 
 def with_instruments(document, *, keys_device=GONE_PORT):
     """Give the lead a FluidSynth instrument and the drums one on a MIDI port, and add an instrument nothing plays through, on a port that has gone."""
-    for name, device in ((FLUID, FLUIDSYNTH_DEVICE), (KEYS, keys_device), (UNUSED, GONE_PORT)):
+    for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, keys_device), (UNUSED, GONE_PORT)):
         document.add_instrument(name)
         document.set_instrument_device(name=name, device=device)
     document.set_track_instrument(name=LEAD, instrument=FLUID)
@@ -69,7 +69,7 @@ class TestSilentInstrumentLines(unittest.TestCase):
 
     def test_fluidsynth_is_told_once_however_many_instruments_use_it(self):
         document = with_instruments(a_song())
-        document.set_instrument_device(name=KEYS, device=FLUIDSYNTH_DEVICE)
+        document.set_instrument_device(name=KEYS, device=file_format.FLUIDSYNTH_DEVICE)
         self.assertEqual(silent_instrument_lines(setlist=document.setlist(), installed=False, connected=set()), [errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND])
 
 
@@ -107,7 +107,7 @@ class TestSilentInstrumentsWhenTheTrackerStarts(SilentInstrumentsTest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
         setlist = self.app.get_document().setlist()
-        self.assertEqual(setlist.get_instrument(FLUID).get_device(), FLUIDSYNTH_DEVICE)
+        self.assertEqual(setlist.get_instrument(FLUID).get_device(), file_format.FLUIDSYNTH_DEVICE)
         self.assertEqual(setlist.get_instrument(KEYS).get_device(), GONE_PORT)
         self.assertFalse(self.app.get_document().is_dirty())
 

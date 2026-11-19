@@ -17,7 +17,7 @@
 
 from llamatron.composition import limits
 from llamatron.composition.file_format import RampPart, RampWay, VelocitySetting
-from llamatron.composition.velocity_ramps import AS_WRITTEN
+from llamatron.composition import velocity_ramps
 from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 from llamatron.tui.screens.arrange.arrange_details import clip_details, scene_details
@@ -69,11 +69,11 @@ class TestVelocityOnTheScenePage(VelocityTest):
         await self.show(ScenePage(holder=self.app.screen.holder, index=FIRST_SCENE))
 
     async def test_a_blank_velocity_shows_the_notes_as_written_and_steps_from_there(self):
-        self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), percent(AS_WRITTEN))
+        self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), percent(velocity_ramps.AS_WRITTEN))
         await self.select_field(labels_text.MSG_VELOCITY_PERCENT_LABEL)
         await self.press(keybindings.FieldPage.LESS)
-        self.assertEqual(self.scene().get_velocity().level, AS_WRITTEN - 1)
-        self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), percent(AS_WRITTEN - 1))
+        self.assertEqual(self.scene().get_velocity().level, velocity_ramps.AS_WRITTEN - 1)
+        self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), percent(velocity_ramps.AS_WRITTEN - 1))
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertIsNone(self.scene().get_velocity_settings()[VelocitySetting.LEVEL])
 
@@ -100,7 +100,7 @@ class TestVelocityOnTheScenePage(VelocityTest):
         await self.select_field(IN_OVER)
         await self.press(keybindings.FieldPage.MORE)
         ramp = self.scene().get_velocity().ramp_in
-        self.assertEqual((ramp.start, ramp.end, ramp.over), (AS_WRITTEN - 1, AS_WRITTEN, limits.MIN_RAMP_BARS + 1))
+        self.assertEqual((ramp.start, ramp.end, ramp.over), (velocity_ramps.AS_WRITTEN - 1, velocity_ramps.AS_WRITTEN, limits.MIN_RAMP_BARS + 1))
         self.assertEqual(self.shown(IN_OVER), marks.MSG_RAMP_BARS_SHOWN.format(bars=limits.MIN_RAMP_BARS + 1))
         await self.open_section(RampWay.IN)
         self.assertIn(marks.MSG_SECTION_SET, self.text())
@@ -109,7 +109,7 @@ class TestVelocityOnTheScenePage(VelocityTest):
         await self.open_section(RampWay.OUT)
         await self.select_field(OUT_END)
         await self.press(keybindings.FieldPage.LESS)
-        self.assertEqual(self.scene().get_velocity_settings()[VelocitySetting.OUT_END], AS_WRITTEN - 1)
+        self.assertEqual(self.scene().get_velocity_settings()[VelocitySetting.OUT_END], velocity_ramps.AS_WRITTEN - 1)
         self.assertIsNone(self.scene().get_velocity().ramp_out)
 
     async def test_an_edit_is_undone_and_redone(self):
@@ -118,7 +118,7 @@ class TestVelocityOnTheScenePage(VelocityTest):
         await self.press(keybindings.Page.UNDO)
         self.assertIsNone(self.scene().get_velocity_settings()[VelocitySetting.LEVEL])
         await self.press(keybindings.Page.REDO)
-        self.assertEqual(self.scene().get_velocity().level, AS_WRITTEN - 1)
+        self.assertEqual(self.scene().get_velocity().level, velocity_ramps.AS_WRITTEN - 1)
 
 
 class TestVelocityOnTheClipPage(VelocityTest):

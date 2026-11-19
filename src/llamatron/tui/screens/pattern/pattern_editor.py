@@ -40,7 +40,8 @@ on the rows.
 
 
 from llamatron.composition.checks import is_written_length, listed
-from llamatron.composition.file_format import DIRECTIONS, REGISTER_NAMES, Row, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Row, Section
 from llamatron.composition import limits
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import Pattern
@@ -183,7 +184,7 @@ OTHER_PATTERN_TITLES = {
     Munge.SPLICE_AT_CURSOR: messages.MSG_SPLICE_AT_CURSOR_CHOICE_TITLE,
 }
 # The munges that smooth the row setting one register.
-SMOOTHED_REGISTERS = dict(zip((Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX), REGISTER_NAMES))
+SMOOTHED_REGISTERS = dict(zip((Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX), file_format.REGISTER_NAMES))
 
 
 class Reconfigure:
@@ -427,8 +428,8 @@ class PatternEditor(ShowsNamedItem, StepEditor):
     def pick_direction(self):
         current = self.pattern().get_direction()
         self.ask(
-            dialog=ChoiceDialog(title=messages.MSG_PLAY_DIRECTION_TITLE, options=direction_choices(DIRECTIONS), current=DIRECTIONS.index(current)),
-            then=lambda chosen: self.document().set_direction(name=self.item, direction=DIRECTIONS[chosen]),
+            dialog=ChoiceDialog(title=messages.MSG_PLAY_DIRECTION_TITLE, options=direction_choices(file_format.DIRECTIONS), current=file_format.DIRECTIONS.index(current)),
+            then=lambda chosen: self.document().set_direction(name=self.item, direction=file_format.DIRECTIONS[chosen]),
         )
 
     def pick_scale_length(self):

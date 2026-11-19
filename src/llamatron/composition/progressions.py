@@ -23,7 +23,8 @@ scale becomes that plain degree, any other the degree a half step above it with 
 it with a sharp, and plain degrees then follow later edits of the scale, as a pattern's do.
 """
 
-from llamatron.composition.file_format import ACCIDENTALS, Accidental, NamedProgression, Quality
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, NamedProgression, Quality
 from llamatron.music.scale import ScaleType
 from llamatron.strings import marks
 
@@ -49,7 +50,7 @@ def half_steps_to(*, scale, degree, accidental=None):
     """Return how many half steps a chord's root is above the scale's root: its degree's, and one more for a sharp or one less for a flat."""
     shape = shape_of(scale)
     octaves, place = divmod(degree - 1, len(shape))
-    return octaves * HALF_STEPS_PER_OCTAVE + shape[place] + ACCIDENTALS.get(accidental, 0)
+    return octaves * HALF_STEPS_PER_OCTAVE + shape[place] + file_format.ACCIDENTALS.get(accidental, 0)
 
 
 def quality_of(*, scale, degree, accidental=None):
@@ -133,10 +134,10 @@ def numeral_half_steps(numeral):
     """Return how many half steps a numeral of a named progression, like bVII, is above the key's root."""
     shift = 0
     if numeral.startswith(FLAT_WRITTEN):
-        shift = ACCIDENTALS[Accidental.FLAT]
+        shift = file_format.ACCIDENTALS[Accidental.FLAT]
         numeral = numeral[len(FLAT_WRITTEN):]
     elif numeral.startswith(SHARP_WRITTEN):
-        shift = ACCIDENTALS[Accidental.SHARP]
+        shift = file_format.ACCIDENTALS[Accidental.SHARP]
         numeral = numeral[len(SHARP_WRITTEN):]
     return SHAPE_WITHOUT_A_SCALE[ROMAN_NUMERALS.index(numeral.upper())] + shift
 

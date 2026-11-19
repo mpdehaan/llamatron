@@ -21,8 +21,9 @@ field's, which the ramps start from and return to.
 """
 
 from llamatron.composition import limits
-from llamatron.composition.file_format import RAMP_WAYS, VELOCITY_RAMP_SETTINGS, RampPart, VelocitySetting
-from llamatron.composition.velocity_ramps import AS_WRITTEN
+from llamatron.composition import file_format
+from llamatron.composition.file_format import RampPart, VelocitySetting
+from llamatron.composition import velocity_ramps
 from llamatron.strings import labels, legends, marks
 from llamatron.tui.screens.shared.field import NumberField
 
@@ -46,23 +47,23 @@ def velocity_field(*, page, own, above, store):
     elif taken is not None:
         shown = marks.MSG_FROM_SCENE_SHOWN.format(value=percent_shown(taken))
     else:
-        shown = percent_shown(AS_WRITTEN)
+        shown = percent_shown(velocity_ramps.AS_WRITTEN)
     return NumberField(
-        page=page, label=labels.MSG_VELOCITY_PERCENT_LABEL, number=level, start=AS_WRITTEN if taken is None else taken, shown=shown,
+        page=page, label=labels.MSG_VELOCITY_PERCENT_LABEL, number=level, start=velocity_ramps.AS_WRITTEN if taken is None else taken, shown=shown,
         lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, set=lambda number: store(name, number), clear=lambda: store(name, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
     )
 
 
 def velocity_ramp_sections(*, page, own, above, store):
     """Return the two velocity ramp sections, each closed until opened: the percentage it starts from, the percentage it reaches, and the bars it takes."""
-    return [field for way in RAMP_WAYS for field in velocity_ramp_section(page=page, way=way, own=own, above=above, store=store)]
+    return [field for way in file_format.RAMP_WAYS for field in velocity_ramp_section(page=page, way=way, own=own, above=above, store=store)]
 
 
 def velocity_ramp_section(*, page, way, own, above, store):
     level = own(VelocitySetting.LEVEL)
     level = above(VelocitySetting.LEVEL) if level is None else level
-    level = AS_WRITTEN if level is None else level
-    names = {part: VELOCITY_RAMP_SETTINGS[(way, part)] for part in (RampPart.START, RampPart.END, RampPart.OVER)}
+    level = velocity_ramps.AS_WRITTEN if level is None else level
+    names = {part: file_format.VELOCITY_RAMP_SETTINGS[(way, part)] for part in (RampPart.START, RampPart.END, RampPart.OVER)}
 
     def end_shown(name):
         if own(name) is not None:

@@ -26,7 +26,8 @@ import unittest
 from llamatron.composition.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, Row, Tension
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
-from llamatron.composition.pattern_notes import SPLIT_ROWS, whole_steps_down, whole_steps_up
+from llamatron.composition import pattern_notes
+from llamatron.composition.pattern_notes import whole_steps_down, whole_steps_up
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.support.rational import Rational
@@ -252,7 +253,7 @@ class TestDrawingNotes(unittest.TestCase):
         pattern.draw_note(step=1, degree=5, octave=OCTAVE + 1, length=EIGHTH, step_size=SIXTEENTH)
         self.assertEqual(pattern.get_row(Row.DEGREE), [1, 5, None, 1, *[None] * 4])
         self.assertEqual(pattern.get_row(Row.TIE), ties(2, 4))
-        for row in SPLIT_ROWS:
+        for row in pattern_notes.SPLIT_ROWS:
             with self.subTest(row=row):
                 self.assertEqual(pattern.get_value(row=row, step=3), pattern.get_value(row=row, step=0))
 

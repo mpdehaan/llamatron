@@ -22,7 +22,7 @@ them, the same one the piano roll opens, and Bksp clears them. A step with no no
 
 from llamatron.composition.file_format import Row
 from llamatron.strings import marks, messages
-from llamatron.composition.instrument import NO_KEYSWITCH
+from llamatron.composition import instrument as instrument_values
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
 from llamatron.tui.drawing import NOTHING
@@ -63,7 +63,7 @@ def slot_rows(editor):
     used = {slot for step in range(editor.pattern().get_steps()) for slot in editor.value(row=Row.KEYSWITCH, step=step) or ()}
     if instrument is None:
         return sorted(used), said
-    mapped = {slot for slot, keyswitch in enumerate(instrument.get_keyswitches()) if keyswitch != NO_KEYSWITCH}
+    mapped = {slot for slot, keyswitch in enumerate(instrument.get_keyswitches()) if keyswitch != instrument_values.NO_KEYSWITCH}
     return sorted(mapped | used), messages.MSG_KEYSWITCH_SECTION_HINT.format(instrument=said)
 
 

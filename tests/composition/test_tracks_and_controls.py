@@ -30,7 +30,8 @@ import mido
 import yaml
 
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.composition.file_format import CC_ROWS, ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, TrackSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, TrackSetting
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.generators.arp import Arp, ChordOrder, OctaveJump, along_scale
 from llamatron.music.chord import Chord
@@ -274,7 +275,7 @@ class TestControls(unittest.TestCase):
         blank = song_data()
         without = song_data()
         steps = blank[Section.PATTERNS][RIFF][PatternSetting.STEPS]
-        for row in CC_ROWS:
+        for row in file_format.CC_ROWS:
             blank[Section.PATTERNS][RIFF][row] = [None] * steps
             without[Section.PATTERNS][RIFF].pop(row, None)
         self.assertEqual(lead_clip(blank).get_controls(), [])

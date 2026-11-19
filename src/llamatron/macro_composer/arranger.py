@@ -48,7 +48,8 @@ from llamatron.macro_composer.shaping import COMPOUND_BEAT, SIMPLE_BEAT, is_comp
 from llamatron.macro_composer.song_plan import PLAN_OF_SONG, SongPlan
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.checks import in_whole_notes
-from llamatron.composition.file_format import SECTION_KINDS, ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.composition.generator_settings import FollowChordsSetting
 from llamatron.composition.named_scale import scale_type_called
 from llamatron.composition import limits
@@ -1333,7 +1334,7 @@ def arranged(*, style, song):
             continue
         play[composer_text.MSG_CHORDS_TRACK] = chords_played
         scene_settings = dict(section.get(SCENE_SETTINGS) or {})
-        if section[KIND] in SECTION_KINDS:
+        if section[KIND] in file_format.SECTION_KINDS:
             # A scene says what kind of section it is, where the kind is one a scene may be.
             scene_settings.setdefault(SECTION_OF_SCENE, section[KIND])
         if isinstance(scene_settings.get(SCALE), dict):

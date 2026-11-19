@@ -19,7 +19,8 @@ A page takes the colour of the section it shows or lists (an editor and its list
 the one it names; the main screen's is white, and Arrange has none and keeps the rule.
 """
 
-from llamatron.composition.file_format import NAMED_GENERATORS, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section
 
 SONGS = (0, 90, 255)
 PATTERNS = (0, 200, 0)
@@ -38,13 +39,13 @@ WIZARD = (0, 255, 255)
 # The colour of each section's pages, every generator section's the generators' one.
 SECTION_THEMES = {
     Section.SONGS: SONGS, Section.PATTERNS: PATTERNS, Section.CHAINS: CHAINS, Section.SCALES: SCALES, Section.GROOVES: GROOVES,
-    Section.INSTRUMENTS: INSTRUMENTS, Section.TRACKS: FROM_ARRANGE, **{section: GENERATORS for section in NAMED_GENERATORS.values()},
+    Section.INSTRUMENTS: INSTRUMENTS, Section.TRACKS: FROM_ARRANGE, **{section: GENERATORS for section in file_format.NAMED_GENERATORS.values()},
 }
 
 
 def target_theme(kind):
     """Return the colour of what a line of Arrange's details names, a section or a generator's kind, since a kind of thing has one colour everywhere, or None."""
-    if kind in NAMED_GENERATORS:
+    if kind in file_format.NAMED_GENERATORS:
         return GENERATORS
     return SECTION_THEMES.get(kind)
 

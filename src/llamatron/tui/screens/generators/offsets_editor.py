@@ -25,7 +25,8 @@ the screen scrolls sideways like the pattern editor rather than wrapping onto mo
 
 from rich.text import Text
 
-from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.generators.arp import MAX_OFFSET, MAX_OFFSETS
 from llamatron.tui.components.signed_gauge import SignedGauge
 from llamatron.tui.drawing import Box, NOTHING, Style
@@ -78,7 +79,7 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
 
     def register_edited(self):
         """Return the register whose add row the cursor is on, or None on the Offset row."""
-        return None if self.edited_row == OFFSET_ROW else REGISTER_NAMES[self.edited_row - 1]
+        return None if self.edited_row == OFFSET_ROW else file_format.REGISTER_NAMES[self.edited_row - 1]
 
     def values(self):
         register = self.register_edited()
@@ -91,11 +92,11 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
     def shown_add_rows(self):
         """Return the registers whose add rows show: those that add on some step, and the one the cursor is on, so that an arp with no adds draws as it always has."""
         arp = self.arp()
-        return [register for register in REGISTER_NAMES if register == self.register_edited() or any(arp.get_step_adds(register) or [])]
+        return [register for register in file_format.REGISTER_NAMES if register == self.register_edited() or any(arp.get_step_adds(register) or [])]
 
     def next_row(self):
         """Move the cursor to the next row, from the Offset row through each register's add row and back."""
-        self.edited_row = (self.edited_row + 1) % (len(REGISTER_NAMES) + 1)
+        self.edited_row = (self.edited_row + 1) % (len(file_format.REGISTER_NAMES) + 1)
 
     def still_exists(self):
         # Opening this editor gives an arp without offsets a row of them, so undoing that leaves nothing to edit here.

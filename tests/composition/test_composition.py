@@ -28,11 +28,8 @@ from fractions import Fraction
 
 from llamatron.composition.clip_slot import ClipSlot, morph_style_name
 from llamatron.composition.chain import Chain
-from llamatron.composition.file_format import (
-    CC_ROWS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Accidental, ResetBehavior,
-    ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, Row, ScaleSetting, SceneSetting, Section,
-    SetlistSetting, SongSetting, TrackSetting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, ResetBehavior, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.composition.generator_settings import (
     ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, written_name,
 )
@@ -341,14 +338,14 @@ class TestPattern(RoundTrip):
         for edit in (None, {Row.VELOCITY: 64}, {Row.CC1: 0}):
             for row, value in (edit or {}).items():
                 pattern.set_value(row=row, step=1, value=value)
-            every = pattern.get_every_step_values(rows=PATTERN_ROWS)
+            every = pattern.get_every_step_values(rows=file_format.PATTERN_ROWS)
             self.assertEqual(len(every), pattern.get_steps())
             for step, values in enumerate(every):
                 with self.subTest(edit=edit, step=step):
-                    self.assertEqual(values, {row: pattern.get_value(row=row, step=step) for row in PATTERN_ROWS})
+                    self.assertEqual(values, {row: pattern.get_value(row=row, step=step) for row in file_format.PATTERN_ROWS})
 
     def test_every_steps_values_are_a_dictionary_of_their_own(self):
-        every = Pattern.from_data(data=self.DATA, where=HERE).get_every_step_values(rows=PATTERN_ROWS)
+        every = Pattern.from_data(data=self.DATA, where=HERE).get_every_step_values(rows=file_format.PATTERN_ROWS)
         every[0][Row.DEGREE] = 7
         self.assertIsNone(every[1][Row.DEGREE])
 
@@ -358,7 +355,7 @@ class TestPattern(RoundTrip):
 
         self.assertFalse(pattern_with().sends_controls())
         self.assertFalse(pattern_with(**{Row.SLIDE: [True, False]}).sends_controls())
-        for row in CC_ROWS:
+        for row in file_format.CC_ROWS:
             with self.subTest(row=row):
                 self.assertTrue(pattern_with(**{row: [None, 0]}).sends_controls())
                 self.assertFalse(pattern_with(**{row: [None, None]}).sends_controls())
@@ -374,8 +371,8 @@ class TestPattern(RoundTrip):
 
         self.assertFalse(pattern_with().uses_registers())
         # Adding to a register is not using one.
-        self.assertFalse(pattern_with(**{REGISTER_ADD_ROWS[RegisterName.AX]: [1, 1]}).uses_registers())
-        for rows in (REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS):
+        self.assertFalse(pattern_with(**{file_format.REGISTER_ADD_ROWS[RegisterName.AX]: [1, 1]}).uses_registers())
+        for rows in (file_format.REGISTER_NOTE_ROWS, file_format.REGISTER_VELOCITY_ROWS):
             for name, row in rows.items():
                 with self.subTest(register=name, row=row):
                     self.assertTrue(pattern_with(**{row: [False, True]}).uses_registers())

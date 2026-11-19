@@ -34,7 +34,8 @@ values and move the pattern's revision, so nothing here is written under @notes_
 
 from llamatron.composition.checks import fraction_text, written_length
 from llamatron.composition.chords import borrowed, chord_half_steps
-from llamatron.composition.file_format import ACCIDENTAL_CYCLE, ACCIDENTALS, FIXED_CHORDS, GATE_MODIFIERS, SCALE_CHORDS, Row
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Row
 from llamatron.composition import limits
 from llamatron.music import midi
 from llamatron.support.rational import Rational
@@ -92,7 +93,7 @@ class PatternNotes:
             return None
         length = written_length(value=gate, most=limits.MAX_GATE)
         modifier = self.get_value(row=Row.DOT, step=step)
-        return length if modifier is None else length * GATE_MODIFIERS[modifier]
+        return length if modifier is None else length * file_format.GATE_MODIFIERS[modifier]
 
     def note_span(self, *, step, step_size):
         """Return how many steps the note on a step covers on a piano roll: its ties, or its gate rounded up to whole steps, and any ties right after that."""
@@ -150,12 +151,12 @@ class PatternNotes:
         kind = self.get_value(row=Row.CHORD_SCALE, step=step)
         if scale is not None and (tensions or kind):
             tones = _tones_leaving_the_scale(scale=scale, degree=degree, octave=octave, accidental=accidental, symbol=symbol, tensions=tensions, kind=kind)
-        elif symbol in SCALE_CHORDS:
-            tones = [(degree + above, octave, accidental) for above in SCALE_CHORDS[symbol] if above]
+        elif symbol in file_format.SCALE_CHORDS:
+            tones = [(degree + above, octave, accidental) for above in file_format.SCALE_CHORDS[symbol] if above]
         elif scale is None:
             return []
         else:
-            tones = [scale.degree_above(degree=degree, octave=octave, accidental=accidental, half_steps=half_steps) for half_steps in FIXED_CHORDS[symbol].value]
+            tones = [scale.degree_above(degree=degree, octave=octave, accidental=accidental, half_steps=half_steps) for half_steps in file_format.FIXED_CHORDS[symbol].value]
             tones = [tone for tone in tones if tone is not None]
         return _inverted_tones(root=(degree, octave, accidental), tones=tones, inversion=self.get_value(row=Row.INVERSION, step=step))
 
@@ -276,7 +277,7 @@ class PatternNotes:
     def cycle_accidental(self, start):
         """Move the note starting on a step on to the next of natural, sharp and flat."""
         current = self.get_value(row=Row.ACCIDENTAL, step=start)
-        following = ACCIDENTAL_CYCLE[(ACCIDENTAL_CYCLE.index(current) + 1) % len(ACCIDENTAL_CYCLE)]
+        following = file_format.ACCIDENTAL_CYCLE[(file_format.ACCIDENTAL_CYCLE.index(current) + 1) % len(file_format.ACCIDENTAL_CYCLE)]
         self.set_value(row=Row.ACCIDENTAL, step=start, value=following)
 
 
@@ -290,11 +291,11 @@ def _tones_leaving_the_scale(*, scale, degree, octave, accidental, symbol, tensi
     source = borrowed(scale=scale, kind=kind)
     steps = source.get_half_steps()
     octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
-    root = octaves_up * midi.HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0)
+    root = octaves_up * midi.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
     above = list(chord_half_steps(scale=source, degree=degree, symbol=symbol, tensions=tensions))
     own_steps = scale.get_half_steps()
     own_octaves_up, own_place = divmod(degree - limits.MIN_DEGREE, len(own_steps))
-    if root != own_octaves_up * midi.HALF_STEPS_PER_OCTAVE + own_steps[own_place] + ACCIDENTALS.get(accidental, 0):
+    if root != own_octaves_up * midi.HALF_STEPS_PER_OCTAVE + own_steps[own_place] + file_format.ACCIDENTALS.get(accidental, 0):
         above.insert(0, 0)
     tones = [scale.degree_above(degree=limits.MIN_DEGREE, octave=octave, accidental=None, half_steps=root + half_steps) for half_steps in above]
     return [tone for tone in tones if tone is not None]

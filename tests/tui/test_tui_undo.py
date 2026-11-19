@@ -34,7 +34,8 @@ from llamatron.composition.naming import default_scale_name
 from llamatron.composition import defaults
 from llamatron.strings import labels, messages, names as names_text
 from llamatron.composition.file_format import EuclidPart, ReadyBar, ShapePart, StrumPart
-from llamatron.composition.generator_settings import DEFAULT_DRAG, DEFAULT_RUSH, DEFAULT_SHORTEN, MusicianSetting, PhrasingSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.generators.musician import BUSY
 from llamatron.generators.phrasing import DEEP_BREATH
 from tests.support.ui_testing import STRUMMER, BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
@@ -716,7 +717,7 @@ class TestShortenEditorUndo(UndoTest):
         before = self.data()
         await self.select_field(labels.MSG_SHORTEN_LABEL)
         await self.press(keybindings.ShortenEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=CLIPS).get_shorten(), DEFAULT_SHORTEN + 1)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=CLIPS).get_shorten(), generator_settings.DEFAULT_SHORTEN + 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
@@ -739,7 +740,7 @@ class TestRushEditorUndo(UndoTest):
         before = self.data()
         await self.select_field(labels.MSG_RUSH_AMOUNT_LABEL)
         await self.press(keybindings.RushEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=PUSH).get_amount(), DEFAULT_RUSH + 1)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=PUSH).get_amount(), generator_settings.DEFAULT_RUSH + 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
@@ -762,7 +763,7 @@ class TestDragEditorUndo(UndoTest):
         before = self.data()
         await self.select_field(labels.MSG_DRAG_AMOUNT_LABEL)
         await self.press(keybindings.DragEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=LAZY).get_amount(), DEFAULT_DRAG + 1)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=LAZY).get_amount(), generator_settings.DEFAULT_DRAG + 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

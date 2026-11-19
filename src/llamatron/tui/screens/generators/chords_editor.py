@@ -29,12 +29,14 @@ pattern editor opens, on that row's list. The Name row and the status line say w
 
 
 from llamatron.composition.chords import chord_half_steps, borrowed
-from llamatron.composition.file_format import ACCIDENTAL_CYCLE, FIXED_CHORDS, TENSIONS, GeneratorKind, Section
-from llamatron.composition.generator_settings import PROGRESSION_INVERSIONS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition import generator_settings
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.composition.naming import words
-from llamatron.composition.progressions import NAMED_PROGRESSIONS, ROMAN_NUMERALS, named_progression_in, shown_numerals
+from llamatron.composition import progressions
+from llamatron.composition.progressions import named_progression_in, shown_numerals
 from llamatron.tui import keybindings
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.chord_row import quality_names
@@ -63,9 +65,9 @@ EDITED_ROWS = 6
 # The rows the Chord dialog edits together, and the list it opens on from each.
 DIALOG_ROWS = {SCALE_ROW: SCALE_LIST, QUALITY_ROW: QUALITY_LIST, TENSION_ROW: TENSION_LIST}
 # What each of those rows steps through, nothing first.
-QUALITY_CYCLE = [None, *FIXED_CHORDS]
+QUALITY_CYCLE = [None, *file_format.FIXED_CHORDS]
 SCALE_CYCLE = [None, *SCALE_TYPES_IN_ORDER]
-TENSION_CYCLE = [None, *[(tension,) for tension in TENSIONS]]
+TENSION_CYCLE = [None, *[(tension,) for tension in file_format.TENSIONS]]
 # The Degree gauge is drawn two degrees a line, a half block for the odd one, so that the page fits 24 lines with the three rows added.
 GAUGE_LINES = (limits.MAX_PROGRESSION_DEGREE + 1) // 2
 # The degree a chord with a sharp or flat keeps the sound of, when no quality is named: the figure's own, on degree 1.
@@ -78,7 +80,7 @@ THIRD_AND_FIFTH = 2
 # How much of a scale type's name and of a chord's tensions a cell shows.
 CELL_ROOM = 5
 # The inversions a chord steps through: root position first.
-INVERSION_CYCLE = [None, *PROGRESSION_INVERSIONS]
+INVERSION_CYCLE = [None, *generator_settings.PROGRESSION_INVERSIONS]
 # The chord I inserts.
 INSERTED_DEGREE = limits.MIN_PROGRESSION_DEGREE
 # What a digit types on the Inv. row to go back to root position.
@@ -171,7 +173,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         if self.edited_row == CHORD_ROW:
             self.set_value(max(min(self.rows()[CHORD_ROW][self.step] + offset, limits.MAX_PROGRESSION_DEGREE), limits.MIN_PROGRESSION_DEGREE))
             return
-        cycle = {ACCIDENTAL_ROW: ACCIDENTAL_CYCLE, INVERSION_ROW: INVERSION_CYCLE, SCALE_ROW: SCALE_CYCLE, QUALITY_ROW: QUALITY_CYCLE, TENSION_ROW: TENSION_CYCLE}[self.edited_row]
+        cycle = {ACCIDENTAL_ROW: file_format.ACCIDENTAL_CYCLE, INVERSION_ROW: INVERSION_CYCLE, SCALE_ROW: SCALE_CYCLE, QUALITY_ROW: QUALITY_CYCLE, TENSION_ROW: TENSION_CYCLE}[self.edited_row]
         current = self.rows()[self.edited_row][self.step]
         if current not in cycle:
             # Several tensions at once are no step of the cycle, which starts again from none.
@@ -188,7 +190,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
             if number is not None:
                 self.set_value(number)
         elif self.edited_row == INVERSION_ROW:
-            number = self.typed_number(digit=digit, low=ROOT_POSITION_TYPED, high=PROGRESSION_INVERSIONS[-1])
+            number = self.typed_number(digit=digit, low=ROOT_POSITION_TYPED, high=generator_settings.PROGRESSION_INVERSIONS[-1])
             if number is not None:
                 self.changed_here(row=INVERSION_ROW, value=number or None)
 
@@ -230,7 +232,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
 
         dialog = ChordDialog(
             title=messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_PROGRESSION.format(chord=place + 1, progression=self.item)),
-            qualities=QUALITY_CYCLE, quality_names=[messages.MSG_QUALITY_FROM_SCALE, *quality_names(FIXED_CHORDS)], inversions=INVERSION_CYCLE, categories=SCALE_CATEGORIES,
+            qualities=QUALITY_CYCLE, quality_names=[messages.MSG_QUALITY_FROM_SCALE, *quality_names(file_format.FIXED_CHORDS)], inversions=INVERSION_CYCLE, categories=SCALE_CATEGORIES,
             current=self.choice_at(place), opens_on=DIALOG_ROWS[self.edited_row], said=lambda choice: self.in_words(place=place, choice=choice).sentences(),
         )
         self.ask(dialog=dialog, then=chosen)
@@ -249,7 +251,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         own = chord_half_steps(
             scale=borrowed(scale=self.scale(), kind=rows[SCALE_ROW][place]), degree=degree, symbol=quality, own_degree=FIGURE_DEGREE if accidental and quality is None else None,
         )
-        numeral = ROMAN_NUMERALS[(degree - 1) % len(ROMAN_NUMERALS)]
+        numeral = progressions.ROMAN_NUMERALS[(degree - 1) % len(progressions.ROMAN_NUMERALS)]
         if own and own[0] == MINOR_THIRD:
             numeral = numeral.lower()
         fifth = own[1] if len(own) >= THIRD_AND_FIFTH else None
@@ -264,10 +266,10 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
 
     def pick_progression(self):
         """Fill the chords with a named progression from a picker of two columns, matched to the song's scale."""
-        keys = [name for column in NAMED_PROGRESSIONS for name, _ in column]
+        keys = [name for column in progressions.NAMED_PROGRESSIONS for name, _ in column]
         columns = []
         place = 0
-        for heading, column in zip(labels.MSG_PROGRESSION_GROUPS, NAMED_PROGRESSIONS):
+        for heading, column in zip(labels.MSG_PROGRESSION_GROUPS, progressions.NAMED_PROGRESSIONS):
             columns.append([(heading, list(range(place, place + len(column))))])
             place += len(column)
         dialog = GridChoiceDialog(

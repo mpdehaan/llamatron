@@ -30,10 +30,11 @@ from llamatron.composition.chain import check_chain_names
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.composition.checks import check_keys, listed, number, reading
-from llamatron.composition.corrections import LEFT_OUT
+from llamatron.composition import corrections
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import RAMP_PARTS, RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, TEMPO_RAMP_SETTINGS, VELOCITY_SETTINGS, RampPart, SceneSetting, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import RampPart, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
@@ -41,8 +42,8 @@ from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, ch
 from llamatron.support.revised import notes_change
 
 # The settings of a scene's tempo ramps that are tempos, which a file writes as it writes a scene's tempo.
-RAMP_TEMPOS = tuple(TEMPO_RAMP_SETTINGS[(way, part)] for way in RAMP_WAYS for part in (RampPart.START, RampPart.END))
-RAMP_SETTINGS = tuple(TEMPO_RAMP_SETTINGS[(way, part)] for way in RAMP_WAYS for part in RAMP_PARTS)
+RAMP_TEMPOS = tuple(file_format.TEMPO_RAMP_SETTINGS[(way, part)] for way in file_format.RAMP_WAYS for part in (RampPart.START, RampPart.END))
+RAMP_SETTINGS = tuple(file_format.TEMPO_RAMP_SETTINGS[(way, part)] for way in file_format.RAMP_WAYS for part in file_format.RAMP_PARTS)
 
 
 class TempoRamp(NamedTuple):
@@ -66,18 +67,18 @@ def _check_scale_name(*, value, song):
 
 def is_register_list(value):
     """Return whether a value is a list of register names, each at most once."""
-    return isinstance(value, list) and all(name in REGISTER_NAMES for name in value) and len(set(value)) == len(value)
+    return isinstance(value, list) and all(name in file_format.REGISTER_NAMES for name in value) and len(set(value)) == len(value)
 
 
 def _check_reset(value):
     if not is_register_list(value):
-        raise InvalidValue(errors.ERR_BAD_RESET.format(names=listed(REGISTER_NAMES), value=value))
+        raise InvalidValue(errors.ERR_BAD_RESET.format(names=listed(file_format.REGISTER_NAMES), value=value))
 
 
 # A scene's settings, each described once, in the order they're written to a file, before its tracks.
 SETTINGS = described(
     Checked(name=SceneSetting.NAME, check=_check_scene_name),
-    Choice(name=SceneSetting.SECTION, choices=SECTION_KINDS, default=LEFT_OUT, error=errors.ERR_BAD_SECTION),
+    Choice(name=SceneSetting.SECTION, choices=file_format.SECTION_KINDS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_SECTION),
     WholeNumber(name=SceneSetting.REPEAT, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, error=errors.ERR_BAD_REPEAT),
     Checked(name=SceneSetting.SCALE, check=_check_scale_name, needs_song=True),
     Checked(name=SceneSetting.TEMPO, check=number),
@@ -194,23 +195,23 @@ class Scene(LlamaData):
 
     def get_tempo_ramp(self, way):
         """Return its tempo ramp in or out as a TempoRamp, or None when the ramp changes nothing: it gives no bars, or neither a start nor an end."""
-        start, end, over = (self._settings[TEMPO_RAMP_SETTINGS[(way, part)]] for part in RAMP_PARTS)
+        start, end, over = (self._settings[file_format.TEMPO_RAMP_SETTINGS[(way, part)]] for part in file_format.RAMP_PARTS)
         if over is None or (start is None and end is None):
             return None
         return TempoRamp(None if start is None else number(start), None if end is None else number(end), over)
 
     def has_tempo_ramp(self):
         """Return whether either of its tempo ramps changes its tempo."""
-        return any(self.get_tempo_ramp(way) is not None for way in RAMP_WAYS)
+        return any(self.get_tempo_ramp(way) is not None for way in file_format.RAMP_WAYS)
 
     def get_tempo_ramp_setting(self, *, way, part):
         """Return one part of one of its tempo ramps as written, or None where it is blank."""
-        return self._settings[TEMPO_RAMP_SETTINGS[(way, part)]]
+        return self._settings[file_format.TEMPO_RAMP_SETTINGS[(way, part)]]
 
     def get_reset_names(self):
         """Return the registers it sets back to their defaults as it starts, in the order the registers come."""
         reset = self._settings[SceneSetting.RESET] or []
-        return [name for name in REGISTER_NAMES if name in reset]
+        return [name for name in file_format.REGISTER_NAMES if name in reset]
 
     def get_register_sets(self):
         """Return what it sets registers to as it first starts, a value for each register it sets."""
@@ -307,7 +308,7 @@ class Scene(LlamaData):
     @notes_change
     def set_tempo_ramp_setting(self, *, way, part, value):
         """Set one part of one of its tempo ramps, or None to leave it blank."""
-        name = TEMPO_RAMP_SETTINGS[(way, part)]
+        name = file_format.TEMPO_RAMP_SETTINGS[(way, part)]
         if value is not None:
             SETTINGS[name].check(value)
         self._settings[name] = value
@@ -315,11 +316,11 @@ class Scene(LlamaData):
     @notes_change
     def set_reset(self, *, register, on):
         """Make it set a register back to its default as it starts, or stop it, keeping the registers in order."""
-        if register not in REGISTER_NAMES:
-            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(REGISTER_NAMES)))
+        if register not in file_format.REGISTER_NAMES:
+            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(file_format.REGISTER_NAMES)))
         chosen = set(self.get_reset_names())
         chosen = chosen | {register} if on else chosen - {register}
-        reset = [name for name in REGISTER_NAMES if name in chosen]
+        reset = [name for name in file_format.REGISTER_NAMES if name in chosen]
         self._settings[SceneSetting.RESET] = reset or None
 
     @notes_change
@@ -391,7 +392,7 @@ class Scene(LlamaData):
 
     def get_velocity_settings(self):
         """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
-        return {name: self._settings[name] for name in VELOCITY_SETTINGS}
+        return {name: self._settings[name] for name in file_format.VELOCITY_SETTINGS}
 
     def get_velocity(self):
         """Return how loud the scene plays its clips, as a Velocity, before any clip's own."""

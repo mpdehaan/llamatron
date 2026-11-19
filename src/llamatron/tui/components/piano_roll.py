@@ -31,7 +31,8 @@ Textual.
 
 import functools
 
-from llamatron.composition.file_format import ACCIDENTALS, STEP_SIZE_CHOICES, Accidental, Row
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, Row
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks
 from llamatron.tui.components.chord_row import pick_chord
@@ -153,7 +154,7 @@ class PianoRoll(BindsKeys):
         octaves_up, place = divmod(degree - limits.MIN_DEGREE, self.size())
         pitch = (self.step_octave(step) + octaves_up) * self.per_octave() + self.scale_steps()[place]
         if self.scale_name() is not None:
-            pitch += ACCIDENTALS.get(self.accidental_symbol(step), 0)
+            pitch += file_format.ACCIDENTALS.get(self.accidental_symbol(step), 0)
         return self.clamped(pitch)
 
     def is_degree(self, pitch):
@@ -267,7 +268,7 @@ class PianoRoll(BindsKeys):
             octaves_up, place = divmod(degree - limits.MIN_DEGREE, self.size())
             pitch = (octave + octaves_up) * self.per_octave() + self.scale_steps()[place]
             if self.scale_name() is not None:
-                pitch += ACCIDENTALS.get(accidental, 0)
+                pitch += file_format.ACCIDENTALS.get(accidental, 0)
             if 0 <= pitch <= self.highest_pitch():
                 ghosts.add(pitch)
         return ghosts
@@ -431,10 +432,10 @@ class PianoRoll(BindsKeys):
 
     def pick_entry_size(self):
         """Open a picker of the pattern's entry size: the song's first, then the step sizes, on what the pattern has now."""
-        choices = [None, *STEP_SIZE_CHOICES]
+        choices = [None, *file_format.STEP_SIZE_CHOICES]
         written = self.document().written_entry_size(self.name())
         place = choices.index(written) if written in choices else 0
         self.editor.ask(
-            dialog=ChoiceDialog(title=labels.MSG_ENTRY_SIZE_LABEL, options=[labels.MSG_SONG_ENTRY_SIZE_CHOICE, *STEP_SIZE_CHOICES], current=place),
+            dialog=ChoiceDialog(title=labels.MSG_ENTRY_SIZE_LABEL, options=[labels.MSG_SONG_ENTRY_SIZE_CHOICE, *file_format.STEP_SIZE_CHOICES], current=place),
             then=lambda chosen: self.document().set_pattern_entry_size(name=self.name(), entry_size=choices[chosen]),
         )

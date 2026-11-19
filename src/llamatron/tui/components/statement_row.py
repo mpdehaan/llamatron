@@ -23,7 +23,8 @@ one setter of a whole statement, so that no step is left holding half of one.
 """
 
 from llamatron.composition import conditions, limits
-from llamatron.composition.file_format import DIVIDING_OPERATORS, OPERATORS, REGISTER_NAMES, RESULT_COMPARISONS, STATEMENT_OF_ROW, StatementPart, StepStatement
+from llamatron.composition import file_format
+from llamatron.composition.file_format import StatementPart, StepStatement
 from llamatron.strings import errors, labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.components.pattern_row import PatternRow
@@ -39,9 +40,9 @@ ZERO = 0
 NUMBER_PLACE = 0
 # The parts chosen from a list, with the list and the picker's title, and the parts that hold a number or a register.
 CHOSEN_PARTS = {
-    StatementPart.REGISTER: (REGISTER_NAMES, labels.MSG_STATEMENT_REGISTER_TITLE),
-    StatementPart.OPERATOR: (OPERATORS, labels.MSG_STATEMENT_OPERATOR_TITLE),
-    StatementPart.COMPARISON: (RESULT_COMPARISONS, labels.MSG_STATEMENT_COMPARISON_TITLE),
+    StatementPart.REGISTER: (file_format.REGISTER_NAMES, labels.MSG_STATEMENT_REGISTER_TITLE),
+    StatementPart.OPERATOR: (file_format.OPERATORS, labels.MSG_STATEMENT_OPERATOR_TITLE),
+    StatementPart.COMPARISON: (file_format.RESULT_COMPARISONS, labels.MSG_STATEMENT_COMPARISON_TITLE),
 }
 
 
@@ -58,7 +59,7 @@ class StatementRow(PatternRow):
 
     def __init__(self, *, editor, name):
         super().__init__(editor=editor, name=name)
-        self.kind, self.part = STATEMENT_OF_ROW[name]
+        self.kind, self.part = file_format.STATEMENT_OF_ROW[name]
 
     def on_rests(self):
         return True
@@ -108,7 +109,7 @@ class StatementRow(PatternRow):
 
     def divides(self, statement):
         """Return whether the row holds what the statement divides by, which cannot be 0."""
-        return self.part == StatementPart.VALUE and statement[StatementPart.OPERATOR] in DIVIDING_OPERATORS
+        return self.part == StatementPart.VALUE and statement[StatementPart.OPERATOR] in file_format.DIVIDING_OPERATORS
 
     def choices(self):
         """Return the row's choices in the order the keys step through them, a step with no register first on the register's row, or None on a row that holds a number or a register."""
@@ -127,7 +128,7 @@ class StatementRow(PatternRow):
                 self.with_part(choices[place])
             return
         current = statement[self.part]
-        number = ZERO if current in REGISTER_NAMES else current + offset
+        number = ZERO if current in file_format.REGISTER_NAMES else current + offset
         if -limits.MAX_STATEMENT_NUMBER <= number <= limits.MAX_STATEMENT_NUMBER:
             self.with_part(number)
 
@@ -142,14 +143,14 @@ class StatementRow(PatternRow):
             self.editor.ask(dialog=ChoiceDialog(title=title, options=shown, current=current), then=lambda place: self.with_part(values[place]))
             return
         current = statement[self.part]
-        choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *REGISTER_NAMES]
+        choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *file_format.REGISTER_NAMES]
 
         def picked(place):
             if place == NUMBER_PLACE:
-                self.ask_number(ZERO if current in REGISTER_NAMES else current)
+                self.ask_number(ZERO if current in file_format.REGISTER_NAMES else current)
             else:
                 self.with_part(choices[place])
-        opens_on = choices.index(current) if current in REGISTER_NAMES else NUMBER_PLACE
+        opens_on = choices.index(current) if current in file_format.REGISTER_NAMES else NUMBER_PLACE
         self.editor.ask(dialog=ChoiceDialog(title=labels.MSG_STATEMENT_VALUE_TITLE, options=choices, current=opens_on), then=picked)
 
     def ask_number(self, current):

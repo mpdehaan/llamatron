@@ -20,7 +20,8 @@ file's text is read as, and what a set calls a mashup."""
 import unittest
 
 from llamatron.composition.file_format import Section, SongSetting
-from llamatron.composition.genres import GENRES, MASHUP, MASHUP_NAMED, SUBGENRES, VARIANTS, sensible_style, style_name, subgenres_of, variants_of
+from llamatron.composition import genres
+from llamatron.composition.genres import sensible_style, style_name, subgenres_of, variants_of
 from llamatron.macro_composer.arranger import GENRE, NAME, TEMPLATES, variants_of as variants_of_template
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names, style_of
 from llamatron.support import version
@@ -63,16 +64,16 @@ class TestGenreLists(unittest.TestCase):
         for genre in genre_names():
             style = style_of(genre)
             with self.subTest(genre=genre):
-                self.assertIn(style[GENRE], GENRES)
+                self.assertIn(style[GENRE], genres.GENRES)
                 self.assertEqual(sorted(subgenres_of(style[GENRE])), sorted(style[TEMPLATES]))
                 for subgenre in style[TEMPLATES]:
                     names = [variant[NAME] for variant in variants_of_template(style=style, template=subgenre)]
                     self.assertEqual(variants_of(genre=style[GENRE], subgenre=subgenre), names)
 
     def test_every_list_is_of_a_genre_there_is_and_the_genres_are_in_order(self):
-        self.assertEqual(GENRES, sorted(GENRES, key=str.lower))
-        self.assertLessEqual(set(SUBGENRES), set(GENRES))
-        for genre, subgenres in VARIANTS.items():
+        self.assertEqual(genres.GENRES, sorted(genres.GENRES, key=str.lower))
+        self.assertLessEqual(set(genres.SUBGENRES), set(genres.GENRES))
+        for genre, subgenres in genres.VARIANTS.items():
             self.assertLessEqual(set(subgenres), set(subgenres_of(genre)))
 
     def test_a_genre_with_no_subgenres_has_none_and_no_genre_has_none(self):
@@ -93,12 +94,12 @@ class TestSensibleStyle(unittest.TestCase):
         self.assertEqual(sensible_style(genre=A_SEED, subgenre=[HARD_ROCK], variant=None), (None, None, None))
 
     def test_a_mashup_written_the_older_way_is_the_mashup_of_its_genre(self):
-        self.assertEqual(sensible_style(genre=OLD_ROCK_MASHUP, subgenre=None, variant=None), (MASHUP, ROCK, None))
-        self.assertEqual(sensible_style(genre=MASHUP_NAMED.format(subgenre=NOT_A_GENRE), subgenre=None, variant=None), (MASHUP, None, None))
+        self.assertEqual(sensible_style(genre=OLD_ROCK_MASHUP, subgenre=None, variant=None), (genres.MASHUP, ROCK, None))
+        self.assertEqual(sensible_style(genre=genres.MASHUP_NAMED.format(subgenre=NOT_A_GENRE), subgenre=None, variant=None), (genres.MASHUP, None, None))
 
     def test_a_mashup_is_named_with_its_subgenre_and_any_other_genre_by_itself(self):
-        self.assertEqual(style_name(genre=MASHUP, subgenre=ROCK), OLD_ROCK_MASHUP)
-        self.assertEqual(style_name(genre=MASHUP, subgenre=None), MASHUP)
+        self.assertEqual(style_name(genre=genres.MASHUP, subgenre=ROCK), OLD_ROCK_MASHUP)
+        self.assertEqual(style_name(genre=genres.MASHUP, subgenre=None), genres.MASHUP)
         self.assertEqual(style_name(genre=ROCK, subgenre=HARD_ROCK), ROCK)
         self.assertIsNone(style_name(genre=None, subgenre=None))
 
@@ -148,11 +149,11 @@ class TestSongStyle(unittest.TestCase):
     def test_a_file_written_the_older_way_reads_as_a_mashup_and_the_set_names_it_as_before(self):
         setlist = setlist_from_data(set_data(genre=OLD_ROCK_MASHUP))
         song = setlist.get_song(setlist.get_song_names()[0])
-        self.assertEqual(style_kept(song), (MASHUP, ROCK, None))
+        self.assertEqual(style_kept(song), (genres.MASHUP, ROCK, None))
         self.assertEqual(song.get_style_name(), OLD_ROCK_MASHUP)
         self.assertEqual(setlist.get_genres(), [OLD_ROCK_MASHUP])
         written = setlist.to_data()[Section.SONGS][setlist.get_song_names()[0]]
-        self.assertEqual((written[SongSetting.GENRE], written[SongSetting.SUBGENRE]), (MASHUP, ROCK))
+        self.assertEqual((written[SongSetting.GENRE], written[SongSetting.SUBGENRE]), (genres.MASHUP, ROCK))
 
     def test_a_song_of_the_song_wizard_says_its_genre_subgenre_and_variant(self):
         choices = WizardChoices()

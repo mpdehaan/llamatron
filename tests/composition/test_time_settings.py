@@ -18,9 +18,8 @@
 import unittest
 
 from llamatron.composition.checks import Bars, in_whole_notes, time_length
-from llamatron.composition.file_format import (
-    ONE_BAR_WRITTEN, TIME_CHOICES, ClipSlotSetting, GeneratorKind, PatternSetting, SceneSetting, Section, Shape, ShapePart, ShapeThen, SongSetting, shape_setting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, SceneSetting, Section, Shape, ShapePart, ShapeThen, SongSetting, shape_setting
 from llamatron.composition.generator_settings import ArpSetting, DriftSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.song_file_error import SongFileError
@@ -47,23 +46,23 @@ class TestTheList(unittest.TestCase):
 
     def test_each_triplet_follows_its_straight_value_and_then_the_dotted_one(self):
         for straight, triplet, dotted in (('1/16', '1/24', '3/32'), ('1/8', '1/12', '3/16')):
-            place = TIME_CHOICES.index(straight)
-            self.assertEqual(TIME_CHOICES[place + 1:place + 3], [triplet, dotted])
+            place = file_format.TIME_CHOICES.index(straight)
+            self.assertEqual(file_format.TIME_CHOICES[place + 1:place + 3], [triplet, dotted])
 
     def test_the_straight_lengths_get_longer_and_the_list_ends_in_bars(self):
-        lengths = [time_length(time) for time in TIME_CHOICES if not isinstance(time_length(time), Bars) and time not in labels.MSG_TIME_NAMES]
+        lengths = [time_length(time) for time in file_format.TIME_CHOICES if not isinstance(time_length(time), Bars) and time not in labels.MSG_TIME_NAMES]
         self.assertEqual(lengths, sorted(lengths))
-        self.assertEqual([time_length(time).count for time in TIME_CHOICES if isinstance(time_length(time), Bars)], [1, 2, 4, 8, 16])
+        self.assertEqual([time_length(time).count for time in file_format.TIME_CHOICES if isinstance(time_length(time), Bars)], [1, 2, 4, 8, 16])
 
     def test_every_dotted_and_triplet_value_has_a_name(self):
         for written, name in labels.MSG_TIME_NAMES.items():
-            self.assertIn(written, TIME_CHOICES, name)
+            self.assertIn(written, file_format.TIME_CHOICES, name)
 
 
 class TestTimeLength(unittest.TestCase):
 
     def test_bars_and_lengths(self):
-        self.assertEqual(time_length(ONE_BAR_WRITTEN), Bars(1))
+        self.assertEqual(time_length(file_format.ONE_BAR_WRITTEN), Bars(1))
         self.assertEqual(time_length(TWO_BARS), Bars(2))
         self.assertEqual(time_length('3/32'), Rational(3, 32))
         self.assertEqual(time_length(2), Rational(2))
@@ -90,7 +89,7 @@ class TestBarsInTheRender(unittest.TestCase):
     def test_a_shapes_over_in_bars(self):
         ramp = {
             shape_setting(shape=Shape.DENSITY, part=ShapePart.START): 0, shape_setting(shape=Shape.DENSITY, part=ShapePart.END): 100,
-            shape_setting(shape=Shape.DENSITY, part=ShapePart.OVER): ONE_BAR_WRITTEN, shape_setting(shape=Shape.DENSITY, part=ShapePart.THEN): ShapeThen.REPEAT,
+            shape_setting(shape=Shape.DENSITY, part=ShapePart.OVER): file_format.ONE_BAR_WRITTEN, shape_setting(shape=Shape.DENSITY, part=ShapePart.THEN): ShapeThen.REPEAT,
         }
         played = notes(one_scene(repeat=2, scene=ramp))
         # Each bar ramps from nothing again, so the two bars play alike.
@@ -103,7 +102,7 @@ class TestBarsInTheRender(unittest.TestCase):
             patterns={X: dict(pattern(STEPS, chord=[CHORD] * STEPS), **{PatternSetting.STEP_SIZE: '1/4'})},
             scenes=[{SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X, ClipSlotSetting.CHAINS: [ARPEGGIATED]}}}],
         )
-        data[Section.ARPS] = {ARP: {ArpSetting.STEP: ONE_BAR_WRITTEN}}
+        data[Section.ARPS] = {ARP: {ArpSetting.STEP: file_format.ONE_BAR_WRITTEN}}
         data[Section.CHAINS] = {ARPEGGIATED: [{GeneratorKind.ARP: ARP}]}
         # A step as long as a bar is longer than each quarter-note chord, so each chord plays one note, where a sixteenth plays four.
         self.assertEqual(len(notes(data)), STEPS)
@@ -129,14 +128,14 @@ class TestTimeField(unittest.TestCase):
 
     def test_first_stands_for_blank_and_then_the_list(self):
         field, stored = self.field(written=None)
-        self.assertEqual(field.choices, [self.BLANK, *TIME_CHOICES])
+        self.assertEqual(field.choices, [self.BLANK, *file_format.TIME_CHOICES])
         self.assertEqual(field.text(), self.BLANK)
         field.set(self.BLANK)
         self.assertEqual(stored, [None])
 
     def test_a_first_that_is_in_the_list_is_not_offered_twice(self):
-        field, _ = self.field(written=None, first=ONE_BAR_WRITTEN)
-        self.assertEqual(field.choices.count(ONE_BAR_WRITTEN), 1)
+        field, _ = self.field(written=None, first=file_format.ONE_BAR_WRITTEN)
+        self.assertEqual(field.choices.count(file_format.ONE_BAR_WRITTEN), 1)
 
     def test_a_value_outside_the_list_is_kept_and_offered_last(self):
         field, _ = self.field(written=self.TYPED)

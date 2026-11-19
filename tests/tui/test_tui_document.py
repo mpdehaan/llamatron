@@ -38,7 +38,8 @@ from llamatron.generators.blend import BlendMode
 from llamatron.music.note import Note, NoteName
 from llamatron.exporters.exports import ExportKind, export_name
 from llamatron.music.scale import ScaleType
-from llamatron.composition.setlist import DEFAULT_SCALE, STARTER_DEGREE, STARTER_PATTERN_STEPS, STARTER_STEPS_PER_BEAT, Setlist, new_setlist
+from llamatron.composition import setlist
+from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.tui.document import Document
 from llamatron.tui.document_parts.pattern_edits import NEW_PATTERN_STEPS
 from llamatron.composition.naming import copy_name, unique_name
@@ -163,7 +164,7 @@ def song_with_things():
     song[Section.SCENES] = [
         {SceneSetting.NAME: ONE, SceneSetting.REPEAT: 2, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: NAMED}}},
         {SceneSetting.NAME: TWO, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}, BASS: {ClipSlotSetting.PATTERN: B}}},
-        {SceneSetting.NAME: THREE, SceneSetting.SCALE: DEFAULT_SCALE, SceneSetting.TRACKS: {BASS: {ClipSlotSetting.PATTERN: B}}},
+        {SceneSetting.NAME: THREE, SceneSetting.SCALE: setlist.DEFAULT_SCALE, SceneSetting.TRACKS: {BASS: {ClipSlotSetting.PATTERN: B}}},
     ]
     return Document(setlist=Setlist.from_data(data=data))
 
@@ -181,10 +182,10 @@ class TestNewSong(unittest.TestCase):
         first_track = names_text.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER)
         self.assertEqual(document.song().get_pattern_names(), [first_pattern])
         pattern = document.song().get_pattern(first_pattern)
-        self.assertEqual(pattern.get_steps(), STARTER_PATTERN_STEPS)
-        on_beats = [step for step in range(STARTER_PATTERN_STEPS) if document.step_value(name=first_pattern, row=Row.DEGREE, step=step) == STARTER_DEGREE]
-        self.assertEqual(on_beats, list(range(0, STARTER_PATTERN_STEPS, STARTER_STEPS_PER_BEAT)))
-        self.assertTrue(all(document.step_value(name=first_pattern, row=Row.GATE, step=step) is None for step in range(STARTER_PATTERN_STEPS)))
+        self.assertEqual(pattern.get_steps(), setlist.STARTER_PATTERN_STEPS)
+        on_beats = [step for step in range(setlist.STARTER_PATTERN_STEPS) if document.step_value(name=first_pattern, row=Row.DEGREE, step=step) == setlist.STARTER_DEGREE]
+        self.assertEqual(on_beats, list(range(0, setlist.STARTER_PATTERN_STEPS, setlist.STARTER_STEPS_PER_BEAT)))
+        self.assertTrue(all(document.step_value(name=first_pattern, row=Row.GATE, step=step) is None for step in range(setlist.STARTER_PATTERN_STEPS)))
         self.assertEqual(document.song().get_track_names(), [first_track])
         self.assertEqual(document.clip_slot(index=0, track=first_track).get_pattern_name(), first_pattern)
         self.assertEqual(len(uses_of(setlist=document.setlist(), section=Section.PATTERNS, name=first_pattern)), 1)
@@ -197,7 +198,7 @@ class TestNewSong(unittest.TestCase):
         grid = render_song(document.song())
         clip = grid.get_clip(row=grid.get_rows()[0], column=grid.get_columns()[0])
         notes = [note for note in clip.resolved_notes() if isinstance(note, Note)]
-        self.assertEqual(len(notes), STARTER_PATTERN_STEPS // STARTER_STEPS_PER_BEAT)
+        self.assertEqual(len(notes), setlist.STARTER_PATTERN_STEPS // setlist.STARTER_STEPS_PER_BEAT)
         self.assertEqual({note.get_midi_number() for note in notes}, {Note(name=NoteName.C, octave_number=defaults.DEFAULT_OCTAVE).get_midi_number()})
         document.delete_clip_slot(index=0, track=first_track)
         self.assertEqual(uses_of(setlist=document.setlist(), section=Section.PATTERNS, name=first_pattern), [])
@@ -206,13 +207,13 @@ class TestNewSong(unittest.TestCase):
 
     def test_has_a_c_major_scale_that_can_be_deleted(self):
         document = Document()
-        self.assertEqual(document.song().get_scale_name(), DEFAULT_SCALE)
-        self.assertEqual(document.song().get_scale_names(), [DEFAULT_SCALE])
-        self.assertEqual(root_and_kind(document=document, name=DEFAULT_SCALE), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
-        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.SCALES, name=DEFAULT_SCALE), [THE_SONG])
+        self.assertEqual(document.song().get_scale_name(), setlist.DEFAULT_SCALE)
+        self.assertEqual(document.song().get_scale_names(), [setlist.DEFAULT_SCALE])
+        self.assertEqual(root_and_kind(document=document, name=setlist.DEFAULT_SCALE), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
+        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.SCALES, name=setlist.DEFAULT_SCALE), [THE_SONG])
         document.set_scale_name(None)
-        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.SCALES, name=DEFAULT_SCALE), [])
-        document.delete_named(section=Section.SCALES, name=DEFAULT_SCALE)
+        self.assertEqual(uses_of(setlist=document.setlist(), section=Section.SCALES, name=setlist.DEFAULT_SCALE), [])
+        document.delete_named(section=Section.SCALES, name=setlist.DEFAULT_SCALE)
         self.assertEqual(document.song().get_scale_names(), [])
 
     def test_has_the_song_defaults(self):
@@ -499,8 +500,8 @@ class TestUses(unittest.TestCase):
         document = Document()
         starter = names_text.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)
         revision = document.revision()
-        self.assertEqual(document.pattern_scale(starter), DEFAULT_SCALE)
-        self.assertEqual(document.pattern_scale(starter), DEFAULT_SCALE)
+        self.assertEqual(document.pattern_scale(starter), setlist.DEFAULT_SCALE)
+        self.assertEqual(document.pattern_scale(starter), setlist.DEFAULT_SCALE)
         self.assertEqual(document.revision(), revision)
         document.add_scale(name=NAMED, root=NoteName.A, kind=scale_type_name(ScaleType.MINOR))
         self.assertGreater(document.revision(), revision)
@@ -515,11 +516,11 @@ class TestUses(unittest.TestCase):
         before = document.revision()
         document.undo()
         self.assertGreater(document.revision(), before)
-        self.assertEqual(document.pattern_scale(starter), DEFAULT_SCALE)
+        self.assertEqual(document.pattern_scale(starter), setlist.DEFAULT_SCALE)
         # The notes a pattern's steps cover are remembered the same way, and follow a note placed through the document.
         covering = document.covering_notes(starter)
         self.assertIs(document.covering_notes(starter), covering)
-        document.set_step_value(name=starter, row=Row.DEGREE, step=1, value=STARTER_DEGREE)
+        document.set_step_value(name=starter, row=Row.DEGREE, step=1, value=setlist.STARTER_DEGREE)
         self.assertEqual(document.covering_notes(starter)[1], 1)
 
     def test_a_change_inside_a_pattern_keeps_what_was_worked_out_from_everything_else(self):
@@ -565,7 +566,7 @@ class TestUses(unittest.TestCase):
         self.assertEqual(document.covering_notes(A), document.covering_notes(B))
 
     def test_scale(self):
-        self.assertEqual(uses_of(setlist=song_with_things().setlist(), section=Section.SCALES, name=DEFAULT_SCALE), [THE_SONG, 'song untitled, scene 3 (three)'])
+        self.assertEqual(uses_of(setlist=song_with_things().setlist(), section=Section.SCALES, name=setlist.DEFAULT_SCALE), [THE_SONG, 'song untitled, scene 3 (three)'])
 
 
 class TestStepSizes(unittest.TestCase):
@@ -659,7 +660,7 @@ class TestRenaming(unittest.TestCase):
 
     def test_setting_a_scales_root_and_kind_changes_what_uses_it_and_renames_a_default_name(self):
         document = song_with_things()
-        document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=C_MAJOR_NAME)
+        document.rename_named(section=Section.SCALES, old=setlist.DEFAULT_SCALE, new=C_MAJOR_NAME)
         self.assertEqual(document.set_scale_root(name=C_MAJOR_NAME, root=NoteName.D), D_MAJOR)
         self.assertEqual(document.set_scale_kind(name=D_MAJOR, kind=scale_type_name(ScaleType.MINOR)), D_MINOR)
         self.assertEqual(document.song().get_scale_names(), [D_MINOR])
@@ -673,19 +674,19 @@ class TestRenaming(unittest.TestCase):
 
     def test_a_scale_with_its_own_name_keeps_it_when_its_notes_change(self):
         document = song_with_things()
-        document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=MAIN)
+        document.rename_named(section=Section.SCALES, old=setlist.DEFAULT_SCALE, new=MAIN)
         self.assertEqual(document.set_scale_root(name=MAIN, root=NoteName.D), MAIN)
         self.assertEqual(document.song().get_scale_names(), [MAIN])
 
     def test_a_default_name_stays_when_the_new_one_is_taken(self):
         document = song_with_things()
         document.add_scale(name=D_MAJOR, root=NoteName.D, kind=scale_type_name(ScaleType.MAJOR))
-        self.assertEqual(document.set_scale_root(name=DEFAULT_SCALE, root=NoteName.D), DEFAULT_SCALE)
-        self.assertEqual(document.song().get_scale_names(), [DEFAULT_SCALE, D_MAJOR])
+        self.assertEqual(document.set_scale_root(name=setlist.DEFAULT_SCALE, root=NoteName.D), setlist.DEFAULT_SCALE)
+        self.assertEqual(document.song().get_scale_names(), [setlist.DEFAULT_SCALE, D_MAJOR])
 
     def test_renaming_a_scale_updates_everything(self):
         document = song_with_things()
-        document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=MAIN)
+        document.rename_named(section=Section.SCALES, old=setlist.DEFAULT_SCALE, new=MAIN)
         self.assertEqual(document.song().get_scale_name(), MAIN)
         self.assertEqual(document.song().get_scenes()[2].get_scale_name(), MAIN)
         self.assertEqual(document.song().get_scale_names(), [MAIN])
@@ -693,14 +694,14 @@ class TestRenaming(unittest.TestCase):
 
     def test_a_scale_can_be_copied_with_the_same_notes(self):
         document = song_with_things()
-        copy = copy_name(name=DEFAULT_SCALE, taken=[DEFAULT_SCALE])
-        self.assertEqual(document.copy_named(section=Section.SCALES, name=DEFAULT_SCALE), copy)
+        copy = copy_name(name=setlist.DEFAULT_SCALE, taken=[setlist.DEFAULT_SCALE])
+        self.assertEqual(document.copy_named(section=Section.SCALES, name=setlist.DEFAULT_SCALE), copy)
         self.assertEqual(document.scale_notes_text(copy), C_MAJOR)
 
     def test_a_scale_named_by_its_number_keeps_its_name_when_its_root_and_kind_change(self):
         document = song_with_things()
-        self.assertEqual(document.set_scale_root(name=DEFAULT_SCALE, root=NoteName.D), DEFAULT_SCALE)
-        self.assertEqual(document.set_scale_kind(name=DEFAULT_SCALE, kind=scale_type_name(ScaleType.MINOR)), DEFAULT_SCALE)
+        self.assertEqual(document.set_scale_root(name=setlist.DEFAULT_SCALE, root=NoteName.D), setlist.DEFAULT_SCALE)
+        self.assertEqual(document.set_scale_kind(name=setlist.DEFAULT_SCALE, kind=scale_type_name(ScaleType.MINOR)), setlist.DEFAULT_SCALE)
 
 
 class TestLists(unittest.TestCase):
@@ -991,16 +992,16 @@ class TestPickerLayouts(unittest.TestCase):
     """Every chord, scale and root has exactly one place in its picker."""
 
     def test_every_chord_has_a_name_and_every_named_chord_a_short_name(self):
-        from llamatron.composition.file_format import CHORD_SYMBOLS, FIXED_CHORDS
-        self.assertEqual(set(labels_text.MSG_CHORD_NAMES), set(CHORD_SYMBOLS))
-        self.assertEqual(set(marks_text.MSG_CHORD_SUFFIXES), set(FIXED_CHORDS))
+        from llamatron.composition import file_format
+        self.assertEqual(set(labels_text.MSG_CHORD_NAMES), set(file_format.CHORD_SYMBOLS))
+        self.assertEqual(set(marks_text.MSG_CHORD_SUFFIXES), set(file_format.FIXED_CHORDS))
 
     def test_scale_pages_hold_every_kind_once_except_melodic_minor(self):
-        from llamatron.composition.named_scale import SCALE_TYPE_NAMES
+        from llamatron.composition import named_scale
         from llamatron.tui.screens.set.scale_page import SCALE_PAGES
         flat = [kind for _, columns in SCALE_PAGES for groups in columns for _, kinds in groups for kind in kinds]
         flat.remove(scale_type_name(ScaleType.MELODIC_MINOR))
-        self.assertEqual(sorted(flat), sorted(SCALE_TYPE_NAMES))
+        self.assertEqual(sorted(flat), sorted(named_scale.SCALE_TYPE_NAMES))
 
     def test_a_paged_grid_opens_on_the_page_of_the_current_option(self):
         from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog

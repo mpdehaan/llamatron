@@ -38,7 +38,8 @@ from typing import NamedTuple
 from llamatron.composition.checks import check_keys, reading
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, KEYSWITCH_SLOT_COUNT, KEYSWITCH_SLOTS, InstrumentSetting, KeyswitchSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import InstrumentSetting, KeyswitchSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import LlamaData, own_copy, or_default, settings_by_name, written_settings
 from llamatron.composition.setting import Checked, Text, WholeNumber, check_settings, described
@@ -79,19 +80,19 @@ KEYSWITCH_SETTINGS = described(
 
 def check_keyswitch_slot(slot):
     """Refuse a slot's number that no instrument has."""
-    if type(slot) is not int or slot not in KEYSWITCH_SLOTS:
-        raise InvalidValue(errors.ERR_BAD_KEYSWITCH_SLOT.format(lowest=KEYSWITCH_SLOTS[0], highest=KEYSWITCH_SLOTS[-1], value=slot))
+    if type(slot) is not int or slot not in file_format.KEYSWITCH_SLOTS:
+        raise InvalidValue(errors.ERR_BAD_KEYSWITCH_SLOT.format(lowest=file_format.KEYSWITCH_SLOTS[0], highest=file_format.KEYSWITCH_SLOTS[-1], value=slot))
 
 
 def check_keyswitches(value):
     """Refuse keyswitches that aren't a list of the ten slots, each blank or holding a name, a note or both."""
-    if not isinstance(value, list) or len(value) != KEYSWITCH_SLOT_COUNT:
-        raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=value))
+    if not isinstance(value, list) or len(value) != file_format.KEYSWITCH_SLOT_COUNT:
+        raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=file_format.KEYSWITCH_SLOT_COUNT, value=value))
     for slot in value:
         if slot is None:
             continue
         if not isinstance(slot, dict) or not slot or any(key not in KEYSWITCH_SETTINGS for key in slot):
-            raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=value))
+            raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=file_format.KEYSWITCH_SLOT_COUNT, value=value))
         check_settings(settings=KEYSWITCH_SETTINGS, data=slot)
 
 
@@ -172,7 +173,7 @@ class Instrument(LlamaData):
 
     def uses_fluidsynth(self):
         """Return whether it plays through FluidSynth, which the tracker starts, rather than through a MIDI port: its channel is then chosen for each track and its General MIDI sound sent."""
-        return self.get_device() == FLUIDSYNTH_DEVICE
+        return self.get_device() == file_format.FLUIDSYNTH_DEVICE
 
     @notes_change
     def set_device(self, device):
@@ -201,7 +202,7 @@ class Instrument(LlamaData):
         """Return its ten keyswitch slots in order, each a Keyswitch with its name and note, or None for whichever it lacks."""
         written = self._settings[InstrumentSetting.KEYSWITCHES]
         if written is None:
-            return [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT
+            return [NO_KEYSWITCH] * file_format.KEYSWITCH_SLOT_COUNT
         return [NO_KEYSWITCH if slot is None else Keyswitch(slot.get(KeyswitchSetting.NAME), slot.get(KeyswitchSetting.NOTE)) for slot in written]
 
     def get_keyswitch(self, slot):
@@ -233,8 +234,8 @@ class Instrument(LlamaData):
     @notes_change
     def set_keyswitches(self, keyswitches):
         """Give every slot its name and note at once, from ten Keyswitches in order, as the Keyswitch Map dialog answers them."""
-        if len(keyswitches) != KEYSWITCH_SLOT_COUNT:
-            raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=KEYSWITCH_SLOT_COUNT, value=list(keyswitches)))
+        if len(keyswitches) != file_format.KEYSWITCH_SLOT_COUNT:
+            raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=file_format.KEYSWITCH_SLOT_COUNT, value=list(keyswitches)))
         written = [_slot_data(Keyswitch(*keyswitch)) for keyswitch in keyswitches]
         if any(slot is not None for slot in written):
             check_keyswitches(written)

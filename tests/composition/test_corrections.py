@@ -28,12 +28,11 @@ import unittest
 
 import yaml
 
-from llamatron.composition.clip_slot import FIRST_MORPH_STYLE
-from llamatron.composition.corrections import LEFT_OUT, Correction, changed_count, place_without
-from llamatron.composition.file_format import (
-    CC_ROWS, LIVE_OCTAVE_OFFSET, REGISTER_ADD_ROWS, ClipSlotSetting, GrooveSetting, PatternSetting, RegisterName, RegisterSetting, Row,
-    SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting,
-)
+from llamatron.composition import clip_slot
+from llamatron.composition import corrections as corrections_values
+from llamatron.composition.corrections import Correction, changed_count, place_without
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, RegisterName, RegisterSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition import limits
 from llamatron.strings import errors, messages, names
@@ -128,8 +127,8 @@ CLIP = (*SCENE, SceneSetting.TRACKS, LEAD)
 REGISTER = (*SONG, Section.REGISTERS, RegisterName.AX)
 GROOVE = (Section.GROOVES, SHUFFLE)
 ARP = (Section.ARPS, UP)
-AX_ADD = REGISTER_ADD_ROWS[RegisterName.AX]
-FIRST_CC = CC_ROWS[0]
+AX_ADD = file_format.REGISTER_ADD_ROWS[RegisterName.AX]
+FIRST_CC = file_format.CC_ROWS[0]
 # Every value a file can hold that has an allowed value near it: the data that holds the wrong value, where the
 # value is in the set's data, and what is there once the set is read corrected. LEFT_OUT is a setting taken out.
 CORRECTED = [
@@ -137,7 +136,7 @@ CORRECTED = [
     ({SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1}, (SetlistSetting.DEFAULT_OCTAVE,), limits.MAX_OCTAVE),
     ({SetlistSetting.DEFAULT_DRUM_OCTAVE: limits.MIN_OCTAVE - 1}, (SetlistSetting.DEFAULT_DRUM_OCTAVE,), limits.MIN_OCTAVE),
     ({SetlistSetting.STEP_SIZE: limits.MAX_STEP_SIZE * 2}, (SetlistSetting.STEP_SIZE,), limits.MAX_STEP_SIZE),
-    ({SetlistSetting.OCTAVE_LABELS: NOT_A_CHOICE}, (SetlistSetting.OCTAVE_LABELS,), LEFT_OUT),
+    ({SetlistSetting.OCTAVE_LABELS: NOT_A_CHOICE}, (SetlistSetting.OCTAVE_LABELS,), corrections_values.LEFT_OUT),
     # A song.
     (with_song({SongSetting.ENTRY_SIZE: limits.MAX_GATE + 1}), (*SONG, SongSetting.ENTRY_SIZE), limits.MAX_GATE),
     # A track.
@@ -151,13 +150,13 @@ CORRECTED = [
     # A clip.
     (with_clip({ClipSlotSetting.REPEAT: limits.MIN_REPEAT - 1}), (*CLIP, ClipSlotSetting.REPEAT), limits.MIN_REPEAT),
     (with_clip({ClipSlotSetting.REPEAT: limits.MAX_CLIP_REPEAT + 1}), (*CLIP, ClipSlotSetting.REPEAT), limits.MAX_CLIP_REPEAT),
-    (with_clip({ClipSlotSetting.DIRECTION: NOT_A_CHOICE}), (*CLIP, ClipSlotSetting.DIRECTION), LEFT_OUT),
+    (with_clip({ClipSlotSetting.DIRECTION: NOT_A_CHOICE}), (*CLIP, ClipSlotSetting.DIRECTION), corrections_values.LEFT_OUT),
     (
         with_clip({ClipSlotSetting.REPEAT: limits.MIN_REPEAT + 1, ClipSlotSetting.MORPH_TO: TUNE, ClipSlotSetting.MORPH_STYLE: NOT_A_CHOICE}),
-        (*CLIP, ClipSlotSetting.MORPH_STYLE), FIRST_MORPH_STYLE,
+        (*CLIP, ClipSlotSetting.MORPH_STYLE), clip_slot.FIRST_MORPH_STYLE,
     ),
     # A pattern's settings.
-    (with_pattern({PatternSetting.DIRECTION: NOT_A_CHOICE}), (*PATTERN, PatternSetting.DIRECTION), LEFT_OUT),
+    (with_pattern({PatternSetting.DIRECTION: NOT_A_CHOICE}), (*PATTERN, PatternSetting.DIRECTION), corrections_values.LEFT_OUT),
     (with_pattern({PatternSetting.STEP_SIZE: limits.MAX_STEP_SIZE + 1}), (*PATTERN, PatternSetting.STEP_SIZE), limits.MAX_STEP_SIZE),
     (with_pattern({PatternSetting.ENTRY_SIZE: limits.MAX_GATE + 1}), (*PATTERN, PatternSetting.ENTRY_SIZE), limits.MAX_GATE),
     # A pattern's rows, where every step that needs it is corrected at once.
@@ -206,14 +205,14 @@ CORRECTED = [
     (with_groove({GrooveSetting.CELL_LENGTH: limits.MAX_GROOVE_CELL_LENGTH + 1}), (*GROOVE, GrooveSetting.CELL_LENGTH), limits.MAX_GROOVE_CELL_LENGTH),
     # An arpeggiator.
     (with_arp({ArpSetting.OCTAVE_RANGE: MAX_OCTAVE_RANGE + 1}), (*ARP, ArpSetting.OCTAVE_RANGE), MAX_OCTAVE_RANGE),
-    (with_arp({ArpSetting.ORDER: NOT_A_CHOICE}), (*ARP, ArpSetting.ORDER), LEFT_OUT),
-    (with_arp({ArpSetting.OCTAVE_JUMP: NOT_A_CHOICE}), (*ARP, ArpSetting.OCTAVE_JUMP), LEFT_OUT),
+    (with_arp({ArpSetting.ORDER: NOT_A_CHOICE}), (*ARP, ArpSetting.ORDER), corrections_values.LEFT_OUT),
+    (with_arp({ArpSetting.OCTAVE_JUMP: NOT_A_CHOICE}), (*ARP, ArpSetting.OCTAVE_JUMP), corrections_values.LEFT_OUT),
     (with_arp({ArpSetting.OFFSETS: [MAX_OFFSET + 1, None, -MAX_OFFSET - 1]}), (*ARP, ArpSetting.OFFSETS), [MAX_OFFSET, None, -MAX_OFFSET]),
 ]
 # Data with something wrong that no allowed value is near, which is refused as it always was.
 REFUSED = [
     with_clip({ClipSlotSetting.CHAIN: NOT_A_NAME}),
-    with_clip({ClipSlotSetting.MORPH_TO: NOT_A_NAME, ClipSlotSetting.MORPH_STYLE: FIRST_MORPH_STYLE, ClipSlotSetting.REPEAT: limits.MIN_REPEAT + 1}),
+    with_clip({ClipSlotSetting.MORPH_TO: NOT_A_NAME, ClipSlotSetting.MORPH_STYLE: clip_slot.FIRST_MORPH_STYLE, ClipSlotSetting.REPEAT: limits.MIN_REPEAT + 1}),
     with_clip({ClipSlotSetting.LOOP: 1}),
     with_song({SongSetting.SCALE: NOT_A_NAME}),
     with_song({SongSetting.TEMPO: NOT_A_NUMBER}),
@@ -247,7 +246,7 @@ class TestCorrection(unittest.TestCase):
 
     def test_applying_one_that_leaves_the_setting_out_takes_it_out_of_the_data(self):
         data = {TEMPO: FAR_TOO_MANY, LEAD: A_DEGREE}
-        Correction(holder=data, key=TEMPO, name=TEMPO, found=FAR_TOO_MANY, used=LEFT_OUT).apply()
+        Correction(holder=data, key=TEMPO, name=TEMPO, found=FAR_TOO_MANY, used=corrections_values.LEFT_OUT).apply()
         self.assertEqual(data, {LEAD: A_DEGREE})
 
     def test_it_says_where_what_was_found_and_what_is_used(self):
@@ -258,7 +257,7 @@ class TestCorrection(unittest.TestCase):
         self.assertIsNone(correction.get_count())
 
     def test_a_setting_taken_out_is_said_to_become_the_default(self):
-        correction = Correction(holder={}, key=TEMPO, name=TEMPO, found=NOT_A_CHOICE, used=LEFT_OUT)
+        correction = Correction(holder={}, key=TEMPO, name=TEMPO, found=NOT_A_CHOICE, used=corrections_values.LEFT_OUT)
         correction.set_place(A_PLACE)
         self.assertEqual(correction.described(), messages.MSG_CORRECTED_TO_DEFAULT.format(where=A_PLACE, name=TEMPO, found=NOT_A_CHOICE))
 
@@ -293,7 +292,7 @@ class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
             with self.subTest(path=path):
                 setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
                 self.assertEqual(len(corrections), 1)
-                self.assertEqual(value_at(data=setlist.to_data(), path=path), ABSENT if expected is LEFT_OUT else expected)
+                self.assertEqual(value_at(data=setlist.to_data(), path=path), ABSENT if expected is corrections_values.LEFT_OUT else expected)
 
     def test_the_correction_says_what_was_found_and_what_is_used(self):
         for data, path, expected in CORRECTED:
@@ -404,7 +403,7 @@ class TestOlderFilesAreCorrectedToo(unittest.TestCase):
     def test_an_octave_in_lives_numbers_is_moved_before_it_is_corrected(self):
         data = {SetlistSetting.VERSION: A_VERSION_WITH_LIVE_OCTAVES, SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE}
         setlist, corrections = Setlist.from_data_corrected(data=data)
-        self.assertEqual(corrections[0].get_found(), limits.MAX_OCTAVE + LIVE_OCTAVE_OFFSET)
+        self.assertEqual(corrections[0].get_found(), limits.MAX_OCTAVE + file_format.LIVE_OCTAVE_OFFSET)
         self.assertEqual(setlist.get_default_octave(), limits.MAX_OCTAVE)
 
 

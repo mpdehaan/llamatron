@@ -21,7 +21,8 @@ import tempfile
 import unittest
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.setlist import SECTIONS_TAKEN_IN, Setlist
+from llamatron.composition import setlist as setlist_values
+from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
 from llamatron.strings import names
 from llamatron.support import version
@@ -67,7 +68,7 @@ class TestTakingIn(unittest.TestCase):
         before = setlist.to_data()
         self.assertEqual(setlist.take_in(made(name=FIRST)), [FIRST])
         self.assertEqual(setlist.get_song_names(), [names.MSG_DEFAULT_SONG_NAME, FIRST])
-        for section in SECTIONS_TAKEN_IN:
+        for section in setlist_values.SECTIONS_TAKEN_IN:
             for name, item in (before.get(section) or {}).items():
                 self.assertEqual(setlist.get_item(section=section, name=name).to_data(), item)
         together = render_song(setlist.get_song(FIRST), seed=A_SEED)
@@ -229,7 +230,7 @@ class TestEverythingNamed(unittest.TestCase):
 
     def assert_the_walk_agrees(self, setlist):
         named = setlist.everything_named()
-        items = [(section, name) for section in SECTIONS_TAKEN_IN for name in setlist.get_item_names(section)]
+        items = [(section, name) for section in setlist_values.SECTIONS_TAKEN_IN for name in setlist.get_item_names(section)]
         self.assertTrue(items)
         for section, name in items:
             if section == Section.SONGS:

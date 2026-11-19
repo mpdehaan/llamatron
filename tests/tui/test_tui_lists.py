@@ -21,10 +21,8 @@ from tests.support.ui_testing import (
 )
 from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.tui.drawing import NOTHING
-from llamatron.composition.file_format import (
-    TIME_CHOICES,
-    DRIFT_DIRECTIONS, NAMED_GENERATORS, REGISTER_NAMES, ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.generators.arp import ChordOrder, MAX_OFFSETS, OctaveJump
@@ -37,7 +35,7 @@ from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
@@ -74,7 +72,7 @@ D_DORIAN = 'D_dorian'
 D_MINOR = 'D_minor'
 D_HIRAJOSHI = 'D_hirajoshi'
 # The second scale a set gets, by adding or by copying the first: named by its number.
-SCALE_2 = new_name(word=names_text.MSG_NEW_SCALE_WORD, taken=[DEFAULT_SCALE])
+SCALE_2 = new_name(word=names_text.MSG_NEW_SCALE_WORD, taken=[setlist.DEFAULT_SCALE])
 OTHER_PAGE = 'other page'
 # The key that added on a list before A did, which adds nothing now.
 OLD_ADD_KEY = Key.PLUS
@@ -131,16 +129,16 @@ class TestScalesPage(UITest):
         """A adds on every list page, since + needs Shift; the + row at the bottom still adds with Enter."""
         await self.press(keybindings.MainPage.SCALES, OLD_ADD_KEY)
         self.assertIsInstance(self.app.screen, ScalesPage)
-        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE])
+        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE])
         self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.ScalesPage.ADD)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.ADD), self.text())
         await self.press(Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
-        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE, SCALE_2])
+        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE, SCALE_2])
 
     async def test_adding_a_scale_makes_c_major_named_by_its_number_and_opens_its_page(self):
         await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.ADD)
         self.assertIsInstance(self.app.screen, ScalePage)
-        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE, SCALE_2])
+        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE, SCALE_2])
         self.assertEqual(self.root_and_kind(SCALE_2), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
         self.assertIn(SCALE_2, self.crumbs_line())
         await self.press(Key.ESCAPE)
@@ -152,7 +150,7 @@ class TestScalesPage(UITest):
         self.assertEqual(self.root_and_kind(SCALE_2), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
 
     async def test_renaming_a_scale_updates_what_uses_it(self):
-        self.document.set_scene_scale(index=0, name=DEFAULT_SCALE)
+        self.document.set_scene_scale(index=0, name=setlist.DEFAULT_SCALE)
         await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.RENAME)
         self.app.screen.value = MAIN
         await self.press(Key.ENTER)
@@ -166,15 +164,15 @@ class TestScalePage(UITest):
 
     def name_the_scale_after_its_notes(self):
         """Name the set's scale as an older file or an import would, after its root and kind, a name that follows them."""
-        self.document.rename_named(section=Section.SCALES, old=DEFAULT_SCALE, new=C_MAJOR)
+        self.document.rename_named(section=Section.SCALES, old=setlist.DEFAULT_SCALE, new=C_MAJOR)
 
     async def test_a_scale_named_by_its_number_keeps_its_name_when_its_notes_change(self):
         # A new scale is scale-1, and only a person renames it.
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         await self.select_field(labels.MSG_ROOT_LABEL)
         await self.press(Key.RIGHT, Key.RIGHT)
-        self.assertEqual(self.root_and_kind(DEFAULT_SCALE), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
-        self.assertEqual(self.document.song().get_scale_names(), [DEFAULT_SCALE])
+        self.assertEqual(self.root_and_kind(setlist.DEFAULT_SCALE), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
+        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE])
 
     async def test_the_scale_page_steps_the_root_and_kind_and_shows_the_notes(self):
         self.name_the_scale_after_its_notes()
@@ -216,7 +214,7 @@ class TestScalePage(UITest):
         self.assertIn(note.SHARP_NAMES[4].center(KEYBOARD_KEY_WIDTH), lines[2])
 
     async def test_the_scale_page_renames_the_scale_and_what_uses_it(self):
-        self.document.set_scene_scale(index=0, name=DEFAULT_SCALE)
+        self.document.set_scene_scale(index=0, name=setlist.DEFAULT_SCALE)
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         await self.select_field(labels.MSG_NAME_LABEL)
         await self.press(Key.ENTER)
@@ -367,7 +365,7 @@ class TestGeneratorsPage(UITest):
     async def test_every_type_the_set_has_gets_a_heading_and_each_starts_closed(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
-        held = [kind for kind in NAMED_GENERATORS if self.document.song().get_generator_names(kind)]
+        held = [kind for kind in file_format.NAMED_GENERATORS if self.document.song().get_generator_names(kind)]
         self.assertEqual(len(page.generators()), sum(len(self.document.song().get_generator_names(kind)) for kind in held))
         self.assertEqual([cells[0] for _, cells in page.rows()][:-1], [self.heading(kind=kind, closed=True) for kind in page.kinds()])
         self.assertEqual(set(page.kinds()), set(held))
@@ -490,7 +488,7 @@ class TestArpEditor(UITest):
         before = self.arp(UP).get_step()
         await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
         # ] (inc) steps to the next value of the one list of times that every time setting shares.
-        self.assertEqual(self.arp(UP).get_step(), TIME_CHOICES[TIME_CHOICES.index(before) + 1])
+        self.assertEqual(self.arp(UP).get_step(), file_format.TIME_CHOICES[file_format.TIME_CHOICES.index(before) + 1])
         await self.press(Key.DOWN, key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.arp(UP).get_order(), written_name(ChordOrder.DOWN))
 
@@ -506,7 +504,7 @@ class TestArpEditorFields(UITest):
         return self.arp(UP)
 
     async def test_each_registers_add_per_note_steps_and_clears(self):
-        for register in REGISTER_NAMES:
+        for register in file_format.REGISTER_NAMES:
             with self.subTest(register=register):
                 await self.select_field(labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register))
                 await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
@@ -638,7 +636,7 @@ class TestDriftEditor(UITest):
     async def test_its_own_settings_step_and_go_back_to_their_defaults(self):
         await self.select_field(labels.MSG_DRIFT_DIRECTION_LABEL)
         await self.press(keybindings.DriftEditor.MORE)
-        self.assertEqual(self.drift().get_direction(), DRIFT_DIRECTIONS[1])
+        self.assertEqual(self.drift().get_direction(), file_format.DRIFT_DIRECTIONS[1])
         await self.select_field(labels.MSG_EVERY_LABEL)
         await self.press(keybindings.DriftEditor.MORE)
         self.assertIsNotNone(self.drift().get_every())
@@ -656,17 +654,17 @@ class TestOffsetsEditor(UITest):
 
     async def test_tab_moves_to_a_registers_add_row_where_steps_add_within_its_limit(self):
         await self.open_offsets([0, 2])
-        self.assertNotIn(labels.MSG_STEP_ADD_ROW_LABEL.format(name=REGISTER_NAMES[0]), self.text())
+        self.assertNotIn(labels.MSG_STEP_ADD_ROW_LABEL.format(name=file_format.REGISTER_NAMES[0]), self.text())
         await self.press(keybindings.OffsetsEditor.NEXT_ROW)
-        self.assertIn(labels.MSG_STEP_ADD_ROW_LABEL.format(name=REGISTER_NAMES[0]), self.text())
+        self.assertIn(labels.MSG_STEP_ADD_ROW_LABEL.format(name=file_format.REGISTER_NAMES[0]), self.text())
         await self.press(keybindings.OffsetsEditor.MORE, Key.RIGHT, keybindings.OffsetsEditor.LESS)
-        self.assertEqual(self.arp(UP).get_step_adds(REGISTER_NAMES[0]), [1, -1])
+        self.assertEqual(self.arp(UP).get_step_adds(file_format.REGISTER_NAMES[0]), [1, -1])
         self.assertEqual(self.app.screen.offsets(), [0, 2])
-        most = self.document.song().get_register(REGISTER_NAMES[0]).get_allowed_inc_max()
+        most = self.document.song().get_register(file_format.REGISTER_NAMES[0]).get_allowed_inc_max()
         for _ in range(most + 1):
             await self.press(keybindings.OffsetsEditor.LESS)
-        self.assertEqual(self.arp(UP).get_step_adds(REGISTER_NAMES[0])[1], -most)
-        for _ in REGISTER_NAMES:
+        self.assertEqual(self.arp(UP).get_step_adds(file_format.REGISTER_NAMES[0])[1], -most)
+        for _ in file_format.REGISTER_NAMES:
             await self.press(keybindings.OffsetsEditor.NEXT_ROW)
         self.assertIsNone(self.app.screen.register_edited())
 

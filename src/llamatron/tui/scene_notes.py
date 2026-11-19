@@ -31,10 +31,8 @@ numbered in the scene's scale, with the bass after a slash when it isn't the roo
 
 from typing import NamedTuple
 
-from llamatron.composition.file_format import (
-    FIXED_CHORDS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, STATEMENT_OF_ROW, Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section,
-    SongSetting, TrackSetting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.euclid import euclid_settings
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.shapes import shape_settings
@@ -54,7 +52,7 @@ LETTERS = 'CDEFGAB'
 ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 # The pattern rows a written view takes out: the steps' probability and every row that reads a register.
 PROBABILITY_ROW = 'probability'
-READING_ROWS = [*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *STATEMENT_OF_ROW]
+READING_ROWS = [*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.STATEMENT_OF_ROW]
 # A chord's root, its third and its fifth, as half steps, which say its quality.
 MINOR_THIRD = 3
 MAJOR_THIRD = 4
@@ -171,7 +169,7 @@ def scene_notes(*, song, index, written):
 
 def chord_shapes():
     """Return each fixed chord symbol with its notes as half steps above the root, within one octave, the root among them."""
-    return {symbol: frozenset({0, *[step % HALF_STEPS_PER_OCTAVE for step in kind.value]}) for symbol, kind in FIXED_CHORDS.items()}
+    return {symbol: frozenset({0, *[step % HALF_STEPS_PER_OCTAVE for step in kind.value]}) for symbol, kind in file_format.FIXED_CHORDS.items()}
 
 
 def chord_of(*, weights, bass):

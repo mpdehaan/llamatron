@@ -26,7 +26,8 @@ changes the one under the cursor, and Bksp sets the line back to ignored.
 """
 
 from llamatron.composition import conditions, limits
-from llamatron.composition.file_format import DIVIDING_OPERATORS, OPERATORS, REGISTER_NAMES, RESULT_COMPARISONS, StatementPart
+from llamatron.composition import file_format
+from llamatron.composition.file_format import StatementPart
 from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import NOTHING
@@ -37,7 +38,7 @@ FIRST_TABLE = 0
 SECOND_TABLE = 1
 # How wide each cell is drawn, so that the cells after it never move.
 REGISTER_WIDTH = len(labels.MSG_STATEMENT_IGNORED)
-OPERATOR_WIDTH = max(len(operator) for operator in OPERATORS)
+OPERATOR_WIDTH = max(len(operator) for operator in file_format.OPERATORS)
 NUMBER_WIDTH = len(str(-limits.MAX_STATEMENT_NUMBER))
 # The number a statement divides by may not be this.
 ZERO = 0
@@ -62,7 +63,7 @@ def register_fields(*, page, label, name_label, values, store, lowest=limits.MIN
     values() is what each register is given, and store(register, value) gives one a value, or none for None.
     """
     heading = page.heading(label=label, is_set=lambda: bool(values()))
-    return [heading, *[_register_field(page=page, label=name_label.format(name=register), register=register, values=values, store=store, lowest=lowest) for register in REGISTER_NAMES]]
+    return [heading, *[_register_field(page=page, label=name_label.format(name=register), register=register, values=values, store=store, lowest=lowest) for register in file_format.REGISTER_NAMES]]
 
 
 def _register_field(*, page, label, register, values, store, lowest):
@@ -91,24 +92,24 @@ def _line(*, page, place, table, statements, store):
     if statement is not None:
         operator = statement[StatementPart.OPERATOR]
         cells.append(_choice_cell(
-            page=page, title=labels.MSG_STATEMENT_OPERATOR_TITLE, choices=OPERATORS, current=operator, width=OPERATOR_WIDTH,
+            page=page, title=labels.MSG_STATEMENT_OPERATOR_TITLE, choices=file_format.OPERATORS, current=operator, width=OPERATOR_WIDTH,
             store=lambda chosen: store(at, conditions.with_operator(statement=statement, operator=chosen)), clear=clear,
         ))
         for part in conditions.parts_of(operator):
             if part == StatementPart.COMPARISON:
                 cells.append(_choice_cell(
-                    page=page, title=labels.MSG_STATEMENT_COMPARISON_TITLE, choices=RESULT_COMPARISONS, current=statement[part], width=OPERATOR_WIDTH,
+                    page=page, title=labels.MSG_STATEMENT_COMPARISON_TITLE, choices=file_format.RESULT_COMPARISONS, current=statement[part], width=OPERATOR_WIDTH,
                     store=lambda chosen, part=part: changed(part, chosen), clear=clear,
                 ))
             else:
-                divides = part == StatementPart.VALUE and operator in DIVIDING_OPERATORS
+                divides = part == StatementPart.VALUE and operator in file_format.DIVIDING_OPERATORS
                 cells.append(_value_cell(page=page, current=statement[part], divides=divides, store=lambda value, part=part: changed(part, value), clear=clear))
     return Cells(label=labels.MSG_STATEMENT_LINE_LABEL * (table * limits.MAX_STATEMENTS + place + 1), cells=cells)
 
 
 def _register_cell(*, page, statement, store, clear):
     """Return the cell that names a line's register, or says the line is ignored."""
-    choices = [labels.MSG_STATEMENT_IGNORED, *REGISTER_NAMES]
+    choices = [labels.MSG_STATEMENT_IGNORED, *file_format.REGISTER_NAMES]
     current = labels.MSG_STATEMENT_IGNORED if statement is None else statement[StatementPart.REGISTER]
 
     def chosen(register):
@@ -128,7 +129,7 @@ def _choice_cell(*, page, title, choices, current, width, store, clear):
 
 def _value_cell(*, page, current, divides, store, clear):
     """Return a cell that holds a number or another register: ENTER offers a number to type and each register."""
-    choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *REGISTER_NAMES]
+    choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *file_format.REGISTER_NAMES]
 
     def typed(number):
         if divides and number == ZERO:
@@ -139,13 +140,13 @@ def _value_cell(*, page, current, divides, store, clear):
     def picked(place):
         if place == NUMBER_PLACE:
             page.ask_number(
-                title=labels.MSG_STATEMENT_VALUE_TITLE, value=str(current) if current not in REGISTER_NAMES else str(ZERO), then=typed,
+                title=labels.MSG_STATEMENT_VALUE_TITLE, value=str(current) if current not in file_format.REGISTER_NAMES else str(ZERO), then=typed,
                 low=-limits.MAX_STATEMENT_NUMBER, high=limits.MAX_STATEMENT_NUMBER,
             )
         else:
             store(choices[place])
 
     def pick():
-        opens_on = choices.index(current) if current in REGISTER_NAMES else NUMBER_PLACE
+        opens_on = choices.index(current) if current in file_format.REGISTER_NAMES else NUMBER_PLACE
         page.ask(dialog=ChoiceDialog(title=labels.MSG_STATEMENT_VALUE_TITLE, options=choices, current=opens_on), then=picked)
     return Field(label=labels.MSG_STATEMENT_VALUE_TITLE, value=lambda: str(current).ljust(NUMBER_WIDTH), enter=pick, enter_what=legends.What.CHOOSE, clear=clear)

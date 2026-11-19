@@ -16,8 +16,10 @@
 
 """The musician's editor: the instrument, the tracks the chords and the tune are read from, the player's touch, and a heading for each kind of section the song has."""
 
-from llamatron.composition.file_format import SECTION_KINDS, GeneratorKind, Section
-from llamatron.composition.generator_settings import MUSICIAN_DEFAULTS, MUSICIAN_SECTION_DEFAULTS, MusicianSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
@@ -44,11 +46,11 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
 
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a musician does unasked."""
-        self.document().set_generator_setting(section=Section.MUSICIANS, name=self.item, setting=setting, value=None if value == MUSICIAN_DEFAULTS.get(setting) else value)
+        self.document().set_generator_setting(section=Section.MUSICIANS, name=self.item, setting=setting, value=None if value == generator_settings.MUSICIAN_DEFAULTS.get(setting) else value)
 
     def store_section(self, *, section, name, value):
         """Keep what a kind of section has of its own, left out where it is what a section does unasked."""
-        self.document().set_musician_section(name=self.item, section=section, setting=name, value=None if value == MUSICIAN_SECTION_DEFAULTS[name] else value)
+        self.document().set_musician_section(name=self.item, section=section, setting=name, value=None if value == generator_settings.MUSICIAN_SECTION_DEFAULTS[name] else value)
 
     def tracks(self, named):
         """Return the tracks a musician can read: the current song's, sorted, and the one named among them even when the song has no such track, so that it is seen and kept."""
@@ -89,11 +91,11 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
     def sections(self):
         """Return the kinds of section the musician can be told about: those the song's scenes are, and those the musician already has settings for, in the order kinds of section are listed."""
         used = {scene.get_section() for scene in self.document().song().get_scenes()}
-        return [kind for kind in SECTION_KINDS if kind in used or self.section_is_set(kind)]
+        return [kind for kind in file_format.SECTION_KINDS if kind in used or self.section_is_set(kind)]
 
     def section_is_set(self, section):
         own = self.musician()
-        return any(own.get_section_own(section=section, name=name) is not None for name in MUSICIAN_SECTION_DEFAULTS)
+        return any(own.get_section_own(section=section, name=name) is not None for name in generator_settings.MUSICIAN_SECTION_DEFAULTS)
 
     def section_fields(self, section):
         own = self.musician()

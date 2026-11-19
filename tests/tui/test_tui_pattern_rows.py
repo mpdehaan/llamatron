@@ -17,12 +17,11 @@
 """Kinds of row in the pattern editor: the limits a file holds a row to, the register rows, the Tie row, and a drum pattern's rows."""
 
 from tests.support.ui_testing import ROW_SHOWN, UITest
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS, RowOfNumbers
+from llamatron.composition import row_descriptions
+from llamatron.composition.row_descriptions import RowOfNumbers
 from llamatron.composition import conditions, limits
-from llamatron.composition.file_format import (
-    OPERATORS, REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_SET_ROWS, RESULT_COMPARISONS, STATEMENT_ROWS, Operator, RegisterName, RegisterSetting, Row, StatementPart,
-    StepStatement,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Operator, RegisterName, RegisterSetting, Row, StatementPart, StepStatement
 from llamatron.music.note import NoteName
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
@@ -40,7 +39,7 @@ SAVED_SET = 'saved.yml'
 # The step of tune that holds nothing.
 EMPTY_STEP = 2
 # The register rows whose line is narrower than a file allows, and an Allowed Inc Max narrower than the default.
-NARROWER_ROWS = {*REGISTER_ADD_ROWS.values(), *REGISTER_SET_ROWS.values()}
+NARROWER_ROWS = {*file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values()}
 NARROW_INC_MAX = 4
 # A number typed into a statement.
 TYPED_NUMBER = 12
@@ -50,7 +49,7 @@ class TestTheRowsLimitsAreTheFiles(PatternEditorTest):
     """A row of numbers stops where the row's one description says, which is what a file's values are checked against (composition/row_descriptions.py)."""
 
     async def test_every_row_of_numbers_stops_at_the_limits_a_file_is_checked_against(self):
-        for name, described in ROW_DESCRIPTIONS.items():
+        for name, described in row_descriptions.ROW_DESCRIPTIONS.items():
             # The register rows that change a register step through a shorter line than a file allows, by design: TestRegisterChangeRows holds them to it.
             if type(described) is not RowOfNumbers or name in NARROWER_ROWS:
                 continue
@@ -65,16 +64,16 @@ class TestTheRowsLimitsAreTheFiles(PatternEditorTest):
                 self.assertEqual(self.value(row=name), described.get_lowest())
 
     async def test_what_the_editor_can_set_on_every_row_is_what_a_file_may_hold(self):
-        for name, described in ROW_DESCRIPTIONS.items():
+        for name, described in row_descriptions.ROW_DESCRIPTIONS.items():
             if type(described) is RowOfNumbers:
                 await self.go_to_row(name)
                 # A += row reaches only its register's Allowed Inc Max, which is what the file is held to for the songs that play the pattern.
-                self.editor.set_value(value=self.editor.row_for(name).range()[1] if name in REGISTER_ADD_ROWS.values() else described.get_highest())
+                self.editor.set_value(value=self.editor.row_for(name).range()[1] if name in file_format.REGISTER_ADD_ROWS.values() else described.get_highest())
         self.document.save(path=SAVED_SET)
         self.assertEqual(Document.load_or_correct(SAVED_SET)[1], [])
 
     async def test_a_blank_step_shows_a_dot_only_where_a_blank_changes_nothing(self):
-        for name, described in ROW_DESCRIPTIONS.items():
+        for name, described in row_descriptions.ROW_DESCRIPTIONS.items():
             if type(described) is not RowOfNumbers:
                 continue
             with self.subTest(row=name):
@@ -88,7 +87,7 @@ class TestRegisterChangeRows(PatternEditorTest):
     """The = rows step from blank through the current song's register, the += rows within the register's Allowed Inc Max, """
 
     async def test_an_add_row_stops_at_the_registers_allowed_inc_max_and_says_so(self):
-        for register, name in REGISTER_ADD_ROWS.items():
+        for register, name in file_format.REGISTER_ADD_ROWS.items():
             with self.subTest(row=name):
                 most = self.document.song().get_register(register).get_allowed_inc_max()
                 await self.go_to_row(name)
@@ -104,7 +103,7 @@ class TestRegisterChangeRows(PatternEditorTest):
         self.assertEqual(self.editor.row_for(Row.AX_ADD).range(), (-NARROW_INC_MAX, NARROW_INC_MAX))
 
     async def test_a_set_row_steps_from_blank_to_the_registers_minimum_and_back(self):
-        for register, name in REGISTER_SET_ROWS.items():
+        for register, name in file_format.REGISTER_SET_ROWS.items():
             with self.subTest(row=name):
                 kept = self.document.song().get_register(register)
                 await self.go_to_row(name)
@@ -127,7 +126,7 @@ class TestStatementRows(PatternEditorTest):
     """The five rows of Stop When, Restart When and Mute When write one statement on a step, part by part."""
 
     async def test_a_register_starts_a_statement_and_the_other_rows_then_take_their_parts(self):
-        for kind, rows in STATEMENT_ROWS.items():
+        for kind, rows in file_format.STATEMENT_ROWS.items():
             with self.subTest(kind=kind):
                 register_row, operator_row, value_row, comparison_row, against_row = rows
                 await self.go_to_row(register_row)
@@ -135,7 +134,7 @@ class TestStatementRows(PatternEditorTest):
                 for row in rows[1:]:
                     self.assertTrue(self.editor.row_for(row).blocked())
                 await self.press(keybindings.StatementRow.NEXT)
-                started = conditions.new_statement(REGISTER_NAMES[0])
+                started = conditions.new_statement(file_format.REGISTER_NAMES[0])
                 self.assertEqual(self.statement(kind), started)
                 self.assertFalse(self.editor.row_for(value_row).blocked())
                 self.assertTrue(self.editor.row_for(comparison_row).blocked())
@@ -143,39 +142,39 @@ class TestStatementRows(PatternEditorTest):
                 await self.press(keybindings.StatementRow.MORE, keybindings.StatementRow.MORE, keybindings.StatementRow.LESS)
                 self.assertEqual(self.statement(kind)[StatementPart.VALUE], started[StatementPart.VALUE] + 1)
                 await self.go_to_row(operator_row)
-                for _ in range(OPERATORS.index(Operator.PLUS) - OPERATORS.index(started[StatementPart.OPERATOR])):
+                for _ in range(file_format.OPERATORS.index(Operator.PLUS) - file_format.OPERATORS.index(started[StatementPart.OPERATOR])):
                     await self.press(keybindings.StatementRow.MORE)
                 self.assertEqual(self.statement(kind)[StatementPart.OPERATOR], Operator.PLUS)
                 self.assertFalse(self.editor.row_for(comparison_row).blocked())
                 self.assertFalse(self.editor.row_for(against_row).blocked())
                 await self.go_to_row(comparison_row)
                 await self.press(keybindings.StatementRow.NEXT)
-                self.assertIn(self.statement(kind)[StatementPart.COMPARISON], RESULT_COMPARISONS)
+                self.assertIn(self.statement(kind)[StatementPart.COMPARISON], file_format.RESULT_COMPARISONS)
                 await self.press(keybindings.StatementRow.CLEAR)
                 self.assertIsNone(self.statement(kind))
                 await self.press(Key.LEFT)
 
     async def test_a_choice_stops_at_each_end_of_its_list(self):
-        register_row, operator_row = STATEMENT_ROWS[StepStatement.MUTE][:2]
+        register_row, operator_row = file_format.STATEMENT_ROWS[StepStatement.MUTE][:2]
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.LESS)
         self.assertIsNone(self.statement(StepStatement.MUTE))
-        for _ in range(len(REGISTER_NAMES) + 1):
+        for _ in range(len(file_format.REGISTER_NAMES) + 1):
             await self.press(keybindings.StatementRow.MORE)
-        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.REGISTER], REGISTER_NAMES[-1])
+        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.REGISTER], file_format.REGISTER_NAMES[-1])
         await self.go_to_row(operator_row)
-        for _ in range(len(OPERATORS)):
+        for _ in range(len(file_format.OPERATORS)):
             await self.press(keybindings.StatementRow.LESS)
-        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.OPERATOR], OPERATORS[0])
+        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.OPERATOR], file_format.OPERATORS[0])
 
     async def test_the_picker_chooses_a_register_and_a_number_or_a_register_to_compare_with(self):
-        register_row, _, value_row = STATEMENT_ROWS[StepStatement.STOP][:3]
+        register_row, _, value_row = file_format.STATEMENT_ROWS[StepStatement.STOP][:3]
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.CHOOSE, Key.DOWN, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.REGISTER], REGISTER_NAMES[1])
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.REGISTER], file_format.REGISTER_NAMES[1])
         await self.go_to_row(value_row)
         await self.press(keybindings.StatementRow.CHOOSE, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], REGISTER_NAMES[0])
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], file_format.REGISTER_NAMES[0])
         await self.press(keybindings.StatementRow.CHOOSE, Key.UP, Key.ENTER)
         await self.type(str(TYPED_NUMBER))
         await self.press(Key.ENTER)
@@ -186,7 +185,7 @@ class TestStatementRows(PatternEditorTest):
         self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], TYPED_NUMBER)
 
     async def test_a_statement_cannot_divide_by_zero(self):
-        register_row, _, value_row = STATEMENT_ROWS[StepStatement.MUTE][:3]
+        register_row, _, value_row = file_format.STATEMENT_ROWS[StepStatement.MUTE][:3]
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.NEXT)
         self.document.set_step_statement(
@@ -199,12 +198,12 @@ class TestStatementRows(PatternEditorTest):
         self.assertIn(errors.ERR_CANNOT_DIVIDE_BY_ZERO, self.text())
 
     async def test_the_first_step_cannot_start_the_pattern_over(self):
-        for row in STATEMENT_ROWS[StepStatement.RESTART]:
+        for row in file_format.STATEMENT_ROWS[StepStatement.RESTART]:
             self.assertTrue(self.editor.row_for(row).blocked(step=0))
-        self.assertFalse(self.editor.row_for(STATEMENT_ROWS[StepStatement.RESTART][0]).blocked(step=EMPTY_STEP))
+        self.assertFalse(self.editor.row_for(file_format.STATEMENT_ROWS[StepStatement.RESTART][0]).blocked(step=EMPTY_STEP))
 
     async def test_an_empty_step_holds_a_statement_and_clearing_a_note_keeps_one(self):
-        register_row = STATEMENT_ROWS[StepStatement.MUTE][0]
+        register_row = file_format.STATEMENT_ROWS[StepStatement.MUTE][0]
         self.assertFalse(self.editor.row_for(register_row).blocked(step=EMPTY_STEP))
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.NEXT)

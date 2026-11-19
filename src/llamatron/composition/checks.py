@@ -28,7 +28,7 @@ from contextlib import contextmanager
 from math import isfinite
 from typing import NamedTuple
 
-from llamatron.composition.file_format import BARS_WRITTEN, ONE_BAR_WRITTEN
+from llamatron.composition import file_format
 from llamatron.music.note import _check_length
 from llamatron.music.scale import Scale
 from llamatron.music.time_signature import TimeSignature
@@ -263,10 +263,10 @@ def bars_written(value):
     """Return the count of bars a text like 2 bars or 1 bar says, or None for any other value."""
     if not isinstance(value, str):
         return None
-    if value == ONE_BAR_WRITTEN:
+    if value == file_format.ONE_BAR_WRITTEN:
         return 1
     words = value.split()
-    if len(words) == len(BARS_WRITTEN.split()) and words[0].isdigit() and BARS_WRITTEN.format(count=words[0]) == value and int(words[0]) > 0:
+    if len(words) == len(file_format.BARS_WRITTEN.split()) and words[0].isdigit() and file_format.BARS_WRITTEN.format(count=words[0]) == value and int(words[0]) > 0:
         return int(words[0])
     return None
 

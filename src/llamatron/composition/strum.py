@@ -23,10 +23,9 @@ the normal spread, no fade, no loose timing, and every string on an upstroke.
 
 from typing import NamedTuple
 
-from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.file_format import (
-    STRUM_DIRECTIONS, STRUM_SPREADS, UPSTROKE_STRINGS, StrumDirection, StrumPart, StrumSpread, UpstrokeStrings, strum_setting,
-)
+from llamatron.composition import corrections
+from llamatron.composition import file_format
+from llamatron.composition.file_format import StrumDirection, StrumPart, StrumSpread, UpstrokeStrings, strum_setting
 from llamatron.composition import limits
 from llamatron.strings import errors
 from llamatron.composition.setting import Choice, WholeNumber
@@ -54,13 +53,13 @@ class StrumValues(NamedTuple):
 def strum_part_settings(named):
     """Return the descriptions of a strum's five parts, each named by named(part)."""
     def choice(part, choices):
-        return Choice(name=named(part), choices=choices, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
+        return Choice(name=named(part), choices=choices, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
     return [
-        choice(StrumPart.DIRECTION, STRUM_DIRECTIONS),
-        choice(StrumPart.SPREAD, STRUM_SPREADS),
+        choice(StrumPart.DIRECTION, file_format.STRUM_DIRECTIONS),
+        choice(StrumPart.SPREAD, file_format.STRUM_SPREADS),
         WholeNumber(name=named(StrumPart.FADE), lowest=limits.MIN_STRUM_PERCENT, highest=limits.MAX_STRUM_FADE, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=named(StrumPart.LOOSE_TIMING), lowest=limits.MIN_STRUM_PERCENT, highest=limits.MAX_LOOSE_TIMING, error=errors.ERR_BAD_SHAPE_PERCENT),
-        choice(StrumPart.UPSTROKE_STRINGS, UPSTROKE_STRINGS),
+        choice(StrumPart.UPSTROKE_STRINGS, file_format.UPSTROKE_STRINGS),
     ]
 
 

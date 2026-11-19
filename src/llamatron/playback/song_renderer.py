@@ -25,7 +25,8 @@ from llamatron.exporters.timing import timed_events
 from llamatron.grid.handed_note import HandedNote
 from llamatron.grid.nudge_plan import MovingRow, NudgePlan, amount_moved
 from llamatron.support.rational import Rational
-from llamatron.composition.file_format import REGISTER_NAMES, GeneratorKind, RampWay, Restart, Section, StepStatement
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, RampWay, Restart, Section, StepStatement
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.musician import Surroundings
@@ -129,7 +130,7 @@ class SongRenderer:
         self._song = song
         self._seed = song.get_seed() if seed is None else seed
         self._scenes = WrittenScene.write_out(song)
-        self._registers = {name: song.get_register(name) for name in REGISTER_NAMES}
+        self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
         self._clips = {}
         # Clips played only to record their register changes, with those changes.
         self._counted = {}

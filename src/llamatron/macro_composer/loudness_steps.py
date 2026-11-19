@@ -33,8 +33,9 @@ drummer moves from one to another. The trade is written as each clip's own veloc
 
 from llamatron.composition import defaults
 from llamatron.composition.checks import time_length
-from llamatron.composition.file_format import FIXED_CHORDS, VELOCITY_SETTINGS, ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
-from llamatron.composition.velocity_ramps import AS_WRITTEN, BAR_COUNTS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
+from llamatron.composition import velocity_ramps
 from llamatron.macro_composer.breaks import HAT, OPEN, RIDE
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held
@@ -99,7 +100,7 @@ def chord_notes(symbol):
     """How many notes a step sounds as written: one, or its chord's."""
     if symbol is None:
         return ONE_NOTE
-    return len(FIXED_CHORDS[symbol].value) + 1 if symbol in FIXED_CHORDS else USUAL_CHORD_NOTES
+    return len(file_format.FIXED_CHORDS[symbol].value) + 1 if symbol in file_format.FIXED_CHORDS else USUAL_CHORD_NOTES
 
 
 def strings_held(*, symbol, settings):
@@ -236,9 +237,9 @@ def with_trades(*, song, kept=()):
             if share is None:
                 continue
             slot = scene.get_clip_slot(track)
-            for name in VELOCITY_SETTINGS:
-                percent = AS_WRITTEN if name == VelocitySetting.LEVEL and of_scene[name] is None else of_scene[name]
-                if name not in BAR_COUNTS and percent is not None:
+            for name in file_format.VELOCITY_SETTINGS:
+                percent = velocity_ramps.AS_WRITTEN if name == VelocitySetting.LEVEL and of_scene[name] is None else of_scene[name]
+                if name not in velocity_ramps.BAR_COUNTS and percent is not None:
                     slot.set_velocity_setting(name=name, value=round(percent * share))
 
 

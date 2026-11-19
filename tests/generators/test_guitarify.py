@@ -22,14 +22,12 @@ seconds, so 8 milliseconds between strings is 1/250 of a whole note.
 
 import unittest
 
-from llamatron.composition.file_format import (
-    Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning, GENERATOR_RESTART,
-    STROKES,
-)
-from llamatron.composition.generator_settings import (
-    DEFAULT_GUITAR_SPREAD, EVERY_STRING, MAX_GUITAR_BAR, MAX_GUITAR_FRET, MAX_GUITAR_PERCENT, MAX_GUITAR_SPREAD, MAX_GUITAR_STRINGS, MIN_GUITAR_STRINGS, GuitarifySettings,
-)
-from llamatron.composition.guitar_bars import DEFAULT_BAR, READY_BARS, ready_bar_matching
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import GuitarifySettings
+from llamatron.composition import guitar_bars
+from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.generators.guitarify import APPROACH_LENGTH, FOURTH_BELOW, SQUEAL_ABOVE, MUTE_LENGTH, MUTE_VELOCITY, MUTED_BASS_VELOCITY, OPEN_STRINGS, REACH, SHORT_LENGTH, STRUM_TICKS, UNACCENTED_VELOCITY
@@ -65,8 +63,8 @@ def delay(*, spread, strings):
 
 
 # How long after a stroke its second and its third string start, with the spread a Guitarify has unless set.
-GAP = delay(spread=DEFAULT_GUITAR_SPREAD, strings=1)
-TWO_GAPS = delay(spread=DEFAULT_GUITAR_SPREAD, strings=2)
+GAP = delay(spread=generator_settings.DEFAULT_GUITAR_SPREAD, strings=1)
+TWO_GAPS = delay(spread=generator_settings.DEFAULT_GUITAR_SPREAD, strings=2)
 WIDE_SPREAD = 16
 C = 60
 E = 64
@@ -152,9 +150,9 @@ class TestShape(unittest.TestCase):
         self.assertGreaterEqual(min(played), OPEN_STRINGS[Tuning.STANDARD][0] + capo)
 
     def test_fewer_strings_are_the_highest_ones(self):
-        played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.STRINGS: MIN_GUITAR_STRINGS}))
-        self.assertLessEqual(len(played), MIN_GUITAR_STRINGS)
-        self.assertGreaterEqual(min(played), OPEN_STRINGS[Tuning.STANDARD][-MIN_GUITAR_STRINGS])
+        played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.STRINGS: generator_settings.MIN_GUITAR_STRINGS}))
+        self.assertLessEqual(len(played), generator_settings.MIN_GUITAR_STRINGS)
+        self.assertGreaterEqual(min(played), OPEN_STRINGS[Tuning.STANDARD][-generator_settings.MIN_GUITAR_STRINGS])
         self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
 
     def test_a_tuning_changes_the_strings(self):
@@ -177,7 +175,7 @@ class TestShape(unittest.TestCase):
 
     def test_a_hand_short_of_strings_leaves_the_fifth_out_before_the_root(self):
         # A seventh chord has four notes, and three strings hold three of them: the root, the third and the seventh.
-        played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.STRINGS: MIN_GUITAR_STRINGS, GuitarifySetting.POSITION: 5}, rows={Row.CHORD: ['dom7']}))
+        played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.STRINGS: generator_settings.MIN_GUITAR_STRINGS, GuitarifySetting.POSITION: 5}, rows={Row.CHORD: ['dom7']}))
         self.assertEqual(played, [C, E, 70])
 
     def test_a_note_outside_the_scale_builds_no_chord(self):
@@ -217,7 +215,7 @@ class TestStrokes(unittest.TestCase):
     def test_an_upstroke_catches_only_its_top_strings(self):
         data = guitar(settings=bar([Stroke.UP], cell=WHOLE, **{GuitarifySetting.UPSTROKE: 2}))
         self.assertEqual(pitches(data), [G, E])
-        every = guitar(settings=bar([Stroke.UP], cell=WHOLE, **{GuitarifySetting.UPSTROKE: EVERY_STRING}))
+        every = guitar(settings=bar([Stroke.UP], cell=WHOLE, **{GuitarifySetting.UPSTROKE: generator_settings.EVERY_STRING}))
         self.assertEqual(pitches(every), [G, E, C])
 
     def test_a_muted_stroke_is_short_and_quiet(self):
@@ -284,12 +282,12 @@ class TestStrokes(unittest.TestCase):
         self.assertEqual({event.start for event in together}, {Rational(0)})
 
     def test_a_strum_never_takes_more_than_half_the_time_to_the_next_stroke(self):
-        played = events(guitar(settings=bar([Stroke.DOWN], cell='1/64', **{GuitarifySetting.SPREAD: MAX_GUITAR_SPREAD})))
+        played = events(guitar(settings=bar([Stroke.DOWN], cell='1/64', **{GuitarifySetting.SPREAD: generator_settings.MAX_GUITAR_SPREAD})))
         first = [event for event in played if event.start < Rational(1, 64)]
         self.assertLessEqual(max(event.start for event in first), Rational(1, 128))
 
     def test_loose_timing_is_uneven_and_the_same_for_the_same_seed(self):
-        data = guitar(settings=bar([Stroke.DOWN], cell=WHOLE, **{GuitarifySetting.LOOSE_TIMING: MAX_GUITAR_PERCENT, GuitarifySetting.SPREAD: MAX_GUITAR_SPREAD}), rows={Row.CHORD: ['M9']})
+        data = guitar(settings=bar([Stroke.DOWN], cell=WHOLE, **{GuitarifySetting.LOOSE_TIMING: generator_settings.MAX_GUITAR_PERCENT, GuitarifySetting.SPREAD: generator_settings.MAX_GUITAR_SPREAD}), rows={Row.CHORD: ['M9']})
         starts = [event.start for event in events(data, seed=SEED)]
         self.assertEqual(starts, [event.start for event in events(data, seed=SEED)])
         self.assertNotEqual(starts, [event.start for event in events(data, seed=OTHER_SEED)])
@@ -313,7 +311,7 @@ class TestStrokes(unittest.TestCase):
 
     def test_a_new_guitarify_plays_the_default_bar_on_the_held_chord(self):
         played = events(guitar())
-        strokes = READY_BARS[DEFAULT_BAR].strokes
+        strokes = guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].strokes
         struck = [place for place, stroke in enumerate(strokes) if stroke != Stroke.NOTHING]
         cell = Rational(1, 8)
         self.assertEqual(sorted({event.start // cell for event in played}), struck)
@@ -326,7 +324,7 @@ class TestTheBarFollowsTheSongsBars(unittest.TestCase):
         # A clip of three quarter notes played twice: one bar and a half of 4/4.
         settings = bar([Stroke.BASS, Stroke.STRING_1, Stroke.STRING_1, Stroke.STRING_1])
         if restart is not None:
-            settings[GENERATOR_RESTART] = restart
+            settings[file_format.GENERATOR_RESTART] = restart
         data = guitar(settings=settings, steps=3, step_size=QUARTER)
         data[Section.SCENES].append({SceneSetting.TRACKS: {LEAD: dict(data[Section.SCENES][0][SceneSetting.TRACKS][LEAD])}})
         return data
@@ -392,26 +390,26 @@ class TestApproach(unittest.TestCase):
 class TestReadyMadeBars(unittest.TestCase):
 
     def test_every_ready_made_bar_is_strokes_and_accents_of_one_length_within_the_limit(self):
-        for name, ready in READY_BARS.items():
+        for name, ready in guitar_bars.READY_BARS.items():
             with self.subTest(bar=name):
                 self.assertEqual(len(ready.strokes), len(ready.accents))
-                self.assertLessEqual(len(ready.strokes), MAX_GUITAR_BAR)
-                self.assertTrue(all(stroke in STROKES for stroke in ready.strokes))
+                self.assertLessEqual(len(ready.strokes), generator_settings.MAX_GUITAR_BAR)
+                self.assertTrue(all(stroke in file_format.STROKES for stroke in ready.strokes))
                 GuitarifySettings.check_data({GuitarifySetting.BAR: list(ready.strokes), GuitarifySetting.ACCENTS: list(ready.accents), GuitarifySetting.CELL: ready.cell})
 
     def test_every_ready_made_bar_has_a_name_and_no_two_are_the_same(self):
         names = [getattr(ReadyBar, name) for name in vars(ReadyBar) if not name.startswith('_')]
-        self.assertEqual(sorted(names), sorted(READY_BARS))
-        self.assertEqual(len({(ready.cell, ready.strokes, ready.accents) for ready in READY_BARS.values()}), len(READY_BARS))
+        self.assertEqual(sorted(names), sorted(guitar_bars.READY_BARS))
+        self.assertEqual(len({(ready.cell, ready.strokes, ready.accents) for ready in guitar_bars.READY_BARS.values()}), len(guitar_bars.READY_BARS))
 
     def test_a_bar_is_matched_to_its_ready_made_name(self):
-        ready = READY_BARS[ReadyBar.CHUG]
+        ready = guitar_bars.READY_BARS[ReadyBar.CHUG]
         self.assertEqual(ready_bar_matching(cell=ready.cell, strokes=list(ready.strokes), accents=list(ready.accents)), ReadyBar.CHUG)
         self.assertIsNone(ready_bar_matching(cell=ready.cell, strokes=[Stroke.DOWN], accents=[False]))
 
     def test_new_settings_hold_the_default_bar(self):
         settings = GuitarifySettings.new()
-        ready = READY_BARS[DEFAULT_BAR]
+        ready = guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR]
         self.assertEqual((settings.get_cell(), settings.get_bar(), settings.get_accents()), (ready.cell, list(ready.strokes), list(ready.accents)))
         self.assertEqual(settings.to_data(), {})
 
@@ -431,7 +429,7 @@ class TestWhatAFileRefuses(unittest.TestCase):
 
     def test_an_empty_bar_and_one_too_long_are_refused(self):
         self.refused({GuitarifySetting.BAR: []})
-        self.refused({GuitarifySetting.BAR: [Stroke.DOWN] * (MAX_GUITAR_BAR + 1)})
+        self.refused({GuitarifySetting.BAR: [Stroke.DOWN] * (generator_settings.MAX_GUITAR_BAR + 1)})
 
     def test_accents_that_are_not_true_or_false_are_refused(self):
         self.refused({GuitarifySetting.ACCENTS: [1, 0]})
@@ -441,14 +439,14 @@ class TestWhatAFileRefuses(unittest.TestCase):
         self.refused({GuitarifySetting.SINGLE_NOTES: 'arpeggio'})
 
     def test_numbers_out_of_range_are_refused(self):
-        self.refused({GuitarifySetting.POSITION: MAX_GUITAR_FRET + 1})
+        self.refused({GuitarifySetting.POSITION: generator_settings.MAX_GUITAR_FRET + 1})
         self.refused({GuitarifySetting.CAPO: -1})
-        self.refused({GuitarifySetting.STRINGS: MIN_GUITAR_STRINGS - 1})
-        self.refused({GuitarifySetting.STRINGS: MAX_GUITAR_STRINGS + 1})
-        self.refused({GuitarifySetting.SPREAD: MAX_GUITAR_SPREAD + 1})
-        self.refused({GuitarifySetting.FADE: MAX_GUITAR_PERCENT + 1})
-        self.refused({GuitarifySetting.LOOSE_TIMING: MAX_GUITAR_PERCENT + 1})
-        self.refused({GuitarifySetting.UPSTROKE: MAX_GUITAR_STRINGS + 1})
+        self.refused({GuitarifySetting.STRINGS: generator_settings.MIN_GUITAR_STRINGS - 1})
+        self.refused({GuitarifySetting.STRINGS: generator_settings.MAX_GUITAR_STRINGS + 1})
+        self.refused({GuitarifySetting.SPREAD: generator_settings.MAX_GUITAR_SPREAD + 1})
+        self.refused({GuitarifySetting.FADE: generator_settings.MAX_GUITAR_PERCENT + 1})
+        self.refused({GuitarifySetting.LOOSE_TIMING: generator_settings.MAX_GUITAR_PERCENT + 1})
+        self.refused({GuitarifySetting.UPSTROKE: generator_settings.MAX_GUITAR_STRINGS + 1})
 
     def test_a_switch_that_is_not_true_or_false_is_refused(self):
         self.refused({GuitarifySetting.SHAPE: 'yes'})

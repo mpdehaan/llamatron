@@ -35,7 +35,7 @@ from typing import NamedTuple
 from llamatron.composition.checks import in_whole_notes
 from llamatron.composition.file_format import DriftDirection, GeneratorKind
 from llamatron.composition.file_format import DriftValue, DriftVersion
-from llamatron.composition.generator_settings import DRIFT_ADDS
+from llamatron.composition import generator_settings
 from llamatron.support.random_source import random_source
 
 # How a drift's own random numbers are seeded from the render's seed and its name, so that each drift draws its own.
@@ -113,7 +113,7 @@ class DriftPlay:
     def adds_at(self, *, name, trigger):
         """Return what a drift adds to each register at a trigger, by register name, leaving out nothing added."""
         numbers = self.picked(name=name, trigger=trigger).numbers
-        return {register: numbers[value] for register, value in DRIFT_ADDS.items() if numbers[value]}
+        return {register: numbers[value] for register, value in generator_settings.DRIFT_ADDS.items() if numbers[value]}
 
     def effects(self, *, names, time, origins=None):
         """Return what the drifts named do to a step at a song time, their numbers added together and the last one's overrides winning.
@@ -173,7 +173,7 @@ class DriftPlay:
         position = self.position(name=name, trigger=trigger)
         chooser = self._chooser(name)
         numbers = {}
-        for value in (*DRIFT_ADDS.values(), DriftValue.VELOCITY, DriftValue.PROBABILITY, DriftValue.DEGREE, DriftValue.DEGREE_RANDOM,
+        for value in (*generator_settings.DRIFT_ADDS.values(), DriftValue.VELOCITY, DriftValue.PROBABILITY, DriftValue.DEGREE, DriftValue.DEGREE_RANDOM,
                       DriftValue.SCALE_PROBABILITY, DriftValue.ROOT_PROBABILITY):
             first = settings.get_value(version=DriftVersion.A, value=value) or NOTHING_ADDED
             second = settings.get_value(version=DriftVersion.B, value=value) or NOTHING_ADDED

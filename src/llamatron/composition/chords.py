@@ -25,7 +25,8 @@ what that comes to, in a scale that is known, as a name, a longer name and the n
 
 from dataclasses import dataclass
 
-from llamatron.composition.file_format import ACCIDENTALS, FIXED_CHORDS, SCALE_CHORDS, TENSIONS, Accidental, ChordSymbol, Tension
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, ChordSymbol, Tension
 from llamatron.composition.named_scale import NamedScale
 from llamatron.music import midi
 from llamatron.music import note
@@ -59,7 +60,7 @@ MOST_SIGNS = 1
 ROOT_WITHOUT_A_SCALE = 'C'
 SHAPE_WITHOUT_A_SCALE = (0, 2, 4, 5, 7, 9, 11)
 # The half steps of each named chord, by which a chord the scale builds is given its symbol.
-SYMBOLS_BY_HALF_STEPS = {kind.value: symbol for symbol, kind in FIXED_CHORDS.items()}
+SYMBOLS_BY_HALF_STEPS = {kind.value: symbol for symbol, kind in file_format.FIXED_CHORDS.items()}
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
@@ -104,7 +105,7 @@ def root_name(*, scale, degree, accidental):
     root = ROOT_WITHOUT_A_SCALE if scale is None else scale.get_root()
     shape = SHAPE_WITHOUT_A_SCALE if scale is None else scale.get_half_steps()
     place = (degree - 1) % len(shape)
-    half_steps = shape[place] + ACCIDENTALS.get(accidental, 0)
+    half_steps = shape[place] + file_format.ACCIDENTALS.get(accidental, 0)
     pitch = (note.SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
     if len(shape) != PLACED_SCALE_SIZE:
         return (note.FLAT_NAMES if accidental == Accidental.FLAT or marks.MSG_FLAT_SPELLED in root else note.SHARP_NAMES)[pitch]
@@ -133,12 +134,12 @@ def chord_half_steps(*, scale, degree, symbol, tensions=None, own_degree=None):
     on the chord's degree, or on own_degree where the chord keeps the sound of another degree, as a progression's chord with
     a sharp or flat keeps the sound of degree 1.
     """
-    if symbol is not None and str(symbol) in FIXED_CHORDS:
-        own = FIXED_CHORDS[str(symbol)].value
+    if symbol is not None and str(symbol) in file_format.FIXED_CHORDS:
+        own = file_format.FIXED_CHORDS[str(symbol)].value
     else:
-        places = SCALE_CHORDS[ChordSymbol.SCALE_TRIAD if symbol is None else str(symbol)]
+        places = file_format.SCALE_CHORDS[ChordSymbol.SCALE_TRIAD if symbol is None else str(symbol)]
         own = scale_chord_half_steps(scale=scale, degree=degree if own_degree is None else own_degree, places=[place for place in places if place])
-    return own + tuple(TENSIONS[tension] for tension in tensions or () if TENSIONS[tension] not in own)
+    return own + tuple(file_format.TENSIONS[tension] for tension in tensions or () if file_format.TENSIONS[tension] not in own)
 
 
 def symbol_of(half_steps):
@@ -154,12 +155,12 @@ def spelled_chord(*, scale, degree, accidental=None, kind=None, symbol=None, ten
     drawn_from = borrowed(scale=scale, kind=kind)
     root = root_name(scale=drawn_from, degree=degree, accidental=accidental)
     own = chord_half_steps(scale=drawn_from, degree=degree, symbol=symbol, own_degree=own_degree)
-    named = str(symbol) if symbol is not None and str(symbol) in FIXED_CHORDS else symbol_of(own)
-    added = [tension for tension in TENSIONS if tension in (tensions or ()) and TENSIONS[tension] not in own]
+    named = str(symbol) if symbol is not None and str(symbol) in file_format.FIXED_CHORDS else symbol_of(own)
+    added = [tension for tension in file_format.TENSIONS if tension in (tensions or ()) and file_format.TENSIONS[tension] not in own]
     shown_tensions = marks.MSG_CHORD_TENSIONS_SHOWN.format(tensions=marks.MSG_TENSION_SEPARATOR.join(added)) if added else ''
     suffix = marks.MSG_UNNAMED_CHORD_SUFFIX if named is None else marks.MSG_CHORD_SUFFIXES[named]
     long_name = root if named is None else root + ' ' + labels.MSG_CHORD_NAMES[named].split(',')[0].title()
-    notes = (root, *[spelled_note(root=root, half_steps=half_steps) for half_steps in (*own, *[TENSIONS[tension] for tension in added])])
+    notes = (root, *[spelled_note(root=root, half_steps=half_steps) for half_steps in (*own, *[file_format.TENSIONS[tension] for tension in added])])
     return SpelledChord(root=root, name=root + suffix + shown_tensions, long_name=(long_name + ' ' + shown_tensions).strip(), notes=notes)
 
 
@@ -171,7 +172,7 @@ def replaced_places(*, symbol, tensions):
     """
     places = {}
     if symbol is not None:
-        for half_steps in FIXED_CHORDS[str(symbol)].value:
+        for half_steps in file_format.FIXED_CHORDS[str(symbol)].value:
             within = half_steps % midi.HALF_STEPS_PER_OCTAVE
             if half_steps > midi.HALF_STEPS_PER_OCTAVE:
                 places[{2: NINTH_PLACE, 5: ELEVENTH_PLACE, 9: THIRTEENTH_PLACE}[within]] = within
@@ -182,5 +183,5 @@ def replaced_places(*, symbol, tensions):
             elif within in SEVENTHS:
                 places[SEVENTH_PLACE] = within
     for tension in tensions or ():
-        places[TENSION_PLACES[tension]] = TENSIONS[tension] % midi.HALF_STEPS_PER_OCTAVE
+        places[TENSION_PLACES[tension]] = file_format.TENSIONS[tension] % midi.HALF_STEPS_PER_OCTAVE
     return places

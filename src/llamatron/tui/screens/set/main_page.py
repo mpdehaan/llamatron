@@ -35,7 +35,8 @@ from collections import deque
 
 from rich.text import Text
 
-from llamatron.composition.sections import GENERATOR_KINDS, Section
+from llamatron.composition import sections
+from llamatron.composition.sections import Section
 from llamatron.tui.drawing import Box, Canvas, NOTHING, padded, SPACE, Style
 from llamatron.strings import errors, help as help_text, labels as labels_text, marks, messages
 from llamatron.tui.keys import Key
@@ -318,7 +319,7 @@ class MainPage(Page):
         if name == labels_text.PageName.REAL_TIME:
             return marks.MSG_REAL_TIME_ON_MARK if setlist.is_real_time() else marks.MSG_REAL_TIME_OFF_MARK
         if name == labels_text.PageName.GENERATORS:
-            return sum(len(setlist.get_item_names(section)) for section in GENERATOR_KINDS)
+            return sum(len(setlist.get_item_names(section)) for section in sections.GENERATOR_KINDS)
         if name == labels_text.PageName.GROOVES:
             # The set's own grooves: the factory ones are always there, so counting them would say nothing.
             return len(setlist.get_own_groove_names())

@@ -30,7 +30,7 @@ dialog. After a pick the cursor goes on to the qualities, so that the next Enter
 
 from rich.text import Text
 
-from llamatron.composition.file_format import TENSIONS
+from llamatron.composition import file_format
 from llamatron.composition.naming import words
 from llamatron.strings import labels, marks, messages
 from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, Dialog
@@ -150,7 +150,7 @@ class ChordDialog(Dialog):
             self.moved(choice)
 
     def counts(self):
-        return (len(self.qualities), len(self.inversions), len(TENSIONS), len(self.categories) + 1)
+        return (len(self.qualities), len(self.inversions), len(file_format.TENSIONS), len(self.categories) + 1)
 
     def move(self, name):
         """Move within the cursor's list with Up and Down and from list to list with Left and Right, stopping at every edge."""
@@ -163,7 +163,7 @@ class ChordDialog(Dialog):
         self.part = (self.part + 1) % LISTS
 
     def flip(self):
-        self.picked ^= {list(TENSIONS)[self.places[TENSION_LIST]]}
+        self.picked ^= {list(file_format.TENSIONS)[self.places[TENSION_LIST]]}
 
     # The scale: a row that borrows none, then the categories, each with a flyout of its scale types.
 
@@ -216,7 +216,7 @@ class ChordDialog(Dialog):
         return self.kinds_of_row(self.flyout)[self.flyout_place]
 
     def choice(self):
-        tensions = tuple(tension for tension in TENSIONS if tension in self.picked) or None
+        tensions = tuple(tension for tension in file_format.TENSIONS if tension in self.picked) or None
         return ChordChoice(
             quality=self.qualities[self.places[QUALITY_LIST]], inversion=self.inversions[self.places[INVERSION_LIST]], tensions=tensions, kind=self.shown_kind(),
         )
@@ -243,7 +243,7 @@ class ChordDialog(Dialog):
         if part == INVERSION_LIST:
             return marks.MSG_NONE_SHOWN if self.inversions[place] is None else str(self.inversions[place])
         if part == TENSION_LIST:
-            tension = list(TENSIONS)[place]
+            tension = list(file_format.TENSIONS)[place]
             return (marks.MSG_TOGGLE_ON if tension in self.picked else marks.MSG_FIELD_TOGGLE_OFF) + SPACE + tension
         return self.scale_row_text(place)
 

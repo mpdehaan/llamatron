@@ -33,24 +33,8 @@ import os
 import sys
 
 from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import (
-    BYPASS_WHEN, NAMED_GENERATORS, PLACED_SHAPES, SHAPE_PARTS, VELOCITY_SETTINGS, shape_setting,
-    CC_REGISTER_SETTINGS,
-    CC_ROWS,
-    STATEMENT_ROWS, StepStatement,
-    REGISTER_ADD_ROWS,
-    REGISTER_NOTE_ROWS,
-    REGISTER_SET_ROWS,
-    REGISTER_VELOCITY_ROWS,
-    ClipSlotSetting,
-    PatternSetting,
-    Row,
-    SceneSetting,
-    Section,
-    SetlistSetting,
-    SongSetting,
-    TrackSetting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import shape_setting, StepStatement, ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.composition.setlist import Setlist
 from llamatron.support.example_sets import example_sets
 
@@ -135,9 +119,9 @@ def any_song_section(section):
 
 def bypasses_generators(data):
     """Return whether any generator, chain, scene, clip or track of the set has statements that bypass generators."""
-    generators = [settings for section in NAMED_GENERATORS.values() for settings in data.get(section, {}).values()]
+    generators = [settings for section in file_format.NAMED_GENERATORS.values() for settings in data.get(section, {}).values()]
     chains = [chain for chain in data.get(Section.CHAINS, {}).values() if isinstance(chain, dict)]
-    return any(BYPASS_WHEN in item for item in [*generators, *chains, *scenes(data), *clip_slots(data), *tracks(data)])
+    return any(file_format.BYPASS_WHEN in item for item in [*generators, *chains, *scenes(data), *clip_slots(data), *tracks(data)])
 
 
 def repeats(*, items, setting):
@@ -146,7 +130,7 @@ def repeats(*, items, setting):
 
 def binds_registers(data):
     """Return whether any track binds a CC lane or its velocity to a register."""
-    return any(any_track_setting(setting)(data) for setting in (*CC_REGISTER_SETTINGS, TrackSetting.VELOCITY_REGISTER))
+    return any(any_track_setting(setting)(data) for setting in (*file_format.CC_REGISTER_SETTINGS, TrackSetting.VELOCITY_REGISTER))
 
 
 def uses_another_time_signature(data):
@@ -155,7 +139,7 @@ def uses_another_time_signature(data):
 
 # Each feature a set can use, in the order the table lists them, with how to tell from a set's data.
 # Every setting of a shape a scene or a clip can hold, like density_start.
-SHAPE_SETTINGS = [shape_setting(shape=shape, part=part) for shape in PLACED_SHAPES for part in SHAPE_PARTS]
+SHAPE_SETTINGS = [shape_setting(shape=shape, part=part) for shape in file_format.PLACED_SHAPES for part in file_format.SHAPE_PARTS]
 
 FEATURES = [
     ('gates', any_pattern_row(Row.GATE)),
@@ -171,15 +155,15 @@ FEATURES = [
     ('ratchets', any_pattern_row(Row.RATCHET)),
     ('ratchet offsets', any_pattern_row(Row.RATCHET_OFFSET)),
     ('grab steps', any_pattern_row(Row.GRAB)),
-    ('CC rows', any_pattern_rows(CC_ROWS)),
+    ('CC rows', any_pattern_rows(file_format.CC_ROWS)),
     ('slides', any_pattern_row(Row.SLIDE)),
-    ('register note rows', any_pattern_rows(REGISTER_NOTE_ROWS.values())),
-    ('register velocity rows', any_pattern_rows(REGISTER_VELOCITY_ROWS.values())),
-    ('register adds', any_pattern_rows(REGISTER_ADD_ROWS.values())),
-    ('register sets', any_pattern_rows(REGISTER_SET_ROWS.values())),
-    ('stop when', any_pattern_rows(STATEMENT_ROWS[StepStatement.STOP])),
-    ('restart when', any_pattern_rows(STATEMENT_ROWS[StepStatement.RESTART])),
-    ('mute when', any_pattern_rows(STATEMENT_ROWS[StepStatement.MUTE])),
+    ('register note rows', any_pattern_rows(file_format.REGISTER_NOTE_ROWS.values())),
+    ('register velocity rows', any_pattern_rows(file_format.REGISTER_VELOCITY_ROWS.values())),
+    ('register adds', any_pattern_rows(file_format.REGISTER_ADD_ROWS.values())),
+    ('register sets', any_pattern_rows(file_format.REGISTER_SET_ROWS.values())),
+    ('stop when', any_pattern_rows(file_format.STATEMENT_ROWS[StepStatement.STOP])),
+    ('restart when', any_pattern_rows(file_format.STATEMENT_ROWS[StepStatement.RESTART])),
+    ('mute when', any_pattern_rows(file_format.STATEMENT_ROWS[StepStatement.MUTE])),
     ('register binding', binds_registers),
     ('drum patterns', any_pattern_setting(PatternSetting.DRUM)),
     ('pattern step size', any_pattern_setting(PatternSetting.STEP_SIZE)),
@@ -191,8 +175,8 @@ FEATURES = [
     ('clip chain', any_clip_slot_setting(ClipSlotSetting.CHAINS)),
     ('scene chains', any_scene_setting(SceneSetting.CHAINS)),
     ('track chains', any_track_setting(TrackSetting.CHAINS)),
-    ('scene velocity', lambda data: any(any_scene_setting(setting)(data) for setting in VELOCITY_SETTINGS)),
-    ('clip velocity', lambda data: any(any_clip_slot_setting(setting)(data) for setting in VELOCITY_SETTINGS)),
+    ('scene velocity', lambda data: any(any_scene_setting(setting)(data) for setting in file_format.VELOCITY_SETTINGS)),
+    ('clip velocity', lambda data: any(any_clip_slot_setting(setting)(data) for setting in file_format.VELOCITY_SETTINGS)),
     ('clip shapes', lambda data: any(any_clip_slot_setting(setting)(data) for setting in SHAPE_SETTINGS)),
     ('scene shapes', lambda data: any(any_scene_setting(setting)(data) for setting in SHAPE_SETTINGS)),
     ('morphs', any_clip_slot_setting(ClipSlotSetting.MORPH_TO)),

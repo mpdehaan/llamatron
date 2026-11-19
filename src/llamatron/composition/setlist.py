@@ -34,25 +34,26 @@ import yaml
 from llamatron.support import files
 from llamatron.support.safe_yaml import load_safely
 from llamatron.composition.chain import Chain
-from llamatron.composition.checks import TOP_OF_FILE, check_keys, is_whole_number, reading, written_length
-from llamatron.composition.corrections import LEFT_OUT, Correction
+from llamatron.composition import checks
+from llamatron.composition.checks import check_keys, is_whole_number, reading, written_length
+from llamatron.composition import corrections as corrections_values
+from llamatron.composition.corrections import Correction
 from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, WholeNumber, described, settings_held
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition import defaults, limits as set_limits
 from llamatron.strings import errors, names as names_text
-from llamatron.composition.file_format import (
-    CLOSED_PATTERN_GROUPS, FOLLOW_ACTION_CHOICES, OPEN_GENERATOR_TYPES, LIVE_OCTAVE_OFFSET, REGISTER_ADD_ROWS, LLAMATRON_OCTAVES_SINCE, NAMED_GENERATORS, NOTES_SINCE, OCTAVE_LABEL_CHOICES, OCTAVE_LABEL_OFFSETS, SETLISTS_SINCE,
-    VISUALIZER_NAMES, ClipSlotSetting, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting,
-)
-from llamatron.composition.generator_settings import GENERATOR_SETTINGS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.composition import generator_settings
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems
 from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern, held_add
-from llamatron.composition.sections import SECTION_LABELS, SETLIST_SECTIONS
+from llamatron.composition import sections
 from llamatron.composition.instrument import Instrument
-from llamatron.composition.groove import FACTORY_GROOVE_NAMES, Groove, check_groove_name, factory_groove, is_factory_groove
+from llamatron.composition import groove
+from llamatron.composition.groove import Groove, check_groove_name, factory_groove, is_factory_groove
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song import Song, started_song
 from llamatron.composition.song_file_error import SongFileError
@@ -84,8 +85,8 @@ SETTINGS = described(
     Length(name=SetlistSetting.STEP_SIZE, most=set_limits.MAX_STEP_SIZE),
     WholeNumber(name=SetlistSetting.DEFAULT_OCTAVE, lowest=set_limits.MIN_OCTAVE, highest=set_limits.MAX_OCTAVE, error=errors.ERR_CHECKS_BAD_OCTAVE),
     WholeNumber(name=SetlistSetting.DEFAULT_DRUM_OCTAVE, lowest=set_limits.MIN_OCTAVE, highest=set_limits.MAX_OCTAVE, error=errors.ERR_CHECKS_BAD_OCTAVE),
-    Choice(name=SetlistSetting.OCTAVE_LABELS, choices=OCTAVE_LABEL_CHOICES, default=LEFT_OUT, error=errors.ERR_SONG_BAD_OCTAVE_LABELS),
-    Choice(name=SetlistSetting.DEFAULT_FOLLOW_ACTION, choices=FOLLOW_ACTION_CHOICES, default=LEFT_OUT, error=errors.ERR_BAD_DEFAULT_FOLLOW_ACTION),
+    Choice(name=SetlistSetting.OCTAVE_LABELS, choices=file_format.OCTAVE_LABEL_CHOICES, default=corrections_values.LEFT_OUT, error=errors.ERR_SONG_BAD_OCTAVE_LABELS),
+    Choice(name=SetlistSetting.DEFAULT_FOLLOW_ACTION, choices=file_format.FOLLOW_ACTION_CHOICES, default=corrections_values.LEFT_OUT, error=errors.ERR_BAD_DEFAULT_FOLLOW_ACTION),
     Flag(name=SetlistSetting.REAL_TIME, error=errors.ERR_REAL_TIME_NOT_TRUE_OR_FALSE),
     Checked(name=SetlistSetting.VISUALIZER, check=_never_refused),
     Checked(name=SetlistSetting.HIDDEN_VISUALIZERS, check=_never_refused),
@@ -102,14 +103,14 @@ NO_TEXT = ''
 ITEM_KINDS = {
     Section.SCALES: NamedScale,
     Section.PATTERNS: Pattern,
-    **{section: GENERATOR_SETTINGS[kind] for kind, section in NAMED_GENERATORS.items()},
+    **{section: generator_settings.GENERATOR_SETTINGS[kind] for kind, section in file_format.NAMED_GENERATORS.items()},
     Section.CHAINS: Chain,
     Section.GROOVES: Groove,
     Section.INSTRUMENTS: Instrument,
     Section.SONGS: Song,
 }
 # The sections taken in from another set, in the order a set is read, so that each can name what the ones before it hold.
-SECTIONS_TAKEN_IN = [Section.SCALES, Section.PATTERNS, *NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
+SECTIONS_TAKEN_IN = [Section.SCALES, Section.PATTERNS, *file_format.NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 # The sections whose items are read knowing the set, where the others take the set in place of a song, to look names up in.
 READ_WITH_THE_SET = (Section.CHAINS, Section.SONGS)
 # The scale a new set starts with, which can be deleted.
@@ -152,7 +153,7 @@ def new_setlist():
 
 
 # The kind of generator each generator section holds.
-GENERATOR_KINDS_OF_SECTIONS = {section: kind for kind, section in NAMED_GENERATORS.items()}
+GENERATOR_KINDS_OF_SECTIONS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
 
 
 class Setlist(LlamaData):
@@ -172,7 +173,7 @@ class Setlist(LlamaData):
         # The types of generator shown open on the Generators page, kept the same way (file_format.OPEN_GENERATOR_TYPES).
         self._open_types = []
         self._settings = {name: None for name in SETTINGS}
-        self._sections = {name: NamedItems(label=SECTION_LABELS[name]) for name in SETLIST_SECTIONS}
+        self._sections = {name: NamedItems(label=sections.SECTION_LABELS[name]) for name in sections.SETLIST_SECTIONS}
 
     @classmethod
     def read_file(cls, path):
@@ -208,10 +209,10 @@ class Setlist(LlamaData):
         data = self.to_data()
         closed = self.get_closed_pattern_groups()
         if closed:
-            data[CLOSED_PATTERN_GROUPS] = closed
+            data[file_format.CLOSED_PATTERN_GROUPS] = closed
         opened = self.get_open_generator_types()
         if opened:
-            data[OPEN_GENERATOR_TYPES] = opened
+            data[file_format.OPEN_GENERATOR_TYPES] = opened
         return data
 
     @classmethod
@@ -284,7 +285,7 @@ class Setlist(LlamaData):
         self._read_settings(data)
         self._read_scales(data)
         self._read_items(data=data, section=Section.PATTERNS)
-        for section in NAMED_GENERATORS.values():
+        for section in file_format.NAMED_GENERATORS.values():
             self._read_generators(data=data, section=section)
         self._read_items(data=data, section=Section.CHAINS)
         self._read_grooves(data)
@@ -296,7 +297,7 @@ class Setlist(LlamaData):
         """Refuse a pattern whose += rows add more than the narrowest Allowed Inc Max of the songs that play it, with the correction that brings them within it."""
         for name in self.get_pattern_names():
             pattern = self.get_pattern(name)
-            for register, row in REGISTER_ADD_ROWS.items():
+            for register, row in file_format.REGISTER_ADD_ROWS.items():
                 if not pattern.adds_anything(row):
                     continue
                 most = self.allowed_inc_max_for_pattern(name=name, register=register)
@@ -313,7 +314,7 @@ class Setlist(LlamaData):
     def _read_settings(self, data):
         for setting in settings_held(settings=SETTINGS, data=data):
             name = setting.get_name()
-            with reading(TOP_OF_FILE if name in NAMED_BY_THEIR_MESSAGE else name):
+            with reading(checks.TOP_OF_FILE if name in NAMED_BY_THEIR_MESSAGE else name):
                 setting.check_held(data)
         self._settings = {name: own_copy(data.get(name)) for name in SETTINGS}
         self._settings[SetlistSetting.VISUALIZER] = sensible_visualizer(self._settings[SetlistSetting.VISUALIZER])
@@ -373,12 +374,12 @@ class Setlist(LlamaData):
 
     def _where(self, *, section, name):
         """Return how a message places one item of a section, like pattern (tune)."""
-        return errors.ERR_WHERE_NAMED.format(label=SECTION_LABELS[section], name=name)
+        return errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[section], name=name)
 
     @notes_change
     def _set_section(self, *, section, items):
         """Give a section its items as read from the file, or None for a section the file leaves out."""
-        self._sections[section] = NamedItems(label=SECTION_LABELS[section], items=items)
+        self._sections[section] = NamedItems(label=sections.SECTION_LABELS[section], items=items)
 
     def _section(self, section):
         return self._sections[section]
@@ -442,7 +443,7 @@ class Setlist(LlamaData):
 
     def octave_label_offset(self):
         """Return how far below the file's octave numbers the shown ones are: 2 with Live's labels."""
-        return OCTAVE_LABEL_OFFSETS[self.get_octave_labels()]
+        return file_format.OCTAVE_LABEL_OFFSETS[self.get_octave_labels()]
 
     def shown_octave(self, octave):
         """Return an octave from the file as the tracker shows it, in the set's octave labels."""
@@ -595,7 +596,7 @@ class Setlist(LlamaData):
     def ordered_generators(self):
         """Return every generator as (kind, name) in the Generators page's order: the order kept, leaving out any generator
         gone, then any it doesn't name, kind by kind in each kind's own order."""
-        existing = [(kind, name) for kind, section in NAMED_GENERATORS.items() for name in self._section(section).names()]
+        existing = [(kind, name) for kind, section in file_format.NAMED_GENERATORS.items() for name in self._section(section).names()]
         kept = []
         for entry in self._settings[SetlistSetting.GENERATOR_ORDER] or []:
             pair = next(iter(entry.items()))
@@ -828,7 +829,7 @@ class Setlist(LlamaData):
         """Bring every pattern's += rows within the narrowest Allowed Inc Max of the songs that play it: lowering a limit changes what used it."""
         for name in self.get_pattern_names():
             pattern = self.get_pattern(name)
-            for register, row in REGISTER_ADD_ROWS.items():
+            for register, row in file_format.REGISTER_ADD_ROWS.items():
                 if not pattern.adds_anything(row):
                     continue
                 most = self.allowed_inc_max_for_pattern(name=name, register=register)
@@ -868,7 +869,7 @@ class Setlist(LlamaData):
 
     def get_groove_names(self):
         """Return every groove a song can choose: the factory grooves, then the set's own in the set's order."""
-        return [*FACTORY_GROOVE_NAMES, *self.get_own_groove_names()]
+        return [*groove.FACTORY_GROOVE_NAMES, *self.get_own_groove_names()]
 
     def get_own_groove_names(self):
         """Return the names of the set's own grooves, which the file writes, in the set's order."""
@@ -1012,7 +1013,7 @@ class Setlist(LlamaData):
 
     def get_open_generator_types(self):
         """Return the kinds of generator the Generators page shows open, in the order kinds are listed, leaving out any the set has no generator of any more."""
-        return [kind for kind in NAMED_GENERATORS if kind in self._open_types and self._section(NAMED_GENERATORS[kind]).names()]
+        return [kind for kind in file_format.NAMED_GENERATORS if kind in self._open_types and self._section(file_format.NAMED_GENERATORS[kind]).names()]
 
     def is_generator_type_open(self, kind):
         return kind in self._open_types
@@ -1026,14 +1027,14 @@ class Setlist(LlamaData):
 
     def has_generator(self, *, kind, name):
         """Return whether there's a generator of a kind, like arp, with this name."""
-        return self._section(NAMED_GENERATORS[kind]).has(name)
+        return self._section(file_format.NAMED_GENERATORS[kind]).has(name)
 
     def get_generator_settings(self, *, kind, name):
-        return self._section(NAMED_GENERATORS[kind]).get(name)
+        return self._section(file_format.NAMED_GENERATORS[kind]).get(name)
 
     def get_generator_names(self, kind):
         """Return the names of the generators of a kind, like arp, in the set's order."""
-        return self._section(NAMED_GENERATORS[kind]).names()
+        return self._section(file_format.NAMED_GENERATORS[kind]).names()
 
     def has_chain(self, name):
         return self._section(Section.CHAINS).has(name)
@@ -1067,7 +1068,7 @@ class Setlist(LlamaData):
     def get_hidden_visualizers(self):
         """Return the names of the visualizer modes left out of Arrange's visualizer key, in the modes' order."""
         hidden = self._settings[SetlistSetting.HIDDEN_VISUALIZERS] or []
-        return [name for name in VISUALIZER_NAMES if name in hidden]
+        return [name for name in file_format.VISUALIZER_NAMES if name in hidden]
 
     @notes_change
     def set_visualizer_hidden(self, *, name, hidden):
@@ -1109,7 +1110,7 @@ def _file_data(path):
 
 def closed_groups_held(data):
     """Return the pattern groups a file's data shows closed: its list's names, and none where the file holds anything else, since a view's state is never worth refusing a file for."""
-    held = data.get(CLOSED_PATTERN_GROUPS)
+    held = data.get(file_format.CLOSED_PATTERN_GROUPS)
     if not isinstance(held, list):
         return []
     return [name for name in held if isinstance(name, str)]
@@ -1117,10 +1118,10 @@ def closed_groups_held(data):
 
 def open_types_held(data):
     """Return the types of generator a file's data shows open: its list's kinds of generator, and none where the file holds anything else, as for the closed groups."""
-    held = data.get(OPEN_GENERATOR_TYPES)
+    held = data.get(file_format.OPEN_GENERATOR_TYPES)
     if not isinstance(held, list):
         return []
-    return [kind for kind in held if isinstance(kind, str) and kind in NAMED_GENERATORS]
+    return [kind for kind in held if isinstance(kind, str) and kind in file_format.NAMED_GENERATORS]
 
 
 def _as_a_set_is_written(*, data, where, one_song_name):
@@ -1136,10 +1137,10 @@ def _as_a_set_is_written(*, data, where, one_song_name):
     if holds_one_song(data):
         data = as_setlist_data(data=data, song_name=one_song_name)
     with reading(where):
-        check_keys(data=data, allowed={*SETTINGS, *SETLIST_SECTIONS, CLOSED_PATTERN_GROUPS, OPEN_GENERATOR_TYPES})
-    if _saved_before(data=data, version=LLAMATRON_OCTAVES_SINCE):
+        check_keys(data=data, allowed={*SETTINGS, *sections.SETLIST_SECTIONS, file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES})
+    if _saved_before(data=data, version=file_format.LLAMATRON_OCTAVES_SINCE):
         data = _with_live_octaves_moved_up(data)
-    if _saved_before(data=data, version=NOTES_SINCE) and SetlistSetting.DESCRIPTION in data:
+    if _saved_before(data=data, version=file_format.NOTES_SINCE) and SetlistSetting.DESCRIPTION in data:
         data = _with_description_as_notes(data)
     return data
 
@@ -1165,7 +1166,7 @@ def holds_one_song(data):
     """Return whether a file is from before sets existed, with one song's settings at the top and no songs section."""
     if Section.SONGS in data:
         return False
-    return _saved_before(data=data, version=SETLISTS_SINCE) or any(key in data for key in ONE_SONG_KEYS)
+    return _saved_before(data=data, version=file_format.SETLISTS_SINCE) or any(key in data for key in ONE_SONG_KEYS)
 
 
 def as_setlist_data(*, data, song_name):
@@ -1183,8 +1184,8 @@ def _with_live_octaves_moved_up(data):
     moved = dict(data)
     for name in (SetlistSetting.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE):
         if is_whole_number(moved.get(name)):
-            moved[name] = moved[name] + LIVE_OCTAVE_OFFSET
+            moved[name] = moved[name] + file_format.LIVE_OCTAVE_OFFSET
     patterns = moved.get(Section.PATTERNS)
     if isinstance(patterns, dict):
-        moved[Section.PATTERNS] = {name: Pattern.with_octaves_moved(data=pattern, offset=LIVE_OCTAVE_OFFSET) for name, pattern in patterns.items()}
+        moved[Section.PATTERNS] = {name: Pattern.with_octaves_moved(data=pattern, offset=file_format.LIVE_OCTAVE_OFFSET) for name, pattern in patterns.items()}
     return moved

@@ -19,7 +19,8 @@
 import unittest
 import unittest.mock
 
-from llamatron.composition.file_format import FIXED_CHORDS, ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
 from llamatron.composition.generator_settings import GuitarifySettings
 from llamatron.macro_composer import loudness_steps
 from llamatron.macro_composer.breaks import HAT, OPEN, RIDE
@@ -140,8 +141,8 @@ class TestTheCount(unittest.TestCase):
 
     def test_a_step_sounds_one_note_or_its_chords(self):
         self.assertEqual(loudness_steps.chord_notes(None), ONE_NOTE)
-        self.assertEqual(loudness_steps.chord_notes(ChordSymbol.POWER), len(FIXED_CHORDS[ChordSymbol.POWER].value) + ONE_NOTE)
-        self.assertEqual(loudness_steps.chord_notes(ChordSymbol.MAJOR7), len(FIXED_CHORDS[ChordSymbol.MAJOR7].value) + ONE_NOTE)
+        self.assertEqual(loudness_steps.chord_notes(ChordSymbol.POWER), len(file_format.FIXED_CHORDS[ChordSymbol.POWER].value) + ONE_NOTE)
+        self.assertEqual(loudness_steps.chord_notes(ChordSymbol.MAJOR7), len(file_format.FIXED_CHORDS[ChordSymbol.MAJOR7].value) + ONE_NOTE)
 
     def test_each_note_lasts_until_the_note_after(self):
         self.assertEqual(loudness_steps.lasting(steps=[0, 6], count=SOME_NOTES), [6, SOME_NOTES - 6])
