@@ -139,7 +139,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   the user's answers are acted on without asking them to be confirmed. A message that asks a question ends the turn: what
   depends on the answer waits for it.
 - What is agreed and not yet built is written, design by design, in `.claude/DESIGNS.md` and, for the arranger and the song wizard,
-  `.claude/features/WIZARD_DESIGNS.md`, the first kept out of git as the queue is; the order the work is built in is `.claude/QUEUE.md`, Claude's
+  `.claude/features/WIZARD_DESIGNS.md`, both kept out of git as the queue is; the order the work is built in is `.claude/QUEUE.md`, Claude's
   own short list, which git ignores and which is never committed (the user's choice, for privacy and a quieter history). An item
   leaves the designs once built, and a
   request that comes in while Claude works goes where the user says, the bottom unless told otherwise, and Claude says where
