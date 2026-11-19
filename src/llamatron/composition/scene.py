@@ -28,13 +28,14 @@ from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import check_keys, listed, number, reading
 from llamatron.composition.clip_slot import ClipSlot
-from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
+from llamatron.composition.conditions import register_values_setting, statements_setting
 from llamatron.composition.file_format import RampPart, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import data_as_kept, data_built_anew, HoldsSettings, own_copy, written_settings
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.composition.shapes import shape_settings, shape_values
+from llamatron.composition.traits import BypassedWhen, RunsChains, SetsRegisters
 from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.strings import errors
 from llamatron.support.revised import notes_change
@@ -101,7 +102,7 @@ SETTINGS = described(
 READ_ANOTHER_WAY = (SceneSetting.NAME, SceneSetting.TEMPO, *RAMP_TEMPOS)
 
 
-class Scene(HoldsSettings):
+class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
     """A name, how many times it repeats, an optional scale and tempo, and a clip slot for each track it plays.
 
     Settings the file leaves out are kept as None, meaning their defaults. Its scale is kept as
@@ -111,6 +112,10 @@ class Scene(HoldsSettings):
     __slots__ = ('_clip_slots')
 
     SETTINGS = SETTINGS
+    CHAINS_SETTING = SceneSetting.CHAINS
+    BYPASS_SETTING = SceneSetting.BYPASS_WHEN
+    SET_REGISTERS_SETTING = SceneSetting.SET_REGISTERS
+    ADD_REGISTERS_SETTING = SceneSetting.ADD_REGISTERS
 
     # A scene names the scale and the groove it chooses. Its clips name things too, and are its referring parts.
     REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,), Section.CHAINS: (SceneSetting.CHAINS,)}
@@ -210,22 +215,10 @@ class Scene(HoldsSettings):
         reset = self._settings[SceneSetting.RESET] or []
         return [name for name in file_format.REGISTER_NAMES if name in reset]
 
-    def get_register_sets(self):
-        """Return what it sets registers to as it first starts, a value for each register it sets."""
-        return dict(self._settings[SceneSetting.SET_REGISTERS] or {})
-
-    def get_register_adds(self):
-        """Return what it adds to registers every time it plays, its first play and each repeat, an amount for each register it adds to."""
-        return dict(self._settings[SceneSetting.ADD_REGISTERS] or {})
-
     def changes_registers(self):
         """Return whether it, or any of its clips, sets a register or adds to one."""
         own = self._settings[SceneSetting.SET_REGISTERS] or self._settings[SceneSetting.ADD_REGISTERS]
         return bool(own) or any(clip_slot.get_register_sets() or clip_slot.get_register_adds() for clip_slot in (self._clip_slots or {}).values())
-
-    def get_bypass_when(self):
-        """Return the statements about the registers that, while any is true as a clip's pattern starts over, bypass the generators of that clip."""
-        return own_copy(self._settings[SceneSetting.BYPASS_WHEN] or [])
 
     def get_track_names(self):
         """Return the tracks it plays a clip slot on, in the order the file lists them."""
@@ -315,25 +308,6 @@ class Scene(HoldsSettings):
         self._settings[SceneSetting.RESET] = reset or None
 
     @notes_change
-    def set_register_set(self, *, register, value):
-        """Make it set a register to a value as it first starts, or None to leave the register alone."""
-        self._set_checked(name=SceneSetting.SET_REGISTERS, value=with_register_value(values=self._settings[SceneSetting.SET_REGISTERS], register=register, value=value))
-
-    @notes_change
-    def set_register_add(self, *, register, value):
-        """Make it add an amount to a register every time it plays, or None to add nothing."""
-        self._set_checked(name=SceneSetting.ADD_REGISTERS, value=with_register_value(values=self._settings[SceneSetting.ADD_REGISTERS], register=register, value=value or None))
-
-    @notes_change
-    def set_bypass_statement(self, *, place, statement):
-        """Write the statement at a place of its table, add one just past the last, or remove one with None."""
-        self._set_checked(name=SceneSetting.BYPASS_WHEN, value=with_statement(statements=self._settings[SceneSetting.BYPASS_WHEN], place=place, statement=statement))
-
-    def _set_checked(self, *, name, value):
-        """Keep a setting's new value once its description allows it, None leaving the setting out."""
-        self.set_written(name=name, value=value)
-
-    @notes_change
     def set_clip_slot(self, *, track, clip_slot, song):
         """Give a track a clip slot, replacing any it had."""
         if not song.has_track(track):
@@ -397,17 +371,6 @@ class Scene(HoldsSettings):
     def set_shape_setting(self, *, name, value):
         """Set one part of a shape by its file name, like density_start, or None to leave it out."""
         self.set_written(name=name, value=value)
-
-    def get_chain_names(self):
-        """Return the names of the chains every clip of the scene runs, after the clip's own, in order."""
-        return list(self._settings[SceneSetting.CHAINS] or [])
-
-    @notes_change
-    def set_chain_names(self, *, names, song):
-        """Set the chains every clip of the scene runs, by name, in order, or none for an empty list."""
-        if names:
-            SETTINGS[SceneSetting.CHAINS].check(list(names), song=song)
-        self._settings[SceneSetting.CHAINS] = list(names) if names else None
 
     def get_groove_choice(self):
         """Return the groove it chooses by name, False for no groove in this scene whatever the song chooses, or None to take the song's."""

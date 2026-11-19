@@ -1,0 +1,86 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""What several kinds of stored object do alike, each said once: running chains, being bypassed by statements, setting registers.
+
+Each is a trait, a class with no data of its own that a holder of settings (HoldsSettings) lists
+before it, and that reads and stores through get_written() and set_written(). A trait names the
+setting it keeps its value under, which every class with the trait writes under the same name.
+"""
+
+from llamatron.composition.conditions import with_register_value, with_statement
+from llamatron.composition.llama_data import own_copy
+
+
+class RunsChains:
+    """Something whose clips run chains of generators, by name, in order: a clip, its scene and its track."""
+
+    __slots__ = ()
+
+    # The name its class writes the setting under.
+    CHAINS_SETTING = None
+
+    def get_chain_names(self):
+        """Return the names of the chains it runs, in order; none when it runs none."""
+        return list(self.get_written(self.CHAINS_SETTING) or [])
+
+    def set_chain_names(self, *, names, song):
+        """Set the chains it runs, by name, in order, or none for an empty list."""
+        self.set_written(name=self.CHAINS_SETTING, value=list(names) if names else None, song=song)
+
+
+class BypassedWhen:
+    """Something a table of statements about the registers leaves out: while any statement is true as a clip's pattern starts over, it is bypassed for that pass."""
+
+    __slots__ = ()
+
+    # The name its class writes the setting under.
+    BYPASS_SETTING = None
+
+    def get_bypass_when(self):
+        """Return its statements about the registers, in order; none when it has none."""
+        return own_copy(self.get_written(self.BYPASS_SETTING) or [])
+
+    def set_bypass_statement(self, *, place, statement):
+        """Write the statement at a place of its table, add one just past the last, or remove one with None."""
+        self.set_written(name=self.BYPASS_SETTING, value=with_statement(statements=self.get_written(self.BYPASS_SETTING), place=place, statement=statement))
+
+
+class SetsRegisters:
+    """Something that sets registers to values as it starts and adds amounts to registers each time it plays: a scene and a clip."""
+
+    __slots__ = ()
+
+    # The name its class writes the setting under.
+    SET_REGISTERS_SETTING = None
+    # The name its class writes the setting under.
+    ADD_REGISTERS_SETTING = None
+
+    def get_register_sets(self):
+        """Return what it sets registers to as it starts, a value for each register it sets."""
+        return dict(self.get_written(self.SET_REGISTERS_SETTING) or {})
+
+    def get_register_adds(self):
+        """Return what it adds to registers every time it plays, an amount for each register it adds to."""
+        return dict(self.get_written(self.ADD_REGISTERS_SETTING) or {})
+
+    def set_register_set(self, *, register, value):
+        """Make it set a register to a value as it starts, or None to leave the register alone."""
+        self.set_written(name=self.SET_REGISTERS_SETTING, value=with_register_value(values=self.get_written(self.SET_REGISTERS_SETTING), register=register, value=value))
+
+    def set_register_add(self, *, register, value):
+        """Make it add an amount to a register every time it plays, or None or 0 to add nothing."""
+        self.set_written(name=self.ADD_REGISTERS_SETTING, value=with_register_value(values=self.get_written(self.ADD_REGISTERS_SETTING), register=register, value=value or None))

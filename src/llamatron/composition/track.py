@@ -27,6 +27,7 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, or_default, own_copy
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.composition.strum import strum_settings, strum_values
+from llamatron.composition.traits import RunsChains
 from llamatron.music import midi
 from llamatron.strings import errors
 from llamatron.support.revised import notes_change
@@ -78,7 +79,7 @@ SETTINGS = described(
 )
 
 
-class Track(HoldsSettings):
+class Track(RunsChains, HoldsSettings):
     """A track's settings: whether it's a drum track, whether it's muted, its transpose, octave range, CC numbers, groove and instrument, and the registers bound to its CC lanes and its velocity.
 
     A setting the file leaves out is kept as None and means its default, so that saving writes
@@ -88,6 +89,7 @@ class Track(HoldsSettings):
     __slots__ = ()
 
     SETTINGS = SETTINGS
+    CHAINS_SETTING = TrackSetting.CHAINS
 
     # A track names the groove it chooses.
     REFERENCES = {Section.GROOVES: (TrackSetting.GROOVE,), Section.INSTRUMENTS: (TrackSetting.INSTRUMENT,), Section.CHAINS: (TrackSetting.CHAINS,)}
@@ -262,17 +264,6 @@ class Track(HoldsSettings):
         if table is not None:
             SETTINGS[name].check(table)
         self._settings[name] = table
-
-    def get_chain_names(self):
-        """Return the names of the chains every clip on the track runs, after the clip's and the scene's, in order."""
-        return list(self._settings[TrackSetting.CHAINS] or [])
-
-    @notes_change
-    def set_chain_names(self, *, names, song):
-        """Set the chains every clip on the track runs, by name, in order, or none for an empty list."""
-        if names:
-            SETTINGS[TrackSetting.CHAINS].check(list(names), song=song)
-        self._settings[TrackSetting.CHAINS] = list(names) if names else None
 
     def copy(self):
         return Track(**{**self._settings, TrackSetting.CC: self.get_cc_numbers() if self._settings[TrackSetting.CC] else None, TrackSetting.CHAINS: own_copy(self._settings[TrackSetting.CHAINS])})
