@@ -30,7 +30,7 @@ section itself is kept over what the plan would say.
 
 import random
 
-from llamatron.composition.file_format import BARS_WRITTEN, ONE_BAR_WRITTEN
+from llamatron.composition.file_format import VelocitySetting
 from llamatron.macro_composer import hook_writing
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
 from llamatron.macro_composer.melody import BREATHES, HOOK
@@ -112,15 +112,18 @@ MARKER_EVERY = 'marker_every'
 LAST_CHORD = 'last_chord'
 DEGREE = 'degree'
 ACCIDENTAL = 'accidental'
-SWELL_START = 'swell_start'
-SWELL_END = 'swell_end'
-SWELL_OVER = 'swell_over'
+# How loud a section's scene plays: the level that holds, the level a ramp in starts from and its bars, and the level a ramp out ends at and its bars.
+SCENE_VELOCITY = VelocitySetting.LEVEL
+SCENE_VELOCITY_IN_START = VelocitySetting.IN_START
+SCENE_VELOCITY_IN_OVER = VelocitySetting.IN_OVER
+SCENE_VELOCITY_OUT_END = VelocitySetting.OUT_END
+SCENE_VELOCITY_OUT_OVER = VelocitySetting.OUT_OVER
 # A section that fades: softer bar by bar to this share of what is written, from all of it where no plan says how loud the section is.
 FADES = 'fades'
 # How soft a fade goes where the section says no level: to silence, a velocity and a share of what is written alike.
 FADED = 0
 UNFADED = 100
-# A fade's own level, the velocity a fade in starts from and a fade out ends at, from silence to MIDI's loudest; the bars a fade in takes, the whole section where
+# A fade's own level, the velocity a fade in starts from and a fade out ends at, from silence to MIDI's loudest; the bars a fade takes, the whole section where
 # none is said; and whether the fade is a fade in, which a section that opens the song has, where any other fades out.
 FADE_LEVEL = 'fade_level'
 FADE_OVER = 'fade_over'
@@ -130,15 +133,15 @@ LOUDEST_FADE_LEVEL = midi.MAX_VELOCITY
 
 
 def faded(*, own, loud):
-    """Return the scene's swell of a section that fades, from what the section says of its fade and how loud the section is
-    played: a fade in rises from the fade's level to the section's loudness over the fade's bars and stays there, and a fade
-    out falls from the section's loudness to the fade's level over the whole section."""
-    # A scene's swell is a share of each note's written velocity, so the level is said as its share of the loudest velocity.
+    """Return the scene's velocity of a section that fades, from what the section says of its fade and how loud the section is
+    played: a fade in is a ramp in that rises from the fade's level to the section's loudness over the fade's bars and stays
+    there, and a fade out is a ramp out that falls from the section's loudness to the fade's level over the fade's bars, the
+    last of the section. A fade that says no bars takes the whole section, which whoever writes the scene knows the bars of."""
+    # A scene's velocity is a share of each note's written velocity, so the level is said as its share of the loudest velocity.
     level = round(own.get(FADE_LEVEL, FADED) * UNFADED / LOUDEST_FADE_LEVEL)
     if not own.get(FADES_IN):
-        return {SWELL_START: loud, SWELL_END: level}
-    over = {SWELL_OVER: ONE_BAR_WRITTEN if own[FADE_OVER] == 1 else BARS_WRITTEN.format(count=own[FADE_OVER])} if own.get(FADE_OVER) else {}
-    return {SWELL_START: level, SWELL_END: loud, **over}
+        return {SCENE_VELOCITY: loud, SCENE_VELOCITY_OUT_END: level, **({SCENE_VELOCITY_OUT_OVER: own[FADE_OVER]} if own.get(FADE_OVER) else {})}
+    return {SCENE_VELOCITY: loud, SCENE_VELOCITY_IN_START: level, **({SCENE_VELOCITY_IN_OVER: own[FADE_OVER]} if own.get(FADE_OVER) else {})}
 CYMBAL = 'cymbal'
 # What a song may say of its fills: the trait that names the fill, the value for none, how often they come and the count for never.
 FILLS_TRAIT = 'fills'
@@ -330,7 +333,10 @@ class SongPlan:
         rising = self._rises(place)
         if self._at(place).get(FADES):
             return faded(own=self._at(place), loud=loudness_at(energy))
-        return {SWELL_START: loudness_at(energy - RISES_FROM if rising else energy), SWELL_END: loudness_at(self._arrives_at(place) if rising else energy)}
+        if not rising:
+            return {SCENE_VELOCITY: loudness_at(energy)}
+        # A rising section climbs across all of its bars to where it arrives.
+        return {SCENE_VELOCITY: loudness_at(self._arrives_at(place)), SCENE_VELOCITY_IN_START: loudness_at(energy - RISES_FROM)}
 
     def _arrives_at(self, place):
         """The Energy a rising section ends its climb at: that of the section it leads to where that one is higher, so that the climb arrives."""

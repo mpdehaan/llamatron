@@ -24,10 +24,10 @@ A pattern is written once and played in many places, and a generator changes how
 
 ## Shaping Sections
 
-A section of a song often changes over its length: a build grows denser, a crescendo grows louder, a breakdown thins out. Three shapes do this, each a percentage that ramps from a start to an end: Density, how many notes play; Swell, how loud they are; and Articulate, how long they sound.
+A section of a song often changes over its length: a build grows denser, a crescendo grows louder, a breakdown thins out. Three things do this, each a percentage that ramps from a start to an end: Density, how many notes play; velocity, how loud they are; and Articulate, how long they sound.
 
 1. On Arrange, copy a scene with `C` to make the next section, and change its clips. See [Arrange](ARRANGE.md).
-2. On the scene's Scene page, open `+ Density` and set Density start to 25 and Density end to 100: the section starts sparse and fills in to a build. `+ Swell` does the same for loudness, and `+ Articulate` for length. See [Scenes](SCENES.md).
+2. On the scene's Scene page, open `+ Density` and set Density start to 25 and Density end to 100: the section starts sparse and fills in to a build. `+ Velocity Ramp In` and `+ Velocity Ramp Out` fade the section in and out, and `+ Articulate` does the same as Density for length. See [Scenes](SCENES.md).
 3. To give many sections the same shape and change it in one place, make a Density, Swell or Articulate generator instead, and put it in a chain on those scenes. See [Density](generators/DENSITY.md), [Swell](generators/SWELL.md) and [Articulate](generators/ARTICULATE.md).
 
 `examples/by_genre/electronic/edm_density.yml` and `examples/learning/16_bolero_swell.yml` show both ways.

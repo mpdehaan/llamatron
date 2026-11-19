@@ -30,7 +30,8 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.strings import labels, marks as marks_text
-from llamatron.composition.file_format import SHAPES, Section
+from llamatron.composition.velocity_ramps import AS_WRITTEN
+from llamatron.composition.file_format import PLACED_SHAPES, VELOCITY_SETTINGS, Section, VelocitySetting
 from llamatron.tui import themes
 from llamatron.tui.drawing import Style, fit
 from llamatron.tui.text import plain_number
@@ -121,10 +122,21 @@ def chain_lines(*, song, names):
     return lines + [detail(marks_text.MSG_DETAILS_ADD_CHAIN, style=Style.DIM, target=Target(kind=ADD_CHAIN, name=None))]
 
 
+def velocity_lines(owner):
+    """Return the line of a scene's or a clip's own velocity, where it sets any: the level, with a mark where a ramp of its own moves it."""
+    settings = owner.get_velocity_settings()
+    if all(settings[name] is None for name in VELOCITY_SETTINGS):
+        return []
+    level = settings[VelocitySetting.LEVEL]
+    ramps = any(settings[name] is not None for name in VELOCITY_SETTINGS if name != VelocitySetting.LEVEL)
+    line = marks_text.MSG_DETAILS_VELOCITY_RAMPS if ramps else marks_text.MSG_DETAILS_VELOCITY
+    return [detail(line.format(percent=AS_WRITTEN if level is None else level))]
+
+
 def shape_lines(owner):
-    """Return a line for each shape, Density, Swell or Articulate, that a scene or a clip sets."""
+    """Return a line for each shape, Density or Articulate, that a scene or a clip sets."""
     lines = []
-    for shape in SHAPES:
+    for shape in PLACED_SHAPES:
         values = owner.get_shape(shape)
         if values is not None:
             lines.append(detail(marks_text.MSG_DETAILS_SHAPE.format(shape=marks_text.MSG_DETAILS_SHAPE_NAMES[shape], start=values.start, end=values.end)))
@@ -168,7 +180,7 @@ def clip_details(*, setlist, song, clip_slot):
     if written is not None and written != setlist.get_default_follow_action():
         lines.append(detail(marks_text.MSG_DETAILS_ADVANCE.format(action=labels.MSG_FOLLOW_ACTION_NAMES[written])))
     lines += strum_lines(clip_slot.get_strum())
-    return lines + shape_lines(clip_slot)
+    return lines + velocity_lines(clip_slot) + shape_lines(clip_slot)
 
 
 def scene_details(*, song, scene):
@@ -184,7 +196,7 @@ def scene_details(*, song, scene):
     lines += groove_lines(scene.get_groove_choice())
     if scene.get_reset_names():
         lines.append(detail(marks_text.MSG_DETAILS_RESET.format(registers=marks_text.MSG_DETAILS_LIST_SEPARATOR.join(scene.get_reset_names()))))
-    return lines + shape_lines(scene)
+    return lines + velocity_lines(scene) + shape_lines(scene)
 
 
 def track_details(*, song, track):

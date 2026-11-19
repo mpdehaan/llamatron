@@ -153,7 +153,7 @@ Every generator's page ends with a section called Bypass Generators When, a tabl
 
 ## Shapes
 
-[Density](generators/DENSITY.md), [Swell](generators/SWELL.md) and [Articulate](generators/ARTICULATE.md) shape a clip's notes over time, each a percentage that ramps from a start to an end. Each is set in three places: a section of the Scene page and of the clip page, `+ Density`, `+ Swell` and `+ Articulate`, and a generator of each kind, which a chain names as `density: name`, `swell: name` or `articulate: name`. A generator in a clip's chains wins over the clip's own setting, which wins over its scene's, so that a generator can be painted on many clips and changed in one place. Every setting left blank plays as 100%, changing nothing.
+[Density](generators/DENSITY.md), [Swell](generators/SWELL.md) and [Articulate](generators/ARTICULATE.md) shape a clip's notes over time, each a percentage that ramps from a start to an end. Each is a generator, which a chain names as `density: name`, `swell: name` or `articulate: name`, and Density and Articulate are also set in a section of the Scene page and of the clip page, `+ Density` and `+ Articulate`. A generator in a clip's chains wins over the clip's own setting, which wins over its scene's, so that a generator can be painted on many clips and changed in one place. How loud a scene or a clip plays is set by its Velocity and its velocity ramps, which a Swell generator scales again: see [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). Every setting left blank plays as 100%, changing nothing.
 
 | Setting | What it does |
 | --- | --- |

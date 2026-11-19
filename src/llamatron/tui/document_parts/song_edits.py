@@ -163,6 +163,14 @@ class SongEdits:
         """Write one statement of one of a track's tables, by the table's file name, or None to remove it."""
         self._change(self._track(track).set_statement, name=name, place=place, statement=statement)
 
+    def set_scene_velocity_setting(self, *, index, name, value):
+        """Set one of a scene's velocity settings by its file name, the level or a part of a ramp, or None to leave it blank."""
+        self._change(self._scene(index).set_velocity_setting, name=name, value=value)
+
+    def set_clip_velocity_setting(self, *, index, track, name, value):
+        """Set one of a clip's velocity settings by its file name, or None to take its scene's."""
+        self._change(self.clip_slot(index=index, track=track).set_velocity_setting, name=name, value=value)
+
     def set_scene_shape_setting(self, *, index, name, value):
         """Set one part of a scene's Density, Swell or Articulate, by its file name like density_start, or None to leave it blank."""
         self._change(self._scene(index).set_shape_setting, name=name, value=value)

@@ -25,7 +25,7 @@ song that sets none of it plays as it always has.
 from typing import NamedTuple
 
 from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.file_format import SHAPE_THENS, SHAPES, Shape, ShapePart, shape_setting
+from llamatron.composition.file_format import PLACED_SHAPES, SHAPE_THENS, Shape, ShapePart, shape_setting
 from llamatron.composition.checks import time_length
 from llamatron.composition import limits
 from llamatron.strings import errors
@@ -61,7 +61,7 @@ def shape_part_settings(*, shape, named):
 
 def shape_settings():
     """Return the descriptions of every shape's settings a scene or a clip holds, like density_start, in the order a file writes them."""
-    return [setting for shape in SHAPES for setting in shape_part_settings(shape=shape, named=lambda part, shape=shape: shape_setting(shape=shape, part=part))]
+    return [setting for shape in PLACED_SHAPES for setting in shape_part_settings(shape=shape, named=lambda part, shape=shape: shape_setting(shape=shape, part=part))]
 
 
 def shape_values(*, settings, shape, accent=NO_ACCENT):

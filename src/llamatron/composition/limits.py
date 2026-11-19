@@ -81,6 +81,9 @@ MAX_KEYSWITCH_LEAD = 500
 # The percentages each shape runs between: the share of notes that play, how loud they play, and how long, as a share of what's written.
 MIN_DENSITY = 0
 MAX_DENSITY = 100
+# A scene's or a clip's velocity, and each end of a velocity ramp, a percentage of the velocity written.
+MIN_VELOCITY_PERCENT = 0
+MAX_VELOCITY_PERCENT = 200
 MIN_SWELL = 0
 MAX_SWELL = 200
 MIN_ARTICULATE = 10

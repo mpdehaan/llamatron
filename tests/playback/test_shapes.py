@@ -29,6 +29,7 @@ from llamatron.composition.generator_settings import ShapeSetting
 from llamatron.composition import limits
 from llamatron.composition.shapes import ShapeValues
 from llamatron.exporters.timing import timed_events
+from llamatron.music import midi
 from llamatron.playback.shapes import BAR_MIDDLE, BAR_START, FINER, ON_A_BEAT, ON_AN_EIGHTH, ON_A_SIXTEENTH, percent_at, plays_at, strength
 from llamatron.support.rational import Rational
 from llamatron.composition.song_file_error import SongFileError
@@ -49,6 +50,9 @@ FULL = 100
 DOUBLE = 200
 ACCENT = 20
 NO_NOTES = 0
+# The arguments of one_scene that give the clip a chain and the generators the chain names.
+CHAIN = 'chain'
+GENERATORS = 'generators'
 
 
 def at(*, shape, part):
@@ -93,6 +97,11 @@ def lengths(data):
 def steady(*, shape, percent):
     """Return a scene's or clip's settings holding a shape at one percentage."""
     return {at(shape=shape, part=ShapePart.START): percent, at(shape=shape, part=ShapePart.END): percent}
+
+
+def swelling(*, start, end):
+    """Return what one_scene takes to run the lead's clip through a Swell generator from one percentage to another."""
+    return {CHAIN: [{GeneratorKind.SWELL: SHAPED}], GENERATORS: {Section.SWELLS: {SHAPED: {ShapeSetting.START: start, ShapeSetting.END: end}}}}
 
 
 class TestPercentOverTime(unittest.TestCase):
@@ -172,14 +181,14 @@ class TestSwell(unittest.TestCase):
 
     def test_it_scales_the_velocity(self):
         rows = {Row.VELOCITY: [VELOCITY] * STEPS}
-        self.assertEqual(set(velocities(one_scene(rows=rows, scene=steady(shape=Shape.SWELL, percent=HALF)))), {VELOCITY // 2})
+        self.assertEqual(set(velocities(one_scene(rows=rows, **swelling(start=HALF, end=HALF)))), {VELOCITY // 2})
 
     def test_it_is_held_from_1_to_127(self):
-        self.assertEqual(set(velocities(one_scene(scene=steady(shape=Shape.SWELL, percent=limits.MAX_SWELL)))), {127})
-        self.assertEqual(set(velocities(one_scene(scene=steady(shape=Shape.SWELL, percent=NO_NOTES)))), {1})
+        self.assertEqual(set(velocities(one_scene(**swelling(start=limits.MAX_SWELL, end=limits.MAX_SWELL)))), {midi.MAX_VELOCITY})
+        self.assertEqual(set(velocities(one_scene(**swelling(start=NO_NOTES, end=NO_NOTES)))), {midi.MIN_VELOCITY})
 
     def test_a_crescendo_across_the_clip(self):
-        found = velocities(one_scene(rows={Row.VELOCITY: [VELOCITY] * STEPS}, scene={at(shape=Shape.SWELL, part=ShapePart.START): HALF, at(shape=Shape.SWELL, part=ShapePart.END): FULL}))
+        found = velocities(one_scene(rows={Row.VELOCITY: [VELOCITY] * STEPS}, **swelling(start=HALF, end=FULL)))
         self.assertEqual(found, sorted(found))
         self.assertLess(found[0], found[-1])
 
@@ -237,13 +246,13 @@ class TestShapeSettingsInAFile(unittest.TestCase):
             setlist_from_data(data)
 
     def test_an_unknown_then_is_refused(self):
-        data = one_scene(scene={**steady(shape=Shape.SWELL, percent=HALF), at(shape=Shape.SWELL, part=ShapePart.THEN): 'sideways'})
+        data = one_scene(scene={**steady(shape=Shape.ARTICULATE, percent=HALF), at(shape=Shape.ARTICULATE, part=ShapePart.THEN): 'sideways'})
         with self.assertRaises(SongFileError):
             setlist_from_data(data)
 
     def test_it_is_written_back_as_read(self):
-        data = one_scene(scene={**steady(shape=Shape.SWELL, percent=HALF), at(shape=Shape.SWELL, part=ShapePart.OVER): '1/2', at(shape=Shape.SWELL, part=ShapePart.THEN): ShapeThen.BOUNCE})
+        data = one_scene(scene={**steady(shape=Shape.ARTICULATE, percent=HALF), at(shape=Shape.ARTICULATE, part=ShapePart.OVER): '1/2', at(shape=Shape.ARTICULATE, part=ShapePart.THEN): ShapeThen.BOUNCE})
         written = setlist_from_data(data).to_data()
         scene = next(iter(written[Section.SONGS].values()))[Section.SCENES][0]
-        self.assertEqual(scene[at(shape=Shape.SWELL, part=ShapePart.THEN)], ShapeThen.BOUNCE)
-        self.assertEqual(scene[at(shape=Shape.SWELL, part=ShapePart.START)], HALF)
+        self.assertEqual(scene[at(shape=Shape.ARTICULATE, part=ShapePart.THEN)], ShapeThen.BOUNCE)
+        self.assertEqual(scene[at(shape=Shape.ARTICULATE, part=ShapePart.START)], HALF)

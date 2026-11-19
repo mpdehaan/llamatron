@@ -323,7 +323,8 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 
 - The shapes (`Shape`, `SHAPES` in `composition/file_format.py`), the user's design: how many of a clip's notes play, how loud and how long, each a percentage ramping
   from a start to an end. A scene and a clip slot each hold `density_start`, `density_end`,
-  `density_over`, `density_then` and the same for `swell_` and `articulate_` (`shape_setting`,
+  `density_over`, `density_then` and the same for `articulate_` (`PLACED_SHAPES`; how loud a scene or a clip plays is its
+  velocity and velocity ramps, `.claude/format/FILE_RULES.md`, which a Swell generator scales again) (`shape_setting`,
   described by `shape_settings()` in `composition/shapes.py`), and the generator sections
   `densities`, `swells` and `articulates` hold `start`, `end`, `over` and `then`, a swell an
   `accent` too (`ShapeSettings`, `DensitySettings`, `SwellSettings`, `ArticulateSettings`).

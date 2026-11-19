@@ -28,11 +28,12 @@ from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.shapes import shape_settings, shape_values
+from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.composition.checks import check_keys, listed, number, reading
 from llamatron.composition.corrections import LEFT_OUT
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import RAMP_PARTS, RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, TEMPO_RAMP_SETTINGS, RampPart, SceneSetting, Section
+from llamatron.composition.file_format import RAMP_PARTS, RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, TEMPO_RAMP_SETTINGS, VELOCITY_SETTINGS, RampPart, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
@@ -90,6 +91,7 @@ SETTINGS = described(
     Checked(name=SceneSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Flag(name=SceneSetting.LAUNCH_TOGETHER, error=errors.ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
     Checked(name=SceneSetting.CHAINS, check=check_chain_names, needs_song=True),
+    *velocity_setting_descriptions(),
     *shape_settings(),
     register_values_setting(SceneSetting.SET_REGISTERS),
     register_values_setting(SceneSetting.ADD_REGISTERS),
@@ -387,8 +389,23 @@ class Scene(LlamaData):
         """Return one of its shape settings as the file writes it, like density_start, or None when it's left blank."""
         return self._settings[name]
 
+    def get_velocity_settings(self):
+        """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
+        return {name: self._settings[name] for name in VELOCITY_SETTINGS}
+
+    def get_velocity(self):
+        """Return how loud the scene plays its clips, as a Velocity, before any clip's own."""
+        return velocity_of(scene_settings=self.get_velocity_settings())
+
+    @notes_change
+    def set_velocity_setting(self, *, name, value):
+        """Set one of its velocity settings by its file name, or None to leave it blank."""
+        if value is not None:
+            SETTINGS[name].check(value)
+        self._settings[name] = value
+
     def get_shape(self, shape):
-        """Return how a shape, Density, Swell or Articulate, runs over the scene, or None when the scene sets neither its start nor its end."""
+        """Return how a shape, Density or Articulate, runs over the scene, or None when the scene sets neither its start nor its end."""
         return shape_values(settings=self._settings, shape=shape)
 
     @notes_change

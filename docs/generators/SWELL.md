@@ -10,4 +10,4 @@ The settings are those every shape shares, which [Generators](../GENERATORS.md#s
 
 ## Applying the Generator
 
-Set Swell in the `+ Swell` section of a Scene page or a clip page, or make a Swell generator and add it to a chain, as `swell: name`, to paint one shape on many clips and change it in one place. `examples/learning/16_bolero_swell.yml` is one long crescendo.
+Make a Swell generator and add it to a chain, as `swell: name`, to paint one shape on many clips and change it in one place. A Swell scales the notes on top of the Velocity and the velocity ramps of the scene and the clip, which are the plain way to make one scene louder or to fade one in and out: see [Velocity and Velocity Ramps](../SCENES.md#velocity-and-velocity-ramps). In `examples/learning/16_bolero_swell.yml`, the scenes' velocity ramps make one long crescendo and a Swell generator's Accent makes the timpani's downbeats land harder.

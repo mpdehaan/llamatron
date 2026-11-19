@@ -251,7 +251,7 @@ clouds; generate and test, with motif development and counterpoint last.
   `energy` over all of that. Energy never changes a tune's notes.
 - From Energy: `intensity`, the level each player may reach, by the player's change points (`levels` in the template, each
   point but the first moved by the song's seed, so that the band never changes all at once); `plays`, the kind's players but
-  those whose `comes_in` Energy is higher; the cymbal (`cymbal`, a list of Energy and way); the scene's Swell, 80 to 100
+  those whose `comes_in` Energy is higher; the cymbal (`cymbal`, a list of Energy and way); the scene's velocity, 80 to 100
   percent, so that ordinary playing leaves room, a `rising` kind ramping from two lower; and a crash on a section arrived at
   from below at 6 or more, or after a tail.
 - Joins (`src/llamatron/macro_composer/joins.py`): a section's `leaves` holds a `fill`, by how far the Energy rises (the
@@ -292,7 +292,7 @@ clouds; generate and test, with motif development and counterpoint last.
   pattern's notes and chords and what the generators of the clip's chains make of them, a Guitarify's strokes times the strings
   held, each chord for as long as the chord lasts, and an arp's steps a bar. The count is near, not exact; `measured` takes the
   same sums from the song as played, for the report and a test to hold the count against, and a test fails if making a song
-  plays one. A new generator that makes more notes of a note is added to `clip_count`. The trade is each clip's own swell, the
+  plays one. A new generator that makes more notes of a note is added to `clip_count`. The trade is each clip's own velocity, the
   scene's lowered. `internal_tools/loudness_steps.sh` reports the step into every subgenre's first chorus, as written
   (`written_setlist`) and as made; `tests/macro_composer/test_loudness_steps.py`.
   A rising section, such as a pre-chorus, ends its climb at the loudness of the section it leads to (`SongPlan._arrives_at`).
@@ -327,7 +327,7 @@ clouds; generate and test, with motif development and counterpoint last.
   be grouped the same way, each drawn for the user first.
 - **Starts and endings in stages** (S46): the Form panel's Starts with, Ends with, First player and Setup bars (`set_start`,
   `set_end`); each stage is an ordinary section of the form, so opening or closing sections a person changed read as "your own".
-  Every section has Fades (`song_plan.FADES`; a scene swell without a plan). The band genres' templates have an `outro` kind.
+  Every section has Fades (`song_plan.FADES`; a scene's velocity ramp without a plan). The band genres' templates have an `outro` kind.
 - **Players as people**: a player's panel has Comes in and Lays out (`set_comes_in`, `set_lays_out`), which are a reading of which
   sections the player plays and set them through `set_section_plays`, and Reacts (`set_reacts`, the plan's `reacts` by player
   name), which moves the Energy the player answers to away from or toward the middle; Reacts is offered only where making the song

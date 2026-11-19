@@ -261,6 +261,16 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   doesn't loop.
 - A clip plays its pattern `repeat` times and stops. `loop: true` repeats it until that longest
   clip ends, and every clip in a scene looping is an error at build.
+- A scene's and a clip's velocity (the user's design): `velocity`, a percentage of each note's written velocity from 0 to 200
+  that holds, and `velocity_in_start`, `velocity_in_end`, `velocity_in_over`, `velocity_out_start`, `velocity_out_end` and
+  `velocity_out_over`, a ramp in from the first bar and a ramp out back from the last, each over a count of bars
+  (`VelocitySetting`, `composition/velocity_ramps.py`). A ramp plays when it has its bars and a start or an end, and an end
+  left blank is the velocity, which the ramps start from and return to. A clip's settings win over its scene's field by
+  field (`velocity_of`). A ramp whose bars the scene gives counts them across the scene's whole play, every repeat; a ramp
+  whose bars the clip gives counts them over the clip's own play, from its start and back from its end, a looping clip's end
+  being its scene's. The ramp in wins where the two overlap. The percentage is read at each note's own time
+  (`velocity_percent_at` in `playback/shapes.py`), after a Swell generator's, which scales the notes besides. A scene and a
+  clip hold no Swell of their own, and `swell_start` and the like are refused there.
 - A scene's tempo ramps (the user's design): `tempo_in_start`, `tempo_in_end` and `tempo_in_over` ramp from the scene's first bar,
   `tempo_out_start`, `tempo_out_end` and `tempo_out_over` back from its last. A start or an end left out is the scene's own tempo
   (its `tempo`, else the song's), a ramp with no over, or with neither start nor end, does nothing (the user's design: Over is a number of bars). The

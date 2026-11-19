@@ -141,8 +141,8 @@ SHOTS = [
     Shot(name='scene_view_played', keys=[keybindings.MainPage.ARRANGE, keybindings.ArrangePage.SCENE_VIEW, keybindings.ArrangePage.TO_PLAYED], song=DENSITY_SONG),
     Shot(name='scene', keys=[keybindings.MainPage.ARRANGE, Key.ENTER]),
     Shot(name='clip', keys=[keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER]),
-    # The settings pages' sections, opened with PgDn to a heading and Space: a scene's Swell, a clip's Strum, a track's Euclid.
-    Shot(name='scene_swell', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE], song=SWELL_SONG),
+    # The settings pages' sections, opened with PgDn to a heading and Space: a scene's Velocity Ramp In, past its two tempo ramps, a clip's Strum, a track's Euclid.
+    Shot(name='scene_swell', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE], song=SWELL_SONG),
     Shot(name='scene_density', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=DENSITY_SONG),
     Shot(name='clip_strum', keys=[keybindings.MainPage.ARRANGE, Key.DOWN, Key.RIGHT, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=STRUM_SONG),
     Shot(name='track_euclid', keys=[keybindings.MainPage.ARRANGE, Key.UP, *[Key.RIGHT] * EUCLID_TRACK_PLACE, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=EUCLID_SONG),

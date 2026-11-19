@@ -26,7 +26,7 @@ from llamatron.macro_composer.melody import BREATHES
 from llamatron.macro_composer.notation import LOUD, NONE, REST, SOFT, STEPS
 from llamatron.macro_composer.song_plan import (ALLOWS, APPROACH, BIG, BY_PLACE, CONTRAST, CRASH_START, ENERGY, GROWTH, HIGHEST_ENERGY, LAST_CHORD, LOUDEST, FILLS_COME, LAST_CHORUS, LOWEST_ENERGY, MARKER,
                                                 MARKER_BARS, MARKER_EVERY, NOT_AT_ALL, NO_PERCUSSION, PERCUSSION, PERCUSSION_FROM,
-                                                PHRASING, PLAN_OF_SONG, PLAYS, QUIETEST, SCENE_SETTINGS, SECTION_PLAN, SETUP, SHAPES, STAGE_LINE, STAGED, SWELL_END, SWELL_START,
+                                                PHRASING, PLAN_OF_SONG, PLAYS, QUIETEST, SCENE_SETTINGS, SECTION_PLAN, SETUP, SHAPES, STAGE_LINE, STAGED, SCENE_VELOCITY, SCENE_VELOCITY_IN_START,
                                                 SongPlan, level_at, loudness_at)
 from llamatron.macro_composer.wizard_choices import SHAPE_OF_SECTION, SHAPE_USUAL, WizardChoices
 from llamatron.support.version import VERSION
@@ -143,15 +143,15 @@ class TestWhatFollowsFromEnergy(unittest.TestCase):
         made = planned(song()).planned()
         self.assertEqual(len(set(made[arranger.FORM])), len(FORM))
         sections = sections_of(song())
-        self.assertGreater(sections[FIRST_CHORUS][SCENE_SETTINGS][SWELL_END], sections[FORM.index(VERSE)][SCENE_SETTINGS][SWELL_END])
+        self.assertGreater(sections[FIRST_CHORUS][SCENE_SETTINGS][SCENE_VELOCITY], sections[FORM.index(VERSE)][SCENE_SETTINGS][SCENE_VELOCITY])
         rising = sections[FORM.index(PRE_CHORUS)][SCENE_SETTINGS]
-        self.assertLess(rising[SWELL_START], rising[SWELL_END])
+        self.assertLess(rising[SCENE_VELOCITY_IN_START], rising[SCENE_VELOCITY])
 
     def test_a_rising_section_ends_its_climb_at_the_loudness_of_the_section_it_leads_to(self):
         sections = sections_of(song())
         rising = sections[FORM.index(PRE_CHORUS)][SCENE_SETTINGS]
         self.assertEqual(FORM.index(PRE_CHORUS) + 1, FIRST_CHORUS)
-        self.assertEqual(rising[SWELL_END], sections[FIRST_CHORUS][SCENE_SETTINGS][SWELL_START])
+        self.assertEqual(rising[SCENE_VELOCITY], sections[FIRST_CHORUS][SCENE_SETTINGS][SCENE_VELOCITY])
 
     def test_players_come_in_with_energy_and_reach_further(self):
         sections = sections_of(song())

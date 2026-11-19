@@ -107,7 +107,9 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
   and the page scrolls as settings pages do.
 - A Density, Swell or Articulate opens a `ShapeEditor` (`screens/generators/shape_editor.py`): Name, then `shape_fields` from
   `screens/generators/shape_fields.py` (Start, End, Over, Then), and on the swell editor Accent. The Scene
-  page and the clip page end with a section for each shape (`shape_section`, the same fields
+  page and the clip page have a Velocity field and the two velocity ramp sections (`screens/arrange/velocity_fields.py`,
+  through `set_scene_velocity_setting` and `set_clip_velocity_setting`; a blank value shows what plays and where from)
+  and a section for Density and for Articulate (`shape_section`, the same fields
   with the shape's name in front of each label), through `set_scene_shape_setting` and
   `set_clip_shape_setting` (`SongEdits`). `tests/tui/test_tui_shapes.py` tests them.
 - The `ProgressionEditor` has Name, Every and Chords, whose
