@@ -99,6 +99,20 @@ through `document.get_setlist()` and the current song through `document.song()`.
 
 **A name says whether a method hands back what is held.** A method that returns a stored value is `get_x()`, and one that stores a value is `set_x()`, in every package, the text UI included, so that a method named otherwise is known to work something out or to have an effect: `document.get_setlist()` hands back the set the document holds, `document.song()` finds the current song. A yes or no that is held is `is_x`, `has_x` or `can_x`, or a verb that says it, as `loops()` does. The exceptions are a question that other classes answer by working something out, whose name is the question's, listed in `tests/rules/test_getter_names.py`.
 
+**One word for one thing, in every name.** The glossary of the code's verbs and nouns, so that a reader who has met a word once knows it everywhere:
+
+- `get_x` and `set_x`: hand back, or store, what is held. `get_written_x` is the value as the file writes it, `None` where the file leaves it out.
+- `is_x`, `has_x`, `can_x`, or a verb that says it (`loops()`, `launches_together()`): yes or no.
+- `move_cursor(name)`: an arrow moves a cursor, on every page, dialog and component. `Cursor.move` is the cursor's own.
+- `shift(offset)`: what the cursor is on is carried up or down its list. `drop()`: what is carried is put down, and nothing else is ever dropped.
+- `advance(seconds)`: time moves on, for a clock or a picture.
+- `remove_step` and `insert_step`: a step taken out or put in; `remove_step_here()` and `add_step()` are what a one-row editor's subclass does at the cursor.
+- `step_count()`: how many steps. `steps()` is only ever the steps themselves.
+- `remarks(width)`: the lines a settings page shows under its settings. `notes` is only ever the notes of the music, or the set's Notes on screen.
+- `toggle()`: what is on goes off and what is off goes on.
+- `refusal`: why a thing cannot be done, as text for the status line, or `None` when it can. A `Problem` is a title and lines for a dialog.
+- `forget(tag=, after=)`: the real-time sender lets go of events not yet played.
+
 **Every class declares `__slots__`**, so none can be added by mistake, and each class in a
 hierarchy declares its own, even `()`. Dataclasses use `@dataclass(slots=True, kw_only=True)`. The
 exceptions are classes that only hold constants, and subclasses of classes from outside llamatron,
