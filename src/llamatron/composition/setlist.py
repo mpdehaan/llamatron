@@ -47,6 +47,7 @@ from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.composition.song import Song, started_song
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.traits import HoldsSections
 from llamatron.music import note
 from llamatron.music.scale import ScaleType
 from llamatron.strings import errors, names as names_text
@@ -140,7 +141,7 @@ def new_setlist():
 GENERATOR_KINDS_OF_SECTIONS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
 
 
-class Setlist(HoldsSettings):
+class Setlist(HoldsSections, HoldsSettings):
     """The set the user composes: its settings, named scales, patterns, generators and chains, and its songs.
 
     Settings the file leaves out are kept as None and mean their defaults, and so do sections it
@@ -355,14 +356,6 @@ class Setlist(HoldsSettings):
         """Return how a message places one item of a section, like pattern (tune)."""
         return errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[section], name=name)
 
-    @notes_change
-    def _set_section(self, *, section, items):
-        """Give a section its items as read from the file, or None for a section the file leaves out."""
-        self._sections[section] = NamedItems(label=sections.SECTION_LABELS[section], items=items)
-
-    def _section(self, section):
-        return self._sections[section]
-
     def to_data(self):
         return self._data_from(data_built_anew)
 
@@ -537,29 +530,11 @@ class Setlist(HoldsSettings):
     # Changing the named sections, all the same way. An item is a Pattern, NamedScale, Chain,
     # generator settings object or Song, and the set keeps the names in it right.
 
-    def has_item(self, *, section, name):
-        return self._section(section).has(name)
-
-    def get_item(self, *, section, name):
-        return self._section(section).get(name)
-
-    def get_item_names(self, section):
-        """Return the names in a section, in the set's order."""
-        return self._section(section).names()
-
     def add_item(self, *, section, name, item, after=None):
         """Add a named item to a section, at the end, or right after another item. A groove can't take a factory groove's name."""
         if section == Section.GROOVES:
             check_groove_name(name)
-        self._section(section).add(name=name, item=item, after=after)
-
-    def replace_item(self, *, section, name, item):
-        """Put a new item under an existing name, keeping its place."""
-        self._section(section).replace(name=name, item=item)
-
-    def remove_item(self, *, section, name):
-        """Take an item out of a section."""
-        self._section(section).remove(name)
+        HoldsSections.add_item(self, section=section, name=name, item=item, after=after)
 
     def rename_item(self, *, section, old, new):
         """Rename an item, keeping its place, and update everything that names it. A groove can't take a factory groove's name."""
@@ -619,14 +594,6 @@ class Setlist(HoldsSettings):
             pairs.insert(pairs.index((kind, name)) + 1, (kind, new))
             self.set_generator_order(pairs)
         return item
-
-    def move_item(self, *, section, place, offset):
-        """Move an item up or down its section, and return whether it moved, which it can't past either end."""
-        return self._section(section).move(place=place, offset=offset)
-
-    def sort_items(self, section):
-        """Put a section's items in alphabetical order, ignoring case."""
-        self._section(section).sort()
 
     # Another set's songs taken in, which the song wizard does with the set it made.
 

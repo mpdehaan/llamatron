@@ -35,6 +35,7 @@ from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
 from llamatron.composition.setting import Checked, Choice, described, Length, settings_held
 from llamatron.composition.track import Track
+from llamatron.composition.traits import HoldsSections
 from llamatron.strings import errors, names
 from llamatron.support.revised import notes_change
 
@@ -127,7 +128,7 @@ def started_song(*, scale=None):
 WHOLE_STEPS = 1
 
 
-class Song(HoldsSettings):
+class Song(HoldsSections, HoldsSettings):
     """One song: its settings, registers, tracks and scenes, reading what it shares from its setlist.
 
     Settings the file leaves out are kept as None and mean their defaults, and so do sections it
@@ -226,14 +227,6 @@ class Song(HoldsSettings):
     def _where(self, *, where, label, name):
         """Return how a message places one of the song's named items, like song (one), track (bass)."""
         return errors.ERR_WHERE_WITHIN.format(where=where, part=errors.ERR_WHERE_NAMED.format(label=label, name=name))
-
-    @notes_change
-    def _set_section(self, *, section, items):
-        """Give a section its items as read from the file, or None for a section the file leaves out."""
-        self._sections[section] = NamedItems(label=sections.SECTION_LABELS[section], items=items)
-
-    def _section(self, section):
-        return self._sections[section]
 
     def to_data(self):
         return self._data_from(data_built_anew)
@@ -437,31 +430,13 @@ class Song(HoldsSettings):
 
     # Changing the tracks and registers, the same way the set changes its sections.
 
-    def has_item(self, *, section, name):
-        return self._section(section).has(name)
-
-    def get_item(self, *, section, name):
-        return self._section(section).get(name)
-
-    def get_item_names(self, section):
-        """Return the names in a section, in the song's order."""
-        return self._section(section).names()
-
-    def add_item(self, *, section, name, item, after=None):
-        """Add a named item to a section, at the end, or right after another item."""
-        self._section(section).add(name=name, item=item, after=after)
-
     def insert_item(self, *, section, name, item, place):
         """Add a named item at a place in a section, before the item that was there."""
         self._section(section).insert(name=name, item=item, place=place)
 
-    def replace_item(self, *, section, name, item):
-        """Put a new item under an existing name, keeping its place."""
-        self._section(section).replace(name=name, item=item)
-
     def remove_item(self, *, section, name):
         """Take an item out of a section. Removing a track also removes its clip slots and stops grabs from it."""
-        self._section(section).remove(name)
+        HoldsSections.remove_item(self, section=section, name=name)
         if section == Section.TRACKS:
             for scene in self.get_scenes():
                 scene.remove_track(name)
@@ -497,14 +472,6 @@ class Song(HoldsSettings):
             clip_slot = scene.get_clip_slot(name)
             if clip_slot is not None:
                 scene.set_clip_slot(track=new, clip_slot=clip_slot.copy(), song=self)
-
-    def move_item(self, *, section, place, offset):
-        """Move an item up or down its section, and return whether it moved, which it can't past either end."""
-        return self._section(section).move(place=place, offset=offset)
-
-    def sort_items(self, section):
-        """Put a section's items in alphabetical order, ignoring case."""
-        self._section(section).sort()
 
     # The registers. There are always four, and the file names only those with settings changed.
 
