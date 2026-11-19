@@ -18,7 +18,7 @@
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
-from llamatron.composition.naming import new_name, suggested_word
+from llamatron.composition.naming import suggested_word
 from llamatron.strings import help as help_text, labels as labels_text, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -111,7 +111,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
 
         def chosen(place):
             listing = listings[place]
-            name = new_name(word=suggested_word(listing.label), taken=self.document().names_of(sections[place]))
+            name = self.document().new_name(section=sections[place], word=suggested_word(listing.label))
             self.document().add_generator(section=sections[place], name=name)
             then(kind=listing.kind, name=name)
             self.show_page(listing.EDITOR(holder=self.holder, name=name).opened_from(page=self, word=listing.label))

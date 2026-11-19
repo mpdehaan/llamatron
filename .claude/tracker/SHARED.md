@@ -10,7 +10,7 @@ can be found and read on its own. `.claude/UX.md` holds the rules for how the tr
 `tests/rules/test_doc_paths.py` checks that every source path named here exists, so paths move with the
 code.
 
-A page asks for one of some values with `Page.pick(title=, values=, then=, current=, shown=)`, which opens a picker on the current value and hands `then` the value chosen, never its place in the list. A yes-or-no question is `Page.confirm(title=, lines=, then=)`, and a question about deleting `Page.confirm_delete(lines=, then=)`; each runs `then` on yes alone.
+A page asks for one of some values with `Page.pick(title=, values=, then=, current=, shown=)`, which opens a picker on the current value and hands `then` the value chosen, never its place in the list. A yes-or-no question is `Page.confirm(title=, lines=, then=)`, and a question about deleting `Page.confirm_delete(lines=, then=)`; each runs `then` on yes alone. A new item's name comes from `Document.new_name(section=, word=)`, or `new_name(word)` on a page that lists a section.
 
 ## Where things are
 

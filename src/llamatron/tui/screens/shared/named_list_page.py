@@ -48,6 +48,10 @@ class NamedListPage(ListPage):
         """Return the names the page lists, in the page's order, which are the names a new one can't take."""
         return self.document().names_of(self.LISTED_SECTION)
 
+    def new_name(self, word):
+        """Return the name a new item of the page's section is given, from its word."""
+        return self.document().new_name(section=self.LISTED_SECTION, word=word)
+
     def own_place(self):
         """Return the selected thing's place in its section, which is its row unless the page lists other rows first."""
         return self.cursor.get_place()

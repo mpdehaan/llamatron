@@ -21,7 +21,7 @@ A adds one of a type asked for, N renames, C copies and Bksp deletes once nothin
 from typing import NamedTuple
 
 from llamatron.composition import file_format
-from llamatron.composition.naming import name_order, new_name, suggested_word
+from llamatron.composition.naming import name_order, suggested_word
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, key_table, keybindings, themes
 from llamatron.tui.cursor import Cursor
@@ -175,7 +175,7 @@ class GeneratorsPage(ListPage):
 
         def chosen(place):
             listing = listings[place]
-            name = new_name(word=suggested_word(listing.label), taken=self.document().names_of(listing.section))
+            name = self.document().new_name(section=listing.section, word=suggested_word(listing.label))
             self.document().add_generator(section=listing.section, name=name)
             self.put_cursor_on(kind=listing.kind, name=name)
             self.show_page(listing.EDITOR(holder=self.holder, name=name))
