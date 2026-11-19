@@ -20,7 +20,6 @@ from llamatron.composition.file_format import Section
 from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Align
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 
 
@@ -42,7 +41,7 @@ class ChainsPage(NamedListPage):
         ]
 
     def open_item(self):
-        self.show_page(ChainEditor(holder=self.holder, name=self.current()))
+        self.open_editor(section=Section.CHAINS, name=self.current())
 
     def add(self):
         def named(text):

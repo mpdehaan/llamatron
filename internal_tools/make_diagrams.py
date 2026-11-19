@@ -72,6 +72,10 @@ MAIN_SCREEN_ID = 'MainPage'
 EVERYWHERE_MODULE = 'everywhere'
 # The class every screen descends from, which is how the screens are told from the other classes beside them.
 SCREEN_BASE = 'Page'
+# The registry of editors, and how a page opens one by its section.
+EDITORS_MODULE = 'tui.screens.editors'
+OPEN_EDITOR_METHOD = 'open_editor'
+SECTION_ARGUMENT = 'section'
 # Screens whose names in words aren't just their class names split up.
 SCREEN_LABELS = {
     MAIN_SCREEN_ID: 'Main screen',
@@ -250,9 +254,30 @@ def screen_classes(trees):
     return screens
 
 
+def editors_by_section():
+    """Return the editor of each section the registry of editors names outright, as {section's name: class name}, read from its table."""
+    table = {}
+    for node in ast.walk(parsed(SOURCE.joinpath(*EDITORS_MODULE.split(DOT)).with_suffix(PYTHON_SUFFIX))):
+        if isinstance(node, ast.Dict):
+            for key, value in zip(node.keys, node.values):
+                if isinstance(key, ast.Attribute) and isinstance(value, ast.Name):
+                    table[key.attr] = value.id
+    return table
+
+
+def editor_opened(call):
+    """Return the class of the editor a call opens by its section, open_editor(section=Section.NAME, ...), or None for any other call."""
+    if not (isinstance(call.func, ast.Attribute) and call.func.attr == OPEN_EDITOR_METHOD):
+        return None
+    section = keyword(call=call, name=SECTION_ARGUMENT)
+    return editors_by_section().get(section.attr) if isinstance(section, ast.Attribute) else None
+
+
 def screens_built(*, node, screens):
-    """Return the screen classes a piece of code builds, which is how a screen opens another."""
-    return {call.func.id for call in ast.walk(node) if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) and call.func.id in screens}
+    """Return the screen classes a piece of code opens: those it builds, and the editors it opens by their section."""
+    calls = [call for call in ast.walk(node) if isinstance(call, ast.Call)]
+    built = {call.func.id for call in calls if isinstance(call.func, ast.Name) and call.func.id in screens}
+    return built | {editor for editor in map(editor_opened, calls) if editor in screens}
 
 
 def keyword(*, call, name):

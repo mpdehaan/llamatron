@@ -32,7 +32,6 @@ from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.tui.screens.generators.shape_fields import shape_section
 from llamatron.tui.screens.generators.strum_fields import strum_section
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -121,7 +120,7 @@ class ClipPage(FieldPage):
 
     def open_pattern_at(self, place):
         """Open the pattern editor on one pattern of the clip's list."""
-        self.show_page(PatternEditor(holder=self.holder, name=self.clip_slot().get_pattern_names()[place], opened_from=self, track=self.track))
+        self.open_editor(section=Section.PATTERNS, name=self.clip_slot().get_pattern_names()[place], opened_from=self, track=self.track)
 
     def keys(self):
         if self.moving:

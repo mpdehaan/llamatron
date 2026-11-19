@@ -20,7 +20,6 @@ from llamatron.composition.file_format import Section
 from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
-from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 
 
@@ -43,11 +42,11 @@ class InstrumentsPage(NamedListPage):
         ]
 
     def open_item(self):
-        self.show_page(InstrumentEditor(holder=self.holder, name=self.current()))
+        self.open_editor(section=Section.INSTRUMENTS, name=self.current())
 
     def add(self):
         """Add an instrument with no device yet, numbered like new tracks and scenes, and open it."""
         name = self.new_name(names.MSG_NEW_INSTRUMENT_WORD)
         self.document().add_instrument(name)
         self.put_cursor_on(name)
-        self.show_page(InstrumentEditor(holder=self.holder, name=name))
+        self.open_editor(section=Section.INSTRUMENTS, name=name)
