@@ -114,6 +114,14 @@ class Steps(NamedTuple):
     forward: tuple
 
 
+class Binding(NamedTuple):
+    """One key binding of tui/keybindings.py: its key or keys (a Steps for keys that step), the name the legend shows for them, and what they are said to do."""
+
+    keys: object
+    name: str
+    what: str
+
+
 # The character a press of the space bar types into text, where Key.SPACE is the key's name.
 SPACE_CHARACTER = ' '
 

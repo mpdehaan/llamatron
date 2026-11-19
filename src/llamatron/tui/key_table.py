@@ -75,8 +75,7 @@ def keys_of(which):
 
 def every_key(binding):
     """Return every key of a binding of tui/keybindings.py."""
-    keys, _, _ = binding
-    return keys_of(keys)
+    return keys_of(binding.keys)
 
 
 def first_key(binding):
@@ -112,11 +111,10 @@ def bound(*, of, binding, action, wants_key=False, keys=None, name=None, what=No
     key was pressed; one bound with wants_key is passed the key's name, which is only for a key
     that types its own character or an arrow that moves a cursor.
     """
-    own_keys, own_name, own_what = binding
-    which = own_keys if keys is None else keys
+    which = binding.keys if keys is None else keys
     steps = step_directions(which) if isinstance(which, Steps) else None
     return KeyBinding(
-        keys=keys_of(which), what=own_what if what is None else what, action=action, label=own_name if name is None else name,
+        keys=keys_of(which), what=binding.what if what is None else what, action=action, label=binding.name if name is None else name,
         binding=binding, owner=of, wants_key=wants_key, shown=place_of(binding=binding, bindings=of.IN_LEGEND) is not None, steps=steps,
     )
 

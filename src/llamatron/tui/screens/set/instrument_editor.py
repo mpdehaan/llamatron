@@ -162,5 +162,5 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
             self.default_velocity_field(),
             self.accent_field(),
             self.lead_field(),
-            Button(label=labels.MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP[1], enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
+            Button(label=labels.MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP.name, enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
         ]

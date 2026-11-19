@@ -21,7 +21,7 @@ import unittest
 from llamatron.strings import legends
 from llamatron.tui import key_table, keybindings, keys
 from llamatron.tui.key_table import BindsKeys, bound, cursor_moved, every_key, first_key, key_event, keys_of, place_of, pressed_key
-from llamatron.tui.keys import Key, Steps
+from llamatron.tui.keys import Binding, Key, Steps
 
 # How many places a cursor moves among in these tests, the first and last of them, and one in the middle with the places either side of it.
 PLACES = 4
@@ -39,11 +39,11 @@ OTHER_KEYS = (Key.DIGIT_1, Key.DIGIT_2)
 class Bindings:
     """A class of bindings like those of tui/keybindings.py: two bindings that hold the same keys and words, one binding the legend leaves out, and a part's bindings in an order of their own."""
 
-    RENAME = (Key.N, legends.KeyName.N, legends.What.RENAME)
-    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
-    ADJUST = (Steps(back=keys.LESS_KEYS, forward=keys.MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
-    ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
-    ADJUST_AGAIN = (Steps(back=keys.LESS_KEYS, forward=keys.MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
+    RENAME = Binding(Key.N, legends.KeyName.N, legends.What.RENAME)
+    MOVE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    ADJUST = Binding(Steps(back=keys.LESS_KEYS, forward=keys.MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
+    ENDS = Binding(Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
+    ADJUST_AGAIN = Binding(Steps(back=keys.LESS_KEYS, forward=keys.MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
     IN_HELP = [MOVE, ADJUST, ENDS, RENAME, ADJUST_AGAIN]
     IN_LEGEND = [MOVE, ADJUST, RENAME, ADJUST_AGAIN]
 
@@ -51,8 +51,8 @@ class Bindings:
 class PartBindings:
     """The bindings of a part of a page, which the page lists among its own."""
 
-    COPY = (Key.C, legends.KeyName.C, legends.What.COPY)
-    SORT = (Key.S, legends.KeyName.S, legends.What.SORT)
+    COPY = Binding(Key.C, legends.KeyName.C, legends.What.COPY)
+    SORT = Binding(Key.S, legends.KeyName.S, legends.What.SORT)
     IN_HELP = [COPY, SORT]
     IN_LEGEND = IN_HELP
 

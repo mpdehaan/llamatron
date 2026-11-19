@@ -102,8 +102,8 @@ def cell_name(item):
 def cell_opened_by(key):
     """Return the name of the cell a key opens on the main screen, a page or an action, or None for a key that opens none."""
     for binding in [*keybindings.MainPage.PAGES, *ACTION_NAMES]:
-        if binding[0] == key:
-            return ACTION_NAMES.get(binding, binding[2])
+        if binding.keys == key:
+            return ACTION_NAMES.get(binding, binding.what)
     return None
 
 

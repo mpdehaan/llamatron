@@ -48,5 +48,4 @@ class ImportedDialog(MessageDialog):
         lines = self.message_lines(width)
         for warning in self.warnings:
             lines += [Text(drawing.NOTHING), *wrapped(text=warning, width=width)]
-        _, key_name, _ = self.KEYS.CLOSE
-        return [*lines, Text(drawing.NOTHING), *button_row(buttons=[(key_name, importing.MSG_IMPORTED_BUTTON)], selected=0)]
+        return [*lines, Text(drawing.NOTHING), *button_row(buttons=[(self.KEYS.CLOSE.name, importing.MSG_IMPORTED_BUTTON)], selected=0)]

@@ -258,7 +258,7 @@ class TestTutorialDeletesAClip(TutorialTest):
         built = await self.built()
         self.assertEqual(comparable_data(built), comparable_data(self.target))
         self.assertEqual(comparable_music(built), comparable_music(self.target))
-        self.assertIn(keybindings.ArrangePage.DELETE_CLIP[0], [key for screen, key in self.pressed_on if screen is ArrangePage])
+        self.assertIn(keybindings.ArrangePage.DELETE_CLIP.keys, [key for screen, key in self.pressed_on if screen is ArrangePage])
 
 
 class TestTutorialPlays(TutorialTest):

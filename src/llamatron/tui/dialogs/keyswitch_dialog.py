@@ -70,7 +70,7 @@ class KeyswitchDialog(PickManyDialog):
         return line
 
     def lines(self, width):
-        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         return [
             Text(fit(text=self.said, width=width), style=Style.DIM), Text(drawing.NOTHING),
             *[self.slot_line(slot=slot, width=width) for slot in self.options],

@@ -33,7 +33,7 @@ import sys
 
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import every_key, place_of
-from llamatron.tui.keys import Steps
+from llamatron.tui.keys import Binding
 
 KEY_FLAG = '--key'
 SEPARATOR = ' '
@@ -54,7 +54,6 @@ MORE_KEYS = ' +{count}'
 MSG_NO_SUCH_CLASS = 'no class called {name} in tui/keybindings.py: expected one of: {names}'
 MSG_NOTHING_HAS_KEY = 'no binding has the key {key}'
 # How many things a binding holds: its keys, its name on screen and what it does.
-BINDING_PARTS = 3
 EVERYWHERE_LIST = 'EVERYWHERE'
 
 
@@ -70,7 +69,7 @@ def first_line(named):
 
 
 def is_binding(value):
-    return isinstance(value, tuple) and not isinstance(value, Steps) and len(value) == BINDING_PARTS
+    return isinstance(value, Binding)
 
 
 def name_of(*, kind, binding):
@@ -105,8 +104,7 @@ def heading(*, name, kind):
 def show_class(*, name, kind):
     print(heading(name=name, kind=kind))
     for binding in bindings_of(kind):
-        _, shown, what = binding
-        print(ROW.format(constant=name_of(kind=kind, binding=binding), keys=keys_shown(binding), shown=shown, what=what, note=note_for(kind=kind, binding=binding)).rstrip())
+        print(ROW.format(constant=name_of(kind=kind, binding=binding), keys=keys_shown(binding), shown=binding.name, what=binding.what, note=note_for(kind=kind, binding=binding)).rstrip())
     print()
 
 
@@ -116,8 +114,7 @@ def show_key(key):
     for name, kind in binding_classes().items():
         for constant, binding in vars(kind).items():
             if constant.isupper() and is_binding(binding) and key in every_key(binding):
-                _, shown, what = binding
-                print(KEY_ROW.format(owner=OWNER.format(kind=name, constant=constant), keys=keys_shown(binding), shown=shown, what=what, note=note_for(kind=kind, binding=binding)).rstrip())
+                print(KEY_ROW.format(owner=OWNER.format(kind=name, constant=constant), keys=keys_shown(binding), shown=binding.name, what=binding.what, note=note_for(kind=kind, binding=binding)).rstrip())
                 found = True
     if not found:
         print(MSG_NOTHING_HAS_KEY.format(key=key))

@@ -414,7 +414,7 @@ class TestKeyMapIsCurrent(KeyTour):
 
     async def test_the_key_map_says_what_the_tour_finds(self):
         await self.tour()
-        everywhere = '\n'.join(EVERYWHERE_ENTRY.format(key=binding[1], what=binding[2]) for binding in keybindings.Page.EVERYWHERE)
+        everywhere = '\n'.join(EVERYWHERE_ENTRY.format(key=binding.name, what=binding.what) for binding in keybindings.Page.EVERYWHERE)
         text = self.key_map.text(everywhere=everywhere)
         if should_write():
             write_key_map(text)

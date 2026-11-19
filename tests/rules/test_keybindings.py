@@ -33,7 +33,7 @@ from llamatron.strings import legends
 import llamatron.tui
 from llamatron.tui import keybindings, keys as keys_values
 from llamatron.tui.key_table import BindsKeys, every_key, place_of
-from llamatron.tui.keys import Key, Steps
+from llamatron.tui.keys import Binding, Key
 
 SOURCE = pathlib.Path(llamatron.tui.__file__).parent
 PYTHON_FILES = '*.py'
@@ -47,7 +47,6 @@ IN_HELP = 'IN_HELP'
 IN_LEGEND = 'IN_LEGEND'
 EVERYWHERE = 'EVERYWHERE'
 # How many things a binding holds: its keys, its name on screen and what it does.
-BINDING_PARTS = 3
 # How a page names one of its bindings where it binds it, and how anything else does.
 BOUND_THROUGH_KEYS = r'\bKEYS\.{name}\b'
 BOUND_BY_CLASS = r'\bkeybindings\.\w+\.{name}\b'
@@ -79,7 +78,7 @@ def binding_classes():
 
 
 def is_binding(value):
-    return isinstance(value, tuple) and not isinstance(value, Steps) and len(value) == BINDING_PARTS
+    return isinstance(value, Binding)
 
 
 def own_bindings(kind):

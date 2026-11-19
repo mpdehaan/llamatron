@@ -58,8 +58,7 @@ FIRST_STEP = 0
 
 def legend_entry(binding):
     """Return a binding as the legend shows it: the key's name and what the key does."""
-    _, _, what = binding
-    return ui_testing.KEY_SHOWN.format(label=key_name(binding)) + legends.MSG_LEGEND_WHAT.format(what=what)
+    return ui_testing.KEY_SHOWN.format(label=key_name(binding)) + legends.MSG_LEGEND_WHAT.format(what=binding.what)
 
 
 class OneRowChecks:

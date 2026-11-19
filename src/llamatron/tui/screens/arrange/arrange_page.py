@@ -583,7 +583,7 @@ class ArrangePage(Page):
         """Return the screen with Scene View's Inset Window laid over it."""
         inner_width, inner_height = inside_size(width=width, height=height)
         title = marks.MSG_SCENE_VIEW_TITLE.format(scene=scene_name(scene=self.scenes()[self.inset.index()], index=self.inset.index()))
-        closing = marks.MSG_SCENE_VIEW_CLOSING.format(key=self.KEYS.CLOSE_INSET[1], what=self.KEYS.CLOSE_INSET[2])
+        closing = marks.MSG_SCENE_VIEW_CLOSING.format(key=self.KEYS.CLOSE_INSET.name, what=self.KEYS.CLOSE_INSET.what)
         return drawn_over(screen=screen, width=width, height=height, title=title, inside=self.inset.lines(width=inner_width, height=inner_height),
                           colour=self.inset.border_colour(), closing=closing)
 

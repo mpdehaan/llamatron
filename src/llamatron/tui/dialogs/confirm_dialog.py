@@ -63,5 +63,5 @@ class ConfirmDialog(MessageDialog):
 
     def lines(self, width):
         """Return the message, a blank line and Yes and No as boxed buttons, the selected one double-lined."""
-        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_CONFIRM_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_CONFIRM_BUTTONS, BUTTON_BINDINGS)]
         return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.choice)]

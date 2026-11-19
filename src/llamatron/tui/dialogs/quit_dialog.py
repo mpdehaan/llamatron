@@ -66,6 +66,6 @@ class QuitDialog(MessageDialog):
         self.dismiss(None if self.choice == CANCEL else self.choice)
 
     def lines(self, width):
-        keys = (self.KEYS.QUIT[1], self.KEYS.SAVE[1], self.KEYS.CANCEL[1])
+        keys = (self.KEYS.QUIT.name, self.KEYS.SAVE.name, self.KEYS.CANCEL.name)
         buttons = list(zip(keys, labels.MSG_QUIT_BUTTONS))
         return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.choice)]
