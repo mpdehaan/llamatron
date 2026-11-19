@@ -409,17 +409,17 @@ def every_choice(choices):
     # What each player plays in each kind of section: each part offered but the one the player has. A riff is written for the
     # first player who can have one and known by every such player, so that it is among what each is offered.
     def with_a_riff(made):
-        riff = made.add_riff(role=made.riff_instruments()[0])
-        for role in made.riff_instruments()[1:]:
-            made.give_riff(role=role, riff=riff)
+        riff = made.get_riffs().add_riff(role=made.get_riffs().riff_instruments()[0])
+        for role in made.get_riffs().riff_instruments()[1:]:
+            made.get_riffs().give_riff(role=role, riff=riff)
     staged = WizardChoices.from_data(choices.to_data())
-    if staged.riff_instruments():
+    if staged.get_riffs().riff_instruments():
         with_a_riff(staged)
     for kind in staged.section_player_kinds():
         for role in staged.section_players(kind):
             for part in staged.section_parts_offered(kind=kind, role=role):
                 if part != staged.section_part(kind=kind, role=role):
-                    yield PART_IN_KIND, (kind, role, part), lambda made, kind=kind, role=role, part=part: made.set_section_part(kind=kind, role=role, part=part), [with_a_riff if staged.riff_instruments() else nothing_first]
+                    yield PART_IN_KIND, (kind, role, part), lambda made, kind=kind, role=role, part=part: made.set_section_part(kind=kind, role=role, part=part), [with_a_riff if staged.get_riffs().riff_instruments() else nothing_first]
     if choices.tune_kinds():
         # The tune delivered with no Phrasing, and with each setting of a Phrasing moved from what one starts with.
         yield TUNE_PHRASING_CHOICE, False, lambda made: made.set_tune_phrasing(False), [nothing_first]
@@ -435,18 +435,18 @@ def every_choice(choices):
                 yield PLAYER_MUSICIAN, role, lambda made, role=role: made.set_player_musician(role=role, settings={MusicianSetting.LOUDNESS: musician.LOUDEST}), [nothing_first]
     # A riff played by the player it was written for in the first kind of section that takes it: its notes written by hand, written
     # again, drawn each other way, and the riff deleted.
-    for role in choices.riff_instruments()[:1]:
+    for role in choices.get_riffs().riff_instruments()[:1]:
         staged = WizardChoices.from_data(choices.to_data())
-        riff = staged.add_riff(role=role)
+        riff = staged.get_riffs().add_riff(role=role)
         kind = next((kind for kind in staged.section_player_kinds() if riff in staged.section_parts_offered(kind=kind, role=role)), None)
         if kind is None:
             continue
 
         def played(made, role=role, kind=kind, settings=None):
-            made.set_section_part(kind=kind, role=role, part=made.add_riff(role=role, settings=settings))
-        yield OWN_RIFF, kind, lambda made, riff=riff, role=role: made.set_riff_pattern(riff=riff, pattern=first_degree_changed(riff_pattern_of(choices=made, riff=riff))), [played]
-        yield A_RIFF, 'regenerated', lambda made, riff=riff: made.regenerate_riff(riff), [played]
-        yield A_RIFF, 'deleted', lambda made, riff=riff: made.delete_riff(riff), [played]
+            made.set_section_part(kind=kind, role=role, part=made.get_riffs().add_riff(role=role, settings=settings))
+        yield OWN_RIFF, kind, lambda made, riff=riff, role=role: made.get_riffs().set_riff_pattern(riff=riff, pattern=first_degree_changed(riff_pattern_of(choices=made, riff=riff))), [played]
+        yield A_RIFF, 'regenerated', lambda made, riff=riff: made.get_riffs().regenerate_riff(riff), [played]
+        yield A_RIFF, 'deleted', lambda made, riff=riff: made.get_riffs().delete_riff(riff), [played]
         for field in (riffs.RIFF_BAR_COUNT, riffs.RIFF_NOTES):
             other = wizard_limits.RIFF_SETTINGS[field][1]
             yield A_RIFF_SETTING, (field, other), lambda made, role=role, kind=kind, field=field, other=other: played(made, role=role, kind=kind, settings={field: other}), [nothing_first]
@@ -597,7 +597,7 @@ def fresh_with_character(*, choices, character):
 
 def riff_pattern_of(*, choices, riff):
     """Return a riff's notes as the player the riff was written for plays them."""
-    setlist, _, _, _, pattern = choices.riff_heard(riff)
+    setlist, _, _, _, pattern = choices.get_riffs().riff_heard(riff)
     return setlist.get_pattern(pattern).to_data()
 
 

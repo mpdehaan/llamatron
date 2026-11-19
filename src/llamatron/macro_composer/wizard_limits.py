@@ -207,6 +207,8 @@ RIFF_BOOK = 'riffs'
 RIFF_OF_GENRE = 'of_genre'
 RIFFS_KNOWN = 'riffs_known'
 RIFFS_PLAYED = 'riffs_played'
+# The three together, which the riffs' part of the choices holds.
+RIFFS_KEPT = (RIFF_BOOK, RIFFS_KNOWN, RIFFS_PLAYED)
 # What a song says of its melodies, on the Melody panel for the whole song and on a kind of section's panel for the kind: how
 # busy the melodies are, how wide they range, how much they repeat and their character; and by kind of section, how high the
 # kind's melody sits and how busy it is, kept as MELODY_CHOSEN.

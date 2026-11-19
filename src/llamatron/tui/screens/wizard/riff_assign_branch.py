@@ -44,17 +44,17 @@ class RiffAssignBranch(RiffsBranch):
     def summary(self):
         """Return how many riffs the players know between them, or None where the song has no riff."""
         choices = self.get_choices()
-        if not choices.is_ready() or not choices.riff_names():
+        if not choices.is_ready() or not choices.get_riffs().riff_names():
             return None
-        return str(sum(len(choices.riffs_known_by(role)) for role in choices.riff_instruments()))
+        return str(sum(len(choices.get_riffs().riffs_known_by(role)) for role in choices.get_riffs().riff_instruments()))
 
     def fields(self):
         choices = self.get_choices()
         if not choices.is_ready():
             return []
         fields = []
-        for role in choices.riff_instruments():
-            known = choices.riffs_known_by(role)
+        for role in choices.get_riffs().riff_instruments():
+            known = choices.get_riffs().riffs_known_by(role)
             columns = marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=labels.MSG_WIZARD_RIFF_FOR_COLUMN, width=self.for_width(), used=labels.MSG_WIZARD_RIFF_PLAYED_IN_COLUMN)
             fields.append(self.player_heading(role=role, count=len(known), columns=columns))
             fields += [self.known_field(role=role, riff=riff) for riff in known]
@@ -65,7 +65,7 @@ class RiffAssignBranch(RiffsBranch):
         """Return how wide the FOR column is: as wide as its widest value on the panel, the name of a player a riff was written
         for, and no narrower than its heading, so that the column after it starts at one place on every row, as a table's."""
         choices = self.get_choices()
-        written_for = [choices.role_title(choices.riff_written_for(riff)) for role in choices.riff_instruments() for riff in choices.riffs_known_by(role)]
+        written_for = [choices.role_title(choices.get_riffs().riff_written_for(riff)) for role in choices.get_riffs().riff_instruments() for riff in choices.get_riffs().riffs_known_by(role)]
         return max(len(name) for name in [labels.MSG_WIZARD_RIFF_FOR_COLUMN, *written_for])
 
     def known_field(self, *, role, riff):
@@ -73,7 +73,7 @@ class RiffAssignBranch(RiffsBranch):
         choices = self.get_choices()
 
         def shown():
-            return marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=choices.role_title(choices.riff_written_for(riff)), width=self.for_width(), used=listed(choices.kinds_playing(role=role, riff=riff))).rstrip()
+            return marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=choices.role_title(choices.get_riffs().riff_written_for(riff)), width=self.for_width(), used=listed(choices.get_riffs().kinds_playing(role=role, riff=riff))).rstrip()
         return Field(label=riff, value=shown, clear=lambda: self.take(role=role, riff=riff), clear_what=legends.What.DELETE)
 
     def field_keys(self):
@@ -86,13 +86,13 @@ class RiffAssignBranch(RiffsBranch):
         choices = self.get_choices()
         page = self.get_page()
         title = choices.role_title(role)
-        offered = choices.riffs_to_give(role)
+        offered = choices.get_riffs().riffs_to_give(role)
         if not offered:
             page.refuse(errors.ERR_WIZARD_NO_RIFF_TO_GIVE)
             return
 
         def given(place):
-            page.choosing(lambda riff: choices.give_riff(role=role, riff=riff))(offered[place])
+            page.choosing(lambda riff: choices.get_riffs().give_riff(role=role, riff=riff))(offered[place])
             page.app.open_field_sections.add(title)
             page.say(messages.MSG_WIZARD_RIFF_GIVEN.format(player=title, riff=offered[place]))
         page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_GIVE_RIFF_TITLE.format(player=title), options=offered), then=given)
@@ -102,10 +102,10 @@ class RiffAssignBranch(RiffsBranch):
         choices = self.get_choices()
         page = self.get_page()
         title = choices.role_title(role)
-        used = choices.kinds_playing(role=role, riff=riff)
+        used = choices.get_riffs().kinds_playing(role=role, riff=riff)
 
         def taken(_=None):
-            page.choosing(lambda name: choices.take_riff_from(role=role, riff=name))(riff)
+            page.choosing(lambda name: choices.get_riffs().take_riff_from(role=role, riff=name))(riff)
             page.say(messages.MSG_WIZARD_RIFF_TAKEN_FROM.format(player=title, riff=riff))
         if not used:
             taken()

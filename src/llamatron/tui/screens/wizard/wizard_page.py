@@ -256,11 +256,11 @@ class WizardPage(FieldPage):
         plays the riff, whoever plays it in the song itself; the notes are kept as the riff's own when the editor closes, if they
         were changed."""
         try:
-            setlist, _, _, _, name = self._choices.riff_heard(riff)
+            setlist, _, _, _, name = self._choices.get_riffs().riff_heard(riff)
         except (ValueError, SongFileError) as problem:
             self.refuse(str(problem))
             return
-        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_riff_pattern(riff=riff, pattern=pattern),
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.get_riffs().set_riff_pattern(riff=riff, pattern=pattern),
                           kept=messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff), unchanged=messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff))
 
     def open_pattern(self, *, setlist, name, keep, kept, unchanged):
