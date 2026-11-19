@@ -16,7 +16,8 @@
 """The Shorten editor: a Shorten's name, step, amount, row of steps and Restart."""
 
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition.generator_settings import DEFAULT_SHORTEN, StepRowSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
@@ -35,5 +36,5 @@ class ShortenEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_SHORTEN_LABEL_NAME)
 
     def amount_fields(self):
-        return [self.percent_field(label=labels.MSG_SHORTEN_LABEL, setting=StepRowSetting.SHORTEN, current=self.generator().get_shorten(), default=DEFAULT_SHORTEN,
+        return [self.percent_field(label=labels.MSG_SHORTEN_LABEL, setting=StepRowSetting.SHORTEN, current=self.generator().get_shorten(), default=generator_settings.DEFAULT_SHORTEN,
                                    lowest=limits.MIN_SHORTEN, highest=limits.MAX_SHORTEN)]

@@ -30,21 +30,8 @@ from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.midi_messages import NOTE_ON_MESSAGE
 from llamatron.exporters.timing import GLIDE_OVERLAP, timed_events
 from tests.support.rendering import render_data, song_from_data
-from llamatron.composition.file_format import (
-    CHORD_SYMBOLS,
-    FIXED_CHORDS,
-    SCALE_CHORDS,
-    ClipSlotSetting,
-    ChordSymbol,
-    GateModifier,
-    LIVE_OCTAVE_OFFSET,
-    LLAMATRON_OCTAVES_SINCE,
-    OctaveLabels,
-    PatternSetting,
-    Row,
-    Section,
-    SetlistSetting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, ChordSymbol, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
 from llamatron.composition import limits
 from llamatron.support import version as version_values
 from llamatron.composition.song_file_error import SongFileError
@@ -95,11 +82,11 @@ class TestPatterns(unittest.TestCase):
         data[SetlistSetting.DEFAULT_DRUM_OCTAVE] = 1
         data[SetlistSetting.VERSION] = OLD_VERSION
         song = song_from_data(data)
-        self.assertEqual((song.get_default_octave(), song.get_default_drum_octave()), (3 + LIVE_OCTAVE_OFFSET, 1 + LIVE_OCTAVE_OFFSET))
+        self.assertEqual((song.get_default_octave(), song.get_default_drum_octave()), (3 + file_format.LIVE_OCTAVE_OFFSET, 1 + file_format.LIVE_OCTAVE_OFFSET))
         self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [60])
 
     def test_a_file_saved_since_the_numbering_changed_or_without_a_version_is_read_as_it_is(self):
-        for version in [LLAMATRON_OCTAVES_SINCE, version_values.VERSION, None]:
+        for version in [file_format.LLAMATRON_OCTAVES_SINCE, version_values.VERSION, None]:
             with self.subTest(version=version):
                 data = with_parts(patterns={X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}])
                 if version is not None:
@@ -194,7 +181,7 @@ class TestChordRow(unittest.TestCase):
             ChordSymbol.DOMINANT11: [0, 4, 7, 10, 14, 17], ChordSymbol.MAJOR11: [0, 4, 7, 11, 14, 17], ChordSymbol.MINOR11: [0, 3, 7, 10, 14, 17],
             ChordSymbol.DOMINANT13: [0, 4, 7, 10, 14, 17, 21], ChordSymbol.MAJOR13: [0, 4, 7, 11, 14, 17, 21], ChordSymbol.MINOR13: [0, 3, 7, 10, 14, 17, 21],
         }
-        self.assertEqual(set(expected), set(FIXED_CHORDS))
+        self.assertEqual(set(expected), set(file_format.FIXED_CHORDS))
         for symbol, steps in expected.items():
             with self.subTest(symbol=symbol):
                 self.assertEqual(sorted(n.get_midi_number() for n in self.chord(symbol).get_notes()), [48 + s for s in steps])
@@ -204,7 +191,7 @@ class TestChordRow(unittest.TestCase):
         self.assertEqual(sorted(n.get_midi_number() for n in self.chord('M', degree=3).get_notes()), [52, 56, 59])
 
     def test_every_chord_fits_a_pattern_cell(self):
-        for symbol in CHORD_SYMBOLS:
+        for symbol in file_format.CHORD_SYMBOLS:
             self.assertLessEqual(len(symbol), 5)
 
     def test_a_fixed_chord_stays_the_same_in_any_scale(self):
@@ -225,7 +212,7 @@ class TestChordRow(unittest.TestCase):
             5: [48, 55], 3: [48, 52, 55], 7: [48, 52, 55, 59], 9: [48, 52, 55, 59, 62],
             11: [48, 52, 55, 59, 62, 65], 13: [48, 52, 55, 59, 62, 65, 69],
         }
-        self.assertEqual({str(symbol) for symbol in expected}, set(SCALE_CHORDS))
+        self.assertEqual({str(symbol) for symbol in expected}, set(file_format.SCALE_CHORDS))
         for symbol, notes in expected.items():
             with self.subTest(symbol=symbol):
                 self.assertEqual(sorted(n.get_midi_number() for n in self.chord(symbol).get_notes()), notes)

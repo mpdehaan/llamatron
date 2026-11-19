@@ -20,18 +20,19 @@ grooves, and the songs themselves. A song holds its own tracks and registers. Bo
 same way, through a NamedItems each, and these lists say which is which.
 """
 
-from llamatron.composition.file_format import NAMED_GENERATORS, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section
 from llamatron.strings import names
 
 # How error messages name one object in each section of named objects.
 SECTION_LABELS = {
     Section.PATTERNS: names.MSG_PATTERN_WORD, Section.CHAINS: names.MSG_CHAIN_WORD, Section.GROOVES: names.MSG_GROOVE_WORD, Section.INSTRUMENTS: names.MSG_INSTRUMENT_WORD, Section.SCALES: names.MSG_SCALE_WORD, Section.TRACKS: names.MSG_TRACK_WORD,
     Section.REGISTERS: names.MSG_REGISTER_WORD, Section.SONGS: names.MSG_SONG_WORD,
-    **{section: kind for kind, section in NAMED_GENERATORS.items()},
+    **{section: kind for kind, section in file_format.NAMED_GENERATORS.items()},
 }
 # The set's sections, in the order they're written to a file, with the songs last.
-SETLIST_SECTIONS = [Section.SCALES, Section.PATTERNS, *NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
+SETLIST_SECTIONS = [Section.SCALES, Section.PATTERNS, *file_format.NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 # A song's sections, in the order they're written, before its scenes.
 SONG_SECTIONS = [Section.REGISTERS, Section.TRACKS]
 # The generator kind each generator section holds, like arp for arps.
-GENERATOR_KINDS = {section: kind for kind, section in NAMED_GENERATORS.items()}
+GENERATOR_KINDS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}

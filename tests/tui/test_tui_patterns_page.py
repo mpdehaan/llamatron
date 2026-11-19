@@ -18,7 +18,7 @@
 
 import os
 
-from llamatron.composition.file_format import CLOSED_PATTERN_GROUPS
+from llamatron.composition import file_format
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks, messages
 from llamatron.composition.setlist import Setlist
@@ -448,4 +448,4 @@ class TestPatternGroups(PatternsPageTest):
         self.assertEqual(self.document.setlist().get_closed_pattern_groups(), [BASSES])
         self.document.ungroup_patterns(BASSES)
         self.assertNotIn(BASSES, self.document.setlist().get_closed_pattern_groups())
-        self.assertNotIn(CLOSED_PATTERN_GROUPS, self.document.setlist().to_data())
+        self.assertNotIn(file_format.CLOSED_PATTERN_GROUPS, self.document.setlist().to_data())

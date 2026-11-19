@@ -29,9 +29,8 @@ from llamatron.realtime.fluidsynth import FluidSynth
 
 from textual.widgets import Static
 
-from llamatron.composition.file_format import (
-    NAMED_GENERATORS, ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, FollowChordsSetting, HocketSetting, ProgressionSetting, StepRowSetting, written_name
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
@@ -51,7 +50,6 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.key_table import every_key, first_key, key_event
 from llamatron.tui.keys import Key, Steps
 from llamatron.tui import keybindings
-from llamatron.composition.file_format import REGISTER_NAMES
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 
@@ -368,7 +366,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     def delete_every_generator(self):
         """Delete every arp and AutoRatchet, which the chains must have stopped using first."""
         song = self.document.song()
-        for kind, section in NAMED_GENERATORS.items():
+        for kind, section in file_format.NAMED_GENERATORS.items():
             for name in song.get_generator_names(kind):
                 self.document.delete_named(section=section, name=name)
 
@@ -461,7 +459,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         screen = self.app.screen
         if hasattr(screen, 'move_in_grid'):
             # The Registers page is a grid: the cell is reached with Down and Up, then Right and Left.
-            columns = len(screen.fields()) // len(REGISTER_NAMES)
+            columns = len(screen.fields()) // len(file_format.REGISTER_NAMES)
             row, column = divmod([field.label for field in screen.fields()].index(label), columns)
             here_row, here_column = divmod(screen.place, columns)
             await self.press(*([Key.DOWN] * (row - here_row) if row > here_row else [Key.UP] * (here_row - row)))

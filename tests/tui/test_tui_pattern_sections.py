@@ -17,7 +17,8 @@
 """The sections of the pattern editor's rows view, which open and close."""
 
 from tests.support.ui_testing import KEY_SHOWN, QUIET_VALUE, REVERSED, ROW_SHOWN, UITest, back_key, forward_key, key_name, key_of
-from llamatron.composition.file_format import REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, RegisterName, RegisterUse, Row
+from llamatron.composition import file_format
+from llamatron.composition.file_format import RegisterName, RegisterUse, Row
 from llamatron.composition import limits
 from llamatron.strings import labels as labels_text, legends, marks
 from llamatron.music.note import NoteName
@@ -241,14 +242,14 @@ class TestSections(UITest):
 
     async def test_unset_register_changes_show_a_dot(self):
         await open_section(test=self, section=RowSection.REGISTER_MOD)
-        for row in REGISTER_ADD_ROWS.values():
+        for row in file_format.REGISTER_ADD_ROWS.values():
             self.assertEqual(self.editor.cell_text(name=row, step=0), QUIET_VALUE)
 
     async def test_register_changes_take_typed_values_including_negative_ones_even_on_a_rest(self):
         await open_section(test=self, section=RowSection.REGISTER_MOD)
         rest = 2
         typed = -3
-        row = REGISTER_ADD_ROWS[RegisterName.BX]
+        row = file_format.REGISTER_ADD_ROWS[RegisterName.BX]
         await self.press(Key.RIGHT, Key.RIGHT)
         while self.editor.row_name() != row:
             await self.press(Key.DOWN)
@@ -265,7 +266,7 @@ class TestSections(UITest):
     async def test_register_uses_cycle_add_subtract_and_off_on_notes_and_on_empty_steps_alike(self):
         # Space or Enter cycles +, - and blank, where the rows were toggles.
         await open_section(test=self, section=RowSection.REGISTER_APPLY)
-        row = REGISTER_VELOCITY_ROWS[RegisterName.CX]
+        row = file_format.REGISTER_VELOCITY_ROWS[RegisterName.CX]
         while self.editor.row_name() != row:
             await self.press(Key.DOWN)
         self.assertEqual(self.editor.cell_text(name=row, step=0), marks.MSG_TOGGLE_OFF)
@@ -289,7 +290,7 @@ class TestSections(UITest):
         self.assertIn(f'« {key_name(keybindings.RegisterRow.NEXT)} »', self.text())
         # No register setting is locked out for want of a note: every register row works on an empty step, where the render has nothing to move.
         await self.press(*[Key.RIGHT] * EMPTY_STEP)
-        for name in (*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values()):
+        for name in (*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()):
             self.assertTrue(self.editor.row_for(name).editable(), name)
             self.assertNotEqual(self.editor.row_for(name).cell_lines(step=EMPTY_STEP), [marks.MSG_BLOCKED_CELL], name)
         await self.press(keybindings.RegisterRow.NEXT)
@@ -303,9 +304,9 @@ class TestSections(UITest):
         await self.open_patterns_on(BEAT)
         await self.press(Key.ENTER)
         rows = [row.name for row in self.app.screen.rows_view.reachable()]
-        for name in REGISTER_NOTE_ROWS.values():
+        for name in file_format.REGISTER_NOTE_ROWS.values():
             self.assertNotIn(name, rows)
-        for name in REGISTER_VELOCITY_ROWS.values():
+        for name in file_format.REGISTER_VELOCITY_ROWS.values():
             self.assertIn(name, rows)
 
     async def test_on_a_drum_note_row_a_and_f_are_notes(self):

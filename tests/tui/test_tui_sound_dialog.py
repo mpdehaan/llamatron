@@ -18,7 +18,8 @@
 
 import unittest
 
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, PatternSetting, Row
+from llamatron.composition import file_format
+from llamatron.composition.file_format import PatternSetting, Row
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, legends, marks
 from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE
@@ -262,7 +263,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.document.set_instrument_device(name=PREVIEW, device=NOT_CONNECTED)
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
-        self.document.set_instrument_device(name=PREVIEW, device=FLUIDSYNTH_DEVICE)
+        self.document.set_instrument_device(name=PREVIEW, device=file_format.FLUIDSYNTH_DEVICE)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=PREVIEW))
         self.fluidsynth_installed = True
         self.assertIsNone(self.preview().sound_refusal())

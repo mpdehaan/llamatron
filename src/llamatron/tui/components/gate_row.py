@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Gate row: how long a note sounds, one step when blank, as a whole number or fraction of whole notes."""
 
-from llamatron.composition.file_format import GATE_LENGTH_CHOICES
+from llamatron.composition import file_format
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.drawing import NOTHING
 from llamatron.composition.checks import fraction_text
@@ -48,7 +48,7 @@ class GateRow(PatternRow):
     def nudge(self, offset):
         """Set the gate to the next plain length longer or shorter than it is now."""
         now = self.gate_now()
-        lengths = [fraction(length) for length in GATE_LENGTH_CHOICES]
+        lengths = [fraction(length) for length in file_format.GATE_LENGTH_CHOICES]
         if offset > 0:
             choices = [length for length in lengths if length > now] or [lengths[-1]]
             self.set_gate(choices[0])

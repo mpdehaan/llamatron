@@ -26,7 +26,7 @@ starts with something else, so each kind keeps its own add.
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.sections import SONG_SECTIONS
+from llamatron.composition import sections
 from llamatron.strings import errors
 from llamatron.composition.naming import copy_name
 
@@ -47,7 +47,7 @@ class NamedEdits:
 
     def _owner_of(self, section):
         """Return the object that holds a section: the song for its tracks and registers, otherwise the set."""
-        return self.song() if section in SONG_SECTIONS else self._setlist
+        return self.song() if section in sections.SONG_SECTIONS else self._setlist
 
     def names_of(self, section):
         """Return the names in a section, in order: the song's for its tracks, the set's otherwise, with the factory grooves before the set's own."""

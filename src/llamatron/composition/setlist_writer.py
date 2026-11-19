@@ -28,7 +28,8 @@ import re
 import yaml
 
 from llamatron.support.safe_yaml import load_safely
-from llamatron.composition.file_format import CLOSED_PATTERN_GROUPS, OPEN_GENERATOR_TYPES, PATTERN_ROWS, PatternSetting, Section, SceneSetting, SetlistSetting, SongSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import PatternSetting, Section, SceneSetting, SetlistSetting, SongSetting
 
 # Text that can be written without quotes: it starts with a letter, digit or underscore, and
 # holds only those, #, ., /, spaces and hyphens.
@@ -38,7 +39,7 @@ _PLAIN = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_#./ -]*')
 _SETTINGS = [
     SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION, SetlistSetting.STEP_SIZE, SetlistSetting.DEFAULT_OCTAVE,
     SetlistSetting.DEFAULT_DRUM_OCTAVE, SetlistSetting.OCTAVE_LABELS, SetlistSetting.DEFAULT_FOLLOW_ACTION, SetlistSetting.REAL_TIME,
-    SetlistSetting.VISUALIZER, SetlistSetting.HIDDEN_VISUALIZERS, SetlistSetting.GENERATOR_ORDER, SetlistSetting.PROTECTED, CLOSED_PATTERN_GROUPS, OPEN_GENERATOR_TYPES,
+    SetlistSetting.VISUALIZER, SetlistSetting.HIDDEN_VISUALIZERS, SetlistSetting.GENERATOR_ORDER, SetlistSetting.PROTECTED, file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES,
 ]
 _BEFORE_NOTES = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION)
 # A song's settings, in the order they're written at the top of its entry.
@@ -150,7 +151,7 @@ def _pattern_lines(pattern):
     for setting in _PATTERN_SETTINGS:
         if pattern.get(setting):
             lines.append(SETTING.format(key=setting, value=_text(pattern[setting])))
-    lines += [SETTING.format(key=row, value=_text(pattern[row])) for row in PATTERN_ROWS if pattern.get(row) is not None]
+    lines += [SETTING.format(key=row, value=_text(pattern[row])) for row in file_format.PATTERN_ROWS if pattern.get(row) is not None]
     return lines
 
 

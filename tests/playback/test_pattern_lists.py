@@ -21,10 +21,8 @@ Three patterns of two quarter notes each: a plays C and D, b plays E and F, and 
 
 import unittest
 
-from llamatron.composition.file_format import (
-    PATTERN_ORDERS, REGISTER_ADD_ROWS, STATEMENT_PARTS, STATEMENT_ROWS, ClipSlotSetting, Direction, Operator, PatternOrder, PatternSetting, RegisterName, Section, StatementPart,
-    StepStatement,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, Direction, Operator, PatternOrder, PatternSetting, RegisterName, Section, StatementPart, StepStatement
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.pattern_order import ordered_patterns
 from llamatron.support.random_source import random_source
@@ -100,9 +98,9 @@ class TestAClipOfSeveralPatterns(unittest.TestCase):
 
     def test_a_step_that_starts_the_pattern_over_starts_the_whole_list_over(self):
         statement = {StatementPart.REGISTER: RegisterName.AX, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: RESTARTS_UNDER}
-        rows = {row: [None, statement.get(part)] for row, part in zip(STATEMENT_ROWS[StepStatement.RESTART], STATEMENT_PARTS)}
+        rows = {row: [None, statement.get(part)] for row, part in zip(file_format.STATEMENT_ROWS[StepStatement.RESTART], file_format.STATEMENT_PARTS)}
         # The first pattern counts the passes, and the second starts over on its second step while the count is low.
-        counted = {REGISTER_ADD_ROWS[RegisterName.AX]: [1, 0]}
+        counted = {file_format.REGISTER_ADD_ROWS[RegisterName.AX]: [1, 0]}
         notes = played(repeat=4, changed={A: counted, B: rows})
         cut = [*PLAYED[A], PLAYED[B][0]]
         self.assertEqual(notes[:len(cut) + len(PLAYED[A])], [*cut, *PLAYED[A]])
@@ -113,7 +111,7 @@ class TestPatternOrder(unittest.TestCase):
 
     def test_forward_is_the_default_and_every_order_plays_every_pattern_once_a_pass(self):
         self.assertEqual(played(repeat=2, order=PatternOrder.FORWARD), played(repeat=2))
-        for order in PATTERN_ORDERS:
+        for order in file_format.PATTERN_ORDERS:
             for place in range(TRIES):
                 with self.subTest(order=order, place=place):
                     self.assertEqual(sorted(ordered_patterns(names=LIST, order=order, place=place, rolls=random_source(place))), LIST)
@@ -138,7 +136,7 @@ class TestPatternOrder(unittest.TestCase):
         self.assertGreater(len(orders), 1)
 
     def test_a_list_of_one_is_the_same_in_every_order(self):
-        for order in PATTERN_ORDERS:
+        for order in file_format.PATTERN_ORDERS:
             self.assertEqual(played(names=[A], repeat=2, order=order), notes_of(A, A))
 
     def test_a_file_refuses_an_order_that_is_not_one(self):

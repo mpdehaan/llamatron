@@ -17,8 +17,10 @@
 
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
-from llamatron.composition.genres import GENRES, subgenres_of, variants_of
-from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, STEP_SIZE_CHOICES, TIME_SIGNATURE_CHOICES, Section
+from llamatron.composition import genres
+from llamatron.composition.genres import subgenres_of, variants_of
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.text import sorted_names, tempo_text
 from llamatron.tui.screens.shared.everywhere import export
@@ -71,14 +73,14 @@ class SongPage(FieldPage):
                 set=document.set_seed, clear=lambda: document.set_seed(None), clear_what=messages.MSG_NO_SEED,
             ),
             Field(label=labels.MSG_GROOVE_LABEL, value=song.get_groove_name, adjust=self.step_groove, enter=self.pick_groove, enter_what=legends.What.CHOOSE),
-            self.style_field(label=labels.MSG_GENRE_LABEL, choices=GENRES, current=song.get_genre(), set_choice=document.set_genre),
+            self.style_field(label=labels.MSG_GENRE_LABEL, choices=genres.GENRES, current=song.get_genre(), set_choice=document.set_genre),
             self.style_field(label=labels.MSG_SUBGENRE_LABEL, choices=subgenres_of(song.get_genre()), current=song.get_subgenre(), set_choice=document.set_subgenre),
             self.style_field(
                 label=labels.MSG_VARIANT_LABEL, choices=variants_of(genre=song.get_genre(), subgenre=song.get_subgenre()), current=song.get_variant(), set_choice=document.set_variant,
             ),
             ChoiceField(
-                page=self, label=labels.MSG_LIVE_RESPONSIVENESS_LABEL, choices=LIVE_RESPONSIVENESSES, current=song.get_live_responsiveness(),
-                names=[labels.MSG_LIVE_RESPONSIVENESS_NAMES[choice] for choice in LIVE_RESPONSIVENESSES], shown=labels.MSG_LIVE_RESPONSIVENESS_NAMES[song.get_live_responsiveness()],
+                page=self, label=labels.MSG_LIVE_RESPONSIVENESS_LABEL, choices=file_format.LIVE_RESPONSIVENESSES, current=song.get_live_responsiveness(),
+                names=[labels.MSG_LIVE_RESPONSIVENESS_NAMES[choice] for choice in file_format.LIVE_RESPONSIVENESSES], shown=labels.MSG_LIVE_RESPONSIVENESS_NAMES[song.get_live_responsiveness()],
                 set=document.set_live_responsiveness,
             ),
             Field(label=labels.MSG_PREVIEW_INSTRUMENT_LABEL, value=lambda: song.get_preview_instrument_name() or labels.MSG_PREVIEW_INSTRUMENT_UNSET, adjust=self.step_preview_instrument,
@@ -100,8 +102,8 @@ class SongPage(FieldPage):
     def step_time_signature(self, offset):
         """Move to the next or previous common time signature, from 4/4 if the song's isn't in the list."""
         current = self.song().get_time_signature().to_text()
-        place = TIME_SIGNATURE_CHOICES.index(current if current in TIME_SIGNATURE_CHOICES else defaults.DEFAULT_TIME_SIGNATURE)
-        self.document().set_time_signature(TIME_SIGNATURE_CHOICES[max(min(place + offset, len(TIME_SIGNATURE_CHOICES) - 1), 0)])
+        place = file_format.TIME_SIGNATURE_CHOICES.index(current if current in file_format.TIME_SIGNATURE_CHOICES else defaults.DEFAULT_TIME_SIGNATURE)
+        self.document().set_time_signature(file_format.TIME_SIGNATURE_CHOICES[max(min(place + offset, len(file_format.TIME_SIGNATURE_CHOICES) - 1), 0)])
 
     def ask_time_signature(self):
         current = self.song().get_time_signature().to_text()
@@ -114,15 +116,15 @@ class SongPage(FieldPage):
 
     def step_entry_size(self, offset):
         """Move to the next or previous step size, with one step before the shortest, and from one step if the song's size isn't in the list."""
-        choices = [None, *STEP_SIZE_CHOICES]
+        choices = [None, *file_format.STEP_SIZE_CHOICES]
         current = self.entry_size_text()
         place = choices.index(current) if current in choices else 0
         self.document().set_entry_size(choices[max(min(place + offset, len(choices) - 1), 0)])
 
     def pick_entry_size(self):
-        choices = [None, *STEP_SIZE_CHOICES]
+        choices = [None, *file_format.STEP_SIZE_CHOICES]
         current = self.entry_size_text()
-        options = [marks.MSG_ONE_STEP_SHOWN, *STEP_SIZE_CHOICES]
+        options = [marks.MSG_ONE_STEP_SHOWN, *file_format.STEP_SIZE_CHOICES]
         place = choices.index(current) if current in choices else 0
         self.ask(dialog=ChoiceDialog(title=labels.MSG_ENTRY_SIZE_LABEL, options=options, current=place), then=lambda chosen: self.document().set_entry_size(choices[chosen]))
 

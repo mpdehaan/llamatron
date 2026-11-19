@@ -20,7 +20,8 @@ from tests.support.ui_testing import DRUMS, KEY_SHOWN, LEAD, UITest, key_of
 from llamatron.composition import defaults, limits
 from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.composition.file_format import GrooveSetting
-from llamatron.composition.groove import FACTORY_GROOVE_NAMES, FactoryGroove, GROOVE_CELL_LENGTH_CHOICES, GROOVE_CELLS, STRAIGHT
+from llamatron.composition import groove as groove_values
+from llamatron.composition.groove import FactoryGroove
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -54,14 +55,14 @@ class TestGroovesPage(UITest):
         return self.document.song().get_groove_names()
 
     async def test_the_factory_grooves_are_listed_first_and_marked(self):
-        self.assertEqual(self.grooves(), FACTORY_GROOVE_NAMES)
+        self.assertEqual(self.grooves(), groove_values.FACTORY_GROOVE_NAMES)
         text = self.text()
-        for name in FACTORY_GROOVE_NAMES:
+        for name in groove_values.FACTORY_GROOVE_NAMES:
             self.assertIn(name, text)
         self.assertIn(marks.MSG_FACTORY_GROOVE_SHOWN, text)
         self.assertNotIn(marks.MSG_OWN_GROOVE_SHOWN, text)
         # The song chooses none, so none has one use and the rest have none.
-        self.assertEqual([row[1][-1] for row in self.app.screen.rows()], [1] + [0] * (len(FACTORY_GROOVE_NAMES) - 1))
+        self.assertEqual([row[1][-1] for row in self.app.screen.rows()], [1] + [0] * (len(groove_values.FACTORY_GROOVE_NAMES) - 1))
 
     async def test_a_factory_groove_cannot_be_renamed_moved_or_deleted(self):
         shown = [name for item in self.app.screen.key_table() for name in item.keys]
@@ -71,7 +72,7 @@ class TestGroovesPage(UITest):
         self.assertIn(first_key(keybindings.GroovesPage.COPY), shown)
         await self.press(keybindings.GroovesPage.RENAME, Key.BACKSPACE, keybindings.GroovesPage.MOVE)
         self.assertIsInstance(self.app.screen, GroovesPage)
-        self.assertEqual(self.grooves(), FACTORY_GROOVE_NAMES)
+        self.assertEqual(self.grooves(), groove_values.FACTORY_GROOVE_NAMES)
 
     async def test_enter_looks_at_a_factory_groove_without_editing_it(self):
         await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
@@ -81,12 +82,12 @@ class TestGroovesPage(UITest):
         await self.press(Key.RIGHT, '9', keybindings.GrooveEditor.MORE, keybindings.GrooveEditor.REMOVE_CELL, keybindings.GrooveEditor.CELL_LENGTH, keybindings.GrooveEditor.RENAME)
         self.assertIsInstance(self.app.screen, GrooveEditor)
         self.assertEqual(self.document.song().get_groove(FactoryGroove.SWING_58).get_cells()[1], 16)
-        self.assertEqual(len(self.document.song().get_groove(FactoryGroove.SWING_58).get_cells()), GROOVE_CELLS)
+        self.assertEqual(len(self.document.song().get_groove(FactoryGroove.SWING_58).get_cells()), groove_values.GROOVE_CELLS)
         self.assertFalse(self.document.is_dirty())
 
     async def test_copying_a_factory_groove_makes_one_of_your_own(self):
         await self.press(Key.DOWN, Key.DOWN, keybindings.GroovesPage.COPY)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, SWING_58_COPY])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, SWING_58_COPY])
         self.assertIn(messages.MSG_COPIED_TO.format(name=SWING_58_COPY), self.text())
         self.assertEqual(self.document.song().get_groove(SWING_58_COPY).get_cells(), self.document.song().get_groove(FactoryGroove.SWING_58).get_cells())
         self.assertIn(marks.MSG_OWN_GROOVE_SHOWN, self.text())
@@ -102,31 +103,31 @@ class TestGroovesPage(UITest):
     async def test_a_adds_a_numbered_straight_groove_and_opens_it(self):
         await self.press(keybindings.GroovesPage.ADD)
         self.assertIsInstance(self.app.screen, GrooveEditor)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, GROOVE_1])
-        self.assertEqual(self.document.song().get_groove(GROOVE_1).get_cells(), [STRAIGHT] * GROOVE_CELLS)
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1])
+        self.assertEqual(self.document.song().get_groove(GROOVE_1).get_cells(), [groove_values.STRAIGHT] * groove_values.GROOVE_CELLS)
         self.assertEqual(self.document.song().get_groove(GROOVE_1).get_cell_length_text(), defaults.DEFAULT_GROOVE_CELL_LENGTH)
         await self.press(Key.ESCAPE, keybindings.GroovesPage.ADD)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, GROOVE_1, GROOVE_2])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1, GROOVE_2])
 
     async def test_your_own_grooves_can_be_renamed_moved_and_deleted(self):
         await self.press(keybindings.GroovesPage.ADD, Key.ESCAPE, keybindings.GroovesPage.ADD, Key.ESCAPE, keybindings.GroovesPage.RENAME)
         self.app.screen.value = SHUFFLE
         await self.press(Key.ENTER)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, GROOVE_1, SHUFFLE])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1, SHUFFLE])
         await self.press(keybindings.GroovesPage.MOVE, Key.UP, Key.ENTER)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, SHUFFLE, GROOVE_1])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, SHUFFLE, GROOVE_1])
         await self.press(keybindings.GroovesPage.MOVE, Key.UP, Key.ENTER)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, SHUFFLE, GROOVE_1])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, SHUFFLE, GROOVE_1])
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, GROOVE_1])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1])
 
     async def test_a_groove_cannot_take_a_factory_name(self):
         await self.press(keybindings.GroovesPage.ADD, Key.ESCAPE, keybindings.GroovesPage.RENAME)
         self.app.screen.value = FactoryGroove.PUSH
         await self.press(Key.ENTER)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, GROOVE_1])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1])
 
     async def test_a_groove_in_use_cannot_be_deleted(self):
         await self.press(keybindings.GroovesPage.ADD, Key.ESCAPE)
@@ -135,7 +136,7 @@ class TestGroovesPage(UITest):
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(messages.MSG_USE_SONG_TRACK.format(song=THE_SONG, track=DRUMS), self.text())
         await self.press(Key.ENTER)
-        self.assertEqual(self.grooves(), [*FACTORY_GROOVE_NAMES, GROOVE_1])
+        self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1])
         render_song(self.document.song())
 
 
@@ -198,7 +199,7 @@ class TestGrooveEditor(UITest):
         self.assertEqual(self.groove().get_cells()[:3], [0, 0, 7])
         await self.press(keybindings.GrooveEditor.REMOVE_CELL, keybindings.GrooveEditor.REMOVE_CELL)
         self.assertEqual(self.groove().get_cells()[:2], [0, 0])
-        self.assertEqual(len(self.groove().get_cells()), GROOVE_CELLS - 1)
+        self.assertEqual(len(self.groove().get_cells()), groove_values.GROOVE_CELLS - 1)
         await self.press(*[keybindings.GrooveEditor.INSERT_CELL] * limits.MAX_GROOVE_CELLS)
         self.assertEqual(len(self.groove().get_cells()), limits.MAX_GROOVE_CELLS)
         await self.press(*[keybindings.GrooveEditor.REMOVE_CELL] * (limits.MAX_GROOVE_CELLS + 2))
@@ -207,11 +208,11 @@ class TestGrooveEditor(UITest):
     async def test_s_steps_the_cell_length_round_the_choices(self):
         self.assertEqual(self.groove().get_cell_length_text(), defaults.DEFAULT_GROOVE_CELL_LENGTH)
         seen = []
-        for _ in GROOVE_CELL_LENGTH_CHOICES:
+        for _ in groove_values.GROOVE_CELL_LENGTH_CHOICES:
             await self.press(keybindings.GrooveEditor.CELL_LENGTH)
             seen.append(self.groove().get_cell_length_text())
             self.assertIn(self.groove().get_cell_length_text(), self.text())
-        self.assertEqual(sorted(seen), sorted(GROOVE_CELL_LENGTH_CHOICES))
+        self.assertEqual(sorted(seen), sorted(groove_values.GROOVE_CELL_LENGTH_CHOICES))
         self.assertEqual(self.groove().get_cell_length_text(), defaults.DEFAULT_GROOVE_CELL_LENGTH)
         self.assertNotIn(GrooveSetting.CELL_LENGTH, self.groove().to_data())
 
@@ -224,7 +225,7 @@ class TestGrooveChoices(UITest):
         await self.select_field(labels.MSG_GROOVE_LABEL)
         self.assertEqual(self.document.song().get_groove_name(), FactoryGroove.NONE)
         # The arrows step through the names as the picker sorts them.
-        names = sorted_names(FACTORY_GROOVE_NAMES)
+        names = sorted_names(groove_values.FACTORY_GROOVE_NAMES)
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertEqual(self.document.song().get_groove_name(), names[names.index(FactoryGroove.NONE) + 2])
         await self.press(Key.LEFT, Key.LEFT, Key.LEFT)
@@ -246,7 +247,7 @@ class TestGrooveChoices(UITest):
         self.assertIn(marks.MSG_GROOVE_OFF_SHOWN, self.text())
         # The arrows step through the names in the picker's order, sorted, after the two choices that aren't names.
         await self.press(Key.RIGHT, Key.RIGHT)
-        self.assertEqual(self.document.song().get_scenes()[FIRST_SCENE].get_groove_choice(), sorted_names(FACTORY_GROOVE_NAMES)[1])
+        self.assertEqual(self.document.song().get_scenes()[FIRST_SCENE].get_groove_choice(), sorted_names(groove_values.FACTORY_GROOVE_NAMES)[1])
         await self.press(Key.BACKSPACE)
         self.assertIsNone(self.document.song().get_scenes()[FIRST_SCENE].get_groove_choice())
         await self.press(Key.ENTER)

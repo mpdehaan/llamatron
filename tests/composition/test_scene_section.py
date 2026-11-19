@@ -18,7 +18,8 @@
 
 import unittest
 
-from llamatron.composition.file_format import SECTION_KINDS, SceneSetting, Section, SectionKind
+from llamatron.composition import file_format
+from llamatron.composition.file_format import SceneSetting, Section, SectionKind
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
@@ -53,7 +54,7 @@ class TestSceneSection(unittest.TestCase):
 
     def test_every_kind_can_be_set_written_and_cleared(self):
         scene = a_song().get_scenes()[0]
-        for kind in SECTION_KINDS:
+        for kind in file_format.SECTION_KINDS:
             scene.set_section(kind)
             self.assertEqual(scene.get_section(), kind)
             self.assertEqual(scene.to_data()[SceneSetting.SECTION], kind)

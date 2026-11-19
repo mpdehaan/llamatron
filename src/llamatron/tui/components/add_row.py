@@ -15,13 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A register's += row: how much a step adds to the register, or takes from it, within the register's Allowed Inc Max."""
 
-from llamatron.composition.file_format import REGISTER_ADD_ROWS
+from llamatron.composition import file_format
 from llamatron.strings import errors
 from llamatron.tui.components.control_row import ControlRow
 from llamatron.tui import keybindings
 
 # Which register each += row adds to, by the row's name.
-REGISTER_OF_ROW = {row: name for name, row in REGISTER_ADD_ROWS.items()}
+REGISTER_OF_ROW = {row: name for name, row in file_format.REGISTER_ADD_ROWS.items()}
 
 
 class AddRow(ControlRow):

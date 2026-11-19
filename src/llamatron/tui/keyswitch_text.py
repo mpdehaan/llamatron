@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """How keyswitches are written on screen: a note in the set's octave labels with its MIDI number, a slot's name, and a step's keyswitches in words."""
 
-from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT
-from llamatron.composition.instrument import NO_KEYSWITCH
+from llamatron.composition import file_format
+from llamatron.composition import instrument as instrument_values
 from llamatron.music import midi
 from llamatron.music import note as note_values
 from llamatron.strings import marks
@@ -33,7 +33,7 @@ def keyswitch_note_text(*, setlist, note):
 
 def keyswitches_of(instrument):
     """Return an instrument's ten slots, or ten empty ones when there is no instrument to ask."""
-    return [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT if instrument is None else instrument.get_keyswitches()
+    return [instrument_values.NO_KEYSWITCH] * file_format.KEYSWITCH_SLOT_COUNT if instrument is None else instrument.get_keyswitches()
 
 
 def slot_name(*, keyswitches, slot):

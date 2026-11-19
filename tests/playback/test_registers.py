@@ -25,10 +25,8 @@ import unittest
 from llamatron.music import midi
 from llamatron.composition.clip_slot import morph_style_name
 from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import (
-    REGISTER_ADD_ROWS, REGISTER_NAMES, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, ClipSlotSetting, PatternSetting,
-    RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.generators.blend import BlendMode
 from llamatron.composition.song_file_error import SongFileError
@@ -118,9 +116,9 @@ def velocities(data, **where):
 
 
 # AX's rows, which most tests use.
-ADDS = REGISTER_ADD_ROWS[AX]
-USES_NOTE = REGISTER_NOTE_ROWS[AX]
-USES_VELOCITY = REGISTER_VELOCITY_ROWS[AX]
+ADDS = file_format.REGISTER_ADD_ROWS[AX]
+USES_NOTE = file_format.REGISTER_NOTE_ROWS[AX]
+USES_VELOCITY = file_format.REGISTER_VELOCITY_ROWS[AX]
 # What a step holds on a +Note or +Vel row: adds the register, subtracts it, or neither.
 ADDS_IT = RegisterUse.ADD
 SUBTRACTS_IT = RegisterUse.SUBTRACT
@@ -226,9 +224,9 @@ class TestAddingAndUsing(unittest.TestCase):
 
     def test_each_register_is_separate_and_the_ones_used_add_up(self):
         other_add = 2
-        rows = {ADDS: [self.ADD], REGISTER_ADD_ROWS[BX]: [other_add], USES_NOTE: [ADDS_IT], REGISTER_NOTE_ROWS[BX]: [OFF]}
+        rows = {ADDS: [self.ADD], file_format.REGISTER_ADD_ROWS[BX]: [other_add], USES_NOTE: [ADDS_IT], file_format.REGISTER_NOTE_ROWS[BX]: [OFF]}
         self.assertEqual(pitches(one_clip(rows=rows)), scale_notes([self.ADD]))
-        rows[REGISTER_NOTE_ROWS[BX]] = [ADDS_IT]
+        rows[file_format.REGISTER_NOTE_ROWS[BX]] = [ADDS_IT]
         self.assertEqual(pitches(one_clip(rows=rows)), scale_notes([self.ADD + other_add]))
 
     def test_it_starts_at_its_default(self):
@@ -243,7 +241,7 @@ class TestAddingAndUsing(unittest.TestCase):
 
     def test_adding_one_register_and_subtracting_another_nets_the_difference(self):
         other_add = 3
-        rows = {ADDS: [self.ADD], REGISTER_ADD_ROWS[BX]: [other_add], USES_NOTE: [ADDS_IT], REGISTER_NOTE_ROWS[BX]: [SUBTRACTS_IT]}
+        rows = {ADDS: [self.ADD], file_format.REGISTER_ADD_ROWS[BX]: [other_add], USES_NOTE: [ADDS_IT], file_format.REGISTER_NOTE_ROWS[BX]: [SUBTRACTS_IT]}
         self.assertEqual(pitches(one_clip(rows=rows)), scale_notes([self.ADD - other_add]))
 
     def test_a_file_from_before_the_change_holding_true_still_adds(self):
@@ -257,10 +255,10 @@ class TestAddingAndUsing(unittest.TestCase):
 
     def test_a_note_pushed_past_the_midi_range_moves_by_octaves_to_fit(self):
         # Every register at its highest, all moving one of the highest notes.
-        registers = {name: {RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE, RegisterSetting.ALLOWED_INC_MAX: limits.MAX_REGISTER_VALUE} for name in REGISTER_NAMES}
+        registers = {name: {RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE, RegisterSetting.ALLOWED_INC_MAX: limits.MAX_REGISTER_VALUE} for name in file_format.REGISTER_NAMES}
         rows = {Row.OCTAVE: [10]}
-        for name in REGISTER_NAMES:
-            rows.update({REGISTER_ADD_ROWS[name]: [limits.MAX_REGISTER_VALUE], REGISTER_NOTE_ROWS[name]: [ADDS_IT]})
+        for name in file_format.REGISTER_NAMES:
+            rows.update({file_format.REGISTER_ADD_ROWS[name]: [limits.MAX_REGISTER_VALUE], file_format.REGISTER_NOTE_ROWS[name]: [ADDS_IT]})
         self.assertEqual(len(pitches(one_clip(rows=rows, registers=registers))), 1)
 
 
@@ -307,7 +305,7 @@ class TestLimits(unittest.TestCase):
     def test_a_set_puts_a_reversed_register_back_to_counting_forward(self):
         # Four steps: the fourth sets AX to 1 once it has turned round at 2, and the adds after it count up again.
         registers = {AX: {RegisterSetting.MAXIMUM: 2, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}}
-        rows = {ADDS: [1, 1, 1, 0, 1, 1], REGISTER_SET_ROWS[AX]: [None, None, None, 1, None, None], USES_NOTE: [ADDS_IT] * 6}
+        rows = {ADDS: [1, 1, 1, 0, 1, 1], file_format.REGISTER_SET_ROWS[AX]: [None, None, None, 1, None, None], USES_NOTE: [ADDS_IT] * 6}
         data = one_clip(steps=6, rows=rows, registers=registers)
         self.assertEqual(pitches(data), scale_notes([1, 2, 1, 1, 2, 1]))
 
@@ -392,8 +390,8 @@ class TestSharing(unittest.TestCase):
 
     def test_a_reset_only_resets_the_registers_it_names(self):
         patterns = {
-            X: pattern(1, **{ADDS: [self.ADD], REGISTER_ADD_ROWS[BX]: [self.ADD]}),
-            Y: pattern(1, **{REGISTER_NOTE_ROWS[BX]: [ADDS_IT]}),
+            X: pattern(1, **{ADDS: [self.ADD], file_format.REGISTER_ADD_ROWS[BX]: [self.ADD]}),
+            Y: pattern(1, **{file_format.REGISTER_NOTE_ROWS[BX]: [ADDS_IT]}),
         }
         scenes = [self.scene(), {SceneSetting.RESET: [AX], SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: Y}}}]
         self.assertEqual(pitches(song(patterns=patterns, scenes=scenes), scene=2), scale_notes([self.ADD]))
@@ -442,8 +440,8 @@ class TestTheFile(unittest.TestCase):
 
     def test_bad_rows_are_refused(self):
         for rows in [
-            {ADDS: [limits.MAX_REGISTER_VALUE + 1]}, {ADDS: [limits.MIN_REGISTER_VALUE - 1]}, {REGISTER_ADD_ROWS[BX]: [X]},
-            {REGISTER_NOTE_ROWS[CX]: [2]}, {REGISTER_VELOCITY_ROWS[DX]: [-2]}, {REGISTER_VELOCITY_ROWS[DX]: [X]},
+            {ADDS: [limits.MAX_REGISTER_VALUE + 1]}, {ADDS: [limits.MIN_REGISTER_VALUE - 1]}, {file_format.REGISTER_ADD_ROWS[BX]: [X]},
+            {file_format.REGISTER_NOTE_ROWS[CX]: [2]}, {file_format.REGISTER_VELOCITY_ROWS[DX]: [-2]}, {file_format.REGISTER_VELOCITY_ROWS[DX]: [X]},
         ]:
             with self.subTest(rows=rows), self.assertRaises(SongFileError):
                 song_from_data(one_clip(rows=rows))

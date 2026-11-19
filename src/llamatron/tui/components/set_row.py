@@ -15,12 +15,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A register's = row: the value a step sets the register to before anything adds to it, or blank to leave the register as it is."""
 
-from llamatron.composition.file_format import REGISTER_SET_ROWS
+from llamatron.composition import file_format
 from llamatron.tui.components.control_row import ControlRow
 from llamatron.tui import keybindings
 
 # Which register each = row sets, by the row's name.
-REGISTER_OF_ROW = {row: name for name, row in REGISTER_SET_ROWS.items()}
+REGISTER_OF_ROW = {row: name for name, row in file_format.REGISTER_SET_ROWS.items()}
 
 
 class SetRow(ControlRow):

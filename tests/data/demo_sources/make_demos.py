@@ -36,8 +36,8 @@ import mido
 
 from llamatron.music.scale import ScaleType
 from llamatron.music import note as note_values
-from llamatron.composition.file_format import PATTERN_ROWS
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
+from llamatron.composition import file_format
+from llamatron.composition import row_descriptions
 from llamatron.composition.setlist import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.tui.screens.set.scale_page import SCALE_PAGES
@@ -81,7 +81,7 @@ def text_length(value):
 
 def is_on_or_off(row):
     """Return whether a row the tune data names is one a pattern writes as true or false. The duration row, which the tunes were written with, is no row of a pattern now."""
-    return row in ROW_DESCRIPTIONS and ROW_DESCRIPTIONS[row].is_on_or_off()
+    return row in row_descriptions.ROW_DESCRIPTIONS and row_descriptions.ROW_DESCRIPTIONS[row].is_on_or_off()
 
 
 def pattern(steps, root=None, kind=None, drum=False, prefer='#', **settings):
@@ -90,7 +90,7 @@ def pattern(steps, root=None, kind=None, drum=False, prefer='#', **settings):
     A note is a name like 'A3', a MIDI number, or None for a rest. The pattern is written with
     durations, as the demos were first written, and song_to_gates turns it into gates.
     """
-    written_rows = ['duration', *PATTERN_ROWS]
+    written_rows = ['duration', *file_format.PATTERN_ROWS]
     rows = {row: [] for row in written_rows}
     for step in steps:
         note, duration = step[0], step[1]

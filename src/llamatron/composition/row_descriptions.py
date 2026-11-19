@@ -27,13 +27,11 @@ which playback reads directly, since it reads every step of every pass.
 """
 
 from llamatron.composition.checks import is_true_or_false, is_whole_number, is_whole_number_from, listed
-from llamatron.composition.corrections import NO_NEAREST_VALUE
+from llamatron.composition import corrections
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, KEYSWITCH_SLOTS, CHORD_SYMBOLS, TENSIONS, GATE_MODIFIERS, NOTE_LETTERS, OPERATORS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NAMES,
-    REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_USES, REGISTER_VELOCITY_ROWS, RESULT_COMPARISONS, STATEMENT_OF_ROW, RegisterUse, Row, StatementPart,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import RegisterUse, Row, StatementPart
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.setting import Length
@@ -112,7 +110,7 @@ class RowDescription:
 
     def nearest(self, value, *, drum):
         """Return the allowed value nearest a wrong one, or NO_NEAREST_VALUE: only a row with limits has one."""
-        return NO_NEAREST_VALUE
+        return corrections.NO_NEAREST_VALUE
 
 
 class RowOfNumbers(RowDescription):
@@ -152,7 +150,7 @@ class RowOfNumbers(RowDescription):
     def nearest(self, value, *, drum):
         """Return the end of the range nearest a whole number outside it."""
         if not is_whole_number(value):
-            return NO_NEAREST_VALUE
+            return corrections.NO_NEAREST_VALUE
         return max(min(value, self._highest), self._lowest)
 
 
@@ -187,7 +185,7 @@ class RowOfDegrees(RowDescription):
     def nearest(self, value, *, drum):
         """Return the lowest degree for a whole number under it. A drum pattern's note letter has no nearest."""
         if drum or not is_whole_number(value):
-            return NO_NEAREST_VALUE
+            return corrections.NO_NEAREST_VALUE
         return max(value, self._lowest)
 
 
@@ -393,7 +391,7 @@ class RowOfRegisterUses(RowDescription):
 
     def get_choices(self):
         """Return the uses a key cycles through after off, in order: add, then subtract."""
-        return list(REGISTER_USES)
+        return list(file_format.REGISTER_USES)
 
     def written(self, values):
         return [RegisterUse.OFF if value is None else int(value) for value in values]
@@ -427,7 +425,7 @@ class RowOfNoteMoves(RowOfRegisterUses):
 
 def is_note_letter(value):
     """Return whether a value is one note letter, A to G, as a drum pattern's degree row holds."""
-    return isinstance(value, str) and len(value) == NOTE_LETTER_LENGTH and value in NOTE_LETTERS
+    return isinstance(value, str) and len(value) == NOTE_LETTER_LENGTH and value in file_format.NOTE_LETTERS
 
 
 def described_rows(*rows):
@@ -459,9 +457,9 @@ class RowOfStatementValues(RowDescription):
         super().__init__(name=name, kept_by_a_rest=True)
 
     def problem_with(self, value, *, drum):
-        if value in REGISTER_NAMES or is_whole_number_from(value=value, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER):
+        if value in file_format.REGISTER_NAMES or is_whole_number_from(value=value, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER):
             return None
-        return errors.ERR_NOT_STATEMENT_VALUE.format(lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, choices=listed(REGISTER_NAMES))
+        return errors.ERR_NOT_STATEMENT_VALUE.format(lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, choices=listed(file_format.REGISTER_NAMES))
 
 
 class RowOfStatementChoices(RowOfChoices):
@@ -475,12 +473,12 @@ class RowOfStatementChoices(RowOfChoices):
 
 
 # What each part of a statement may be, by the part.
-STATEMENT_PART_CHOICES = {StatementPart.REGISTER: REGISTER_NAMES, StatementPart.OPERATOR: OPERATORS, StatementPart.COMPARISON: RESULT_COMPARISONS}
+STATEMENT_PART_CHOICES = {StatementPart.REGISTER: file_format.REGISTER_NAMES, StatementPart.OPERATOR: file_format.OPERATORS, StatementPart.COMPARISON: file_format.RESULT_COMPARISONS}
 
 
 def statement_row(name):
     """Return the description of one row of a step's statements: the row of one part of one kind of statement."""
-    _, part = STATEMENT_OF_ROW[name]
+    _, part = file_format.STATEMENT_OF_ROW[name]
     if part in STATEMENT_PART_CHOICES:
         return RowOfStatementChoices(name=name, choices=STATEMENT_PART_CHOICES[part])
     return RowOfStatementValues(name=name)
@@ -490,12 +488,12 @@ def statement_row(name):
 ROW_DESCRIPTIONS = described_rows(
     RowOfDegrees(name=Row.DEGREE, lowest=limits.MIN_DEGREE),
     RowOfLengths(name=Row.GATE, most=limits.MAX_GATE),
-    RowOfChoices(name=Row.DOT, choices=GATE_MODIFIERS, problem=errors.ERR_NOT_GATE_MODIFIER),
-    RowOfChoices(name=Row.ACCIDENTAL, choices=ACCIDENTALS, problem=errors.ERR_NOT_ACCIDENTAL, changes_with_drums=True),
+    RowOfChoices(name=Row.DOT, choices=file_format.GATE_MODIFIERS, problem=errors.ERR_NOT_GATE_MODIFIER),
+    RowOfChoices(name=Row.ACCIDENTAL, choices=file_format.ACCIDENTALS, problem=errors.ERR_NOT_ACCIDENTAL, changes_with_drums=True),
     RowOfOctaves(name=Row.OCTAVE, lowest=limits.MIN_OCTAVE, highest=limits.MAX_OCTAVE, default=NO_DEFAULT),
-    RowOfChords(name=Row.CHORD, symbols=CHORD_SYMBOLS),
+    RowOfChords(name=Row.CHORD, symbols=file_format.CHORD_SYMBOLS),
     RowOfInversions(name=Row.INVERSION, choices=limits.INVERSIONS),
-    RowOfTensions(name=Row.TENSION, choices=TENSIONS),
+    RowOfTensions(name=Row.TENSION, choices=file_format.TENSIONS),
     RowOfChordScales(name=Row.CHORD_SCALE, choices=scale_type_names()),
     RowOfNumbers(name=Row.VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, default=defaults.DEFAULT_VELOCITY),
     RowOfToggles(name=Row.ACCENT),
@@ -505,14 +503,14 @@ ROW_DESCRIPTIONS = described_rows(
     RowOfNumbers(name=Row.RATCHET, lowest=limits.MIN_RATCHET, highest=limits.MAX_RATCHET, default=defaults.DEFAULT_RATCHET, quiet=True),
     RowOfNumbers(name=Row.RATCHET_OFFSET, lowest=-limits.MAX_RATCHET_OFFSET, highest=limits.MAX_RATCHET_OFFSET, default=NO_RATCHET_OFFSET, quiet=True),
     RowOfToggles(name=Row.GRAB),
-    RowOfKeyswitches(name=Row.KEYSWITCH, choices=KEYSWITCH_SLOTS),
-    *[control_row(name) for name in CC_ROWS],
+    RowOfKeyswitches(name=Row.KEYSWITCH, choices=file_format.KEYSWITCH_SLOTS),
+    *[control_row(name) for name in file_format.CC_ROWS],
     RowOfToggles(name=Row.SLIDE, kept_by_a_rest=True),
-    *[RowOfNoteMoves(name=name) for name in REGISTER_NOTE_ROWS.values()],
-    *[RowOfRegisterUses(name=name) for name in REGISTER_VELOCITY_ROWS.values()],
-    *[register_change_row(name) for name in REGISTER_ADD_ROWS.values()],
-    *[register_set_row(name) for name in REGISTER_SET_ROWS.values()],
-    *[statement_row(name) for name in STATEMENT_OF_ROW],
+    *[RowOfNoteMoves(name=name) for name in file_format.REGISTER_NOTE_ROWS.values()],
+    *[RowOfRegisterUses(name=name) for name in file_format.REGISTER_VELOCITY_ROWS.values()],
+    *[register_change_row(name) for name in file_format.REGISTER_ADD_ROWS.values()],
+    *[register_set_row(name) for name in file_format.REGISTER_SET_ROWS.values()],
+    *[statement_row(name) for name in file_format.STATEMENT_OF_ROW],
 )
 
 
@@ -525,4 +523,4 @@ def row_described(name):
 
 def rows_where(condition):
     """Return the names of the rows whose description a condition is true of, in the order a file writes them."""
-    return tuple(name for name in PATTERN_ROWS if condition(ROW_DESCRIPTIONS[name]))
+    return tuple(name for name in file_format.PATTERN_ROWS if condition(ROW_DESCRIPTIONS[name]))

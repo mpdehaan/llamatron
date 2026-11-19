@@ -29,7 +29,8 @@ makes, and the items whose data is the same are the very objects they were.
 import copy
 import unittest
 
-from llamatron.composition.file_format import REGISTER_NAMES, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.llama_data import LlamaData, own_copy
 from llamatron.composition.named_items import NamedItems
@@ -217,8 +218,8 @@ class TestKeptData(unittest.TestCase):
             lambda: self.document.insert_step(name=TUNE, step=0),
             lambda: self.document.set_track_cc_number(name=LEAD, lane=FIRST_LANE, number=A_CC_NUMBER),
             lambda: self.document.set_track_cc_number(name=LEAD, lane=FIRST_LANE + 1, number=A_CC_NUMBER),
-            lambda: self.document.set_reset(index=FIRST_SCENE, register=REGISTER_NAMES[0], on=True),
-            lambda: self.document.set_reset(index=FIRST_SCENE, register=REGISTER_NAMES[1], on=True),
+            lambda: self.document.set_reset(index=FIRST_SCENE, register=file_format.REGISTER_NAMES[0], on=True),
+            lambda: self.document.set_reset(index=FIRST_SCENE, register=file_format.REGISTER_NAMES[1], on=True),
             lambda: self.document.set_generator_setting(section=Section.ARPS, name=UP_ARP, setting=ArpSetting.OFFSETS, value=list(SOME_OFFSETS)),
             lambda: self.document.set_arp_offset(name=UP_ARP, step=0, offset=AN_OFFSET),
             lambda: self.document.insert_arp_offset(name=UP_ARP, step=0),

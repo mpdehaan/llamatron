@@ -26,10 +26,8 @@ from llamatron.composition.checks import written_length
 from llamatron.composition.conditions import is_true
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, FIXED_CHORDS, TENSIONS, GATE_MODIFIERS, PATTERN_ROWS, REGISTER_ADD_ROWS,
-    REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, SCALE_CHORDS, STATEMENT_OF_ROW, Row, StepStatement,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Row, StepStatement
 from llamatron.composition.named_scale import NamedScale
 from llamatron.playback.drift import NO_EFFECTS
 from llamatron.music import midi
@@ -55,11 +53,11 @@ NOTHING_ADDED = 0
 # The start of a pass.
 NO_TIME = 0
 # The rows whose values a step plays from. A step's statements are gathered apart, whole, only where a pattern holds any.
-PLAYED_ROWS = [row for row in PATTERN_ROWS if row not in STATEMENT_OF_ROW]
+PLAYED_ROWS = [row for row in file_format.PATTERN_ROWS if row not in file_format.STATEMENT_OF_ROW]
 # Where what a step sounds keeps when it starts in the pass, before its pieces.
 START = 0
 # What a gate is multiplied by when its step is dotted or a triplet, as pairs, since every such step asks.
-GATE_MODIFIER_PAIRS = {modifier: Length.exact(amount) for modifier, amount in GATE_MODIFIERS.items()}
+GATE_MODIFIER_PAIRS = {modifier: Length.exact(amount) for modifier, amount in file_format.GATE_MODIFIERS.items()}
 
 
 @dataclass(kw_only=True, slots=True)
@@ -251,8 +249,8 @@ class PatternPlayer:
             heard = not muted
             if uses_registers:
                 # Drum patterns have no scale to move a note along, so registers only change their velocity.
-                note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=REGISTER_NOTE_ROWS)
-                velocity_added += _used_values(values=values, current=current, rows=REGISTER_VELOCITY_ROWS)
+                note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
+                velocity_added += _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
             effects = NO_EFFECTS
@@ -351,14 +349,14 @@ class PatternPlayer:
         adds notes of this clip's scale above the note, which needs a scale. A note of the chord
         that would fall outside the MIDI range is left out.
         """
-        if symbol in FIXED_CHORDS:
+        if symbol in file_format.FIXED_CHORDS:
             scale = None
-            moves = FIXED_CHORDS[symbol].value
+            moves = file_format.FIXED_CHORDS[symbol].value
         else:
             if self._scale is None:
                 raise no_scale_error(where=where, scene=self._scene)
             scale = self._scale
-            moves = [above for above in SCALE_CHORDS[symbol] if above]
+            moves = [above for above in file_format.SCALE_CHORDS[symbol] if above]
         notes = [root]
         for move in moves:
             try:
@@ -408,17 +406,17 @@ class PatternPlayer:
         if self._scale_name is None:
             raise no_scale_error(where=where, scene=self._scene)
         scale = self._scene_scale_at(octave, effects=effects, kind=values[Row.CHORD_SCALE])
-        half_steps = ACCIDENTALS.get(values[Row.ACCIDENTAL], NO_HALF_STEPS)
+        half_steps = file_format.ACCIDENTALS.get(values[Row.ACCIDENTAL], NO_HALF_STEPS)
         degree = values[Row.DEGREE]
         symbol = None if values[Row.CHORD] is None else str(values[Row.CHORD])
-        if symbol is not None and symbol not in FIXED_CHORDS:
+        if symbol is not None and symbol not in file_format.FIXED_CHORDS:
             # A chord of scale notes: the step's degree and the scale degrees above it that a symbol like 7 names.
             return Sound.chord([
                 scale.sound_at(degree=degree + above, scale_notes=shift, half_steps=half_steps, length=length, velocity=velocity, glide=glide)
-                for above in SCALE_CHORDS[symbol]
+                for above in file_format.SCALE_CHORDS[symbol]
             ])
         root = scale.sound_at(degree=degree, scale_notes=shift, half_steps=half_steps, length=length, velocity=velocity, glide=glide)
-        return root if symbol is None else Sound.chord_above(root, FIXED_CHORDS[symbol].value)
+        return root if symbol is None else Sound.chord_above(root, file_format.FIXED_CHORDS[symbol].value)
 
 
 def _with_tensions(*, chord, tensions):
@@ -430,10 +428,10 @@ def _with_tensions(*, chord, tensions):
     root = notes[0]
     held = {note[sound_values.MIDI] for note in notes}
     for tension in tensions:
-        if root[sound_values.MIDI] + TENSIONS[tension] in held:
+        if root[sound_values.MIDI] + file_format.TENSIONS[tension] in held:
             continue
         try:
-            notes.append(Sound.half_step(root, TENSIONS[tension]))
+            notes.append(Sound.half_step(root, file_format.TENSIONS[tension]))
         except ValueError:
             pass
     return Sound.chord(notes)
@@ -554,12 +552,12 @@ def _rests(*, start, end, step_length):
 
 def _register_adds(values):
     """Return what a step adds to each register it adds to, by register name."""
-    return {name: values[row] for name, row in REGISTER_ADD_ROWS.items() if values[row]}
+    return {name: values[row] for name, row in file_format.REGISTER_ADD_ROWS.items() if values[row]}
 
 
 def _register_sets(values):
     """Return what a step sets each register to, by register name, for each register it sets."""
-    return {name: values[row] for name, row in REGISTER_SET_ROWS.items() if values[row] is not None}
+    return {name: values[row] for name, row in file_format.REGISTER_SET_ROWS.items() if values[row] is not None}
 
 
 def _used_values(*, values, current, rows):
@@ -571,7 +569,7 @@ def _controls_sent(*, values, time):
     """Return the CC values a step sends at a time, one for each CC lane it has a value on."""
     return [
         Control(time=time, number=lane, value=values[row], slide=bool(values[Row.SLIDE]))
-        for lane, row in enumerate(CC_ROWS) if values[row] is not None
+        for lane, row in enumerate(file_format.CC_ROWS) if values[row] is not None
     ]
 
 

@@ -19,8 +19,9 @@
 from llamatron.composition.checks import check_keys, listed, reading
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.corrections import LEFT_OUT
-from llamatron.composition.file_format import RESET_BEHAVIORS, ResetBehavior, RegisterSetting
+from llamatron.composition import corrections
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ResetBehavior, RegisterSetting
 from llamatron.composition.llama_data import LlamaData, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Choice, Flag, WholeNumber, described
@@ -31,7 +32,7 @@ SETTINGS = described(
     WholeNumber(name=RegisterSetting.DEFAULT, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
     WholeNumber(name=RegisterSetting.MINIMUM, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
     WholeNumber(name=RegisterSetting.MAXIMUM, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
-    Choice(name=RegisterSetting.RESET_BEHAVIOR, choices=RESET_BEHAVIORS, default=LEFT_OUT, error=errors.ERR_BAD_RESET_BEHAVIOR),
+    Choice(name=RegisterSetting.RESET_BEHAVIOR, choices=file_format.RESET_BEHAVIORS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_RESET_BEHAVIOR),
     Flag(name=RegisterSetting.RESET_EACH_SCENE, error=errors.ERR_RESET_EACH_SCENE_NOT_TRUE_OR_FALSE),
     WholeNumber(name=RegisterSetting.ALLOWED_INC_MAX, lowest=limits.MIN_ALLOWED_INC_MAX, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_BAD_VALUE),
 )

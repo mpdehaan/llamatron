@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields that choose visualizer modes: the mode Arrange's visualizer key shows first, on the File/Global page and the Song page, the song's over the set's, and the File/Global page's Hide Visualizers section."""
 
-from llamatron.composition.file_format import VISUALIZER_NAMES
+from llamatron.composition import file_format
 from llamatron.strings import labels, legends, marks
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field
@@ -24,8 +24,8 @@ from llamatron.visualizers.modes import mode_called
 
 def visualizer_field(*, page, current, set_name, first):
     """Return the field that chooses the mode shown first: first, the words for none of its own, then every mode by its name on screen."""
-    choices = [first, *VISUALIZER_NAMES]
-    names = [first, *[mode_called(name).NAME for name in VISUALIZER_NAMES]]
+    choices = [first, *file_format.VISUALIZER_NAMES]
+    names = [first, *[mode_called(name).NAME for name in file_format.VISUALIZER_NAMES]]
     shown = first if current is None else mode_called(current).NAME
     return ChoiceField(
         page=page, label=labels.MSG_VISUALIZER_LABEL, choices=choices, current=current or first, names=names, shown=shown,
@@ -44,9 +44,9 @@ def hidden_visualizers_field(*, page):
 
     def pick():
         def chosen(names):
-            for name in VISUALIZER_NAMES:
+            for name in file_format.VISUALIZER_NAMES:
                 page.document().set_visualizer_hidden(name=name, hidden=name in names)
-        dialog = PickManyDialog(title=labels.MSG_HIDE_VISUALIZERS_LABEL, options=list(VISUALIZER_NAMES), names=[mode_called(name).NAME for name in VISUALIZER_NAMES],
+        dialog = PickManyDialog(title=labels.MSG_HIDE_VISUALIZERS_LABEL, options=list(file_format.VISUALIZER_NAMES), names=[mode_called(name).NAME for name in file_format.VISUALIZER_NAMES],
                                 picked=setlist.get_hidden_visualizers())
         page.ask(dialog=dialog, then=chosen)
     return Field(label=labels.MSG_HIDE_VISUALIZERS_LABEL, value=shown, enter=pick, enter_what=legends.What.CHOOSE)

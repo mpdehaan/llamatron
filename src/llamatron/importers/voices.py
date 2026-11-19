@@ -33,7 +33,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from llamatron.composition.file_format import CC_ROWS, FIXED_CHORDS
+from llamatron.composition import file_format
 from llamatron.strings import importing
 
 # Middle C, where a part that plays both hands is split. A part plays both hands when enough of its
@@ -47,7 +47,7 @@ FIRST_DRUM_NUMBER = 1
 def chord_shapes():
     """Return the chord symbols by the half steps of their notes above the lowest, the first symbol for a shape winning."""
     shapes = {}
-    for symbol, chord_type in FIXED_CHORDS.items():
+    for symbol, chord_type in file_format.FIXED_CHORDS.items():
         shapes.setdefault(chord_type.value, symbol)
     return shapes
 
@@ -111,7 +111,7 @@ def control_lanes(part):
     sent = Counter(control.number for control in part.controls if control.number < FIRST_CHANNEL_MODE)
     first = [number for number in CC_PRIORITY if number in sent]
     others = sorted((number for number in sent if number not in CC_PRIORITY), key=lambda number: (-sent[number], number))
-    return (first + others)[:len(CC_ROWS)]
+    return (first + others)[:len(file_format.CC_ROWS)]
 
 
 def single(note):

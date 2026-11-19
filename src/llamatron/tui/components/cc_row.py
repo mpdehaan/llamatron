@@ -21,7 +21,7 @@ CC 1 (74), or (off) for a lane that sends nothing on them, or (?) when the track
 plain CC 1 when no track plays the pattern yet.
 """
 
-from llamatron.composition.file_format import CC_ROWS
+from llamatron.composition import file_format
 from llamatron.tui.components.control_row import ControlRow
 from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
@@ -35,7 +35,7 @@ class CcRow(ControlRow):
     __slots__ = ()
 
     def lane(self):
-        return CC_ROWS.index(self.name)
+        return file_format.CC_ROWS.index(self.name)
 
     def label(self):
         numbers = self.editor.document().cc_numbers_for_pattern(name=self.editor.item, lane=self.lane())

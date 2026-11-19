@@ -20,7 +20,8 @@ from rich.text import Text
 
 from llamatron.composition import defaults, limits
 from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.composition.file_format import EuclidPart, CC_ROWS, REGISTER_NAMES, Section, TrackSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import EuclidPart, Section, TrackSetting
 from llamatron.tui.screens.shared.statements import FIRST_TABLE, SECOND_TABLE, statement_section
 from llamatron.tui.screens.shared.octave_field import octave_field
 from llamatron.tui.screens.generators.strum_fields import strum_section
@@ -107,7 +108,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
 
     def register_field(self, *, label, current, bind):
         """Return a field binding a CC lane or the velocity to a register, (none) first and then AX to DX."""
-        choices = [marks.MSG_NONE_SHOWN, *REGISTER_NAMES]
+        choices = [marks.MSG_NONE_SHOWN, *file_format.REGISTER_NAMES]
         return ChoiceField(
             page=self, label=label, choices=choices, current=current or marks.MSG_NONE_SHOWN,
             set=lambda choice: bind(None if choice == marks.MSG_NONE_SHOWN else choice), clear=lambda: bind(None), clear_what=legends.MSG_UNBIND_WHAT,
@@ -161,12 +162,12 @@ class TrackEditor(ShowsNamedItem, FieldPage):
                               set_octave=lambda octave: self.document().set_track_highest_octave(name=self.item, octave=octave)),
         ]
         result += [self.default_velocity_field(), self.accent_field()]
-        result += [self.cc_field(lane) for lane in range(len(CC_ROWS))]
+        result += [self.cc_field(lane) for lane in range(len(file_format.CC_ROWS))]
         registers = track.get_cc_registers()
         result += [
             self.register_field(label=labels.MSG_CC_REGISTER_LABEL.format(number=lane + 1), current=registers[lane],
                                 bind=lambda register, lane=lane: self.document().set_track_cc_register(name=self.item, lane=lane, register=register))
-            for lane in range(len(CC_ROWS))
+            for lane in range(len(file_format.CC_ROWS))
         ]
         result.append(self.register_field(label=labels.MSG_VELOCITY_REGISTER_LABEL, current=track.get_velocity_register(),
                                           bind=lambda register: self.document().set_track_velocity_register(name=self.item, register=register)))

@@ -31,8 +31,9 @@ that are the chord's third, fifth and seventh. Its tensions set the notes betwee
 
 import math
 
-from llamatron.composition.chords import PLACED_SCALE_SIZE, ROOT_PLACE, replaced_places
-from llamatron.composition.file_format import ACCIDENTALS, TENSIONS
+from llamatron.composition import chords as chords_values
+from llamatron.composition.chords import replaced_places
+from llamatron.composition import file_format
 from llamatron.composition.named_scale import scale_type_called
 from llamatron.generators.arp import along_scale
 from llamatron.generators.base import ClipGenerator
@@ -116,7 +117,7 @@ class Progression(ClipGenerator):
         accidental = self._accidentals[place]
         if accidental is None:
             return along_scale(note=note, steps=self._chords[place] - 1, scale=scale)
-        return Sound.half_step(note, _half_steps_to(degree=self._chords[place], scale=scale) + ACCIDENTALS[accidental])
+        return Sound.half_step(note, _half_steps_to(degree=self._chords[place], scale=scale) + file_format.ACCIDENTALS[accidental])
 
     def _to_changed_chord(self, *, note, place, scale):
         """Return a note moved to a chord that borrows a scale, or names its quality or tensions.
@@ -131,7 +132,7 @@ class Progression(ClipGenerator):
             note = _carried(note=note, scale=scale, drawn_from=drawn_from)
         replaced = self._replaced[place]
         size = len(drawn_from.get_type().value)
-        if extra or size != PLACED_SCALE_SIZE or above not in replaced or above == ROOT_PLACE:
+        if extra or size != chords_values.PLACED_SCALE_SIZE or above not in replaced or above == chords_values.ROOT_PLACE:
             return self._to_chord(note=note, place=place, scale=drawn_from)
         root = self._to_chord(note=along_scale(note=note, steps=-above, scale=drawn_from), place=place, scale=drawn_from)
         return Sound.half_step(root, replaced[above])
@@ -165,10 +166,10 @@ def _with_tensions(*, notes, tensions):
     held = {note[sound_values.MIDI] % HALF_STEPS_PER_OCTAVE for note in notes}
     result = list(notes)
     for tension in tensions:
-        if (lowest[sound_values.MIDI] + TENSIONS[tension]) % HALF_STEPS_PER_OCTAVE in held:
+        if (lowest[sound_values.MIDI] + file_format.TENSIONS[tension]) % HALF_STEPS_PER_OCTAVE in held:
             continue
         try:
-            result.append(Sound.half_step(lowest, TENSIONS[tension]))
+            result.append(Sound.half_step(lowest, file_format.TENSIONS[tension]))
         except ValueError:
             pass
     return result

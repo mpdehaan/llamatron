@@ -20,7 +20,8 @@ import unittest
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 
 from tests.support.ui_testing import UITest, back_key, forward_key
-from llamatron.composition.file_format import VISUALIZER_NAMES, SetlistSetting, SongSetting, sensible_hidden_visualizers, sensible_visualizer
+from llamatron.composition import file_format
+from llamatron.composition.file_format import SetlistSetting, SongSetting, sensible_hidden_visualizers, sensible_visualizer
 from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
@@ -41,7 +42,7 @@ class TestVisualizerSettings(unittest.TestCase):
     """The set's and the song's visualizer settings, as a file holds them."""
 
     def test_the_formats_names_are_the_modes_in_order(self):
-        self.assertEqual(VISUALIZER_NAMES, mode_options())
+        self.assertEqual(file_format.VISUALIZER_NAMES, mode_options())
 
     def test_a_setting_that_makes_no_sense_is_made_sensible_never_refused(self):
         data = new_setlist()
@@ -75,7 +76,7 @@ class TestVisualizerSettings(unittest.TestCase):
 
     def test_cycle_leaves_out_the_hidden_modes_unless_that_leaves_none(self):
         self.assertNotIn(mode_called(PLASMA), Cycle(hidden=[PLASMA]).order())
-        self.assertTrue(Cycle(hidden=VISUALIZER_NAMES).order())
+        self.assertTrue(Cycle(hidden=file_format.VISUALIZER_NAMES).order())
 
 
 class TestArrangeVisualizerChoices(UITest):
@@ -119,7 +120,7 @@ class TestArrangeVisualizerChoices(UITest):
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIs(self.showing(), MODES[0])
         await self.press(Key.ESCAPE)
-        for name in VISUALIZER_NAMES:
+        for name in file_format.VISUALIZER_NAMES:
             self.document.set_visualizer_hidden(name=name, hidden=True)
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIsNone(self.page.visualizer)
@@ -135,7 +136,7 @@ class TestHideVisualizersSection(UITest):
         await self.select_field(labels.MSG_HIDE_VISUALIZERS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PickManyDialog)
-        place = list(VISUALIZER_NAMES).index(PLASMA)
+        place = list(file_format.VISUALIZER_NAMES).index(PLASMA)
         await self.press(*[Key.DOWN] * place, keybindings.PickManyDialog.FLIP, keybindings.PickManyDialog.DONE)
         self.assertEqual(self.document.setlist().get_hidden_visualizers(), [PLASMA])
         self.assertIn(mode_called(PLASMA).NAME, self.text())

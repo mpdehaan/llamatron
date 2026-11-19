@@ -16,12 +16,13 @@
 """The tracker's Progression: the Progressions page, the progression editor and the chord editor, with the picker of named progressions."""
 
 from tests.support.ui_testing import POP, UITest
-from llamatron.composition.file_format import Section, ONE_BAR_WRITTEN, TIME_CHOICES, Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Tension
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section, Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Tension
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.scale import ScaleType
 from llamatron.composition import limits
 from llamatron.strings import labels, messages
-from llamatron.composition.generator_settings import PROGRESSION_INVERSIONS
+from llamatron.composition import generator_settings
 from llamatron.tui.dialogs.chord_dialog import INVERSION_LIST, LISTS, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
 from llamatron.composition.progressions import named_progression
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
@@ -70,10 +71,10 @@ class TestProgressionEditor(UITest):
         return self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP)
 
     async def test_every_starts_at_a_bar_and_steps_through_the_list(self):
-        self.assertIn(ONE_BAR_WRITTEN, self.text())
+        self.assertIn(file_format.ONE_BAR_WRITTEN, self.text())
         await self.select_field(labels.MSG_EVERY_LABEL)
         await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.progression().get_every(), [time for time in TIME_CHOICES if time != ONE_BAR_WRITTEN][0])
+        self.assertEqual(self.progression().get_every(), [time for time in file_format.TIME_CHOICES if time != file_format.ONE_BAR_WRITTEN][0])
 
     async def test_the_chords_field_shows_the_numerals_and_opens_the_chord_editor(self):
         self.assertIn(POP_NUMERALS, self.text())
@@ -187,7 +188,7 @@ class TestChordsEditor(UITest):
         await self.press(Key.ENTER)
         self.assertEqual(self.progression().get_tensions()[1], (Tension.FLAT_NINTH,))
         self.assertEqual(self.progression().get_qualities()[1], ChordSymbol.DOMINANT7)
-        self.assertEqual(self.progression().get_inversions()[1], PROGRESSION_INVERSIONS[0])
+        self.assertEqual(self.progression().get_inversions()[1], generator_settings.PROGRESSION_INVERSIONS[0])
         self.assertIn(G_SEVEN_FLAT_NINE, self.text())
 
     async def test_escape_in_the_dialog_changes_nothing(self):

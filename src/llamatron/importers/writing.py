@@ -36,9 +36,8 @@ from llamatron.support.rational import Rational
 from llamatron.composition.checks import fraction_text
 from llamatron.composition import defaults
 from llamatron.strings import importing
-from llamatron.composition.file_format import (
-    CC_ROWS, ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
 from llamatron.composition.pattern import Pattern
@@ -97,7 +96,7 @@ def control_rows(controls):
     """Return the CC rows and the Slide row of a pattern's CC steps, each lane on the CC row of its place, holding only the rows that send anything."""
     count = len(controls)
     rows = {}
-    for lane, row in enumerate(CC_ROWS):
+    for lane, row in enumerate(file_format.CC_ROWS):
         values = [None if step is None or lane >= len(step.values) else step.values[lane] for step in controls]
         if any(value is not None for value in values):
             rows[row] = values
@@ -136,7 +135,7 @@ def track_data(voice):
     if voice.drum:
         data[TrackSetting.DRUM] = True
     if voice.lanes:
-        data[TrackSetting.CC] = [*voice.lanes, *[None] * (len(CC_ROWS) - len(voice.lanes))]
+        data[TrackSetting.CC] = [*voice.lanes, *[None] * (len(file_format.CC_ROWS) - len(voice.lanes))]
     return data
 
 

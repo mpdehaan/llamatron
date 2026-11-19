@@ -17,7 +17,8 @@
 renamed and deleted since the Tracks page went, and the track editor it opens."""
 
 from tests.support.ui_testing import UITest, back_key, forward_key, key_of
-from llamatron.composition.file_format import REGISTER_NAMES, ClipSlotSetting, PatternSetting, TrackSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, TrackSetting
 from llamatron.composition import defaults, limits
 from llamatron.strings import labels, marks, names as names_text
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -242,13 +243,13 @@ class TestTrackEditor(UITest):
         more = key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET)
         await self.select_field(labels.MSG_CC_REGISTER_LABEL.format(number=2))
         await self.press(more, more)
-        self.assertEqual(self.track(LEAD).get_cc_registers(), [None, REGISTER_NAMES[1], None, None])
+        self.assertEqual(self.track(LEAD).get_cc_registers(), [None, file_format.REGISTER_NAMES[1], None, None])
         await self.press(Key.BACKSPACE)
-        self.assertEqual(self.track(LEAD).get_cc_registers(), [None] * len(REGISTER_NAMES))
+        self.assertEqual(self.track(LEAD).get_cc_registers(), [None] * len(file_format.REGISTER_NAMES))
         await self.select_field(labels.MSG_VELOCITY_REGISTER_LABEL)
         await self.press(more)
-        self.assertEqual(self.track(LEAD).get_velocity_register(), REGISTER_NAMES[0])
-        self.assertEqual(self.track(LEAD).to_data(), {TrackSetting.VELOCITY_REGISTER: REGISTER_NAMES[0]})
+        self.assertEqual(self.track(LEAD).get_velocity_register(), file_format.REGISTER_NAMES[0])
+        self.assertEqual(self.track(LEAD).to_data(), {TrackSetting.VELOCITY_REGISTER: file_format.REGISTER_NAMES[0]})
         await self.press(Key.BACKSPACE)
         self.assertIsNone(self.track(LEAD).get_velocity_register())
 

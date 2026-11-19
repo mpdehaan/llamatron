@@ -36,7 +36,7 @@ from llamatron.composition import defaults, limits
 from llamatron.strings import errors
 from llamatron.composition.file_format import GrooveSetting
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.corrections import NO_NEAREST_VALUE
+from llamatron.composition import corrections
 from llamatron.composition.setting import Checked, Length, described
 from llamatron.composition.llama_data import LlamaData, or_default
 from llamatron.support.revised import notes_change
@@ -189,7 +189,7 @@ def _check_cells(cells):
 def _nearest_cells(cells):
     """Return cells with each amount outside the limits at the nearest limit, or NO_NEAREST_VALUE unless they're the right number of whole numbers."""
     if not isinstance(cells, list) or not limits.MIN_GROOVE_CELLS <= len(cells) <= limits.MAX_GROOVE_CELLS or not all(is_whole_number(amount) for amount in cells):
-        return NO_NEAREST_VALUE
+        return corrections.NO_NEAREST_VALUE
     return [min(max(amount, limits.MIN_GROOVE_AMOUNT), limits.MAX_GROOVE_AMOUNT) for amount in cells]
 
 

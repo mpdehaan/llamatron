@@ -25,7 +25,7 @@ from tests.support.ui_testing import DRUMS, LEAD, NAMED, ONE, TUNE, a_song
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.sections import SONG_SECTIONS
+from llamatron.composition import sections
 from llamatron.strings import errors, names as names_text
 from llamatron.composition.naming import copy_name
 
@@ -54,7 +54,7 @@ def names_of(*, document, section):
     """Return the names of a section's own items, in the section's order: the song's for its tracks, the set's otherwise."""
     if section == Section.GROOVES:
         return document.setlist().get_own_groove_names()
-    owner = document.song() if section in SONG_SECTIONS else document.setlist()
+    owner = document.song() if section in sections.SONG_SECTIONS else document.setlist()
     return owner.get_item_names(section)
 
 

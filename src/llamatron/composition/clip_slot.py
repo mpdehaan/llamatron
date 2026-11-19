@@ -27,7 +27,8 @@ setting names something the song holds.
 from llamatron.composition.checks import check_keys, check_name, reading
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, marks
-from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOICES, DIRECTIONS, PATTERN_ORDERS, VELOCITY_SETTINGS, ClipSlotSetting, PatternOrder, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import strum_setting, ClipSlotSetting, PatternOrder, Section
 from llamatron.composition.llama_data import own_copy, LlamaData, settings_by_name, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.chain import check_chain_names
@@ -35,7 +36,7 @@ from llamatron.composition.conditions import register_values_setting, statements
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.composition.strum import strum_settings, strum_values
-from llamatron.composition.corrections import LEFT_OUT
+from llamatron.composition import corrections
 from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
 from llamatron.generators.blend import BlendMode
 from llamatron.support.revised import notes_change
@@ -87,13 +88,13 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.PATTERNS, check=_check_pattern_names, needs_song=True),
     Checked(name=ClipSlotSetting.CHAINS, check=check_chain_names, needs_song=True),
     Flag(name=ClipSlotSetting.LOOP, error=errors.ERR_LOOP_NOT_TRUE_OR_FALSE),
-    Choice(name=ClipSlotSetting.PATTERN_ORDER, choices=PATTERN_ORDERS, default=PatternOrder.FORWARD, error=errors.ERR_BAD_PATTERN_ORDER),
+    Choice(name=ClipSlotSetting.PATTERN_ORDER, choices=file_format.PATTERN_ORDERS, default=PatternOrder.FORWARD, error=errors.ERR_BAD_PATTERN_ORDER),
     WholeNumber(name=ClipSlotSetting.REPEAT, lowest=limits.MIN_REPEAT, highest=limits.MAX_CLIP_REPEAT, error=errors.ERR_BAD_REPEAT),
-    Choice(name=ClipSlotSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
+    Choice(name=ClipSlotSetting.DIRECTION, choices=file_format.DIRECTIONS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
     Checked(name=ClipSlotSetting.MORPH_TO, check=_check_pattern_name, needs_song=True),
     Choice(name=ClipSlotSetting.MORPH_STYLE, choices=sorted(MORPH_STYLES), default=FIRST_MORPH_STYLE, error=errors.ERR_BAD_MORPH_STYLE),
     Checked(name=ClipSlotSetting.GRAB_TRACK, check=_check_grab_track_name, needs_song=True),
-    Choice(name=ClipSlotSetting.FOLLOW_ACTION, choices=FOLLOW_ACTION_CHOICES, default=LEFT_OUT, error=errors.ERR_BAD_FOLLOW_ACTION),
+    Choice(name=ClipSlotSetting.FOLLOW_ACTION, choices=file_format.FOLLOW_ACTION_CHOICES, default=corrections.LEFT_OUT, error=errors.ERR_BAD_FOLLOW_ACTION),
     Checked(name=ClipSlotSetting.SCALE, check=_check_scale_name, needs_song=True),
     *velocity_setting_descriptions(),
     *shape_settings(),
@@ -197,7 +198,7 @@ class ClipSlot(LlamaData):
 
     def get_velocity_settings(self):
         """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
-        return {name: self._settings[name] for name in VELOCITY_SETTINGS}
+        return {name: self._settings[name] for name in file_format.VELOCITY_SETTINGS}
 
     def get_velocity(self, scene):
         """Return how loud the clip plays in its scene, as a Velocity: its own settings over the scene's, field by field."""

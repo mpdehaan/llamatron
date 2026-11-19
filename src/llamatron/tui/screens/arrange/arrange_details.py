@@ -30,8 +30,9 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.strings import labels, marks as marks_text
-from llamatron.composition.velocity_ramps import AS_WRITTEN
-from llamatron.composition.file_format import PLACED_SHAPES, VELOCITY_SETTINGS, Section, VelocitySetting
+from llamatron.composition import velocity_ramps
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section, VelocitySetting
 from llamatron.tui import themes
 from llamatron.tui.drawing import Style, fit
 from llamatron.tui.text import plain_number
@@ -125,18 +126,18 @@ def chain_lines(*, song, names):
 def velocity_lines(owner):
     """Return the line of a scene's or a clip's own velocity, where it sets any: the level, with a mark where a ramp of its own moves it."""
     settings = owner.get_velocity_settings()
-    if all(settings[name] is None for name in VELOCITY_SETTINGS):
+    if all(settings[name] is None for name in file_format.VELOCITY_SETTINGS):
         return []
     level = settings[VelocitySetting.LEVEL]
-    ramps = any(settings[name] is not None for name in VELOCITY_SETTINGS if name != VelocitySetting.LEVEL)
+    ramps = any(settings[name] is not None for name in file_format.VELOCITY_SETTINGS if name != VelocitySetting.LEVEL)
     line = marks_text.MSG_DETAILS_VELOCITY_RAMPS if ramps else marks_text.MSG_DETAILS_VELOCITY
-    return [detail(line.format(percent=AS_WRITTEN if level is None else level))]
+    return [detail(line.format(percent=velocity_ramps.AS_WRITTEN if level is None else level))]
 
 
 def shape_lines(owner):
     """Return a line for each shape, Density or Articulate, that a scene or a clip sets."""
     lines = []
-    for shape in PLACED_SHAPES:
+    for shape in file_format.PLACED_SHAPES:
         values = owner.get_shape(shape)
         if values is not None:
             lines.append(detail(marks_text.MSG_DETAILS_SHAPE.format(shape=marks_text.MSG_DETAILS_SHAPE_NAMES[shape], start=values.start, end=values.end)))

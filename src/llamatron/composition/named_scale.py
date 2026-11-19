@@ -16,7 +16,8 @@
 
 """A scale the song names, like main: { root: F, type: minor }, for the song and scenes to use."""
 
-from llamatron.composition.file_format import ACCIDENTALS, Accidental, ScaleSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, ScaleSetting
 from llamatron.composition import limits
 from llamatron.strings import errors
 from llamatron.composition.llama_data import LlamaData
@@ -103,7 +104,7 @@ class NamedScale(LlamaData):
         """
         steps = self.get_half_steps()
         octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
-        total = (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0) + half_steps
+        total = (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0) + half_steps
         tone_octave, within = divmod(total, midi.HALF_STEPS_PER_OCTAVE)
         below = max(index for index, step in enumerate(steps) if step <= within)
         if steps[below] == within:

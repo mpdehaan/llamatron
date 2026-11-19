@@ -15,11 +15,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Drift editor page: a drift's own settings, then each of its values for version A and version B side by side."""
 
-from llamatron.composition.file_format import ONE_BAR_WRITTEN
+from llamatron.composition import file_format
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
-from llamatron.composition.file_format import DRIFT_DIRECTIONS, DRIFT_VERSIONS, DriftValue, GeneratorKind, Section
-from llamatron.composition.generator_settings import DRIFT_NUMBERS, DriftSetting, MAX_STEPS_TO_B, MIN_STEPS_TO_B, versioned
+from llamatron.composition.file_format import DriftValue, GeneratorKind, Section
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import DriftSetting, versioned
 from llamatron.music import note
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -62,11 +63,11 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         every = drift.get_every()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            time_field(page=self, label=labels.MSG_EVERY_LABEL, written=every, first=ONE_BAR_WRITTEN, store=lambda value: self.set_value(setting=DriftSetting.EVERY, value=value)),
-            NumberField(page=self, label=labels.MSG_STEPS_TO_B_LABEL, number=drift.get_steps_to_b(), lowest=MIN_STEPS_TO_B, highest=MAX_STEPS_TO_B,
+            time_field(page=self, label=labels.MSG_EVERY_LABEL, written=every, first=file_format.ONE_BAR_WRITTEN, store=lambda value: self.set_value(setting=DriftSetting.EVERY, value=value)),
+            NumberField(page=self, label=labels.MSG_STEPS_TO_B_LABEL, number=drift.get_steps_to_b(), lowest=generator_settings.MIN_STEPS_TO_B, highest=generator_settings.MAX_STEPS_TO_B,
                         set=lambda number: self.set_value(setting=DriftSetting.STEPS_TO_B, value=number)),
-            ChoiceField(page=self, label=labels.MSG_DRIFT_DIRECTION_LABEL, choices=DRIFT_DIRECTIONS, current=drift.get_direction(),
-                        set=lambda value: self.set_value(setting=DriftSetting.DIRECTION, value=None if value == DRIFT_DIRECTIONS[0] else value)),
+            ChoiceField(page=self, label=labels.MSG_DRIFT_DIRECTION_LABEL, choices=file_format.DRIFT_DIRECTIONS, current=drift.get_direction(),
+                        set=lambda value: self.set_value(setting=DriftSetting.DIRECTION, value=None if value == file_format.DRIFT_DIRECTIONS[0] else value)),
             NumberField(
                 page=self, label=labels.MSG_SEED_LABEL, number=seed, start=NO_SEED, shown=marks.MSG_SONG_SEED_SHOWN if seed is None else None,
                 set=lambda number: self.set_value(setting=DriftSetting.SEED, value=number),
@@ -80,7 +81,7 @@ class DriftEditor(ShowsNamedItem, FieldPage):
 
     def version_values(self):
         """Return each value a version has, in the editor's order."""
-        numbers = [name for name, _, _ in DRIFT_NUMBERS]
+        numbers = [name for name, _, _ in generator_settings.DRIFT_NUMBERS]
         return [*numbers[:-2], DriftValue.SCALE, numbers[-2], DriftValue.ROOT, numbers[-1]]
 
     def is_version_row(self):
@@ -93,16 +94,16 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         return result
 
     def pick_version(self, name):
-        self.version = cursor_moved(place=self.version, name=name, count=len(DRIFT_VERSIONS))
+        self.version = cursor_moved(place=self.version, name=name, count=len(file_format.DRIFT_VERSIONS))
 
     def version_field(self, value):
         """Return the row of one value, showing A's and B's, the one picked marked, and changing only the one picked."""
         label = labels.MSG_DRIFT_VALUE_LABELS[value]
         drift = self.drift()
-        shown = [self.value_text(value=value, written=drift.get_value(version=version, value=value)) for version in DRIFT_VERSIONS]
+        shown = [self.value_text(value=value, written=drift.get_value(version=version, value=value)) for version in file_format.DRIFT_VERSIONS]
         shown[self.version] = labels.MSG_DRIFT_PICKED.format(value=shown[self.version])
-        setting = versioned(version=DRIFT_VERSIONS[self.version], value=value)
-        current = drift.get_value(version=DRIFT_VERSIONS[self.version], value=value)
+        setting = versioned(version=file_format.DRIFT_VERSIONS[self.version], value=value)
+        current = drift.get_value(version=file_format.DRIFT_VERSIONS[self.version], value=value)
         if value in (DriftValue.SCALE, DriftValue.ROOT):
             choices = [None, *self.choices_of(value)]
             return Field(
@@ -127,7 +128,7 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         return str(written)
 
     def range_of(self, value):
-        for name, lowest, highest in DRIFT_NUMBERS:
+        for name, lowest, highest in generator_settings.DRIFT_NUMBERS:
             if name == value:
                 return lowest, highest
         raise KeyError(value)

@@ -25,7 +25,8 @@ scene's, one field at a time. Everything left blank, the notes play as written.
 from typing import NamedTuple
 
 from llamatron.composition import limits
-from llamatron.composition.file_format import RAMP_WAYS, VELOCITY_RAMP_SETTINGS, VELOCITY_SETTINGS, RampPart, RampWay, VelocitySetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import RampPart, RampWay, VelocitySetting
 from llamatron.composition.setting import WholeNumber
 from llamatron.strings import errors
 
@@ -67,7 +68,7 @@ def velocity_setting_descriptions():
     return [
         WholeNumber(name=name, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS) if name in BAR_COUNTS
         else WholeNumber(name=name, lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, error=errors.ERR_BAD_SHAPE_PERCENT)
-        for name in VELOCITY_SETTINGS
+        for name in file_format.VELOCITY_SETTINGS
     ]
 
 
@@ -83,11 +84,11 @@ def velocity_of(*, scene_settings, clip_settings=None):
     level = taken(VelocitySetting.LEVEL)
     level = AS_WRITTEN if level is None else level
     ramps = {}
-    for way in RAMP_WAYS:
-        start, end, over = (taken(VELOCITY_RAMP_SETTINGS[(way, part)]) for part in (RampPart.START, RampPart.END, RampPart.OVER))
+    for way in file_format.RAMP_WAYS:
+        start, end, over = (taken(file_format.VELOCITY_RAMP_SETTINGS[(way, part)]) for part in (RampPart.START, RampPart.END, RampPart.OVER))
         if over is None or (start is None and end is None):
             ramps[way] = None
             continue
-        of_clip = own.get(VELOCITY_RAMP_SETTINGS[(way, RampPart.OVER)]) is not None
+        of_clip = own.get(file_format.VELOCITY_RAMP_SETTINGS[(way, RampPart.OVER)]) is not None
         ramps[way] = VelocityRamp(level if start is None else start, level if end is None else end, over, of_clip)
     return Velocity(level, ramps[RampWay.IN], ramps[RampWay.OUT])

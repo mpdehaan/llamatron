@@ -20,12 +20,14 @@ and AutoRatchets pages. What a page alone does, like adding, is tested with the 
 """
 
 from tests.support.ui_testing import LEAD, NAMED, TUNE, UITest, leaf_pages
-from llamatron.composition.file_format import NAMED_GENERATORS, ClipSlotSetting, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, Section
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
-from llamatron.composition.groove import FACTORY_GROOVE_NAMES, FactoryGroove
+from llamatron.composition import groove
+from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, messages, names
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.tui.drawing import NOTHING, SPACE, fit
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -243,7 +245,7 @@ class TestScalesPageAsANamedList(NamedListChecks, UITest):
 
     PAGE = ScalesPage
     OPENING = (keybindings.MainPage.SCALES,)
-    FIRST = DEFAULT_SCALE
+    FIRST = setlist.DEFAULT_SCALE
 
 
 class TestChainsPageAsANamedList(NamedListChecks, UITest):
@@ -271,7 +273,7 @@ class TestGroovesPageAsANamedList(NamedListChecks, UITest):
         return True
 
     async def test_the_factory_grooves_come_first_and_only_the_sets_own_move(self):
-        self.assertEqual(self.page().names(), [*FACTORY_GROOVE_NAMES, A_GROOVE])
+        self.assertEqual(self.page().names(), [*groove.FACTORY_GROOVE_NAMES, A_GROOVE])
         self.assertEqual(self.page().own_place(), 0)
         self.page().put_cursor_on(FactoryGroove.SWING_58)
         await self.press(Key.DOWN, Key.UP)
@@ -321,7 +323,7 @@ class TestEveryNamedListPageIsChecked(unittest.TestCase):
 
     def test_every_named_section_of_the_set_has_a_page(self):
         self.assertEqual(sorted(checks.PAGE.LISTED_SECTION for checks in CHECKED), sorted(EVERY_NAMED_SECTION_OF_THE_SET))
-        self.assertEqual(sorted(GENERATOR_PAGES), sorted(NAMED_GENERATORS.values()))
+        self.assertEqual(sorted(GENERATOR_PAGES), sorted(file_format.NAMED_GENERATORS.values()))
 
     def test_every_page_says_how_it_words_a_rename_and_a_question(self):
         for checks in CHECKED:

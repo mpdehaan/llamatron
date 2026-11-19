@@ -23,18 +23,18 @@ are checked again when a chain makes the generator, since settings can be built 
 
 from llamatron.composition.conditions import statements_setting, with_statement
 from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, number, is_whole_number, is_whole_number_from, listed, reading, time_length
-from llamatron.composition.file_format import (
-    BYPASS_WHEN, SECTION_KINDS, FIXED_CHORDS, GENERATOR_RESTART, RESTARTS, TENSIONS, Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DRIFT_DIRECTIONS, DRIFT_VERSIONS, REGISTER_NAMES, SHAPE_PARTS, SHAPE_THENS, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import TENSIONS, Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.strum import strum_part_settings, strum_values
-from llamatron.composition.shapes import NO_ACCENT, UNCHANGED, ShapeValues, shape_part_settings, shape_values
+from llamatron.composition import shapes as shapes_values
+from llamatron.composition.shapes import ShapeValues, shape_part_settings, shape_values
 from llamatron.music import note
 from llamatron.composition import limits
 from llamatron.strings import errors
 from llamatron.composition.llama_data import LlamaData, or_default, own_copy
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE
+from llamatron.composition import corrections
 from llamatron.composition.setting import Checked, Choice, Flag, Text, WholeNumber, check_settings, described
 from llamatron.support.rational import Rational
 from llamatron.generators import musician
@@ -43,12 +43,13 @@ from llamatron.generators.phrasing import BREATHS, JOINS, LITTLE_RISE, NOTES_AS_
 from llamatron.generators.progression import Progression
 from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.generators.guitarify import Guitarify
-from llamatron.composition.file_format import APPROACHES, CHORD_COLORS, SINGLE_NOTES, STROKES, TUNINGS, Approach, ChordColor, GuitarifySetting, SingleNotes, Tuning
-from llamatron.composition.guitar_bars import DEFAULT_BAR, READY_BARS
+from llamatron.composition.file_format import Approach, ChordColor, GuitarifySetting, SingleNotes, Tuning
+from llamatron.composition import guitar_bars
 from llamatron.generators.euclid import EuclidMask
 from llamatron.generators.glide import Glide
 from llamatron.generators.shorten import Shorten
-from llamatron.composition.euclid import NAMED_RHYTHMS, euclid_part_settings, euclid_values
+from llamatron.composition import euclid
+from llamatron.composition.euclid import euclid_part_settings, euclid_values
 from llamatron.generators.arp import MAX_OCTAVE_RANGE, MAX_OFFSET, MAX_OFFSETS, MIN_OFFSETS, Arp, ChordOrder, OctaveJump, _check_offsets
 from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.support.revised import notes_change
@@ -61,13 +62,13 @@ NEW_AUTO_RATCHET_COUNTS = [2]
 
 
 # Every generator's Restart: when it starts over, every clip unless set.
-RESTART_SETTING = Choice(name=GENERATOR_RESTART, choices=RESTARTS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
+RESTART_SETTING = Choice(name=file_format.GENERATOR_RESTART, choices=file_format.RESTARTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
 
 
 class ArpSetting:
     """An arpeggiator's settings, as a file names them."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
 
     STEP = 'step'
     ORDER = 'order'
@@ -96,7 +97,7 @@ ARP_STEP_ADDS = {
 class DriftSetting:
     """A drift's own settings, as a file names them. Each version's settings are named in VERSIONED, with the version's letter in front."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
 
     EVERY = 'every'
     STEPS_TO_B = 'steps_to_b'
@@ -145,7 +146,7 @@ def _check_root(value):
 class AutoRatchetSetting:
     """An AutoRatchet's settings, as a file names them."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
 
     COUNTS = 'counts'
 
@@ -183,9 +184,9 @@ def _check_arp_offsets(value):
 def _nearest_offsets(offsets):
     """Return offsets with each one further than the arp allows at the furthest it does, or NO_NEAREST_VALUE unless they're the right number of whole numbers and silent steps."""
     if not isinstance(offsets, list) or not MIN_OFFSETS <= len(offsets) <= MAX_OFFSETS:
-        return NO_NEAREST_VALUE
+        return corrections.NO_NEAREST_VALUE
     if not all(offset is None or is_whole_number(offset) for offset in offsets):
-        return NO_NEAREST_VALUE
+        return corrections.NO_NEAREST_VALUE
     return [offset if offset is None else min(max(offset, -MAX_OFFSET), MAX_OFFSET) for offset in offsets]
 
 
@@ -271,16 +272,16 @@ class GeneratorSettings(LlamaData):
 
     def get_bypass_when(self):
         """Return the statements about the registers that, while any is true as a clip's pattern starts over, bypass the generator for that pass."""
-        return own_copy(self._written(BYPASS_WHEN) or [])
+        return own_copy(self._written(file_format.BYPASS_WHEN) or [])
 
     @notes_change
     def set_bypass_statement(self, *, place, statement):
         """Write the statement at a place of its table, add one just past the last, or remove one with None."""
-        self.set_setting(name=BYPASS_WHEN, value=with_statement(statements=self._written(BYPASS_WHEN), place=place, statement=statement))
+        self.set_setting(name=file_format.BYPASS_WHEN, value=with_statement(statements=self._written(file_format.BYPASS_WHEN), place=place, statement=statement))
 
     def get_restart(self):
         """Return when the generator starts over, every clip unless set."""
-        return self._written(GENERATOR_RESTART) or Restart.EVERY_CLIP
+        return self._written(file_format.GENERATOR_RESTART) or Restart.EVERY_CLIP
 
     def make_generator(self, *, where, default_seed, default_step=None, bar=None, continuation=None, tempo=None):
         """Return the generator these settings describe, or raise SongFileError if they're wrong.
@@ -296,12 +297,12 @@ class GeneratorSettings(LlamaData):
             values = self._with_defaults(values=self._taken_values(), default_seed=default_seed, default_step=default_step, bar=bar)
             values = self._with_tempo(values=values, tempo=tempo)
             # Restart is the renderer's to read; the generator is handed where it carries on from instead.
-            values.pop(GENERATOR_RESTART, None)
+            values.pop(file_format.GENERATOR_RESTART, None)
             return self.GENERATOR(**values, continuation=continuation)
 
     def _taken_values(self):
         """Return the settings as the generator takes them: a length as a number, a choice as what its name means, and the rest as written."""
-        return {name: self.TAKEN_AS[name](value) if name in self.TAKEN_AS else value for name, value in self._settings.items() if name != BYPASS_WHEN}
+        return {name: self.TAKEN_AS[name](value) if name in self.TAKEN_AS else value for name, value in self._settings.items() if name != file_format.BYPASS_WHEN}
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
         """Return the generator's values, with a seed and a step added where it needs them. Most don't."""
@@ -320,10 +321,10 @@ class ArpSettings(GeneratorSettings):
     GENERATOR = Arp
     SETTINGS = described(
         Checked(name=ArpSetting.STEP, check=time_length),
-        Choice(name=ArpSetting.ORDER, choices=sorted(ORDERS), default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=ArpSetting.ORDER, choices=sorted(ORDERS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         WholeNumber(name=ArpSetting.SEED, error=errors.ERR_GENERATOR_NOT_INTEGER),
         WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE, error=errors.ERR_GENERATOR_BAD_OCTAVE_RANGE),
-        Choice(name=ArpSetting.OCTAVE_JUMP, choices=sorted(OCTAVE_JUMPS), default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=ArpSetting.OCTAVE_JUMP, choices=sorted(OCTAVE_JUMPS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Checked(name=ArpSetting.OFFSETS, check=_check_arp_offsets, nearest=_nearest_offsets),
         *[WholeNumber(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_GENERATOR_BAD_ADD) for name in ARP_NOTE_ADDS.values()],
         *[Checked(name=name, check=_check_step_adds) for name in ARP_STEP_ADDS.values()],
@@ -377,7 +378,7 @@ class ArpSettings(GeneratorSettings):
 
     def adds_to_registers(self):
         """Return whether its notes or its offsets' steps add to any register."""
-        return any(self.get_note_add(register) for register in REGISTER_NAMES) or any(any(self.get_step_adds(register) or []) for register in REGISTER_NAMES)
+        return any(self.get_note_add(register) for register in file_format.REGISTER_NAMES) or any(any(self.get_step_adds(register) or []) for register in file_format.REGISTER_NAMES)
 
     def set_step_add(self, *, register, step, add):
         """Set what one step of the offsets adds to a register, where None or 0 adds nothing; a row that adds nothing is left out of the file."""
@@ -404,7 +405,7 @@ class ArpSettings(GeneratorSettings):
         offsets = self.get_offsets()
         if offsets is None or not is_whole_number_from(value=step, lowest=0, highest=len(offsets)):
             raise InvalidValue(errors.ERR_NO_SUCH_OFFSET.format(step=step, count=len(offsets or [])))
-        rows = {register: self.get_step_adds(register) for register in REGISTER_NAMES}
+        rows = {register: self.get_step_adds(register) for register in file_format.REGISTER_NAMES}
         offsets.insert(step, NO_OFFSET)
         self.set_setting(name=ArpSetting.OFFSETS, value=offsets)
         for register, adds in rows.items():
@@ -413,7 +414,7 @@ class ArpSettings(GeneratorSettings):
 
     def remove_offset(self, step):
         offsets = self._offsets_to_change(step)
-        rows = {register: self.get_step_adds(register) for register in REGISTER_NAMES}
+        rows = {register: self.get_step_adds(register) for register in file_format.REGISTER_NAMES}
         offsets.pop(step)
         self.set_setting(name=ArpSetting.OFFSETS, value=offsets or None)
         for register, adds in rows.items():
@@ -453,7 +454,7 @@ class AutoRatchetSettings(GeneratorSettings):
 class ProgressionSetting:
     """A Progression's settings, as a file names them: its chords as degrees, a sharp or flat and an inversion for each, and how long each chord lasts."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
 
     EVERY = 'every'
     CHORDS = 'chords'
@@ -512,7 +513,7 @@ class ProgressionSettings(GeneratorSettings):
         Checked(name=ProgressionSetting.ACCIDENTALS, check=_row_of(name=ProgressionSetting.ACCIDENTALS, allowed=PROGRESSION_ACCIDENTALS)),
         Checked(name=ProgressionSetting.INVERSIONS, check=_row_of(name=ProgressionSetting.INVERSIONS, allowed=PROGRESSION_INVERSIONS)),
         Checked(name=ProgressionSetting.SCALES, check=_row_of(name=ProgressionSetting.SCALES, allowed=scale_type_names())),
-        Checked(name=ProgressionSetting.QUALITIES, check=_row_of(name=ProgressionSetting.QUALITIES, allowed=list(FIXED_CHORDS))),
+        Checked(name=ProgressionSetting.QUALITIES, check=_row_of(name=ProgressionSetting.QUALITIES, allowed=list(file_format.FIXED_CHORDS))),
         Checked(name=ProgressionSetting.TENSIONS, check=_tensions_row),
         RESTART_SETTING,
     )
@@ -566,7 +567,7 @@ def _lined_up(*, values, count):
 class VoiceLeadingSetting:
     """A Voice leading's settings, as a file names them: the octaves its chords stay within, and whether the root stays in the bass."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
 
     LOWEST_OCTAVE = 'lowest_octave'
     HIGHEST_OCTAVE = 'highest_octave'
@@ -642,8 +643,8 @@ EVERY_STRING = 0
 
 def _check_guitar_bar(values):
     """Check a bar of strokes: a list of 1 to MAX_GUITAR_BAR, each a stroke's name."""
-    if not (isinstance(values, list) and 1 <= len(values) <= MAX_GUITAR_BAR and all(value in STROKES for value in values)):
-        raise InvalidValue(errors.ERR_BAD_GUITAR_BAR.format(name=GuitarifySetting.BAR, most=MAX_GUITAR_BAR, choices=listed(STROKES), value=values))
+    if not (isinstance(values, list) and 1 <= len(values) <= MAX_GUITAR_BAR and all(value in file_format.STROKES for value in values)):
+        raise InvalidValue(errors.ERR_BAD_GUITAR_BAR.format(name=GuitarifySetting.BAR, most=MAX_GUITAR_BAR, choices=listed(file_format.STROKES), value=values))
 
 
 def _check_guitar_accents(values):
@@ -664,12 +665,12 @@ class GuitarifySettings(GeneratorSettings):
     GENERATOR = Guitarify
     SETTINGS = described(
         _guitar_flag(GuitarifySetting.SHAPE),
-        Choice(name=GuitarifySetting.TUNING, choices=TUNINGS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.TUNING, choices=file_format.TUNINGS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         WholeNumber(name=GuitarifySetting.POSITION, lowest=0, highest=MAX_GUITAR_FRET, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=GuitarifySetting.CAPO, lowest=0, highest=MAX_GUITAR_FRET, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=GuitarifySetting.STRINGS, lowest=MIN_GUITAR_STRINGS, highest=MAX_GUITAR_STRINGS, error=errors.ERR_BAD_SHAPE_PERCENT),
-        Choice(name=GuitarifySetting.SINGLE_NOTES, choices=SINGLE_NOTES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=GuitarifySetting.COLOR, choices=CHORD_COLORS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.SINGLE_NOTES, choices=file_format.SINGLE_NOTES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.COLOR, choices=file_format.CHORD_COLORS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         _guitar_flag(GuitarifySetting.STROKES),
         Checked(name=GuitarifySetting.BAR, check=_check_guitar_bar),
         Checked(name=GuitarifySetting.ACCENTS, check=_check_guitar_accents),
@@ -679,7 +680,7 @@ class GuitarifySettings(GeneratorSettings):
         WholeNumber(name=GuitarifySetting.FADE, lowest=0, highest=MAX_GUITAR_PERCENT, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=GuitarifySetting.LOOSE_TIMING, lowest=0, highest=MAX_GUITAR_PERCENT, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=GuitarifySetting.UPSTROKE, lowest=EVERY_STRING, highest=MAX_GUITAR_STRINGS, error=errors.ERR_BAD_SHAPE_PERCENT),
-        Choice(name=GuitarifySetting.APPROACH, choices=APPROACHES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.APPROACH, choices=file_format.APPROACHES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         RESTART_SETTING,
     )
     TAKEN_AS = {GuitarifySetting.CELL: time_length}
@@ -734,18 +735,18 @@ class GuitarifySettings(GeneratorSettings):
 
     def get_bar(self):
         """Return the stroke of each cell, the default bar's unless written."""
-        return list(self._written(GuitarifySetting.BAR) or READY_BARS[DEFAULT_BAR].strokes)
+        return list(self._written(GuitarifySetting.BAR) or guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].strokes)
 
     def get_accents(self):
         """Return whether each cell is accented, as long as the bar: the default bar's while the bar is unwritten, and none where a written bar has none."""
         if self._written(GuitarifySetting.BAR) is None and self._written(GuitarifySetting.ACCENTS) is None:
-            return list(READY_BARS[DEFAULT_BAR].accents)
+            return list(guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].accents)
         count = len(self.get_bar())
         return (list(self._written(GuitarifySetting.ACCENTS) or []) + [False] * count)[:count]
 
     def get_cell(self):
         """Return how long a cell lasts, as a file writes it: the default bar's unless written."""
-        return self._written(GuitarifySetting.CELL) or READY_BARS[DEFAULT_BAR].cell
+        return self._written(GuitarifySetting.CELL) or guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].cell
 
     def get_spread(self):
         return or_default(value=self._written(GuitarifySetting.SPREAD), default=DEFAULT_GUITAR_SPREAD)
@@ -798,7 +799,7 @@ class EuclidSettings(GeneratorSettings):
     @classmethod
     def new(cls):
         """Return the settings a new Euclid starts with: the tresillo, three hits over eight steps."""
-        hits, steps = NAMED_RHYTHMS[NamedRhythm.TRESILLO]
+        hits, steps = euclid.NAMED_RHYTHMS[NamedRhythm.TRESILLO]
         return cls({EuclidPart.HITS: hits, EuclidPart.STEPS: steps})
 
     @classmethod
@@ -829,7 +830,7 @@ def _check_hits_fit(*, hits, steps):
 class StepRowSetting:
     """A Glide's, a Shorten's, a Rush's or a Drag's settings, as a file names them: its row of steps, each on or off, how long each step is, and how much a step that's on changes its note."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
     STEPS = 'steps'
     STEP = 'step'
     GLIDE_AMOUNT = 'glide_amount'
@@ -973,7 +974,7 @@ class DragSettings(MovingRowSettings):
 class ShapeSetting:
     """A Density, Swell or Articulate generator's settings, as a file names them: a Swell's accent besides the four every shape has."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
 
     START = 'start'
     END = 'end'
@@ -986,7 +987,7 @@ def _drift_settings():
     """Return a drift's settings, each described once: its own, then each version's values, A's first."""
     numbers = {name: (lowest, highest) for name, lowest, highest in DRIFT_NUMBERS}
     versions = []
-    for version in DRIFT_VERSIONS:
+    for version in file_format.DRIFT_VERSIONS:
         for value in DRIFT_VALUES:
             name = versioned(version=version, value=value)
             if value == DriftValue.SCALE:
@@ -999,7 +1000,7 @@ def _drift_settings():
     return described(
         Checked(name=DriftSetting.EVERY, check=time_length),
         WholeNumber(name=DriftSetting.STEPS_TO_B, lowest=MIN_STEPS_TO_B, highest=MAX_STEPS_TO_B, error=errors.ERR_GENERATOR_BAD_ADD),
-        Choice(name=DriftSetting.DIRECTION, choices=DRIFT_DIRECTIONS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=DriftSetting.DIRECTION, choices=file_format.DRIFT_DIRECTIONS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         WholeNumber(name=DriftSetting.SEED, error=errors.ERR_GENERATOR_NOT_INTEGER),
         *versions,
         RESTART_SETTING,
@@ -1032,7 +1033,7 @@ class DriftSettings(GeneratorSettings):
         return self._written(DriftSetting.STEPS_TO_B) or DEFAULT_STEPS_TO_B
 
     def get_direction(self):
-        return self._written(DriftSetting.DIRECTION) or DRIFT_DIRECTIONS[0]
+        return self._written(DriftSetting.DIRECTION) or file_format.DRIFT_DIRECTIONS[0]
 
     def get_seed(self):
         return self._written(DriftSetting.SEED)
@@ -1043,7 +1044,7 @@ class DriftSettings(GeneratorSettings):
 
     def adds_to_registers(self):
         """Return whether either version adds to a register at its triggers."""
-        return any(self.get_value(version=version, value=value) for version in DRIFT_VERSIONS for value in DRIFT_ADDS.values())
+        return any(self.get_value(version=version, value=value) for version in file_format.DRIFT_VERSIONS for value in DRIFT_ADDS.values())
 
 
 class ShapeSettings(GeneratorSettings):
@@ -1065,12 +1066,12 @@ class ShapeSettings(GeneratorSettings):
 
     def get_shape(self):
         """Return its shape's values, its start and end 100% when left blank."""
-        written = {shape_setting(shape=self.SHAPE, part=part): self._written(part) for part in SHAPE_PARTS}
+        written = {shape_setting(shape=self.SHAPE, part=part): self._written(part) for part in file_format.SHAPE_PARTS}
         values = shape_values(settings=written, shape=self.SHAPE)
-        accent = self._written(ShapeSetting.ACCENT) or NO_ACCENT
+        accent = self._written(ShapeSetting.ACCENT) or shapes_values.NO_ACCENT
         if values is None:
-            return ShapeValues(UNCHANGED, UNCHANGED, written[shape_setting(shape=self.SHAPE, part=ShapePart.OVER)],
-                               written[shape_setting(shape=self.SHAPE, part=ShapePart.THEN)] or SHAPE_THENS[0], accent)
+            return ShapeValues(shapes_values.UNCHANGED, shapes_values.UNCHANGED, written[shape_setting(shape=self.SHAPE, part=ShapePart.OVER)],
+                               written[shape_setting(shape=self.SHAPE, part=ShapePart.THEN)] or file_format.SHAPE_THENS[0], accent)
         return values._replace(accent=accent)
 
 
@@ -1109,7 +1110,7 @@ class ArticulateSettings(ShapeSettings):
 class HocketSetting:
     """A Hocket's settings, as a file names them: the track whose notes it shares out."""
 
-    RESTART = GENERATOR_RESTART
+    RESTART = file_format.GENERATOR_RESTART
 
     SOURCE = 'source'
 
@@ -1210,10 +1211,10 @@ class PhrasingSettings(GeneratorSettings):
 
     GENERATOR = Phrasing
     SETTINGS = described(
-        Choice(name=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.BREATH, choices=BREATHS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=RISES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.NOTES, choices=JOINS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.BREATH, choices=BREATHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=RISES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.NOTES, choices=JOINS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
     )
 
     @classmethod
@@ -1253,7 +1254,7 @@ class MusicianSetting:
 # What a kind of section has of its own for a musician: whether the musician plays there, and how the part is played.
 MUSICIAN_BY_SECTION = described(
     Flag(name=musician.PLAYS, error=errors.ERR_MUSICIAN_PLAYS_NOT_TRUE_OR_FALSE),
-    Choice(name=musician.PLAYED, choices=musician.FORMS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+    Choice(name=musician.PLAYED, choices=musician.FORMS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
 )
 # What a musician does with each setting left out, but for how it gives way and holds its notes, which its instrument says.
 MUSICIAN_DEFAULTS = {
@@ -1265,8 +1266,8 @@ MUSICIAN_SECTION_DEFAULTS = {musician.PLAYS: True, musician.PLAYED: musician.WHO
 
 def check_musician_by_section(value):
     """Raise InvalidValue unless a value is settings by kind of section, each whether a musician plays there and how the part is played."""
-    if not isinstance(value, dict) or any(section not in SECTION_KINDS or not isinstance(own, dict) for section, own in value.items()):
-        raise InvalidValue(errors.ERR_BAD_BY_SECTION.format(choices=listed(SECTION_KINDS), value=value))
+    if not isinstance(value, dict) or any(section not in file_format.SECTION_KINDS or not isinstance(own, dict) for section, own in value.items()):
+        raise InvalidValue(errors.ERR_BAD_BY_SECTION.format(choices=listed(file_format.SECTION_KINDS), value=value))
     for own in value.values():
         check_keys(data=own, allowed=set(MUSICIAN_BY_SECTION))
         check_settings(settings=MUSICIAN_BY_SECTION, data=own)
@@ -1284,16 +1285,16 @@ class MusicianSettings(GeneratorSettings):
 
     GENERATOR = musician.Musician
     SETTINGS = described(
-        Choice(name=MusicianSetting.INSTRUMENT, choices=musician.INSTRUMENTS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.INSTRUMENT, choices=musician.INSTRUMENTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Text(name=MusicianSetting.CHORDS_FROM, error=errors.ERR_NOT_TEXT),
         Text(name=MusicianSetting.TUNE_FROM, error=errors.ERR_NOT_TEXT),
-        Choice(name=MusicianSetting.ACTIVITY, choices=musician.ACTIVITIES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.ACTIVITY, choices=musician.ACTIVITIES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         WholeNumber(name=MusicianSetting.LOUDNESS, lowest=musician.QUIETEST, highest=musician.LOUDEST, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=MusicianSetting.LOOSENESS, lowest=musician.TIGHT, highest=musician.LOOSEST, error=errors.ERR_BAD_SHAPE_PERCENT),
-        Choice(name=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=MusicianSetting.ACCENTS, choices=musician.ACCENTS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=MusicianSetting.NOTES, choices=musician.NOTE_LENGTHS, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=MusicianSetting.RANGE, choices=musician.RANGES, default=LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.ACCENTS, choices=musician.ACCENTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.NOTES, choices=musician.NOTE_LENGTHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.RANGE, choices=musician.RANGES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Checked(name=MusicianSetting.BY_SECTION, check=check_musician_by_section),
     )
     REFERENCES = {Section.TRACKS: (MusicianSetting.CHORDS_FROM, MusicianSetting.TUNE_FROM)}
@@ -1383,6 +1384,6 @@ GENERATOR_SETTINGS = {
 }
 
 # Every generator keeps a table of statements about the registers, written last, which says when a clip's pass goes by it untouched.
-BYPASS_SETTING = statements_setting(BYPASS_WHEN)
+BYPASS_SETTING = statements_setting(file_format.BYPASS_WHEN)
 for _settings_class in GENERATOR_SETTINGS.values():
-    _settings_class.SETTINGS = {**_settings_class.SETTINGS, BYPASS_WHEN: BYPASS_SETTING}
+    _settings_class.SETTINGS = {**_settings_class.SETTINGS, file_format.BYPASS_WHEN: BYPASS_SETTING}

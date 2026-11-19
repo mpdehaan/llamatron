@@ -25,10 +25,11 @@ from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from tests.support.rendering import as_setlist, dump_song_data, render_data, render_file, setlist_from_data, song_from_data
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, NOTES_SINCE, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition.sections import SECTION_LABELS
+from llamatron.composition import sections
 from llamatron.strings import errors
 from tests.support.song_testing import LEAD, X, pat, with_parts
 
@@ -101,12 +102,12 @@ class TestErrors(unittest.TestCase):
     def test_unknown_generator_setting_names_the_generator(self):
         scenes = [{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: X}}}]
         self.assert_error(
-            UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=SECTION_LABELS[Section.AUTO_RATCHETS], name=R)),
+            UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[Section.AUTO_RATCHETS], name=R)),
             auto_ratchets={R: {COUNT: [2]}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes,
         )
 
     def test_a_generator_no_chain_uses_is_checked_too(self):
-        self.assert_error(UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=SECTION_LABELS[Section.AUTO_RATCHETS], name=R)), auto_ratchets={R: {COUNT: [2]}})
+        self.assert_error(UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[Section.AUTO_RATCHETS], name=R)), auto_ratchets={R: {COUNT: [2]}})
         self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}})
 
     def test_missing_generator_setting(self):
@@ -151,7 +152,7 @@ class TestErrors(unittest.TestCase):
         setlist = setlist_from_data(old)
         self.assertEqual(setlist.get_notes(), old[SetlistSetting.DESCRIPTION])
         self.assertEqual(setlist.get_description(), NO_TEXT)
-        new = {SetlistSetting.VERSION: NOTES_SINCE, SetlistSetting.DESCRIPTION: 'A tune', Section.SONGS: {}}
+        new = {SetlistSetting.VERSION: file_format.NOTES_SINCE, SetlistSetting.DESCRIPTION: 'A tune', Section.SONGS: {}}
         self.assertEqual(setlist_from_data(new).get_description(), new[SetlistSetting.DESCRIPTION])
         self.assertEqual(setlist_from_data(new).get_notes(), NO_TEXT)
 

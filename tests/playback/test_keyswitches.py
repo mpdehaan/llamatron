@@ -22,11 +22,10 @@ import unittest
 import xml.etree.ElementTree as ET
 
 from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import (
-    FLUIDSYNTH_DEVICE, KEYSWITCH_SLOT_COUNT, KEYSWITCH_SLOTS, ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting,
-    Row, SceneSetting, Section, SongSetting, TrackSetting,
-)
-from llamatron.composition.instrument import NO_KEYSWITCH, Instrument, Keyswitch
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.composition import instrument as instrument_values
+from llamatron.composition.instrument import Instrument, Keyswitch
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song_file_error import SongFileError
@@ -74,7 +73,7 @@ VALUE = 'Value'
 
 def slots_written(**slots):
     """Return an instrument's keyswitches as a file holds them, from each slot's (name, note) by its number's name."""
-    written = [None] * KEYSWITCH_SLOT_COUNT
+    written = [None] * file_format.KEYSWITCH_SLOT_COUNT
     for slot, (name, note) in slots.items():
         written[int(slot.removeprefix('slot'))] = {KeyswitchSetting.NAME: name, KeyswitchSetting.NOTE: note}
     return written
@@ -129,7 +128,7 @@ class TestInstrumentKeyswitches(unittest.TestCase):
 
     def test_a_new_instrument_has_ten_empty_slots_and_writes_none(self):
         instrument = Instrument()
-        self.assertEqual(instrument.get_keyswitches(), [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT)
+        self.assertEqual(instrument.get_keyswitches(), [instrument_values.NO_KEYSWITCH] * file_format.KEYSWITCH_SLOT_COUNT)
         self.assertFalse(instrument.has_keyswitches())
         self.assertNotIn(InstrumentSetting.KEYSWITCHES, instrument.to_data())
 
@@ -163,13 +162,13 @@ class TestInstrumentKeyswitches(unittest.TestCase):
 
     def test_what_a_slot_refuses(self):
         instrument = Instrument()
-        for arguments in ({'slot': KEYSWITCH_SLOT_COUNT}, {'slot': SUSTAIN_SLOT, 'note': midi.MAX_MIDI_NUMBER + 1}, {'slot': SUSTAIN_SLOT, 'name': 'x' * (limits.MAX_NAME_LENGTH + 1)},
+        for arguments in ({'slot': file_format.KEYSWITCH_SLOT_COUNT}, {'slot': SUSTAIN_SLOT, 'note': midi.MAX_MIDI_NUMBER + 1}, {'slot': SUSTAIN_SLOT, 'name': 'x' * (limits.MAX_NAME_LENGTH + 1)},
                           {'slot': SUSTAIN_SLOT, 'name': ''}, {'slot': SUSTAIN_SLOT, 'note': str(SUSTAIN_NOTE)}):
             with self.subTest(arguments=arguments), self.assertRaises(InvalidValue):
                 instrument.set_keyswitch(**arguments)
 
     def test_what_a_file_refuses_of_keyswitches(self):
-        for keyswitches in ([None], {}, [{}] * KEYSWITCH_SLOT_COUNT, slots_written(slot0=(SUSTAIN, midi.MAX_MIDI_NUMBER + 1)), [{'key': SUSTAIN}, *[None] * (KEYSWITCH_SLOT_COUNT - 1)]):
+        for keyswitches in ([None], {}, [{}] * file_format.KEYSWITCH_SLOT_COUNT, slots_written(slot0=(SUSTAIN, midi.MAX_MIDI_NUMBER + 1)), [{'key': SUSTAIN}, *[None] * (file_format.KEYSWITCH_SLOT_COUNT - 1)]):
             with self.subTest(keyswitches=keyswitches), self.assertRaises((InvalidValue, SongFileError)):
                 Instrument.from_data(data={InstrumentSetting.KEYSWITCHES: keyswitches}, where=WHERE)
 
@@ -201,8 +200,8 @@ class TestKeyswitchRow(unittest.TestCase):
 
     def test_every_slot_can_be_set_and_cleared(self):
         made = self.pattern()
-        made.set_value(row=Row.KEYSWITCH, step=0, value=list(KEYSWITCH_SLOTS))
-        self.assertEqual(made.get_value(row=Row.KEYSWITCH, step=0), KEYSWITCH_SLOTS)
+        made.set_value(row=Row.KEYSWITCH, step=0, value=list(file_format.KEYSWITCH_SLOTS))
+        self.assertEqual(made.get_value(row=Row.KEYSWITCH, step=0), file_format.KEYSWITCH_SLOTS)
         made.set_value(row=Row.KEYSWITCH, step=0, value=None)
         self.assertFalse(made.sends_keyswitches())
 
@@ -213,7 +212,7 @@ class TestKeyswitchRow(unittest.TestCase):
 
     def test_what_a_step_refuses(self):
         made = self.pattern()
-        for value in ([KEYSWITCH_SLOT_COUNT], [SUSTAIN_SLOT, SUSTAIN_SLOT], SUSTAIN_SLOT, [], [str(SUSTAIN_SLOT)], [True]):
+        for value in ([file_format.KEYSWITCH_SLOT_COUNT], [SUSTAIN_SLOT, SUSTAIN_SLOT], SUSTAIN_SLOT, [], [str(SUSTAIN_SLOT)], [True]):
             with self.subTest(value=value), self.assertRaises(InvalidValue):
                 made.set_value(row=Row.KEYSWITCH, step=0, value=value)
 
@@ -253,7 +252,7 @@ class TestKeyswitchesPlayed(unittest.TestCase):
         self.assertEqual(sent(data), [])
 
     def test_an_instrument_through_fluidsynth_sends_none(self):
-        self.assertEqual(sent(switched(keyswitch=[[SUSTAIN_SLOT]], instrument=violin(device=FLUIDSYNTH_DEVICE))), [])
+        self.assertEqual(sent(switched(keyswitch=[[SUSTAIN_SLOT]], instrument=violin(device=file_format.FLUIDSYNTH_DEVICE))), [])
 
     def test_the_tracks_transpose_leaves_a_keyswitch_where_the_map_wrote_it(self):
         plain = rendered(switched(keyswitch=[[SUSTAIN_SLOT]]))

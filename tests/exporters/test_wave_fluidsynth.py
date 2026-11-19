@@ -32,7 +32,7 @@ from unittest import mock
 import mido
 import numpy
 
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE
+from llamatron.composition import file_format
 from llamatron.exporters import wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.exports import EXPORT_KINDS, EXPORT_LABELS
@@ -74,7 +74,7 @@ ROUNDING = 1
 def song_with_instruments():
     """Return a document whose lead plays through FluidSynth with a violin and whose drums play through a MIDI port."""
     document = a_song()
-    for name, device in ((FLUID, FLUIDSYNTH_DEVICE), (KEYS, OTHER_PORT)):
+    for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, OTHER_PORT)):
         document.add_instrument(name)
         document.set_instrument_device(name=name, device=device)
     document.set_instrument_gm_sound(name=FLUID, sound=VIOLIN)

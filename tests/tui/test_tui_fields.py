@@ -27,7 +27,7 @@ from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import STRUMMER, BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FADE, FOLK, NAMED, POP, SMOOTH, SWAY, LEAD, ROLLS, THIN, UITest, UP_ARP, leaf_pages
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, legends, marks
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -268,7 +268,7 @@ class TestFieldsOnThePages(UITest):
             ProgressionEditor(holder=holder, name=POP), VoiceLeadingEditor(holder=holder, name=SMOOTH), HocketEditor(holder=holder, name=TRADE), FollowChordsEditor(holder=holder, name=FOLLOWS), PhrasingEditor(holder=holder, name=BREATHES), MusicianEditor(holder=holder, name=STRUMMER), GuitarifyEditor(holder=holder, name=PICKED), StrumEditor(holder=holder, name=FOLK), EuclidEditor(holder=holder, name=CLAVE), GlideEditor(holder=holder, name=SLIDES), ShortenEditor(holder=holder, name=CLIPS),
             RushEditor(holder=holder, name=PUSH), DragEditor(holder=holder, name=LAZY),
             DensityEditor(holder=holder, name=THIN), SwellEditor(holder=holder, name=FADE), ArticulateEditor(holder=holder, name=CLIPPED),
-            ScalePage(holder=holder, name=DEFAULT_SCALE), ChainStatementsPage(holder=holder, name=NAMED), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),
+            ScalePage(holder=holder, name=setlist.DEFAULT_SCALE), ChainStatementsPage(holder=holder, name=NAMED), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),
         ]
 
     def a_wizard(self, holder):

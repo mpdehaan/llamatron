@@ -28,7 +28,8 @@ import unittest
 
 import mido
 
-from llamatron.composition.file_format import ACCIDENTALS, Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.naming import default_scale_name
 from llamatron.composition.setlist import Setlist
@@ -266,7 +267,7 @@ class TestKeys(unittest.TestCase):
                 if written is None:
                     continue
                 degree, accidental, octave = written
-                half_steps = ACCIDENTALS.get(accidental, NO_HALF_STEPS)
+                half_steps = file_format.ACCIDENTALS.get(accidental, NO_HALF_STEPS)
                 with self.subTest(key=key, pitch=pitch):
                     note = scale.scale_at(octave).note_at(degree=degree, scale_notes=0, half_steps=half_steps, length=QUARTER)
                     self.assertEqual(note.get_midi_number(), pitch)

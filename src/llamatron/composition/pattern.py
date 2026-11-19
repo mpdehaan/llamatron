@@ -22,10 +22,8 @@ values, editing single values, resizing and rearranging it, and working out what
 
 from llamatron.composition.conditions import check_statement, statement_of
 from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, reading, time_signature, written_length
-from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, CHORD_ROWS, DIRECTIONS, PATTERN_ROWS, PITCH_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Direction, PatternSetting, Row,
-    REGISTER_SET_ROWS, STATEMENT_OF_ROW, STATEMENT_PARTS, STATEMENT_ROWS, STATEMENTS_CUTTING_A_PASS, StepStatement,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Direction, PatternSetting, Row, StepStatement
 from math import floor
 
 from llamatron.music.note import Note
@@ -37,8 +35,10 @@ from llamatron.composition.llama_data import LlamaData, written_settings
 from llamatron.composition.pattern_munges import PatternMunges
 from llamatron.composition.pattern_notes import PatternNotes
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE, Correction
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS, row_described, rows_where
+from llamatron.composition import corrections
+from llamatron.composition.corrections import Correction
+from llamatron.composition import row_descriptions
+from llamatron.composition.row_descriptions import row_described, rows_where
 from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, WholeNumber, described, settings_held
 from llamatron.support.revised import notes_change
 
@@ -55,7 +55,7 @@ SETTINGS = described(
     Checked(name=PatternSetting.TIME_SIGNATURE, check=time_signature),
     Length(name=PatternSetting.ENTRY_SIZE, most=limits.MAX_GATE),
     Flag(name=PatternSetting.DRUM, error=errors.ERR_DRUM_NOT_TRUE_OR_FALSE),
-    Choice(name=PatternSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
+    Choice(name=PatternSetting.DIRECTION, choices=file_format.DIRECTIONS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
     Text(name=PatternSetting.GROUP, error=errors.ERR_NOT_TEXT),
     WholeNumber(name=PatternSetting.SCALE_LENGTH, lowest=limits.MIN_SCALE_LENGTH, highest=limits.MAX_SCALE_LENGTH, error=errors.ERR_BAD_SCALE_LENGTH),
 )
@@ -101,7 +101,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_PATTERN_EXPECTED_SETTINGS)
-            check_keys(data=data, allowed={PatternSetting.STEPS, *SETTINGS, *PATTERN_ROWS})
+            check_keys(data=data, allowed={PatternSetting.STEPS, *SETTINGS, *file_format.PATTERN_ROWS})
             steps = data.get(PatternSetting.STEPS)
             if not is_whole_number_from(value=steps, lowest=limits.MIN_STEPS):
                 raise InvalidValue(errors.ERR_BAD_STEPS.format(lowest=limits.MIN_STEPS, value=steps))
@@ -110,10 +110,10 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
                 with reading(errors.ERR_WHERE_IN_ROW.format(where=where, row=name) if name in PLACED_BY_NAME else where):
                     setting.check_held(data)
             drum = data.get(PatternSetting.DRUM, False)
-            for row in PATTERN_ROWS:
+            for row in file_format.PATTERN_ROWS:
                 _check_row(row=row, data=data, steps=steps, drum=drum, where=where)
             _check_ties(data=data, steps=steps)
-            rows = {row: data.get(row) for row in PATTERN_ROWS}
+            rows = {row: data.get(row) for row in file_format.PATTERN_ROWS}
             return cls(steps=steps, rows=rows, **{name: data.get(name) for name in SETTINGS})
 
     def to_data(self):
@@ -193,7 +193,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
     def adds_to_registers(self):
         """Return whether any step adds to a register, which is a non-zero value on a register change row."""
-        return any(self._adds_on(row) for row in REGISTER_ADD_ROWS.values())
+        return any(self._adds_on(row) for row in file_format.REGISTER_ADD_ROWS.values())
 
     def adds_anything(self, row):
         """Return whether any step of a register's += row adds or takes away anything at all: most patterns add nothing, and
@@ -211,7 +211,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
     def sets_registers(self):
         """Return whether any step sets a register to a value, which is a value on a register's = row, 0 included."""
-        return any(value is not None for row in REGISTER_SET_ROWS.values() for value in self._rows[row] or [])
+        return any(value is not None for row in file_format.REGISTER_SET_ROWS.values() for value in self._rows[row] or [])
 
     def changes_registers(self):
         """Return whether any step sets a register or adds to one, so that playing the pattern changes the registers' values."""
@@ -219,21 +219,21 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
     def uses_registers(self):
         """Return whether any step reads a register: a row of +Note or +Vel switched on there, or a statement about the registers."""
-        if any(self._adds_on(row) for rows in (REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS) for row in rows.values()):
+        if any(self._adds_on(row) for rows in (file_format.REGISTER_NOTE_ROWS, file_format.REGISTER_VELOCITY_ROWS) for row in rows.values()):
             return True
-        return any(self.has_statements(kind) for kind in STATEMENT_ROWS)
+        return any(self.has_statements(kind) for kind in file_format.STATEMENT_ROWS)
 
     def has_statements(self, kind):
         """Return whether any step holds a statement of a kind about the registers: one that stops the clip, starts the pattern over or mutes the step."""
-        return any(self._rows[STATEMENT_ROWS[kind][REGISTER_PART]] or [])
+        return any(self._rows[file_format.STATEMENT_ROWS[kind][REGISTER_PART]] or [])
 
     def cuts_passes_short(self):
         """Return whether any step can stop the clip or start the pattern over, so that how long a pass lasts is known only as it plays."""
-        return any(self.has_statements(kind) for kind in STATEMENTS_CUTTING_A_PASS)
+        return any(self.has_statements(kind) for kind in file_format.STATEMENTS_CUTTING_A_PASS)
 
     def get_statement(self, *, kind, step):
         """Return the statement of a kind a step holds, as a file writes one on a clip, or None when the step holds none or holds parts that make no statement."""
-        return statement_of([self.get_value(row=row, step=step) for row in STATEMENT_ROWS[kind]])
+        return statement_of([self.get_value(row=row, step=step) for row in file_format.STATEMENT_ROWS[kind]])
 
     def get_statements(self, kind):
         """Return every step's statement of a kind, None where a step holds none, or None when no step holds one."""
@@ -247,7 +247,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
     def sends_controls(self):
         """Return whether any step holds a CC value, which a value of 0 is too."""
-        return any(value is not None for row in CC_ROWS for value in self._rows[row] or [])
+        return any(value is not None for row in file_format.CC_ROWS for value in self._rows[row] or [])
 
     def _adds_on(self, row):
         """Return whether any step has a non-zero value on a row."""
@@ -278,9 +278,9 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
         self._check_step(step)
         if self.has_sound(step) or self.get_value(row=Row.TIE, step=step):
             return True
-        if any(self.get_value(row=row, step=step) is not None for row in CC_ROWS):
+        if any(self.get_value(row=row, step=step) is not None for row in file_format.CC_ROWS):
             return True
-        return any(self.get_value(row=row, step=step) not in (None, NO_CHANGE) for row in REGISTER_ADD_ROWS.values())
+        return any(self.get_value(row=row, step=step) not in (None, NO_CHANGE) for row in file_format.REGISTER_ADD_ROWS.values())
 
     def steps_with_anything_from(self, start):
         """Return how many steps from a position onward hold anything, which shortening the pattern would lose."""
@@ -306,7 +306,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
         octave = default_octave if octave is None else octave
         half_steps = scale.get_half_steps()
         octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(half_steps))
-        moved = half_steps[place] + octaves_up * midi.HALF_STEPS_PER_OCTAVE + ACCIDENTALS.get(accidental, 0)
+        moved = half_steps[place] + octaves_up * midi.HALF_STEPS_PER_OCTAVE + file_format.ACCIDENTALS.get(accidental, 0)
         note = Note(name=scale.get_root(), octave_number=REFERENCE_OCTAVE).half_step(moved)
         return NOTE_NAME.format(name=note.get_name(), octave=note.get_octave_number() - REFERENCE_OCTAVE + octave - octave_label_offset)
 
@@ -348,7 +348,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
             check_statement(name=kind, statement=statement)
             if kind == StepStatement.RESTART and step == FIRST_STEP:
                 raise InvalidValue(errors.ERR_RESTART_ON_FIRST_STEP)
-        for row, part in zip(STATEMENT_ROWS[kind], STATEMENT_PARTS):
+        for row, part in zip(file_format.STATEMENT_ROWS[kind], file_format.STATEMENT_PARTS):
             value = None if statement is None else statement.get(part)
             if value is None and self._rows[row] is None:
                 continue
@@ -366,7 +366,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
         that drew it, and nothing a rest can hold.
         """
         self._check_step(step)
-        for row in PATTERN_ROWS:
+        for row in file_format.PATTERN_ROWS:
             if row not in REST_ROWS and self._rows[row] is not None:
                 self._rows[row][step] = blank_value(row)
         ties = self._rows[Row.TIE]
@@ -487,7 +487,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
                 self._rows[row] = [own_step_value(values[step]) for step in order]
         self._steps = len(order)
         # The first step can never start the pattern over, since the pattern would never get past it.
-        for row in STATEMENT_ROWS[StepStatement.RESTART]:
+        for row in file_format.STATEMENT_ROWS[StepStatement.RESTART]:
             if self._rows[row] is not None:
                 self._rows[row][FIRST_STEP] = blank_value(row)
 
@@ -544,19 +544,19 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
     def clear_all_but_pitch(self):
         """Blank everything a step holds but which notes it plays: its degree, octave, sharp or flat and chord stay."""
-        self.clear_rows([row for row in PATTERN_ROWS if row not in PITCH_ROWS])
+        self.clear_rows([row for row in file_format.PATTERN_ROWS if row not in file_format.PITCH_ROWS])
 
     def clear_chords(self):
         """Blank every step's chord, with its tensions, borrowed scale and inversion, leaving the note each chord was built on."""
-        self.clear_rows(CHORD_ROWS)
+        self.clear_rows(file_format.CHORD_ROWS)
 
     def clear_register_changes(self):
         """Blank the rows that set a register and that add to one."""
-        self.clear_rows([*REGISTER_SET_ROWS.values(), *REGISTER_ADD_ROWS.values()])
+        self.clear_rows([*file_format.REGISTER_SET_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values()])
 
     def clear_statements(self):
         """Blank every step's statements about the registers: what stops the clip, starts the pattern over and mutes the step."""
-        self.clear_rows(list(STATEMENT_OF_ROW))
+        self.clear_rows(list(file_format.STATEMENT_OF_ROW))
 
     def mirror(self):
         """Add its steps again after the last, backwards, so that it plays forward and then back and is twice as long."""
@@ -568,7 +568,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
         """Put a step of another pattern after each of its own, so that it is twice as long: the other's steps are read round and round, or as far as needed, and the other is not changed."""
         if self._steps * 2 > limits.MAX_STEPS or other.is_drum() != self.is_drum():
             raise InvalidValue(errors.ERR_PATTERN_CANNOT_INTERLEAVE)
-        for row in PATTERN_ROWS:
+        for row in file_format.PATTERN_ROWS:
             own = self._rows[row]
             others = other._row_values(row)
             if own is None and others is None:
@@ -589,7 +589,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
             raise InvalidValue(errors.ERR_PATTERN_NO_SUCH_STEP.format(step=at, steps=self._steps))
         if self._steps + other.get_steps() > limits.MAX_STEPS or other.is_drum() != self.is_drum():
             raise InvalidValue(errors.ERR_PATTERN_CANNOT_INTERLEAVE)
-        for row in PATTERN_ROWS:
+        for row in file_format.PATTERN_ROWS:
             own = self._rows[row]
             others = other._row_values(row)
             if own is None and others is None:
@@ -620,7 +620,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
     def smooth_ccs(self):
         """Fill the blank steps between two values of each CC row."""
-        self.smooth_rows(rows=CC_ROWS)
+        self.smooth_rows(rows=file_format.CC_ROWS)
 
     def smooth_velocity(self):
         """Fill the blank velocities between two typed ones, on the steps that play a note."""
@@ -628,7 +628,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
     def smooth_register_sets(self, register):
         """Fill the blank steps between two values of the row that sets a register."""
-        self.smooth_rows(rows=[REGISTER_SET_ROWS[register]])
+        self.smooth_rows(rows=[file_format.REGISTER_SET_ROWS[register]])
 
     def reverse_after(self, step):
         """Reverse every step after a step, leaving it and the steps before it where they are."""
@@ -668,7 +668,7 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
 
 def _copied_rows(rows):
     """Return a copy of every row's list of values as the pattern holds them, with None for a row that isn't given, so the pattern owns its lists."""
-    return {row: (None if rows.get(row) is None else ROW_DESCRIPTIONS[row].read(rows[row])) for row in PATTERN_ROWS}
+    return {row: (None if rows.get(row) is None else row_descriptions.ROW_DESCRIPTIONS[row].read(rows[row])) for row in file_format.PATTERN_ROWS}
 
 
 def own_step_value(value):
@@ -678,7 +678,7 @@ def own_step_value(value):
 
 def blank_value(row):
     """Return what a step holds on a row when nothing is set: off on an on or off row, and None otherwise."""
-    return ROW_DESCRIPTIONS[row].blank()
+    return row_descriptions.ROW_DESCRIPTIONS[row].blank()
 
 
 def _blank_row(*, row, steps):
@@ -689,13 +689,13 @@ def _holds_something(*, row, values):
     """Return whether a row has any step that isn't the row's blank, which is what makes it worth writing to a file."""
     if values is None:
         return False
-    blank = ROW_DESCRIPTIONS[row].blank()
+    blank = row_descriptions.ROW_DESCRIPTIONS[row].blank()
     return any(value is not None and value != blank for value in values)
 
 
 def _saved_row(*, row, values):
     """Return a row as a file writes it: a copy, with an on or off row as true and false."""
-    return ROW_DESCRIPTIONS[row].written(values)
+    return row_descriptions.ROW_DESCRIPTIONS[row].written(values)
 
 
 def _check_row(*, row, data, steps, drum, where):
@@ -709,7 +709,7 @@ def _check_row(*, row, data, steps, drum, where):
         return
     if not isinstance(values, list) or len(values) != steps:
         raise InvalidValue(errors.ERR_ROW_WRONG_LENGTH.format(row=row, steps=steps, value=values))
-    description = ROW_DESCRIPTIONS[row]
+    description = row_descriptions.ROW_DESCRIPTIONS[row]
     never_blank = description.is_on_or_off()
     for value in values:
         if value is None:
@@ -725,7 +725,7 @@ def _check_row(*, row, data, steps, drum, where):
 
 def nearest_step_value(*, row, value, drum):
     """Return the allowed value nearest a step's wrong value on a row, or NO_NEAREST_VALUE when the row has no limits or the value isn't a number at all. A blank step stays blank."""
-    return None if value is None else ROW_DESCRIPTIONS[row].nearest(value, drum=drum)
+    return None if value is None else row_descriptions.ROW_DESCRIPTIONS[row].nearest(value, drum=drum)
 
 
 def held_add(*, value, most):
@@ -739,7 +739,7 @@ def _row_correction(*, data, row, drum):
     """Return the correction that brings every step of a row within the row's limits, or None when a value on the row has no allowed value near it."""
     found = data[row]
     used = [nearest_step_value(row=row, value=value, drum=drum) for value in found]
-    if any(value is NO_NEAREST_VALUE for value in used):
+    if any(value is corrections.NO_NEAREST_VALUE for value in used):
         return None
     return Correction(holder=data, key=row, name=row, found=found, used=used)
 

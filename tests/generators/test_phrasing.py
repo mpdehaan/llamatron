@@ -18,7 +18,8 @@
 import unittest
 
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
-from llamatron.composition.generator_settings import DEFAULT_LINE_BARS, PhrasingSetting, PhrasingSettings
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import PhrasingSetting, PhrasingSettings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
@@ -212,7 +213,7 @@ class TestPhrasingSettings(unittest.TestCase):
 
     def test_a_new_one_starts_with_lines_of_two_bars_a_quick_breath_a_little_rise_and_notes_as_written(self):
         settings = PhrasingSettings.new()
-        self.assertEqual(settings.get_own(PhrasingSetting.LINE_BARS), DEFAULT_LINE_BARS)
+        self.assertEqual(settings.get_own(PhrasingSetting.LINE_BARS), generator_settings.DEFAULT_LINE_BARS)
         self.assertEqual(settings.get_own(PhrasingSetting.BREATH), QUICK_BREATH)
         self.assertEqual(settings.get_own(PhrasingSetting.RISE_AND_FALL), LITTLE_RISE)
         self.assertEqual(settings.get_own(PhrasingSetting.NOTES), NOTES_AS_WRITTEN)

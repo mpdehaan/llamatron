@@ -16,7 +16,7 @@
 """The tracker's Euclidean mask: the Euclids page and editor, the track editor's + Euclid section, and the picker of named rhythms that H opens on Hits."""
 
 from tests.support.ui_testing import CLAVE, LEAD, UITest
-from llamatron.composition.euclid import NAMED_RHYTHMS
+from llamatron.composition import euclid
 from llamatron.composition.file_format import Section, EuclidPart, GeneratorKind, NamedRhythm
 from llamatron.strings import labels
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -27,7 +27,7 @@ from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui import keybindings
 
 NEW_ONE = 'bell'
-TRESILLO_HITS, TRESILLO_STEPS = NAMED_RHYTHMS[NamedRhythm.TRESILLO]
+TRESILLO_HITS, TRESILLO_STEPS = euclid.NAMED_RHYTHMS[NamedRhythm.TRESILLO]
 
 
 class TestEuclidAdded(UITest):
@@ -61,7 +61,7 @@ class TestEuclidEditor(UITest):
         await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.HITS])
         await self.press(keybindings.EuclidEditor.PICK_RHYTHM)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(len(self.app.screen.options), len(NAMED_RHYTHMS))
+        self.assertEqual(len(self.app.screen.options), len(euclid.NAMED_RHYTHMS))
 
 
 class TestTrackEuclidSection(UITest):
@@ -73,6 +73,6 @@ class TestTrackEuclidSection(UITest):
         await self.press(Key.ENTER)
         await self.select_field(labels.MSG_EUCLID_FIELD_LABELS[EuclidPart.HITS])
         await self.press(keybindings.TrackEditor.PICK_RHYTHM, Key.DOWN, Key.ENTER)
-        hits, steps = list(NAMED_RHYTHMS.values())[1]
+        hits, steps = list(euclid.NAMED_RHYTHMS.values())[1]
         mask = self.document.song().get_track(LEAD).get_euclid()
         self.assertEqual((mask.hits, mask.steps), (hits, steps))

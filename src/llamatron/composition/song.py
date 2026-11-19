@@ -29,14 +29,15 @@ from llamatron.strings import errors, names
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
-from llamatron.composition.corrections import LEFT_OUT
+from llamatron.composition import corrections
 from llamatron.composition.setting import Checked, Choice, Length, described, settings_held
-from llamatron.composition.file_format import LIVE_RESPONSIVENESSES, REGISTER_NAMES, sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting, StepStatement
+from llamatron.composition import file_format
+from llamatron.composition.file_format import sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting, StepStatement
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems, moved_in_list
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
-from llamatron.composition.sections import SECTION_LABELS, SONG_SECTIONS
+from llamatron.composition import sections
 from llamatron.composition.track import Track
 from llamatron.support.revised import notes_change
 
@@ -91,7 +92,7 @@ SETTINGS = described(
     Checked(name=SongSetting.GENRE, check=_never_refused),
     Checked(name=SongSetting.SUBGENRE, check=_never_refused),
     Checked(name=SongSetting.VARIANT, check=_never_refused),
-    Choice(name=SongSetting.LIVE_RESPONSIVENESS, choices=LIVE_RESPONSIVENESSES, default=LEFT_OUT, error=errors.ERR_BAD_LIVE_RESPONSIVENESS),
+    Choice(name=SongSetting.LIVE_RESPONSIVENESS, choices=file_format.LIVE_RESPONSIVENESSES, default=corrections.LEFT_OUT, error=errors.ERR_BAD_LIVE_RESPONSIVENESS),
     Checked(name=SongSetting.VISUALIZER, check=_never_refused),
     Checked(name=SongSetting.PREVIEW_INSTRUMENT, check=_check_preview_instrument, needs_song=True),
     Checked(name=SongSetting.WIZARD, check=_check_wizard_choices),
@@ -145,7 +146,7 @@ class Song(LlamaData):
         self.note_change()
         self._setlist = setlist
         self._settings = {name: None for name in SETTINGS}
-        self._sections = {name: NamedItems(label=SECTION_LABELS[name]) for name in SONG_SECTIONS}
+        self._sections = {name: NamedItems(label=sections.SECTION_LABELS[name]) for name in sections.SONG_SECTIONS}
         self._scenes = None
 
     @classmethod
@@ -165,7 +166,7 @@ class Song(LlamaData):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_NOT_A_SONG.format(value=data))
-            check_keys(data=data, allowed={*SETTINGS, *SONG_SECTIONS, Section.SCENES})
+            check_keys(data=data, allowed={*SETTINGS, *sections.SONG_SECTIONS, Section.SCENES})
         song = cls(setlist=setlist)
         song._read_settings(data=data, where=where)
         song._read_registers(data=data, where=where)
@@ -195,8 +196,8 @@ class Song(LlamaData):
         """Read the registers' settings. There are always four, so the file only names those it changes."""
         registers = data.get(Section.REGISTERS) or {}
         with reading(where):
-            if not isinstance(registers, dict) or not set(registers) <= set(REGISTER_NAMES):
-                raise InvalidValue(errors.ERR_REGISTERS_NOT_NAMED.format(names=listed(REGISTER_NAMES)))
+            if not isinstance(registers, dict) or not set(registers) <= set(file_format.REGISTER_NAMES):
+                raise InvalidValue(errors.ERR_REGISTERS_NOT_NAMED.format(names=listed(file_format.REGISTER_NAMES)))
         if Section.REGISTERS in data:
             self._set_section(section=Section.REGISTERS, items={
                 name: Register.from_data(data=settings, where=self._where(where=where, label=names.MSG_REGISTER_WORD, name=name)) for name, settings in registers.items()
@@ -230,7 +231,7 @@ class Song(LlamaData):
     @notes_change
     def _set_section(self, *, section, items):
         """Give a section its items as read from the file, or None for a section the file leaves out."""
-        self._sections[section] = NamedItems(label=SECTION_LABELS[section], items=items)
+        self._sections[section] = NamedItems(label=sections.SECTION_LABELS[section], items=items)
 
     def _section(self, section):
         return self._sections[section]
@@ -514,12 +515,12 @@ class Song(LlamaData):
 
     def set_register_setting(self, *, name, setting, value):
         """Change one setting of a register, AX to DX, by its file name, or None for its default."""
-        if name not in REGISTER_NAMES:
-            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=name, names=listed(REGISTER_NAMES)))
+        if name not in file_format.REGISTER_NAMES:
+            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=name, names=listed(file_format.REGISTER_NAMES)))
         register = self.get_register(name).copy()
         register.set_setting(name=setting, value=value)
         registers = {**dict(self._section(Section.REGISTERS).items()), name: register}
-        changed = {name: registers[name] for name in REGISTER_NAMES if name in registers and not registers[name].is_default()}
+        changed = {name: registers[name] for name in file_format.REGISTER_NAMES if name in registers and not registers[name].is_default()}
         self._set_section(section=Section.REGISTERS, items=changed or None)
 
     # The scenes, in the order they play.

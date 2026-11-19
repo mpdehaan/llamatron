@@ -20,9 +20,10 @@ from typing import NamedTuple
 
 from llamatron.composition.conditions import statements_setting, with_statement
 from llamatron.composition.file_format import ChainSetting
-from llamatron.composition.generator_settings import GENERATOR_SETTINGS
+from llamatron.composition import generator_settings
 from llamatron.composition.llama_data import LlamaData, own_copy
-from llamatron.composition.sections import GENERATOR_KINDS, NAMED_GENERATORS
+from llamatron.composition import sections
+from llamatron.composition import file_format
 from llamatron.composition.checks import listed, reading
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.strings import errors
@@ -99,11 +100,11 @@ class Chain(LlamaData):
 
     def names_item(self, *, section, name):
         """Return whether one of its steps runs a generator of a section, like an arp of the arps. A chain names nothing else."""
-        return section in GENERATOR_KINDS and ChainStep(GENERATOR_KINDS[section], name) in self._steps
+        return section in sections.GENERATOR_KINDS and ChainStep(sections.GENERATOR_KINDS[section], name) in self._steps
 
     def named_items(self):
         """Return the generators its steps run, as a set of (section, name)."""
-        return {(NAMED_GENERATORS[step.kind], step.name) for step in self._steps}
+        return {(file_format.NAMED_GENERATORS[step.kind], step.name) for step in self._steps}
 
     def copy(self):
         return Chain(self._steps, bypass_when=self._bypass_when)
@@ -144,7 +145,7 @@ class Chain(LlamaData):
     @notes_change
     def _rename_own_references(self, *, section, old, new):
         """Make every step that ran the renamed generator run it under its new name."""
-        kind = GENERATOR_KINDS[section]
+        kind = sections.GENERATOR_KINDS[section]
         self._steps = [ChainStep(kind, new) if step == (kind, old) else step for step in self._steps]
 
     def _check_place(self, place):
@@ -154,8 +155,8 @@ class Chain(LlamaData):
 
 def _checked_step(*, kind, name, setlist):
     """Return a step naming a generator the set has, or raise InvalidValue."""
-    if kind not in GENERATOR_SETTINGS:
-        raise InvalidValue(errors.ERR_UNKNOWN_GENERATOR.format(kind=kind, kinds=listed(sorted(GENERATOR_SETTINGS))))
+    if kind not in generator_settings.GENERATOR_SETTINGS:
+        raise InvalidValue(errors.ERR_UNKNOWN_GENERATOR.format(kind=kind, kinds=listed(sorted(generator_settings.GENERATOR_SETTINGS))))
     if not isinstance(name, str) or not setlist.has_generator(kind=kind, name=name):
         raise InvalidValue(errors.ERR_NO_SUCH_GENERATOR.format(kind=kind, name=name))
     return ChainStep(kind, name)

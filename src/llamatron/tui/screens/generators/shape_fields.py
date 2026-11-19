@@ -15,8 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields of a shape, Density, Swell or Articulate, which the Scene page, the clip page and the shape generators' editors share: a section heading and its start, end, over and then."""
 
-from llamatron.composition.file_format import SHAPE_PARTS, SHAPE_THENS, ShapePart
-from llamatron.composition.shapes import SHAPE_LIMITS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ShapePart
+from llamatron.composition import shapes
 from llamatron.strings import labels, marks
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.tui.screens.generators.time_field import time_field
@@ -31,7 +32,7 @@ def shape_fields(*, page, shape, value, store, prefixed=True):
     prefixed puts the shape's name in front of each label, as on the Scene page and the clip
     page, where three shapes share the page; a shape generator's editor has one and leaves it off.
     """
-    lowest, highest = SHAPE_LIMITS[shape]
+    lowest, highest = shapes.SHAPE_LIMITS[shape]
     name = labels.MSG_SHAPE_NAMES[shape]
 
     def label(part):
@@ -44,12 +45,12 @@ def shape_fields(*, page, shape, value, store, prefixed=True):
                       lowest=lowest, highest=highest, set=lambda number, part=part: store(part, number), clear=lambda part=part: store(part, None))
           for part in (ShapePart.START, ShapePart.END)],
         time_field(page=page, label=label(ShapePart.OVER), written=over, first=labels.MSG_WHOLE_SPAN, store=lambda choice: store(ShapePart.OVER, choice)),
-        ChoiceField(page=page, label=label(ShapePart.THEN), choices=SHAPE_THENS, current=then or SHAPE_THENS[0],
-                    set=lambda choice: store(ShapePart.THEN, None if choice == SHAPE_THENS[0] else choice)),
+        ChoiceField(page=page, label=label(ShapePart.THEN), choices=file_format.SHAPE_THENS, current=then or file_format.SHAPE_THENS[0],
+                    set=lambda choice: store(ShapePart.THEN, None if choice == file_format.SHAPE_THENS[0] else choice)),
     ]
 
 
 def shape_section(*, page, shape, value, store):
     """Return a shape's section on the Scene page or the clip page: its heading, closed until opened, saying when any part is set, and its four fields."""
-    heading = page.heading(label=labels.MSG_SHAPE_NAMES[shape], is_set=lambda: any(value(part) is not None for part in SHAPE_PARTS))
+    heading = page.heading(label=labels.MSG_SHAPE_NAMES[shape], is_set=lambda: any(value(part) is not None for part in file_format.SHAPE_PARTS))
     return [heading, *shape_fields(page=page, shape=shape, value=value, store=store)]

@@ -21,15 +21,15 @@ from fractions import Fraction
 from unittest import mock
 
 from tests.support.ui_testing import KEY_SHOWN, UITest, key_of, key_name
-from llamatron.composition.file_format import Section, STEP_SIZE_CHOICES
-from llamatron.composition.setlist import NO_TEXT
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section
+from llamatron.composition import setlist as setlist_values
 from llamatron.composition import defaults
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.composition.setlist import DEFAULT_SCALE
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.open_page import OpenPage
@@ -78,7 +78,7 @@ class TestFilePage(UITest):
         # The loose settings alphabetically, then the Notes & Octaves and Visualizers sections.
         labels = [field.label for field in self.app.screen.fields()]
         self.assertEqual(labels[:6], [AUTHOR, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_PROTECTED_LABEL, TITLE])
-        self.assertEqual(self.document.setlist().get_title(), NO_TEXT)
+        self.assertEqual(self.document.setlist().get_title(), setlist_values.NO_TEXT)
         await self.select_field(TITLE)
         await self.press(Key.ENTER)
         await self.type('Rain on the Bridge')
@@ -94,7 +94,7 @@ class TestFilePage(UITest):
             self.assertTrue(file.read().startswith(f'version: {version.VERSION}\ntitle: Rain on the Bridge\nauthor: Someone\n'))
         self.assertEqual(Document.load('song.yml').setlist().get_title(), RAIN_ON_THE_BRIDGE)
         await self.press(Key.BACKSPACE)
-        self.assertEqual(self.document.setlist().get_author(), NO_TEXT)
+        self.assertEqual(self.document.setlist().get_author(), setlist_values.NO_TEXT)
 
     async def test_step_size_offers_only_the_allowed_values(self):
         await self.select_field(STEP_SIZE)
@@ -102,7 +102,7 @@ class TestFilePage(UITest):
         self.assertEqual(self.document.setlist().get_step_size(), Fraction(1, 8))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, STEP_SIZE_CHOICES)
+        self.assertEqual(self.app.screen.options, file_format.STEP_SIZE_CHOICES)
 
     async def test_the_notes_say_where_the_file_and_the_exports_are(self):
         text = self.text()
@@ -267,7 +267,7 @@ class TestFilePage(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertEqual(self.app.get_document().song().get_pattern_names(), [names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)])
-        self.assertEqual(self.app.get_document().song().get_scale_name(), DEFAULT_SCALE)
+        self.assertEqual(self.app.get_document().song().get_scale_name(), setlist_values.DEFAULT_SCALE)
         self.assertEqual(self.app.get_document().song_names(), [names.MSG_DEFAULT_SONG_NAME])
 
 

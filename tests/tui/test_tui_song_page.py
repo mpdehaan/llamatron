@@ -18,7 +18,8 @@
 
 from tests.support.ui_testing import BEAT, KEY_SHOWN, UITest, key_of, key_name
 from llamatron.tui.dialogs.dialog import DIALOG_VIEW_SELECTOR
-from llamatron.composition.file_format import SongSetting, LiveResponsiveness, Section, STEP_SIZE_CHOICES, TIME_SIGNATURE_CHOICES
+from llamatron.composition import file_format
+from llamatron.composition.file_format import SongSetting, LiveResponsiveness, Section
 from llamatron.composition import defaults
 from llamatron.strings import errors, labels as labels_text, legends, marks, names as names_text
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -27,7 +28,8 @@ from llamatron.music import time_signature
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.composition.genres import GENRES, MASHUP, subgenres_of, variants_of
+from llamatron.composition import genres
+from llamatron.composition.genres import subgenres_of, variants_of
 from llamatron.tui import keybindings
 
 A_GENRE_WITH_VARIANTS = 'Rock'
@@ -101,12 +103,12 @@ class TestSongPage(UITest):
             self.assertIn(marks.MSG_UNDEFINED_SHOWN, self.shown_on(label))
         await self.select_field(labels_text.MSG_GENRE_LABEL)
         await self.press(key_of(binding=keybindings.FieldPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(song.get_genre(), GENRES[0])
+        self.assertEqual(song.get_genre(), genres.GENRES[0])
         await self.press(Key.ENTER)
-        await self.type(MASHUP)
+        await self.type(genres.MASHUP)
         await self.press(Key.ENTER)
-        self.assertEqual(song.get_genre(), MASHUP)
-        self.assertIn(MASHUP, self.shown_on(labels_text.MSG_GENRE_LABEL))
+        self.assertEqual(song.get_genre(), genres.MASHUP)
+        self.assertIn(genres.MASHUP, self.shown_on(labels_text.MSG_GENRE_LABEL))
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertIsNone(song.get_genre())
 
@@ -127,12 +129,12 @@ class TestSongPage(UITest):
         self.assertIn(variants[0], self.shown_on(labels_text.MSG_VARIANT_LABEL))
         await self.select_field(labels_text.MSG_GENRE_LABEL)
         await self.press(Key.ENTER)
-        await self.type(MASHUP)
+        await self.type(genres.MASHUP)
         await self.press(Key.ENTER)
         self.assertEqual((song.get_subgenre(), song.get_variant()), (None, None))
         await self.select_field(labels_text.MSG_SUBGENRE_LABEL)
         await self.press(Key.ENTER)
-        for subgenre in subgenres_of(MASHUP):
+        for subgenre in subgenres_of(genres.MASHUP):
             self.assertIn(subgenre, self.text())
 
     async def test_live_response_steps_through_its_three_choices_from_next_bar(self):
@@ -175,9 +177,9 @@ class TestSongPage(UITest):
         await self.select_field(labels_text.MSG_TIME_SIGNATURE_LABEL)
         self.assertEqual(self.document.song().get_time_signature().to_text(), defaults.DEFAULT_TIME_SIGNATURE)
         await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.document.song().get_time_signature().to_text(), TIME_SIGNATURE_CHOICES[TIME_SIGNATURE_CHOICES.index(defaults.DEFAULT_TIME_SIGNATURE) + 1])
+        self.assertEqual(self.document.song().get_time_signature().to_text(), file_format.TIME_SIGNATURE_CHOICES[file_format.TIME_SIGNATURE_CHOICES.index(defaults.DEFAULT_TIME_SIGNATURE) + 1])
         await self.press(Key.LEFT, Key.LEFT)
-        self.assertEqual(self.document.song().get_time_signature().to_text(), TIME_SIGNATURE_CHOICES[TIME_SIGNATURE_CHOICES.index(defaults.DEFAULT_TIME_SIGNATURE) - 1])
+        self.assertEqual(self.document.song().get_time_signature().to_text(), file_format.TIME_SIGNATURE_CHOICES[file_format.TIME_SIGNATURE_CHOICES.index(defaults.DEFAULT_TIME_SIGNATURE) - 1])
         await self.press(Key.ENTER)
         self.app.screen.value = SEVEN_EIGHT
         await self.press(Key.ENTER)
@@ -190,15 +192,15 @@ class TestSongPage(UITest):
         self.assertIsNone(self.document.song().get_entry_size())
         self.assertIn(marks.MSG_ONE_STEP_SHOWN, self.text())
         await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.document.song().get_written_entry_size(), STEP_SIZE_CHOICES[0])
+        self.assertEqual(self.document.song().get_written_entry_size(), file_format.STEP_SIZE_CHOICES[0])
         await self.press(Key.LEFT)
         self.assertIsNone(self.document.song().get_written_entry_size())
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, [marks.MSG_ONE_STEP_SHOWN, *STEP_SIZE_CHOICES])
+        self.assertEqual(self.app.screen.options, [marks.MSG_ONE_STEP_SHOWN, *file_format.STEP_SIZE_CHOICES])
         await self.press(Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.document.song().get_written_entry_size(), STEP_SIZE_CHOICES[2])
-        self.assertIn(STEP_SIZE_CHOICES[2], self.text())
+        self.assertEqual(self.document.song().get_written_entry_size(), file_format.STEP_SIZE_CHOICES[2])
+        self.assertIn(file_format.STEP_SIZE_CHOICES[2], self.text())
         await self.press(Key.BACKSPACE)
         self.assertIsNone(self.document.song().get_written_entry_size())
         self.assertTrue(self.document.is_dirty())

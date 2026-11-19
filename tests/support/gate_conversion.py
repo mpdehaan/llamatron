@@ -28,8 +28,9 @@ uses it to write the demos.
 import math
 from fractions import Fraction as F
 
-from llamatron.composition.file_format import PATTERN_ROWS, GateModifier, PatternSetting, Row
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GateModifier, PatternSetting, Row
+from llamatron.composition import row_descriptions
 
 OLD_DURATION = 'duration'
 OLD_DEFAULT_LENGTH = 'default_length'
@@ -84,8 +85,8 @@ def to_gates(*, old, default=F(1, 16)):
         return {key: value for key, value in old.items() if key != OLD_DURATION}
     durations = [F(str(value)) if value is not None else default for value in (old.get(OLD_DURATION) or [None] * steps)]
     step = common_step(durations)
-    misfits = {row: old[row] for row in PATTERN_ROWS if isinstance(old.get(row), list) and len(old[row]) != steps}
-    rows = [row for row in PATTERN_ROWS if row in old and row not in (Row.GATE, Row.DOT) and row not in misfits]
+    misfits = {row: old[row] for row in file_format.PATTERN_ROWS if isinstance(old.get(row), list) and len(old[row]) != steps}
+    rows = [row for row in file_format.PATTERN_ROWS if row in old and row not in (Row.GATE, Row.DOT) and row not in misfits]
     degrees = old.get(Row.DEGREE) or [None] * steps
     new_rows = {row: [] for row in [*rows, Row.GATE, Row.DOT]}
     for place, duration in enumerate(durations):
@@ -120,7 +121,7 @@ def _filler_value(*, row, value):
     """Return what a step added to fill out an old step's duration holds on a row: nothing, except that a tie covers the whole duration."""
     if row == Row.TIE:
         return value
-    return ROW_DESCRIPTIONS[row].blank()
+    return row_descriptions.ROW_DESCRIPTIONS[row].blank()
 
 
 def _given(*, old, row, place, worked_out):

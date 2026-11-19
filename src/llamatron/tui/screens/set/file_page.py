@@ -19,7 +19,7 @@ import os
 
 from rich.text import Text
 
-from llamatron.composition.file_format import FOLLOW_ACTION_CHOICES, OCTAVE_LABEL_CHOICES, STEP_SIZE_CHOICES
+from llamatron.composition import file_format
 from llamatron.tui.document import Document
 from llamatron.tui.drawing import LINE_BREAK, Style
 from llamatron.strings import help as help_text, labels, legends, marks, messages
@@ -53,8 +53,8 @@ class FilePage(FieldPage):
         document = self.document()
         setlist = self.setlist()
         follow = ChoiceField(
-            page=self, label=labels.MSG_DEFAULT_FOLLOW_ACTION_LABEL, choices=FOLLOW_ACTION_CHOICES, current=setlist.get_default_follow_action(),
-            names=[labels.MSG_FOLLOW_ACTION_NAMES[choice] for choice in FOLLOW_ACTION_CHOICES], shown=labels.MSG_FOLLOW_ACTION_NAMES[setlist.get_default_follow_action()],
+            page=self, label=labels.MSG_DEFAULT_FOLLOW_ACTION_LABEL, choices=file_format.FOLLOW_ACTION_CHOICES, current=setlist.get_default_follow_action(),
+            names=[labels.MSG_FOLLOW_ACTION_NAMES[choice] for choice in file_format.FOLLOW_ACTION_CHOICES], shown=labels.MSG_FOLLOW_ACTION_NAMES[setlist.get_default_follow_action()],
             set=document.set_default_follow_action,
         )
         # The settings in their order: the loose ones alphabetically, then the sections, each alphabetical inside.
@@ -73,11 +73,11 @@ class FilePage(FieldPage):
                   adjust=lambda offset: document.set_default_octave(octave_moved(octave=setlist.get_default_octave(), offset=offset))),
             # How octaves are numbered on screen, each choice named with where middle C falls.
             ChoiceField(
-                page=self, label=labels.MSG_OCTAVE_LABELS_LABEL, choices=OCTAVE_LABEL_CHOICES, current=setlist.get_octave_labels(),
-                names=[labels.MSG_OCTAVE_LABEL_NAMES[choice] for choice in OCTAVE_LABEL_CHOICES], shown=labels.MSG_OCTAVE_LABEL_NAMES[setlist.get_octave_labels()],
+                page=self, label=labels.MSG_OCTAVE_LABELS_LABEL, choices=file_format.OCTAVE_LABEL_CHOICES, current=setlist.get_octave_labels(),
+                names=[labels.MSG_OCTAVE_LABEL_NAMES[choice] for choice in file_format.OCTAVE_LABEL_CHOICES], shown=labels.MSG_OCTAVE_LABEL_NAMES[setlist.get_octave_labels()],
                 set=document.set_octave_labels,
             ),
-            ChoiceField(page=self, label=labels.MSG_STEP_SIZE_LABEL, choices=STEP_SIZE_CHOICES, current=str(setlist.get_step_size()), set=document.set_default_step_size),
+            ChoiceField(page=self, label=labels.MSG_STEP_SIZE_LABEL, choices=file_format.STEP_SIZE_CHOICES, current=str(setlist.get_step_size()), set=document.set_default_step_size),
             self.heading(label=labels.MSG_VISUALIZERS_SECTION, is_set=lambda: setlist.get_visualizer() is not None or bool(setlist.get_hidden_visualizers())),
             visualizer_field(page=self, current=setlist.get_visualizer(), set_name=document.set_visualizer, first=marks.MSG_NONE_SHOWN),
             hidden_visualizers_field(page=self),

@@ -22,12 +22,12 @@ from rich.text import Text
 
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
-from llamatron.composition.clip_slot import MORPH_STYLES
-from llamatron.composition.file_format import PLACED_SHAPES, PATTERN_ORDERS, shape_setting, strum_setting, FOLLOW_ACTION_CHOICES, ClipSlotSetting, DIRECTIONS, Section
+from llamatron.composition import clip_slot as clip_slot_values
+from llamatron.composition import file_format
+from llamatron.composition.file_format import shape_setting, strum_setting, ClipSlotSetting, Section
 from llamatron.playback.song_renderer import GRAB_ARROW
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.composition.clip_slot import FIRST_MORPH_STYLE
 from llamatron.composition.naming import new_name, words
 from llamatron.tui.text import clock, sorted_names
 from llamatron.tui.drawing import NOTHING, Style
@@ -217,8 +217,8 @@ class ClipPage(FieldPage):
         return self.moving and isinstance(row, PatternRow) and row.place == place
 
     def pattern_order_field(self):
-        return ChoiceField(page=self, label=labels_text.MSG_PATTERN_ORDER_LABEL, choices=PATTERN_ORDERS, current=self.clip_slot().get_pattern_order(),
-                           names=[labels_text.MSG_PATTERN_ORDER_NAMES[order] for order in PATTERN_ORDERS],
+        return ChoiceField(page=self, label=labels_text.MSG_PATTERN_ORDER_LABEL, choices=file_format.PATTERN_ORDERS, current=self.clip_slot().get_pattern_order(),
+                           names=[labels_text.MSG_PATTERN_ORDER_NAMES[order] for order in file_format.PATTERN_ORDERS],
                            shown=labels_text.MSG_PATTERN_ORDER_NAMES[self.clip_slot().get_pattern_order()],
                            set=lambda order: self.set_value(setting=ClipSlotSetting.PATTERN_ORDER, value=order))
 
@@ -291,15 +291,15 @@ class ClipPage(FieldPage):
         self.set_value(setting=ClipSlotSetting.DIRECTION, value=direction)
 
     def step_direction(self, offset):
-        options = [None, *DIRECTIONS]
+        options = [None, *file_format.DIRECTIONS]
         place = options.index(self.clip_slot().get_direction())
         self.set_direction(options[(place + offset) % len(options)])
 
     def pick_direction(self):
-        options = [None, *DIRECTIONS]
+        options = [None, *file_format.DIRECTIONS]
         labels = columns([
             (labels_text.MSG_PATTERN_DIRECTION_OPTION, legends.MSG_PATTERN_DIRECTION_WHAT),
-            *[(words(name), labels_text.MSG_DIRECTION_NAMES[name]) for name in DIRECTIONS],
+            *[(words(name), labels_text.MSG_DIRECTION_NAMES[name]) for name in file_format.DIRECTIONS],
         ])
         place = options.index(self.clip_slot().get_direction())
         self.ask(dialog=ChoiceDialog(title=messages.MSG_PLAY_DIRECTION_TITLE, options=labels, current=place), then=lambda chosen: self.set_direction(options[chosen]))
@@ -321,10 +321,10 @@ class ClipPage(FieldPage):
             self.tell(errors.ERR_LOOP_SCENES_TITLE, *loop_error_lines(self.document().song()))
 
     def morph_style(self):
-        return self.clip_slot().get_morph_style_name() or FIRST_MORPH_STYLE
+        return self.clip_slot().get_morph_style_name() or clip_slot_values.FIRST_MORPH_STYLE
 
     def step_style(self, offset):
-        styles = list(MORPH_STYLES)
+        styles = list(clip_slot_values.MORPH_STYLES)
         place = styles.index(self.morph_style())
         self.set_value(setting=ClipSlotSetting.MORPH_STYLE, value=styles[(place + offset) % len(styles)])
 
@@ -358,7 +358,7 @@ class ClipPage(FieldPage):
             self.follow_action_field(),
             *self.strum_section(),
             *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
-            *[field for shape in PLACED_SHAPES for field in self.shape_section(shape)],
+            *[field for shape in file_format.PLACED_SHAPES for field in self.shape_section(shape)],
             *self.register_sections(),
             # Real-time playback's buttons, which do what L does, drawn below the settings after a blank line as every page's buttons are.
             Button(label=labels_text.MSG_PLAY_LABEL, key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT),
@@ -414,8 +414,8 @@ class ClipPage(FieldPage):
     def follow_action_field(self):
         """Return the Follow action field: what the clip sends down in real-time playback when its scene is done, shown as the set's default when the clip sets none, with no (default) choice."""
         advance = self.document().setlist().follow_action_of(self.clip_slot())
-        return ChoiceField(page=self, label=labels_text.MSG_FOLLOW_ACTION_LABEL, choices=FOLLOW_ACTION_CHOICES, current=advance,
-                           names=[labels_text.MSG_FOLLOW_ACTION_NAMES[choice] for choice in FOLLOW_ACTION_CHOICES],
+        return ChoiceField(page=self, label=labels_text.MSG_FOLLOW_ACTION_LABEL, choices=file_format.FOLLOW_ACTION_CHOICES, current=advance,
+                           names=[labels_text.MSG_FOLLOW_ACTION_NAMES[choice] for choice in file_format.FOLLOW_ACTION_CHOICES],
                            shown=labels_text.MSG_FOLLOW_ACTION_NAMES[advance] if self.clip_slot().get_written_follow_action() is not None
                            else marks.MSG_FROM_SET_SHOWN.format(value=labels_text.MSG_FOLLOW_ACTION_NAMES[advance]),
                            set=lambda value: self.set_value(setting=ClipSlotSetting.FOLLOW_ACTION, value=value))

@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields of a Euclidean mask, which the track editor's + Euclid section and the Euclid editor share: hits, steps, rotation and step, and the picker of named rhythms that H opens on Hits."""
 
-from llamatron.composition.euclid import NAMED_RHYTHMS, rhythm
+from llamatron.composition import euclid
+from llamatron.composition.euclid import rhythm
 from llamatron.composition.file_format import EuclidPart
 from llamatron.composition import limits
 from llamatron.strings import labels, marks, messages
@@ -56,11 +57,11 @@ def euclid_section(*, page, value, store):
 
 def pick_rhythm(*, page, store):
     """Ask which named rhythm to use, and fill the hits and steps with it, the rotation back to none."""
-    names = list(NAMED_RHYTHMS)
-    options = [marks.MSG_RHYTHM_SHOWN.format(name=labels.MSG_RHYTHM_NAMES[name], hits=hits, steps=steps, drawn=drawn_rhythm(hits=hits, steps=steps)) for name, (hits, steps) in NAMED_RHYTHMS.items()]
+    names = list(euclid.NAMED_RHYTHMS)
+    options = [marks.MSG_RHYTHM_SHOWN.format(name=labels.MSG_RHYTHM_NAMES[name], hits=hits, steps=steps, drawn=drawn_rhythm(hits=hits, steps=steps)) for name, (hits, steps) in euclid.NAMED_RHYTHMS.items()]
 
     def chosen(place):
-        hits, steps = NAMED_RHYTHMS[names[place]]
+        hits, steps = euclid.NAMED_RHYTHMS[names[place]]
         store(EuclidPart.HITS, hits)
         store(EuclidPart.STEPS, steps)
         store(EuclidPart.ROTATE, None)

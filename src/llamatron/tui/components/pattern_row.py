@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """One row of the pattern editor: what each of its cells shows, and what its keys do when the cursor is on it."""
 
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
+from llamatron.composition import row_descriptions
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, BindsKeys
 from llamatron.strings import labels as labels_text, marks
@@ -36,7 +36,7 @@ class PatternRow(BindsKeys):
 
     def described(self):
         """Return the row's one description, which says what a step may hold on the row: its limits, its choices and what a blank step plays as (composition/row_descriptions.py)."""
-        return ROW_DESCRIPTIONS[self.name]
+        return row_descriptions.ROW_DESCRIPTIONS[self.name]
 
     def __init__(self, *, editor, name):
         self.editor = editor

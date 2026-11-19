@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Chord row: a chord symbol on a note, picked from a grid or cycled through."""
 
-from llamatron.composition.file_format import CHORD_SYMBOLS, Row
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Row
 from llamatron.composition import limits
 from llamatron.strings import labels, marks, messages
 
@@ -111,7 +112,7 @@ def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
 
     dialog = ChordDialog(
         title=messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_STEP.format(step=step + 1, pattern=editor.item)),
-        qualities=[None, *CHORD_SYMBOLS], quality_names=[messages.MSG_QUALITY_SINGLE_NOTE, *quality_names(CHORD_SYMBOLS)], inversions=[None, *limits.INVERSIONS], categories=SCALE_CATEGORIES,
+        qualities=[None, *file_format.CHORD_SYMBOLS], quality_names=[messages.MSG_QUALITY_SINGLE_NOTE, *quality_names(file_format.CHORD_SYMBOLS)], inversions=[None, *limits.INVERSIONS], categories=SCALE_CATEGORIES,
         current=step_choice(editor=editor, step=step), opens_on=opens_on, moved=moved,
         said=lambda choice: step_chord_in_words(editor=editor, step=step, choice=choice).sentences(),
         keyboard=lambda choice: step_keyboard(editor=editor, step=step, choice=choice),
@@ -143,7 +144,7 @@ class ChordRow(PatternRow):
 
     def options(self):
         """Return the values the row steps through, nothing first, each as the pattern holds it."""
-        return [None, *[chord_value(symbol) for symbol in CHORD_SYMBOLS]]
+        return [None, *[chord_value(symbol) for symbol in file_format.CHORD_SYMBOLS]]
 
     def cycle(self, offset):
         options = self.options()

@@ -22,7 +22,8 @@ on Pattern itself.
 """
 
 from llamatron.composition import limits
-from llamatron.composition.file_format import ACCIDENTALS, PATTERN_ROWS, PITCH_ROWS, Row
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Row
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.row_descriptions import row_described, rows_where
 from llamatron.music import midi
@@ -32,7 +33,7 @@ from llamatron.support.revised import notes_change
 
 # What makes a step's note, which a rest holds none of: every row but the ones a rest keeps.
 REST_ROWS = rows_where(lambda row: row.is_kept_by_a_rest())
-SOUND_ROWS = [row for row in PATTERN_ROWS if row not in REST_ROWS]
+SOUND_ROWS = [row for row in file_format.PATTERN_ROWS if row not in REST_ROWS]
 # The octaves a chord may be moved by when voice leading may move one: none first, so that a tie keeps the octave written.
 OCTAVE_SHIFTS = (0, -1, 1)
 NO_SHIFT = (0,)
@@ -68,7 +69,7 @@ class PatternMunges:
 
     def _pitch(self, step):
         """Return what a step plays, apart from how long and how loud: its degree, octave, sharp or flat and chord."""
-        return [own_value(self._held(row=row, step=step)) for row in PITCH_ROWS]
+        return [own_value(self._held(row=row, step=step)) for row in file_format.PITCH_ROWS]
 
     def _written_notes(self):
         """Return the steps that hold a note of their own, leaving out a step that only grabs one."""
@@ -124,7 +125,7 @@ class PatternMunges:
     def _repitch(self, pitches):
         """Give the steps that hold a note new pitches, one each, in order."""
         for step, pitch in zip(self._written_notes(), pitches):
-            for row, value in zip(PITCH_ROWS, pitch):
+            for row, value in zip(file_format.PITCH_ROWS, pitch):
                 self._hold(row=row, step=step, value=value)
 
     def randomize_pitches(self):
@@ -229,7 +230,7 @@ def half_steps_of(*, tone, scale):
     degree, octave, accidental = tone
     steps = scale.get_half_steps()
     octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
-    return (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0)
+    return (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
 
 
 def inverted(*, pitches, inversion):

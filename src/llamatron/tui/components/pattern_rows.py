@@ -25,8 +25,9 @@ each is headed by a row (SectionRow) that Space or Enter opens or closes, PgUp a
 PgDn jump between the headings, and which sections are open is kept on the app for the session.
 """
 
-from llamatron.composition.file_format import CC_ROWS, KEYSWITCH_SLOT_COUNT, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, STATEMENT_OF_ROW, STATEMENT_ROWS, Row, StepStatement
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Row, StepStatement
+from llamatron.composition import row_descriptions
 from llamatron.tui.components.accidental_row import AccidentalRow
 from llamatron.tui.components.add_row import AddRow
 from llamatron.tui.components.cc_row import CcRow
@@ -65,29 +66,29 @@ SECTIONS = {
     # The Keyswitch row is shown as a row for each slot of the instrument's Keyswitch Map, which the pattern and its instrument decide (section_rows).
     RowSection.KEYSWITCH: [Row.KEYSWITCH],
     RowSection.ADVANCED: [Row.PROBABILITY, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB],
-    RowSection.CC: [*CC_ROWS, Row.SLIDE],
+    RowSection.CC: [*file_format.CC_ROWS, Row.SLIDE],
     # The register sections read in the order a step works them out: sets, then adds, then the uses.
-    RowSection.REGISTER_MOD: [*REGISTER_SET_ROWS.values(), *REGISTER_ADD_ROWS.values()],
-    RowSection.REGISTER_APPLY: [*REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values()],
+    RowSection.REGISTER_MOD: [*file_format.REGISTER_SET_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values()],
+    RowSection.REGISTER_APPLY: [*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()],
     # A step's statements, in the order a step reads them.
-    RowSection.STOP_WHEN: [*STATEMENT_ROWS[StepStatement.STOP]],
-    RowSection.RESTART_WHEN: [*STATEMENT_ROWS[StepStatement.RESTART]],
-    RowSection.MUTE_WHEN: [*STATEMENT_ROWS[StepStatement.MUTE]],
+    RowSection.STOP_WHEN: [*file_format.STATEMENT_ROWS[StepStatement.STOP]],
+    RowSection.RESTART_WHEN: [*file_format.STATEMENT_ROWS[StepStatement.RESTART]],
+    RowSection.MUTE_WHEN: [*file_format.STATEMENT_ROWS[StepStatement.MUTE]],
 }
 # The component that draws and edits each row.
 ROW_CLASSES = {
     Row.DEGREE: DegreeRow, Row.GATE: GateRow, Row.DOT: DotRow, Row.ACCIDENTAL: AccidentalRow, Row.OCTAVE: OctaveRow,
     Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.VELOCITY: NumberRow, Row.ACCENT: AccentRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
     Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.KEYSWITCH: KeyswitchSlotRow, Row.SLIDE: SlideRow,
-    **dict.fromkeys(CC_ROWS, CcRow),
-    **dict.fromkeys(REGISTER_NOTE_ROWS.values(), RegisterRow),
-    **dict.fromkeys(REGISTER_VELOCITY_ROWS.values(), RegisterRow),
-    **dict.fromkeys(REGISTER_ADD_ROWS.values(), AddRow),
-    **dict.fromkeys(REGISTER_SET_ROWS.values(), SetRow),
-    **dict.fromkeys(STATEMENT_OF_ROW, StatementRow),
+    **dict.fromkeys(file_format.CC_ROWS, CcRow),
+    **dict.fromkeys(file_format.REGISTER_NOTE_ROWS.values(), RegisterRow),
+    **dict.fromkeys(file_format.REGISTER_VELOCITY_ROWS.values(), RegisterRow),
+    **dict.fromkeys(file_format.REGISTER_ADD_ROWS.values(), AddRow),
+    **dict.fromkeys(file_format.REGISTER_SET_ROWS.values(), SetRow),
+    **dict.fromkeys(file_format.STATEMENT_OF_ROW, StatementRow),
 }
 # The slot each row of the Keyswitch section is for, by the row's name in the rows view.
-SLOT_OF_ROW = {slot_row_name(slot): slot for slot in range(KEYSWITCH_SLOT_COUNT)}
+SLOT_OF_ROW = {slot_row_name(slot): slot for slot in range(file_format.KEYSWITCH_SLOT_COUNT)}
 KEYSWITCH_SLOTS_KEY = 'keyswitch slots'
 # The arrows that move the cursor along the steps; the others move it between rows.
 STEP_ARROWS = (Key.LEFT, Key.RIGHT)
@@ -134,10 +135,10 @@ class PatternRows(BindsKeys):
     def section_rows(self, section):
         """Return the names of a section's rows, leaving out those a drum pattern has no use for."""
         if section == RowSection.KEYSWITCH:
-            return [] if self.editor.is_drum() and not ROW_DESCRIPTIONS[Row.KEYSWITCH].is_in_drum_patterns() else [slot_row_name(slot) for slot in self.keyswitch_slots()[0]]
+            return [] if self.editor.is_drum() and not row_descriptions.ROW_DESCRIPTIONS[Row.KEYSWITCH].is_in_drum_patterns() else [slot_row_name(slot) for slot in self.keyswitch_slots()[0]]
         names = SECTIONS[section]
         if self.editor.is_drum():
-            names = [name for name in names if ROW_DESCRIPTIONS[name].is_in_drum_patterns()]
+            names = [name for name in names if row_descriptions.ROW_DESCRIPTIONS[name].is_in_drum_patterns()]
         return names
 
     def shown_sections(self):
@@ -159,7 +160,7 @@ class PatternRows(BindsKeys):
 
     def is_empty_keyswitch_section(self, section):
         """Return whether a section is the Keyswitch section with no rows yet, whose heading still shows, so that its hint can say why, unless a drum pattern has no use for keyswitches."""
-        return section == RowSection.KEYSWITCH and (not self.editor.is_drum() or ROW_DESCRIPTIONS[Row.KEYSWITCH].is_in_drum_patterns())
+        return section == RowSection.KEYSWITCH and (not self.editor.is_drum() or row_descriptions.ROW_DESCRIPTIONS[Row.KEYSWITCH].is_in_drum_patterns())
 
     def section_hint(self, section):
         """Return what the header says while the cursor is in a section, or None for a section with nothing to say."""

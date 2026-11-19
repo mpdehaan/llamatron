@@ -20,7 +20,8 @@ import os
 import tempfile
 import unittest
 
-from llamatron.composition.file_format import OPEN_GENERATOR_TYPES, GeneratorKind, Section, SetlistSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, Section, SetlistSetting
 from llamatron.composition.setlist import Setlist
 from tests.support.rendering import as_setlist
 
@@ -84,17 +85,17 @@ class TestOpenGeneratorTypes(unittest.TestCase):
         before = setlist.to_data()
         setlist.show_generator_type(kind=GeneratorKind.ARP, opened=True)
         self.assertEqual(setlist.to_data(), before)
-        self.assertNotIn(OPEN_GENERATOR_TYPES, setlist.to_data())
+        self.assertNotIn(file_format.OPEN_GENERATOR_TYPES, setlist.to_data())
 
     def test_a_file_keeps_the_open_types_and_forgets_a_type_with_no_generator(self):
         data = a_set().to_data()
-        data[OPEN_GENERATOR_TYPES] = [GeneratorKind.ARP, GeneratorKind.DRIFT, UNKNOWN]
+        data[file_format.OPEN_GENERATOR_TYPES] = [GeneratorKind.ARP, GeneratorKind.DRIFT, UNKNOWN]
         self.assertEqual(Setlist.from_data(data=data).get_open_generator_types(), [GeneratorKind.ARP])
 
     def test_a_file_holding_anything_else_there_still_opens(self):
         for held in (A_NUMBER, [A_NUMBER, GeneratorKind.ARP], {GeneratorKind.ARP: True}):
             data = a_set().to_data()
-            data[OPEN_GENERATOR_TYPES] = held
+            data[file_format.OPEN_GENERATOR_TYPES] = held
             self.assertIn(Setlist.from_data(data=data).get_open_generator_types(), ([], [GeneratorKind.ARP]))
 
     def test_an_open_type_is_written_to_the_file_and_read_back(self):

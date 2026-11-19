@@ -17,9 +17,10 @@
 """Tests for the Guitarify editor, its two sections, and the editor of its bar of strokes."""
 
 from tests.support.ui_testing import PICKED, UITest
-from llamatron.composition.file_format import STROKES, GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
-from llamatron.composition.generator_settings import DEFAULT_GUITAR_SPREAD, EVERY_STRING, MAX_GUITAR_BAR, MAX_GUITAR_FRET
-from llamatron.composition.guitar_bars import DEFAULT_BAR, READY_BARS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
+from llamatron.composition import generator_settings
+from llamatron.composition import guitar_bars
 from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -53,7 +54,7 @@ class TestGuitarifyAdded(UITest):
         guitar = self.document.song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=name)
         self.assertTrue(guitar.shapes())
         self.assertTrue(guitar.strikes())
-        self.assertEqual(guitar.get_bar(), list(READY_BARS[DEFAULT_BAR].strokes))
+        self.assertEqual(guitar.get_bar(), list(guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].strokes))
         self.assertEqual(guitar.to_data(), {})
 
 
@@ -107,8 +108,8 @@ class TestGuitarifyEditor(GuitarifyTest):
         await self.press(keybindings.GuitarifyEditor.MORE)
         self.assertEqual(self.guitar().get_position(), 1)
         self.assertIn(marks.MSG_GUITAR_FRET.format(fret=1), self.text())
-        await self.press(*[keybindings.GuitarifyEditor.MORE] * (MAX_GUITAR_FRET + 1))
-        self.assertEqual(self.guitar().get_position(), MAX_GUITAR_FRET)
+        await self.press(*[keybindings.GuitarifyEditor.MORE] * (generator_settings.MAX_GUITAR_FRET + 1))
+        self.assertEqual(self.guitar().get_position(), generator_settings.MAX_GUITAR_FRET)
         await self.press(Key.BACKSPACE)
         self.assertNotIn(GuitarifySetting.POSITION, self.written())
 
@@ -136,21 +137,21 @@ class TestGuitarifyEditor(GuitarifyTest):
 
     async def test_the_spread_is_shown_in_milliseconds_and_left_out_at_its_default(self):
         await self.select_field(labels.MSG_GUITAR_SPREAD_LABEL)
-        self.assertIn(marks.MSG_GUITAR_MILLISECONDS.format(milliseconds=DEFAULT_GUITAR_SPREAD), self.text())
+        self.assertIn(marks.MSG_GUITAR_MILLISECONDS.format(milliseconds=generator_settings.DEFAULT_GUITAR_SPREAD), self.text())
         await self.press(keybindings.GuitarifyEditor.MORE)
-        self.assertEqual(self.guitar().get_spread(), DEFAULT_GUITAR_SPREAD + 1)
+        self.assertEqual(self.guitar().get_spread(), generator_settings.DEFAULT_GUITAR_SPREAD + 1)
         await self.press(keybindings.GuitarifyEditor.LESS)
         self.assertNotIn(GuitarifySetting.SPREAD, self.written())
 
     async def test_upstroke_strings_down_to_none_means_every_string(self):
         await self.select_field(labels.MSG_GUITAR_UPSTROKE_LABEL)
         await self.press(*[keybindings.GuitarifyEditor.LESS] * 6)
-        self.assertEqual(self.guitar().get_upstroke(), EVERY_STRING)
+        self.assertEqual(self.guitar().get_upstroke(), generator_settings.EVERY_STRING)
         self.assertIn(marks.MSG_GUITAR_EVERY_STRING, self.text())
 
     async def test_the_bar_field_names_the_ready_made_bar_and_opens_its_editor(self):
         await self.select_field(labels.MSG_GUITAR_BAR_LABEL)
-        self.assertIn(labels.MSG_READY_BAR_NAMES[DEFAULT_BAR], self.text())
+        self.assertIn(labels.MSG_READY_BAR_NAMES[guitar_bars.DEFAULT_BAR], self.text())
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, GuitarBarEditor)
         await self.press(keybindings.GuitarBarEditor.MORE, Key.ESCAPE)
@@ -167,7 +168,7 @@ class TestGuitarBarEditor(GuitarifyTest):
         self.assertIsInstance(self.app.screen, GuitarBarEditor)
 
     def default(self):
-        return READY_BARS[DEFAULT_BAR]
+        return guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR]
 
     async def test_it_shows_each_cells_stroke_and_says_the_cursors_in_words(self):
         text = self.text()
@@ -181,11 +182,11 @@ class TestGuitarBarEditor(GuitarifyTest):
     async def test_the_brackets_step_the_cursors_stroke_and_stop_at_both_ends(self):
         first = self.default().strokes[FIRST_CELL]
         await self.press(keybindings.GuitarBarEditor.MORE)
-        self.assertEqual(self.guitar().get_bar()[FIRST_CELL], STROKES[STROKES.index(first) + 1])
-        await self.press(*[keybindings.GuitarBarEditor.MORE] * len(STROKES))
-        self.assertEqual(self.guitar().get_bar()[FIRST_CELL], STROKES[-1])
-        await self.press(*[keybindings.GuitarBarEditor.LESS] * (len(STROKES) + 1))
-        self.assertEqual(self.guitar().get_bar()[FIRST_CELL], STROKES[0])
+        self.assertEqual(self.guitar().get_bar()[FIRST_CELL], file_format.STROKES[file_format.STROKES.index(first) + 1])
+        await self.press(*[keybindings.GuitarBarEditor.MORE] * len(file_format.STROKES))
+        self.assertEqual(self.guitar().get_bar()[FIRST_CELL], file_format.STROKES[-1])
+        await self.press(*[keybindings.GuitarBarEditor.LESS] * (len(file_format.STROKES) + 1))
+        self.assertEqual(self.guitar().get_bar()[FIRST_CELL], file_format.STROKES[0])
         self.assertEqual(self.guitar().get_bar()[SECOND_CELL:], list(self.default().strokes[SECOND_CELL:]))
 
     async def test_space_accents_the_cursors_cell(self):
@@ -202,9 +203,9 @@ class TestGuitarBarEditor(GuitarifyTest):
         self.assertEqual(self.guitar().get_accents(), [False, *self.default().accents])
         await self.press(keybindings.GuitarBarEditor.REMOVE_CELL)
         self.assertEqual(self.guitar().get_bar(), list(self.default().strokes))
-        await self.press(*[keybindings.GuitarBarEditor.INSERT_CELL] * MAX_GUITAR_BAR)
-        self.assertEqual(len(self.guitar().get_bar()), MAX_GUITAR_BAR)
-        await self.press(*[keybindings.GuitarBarEditor.REMOVE_CELL] * (MAX_GUITAR_BAR + count))
+        await self.press(*[keybindings.GuitarBarEditor.INSERT_CELL] * generator_settings.MAX_GUITAR_BAR)
+        self.assertEqual(len(self.guitar().get_bar()), generator_settings.MAX_GUITAR_BAR)
+        await self.press(*[keybindings.GuitarBarEditor.REMOVE_CELL] * (generator_settings.MAX_GUITAR_BAR + count))
         self.assertEqual(len(self.guitar().get_bar()), 1)
 
     async def test_the_cursor_stops_at_both_ends(self):
@@ -222,17 +223,17 @@ class TestGuitarBarEditor(GuitarifyTest):
     async def test_a_ready_made_bar_replaces_strokes_accents_and_cell_length(self):
         await self.press(keybindings.GuitarBarEditor.READY_BARS)
         await self.pick(labels.MSG_READY_BAR_NAMES[ReadyBar.GALLOP])
-        gallop = READY_BARS[ReadyBar.GALLOP]
+        gallop = guitar_bars.READY_BARS[ReadyBar.GALLOP]
         self.assertEqual((self.guitar().get_cell(), self.guitar().get_bar(), self.guitar().get_accents()), (gallop.cell, list(gallop.strokes), list(gallop.accents)))
 
     async def test_the_picker_opens_on_the_bar_it_holds_and_esc_changes_nothing(self):
         await self.press(keybindings.GuitarBarEditor.READY_BARS)
-        self.assertEqual(self.app.screen.options[self.app.screen.place], labels.MSG_READY_BAR_NAMES[DEFAULT_BAR])
+        self.assertEqual(self.app.screen.options[self.app.screen.place], labels.MSG_READY_BAR_NAMES[guitar_bars.DEFAULT_BAR])
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, GuitarBarEditor)
         self.assertEqual(self.guitar().to_data(), {})
 
     async def test_a_long_bar_scrolls_with_the_cursor(self):
-        await self.press(*[keybindings.GuitarBarEditor.INSERT_CELL] * MAX_GUITAR_BAR, *[Key.RIGHT] * MAX_GUITAR_BAR)
-        self.assertEqual(self.app.screen.step, MAX_GUITAR_BAR - 1)
-        self.assertIn(str(MAX_GUITAR_BAR), self.text())
+        await self.press(*[keybindings.GuitarBarEditor.INSERT_CELL] * generator_settings.MAX_GUITAR_BAR, *[Key.RIGHT] * generator_settings.MAX_GUITAR_BAR)
+        self.assertEqual(self.app.screen.step, generator_settings.MAX_GUITAR_BAR - 1)
+        self.assertIn(str(generator_settings.MAX_GUITAR_BAR), self.text())

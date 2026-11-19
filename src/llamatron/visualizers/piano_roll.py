@@ -26,7 +26,7 @@ kick, snare, hats, toms, cymbal and the rest, where each hit is a short mark. Th
 The amounts are named constants here, to tune by eye.
 """
 
-from llamatron.composition.file_format import LIVE_OCTAVE_OFFSET
+from llamatron.composition import file_format
 from llamatron.strings import visualizers
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.heard import SILENCE
@@ -226,7 +226,7 @@ class PianoRoll(Visualizer):
             pitch = top - offset
             row = LEGEND_ROWS + offset
             if is_octave_line(pitch):
-                label = visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=pitch // HALF_STEPS_PER_OCTAVE - LIVE_OCTAVE_OFFSET)
+                label = visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=pitch // HALF_STEPS_PER_OCTAVE - file_format.LIVE_OCTAVE_OFFSET)
                 for column in range(width):
                     characters[row][column] = label[column] if column < len(label) else LINE_CHARACTER
                     colours[row][column] = LABEL_COLOUR if column < len(label) else LINE_COLOUR

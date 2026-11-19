@@ -19,21 +19,22 @@ InvalidValue when it's wrong, and leaves the object as it was."""
 
 import unittest
 
-from llamatron.composition.clip_slot import ClipSlot, MORPH_STYLES
+from llamatron.composition import clip_slot
+from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.chain import Chain
 from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import (
-    CC_ROWS, REGISTER_NAMES, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampPart, RampWay, RegisterName, RegisterSetting, Row,
-    SceneSetting, Section, TrackSetting,
-)
-from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, NO_OFFSET
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampPart, RampWay, RegisterName, RegisterSetting, Row, SceneSetting, Section, TrackSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.music import midi
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene, TempoRamp
-from llamatron.composition.setlist import NO_TEXT, Setlist
+from llamatron.composition import setlist as setlist_values
+from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.track import Track
 from llamatron.music.note import NoteName
@@ -74,7 +75,7 @@ NEW_OCTAVE_RANGE = 2
 A_STEP_VALUE = 7
 TOO_FAR = limits.MAX_TRANSPOSE + 1
 NOT_A_CC_NUMBER = midi.MAX_CC_NUMBER + 1
-NO_SUCH_LANE = len(CC_ROWS)
+NO_SUCH_LANE = len(file_format.CC_ROWS)
 FIRST_LANE = 0
 # Register settings in and out of order.
 LOW = 2
@@ -87,7 +88,7 @@ PAST_THE_OFFSETS = 2
 ONE_UP = -1
 ONE_DOWN = 1
 TWO_DOWN = 2
-FIRST_STYLE = next(iter(MORPH_STYLES))
+FIRST_STYLE = next(iter(clip_slot.MORPH_STYLES))
 TEXT = '  Title  '
 
 
@@ -324,7 +325,7 @@ class TestTrack(SetterTestCase):
         self.track.set_mute(True)
         self.track.set_transpose(limits.MAX_TRANSPOSE)
         self.track.set_cc_number(lane=FIRST_LANE, number=A_MOD_WHEEL)
-        self.assertEqual(self.track.get_cc_numbers(), [A_MOD_WHEEL] + [None] * (len(CC_ROWS) - 1))
+        self.assertEqual(self.track.get_cc_numbers(), [A_MOD_WHEEL] + [None] * (len(file_format.CC_ROWS) - 1))
         self.track.set_drum(False)
         self.track.set_mute(False)
         self.track.set_transpose(defaults.DEFAULT_TRANSPOSE)
@@ -409,7 +410,7 @@ class TestGeneratorSettings(SetterTestCase):
         self.assertRefused(self.arp, self.arp.set_offset, step=FIRST, offset=AN_OFFSET)
         self.arp.set_setting(name=ArpSetting.OFFSETS, value=[AN_OFFSET])
         self.arp.insert_offset(FIRST)
-        self.assertEqual(self.arp.get_offsets(), [NO_OFFSET, AN_OFFSET])
+        self.assertEqual(self.arp.get_offsets(), [generator_settings.NO_OFFSET, AN_OFFSET])
         self.arp.set_offset(step=FIRST, offset=ANOTHER_OFFSET)
         self.assertRefused(self.arp, self.arp.set_offset, step=PAST_THE_OFFSETS, offset=AN_OFFSET)
         self.arp.remove_offset(FIRST)
@@ -438,8 +439,8 @@ class TestSong(SetterTestCase):
         self.assertRefused(setlist, setlist.set_version, NOT_A_NAME)
         setlist.set_title(TEXT)
         self.assertEqual(setlist.get_title(), TEXT.strip())
-        setlist.set_title(NO_TEXT)
-        self.assertEqual(setlist.get_title(), NO_TEXT)
+        setlist.set_title(setlist_values.NO_TEXT)
+        self.assertEqual(setlist.get_title(), setlist_values.NO_TEXT)
 
     def test_names_are_unique_within_a_section_and_have_to_exist(self):
         setlist = self.song.get_setlist()
@@ -481,7 +482,7 @@ class TestSong(SetterTestCase):
         self.assertEqual(self.song.get_register(RegisterName.DX).get_maximum(), HIGH)
         self.assertRefused(self.song, self.song.set_register_setting, name=RegisterName.AX, setting=RegisterSetting.DEFAULT, value=TOO_HIGH)
         self.assertRefused(self.song, self.song.set_register_setting, name=NOT_A_NAME, setting=RegisterSetting.DEFAULT, value=LOW)
-        for name in REGISTER_NAMES:
+        for name in file_format.REGISTER_NAMES:
             self.song.set_register_setting(name=name, setting=RegisterSetting.MAXIMUM, value=None)
         self.assertNotIn(Section.REGISTERS, self.song.to_data())
 

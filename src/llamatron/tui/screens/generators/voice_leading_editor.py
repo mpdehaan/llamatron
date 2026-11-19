@@ -16,7 +16,8 @@
 """The Voice leading editor page: one voice leading's name, the octaves its chords stay within, and whether the root stays in the bass."""
 
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition.generator_settings import DEFAULT_VOICING_HIGHEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE, VoiceLeadingSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import VoiceLeadingSetting
 from llamatron.music import note
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
@@ -51,11 +52,11 @@ class VoiceLeadingEditor(ShowsNamedItem, FieldPage):
             NameField(value=lambda: self.item, rename=self.rename),
             octave_field(
                 page=self, label=labels.MSG_LOWEST_OCTAVE_LABEL, current=voicing.get_lowest_octave, lowest=lambda: note.MIN_OCTAVE, highest=voicing.get_highest_octave,
-                default=DEFAULT_VOICING_LOWEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.LOWEST_OCTAVE, value=octave),
+                default=generator_settings.DEFAULT_VOICING_LOWEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.LOWEST_OCTAVE, value=octave),
             ),
             octave_field(
                 page=self, label=labels.MSG_HIGHEST_OCTAVE_LABEL, current=voicing.get_highest_octave, lowest=voicing.get_lowest_octave, highest=lambda: note.MAX_OCTAVE,
-                default=DEFAULT_VOICING_HIGHEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.HIGHEST_OCTAVE, value=octave),
+                default=generator_settings.DEFAULT_VOICING_HIGHEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.HIGHEST_OCTAVE, value=octave),
             ),
             Toggle(label=labels.MSG_ROOT_IN_BASS_LABEL, on=voicing.keeps_root_in_bass(), set=lambda on: self.store(setting=VoiceLeadingSetting.ROOT_IN_BASS, value=on or None)),
             restart_field(self),

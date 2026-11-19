@@ -20,7 +20,8 @@ from unittest import mock
 from tests.support.ui_testing import LEAD, UITest
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, labels, marks, messages, names
-from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, Section, SetlistSetting, TrackSetting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.music import midi
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -155,7 +156,7 @@ class TestInstrumentEditor(UITest):
             await self.select_field(labels.MSG_DEVICE_LABEL)
             await self.press(Key.ENTER)
             self.assertIsInstance(self.app.screen, ChoiceDialog)
-            self.assertEqual(self.app.screen.options, [marks.MSG_NO_DEVICE_SHOWN, FLUIDSYNTH_DEVICE, *sorted(PORTS)])
+            self.assertEqual(self.app.screen.options, [marks.MSG_NO_DEVICE_SHOWN, file_format.FLUIDSYNTH_DEVICE, *sorted(PORTS)])
             await self.press(Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER)
         self.assertEqual(self.instrument().get_device(), sorted(PORTS)[1])
         self.assertEqual(self.field_text(labels.MSG_DEVICE_LABEL), sorted(PORTS)[1])
@@ -167,7 +168,7 @@ class TestInstrumentEditor(UITest):
         with mock.patch(PORT_NAMES, return_value=list(PORTS)):
             await self.select_field(labels.MSG_DEVICE_LABEL)
             await self.press(Key.ENTER)
-            self.assertEqual(self.app.screen.options, [marks.MSG_NO_DEVICE_SHOWN, FLUIDSYNTH_DEVICE, *sorted([*PORTS, GONE_PORT])])
+            self.assertEqual(self.app.screen.options, [marks.MSG_NO_DEVICE_SHOWN, file_format.FLUIDSYNTH_DEVICE, *sorted([*PORTS, GONE_PORT])])
             self.assertEqual(self.app.screen.place, self.app.screen.options.index(GONE_PORT))
             await self.press(Key.ESCAPE)
         self.assertEqual(self.instrument().get_device(), GONE_PORT)
@@ -179,7 +180,7 @@ class TestInstrumentEditor(UITest):
             # The tracker's own FluidSynth port is FluidSynth, chosen as itself, never offered as a port.
             self.assertNotIn(FLUIDSYNTH_PORT, self.app.screen.options)
             await self.press(Key.DOWN, Key.ENTER)
-        self.assertEqual(self.instrument().get_device(), FLUIDSYNTH_DEVICE)
+        self.assertEqual(self.instrument().get_device(), file_format.FLUIDSYNTH_DEVICE)
         self.assertTrue(self.instrument().uses_fluidsynth())
         self.assertEqual(self.field_text(labels.MSG_CHANNEL_LABEL), marks.MSG_AUTO_CHANNEL_SHOWN)
         await self.select_field(labels.MSG_CHANNEL_LABEL)

@@ -29,7 +29,8 @@ import unittest
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.file_format import Row
-from llamatron.composition.generator_settings import LINES_IN_BARS, PHRASING_DEFAULTS, MusicianSetting, PhrasingSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.generators import musician
 from llamatron.generators.phrasing import BREATHS, JOINS, RISES
 from llamatron.macro_composer import interplay
@@ -173,7 +174,7 @@ def fresh(*, genre, subgenre):
         choices.set_way(trait=trait, value=choices.get_way(trait))
     return choices
 # Every value each setting of a Phrasing takes.
-PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: LINES_IN_BARS, PhrasingSetting.BREATH: BREATHS, PhrasingSetting.RISE_AND_FALL: RISES, PhrasingSetting.NOTES: JOINS}
+PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: generator_settings.LINES_IN_BARS, PhrasingSetting.BREATH: BREATHS, PhrasingSetting.RISE_AND_FALL: RISES, PhrasingSetting.NOTES: JOINS}
 
 
 def song_of(choices):
@@ -434,7 +435,7 @@ def every_choice(choices):
         yield TUNE_PHRASING_CHOICE, False, lambda made: made.set_tune_phrasing(False), [nothing_first]
         for setting, offered in PHRASING_OFFERED_VALUES.items():
             for value in offered:
-                if value != PHRASING_DEFAULTS[setting]:
+                if value != generator_settings.PHRASING_DEFAULTS[setting]:
                     yield TUNE_PHRASING_CHOICE, (setting, value), lambda made, setting=setting, value=value: made.set_tune_phrasing({setting: value}), [nothing_first]
     if choices.has_musicians():
         # A player's Musician of the person's own, for each player whose clips run one: the loudest.

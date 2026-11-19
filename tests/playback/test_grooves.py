@@ -24,7 +24,8 @@ import mido
 
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition.groove import FACTORY_GROOVE_NAMES, FactoryGroove, Groove, GROOVE_CELLS, PUSH_AMOUNT, STRAIGHT, new_groove
+from llamatron.composition import groove as groove_values
+from llamatron.composition.groove import FactoryGroove, Groove, new_groove
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
@@ -49,7 +50,7 @@ ONE_CELL_IN_THREE = 3
 MOD_WHEEL = 1
 CC_VALUE = 64
 # A full bar of 16ths, each a degree of the scale.
-A_BAR_OF_SIXTEENTHS = [(1, SIXTEENTH)] * GROOVE_CELLS
+A_BAR_OF_SIXTEENTHS = [(1, SIXTEENTH)] * groove_values.GROOVE_CELLS
 # Playing one note every quarter: four steps of 16ths, the first with a note.
 QUARTER_STEPS = [(1, SIXTEENTH), (None, SIXTEENTH), (None, SIXTEENTH), (None, SIXTEENTH)]
 TOO_LONG = '2'
@@ -119,15 +120,15 @@ class TestGrooveFiles(unittest.TestCase):
 
     def test_every_set_has_the_factory_grooves_and_can_add_its_own(self):
         setlist = Setlist.new()
-        self.assertEqual(setlist.get_groove_names(), FACTORY_GROOVE_NAMES)
+        self.assertEqual(setlist.get_groove_names(), groove_values.FACTORY_GROOVE_NAMES)
         self.assertEqual(setlist.get_own_groove_names(), [])
         self.assertTrue(setlist.get_groove(FactoryGroove.NONE).is_straight())
         self.assertFalse(setlist.get_groove(FactoryGroove.SWING_58).is_straight())
-        self.assertEqual(setlist.get_groove(FactoryGroove.SWING_58).get_cells(), [STRAIGHT, SWING_58_AMOUNT] * (GROOVE_CELLS // 2))
+        self.assertEqual(setlist.get_groove(FactoryGroove.SWING_58).get_cells(), [groove_values.STRAIGHT, SWING_58_AMOUNT] * (groove_values.GROOVE_CELLS // 2))
         self.assertEqual(setlist.get_groove(FactoryGroove.EIGHTH_SWING_66).get_cell_length(), Rational(1, 8))
-        self.assertEqual(setlist.get_groove(FactoryGroove.PUSH).get_cells()[1], PUSH_AMOUNT)
+        self.assertEqual(setlist.get_groove(FactoryGroove.PUSH).get_cells()[1], groove_values.PUSH_AMOUNT)
         setlist.add_item(section=Section.GROOVES, name=LATE, item=new_groove())
-        self.assertEqual(setlist.get_groove_names(), [*FACTORY_GROOVE_NAMES, LATE])
+        self.assertEqual(setlist.get_groove_names(), [*groove_values.FACTORY_GROOVE_NAMES, LATE])
         with self.assertRaises(InvalidValue):
             setlist.add_item(section=Section.GROOVES, name=FactoryGroove.PUSH, item=new_groove())
         with self.assertRaises(InvalidValue):
@@ -138,7 +139,7 @@ class TestGrooveFiles(unittest.TestCase):
     def test_a_factory_groove_cannot_be_changed_through_the_set(self):
         setlist = Setlist.new()
         setlist.get_groove(FactoryGroove.SWING_58).set_cell(step=0, amount=limits.MAX_GROOVE_AMOUNT)
-        self.assertEqual(setlist.get_groove(FactoryGroove.SWING_58).get_cells()[0], STRAIGHT)
+        self.assertEqual(setlist.get_groove(FactoryGroove.SWING_58).get_cells()[0], groove_values.STRAIGHT)
 
     def test_editing_a_groove_checks_its_cells(self):
         groove = new_groove()
@@ -147,9 +148,9 @@ class TestGrooveFiles(unittest.TestCase):
         with self.assertRaises(InvalidValue):
             groove.set_cell(step=1, amount=limits.MAX_GROOVE_AMOUNT + 1)
         with self.assertRaises(InvalidValue):
-            groove.set_cell(step=GROOVE_CELLS, amount=0)
+            groove.set_cell(step=groove_values.GROOVE_CELLS, amount=0)
         groove.insert_cell(0)
-        self.assertEqual(len(groove.get_cells()), GROOVE_CELLS + 1)
+        self.assertEqual(len(groove.get_cells()), groove_values.GROOVE_CELLS + 1)
         for _ in range(limits.MAX_GROOVE_CELLS):
             groove.insert_cell(0)
         self.assertEqual(len(groove.get_cells()), limits.MAX_GROOVE_CELLS)
@@ -169,7 +170,7 @@ class TestGrooveTiming(unittest.TestCase):
 
     def test_swing_delays_every_second_sixteenth_and_keeps_the_gate(self):
         a_clip = lead_clip(groove_song(cells=[0, SWING_58_AMOUNT], song_groove=LATE))
-        self.assertEqual(onsets(a_clip), [place * SIXTEENTH + (SWING_58_DELAY if place % 2 else 0) for place in range(GROOVE_CELLS)])
+        self.assertEqual(onsets(a_clip), [place * SIXTEENTH + (SWING_58_DELAY if place % 2 else 0) for place in range(groove_values.GROOVE_CELLS)])
         events, _ = timed_events(clip=a_clip, scale=a_clip.get_scale())
         # Every note keeps its gate, except the last, which the end of the clip cuts as it always does.
         *within, last = sorted(events)
@@ -180,19 +181,19 @@ class TestGrooveTiming(unittest.TestCase):
     def test_the_factory_swings_match_their_percentages(self):
         a_clip = lead_clip(groove_song(cells=[0], song_groove=FactoryGroove.SWING_58))
         self.assertEqual(onsets(a_clip)[1], SIXTEENTH + SWING_58_DELAY)
-        steps = [(1, EIGHTH)] * (GROOVE_CELLS // 2)
+        steps = [(1, EIGHTH)] * (groove_values.GROOVE_CELLS // 2)
         a_clip = lead_clip(groove_song(cells=[0], song_groove=FactoryGroove.EIGHTH_SWING_66, steps=steps))
         self.assertEqual(onsets(a_clip)[:3], [0, EIGHTH + EIGHTH_SWING_66_DELAY, 2 * EIGHTH])
 
     def test_a_push_plays_early_and_never_before_the_start(self):
-        a_clip = lead_clip(groove_song(cells=[PUSH_AMOUNT], song_groove=LATE))
+        a_clip = lead_clip(groove_song(cells=[groove_values.PUSH_AMOUNT], song_groove=LATE))
         starts = onsets(a_clip)
         self.assertEqual(starts[0], 0)
-        self.assertEqual(starts[1], SIXTEENTH + Fraction(PUSH_AMOUNT, 100) * SIXTEENTH)
+        self.assertEqual(starts[1], SIXTEENTH + Fraction(groove_values.PUSH_AMOUNT, 100) * SIXTEENTH)
 
     def test_the_groove_follows_time_not_steps(self):
         # Notes a quarter apart land on cells 0, 4, 8 and 12 of a 16-cell groove, whatever the pattern's steps.
-        cells = [0] * GROOVE_CELLS
+        cells = [0] * groove_values.GROOVE_CELLS
         cells[4] = SWING_58_AMOUNT
         a_clip = lead_clip(groove_song(cells=cells, song_groove=LATE, steps=QUARTER_STEPS * 4))
         self.assertEqual(onsets(a_clip), [0, Fraction(1, 4) + SWING_58_DELAY, Fraction(1, 2), Fraction(3, 4)])
@@ -200,10 +201,10 @@ class TestGrooveTiming(unittest.TestCase):
     def test_the_row_repeats_its_own_length(self):
         a_clip = lead_clip(groove_song(cells=[0, 0, SWING_58_AMOUNT], song_groove=LATE))
         late = [place for place, start in enumerate(onsets(a_clip)) if start != place * SIXTEENTH]
-        self.assertEqual(late, [place for place in range(GROOVE_CELLS) if place % ONE_CELL_IN_THREE == 2])
+        self.assertEqual(late, [place for place in range(groove_values.GROOVE_CELLS) if place % ONE_CELL_IN_THREE == 2])
 
     def test_cc_values_move_with_their_steps(self):
-        rows = {Row.CC1: [CC_VALUE] * GROOVE_CELLS}
+        rows = {Row.CC1: [CC_VALUE] * groove_values.GROOVE_CELLS}
         data = groove_song(cells=[0, SWING_58_AMOUNT], song_groove=LATE, tracks={LEAD: {TrackSetting.CC: [MOD_WHEEL, None, None, None]}})
         data[Section.PATTERNS][X].update(rows)
         a_clip = lead_clip(data)
@@ -212,7 +213,7 @@ class TestGrooveTiming(unittest.TestCase):
 
     def test_the_track_wins_then_the_scene_then_the_song_and_false_switches_grooving_off(self):
         swung = [0, SWING_58_AMOUNT]
-        straight = [place * SIXTEENTH for place in range(GROOVE_CELLS)]
+        straight = [place * SIXTEENTH for place in range(groove_values.GROOVE_CELLS)]
         swung_onsets = onsets(lead_clip(groove_song(cells=swung, song_groove=LATE)))
         self.assertNotEqual(swung_onsets, straight)
         # The scene's choice beats the song's, and the track's beats the scene's.
@@ -231,7 +232,7 @@ class TestGrooveTiming(unittest.TestCase):
         # The lead is swung; the drums grab from it on every step and must get the same pitches
         # as from a straight lead, since grooves only move timing.
         def grabbed(cells):
-            grab = {PatternSetting.STEPS: GROOVE_CELLS, Row.GRAB: [True] * GROOVE_CELLS, Row.DEGREE: [1] * GROOVE_CELLS}
+            grab = {PatternSetting.STEPS: groove_values.GROOVE_CELLS, Row.GRAB: [True] * groove_values.GROOVE_CELLS, Row.DEGREE: [1] * groove_values.GROOVE_CELLS}
             data = groove_song(cells=cells, song_groove=LATE, steps=[(degree, SIXTEENTH) for degree in [1, 2, 3, 4] * 4])
             data[Section.PATTERNS][EARLY] = grab
             data[Section.TRACKS][DRUMS] = {TrackSetting.GROOVE: False}

@@ -16,7 +16,8 @@
 """The Rush editor: a Rush's name, step, amount, row of steps and Restart."""
 
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition.generator_settings import DEFAULT_RUSH, NO_RUSH_OR_DRAG, StepRowSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
@@ -35,5 +36,5 @@ class RushEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_RUSH_LABEL)
 
     def amount_fields(self):
-        return [self.percent_field(label=labels.MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.generator().get_amount(), default=DEFAULT_RUSH,
-                                   lowest=NO_RUSH_OR_DRAG, highest=limits.MAX_RUSH_OR_DRAG)]
+        return [self.percent_field(label=labels.MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.generator().get_amount(), default=generator_settings.DEFAULT_RUSH,
+                                   lowest=generator_settings.NO_RUSH_OR_DRAG, highest=limits.MAX_RUSH_OR_DRAG)]

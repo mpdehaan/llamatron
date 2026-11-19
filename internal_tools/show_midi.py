@@ -36,7 +36,7 @@ from fractions import Fraction
 
 import mido
 
-from llamatron.composition.file_format import LIVE_OCTAVE_OFFSET
+from llamatron.composition import file_format
 from llamatron.music import midi as midi_numbers
 from llamatron.music import note
 
@@ -64,7 +64,7 @@ TEMPO_PLACES = 1
 def note_name(number):
     """Return a MIDI note number as a name with its octave as Live numbers them, like C3 for 60."""
     octave, place = divmod(number, midi_numbers.HALF_STEPS_PER_OCTAVE)
-    return note.SHARP_NAMES[place], octave - LIVE_OCTAVE_OFFSET
+    return note.SHARP_NAMES[place], octave - file_format.LIVE_OCTAVE_OFFSET
 
 
 def whole_notes(*, ticks, ticks_per_quarter):

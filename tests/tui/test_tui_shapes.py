@@ -16,7 +16,8 @@
 """The tracker's Density, Swell and Articulate: their list pages and editors, the sections on the Scene page and the clip page, and the settings pages' sections that hold them."""
 
 from tests.support.ui_testing import CLIPPED, FADE, LEAD, THIN, UITest, back_key, forward_key
-from llamatron.composition.file_format import Section, GeneratorKind, SHAPE_THENS, RampWay, Shape, ShapePart, shape_setting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Section, GeneratorKind, RampWay, Shape, ShapePart, shape_setting
 from llamatron.composition import limits
 from llamatron.strings import labels as labels_text, marks
 from llamatron.tui.keys import Key
@@ -83,10 +84,10 @@ class TestDensityEditor(ShapeEditorTest):
         self.assertEqual(self.shape().end, FULL)
 
     async def test_then_steps_through_hold_repeat_and_bounce(self):
-        self.assertEqual(self.shape().then, SHAPE_THENS[0])
+        self.assertEqual(self.shape().then, file_format.SHAPE_THENS[0])
         await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.THEN])
         await self.press(keybindings.DensityEditor.MORE)
-        self.assertEqual(self.shape().then, SHAPE_THENS[1])
+        self.assertEqual(self.shape().then, file_format.SHAPE_THENS[1])
 
     async def test_over_steps_from_the_whole_clip_to_a_length(self):
         self.assertIsNone(self.shape().over)

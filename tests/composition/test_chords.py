@@ -20,8 +20,10 @@ what a chord comes to in a scale, its names and its notes, as the editors show i
 
 import unittest
 
-from llamatron.composition.chords import chord_half_steps, replaced_places, spelled_chord, FIFTH_PLACE, NINTH_PLACE, SEVENTH_PLACE, THIRD_PLACE
-from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Tension, TENSIONS
+from llamatron.composition import chords
+from llamatron.composition.chords import chord_half_steps, replaced_places, spelled_chord
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Tension
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import NoteName
@@ -123,10 +125,10 @@ class TestSpelling(unittest.TestCase):
         self.assertEqual(spelled_chord(scale=None, degree=4).name, 'F')
 
     def test_a_chords_half_steps_leave_out_a_tension_it_holds(self):
-        self.assertEqual(chord_half_steps(scale=C_MAJOR, degree=5, symbol=ChordSymbol.DOMINANT9, tensions=(Tension.NINTH, Tension.SHARP_ELEVENTH)), (4, 7, 10, 14, TENSIONS[Tension.SHARP_ELEVENTH]))
+        self.assertEqual(chord_half_steps(scale=C_MAJOR, degree=5, symbol=ChordSymbol.DOMINANT9, tensions=(Tension.NINTH, Tension.SHARP_ELEVENTH)), (4, 7, 10, 14, file_format.TENSIONS[Tension.SHARP_ELEVENTH]))
 
     def test_the_places_a_quality_and_tensions_replace(self):
-        self.assertEqual(replaced_places(symbol=ChordSymbol.MINOR7, tensions=(Tension.FLAT_NINTH,)), {THIRD_PLACE: 3, FIFTH_PLACE: 7, SEVENTH_PLACE: 10, NINTH_PLACE: 1})
+        self.assertEqual(replaced_places(symbol=ChordSymbol.MINOR7, tensions=(Tension.FLAT_NINTH,)), {chords.THIRD_PLACE: 3, chords.FIFTH_PLACE: 7, chords.SEVENTH_PLACE: 10, chords.NINTH_PLACE: 1})
         self.assertEqual(replaced_places(symbol=None, tensions=None), {})
 
 

@@ -25,7 +25,7 @@ from llamatron.tui.keys import Key
 from llamatron.tui.drawing import cursor_mark, INDENT, NOTHING, padded, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.field import Button, CELL_GAP, Cells, Field, Heading, NameField
-from llamatron.composition.setlist import NO_TEXT
+from llamatron.composition import setlist
 from llamatron.tui.key_table import STEP_FORWARD
 from llamatron.tui.screens.shared.page import Page
 from llamatron.tui import keybindings
@@ -61,7 +61,7 @@ class FieldPage(Page):
     def text_field(self, *, label, current, set_text):
         """A field for text like the title: current() reads it, and set_text(text) stores it, blank text clearing it."""
         return Field(label=label, value=current, adjust=None, enter=lambda: self.ask(dialog=PromptDialog(title=label, value=current()), then=set_text), enter_what=legends.What.EDIT,
-                     clear=lambda: set_text(NO_TEXT), clear_what=legends.What.CLEAR)
+                     clear=lambda: set_text(setlist.NO_TEXT), clear_what=legends.What.CLEAR)
 
     def page_keys(self):
         return []

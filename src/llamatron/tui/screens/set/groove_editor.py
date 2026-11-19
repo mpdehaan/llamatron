@@ -23,7 +23,8 @@ that the one-row editors could share OneRowEditor (one_row_editor.py).
 from rich.text import Text
 
 from llamatron.composition.file_format import Section
-from llamatron.composition.groove import GROOVE_CELL_LENGTH_CHOICES, is_factory_groove
+from llamatron.composition import groove as groove_values
+from llamatron.composition.groove import is_factory_groove
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui.drawing import Box, NOTHING, Style
@@ -83,7 +84,7 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
 
     def next_cell_length(self):
         """Step the cell length through the choices, going round at the end."""
-        choices = GROOVE_CELL_LENGTH_CHOICES
+        choices = groove_values.GROOVE_CELL_LENGTH_CHOICES
         current = self.groove().get_cell_length_text()
         following = stepped(values=choices, current=current, offset=1) if current in choices[:-1] else choices[0]
         self.document().set_groove_cell_length(name=self.item, length=following)

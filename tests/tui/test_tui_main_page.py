@@ -21,7 +21,7 @@ from unittest import mock
 from tests.support.ui_testing import UITest, key_name
 from llamatron.tui.drawing import Box, NOTHING, SPACE
 from llamatron.tui.screens.set.main_page import arrows_between, cell_positions, COLUMNS, GRID_WIDTH, moved
-from llamatron.composition.file_format import NAMED_GENERATORS
+from llamatron.composition import file_format
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -286,7 +286,7 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertEqual(counts[first_key(keybindings.MainPage.SCALES)], len(setlist.get_scale_names()))
         # The set's own grooves, never the factory ones, which every set has.
         self.assertEqual(counts[first_key(keybindings.MainPage.GROOVES)], 0)
-        self.assertEqual(counts[first_key(keybindings.MainPage.GENERATORS)], sum(len(setlist.get_generator_names(kind)) for kind in NAMED_GENERATORS))
+        self.assertEqual(counts[first_key(keybindings.MainPage.GENERATORS)], sum(len(setlist.get_generator_names(kind)) for kind in file_format.NAMED_GENERATORS))
         for binding in (keybindings.MainPage.FILE, keybindings.MainPage.REGISTERS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
             self.assertIsNone(counts[first_key(binding)], binding)
         # The count sits one space in from the box's edge, on the selected cell as on the others.

@@ -21,7 +21,8 @@ from fractions import Fraction
 from tests.support.ui_testing import KEY_SHOWN, QUIET_VALUE, REVERSED, ROW_SHOWN, key_of
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages
-from llamatron.composition.file_format import CHORD_SYMBOLS, Accidental, ChordSymbol, GateModifier, OctaveLabels, Row
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, ChordSymbol, GateModifier, OctaveLabels, Row
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
@@ -35,7 +36,7 @@ from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.components.pattern_rows import PINNED_ROWS, SECTIONS
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.tui import keybindings
 from tests.support.rendering import render_song
 from tests.support.pattern_editor_testing import PatternEditorTest, open_section
@@ -209,7 +210,7 @@ class TestPatternEditor(PatternEditorTest):
         self.assertEqual(lines, [*[NOTHING] * 4, *[marks.MSG_GAUGE_BAR] * 3, '3'])
         self.assertEqual(degree.cell_lines(step=2), [NOTHING] * 8)
         self.assertTrue(degree.rule_after())
-        self.assertIn(labels_text.MSG_SCALE_HEADER.format(scale=DEFAULT_SCALE), self.text())
+        self.assertIn(labels_text.MSG_SCALE_HEADER.format(scale=setlist.DEFAULT_SCALE), self.text())
 
     async def test_a_pattern_under_two_scales_has_a_numbered_gauge_and_the_header_says_so(self):
         self.document.add_scale(name=SMALL_SCALE, root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR_PENTATONIC))
@@ -426,9 +427,9 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         await self.press(keybindings.ChordRow.MORE)
         self.assertEqual(self.value(row=Row.CHORD), 'M')
         # ] stops at the last symbol, and [ goes back from the last.
-        last = chord_value(CHORD_SYMBOLS[-1])
-        before_last = chord_value(CHORD_SYMBOLS[-2])
-        await self.press(*[keybindings.ChordRow.MORE] * (len(CHORD_SYMBOLS) + 1))
+        last = chord_value(file_format.CHORD_SYMBOLS[-1])
+        before_last = chord_value(file_format.CHORD_SYMBOLS[-2])
+        await self.press(*[keybindings.ChordRow.MORE] * (len(file_format.CHORD_SYMBOLS) + 1))
         self.assertEqual(self.value(row=Row.CHORD), last)
         await self.press(keybindings.ChordRow.LESS)
         self.assertEqual(self.value(row=Row.CHORD), before_last)

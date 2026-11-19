@@ -15,17 +15,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields of a strum, which the track editor's and the clip page's + Strum sections and the Strum editor share: direction, spread, fade, loose timing and upstroke strings."""
 
-from llamatron.composition.file_format import STRUM_DIRECTIONS, STRUM_SPREADS, UPSTROKE_STRINGS, StrumPart
+from llamatron.composition import file_format
+from llamatron.composition.file_format import StrumPart
 from llamatron.composition import limits
 from llamatron.strings import labels, marks
-from llamatron.composition.strum import DEFAULT_SPREAD, DEFAULT_UPSTROKE_STRINGS, SPREAD_MILLISECONDS
+from llamatron.composition import strum
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 
 NO_PERCENT = 0
 
 
 def spread_name(spread):
-    return marks.MSG_SPREAD_SHOWN.format(name=spread, milliseconds=SPREAD_MILLISECONDS[spread])
+    return marks.MSG_SPREAD_SHOWN.format(name=spread, milliseconds=strum.SPREAD_MILLISECONDS[spread])
 
 
 def strum_fields(*, page, value, store, first=None, prefixed=True, inherited=None):
@@ -39,11 +40,11 @@ def strum_fields(*, page, value, store, first=None, prefixed=True, inherited=Non
     def label(part):
         return labels.MSG_STRUM_FIELD_LABELS[part] if prefixed else labels.MSG_STRUM_PART_LABELS[part]
 
-    directions = STRUM_DIRECTIONS if first is None else [first, *STRUM_DIRECTIONS]
+    directions = file_format.STRUM_DIRECTIONS if first is None else [first, *file_format.STRUM_DIRECTIONS]
     direction = value(StrumPart.DIRECTION)
-    current = direction if direction is not None else (first if first is not None else STRUM_DIRECTIONS[0])
-    spread = value(StrumPart.SPREAD) or DEFAULT_SPREAD
-    upstroke = value(StrumPart.UPSTROKE_STRINGS) or DEFAULT_UPSTROKE_STRINGS
+    current = direction if direction is not None else (first if first is not None else file_format.STRUM_DIRECTIONS[0])
+    spread = value(StrumPart.SPREAD) or strum.DEFAULT_SPREAD
+    upstroke = value(StrumPart.UPSTROKE_STRINGS) or strum.DEFAULT_UPSTROKE_STRINGS
 
     def percent(part, highest):
         number = value(part)
@@ -58,14 +59,14 @@ def strum_fields(*, page, value, store, first=None, prefixed=True, inherited=Non
             set=lambda chosen: store(StrumPart.DIRECTION, None if chosen == first else chosen),
         ),
         ChoiceField(
-            page=page, label=label(StrumPart.SPREAD), choices=STRUM_SPREADS, current=spread, names=[spread_name(choice) for choice in STRUM_SPREADS],
-            shown=spread_name(spread), set=lambda chosen: store(StrumPart.SPREAD, None if chosen == DEFAULT_SPREAD else chosen),
+            page=page, label=label(StrumPart.SPREAD), choices=file_format.STRUM_SPREADS, current=spread, names=[spread_name(choice) for choice in file_format.STRUM_SPREADS],
+            shown=spread_name(spread), set=lambda chosen: store(StrumPart.SPREAD, None if chosen == strum.DEFAULT_SPREAD else chosen),
         ),
         percent(StrumPart.FADE, limits.MAX_STRUM_FADE),
         percent(StrumPart.LOOSE_TIMING, limits.MAX_LOOSE_TIMING),
         ChoiceField(
-            page=page, label=label(StrumPart.UPSTROKE_STRINGS), choices=UPSTROKE_STRINGS, current=upstroke, names=[labels.MSG_STRUM_WORDS.get(choice, choice) for choice in UPSTROKE_STRINGS],
-            shown=labels.MSG_STRUM_WORDS.get(upstroke, upstroke), set=lambda chosen: store(StrumPart.UPSTROKE_STRINGS, None if chosen == DEFAULT_UPSTROKE_STRINGS else chosen),
+            page=page, label=label(StrumPart.UPSTROKE_STRINGS), choices=file_format.UPSTROKE_STRINGS, current=upstroke, names=[labels.MSG_STRUM_WORDS.get(choice, choice) for choice in file_format.UPSTROKE_STRINGS],
+            shown=labels.MSG_STRUM_WORDS.get(upstroke, upstroke), set=lambda chosen: store(StrumPart.UPSTROKE_STRINGS, None if chosen == strum.DEFAULT_UPSTROKE_STRINGS else chosen),
         ),
     ]
 

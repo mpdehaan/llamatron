@@ -20,7 +20,8 @@ from rich.text import Text
 
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.composition.file_format import PLACED_SHAPES, RAMP_WAYS, REGISTER_NAMES, SECTION_KINDS, RampPart, Section, shape_setting
+from llamatron.composition import file_format
+from llamatron.composition.file_format import RampPart, Section, shape_setting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
@@ -94,7 +95,7 @@ class ScenePage(FieldPage):
     def section_field(self):
         """Return the Section field: the kind of section the scene is, chosen from the kinds a scene may be, or none."""
         section = self.scene().get_section()
-        choices = [marks.MSG_NONE_SHOWN, *SECTION_KINDS]
+        choices = [marks.MSG_NONE_SHOWN, *file_format.SECTION_KINDS]
         return ChoiceField(page=self, label=labels.MSG_SCENE_SECTION_LABEL, choices=choices, current=section or marks.MSG_NONE_SHOWN,
                            set=lambda choice: self.document().set_scene_section(index=self.index, section=None if choice == marks.MSG_NONE_SHOWN else choice))
 
@@ -179,13 +180,13 @@ class ScenePage(FieldPage):
                 page=self, label=labels.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT,
                 set=lambda number: self.document().set_scene_repeat(index=self.index, repeat=number),
             ),
-            *[self.reset_field(name) for name in REGISTER_NAMES],
+            *[self.reset_field(name) for name in file_format.REGISTER_NAMES],
             # Real-time playback alone reads it, so it comes last, after everything the export reads.
             Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().set_scene_launch_together(index=self.index, value=on)),
             chains_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().set_scene_chains(index=self.index, names=names)),
-            *[field for way in RAMP_WAYS for field in self.tempo_ramp_section(way)],
+            *[field for way in file_format.RAMP_WAYS for field in self.tempo_ramp_section(way)],
             *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
-            *[field for shape in PLACED_SHAPES for field in self.shape_section(shape)],
+            *[field for shape in file_format.PLACED_SHAPES for field in self.shape_section(shape)],
             *self.register_sections(),
         ]
 

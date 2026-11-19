@@ -20,7 +20,8 @@ import os
 import tempfile
 import unittest
 
-from llamatron.composition.file_format import CLOSED_PATTERN_GROUPS, ClipSlotSetting, PatternSetting, SceneSetting, Section
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, SceneSetting, Section
 from llamatron.composition import limits
 from llamatron.strings import errors, names as names_text
 from llamatron.composition.naming import name_in_copied_group
@@ -137,13 +138,13 @@ class TestClosedGroups(unittest.TestCase):
 
     def test_a_file_naming_a_group_no_pattern_is_in_opens_and_forgets_it(self):
         data = a_set()
-        data[CLOSED_PATTERN_GROUPS] = [NO_SUCH_GROUP, DRUMS]
+        data[file_format.CLOSED_PATTERN_GROUPS] = [NO_SUCH_GROUP, DRUMS]
         self.assertEqual(Setlist.from_data(data=data).get_closed_pattern_groups(), [DRUMS])
 
     def test_a_file_holding_anything_else_there_still_opens(self):
         for held in (A_NUMBER, [A_NUMBER, DRUMS], {DRUMS: True}):
             data = a_set()
-            data[CLOSED_PATTERN_GROUPS] = held
+            data[file_format.CLOSED_PATTERN_GROUPS] = held
             self.assertIn(Setlist.from_data(data=data).get_closed_pattern_groups(), ([], [DRUMS]))
 
     def test_a_renamed_group_stays_closed_and_an_emptied_one_is_forgotten(self):

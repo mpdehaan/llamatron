@@ -16,7 +16,8 @@
 """The Phrasing editor: how long a line is, how the lines breathe, and a table of what each kind of section does of its own."""
 
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition.generator_settings import LINES_IN_BARS, PHRASING_DEFAULTS, PhrasingSetting
+from llamatron.composition import generator_settings
+from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators.phrasing import BREATHS, JOINS, RISES
 from llamatron.strings import help as help_text
 from llamatron.strings import labels, messages
@@ -43,7 +44,7 @@ class PhrasingEditor(ShowsNamedItem, FieldPage):
 
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a Phrasing starts with."""
-        self.document().set_generator_setting(section=Section.PHRASINGS, name=self.item, setting=setting, value=None if value == PHRASING_DEFAULTS[setting] else value)
+        self.document().set_generator_setting(section=Section.PHRASINGS, name=self.item, setting=setting, value=None if value == generator_settings.PHRASING_DEFAULTS[setting] else value)
 
     def choice(self, *, label, setting, choices, names=None):
         """Return a field that chooses one of a setting's values from a list, shown by its name where its value is not a word."""
@@ -56,7 +57,7 @@ class PhrasingEditor(ShowsNamedItem, FieldPage):
     def fields(self):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            self.choice(label=labels.MSG_PHRASING_LINE_LABEL, setting=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, names=[labels.MSG_PHRASING_LINE_NAMES[bars] for bars in LINES_IN_BARS]),
+            self.choice(label=labels.MSG_PHRASING_LINE_LABEL, setting=PhrasingSetting.LINE_BARS, choices=generator_settings.LINES_IN_BARS, names=[labels.MSG_PHRASING_LINE_NAMES[bars] for bars in generator_settings.LINES_IN_BARS]),
             self.choice(label=labels.MSG_PHRASING_BREATH_LABEL, setting=PhrasingSetting.BREATH, choices=BREATHS),
             self.choice(label=labels.MSG_PHRASING_RISE_LABEL, setting=PhrasingSetting.RISE_AND_FALL, choices=RISES),
             self.choice(label=labels.MSG_PHRASING_NOTES_LABEL, setting=PhrasingSetting.NOTES, choices=JOINS),

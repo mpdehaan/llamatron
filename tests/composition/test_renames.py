@@ -31,7 +31,7 @@ from llamatron.composition.generator_settings import FollowChordsSetting, Follow
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.scene import Scene
-from llamatron.composition.sections import SETLIST_SECTIONS, SONG_SECTIONS
+from llamatron.composition import sections as sections_values
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.track import Track
@@ -102,7 +102,7 @@ def rename_everything(*, document, sections=RENAMED_SECTIONS):
     renamed = {}
     for section in sections:
         # The set holds the shared sections and the songs, and the current song its own tracks.
-        owner = document.song() if section in SONG_SECTIONS else document.setlist()
+        owner = document.song() if section in sections_values.SONG_SECTIONS else document.setlist()
         for name in owner.get_item_names(section):
             new = RENAMED.format(name=name)
             if section == Section.SONGS:
@@ -347,7 +347,7 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         self.assertEqual(len(grabbers(song=document.song(), song_name=song_name, track=LEAD)), ONE_USE)
 
     def test_in_every_example_what_uses_an_item_is_what_its_rename_changes(self):
-        shared = [section for section in SETLIST_SECTIONS if section != Section.SONGS]
+        shared = [section for section in sections_values.SETLIST_SECTIONS if section != Section.SONGS]
         for path in EXAMPLES:
             document = Document.load(path)
             setlist = document.setlist()

@@ -21,9 +21,8 @@ two bars, so that where a generator's run carries on shows in the second scene.
 
 import unittest
 
-from llamatron.composition.file_format import (
-    GENERATOR_RESTART, ClipSlotSetting, GeneratorKind, PatternSetting, Restart, Row, SceneSetting, Section,
-)
+from llamatron.composition import file_format
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Restart, Row, SceneSetting, Section
 from llamatron.exporters.timing import timed_events
 from tests.support.rendering import render_data
 from llamatron.generators.base import Continuation
@@ -54,7 +53,7 @@ def two_scenes(*, section, kind, settings, restart=None, first_repeat=1, rows=No
         {SceneSetting.REPEAT: first_repeat, SceneSetting.TRACKS: {LEAD: dict(clip)}},
         {SceneSetting.TRACKS: {LEAD: dict(clip)}},
     ])
-    data[section] = {NAME: dict(settings, **({} if restart is None else {GENERATOR_RESTART: restart}))}
+    data[section] = {NAME: dict(settings, **({} if restart is None else {file_format.GENERATOR_RESTART: restart}))}
     data[Section.CHAINS] = {CHAIN: [{kind: NAME}]}
     return data
 

@@ -22,15 +22,16 @@ alone under C Major, so the roll knows its scale and its track.
 
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, labels, legends, marks
-from llamatron.composition.file_format import Accidental, Direction, Row, STEP_SIZE_CHOICES
-from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
+from llamatron.composition import file_format
+from llamatron.composition.file_format import Accidental, Direction, Row
+from llamatron.composition import row_descriptions
 from llamatron.tui.drawing import Box, NOTHING, SPACE, Style
 from llamatron.composition.file_format import ChordSymbol
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.chord_dialog import QUALITY_LIST, ChordDialog
-from llamatron.composition.setlist import DEFAULT_SCALE
+from llamatron.composition import setlist
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
@@ -115,14 +116,14 @@ class RollTest(UITest):
         starts = self.header_cell_starts(first)
         self.assertEqual(len(starts), 3)
         self.assertEqual(self.header_cell_starts(second), starts[:2])
-        self.assertEqual(second[starts[0]:].split(marks.MSG_HEADER_CELL_GAP)[0], labels.MSG_SCALE_HEADER.format(scale=marks.MSG_SCALE_SHOWN.format(name=DEFAULT_SCALE, notes=self.document.scale_notes_text(DEFAULT_SCALE))))
+        self.assertEqual(second[starts[0]:].split(marks.MSG_HEADER_CELL_GAP)[0], labels.MSG_SCALE_HEADER.format(scale=marks.MSG_SCALE_SHOWN.format(name=setlist.DEFAULT_SCALE, notes=self.document.scale_notes_text(setlist.DEFAULT_SCALE))))
         self.assertTrue(second[starts[1]:].startswith(marks.MSG_ENTRY_SIZE_SHOWN.format(size=EIGHTH, whose=marks.MSG_FROM_SONG_SHOWN)))
         self.assertTrue(first[starts[2]:].startswith(marks.MSG_DIRECTION_HEADER.format(direction=words(Direction.FORWARD))))
 
     def row(self, row):
         """Return a row's value on every step, with False where a toggle row was never written."""
         pattern = self.document.song().get_pattern(TUNE)
-        return [bool(pattern.get_value(row=row, step=step)) if ROW_DESCRIPTIONS[row].is_on_or_off() else pattern.get_value(row=row, step=step) for step in range(pattern.get_steps())]
+        return [bool(pattern.get_value(row=row, step=step)) if row_descriptions.ROW_DESCRIPTIONS[row].is_on_or_off() else pattern.get_value(row=row, step=step) for step in range(pattern.get_steps())]
 
     def value(self, *, row, step):
         return self.document.step_value(name=TUNE, row=row, step=step)
@@ -143,7 +144,7 @@ class TestPianoRoll(RollTest):
         self.assertIn(marks.MSG_NOTE_UNDER_CURSOR, self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
 
     async def test_the_header_says_the_scale_and_the_entry_size(self):
-        self.assertIn(labels.MSG_SCALE_HEADER.format(scale=DEFAULT_SCALE), self.text())
+        self.assertIn(labels.MSG_SCALE_HEADER.format(scale=setlist.DEFAULT_SCALE), self.text())
         self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=EIGHTH, whose=marks.MSG_FROM_SONG_SHOWN), self.text())
         await self.pick_entry_size(QUARTER)
         self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=QUARTER, whose=NOTHING), self.text())
@@ -243,7 +244,7 @@ class TestPlacingNotes(RollTest):
         await self.press(keybindings.PianoRoll.ENTRY_SIZE)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.title, labels.MSG_ENTRY_SIZE_LABEL)
-        self.assertEqual(self.app.screen.options, [labels.MSG_SONG_ENTRY_SIZE_CHOICE, *STEP_SIZE_CHOICES])
+        self.assertEqual(self.app.screen.options, [labels.MSG_SONG_ENTRY_SIZE_CHOICE, *file_format.STEP_SIZE_CHOICES])
         # The pattern has no entry size of its own yet, so the picker opens on the song's.
         self.assertEqual(self.app.screen.options[self.app.screen.place], labels.MSG_SONG_ENTRY_SIZE_CHOICE)
         await self.pick(HALF)
@@ -551,7 +552,7 @@ class TestChordsOnTheRoll(RollTest):
         self.assertEqual((self.value(row=Row.DEGREE, step=LAST_STEP), self.value(row=Row.ACCIDENTAL, step=LAST_STEP)), (D_DEGREE, Accidental.SHARP))
 
     async def test_a_scale_spelled_with_flats_writes_a_row_between_degrees_as_the_degree_above_flattened(self):
-        self.document.set_scale_root(name=DEFAULT_SCALE, root=NoteName.B_FLAT)
+        self.document.set_scale_root(name=setlist.DEFAULT_SCALE, root=NoteName.B_FLAT)
         await self.press(Key.RIGHT, Key.LEFT)
         # Bb major: a half step above its second degree, C, is Db, the third degree flattened, and the degrees themselves are unchanged.
         self.assertEqual(self.roll.note_at(C_PITCH + 3), (3, defaults.DEFAULT_OCTAVE, Accidental.FLAT))

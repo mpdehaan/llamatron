@@ -26,7 +26,8 @@ from llamatron.composition import limits
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.composition.generator_settings import ShapeSetting
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition.velocity_ramps import AS_WRITTEN, Velocity, VelocityRamp, velocity_of
+from llamatron.composition import velocity_ramps
+from llamatron.composition.velocity_ramps import Velocity, VelocityRamp, velocity_of
 from llamatron.exporters.timing import timed_events
 from llamatron.music import midi
 from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, velocity_percent_at
@@ -154,7 +155,7 @@ class TestAClipOverItsScene(unittest.TestCase):
 
     def test_a_clips_own_bars_make_the_ramp_the_clips(self):
         scene = {VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}
-        self.assertEqual(velocity_of(scene_settings=scene, clip_settings={VelocitySetting.IN_OVER: TWO_BARS}).ramp_in, VelocityRamp(LOW, AS_WRITTEN, TWO_BARS, True))
+        self.assertEqual(velocity_of(scene_settings=scene, clip_settings={VelocitySetting.IN_OVER: TWO_BARS}).ramp_in, VelocityRamp(LOW, velocity_ramps.AS_WRITTEN, TWO_BARS, True))
 
     def test_a_clips_velocity_is_where_its_scenes_ramp_ends(self):
         scene = {VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}
@@ -165,7 +166,7 @@ class TestAClipOverItsScene(unittest.TestCase):
     def test_a_scene_alone_says_how_its_clips_play_and_what_stands_for_it(self):
         still = velocity_of(scene_settings={})
         self.assertTrue(still.changes_nothing())
-        self.assertEqual(still.typical(), AS_WRITTEN)
+        self.assertEqual(still.typical(), velocity_ramps.AS_WRITTEN)
         ramped = velocity_of(scene_settings={VelocitySetting.LEVEL: WRITTEN, VelocitySetting.IN_START: HALF, VelocitySetting.IN_OVER: ONE_BAR})
         self.assertFalse(ramped.changes_nothing())
         self.assertEqual(ramped.typical(), (HALF + WRITTEN) / 2)

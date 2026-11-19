@@ -20,7 +20,8 @@ Each test plays a bar of sixteen sixteenth notes, so that every step of a 16-ste
 
 import unittest
 
-from llamatron.composition.euclid import NAMED_RHYTHMS, rhythm
+from llamatron.composition import euclid
+from llamatron.composition.euclid import rhythm
 from llamatron.composition.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section, euclid_setting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.support.rational import Rational
@@ -57,7 +58,7 @@ def hits_of(*, hits, steps, rotate=0):
 class TestRhythm(unittest.TestCase):
 
     def test_the_named_rhythms(self):
-        hits = {name: hits_of(hits=count, steps=steps) for name, (count, steps) in NAMED_RHYTHMS.items()}
+        hits = {name: hits_of(hits=count, steps=steps) for name, (count, steps) in euclid.NAMED_RHYTHMS.items()}
         self.assertEqual(hits[NamedRhythm.TRESILLO], [0, 3, 6])
         self.assertEqual(hits[NamedRhythm.CINQUILLO], [0, 2, 3, 5, 6])
         self.assertEqual(hits[NamedRhythm.BOSSA_NOVA], [0, 3, 6, 9, 12])

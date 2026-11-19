@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The field of a time setting, Step, Every or Over, which every page with one shares: the one list of times, after the setting's own first choice."""
 
-from llamatron.composition.file_format import TIME_CHOICES
+from llamatron.composition import file_format
 from llamatron.strings import labels
 from llamatron.tui.screens.shared.field import ChoiceField
 
@@ -28,7 +28,7 @@ def time_field(*, page, label, written, first, store):
     offered too, after the list, so that a field never loses what the set holds. A choice that
     is the same as first, like Every's 1 bar, is first and not offered twice.
     """
-    times = [time for time in TIME_CHOICES if time != first]
+    times = [time for time in file_format.TIME_CHOICES if time != first]
     current = first if written is None else str(written)
     if current != first and current not in times:
         times.append(current)
