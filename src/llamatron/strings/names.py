@@ -23,6 +23,8 @@ Each constant starts with MSG_.
 # with the name older files gave one, like F Harmonic Minor.
 MSG_NUMBER_JOINT = '-'
 MSG_NUMBERED_NAME = '{base}-{number}'
+# What the parts of a pattern split into new patterns are named after: the pattern, and then a number.
+MSG_SPLIT_BASE = '{name}-split'
 MSG_DEFAULT_SCALE_NAME = '{root}_{kind}'
 MSG_LEGACY_SCALE_NAME = '{root} {kind}'
 

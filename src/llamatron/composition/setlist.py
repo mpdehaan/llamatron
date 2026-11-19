@@ -47,7 +47,7 @@ from llamatron.composition.file_format import (
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS
 from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
 from llamatron.composition.named_items import NamedItems
-from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, unique_name
+from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern, held_add
 from llamatron.composition.sections import SECTION_LABELS, SETLIST_SECTIONS
@@ -930,6 +930,22 @@ class Setlist(LlamaData):
         for name, copied in names.items():
             self.copy_item(section=Section.PATTERNS, name=name, new=copied).set_group(new)
         return list(names.values())
+
+    @notes_change
+    def split_pattern(self, *, name, steps):
+        """Make new patterns of a pattern's steps, so many steps each and the last with what is left, and return their names; the pattern itself is left as it is.
+
+        Each part keeps the pattern's settings and group. A part's name longer than a name may be refuses the whole split.
+        """
+        pattern = self.get_pattern(name)
+        starts = range(0, pattern.get_steps(), steps)
+        made = split_part_names(name=name, count=len(starts), taken=self.get_pattern_names())
+        too_long = [part for part in made if len(part) > set_limits.MAX_NAME_LENGTH]
+        if too_long:
+            raise ValueError(errors.ERR_GROUP_COPY_NAME_TOO_LONG.format(name=too_long[0], most=set_limits.MAX_NAME_LENGTH))
+        for part, start in zip(made, starts):
+            self.copy_item(section=Section.PATTERNS, name=name, new=part).take_steps(list(range(start, min(start + steps, pattern.get_steps()))))
+        return made
 
     @notes_change
     def fracture(self, song):

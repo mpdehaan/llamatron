@@ -110,6 +110,14 @@ def new_name(*, word, taken):
     return names.MSG_NUMBERED_NAME.format(base=word, number=highest + 1)
 
 
+def split_part_names(*, name, count, taken):
+    """Return the names of the patterns a pattern is split into: its name, the word split and a number, like p1-split-1, counted on
+    from the highest such name in use, so that splitting again takes no name of an earlier split."""
+    word = names.MSG_SPLIT_BASE.format(name=name)
+    first = split_trailing_number(new_name(word=word, taken=taken))[-1]
+    return [names.MSG_NUMBERED_NAME.format(base=word, number=first + part) for part in range(count)]
+
+
 def split_trailing_number(name):
     """Return a name's words, what joins its number to them and the number it ends in, like ("verse", "-", 1), or the name, None and None if it ends in none."""
     found = TRAILING_NUMBER.match(name)
