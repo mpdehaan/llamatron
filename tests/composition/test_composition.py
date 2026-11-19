@@ -504,6 +504,28 @@ class TestClipSlot(RoundTrip):
         self.assert_round_trip(ClipSlot, data, a_song(), track=LEAD)
         self.assert_round_trip(ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.LOOP: False}, a_song(), track=LEAD)
 
+    def test_a_clip_of_several_patterns_lists_them_and_a_clip_of_one_names_it(self):
+        song = a_song()
+        several = ClipSlot.from_data(data={ClipSlotSetting.PATTERNS: [A, B, A]}, where=HERE, song=song, track=LEAD)
+        self.assertEqual(several.get_pattern_names(), [A, B, A])
+        self.assertEqual(several.get_pattern_name(), A)
+        self.assertEqual(several.to_data(), {ClipSlotSetting.PATTERNS: [A, B, A]})
+        self.assertTrue(several.names_item(section=Section.PATTERNS, name=B))
+        several.rename_references(section=Section.PATTERNS, old=A, new=ZZ)
+        self.assertEqual(several.get_pattern_names(), [ZZ, B, ZZ])
+        one = ClipSlot.from_data(data={ClipSlotSetting.PATTERNS: [A]}, where=HERE, song=song, track=LEAD)
+        self.assertEqual(one.to_data(), {ClipSlotSetting.PATTERN: A})
+        data = {ClipSlotSetting.PATTERN: A}
+        self.assertEqual(ClipSlot.from_data(data=data, where=HERE, song=song, track=LEAD).get_pattern_names(), [A])
+        self.assertEqual(data, {ClipSlotSetting.PATTERN: A})
+        one.set_pattern_names(names=[B, A], song=song)
+        self.assertEqual(one.get_pattern_names(), [B, A])
+        for wrong in ([], A, [A, 3], [A, ZZ]):
+            with self.assertRaises(InvalidValue):
+                one.set_pattern_names(names=wrong, song=song)
+        with self.assertRaises(SongFileError):
+            ClipSlot.from_data(data={ClipSlotSetting.PATTERN: A, ClipSlotSetting.PATTERNS: [B]}, where=HERE, song=song, track=LEAD)
+
     def test_a_name_of_its_own_or_its_patterns(self):
         named = ClipSlot.from_data(data={ClipSlotSetting.PATTERN: A, ClipSlotSetting.NAME: RIFF}, where=HERE, song=a_song(), track=LEAD)
         self.assertEqual((named.get_name(), named.get_display_name()), (RIFF, RIFF))
