@@ -1,0 +1,88 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""Tests of Fracture on Arrange: after a question, every clip of the song gets a pattern of its own.
+
+The song has two scenes and two tracks. The lead plays the tune in both scenes and the drums
+play the tune in the second, so the tune is shared by three clips, and the beat by one.
+"""
+
+from llamatron.strings import messages
+from llamatron.tui import keybindings
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from tests.support.ui_testing import BEAT, TUNE, UITest
+
+LEAD = 'lead'
+DRUMS = 'drums'
+FIRST = 0
+SECOND = 1
+TUNE_2 = 'tune-2'
+TUNE_3 = 'tune-3'
+COPIES = 2
+CHANGED_STEPS = 8
+
+
+class TestFracture(UITest):
+    """The key on Arrange, its question, and what yes and no leave."""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.document.add_clip_slot(index=SECOND, track=LEAD, pattern=TUNE)
+        self.document.add_clip_slot(index=SECOND, track=DRUMS, pattern=TUNE)
+        self.document.record_edit()
+        await self.press(keybindings.MainPage.ARRANGE)
+
+    def patterns_played(self):
+        """Return the pattern each clip plays, scene by scene and track by track."""
+        song = self.document.song()
+        return [scene.get_clip_slot(track).get_pattern_name() for scene in song.get_scenes() for track in song.get_track_names() if scene.has_clip_slot(track)]
+
+    async def test_the_key_asks_first_and_no_changes_nothing(self):
+        await self.press(keybindings.ArrangePage.FRACTURE)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        self.assertIn(messages.MSG_FRACTURE_TITLE, self.text())
+        self.assertIn(messages.MSG_FRACTURE_QUESTION, self.text())
+        await self.press(keybindings.ConfirmDialog.NO)
+        self.assertIsInstance(self.app.screen, ArrangePage)
+        self.assertEqual(self.patterns_played(), [TUNE, BEAT, TUNE, TUNE])
+
+    async def test_yes_gives_every_clip_a_pattern_of_its_own_numbered_from_the_first(self):
+        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        self.assertEqual(self.patterns_played(), [TUNE, BEAT, TUNE_2, TUNE_3])
+        self.assertIn(messages.MSG_FRACTURED.format(count=COPIES), self.text())
+        setlist = self.document.setlist()
+        # A copy holds what the pattern held, in the pattern's group, and is a pattern apart.
+        self.assertEqual(setlist.get_pattern(TUNE_2).get_group(), setlist.get_pattern(TUNE).get_group())
+        self.assertEqual(setlist.get_pattern(TUNE_3).get_steps(), setlist.get_pattern(TUNE).get_steps())
+        setlist.get_pattern(TUNE_2).set_steps(CHANGED_STEPS)
+        self.assertNotEqual(setlist.get_pattern(TUNE).get_steps(), CHANGED_STEPS)
+
+    async def test_a_song_with_nothing_shared_says_so(self):
+        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        before = self.patterns_played()
+        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        self.assertEqual(self.patterns_played(), before)
+        self.assertIn(messages.MSG_NOTHING_TO_FRACTURE, self.text())
+
+    async def test_one_undo_puts_every_clip_back_on_the_shared_pattern(self):
+        names = self.document.setlist().get_pattern_names()
+        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.Page.UNDO)
+        self.assertEqual(self.patterns_played(), [TUNE, BEAT, TUNE, TUNE])
+        self.assertEqual(self.document.setlist().get_pattern_names(), names)
+        await self.press(keybindings.Page.REDO)
+        self.assertEqual(self.patterns_played(), [TUNE, BEAT, TUNE_2, TUNE_3])

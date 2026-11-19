@@ -88,6 +88,10 @@ class PatternEdits:
         """Copy a whole group under a new name and return the copies' names, or raise ValueError when a copy's name would be too long."""
         return self._change(self._setlist.copy_pattern_group, group=group, new=new)
 
+    def fracture_song(self):
+        """Give every clip of the current song a pattern of its own, and return the names of the copies made."""
+        return self._change(self._setlist.fracture, self.song())
+
     def show_pattern_group(self, *, group, closed):
         """Show a group closed or open on the Patterns page, which is no change to the set: nothing to undo and nothing to save."""
         self._setlist.show_pattern_group(group=group, closed=closed)
