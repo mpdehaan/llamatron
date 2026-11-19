@@ -31,7 +31,7 @@ import numpy
 import random
 
 from llamatron.strings import visualizers
-from llamatron.visualizers import cells, colour, heard as heard_values
+from llamatron.visualizers import cells, colour
 from llamatron.visualizers.cells import CellPainter, packed
 from llamatron.visualizers.colour import note_colour
 from llamatron.visualizers.visualizer import Visualizer
@@ -109,7 +109,7 @@ class Life(Visualizer):
         """Return a fresh grid with FRESH_SHARE of its cells alive, at random."""
         return numpy.array([[self._chooser.random() < FRESH_SHARE for _ in range(columns)] for _ in range(rows)], dtype=bool)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
+    def frame_of(self, *, width, height, now, heard):
         rows = height // CELL_ROWS
         columns = width // CELL_COLUMNS
         if not rows or not columns:

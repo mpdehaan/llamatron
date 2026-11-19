@@ -30,7 +30,7 @@ import numpy
 import random
 
 from llamatron.strings import visualizers
-from llamatron.visualizers import cells, heard as heard_values
+from llamatron.visualizers import cells
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.visualizer import Visualizer
@@ -133,9 +133,7 @@ class LaserLlama(Visualizer):
         """Return how many beams are alive, for the tests."""
         return len(self._beams)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
-        if not width or not height:
-            return []
+    def frame_of(self, *, width, height, now, heard):
         self.sized(width=width, height=height)
         seconds = self.seconds_since_last_frame(now)
         tempo = heard.tempo_factor()

@@ -32,7 +32,6 @@ from rich.style import Style
 from rich.text import Text
 
 from llamatron.strings import visualizers
-from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 
 # The drawings, smallest first, each facing left, its head at the left, and mirrored to face right.
@@ -110,9 +109,7 @@ class Llamas(Visualizer):
         """Return a track's llama, or None before the track has played."""
         return self._llamas.get(track)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
-        if not width or not height:
-            return []
+    def frame_of(self, *, width, height, now, heard):
         seconds = self.seconds_since_last_frame(now)
         tempo = heard.tempo_factor()
         self._motion += seconds * tempo

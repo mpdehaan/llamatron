@@ -137,7 +137,7 @@ class PianoRoll(Visualizer):
         """Return the notes on the roll."""
         return list(self._notes)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
+    def frame_of(self, *, width, height, now, heard):
         if width <= LABEL_COLUMNS or height <= LEGEND_ROWS:
             return []
         elapsed = self.seconds_since_last_frame(now)

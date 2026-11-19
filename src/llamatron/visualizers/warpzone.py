@@ -29,7 +29,7 @@ import math
 import numpy
 
 from llamatron.strings import visualizers
-from llamatron.visualizers import cells, heard as heard_values
+from llamatron.visualizers import cells
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
@@ -105,9 +105,7 @@ class WarpZone(Visualizer):
         inside = numpy.hypot(down, across) <= BALL_RADIUS
         self._disc = numpy.stack([down[inside], across[inside]], axis=1)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
-        if not width or not height:
-            return []
+    def frame_of(self, *, width, height, now, heard):
         rows = height * cells.BRAILLE_ROWS
         columns = width * cells.BRAILLE_COLUMNS
         if (rows, columns) != (self._rows, self._columns):

@@ -30,7 +30,6 @@ from rich.style import Style
 from rich.text import Text
 
 from llamatron.strings import visualizers
-from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 
 # The bars: each this many columns wide with a gap of this many after it, and the pitches they span, low to high.
@@ -102,11 +101,9 @@ class Spectrum(Visualizer):
         share = (min(max(pitch, LOWEST_PITCH), HIGHEST_PITCH) - LOWEST_PITCH) / (HIGHEST_PITCH - LOWEST_PITCH)
         return min(int(share * len(self._levels)), len(self._levels) - 1)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
+    def frame_of(self, *, width, height, now, heard):
         if bands_across(width) != len(self._levels):
             self.reset(bands=bands_across(width))
-        if not width or not height:
-            return []
         seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
         self.settle(seconds)
