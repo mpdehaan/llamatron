@@ -16,6 +16,8 @@
 
 """A register: one of the song's four values, AX to DX, that pattern steps change and read as the song plays."""
 
+from typing import NamedTuple
+
 from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.checks import check_keys, listed, reading
 from llamatron.composition.file_format import RegisterSetting, ResetBehavior
@@ -41,6 +43,13 @@ DEFAULTS = {
     RegisterSetting.RESET_EACH_SCENE: defaults.DEFAULT_RESET_EACH_SCENE,
     RegisterSetting.ALLOWED_INC_MAX: defaults.DEFAULT_ALLOWED_INC_MAX,
 }
+
+
+class Bounced(NamedTuple):
+    """What a register that reverses comes to after an amount: its value, and whether it now counts the other way."""
+
+    value: int
+    turned: bool
 
 
 class Register(LlamaData):
@@ -146,7 +155,7 @@ class Register(LlamaData):
         return highest if past_the_top else lowest
 
     def reversed(self, *, value, amount, turned):
-        """Return a value with an amount added by a register that reverses, and whether it then counts the other way.
+        """Return a value with an amount added by a register that reverses, as a Bounced: the value, and whether the register then counts the other way.
 
         While turned, an amount counts the other way: an add takes away and a subtraction adds.
         Past an end the value bounces off it, what is left over carrying on back the other way,
@@ -155,12 +164,12 @@ class Register(LlamaData):
         lowest = self.get_minimum()
         highest = self.get_maximum()
         if lowest == highest:
-            return lowest, turned
+            return Bounced(value=lowest, turned=turned)
         result = value - amount if turned else value + amount
         while not lowest <= result <= highest:
             result = 2 * highest - result if result > highest else 2 * lowest - result
             turned = not turned
-        return result, turned
+        return Bounced(value=result, turned=turned)
 
     def held(self, value):
         """Return a value a step sets the register to, kept between the minimum and maximum: a set is an exact value, so it stops at an end and never wraps."""

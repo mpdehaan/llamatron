@@ -203,7 +203,7 @@ class SongRenderer:
                     grid.set_clip(row=grid_scene, column=tracks[name], clip=clip)
             tempos = self.tempos_of(scene)
             if tempos is not None:
-                grid_scene.set_tempo(tempos[0][1])
+                grid_scene.set_tempo(tempos[0].tempo)
                 grid_scene.set_tempo_changes(tempos[1:])
         return grid
 

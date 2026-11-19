@@ -24,12 +24,21 @@ A ramp in starts at its start and comes to its end on the first step after its b
 out leaves its start on its first step and is at its end on the scene's last step.
 """
 
+from typing import NamedTuple
+
 from llamatron.support.rational import Rational
 
 # How finely a tempo inside a ramp is kept: more than any export can write.
 TEMPO_PLACES = 4
 SCENE_START = Rational(0)
 WHOLE_RAMP = 1
+
+
+class TempoChange(NamedTuple):
+    """A tempo a scene takes at a time: the time in whole notes from the scene's start, and the tempo from then on."""
+
+    time: Rational
+    tempo: float
 
 
 def ramped_tempos(*, base, ramp_in, ramp_out, length, bar, step):
@@ -49,16 +58,16 @@ def ramped_tempos(*, base, ramp_in, ramp_out, length, bar, step):
             tempo = _between(ramp=ramp_out, base=base, share=min((time - out_from + step) / out_span, WHOLE_RAMP))
         else:
             tempo = float(base)
-        if not tempos or tempos[-1][1] != tempo:
-            tempos.append((time, tempo))
+        if not tempos or tempos[-1].tempo != tempo:
+            tempos.append(TempoChange(time, tempo))
         time += step
     return tempos
 
 
 def tempos_within(*, tempos, start, end):
     """Return the part of a scene's tempos that one of its rows plays, from start to end, as times counted from the row's start, the first at 0."""
-    before = [tempo for time, tempo in tempos if time <= start]
-    return [(SCENE_START, before[-1])] + [(time - start, tempo) for time, tempo in tempos if start < time < end]
+    before = [change.tempo for change in tempos if change.time <= start]
+    return [TempoChange(SCENE_START, before[-1])] + [TempoChange(change.time - start, change.tempo) for change in tempos if start < change.time < end]
 
 
 def _span(*, ramp, length, bar):

@@ -66,7 +66,7 @@ def tempos(*, length=EIGHT_BARS * BAR, ramp_in=None, ramp_out=None):
 
 def tempo_at(*, changes, time):
     """Return the tempo a list of changes gives a time."""
-    return [tempo for start, tempo in changes if start <= time][-1]
+    return [change.tempo for change in changes if change.time <= time][-1]
 
 
 def data_with(*scenes):
@@ -84,13 +84,13 @@ class TestTheTempoOfEachBeat(unittest.TestCase):
     def test_a_ramp_in_starts_at_its_start_and_arrives_on_the_beat_after_its_bars(self):
         changes = tempos(ramp_in=TempoRamp(SLOW, None, TWO_BARS))
         # 100 to the scene's 120 over 8 beats, 2.5 a beat.
-        self.assertEqual([tempo for _, tempo in changes], [100.0, 102.5, 105.0, 107.5, 110.0, 112.5, 115.0, 117.5, 120.0])
-        self.assertEqual([time for time, _ in changes], [beat * BEAT for beat in range(TWO_BARS * BEATS_IN_A_BAR + 1)])
+        self.assertEqual([change.tempo for change in changes], [100.0, 102.5, 105.0, 107.5, 110.0, 112.5, 115.0, 117.5, 120.0])
+        self.assertEqual([change.time for change in changes], [beat * BEAT for beat in range(TWO_BARS * BEATS_IN_A_BAR + 1)])
 
     def test_a_ramp_out_is_measured_back_from_the_end_and_is_at_its_end_on_the_last_beat(self):
         changes = tempos(ramp_out=TempoRamp(None, SLOW, TWO_BARS))
         self.assertEqual(changes[0], (0, float(BASE)))
-        self.assertEqual(changes[1][0], (EIGHT_BARS - TWO_BARS) * BAR)
+        self.assertEqual(changes[1].time, (EIGHT_BARS - TWO_BARS) * BAR)
         self.assertEqual(changes[-1], (EIGHT_BARS * BAR - BEAT, float(SLOW)))
         self.assertEqual(len(changes), 1 + TWO_BARS * BEATS_IN_A_BAR)
 
@@ -98,7 +98,7 @@ class TestTheTempoOfEachBeat(unittest.TestCase):
         changes = tempos(ramp_in=TempoRamp(SLOW, None, TWO_BARS), ramp_out=TempoRamp(None, FAST, TWO_BARS))
         for bar in range(TWO_BARS, EIGHT_BARS - TWO_BARS):
             self.assertEqual(tempo_at(changes=changes, time=bar * BAR), BASE)
-        self.assertEqual(changes[-1][1], FAST)
+        self.assertEqual(changes[-1].tempo, FAST)
 
     def test_where_the_ramps_overlap_the_ramp_in_wins(self):
         changes = tempos(length=FOUR_BARS * BAR, ramp_in=TempoRamp(SLOW, SLOW, FOUR_BARS - 1), ramp_out=TempoRamp(FAST, FAST, FOUR_BARS))
@@ -107,8 +107,8 @@ class TestTheTempoOfEachBeat(unittest.TestCase):
     def test_a_ramp_over_the_whole_scene_never_holds_a_tempo_for_more_than_a_step(self):
         changes = tempos(ramp_in=TempoRamp(None, FAST, EIGHT_BARS))
         self.assertEqual(len(changes), EIGHT_BARS * BEATS_IN_A_BAR)
-        self.assertEqual(changes[0][1], BASE)
-        self.assertLess(changes[-1][1], FAST)
+        self.assertEqual(changes[0].tempo, BASE)
+        self.assertLess(changes[-1].tempo, FAST)
         self.assertEqual(tempo_at(changes=changes, time=EIGHT_BARS * BAR / 2), (BASE + FAST) / 2)
 
     def test_a_ramp_longer_than_the_scene_is_cut_where_the_scene_ends(self):

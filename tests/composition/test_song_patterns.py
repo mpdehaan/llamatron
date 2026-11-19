@@ -136,7 +136,7 @@ class TestPatterns(unittest.TestCase):
         pattern = {PatternSetting.STEPS: 8, Row.DEGREE: [1, 3, None, 5, None, None, None, None], Row.GATE: [HALF, None, None, '1', None, None, None, None]}
         data = with_parts(patterns={song_testing.X: pattern}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X, ClipSlotSetting.REPEAT: 2}}}])
         events, _ = timed_events(clip=clip(song=render_data(data), scene=1, track=song_testing.LEAD), scale=None)
-        starts_and_ends = sorted((start, end) for start, end, _, _ in events)
+        starts_and_ends = sorted((event.start, event.end) for event in events)
         # The first note sounds right through the next two, and the last is cut at the end of the pattern.
         self.assertEqual(starts_and_ends[:3], [(0, Fraction(1, 2)), (Fraction(1, 16), Fraction(1, 8)), (Fraction(3, 16), Fraction(1, 2))])
         self.assertEqual(starts_and_ends[3][0], Fraction(1, 2))
@@ -261,15 +261,15 @@ class TestStepRows(unittest.TestCase):
 
     def test_velocity_defaults_to_127(self):
         events, _ = timed_events(clip=lead([1, QUARTER]), scale=None)
-        self.assertEqual(events[0][3], 127)
+        self.assertEqual(events[0].velocity, 127)
 
     def test_velocity_reaches_the_note(self):
         events, _ = timed_events(clip=lead([1, QUARTER], rows={Row.VELOCITY: [40]}), scale=None)
-        self.assertEqual(events[0][3], 40)
+        self.assertEqual(events[0].velocity, 40)
 
     def test_velocity_reaches_every_chord_note(self):
         events, _ = timed_events(clip=lead([1, QUARTER], rows={Row.VELOCITY: [40], Row.CHORD: ['M']}), scale=None)
-        self.assertEqual({event[3] for event in events}, {40})
+        self.assertEqual({event.velocity for event in events}, {40})
 
     def test_velocity_reaches_a_midi_file(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -374,8 +374,8 @@ class TestStepRows(unittest.TestCase):
 
     def test_glide_runs_into_the_next_note(self):
         events, _ = timed_events(clip=lead([1, QUARTER], [3, QUARTER], rows={Row.GLIDE: [True, False]}), scale=None)
-        self.assertEqual(events[0][1], Fraction(1, 4) + timing.GLIDE_OVERLAP)
-        self.assertEqual(events[1][1], Fraction(1, 2))
+        self.assertEqual(events[0].end, Fraction(1, 4) + timing.GLIDE_OVERLAP)
+        self.assertEqual(events[1].end, Fraction(1, 2))
 
     def test_glide_to_a_rest_or_the_same_pitch_or_the_end_does_nothing(self):
         for steps, glide in [
@@ -385,9 +385,9 @@ class TestStepRows(unittest.TestCase):
         ]:
             with self.subTest(steps=steps):
                 events, _ = timed_events(clip=lead(*steps, rows={Row.GLIDE: glide}), scale=None)
-                self.assertEqual(events[0][1], Fraction(1, 4))
+                self.assertEqual(events[0].end, Fraction(1, 4))
 
     def test_only_the_last_ratchet_slice_glides(self):
         events, _ = timed_events(clip=lead([1, QUARTER], [3, QUARTER], rows={Row.RATCHET: [2, None], Row.GLIDE: [True, False]}), scale=None)
-        self.assertEqual(events[0][1], Fraction(1, 8))
-        self.assertEqual(events[1][1], Fraction(1, 4) + timing.GLIDE_OVERLAP)
+        self.assertEqual(events[0].end, Fraction(1, 8))
+        self.assertEqual(events[1].end, Fraction(1, 4) + timing.GLIDE_OVERLAP)

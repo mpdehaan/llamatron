@@ -109,7 +109,7 @@ class TestClipsInAScene(unittest.TestCase):
 
     def test_estimate_uses_the_scene_tempo(self):
         estimates = estimate_data(with_parts(scenes=[{SceneSetting.TEMPO: 60, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}]))
-        self.assertEqual(estimates[0][1], 4)
+        self.assertEqual(estimates[0].seconds, 4)
 
     def test_estimate_reports_a_problem_in_only_that_scene(self):
         estimates = estimate_data(with_parts(scenes=[
