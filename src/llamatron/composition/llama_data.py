@@ -156,6 +156,10 @@ class LlamaData(Revised):
         """Return this object's settings as plain data in the set file's format."""
         raise NotImplementedError(errors.ERR_NEEDS_TO_DATA.format(kind=type(self).__name__))
 
+    def copy(self):
+        """Return an object just like this one that shares no list or dictionary with it, which copying a named thing makes."""
+        raise NotImplementedError(errors.ERR_NEEDS_COPY.format(kind=type(self).__name__))
+
     @classmethod
     def from_data(cls, *, data, where, song=None):
         """Return an object built from plain data, or raise SongFileError if the data is wrong.
