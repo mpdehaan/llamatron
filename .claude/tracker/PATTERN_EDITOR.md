@@ -48,7 +48,9 @@ roll or the rows.
   for the session in `app.open_munge_groups`, each heading's choices sorted by name. A new choice is appended to the list and
   the class and put under a heading; a Notes heading waits for the two legato choices. The choices: the reverses, pivot and randomize; the four
   copies of the steps at and before, or at and after, the cursor to the end or before the start; randomize of either part;
-  roll left and right, which ask for a number from 1 to the pattern's steps; mirror; interleave, splice and splice before,
+  roll left and right, which ask for a number from 1 to the pattern's steps, and roll left and right at the cursor, which
+  turn the steps at and before it, or at and after it, by one step and ask nothing; a choice that reads the cursor has
+  `(cursor)` after its name unless its name already says cursor; mirror; interleave, splice and splice before,
   which ask for another pattern of the same kind, drum or not; the clears (all data except pitch, `PITCH_ROWS`; chords,
   `CHORD_ROWS`; register modifications, the `=` and `+=` rows only; register conditions, the When statements); and the
   smooths (CCs, velocity on steps that play, and each register's `=` row), which fill the blanks between two values from a

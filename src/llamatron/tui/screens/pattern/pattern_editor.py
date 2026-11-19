@@ -102,6 +102,8 @@ class Munge:
     SPLICE_BEFORE = 26
     SPLIT = 27
     SPLICE_AT_CURSOR = 28
+    ROLL_LEFT_AT_CURSOR = 29
+    ROLL_RIGHT_AT_CURSOR = 30
 
 
 # The heading each munge is listed under.
@@ -111,6 +113,7 @@ MUNGE_GROUPS = {
     labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLICE_AT_CURSOR, Munge.SPLIT],
     labels.MungeGroup.REARRANGE: [
         Munge.REVERSE_AFTER, Munge.REVERSE_BEFORE, Munge.REVERSE, Munge.PIVOT, Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE, Munge.ROLL_LEFT, Munge.ROLL_RIGHT,
+        Munge.ROLL_LEFT_AT_CURSOR, Munge.ROLL_RIGHT_AT_CURSOR,
     ],
     labels.MungeGroup.SMOOTH: [Munge.SMOOTH_CCS, Munge.SMOOTH_VELOCITY, Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX],
 }
@@ -455,6 +458,16 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 document.munge_pattern(name=name, way=Pattern.shuffle_from if choice == Munge.RANDOMIZE_AFTER else Pattern.shuffle_through, step=self.step)
         elif choice in (Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START):
             self.copy_steps(choice)
+        elif choice == Munge.ROLL_LEFT_AT_CURSOR:
+            if self.step == 0:
+                self.refuse(errors.ERR_NOTHING_BEFORE)
+                return
+            document.munge_pattern(name=name, way=Pattern.roll_through, step=self.step)
+        elif choice == Munge.ROLL_RIGHT_AT_CURSOR:
+            if self.step >= last:
+                self.refuse(errors.ERR_NOTHING_AFTER)
+                return
+            document.munge_pattern(name=name, way=Pattern.roll_from, step=self.step)
         elif choice in (Munge.ROLL_LEFT, Munge.ROLL_RIGHT):
             self.ask_roll(left=choice == Munge.ROLL_LEFT)
         elif choice == Munge.MIRROR:

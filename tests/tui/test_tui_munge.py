@@ -142,6 +142,20 @@ class TestMunge(UITest):
         await munge(test=self, choice=Munge.RANDOMIZE_BEFORE)
         self.assertEqual(sorted(self.row()), ROWS[Row.DEGREE])
 
+    async def test_the_rolls_at_the_cursor_ask_nothing_and_are_refused_with_nothing_to_roll(self):
+        await munge(test=self, choice=Munge.ROLL_LEFT_AT_CURSOR)
+        self.assertIn(errors.ERR_NOTHING_BEFORE, self.text())
+        await self.press(Key.RIGHT, Key.RIGHT)
+        await munge(test=self, choice=Munge.ROLL_LEFT_AT_CURSOR)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertEqual(self.row(), [2, 3, 1, 4, 5])
+        await munge(test=self, choice=Munge.ROLL_RIGHT_AT_CURSOR)
+        self.assertEqual(self.row(), [2, 3, 5, 1, 4])
+        self.assertEqual(self.editor.step, THIRD)
+        await self.press(Key.RIGHT, Key.RIGHT)
+        await munge(test=self, choice=Munge.ROLL_RIGHT_AT_CURSOR)
+        self.assertIn(errors.ERR_NOTHING_AFTER, self.text())
+
     async def test_the_mirror_doubles_the_pattern(self):
         await munge(test=self, choice=Munge.MIRROR)
         self.assertEqual(self.row(), [1, 2, 3, 4, 5, 5, 4, 3, 2, 1])
