@@ -115,5 +115,5 @@ class NewPatternDialog(Dialog):
             blocked = row == SCALE_LENGTH and self.drum
             line.append(value, style=Style.DIM if blocked else Style.BOLD if row == self.row else Style.PLAIN)
             lines.append(line)
-        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_NEW_PATTERN_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_NEW_PATTERN_BUTTONS, BUTTON_BINDINGS)]
         return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.row == BUTTONS else NO_BUTTON)]

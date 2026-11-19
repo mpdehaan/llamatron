@@ -82,14 +82,12 @@ class Place:
 
 def forward_key(binding):
     """Return the first key that steps a binding forward, the one the legend names."""
-    steps, _, _ = binding
-    return steps.forward[0]
+    return binding.keys.forward[0]
 
 
 def back_key(binding):
     """Return the first key that steps a binding back."""
-    steps, _, _ = binding
-    return steps.back[0]
+    return binding.keys.back[0]
 
 
 MORE = forward_key(keybindings.PatternRow.ADJUST)

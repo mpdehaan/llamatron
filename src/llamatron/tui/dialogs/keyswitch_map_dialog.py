@@ -189,7 +189,7 @@ class KeyswitchMapDialog(Dialog):
         return line
 
     def lines(self, width):
-        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         return [
             self.heading_line(width),
             *[self.slot_line(slot=slot, width=width) for slot in range(file_format.KEYSWITCH_SLOT_COUNT)],

@@ -190,7 +190,7 @@ NOT_A_KEY_OF = '{key} is not one of the keys of the binding {binding}'
 
 def keys_stepping(*, binding, back):
     """Return the keys of a stepping binding that step one way: back, or forward."""
-    keys, _, _ = binding
+    keys = binding.keys
     assert isinstance(keys, Steps), binding
     return keys.back if back else keys.forward
 
@@ -207,8 +207,7 @@ def forward_key(binding):
 
 def key_name(binding):
     """Return what the tracker calls a binding's keys on screen, in the legend and the F1 dialog."""
-    _, name, _ = binding
-    return name
+    return binding.name
 
 
 def key_of(*, binding, key):
@@ -221,8 +220,7 @@ def pressed(key):
     """Return the name of the key to press: a key's name as it is, or the first key of a binding of tui/keybindings.py, which says what the key does."""
     if isinstance(key, str):
         return key
-    keys, _, _ = key
-    assert not isinstance(keys, Steps), STEPS_NEED_A_WAY.format(binding=key)
+    assert not isinstance(key.keys, Steps), STEPS_NEED_A_WAY.format(binding=key)
     return first_key(key)
 
 

@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Every key binding of the tracker in one place: one class for each page, dialog and component, named after it.
 
-A binding is a tuple of three things: the key or keys (from tui/keys.py, a `Steps` for keys that
+A binding is a `Binding` of three things: its `keys`, the key or keys (from tui/keys.py, a `Steps` for keys that
 step something one way or the other), the name the legend shows for them (a `KeyName` from
 strings/legends.py), and what they are said to do (a `What` or a `MSG_..._WHAT` from the same
 module). A class here has the same name as the page, dialog or component that binds its keys, and
@@ -36,7 +36,7 @@ one key.
 
 from llamatron.strings import labels, legends
 from llamatron.tui import keys
-from llamatron.tui.keys import Key, Steps
+from llamatron.tui.keys import Binding, Key, Steps
 
 
 def all_but(*, bindings, hidden):
@@ -49,21 +49,21 @@ def all_but(*, bindings, hidden):
 class Page:
     """What every page has: the keys that work everywhere, which the F1 dialog lists first, and Esc, which goes back."""
 
-    SAVE = (Key.CTRL_S, legends.KeyName.CTRL_S, legends.What.SAVE)
-    OPEN_SET = (Key.CTRL_O, legends.KeyName.CTRL_O, legends.What.OPEN_SET)
-    EXPORT = (Key.CTRL_X, legends.KeyName.CTRL_X, legends.What.EXPORT)
-    UNDO = (Key.CTRL_Z, legends.KeyName.CTRL_Z, legends.What.UNDO)
-    REDO = (Key.CTRL_Y, legends.KeyName.CTRL_Y, legends.What.REDO)
+    SAVE = Binding(Key.CTRL_S, legends.KeyName.CTRL_S, legends.What.SAVE)
+    OPEN_SET = Binding(Key.CTRL_O, legends.KeyName.CTRL_O, legends.What.OPEN_SET)
+    EXPORT = Binding(Key.CTRL_X, legends.KeyName.CTRL_X, legends.What.EXPORT)
+    UNDO = Binding(Key.CTRL_Z, legends.KeyName.CTRL_Z, legends.What.UNDO)
+    REDO = Binding(Key.CTRL_Y, legends.KeyName.CTRL_Y, legends.What.REDO)
     # The emergency stop: note offs, all notes off and all sound off on every channel the instruments use, whatever is known to be playing.
-    SILENCE = (Key.CTRL_T, legends.KeyName.CTRL_T, legends.What.SILENCE)
+    SILENCE = Binding(Key.CTRL_T, legends.KeyName.CTRL_T, legends.What.SILENCE)
     # Quits at once, from any page, closing FluidSynth and the MIDI sender as quitting does, as Ctrl+C stops a program in a terminal.
-    QUIT_NOW = (Key.CTRL_C, legends.KeyName.CTRL_C, legends.What.QUIT_NOW)
-    HELP = (Key.F1, legends.KeyName.F1, legends.What.HELP)
+    QUIT_NOW = Binding(Key.CTRL_C, legends.KeyName.CTRL_C, legends.What.QUIT_NOW)
+    HELP = Binding(Key.F1, legends.KeyName.F1, legends.What.HELP)
     # About is F3, so that F2 renames as on Windows.
-    ABOUT = (Key.F3, legends.KeyName.F3, legends.What.ABOUT)
+    ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.What.ABOUT)
     # The song wizard is F5, set apart from F1 and F3, which only inform: F9 and the keys above it are the Mac's own.
-    WIZARD = (Key.F5, legends.KeyName.F5, legends.What.WIZARD)
-    BACK = (Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.BACK)
+    WIZARD = Binding(Key.F5, legends.KeyName.F5, legends.What.WIZARD)
+    BACK = Binding(Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.BACK)
     # The keys every page has, in the order the F1 dialog lists them. Ctrl+S is Save because a plain
     # letter would be typed into names, and Cmd+S never reaches a terminal program. Open is Ctrl+O,
     # Export is Ctrl+X, Help is F1 and About is F2 for the same reason:
@@ -84,30 +84,30 @@ class Page:
 class MainPage(Page):
     """The main screen: a letter opens each page, the arrows and Enter do the same, and Q quits, here alone."""
 
-    FILE = (Key.F, legends.KeyName.F, labels.PageName.FILE)
-    SONGS = (Key.S, legends.KeyName.S, labels.PageName.SONGS)
-    PATTERNS = (Key.P, legends.KeyName.P, labels.PageName.PATTERNS)
-    CHAINS = (Key.C, legends.KeyName.C, labels.PageName.CHAINS)
-    GENERATORS = (Key.G, legends.KeyName.G, labels.PageName.GENERATORS)
-    SCALES = (Key.Z, legends.KeyName.Z, labels.PageName.SCALES)
-    GROOVES = (Key.V, legends.KeyName.V, labels.PageName.GROOVES)
-    INSTRUMENTS = (Key.I, legends.KeyName.I, labels.PageName.INSTRUMENTS)
-    REGISTERS = (Key.R, legends.KeyName.R, labels.PageName.REGISTERS)
-    ARRANGE = (Key.A, legends.KeyName.A, labels.PageName.ARRANGE)
+    FILE = Binding(Key.F, legends.KeyName.F, labels.PageName.FILE)
+    SONGS = Binding(Key.S, legends.KeyName.S, labels.PageName.SONGS)
+    PATTERNS = Binding(Key.P, legends.KeyName.P, labels.PageName.PATTERNS)
+    CHAINS = Binding(Key.C, legends.KeyName.C, labels.PageName.CHAINS)
+    GENERATORS = Binding(Key.G, legends.KeyName.G, labels.PageName.GENERATORS)
+    SCALES = Binding(Key.Z, legends.KeyName.Z, labels.PageName.SCALES)
+    GROOVES = Binding(Key.V, legends.KeyName.V, labels.PageName.GROOVES)
+    INSTRUMENTS = Binding(Key.I, legends.KeyName.I, labels.PageName.INSTRUMENTS)
+    REGISTERS = Binding(Key.R, legends.KeyName.R, labels.PageName.REGISTERS)
+    ARRANGE = Binding(Key.A, legends.KeyName.A, labels.PageName.ARRANGE)
     # The Real Time switch, a cell among the pages that turns real-time playback on and off.
-    REAL_TIME = (Key.T, legends.KeyName.T, labels.PageName.REAL_TIME)
+    REAL_TIME = Binding(Key.T, legends.KeyName.T, labels.PageName.REAL_TIME)
     # The Open and Export cells take a plain letter here, to save a keystroke, since the main screen's letters are its own
     #. Ctrl+O and Ctrl+X still work, here as everywhere. Save stays Ctrl+S, since S is Songs.
-    OPEN_SET_HERE = (Key.O, legends.KeyName.O, legends.What.OPEN_SET)
-    EXPORT_HERE = (Key.X, legends.KeyName.X, legends.What.EXPORT)
+    OPEN_SET_HERE = Binding(Key.O, legends.KeyName.O, legends.What.OPEN_SET)
+    EXPORT_HERE = Binding(Key.X, legends.KeyName.X, legends.What.EXPORT)
     # Import MIDI, in the row of actions after Export.
-    IMPORT_HERE = (Key.M, legends.KeyName.M, legends.What.IMPORT_MIDI)
-    QUIT = (Key.Q, legends.KeyName.Q, legends.What.QUIT)
-    SELECT = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.SELECT)
-    OPEN = (Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
+    IMPORT_HERE = Binding(Key.M, legends.KeyName.M, legends.What.IMPORT_MIDI)
+    QUIT = Binding(Key.Q, legends.KeyName.Q, legends.What.QUIT)
+    SELECT = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.SELECT)
+    OPEN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
     # Help and About work everywhere and have no cell, so the main screen's legend reminds of them, in lower case.
-    FOOTER_HELP = (Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
-    FOOTER_ABOUT = (Key.F3, legends.KeyName.F3, legends.MSG_ABOUT_FOOTER_WHAT)
+    FOOTER_HELP = Binding(Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
+    FOOTER_ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.MSG_ABOUT_FOOTER_WHAT)
     # The pages in the order of their cells, four to a row.
     PAGES = [FILE, SONGS, PATTERNS, CHAINS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, ARRANGE, REAL_TIME]
     IN_HELP = [*PAGES, OPEN_SET_HERE, EXPORT_HERE, IMPORT_HERE, QUIT, SELECT, OPEN]
@@ -117,27 +117,27 @@ class MainPage(Page):
 class ListPage(Page):
     """A page of rows with a + row at the bottom: the keys every list of named things shares, and the keys of a search."""
 
-    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    ADD = (Key.A, legends.KeyName.A, legends.What.ADD)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    ADD = Binding(Key.A, legends.KeyName.A, legends.What.ADD)
     # Enter on the + row adds, as A does on any row.
-    ADD_HERE = (Key.ENTER, legends.KeyName.ENTER, legends.What.ADD)
-    EDIT = (Key.ENTER, legends.KeyName.ENTER, legends.What.EDIT)
+    ADD_HERE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ADD)
+    EDIT = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.EDIT)
     # F2 renames too, as on Windows; N stays, since a stock Mac needs fn for F2.
-    RENAME = ((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
-    COPY = (Key.C, legends.KeyName.C, legends.What.COPY)
-    DELETE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DELETE)
+    RENAME = Binding((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
+    COPY = Binding(Key.C, legends.KeyName.C, legends.What.COPY)
+    DELETE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DELETE)
     # Move mode: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it where it is.
-    MOVE = (Key.M, legends.KeyName.M, legends.What.MOVE)
-    CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
-    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
-    SORT = (Key.S, legends.KeyName.S, legends.What.SORT)
-    SEARCH = (Key.SLASH, legends.KeyName.SLASH, legends.What.SEARCH)
+    MOVE = Binding(Key.M, legends.KeyName.M, legends.What.MOVE)
+    CARRY = Binding(Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
+    DROP = Binding(keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    SORT = Binding(Key.S, legends.KeyName.S, legends.What.SORT)
+    SEARCH = Binding(Key.SLASH, legends.KeyName.SLASH, legends.What.SEARCH)
     # While a search is typed, the page's letters are text.
-    SEARCH_CANCEL = (Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CANCEL)
-    SEARCH_TYPE = (keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
-    SEARCH_ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
-    SEARCH_COMPLETE = (Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
-    SEARCH_KEEP = (Key.ENTER, legends.KeyName.ENTER, legends.What.KEEP)
+    SEARCH_CANCEL = Binding(Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CANCEL)
+    SEARCH_TYPE = Binding(keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    SEARCH_ERASE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
+    SEARCH_COMPLETE = Binding(Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
+    SEARCH_KEEP = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.KEEP)
     SEARCHING = [SEARCH_CANCEL, SEARCH_TYPE, SEARCH_ERASE, SEARCH_COMPLETE, SEARCH_KEEP]
     IN_HELP = [Page.BACK, DROP, SEARCH_CANCEL, ADD_HERE, SELECT, CARRY, SEARCH_TYPE, SEARCH_ERASE, SEARCH_COMPLETE, SEARCH_KEEP, ADD, EDIT, RENAME, COPY, DELETE, MOVE, SORT, SEARCH]
     # The search key works everywhere on a list but stays off the legend.
@@ -151,8 +151,8 @@ class NamedListPage(ListPage):
 class SongsPage(NamedListPage):
     """The Songs page: Space makes the selected song the current one, and Enter opens its settings."""
 
-    CURRENT = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_MAKE_CURRENT_WHAT)
-    SETTINGS = (Key.ENTER, legends.KeyName.ENTER, legends.What.SETTINGS)
+    CURRENT = Binding(Key.SPACE, legends.KeyName.SPACE, legends.MSG_MAKE_CURRENT_WHAT)
+    SETTINGS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.SETTINGS)
     IN_HELP = [
         Page.BACK, ListPage.DROP, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, ListPage.CARRY, *ListPage.SEARCHING[1:], ListPage.ADD, CURRENT, SETTINGS,
         ListPage.RENAME, ListPage.COPY, ListPage.DELETE, ListPage.MOVE, ListPage.SORT, ListPage.SEARCH,
@@ -165,16 +165,16 @@ class PatternsPage(NamedListPage):
     list keys, G, which moves the selected pattern to another group, the keys of a group's heading and of the two buttons that
     add, and L, which plays the selected pattern at once, again and again, until L stops it."""
 
-    LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
-    STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
-    GROUP = (Key.G, legends.KeyName.G, legends.MSG_GROUP_WHAT)
+    LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
+    STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
+    GROUP = Binding(Key.G, legends.KeyName.G, legends.MSG_GROUP_WHAT)
     # A group's heading opens and closes as a settings page's section does, and PgUp and PgDn jump between the headings.
-    TOGGLE_GROUP = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    NEXT_GROUP = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_GROUP_WHAT)
-    NEW_PATTERN = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_PATTERN_WHAT)
-    NEW_GROUP = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_GROUP_WHAT)
+    TOGGLE_GROUP = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    NEXT_GROUP = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_GROUP_WHAT)
+    NEW_PATTERN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_PATTERN_WHAT)
+    NEW_GROUP = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_GROUP_WHAT)
     # On a group's heading Bksp takes its patterns out of the group and deletes none.
-    UNGROUP = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_UNGROUP_WHAT)
+    UNGROUP = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_UNGROUP_WHAT)
     IN_HELP = [
         Page.BACK, ListPage.SEARCH_CANCEL, ListPage.SELECT, *ListPage.SEARCHING[1:], TOGGLE_GROUP, NEW_PATTERN, NEW_GROUP, ListPage.EDIT, GROUP, ListPage.ADD,
         ListPage.RENAME, ListPage.COPY, ListPage.DELETE, UNGROUP, LISTEN, STOP_LISTENING, NEXT_GROUP, ListPage.SEARCH,
@@ -195,8 +195,8 @@ class GeneratorsPage(ListPage):
     A adds one of a type asked for, the usual keys rename, copy and delete one, and a type's heading opens and closes."""
 
     # A type's heading opens and closes as a settings page's section does, and PgUp and PgDn jump between the headings.
-    TOGGLE_TYPE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    NEXT_TYPE = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TYPE_WHAT)
+    TOGGLE_TYPE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    NEXT_TYPE = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TYPE_WHAT)
     IN_HELP = [
         Page.BACK, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, *ListPage.SEARCHING[1:], TOGGLE_TYPE, ListPage.ADD, ListPage.EDIT, ListPage.RENAME, ListPage.COPY,
         ListPage.DELETE, NEXT_TYPE, ListPage.SEARCH,
@@ -207,7 +207,7 @@ class GeneratorsPage(ListPage):
 class OpenPage(ListPage):
     """The page that opens a set file: Enter opens the file or the directory under the cursor."""
 
-    OPEN = (Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
+    OPEN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
     IN_HELP = [Page.BACK, ListPage.SEARCH_CANCEL, ListPage.SELECT, *ListPage.SEARCHING[1:], OPEN, ListPage.SEARCH]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
 
@@ -219,7 +219,7 @@ class InstrumentsPage(NamedListPage):
 class GroovesPage(NamedListPage):
     """The Grooves page: a factory groove can only be viewed and copied."""
 
-    VIEW = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_VIEW_WHAT)
+    VIEW = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_VIEW_WHAT)
     IN_HELP = [
         Page.BACK, ListPage.DROP, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, ListPage.CARRY, *ListPage.SEARCHING[1:], ListPage.ADD, VIEW, ListPage.EDIT,
         ListPage.RENAME, ListPage.COPY, ListPage.DELETE, ListPage.MOVE, ListPage.SORT, ListPage.SEARCH,
@@ -230,9 +230,9 @@ class GroovesPage(NamedListPage):
 class ChainEditor(ListPage):
     """The chain editor: its rows are the chain's steps, and N renames the chain itself."""
 
-    CHANGE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHANGE)
-    REMOVE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)
-    WHEN = (Key.W, Key.W.upper(), legends.What.WHEN)
+    CHANGE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHANGE)
+    REMOVE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)
+    WHEN = Binding(Key.W, Key.W.upper(), legends.What.WHEN)
     IN_HELP = [
         Page.BACK, ListPage.DROP, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, ListPage.CARRY, *ListPage.SEARCHING[1:], ListPage.ADD, CHANGE, ListPage.COPY, REMOVE,
         ListPage.MOVE, ListPage.RENAME, WHEN, ListPage.SEARCH,
@@ -243,7 +243,7 @@ class ChainEditor(ListPage):
 class ChainListPage(ListPage):
     """The chains a clip, a scene or a track runs: A adds one, U and D move it, Bksp takes it out of the list."""
 
-    REMOVE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)
+    REMOVE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)
     IN_HELP = [Page.BACK, ListPage.DROP, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, ListPage.CARRY, *ListPage.SEARCHING[1:], ListPage.ADD, REMOVE, ListPage.MOVE, ListPage.SEARCH]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
 
@@ -251,23 +251,23 @@ class ChainListPage(ListPage):
 class FieldPage(Page):
     """A page of settings: Up and Down pick a field, Left and Right change its value, and what Enter and Bksp do is said by the field."""
 
-    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
     # [ dec and ] inc, the one adjust system, named the same way everywhere; Left and Right do the same, off the legend.
-    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     # A field that's true or false answers to Space and Enter alike.
-    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     # What Enter and Bksp do depends on the field, which says so itself: these words stand for the field's own.
-    ENTER = (Key.ENTER, legends.KeyName.ENTER, legends.What.EDIT)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    ENTER = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.EDIT)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     # On a page with sections, PgUp and PgDn jump between their headings, as in the pattern editor's rows.
-    SECTION = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
+    SECTION = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
     # F2 renames from any field of a page that has a Name, as on Windows; off the legend, where Enter on Name says rename.
-    RENAME = (Key.F2, legends.KeyName.F2, legends.What.RENAME)
+    RENAME = Binding(Key.F2, legends.KeyName.F2, legends.What.RENAME)
     # On the row of buttons under the settings, Left and Right move along it.
-    ALONG_BUTTONS = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
     # In a row of cells side by side, Left and Right move between the cells, and step nothing.
-    ALONG_CELLS = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    ALONG_CELLS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
@@ -277,25 +277,25 @@ class WizardPage(FieldPage):
     In the tree, Up and Down move, Left and Right close and open a part, and ENTER or Tab moves into the settings; there the
     settings' own keys work, and ESC or Tab moves back to the tree. ESC in the tree closes the wizard."""
 
-    TREE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    FOLD = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_WIZARD_FOLD_WHAT)
-    INTO_FIELDS = ((Key.ENTER, Key.TAB), legends.KeyName.ENTER, legends.What.EDIT)
-    TO_TREE = ((Key.ESCAPE, Key.TAB), legends.KeyName.ESCAPE, legends.MSG_WIZARD_TO_TREE_WHAT)
-    CLOSE = (Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CLOSE)
+    TREE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    FOLD = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_WIZARD_FOLD_WHAT)
+    INTO_FIELDS = Binding((Key.ENTER, Key.TAB), legends.KeyName.ENTER, legends.What.EDIT)
+    TO_TREE = Binding((Key.ESCAPE, Key.TAB), legends.KeyName.ESCAPE, legends.MSG_WIZARD_TO_TREE_WHAT)
+    CLOSE = Binding(Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CLOSE)
     # A part that is one of a list, as a section of the form, takes the keys every list has; A also adds from the part that holds the list.
-    ADD = (Key.A, legends.KeyName.A, legends.What.ADD)
-    INSERT = (Key.I, legends.KeyName.I, legends.What.INSERT)
-    COPY = (Key.C, legends.KeyName.C, legends.What.COPY)
-    DELETE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DELETE)
-    MOVE = (Key.M, legends.KeyName.M, legends.What.MOVE)
-    CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
-    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    ADD = Binding(Key.A, legends.KeyName.A, legends.What.ADD)
+    INSERT = Binding(Key.I, legends.KeyName.I, legends.What.INSERT)
+    COPY = Binding(Key.C, legends.KeyName.C, legends.What.COPY)
+    DELETE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DELETE)
+    MOVE = Binding(Key.M, legends.KeyName.M, legends.What.MOVE)
+    CARRY = Binding(Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
+    DROP = Binding(keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     # On a part with something to hear, as the hook, a tune or a section: the part of the song as it would be made, through FluidSynth.
-    LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
-    STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
+    LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
+    STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     # On a riff or a section's melody: other notes written for it, after a question. On a riff: its name.
-    REGENERATE = (Key.R, legends.KeyName.R, legends.MSG_REGENERATE_WHAT)
-    RENAME_RIFF = (Key.N, legends.KeyName.N, legends.What.RENAME)
+    REGENERATE = Binding(Key.R, legends.KeyName.R, legends.MSG_REGENERATE_WHAT)
+    RENAME_RIFF = Binding(Key.N, legends.KeyName.N, legends.What.RENAME)
     IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, REGENERATE, RENAME_RIFF, *FieldPage.IN_HELP[1:]]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -303,8 +303,8 @@ class WizardPage(FieldPage):
 class FilePage(FieldPage):
     """The File page: N starts a new set and W saves the set under another name."""
 
-    NEW = (Key.N, legends.KeyName.N, legends.MSG_NEW_WHAT)
-    SAVE_AS = (Key.W, legends.KeyName.W, legends.MSG_SAVE_AS_WHAT)
+    NEW = Binding(Key.N, legends.KeyName.N, legends.MSG_NEW_WHAT)
+    SAVE_AS = Binding(Key.W, legends.KeyName.W, legends.MSG_SAVE_AS_WHAT)
     IN_HELP = [*FieldPage.IN_HELP, NEW, SAVE_AS]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -321,9 +321,9 @@ class RegistersPage(FieldPage):
     """The Registers page, a grid of the four registers by their settings: the arrows move over it, stopping at
     every edge, [ and ] make the value under the cursor less and more, and Enter, Space and Bksp act on it as on a settings page."""
 
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR]
     IN_LEGEND = IN_HELP
 
@@ -335,15 +335,15 @@ class ScenePage(FieldPage):
 class ClipPage(FieldPage):
     """The clip page: the settings keys, and J, which jumps to the clip's pattern in the pattern editor from any field, since the page has one pattern."""
 
-    OPEN_PATTERN = (Key.J, legends.KeyName.J, legends.MSG_OPEN_PATTERN_WHAT)
+    OPEN_PATTERN = Binding(Key.J, legends.KeyName.J, legends.MSG_OPEN_PATTERN_WHAT)
     # The clip's list of patterns: A adds one, and M picks up the pattern under the cursor, which Up and Down carry and ENTER, ESC or M drops.
-    ADD_PATTERN = (Key.A, legends.KeyName.A, legends.MSG_ADD_PATTERN_WHAT)
-    MOVE_PATTERN = (Key.M, legends.KeyName.M, legends.MSG_MOVE_PATTERN_WHAT)
-    CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
-    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    ADD_PATTERN = Binding(Key.A, legends.KeyName.A, legends.MSG_ADD_PATTERN_WHAT)
+    MOVE_PATTERN = Binding(Key.M, legends.KeyName.M, legends.MSG_MOVE_PATTERN_WHAT)
+    CARRY = Binding(Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
+    DROP = Binding(keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     # Real-time playback: L plays the clip as its scene would, looping until stopped, and L again stops it, with the Play and Stop buttons below the fields doing the same.
-    LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
-    STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
+    LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
+    STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     IN_HELP = [FieldPage.IN_HELP[0], DROP, *FieldPage.IN_HELP[1:], CARRY, ADD_PATTERN, MOVE_PATTERN, OPEN_PATTERN, LISTEN, STOP_LISTENING]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -351,7 +351,7 @@ class ClipPage(FieldPage):
 class TrackEditor(FieldPage):
     """The track editor: the settings keys, and H on the Euclid hits field for a named rhythm."""
 
-    PICK_RHYTHM = (Key.H, legends.KeyName.H, legends.MSG_PICK_RHYTHM_WHAT)
+    PICK_RHYTHM = Binding(Key.H, legends.KeyName.H, legends.MSG_PICK_RHYTHM_WHAT)
     IN_HELP = [*FieldPage.IN_HELP, PICK_RHYTHM]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -359,7 +359,7 @@ class TrackEditor(FieldPage):
 class InstrumentEditor(FieldPage):
     """The instrument editor: the settings keys, and K, which opens the Keyswitch Map from any field, as its button does."""
 
-    KEYSWITCH_MAP = (Key.K, legends.KeyName.K, legends.MSG_KEYSWITCH_MAP_WHAT)
+    KEYSWITCH_MAP = Binding(Key.K, legends.KeyName.K, legends.MSG_KEYSWITCH_MAP_WHAT)
     IN_HELP = [*FieldPage.IN_HELP, KEYSWITCH_MAP]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -411,7 +411,7 @@ class StrumEditor(FieldPage):
 class EuclidEditor(FieldPage):
     """A Euclid's editor: the settings keys, and H on Hits for a named rhythm."""
 
-    PICK_RHYTHM = (Key.H, legends.KeyName.H, legends.MSG_PICK_RHYTHM_WHAT)
+    PICK_RHYTHM = Binding(Key.H, legends.KeyName.H, legends.MSG_PICK_RHYTHM_WHAT)
     IN_HELP = [*FieldPage.IN_HELP, PICK_RHYTHM]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -455,9 +455,9 @@ class ArticulateEditor(ShapeEditor):
 class DriftEditor(FieldPage):
     """The drift's editor: the settings keys, except that Left and Right pick version A or B on a row that has both, so only [ and ] change a value."""
 
-    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    VERSION = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_A_OR_B_WHAT)
+    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    VERSION = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_A_OR_B_WHAT)
     IN_HELP = [Page.BACK, FieldPage.SELECT, VERSION, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION, FieldPage.RENAME, FieldPage.ALONG_BUTTONS]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -465,19 +465,19 @@ class DriftEditor(FieldPage):
 class NotesPage(Page):
     """The Description page: reading, it scrolls and E edits; editing, Tab moves between the text and the Save and Cancel buttons."""
 
-    SCROLL = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.SCROLL)
-    EDIT = (Key.E, legends.KeyName.E, legends.What.EDIT)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    SCROLL = Binding(Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.SCROLL)
+    EDIT = Binding(Key.E, legends.KeyName.E, legends.What.EDIT)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     # While the text is edited.
-    CANCEL = (Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CANCEL)
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    NEW_LINE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_LINE_WHAT)
-    ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
-    TO_BUTTONS = (Key.TAB, legends.KeyName.TAB, legends.MSG_TO_BUTTONS_WHAT)
+    CANCEL = Binding(Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CANCEL)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    NEW_LINE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_LINE_WHAT)
+    ERASE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
+    TO_BUTTONS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_BUTTONS_WHAT)
     # On the Save and Cancel buttons.
-    SELECT_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    PRESS_BUTTON = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    TO_TEXT = (Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TEXT_WHAT)
+    SELECT_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    PRESS_BUTTON = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    TO_TEXT = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TEXT_WHAT)
     IN_HELP = [Page.BACK, CANCEL, SCROLL, MOVE, SELECT_BUTTON, NEW_LINE, PRESS_BUTTON, EDIT, CLEAR, ERASE, TO_BUTTONS, TO_TEXT]
     IN_LEGEND = IN_HELP
 
@@ -489,11 +489,11 @@ class StepEditor(Page):
 class OneRowEditor(StepEditor):
     """An editor of one row of numbers: Left and Right move along the row, and Up and Down change the number, since no row lies below the cursor."""
 
-    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    MOVE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # [ dec and ] inc as everywhere; Up and Down do the same, off the legend, since no row lies below the cursor.
-    LESS = (keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
+    LESS = Binding(keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TYPE = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, TYPE]
     IN_LEGEND = IN_HELP
 
@@ -502,12 +502,12 @@ class OffsetsEditor(OneRowEditor):
     """The offsets editor, one row of an arp's offsets."""
 
     # Space or Enter silences a step that plays and plays a step that's silent.
-    SILENT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_SILENT_WHAT)
-    PLAY = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLAY_WHAT)
-    INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
-    REMOVE_STEP = (Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
+    SILENT = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_SILENT_WHAT)
+    PLAY = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLAY_WHAT)
+    INSERT_STEP = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
+    REMOVE_STEP = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
     # Tab moves between the Offset row and the register add rows under it.
-    NEXT_ROW = (Key.TAB, legends.KeyName.TAB, legends.MSG_NEXT_ROW_WHAT)
+    NEXT_ROW = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_NEXT_ROW_WHAT)
     IN_HELP = [*OneRowEditor.IN_HELP, NEXT_ROW, SILENT, PLAY, INSERT_STEP, REMOVE_STEP]
     IN_LEGEND = IN_HELP
 
@@ -515,19 +515,19 @@ class OffsetsEditor(OneRowEditor):
 class ChordsEditor(StepEditor):
     """The chord editor, a progression's chords: the arrows move along the chords and between the Chord, #/b and Inv. rows."""
 
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TYPE = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
     # On the #/b and Inv. rows, Space or Enter goes to the next choice, as on the pattern editor's cycle rows.
-    NEXT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
-    INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
-    REMOVE_STEP = (Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
-    PICK = (Key.H, legends.KeyName.H, legends.MSG_PICK_PROGRESSION_WHAT)
+    NEXT = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
+    INSERT_STEP = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
+    REMOVE_STEP = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
+    PICK = Binding(Key.H, legends.KeyName.H, legends.MSG_PICK_PROGRESSION_WHAT)
     # On the Scale, Quality and Tensions rows, Enter opens the Chord dialog, and Space goes to the next choice.
-    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    NEXT_CHOICE = (Key.SPACE, legends.KeyName.SPACE, legends.What.NEXT)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    CHOOSE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    NEXT_CHOICE = Binding(Key.SPACE, legends.KeyName.SPACE, legends.What.NEXT)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, TYPE, NEXT, CHOOSE, NEXT_CHOICE, CLEAR, INSERT_STEP, REMOVE_STEP, PICK]
     IN_LEGEND = IN_HELP
 
@@ -535,11 +535,11 @@ class ChordsEditor(StepEditor):
 class StepRowEditor(StepEditor):
     """A row of on-or-off steps: Left and Right move, Space or Enter turns a step on or off, I and D insert and remove."""
 
-    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    MOVE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # As in the one-row editors, Up and Down change the step under the cursor too, off the legend, since no row lies below it.
-    TOGGLE = ((*keys.TOGGLE_KEYS, *keys.ARROWS_UP_DOWN), legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
-    REMOVE_STEP = (Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
+    TOGGLE = Binding((*keys.TOGGLE_KEYS, *keys.ARROWS_UP_DOWN), legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    INSERT_STEP = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
+    REMOVE_STEP = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
     IN_HELP = [Page.BACK, MOVE, TOGGLE, INSERT_STEP, REMOVE_STEP]
     IN_LEGEND = IN_HELP
 
@@ -547,15 +547,15 @@ class StepRowEditor(StepEditor):
 class GuitarBarEditor(StepEditor):
     """A Guitarify's bar of strokes: Left and Right move, [ and ] change the stroke, Space or ENTER accents, I and D insert and remove, S the cell length, R a ready-made bar."""
 
-    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    MOVE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # Up and Down change the stroke too, off the legend, since no row lies below the cursor.
-    LESS = (keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    ACCENT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_ACCENT_WHAT)
-    INSERT_CELL = (Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
-    REMOVE_CELL = (Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
-    CELL_LENGTH = (Key.S, legends.KeyName.S, legends.MSG_CELL_LENGTH_WHAT)
-    READY_BARS = (Key.R, legends.KeyName.R, legends.MSG_READY_BARS_WHAT)
+    LESS = Binding(keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    ACCENT = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_ACCENT_WHAT)
+    INSERT_CELL = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
+    REMOVE_CELL = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
+    CELL_LENGTH = Binding(Key.S, legends.KeyName.S, legends.MSG_CELL_LENGTH_WHAT)
+    READY_BARS = Binding(Key.R, legends.KeyName.R, legends.MSG_READY_BARS_WHAT)
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, ACCENT, INSERT_CELL, REMOVE_CELL, CELL_LENGTH, READY_BARS]
     IN_LEGEND = IN_HELP
 
@@ -579,11 +579,11 @@ class DragStepsEditor(StepRowEditor):
 class GrooveEditor(OneRowEditor):
     """The groove editor, one row of a groove's cells, with S for the cell length and N to rename."""
 
-    INSERT_CELL = (Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
-    REMOVE_CELL = (Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
-    CELL_LENGTH = (Key.S, legends.KeyName.S, legends.MSG_CELL_LENGTH_WHAT)
+    INSERT_CELL = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
+    REMOVE_CELL = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
+    CELL_LENGTH = Binding(Key.S, legends.KeyName.S, legends.MSG_CELL_LENGTH_WHAT)
     # F2 renames too, as on Windows; N stays, since a stock Mac needs fn for F2.
-    RENAME = ((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
+    RENAME = Binding((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
     IN_HELP = [*OneRowEditor.IN_HELP, INSERT_CELL, REMOVE_CELL, CELL_LENGTH, RENAME]
     IN_LEGEND = IN_HELP
 
@@ -591,86 +591,86 @@ class GrooveEditor(OneRowEditor):
 class ArrangePage(Page):
     """Arrange: the keys change with what the cursor is on, a track's name, a scene's name, a clip or a +, so each meaning has a binding of its own."""
 
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     # Real-time playback, bound only while the set's Real Time switch is on: Space plays what the cursor is on, or stops it, and the mark before each bar says which.
-    PLAY_SONG = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_SONG_WHAT)
-    PLAY_SCENE = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_SCENE_WHAT)
-    PLAY_CLIP = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_CLIP_WHAT)
-    STOP_PLAYING = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_STOP_WHAT)
-    STOP_CLIP = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_STOP_CLIP_WHAT)
+    PLAY_SONG = Binding(Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_SONG_WHAT)
+    PLAY_SCENE = Binding(Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_SCENE_WHAT)
+    PLAY_CLIP = Binding(Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_CLIP_WHAT)
+    STOP_PLAYING = Binding(Key.SPACE, legends.KeyName.SPACE, legends.MSG_STOP_WHAT)
+    STOP_CLIP = Binding(Key.SPACE, legends.KeyName.SPACE, legends.MSG_STOP_CLIP_WHAT)
     # On the row of track names.
-    ADD_TRACK = (Key.A, legends.KeyName.A, legends.MSG_ADD_TRACK_WHAT)
-    ADD_TRACK_HERE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_TRACK_WHAT)
-    TRACK_SETTINGS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_TRACK_SETTINGS_WHAT)
-    COPY_TRACK = (Key.C, legends.KeyName.C, legends.MSG_COPY_TRACK_WHAT)
-    INSERT_TRACK = (Key.I, legends.KeyName.I, legends.MSG_INSERT_TRACK_WHAT)
-    MOVE_TRACK = (Key.M, legends.KeyName.M, legends.MSG_MOVE_TRACK_WHAT)
-    DELETE_TRACK = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_DELETE_TRACK_WHAT)
+    ADD_TRACK = Binding(Key.A, legends.KeyName.A, legends.MSG_ADD_TRACK_WHAT)
+    ADD_TRACK_HERE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_TRACK_WHAT)
+    TRACK_SETTINGS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_TRACK_SETTINGS_WHAT)
+    COPY_TRACK = Binding(Key.C, legends.KeyName.C, legends.MSG_COPY_TRACK_WHAT)
+    INSERT_TRACK = Binding(Key.I, legends.KeyName.I, legends.MSG_INSERT_TRACK_WHAT)
+    MOVE_TRACK = Binding(Key.M, legends.KeyName.M, legends.MSG_MOVE_TRACK_WHAT)
+    DELETE_TRACK = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_DELETE_TRACK_WHAT)
     # On a scene's row.
-    ADD_SCENE = (Key.A, legends.KeyName.A, legends.MSG_ADD_SCENE_WHAT)
-    ADD_SCENE_HERE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_SCENE_WHAT)
-    SCENE_SETTINGS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_SCENE_SETTINGS_WHAT)
-    COPY_SCENE = (Key.C, legends.KeyName.C, legends.MSG_COPY_SCENE_WHAT)
-    DELETE_SCENE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_DELETE_SCENE_WHAT)
-    INSERT_SCENE = (Key.I, legends.KeyName.I, legends.MSG_INSERT_SCENE_WHAT)
-    MOVE_SCENE = (Key.M, legends.KeyName.M, legends.MSG_MOVE_SCENE_WHAT)
+    ADD_SCENE = Binding(Key.A, legends.KeyName.A, legends.MSG_ADD_SCENE_WHAT)
+    ADD_SCENE_HERE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_SCENE_WHAT)
+    SCENE_SETTINGS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_SCENE_SETTINGS_WHAT)
+    COPY_SCENE = Binding(Key.C, legends.KeyName.C, legends.MSG_COPY_SCENE_WHAT)
+    DELETE_SCENE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_DELETE_SCENE_WHAT)
+    INSERT_SCENE = Binding(Key.I, legends.KeyName.I, legends.MSG_INSERT_SCENE_WHAT)
+    MOVE_SCENE = Binding(Key.M, legends.KeyName.M, legends.MSG_MOVE_SCENE_WHAT)
     # Move mode on Arrange: M on a scene's name, a track's name or a clip picks it up, the arrows carry it (a clip only
     # into an empty cell), and Enter, Esc or M drops it where it is.
-    MOVE_CLIP = (Key.M, legends.KeyName.M, legends.MSG_MOVE_CLIP_WHAT)
-    CARRY_SCENE = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
-    CARRY_TRACK = (Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), legends.KeyName.LEFT_RIGHT, legends.What.CARRY)
-    CARRY_CLIP = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.CARRY)
-    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    MOVE_CLIP = Binding(Key.M, legends.KeyName.M, legends.MSG_MOVE_CLIP_WHAT)
+    CARRY_SCENE = Binding(Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
+    CARRY_TRACK = Binding(Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), legends.KeyName.LEFT_RIGHT, legends.What.CARRY)
+    CARRY_CLIP = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.CARRY)
+    DROP = Binding(keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     # On a clip, or the empty cell where one would be.
-    ADD_CLIP = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_CLIP_WHAT)
+    ADD_CLIP = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_CLIP_WHAT)
     # B on an empty cell makes a blank pattern named after the track, puts a clip of it there and opens it, as Live makes a new clip in an empty slot.
-    BLANK_PATTERN = (Key.B, legends.KeyName.B, legends.MSG_BLANK_PATTERN_WHAT)
-    EDIT_CLIP = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_EDIT_CLIP_WHAT)
+    BLANK_PATTERN = Binding(Key.B, legends.KeyName.B, legends.MSG_BLANK_PATTERN_WHAT)
+    EDIT_CLIP = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_EDIT_CLIP_WHAT)
     # P opens the clip's pattern in the pattern editor, chosen over Shift+Enter, which a stock terminal sends as Enter.
-    OPEN_PATTERN = (Key.J, legends.KeyName.J, legends.MSG_OPEN_PATTERN_WHAT)
-    COPY_CLIP = (Key.C, legends.KeyName.C, legends.MSG_COPY_CLIP_WHAT)
-    DELETE_CLIP = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_DELETE_CLIP_WHAT)
-    PASTE_CLIP = (Key.V, legends.KeyName.V, legends.MSG_PASTE_CLIP_WHAT)
+    OPEN_PATTERN = Binding(Key.J, legends.KeyName.J, legends.MSG_OPEN_PATTERN_WHAT)
+    COPY_CLIP = Binding(Key.C, legends.KeyName.C, legends.MSG_COPY_CLIP_WHAT)
+    DELETE_CLIP = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_DELETE_CLIP_WHAT)
+    PASTE_CLIP = Binding(Key.V, legends.KeyName.V, legends.MSG_PASTE_CLIP_WHAT)
     # A clip's track moves with the same keys as on the track's name, listed last on a clip, after the scene's keys.
     # With Real Time on, the visualizer over the clip area: the key steps through its modes and back to
     # the clips, from anywhere on the page, and while it shows, Esc brings the clips back rather than leaving the page.
-    VISUALIZER = (Key.Z, legends.KeyName.Z, legends.MSG_VISUALIZER_WHAT)
+    VISUALIZER = Binding(Key.Z, legends.KeyName.Z, legends.MSG_VISUALIZER_WHAT)
     # Fracture: after a question, every clip of the song gets a pattern of its own, so that sections that shared one can be edited apart.
-    FRACTURE = (Key.F, legends.KeyName.F, legends.MSG_FRACTURE_WHAT)
+    FRACTURE = Binding(Key.F, legends.KeyName.F, legends.MSG_FRACTURE_WHAT)
     # While the visualizer shows, [ and ] step to the mode before or after, going round.
-    STEP_VISUALIZER = (Steps(back=(Key.LEFT_BRACKET,), forward=(Key.RIGHT_BRACKET,)), legends.KeyName.BRACKETS, legends.MSG_STEP_VISUALIZER_WHAT)
+    STEP_VISUALIZER = Binding(Steps(back=(Key.LEFT_BRACKET,), forward=(Key.RIGHT_BRACKET,)), legends.KeyName.BRACKETS, legends.MSG_STEP_VISUALIZER_WHAT)
     # The details view: D shows, under every bar, the chains and generators and the settings that aren't
     # their defaults, widening the columns to fit, with coloured dividers between the tracks, and D again hides them.
-    SHOW_DETAILS = (Key.D, legends.KeyName.D, legends.MSG_SHOW_DETAILS_WHAT)
-    HIDE_DETAILS = (Key.D, legends.KeyName.D, legends.MSG_HIDE_DETAILS_WHAT)
+    SHOW_DETAILS = Binding(Key.D, legends.KeyName.D, legends.MSG_SHOW_DETAILS_WHAT)
+    HIDE_DETAILS = Binding(Key.D, legends.KeyName.D, legends.MSG_HIDE_DETAILS_WHAT)
     # Tab on a track's name, a scene's name or a clip, opens that cell's details if they aren't showing and locks into it:
     # Up and Down pick a chain, a generator, or a line naming a scale, an instrument or a groove, shown in brackets, Enter opens its page,
     # and Tab again or Esc leaves, closing the cell's details in the usual view, Esc closing the topmost thing as everywhere.
-    INTO_DETAILS = (Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_DETAILS_WHAT)
-    OUT_OF_DETAILS = (Key.TAB, legends.KeyName.TAB, legends.MSG_OUT_OF_DETAILS_WHAT)
-    PICK_DETAIL = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    OPEN_DETAIL = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_OPEN_DETAIL_WHAT)
+    INTO_DETAILS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_DETAILS_WHAT)
+    OUT_OF_DETAILS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_OUT_OF_DETAILS_WHAT)
+    PICK_DETAIL = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    OPEN_DETAIL = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_OPEN_DETAIL_WHAT)
     # On the + under a cell's chains Enter adds a chain to the cell, and on a chain's line Bksp takes it out of the cell.
-    ADD_CHAIN = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_CHAIN_WHAT)
-    REMOVE_CHAIN = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_REMOVE_CHAIN_WHAT)
+    ADD_CHAIN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_CHAIN_WHAT)
+    REMOVE_CHAIN = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_REMOVE_CHAIN_WHAT)
     # While locked into a cell, D closes every detail and leaves the cell, and Esc leaves the cell.
-    CLOSE_DETAILS = (Key.D, legends.KeyName.D, legends.MSG_CLOSE_DETAILS_WHAT)
+    CLOSE_DETAILS = Binding(Key.D, legends.KeyName.D, legends.MSG_CLOSE_DETAILS_WHAT)
     # P on a scene's name opens Scene View, an Inset Window of every track's notes in the scene; inside it only P closes
     # it, Tab switches between as written and as played, the arrows move its cursor, and Esc closes it as P does.
-    SCENE_VIEW = (Key.P, legends.KeyName.P, legends.MSG_SCENE_VIEW_WHAT)
-    CLOSE_INSET = (Key.P, legends.KeyName.P, legends.MSG_CLOSE_INSET_WHAT)
+    SCENE_VIEW = Binding(Key.P, legends.KeyName.P, legends.MSG_SCENE_VIEW_WHAT)
+    CLOSE_INSET = Binding(Key.P, legends.KeyName.P, legends.MSG_CLOSE_INSET_WHAT)
     # V switches between as written and as played, PgUp and PgDn jump its cursor a bar, and [ and ] scroll the sidebar,
     # so that Tab keeps its one meaning of the next part of a page.
-    TO_PLAYED = (Key.V, legends.KeyName.V, legends.MSG_TO_PLAYED_WHAT)
-    TO_WRITTEN = (Key.V, legends.KeyName.V, legends.MSG_TO_WRITTEN_WHAT)
-    INSET_BARS = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_JUMP_BAR_WHAT)
-    INSET_MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    ESCAPE_INSET = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_CLOSE_INSET_ESC_WHAT)
+    TO_PLAYED = Binding(Key.V, legends.KeyName.V, legends.MSG_TO_PLAYED_WHAT)
+    TO_WRITTEN = Binding(Key.V, legends.KeyName.V, legends.MSG_TO_WRITTEN_WHAT)
+    INSET_BARS = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_JUMP_BAR_WHAT)
+    INSET_MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    ESCAPE_INSET = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_CLOSE_INSET_ESC_WHAT)
     # In Scene View, [ and ] switch between as written and as played, - and = draw each sixteenth narrower or wider, and PgUp and PgDn scroll the sidebar of the tracks' details.
-    INSET_ZOOM = (Steps(back=(Key.MINUS,), forward=(Key.EQUALS,)), legends.KeyName.MINUS_EQUALS, legends.MSG_ZOOM_WHAT)
-    INSET_SCROLL = (Steps(back=(Key.LEFT_BRACKET,), forward=(Key.RIGHT_BRACKET,)), legends.KeyName.BRACKETS, legends.MSG_SCROLL_SIDEBAR_WHAT)
-    ESCAPE_CELL = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_LEAVE_CELL_WHAT)
-    TO_CLIPS = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_TO_CLIPS_WHAT)
+    INSET_ZOOM = Binding(Steps(back=(Key.MINUS,), forward=(Key.EQUALS,)), legends.KeyName.MINUS_EQUALS, legends.MSG_ZOOM_WHAT)
+    INSET_SCROLL = Binding(Steps(back=(Key.LEFT_BRACKET,), forward=(Key.RIGHT_BRACKET,)), legends.KeyName.BRACKETS, legends.MSG_SCROLL_SIDEBAR_WHAT)
+    ESCAPE_CELL = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_LEAVE_CELL_WHAT)
+    TO_CLIPS = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_TO_CLIPS_WHAT)
     IN_HELP = [
         Page.BACK, DROP, TO_CLIPS, ESCAPE_CELL, ESCAPE_INSET, CLOSE_INSET, INSET_MOVE, INSET_BARS, TO_PLAYED, TO_WRITTEN, INSET_ZOOM, INSET_SCROLL, STEP_VISUALIZER, OUT_OF_DETAILS, MOVE, CARRY_SCENE, CARRY_TRACK, CARRY_CLIP, PICK_DETAIL, OPEN_DETAIL, ADD_CHAIN, REMOVE_CHAIN, CLOSE_DETAILS, PLAY_SONG, PLAY_SCENE, PLAY_CLIP, STOP_PLAYING, STOP_CLIP,
         ADD_TRACK, ADD_TRACK_HERE, TRACK_SETTINGS, COPY_TRACK, INSERT_TRACK, MOVE_TRACK, DELETE_TRACK,
@@ -688,17 +688,17 @@ class ArrangePage(Page):
 class PatternEditor(StepEditor):
     """The pattern editor's own keys, whichever view shows: Tab switches the view, S sizes the pattern and R opens Reconfigure."""
 
-    TO_ROLL = (Key.TAB, legends.KeyName.TAB, legends.MSG_TO_ROLL_WHAT)
-    TO_EDITOR = (Key.TAB, legends.KeyName.TAB, legends.MSG_TO_EDITOR_WHAT)
-    RESIZE = (Key.S, legends.KeyName.S, legends.MSG_SIZE_WHAT)
-    RECONFIGURE = (Key.R, legends.KeyName.R, legends.MSG_RECONFIGURE_WHAT)
+    TO_ROLL = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_ROLL_WHAT)
+    TO_EDITOR = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_EDITOR_WHAT)
+    RESIZE = Binding(Key.S, legends.KeyName.S, legends.MSG_SIZE_WHAT)
+    RECONFIGURE = Binding(Key.R, legends.KeyName.R, legends.MSG_RECONFIGURE_WHAT)
     # M opens Munge, the list of ways to rearrange, copy and clear the pattern's steps, many of them around the cursor.
-    MUNGE = (Key.M, legends.KeyName.M, legends.What.MUNGE)
+    MUNGE = Binding(Key.M, legends.KeyName.M, legends.What.MUNGE)
     # Real-time playback: L plays the pattern at once through the pattern preview, looping until L again stops it.
-    LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
-    STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
+    LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
+    STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     # F2 renames the pattern, as on Windows, beside rename in R's menu; off the legend.
-    RENAME = (Key.F2, legends.KeyName.F2, legends.What.RENAME)
+    RENAME = Binding(Key.F2, legends.KeyName.F2, legends.What.RENAME)
     IN_HELP = [Page.BACK, TO_ROLL, TO_EDITOR, RESIZE, MUNGE, RECONFIGURE, LISTEN, STOP_LISTENING, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
@@ -708,11 +708,11 @@ class PatternEditor(StepEditor):
 class PatternRows:
     """The rows view of the pattern editor: the cursor's keys, and the keys that insert and remove a step, which its legend shows."""
 
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
-    SECTION = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
-    INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
-    REMOVE_STEP = (Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    ENDS = Binding(Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
+    SECTION = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
+    INSERT_STEP = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
+    REMOVE_STEP = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
     IN_HELP = [MOVE, ENDS, SECTION, INSERT_STEP, REMOVE_STEP]
     # Home and End are listed by F1 alone.
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ENDS])
@@ -724,20 +724,20 @@ class PianoRoll:
     Enter draws as Space does, since the two do the same everywhere else, so the chord picker took the free letter H.
     """
 
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
-    PLACE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLACE_NOTE_WHAT)
-    CHORD = (Key.H, legends.KeyName.H, legends.MSG_CHORD_WHAT)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    ENDS = Binding(Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
+    PLACE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLACE_NOTE_WHAT)
+    CHORD = Binding(Key.H, legends.KeyName.H, legends.MSG_CHORD_WHAT)
     # [ and ] drag the note's end a step earlier and later, called shrink and stretch, since a note is not a number.
-    SHORTER = (Key.LEFT_BRACKET, legends.KeyName.LEFT_BRACKET, legends.MSG_SHRINK_WHAT)
-    LONGER = (Key.RIGHT_BRACKET, legends.KeyName.RIGHT_BRACKET, legends.MSG_STRETCH_WHAT)
+    SHORTER = Binding(Key.LEFT_BRACKET, legends.KeyName.LEFT_BRACKET, legends.MSG_SHRINK_WHAT)
+    LONGER = Binding(Key.RIGHT_BRACKET, legends.KeyName.RIGHT_BRACKET, legends.MSG_STRETCH_WHAT)
     # Keyswitch took the knife's letter, and the knife the letter people know for cutting.
-    KEYSWITCH = (Key.K, legends.KeyName.K, legends.MSG_KEYSWITCH_WHAT)
-    KNIFE = (Key.X, legends.KeyName.X, legends.MSG_SPLIT_WHAT)
-    ACCIDENTAL = (Key.PERIOD, legends.KeyName.PERIOD, legends.MSG_ACCIDENTAL_WHAT)
-    ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
-    GRAB = (Key.G, legends.KeyName.G, legends.MSG_GRAB_WHAT)
-    ENTRY_SIZE = (Key.E, legends.KeyName.E, legends.MSG_ENTRY_SIZE_WHAT)
+    KEYSWITCH = Binding(Key.K, legends.KeyName.K, legends.MSG_KEYSWITCH_WHAT)
+    KNIFE = Binding(Key.X, legends.KeyName.X, legends.MSG_SPLIT_WHAT)
+    ACCIDENTAL = Binding(Key.PERIOD, legends.KeyName.PERIOD, legends.MSG_ACCIDENTAL_WHAT)
+    ERASE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
+    GRAB = Binding(Key.G, legends.KeyName.G, legends.MSG_GRAB_WHAT)
+    ENTRY_SIZE = Binding(Key.E, legends.KeyName.E, legends.MSG_ENTRY_SIZE_WHAT)
     IN_HELP = [MOVE, ENDS, PLACE, CHORD, KEYSWITCH, SHORTER, LONGER, KNIFE, ACCIDENTAL, ERASE, GRAB, ENTRY_SIZE]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ENDS, KNIFE, GRAB])
 
@@ -747,8 +747,8 @@ class PianoRoll:
 class PatternRow:
     """What the rows share: [ and ] step the value under the cursor, with -, + and = working too, as two legend entries, less and more."""
 
-    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     IN_HELP = [LESS, MORE]
     IN_LEGEND = IN_HELP
 
@@ -756,12 +756,12 @@ class PatternRow:
 class DegreeRow(PatternRow):
     """The Degree row: digits type a degree, or on a drum pattern, where the row is called Note, letters type a note."""
 
-    NOTE = (keys.NOTE_LETTER_KEYS, legends.KeyName.NOTE_LETTERS, legends.MSG_NOTE_WHAT)
+    NOTE = Binding(keys.NOTE_LETTER_KEYS, legends.KeyName.NOTE_LETTERS, legends.MSG_NOTE_WHAT)
     # The digits bound, and their name, are the degrees of the scale: 1-7 in a scale of seven notes.
-    DEGREE = (keys.DIGITS, legends.KeyName.DIGITS, legends.MSG_DEGREE_WHAT)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    DEGREE = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.MSG_DEGREE_WHAT)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     # Space puts a note on an empty step, the first degree, and takes the note off a step that has one.
-    TOGGLE_NOTE = (Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
+    TOGGLE_NOTE = Binding(Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
     IN_HELP = [NOTE, DEGREE, PatternRow.LESS, PatternRow.MORE, TOGGLE_NOTE, CLEAR]
     IN_LEGEND = IN_HELP
 
@@ -770,8 +770,8 @@ class OctaveRow(PatternRow):
     """The Octave row: digits type an octave, and Bksp goes back to the default."""
 
     # The name shown is the range of octaves in the set's octave labels.
-    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.MSG_TYPE_OCTAVE_WHAT)
-    DEFAULT = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DEFAULT)
+    TYPE = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.MSG_TYPE_OCTAVE_WHAT)
+    DEFAULT = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DEFAULT)
     IN_HELP = [TYPE, PatternRow.LESS, PatternRow.MORE, DEFAULT]
     IN_LEGEND = IN_HELP
 
@@ -779,8 +779,8 @@ class OctaveRow(PatternRow):
 class GateRow(PatternRow):
     """The Gate row: Enter types a length, and Bksp goes back to one step."""
 
-    TYPE = (Key.ENTER, legends.KeyName.ENTER, legends.What.TYPE)
-    ONE_STEP = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_ONE_STEP_WHAT)
+    TYPE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.TYPE)
+    ONE_STEP = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_ONE_STEP_WHAT)
     IN_HELP = [PatternRow.LESS, PatternRow.MORE, TYPE, ONE_STEP]
     IN_LEGEND = IN_HELP
 
@@ -788,9 +788,9 @@ class GateRow(PatternRow):
 class NumberRow(PatternRow):
     """A row of numbers, like Velocity: digits type into the cell, and Enter asks for the number."""
 
-    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
-    ASK = (Key.ENTER, legends.KeyName.ENTER, legends.What.TYPE)
-    DEFAULT = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DEFAULT)
+    TYPE = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
+    ASK = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.TYPE)
+    DEFAULT = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DEFAULT)
     IN_HELP = [TYPE, PatternRow.LESS, PatternRow.MORE, ASK, DEFAULT]
     IN_LEGEND = IN_HELP
 
@@ -814,8 +814,8 @@ class SetRow(ControlRow):
 class CycleRow(PatternRow):
     """A row with a cycle of choices, like Dot: Space or Enter goes to the next, and [ and ] step back and forward as on every row, the one adjust system."""
 
-    NEXT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    NEXT = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     IN_HELP = [NEXT, PatternRow.LESS, PatternRow.MORE, CLEAR]
     IN_LEGEND = IN_HELP
 
@@ -835,9 +835,9 @@ class InversionRow(CycleRow):
 class ChordRow(PatternRow):
     """The Chord row: Enter opens the chord picker, so Space alone goes to the next chord, and [ and ] step through them."""
 
-    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    NEXT = (Key.SPACE, legends.KeyName.SPACE, legends.What.NEXT)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    CHOOSE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    NEXT = Binding(Key.SPACE, legends.KeyName.SPACE, legends.What.NEXT)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     IN_HELP = [CHOOSE, NEXT, PatternRow.LESS, PatternRow.MORE, CLEAR]
     IN_LEGEND = IN_HELP
 
@@ -853,8 +853,8 @@ class ChordScaleRow(ChordRow):
 class ToggleRow(PatternRow):
     """A row that's on or off on each step: Space or Enter toggles."""
 
-    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     IN_HELP = [TOGGLE, CLEAR]
     IN_LEGEND = IN_HELP
 
@@ -890,9 +890,9 @@ class RegisterRow(CycleRow):
 class StatementRow(PatternRow):
     """A row of a step's statement about the registers: Enter opens the picker of the part, Space goes to the next choice or number, and [ and ] step."""
 
-    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    NEXT = (Key.SPACE, legends.KeyName.SPACE, legends.What.NEXT)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    CHOOSE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    NEXT = Binding(Key.SPACE, legends.KeyName.SPACE, legends.What.NEXT)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     IN_HELP = [CHOOSE, NEXT, PatternRow.LESS, PatternRow.MORE, CLEAR]
     IN_LEGEND = IN_HELP
 
@@ -900,8 +900,8 @@ class StatementRow(PatternRow):
 class SectionRow(PatternRow):
     """A section's heading: Space or Enter opens a closed section and closes an open one."""
 
-    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_OPEN_SECTION_WHAT)
-    CLOSE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_CLOSE_SECTION_WHAT)
+    OPEN = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_OPEN_SECTION_WHAT)
+    CLOSE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_CLOSE_SECTION_WHAT)
     IN_HELP = [OPEN, CLOSE]
     IN_LEGEND = IN_HELP
 
@@ -911,7 +911,7 @@ class SectionRow(PatternRow):
 class Dialog:
     """What every dialog has: Esc cancels."""
 
-    CANCEL = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CANCEL)
+    CANCEL = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CANCEL)
     IN_HELP = [CANCEL]
     IN_LEGEND = IN_HELP
 
@@ -919,7 +919,7 @@ class Dialog:
 class StartScreen:
     """The start screen: Enter starts."""
 
-    START = (Key.ENTER, legends.KeyName.ENTER, legends.What.START)
+    START = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.START)
     IN_HELP = [START]
     IN_LEGEND = IN_HELP
 
@@ -927,7 +927,7 @@ class StartScreen:
 class MessageDialog(Dialog):
     """A message: Enter or Esc closes it."""
 
-    CLOSE = ((Key.ENTER, *keys.CANCEL_KEYS), legends.KeyName.ENTER, legends.What.CLOSE)
+    CLOSE = Binding((Key.ENTER, *keys.CANCEL_KEYS), legends.KeyName.ENTER, legends.What.CLOSE)
     IN_HELP = [CLOSE]
     IN_LEGEND = IN_HELP
 
@@ -935,10 +935,10 @@ class MessageDialog(Dialog):
 class ConfirmDialog(MessageDialog):
     """A Yes or No question: Left and Right move between the buttons, Enter presses one, and Y and N answer at once."""
 
-    SELECT = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    ANSWER = (Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
-    YES = (Key.Y, legends.KeyName.Y, legends.What.YES)
-    NO = (Key.N, legends.KeyName.N, legends.What.NO)
+    SELECT = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    ANSWER = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
+    YES = Binding(Key.Y, legends.KeyName.Y, legends.What.YES)
+    NO = Binding(Key.N, legends.KeyName.N, legends.What.NO)
     IN_HELP = [Dialog.CANCEL, SELECT, ANSWER, YES, NO]
     IN_LEGEND = IN_HELP
 
@@ -946,10 +946,10 @@ class ConfirmDialog(MessageDialog):
 class QuitDialog(MessageDialog):
     """Quitting with unsaved changes: Left and Right choose a button, Enter presses it, Q quits without saving, S saves and then quits, and Esc cancels."""
 
-    SELECT = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
-    QUIT = (Key.Q, legends.KeyName.Q, legends.MSG_QUIT_WITHOUT_SAVING_WHAT)
-    SAVE = (Key.S, legends.KeyName.S, legends.MSG_SAVE_THEN_QUIT_WHAT)
+    SELECT = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
+    QUIT = Binding(Key.Q, legends.KeyName.Q, legends.MSG_QUIT_WITHOUT_SAVING_WHAT)
+    SAVE = Binding(Key.S, legends.KeyName.S, legends.MSG_SAVE_THEN_QUIT_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, PRESS, QUIT, SAVE]
     IN_LEGEND = IN_HELP
 
@@ -971,14 +971,14 @@ class ImportedDialog(MessageDialog):
 class ImportDialog(Dialog):
     """The MIDI import's dialog of fields: Up and Down pick a field, [ and ] step one, Space or Enter flips a toggle, Enter renames the song, and on the buttons Left and Right choose and Enter presses; I imports from anywhere."""
 
-    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    RENAME = (Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
-    PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
-    IMPORT = (Key.I, legends.KeyName.I, legends.MSG_IMPORT_WHAT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    RENAME = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
+    PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
+    IMPORT = Binding(Key.I, legends.KeyName.I, legends.MSG_IMPORT_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, RENAME, PRESS, IMPORT]
     IN_LEGEND = IN_HELP
 
@@ -986,13 +986,13 @@ class ImportDialog(Dialog):
 class NewPatternDialog(Dialog):
     """The New Pattern dialog: Up and Down pick a row, [ and ] step the scale length, where Enter is OK, Space or Enter flips the drum toggle, and on the buttons Left and Right choose and Enter presses."""
 
-    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    OK = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_OK_WHAT)
-    PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    OK = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_OK_WHAT)
+    PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, OK, PRESS]
     IN_LEGEND = IN_HELP
 
@@ -1000,13 +1000,13 @@ class NewPatternDialog(Dialog):
 class NewRiffDialog(Dialog):
     """The New Riff dialog: Up and Down pick a row, [ and ] step a choice, where Enter writes the riff, Space or Enter flips the toggle, and on the buttons Left and Right choose and Enter presses."""
 
-    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    WRITE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_WRITE_RIFF_WHAT)
-    PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    WRITE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_WRITE_RIFF_WHAT)
+    PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, WRITE, PRESS]
     IN_LEGEND = IN_HELP
 
@@ -1014,9 +1014,9 @@ class NewRiffDialog(Dialog):
 class PromptDialog(Dialog):
     """A prompt for text: Left and Right move the cursor in it."""
 
-    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
-    DONE = (Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
-    ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
+    MOVE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    DONE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
+    ERASE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
     IN_HELP = [Dialog.CANCEL, MOVE, DONE, ERASE]
     IN_LEGEND = IN_HELP
 
@@ -1024,11 +1024,11 @@ class PromptDialog(Dialog):
 class ChoiceDialog(Dialog):
     """A picker, which searches as you type: Tab completes and Bksp erases once something is typed."""
 
-    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    SEARCH = (keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
-    ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
-    COMPLETE = (Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
+    MOVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    CHOOSE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    SEARCH = Binding(keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    ERASE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
+    COMPLETE = Binding(Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
     IN_HELP = [Dialog.CANCEL, MOVE, CHOOSE, SEARCH, ERASE, COMPLETE]
     IN_LEGEND = IN_HELP
 
@@ -1036,10 +1036,10 @@ class ChoiceDialog(Dialog):
 class GroupedChoiceDialog(ChoiceDialog):
     """A picker under headings: Space or Enter opens and closes a heading, PgUp and PgDn jump between headings, and typing searches every choice."""
 
-    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
-    CLOSE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.CLOSE)
-    HEADING = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
-    START_SEARCH = (keys.SEARCH_STARTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    OPEN = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
+    CLOSE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.CLOSE)
+    HEADING = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
+    START_SEARCH = Binding(keys.SEARCH_STARTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
     IN_HELP = [Dialog.CANCEL, ChoiceDialog.MOVE, OPEN, CLOSE, ChoiceDialog.CHOOSE, HEADING, START_SEARCH, ChoiceDialog.SEARCH, ChoiceDialog.ERASE, ChoiceDialog.COMPLETE]
     IN_LEGEND = IN_HELP
 
@@ -1048,24 +1048,24 @@ class SoundDialog(Dialog):
     """The Sound dialog: Up and Down move, Space or Enter opens a group's flyout, where Enter takes a sound and Esc or Left closes it; / searches every
     sound, where Enter goes to the sound found; L tries the sound under the cursor."""
 
-    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    MOVE_IN_FLYOUT = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
-    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    MOVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    MOVE_IN_FLYOUT = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    OPEN = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
+    CHOOSE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     # While a flyout or the search is open, Esc closes it alone, the topmost thing.
-    CLOSE = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
-    SEARCH = (Key.SLASH, legends.KeyName.SLASH, legends.What.SEARCH)
-    TYPE = (keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
-    FIND = (Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
-    ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
-    COMPLETE = (Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
-    LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
-    STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
+    CLOSE = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
+    SEARCH = Binding(Key.SLASH, legends.KeyName.SLASH, legends.What.SEARCH)
+    TYPE = Binding(keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    FIND = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
+    ERASE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
+    COMPLETE = Binding(Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
+    LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
+    STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     # On the Note row, where the asker's sound plays on one note: [ and ] step the note, a note's name is typed, and Enter sets what was typed or takes the note.
-    NOTE_LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    NOTE_MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TYPE_NOTE = (keys.NOTE_CHARACTERS, legends.KeyName.NOTE_LETTERS, legends.MSG_TYPE_NOTE_WHAT)
-    TAKE_NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    NOTE_LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    NOTE_MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TYPE_NOTE = Binding(keys.NOTE_CHARACTERS, legends.KeyName.NOTE_LETTERS, legends.MSG_TYPE_NOTE_WHAT)
+    TAKE_NOTE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     IN_HELP = [Dialog.CANCEL, CLOSE, MOVE, MOVE_IN_FLYOUT, OPEN, CHOOSE, SEARCH, TYPE, FIND, ERASE, COMPLETE, LISTEN, STOP_LISTENING, NOTE_LESS, NOTE_MORE, TYPE_NOTE, TAKE_NOTE]
     IN_LEGEND = IN_HELP
 
@@ -1073,9 +1073,9 @@ class SoundDialog(Dialog):
 class PickManyDialog(Dialog):
     """A list where several choices can be picked: Up and Down move, Space turns one on or off, Enter finishes and Esc cancels."""
 
-    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    FLIP = (Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
-    DONE = (Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
+    MOVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    FLIP = Binding(Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
+    DONE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
     IN_HELP = [Dialog.CANCEL, MOVE, FLIP, DONE]
     IN_LEGEND = IN_HELP
 
@@ -1086,21 +1086,21 @@ class KeyswitchMapDialog(Dialog):
     On the buttons, Left and Right choose one and Enter presses it. In the note picker, drawn over the map, Left and Right move along the octave's keys, Up and Down change the octave, Enter takes the note and Esc closes the picker with nothing changed.
     """
 
-    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    RENAME = ((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
-    NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_KEYSWITCH_NOTE_WHAT)
+    MOVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    RENAME = Binding((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
+    NOTE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_KEYSWITCH_NOTE_WHAT)
     # The cursor is on a slot's name or its note: Enter renames on the name and opens the note picker on the note, and the legend says which arrow reaches the other.
-    TO_NOTE = (Key.RIGHT, legends.KeyName.TO_THE_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
-    TO_NAME = (Key.LEFT, legends.KeyName.TO_THE_LEFT, legends.MSG_KEYSWITCH_NAME_WHAT)
-    RENAME_HERE = (Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
-    CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
-    OK = (Key.O, legends.KeyName.O, legends.MSG_OK_WHAT)
-    ALONG_BUTTONS = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
-    PICK_NOTE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
-    PICK_OCTAVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.MSG_KEYSWITCH_OCTAVE_WHAT)
-    TAKE_NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    CLOSE_PICKER = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
+    TO_NOTE = Binding(Key.RIGHT, legends.KeyName.TO_THE_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
+    TO_NAME = Binding(Key.LEFT, legends.KeyName.TO_THE_LEFT, legends.MSG_KEYSWITCH_NAME_WHAT)
+    RENAME_HERE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
+    CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
+    OK = Binding(Key.O, legends.KeyName.O, legends.MSG_OK_WHAT)
+    ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
+    PICK_NOTE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
+    PICK_OCTAVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.MSG_KEYSWITCH_OCTAVE_WHAT)
+    TAKE_NOTE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    CLOSE_PICKER = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
     IN_HELP = [Dialog.CANCEL, MOVE, TO_NOTE, TO_NAME, RENAME, RENAME_HERE, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[Dialog.CANCEL, OK])
 
@@ -1108,13 +1108,13 @@ class KeyswitchMapDialog(Dialog):
 class RowDialog(Dialog):
     """The Row dialog, one row of numbers: Left and Right move, [ and ] change the number, I inserts a cell and D removes one, Bksp puts back the usual row, Enter is OK and Esc is CANCEL."""
 
-    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
-    LESS = (keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    INSERT_CELL = (Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
-    REMOVE_CELL = (Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
-    USUAL = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_USUAL_ROW_WHAT)
-    DONE = (Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
+    MOVE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    LESS = Binding(keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    INSERT_CELL = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
+    REMOVE_CELL = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
+    USUAL = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_USUAL_ROW_WHAT)
+    DONE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
     IN_HELP = [Dialog.CANCEL, MOVE, LESS, MORE, INSERT_CELL, REMOVE_CELL, USUAL, DONE]
     IN_LEGEND = [MOVE, LESS, MORE, INSERT_CELL, REMOVE_CELL, USUAL]
 
@@ -1122,7 +1122,7 @@ class RowDialog(Dialog):
 class KeyswitchDialog(PickManyDialog):
     """The dialog that picks a step's keyswitches: Up and Down move, Space turns the slot under the cursor on or off, a digit turns its slot on or off, Enter is OK and Esc is CANCEL, the two shown as buttons."""
 
-    TOGGLE_SLOT = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TOGGLE)
+    TOGGLE_SLOT = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.What.TOGGLE)
     IN_HELP = [Dialog.CANCEL, PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT, PickManyDialog.DONE]
     IN_LEGEND = [PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT]
 
@@ -1130,14 +1130,14 @@ class KeyswitchDialog(PickManyDialog):
 class ChordDialog(Dialog):
     """The Chord dialog, three lists side by side: the arrows move, Tab goes to the next list, Space turns a tension on or off, Space or Enter on a category of scales opens its flyout, where Enter picks, and Enter elsewhere takes the chord."""
 
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    NEXT_LIST = (Key.TAB, legends.KeyName.TAB, legends.MSG_NEXT_LIST_WHAT)
-    FLIP = (Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
-    CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    NEXT_LIST = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_NEXT_LIST_WHAT)
+    FLIP = Binding(Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
+    CHOOSE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     # On a category of scale types, which opens its flyout, and on the row that borrows no scale.
-    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
+    OPEN = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
     # While a flyout is open, Esc closes the flyout alone, the topmost thing.
-    CLOSE_FLYOUT = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
+    CLOSE_FLYOUT = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
     IN_HELP = [Dialog.CANCEL, CLOSE_FLYOUT, MOVE, NEXT_LIST, FLIP, OPEN, CHOOSE]
     IN_LEGEND = IN_HELP
 
@@ -1145,8 +1145,8 @@ class ChordDialog(Dialog):
 class GridChoiceDialog(ChoiceDialog):
     """A picker laid out as a grid, which all four arrows move over and which doesn't search: Tab and Shift+Tab turn its pages."""
 
-    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    OTHER_PAGE = (Steps(back=(Key.SHIFT_TAB,), forward=(Key.TAB,)), legends.KeyName.TAB_SHIFT_TAB, legends.What.OTHER_PAGE)
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    OTHER_PAGE = Binding(Steps(back=(Key.SHIFT_TAB,), forward=(Key.TAB,)), legends.KeyName.TAB_SHIFT_TAB, legends.What.OTHER_PAGE)
     IN_HELP = [Dialog.CANCEL, MOVE, ChoiceDialog.CHOOSE, OTHER_PAGE]
     IN_LEGEND = IN_HELP
 
@@ -1154,8 +1154,8 @@ class GridChoiceDialog(ChoiceDialog):
 class HelpDialog(Dialog):
     """The F1 dialog: Tab, Left and Right turn between its two panels, and F1 closes it like Enter and Esc, off the legend."""
 
-    CLOSE = ((Key.ENTER, Key.ESCAPE, Key.F1), legends.KeyName.ENTER_ESCAPE, legends.What.CLOSE)
-    OTHER_PANEL = ((Key.TAB, *keys.ARROWS_LEFT_RIGHT), legends.KeyName.TAB_ARROWS, legends.What.OTHER_PANEL)
+    CLOSE = Binding((Key.ENTER, Key.ESCAPE, Key.F1), legends.KeyName.ENTER_ESCAPE, legends.What.CLOSE)
+    OTHER_PANEL = Binding((Key.TAB, *keys.ARROWS_LEFT_RIGHT), legends.KeyName.TAB_ARROWS, legends.What.OTHER_PANEL)
     IN_HELP = [CLOSE, OTHER_PANEL]
     IN_LEGEND = IN_HELP
 
@@ -1163,6 +1163,6 @@ class HelpDialog(Dialog):
 class AboutDialog(Dialog):
     """The About dialog: Enter or Esc closes it."""
 
-    CLOSE = ((Key.ENTER, *keys.CANCEL_KEYS), legends.KeyName.ENTER_ESCAPE, legends.What.CLOSE)
+    CLOSE = Binding((Key.ENTER, *keys.CANCEL_KEYS), legends.KeyName.ENTER_ESCAPE, legends.What.CLOSE)
     IN_HELP = [CLOSE]
     IN_LEGEND = IN_HELP

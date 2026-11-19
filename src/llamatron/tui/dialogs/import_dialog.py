@@ -191,9 +191,8 @@ class ImportDialog(Dialog):
         line = Text(no_wrap=True)
         for place, (label, binding) in enumerate(zip(importing.MSG_IMPORT_BUTTONS, BUTTON_BINDINGS)):
             selected = self.row == BUTTONS and place == self.button
-            _, key_name, _ = binding
             line.append(cursor_mark(selected))
-            line.append(padded(key_name), style=Style.REVERSE)
+            line.append(padded(binding.name), style=Style.REVERSE)
             line.append(drawing.SPACE)
             line.append(label, style=Style.BOLD if selected else Style.PLAIN)
             line.append(marks.MSG_CONFIRM_BUTTON_GAP)

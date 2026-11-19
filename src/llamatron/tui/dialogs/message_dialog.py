@@ -39,8 +39,7 @@ class MessageDialog(Dialog):
 
     def lines(self, width):
         """Return the messages, a blank line and the one OK button, boxed as a real window's."""
-        _, key_name, _ = self.KEYS.CLOSE
-        return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=[(key_name, labels.MSG_OK_BUTTON)], selected=0)]
+        return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=[(self.KEYS.CLOSE.name, labels.MSG_OK_BUTTON)], selected=0)]
 
     def message_lines(self, width):
         """Return the messages as lines, each wrapped to the dialog's width. A dialog that says more than its messages draws them here."""

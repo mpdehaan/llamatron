@@ -296,8 +296,7 @@ class FieldPage(Page):
 
     def button(self, *, binding, label, action):
         """Return a button that runs one of the keys that work everywhere on Enter, labelled as the main screen labels it and showing the key's name."""
-        _, key_name, what = binding
-        return Button(label=label, key_name=key_name, enter=action, enter_what=what)
+        return Button(label=label, key_name=binding.name, enter=action, enter_what=binding.what)
 
     # Common kinds of setting.
 

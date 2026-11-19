@@ -107,5 +107,5 @@ class NewRiffDialog(Dialog):
             line = Text(cursor_mark(place == self.row) + labels.MSG_NEW_RIFF_LABELS[row].ljust(LABEL_WIDTH))
             line.append(self.shown(row), style=Style.BOLD if place == self.row else Style.PLAIN)
             lines.append(line)
-        buttons = [(binding[1], label) for label, binding in zip(labels.MSG_NEW_RIFF_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_NEW_RIFF_BUTTONS, BUTTON_BINDINGS)]
         return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else NO_BUTTON)]
