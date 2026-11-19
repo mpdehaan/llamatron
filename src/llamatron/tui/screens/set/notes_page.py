@@ -21,7 +21,6 @@ import textwrap
 
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, keybindings, keys as keys_values, themes
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved, pressed_key, quits_at_once
 from llamatron.tui.keys import Key
@@ -177,7 +176,7 @@ class NotesPage(Page):
 
     def clear(self):
         if self.document().setlist().has_notes():
-            self.ask(dialog=ConfirmDialog(title=messages.MSG_CLEAR_NOTES_TITLE, messages=[messages.MSG_CLEAR_NOTES_QUESTION]), then=lambda _: self.store([drawing.NOTHING]))
+            self.confirm(title=messages.MSG_CLEAR_NOTES_TITLE, lines=[messages.MSG_CLEAR_NOTES_QUESTION], then=lambda: self.store([drawing.NOTHING]))
 
     def move(self, name):
         lines = self.text_lines()

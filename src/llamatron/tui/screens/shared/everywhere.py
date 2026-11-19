@@ -144,7 +144,7 @@ def save(page, *, then=None):
         return
     if document.file_is_protected():
         messages = [messages_text.MSG_PROTECTED_EXPLAINED.format(path=path), messages_text.MSG_PROTECTED_SAVE_COPY_QUESTION]
-        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_PROTECTED_TITLE, messages=messages), then=lambda _: save_as(page, then=then))
+        page.confirm(title=messages_text.MSG_PROTECTED_TITLE, lines=messages, then=lambda: save_as(page, then=then))
         return
     # The file is read once for both questions about it.
     held = document.file_now()
@@ -154,7 +154,7 @@ def save(page, *, then=None):
             then()
     elif document.file_changed_elsewhere(held=held):
         question = messages_text.MSG_FILE_CHANGED_ELSEWHERE_QUESTION.format(path=path)
-        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_FILE_CHANGED_ELSEWHERE_TITLE, messages=[question]), then=lambda _: write(page, path=path, then=then))
+        page.confirm(title=messages_text.MSG_FILE_CHANGED_ELSEWHERE_TITLE, lines=[question], then=lambda: write(page, path=path, then=then))
     else:
         write(page, path=path, then=then)
 
@@ -173,7 +173,7 @@ def save_as(page, *, then=None):
         if document.file_is_protected(path=path):
             page.tell(messages_text.MSG_PROTECTED_TITLE, messages_text.MSG_PROTECTED_EXPLAINED.format(path=path), messages_text.MSG_PROTECTED_CHOOSE_ANOTHER_NAME)
         elif path != document.get_path() and os.path.exists(path):
-            page.ask(dialog=ConfirmDialog(title=messages_text.MSG_REPLACE_FILE_TITLE, messages=[messages_text.MSG_REPLACE_FILE_QUESTION.format(path=path)]), then=lambda _: write(page, path=path, then=then, as_copy=True))
+            page.confirm(title=messages_text.MSG_REPLACE_FILE_TITLE, lines=[messages_text.MSG_REPLACE_FILE_QUESTION.format(path=path)], then=lambda: write(page, path=path, then=then, as_copy=True))
         else:
             write(page, path=path, then=then, as_copy=True)
     page.ask(dialog=PromptDialog(title=messages_text.MSG_SAVE_AS_PROMPT, value=default), then=chosen)
@@ -202,7 +202,7 @@ def write(page, *, path, then=None, as_copy=False):
 def unless_unsaved(page, *, then):
     """Call then, after asking if the set has unsaved changes that it would lose."""
     if page.document().is_dirty():
-        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_UNSAVED_TITLE, messages=[messages_text.MSG_UNSAVED_CONTINUE]), then=lambda _: then())
+        page.confirm(title=messages_text.MSG_UNSAVED_TITLE, lines=[messages_text.MSG_UNSAVED_CONTINUE], then=then)
     else:
         then()
 
@@ -252,7 +252,7 @@ def export(page):
     if loops_block_export(page):
         return
     if not page.document().can_export():
-        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_SAVE_BEFORE_EXPORT_TITLE, messages=[messages_text.MSG_SAVE_BEFORE_EXPORT]), then=lambda _: save_as(page, then=lambda: choose_export(page)))
+        page.confirm(title=messages_text.MSG_SAVE_BEFORE_EXPORT_TITLE, lines=[messages_text.MSG_SAVE_BEFORE_EXPORT], then=lambda: save_as(page, then=lambda: choose_export(page)))
         return
     choose_export(page)
 
@@ -270,7 +270,7 @@ def export_chosen(page, *, to):
     elif not page.app.transport.fluidsynth_installed():
         page.tell(errors.ERR_CANT_EXPORT_TITLE, errors.ERR_WAV_NEEDS_FLUIDSYNTH)
     else:
-        page.ask(dialog=ConfirmDialog(title=messages_text.MSG_WAV_EXPORT_TITLE, messages=[messages_text.MSG_WAV_EXPORT_NOTE]), then=lambda _: export_as(page, to=to))
+        page.confirm(title=messages_text.MSG_WAV_EXPORT_TITLE, lines=[messages_text.MSG_WAV_EXPORT_NOTE], then=lambda: export_as(page, to=to))
 
 
 def loops_block_export(page):
