@@ -22,7 +22,7 @@ value of the field the player takes. A field that is a number, or timings in num
 every place of its gauge differs. A level on its own is a preset: every gauge at that level's place, which gives the level as
 the template writes it."""
 
-from llamatron.macro_composer.melody import SPAN
+from llamatron.macro_composer import melody
 
 # The fields of a level, as a style template writes them.
 SAYS = 'says'
@@ -44,9 +44,9 @@ STRUMMING = 'strumming'
 RANGE = 'range'
 GAUGES = (NOTES, VARIETY, TOUCH, LOOSE, FILLS, STRUMMING, RANGE)
 # The gauge each field of a level belongs to; what a level says of itself goes with no gauge, and is the preset's alone.
-GAUGE_OF_FIELD = {ADDS: NOTES, BUSY: NOTES, VARIES: VARIETY, UNEVEN: TOUCH, TIMING: LOOSE, FILL: FILLS, FILL_EVERY: FILLS, GUITARIFY_OF_PLAYER: STRUMMING, SPAN: RANGE}
+GAUGE_OF_FIELD = {ADDS: NOTES, BUSY: NOTES, VARIES: VARIETY, UNEVEN: TOUCH, TIMING: LOOSE, FILL: FILLS, FILL_EVERY: FILLS, GUITARIFY_OF_PLAYER: STRUMMING, melody.SPAN: RANGE}
 # The fields blended between the levels; how often a fill comes is a number too, of bars, and is taken whole from its level.
-BLENDED = (UNEVEN, TIMING, SPAN)
+BLENDED = (UNEVEN, TIMING, melody.SPAN)
 LOWEST = 0
 HIGHEST = 20
 # The levels, each a band of a gauge's places, and the place a level's preset stands at, in the middle of its band.
@@ -118,7 +118,7 @@ def blend_at(*, levels, field, place):
     first = PRESET_PLACE[LEVELS[0]]
     last = PRESET_PLACE[LEVELS[-1]]
     if place <= first:
-        nothing = values[LEVELS[0]] if field == SPAN else None
+        nothing = values[LEVELS[0]] if field == melody.SPAN else None
         return blended(low=nothing, high=values[LEVELS[0]], share=place / first)
     if place >= last:
         return blended(low=values[LEVELS[-2]], high=values[LEVELS[-1]], share=1 + (place - last) / PLACES_IN_BAND)

@@ -19,9 +19,10 @@
 import unittest
 
 from llamatron.macro_composer import arranger, interplay
-from llamatron.macro_composer.melody import GRID
-from llamatron.macro_composer.notation import LINES, REST, STEPS
-from llamatron.macro_composer.wizard_choices import BESIDE_KEPT, BY, WizardChoices
+from llamatron.macro_composer import melody
+from llamatron.macro_composer import notation
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
 
@@ -41,16 +42,16 @@ A_SEED = 7
 A_GRID = 8
 # A line of two bars the tune sings: its last note three steps long, and a rest of one step after.
 LAST_NOTE = 3
-A_LINE = [{REST: 1}, {'degree': 3, STEPS: 2}, {'degree': 2, STEPS: 9}, {'degree': 1, STEPS: LAST_NOTE}, {REST: 1}]
-SILENT = [{REST: A_GRID * 2}]
+A_LINE = [{notation.REST: 1}, {'degree': 3, notation.STEPS: 2}, {'degree': 2, notation.STEPS: 9}, {'degree': 1, notation.STEPS: LAST_NOTE}, {notation.REST: 1}]
+SILENT = [{notation.REST: A_GRID * 2}]
 
 
 def steps_in(line):
-    return sum(note.get(REST, note.get(STEPS, 0)) for note in line)
+    return sum(note.get(notation.REST, note.get(notation.STEPS, 0)) for note in line)
 
 
 def sounds_in(line):
-    return [note for note in line if REST not in note]
+    return [note for note in line if notation.REST not in note]
 
 
 def starts_of(line):
@@ -58,9 +59,9 @@ def starts_of(line):
     at = 0
     starts = []
     for note in line:
-        if REST not in note:
+        if notation.REST not in note:
             starts.append(at)
-        at += note.get(REST, note.get(STEPS, 0))
+        at += note.get(notation.REST, note.get(notation.STEPS, 0))
     return starts
 
 
@@ -87,7 +88,7 @@ class TestRoomInALine(unittest.TestCase):
     def test_the_room_is_the_rests_at_the_end_and_the_last_note_but_for_the_step_it_lands_on(self):
         self.assertEqual(interplay.room_in(A_LINE), 1 + LAST_NOTE - 1)
         self.assertEqual(interplay.room_in(SILENT), A_GRID * 2)
-        self.assertEqual(interplay.room_in([{'degree': 1, STEPS: 1}]), 0)
+        self.assertEqual(interplay.room_in([{'degree': 1, notation.STEPS: 1}]), 0)
 
     def test_a_fills_notes_are_more_and_shorter_the_busier_and_fill_the_room(self):
         counts = []
@@ -109,7 +110,7 @@ class TestUnderLead(unittest.TestCase):
         self.tune = [[dict(note) for note in A_LINE] for _ in range(4)]
 
     def under(self, *, busy):
-        return interplay.UnderLead(busy=busy, habits=self.habits, grid=self.habits[GRID], scale_type='major', seed=A_SEED)
+        return interplay.UnderLead(busy=busy, habits=self.habits, grid=self.habits[melody.GRID], scale_type='major', seed=A_SEED)
 
     def lines(self, way, *, busy=interplay.USUAL_BUSY, tune=None):
         return self.under(busy=busy).lines(way=way, tune=tune or self.tune, chords=self.chords, section=VERSE)
@@ -134,11 +135,11 @@ class TestUnderLead(unittest.TestCase):
         self.assertEqual(starts_of(answered[1])[0], 0)
         # A fill, in the same room, lasts no more than half a bar.
         filled = self.lines(interplay.FILLS, tune=[A_LINE, SILENT], busy=interplay.MOST_BUSY)
-        self.assertEqual(starts_of(filled[1])[0], steps_in(SILENT) - self.habits[GRID] // interplay.FILL_SHARE_OF_BAR)
+        self.assertEqual(starts_of(filled[1])[0], steps_in(SILENT) - self.habits[melody.GRID] // interplay.FILL_SHARE_OF_BAR)
 
     def test_a_line_with_no_room_is_left_silent(self):
-        full = [{'degree': 1, STEPS: 1}] * (A_GRID * 2)
-        self.assertEqual(self.lines(interplay.ANSWERS, tune=[full]), [[{REST: A_GRID * 2}]])
+        full = [{'degree': 1, notation.STEPS: 1}] * (A_GRID * 2)
+        self.assertEqual(self.lines(interplay.ANSWERS, tune=[full]), [[{notation.REST: A_GRID * 2}]])
 
     def test_playing_the_hook_with_the_tune_is_the_tunes_own_lines_sharing_no_note(self):
         lines = self.lines(interplay.DOUBLES)
@@ -150,9 +151,9 @@ class TestUnderLead(unittest.TestCase):
         for line in lines:
             starts = starts_of(line)
             self.assertIn(0, starts)
-            self.assertIn(self.habits[GRID], starts)
-            bar = [start for start in starts if start < self.habits[GRID]]
-            self.assertEqual([start - self.habits[GRID] for start in starts if start >= self.habits[GRID]], bar)
+            self.assertIn(self.habits[melody.GRID], starts)
+            bar = [start for start in starts if start < self.habits[melody.GRID]]
+            self.assertEqual([start - self.habits[melody.GRID] for start in starts if start >= self.habits[melody.GRID]], bar)
 
     def test_how_busy_changes_the_fills_and_the_riff(self):
         for way in (interplay.ANSWERS, interplay.RIFF):
@@ -174,7 +175,7 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         self.assertEqual(parts[BRIDGE], composer_text.MSG_PART_BESIDE.format(BRIDGE, SOLO, interplay.ANSWERS))
         self.assertNotIn(interplay.FILLS, parts[SOLO])
         # Playing the hook with the tune is the singer's own line, on the player's own track.
-        self.assertEqual(song[arranger.PARTS][parts[CHORUS]][LINES], song[arranger.PARTS][composer_text.MSG_PART_OF_SECTION.format(CHORUS, 'lead')][LINES])
+        self.assertEqual(song[arranger.PARTS][parts[CHORUS]][notation.LINES], song[arranger.PARTS][composer_text.MSG_PART_OF_SECTION.format(CHORUS, 'lead')][notation.LINES])
 
     def test_fills_are_drawn_anew_each_time_a_section_returns_and_the_hook_is_the_same_every_time(self):
         choices = wizard()
@@ -183,7 +184,7 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         parts, song = self.parts_of(choices=choices, way=None)
         second = composer_text.MSG_REPEATED_SCENE.format(VERSE, 2)
         self.assertEqual(parts[second], composer_text.MSG_PART_BESIDE.format(second, SOLO, interplay.FILLS))
-        self.assertNotEqual(song[arranger.PARTS][parts[VERSE]][LINES], song[arranger.PARTS][parts[second]][LINES])
+        self.assertNotEqual(song[arranger.PARTS][parts[VERSE]][notation.LINES], song[arranger.PARTS][parts[second]][notation.LINES])
         self.assertEqual(parts[composer_text.MSG_REPEATED_SCENE.format(CHORUS, 2)], parts[CHORUS])
 
     def test_a_player_who_waits_everywhere_makes_the_song_made_before_answering_could_be_chosen(self):
@@ -279,8 +280,8 @@ class TestWizardInterplayChoices(unittest.TestCase):
         choices.set_answered_by(None)
         again = WizardChoices.from_data(choices.to_data())
         self.assertIsNone(again.answered_by())
-        self.assertEqual(again.to_data()[BESIDE_KEPT][BY], None)
-        before = {field: value for field, value in choices.to_data().items() if field != BESIDE_KEPT}
+        self.assertEqual(again.to_data()[wizard_choices.BESIDE_KEPT][wizard_choices.BY], None)
+        before = {field: value for field, value in choices.to_data().items() if field != wizard_choices.BESIDE_KEPT}
         old = WizardChoices.from_data(before)
         self.assertEqual((old.answerers(), old.answered_by()), ([], None))
         self.assertNotIn(arranger.BESIDE, old.song_picks(SONG_NAME))

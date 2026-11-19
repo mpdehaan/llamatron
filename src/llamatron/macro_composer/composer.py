@@ -33,8 +33,9 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
 
 from fractions import Fraction
 
-from llamatron.macro_composer.loudness import USUAL_DYNAMICS
-from llamatron.macro_composer.notation import ACCENT, DEFAULT_STEP_SIZE, GHOST, HITS, LINES, LOUD, OCTAVE, SOFT, STEP, STEPS, STEP_SIZE, VELOCITY, DRUM, drum_rows, tune_rows
+from llamatron.macro_composer import loudness
+from llamatron.macro_composer import notation
+from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped
 from llamatron.strings import errors
 
@@ -100,12 +101,12 @@ def pattern_of(part):
     """A part as a pattern, before any shaping."""
     if RAW in part:
         return dict(part[RAW])
-    if HITS in part:
-        return drum_rows(drum=part[DRUM], hits=part[HITS], loud=part[LOUD], soft=part.get(SOFT, part[LOUD]), step_size=part.get(STEP, DEFAULT_STEP_SIZE),
-                         accent=part.get(ACCENT), ghost=part.get(GHOST))
-    step = part.get(STEP, DEFAULT_STEP_SIZE)
-    levels = {level: part[level] for level in (ACCENT, SOFT, GHOST) if level in part}
-    return tune_rows(lines=part[LINES], octave=part[OCTAVE], velocity=part[VELOCITY], step_size=step, levels=levels)
+    if notation.HITS in part:
+        return drum_rows(drum=part[notation.DRUM], hits=part[notation.HITS], loud=part[notation.LOUD], soft=part.get(notation.SOFT, part[notation.LOUD]), step_size=part.get(notation.STEP, notation.DEFAULT_STEP_SIZE),
+                         accent=part.get(notation.ACCENT), ghost=part.get(notation.GHOST))
+    step = part.get(notation.STEP, notation.DEFAULT_STEP_SIZE)
+    levels = {level: part[level] for level in (notation.ACCENT, notation.SOFT, notation.GHOST) if level in part}
+    return tune_rows(lines=part[notation.LINES], octave=part[notation.OCTAVE], velocity=part[notation.VELOCITY], step_size=step, levels=levels)
 
 
 def clip_of(played):
@@ -124,7 +125,7 @@ def clip_of(played):
 
 
 def bars_of(*, pattern, signature):
-    return Fraction(pattern[STEPS]) * Fraction(str(pattern.get(STEP_SIZE, DEFAULT_STEP_SIZE))) / signature
+    return Fraction(pattern[notation.STEPS]) * Fraction(str(pattern.get(notation.STEP_SIZE, notation.DEFAULT_STEP_SIZE))) / signature
 
 
 def scene_of(*, entry, bands, patterns, signature):
@@ -173,8 +174,8 @@ def composed(*, given, version):
     for name in given.get(SHAPED, []):
         role = role_of(pattern=patterns[name], tracks=players.get(name, []))
         if role:
-            dynamics = next((given[DYNAMICS][track] for track in players.get(name, []) if track in given.get(DYNAMICS, {})), USUAL_DYNAMICS)
-            patterns[name][VELOCITY] = shaped(pattern=patterns[name], role=role, feel=given[FEEL], signature=signature, compound=is_compound(given.get(TIME_SIGNATURE)), dynamics=dynamics)
+            dynamics = next((given[DYNAMICS][track] for track in players.get(name, []) if track in given.get(DYNAMICS, {})), loudness.USUAL_DYNAMICS)
+            patterns[name][notation.VELOCITY] = shaped(pattern=patterns[name], role=role, feel=given[FEEL], signature=signature, compound=is_compound(given.get(TIME_SIGNATURE)), dynamics=dynamics)
     data = {VERSION: version}
     for optional in (TITLE, DESCRIPTION, AUTHOR):
         if optional in given:
@@ -192,7 +193,7 @@ def composed(*, given, version):
         if given.get(optional) is not None:
             song[optional] = given[optional]
     drums = set(given.get(DRUM_TRACKS, []))
-    song[TRACKS] = {track: ({DRUM: True, INSTRUMENT: instrument} if track in drums else {INSTRUMENT: instrument}) for track, instrument in given[TRACKS].items()}
+    song[TRACKS] = {track: ({notation.DRUM: True, INSTRUMENT: instrument} if track in drums else {INSTRUMENT: instrument}) for track, instrument in given[TRACKS].items()}
     for track in given.get(MUTED_TRACKS, []):
         song[TRACKS][track][MUTE] = True
     song[SCENES] = scenes

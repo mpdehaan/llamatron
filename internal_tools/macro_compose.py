@@ -31,7 +31,8 @@ from pathlib import Path
 import yaml
 
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer.arranger import STYLE, arranged, style_named
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.arranger import arranged, style_named
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer.decomposer import decomposed, same_music
 from llamatron.support.safe_yaml import load_safely
@@ -72,12 +73,12 @@ def compose_file(*, source, out):
 def arrange_file(*, source, out, keep_input):
     """A song's picks made into a set through its style's template, the input kept beside it when asked."""
     song = read(source)
-    given = arranged(style=style_named(song[STYLE]), song=song)
+    given = arranged(style=style_named(song[arranger.STYLE]), song=song)
     if keep_input:
         with open(keep_input, WRITE_TEXT, encoding=FILE_ENCODING) as file:
             file.write(LEGEND + yaml.safe_dump(given, sort_keys=False, width=LINE_WIDTH, default_flow_style=None, allow_unicode=True))
     Setlist.from_data(data=composed(given=given, version=version.VERSION)).write_file(str(out))
-    print(MSG_ARRANGED.format(source, song[STYLE], out))
+    print(MSG_ARRANGED.format(source, song[arranger.STYLE], out))
 
 
 def decompose_file(*, source, out):

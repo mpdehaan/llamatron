@@ -22,10 +22,12 @@ from fractions import Fraction
 from llamatron.composition.file_format import Section
 from llamatron.composition import limits
 from llamatron.strings import errors, macro_composer as composer_text
-from llamatron.macro_composer.wizard_choices import HOOK_TAKE_KEPT, MOST_ROW_CELLS, PLAYER_ROWS, PLAYER_ROWS_KEPT, MELODY_SETTINGS_KEPT, MELODY_SETTINGS_OF, style_of, STAND_INS, LEAST_BUSY, MOST_BUSY, USUAL_BUSY, QUARTERS_IN_WHOLE, SECONDS_IN_MINUTE, FIRST_SEED, LAST_SEED, MAJOR, MINOR, SCALE_TYPES, SUBGENRE, OWN_SECTIONS, FEWEST_FILLS, FILLS_KEPT, MOST_FILLS, QUIET_NOTES_KEPT, PIECES_OFF_KEPT, CHORDS_PLAYER, GUITARISTS_KEPT, ONE_GUITARIST, ONE_GUITARIST_COUNT, SOLO_PLAYER, SOLO_WAY, TWO_GUITARISTS, SOUNDS_KEPT, BAND_SOUNDS, KEPT_BY, USUAL_SOUNDS, FILLS_TRAITS, MELODY_STYLE, MELODY_STYLES, HOOK_KEPT, PROGRESSION_TRAITS, USUAL_ROOTS, WizardChoices, genre_names, genre_title
-from llamatron.macro_composer.melody import LENGTHS, DEFAULT_GAUGES, HIGHEST_GAUGE, EVOLVING, HOME, LADDER, LEAPS, LOWEST_GAUGE, MOVE, SERIAL, SMART
-from llamatron.macro_composer.notation import DEGREE, LINES
-from llamatron.macro_composer.arranger import PICKS, SCALE_TYPE, values_of, share_in, SOUNDS, BY_SCALE_TYPE, GRID, MELODY, PARTS, arranged, DRUMS, GENRE, PLAYERS, ROLE_TITLE, TYPE, WITHOUT, style_named, style_names
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import style_of, WizardChoices, genre_names, genre_title
+from llamatron.macro_composer import melody
+from llamatron.macro_composer import notation
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.arranger import values_of, share_in, arranged, GENRE, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support import version
@@ -105,8 +107,8 @@ class TestWizardChoices(unittest.TestCase):
                 choices = chosen(genre=place, subgenre=subgenre)
                 with self.subTest(genre=genre, subgenre=choices.get_subgenre()):
                     self.assertTrue(choices.is_ready())
-                    self.assertIn(choices.get_scale_type(), SCALE_TYPES)
-                    self.assertEqual(choices.get_root(), USUAL_ROOTS[choices.get_scale_type()])
+                    self.assertIn(choices.get_scale_type(), wizard_choices.SCALE_TYPES)
+                    self.assertEqual(choices.get_root(), wizard_choices.USUAL_ROOTS[choices.get_scale_type()])
                     self.assertEqual(choices.get_tempo(), choices.usual_tempo())
                     lowest, highest = choices.tempo_range()
                     self.assertLessEqual(lowest, highest)
@@ -163,7 +165,7 @@ class TestWizardChoices(unittest.TestCase):
     def test_the_choices_are_kept_as_data_and_read_back_the_same(self):
         choices = chosen(genre=1, subgenre=1)
         choices.set_root(NoteName.F_SHARP)
-        choices.set_scale_type(MINOR)
+        choices.set_scale_type(wizard_choices.MINOR)
         choices.set_tempo(choices.get_tempo() + 3)
         choices.set_form(choices.forms()[-1])
         choices.set_seed(A_SEED)
@@ -172,7 +174,7 @@ class TestWizardChoices(unittest.TestCase):
 
     def test_reading_leaves_out_what_no_longer_fits_and_keeps_the_rest(self):
         data = chosen().to_data()
-        gone = WizardChoices.from_data({**data, SUBGENRE: NOT_A_CHOICE})
+        gone = WizardChoices.from_data({**data, wizard_choices.SUBGENRE: NOT_A_CHOICE})
         self.assertEqual(gone.get_genre(), data[GENRE])
         self.assertIsNone(gone.get_subgenre())
         self.assertEqual(WizardChoices.from_data(None).to_data(), {})
@@ -191,23 +193,23 @@ class TestWizardChoices(unittest.TestCase):
         choices = chosen()
         choices.draw_seed(dice=random.Random(A_SEED))
         seed = choices.get_seed()
-        self.assertTrue(FIRST_SEED <= seed <= LAST_SEED)
+        self.assertTrue(wizard_choices.FIRST_SEED <= seed <= wizard_choices.LAST_SEED)
         choices.made_setlist(name=A_NAME, version=version.VERSION)
         self.assertEqual(choices.get_seed(), seed)
 
     def test_a_scale_type_changes_the_songs_scale(self):
         choices = chosen()
-        for kind in (MAJOR, MINOR):
+        for kind in (wizard_choices.MAJOR, wizard_choices.MINOR):
             choices.set_scale_type(kind)
             setlist = choices.made_setlist(name=A_NAME, version=version.VERSION)
             scale = setlist.get_named_scale(setlist.get_song(A_NAME).get_scale_name())
-            self.assertEqual(scale.to_data()[TYPE], kind)
+            self.assertEqual(scale.to_data()[arranger.TYPE], kind)
 
     def test_a_forms_length_is_its_bars_at_the_tempo_and_the_meter(self):
         choices = chosen()
         bars = sum(choices.section_bars(place) for place in range(len(choices.form_sections())))
         seconds = choices.form_seconds()
-        self.assertAlmostEqual(seconds, bars * float(Fraction(choices.meter())) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
+        self.assertAlmostEqual(seconds, bars * float(Fraction(choices.meter())) * wizard_choices.QUARTERS_IN_WHOLE * wizard_choices.SECONDS_IN_MINUTE / choices.get_tempo())
         choices.set_tempo(choices.get_tempo() * 2)
         self.assertAlmostEqual(choices.form_seconds(), seconds / 2)
 
@@ -248,7 +250,7 @@ class TestWizardChoices(unittest.TestCase):
 def scene_bars_of(choices):
     """How long each scene of the song made lasts, in bars."""
     song = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)
-    seconds_in_a_bar = float(Fraction(choices.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / choices.get_tempo())
+    seconds_in_a_bar = float(Fraction(choices.meter()) * wizard_choices.QUARTERS_IN_WHOLE * wizard_choices.SECONDS_IN_MINUTE / choices.get_tempo())
     return [round(float(scene.seconds) / seconds_in_a_bar) for scene in SongRenderer(song).estimate()]
 
 
@@ -308,7 +310,7 @@ class TestWizardForm(unittest.TestCase):
         choices = self.rock()
         suggested = choices.form_sections()
         self.assertFalse(choices.has_own_form())
-        self.assertNotIn(OWN_SECTIONS, choices.to_data())
+        self.assertNotIn(wizard_choices.OWN_SECTIONS, choices.to_data())
         choices.copy_section(0)
         self.assertTrue(choices.has_own_form())
         self.assertEqual(choices.form_sections(), [suggested[0], *suggested])
@@ -476,7 +478,7 @@ class TestWizardForm(unittest.TestCase):
 
     def test_kept_sections_that_no_longer_fit_are_dropped_and_the_rest_of_the_choices_kept(self):
         choices = self.rock()
-        data = {**choices.to_data(), OWN_SECTIONS: [{}]}
+        data = {**choices.to_data(), wizard_choices.OWN_SECTIONS: [{}]}
         again = WizardChoices.from_data(data)
         self.assertFalse(again.has_own_form())
         self.assertEqual(again.get_subgenre(), choices.get_subgenre())
@@ -569,19 +571,19 @@ class TestWizardSongWays(unittest.TestCase):
 
     def test_nothing_of_the_song_is_offered_before_a_subgenre_is_chosen(self):
         choices = WizardChoices()
-        self.assertIsNone(choices.song_trait(PROGRESSION_TRAITS))
+        self.assertIsNone(choices.song_trait(wizard_choices.PROGRESSION_TRAITS))
         self.assertEqual(choices.melody_styles(), [])
 
     def test_a_trait_a_player_owns_is_not_the_songs(self):
         for place in range(len(genre_names())):
             choices = chosen(genre=place)
             owned = {trait for role in choices.roles() for trait in choices.role_traits(role)}
-            for traits in (PROGRESSION_TRAITS, FILLS_TRAITS):
+            for traits in (wizard_choices.PROGRESSION_TRAITS, wizard_choices.FILLS_TRAITS):
                 self.assertNotIn(choices.song_trait(traits), owned)
 
     def test_another_progression_changes_the_song(self):
         choices = self.rock()
-        trait = choices.song_trait(PROGRESSION_TRAITS)
+        trait = choices.song_trait(wizard_choices.PROGRESSION_TRAITS)
         before = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()
         choices.set_way(trait=trait, value=[way for way in choices.song_ways(trait) if way != choices.get_way(trait)][0])
         self.assertNotEqual(choices.made_setlist(name=A_NAME, version=version.VERSION).to_data(), before)
@@ -599,7 +601,7 @@ class TestWizardSongWays(unittest.TestCase):
                 self.assertTrue(any(patterns != usual for patterns in made), genre_names()[place])
 
     def test_a_style_the_subgenre_cannot_use_is_not_offered_and_is_refused(self):
-        refused = [(place, style) for place in range(len(genre_names())) for style in MELODY_STYLES if style not in chosen(genre=place).melody_styles()]
+        refused = [(place, style) for place in range(len(genre_names())) for style in wizard_choices.MELODY_STYLES if style not in chosen(genre=place).melody_styles()]
         self.assertTrue(refused)
         place, style = refused[0]
         with self.assertRaises(ValueError):
@@ -609,7 +611,7 @@ class TestWizardSongWays(unittest.TestCase):
 
     def test_the_melody_style_is_kept_with_the_choices_and_another_subgenre_goes_back_to_the_usual(self):
         choices = self.rock()
-        self.assertNotIn(MELODY_STYLE, choices.to_data())
+        self.assertNotIn(wizard_choices.MELODY_STYLE, choices.to_data())
         choices.set_melody(choices.melody_styles()[-1])
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.get_melody(), choices.get_melody())
@@ -648,10 +650,10 @@ class TestWizardSounds(unittest.TestCase):
     def test_the_usual_sounds_change_nothing_and_each_other_kind_moves_a_player_and_is_made(self):
         choices = self.rock()
         usual = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS]
-        self.assertEqual(choices.get_band_sounds(), USUAL_SOUNDS)
+        self.assertEqual(choices.get_band_sounds(), wizard_choices.USUAL_SOUNDS)
         self.assertEqual(choices.get_sound(A_BASS), choices.usual_sound(A_BASS))
         any_moved = False
-        for sounds in BAND_SOUNDS[1:]:
+        for sounds in wizard_choices.BAND_SOUNDS[1:]:
             choices.set_band_sounds(sounds)
             moved = [role for role in choices.roles_in() if choices.has_sound(role) and choices.get_sound(role) != choices.usual_sound(role)]
             # A band already of the kind chosen, as an electric rock band, keeps its sounds and makes the same song.
@@ -663,10 +665,10 @@ class TestWizardSounds(unittest.TestCase):
 
     def test_a_sound_already_of_the_kind_chosen_stays(self):
         choices = self.rock()
-        for sounds in BAND_SOUNDS[1:]:
+        for sounds in wizard_choices.BAND_SOUNDS[1:]:
             choices.set_band_sounds(sounds)
             for role in choices.roles_in():
-                if choices.has_sound(role) and choices.usual_sound(role) in KEPT_BY[sounds]:
+                if choices.has_sound(role) and choices.usual_sound(role) in wizard_choices.KEPT_BY[sounds]:
                     self.assertEqual(choices.get_sound(role), choices.usual_sound(role))
 
     def test_every_kind_of_sounds_makes_a_song_that_plays_in_every_subgenre(self):
@@ -674,21 +676,21 @@ class TestWizardSounds(unittest.TestCase):
             for subgenre in range(len(chosen(genre=place).subgenres())):
                 choices = chosen(genre=place, subgenre=subgenre)
                 choices.set_seed(A_SEED)
-                for sounds in BAND_SOUNDS[1:]:
+                for sounds in wizard_choices.BAND_SOUNDS[1:]:
                     choices.set_band_sounds(sounds)
                     with self.subTest(subgenre=choices.get_subgenre(), sounds=sounds):
                         SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
 
     def test_a_players_own_sound_overrides_the_bands_and_none_follows_the_band_again(self):
         choices = self.rock()
-        choices.set_band_sounds(BAND_SOUNDS[1])
+        choices.set_band_sounds(wizard_choices.BAND_SOUNDS[1])
         band = choices.get_sound(A_BASS)
         choices.set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
         self.assertTrue(choices.has_own_sound(A_BASS))
         self.assertEqual(self.sound_made(choices=choices, role=A_BASS), limits.MAX_GM_SOUND)
-        choices.set_band_sounds(BAND_SOUNDS[2])
+        choices.set_band_sounds(wizard_choices.BAND_SOUNDS[2])
         self.assertEqual(choices.get_sound(A_BASS), limits.MAX_GM_SOUND)
-        choices.set_band_sounds(BAND_SOUNDS[1])
+        choices.set_band_sounds(wizard_choices.BAND_SOUNDS[1])
         choices.set_sound(role=A_BASS, sound=None)
         self.assertEqual(choices.get_sound(A_BASS), band)
 
@@ -707,14 +709,14 @@ class TestWizardSounds(unittest.TestCase):
 
     def test_the_sounds_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
         choices = self.rock()
-        self.assertNotIn(SOUNDS_KEPT, choices.to_data())
-        choices.set_band_sounds(BAND_SOUNDS[-1])
+        self.assertNotIn(wizard_choices.SOUNDS_KEPT, choices.to_data())
+        choices.set_band_sounds(wizard_choices.BAND_SOUNDS[-1])
         choices.set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.to_data(), choices.to_data())
         self.assertEqual(again.get_sound(A_BASS), limits.MAX_GM_SOUND)
         again.set_subgenre(again.subgenres()[1])
-        self.assertEqual(again.get_band_sounds(), USUAL_SOUNDS)
+        self.assertEqual(again.get_band_sounds(), wizard_choices.USUAL_SOUNDS)
         self.assertFalse(again.has_own_sound(A_BASS))
 
 
@@ -727,7 +729,7 @@ class TestWizardGuitarists(unittest.TestCase):
         return choices
 
     def one(self, choices):
-        return style_named(choices.get_genre())[ONE_GUITARIST]
+        return style_named(choices.get_genre())[wizard_choices.ONE_GUITARIST]
 
     def players_by_scene(self, choices):
         """Which tracks play in each scene of the song made, by the scene's name."""
@@ -737,25 +739,25 @@ class TestWizardGuitarists(unittest.TestCase):
 
     def test_a_band_has_two_guitarists_until_one_is_chosen_and_a_genre_with_no_guitar_solo_offers_only_two(self):
         choices = self.rock()
-        self.assertEqual(choices.get_guitarists(), TWO_GUITARISTS)
+        self.assertEqual(choices.get_guitarists(), wizard_choices.TWO_GUITARISTS)
         self.assertTrue(choices.offers_one_guitarist())
         without = [place for place in range(len(genre_names())) if not chosen(genre=place).offers_one_guitarist()]
         self.assertTrue(without)
         with self.assertRaises(ValueError):
-            chosen(genre=without[0]).set_guitarists(ONE_GUITARIST_COUNT)
+            chosen(genre=without[0]).set_guitarists(wizard_choices.ONE_GUITARIST_COUNT)
         with self.assertRaises(ValueError):
             choices.set_guitarists(NOT_A_CHOICE)
 
     def test_one_guitarist_is_one_player_on_the_screen_who_takes_the_solo_on_the_guitar(self):
         choices = self.rock()
         one = self.one(choices)
-        choices.set_guitarists(ONE_GUITARIST_COUNT)
-        self.assertNotIn(one[SOLO_PLAYER], choices.roles_shown())
-        self.assertEqual(choices.role_title(one[CHORDS_PLAYER]), one[ROLE_TITLE])
-        self.assertEqual(choices.get_way(one[SOLO_PLAYER]), one[SOLO_WAY])
-        self.assertTrue(choices.role_is_in(one[SOLO_PLAYER]))
-        choices.set_guitarists(TWO_GUITARISTS)
-        self.assertIn(one[SOLO_PLAYER], choices.roles_shown())
+        choices.set_guitarists(wizard_choices.ONE_GUITARIST_COUNT)
+        self.assertNotIn(one[wizard_choices.SOLO_PLAYER], choices.roles_shown())
+        self.assertEqual(choices.role_title(one[wizard_choices.CHORDS_PLAYER]), one[arranger.ROLE_TITLE])
+        self.assertEqual(choices.get_way(one[wizard_choices.SOLO_PLAYER]), one[wizard_choices.SOLO_WAY])
+        self.assertTrue(choices.role_is_in(one[wizard_choices.SOLO_PLAYER]))
+        choices.set_guitarists(wizard_choices.TWO_GUITARISTS)
+        self.assertIn(one[wizard_choices.SOLO_PLAYER], choices.roles_shown())
 
     def test_the_chords_stop_where_the_solo_plays_in_a_suggested_form_and_in_the_songs_own(self):
         for own in (False, True):
@@ -763,28 +765,28 @@ class TestWizardGuitarists(unittest.TestCase):
             one = self.one(choices)
             if own:
                 choices.copy_section(0)
-            both = [name for name, tracks in self.players_by_scene(choices).items() if one[SOLO_PLAYER] in tracks and one[CHORDS_PLAYER] in tracks]
+            both = [name for name, tracks in self.players_by_scene(choices).items() if one[wizard_choices.SOLO_PLAYER] in tracks and one[wizard_choices.CHORDS_PLAYER] in tracks]
             self.assertTrue(both)
-            choices.set_guitarists(ONE_GUITARIST_COUNT)
+            choices.set_guitarists(wizard_choices.ONE_GUITARIST_COUNT)
             scenes = self.players_by_scene(choices)
-            self.assertTrue(any(one[SOLO_PLAYER] in tracks for tracks in scenes.values()))
-            self.assertTrue(any(one[CHORDS_PLAYER] in tracks for tracks in scenes.values()))
+            self.assertTrue(any(one[wizard_choices.SOLO_PLAYER] in tracks for tracks in scenes.values()))
+            self.assertTrue(any(one[wizard_choices.CHORDS_PLAYER] in tracks for tracks in scenes.values()))
             for name, tracks in scenes.items():
-                self.assertFalse(one[SOLO_PLAYER] in tracks and one[CHORDS_PLAYER] in tracks, name)
+                self.assertFalse(one[wizard_choices.SOLO_PLAYER] in tracks and one[wizard_choices.CHORDS_PLAYER] in tracks, name)
 
     def test_one_guitarist_left_out_takes_the_solo_out_too(self):
         choices = self.rock()
         one = self.one(choices)
-        choices.set_guitarists(ONE_GUITARIST_COUNT)
-        choices.set_role_in(role=one[CHORDS_PLAYER], on=False)
+        choices.set_guitarists(wizard_choices.ONE_GUITARIST_COUNT)
+        choices.set_role_in(role=one[wizard_choices.CHORDS_PLAYER], on=False)
         tracks = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME).get_track_names()
-        self.assertNotIn(one[SOLO_PLAYER], tracks)
-        self.assertNotIn(one[CHORDS_PLAYER], tracks)
+        self.assertNotIn(one[wizard_choices.SOLO_PLAYER], tracks)
+        self.assertNotIn(one[wizard_choices.CHORDS_PLAYER], tracks)
 
     def test_one_guitarist_is_kept_with_the_choices_and_another_subgenre_has_two_again(self):
         choices = self.rock()
-        self.assertNotIn(GUITARISTS_KEPT, choices.to_data())
-        choices.set_guitarists(ONE_GUITARIST_COUNT)
+        self.assertNotIn(wizard_choices.GUITARISTS_KEPT, choices.to_data())
+        choices.set_guitarists(wizard_choices.ONE_GUITARIST_COUNT)
         again = WizardChoices.from_data(choices.to_data())
         self.assertTrue(again.has_one_guitarist())
         self.assertEqual(again.to_data(), choices.to_data())
@@ -855,7 +857,7 @@ class TestWizardKit(unittest.TestCase):
 
     def test_the_pieces_switched_off_are_kept_with_the_choices_and_another_subgenre_has_them_all(self):
         choices = self.rock()
-        self.assertNotIn(PIECES_OFF_KEPT, choices.to_data())
+        self.assertNotIn(wizard_choices.PIECES_OFF_KEPT, choices.to_data())
         piece = choices.pieces()[-1]
         choices.set_piece_on(piece=piece, on=False)
         again = WizardChoices.from_data(choices.to_data())
@@ -892,28 +894,28 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
 
     def test_the_drummer_decides_how_often_until_a_position_is_chosen_and_the_song_is_then_the_same(self):
         choices = self.rock()
-        self.assertIn(choices.get_fills(), range(FEWEST_FILLS, MOST_FILLS + 1))
-        self.assertNotIn(FILLS_KEPT, choices.to_data())
+        self.assertIn(choices.get_fills(), range(wizard_choices.FEWEST_FILLS, wizard_choices.MOST_FILLS + 1))
+        self.assertNotIn(wizard_choices.FILLS_KEPT, choices.to_data())
 
     def test_every_position_makes_a_song_that_plays_in_every_subgenre_and_the_positions_differ(self):
         for place in range(len(genre_names())):
             for subgenre in range(len(chosen(genre=place).subgenres())):
                 choices = chosen(genre=place, subgenre=subgenre)
                 choices.set_seed(A_SEED)
-                for position in range(FEWEST_FILLS, MOST_FILLS + 1):
+                for position in range(wizard_choices.FEWEST_FILLS, wizard_choices.MOST_FILLS + 1):
                     choices.set_fills(position)
                     with self.subTest(subgenre=choices.get_subgenre(), position=position):
                         SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
         choices = self.rock()
         made = []
-        for position in range(FEWEST_FILLS, MOST_FILLS + 1):
+        for position in range(wizard_choices.FEWEST_FILLS, wizard_choices.MOST_FILLS + 1):
             choices.set_fills(position)
             made.append(self.patterns(choices))
         self.assertNotEqual(made[0], made[-1])
         self.assertNotEqual(made[1], made[-1])
 
     def test_a_position_that_is_not_one_is_refused(self):
-        for refused in (FEWEST_FILLS - 1, MOST_FILLS + 1, True, NOT_A_NUMBER):
+        for refused in (wizard_choices.FEWEST_FILLS - 1, wizard_choices.MOST_FILLS + 1, True, NOT_A_NUMBER):
             with self.assertRaises(ValueError):
                 self.rock().set_fills(refused)
         with self.assertRaises(ValueError):
@@ -936,13 +938,13 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
 
     def test_both_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
         choices = self.with_quiet_notes()
-        self.assertNotIn(QUIET_NOTES_KEPT, choices.to_data())
+        self.assertNotIn(wizard_choices.QUIET_NOTES_KEPT, choices.to_data())
         choices.set_quiet_notes(False)
-        choices.set_fills(MOST_FILLS)
+        choices.set_fills(wizard_choices.MOST_FILLS)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.to_data(), choices.to_data())
         self.assertFalse(again.plays_quiet_notes())
-        self.assertEqual(again.get_fills(), MOST_FILLS)
+        self.assertEqual(again.get_fills(), wizard_choices.MOST_FILLS)
         again.set_subgenre([name for name in again.subgenres() if name != again.get_subgenre()][0])
         self.assertTrue(again.plays_quiet_notes())
 
@@ -975,7 +977,7 @@ class TestWizardMelodySettings(unittest.TestCase):
     def test_each_style_shows_its_own_settings_and_the_usual_style_its_range(self):
         self.assertGreater(len(self.styles()), 1)
         for style in self.styles():
-            self.assertEqual(self.rock(style=style).melody_settings(), list(MELODY_SETTINGS_OF[style]))
+            self.assertEqual(self.rock(style=style).melody_settings(), list(wizard_choices.MELODY_SETTINGS_OF[style]))
         self.assertEqual(WizardChoices().melody_settings(), [])
 
     def test_a_setting_is_the_genres_until_changed_and_every_setting_changes_the_song_and_is_kept(self):
@@ -983,7 +985,7 @@ class TestWizardMelodySettings(unittest.TestCase):
             for name in self.rock(style=style).melody_settings():
                 choices = self.rock(style=style)
                 before = self.patterns(choices)
-                self.assertNotIn(MELODY_SETTINGS_KEPT, choices.to_data())
+                self.assertNotIn(wizard_choices.MELODY_SETTINGS_KEPT, choices.to_data())
                 value = self.another_value(choices=choices, name=name)
                 choices.set_melody_setting(name=name, value=value)
                 self.assertEqual(choices.get_melody_setting(name), value)
@@ -994,33 +996,33 @@ class TestWizardMelodySettings(unittest.TestCase):
 
     def test_the_usual_style_has_no_settings_of_its_own_since_a_tunes_range_is_its_players_gauge(self):
         self.assertEqual(self.rock().melody_settings(), [])
-        self.assertTrue(self.rock(style=EVOLVING).melody_settings())
+        self.assertTrue(self.rock(style=melody.EVOLVING).melody_settings())
 
     def test_a_setting_of_another_style_is_kept_and_says_nothing(self):
-        choices = self.rock(style=SERIAL)
-        choices.set_melody_setting(name=LEAPS, value=True)
-        choices.set_melody(SMART)
-        self.assertEqual(self.patterns(choices), self.patterns(self.rock(style=SMART)))
-        choices.set_melody(SERIAL)
-        self.assertTrue(choices.get_melody_setting(LEAPS))
+        choices = self.rock(style=melody.SERIAL)
+        choices.set_melody_setting(name=melody.LEAPS, value=True)
+        choices.set_melody(melody.SMART)
+        self.assertEqual(self.patterns(choices), self.patterns(self.rock(style=melody.SMART)))
+        choices.set_melody(melody.SERIAL)
+        self.assertTrue(choices.get_melody_setting(melody.LEAPS))
 
     def test_a_setting_the_style_has_not_and_a_value_out_of_range_are_refused(self):
-        choices = self.rock(style=SERIAL)
-        for refused in (lambda: choices.set_melody_setting(name=MOVE, value=A_SECOND), lambda: choices.set_melody_setting(name=NO_SUCH_GAUGE, value=True),
-                        lambda: choices.set_melody_setting(name=LEAPS, value=A_SECOND)):
+        choices = self.rock(style=melody.SERIAL)
+        for refused in (lambda: choices.set_melody_setting(name=melody.MOVE, value=A_SECOND), lambda: choices.set_melody_setting(name=NO_SUCH_GAUGE, value=True),
+                        lambda: choices.set_melody_setting(name=melody.LEAPS, value=A_SECOND)):
             with self.assertRaises(ValueError):
                 refused()
-        evolving = self.rock(style=EVOLVING)
-        lowest, highest = evolving.melody_setting_range(MOVE)
+        evolving = self.rock(style=melody.EVOLVING)
+        lowest, highest = evolving.melody_setting_range(melody.MOVE)
         for value in (lowest - 1, highest + 1, True, NOT_A_NUMBER):
             with self.assertRaises(ValueError):
-                evolving.set_melody_setting(name=MOVE, value=value)
+                evolving.set_melody_setting(name=melody.MOVE, value=value)
 
     def test_a_new_genre_forgets_the_settings(self):
-        choices = self.rock(style=EVOLVING)
-        choices.set_melody_setting(name=MOVE, value=self.another_value(choices=choices, name=MOVE))
+        choices = self.rock(style=melody.EVOLVING)
+        choices.set_melody_setting(name=melody.MOVE, value=self.another_value(choices=choices, name=melody.MOVE))
         choices.set_genre(ANOTHER_GENRE)
-        self.assertNotIn(MELODY_SETTINGS_KEPT, choices.to_data())
+        self.assertNotIn(wizard_choices.MELODY_SETTINGS_KEPT, choices.to_data())
 
 
 class TestWizardPlayerRows(unittest.TestCase):
@@ -1028,15 +1030,15 @@ class TestWizardPlayerRows(unittest.TestCase):
 
     def serial(self):
         choices = chosen(genre=genre_names().index(A_GENRE_WITH_STYLES))
-        choices.set_melody(SERIAL)
-        choices.set_seed(FIRST_SEED)
+        choices.set_melody(melody.SERIAL)
+        choices.set_seed(wizard_choices.FIRST_SEED)
         return choices
 
     def a_player(self, choices):
         return next(role for role in choices.roles_in() if choices.player_rows(role))
 
     def parts(self, choices):
-        return arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[PARTS]
+        return arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[arranger.PARTS]
 
     def moved(self, *, choices, name, row):
         """A row with every cell at the end of its range the cell is further from."""
@@ -1049,7 +1051,7 @@ class TestWizardPlayerRows(unittest.TestCase):
         self.assertTrue(with_rows)
         self.assertLess(len(with_rows), len(choices.roles_in()))
         for role in with_rows:
-            self.assertEqual(choices.player_rows(role), list(PLAYER_ROWS))
+            self.assertEqual(choices.player_rows(role), list(wizard_choices.PLAYER_ROWS))
         choices.set_melody(None)
         for role in choices.roles_in():
             self.assertEqual(choices.player_rows(role), [])
@@ -1057,7 +1059,7 @@ class TestWizardPlayerRows(unittest.TestCase):
     def test_a_row_is_the_genres_until_changed_and_each_row_changed_changes_the_song(self):
         choices = self.serial()
         role = self.a_player(choices)
-        for name in PLAYER_ROWS:
+        for name in wizard_choices.PLAYER_ROWS:
             before = self.parts(choices)
             usual = choices.get_player_row(role=role, name=name)
             self.assertEqual(usual, choices.genre_row(role=role, name=name))
@@ -1074,13 +1076,13 @@ class TestWizardPlayerRows(unittest.TestCase):
             choices.set_player_row(role=role, name=name, values=usual)
             self.assertFalse(choices.player_row_is_own(role=role, name=name))
             self.assertEqual(self.parts(choices), before)
-            self.assertNotIn(PLAYER_ROWS_KEPT, choices.to_data())
+            self.assertNotIn(wizard_choices.PLAYER_ROWS_KEPT, choices.to_data())
 
     def test_a_row_changes_only_its_players_parts(self):
         choices = self.serial()
         role = self.a_player(choices)
         before = self.parts(choices)
-        choices.set_player_row(role=role, name=LENGTHS, values=self.moved(choices=choices, name=LENGTHS, row=choices.get_player_row(role=role, name=LENGTHS)))
+        choices.set_player_row(role=role, name=melody.LENGTHS, values=self.moved(choices=choices, name=melody.LENGTHS, row=choices.get_player_row(role=role, name=melody.LENGTHS)))
         after = self.parts(choices)
         # A part that changed is a tune player's: the player's own, or the part of a player of lines who plays the tune along.
         with_rows = [other for other in choices.roles_in() if choices.player_rows(other)]
@@ -1091,34 +1093,34 @@ class TestWizardPlayerRows(unittest.TestCase):
     def test_a_row_out_of_range_too_long_or_of_another_style_is_refused(self):
         choices = self.serial()
         role = self.a_player(choices)
-        lowest, highest = choices.row_limits(LENGTHS)
-        for values in ([], [lowest] * (MOST_ROW_CELLS + 1), [lowest - 1], [highest + 1], [True], [NOT_A_NUMBER], NOT_A_NUMBER):
+        lowest, highest = choices.row_limits(melody.LENGTHS)
+        for values in ([], [lowest] * (wizard_choices.MOST_ROW_CELLS + 1), [lowest - 1], [highest + 1], [True], [NOT_A_NUMBER], NOT_A_NUMBER):
             with self.assertRaises(ValueError):
-                choices.set_player_row(role=role, name=LENGTHS, values=values)
+                choices.set_player_row(role=role, name=melody.LENGTHS, values=values)
         with self.assertRaises(ValueError):
             choices.set_player_row(role=role, name=NO_SUCH_GAUGE, values=[lowest])
-        choices.set_player_row(role=role, name=LENGTHS, values=[lowest] * MOST_ROW_CELLS)
-        choices.set_player_row(role=role, name=LENGTHS, values=[highest])
+        choices.set_player_row(role=role, name=melody.LENGTHS, values=[lowest] * wizard_choices.MOST_ROW_CELLS)
+        choices.set_player_row(role=role, name=melody.LENGTHS, values=[highest])
         choices.set_melody(None)
         with self.assertRaises(ValueError):
-            choices.get_player_row(role=role, name=LENGTHS)
+            choices.get_player_row(role=role, name=melody.LENGTHS)
 
     def test_a_row_kept_says_nothing_under_another_style_and_a_new_genre_forgets_the_rows(self):
         choices = self.serial()
         role = self.a_player(choices)
-        choices.set_player_row(role=role, name=LENGTHS, values=[choices.row_limits(LENGTHS)[1]])
+        choices.set_player_row(role=role, name=melody.LENGTHS, values=[choices.row_limits(melody.LENGTHS)[1]])
         choices.set_melody(None)
         plain = self.serial()
         plain.set_melody(None)
         self.assertEqual(self.parts(choices), self.parts(plain))
         choices.set_genre(ANOTHER_GENRE)
-        self.assertNotIn(PLAYER_ROWS_KEPT, choices.to_data())
+        self.assertNotIn(wizard_choices.PLAYER_ROWS_KEPT, choices.to_data())
 
     def test_the_genres_own_rows_are_those_its_players_are_written_with(self):
         choices = chosen(genre=genre_names().index(A_SERIAL_GENRE))
         role = self.a_player(choices)
         written = next(entry for entry in style_of(A_SERIAL_GENRE)[ROLES_OF_STYLE] if entry[ROLE_OF_ENTRY] == role)[HABITS_OF_ENTRY]
-        self.assertEqual(choices.get_player_row(role=role, name=LENGTHS), written[LENGTHS])
+        self.assertEqual(choices.get_player_row(role=role, name=melody.LENGTHS), written[melody.LENGTHS])
 
 
 class TestWizardMelodyGauges(unittest.TestCase):
@@ -1146,7 +1148,7 @@ class TestWizardMelodyGauges(unittest.TestCase):
         self.assertEqual(self.patterns(again), self.patterns(choices))
         choices.set_hook(True)
         self.assertEqual(self.patterns(choices), with_hook)
-        self.assertNotIn(HOOK_KEPT, choices.to_data())
+        self.assertNotIn(wizard_choices.HOOK_KEPT, choices.to_data())
 
     def test_the_hooks_notes_are_read_from_the_song_as_chosen_and_follow_every_choice(self):
         choices = self.rock()
@@ -1165,12 +1167,12 @@ class TestWizardMelodyGauges(unittest.TestCase):
 
     def test_a_new_hook_changes_the_hook_and_no_other_part_and_is_kept(self):
         choices = self.rock()
-        before = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[PARTS]
+        before = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[arranger.PARTS]
         first = choices.hook_notes()
         choices.new_hook()
         self.assertEqual(choices.get_hook_take(), 1)
         self.assertNotEqual(choices.hook_notes(), first)
-        after = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[PARTS]
+        after = arranged(style=style_of(choices.get_genre()), song=choices.song_picks(A_NAME))[arranger.PARTS]
         changed = [part for part in before if before[part] != after[part]]
         self.assertTrue(changed)
         # Only parts of the sections that have the hook change: the tune's, and any player's who plays the hook with the tune.
@@ -1192,7 +1194,7 @@ class TestWizardMelodyGauges(unittest.TestCase):
         self.assertEqual(choices.get_hook_take(), 0)
         # A take kept that is no take is left out, as any kept choice that no longer holds is.
         for take in (-1, True, NOT_A_NUMBER):
-            self.assertEqual(WizardChoices.from_data({**self.rock().to_data(), HOOK_TAKE_KEPT: take}).get_hook_take(), 0)
+            self.assertEqual(WizardChoices.from_data({**self.rock().to_data(), wizard_choices.HOOK_TAKE_KEPT: take}).get_hook_take(), 0)
 
     def test_a_song_with_no_hook_has_no_hook_notes(self):
         choices = self.rock()
@@ -1215,41 +1217,41 @@ class TestWizardMelodyGauges(unittest.TestCase):
     def test_the_gauges_show_only_while_the_melody_style_is_smart(self):
         choices = self.rock()
         self.assertEqual(choices.gauges(), [])
-        choices.set_melody(SMART)
-        self.assertEqual(choices.gauges(), list(DEFAULT_GAUGES))
+        choices.set_melody(melody.SMART)
+        self.assertEqual(choices.gauges(), list(melody.DEFAULT_GAUGES))
         choices.set_melody(None)
         self.assertEqual(choices.gauges(), [])
 
     def test_a_gauge_stands_where_the_genre_sets_it_until_moved(self):
         choices = self.rock()
-        choices.set_melody(SMART)
-        style = style_of(A_GENRE_WITH_TUNES)[MELODY]
-        own = (style if GRID in style else style[choices.meter()])[SMART]
+        choices.set_melody(melody.SMART)
+        style = style_of(A_GENRE_WITH_TUNES)[arranger.MELODY]
+        own = (style if melody.GRID in style else style[choices.meter()])[melody.SMART]
         for name in choices.gauges():
-            self.assertEqual(choices.get_gauge(name), own.get(name, DEFAULT_GAUGES[name]))
-            self.assertIn(choices.get_gauge(name), range(LOWEST_GAUGE, HIGHEST_GAUGE + 1))
+            self.assertEqual(choices.get_gauge(name), own.get(name, melody.DEFAULT_GAUGES[name]))
+            self.assertIn(choices.get_gauge(name), range(melody.LOWEST_GAUGE, melody.HIGHEST_GAUGE + 1))
 
     def test_a_gauge_set_where_it_stands_makes_the_same_song_and_a_moved_one_another_and_is_kept(self):
         choices = self.rock()
-        choices.set_melody(SMART)
+        choices.set_melody(melody.SMART)
         usual = self.patterns(choices)
         name = choices.gauges()[0]
         choices.set_gauge(name=name, position=choices.get_gauge(name))
         self.assertEqual(self.patterns(choices), usual)
-        choices.set_gauge(name=name, position=HIGHEST_GAUGE)
+        choices.set_gauge(name=name, position=melody.HIGHEST_GAUGE)
         self.assertNotEqual(self.patterns(choices), usual)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_gauge(name), HIGHEST_GAUGE)
+        self.assertEqual(again.get_gauge(name), melody.HIGHEST_GAUGE)
         self.assertEqual(self.patterns(again), self.patterns(choices))
 
     def test_a_gauge_there_is_none_of_and_a_position_out_of_range_are_refused(self):
         choices = self.rock()
-        choices.set_melody(SMART)
+        choices.set_melody(melody.SMART)
         name = choices.gauges()[0]
-        for refused_name, position in ((NO_SUCH_GAUGE, LOWEST_GAUGE), (name, LOWEST_GAUGE - 1), (name, HIGHEST_GAUGE + 1), (name, True), (name, A_GAUGE_IN_WORDS)):
+        for refused_name, position in ((NO_SUCH_GAUGE, melody.LOWEST_GAUGE), (name, melody.LOWEST_GAUGE - 1), (name, melody.HIGHEST_GAUGE + 1), (name, True), (name, A_GAUGE_IN_WORDS)):
             with self.assertRaises(ValueError) as refused:
                 choices.set_gauge(name=refused_name, position=position)
-            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_GAUGE.format(name=refused_name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_GAUGE.format(name=refused_name, low=melody.LOWEST_GAUGE, high=melody.HIGHEST_GAUGE, value=position))
 
 
 class TestWizardMinorTunes(unittest.TestCase):
@@ -1258,13 +1260,13 @@ class TestWizardMinorTunes(unittest.TestCase):
     def degrees_sung(self, choices):
         """Return the scale degrees of every tune of the song the choices make: the lead's part in each section."""
         style = style_of(choices.get_genre())
-        parts = arranged(style=style, song=choices.song_picks(A_NAME))[PARTS]
-        tunes = [part for name, part in parts.items() if name.endswith(composer_text.MSG_PART_OF_SECTION.format(EMPTY, LEAD_ROLE)) and LINES in part]
-        return {note[DEGREE] for part in tunes for line in part[LINES] for note in line if DEGREE in note}
+        parts = arranged(style=style, song=choices.song_picks(A_NAME))[arranger.PARTS]
+        tunes = [part for name, part in parts.items() if name.endswith(composer_text.MSG_PART_OF_SECTION.format(EMPTY, LEAD_ROLE)) and notation.LINES in part]
+        return {note[notation.DEGREE] for part in tunes for line in part[notation.LINES] for note in line if notation.DEGREE in note}
 
     def habits(self, choices):
-        habits = style_of(choices.get_genre())[MELODY]
-        return habits if GRID in habits else habits[choices.meter()]
+        habits = style_of(choices.get_genre())[arranger.MELODY]
+        return habits if melody.GRID in habits else habits[choices.meter()]
 
     def test_every_subgenre_of_a_style_with_minor_notes_sings_the_notes_of_its_scale_type(self):
         checked = set()
@@ -1273,19 +1275,19 @@ class TestWizardMinorTunes(unittest.TestCase):
                 choices = chosen(genre=place, subgenre=subgenre)
                 choices.set_seed(A_SEED)
                 habits = self.habits(choices)
-                if BY_SCALE_TYPE not in habits:
+                if arranger.BY_SCALE_TYPE not in habits:
                     continue
-                own = habits[BY_SCALE_TYPE].get(choices.get_scale_type(), habits)
+                own = habits[arranger.BY_SCALE_TYPE].get(choices.get_scale_type(), habits)
                 checked.add(choices.get_scale_type())
                 with self.subTest(subgenre=choices.get_subgenre()):
-                    self.assertLessEqual(self.degrees_sung(choices), {note[DEGREE] for note in own[LADDER]})
+                    self.assertLessEqual(self.degrees_sung(choices), {note[notation.DEGREE] for note in own[melody.LADDER]})
         self.assertGreater(len(checked), 1)
 
     def test_the_minor_notes_differ_from_the_usual_ones_and_rest_on_the_first(self):
         choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
-        minor = self.habits(choices)[BY_SCALE_TYPE][MINOR]
-        self.assertNotEqual(minor[LADDER], self.habits(choices)[LADDER])
-        self.assertEqual(minor[HOME][DEGREE], FIRST_DEGREE)
+        minor = self.habits(choices)[arranger.BY_SCALE_TYPE][wizard_choices.MINOR]
+        self.assertNotEqual(minor[melody.LADDER], self.habits(choices)[melody.LADDER])
+        self.assertEqual(minor[melody.HOME][notation.DEGREE], FIRST_DEGREE)
 
 
 class TestWizardStandIns(unittest.TestCase):
@@ -1296,21 +1298,21 @@ class TestWizardStandIns(unittest.TestCase):
         for place, genre in enumerate(genre_names()):
             style = style_of(genre)
             choices = chosen(genre=place)
-            for role, by_subgenre in style.get(STAND_INS, {}).items():
+            for role, by_subgenre in style.get(wizard_choices.STAND_INS, {}).items():
                 found = True
                 self.assertIn(role, choices.roles())
                 self.assertLessEqual(set(by_subgenre), set(choices.subgenres()))
-                self.assertLessEqual(set(by_subgenre.values()), set(style[SOUNDS]))
+                self.assertLessEqual(set(by_subgenre.values()), set(style[arranger.SOUNDS]))
         self.assertTrue(found)
 
     def test_the_player_plays_the_stand_in_in_the_song_made_and_keeps_one_way_and_a_sound_chosen_wins(self):
         genre = genre_names().index(A_GENRE_WITH_TUNES)
         style = style_of(A_GENRE_WITH_TUNES)
-        for role, by_subgenre in style[STAND_INS].items():
+        for role, by_subgenre in style[wizard_choices.STAND_INS].items():
             for subgenre, sound in by_subgenre.items():
                 choices = chosen(genre=genre, subgenre=chosen(genre=genre).subgenres().index(subgenre))
                 choices.set_seed(A_SEED)
-                number = style[SOUNDS][sound]
+                number = style[arranger.SOUNDS][sound]
                 with self.subTest(subgenre=subgenre):
                     self.assertEqual(choices.get_sound(role), number)
                     self.assertFalse(choices.has_own_sound(role))
@@ -1332,7 +1334,7 @@ class TestWizardProgressionByChance(unittest.TestCase):
         return chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
 
     def drawn(self, choices):
-        return choices.song_picks(A_NAME)[PICKS][choices.progression_trait()]
+        return choices.song_picks(A_NAME)[arranger.PICKS][choices.progression_trait()]
 
     def test_a_song_starts_with_its_progression_left_to_chance_and_runs_draw_different_ones(self):
         choices = self.rock()
@@ -1348,7 +1350,7 @@ class TestWizardProgressionByChance(unittest.TestCase):
     def test_with_no_seed_nothing_is_drawn_and_the_subgenres_usual_one_is_played(self):
         choices = self.rock()
         self.assertEqual(choices.progressions_by_chance(), [])
-        self.assertNotIn(choices.progression_trait(), choices.song_picks(A_NAME)[PICKS])
+        self.assertNotIn(choices.progression_trait(), choices.song_picks(A_NAME)[arranger.PICKS])
 
     def test_a_progression_chosen_is_played_on_every_run_until_it_is_left_to_chance_again(self):
         choices = self.rock()
@@ -1371,7 +1373,7 @@ class TestWizardProgressionByChance(unittest.TestCase):
                 if trait is None:
                     continue
                 entries = values_of(style=style_of(genre), trait=trait)
-                suited = {way for way in choices.song_ways(trait) if entries[way].get(SCALE_TYPE, MAJOR) == choices.get_scale_type()}
+                suited = {way for way in choices.song_ways(trait) if entries[way].get(arranger.SCALE_TYPE, wizard_choices.MAJOR) == choices.get_scale_type()}
                 # A progression the subgenre's harmonic family never uses is drawn by no seed, and is chosen by hand.
                 suited = {way for way in suited if share_in(style=style_of(genre), entry=entries[way], template=choices.get_subgenre())} or suited
                 for seed in range(A_SEED, A_SEED + MANY_RUNS):
@@ -1417,7 +1419,7 @@ class EveryPlayerOfAGenre:
                 choices.made_setlist(name=A_NAME, version=version.VERSION)
             choices.set_way(trait=trait, value=usual)
         if choices.has_busy(role):
-            for level in (LEAST_BUSY, MOST_BUSY, USUAL_BUSY):
+            for level in (wizard_choices.LEAST_BUSY, wizard_choices.MOST_BUSY, wizard_choices.USUAL_BUSY):
                 choices.set_busy(role=role, level=level)
                 choices.made_setlist(name=A_NAME, version=version.VERSION)
         if len(choices.roles_in()) > 1:
@@ -1438,7 +1440,7 @@ class EverySongWayOfAGenre:
         for subgenre in range(len(chosen(genre=place).subgenres())):
             choices = chosen(genre=place, subgenre=subgenre)
             choices.set_seed(A_SEED)
-            for traits in (PROGRESSION_TRAITS, FILLS_TRAITS):
+            for traits in (wizard_choices.PROGRESSION_TRAITS, wizard_choices.FILLS_TRAITS):
                 trait = choices.song_trait(traits)
                 for way in (choices.song_ways(trait) if trait else []):
                     with self.subTest(subgenre=choices.get_subgenre(), trait=trait, way=way):
@@ -1531,7 +1533,7 @@ class TestWizardBand(unittest.TestCase):
         self.assertEqual(self.tracks_of(choices), [track for track in whole if track != A_BASS])
         choices.set_role_in(role=A_BASS, on=True)
         self.assertEqual(self.tracks_of(choices), whole)
-        choices.set_role_in(role=DRUMS, on=False)
+        choices.set_role_in(role=arranger.DRUMS, on=False)
         left = self.tracks_of(choices)
         self.assertEqual(left, [track for track in whole if track in choices.roles() or track == composer_text.MSG_CHORDS_TRACK])
 
@@ -1556,14 +1558,14 @@ class TestWizardBand(unittest.TestCase):
 
     def test_each_player_starts_a_little_busy_and_busier_players_change_the_song(self):
         choices = self.rock()
-        self.assertEqual(choices.get_busy(DRUMS), USUAL_BUSY)
+        self.assertEqual(choices.get_busy(arranger.DRUMS), wizard_choices.USUAL_BUSY)
         usual = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
-        choices.set_busy(role=DRUMS, level=MOST_BUSY)
+        choices.set_busy(role=arranger.DRUMS, level=wizard_choices.MOST_BUSY)
         self.assertNotEqual(choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS], usual)
-        for level in (LEAST_BUSY - 1, MOST_BUSY + 1, NOT_A_NUMBER, True):
+        for level in (wizard_choices.LEAST_BUSY - 1, wizard_choices.MOST_BUSY + 1, NOT_A_NUMBER, True):
             with self.assertRaises(ValueError):
-                choices.set_busy(role=DRUMS, level=level)
-        self.assertEqual(choices.get_busy(DRUMS), MOST_BUSY)
+                choices.set_busy(role=arranger.DRUMS, level=level)
+        self.assertEqual(choices.get_busy(arranger.DRUMS), wizard_choices.MOST_BUSY)
 
     def test_a_way_of_playing_that_is_not_the_traits_is_refused(self):
         choices = self.rock()
@@ -1577,19 +1579,19 @@ class TestWizardBand(unittest.TestCase):
         choices = self.rock()
         trait = choices.role_traits(A_BASS)[0]
         choices.set_way(trait=trait, value=choices.ways(role=A_BASS, trait=trait)[-1])
-        choices.set_busy(role=A_BASS, level=MOST_BUSY)
+        choices.set_busy(role=A_BASS, level=wizard_choices.MOST_BUSY)
         choices.set_role_in(role=choices.roles_in()[0], on=False)
         data = choices.to_data()
         again = WizardChoices.from_data(data)
         self.assertEqual(again.to_data(), data)
         self.assertEqual(again.made_setlist(name=A_NAME, version=version.VERSION).to_data(), choices.made_setlist(name=A_NAME, version=version.VERSION).to_data())
         choices.set_subgenre(choices.subgenres()[-1])
-        self.assertEqual(choices.get_busy(A_BASS), USUAL_BUSY)
-        self.assertNotIn(WITHOUT, choices.to_data())
+        self.assertEqual(choices.get_busy(A_BASS), wizard_choices.USUAL_BUSY)
+        self.assertNotIn(arranger.WITHOUT, choices.to_data())
 
     def test_choices_kept_before_the_band_could_be_chosen_name_no_levels_and_make_the_same_song(self):
         choices = self.rock()
-        old = {field: value for field, value in choices.to_data().items() if field != PLAYERS}
+        old = {field: value for field, value in choices.to_data().items() if field != arranger.PLAYERS}
         again = WizardChoices.from_data(old)
-        self.assertIsNone(again.get_busy(DRUMS))
+        self.assertIsNone(again.get_busy(arranger.DRUMS))
         self.assertEqual(again.to_data(), old)

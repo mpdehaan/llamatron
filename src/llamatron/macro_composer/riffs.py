@@ -32,8 +32,8 @@ more are the root. Its first player plays the chords, and whoever plays it besid
 
 import random
 
-from llamatron.macro_composer.melody import HALF_STEPS, MAJOR
-from llamatron.macro_composer.notation import ACCENT, ACCIDENTAL, CHORD, DEGREE, FLAT, GHOST, LEVEL, LOUD, NONE, OCTAVE, REST, STEPS
+from llamatron.macro_composer import melody
+from llamatron.macro_composer import notation
 
 # What a song says of its riff.
 RIFF = 'riff'
@@ -78,7 +78,7 @@ TRIES = 20
 
 def note_at(*, place, steps):
     degree, octave = place
-    return {DEGREE: degree, STEPS: steps, **({OCTAVE: octave} if octave else {})}
+    return {notation.DEGREE: degree, notation.STEPS: steps, **({notation.OCTAVE: octave} if octave else {})}
 
 
 def drawn_place(*, dice, before):
@@ -94,8 +94,8 @@ def riff_bar(*, dice, eighths):
     room = eighths
     while room:
         length = min(dice.choice(LENGTHS), room)
-        if bar and length <= LONGEST_REST and dice.random() < REST_SHARE and REST not in bar[-1]:
-            bar.append({REST: length})
+        if bar and length <= LONGEST_REST and dice.random() < REST_SHARE and notation.REST not in bar[-1]:
+            bar.append({notation.REST: length})
         else:
             place = HOME if not bar else drawn_place(dice=dice, before=places)
             places.append(place)
@@ -106,11 +106,11 @@ def riff_bar(*, dice, eighths):
 
 def answered(*, bar, dice):
     """A bar said again with its last notes drawn anew, so that the riff's second bar answers its first."""
-    sounding = [count for count, note in enumerate(bar) if REST not in note]
+    sounding = [count for count, note in enumerate(bar) if notation.REST not in note]
     again = [dict(note) for note in bar]
     for _ in range(TRIES):
         for count in sounding[1:][-ANSWER_NOTES:]:
-            again[count] = note_at(place=drawn_place(dice=dice, before=[]), steps=bar[count][STEPS])
+            again[count] = note_at(place=drawn_place(dice=dice, before=[]), steps=bar[count][notation.STEPS])
         if again != bar:
             break
     return again
@@ -134,7 +134,7 @@ FEWEST_ACCENTS = 2
 MOST_ACCENTS = 4
 # The degrees flattened over a scale that has them major, and the fifth flattened in passing.
 FLATTENED = (3, 7)
-FLAT_FIFTH = (5, 0, FLAT)
+FLAT_FIFTH = (5, 0, notation.FLAT)
 # The single notes a riff ends on, which lead back to the root.
 TAILS = (((4, 0), (3, 0)), ((3, 0), (7, -1)), ((5, -1), (7, -1)), ((5, 0), (4, 0), (3, 0)), ((4, 0), (3, 0), (7, -1)), ((5, 0), FLAT_FIFTH, (4, 0)))
 
@@ -142,14 +142,14 @@ TAILS = (((4, 0), (3, 0)), ((3, 0), (7, -1)), ((5, -1), (7, -1)), ((5, 0), (4, 0
 def riff_note(*, place, steps, flattened, **more):
     """A note of a heavy riff at a place of the ladder, its third and seventh flattened where the scale has them major."""
     degree, octave, *mark = place
-    note = {DEGREE: degree, STEPS: steps, **({OCTAVE: octave} if octave else {}), **more}
+    note = {notation.DEGREE: degree, notation.STEPS: steps, **({notation.OCTAVE: octave} if octave else {}), **more}
     if mark or degree in flattened:
-        note[ACCIDENTAL] = FLAT
+        note[notation.ACCIDENTAL] = notation.FLAT
     return note
 
 
 def is_root(note):
-    return note.get(DEGREE) == HOME[0] and not note.get(OCTAVE) and ACCIDENTAL not in note
+    return note.get(notation.DEGREE) == HOME[0] and not note.get(notation.OCTAVE) and notation.ACCIDENTAL not in note
 
 
 def heavy_bar(*, accents, eighths, between, flattened, tail):
@@ -162,16 +162,16 @@ def heavy_bar(*, accents, eighths, between, flattened, tail):
         if at in accents:
             # An accent off the beat rings on through the beat after it, where nothing else starts there.
             steps = 2 if at % 2 and at + 1 < body and at + 1 not in accents else 1
-            bar.append(riff_note(place=accents[at], steps=steps, flattened=flattened, **{CHORD: POWER_CHORD, LEVEL: ACCENT}))
+            bar.append(riff_note(place=accents[at], steps=steps, flattened=flattened, **{notation.CHORD: POWER_CHORD, notation.LEVEL: notation.ACCENT}))
             at += steps
         elif between == MUTED_ROOTS:
-            bar.append(riff_note(place=HOME, steps=1, flattened=flattened, **{GATE: MUTED_GATE, LEVEL: GHOST}))
+            bar.append(riff_note(place=HOME, steps=1, flattened=flattened, **{GATE: MUTED_GATE, notation.LEVEL: notation.GHOST}))
             at += 1
         else:
-            if bar and REST in bar[-1]:
-                bar[-1] = {REST: bar[-1][REST] + 1}
+            if bar and notation.REST in bar[-1]:
+                bar[-1] = {notation.REST: bar[-1][notation.REST] + 1}
             else:
-                bar.append({REST: 1})
+                bar.append({notation.REST: 1})
             at += 1
     return bar + [riff_note(place=place, steps=1, flattened=flattened) for place in tail]
 
@@ -181,14 +181,14 @@ def with_gap(*, bar, eighths):
     kept = []
     at = 0
     for note in bar:
-        length = note.get(REST, note.get(STEPS))
+        length = note.get(notation.REST, note.get(notation.STEPS))
         if at >= eighths // 2:
             break
         # A note that would ring into the gap is cut off where the gap starts.
         length = min(length, eighths // 2 - at)
-        kept.append({**note, **({REST: length} if REST in note else {STEPS: length})})
+        kept.append({**note, **({notation.REST: length} if notation.REST in note else {notation.STEPS: length})})
         at += length
-    return kept + [{REST: eighths - at}]
+    return kept + [{notation.REST: eighths - at}]
 
 
 def heavy_line(*, seed, take, eighths, bars=RIFF_BARS, between=MUTED_ROOTS, flattened=(), gap=False):
@@ -212,7 +212,7 @@ def heavy_line(*, seed, take, eighths, bars=RIFF_BARS, between=MUTED_ROOTS, flat
         count = dice.randint(min(FEWEST_ACCENTS, len(offbeats)), min(MOST_ACCENTS, len(offbeats)))
         accents = {0: HOME, **{place: dice.choice(ladder) for place in sorted(dice.sample(offbeats, count))}}
         line = made(accents)
-        sounding = [note for note in line if REST not in note]
+        sounding = [note for note in line if notation.REST not in note]
         if any(place in accents for place in kept) and 2 * sum(is_root(note) for note in sounding) >= len(sounding):
             return line
     # An accent off the beat that is sure to be heard, and every accent on the root, which half the notes or more then are.
@@ -232,27 +232,27 @@ def line_of(*, riff, seed, eighths, flattened=()):
 
 def bars_of(*, line, eighths):
     """How many bars a riff's line lasts."""
-    return sum(note.get(REST, note.get(STEPS)) for note in line) // eighths
+    return sum(note.get(notation.REST, note.get(notation.STEPS)) for note in line) // eighths
 
 
 def single(line):
     """A riff's notes alone, with no chords, as a second player plays the riff under the first."""
-    return [{field: value for field, value in note.items() if field != CHORD} for note in line]
+    return [{field: value for field, value in note.items() if field != notation.CHORD} for note in line]
 
 
 def accent_bars(*, line, eighths):
     """Where a riff's accents fall, as a drum's bars of hits in eighths: a kick follows them."""
     hits = []
     for note in line:
-        length = note.get(REST, note.get(STEPS))
-        hits += [LOUD if note.get(LEVEL) == ACCENT else NONE] + [NONE] * (length - 1)
+        length = note.get(notation.REST, note.get(notation.STEPS))
+        hits += [notation.LOUD if note.get(notation.LEVEL) == notation.ACCENT else notation.NONE] + [notation.NONE] * (length - 1)
     return [hits[start:start + eighths] for start in range(0, len(hits), eighths)]
 
 
 def flattened_in(scale_type):
     """The degrees a heavy riff flattens over a scale: the third and the seventh where the scale has them major."""
-    steps = HALF_STEPS.get(scale_type, HALF_STEPS[MAJOR])
-    return tuple(degree for degree in FLATTENED if steps[degree - 1] == HALF_STEPS[MAJOR][degree - 1])
+    steps = melody.HALF_STEPS.get(scale_type, melody.HALF_STEPS[melody.MAJOR])
+    return tuple(degree for degree in FLATTENED if steps[degree - 1] == melody.HALF_STEPS[melody.MAJOR][degree - 1])
 
 
 def split_bars(*, line, eighths):
@@ -260,7 +260,7 @@ def split_bars(*, line, eighths):
     bars = [[]]
     room = eighths
     for note in line:
-        length = note.get(REST, note.get(STEPS))
+        length = note.get(notation.REST, note.get(notation.STEPS))
         if not room:
             bars.append([])
             room = eighths
@@ -272,7 +272,7 @@ def split_bars(*, line, eighths):
 
 
 def is_home(chord):
-    return chord.get(DEGREE) == HOME[0] and not chord.get(ACCIDENTAL)
+    return chord.get(notation.DEGREE) == HOME[0] and not chord.get(notation.ACCIDENTAL)
 
 
 def bars_played(*, chords, bars, count, stays):
@@ -296,4 +296,4 @@ def bars_played(*, chords, bars, count, stays):
 
 def held_bar(*, eighths, chord):
     """A bar of the chord held, where a riff that stays at home gives way."""
-    return [{DEGREE: HOME[0], STEPS: eighths, **({CHORD: POWER_CHORD} if chord else {})}]
+    return [{notation.DEGREE: HOME[0], notation.STEPS: eighths, **({notation.CHORD: POWER_CHORD} if chord else {})}]

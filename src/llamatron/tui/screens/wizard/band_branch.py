@@ -17,7 +17,7 @@
 """The wizard's Band branch: who is in the band, and a branch for each player who is."""
 
 from llamatron.strings import errors, labels
-from llamatron.macro_composer.wizard_choices import BAND_SOUNDS, GUITARIST_COUNTS
+from llamatron.macro_composer import wizard_choices
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.player_branch import PlayerBranch
@@ -41,11 +41,11 @@ class BandBranch(Branch):
         choices = self.choices()
         # A player with no way of playing written for the subgenre is not offered.
         # Sounds is the band's, which every player follows unless the player has a Sound of its own.
-        sounds = ChoiceField(page=self.page(), label=labels.MSG_WIZARD_SOUNDS_LABEL, choices=list(BAND_SOUNDS), current=choices.get_band_sounds(), set=self.page().choosing(choices.set_band_sounds))
+        sounds = ChoiceField(page=self.page(), label=labels.MSG_WIZARD_SOUNDS_LABEL, choices=list(wizard_choices.BAND_SOUNDS), current=choices.get_band_sounds(), set=self.page().choosing(choices.set_band_sounds))
         fields = [sounds]
         if choices.offers_one_guitarist() or choices.has_one_guitarist():
             # One guitarist plays the chords and takes the solo, and is then one player on the screen.
-            fields.append(ChoiceField(page=self.page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(GUITARIST_COUNTS), names=[str(count) for count in GUITARIST_COUNTS], current=choices.get_guitarists(), set=self.page().choosing(choices.set_guitarists)))
+            fields.append(ChoiceField(page=self.page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_choices.GUITARIST_COUNTS), names=[str(count) for count in wizard_choices.GUITARIST_COUNTS], current=choices.get_guitarists(), set=self.page().choosing(choices.set_guitarists)))
         if choices.answerers():
             # Who has the tune, which is only shown, and who answers that player: one of the players who can, or nobody.
             answerers = choices.answerers()

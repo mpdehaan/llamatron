@@ -23,7 +23,7 @@ theme is drawn from the song's seed, so the same song has the same solo.
 
 import random
 
-from llamatron.macro_composer.notation import LOUD, NONE, SOFT
+from llamatron.macro_composer import notation
 
 KICK = 'kick'
 SNARE = 'snare'
@@ -59,16 +59,16 @@ def theme_of(dice):
 
 
 def empty_bar():
-    return {piece: [NONE] * GRID for piece in PIECES}
+    return {piece: [notation.NONE] * GRID for piece in PIECES}
 
 
 def theme_bar(*, theme, answered):
     """The theme on the snare over a kick on one and three; answered, its second half is on the high tom."""
     bar = empty_bar()
     for place in theme:
-        bar[TOM_HIGH if answered and place >= HALF_BAR else SNARE][place] = LOUD
+        bar[TOM_HIGH if answered and place >= HALF_BAR else SNARE][place] = notation.LOUD
     for place in (BEATS[0], BEATS[2]):
-        bar[KICK][place] = LOUD
+        bar[KICK][place] = notation.LOUD
     return bar
 
 
@@ -77,9 +77,9 @@ def moved_bar(*, theme, late):
     bar = empty_bar()
     for place in theme:
         at = (place + EIGHTH) % GRID if late else place
-        bar[TOM_HIGH if at < HALF_BAR else TOM_LOW][at] = LOUD
+        bar[TOM_HIGH if at < HALF_BAR else TOM_LOW][at] = notation.LOUD
     for place in BEATS:
-        bar[KICK][place] = LOUD
+        bar[KICK][place] = notation.LOUD
     return bar
 
 
@@ -87,9 +87,9 @@ def build_bar(*, theme, fast):
     """The snare on every eighth, or every sixteenth, loud on the theme's strokes and soft between, over a kick on every beat."""
     bar = empty_bar()
     for place in range(0, GRID, 1 if fast else EIGHTH):
-        bar[SNARE][place] = LOUD if place in theme else SOFT
+        bar[SNARE][place] = notation.LOUD if place in theme else notation.SOFT
     for place in BEATS:
-        bar[KICK][place] = LOUD
+        bar[KICK][place] = notation.LOUD
     return bar
 
 
@@ -98,21 +98,21 @@ def peak_bar():
     bar = empty_bar()
     for beat, piece in enumerate(RUN):
         for place in range(beat * QUARTER, (beat + 1) * QUARTER):
-            bar[piece][place] = LOUD
-    bar[CRASH][0] = LOUD
-    bar[KICK][0] = LOUD
-    bar[KICK][HALF_BAR] = LOUD
+            bar[piece][place] = notation.LOUD
+    bar[CRASH][0] = notation.LOUD
+    bar[KICK][0] = notation.LOUD
+    bar[KICK][HALF_BAR] = notation.LOUD
     return bar
 
 
 def cue_bar():
     """The beat again for half a bar, then a fill down the toms that plays the band in."""
     bar = empty_bar()
-    bar[KICK][CUE_BEAT[0]] = LOUD
-    bar[SNARE][CUE_BEAT[1]] = LOUD
+    bar[KICK][CUE_BEAT[0]] = notation.LOUD
+    bar[SNARE][CUE_BEAT[1]] = notation.LOUD
     for piece, places in CUE_FILL.items():
         for place in places:
-            bar[piece][place] = LOUD
+            bar[piece][place] = notation.LOUD
     return bar
 
 
@@ -139,4 +139,4 @@ def solo_hits(*, bars, seed):
     """A solo as each piece's hits through the whole section, a piece that never sounds left out."""
     made = solo_bars(bars=bars, seed=seed)
     hits = {piece: [hit for bar in made for hit in bar[piece]] for piece in PIECES}
-    return {piece: played for piece, played in hits.items() if any(hit != NONE for hit in played)}
+    return {piece: played for piece, played in hits.items() if any(hit != notation.NONE for hit in played)}

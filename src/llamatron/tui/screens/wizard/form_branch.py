@@ -17,8 +17,8 @@
 
 from rich.text import Text
 
-from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
-from llamatron.macro_composer.wizard_choices import WAYS_WITH_FIRST_PLAYER, WAYS_WITH_SETUP_BARS
+from llamatron.macro_composer import song_plan
+from llamatron.macro_composer import wizard_choices
 from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
@@ -57,7 +57,7 @@ class FormBranch(Branch):
         # A planned song gives every section an Energy, and from it who plays, how hard, how loud and how each section leaves.
         plan = [Toggle(label=labels.MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
         if choices.has_song_plan():
-            plan.append(NumberField(page=page, label=labels.MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY), lowest=LOWEST_ENERGY, highest=HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
+            plan.append(NumberField(page=page, label=labels.MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=song_plan.LOWEST_ENERGY, highest=song_plan.HIGHEST_ENERGY), lowest=song_plan.LOWEST_ENERGY, highest=song_plan.HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
         # How the song starts and ends comes first, since a band settles how to get in and out before the middle is arranged.
         return [*self.stage_fields(), *plan, Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form()),
                 Button(label=labels.MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=legends.KeyName.ENTER, enter=self.page().pick_suggested_form, enter_what=legends.MSG_WIZARD_SUGGESTED_FORM_WHAT),
@@ -82,10 +82,10 @@ class FormBranch(Branch):
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_STARTS_LABEL, choices=choices.starts(), current=start or choices.starts()[0], shown=None if start is not None else labels.MSG_WIZARD_OWN_START, set=staging(choices.set_start)))
         if choices.ends():
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_ENDS_LABEL, choices=choices.ends(), current=end or choices.ends()[0], shown=None if end is not None else labels.MSG_WIZARD_OWN_START, set=staging(choices.set_end)))
-        if (start in WAYS_WITH_FIRST_PLAYER or end in WAYS_WITH_FIRST_PLAYER) and len(choices.first_players()) > 1:
+        if (start in wizard_choices.WAYS_WITH_FIRST_PLAYER or end in wizard_choices.WAYS_WITH_FIRST_PLAYER) and len(choices.first_players()) > 1:
             titles = {choices.role_title(role): role for role in choices.first_players()}
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_FIRST_PLAYER_LABEL, choices=list(titles), current=choices.role_title(choices.get_first_player()), set=staging(lambda title: choices.set_first_player(titles[title]))))
-        if start in WAYS_WITH_SETUP_BARS or end in WAYS_WITH_SETUP_BARS:
+        if start in wizard_choices.WAYS_WITH_SETUP_BARS or end in wizard_choices.WAYS_WITH_SETUP_BARS:
             bars = {str(count): count for count in choices.setup_bars_offered()}
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_SETUP_BARS_LABEL, choices=list(bars), current=str(choices.get_setup_bars()), set=staging(lambda count: choices.set_setup_bars(bars[count]))))
         return fields

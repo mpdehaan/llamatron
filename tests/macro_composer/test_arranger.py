@@ -27,6 +27,7 @@ from llamatron.composition import limits
 from llamatron.strings import macro_composer as composer_text
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import arranger, band, composer, loudness, melody, notation, players
+from llamatron.macro_composer import characters
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support import version
 
@@ -365,7 +366,7 @@ class TestArranged(unittest.TestCase):
         made = given[composer.PARTS][played[composer_text.MSG_CHORDS_TRACK]][composer.RAW]
         # The shuffle's last two bars hold two chords each, so the chords are written by the half bar, a step a chord.
         self.assertTrue(any(arranger.shares_a_bar(chord) for chord in pattern))
-        self.assertEqual(made[Row.DEGREE], [arranger.chord_of(chord)[arranger.DEGREE] for chord in arranger.halves_of(pattern)])
+        self.assertEqual(made[Row.DEGREE], [arranger.chord_of(chord)[notation.DEGREE] for chord in arranger.halves_of(pattern)])
         self.assertEqual(made[PatternSetting.STEP_SIZE], arranger.half_bar_of(arranger.COMMON_TIME))
         self.assertEqual(set(made[Row.CHORD]), {arranger.SCALE_TRIAD})
 
@@ -396,7 +397,7 @@ class TestArranged(unittest.TestCase):
 
     def test_a_bar_of_two_chords_is_its_two_by_the_half_bar_and_its_first_bar_by_bar(self):
         self.assertEqual(arranger.halves_of([1, [1, 5]]), [1, 1, 1, 5])
-        self.assertEqual(arranger.chord_of([4, 5]), {arranger.DEGREE: 4})
+        self.assertEqual(arranger.chord_of([4, 5]), {notation.DEGREE: 4})
         self.assertEqual((arranger.half_bar_of(arranger.COMMON_TIME), arranger.half_bar_of(TWELVE_EIGHT)), (HALF_NOTE, DOTTED_HALF_NOTE))
         whole = arranger.progression_of(chords=[1, 4], every=None)
         self.assertNotIn(arranger.EVERY, whole)
@@ -431,7 +432,7 @@ class TestArranged(unittest.TestCase):
 
     def test_a_drums_phrase_ends_in_the_fill(self):
         given = arranger.arranged(style=self.style, song=a_song())
-        fill = arranger.values_of(style=self.style, trait=arranger.FILLS)[arranger.picked(style=self.style, song=a_song())[arranger.FILLS]][arranger.FILL]
+        fill = arranger.values_of(style=self.style, trait=arranger.FILLS)[arranger.picked(style=self.style, song=a_song())[arranger.FILLS]][characters.FILL]
         for drum, hits in fill.items():
             self.assertEqual(given[composer.PARTS][drum][notation.HITS][-len(hits):], hits)
 
@@ -499,7 +500,7 @@ class TestPlayers(unittest.TestCase):
         return [notation.NONE if hit is None else notation.LOUD if hit else notation.SOFT for hit in near]
 
     def uneven(self, song):
-        return self.style[arranger.PLAYERS][players.DRUMS][song[arranger.PLAYERS][players.DRUMS]].get(arranger.UNEVEN, 0)
+        return self.style[arranger.PLAYERS][players.DRUMS][song[arranger.PLAYERS][players.DRUMS]].get(characters.UNEVEN, 0)
 
     def kinds_kick(self):
         kick = self.style[arranger.TEMPLATES][ROCK_KIND][KICK]
@@ -513,7 +514,7 @@ class TestPlayers(unittest.TestCase):
     def test_the_plain_drummer_plays_the_kinds_bar_the_same_in_every_bar(self):
         bar = self.kinds_kick()
         hits = self.hits(song=self.song(levels={players.DRUMS: players.PLAIN}), drum=KICK)
-        every = self.style[arranger.PLAYERS][players.DRUMS][players.PLAIN][arranger.FILL_EVERY]
+        every = self.style[arranger.PLAYERS][players.DRUMS][players.PLAIN][characters.FILL_EVERY]
         self.assertEqual(hits, bar * every)
 
     def test_every_drummer_keeps_every_hit_of_the_kinds_bar_and_a_busier_one_adds_to_it(self):
@@ -521,7 +522,7 @@ class TestPlayers(unittest.TestCase):
         counts = []
         for complexity in players.COMPLEXITIES:
             hits = self.hits(song=self.song(levels={players.DRUMS: complexity}), drum=KICK)
-            every = self.style[arranger.PLAYERS][players.DRUMS][complexity][arranger.FILL_EVERY]
+            every = self.style[arranger.PLAYERS][players.DRUMS][complexity][characters.FILL_EVERY]
             finer = len(hits) // every // len(bar)
             for count in range(every - 1):
                 for place, hit in enumerate(bar):
@@ -538,7 +539,7 @@ class TestPlayers(unittest.TestCase):
         song = self.song(levels={players.DRUMS: players.WILD}, template=BALLAD)
         kick = self.style[arranger.TEMPLATES][BALLAD][KICK]
         bar = arranger.values_of(style=self.style, trait=KICK)[kick][arranger.BAR][KICK]
-        every = self.style[arranger.PLAYERS][players.DRUMS][players.WILD][arranger.FILL_EVERY]
+        every = self.style[arranger.PLAYERS][players.DRUMS][players.WILD][characters.FILL_EVERY]
         self.assertEqual(arranger.picked(style=self.style, song=song)[METER], SIX_EIGHT)
         self.assertEqual(self.hits(song=song, drum=KICK), bar * every)
 
@@ -601,7 +602,7 @@ class TestPlayers(unittest.TestCase):
     def test_a_busier_bass_player_ends_the_bars_the_player_varies_and_leaves_the_others_as_written(self):
         figure = self.bass_figure()
         for complexity in players.COMPLEXITIES[1:]:
-            varied = {bar for variation in self.style[arranger.PLAYERS][players.BASS][complexity][arranger.VARIES] for bar in variation[arranger.BARS]}
+            varied = {bar for variation in self.style[arranger.PLAYERS][players.BASS][complexity][characters.VARIES] for bar in variation[arranger.BARS]}
             lines = self.bass_lines(song={**self.song(levels={players.BASS: complexity}), arranger.FORM: [SOLO]}, scene=SOLO)
             for count, line in enumerate(lines, start=1):
                 written = figure[(count - 1) % len(figure)]
@@ -624,21 +625,21 @@ class TestPlayers(unittest.TestCase):
 
     def test_an_ending_on_a_grid_that_neither_divides_the_figures_nor_is_divided_by_it_is_left_out(self):
         figure = [[{notation.DEGREE: 1, notation.STEPS: SIX_STEPS}]]
-        player = {arranger.VARIES: [{arranger.BARS: [LAST_BAR], arranger.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}]}
+        player = {characters.VARIES: [{arranger.BARS: [LAST_BAR], melody.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}]}
         self.assertEqual(arranger.decorated_figure(bars=figure, player=player, phrase_bars=PHRASE, meter=COMMON), figure)
 
     def test_an_ending_written_for_another_meter_is_left_out(self):
         figure = [[{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS}]]
-        ending = {arranger.BARS: [LAST_BAR], arranger.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}
-        other = {arranger.VARIES: [{**ending, arranger.NEEDS: {arranger.METER: WALTZ}}]}
-        ours = {arranger.VARIES: [{**ending, arranger.NEEDS: {arranger.METER: COMMON}}]}
+        ending = {arranger.BARS: [LAST_BAR], melody.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}
+        other = {characters.VARIES: [{**ending, arranger.NEEDS: {arranger.METER: WALTZ}}]}
+        ours = {characters.VARIES: [{**ending, arranger.NEEDS: {arranger.METER: COMMON}}]}
         self.assertEqual(arranger.decorated_figure(bars=figure, player=other, phrase_bars=PHRASE, meter=COMMON), figure)
         played = arranger.decorated_figure(bars=figure, player=ours, phrase_bars=PHRASE, meter=COMMON)
         self.assertEqual(played[LAST_BAR - 1], [{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS - 1}, {notation.DEGREE: 5, notation.STEPS: 1}])
 
     def test_an_ending_finer_than_the_figure_writes_the_figure_on_the_endings_grid(self):
         figure = [[{notation.DEGREE: 1, notation.STEPS: TWO_STEPS}]]
-        player = {arranger.VARIES: [{arranger.BARS: [LAST_BAR], arranger.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}]}
+        player = {characters.VARIES: [{arranger.BARS: [LAST_BAR], melody.GRID: EIGHT_STEPS, arranger.ENDS: [{notation.DEGREE: 5, notation.STEPS: 1}]}]}
         played = arranger.decorated_figure(bars=figure, player=player, phrase_bars=PHRASE, meter=COMMON)
         self.assertEqual(played[0], [{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS}])
         self.assertEqual(played[LAST_BAR - 1], [{notation.DEGREE: 1, notation.STEPS: EIGHT_STEPS - 1}, {notation.DEGREE: 5, notation.STEPS: 1}])
@@ -651,8 +652,8 @@ class TestPlayers(unittest.TestCase):
                 if levels is None or not any(role.get(arranger.PLAYER) == instrument for role in style[arranger.ROLES]):
                     continue
                 with self.subTest(style=name, instrument=instrument):
-                    self.assertNotIn(arranger.VARIES, levels[players.PLAIN])
-                    counts = [len(levels[level].get(arranger.VARIES, [])) for level in sorted(levels)]
+                    self.assertNotIn(characters.VARIES, levels[players.PLAIN])
+                    counts = [len(levels[level].get(characters.VARIES, [])) for level in sorted(levels)]
                     self.assertEqual(counts, sorted(counts))
                     self.assertGreater(counts[1], 0)
 
@@ -665,12 +666,12 @@ class TestPlayers(unittest.TestCase):
                 self.assertEqual(given[composer.CHAINS][composer_text.MSG_TIMING_CHAIN.format(track)], [{arranger.RUSH: track}, {arranger.DRAG: track}])
         self.assertIn(SNARE, generators[arranger.DRAGS])
         late = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: players.TASTEFUL}))
-        drag = self.style[arranger.PLAYERS][players.DRUMS][players.TASTEFUL][arranger.TIMING][SNARE][arranger.DRAG]
+        drag = self.style[arranger.PLAYERS][players.DRUMS][players.TASTEFUL][characters.TIMING][SNARE][arranger.DRAG]
         self.assertEqual(late[composer.GENERATORS][arranger.DRAGS][SNARE], {arranger.GENERATOR_STEPS: [True], arranger.AMOUNT: drag})
 
     def test_a_players_drum_hits_are_uneven_by_no_more_than_the_player_says_and_the_same_for_a_seed(self):
         level = players.WILD
-        by = self.style[arranger.PLAYERS][players.DRUMS][level][arranger.UNEVEN]
+        by = self.style[arranger.PLAYERS][players.DRUMS][level][characters.UNEVEN]
         song = {**self.song(levels={players.DRUMS: level}), arranger.FORM: [SOLO]}
         one = arranger.arranged(style=self.style, song=song)
         again = arranger.arranged(style=self.style, song=song)
@@ -686,7 +687,7 @@ class TestPlayers(unittest.TestCase):
     def test_a_guitarist_changes_the_guitarify_and_the_notes_name_the_band(self):
         level = players.TASTEFUL
         given = arranger.arranged(style=self.style, song=self.song(levels={players.RHYTHM: level, players.DRUMS: players.ADVANCED}))
-        wanted = self.style[arranger.PLAYERS][players.RHYTHM][level][arranger.GUITARIFY_OF_PLAYER]
+        wanted = self.style[arranger.PLAYERS][players.RHYTHM][level][characters.GUITARIFY_OF_PLAYER]
         for setting, value in wanted.items():
             self.assertEqual(given[composer.GENERATORS][arranger.GUITARIFIES][GUITAR][setting], value)
         self.assertIn(players.player_name(instrument=players.DRUMS, complexity=players.ADVANCED), given[composer.NOTES])

@@ -23,11 +23,12 @@ every note is as loud as the next, and twice the style's distance at the most.
 
 from fractions import Fraction
 
-from llamatron.macro_composer.notation import ACCENT, GHOST, SOFT, clamped
+from llamatron.macro_composer import notation
+from llamatron.macro_composer.notation import clamped
 
 NORMAL = 'normal'
 # The levels from the quietest up, as a person is shown them.
-LEVELS = (GHOST, SOFT, NORMAL, ACCENT)
+LEVELS = (notation.GHOST, notation.SOFT, NORMAL, notation.ACCENT)
 # How a drum's other levels follow from its normal stroke.
 ACCENT_ABOVE = 12
 SOFT_SHARE = Fraction(2, 3)
@@ -46,13 +47,13 @@ def drum_levels(given):
     if not isinstance(given, dict):
         given = {NORMAL: given}
     normal = given[NORMAL]
-    return {GHOST: given.get(GHOST, int(normal * GHOST_SHARE)), SOFT: given.get(SOFT, int(normal * SOFT_SHARE)), NORMAL: normal,
-            ACCENT: given.get(ACCENT, clamped(normal + ACCENT_ABOVE))}
+    return {notation.GHOST: given.get(notation.GHOST, int(normal * GHOST_SHARE)), notation.SOFT: given.get(notation.SOFT, int(normal * SOFT_SHARE)), NORMAL: normal,
+            notation.ACCENT: given.get(notation.ACCENT, clamped(normal + ACCENT_ABOVE))}
 
 
 def note_levels(velocity):
     """A note player's four levels from the player's velocity."""
-    return {GHOST: clamped(velocity - GHOST_BELOW), SOFT: clamped(velocity - SOFT_BELOW), NORMAL: velocity, ACCENT: clamped(velocity + ACCENT_ABOVE)}
+    return {notation.GHOST: clamped(velocity - GHOST_BELOW), notation.SOFT: clamped(velocity - SOFT_BELOW), NORMAL: velocity, notation.ACCENT: clamped(velocity + ACCENT_ABOVE)}
 
 
 def scaled(*, move, dynamics):

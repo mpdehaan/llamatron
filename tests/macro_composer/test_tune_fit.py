@@ -20,8 +20,9 @@ import unittest
 from fractions import Fraction
 
 from llamatron.composition.file_format import PatternSetting, Row
-from llamatron.macro_composer.arranger import CHORDS
-from llamatron.macro_composer.tune_fit import DEGREE, LONG_NOTE, chord_at, fitted, move_to_chord, steps_held
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer import tune_fit
+from llamatron.macro_composer.tune_fit import chord_at, fitted, move_to_chord, steps_held
 from llamatron.macro_composer.wizard_choices import WizardChoices
 
 A_GENRE = 'rock'
@@ -53,13 +54,13 @@ class TestTuneFit(unittest.TestCase):
         self.assertEqual(steps_held(ties=[False, True, False, True], degrees=[5, 6, None, None], place=0), 1)
 
     def test_a_bar_hears_its_chord_the_chords_going_round_and_the_first_of_two_that_share_a_bar(self):
-        chords = [{DEGREE: HOME}, [{DEGREE: SECOND}, {DEGREE: HOME}], SECOND]
+        chords = [{tune_fit.DEGREE: HOME}, [{tune_fit.DEGREE: SECOND}, {tune_fit.DEGREE: HOME}], SECOND]
         self.assertEqual([chord_at(chords=chords, bar=bar) for bar in range(4)], [HOME, SECOND, SECOND, HOME])
 
     def test_long_notes_that_clash_move_and_short_notes_and_rests_stay(self):
-        self.assertEqual(LONG_NOTE, Fraction(1, 4))
+        self.assertEqual(tune_fit.LONG_NOTE, Fraction(1, 4))
         written = tune(degrees=[2, None, 2, 4, None, None, 3, None], ties=[False, True, False, False, False, False, False, True])
-        moved = fitted(pattern=written, chords=[{DEGREE: HOME}], bar=A_BAR)
+        moved = fitted(pattern=written, chords=[{tune_fit.DEGREE: HOME}], bar=A_BAR)
         # The long 2 moves to 1, the short 2 and the short 4 pass, and the long 3 is a note of the chord.
         self.assertEqual(moved[Row.DEGREE], [1, None, 2, 4, None, None, 3, None])
         self.assertEqual(moved[Row.TIE], written[Row.TIE])
@@ -68,13 +69,13 @@ class TestTuneFit(unittest.TestCase):
     def test_each_bar_is_fitted_to_its_own_chord_and_a_note_moved_past_the_top_of_the_scale_goes_up_an_octave(self):
         long_note = [False, True, True, True, True, True, True, True]
         written = tune(degrees=[3, *[None] * 7, 3, *[None] * 7, 7, *[None] * 7], ties=long_note * 3)
-        moved = fitted(pattern=written, chords=[{DEGREE: HOME}, {DEGREE: SECOND}, {DEGREE: HOME}], bar=A_BAR)
+        moved = fitted(pattern=written, chords=[{tune_fit.DEGREE: HOME}, {tune_fit.DEGREE: SECOND}, {tune_fit.DEGREE: HOME}], bar=A_BAR)
         self.assertEqual([moved[Row.DEGREE][bar * STEPS_IN_BAR] for bar in range(3)], [3, 2, 1])
         self.assertEqual([moved[Row.OCTAVE][bar * STEPS_IN_BAR] for bar in range(3)], [AN_OCTAVE, AN_OCTAVE, AN_OCTAVE + 1])
 
     def test_a_pattern_with_no_notes_and_a_tune_with_no_chords_come_back_as_they_were(self):
         blank = {PatternSetting.STEPS: STEPS_IN_BAR, PatternSetting.STEP_SIZE: AN_EIGHTH}
-        self.assertEqual(fitted(pattern=blank, chords=[{DEGREE: HOME}], bar=A_BAR), blank)
+        self.assertEqual(fitted(pattern=blank, chords=[{tune_fit.DEGREE: HOME}], bar=A_BAR), blank)
         written = tune(degrees=[2, None], ties=[False, True])
         self.assertEqual(fitted(pattern=written, chords=[], bar=A_BAR), written)
 
@@ -101,7 +102,7 @@ class TestWizardFitsTune(unittest.TestCase):
         written = choices.tune_pattern(A_KIND)
         choices.set_tune_pattern(kind=A_KIND, pattern=written)
         before = choices.own_tune_chords()
-        choices.set_section_own(place=choices.tune_place(A_KIND), field=CHORDS, value=OTHER_CHORDS)
+        choices.set_section_own(place=choices.tune_place(A_KIND), field=arranger.CHORDS, value=OTHER_CHORDS)
         self.assertNotEqual(choices.own_tune_chords(), before)
         self.assertEqual(choices.tune_pattern(A_KIND), written)
         choices.fit_tune(A_KIND)

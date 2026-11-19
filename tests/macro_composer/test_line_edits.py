@@ -20,8 +20,8 @@ import unittest
 
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer import line_edits
-from llamatron.macro_composer.line_edits import HIGHEST_PLACE, LOWEST_PLACE, NOTES_IN_SCALE, found, moved, place_of, steps_of, stretched, tidied, toggled
-from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, OCTAVE, REST, SHARP, STEPS, STRESS, ARRIVAL
+from llamatron.macro_composer.line_edits import found, moved, place_of, steps_of, stretched, tidied, toggled
+from llamatron.macro_composer import notation
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.support import version
 
@@ -35,12 +35,12 @@ FAR = 100
 FIRST_STEP = 0
 A_STEP_IN_THE_REST = 5
 THE_LAST_NOTE_S_STEP = 6
-NOT_LINES = ('tune', [{DEGREE: 9, STEPS: 16}], [{DEGREE: 1, STEPS: 4}], [{REST: 16}], [{DEGREE: 1, STEPS: 0}, {DEGREE: 1, STEPS: 16}], [{DEGREE: True, STEPS: 16}])
+NOT_LINES = ('tune', [{notation.DEGREE: 9, notation.STEPS: 16}], [{notation.DEGREE: 1, notation.STEPS: 4}], [{notation.REST: 16}], [{notation.DEGREE: 1, notation.STEPS: 0}, {notation.DEGREE: 1, notation.STEPS: 16}], [{notation.DEGREE: True, notation.STEPS: 16}])
 
 
 def a_line():
     """Two notes, a rest of three steps and a note: eight steps."""
-    return [{DEGREE: 3, STEPS: 2, STRESS: ARRIVAL}, {DEGREE: 7, ACCIDENTAL: SHARP, STEPS: 2}, {REST: 2}, {DEGREE: 1, OCTAVE: 1, STEPS: 2}]
+    return [{notation.DEGREE: 3, notation.STEPS: 2, notation.STRESS: notation.ARRIVAL}, {notation.DEGREE: 7, notation.ACCIDENTAL: notation.SHARP, notation.STEPS: 2}, {notation.REST: 2}, {notation.DEGREE: 1, notation.OCTAVE: 1, notation.STEPS: 2}]
 
 
 class TestLineEdits(unittest.TestCase):
@@ -56,40 +56,40 @@ class TestLineEdits(unittest.TestCase):
 
     def test_a_note_moves_along_the_scale_through_the_octave_and_loses_its_sharp(self):
         up = moved(line=a_line(), step=2, by=UP)
-        self.assertEqual(up[1], {DEGREE: 1, OCTAVE: 1, STEPS: 2})
+        self.assertEqual(up[1], {notation.DEGREE: 1, notation.OCTAVE: 1, notation.STEPS: 2})
         self.assertEqual(place_of(moved(line=a_line(), step=FIRST_STEP, by=DOWN)[0]), place_of(a_line()[0]) + DOWN)
         # What else a note holds stays with the note.
-        self.assertEqual(moved(line=a_line(), step=FIRST_STEP, by=UP)[0][STRESS], ARRIVAL)
-        below = moved(line=a_line(), step=FIRST_STEP, by=-NOTES_IN_SCALE)[0]
-        self.assertEqual((below[DEGREE], below[OCTAVE]), (3, -1))
+        self.assertEqual(moved(line=a_line(), step=FIRST_STEP, by=UP)[0][notation.STRESS], notation.ARRIVAL)
+        below = moved(line=a_line(), step=FIRST_STEP, by=-line_edits.NOTES_IN_SCALE)[0]
+        self.assertEqual((below[notation.DEGREE], below[notation.OCTAVE]), (3, -1))
 
     def test_a_note_stops_at_the_highest_and_lowest_places_and_a_rest_does_not_move(self):
-        self.assertEqual(place_of(moved(line=a_line(), step=FIRST_STEP, by=FAR)[0]), HIGHEST_PLACE)
-        self.assertEqual(place_of(moved(line=a_line(), step=FIRST_STEP, by=-FAR)[0]), LOWEST_PLACE)
+        self.assertEqual(place_of(moved(line=a_line(), step=FIRST_STEP, by=FAR)[0]), line_edits.HIGHEST_PLACE)
+        self.assertEqual(place_of(moved(line=a_line(), step=FIRST_STEP, by=-FAR)[0]), line_edits.LOWEST_PLACE)
         self.assertEqual(moved(line=a_line(), step=A_STEP_IN_THE_REST, by=UP), a_line())
 
     def test_a_note_stretches_into_the_rest_after_it_and_never_into_a_note(self):
         longer = stretched(line=a_line(), step=2, by=UP)
-        self.assertEqual((longer[1][STEPS], longer[2]), (3, {REST: 1}))
+        self.assertEqual((longer[1][notation.STEPS], longer[2]), (3, {notation.REST: 1}))
         twice = stretched(line=longer, step=2, by=UP)
-        self.assertEqual([note.get(STEPS) for note in twice], [2, 4, 2])
+        self.assertEqual([note.get(notation.STEPS) for note in twice], [2, 4, 2])
         self.assertEqual(stretched(line=a_line(), step=FIRST_STEP, by=UP), a_line())
         self.assertEqual(stretched(line=a_line(), step=THE_LAST_NOTE_S_STEP, by=UP), a_line())
 
     def test_a_note_shrinks_to_one_step_leaving_a_rest_that_joins_the_rest_after(self):
         shorter = stretched(line=a_line(), step=2, by=DOWN)
-        self.assertEqual((shorter[1][STEPS], shorter[2]), (1, {REST: 3}))
+        self.assertEqual((shorter[1][notation.STEPS], shorter[2]), (1, {notation.REST: 3}))
         self.assertEqual(stretched(line=shorter, step=2, by=DOWN), shorter)
 
     def test_a_note_is_taken_out_and_one_is_put_in_at_the_place_of_the_note_before(self):
         without = toggled(line=a_line(), step=2)
-        self.assertEqual(without[1], {REST: 4})
+        self.assertEqual(without[1], {notation.REST: 4})
         put = toggled(line=a_line(), step=A_STEP_IN_THE_REST)
-        self.assertEqual(put[2:5], [{REST: 1}, {DEGREE: 7, STEPS: 1}, {DEGREE: 1, OCTAVE: 1, STEPS: 2}])
+        self.assertEqual(put[2:5], [{notation.REST: 1}, {notation.DEGREE: 7, notation.STEPS: 1}, {notation.DEGREE: 1, notation.OCTAVE: 1, notation.STEPS: 2}])
         # With no note before, the note after gives the place; with none at all, the scale's first note.
-        first = toggled(line=[{REST: 2}, {DEGREE: 5, STEPS: 2}], step=FIRST_STEP)
-        self.assertEqual(first[0], {DEGREE: 5, STEPS: 1})
-        self.assertEqual(toggled(line=[{REST: 2}], step=1), [{REST: 1}, {DEGREE: 1, STEPS: 1}])
+        first = toggled(line=[{notation.REST: 2}, {notation.DEGREE: 5, notation.STEPS: 2}], step=FIRST_STEP)
+        self.assertEqual(first[0], {notation.DEGREE: 5, notation.STEPS: 1})
+        self.assertEqual(toggled(line=[{notation.REST: 2}], step=1), [{notation.REST: 1}, {notation.DEGREE: 1, notation.STEPS: 1}])
 
     def test_every_edit_keeps_the_line_s_length_and_leaves_the_line_given_alone(self):
         line = a_line()
@@ -97,7 +97,7 @@ class TestLineEdits(unittest.TestCase):
             for edited in (moved(line=line, step=step, by=UP), stretched(line=line, step=step, by=UP), stretched(line=line, step=step, by=DOWN), toggled(line=line, step=step)):
                 self.assertEqual(steps_of(edited), steps_of(line))
         self.assertEqual(line, a_line())
-        self.assertEqual(tidied([{REST: 1}, {REST: 2}, {DEGREE: 1, STEPS: 0}, {REST: 1}]), [{REST: 4}])
+        self.assertEqual(tidied([{notation.REST: 1}, {notation.REST: 2}, {notation.DEGREE: 1, notation.STEPS: 0}, {notation.REST: 1}]), [{notation.REST: 4}])
 
 
 class TestWizardHookNotes(unittest.TestCase):
@@ -168,4 +168,4 @@ class TestWizardHookNotes(unittest.TestCase):
         choices.set_hook(False)
         self.assertIsNone(choices.hook_line())
         with self.assertRaises(ValueError):
-            choices.set_hook_line([{DEGREE: 1, STEPS: 16}])
+            choices.set_hook_line([{notation.DEGREE: 1, notation.STEPS: 16}])

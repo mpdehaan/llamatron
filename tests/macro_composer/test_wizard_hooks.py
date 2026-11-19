@@ -19,10 +19,13 @@
 import unittest
 
 from llamatron.composition.file_format import SectionKind
-from llamatron.macro_composer.arranger import PARTS, PLAYS, SECTIONS, arranged
-from llamatron.macro_composer.melody import (ANSWER, CLOSE_LINE, FIRST_AND_LAST, FIRST_LINES, HIGHER, HOOK, LAST_LINE, LINE, PLACEMENTS, REST, TAG, TAG_LINE, VARIED, placement_of, plan_with_hook_placed,
-                                             plan_with_tag)
-from llamatron.macro_composer.wizard_choices import OUTRO_KIND, OUTRO_THEN_CHORD, WizardChoices
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.arranger import arranged
+from llamatron.macro_composer import melody
+from llamatron.macro_composer import notation
+from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed, plan_with_tag
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import macro_composer as composer_text
 
 A_NAME = 'made'
@@ -32,10 +35,10 @@ A_SUBGENRE_WITH_A_PRE_CHORUS = 'arena rock'
 A_SUBGENRE = 'folk rock'
 A_GENRE_WITH_NO_CHORUS_HOOK = 'blues'
 NOT_A_PLACEMENT = 'in the middle'
-A_HOOK = {LINE: HOOK, HOOK: True, HIGHER: True}
-A_CHORUS = [dict(A_HOOK), {**A_HOOK, VARIED: True}, dict(A_HOOK), {LINE: CLOSE_LINE}]
-A_PLAN_OF_NO_NAMED_SHAPE = [{LINE: 'a'}, dict(A_HOOK), {LINE: 'a'}, dict(A_HOOK)]
-A_SHORT_PLAN = [{LINE: 'p'}, {LINE: 'p', VARIED: True, ANSWER: True}]
+A_HOOK = {melody.LINE: melody.HOOK, melody.HOOK: True, melody.HIGHER: True}
+A_CHORUS = [dict(A_HOOK), {**A_HOOK, melody.VARIED: True}, dict(A_HOOK), {melody.LINE: melody.CLOSE_LINE}]
+A_PLAN_OF_NO_NAMED_SHAPE = [{melody.LINE: 'a'}, dict(A_HOOK), {melody.LINE: 'a'}, dict(A_HOOK)]
+A_SHORT_PLAN = [{melody.LINE: 'p'}, {melody.LINE: 'p', melody.VARIED: True, melody.ANSWER: True}]
 LINES = 'lines'
 STRESS = 'stress'
 OCTAVE = 'octave'
@@ -51,52 +54,52 @@ def chosen(*, subgenre=A_SUBGENRE_WITH_A_PRE_CHORUS):
 
 
 def parts(choices):
-    return arranged(style=choices._style(), song=choices.song_picks(A_NAME))[PARTS]
+    return arranged(style=choices._style(), song=choices.song_picks(A_NAME))[arranger.PARTS]
 
 
 def marked(plan):
-    return [bool(entry.get(HOOK)) for entry in plan]
+    return [bool(entry.get(melody.HOOK)) for entry in plan]
 
 
 class TestHookPlaced(unittest.TestCase):
 
     def test_a_plans_placement_is_named_by_which_of_its_four_lines_are_the_hook(self):
-        self.assertEqual(placement_of(A_CHORUS), FIRST_LINES)
+        self.assertEqual(placement_of(A_CHORUS), melody.FIRST_LINES)
         self.assertIsNone(placement_of(A_PLAN_OF_NO_NAMED_SHAPE))
         self.assertIsNone(placement_of(A_SHORT_PLAN))
 
     def test_each_placement_puts_the_hook_on_its_lines_and_placing_again_gives_the_first_back(self):
-        last = plan_with_hook_placed(plan=A_CHORUS, placement=LAST_LINE)
+        last = plan_with_hook_placed(plan=A_CHORUS, placement=melody.LAST_LINE)
         self.assertEqual(marked(last), [False, False, False, True])
-        both = plan_with_hook_placed(plan=A_CHORUS, placement=FIRST_AND_LAST)
+        both = plan_with_hook_placed(plan=A_CHORUS, placement=melody.FIRST_AND_LAST)
         self.assertEqual(marked(both), [True, False, False, True])
         for placed in (last, both):
-            self.assertEqual(placement_of(plan_with_hook_placed(plan=placed, placement=FIRST_LINES)), FIRST_LINES)
+            self.assertEqual(placement_of(plan_with_hook_placed(plan=placed, placement=melody.FIRST_LINES)), melody.FIRST_LINES)
 
     def test_the_lines_that_are_no_hook_are_never_lifted_so_that_the_hook_keeps_the_top(self):
-        for placement in PLACEMENTS:
+        for placement in melody.PLACEMENTS:
             for entry in plan_with_hook_placed(plan=A_CHORUS, placement=placement):
-                self.assertEqual(bool(entry.get(HIGHER)), bool(entry.get(HOOK)))
+                self.assertEqual(bool(entry.get(melody.HIGHER)), bool(entry.get(melody.HOOK)))
 
     def test_a_plan_of_another_shape_and_a_placement_nobody_named_leave_the_plan_as_it_is(self):
-        self.assertEqual(plan_with_hook_placed(plan=A_PLAN_OF_NO_NAMED_SHAPE, placement=LAST_LINE), A_PLAN_OF_NO_NAMED_SHAPE)
+        self.assertEqual(plan_with_hook_placed(plan=A_PLAN_OF_NO_NAMED_SHAPE, placement=melody.LAST_LINE), A_PLAN_OF_NO_NAMED_SHAPE)
         self.assertEqual(plan_with_hook_placed(plan=A_CHORUS, placement=NOT_A_PLACEMENT), A_CHORUS)
-        self.assertEqual(plan_with_hook_placed(plan=A_CHORUS, placement=FIRST_LINES), A_CHORUS)
+        self.assertEqual(plan_with_hook_placed(plan=A_CHORUS, placement=melody.FIRST_LINES), A_CHORUS)
 
     def test_a_tag_takes_the_last_line_of_a_plan_and_fills_a_section_that_has_no_lines(self):
         tagged = plan_with_tag(plan=A_SHORT_PLAN, lines=2)
         self.assertEqual(tagged[0], A_SHORT_PLAN[0])
-        self.assertEqual(tagged[-1], {LINE: TAG_LINE, TAG: True, ANSWER: True})
-        self.assertEqual(plan_with_tag(plan=[], lines=3), [{LINE: TAG_LINE, TAG: True}] * 3)
+        self.assertEqual(tagged[-1], {melody.LINE: melody.TAG_LINE, melody.TAG: True, melody.ANSWER: True})
+        self.assertEqual(plan_with_tag(plan=[], lines=3), [{melody.LINE: melody.TAG_LINE, melody.TAG: True}] * 3)
 
 
 class TestWizardHookPlacement(unittest.TestCase):
 
     def test_a_chorus_of_a_named_shape_offers_every_placement_and_starts_at_the_genres(self):
         choices = chosen()
-        self.assertEqual(choices.hook_placements_offered(), list(PLACEMENTS))
+        self.assertEqual(choices.hook_placements_offered(), list(melody.PLACEMENTS))
         self.assertEqual(choices.get_hook_placement(), choices.genre_hook_placement())
-        self.assertEqual(choices.genre_hook_placement(), FIRST_LINES)
+        self.assertEqual(choices.genre_hook_placement(), melody.FIRST_LINES)
 
     def test_a_genre_whose_hook_is_no_choruss_offers_no_placement(self):
         choices = WizardChoices()
@@ -108,12 +111,12 @@ class TestWizardHookPlacement(unittest.TestCase):
         choices = chosen()
         before = parts(choices)
         first_notes = choices.hook_notes()
-        choices.set_hook_placement(LAST_LINE)
+        choices.set_hook_placement(melody.LAST_LINE)
         self.assertEqual(choices.hook_line_place(), (SectionKind.CHORUS, 4))
         self.assertNotEqual(parts(choices), before)
         self.assertEqual(choices.hook_notes()[0], first_notes[0])
-        self.assertEqual(WizardChoices.from_data(choices.to_data()).get_hook_placement(), LAST_LINE)
-        choices.set_hook_placement(FIRST_LINES)
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).get_hook_placement(), melody.LAST_LINE)
+        choices.set_hook_placement(melody.FIRST_LINES)
         self.assertEqual(parts(choices), before)
         self.assertEqual(choices.hook_line_place(), (SectionKind.CHORUS, 1))
 
@@ -135,8 +138,8 @@ class TestWizardSecondHook(unittest.TestCase):
         self.assertEqual(choices.second_hook_kinds(), [SectionKind.PRE_CHORUS])
         plain = chosen(subgenre=A_SUBGENRE)
         self.assertEqual(plain.second_hook_kinds(), [])
-        plain.set_end(OUTRO_THEN_CHORD)
-        self.assertEqual(plain.second_hook_kinds(), [OUTRO_KIND])
+        plain.set_end(wizard_choices.OUTRO_THEN_CHORD)
+        self.assertEqual(plain.second_hook_kinds(), [wizard_choices.OUTRO_KIND])
 
     def test_a_second_hook_in_the_pre_chorus_is_its_last_line_the_same_bar_twice_and_changes_no_other_section(self):
         choices = chosen()
@@ -147,15 +150,15 @@ class TestWizardSecondHook(unittest.TestCase):
         tag = self.tag_part(choices=choices, kind=SectionKind.PRE_CHORUS)[LINES][-1]
         heard = [{field: value for field, value in note.items() if field != STRESS} for note in tag]
         self.assertEqual(heard[:len(heard) // 2], heard[len(heard) // 2:])
-        self.assertTrue(any(REST in note for note in tag))
+        self.assertTrue(any(notation.REST in note for note in tag))
 
     def test_a_second_hook_in_the_outro_has_the_melodys_player_play_there_every_line_the_tag(self):
         choices = chosen(subgenre=A_SUBGENRE)
-        choices.set_end(OUTRO_THEN_CHORD)
-        choices.set_second_hook(OUTRO_KIND)
-        lines = self.tag_part(choices=choices, kind=OUTRO_KIND)[LINES]
+        choices.set_end(wizard_choices.OUTRO_THEN_CHORD)
+        choices.set_second_hook(wizard_choices.OUTRO_KIND)
+        lines = self.tag_part(choices=choices, kind=wizard_choices.OUTRO_KIND)[LINES]
         self.assertTrue(all(line == lines[0] for line in lines))
-        self.assertNotIn(choices.tune_player(), choices._style()[SECTIONS][OUTRO_KIND][PLAYS])
+        self.assertNotIn(choices.tune_player(), choices._style()[arranger.SECTIONS][wizard_choices.OUTRO_KIND][arranger.PLAYS])
 
     def test_the_tags_top_is_under_the_main_hooks(self):
         choices = chosen()
@@ -164,7 +167,7 @@ class TestWizardSecondHook(unittest.TestCase):
         chorus = self.tag_part(choices=choices, kind=SectionKind.CHORUS)
 
         def top(lines):
-            return max((note.get(OCTAVE, 0), note[DEGREE]) for line in lines for note in line if REST not in note)
+            return max((note.get(OCTAVE, 0), note[DEGREE]) for line in lines for note in line if notation.REST not in note)
         self.assertLess(top(tag[LINES][-1:]), top(chorus[LINES][:1]))
 
     def test_another_second_hook_is_another_tag_and_the_song_is_kept_with_it(self):

@@ -22,7 +22,7 @@ section comes in at full strength; stops, where the band plays a few hits togeth
 eighth. A figure a player loops is written out for the whole section, so that its last bar alone can differ.
 """
 
-from llamatron.macro_composer.notation import LOUD, NONE, REST, SOFT, STEPS
+from llamatron.macro_composer import notation
 
 # The fields of what a section leaves with.
 LEAVES = 'leaves'
@@ -46,7 +46,7 @@ SOFT_SHARE_OF_BUILD = 2
 
 def lasts(note):
     """How many steps a note or a rest lasts."""
-    return note.get(REST, note.get(STEPS, 0))
+    return note.get(notation.REST, note.get(notation.STEPS, 0))
 
 
 def first_part(*, bar, steps):
@@ -57,21 +57,21 @@ def first_part(*, bar, steps):
         if room <= 0:
             break
         length = min(lasts(note), room)
-        kept.append({**note, (REST if REST in note else STEPS): length})
+        kept.append({**note, (notation.REST if notation.REST in note else notation.STEPS): length})
         room -= length
     return kept
 
 
 def sounding(bar):
     """The first note of a bar that sounds, or nothing."""
-    return next((note for note in bar if REST not in note), None)
+    return next((note for note in bar if notation.REST not in note), None)
 
 
 def dropped_out(*, bar, eighths):
     """A bar whose last eighths are silent."""
     grid = sum(lasts(note) for note in bar)
     silent = grid * eighths // EIGHTHS_IN_BAR
-    return first_part(bar=bar, steps=grid - silent) + [{REST: silent}]
+    return first_part(bar=bar, steps=grid - silent) + [{notation.REST: silent}]
 
 
 def stopped(bar):
@@ -83,7 +83,7 @@ def stopped(bar):
     eighth = grid // EIGHTHS_IN_BAR
     made = []
     for place in range(EIGHTHS_IN_BAR):
-        made.append({**hit, STEPS: eighth} if place in STOP_PLACES else {REST: eighth})
+        made.append({**hit, notation.STEPS: eighth} if place in STOP_PLACES else {notation.REST: eighth})
     return made
 
 
@@ -103,18 +103,18 @@ def drum_tail(*, piece, plain, tail, eighths):
     grid = len(plain)
     if tail == DROP_OUT:
         silent = grid * eighths // EIGHTHS_IN_BAR
-        return plain[:grid - silent] + [NONE] * silent
+        return plain[:grid - silent] + [notation.NONE] * silent
     if tail == STOPS:
         if piece not in STOP_PIECES or grid % EIGHTHS_IN_BAR:
-            return [NONE] * grid
-        return [LOUD if place % (grid // EIGHTHS_IN_BAR) == 0 and place // (grid // EIGHTHS_IN_BAR) in STOP_PLACES else NONE for place in range(grid)]
+            return [notation.NONE] * grid
+        return [notation.LOUD if place % (grid // EIGHTHS_IN_BAR) == 0 and place // (grid // EIGHTHS_IN_BAR) in STOP_PLACES else notation.NONE for place in range(grid)]
     if tail == BUILD:
         if piece in KEPT_IN_BUILD:
             return list(plain)
         if piece != BUILD_PIECE or grid % EIGHTHS_IN_BAR:
-            return [NONE] * grid
+            return [notation.NONE] * grid
         eighth = grid // EIGHTHS_IN_BAR
-        return [(SOFT if place // eighth < EIGHTHS_IN_BAR // SOFT_SHARE_OF_BUILD else LOUD) if place % eighth == 0 else NONE for place in range(grid)]
+        return [(notation.SOFT if place // eighth < EIGHTHS_IN_BAR // SOFT_SHARE_OF_BUILD else notation.LOUD) if place % eighth == 0 else notation.NONE for place in range(grid)]
     return list(plain)
 
 

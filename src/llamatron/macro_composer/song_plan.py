@@ -32,8 +32,8 @@ import random
 
 from llamatron.composition.file_format import VelocitySetting
 from llamatron.macro_composer import hook_writing
-from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
-from llamatron.macro_composer.melody import BREATHES, HOOK
+from llamatron.macro_composer import joins as joins_values
+from llamatron.macro_composer import melody as melody_values
 from llamatron.strings import macro_composer as composer_text
 
 # The fields of a song's plan, and of the plan a style gives.
@@ -375,7 +375,7 @@ class SongPlan:
 
     def _joins(self):
         """What each section leaves with: the tail and the fill, by what follows, how far the Energy moves and what was done last."""
-        allowed = self._for_subgenre(field=TAILS_ALLOWED, default=(DROP_OUT, STOPS, BUILD))
+        allowed = self._for_subgenre(field=TAILS_ALLOWED, default=(joins_values.DROP_OUT, joins_values.STOPS, joins_values.BUILD))
         kinds = [section[KIND] for section in self._sections]
         last_chorus = self._last_choruses_start(kinds)
         joins = []
@@ -388,22 +388,22 @@ class SongPlan:
             rise = self._energies[place + 1] - self._energies[place]
             following = self._sections[place + 1]
             join = {}
-            if following.get(DRUM_SOLO) and STOPS in allowed:
-                join = {TAIL: STOPS}
-            elif place + 1 == last_chorus and kinds[place] != CHORUS and DROP_OUT in allowed and not dropped:
+            if following.get(DRUM_SOLO) and joins_values.STOPS in allowed:
+                join = {joins_values.TAIL: joins_values.STOPS}
+            elif place + 1 == last_chorus and kinds[place] != CHORUS and joins_values.DROP_OUT in allowed and not dropped:
                 # The one silence of the song: the band stops for about a second, and the last chorus comes in whole.
-                join = {TAIL: DROP_OUT, TAIL_EIGHTHS: DROP_EIGHTHS_FAST if self._tempo >= FAST_TEMPO else DROP_EIGHTHS_SLOW}
+                join = {joins_values.TAIL: joins_values.DROP_OUT, joins_values.TAIL_EIGHTHS: DROP_EIGHTHS_FAST if self._tempo >= FAST_TEMPO else DROP_EIGHTHS_SLOW}
                 dropped = True
-            elif self._rises(place) and BUILD in allowed and (before or {}).get(TAIL) != BUILD:
-                join = {TAIL: BUILD}
+            elif self._rises(place) and joins_values.BUILD in allowed and (before or {}).get(joins_values.TAIL) != joins_values.BUILD:
+                join = {joins_values.TAIL: joins_values.BUILD}
             elif not following.get(HELD):
                 # The last chorus is come into on the biggest fill, whatever the rise.
                 size = BIG if rise >= BIG_RISE or place + 1 == last_chorus else MEDIUM if rise > 0 else SMALL
-                if (before or {}).get(FILL_OF_JOIN) == self._fill(size):
+                if (before or {}).get(joins_values.FILL_OF_JOIN) == self._fill(size):
                     size = OTHER_SIZE[size]
                 if self._fill(size):
-                    join = {FILL_OF_JOIN: self._fill(size)}
-            if LEAVES in self._at(place):
+                    join = {joins_values.FILL_OF_JOIN: self._fill(size)}
+            if joins_values.LEAVES in self._at(place):
                 # A join the song gives is the whole join, and a drop-out with no length takes the tempo's.
                 join = self._given_join(place)
             joins.append(join)
@@ -411,13 +411,13 @@ class SongPlan:
         return joins
 
     def _given_join(self, place):
-        join = dict(self._at(place)[LEAVES] or {})
+        join = dict(self._at(place)[joins_values.LEAVES] or {})
         if FILL_SIZE in join:
             size = join.pop(FILL_SIZE)
             if self._fill(size):
-                join[FILL_OF_JOIN] = self._fill(size)
-        if join.get(TAIL) == DROP_OUT and TAIL_EIGHTHS not in join:
-            join[TAIL_EIGHTHS] = DROP_EIGHTHS_FAST if self._tempo >= FAST_TEMPO else DROP_EIGHTHS_SLOW
+                join[joins_values.FILL_OF_JOIN] = self._fill(size)
+        if join.get(joins_values.TAIL) == joins_values.DROP_OUT and joins_values.TAIL_EIGHTHS not in join:
+            join[joins_values.TAIL_EIGHTHS] = DROP_EIGHTHS_FAST if self._tempo >= FAST_TEMPO else DROP_EIGHTHS_SLOW
         return join
 
     def _scene_settings(self, place):
@@ -480,7 +480,7 @@ class SongPlan:
                 said.append(composer_text.MSG_PLAN_STAGE.format(stages[place][0]))
             if not section.get(HELD) and not section.get(DRUM_SOLO):
                 arrives = place > 0 and energy > self._energies[place - 1] and energy >= CRASH_FROM
-                after_tail = place > 0 and (joins[place - 1] or {}).get(TAIL) in (DROP_OUT, BUILD, STOPS)
+                after_tail = place > 0 and (joins[place - 1] or {}).get(joins_values.TAIL) in (joins_values.DROP_OUT, joins_values.BUILD, joins_values.STOPS)
                 made.update({ALLOWS: self._allowed(place), PLAYS: self._plays(place), CRASH_START: bool(arrives or after_tail or (place > 0 and self._sections[place - 1].get(DRUM_SOLO))),
                              SCENE_SETTINGS: self._loudness(place)})
                 # A cymbal the song chose is the drummer's all through; the plan's goes by Energy.
@@ -490,7 +490,7 @@ class SongPlan:
                 if PERCUSSION not in self._song.get(PICKS, {}) and energy < self._of_style.get(PERCUSSION_FROM, LOWEST_ENERGY):
                     made[PICKS][PERCUSSION] = NO_PERCUSSION
                 if joins[place] is not None:
-                    made[LEAVES] = joins[place]
+                    made[joins_values.LEAVES] = joins[place]
                     inside_every = self._fill_inside_every(place=place)
                     if inside_every and self._fill(SMALL):
                         made[FILL_INSIDE] = self._fill(SMALL)
@@ -499,24 +499,24 @@ class SongPlan:
                     if marker:
                         made[MARKER] = marker
                         made[MARKER_EVERY] = MARKER_BARS
-                    if joins[place].get(TAIL):
-                        said.append(composer_text.MSG_PLAN_LEAVES_TAIL.format(joins[place][TAIL]))
-                    elif joins[place].get(FILL_OF_JOIN):
-                        said.append(composer_text.MSG_PLAN_LEAVES_FILL.format(joins[place][FILL_OF_JOIN]))
+                    if joins[place].get(joins_values.TAIL):
+                        said.append(composer_text.MSG_PLAN_LEAVES_TAIL.format(joins[place][joins_values.TAIL]))
+                    elif joins[place].get(joins_values.FILL_OF_JOIN):
+                        said.append(composer_text.MSG_PLAN_LEAVES_FILL.format(joins[place][joins_values.FILL_OF_JOIN]))
                 last_chord = self._last_chord(place)
                 if last_chord is not None:
                     made[LAST_CHORD] = last_chord
                     said.append(composer_text.MSG_PLAN_SET_UP.format(last_chord))
             written = self._song.get(MELODY, {}).get(hook_writing.HOOK_WRITING)
-            if not hook_said and written and self._has_hook() and any(entry.get(HOOK) for entry in section.get(SECTION_PLAN, [])):
+            if not hook_said and written and self._has_hook() and any(entry.get(melody_values.HOOK) for entry in section.get(SECTION_PLAN, [])):
                 said.append(composer_text.MSG_PLAN_HOOK.format(written[hook_writing.BEHAVIOR]))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
-            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, LEAVES, RISES, *FADE_FIELDS, *SCENE_FIELDS)}
+            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, joins_values.LEAVES, RISES, *FADE_FIELDS, *SCENE_FIELDS)}
             scene = {**made.get(SCENE_SETTINGS, {}), **self._scene_settings(place)}
             sections[name] = {**made, **of_song, **own, **({SCENE_SETTINGS: scene} if scene else {}), SAID_OF_SECTION: ' '.join(said)}
-        melody = {**({BREATHES: self._given.get(PHRASING_WAYS) or True} if self._given.get(PHRASING, True) else {}), **self._song.get(MELODY, {})}
+        melody = {**({melody_values.BREATHES: self._given.get(PHRASING_WAYS) or True} if self._given.get(PHRASING, True) else {}), **self._song.get(MELODY, {})}
         return {**self._song, FORM: list(self._names), SECTIONS: sections, MELODY: melody}
 
     def _has_hook(self):
-        return bool(self._song.get(HOOK, self._style.get(HOOK, False)))
+        return bool(self._song.get(melody_values.HOOK, self._style.get(melody_values.HOOK, False)))

@@ -18,7 +18,8 @@
 
 import unittest
 
-from llamatron.macro_composer.arranger import NAME, SHARE, STYLE, TEMPLATES, VARIANT, VARIANTS, VARIANT_SAYS, style_in, style_named, style_names
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.arranger import style_in, style_named, style_names
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version
@@ -51,19 +52,19 @@ class TestVariants(unittest.TestCase):
 
     def test_a_subgenre_starts_on_its_commonest_kind_and_says_what_the_kind_is(self):
         choices = chosen()
-        kinds = style_named(ROCK)[VARIANTS][HARD_ROCK]
-        commonest = max(kinds, key=lambda kind: kind[SHARE])
-        self.assertEqual(choices.variants()[0], commonest[NAME])
-        self.assertEqual(choices.get_variant(), commonest[NAME])
-        self.assertEqual(choices.variant_says(), commonest[VARIANT_SAYS])
-        self.assertEqual(sorted(choices.variants()), sorted(kind[NAME] for kind in kinds))
+        kinds = style_named(ROCK)[arranger.VARIANTS][HARD_ROCK]
+        commonest = max(kinds, key=lambda kind: kind[arranger.SHARE])
+        self.assertEqual(choices.variants()[0], commonest[arranger.NAME])
+        self.assertEqual(choices.get_variant(), commonest[arranger.NAME])
+        self.assertEqual(choices.variant_says(), commonest[arranger.VARIANT_SAYS])
+        self.assertEqual(sorted(choices.variants()), sorted(kind[arranger.NAME] for kind in kinds))
 
     def test_a_subgenre_of_one_kind_has_no_variants(self):
         choices = chosen(subgenre=PUNK)
         self.assertEqual(choices.variants(), [])
         self.assertIsNone(choices.get_variant())
         self.assertIsNone(choices.variant_says())
-        self.assertNotIn(VARIANT, choices.to_data())
+        self.assertNotIn(arranger.VARIANT, choices.to_data())
 
     def test_every_kind_makes_a_song_unlike_every_other_kind_s(self):
         songs = [made(chosen(variant=variant)) for variant in chosen().variants()]
@@ -106,21 +107,21 @@ class TestVariants(unittest.TestCase):
         with self.assertRaises(ValueError) as refused:
             choices.set_variant(NOT_A_VARIANT)
         self.assertIn(fixed_text(errors.ERR_WIZARD_NO_SUCH_VARIANT), str(refused.exception))
-        again = WizardChoices.from_data({**choices.to_data(), VARIANT: NOT_A_VARIANT})
+        again = WizardChoices.from_data({**choices.to_data(), arranger.VARIANT: NOT_A_VARIANT})
         self.assertEqual(again.get_variant(), choices.get_variant())
 
     def test_the_shares_of_a_subgenre_s_kinds_add_to_all(self):
         for name in style_names():
-            for subgenre, kinds in style_named(name).get(VARIANTS, {}).items():
-                self.assertEqual(sum(kind[SHARE] for kind in kinds), ALL_SHARES, (name, subgenre))
-                self.assertIn(subgenre, style_named(name)[TEMPLATES])
+            for subgenre, kinds in style_named(name).get(arranger.VARIANTS, {}).items():
+                self.assertEqual(sum(kind[arranger.SHARE] for kind in kinds), ALL_SHARES, (name, subgenre))
+                self.assertIn(subgenre, style_named(name)[arranger.TEMPLATES])
 
     def test_a_kind_s_words_are_laid_over_the_subgenre_s_and_a_kind_unknown_changes_nothing(self):
         style = style_named(ROCK)
         usual = style_in(style=style, template=HARD_ROCK)
         self.assertIs(style_in(style=style, template=HARD_ROCK, variant=NOT_A_VARIANT), usual)
-        for kind in style[VARIANTS][HARD_ROCK]:
-            laid = style_in(style=style, template=HARD_ROCK, variant=kind[NAME])
-            for field, value in kind[STYLE].items():
+        for kind in style[arranger.VARIANTS][HARD_ROCK]:
+            laid = style_in(style=style, template=HARD_ROCK, variant=kind[arranger.NAME])
+            for field, value in kind[arranger.STYLE].items():
                 if not isinstance(value, dict):
                     self.assertEqual(laid[field], value)

@@ -31,11 +31,11 @@ from llamatron.composition.checks import listed
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer.wizard_choices import INTRO, SOLO, WizardChoices
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
-from llamatron.macro_composer.notation import KIT
-from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE
+from llamatron.macro_composer import notation
 from llamatron.support.memory import Memory, StaleAnswer
 from llamatron.support import version
 from llamatron.tui import keybindings, themes
@@ -224,8 +224,8 @@ class WizardPage(FieldPage):
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_intro_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=INTRO),
-                          unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=INTRO))
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_intro_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_choices.INTRO),
+                          unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=wizard_choices.INTRO))
 
     def edit_solo(self, place):
         """Open the pattern editor on the solo at a place of the form, its player's notes; the notes are kept as that solo's own
@@ -239,8 +239,8 @@ class WizardPage(FieldPage):
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_solo_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=SOLO),
-                          unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=SOLO))
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_solo_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_choices.SOLO),
+                          unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=wizard_choices.SOLO))
 
     def edit_riff(self, riff):
         """Open the pattern editor on a riff's notes as the player the riff was written for plays them, in a song where that player
@@ -604,7 +604,7 @@ class WizardPage(FieldPage):
 
         def played(sound):
             if isinstance(sound, str):
-                return hits_of(KIT[piece if sound == OWN_DRUM else sound]), sound_trial.HITS_STEP, None
+                return hits_of(notation.KIT[piece if sound == OWN_DRUM else sound]), sound_trial.HITS_STEP, None
             return hits_of(dialog.note), sound_trial.HITS_STEP, sound
 
         def chosen(answer):
@@ -616,7 +616,7 @@ class WizardPage(FieldPage):
                 choices.set_piece_note(piece=piece, note=note)
         dialog = SoundDialog(title=labels.MSG_WIZARD_PIECE_SOUND_TITLE.format(piece=piece), top=[(marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)],
                              groups=[(labels.MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played),
-                             note=choices.piece_note(piece) or USUAL_PIECE_NOTE)
+                             note=choices.piece_note(piece) or wizard_choices.USUAL_PIECE_NOTE)
         self.ask(dialog=dialog, then=self.choosing(chosen))
 
     def pick_suggested_form(self):

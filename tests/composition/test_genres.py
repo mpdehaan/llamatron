@@ -22,7 +22,8 @@ import unittest
 from llamatron.composition.file_format import Section, SongSetting
 from llamatron.composition import genres
 from llamatron.composition.genres import sensible_style, style_name, subgenres_of, variants_of
-from llamatron.macro_composer.arranger import GENRE, NAME, TEMPLATES, variants_of as variants_of_template
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.arranger import variants_of as variants_of_template
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names, style_of
 from llamatron.support import version
 from tests.support.rendering import as_setlist, setlist_from_data, song_from_data
@@ -64,11 +65,11 @@ class TestGenreLists(unittest.TestCase):
         for genre in genre_names():
             style = style_of(genre)
             with self.subTest(genre=genre):
-                self.assertIn(style[GENRE], genres.GENRES)
-                self.assertEqual(sorted(subgenres_of(style[GENRE])), sorted(style[TEMPLATES]))
-                for subgenre in style[TEMPLATES]:
-                    names = [variant[NAME] for variant in variants_of_template(style=style, template=subgenre)]
-                    self.assertEqual(variants_of(genre=style[GENRE], subgenre=subgenre), names)
+                self.assertIn(style[arranger.GENRE], genres.GENRES)
+                self.assertEqual(sorted(subgenres_of(style[arranger.GENRE])), sorted(style[arranger.TEMPLATES]))
+                for subgenre in style[arranger.TEMPLATES]:
+                    names = [variant[arranger.NAME] for variant in variants_of_template(style=style, template=subgenre)]
+                    self.assertEqual(variants_of(genre=style[arranger.GENRE], subgenre=subgenre), names)
 
     def test_every_list_is_of_a_genre_there_is_and_the_genres_are_in_order(self):
         self.assertEqual(genres.GENRES, sorted(genres.GENRES, key=str.lower))

@@ -19,8 +19,8 @@
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
-from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY, USUAL_CONTRAST
-from llamatron.macro_composer.wizard_choices import AFTER_FIRST_VERSE, AFTER_THE_INTRO, FROM_THE_START, IN_BREAKDOWNS, NEVER_LAYS_OUT, WHEN_QUIET
+from llamatron.macro_composer import song_plan
+from llamatron.macro_composer import wizard_choices
 from llamatron.strings import labels, messages
 from llamatron.support import version
 from llamatron.tui import keybindings
@@ -70,35 +70,35 @@ class TestWizardPeople(WizardTest):
 
     async def test_a_player_comes_in_where_asked_and_sits_out_every_section_before(self):
         choices = self.chosen()
-        self.assertEqual(choices.get_comes_in(THE_BASS), FROM_THE_START)
-        self.assertEqual(choices.comes_in_offered(THE_BASS)[0], FROM_THE_START)
+        self.assertEqual(choices.get_comes_in(THE_BASS), wizard_choices.FROM_THE_START)
+        self.assertEqual(choices.comes_in_offered(THE_BASS)[0], wizard_choices.FROM_THE_START)
         usual = self.patterns(choices)
-        choices.set_comes_in(role=THE_BASS, way=AFTER_FIRST_VERSE)
-        self.assertEqual(choices.get_comes_in(THE_BASS), AFTER_FIRST_VERSE)
+        choices.set_comes_in(role=THE_BASS, way=wizard_choices.AFTER_FIRST_VERSE)
+        self.assertEqual(choices.get_comes_in(THE_BASS), wizard_choices.AFTER_FIRST_VERSE)
         played = self.plays(choices=choices, role=THE_BASS)
         self.assertEqual(played[:THE_VERSE + 2], [False] * (THE_VERSE + 1) + [True])
         self.assertNotEqual(self.patterns(choices), usual)
-        choices.set_comes_in(role=THE_BASS, way=AFTER_THE_INTRO)
+        choices.set_comes_in(role=THE_BASS, way=wizard_choices.AFTER_THE_INTRO)
         self.assertEqual(self.plays(choices=choices, role=THE_BASS)[:2], [False, True])
         again = type(choices).from_data(choices.to_data())
-        self.assertEqual(again.get_comes_in(THE_BASS), AFTER_THE_INTRO)
+        self.assertEqual(again.get_comes_in(THE_BASS), wizard_choices.AFTER_THE_INTRO)
 
     async def test_a_player_lays_out_never_in_the_breakdowns_or_whenever_it_is_quiet(self):
         choices = self.chosen()
-        self.assertEqual(choices.lays_out_offered(THE_BASS), [NEVER_LAYS_OUT, IN_BREAKDOWNS, WHEN_QUIET])
+        self.assertEqual(choices.lays_out_offered(THE_BASS), [wizard_choices.NEVER_LAYS_OUT, wizard_choices.IN_BREAKDOWNS, wizard_choices.WHEN_QUIET])
         bridge = choices.section_kinds_in_form().index(THE_BRIDGE)
-        choices.set_lays_out(role=THE_BASS, way=IN_BREAKDOWNS)
-        self.assertEqual(choices.get_lays_out(THE_BASS), IN_BREAKDOWNS)
+        choices.set_lays_out(role=THE_BASS, way=wizard_choices.IN_BREAKDOWNS)
+        self.assertEqual(choices.get_lays_out(THE_BASS), wizard_choices.IN_BREAKDOWNS)
         self.assertFalse(self.plays(choices=choices, role=THE_BASS)[bridge])
-        choices.set_lays_out(role=THE_BASS, way=WHEN_QUIET)
+        choices.set_lays_out(role=THE_BASS, way=wizard_choices.WHEN_QUIET)
         quiet = [place for place, energy in enumerate(choices.energies()) if energy <= 4 and place]
         self.assertTrue(quiet)
         self.assertFalse(any(self.plays(choices=choices, role=THE_BASS)[place] for place in quiet))
-        choices.set_lays_out(role=THE_BASS, way=NEVER_LAYS_OUT)
+        choices.set_lays_out(role=THE_BASS, way=wizard_choices.NEVER_LAYS_OUT)
         self.assertTrue(self.plays(choices=choices, role=THE_BASS)[bridge])
         # A song with no plan has no quiet sections to name.
         choices.set_song_plan(False)
-        self.assertNotIn(WHEN_QUIET, choices.lays_out_offered(THE_BASS))
+        self.assertNotIn(wizard_choices.WHEN_QUIET, choices.lays_out_offered(THE_BASS))
 
     async def test_sections_changed_one_by_one_read_as_the_person_s_own_and_what_is_no_way_is_refused(self):
         choices = self.chosen()
@@ -107,20 +107,20 @@ class TestWizardPeople(WizardTest):
         for setter in (choices.set_comes_in, choices.set_lays_out):
             with self.assertRaises(ValueError):
                 setter(role=THE_BASS, way=NOT_A_WAY)
-        for reacts in (LOWEST_ENERGY - 1, HIGHEST_ENERGY + 1, True):
+        for reacts in (song_plan.LOWEST_ENERGY - 1, song_plan.HIGHEST_ENERGY + 1, True):
             with self.assertRaises(ValueError):
                 choices.set_reacts(role=THE_BASS, reacts=reacts)
 
     async def test_a_dramatic_player_and_an_even_one_play_a_planned_song_differently(self):
         choices = self.chosen()
-        self.assertEqual(choices.get_reacts(THE_DRUMS), USUAL_CONTRAST)
+        self.assertEqual(choices.get_reacts(THE_DRUMS), song_plan.USUAL_CONTRAST)
         made = {}
-        for reacts in (LOWEST_ENERGY, USUAL_CONTRAST, HIGHEST_ENERGY):
+        for reacts in (song_plan.LOWEST_ENERGY, song_plan.USUAL_CONTRAST, song_plan.HIGHEST_ENERGY):
             choices.set_reacts(role=THE_DRUMS, reacts=reacts)
             self.assertEqual(choices.get_reacts(THE_DRUMS), reacts)
             made[reacts] = self.patterns(choices)
-        self.assertNotEqual(made[LOWEST_ENERGY], made[HIGHEST_ENERGY])
-        self.assertNotEqual(made[USUAL_CONTRAST], made[HIGHEST_ENERGY])
+        self.assertNotEqual(made[song_plan.LOWEST_ENERGY], made[song_plan.HIGHEST_ENERGY])
+        self.assertNotEqual(made[song_plan.USUAL_CONTRAST], made[song_plan.HIGHEST_ENERGY])
         # With no song plan there is no Energy to answer to, and so nothing for Reacts to change.
         unplanned = self.chosen()
         unplanned.set_song_plan(False)
@@ -129,17 +129,17 @@ class TestWizardPeople(WizardTest):
     async def test_the_player_s_panel_shows_the_three_and_steps_them(self):
         choices = await self.to_player(THE_BASS)
         shown = self.text()
-        for said in (labels.MSG_WIZARD_COMES_IN_LABEL, labels.MSG_WIZARD_LAYS_OUT_LABEL, labels.MSG_WIZARD_REACTS_LABEL, FROM_THE_START, NEVER_LAYS_OUT, labels.MSG_WIZARD_REACTS_SAID[USUAL_CONTRAST]):
+        for said in (labels.MSG_WIZARD_COMES_IN_LABEL, labels.MSG_WIZARD_LAYS_OUT_LABEL, labels.MSG_WIZARD_REACTS_LABEL, wizard_choices.FROM_THE_START, wizard_choices.NEVER_LAYS_OUT, labels.MSG_WIZARD_REACTS_SAID[song_plan.USUAL_CONTRAST]):
             self.assertIn(said, shown)
         await self.select_field(labels.MSG_WIZARD_COMES_IN_LABEL)
         await self.press(self.more())
         self.assertEqual(choices.get_comes_in(THE_BASS), choices.comes_in_offered(THE_BASS)[1])
         await self.select_field(labels.MSG_WIZARD_LAYS_OUT_LABEL)
         await self.press(self.more())
-        self.assertEqual(choices.get_lays_out(THE_BASS), IN_BREAKDOWNS)
+        self.assertEqual(choices.get_lays_out(THE_BASS), wizard_choices.IN_BREAKDOWNS)
         await self.select_field(labels.MSG_WIZARD_REACTS_LABEL)
         await self.press(self.more())
-        self.assertEqual(choices.get_reacts(THE_BASS), USUAL_CONTRAST + 1)
+        self.assertEqual(choices.get_reacts(THE_BASS), song_plan.USUAL_CONTRAST + 1)
         self.assertTrue(self.wizard().has_choices_to_lose())
         choices.set_section_plays(place=len(choices.section_labels()) - 2, role=THE_BASS, on=False)
         await self.press(Key.DOWN, Key.UP)

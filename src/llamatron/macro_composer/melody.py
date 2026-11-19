@@ -27,9 +27,10 @@ import math
 import random
 
 from llamatron.macro_composer import hook_kinds, hook_writing
-from llamatron.macro_composer.notation import ACCIDENTAL, ARRIVAL, DEGREE, ENDING, FLAT, LOUDER, OCTAVE, REST, SHARP, STEPS, STRESS
+from llamatron.macro_composer import notation
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
-from llamatron.macro_composer.phrasing import EIGHTHS_IN_BAR, LINE_BREATH, LINE_EARLY, LINE_LENGTHS, NO_BREATH, USUAL_WAYS, breathed, ended_early, is_shorter
+from llamatron.macro_composer import phrasing
+from llamatron.macro_composer.phrasing import breathed, ended_early, is_shorter
 from llamatron.strings import errors
 
 # The fields of a style's melody habits.
@@ -163,10 +164,10 @@ PARTS_OF_A_LENGTH = 4
 TOGETHER = 'together'
 TAKES = 'takes'
 DEFAULT_LENGTHS = (1, 1, 2, 2, 3, 4, 1)
-ALL_DEGREES = ({DEGREE: 1}, {DEGREE: 2}, {DEGREE: 3}, {DEGREE: 4}, {DEGREE: 5}, {DEGREE: 6}, {DEGREE: 7})
+ALL_DEGREES = ({notation.DEGREE: 1}, {notation.DEGREE: 2}, {notation.DEGREE: 3}, {notation.DEGREE: 4}, {notation.DEGREE: 5}, {notation.DEGREE: 6}, {notation.DEGREE: 7})
 # A form begins one place above or below the note the form before it ended on.
 BESIDE = (1, -1)
-PITCH_FIELDS = (DEGREE, ACCIDENTAL, OCTAVE)
+PITCH_FIELDS = (notation.DEGREE, notation.ACCIDENTAL, notation.OCTAVE)
 VOICE_SEED = '{} {}'
 ROW_SEED = 'row {}'
 STREAM_SEED = 'stream {} {}'
@@ -176,7 +177,7 @@ MINOR = 'minor'
 HALF_STEPS = {
     MAJOR: (0, 2, 4, 5, 7, 9, 11), MINOR: (0, 2, 3, 5, 7, 8, 10), 'dorian': (0, 2, 3, 5, 7, 9, 10), 'mixolydian': (0, 2, 4, 5, 7, 9, 10),
 }
-HALF_STEPS_OF_MARK = {SHARP: 1, FLAT: -1}
+HALF_STEPS_OF_MARK = {notation.SHARP: 1, notation.FLAT: -1}
 NOTES_IN_OCTAVE = 12
 NOTES_IN_SCALE = 7
 OCTAVES_OF_LADDER = (-1, 0, 1)
@@ -194,7 +195,7 @@ PERFECT_FIFTH = 7
 
 def half_steps_of(*, note, scale_type):
     """A note of the scale, with its sharp or flat, as half steps above the scale's root."""
-    return HALF_STEPS[scale_type][(note[DEGREE] - 1) % NOTES_IN_SCALE] + HALF_STEPS_OF_MARK.get(note.get(ACCIDENTAL), 0)
+    return HALF_STEPS[scale_type][(note[notation.DEGREE] - 1) % NOTES_IN_SCALE] + HALF_STEPS_OF_MARK.get(note.get(notation.ACCIDENTAL), 0)
 
 
 def ladder_of(*, notes, scale_type):
@@ -204,7 +205,7 @@ def ladder_of(*, notes, scale_type):
         for note in notes:
             rung = dict(note)
             if octave:
-                rung[OCTAVE] = octave
+                rung[notation.OCTAVE] = octave
             rungs.append((octave * NOTES_IN_OCTAVE + half_steps_of(note=note, scale_type=scale_type), rung))
     return sorted(rungs, key=height_of)
 
@@ -215,11 +216,11 @@ def height_of(rung):
 
 def chord_notes(*, chord, scale_type):
     """The pitch classes of the chord on a degree of the scale; a chord with a sharp or flat is a major chord."""
-    if ACCIDENTAL in chord:
+    if notation.ACCIDENTAL in chord:
         root = half_steps_of(note=chord, scale_type=scale_type)
         return {root % NOTES_IN_OCTAVE, (root + MAJOR_THIRD) % NOTES_IN_OCTAVE, (root + PERFECT_FIFTH) % NOTES_IN_OCTAVE}
     steps = HALF_STEPS[scale_type]
-    return {steps[(chord[DEGREE] - 1 + more) % NOTES_IN_SCALE] for more in (0, THIRD, FIFTH)}
+    return {steps[(chord[notation.DEGREE] - 1 + more) % NOTES_IN_SCALE] for more in (0, THIRD, FIFTH)}
 
 
 def nearest_chord_rung(*, ladder, place, wanted):
@@ -236,43 +237,43 @@ def line_of(*, rhythm, ladder, start, low, high, chords, grid, scale_type, dice)
     notes = []
     at = 0
     for cell in rhythm:
-        if REST in cell:
-            notes.append({REST: cell[REST]})
-            at += cell[REST]
+        if notation.REST in cell:
+            notes.append({notation.REST: cell[notation.REST]})
+            at += cell[notation.REST]
             continue
-        place = max(low, min(high, place + (dice.choice(MOVES) if notes and any(REST not in note for note in notes) else 0)))
-        if cell[STEPS] * LONG_SHARE >= grid:
+        place = max(low, min(high, place + (dice.choice(MOVES) if notes and any(notation.REST not in note for note in notes) else 0)))
+        if cell[notation.STEPS] * LONG_SHARE >= grid:
             place = nearest_chord_rung(ladder=ladder, place=place, wanted=chord_notes(chord=chords[(at // grid) % len(chords)], scale_type=scale_type))
-        notes.append({**ladder[place][1], STEPS: cell[STEPS]})
-        at += cell[STEPS]
+        notes.append({**ladder[place][1], notation.STEPS: cell[notation.STEPS]})
+        at += cell[notation.STEPS]
     return notes
 
 
 def stressed(notes):
     """A line with its longest note marked as the arrival and its last as the ending."""
-    sounds = [note for note in notes if REST not in note]
+    sounds = [note for note in notes if notation.REST not in note]
     if len(sounds) > 1:
         longest = max(sounds, key=steps_of)
         if longest is not sounds[-1]:
-            longest[STRESS] = ARRIVAL
-        sounds[-1][STRESS] = ENDING
+            longest[notation.STRESS] = notation.ARRIVAL
+        sounds[-1][notation.STRESS] = notation.ENDING
     return notes
 
 
 def steps_of(note):
-    return note[STEPS]
+    return note[notation.STEPS]
 
 
 def home_place(*, ladder, home):
     """Where on the ladder the home note of the middle octave is."""
     for place, (_, rung) in enumerate(ladder):
-        if rung[DEGREE] == home[DEGREE] and rung.get(ACCIDENTAL) == home.get(ACCIDENTAL) and OCTAVE not in rung:
+        if rung[notation.DEGREE] == home[notation.DEGREE] and rung.get(notation.ACCIDENTAL) == home.get(notation.ACCIDENTAL) and notation.OCTAVE not in rung:
             return place
     return len(ladder) // 2
 
 
 def silent_line(*, grid, bars):
-    return [{REST: grid}] * bars
+    return [{notation.REST: grid}] * bars
 
 
 class StepWalk:
@@ -340,10 +341,10 @@ class StepWalk:
 
     def varied_line(self, *, line, dice, entry=None, under=None):
         """A line heard before, changed a little: its last notes moved."""
-        sounds = [note for note in line if REST not in note]
+        sounds = [note for note in line if notation.REST not in note]
         for note in sounds[-VARIED_NOTES:]:
             rung = self._ladder[self.within(self._home + dice.choice(MOVES))][1]
-            for field in PITCH_FIELDS + (STRESS,):
+            for field in PITCH_FIELDS + (notation.STRESS,):
                 note.pop(field, None)
             note.update(rung)
         return line
@@ -382,12 +383,12 @@ class StepWalk:
             made = self.new_line(entry=entry, under=under, dice=dice)
             breathes = bool(self._habits.get(BREATHES))
             of_body = self.body_breath(entry=entry, count=count, line=made)
-            if (breathes or LINE_BREATH in entry or LINE_EARLY in entry or of_body is not None) and not entry.get(HOOK) and not entry.get(TAG):
+            if (breathes or phrasing.LINE_BREATH in entry or phrasing.LINE_EARLY in entry or of_body is not None) and not entry.get(HOOK) and not entry.get(TAG):
                 # A line of a chorus's body ends in the silence its Space gauge gives, a shorter line in a little more, unless the line says its own breath.
                 # The breath is drawn apart from the line, so that a line is the same notes whether it breathes or not.
                 made = breathed(line=made, grid=self._grid, count=count, dice=random.Random(BREATH_SEED.format(self._seed, self._answers, letter)),
-                                ways=self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else None, breath=entry.get(LINE_BREATH, of_body),
-                                early=entry.get(LINE_EARLY, None if breathes else False))
+                                ways=self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else None, breath=entry.get(phrasing.LINE_BREATH, of_body),
+                                early=entry.get(phrasing.LINE_EARLY, None if breathes else False))
                 made = self.finished(line=made, entry=entry, under=under)
             made = stressed(made)
             known[letter] = made
@@ -467,22 +468,22 @@ class Serial(StepWalk):
             length = min(self.next_length(), whole - at)
             note = self.next_sound()
             if self._habits.get(LOUDNESS):
-                note[LOUDER] = there_and_back(values=self._habits[LOUDNESS], at=self._sounded)
+                note[notation.LOUDER] = there_and_back(values=self._habits[LOUDNESS], at=self._sounded)
             sounds = length
             if self._habits.get(ARTICULATION):
                 sounds = max(1, length * there_and_back(values=self._habits[ARTICULATION], at=self._sounded) // PARTS_OF_A_LENGTH)
             self._sounded += 1
-            notes.append({**note, STEPS: sounds})
+            notes.append({**note, notation.STEPS: sounds})
             if sounds < length:
-                notes.append({REST: length - sounds})
+                notes.append({notation.REST: length - sounds})
             at += length
         return notes
 
     def varied_line(self, *, line, dice, entry=None, under=None):
-        sounds = [note for note in line if REST not in note]
+        sounds = [note for note in line if notation.REST not in note]
         pitches = [{field: note[field] for field in PITCH_FIELDS if field in note} for note in reversed(sounds)]
         for note, pitch in zip(sounds, pitches):
-            for field in PITCH_FIELDS + (STRESS,):
+            for field in PITCH_FIELDS + (notation.STRESS,):
                 note.pop(field, None)
             note.update(pitch)
         return line
@@ -510,7 +511,7 @@ class Evolving(StepWalk):
     def place_of(self, note):
         """Where on the ladder a note is."""
         for place, (_, rung) in enumerate(self._ladder):
-            if same_note(one=rung, other=note) and rung.get(OCTAVE, 0) == note.get(OCTAVE, 0):
+            if same_note(one=rung, other=note) and rung.get(notation.OCTAVE, 0) == note.get(notation.OCTAVE, 0):
                 return place
         return self._home
 
@@ -521,13 +522,13 @@ class Evolving(StepWalk):
         if self._phrase is None:
             self._phrase = super().new_line(entry=entry, under=under, dice=dice)
             # A long note that landed on the chord may lie a place outside the range, which then reaches as far as the phrase does.
-            places = [self.place_of(note) for note in self._phrase if REST not in note]
+            places = [self.place_of(note) for note in self._phrase if notation.REST not in note]
             self._low = min([self._low] + places)
             self._high = max([self._high] + places)
             return [dict(note) for note in self._phrase]
         self._made += 1
         adds = {**DEFAULT_EVOLVE, **self._habits.get(EVOLVE, {})}
-        sounds = [note for note in self._phrase if REST not in note]
+        sounds = [note for note in self._phrase if notation.REST not in note]
         places = [self.round_the_range(self.place_of(note) + self._made * adds[MOVE]) for note in sounds]
         places = rotated(row=places, by=self._made * adds[ROTATE])
         return self.with_places(line=self._phrase, places=places)
@@ -537,11 +538,11 @@ class Evolving(StepWalk):
         made = []
         left = list(places)
         for note in line:
-            made.append(dict(note) if REST in note else {**self._ladder[left.pop(0)][1], STEPS: note[STEPS]})
+            made.append(dict(note) if notation.REST in note else {**self._ladder[left.pop(0)][1], notation.STEPS: note[notation.STEPS]})
         return made
 
     def varied_line(self, *, line, dice, entry=None, under=None):
-        places = [self.place_of(note) for note in line if REST not in note]
+        places = [self.place_of(note) for note in line if notation.REST not in note]
         return self.with_places(line=line, places=rotated(row=places, by=1))
 
 
@@ -605,7 +606,7 @@ def share_of_gauge(position):
 
 
 def sounds_in(rhythm):
-    return sum(1 for cell in rhythm if REST not in cell)
+    return sum(1 for cell in rhythm if notation.REST not in cell)
 
 
 def shape_height(*, shape, through):
@@ -722,22 +723,22 @@ class Smart(StepWalk):
         at = 0
         heard = 0
         for cell in rhythm:
-            if REST in cell:
-                notes.append({REST: cell[REST]})
-                at += cell[REST]
+            if notation.REST in cell:
+                notes.append({notation.REST: cell[notation.REST]})
+                at += cell[notation.REST]
                 continue
             chord = under[(at // self._grid) % len(under)]
             through = heard / max(1, sounds - 1)
             aim = centre + reach * shape_height(shape=shape, through=through)
-            lands = cell[STEPS] * LONG_SHARE >= self._grid or heard == sounds - 1
+            lands = cell[notation.STEPS] * LONG_SHARE >= self._grid or heard == sounds - 1
             if heard < len(kept):
                 place = kept[heard]
             elif place is None:
                 place = self.within(nearest_chord_rung(ladder=self._ladder, place=self.within(round(aim)), wanted=chord_notes(chord=chord, scale_type=self._scale_type)))
             else:
                 place, before = self.next_place(place=place, before=before, aim=aim, chord=chord, lands=lands, dice=dice)
-            notes.append({**self._ladder[place][1], STEPS: cell[STEPS]})
-            at += cell[STEPS]
+            notes.append({**self._ladder[place][1], notation.STEPS: cell[notation.STEPS]})
+            at += cell[notation.STEPS]
             heard += 1
         return notes
 
@@ -755,8 +756,8 @@ class Smart(StepWalk):
     def varied_line(self, *, line, dice, entry=None, under=None):
         """A line heard before, changed: its head kept note for note, on its own rhythm, and its tail walked anew about the
         line's own middle, falling to its close."""
-        rhythm = [{REST: note[REST]} if REST in note else {STEPS: note[STEPS]} for note in line]
-        places = [self.place_of(note) for note in line if REST not in note]
+        rhythm = [{notation.REST: note[notation.REST]} if notation.REST in note else {notation.STEPS: note[notation.STEPS]} for note in line]
+        places = [self.place_of(note) for note in line if notation.REST not in note]
         kept = places[:max(1, round(len(places) * HEAD_SHARE))]
         centre = self.within(round(sum(places) / len(places))) if places else self._home
         return self.walked(rhythm=rhythm, centre=centre, shape=SHAPE_TUMBLE, under=self._chords, dice=dice, kept=kept)
@@ -842,7 +843,7 @@ class Hooks(Smart):
         lengths = list(lengths)
         last = max(place for place, length in enumerate(lengths) if length > 0)
         if lengths[last] >= HELD_UNITS:
-            return [{REST: -length * unit} if length < 0 else {STEPS: length * unit} for length in lengths]
+            return [{notation.REST: -length * unit} if length < 0 else {notation.STEPS: length * unit} for length in lengths]
         if lengths[0] < 0 and lengths[-1] > 0:
             lengths = lengths[1:] + lengths[:1]
         last = max(place for place, length in enumerate(lengths) if length > 0)
@@ -853,7 +854,7 @@ class Hooks(Smart):
             short -= cut
         if short > 0:
             lengths = [length for length in lengths if length > 0] + [sum(length for length in lengths if length < 0)]
-        return [{REST: -length * unit} if length < 0 else {STEPS: length * unit} for length in lengths if length]
+        return [{notation.REST: -length * unit} if length < 0 else {notation.STEPS: length * unit} for length in lengths if length]
 
     def written_line(self, *, under, dice):
         """A written hook: its bar in the first bar of the line and each second bar after, its last note on a note of the chord,
@@ -870,20 +871,20 @@ class Hooks(Smart):
         for bar, chord in enumerate(under):
             if not bar % 2:
                 sounding = iter(places)
-                notes.extend({REST: -length * unit} if length < 0 else {**self._ladder[next(sounding)][1], STEPS: length * unit} for length in lengths)
+                notes.extend({notation.REST: -length * unit} if length < 0 else {**self._ladder[next(sounding)][1], notation.STEPS: length * unit} for length in lengths)
                 continue
             if catchiness >= hook_writing.SAME_NOTES_FROM:
                 lower = [self.within(place - 1) for place in places]
                 lower[-1] = self.chord_place(chord=chord, lowest=max(self._low, peak - hook_writing.DEEPEST - 1), highest=max(self._low, peak - 1), toward=lower[-1])
                 sounding = iter(lower)
-                notes.extend(dict(cell) if REST in cell else {**self._ladder[next(sounding)][1], STEPS: cell[STEPS]} for cell in answer)
+                notes.extend(dict(cell) if notation.REST in cell else {**self._ladder[next(sounding)][1], notation.STEPS: cell[notation.STEPS]} for cell in answer)
                 continue
             notes.extend(self.held_under(highest=peak - 1, made=lambda: self.walked(rhythm=answer, centre=self.within(peak - ANSWER_BELOW), shape=SHAPE_TUMBLE, under=[chord], dice=dice)))
         return notes
 
     def open_place(self, *, lowest, highest, toward):
         """The place nearest one wanted whose note leaves an ending open, or the place wanted where none is near."""
-        places = [place for place in range(max(self._low, lowest), min(self._high, highest) + 1) if self._ladder[place][1][DEGREE] in OPEN_DEGREES]
+        places = [place for place in range(max(self._low, lowest), min(self._high, highest) + 1) if self._ladder[place][1][notation.DEGREE] in OPEN_DEGREES]
         return min(places, key=lambda place: (abs(place - toward), -place)) if places else toward
 
     def hook_floor(self):
@@ -926,8 +927,8 @@ class Hooks(Smart):
 
     def answer_bar(self, *, short, long, unit, peak, chord, dice):
         """The bar after a hook's figure: the figure's short notes in the opposite order and a long note that leaves a breath, falling from under the peak to a note of the chord."""
-        rhythm = [{STEPS: length} for length in reversed(short)]
-        rhythm += [{STEPS: long - unit}, {REST: unit}] if long > unit else [{STEPS: long}]
+        rhythm = [{notation.STEPS: length} for length in reversed(short)]
+        rhythm += [{notation.STEPS: long - unit}, {notation.REST: unit}] if long > unit else [{notation.STEPS: long}]
         highest = self._high
         self._high = max(self._low, peak - 1)
         try:
@@ -950,17 +951,17 @@ class Hooks(Smart):
             if bar % 2:
                 notes.extend(self.answer_bar(short=short, long=long, unit=unit, peak=peak, chord=chord, dice=dice))
                 continue
-            notes.extend({**self._ladder[place][1], STEPS: length} for place, length in zip(head, short))
+            notes.extend({**self._ladder[place][1], notation.STEPS: length} for place, length in zip(head, short))
             ending = peak if bar == 0 else self.chord_place(chord=chord, lowest=floor, highest=self._high, toward=peak)
-            notes.append({**self._ladder[ending][1], STEPS: long})
+            notes.append({**self._ladder[ending][1], notation.STEPS: long})
         return notes
 
     def varied_hook(self, *, line, under):
         """A hook heard before with its last note risen to a note of the chord at or above its peak."""
-        sounds = [note for note in line if REST not in note]
+        sounds = [note for note in line if notation.REST not in note]
         peak = max(self.place_of(note) for note in sounds)
         ending = self.chord_place(chord=under[-1], lowest=peak, highest=self._high, toward=peak + 1)
-        for field in PITCH_FIELDS + (STRESS,):
+        for field in PITCH_FIELDS + (notation.STRESS,):
             sounds[-1].pop(field, None)
         sounds[-1].update(self._ladder[ending][1])
         return line
@@ -997,13 +998,13 @@ class Tags(Hooks):
         bar = []
         for place, length in enumerate(lengths):
             if length < 0:
-                bar.append({REST: -length * unit})
+                bar.append({notation.REST: -length * unit})
                 continue
             note = self._ladder[self.within(top - next(depths))][1]
             if place == last and length > 1:
-                bar += [{**note, STEPS: (length - 1) * unit}, {REST: unit}]
+                bar += [{**note, notation.STEPS: (length - 1) * unit}, {notation.REST: unit}]
             else:
-                bar.append({**note, STEPS: length * unit})
+                bar.append({**note, notation.STEPS: length * unit})
         return [copy.deepcopy(cell) for _ in under for cell in bar]
 
 
@@ -1028,7 +1029,7 @@ class Bodies(Hooks):
         same = round(hook_writing.share(gauges[hook_writing.SAMENESS]) * bars)
         rhythm = []
         for bar in range(bars):
-            rhythm += [{REST: -length * unit} if length < 0 else {STEPS: length * unit} for length in (lengths if bar < same else hook_writing.plainer(lengths))]
+            rhythm += [{notation.REST: -length * unit} if length < 0 else {notation.STEPS: length * unit} for length in (lengths if bar < same else hook_writing.plainer(lengths))]
         return rhythm
 
     def breath(self):
@@ -1042,7 +1043,7 @@ class Bodies(Hooks):
 
     def leading_place(self, *, highest, toward):
         """Where a line that leads into the hook ends: the nearest note that asks for more, no higher than a place."""
-        places = [place for place in range(self._low, min(self._high, highest) + 1) if self._ladder[place][1][DEGREE] in LEADING_DEGREES and ACCIDENTAL not in self._ladder[place][1]]
+        places = [place for place in range(self._low, min(self._high, highest) + 1) if self._ladder[place][1][notation.DEGREE] in LEADING_DEGREES and notation.ACCIDENTAL not in self._ladder[place][1]]
         return min(places, key=lambda place: (abs(place - toward), -place)) if places else self.open_place(lowest=self._low, highest=highest, toward=toward)
 
     def unsettled_place(self, *, chord, highest, toward):
@@ -1051,12 +1052,12 @@ class Bodies(Hooks):
         places = [place for place in range(self._low, min(self._high, highest) + 1) if not self.in_chord(place=place, chord=chord)]
         if not places:
             return self.open_place(lowest=self._low, highest=highest, toward=toward)
-        return min(places, key=lambda place: (self._ladder[place][1][DEGREE] not in OPEN_DEGREES, abs(place - toward), -place))
+        return min(places, key=lambda place: (self._ladder[place][1][notation.DEGREE] not in OPEN_DEGREES, abs(place - toward), -place))
 
     def ended(self, *, line, entry, under, gauges, answers=False):
         """A line of the body with its last note where the line's place asks: open before a hook, a note of the home chord at the
         section's close, and otherwise settled on a note of the chord or left open as the Resolve gauge says; a line that answers settles."""
-        sounds = [note for note in line if REST not in note]
+        sounds = [note for note in line if notation.REST not in note]
         highest = self.ceiling(gauges)
         now = min(self.place_of(sounds[-1]), highest)
         if entry.get(LEADS_TO_HOOK):
@@ -1067,7 +1068,7 @@ class Bodies(Hooks):
             place = self.held_under(highest=highest, made=lambda: self.chord_place(chord=under[-1], lowest=self._low, highest=highest, toward=now))
         else:
             place = self.unsettled_place(chord=under[-1], highest=highest, toward=now)
-        for field in PITCH_FIELDS + (STRESS,):
+        for field in PITCH_FIELDS + (notation.STRESS,):
             sounds[-1].pop(field, None)
         sounds[-1].update(self._ladder[place][1])
         return line
@@ -1083,7 +1084,7 @@ class Bodies(Hooks):
     def reaching(self, *, line, highest):
         """A line moved up whole until its highest note is the highest place the body reaches, so that the Lift gauge is heard in
         every line; a line already there is left."""
-        sounds = [note for note in line if REST not in note]
+        sounds = [note for note in line if notation.REST not in note]
         up = highest - max(self.place_of(note) for note in sounds)
         if up <= 0:
             return line
@@ -1118,7 +1119,7 @@ BODY_BELOW = 1
 # A line of the body goes no lower than this far under the highest place it reaches, so that a chorus stays above its verse.
 BODY_DEPTH = 4
 TONIC = 1
-HOME_CHORD = {DEGREE: TONIC}
+HOME_CHORD = {notation.DEGREE: TONIC}
 # The notes a line that leads into the hook may end on: each asks for more.
 LEADING_DEGREES = (2, 5, 6, 7)
 
@@ -1178,11 +1179,11 @@ class Hooked(StepWalk):
         if not entry.get(BODY):
             return None
         ways = self._habits[BREATHES] if isinstance(self._habits.get(BREATHES), dict) else {}
-        shorter = is_shorter(count=count, lengths=ways.get(LINE_LENGTHS, USUAL_WAYS[LINE_LENGTHS]))
-        eighth = self._grid // EIGHTHS_IN_BAR
+        shorter = is_shorter(count=count, lengths=ways.get(phrasing.LINE_LENGTHS, phrasing.USUAL_WAYS[phrasing.LINE_LENGTHS]))
+        eighth = self._grid // phrasing.EIGHTHS_IN_BAR
         least = (sounds_in(line) + 1) // 2
-        wanted = self._bodies.breath() + (SHORTER_LINE_BREATH if shorter else NO_BREATH)
-        return next((breath for breath in range(wanted, NO_BREATH, -1) if sounds_in(ended_early(line=line, breath=breath * eighth)) >= least), NO_BREATH)
+        wanted = self._bodies.breath() + (SHORTER_LINE_BREATH if shorter else phrasing.NO_BREATH)
+        return next((breath for breath in range(wanted, phrasing.NO_BREATH, -1) if sounds_in(ended_early(line=line, breath=breath * eighth)) >= least), phrasing.NO_BREATH)
 
     def finished(self, *, line, entry, under):
         """A line of a chorus's body ends where its place asks after its breath too, since the breath may take the line's last note."""
@@ -1209,7 +1210,7 @@ class Hooked(StepWalk):
 
 
 def same_note(*, one, other):
-    return one[DEGREE] == other[DEGREE] and one.get(ACCIDENTAL) == other.get(ACCIDENTAL)
+    return one[notation.DEGREE] == other[notation.DEGREE] and one.get(notation.ACCIDENTAL) == other.get(notation.ACCIDENTAL)
 
 
 def twelve_notes(scale_type):
@@ -1218,9 +1219,9 @@ def twelve_notes(scale_type):
     notes = []
     for half_steps in range(NOTES_IN_OCTAVE):
         if half_steps in steps:
-            notes.append({DEGREE: steps.index(half_steps) + 1})
+            notes.append({notation.DEGREE: steps.index(half_steps) + 1})
         else:
-            notes.append({DEGREE: steps.index(half_steps - 1) + 1, ACCIDENTAL: SHARP})
+            notes.append({notation.DEGREE: steps.index(half_steps - 1) + 1, notation.ACCIDENTAL: notation.SHARP})
     return notes
 
 

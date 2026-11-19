@@ -21,8 +21,9 @@ the tune's last note of a line has landed, and ends with the line."""
 
 import random
 
-from llamatron.macro_composer.melody import MOVES, NOTES_IN_OCTAVE, StepWalk, chord_notes, nearest_chord_rung
-from llamatron.macro_composer.notation import REST, STEPS
+from llamatron.macro_composer import melody
+from llamatron.macro_composer.melody import StepWalk, chord_notes, nearest_chord_rung
+from llamatron.macro_composer import notation
 
 # What a player beside the tune does in a section.
 WAITS = 'waits'
@@ -60,15 +61,15 @@ def room_in(line):
     A line the tune is silent through is all room."""
     room = 0
     for note in reversed(line):
-        if REST in note:
-            room += note[REST]
+        if notation.REST in note:
+            room += note[notation.REST]
             continue
-        return room + note[STEPS] - 1
+        return room + note[notation.STEPS] - 1
     return room
 
 
 def steps_in(line):
-    return sum(note.get(REST, note.get(STEPS, 0)) for note in line)
+    return sum(note.get(notation.REST, note.get(notation.STEPS, 0)) for note in line)
 
 
 def lengths_of(*, steps, unit, busy):
@@ -111,7 +112,7 @@ class UnderLead:
         for count, line in enumerate(tune):
             wanted = (count + 1) % every == 0 or count == len(tune) - 1
             under = self.chords_under(chords=chords, tune=tune, count=count)
-            made.append(self.filled(way=way, line=line, chord=under[-1], dice=random.Random(FILL_SEED.format(self._seed, self._busy, section, count))) if wanted else [{REST: steps_in(line)}])
+            made.append(self.filled(way=way, line=line, chord=under[-1], dice=random.Random(FILL_SEED.format(self._seed, self._busy, section, count))) if wanted else [{notation.REST: steps_in(line)}])
         return made
 
     def chords_under(self, *, chords, tune, count):
@@ -127,17 +128,17 @@ class UnderLead:
         if way != ANSWERS:
             room = min(room, self._grid // FILL_SHARE_OF_BAR)
         if room < SHORTEST_FILL * unit:
-            return [{REST: whole}]
+            return [{notation.REST: whole}]
         lengths = lengths_of(steps=room, unit=unit, busy=self._busy)
         place = self._walk.within(self._home + dice.choice(FILL_STARTS))
         notes = []
         for count, steps in enumerate(lengths):
             if count:
-                place = self._walk.within(place + dice.choice(MOVES))
+                place = self._walk.within(place + dice.choice(melody.MOVES))
             if count == len(lengths) - 1:
                 place = nearest_chord_rung(ladder=self._ladder, place=place, wanted=chord_notes(chord=chord, scale_type=self._scale_type))
-            notes.append({**self._ladder[place][1], STEPS: steps})
-        return ([{REST: whole - room}] if whole > room else []) + notes
+            notes.append({**self._ladder[place][1], notation.STEPS: steps})
+        return ([{notation.REST: whole - room}] if whole > room else []) + notes
 
     def riff_bar(self):
         """The riff's one bar, the same through the song: for each place of the bar, how far up the chord its note is, or None for a place that is silent or held through."""
@@ -152,15 +153,15 @@ class UnderLead:
         for chord in chords:
             wanted = chord_notes(chord=chord, scale_type=self._scale_type)
             low = self._walk.within(self._home - RIFF_BELOW)
-            rungs = [place for place in range(low, len(self._ladder)) if self._ladder[place][0] % NOTES_IN_OCTAVE in wanted] or [low]
+            rungs = [place for place in range(low, len(self._ladder)) if self._ladder[place][0] % melody.NOTES_IN_OCTAVE in wanted] or [low]
             for up in bar:
-                if up is None and notes and STEPS in notes[-1]:
-                    notes[-1][STEPS] += unit
+                if up is None and notes and notation.STEPS in notes[-1]:
+                    notes[-1][notation.STEPS] += unit
                 elif up is None:
-                    notes.append({REST: unit})
+                    notes.append({notation.REST: unit})
                 else:
-                    notes.append({**self._ladder[rungs[min(up, len(rungs) - 1)]][1], STEPS: unit})
+                    notes.append({**self._ladder[rungs[min(up, len(rungs) - 1)]][1], notation.STEPS: unit})
             left = self._grid - unit * len(bar)
             if left:
-                notes.append({REST: left})
+                notes.append({notation.REST: left})
         return notes
