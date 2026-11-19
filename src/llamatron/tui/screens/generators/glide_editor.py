@@ -39,7 +39,7 @@ class GlideEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_GLIDE_LABEL)
 
     def amount_fields(self):
-        written = self.generator().get_written_glide_amount()
+        written = self.settings().get_written_glide_amount()
         current = DEFAULT_GLIDE_AMOUNT_WRITTEN if written is None else str(written)
         return [ChoiceField(page=self, label=labels.MSG_GLIDE_AMOUNT_LABEL, choices=GLIDE_AMOUNTS, current=current,
                             set=lambda chosen: self.store(setting=StepRowSetting.GLIDE_AMOUNT, value=None if chosen == DEFAULT_GLIDE_AMOUNT_WRITTEN else chosen))]

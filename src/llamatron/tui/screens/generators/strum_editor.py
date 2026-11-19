@@ -15,17 +15,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Strum editor page: one Strum generator's name and its strum, which wins over a clip's and its track's."""
 
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.strum_fields import strum_fields
 from llamatron.tui.screens.shared.field import NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 
-class StrumEditor(ShowsNamedItem, FieldPage):
+class StrumEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.StrumEditor
     HELP = help_text.HELP_STRUM_EDITOR
@@ -33,20 +33,13 @@ class StrumEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_STRUM_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def strum(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.STRUM, name=self.item)
-
     def fields(self):
-        strum = self.strum()
+        strum = self.settings()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             *strum_fields(
                 page=self, value=strum.get_strum_setting, prefixed=False,
-                store=lambda part, value: self.document().change(self.document().generator(section=Section.STRUMS, name=self.item).set_setting, name=part, value=value),
+                store=lambda part, value: self.store(setting=part, value=value),
             ),
             restart_field(self),
         ]

@@ -26,14 +26,14 @@ the screen scrolls sideways like the pattern editor rather than wrapping onto mo
 from rich.text import Text
 
 from llamatron.composition import file_format
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.generators import arp as arp_values
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.signed_gauge import SignedGauge
 from llamatron.tui.drawing import Box, Style
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
 
 # The lines around the gauge: the note, a blank line, the top rule, the Step row, the zero line, the Offset row and the bottom rule; and the rule over the add rows, when any shows.
@@ -49,7 +49,7 @@ OFFSET_ROW = 0
 BLANK_CELL = ''
 
 
-class OffsetsEditor(ShowsNamedItem, OneRowEditor):
+class OffsetsEditor(GeneratorEditor, OneRowEditor):
     """An arpeggiator's offsets: one row of up to 16 steps, drawn as a gauge around a zero line, and under it a row per register of what each step adds to it, which Tab moves the cursor between."""
 
     KEYS = keybindings.OffsetsEditor
@@ -67,15 +67,11 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
     REMOVE = KEYS.REMOVE_STEP
 
     def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
+        super().__init__(holder=holder, name=name)
         self.edited_row = OFFSET_ROW
 
-    def arp(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.ARP, name=self.item)
-
     def offsets(self):
-        return self.arp().get_offsets()
+        return self.settings().get_offsets()
 
     def register_edited(self):
         """Return the register whose add row the cursor is on, or None on the Offset row."""
@@ -83,7 +79,7 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
 
     def values(self):
         register = self.register_edited()
-        return self.offsets() if register is None else self.arp().get_step_adds(register)
+        return self.offsets() if register is None else self.settings().get_step_adds(register)
 
     def most(self):
         register = self.register_edited()
@@ -91,7 +87,7 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
 
     def shown_add_rows(self):
         """Return the registers whose add rows show: those that add on some step, and the one the cursor is on, so that an arp with no adds draws as it always has."""
-        arp = self.arp()
+        arp = self.settings()
         return [register for register in file_format.REGISTER_NAMES if register == self.register_edited() or any(arp.get_step_adds(register) or [])]
 
     def next_row(self):
@@ -155,7 +151,7 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
         if shown:
             lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
         for register in shown:
-            adds = self.arp().get_step_adds(register)
+            adds = self.settings().get_step_adds(register)
             cells = [(place, BLANK_CELL if not adds[place] else str(adds[place])) for place in places]
             lines.append(self.grid_line(label=labels.MSG_STEP_ADD_ROW_LABEL.format(name=register), cells=cells, selected=self.step if register == self.register_edited() else None))
         lines.append(self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)))

@@ -28,11 +28,11 @@ from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
 
-class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
+class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
     """A row of on-or-off steps. A page of this kind names its SECTION, KIND and CRUMBS_BEFORE."""
 
     KEYS = keybindings.StepRowEditor
@@ -41,15 +41,8 @@ class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
     CELL_WIDTH = 5
     KIND = None
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def generator(self):
-        return self.document().song().get_generator_settings(kind=self.KIND, name=self.item)
-
     def values(self):
-        return self.generator().get_steps()
+        return self.settings().get_steps()
 
     def steps(self):
         return len(self.values())
@@ -71,13 +64,13 @@ class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
 
     def toggle(self):
         """Turn the cursor's step on or off."""
-        self.document().change(self.generator().set_cell, step=self.step, value=not self.values()[self.step])
+        self.document().change(self.settings().set_cell, step=self.step, value=not self.values()[self.step])
 
     def insert(self):
-        self.document().change(self.generator().insert_cell, self.step)
+        self.document().change(self.settings().insert_cell, self.step)
 
     def remove_step(self):
-        self.document().change(self.generator().remove_cell, self.step)
+        self.document().change(self.settings().remove_cell, self.step)
         self.keep_step()
 
     def body(self, *, width, height):

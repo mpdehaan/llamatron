@@ -17,7 +17,7 @@
 
 from rich.text import Text
 
-from llamatron.composition.file_format import EuclidPart, GeneratorKind, Section
+from llamatron.composition.file_format import EuclidPart, Section
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Style
@@ -25,10 +25,10 @@ from llamatron.tui.screens.generators.euclid_fields import drawn_rhythm, euclid_
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 
-class EuclidEditor(ShowsNamedItem, FieldPage):
+class EuclidEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.EuclidEditor
     HELP = help_text.HELP_EUCLID_EDITOR
@@ -36,24 +36,14 @@ class EuclidEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_EUCLID_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def euclid(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.EUCLID, name=self.item)
-
-    def store(self, *, part, value):
-        self.document().change(self.document().generator(section=Section.EUCLIDS, name=self.item).set_setting, name=part, value=value)
-
     def fields(self):
-        return [NameField(value=lambda: self.item, rename=self.rename), *euclid_fields(page=self, value=self.euclid().get_euclid_setting, store=lambda part, value: self.store(part=part, value=value), prefixed=False), restart_field(self)]
+        return [NameField(value=lambda: self.item, rename=self.rename), *euclid_fields(page=self, value=self.settings().get_euclid_setting, store=lambda part, value: self.store(setting=part, value=value), prefixed=False), restart_field(self)]
 
     def page_keys(self):
         if self.field().label == labels.MSG_EUCLID_PART_LABELS[EuclidPart.HITS]:
-            return [self.bind(self.KEYS.PICK_RHYTHM, action=lambda: pick_rhythm(page=self, store=lambda part, value: self.store(part=part, value=value)))]
+            return [self.bind(self.KEYS.PICK_RHYTHM, action=lambda: pick_rhythm(page=self, store=lambda part, value: self.store(setting=part, value=value)))]
         return []
 
     def notes(self, width):
-        mask = self.euclid().get_euclid()
+        mask = self.settings().get_euclid()
         return [] if mask is None else [Text(drawn_rhythm(hits=mask.hits, steps=mask.steps, rotate=mask.rotate), style=Style.DIM)]

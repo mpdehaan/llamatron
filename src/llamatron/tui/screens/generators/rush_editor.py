@@ -35,5 +35,5 @@ class RushEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_RUSH_LABEL)
 
     def amount_fields(self):
-        return [self.percent_field(label=labels.MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.generator().get_amount(), default=generator_settings.DEFAULT_RUSH,
+        return [self.percent_field(label=labels.MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.settings().get_amount(), default=generator_settings.DEFAULT_RUSH,
                                    lowest=generator_settings.NO_RUSH_OR_DRAG, highest=limits.MAX_RUSH_OR_DRAG)]

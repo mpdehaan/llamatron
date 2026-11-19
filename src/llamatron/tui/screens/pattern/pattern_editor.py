@@ -209,13 +209,12 @@ class PatternEditor(ShowsNamedItem, StepEditor):
     RENAME_PROMPT = messages.MSG_RENAME_PATTERN_PROMPT
 
     def __init__(self, *, holder, name, opened_from=None, track=None):
-        super().__init__(holder)
+        super().__init__(holder=holder, name=name)
         # The track of the clip the editor was opened from, whose instrument names the keyswitches, or None when the Patterns page opened it.
         self.opened_track = track
         # The page a clip opened the editor from, Arrange or the clip page, whose crumbs come first in the editor's, so that the crumbs
         # say where Esc goes back to. None when the Patterns page opened it, whose crumbs are the editor's own.
         self.opened_from = opened_from
-        self.show_item(name)
         # The cursor's step and the window of steps, which StepEditor keeps, are shared by the two views.
         # The two views, each with its own cursor and keys, and what draws each: the rows, and the piano roll.
         self.drawing = PatternDrawing(self)

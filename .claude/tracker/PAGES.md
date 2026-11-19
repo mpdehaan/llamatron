@@ -291,3 +291,5 @@ The user's design, agreed in detail in `.claude/features/WIZARD_DESIGNS.md` (S16
   `app.open_generator_groups`, and typing searches every type with no headings. The Generators page's `A` and the chain
   editor's new generator both open it. The generators are written FollowChords and VoiceLeading, one word, as AutoRatchet is, and every type's name starts with a capital, Arpeggiator included (the user's rule).
   `tests/tui/test_tui_generator_type_picker.py` tests it.
+
+Every page of one generator is a `GeneratorEditor` (`tui/screens/shared/generator_editor.py`): `settings()` is the generator's settings and `store(setting=, value=)` keeps one, and a page overrides `store` only where a value at its default is left out of the file. `ShowsNamedItem` holds the constructor of every page of one named thing, `(holder=, name=)`; a page that takes more calls it with both.

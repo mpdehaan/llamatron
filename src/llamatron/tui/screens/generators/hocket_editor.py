@@ -15,18 +15,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Hocket editor: its name, the track whose notes it shares out, and its Restart."""
 
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import HocketSetting
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.text import sorted_names
 
 
-class HocketEditor(ShowsNamedItem, FieldPage):
+class HocketEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.HocketEditor
     HELP = help_text.HELP_HOCKET_EDITOR
@@ -34,25 +34,18 @@ class HocketEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_HOCKET_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def hocket(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.HOCKET, name=self.item)
-
     def store_source(self, source):
-        self.document().change(self.document().generator(section=Section.HOCKETS, name=self.item).set_setting, name=HocketSetting.SOURCE, value=source)
+        self.store(setting=HocketSetting.SOURCE, value=source)
 
     def sources(self):
         """Return the tracks the source can be: the current song's, sorted, and the Hocket's own source among them even when the song has no such track, so that it is seen and kept."""
         names = set(self.document().song().get_track_names())
-        if self.hocket().get_source() is not None:
-            names.add(self.hocket().get_source())
+        if self.settings().get_source() is not None:
+            names.add(self.settings().get_source())
         return sorted_names(names)
 
     def fields(self):
-        source = self.hocket().get_source()
+        source = self.settings().get_source()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             ChoiceField(

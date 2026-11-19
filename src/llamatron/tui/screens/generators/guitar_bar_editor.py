@@ -26,15 +26,15 @@ which replaces the strokes, the accents and the cell's length together.
 from rich.text import Text
 
 from llamatron.composition import file_format, generator_settings, guitar_bars
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.key_table import cursor_moved
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.shared import stepped
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
 
@@ -44,7 +44,7 @@ FEWEST_CELLS = 1
 FIRST_CHOICE = 0
 
 
-class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
+class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
     """A Guitarify's bar of strokes, a stroke and an accent a cell."""
 
     KEYS = keybindings.GuitarBarEditor
@@ -55,25 +55,18 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
     CELL_WIDTH = 3
     STEPS_SHOWN = marks.MSG_CELLS_SHOWN
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def guitar(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=self.item)
-
     def strokes(self):
-        return self.guitar().get_bar()
+        return self.settings().get_bar()
 
     def accents(self):
-        return self.guitar().get_accents()
+        return self.settings().get_accents()
 
     def steps(self):
         return len(self.strokes())
 
     def store(self, *, strokes, accents, cell=None):
         """Keep the bar, its accents and, where given, its cell's length, as one change."""
-        self.document().change(self.guitar().set_bar, strokes=strokes, accents=accents, cell=cell)
+        self.document().change(self.settings().set_bar, strokes=strokes, accents=accents, cell=cell)
 
     def keys(self):
         self.keep_step()
@@ -93,7 +86,7 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
 
     def nudge(self, direction):
         """Step the cursor's stroke to the one before or after, stopping at both ends."""
-        self.document().change(self.guitar().set_cell, step=self.step, value=stepped(values=list(file_format.STROKES), current=self.strokes()[self.step], offset=direction))
+        self.document().change(self.settings().set_cell, step=self.step, value=stepped(values=list(file_format.STROKES), current=self.strokes()[self.step], offset=direction))
 
     def accent(self):
         accents = self.accents()
@@ -101,21 +94,21 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         self.store(strokes=self.strokes(), accents=accents)
 
     def insert(self):
-        self.document().change(self.guitar().insert_cell, self.step)
+        self.document().change(self.settings().insert_cell, self.step)
 
     def remove_cell(self):
-        self.document().change(self.guitar().remove_cell, self.step)
+        self.document().change(self.settings().remove_cell, self.step)
         self.keep_step()
 
     def next_cell_length(self):
         """Step the cell's length through the choices, going round at the end."""
-        current = self.guitar().get_cell()
+        current = self.settings().get_cell()
         following = CELL_LENGTHS[(CELL_LENGTHS.index(current) + 1) % len(CELL_LENGTHS)] if current in CELL_LENGTHS else CELL_LENGTHS[FIRST_CHOICE]
         self.store(strokes=self.strokes(), accents=self.accents(), cell=following)
 
     def pick_ready_bar(self):
         names = list(guitar_bars.READY_BARS)
-        guitar = self.guitar()
+        guitar = self.settings()
         ready = ready_bar_matching(cell=guitar.get_cell(), strokes=guitar.get_bar(), accents=guitar.get_accents())
         dialog = ChoiceDialog(title=labels.MSG_READY_BARS_TITLE, options=[labels.MSG_READY_BAR_NAMES[name] for name in names], current=names.index(ready) if ready in names else FIRST_CHOICE)
         self.ask(dialog=dialog, then=lambda chosen: self.take_ready_bar(names[chosen]))
@@ -133,7 +126,7 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         accents = self.accents()
         note = messages.MSG_GUITAR_CELL_ACCENTED_NOTE if accents[self.step] else messages.MSG_GUITAR_CELL_NOTE
         return [
-            self.with_steps_shown(text=messages.MSG_GUITAR_BAR_NOTE.format(cell=self.guitar().get_cell()), style=Style.DIM, width=width, first=first, last=last),
+            self.with_steps_shown(text=messages.MSG_GUITAR_BAR_NOTE.format(cell=self.settings().get_cell()), style=Style.DIM, width=width, first=first, last=last),
             Text(note.format(number=self.step + 1, stroke=labels.MSG_GUITAR_STROKE_NAMES[strokes[self.step]])),
             Text(drawing.NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),

@@ -16,7 +16,7 @@
 """The Voice leading editor page: one voice leading's name, the octaves its chords stay within, and whether the root stays in the bass."""
 
 from llamatron.composition import generator_settings
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import VoiceLeadingSetting
 from llamatron.music import note
 from llamatron.strings import help as help_text, labels, messages
@@ -24,11 +24,11 @@ from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import NameField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.octave_field import octave_field
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
 
-class VoiceLeadingEditor(ShowsNamedItem, FieldPage):
+class VoiceLeadingEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.VoiceLeadingEditor
     HELP = help_text.HELP_VOICE_LEADING_EDITOR
@@ -36,18 +36,8 @@ class VoiceLeadingEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_VOICE_LEADING_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def voicing(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=self.item)
-
-    def store(self, *, setting, value):
-        self.document().change(self.document().generator(section=Section.VOICE_LEADINGS, name=self.item).set_setting, name=setting, value=value)
-
     def fields(self):
-        voicing = self.voicing()
+        voicing = self.settings()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             octave_field(

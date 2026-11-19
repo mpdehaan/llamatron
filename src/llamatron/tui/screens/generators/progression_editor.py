@@ -16,7 +16,7 @@
 """The Progression editor page: one progression's name, how long each chord lasts, and its chords, which Enter opens in the chord editor."""
 
 from llamatron.composition import file_format
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.progressions import roman_numeral
 from llamatron.strings import help as help_text, labels, legends, marks, messages
@@ -26,7 +26,7 @@ from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 
 def numerals_text(*, progression, scale):
@@ -41,7 +41,7 @@ def song_scale(song):
     return None if name is None else song.get_named_scale(name)
 
 
-class ProgressionEditor(ShowsNamedItem, FieldPage):
+class ProgressionEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.ProgressionEditor
     HELP = help_text.HELP_PROGRESSION_EDITOR
@@ -49,20 +49,13 @@ class ProgressionEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_PROGRESSION_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def progression(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=self.item)
-
     def fields(self):
-        progression = self.progression()
+        progression = self.settings()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(
                 page=self, label=labels.MSG_EVERY_LABEL, written=progression.get_every(), first=file_format.ONE_BAR_WRITTEN,
-                store=lambda value: self.document().change(self.document().generator(section=Section.PROGRESSIONS, name=self.item).set_setting, name=ProgressionSetting.EVERY, value=value),
+                store=lambda value: self.document().change(self.settings().set_setting, name=ProgressionSetting.EVERY, value=value),
             ),
             Field(label=labels.MSG_CHORDS_LABEL, value=lambda: numerals_text(progression=progression, scale=song_scale(self.document().song())), adjust=None,
                   enter=lambda: self.show_page(ChordsEditor(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),

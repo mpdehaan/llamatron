@@ -30,7 +30,7 @@ pattern editor opens, on that row's list. The Name row and the status line say w
 
 from llamatron.composition import file_format, generator_settings, limits, progressions
 from llamatron.composition.chords import borrowed, chord_half_steps
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.naming import words
 from llamatron.composition.progressions import named_progression_in, shown_numerals
 from llamatron.strings import help as help_text, labels, marks, messages
@@ -42,7 +42,7 @@ from llamatron.tui.dialogs.chord_dialog import ChordChoice, ChordDialog
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
 
@@ -82,7 +82,7 @@ INSERTED_DEGREE = limits.MIN_PROGRESSION_DEGREE
 ROOT_POSITION_TYPED = 0
 
 
-class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
+class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
     """A progression's chords, up to 16, each a column of the grid."""
 
     KEYS = keybindings.ChordsEditor
@@ -94,12 +94,8 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
     CELL_WIDTH = 7
 
     def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
+        super().__init__(holder=holder, name=name)
         self.edited_row = CHORD_ROW
-
-    def progression(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=self.item)
 
     def scale(self):
         """Return the current song's scale, which names the chords, or None when it has none."""
@@ -108,7 +104,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
         return None if name is None else song.get_named_scale(name)
 
     def steps(self):
-        return len(self.progression().get_chords())
+        return len(self.settings().get_chords())
 
     def keys(self):
         self.keep_step()
@@ -141,7 +137,7 @@ class ChordsEditor(ShowsNamedItem, StepGrid, StepEditor):
 
     def rows(self):
         """Return the chords and the rows beside them, in the order of the rows on screen, as lists of one length."""
-        progression = self.progression()
+        progression = self.settings()
         return [
             progression.get_chords(), progression.get_accidentals(), progression.get_qualities(), progression.get_tensions(), progression.get_scales(),
             progression.get_inversions(),

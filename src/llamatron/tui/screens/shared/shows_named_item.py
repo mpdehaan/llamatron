@@ -54,6 +54,11 @@ class ShowsNamedItem:
     opener = None
     opener_word = None
 
+    def __init__(self, *, holder, name):
+        """Open on a named thing; a page that takes more than the name has a constructor of its own."""
+        super().__init__(holder)
+        self.show_item(name)
+
     def shared_sections(self):
         """Return, on a generator's page, the generator's statements about the registers, which every kind of generator has."""
         # A drift changes values as a pattern plays, not a clip's notes in a chain, so no pass of a clip goes by one and it shows no table.
