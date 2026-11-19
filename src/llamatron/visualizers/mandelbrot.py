@@ -36,7 +36,6 @@ from llamatron.visualizers.visualizer import Visualizer
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 # The view: the point it turns about, how fast it turns, in radians a second at 120 a minute, and how it breathes between seeing the whole set and a close look, as the plane's height across the area, over this many seconds.
 FOCUS = complex(-0.7453, 0.1127)
@@ -69,7 +68,7 @@ LOG_TWO = math.log(2.0)
 class Mandelbrot(Visualizer):
     """The Mandelbrot set, turning and breathing, coloured by the tracks."""
 
-    __slots__ = ('_rows', '_columns', '_offsets', '_time', '_phase', '_energy', '_target', '_colours', '_palette', '_last', '_limiter')
+    __slots__ = ('_rows', '_columns', '_offsets', '_time', '_phase', '_energy', '_target', '_colours', '_palette', '_limiter')
 
     NAME = visualizers.MSG_MANDELBROT
     OPTION = 'mandelbrot'
@@ -83,7 +82,6 @@ class Mandelbrot(Visualizer):
         self._target = 0.0
         self._colours = {}
         self._palette = palette_of(QUIET_COLOURS)
-        self._last = None
         self._limiter = Limiter(
             mean_level=MEAN_LEVEL, ceiling=CEILING, rise_per_second=MEAN_RISE_PER_SECOND, fall_per_second=MEAN_FALL_PER_SECOND, most_gain=MOST_GAIN,
         )
@@ -97,8 +95,7 @@ class Mandelbrot(Visualizer):
         self._offsets = ((across - (self._columns - 1) / 2) + 1j * (down - (self._rows - 1) / 2)) / max(self._rows, 1)
 
     def pixels(self, *, now, heard=heard_values.SILENCE):
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
         rise = ENERGY_RISE_PER_SECOND * seconds
         self._energy += max(-rise, min(rise, self._target - self._energy))

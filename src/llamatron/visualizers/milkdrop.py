@@ -38,7 +38,6 @@ from llamatron.visualizers.visualizer import Visualizer
 # The derez: how much finer the picture is than the big pixels, each way, and the colour steps the big pixels are rounded to.
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
-LONGEST_FRAME_SECONDS = 0.2
 REFERENCE_FRAME_SECONDS = 0.05
 # The feedback: how much of the picture each frame keeps, out of 256, the zoom each frame, and the turn and the swirl's extra turn at the middle, in radians a frame at 120 a minute.
 KEPT = 238
@@ -77,7 +76,7 @@ HALF = 0.5
 class Milkdrop(Visualizer):
     """A picture fed back into itself, zoomed, turned and swirled, faded and blurred, with each note drawn new on top."""
 
-    __slots__ = ('_rows', '_columns', '_picture', '_discs', '_limiter', '_last', '_motion', '_warp_key', '_warp_rows', '_warp_columns', '_tracks_seen')
+    __slots__ = ('_rows', '_columns', '_picture', '_discs', '_limiter', '_motion', '_warp_key', '_warp_rows', '_warp_columns', '_tracks_seen')
 
     NAME = visualizers.MSG_MILKDROP
     OPTION = 'milkdrop'
@@ -88,7 +87,6 @@ class Milkdrop(Visualizer):
         self._limiter = Limiter(
             mean_level=MEAN_LEVEL, ceiling=CEILING, rise_per_second=MEAN_RISE_PER_SECOND, fall_per_second=MEAN_FALL_PER_SECOND, most_gain=MOST_GAIN,
         )
-        self._last = None
         self._motion = 0.0
         self._tracks_seen = 1
         self.resized(columns=0, rows=0)
@@ -118,8 +116,7 @@ class Milkdrop(Visualizer):
         return self._warp_rows, self._warp_columns
 
     def pixels(self, *, now, heard=heard_values.SILENCE):
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self._motion += seconds * heard.tempo_factor()
         breath = (HALF + HALF * math.cos(FULL_TURN * (heard.beats % 1.0))) ** BREATH_SHARPNESS
         rows, columns = self.warp(ZOOM + BEAT_BREATH * breath)

@@ -41,7 +41,6 @@ from llamatron.visualizers.visualizer import Visualizer
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3
-LONGEST_FRAME_SECONDS = 0.2
 DIMENSIONS = 4
 # The turning: radians a second at 120 a minute in each of the three planes, as pairs of dimensions, and how much the tracks' playing speeds it.
 PLANES = (((0, 3), 0.55), ((1, 2), 0.37), ((0, 1), 0.13))
@@ -92,7 +91,7 @@ def edges(points):
 class Hypercube(Visualizer):
     """A tesseract turning in four dimensions, its edges glowing in the colours of the tracks that share them."""
 
-    __slots__ = ('_rows', '_columns', '_corners', '_edges', '_angles', '_last', '_energies', '_targets', '_colours', '_limiter', '_along')
+    __slots__ = ('_rows', '_columns', '_corners', '_edges', '_angles', '_energies', '_targets', '_colours', '_limiter', '_along')
 
     NAME = visualizers.MSG_HYPERCUBE
     OPTION = 'hypercube'
@@ -104,7 +103,6 @@ class Hypercube(Visualizer):
         self._corners = corners()
         self._edges = edges(self._corners)
         self._angles = [0.0] * len(PLANES)
-        self._last = None
         self._energies = {}
         self._targets = {}
         self._colours = {}
@@ -120,8 +118,7 @@ class Hypercube(Visualizer):
         self._along = numpy.linspace(0.0, 1.0, max(int(self._rows * POINTS_PER_CELL), 2))[:, None]
 
     def pixels(self, *, now, heard=heard_values.SILENCE):
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
         self.settle(seconds)
         energy = max(self._energies.values(), default=0.0)

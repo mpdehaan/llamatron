@@ -69,8 +69,6 @@ DRUM_LANES = {
     41: TOMS_LANE, 43: TOMS_LANE, 45: TOMS_LANE, 47: TOMS_LANE, 48: TOMS_LANE, 50: TOMS_LANE,
     49: CYMBAL_LANE, 51: CYMBAL_LANE, 52: CYMBAL_LANE, 53: CYMBAL_LANE, 55: CYMBAL_LANE, 57: CYMBAL_LANE, 59: CYMBAL_LANE,
 }
-# The longest a frame may count as, so that a stall doesn't jump the middle.
-LONGEST_FRAME_SECONDS = 0.2
 
 
 def nth_colour(place):
@@ -108,7 +106,7 @@ class RolledNote:
 class PianoRoll(Visualizer):
     """The notes as bars rolling in from the right, every key a row, each track in its colour, the drums in lanes at the bottom."""
 
-    __slots__ = ('_cells', '_notes', '_centre', '_last', '_seconds_per_beat', '_names', '_heard_tracks', '_lowest', '_highest', '_placed')
+    __slots__ = ('_cells', '_notes', '_centre', '_seconds_per_beat', '_names', '_heard_tracks', '_lowest', '_highest', '_placed')
 
     NAME = visualizers.MSG_PIANO_ROLL
     OPTION = 'piano_roll'
@@ -118,7 +116,6 @@ class PianoRoll(Visualizer):
         self._cells = CellPainter()
         self._notes = []
         self._centre = float(START_CENTRE)
-        self._last = None
         self._seconds_per_beat = heard_values.SILENCE.seconds_per_beat
         self._names = ()
         # The tracks heard so far, by their places in the song, in the order they were first heard, which gives each its colour.
@@ -143,8 +140,7 @@ class PianoRoll(Visualizer):
     def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if width <= LABEL_COLUMNS or height <= LEGEND_ROWS:
             return []
-        elapsed = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        elapsed = self.seconds_since_last_frame(now)
         self._seconds_per_beat = heard.seconds_per_beat
         if heard.names:
             self._names = heard.names

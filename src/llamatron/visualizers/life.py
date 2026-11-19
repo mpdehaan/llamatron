@@ -37,7 +37,6 @@ from llamatron.visualizers.colour import note_colour
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
-LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127
 LOWEST_PITCH = 28
 HIGHEST_PITCH = 100
@@ -82,7 +81,7 @@ def stepped(alive):
 class Life(Visualizer):
     """Conway's Game of Life, its live cells the inverse of a drifting gradient, outlined with the beat."""
 
-    __slots__ = ('_alive', '_colours', '_energy', '_target', '_drift', '_since_step', '_last', '_last_beat', '_chooser', '_cells', '_shape', '_left_bits', '_right_bits')
+    __slots__ = ('_alive', '_colours', '_energy', '_target', '_drift', '_since_step', '_last_beat', '_chooser', '_cells', '_shape', '_left_bits', '_right_bits')
 
     NAME = visualizers.MSG_LIFE
     OPTION = 'life'
@@ -97,7 +96,6 @@ class Life(Visualizer):
         self._target = 0.0
         self._drift = 0.0
         self._since_step = 0.0
-        self._last = None
         self._last_beat = None
         self._shape = None
         self._left_bits = int((LEFT_RING * cells.BRAILLE_BITS).sum())
@@ -119,8 +117,7 @@ class Life(Visualizer):
         if self._shape != (rows, columns):
             self._shape = (rows, columns)
             self._alive = self.seeded(rows=rows, columns=columns)
-        seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
-        self._last = now
+        seconds = self.seconds_since_last_frame(now)
         tempo = heard.tempo_factor()
         self._drift += seconds * tempo
         self.hear(heard)
