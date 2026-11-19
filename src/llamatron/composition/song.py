@@ -594,7 +594,7 @@ class Song(LlamaData):
         """Return whether every clip of a scene loops and no step of a pattern they play can stop its clip, so that nothing ends the scene."""
         if not scene.every_clip_loops():
             return False
-        patterns = [scene.get_clip_slot(track).get_pattern_name() for track in scene.get_track_names()]
+        patterns = [name for track in scene.get_track_names() for name in scene.get_clip_slot(track).get_pattern_names()]
         return not any(self.has_pattern(name) and self.get_pattern(name).has_statements(StepStatement.STOP) for name in patterns)
 
     def track_clip_count(self, name):

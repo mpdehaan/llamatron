@@ -27,7 +27,7 @@ setting names something the song holds.
 from llamatron.composition.checks import check_keys, check_name, reading
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors
-from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOICES, DIRECTIONS, VELOCITY_SETTINGS, ClipSlotSetting, Section
+from llamatron.composition.file_format import strum_setting, FOLLOW_ACTION_CHOICES, DIRECTIONS, PATTERN_ORDERS, VELOCITY_SETTINGS, ClipSlotSetting, PatternOrder, Section
 from llamatron.composition.llama_data import own_copy, LlamaData, settings_by_name, written_settings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.chain import check_chain_names
@@ -87,6 +87,7 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.PATTERNS, check=_check_pattern_names, needs_song=True),
     Checked(name=ClipSlotSetting.CHAINS, check=check_chain_names, needs_song=True),
     Flag(name=ClipSlotSetting.LOOP, error=errors.ERR_LOOP_NOT_TRUE_OR_FALSE),
+    Choice(name=ClipSlotSetting.PATTERN_ORDER, choices=PATTERN_ORDERS, default=PatternOrder.FORWARD, error=errors.ERR_BAD_PATTERN_ORDER),
     WholeNumber(name=ClipSlotSetting.REPEAT, lowest=limits.MIN_REPEAT, highest=limits.MAX_CLIP_REPEAT, error=errors.ERR_BAD_REPEAT),
     Choice(name=ClipSlotSetting.DIRECTION, choices=DIRECTIONS, default=LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
     Checked(name=ClipSlotSetting.MORPH_TO, check=_check_pattern_name, needs_song=True),
@@ -299,6 +300,17 @@ class ClipSlot(LlamaData):
         self._settings[ClipSlotSetting.REPEAT] = None if repeat == defaults.DEFAULT_REPEAT else repeat
         if self.get_repeat() < MIN_MORPH_REPEAT:
             self.clear_morph()
+
+    def get_pattern_order(self):
+        """Return the order it plays its patterns in on each pass through them, forward unless it says otherwise."""
+        return self._settings[ClipSlotSetting.PATTERN_ORDER] or PatternOrder.FORWARD
+
+    @notes_change
+    def set_pattern_order(self, order):
+        """Set the order it plays its patterns in, or None for forward."""
+        if order is not None:
+            SETTINGS[ClipSlotSetting.PATTERN_ORDER].check(order)
+        self._settings[ClipSlotSetting.PATTERN_ORDER] = None if order == PatternOrder.FORWARD else order
 
     @notes_change
     def set_direction(self, direction):

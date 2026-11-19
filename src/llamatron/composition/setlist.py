@@ -985,9 +985,9 @@ class Setlist(LlamaData):
             for track in song.get_track_names():
                 if not scene.has_clip_slot(track):
                     continue
-                pattern = self.get_pattern(scene.get_clip_slot(track).get_pattern_name())
-                if pattern.get_group() is None:
-                    pattern.set_group(track)
+                for name in scene.get_clip_slot(track).get_pattern_names():
+                    if self.get_pattern(name).get_group() is None:
+                        self.get_pattern(name).set_group(track)
 
     def first_track_playing(self, pattern):
         """Return the name of the first track, in any song, with a clip that plays a pattern, or nothing when no clip plays it."""
@@ -995,7 +995,7 @@ class Setlist(LlamaData):
             song = self.get_song(song)
             for scene in song.get_scenes():
                 for track in song.get_track_names():
-                    if scene.has_clip_slot(track) and scene.get_clip_slot(track).get_pattern_name() == pattern:
+                    if scene.has_clip_slot(track) and pattern in scene.get_clip_slot(track).get_pattern_names():
                         return track
         return None
 

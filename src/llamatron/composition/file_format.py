@@ -297,6 +297,8 @@ class ClipSlotSetting:
     PATTERN = 'pattern'
     # The patterns a clip plays, laid end to end as one long pattern.
     PATTERNS = 'patterns'
+    # The order the clip plays its patterns in on each pass through them.
+    PATTERN_ORDER = 'pattern_order'
     # Only read, from a file saved before a clip held a list of chains: one chain's name, read as a list of one.
     CHAIN = 'chain'
     # The chains a clip runs, in order, before its scene's and its track's.
@@ -543,6 +545,23 @@ class Direction:
     RANDOM = 'random'
     BROWNIAN = 'brownian'
     EITHERWAY = 'eitherway'
+
+
+class PatternOrder:
+    """The orders a clip can play its list of patterns in, named as a pattern's directions are: each plays every pattern once a pass."""
+
+    FORWARD = 'forward'
+    REVERSE_A = 'reverse_a'
+    REVERSE_B = 'reverse_b'
+    ALTERNATE = 'alternate'
+    PENDULUM = 'pendulum'
+    RANDOM = 'random'
+    FIRST_THEN_RANDOM = 'first_then_random'
+
+
+PATTERN_ORDERS = [
+    PatternOrder.FORWARD, PatternOrder.REVERSE_A, PatternOrder.REVERSE_B, PatternOrder.ALTERNATE, PatternOrder.PENDULUM, PatternOrder.RANDOM, PatternOrder.FIRST_THEN_RANDOM,
+]
 
 
 class GeneratorKind:

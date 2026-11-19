@@ -475,12 +475,12 @@ class SongRenderer:
 
     def _cuts_passes(self, *, scene, track):
         """Return whether a step of the pattern a track's clip plays in a scene can stop the clip or start the pattern over, so that the clip is played with the registers to find what it does."""
-        return self._cutting_of(scene.get_clip_slot(track).get_pattern_name())[CUTS]
+        return any(self._cutting_of(name)[CUTS] for name in scene.get_clip_slot(track).get_pattern_names())
 
     def fills_its_scene(self, *, scene, track):
         """Return whether a track's clip in a scene loops for as long as the scene lasts: a looping clip that no step of its pattern can stop."""
         clip_slot = scene.get_clip_slot(track)
-        return clip_slot.loops() and not self._cutting_of(clip_slot.get_pattern_name())[STOPS]
+        return clip_slot.loops() and not any(self._cutting_of(name)[STOPS] for name in clip_slot.get_pattern_names())
 
     def _is_settled_by_playing(self, scene):
         """Return whether any clip of a scene can be cut short by the registers, so that the scene's length and its registers are found together, by playing. Asked once for each play of a scene."""
@@ -665,7 +665,7 @@ class SongRenderer:
     def _played_once(self, *, scene, track):
         """Return how long a clip lasts played once: its pattern repeat times, whether or not it loops."""
         clip_slot = scene.get_clip_slot(track)
-        return clip_slot.get_repeat() * self._song.get_pattern_length(self._song.get_pattern(clip_slot.get_pattern_name()))
+        return clip_slot.get_repeat() * sum(self._song.get_pattern_length(self._song.get_pattern(name)) for name in clip_slot.get_pattern_names())
 
     def get_grab_source(self, *, scene, track):
         """Return the notes the track that a track's clip slot grabs from plays in a scene, or None if it plays nothing there."""
@@ -841,7 +841,7 @@ def _whole_if_possible(number):
 
 def _patterns_played(clip_slot):
     """Return the names of the patterns a clip slot plays: its own, and the one it morphs to if it morphs."""
-    names = [clip_slot.get_pattern_name()]
+    names = clip_slot.get_pattern_names()
     if clip_slot.get_morph_target() is not None:
         names.append(clip_slot.get_morph_target())
     return names

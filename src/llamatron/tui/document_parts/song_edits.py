@@ -333,6 +333,10 @@ class SongEdits:
             self._change(clip_slot.set_name, value)
         elif setting == ClipSlotSetting.PATTERN:
             self._change(clip_slot.set_pattern_name, name=value, song=song)
+        elif setting == ClipSlotSetting.PATTERNS:
+            self._change(clip_slot.set_pattern_names, names=value, song=song)
+        elif setting == ClipSlotSetting.PATTERN_ORDER:
+            self._change(clip_slot.set_pattern_order, value)
         elif setting == ClipSlotSetting.CHAINS:
             self._change(clip_slot.set_chain_names, names=value, song=song)
         elif setting == ClipSlotSetting.CHAIN:

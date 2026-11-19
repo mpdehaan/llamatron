@@ -24,7 +24,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.blend import Blend
 from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTE, Sound
 from llamatron.playback.morph_controls import morph_controls
-from llamatron.playback.pattern_player import PatternPlayer
+from llamatron.playback.pattern_order import ordered_patterns
+from llamatron.playback.pattern_player import Pass, PatternPlayer
 from llamatron.playback.step_order import StepOrder
 from llamatron.support.random_source import random_source
 from llamatron.composition import limits
@@ -46,6 +47,7 @@ DIRECTION_SEED = '{seed}/{scene}/{track}/direction'
 # A morph's target chooses its steps from a stream of its own, so that a random direction on the
 # clip can't change what the clip's own pattern draws.
 MORPH_DIRECTION_SEED = '{seed}/{scene}/{track}/morph direction'
+PATTERN_ORDER_SEED = '{seed}/{scene}/{track}/pattern order'
 # A morph moves from 0 percent of the way to its target on the first repeat to 100 on the last.
 FULL_MORPH = 100
 # A clip with nothing in it ends straight away.
@@ -320,6 +322,8 @@ class ClipSlotPlayer:
         rolls = random_source(self._seed_for(PROBABILITY_SEED))
         order = StepOrder(random_source(self._seed_for(DIRECTION_SEED)))
         target_order = StepOrder(random_source(self._seed_for(MORPH_DIRECTION_SEED)))
+        # A clip of one pattern draws no order of patterns, so its other random choices are what they were before a clip held a list.
+        pattern_rolls = random_source(self._seed_for(PATTERN_ORDER_SEED))
         repeat = self._clip_slot.get_repeat()
         # A looping clip that a step of its pattern can stop plays until the step's statement holds, giving up after the most passes a clip can repeat.
         most = limits.MAX_CLIP_REPEAT if fill is None and self._clip_slot.loops() else repeat
@@ -330,7 +334,7 @@ class ClipSlotPlayer:
         place = 0
         while (place < most) if fill is None else (total < fill):
             values = registers.at_pass(time=total, sets=sets if place == FIRST_PASS else NO_SETS, adds=adds)
-            played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total)
+            played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total, turn=place, pattern_rolls=pattern_rolls)
             length = played.length
             if length == NO_LENGTH:
                 break
@@ -362,7 +366,7 @@ class ClipSlotPlayer:
             return None
         return template.format(seed=seed, scene=self._scene.get_number(), track=self._track_name)
 
-    def _play_pass(self, *, player, grab, scale, place, repeat, where, rolls, order, target_order, registers, start):
+    def _play_pass(self, *, player, grab, scale, place, repeat, where, rolls, order, target_order, registers, start, turn, pattern_rolls):
         """Return one pass through the clip slot's pattern as a Pass, part way through any morph.
 
         The clip slot's direction applies to everything the clip slot plays, its own pattern and a morph's
@@ -374,11 +378,12 @@ class ClipSlotPlayer:
         to morph.
         """
         clip_slot = self._clip_slot
-        played = player.play_pass(pattern_name=clip_slot.get_pattern_name(), grab=grab, direction=clip_slot.get_direction(), where=where, rolls=rolls, order=order, registers=registers, start=start)
+        names = clip_slot.get_pattern_names()
+        played = self._play_patterns(player=player, names=ordered_patterns(names=names, order=clip_slot.get_pattern_order(), place=turn, rolls=pattern_rolls), grab=grab, scale=scale, where=where, rolls=rolls, order=order, registers=registers, start=start)
         clip = played.clip
         morph_to = clip_slot.get_morph_target()
         # A pass a step's statement cut short is left as it played, with no morph over the part it never reached.
-        if morph_to is None or played.length != player.pattern_length(self._song.get_pattern(clip_slot.get_pattern_name())) or not clip.has_positions():
+        if morph_to is None or played.length != sum(player.pattern_length(self._song.get_pattern(name)) for name in names) or not clip.has_positions():
             return played
         target = player.play_pass(pattern_name=morph_to, grab=None, direction=clip_slot.get_direction(), where=where, rolls=rolls, order=target_order, registers=registers, start=start, changes_registers=False).clip
         amount = Rational(place, repeat - 1) * FULL_MORPH
@@ -388,6 +393,40 @@ class ClipSlotPlayer:
         controls = morph_controls(source=clip, target=target, start=start, end=end)
         played.clip = Clip(sounds=blend.generate(clip).played_sounds(), scale=scale, controls=controls)
         return played
+
+    def _play_patterns(self, *, player, names, grab, scale, where, rolls, order, registers, start):
+        """Return one pass through the clip's patterns in the order given, each played whole after the one before, as one Pass: the patterns laid end to end as one long pattern.
+
+        Each pattern plays at its own step size, in the clip's direction or its own. Ties at the
+        start of a pattern hold the note the pattern before ended with, as ties at the start of
+        a pass do. A step's statement that stops the clip or starts the pattern over ends the
+        pass there, so that what starts over is the whole list.
+        """
+        direction = self._clip_slot.get_direction()
+        if len(names) == 1:
+            return player.play_pass(pattern_name=names[0], grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start)
+        sounds = []
+        controls = []
+        switched = []
+        total = Rational(0)
+        tied_from_before = NO_LENGTH
+        done = False
+        for place, name in enumerate(names):
+            played = player.play_pass(pattern_name=name, grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start + total)
+            if place == 0:
+                tied_from_before = played.tied_from_before
+            elif played.tied_from_before > NO_LENGTH:
+                sounds = _tied_on(sounds=sounds, extra=Length.of(played.tied_from_before))
+                if switched and switched[-1].end == total:
+                    switched[-1] = switched[-1].ending(total + played.tied_from_before)
+            sounds += played.clip.get_sounds()
+            controls += _moved_later(controls=played.clip.get_controls(), time=total)
+            switched += [slots.moved_by(total) for slots in played.keyswitches]
+            total += played.length
+            if played.done or played.length != player.pattern_length(self._song.get_pattern(name)):
+                done = played.done
+                break
+        return Pass(clip=Clip(sounds=sounds, scale=scale, controls=controls), tied_from_before=tied_from_before, length=total, keyswitches=switched, done=done)
 
 
 def _tripped(*, passes, tables):
