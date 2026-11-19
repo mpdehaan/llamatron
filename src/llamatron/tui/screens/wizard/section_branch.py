@@ -47,7 +47,7 @@ OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (CHORDS, ROOT_OF_PLACE, TYPE_OF_
 def fade_field(*, branch, place, field):
     """Return a field of a section's fade, named for the fade's way: the switch, Fade in where the section opens the song and
     Fade out where the section closes it; the level, the velocity the fade starts from or ends at; or the
-    bars a fade in takes. The level and the bars show what a fade takes until they are given, and Bksp gives each back."""
+    bars the fade takes, the first of the section for a fade in and the last for a fade out. The level and the bars show what a fade takes until they are given, and Bksp gives each back."""
     choices = branch.choices()
     page = branch.page()
     label = labels.MSG_WIZARD_FADE_LABELS[choices.fade_way(place)][field]
