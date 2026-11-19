@@ -93,6 +93,10 @@ class PatternRow(BindsKeys):
         """Return whether the cursor's step can take a value on this row."""
         return not self.blocked()
 
+    def nudge(self, offset):
+        """Make the cursor's value less or more by one, key_table.STEP_BACK or STEP_FORWARD: every row whose value steps says how."""
+        raise NotImplementedError
+
     def adjust_keys(self):
         """Return the keys that nudge the cursor's value: [ for less and ] for more on the legend and in the help, with -, + and = working too."""
         return [
