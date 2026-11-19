@@ -66,6 +66,10 @@ class Branch:
         """Return a few words after the branch's name in the tree, such as what it waits for, or nothing."""
         return drawing.NOTHING
 
+    def summary(self):
+        """Return in a few words what the branch has chosen, which the branch over it lists beside the branch's name, or None for a branch with nothing to say."""
+        return None
+
     def children(self):
         """Return the branches under this one, in order."""
         return []
