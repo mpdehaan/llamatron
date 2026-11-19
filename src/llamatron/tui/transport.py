@@ -36,6 +36,7 @@ nothing, so that nothing sleeps.
 """
 
 import random
+from typing import NamedTuple
 
 from llamatron.composition import limits
 from llamatron.composition.file_format import Section
@@ -48,7 +49,7 @@ from llamatron.realtime.fluidsynth import FluidSynth, is_installed
 from llamatron.realtime.outputs import output_port_names
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
-from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
+from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Route
 from llamatron.strings import errors, messages
 from llamatron.tui.uses import loop_error_lines
@@ -88,6 +89,12 @@ class Problem:
         self.title = title
         self.lines = list(lines)
 
+
+class Tried(NamedTuple):
+    """What came of trying to play: what the playing answered, or the refusal to show, one of them None."""
+
+    answer: object
+    refusal: str
 
 class Transport:
     """Plays the current song through the Realtime Sender Process, and answers what is playing."""
@@ -139,6 +146,29 @@ class Transport:
     def is_connected(self, device):
         """Return whether this computer lists a MIDI port now."""
         return device in set(output_port_names())
+
+    def output_port_names(self):
+        """Return the names of the MIDI ports this computer lists now, FluidSynth's own among them."""
+        return output_port_names()
+
+    def device_port_names(self):
+        """Return the names of the MIDI ports an instrument can be sent to: every port this computer lists now but FluidSynth's own, which an instrument reaches by choosing FluidSynth."""
+        return [name for name in output_port_names() if not name.startswith(fluidsynth_values.FLUIDSYNTH_PORT_PREFIX)]
+
+    def fluidsynth_installed(self):
+        """Return whether FluidSynth is installed on this computer."""
+        return self._fluidsynth_installed()
+
+    def try_play(self, play):
+        """Run something that plays, and return a Tried: what it answered, or why it could not play, in words to show.
+
+        A set that cannot be played as written and a Realtime Sender Process that did not start are the two refusals
+        of playing, which every page that plays tells the same way.
+        """
+        try:
+            return Tried(answer=play(), refusal=None)
+        except (SongFileError, SenderNotStarted) as problem:
+            return Tried(answer=None, refusal=str(problem))
 
     # What stops anything from playing.
 

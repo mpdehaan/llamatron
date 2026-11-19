@@ -63,7 +63,7 @@ SPACE = ' '
 SETTLED = 0
 MSG_REAL_FLUIDSYNTH = 'a test started a real FluidSynth: give its transport a stand-in, as test_tui_playback.py does'
 # Where the warning of silent instruments asks whether FluidSynth is installed.
-FLUIDSYNTH_INSTALLED = 'llamatron.tui.silent_instruments.fluidsynth_installed'
+FLUIDSYNTH_INSTALLED = 'llamatron.tui.transport.is_installed'
 # Where the transport asks the same.
 TRANSPORT_FINDS_FLUIDSYNTH = 'llamatron.tui.transport.is_installed'
 ROW_SHOWN = '│ {label}'

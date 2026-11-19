@@ -22,8 +22,6 @@ whatever the song plays: a run of notes for a sound that plays notes, and
 four quarter notes for a drum of the kit or for a sound that stands in for one.
 """
 
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.realtime.sender_process import SenderNotStarted
 
 # A run is played in eighth notes, and a drum's four hits in quarters.
 RUN_STEP = '1/8'
@@ -71,11 +69,7 @@ class SoundTrial:
         if refusal is not None:
             return refusal
         numbers, step_size, sound = self._played(value)
-        try:
-            self.preview().play_sound(numbers=numbers, step_size=step_size, sound=sound, key=value)
-        except (SongFileError, SenderNotStarted) as error:
-            return str(error)
-        return None
+        return self._page.app.transport.try_play(lambda: self.preview().play_sound(numbers=numbers, step_size=step_size, sound=sound, key=value)).refusal
 
     def playing(self):
         return self.preview().playing_sound()

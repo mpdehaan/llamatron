@@ -23,8 +23,6 @@ page and the pattern editor listen to a pattern through the pattern preview (tui
 which plays beside the song with one key and asks nothing.
 """
 
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.shared import play_through
@@ -37,10 +35,9 @@ def listen(*, page, index, track, song=None, name):
     preview = page.app.pattern_preview()
     # With the set's Real Time switch off, the clip plays through General MIDI in FluidSynth, where FluidSynth is installed.
     if song is None and not page.document().setlist().is_real_time() and preview.general_midi_is_installed():
-        try:
-            preview.play_clip_of_song(index=index, track=track)
-        except (SongFileError, SenderNotStarted) as error:
-            page.tell(errors.ERR_CANT_PLAY_TITLE, str(error))
+        refusal = transport.try_play(lambda: preview.play_clip_of_song(index=index, track=track)).refusal
+        if refusal is not None:
+            page.tell(errors.ERR_CANT_PLAY_TITLE, refusal)
             return
         page.say(messages.MSG_LISTENING_GENERAL_MIDI.format(name=name))
         return
@@ -79,10 +76,9 @@ def listen_to_pattern(*, page, pattern):
     # changes a track that plays; the song sends each track's sound again when it next plays.
     if preview.shares_a_channel_with(pattern=pattern, routes=page.app.transport.routes()) and page.app.transport.is_playing():
         page.app.transport.stop_all()
-    try:
-        preview.play(pattern)
-    except (SongFileError, SenderNotStarted) as error:
-        page.tell(errors.ERR_CANT_PLAY_TITLE, str(error))
+    refusal = page.app.transport.try_play(lambda: preview.play(pattern)).refusal
+    if refusal is not None:
+        page.tell(errors.ERR_CANT_PLAY_TITLE, refusal)
         return
     scale = preview.scale()
     page.say(messages.MSG_LISTENING_TO_PATTERN.format(name=pattern) if scale is None else messages.MSG_LISTENING_IN_SCALE.format(name=pattern, scale=scale))

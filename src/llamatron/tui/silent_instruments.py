@@ -23,14 +23,7 @@ some song plays through count, and nothing about the set changes: the set keeps 
 plays again where the device is, and the Instruments page can choose another.
 """
 
-from llamatron.realtime.fluidsynth import is_installed
-from llamatron.realtime.outputs import output_port_names
 from llamatron.strings import errors
-
-
-def fluidsynth_installed():
-    """Return whether FluidSynth is installed, which the tests answer for themselves."""
-    return is_installed()
 
 
 def instruments_played(setlist):
@@ -55,6 +48,6 @@ def silent_instrument_lines(*, setlist, installed, connected):
 
 def warn_of_silent_instruments(*, page, document):
     """Tell in a dialog over the page which of the set's instruments will not sound here, if any."""
-    lines = silent_instrument_lines(setlist=document.setlist(), installed=fluidsynth_installed(), connected=set(output_port_names()))
+    lines = silent_instrument_lines(setlist=document.setlist(), installed=page.app.transport.fluidsynth_installed(), connected=set(page.app.transport.output_port_names()))
     if lines:
         page.tell(errors.ERR_SILENT_INSTRUMENTS_TITLE, *lines)
