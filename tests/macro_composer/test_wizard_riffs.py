@@ -22,7 +22,7 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer.riffs import ACCENT_CHORDS, RIFF_BAR_COUNT, RIFF_BARS, RIFF_NOTES, SINGLE_NOTES
 from llamatron.macro_composer.wizard_choices import ACCOMPANIMENT, MELODY_PART, RESTS_PART, WizardChoices
 from llamatron.strings import macro_composer as composer_text, names
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'made'
 A_SEED = 11
@@ -50,7 +50,7 @@ def chosen(*, subgenre=A_PLAIN_SUBGENRE):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
 
 
 def pattern_of(*, role, riff):

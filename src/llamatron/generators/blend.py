@@ -18,10 +18,12 @@ from enum import Enum, auto
 from fractions import Fraction
 from math import isfinite
 
-from llamatron.support.length import ZERO, Length
+from llamatron.support import length
+from llamatron.support.length import Length
 from llamatron.support.rational import Rational
 from llamatron.generators.base import ClipGenerator
-from llamatron.music.sound import DEGREE, HELD, HELD_SOUND, KIND, LENGTH, PARTS, PHRASE, Sound
+from llamatron.music import sound
+from llamatron.music.sound import Sound
 from llamatron.grid.clip import Clip
 from llamatron.strings import errors
 
@@ -76,12 +78,12 @@ def _concrete(clip):
 
 def _settled(*, position, scale):
     """Return a sound with any degree in it, including inside a held sound, turned into a note of a scale."""
-    kind = position[KIND]
-    if kind == HELD:
-        return (HELD, position[LENGTH], _settled(position=position[HELD_SOUND], scale=scale))
-    if kind == PHRASE:
-        return (PHRASE, position[LENGTH], tuple([_settled(position=part, scale=scale) for part in position[PARTS]]))
-    if kind != DEGREE:
+    kind = position[sound.KIND]
+    if kind == sound.HELD:
+        return (sound.HELD, position[sound.LENGTH], _settled(position=position[sound.HELD_SOUND], scale=scale))
+    if kind == sound.PHRASE:
+        return (sound.PHRASE, position[sound.LENGTH], tuple([_settled(position=part, scale=scale) for part in position[sound.PARTS]]))
+    if kind != sound.DEGREE:
         return position
     if scale is None:
         raise ValueError(errors.ERR_DEGREE_NEEDS_SCALE.format(degree=Sound.position(position)))
@@ -158,11 +160,11 @@ class Blend(ClipGenerator):
 
 def _note_starts(*, source, total):
     """Return where each note of a clip starts, and its start and end, which a blend's edges can move to, as pairs."""
-    edges = [ZERO, Length.of(total)]
-    now = ZERO
+    edges = [length.ZERO, Length.of(total)]
+    now = length.ZERO
     for position in source.played_sounds():
         edges.append(now)
-        now = Length.add(now, position[LENGTH])
+        now = Length.add(now, position[sound.LENGTH])
     return edges
 
 

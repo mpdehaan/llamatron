@@ -19,8 +19,9 @@
 from bisect import bisect_right
 
 from llamatron.exporters.timing import as_note, clip_end
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTES, PARTS, PHRASE, REST
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.support import length
+from llamatron.support.length import Length
 
 
 class GrabSource:
@@ -58,23 +59,23 @@ def _notes_by_start(clip):
     sounds = clip.resolved_sounds()
     end = clip_end(clip=clip, positions=sounds)
     roots = {}
-    start = ZERO
+    start = length.ZERO
     for sound in sounds:
         _place_root(sound=sound, start=start, end=end, scale=clip.get_scale(), roots=roots)
-        start = Length.add(start, sound[LENGTH])
+        start = Length.add(start, sound[sound_values.LENGTH])
     return roots
 
 
 def _place_root(*, sound, start, end, scale, roots):
     """Note the root a sound starting at a time gives, and those a held phrase's parts give one after another, keeping the first at each time."""
-    kind = sound[KIND]
-    if kind == HELD:
-        _place_root(sound=sound[HELD_SOUND], start=start, end=end, scale=scale, roots=roots)
-    elif kind == PHRASE:
-        for part in sound[PARTS]:
+    kind = sound[sound_values.KIND]
+    if kind == sound_values.HELD:
+        _place_root(sound=sound[sound_values.HELD_SOUND], start=start, end=end, scale=scale, roots=roots)
+    elif kind == sound_values.PHRASE:
+        for part in sound[sound_values.PARTS]:
             _place_root(sound=part, start=start, end=end, scale=scale, roots=roots)
-            start = Length.add(start, part[LENGTH])
-    elif kind != REST:
+            start = Length.add(start, part[sound_values.LENGTH])
+    elif kind != sound_values.REST:
         time = Length.rational(start)
         if time < end:
             roots.setdefault(time, _root(sound=sound, scale=scale))
@@ -82,6 +83,6 @@ def _place_root(*, sound, start, end, scale, roots):
 
 def _root(*, sound, scale):
     """Return the MIDI number of a note, or of a chord's root, its first note as built."""
-    if sound[KIND] == CHORD:
-        return _root(sound=sound[NOTES][0], scale=scale)
-    return as_note(position=sound, scale=scale)[MIDI]
+    if sound[sound_values.KIND] == sound_values.CHORD:
+        return _root(sound=sound[sound_values.NOTES][0], scale=scale)
+    return as_note(position=sound, scale=scale)[sound_values.MIDI]

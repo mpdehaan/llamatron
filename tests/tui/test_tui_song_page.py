@@ -23,7 +23,7 @@ from llamatron.composition import defaults
 from llamatron.strings import errors, labels as labels_text, legends, marks, names as names_text
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.music.time_signature import MAX_BEATS, MIN_BEATS, UNITS_LISTED
+from llamatron.music import time_signature
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -209,7 +209,7 @@ class TestSongPage(UITest):
         self.app.screen.value = NOT_A_SIGNATURE
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song().get_time_signature().to_text(), defaults.DEFAULT_TIME_SIGNATURE)
-        self.assertIn(errors.ERR_TYPED_NOT_A_TIME_SIGNATURE.format(text=NOT_A_SIGNATURE, lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED), self.text())
+        self.assertIn(errors.ERR_TYPED_NOT_A_TIME_SIGNATURE.format(text=NOT_A_SIGNATURE, lowest=time_signature.MIN_BEATS, highest=time_signature.MAX_BEATS, units=time_signature.UNITS_LISTED), self.text())
 
     async def test_plus_and_minus_change_the_tempo(self):
         await self.select_field(TEMPO)

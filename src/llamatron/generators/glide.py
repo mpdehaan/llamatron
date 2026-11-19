@@ -18,8 +18,10 @@
 import math
 
 from llamatron.generators.base import ClipGenerator
-from llamatron.music.sound import KIND, LENGTH, MIDI, NOTE, REST, Sound
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
+from llamatron.support import length
+from llamatron.support.length import Length
 
 
 class StepRow(ClipGenerator):
@@ -40,13 +42,13 @@ class StepRow(ClipGenerator):
     def _generate(self, clip):
         sounds = clip.resolved_sounds()
         result = []
-        now = ZERO
+        now = length.ZERO
         for place, sound in enumerate(sounds):
-            if sound[KIND] == NOTE and self.is_on(Length.rational(now)):
+            if sound[sound_values.KIND] == sound_values.NOTE and self.is_on(Length.rational(now)):
                 result += self._changed(note=sound, following=sounds[place + 1:])
             else:
                 result.append(sound)
-            now = Length.add(now, sound[LENGTH])
+            now = Length.add(now, sound[sound_values.LENGTH])
         return result, clip.get_length()
 
     def _changed(self, *, note, following):
@@ -64,15 +66,15 @@ class Glide(StepRow):
         self._amount = Length.of(glide_amount)
 
     def _changed(self, *, note, following):
-        if _next_pitch(following) in (None, note[MIDI]):
+        if _next_pitch(following) in (None, note[sound_values.MIDI]):
             return [note]
-        return [Sound.held(Sound.with_length(note, Length.add(note[LENGTH], self._amount)), note[LENGTH])]
+        return [Sound.held(Sound.with_length(note, Length.add(note[sound_values.LENGTH], self._amount)), note[sound_values.LENGTH])]
 
 
 def _next_pitch(following):
     """Return the pitch of the next note, or None when a rest, a chord or the clip's end comes first."""
     for sound in following:
-        if sound[KIND] == REST:
+        if sound[sound_values.KIND] == sound_values.REST:
             return None
-        return sound[MIDI] if sound[KIND] == NOTE else None
+        return sound[sound_values.MIDI] if sound[sound_values.KIND] == sound_values.NOTE else None
     return None

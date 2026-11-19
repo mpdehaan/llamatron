@@ -18,7 +18,7 @@
 from llamatron.macro_composer.wizard_choices import (
     KEPT_OWN_RIFFS, KEPT_OWN_TUNES, LOST_BAND_SETTINGS, LOST_FORM, LOST_OWN_CHORDS, LOST_RIFFS, LOST_TUNE_TAKES, SCALE_TYPES, genre_names, genre_title,
 )
-from llamatron.music.note import ROOT_NAMES
+from llamatron.music import note
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import NOTHING
@@ -68,7 +68,7 @@ class GenreBranch(Branch):
         ]
         if choices.is_ready():
             fields += [
-                ChoiceField(page=page, label=labels.MSG_WIZARD_KEY_LABEL, choices=ROOT_NAMES, current=choices.get_root(), set=page.choosing(choices.set_root)),
+                ChoiceField(page=page, label=labels.MSG_WIZARD_KEY_LABEL, choices=note.ROOT_NAMES, current=choices.get_root(), set=page.choosing(choices.set_root)),
                 ChoiceField(page=page, label=labels.MSG_SCALE_LABEL, choices=SCALE_TYPES, names=[labels.MSG_WIZARD_SCALE_TYPE_NAMES[kind] for kind in SCALE_TYPES], current=choices.get_scale_type(),
                             shown=labels.MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()], set=page.choosing(choices.set_scale_type)),
                 # The meter is the subgenre's, so it is only shown; the length follows the sections, so stepping it chooses a longer or a shorter form.

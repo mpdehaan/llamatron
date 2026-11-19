@@ -23,7 +23,7 @@ from llamatron.macro_composer.wizard_choices import INTRO, SOLO, PLAYER_ROWS, PL
 from llamatron.composition import limits
 from llamatron.strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
 from llamatron.composition.naming import new_name
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from llamatron.tui import keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
@@ -822,7 +822,7 @@ class TestWizardKit(WizardTest):
         self.assertIn(drum, choices.kit_drums())
         self.assertIsNone(choices.piece_note(piece))
         self.assertEqual(self.wizard().cell_field().value(), marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
-        self.assertNotIn(composer_text.MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=VERSION).to_data()[Section.INSTRUMENTS])
+        self.assertNotIn(composer_text.MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS])
         # ENTER on the Note row then keeps the drum, and so does the piece's own drum.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.ENTER)
         self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (drum, None))
@@ -1578,7 +1578,7 @@ class TestWizardStart(WizardTest):
 
     def patterns_made_from(self, kept):
         """How many patterns the song made from the kept choices has."""
-        return len(WizardChoices.from_data(kept).made_setlist(name=A_SONG_NAME, version=VERSION).get_pattern_names())
+        return len(WizardChoices.from_data(kept).made_setlist(name=A_SONG_NAME, version=version.VERSION).get_pattern_names())
 
     async def test_replacing_from_scratch_keeps_the_songs_name_and_place(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()

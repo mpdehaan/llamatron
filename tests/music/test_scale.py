@@ -18,7 +18,8 @@ import unittest
 
 from fractions import Fraction
 
-from llamatron.music.note import FIRST_DEGREE, MAX_OCTAVE, Note, NoteName
+from llamatron.music import note as note_values
+from llamatron.music.note import Note, NoteName
 from llamatron.strings import errors
 from llamatron.music.scale import Scale, ScaleType
 
@@ -262,11 +263,11 @@ class TestTheNoteADegreePlays(unittest.TestCase):
             with self.subTest(degree=bad):
                 with self.assertRaises(ValueError) as refused:
                     self.C_MAJOR.note_at(degree=bad, scale_notes=0, half_steps=0, length=self.QUARTER)
-                self.assertEqual(str(refused.exception), errors.ERR_BAD_DEGREE.format(value=bad, lowest=FIRST_DEGREE))
+                self.assertEqual(str(refused.exception), errors.ERR_BAD_DEGREE.format(value=bad, lowest=note_values.FIRST_DEGREE))
 
     def test_a_note_outside_the_midi_range_is_refused(self):
-        high = Scale(root=Note(name=NoteName.C, octave_number=MAX_OCTAVE), typ=ScaleType.MAJOR)
-        self.assertEqual(self.at(high, degree=5), f'G{MAX_OCTAVE}')
+        high = Scale(root=Note(name=NoteName.C, octave_number=note_values.MAX_OCTAVE), typ=ScaleType.MAJOR)
+        self.assertEqual(self.at(high, degree=5), f'G{note_values.MAX_OCTAVE}')
         with self.assertRaises(ValueError):
             high.note_at(degree=6, scale_notes=0, half_steps=0, length=self.QUARTER)
 

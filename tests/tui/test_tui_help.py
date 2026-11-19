@@ -29,7 +29,8 @@ from llamatron.tui.screens.shared.page import PROGRAM_NAME
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
-from llamatron.support.version import BUILD_DATE, BUILD_TIME, build_year, VERSION
+from llamatron.support import version
+from llamatron.support.version import build_year
 from llamatron.strings import about, labels, legends, marks
 from llamatron.tui import keybindings
 
@@ -166,7 +167,7 @@ class TestAboutDialog(UITest):
             text = self.text()
             self.assertIn(about.MSG_COW_BUBBLE_TEXT.format(text=PROGRAM_NAME), text)
             self.assertIn(about.MSG_COW[-1].strip(), text)
-            self.assertIn(about.MSG_ABOUT_VERSION.format(version=VERSION, date=BUILD_DATE, time=BUILD_TIME), text)
+            self.assertIn(about.MSG_ABOUT_VERSION.format(version=version.VERSION, date=version.BUILD_DATE, time=version.BUILD_TIME), text)
             self.assertIn(about.MSG_ABOUT_WEB, text)
             self.assertIn(about.MSG_ABOUT_BLOG, text)
             self.assertIn(about.MSG_ABOUT_MORE.format(site=about.MSG_SITE), text)
@@ -231,6 +232,6 @@ class TestAboutDialog(UITest):
         await self.press(Key.ENTER)
 
     async def test_the_build_date_is_a_date_and_the_year_comes_from_it(self):
-        self.assertRegex(BUILD_DATE, DATE_PATTERN)
-        self.assertRegex(BUILD_TIME, TIME_PATTERN)
-        self.assertEqual(build_year(), BUILD_DATE[:len(build_year())])
+        self.assertRegex(version.BUILD_DATE, DATE_PATTERN)
+        self.assertRegex(version.BUILD_TIME, TIME_PATTERN)
+        self.assertEqual(build_year(), version.BUILD_DATE[:len(build_year())])

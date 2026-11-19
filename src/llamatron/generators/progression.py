@@ -37,8 +37,10 @@ from llamatron.composition.named_scale import scale_type_called
 from llamatron.generators.arp import along_scale
 from llamatron.generators.base import ClipGenerator
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.music.sound import CHORD, DEGREE, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTE, NOTES, PARTS, PHRASE, Sound
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
+from llamatron.support import length
+from llamatron.support.length import Length
 
 HALF_STEPS_PER_OCTAVE = 12
 ZERO_OFFSET = 0
@@ -75,29 +77,29 @@ class Progression(ClipGenerator):
     def _generate(self, clip):
         scale = clip.get_scale()
         result = []
-        now = ZERO
+        now = length.ZERO
         for sound in clip.resolved_sounds():
             place = self.chord_at(Length.rational(now))
             result.append(self._moved(sound=sound, place=place, scale=scale))
-            now = Length.add(now, sound[LENGTH])
+            now = Length.add(now, sound[sound_values.LENGTH])
         return result, clip.get_length()
 
     def _moved(self, *, sound, place, scale):
         """Return a sound moved to one chord of the progression."""
-        kind = sound[KIND]
-        if kind == DEGREE and scale is not None:
+        kind = sound[sound_values.KIND]
+        if kind == sound_values.DEGREE and scale is not None:
             return self._moved(sound=Sound.settled(sound, scale), place=place, scale=scale)
-        if kind == NOTE:
+        if kind == sound_values.NOTE:
             return self._moved_note(note=sound, place=place, scale=scale)
-        if kind == CHORD:
-            notes = [self._moved_note(note=note, place=place, scale=scale) for note in sound[NOTES]]
+        if kind == sound_values.CHORD:
+            notes = [self._moved_note(note=note, place=place, scale=scale) for note in sound[sound_values.NOTES]]
             if self._tensions[place]:
                 notes = _with_tensions(notes=notes, tensions=self._tensions[place])
             return Sound.inverted(Sound.chord(notes), self._inversions[place])
-        if kind == HELD:
-            return (HELD, sound[LENGTH], self._moved(sound=sound[HELD_SOUND], place=place, scale=scale))
-        if kind == PHRASE:
-            return (PHRASE, sound[LENGTH], tuple(self._moved(sound=part, place=place, scale=scale) for part in sound[PARTS]))
+        if kind == sound_values.HELD:
+            return (sound_values.HELD, sound[sound_values.LENGTH], self._moved(sound=sound[sound_values.HELD_SOUND], place=place, scale=scale))
+        if kind == sound_values.PHRASE:
+            return (sound_values.PHRASE, sound[sound_values.LENGTH], tuple(self._moved(sound=part, place=place, scale=scale) for part in sound[sound_values.PARTS]))
         return sound
 
     def _moved_note(self, *, note, place, scale):
@@ -144,7 +146,7 @@ class Progression(ClipGenerator):
 def _place_in(*, note, scale):
     """Return which note of a scale's octave, counted from 0, a note is at or just above, and how many half steps above it."""
     shape = scale.get_type().value
-    within = (note[MIDI] - scale.get_root().get_midi_number()) % HALF_STEPS_PER_OCTAVE
+    within = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % HALF_STEPS_PER_OCTAVE
     place = max(index for index, step in enumerate(shape) if step <= within)
     return place, within - shape[place]
 
@@ -159,11 +161,11 @@ def _carried(*, note, scale, drawn_from):
 
 def _with_tensions(*, notes, tensions):
     """Return a chord's notes with its tensions added above its lowest note, each left out where a note of the chord already has its pitch or it would leave the MIDI range."""
-    lowest = min(notes, key=lambda note: note[MIDI])
-    held = {note[MIDI] % HALF_STEPS_PER_OCTAVE for note in notes}
+    lowest = min(notes, key=lambda note: note[sound_values.MIDI])
+    held = {note[sound_values.MIDI] % HALF_STEPS_PER_OCTAVE for note in notes}
     result = list(notes)
     for tension in tensions:
-        if (lowest[MIDI] + TENSIONS[tension]) % HALF_STEPS_PER_OCTAVE in held:
+        if (lowest[sound_values.MIDI] + TENSIONS[tension]) % HALF_STEPS_PER_OCTAVE in held:
             continue
         try:
             result.append(Sound.half_step(lowest, TENSIONS[tension]))

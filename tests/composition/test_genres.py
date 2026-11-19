@@ -23,7 +23,7 @@ from llamatron.composition.file_format import Section, SongSetting
 from llamatron.composition.genres import GENRES, MASHUP, MASHUP_NAMED, SUBGENRES, VARIANTS, sensible_style, style_name, subgenres_of, variants_of
 from llamatron.macro_composer.arranger import GENRE, NAME, TEMPLATES, variants_of as variants_of_template
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names, style_of
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from tests.support.rendering import as_setlist, setlist_from_data, song_from_data
 from tests.support.song_testing import lead_data
 
@@ -160,7 +160,7 @@ class TestSongStyle(unittest.TestCase):
         choices.set_subgenre(HARD_ROCK)
         choices.set_variant(HEAVY)
         choices.set_seed(A_SEED)
-        song = choices.made_setlist(name=SONG_NAME, version=VERSION).get_song(SONG_NAME)
+        song = choices.made_setlist(name=SONG_NAME, version=version.VERSION).get_song(SONG_NAME)
         self.assertEqual(style_kept(song), (ROCK, HARD_ROCK, HEAVY))
 
 

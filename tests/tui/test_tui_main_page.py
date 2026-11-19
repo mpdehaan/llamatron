@@ -35,7 +35,7 @@ from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from llamatron.strings import labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
@@ -81,7 +81,7 @@ class TestMainPage(UITest):
         # The rule, or on a page with a theme its stripe, which is drawn in the theme's colour behind the page's caption.
         self.assertNotIn(Box.RULE * 3, self.text().splitlines()[2])
         # The version is left to the About dialog, and the length sits at the right of the song's line.
-        self.assertNotIn(VERSION, self.title_line())
+        self.assertNotIn(version.VERSION, self.title_line())
         self.assertTrue(self.song_line().rstrip().endswith(clock(self.app.screen.duration())))
         self.assertNotIn(clock(self.app.screen.duration()), self.title_line())
         # A set with no file yet is unsaved, saving makes it saved, a change gives it unsaved changes, and saving again makes it saved.

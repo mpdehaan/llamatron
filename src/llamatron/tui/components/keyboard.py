@@ -28,7 +28,8 @@ colour. chord_keys() says which keys a chord's notes are, from its root up.
 
 from llamatron.composition.named_scale import SPELLING_OCTAVE
 from llamatron.music import midi
-from llamatron.music.note import Note, SHARP_NAMES
+from llamatron.music import note
+from llamatron.music.note import Note
 from llamatron.tui.drawing import NOTHING, SPACE
 from llamatron.strings import marks
 
@@ -129,7 +130,7 @@ class Keyboard:
         keys = self.white_keys()
         characters = list(SPACE * (WHITE_ROW_INDENT + len(keys) * KEY_STRIDE))
         for place, (pitch_class, column) in enumerate(keys):
-            name = marks.MSG_ROOT_KEY_NAME.format(name=SHARP_NAMES[pitch_class]) if pitch_class == root else SHARP_NAMES[pitch_class].center(KEY_WIDTH)
+            name = marks.MSG_ROOT_KEY_NAME.format(name=note.SHARP_NAMES[pitch_class]) if pitch_class == root else note.SHARP_NAMES[pitch_class].center(KEY_WIDTH)
             if BLACK_KEY_AFTER.get(pitch_class) == root or (place > 0 and BLACK_KEY_AFTER.get(keys[place - 1][0]) == root):
                 # The root's name sits under its black key, so the white names either side make room for it.
                 name = NOTHING
@@ -173,7 +174,7 @@ class Keyboard:
 
 def one_octave_rows(pitch_class):
     """Return the three lines of one octave of keys as pieces, each a text and a KeyKind, with one key filled and its name bracketed: the keyswitch note picker's keys."""
-    black, white, names = Keyboard(root=SHARP_NAMES[pitch_class], half_steps=(), chord={pitch_class}).rows()
+    black, white, names = Keyboard(root=note.SHARP_NAMES[pitch_class], half_steps=(), chord={pitch_class}).rows()
     pieces = 1 + len(WHITE_KEYS) * 2
     width = WHITE_ROW_INDENT + len(WHITE_KEYS) * KEY_STRIDE
     return [black[:pieces], white[:pieces], [(names[0][0][:width].rstrip(), None)]]

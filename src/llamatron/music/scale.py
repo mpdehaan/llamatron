@@ -17,7 +17,8 @@
 from enum import Enum
 
 from llamatron.music import midi as midi_numbers
-from llamatron.music.note import FIRST_DEGREE, FLAT_NAMES, FLAT_SIGN, SHARP_NAMES, Note
+from llamatron.music import note
+from llamatron.music.note import Note
 from llamatron.music.sound import Sound
 from llamatron.support.length import Length
 from llamatron.strings import errors, reprs
@@ -129,10 +130,10 @@ class Scale:
         rather than making a Degree and then a copy of its note for each thing a step sets.
         """
         # bool is a subclass of int, but True is not a real degree.
-        if type(degree) is not int or degree < FIRST_DEGREE:
-            raise ValueError(errors.ERR_BAD_DEGREE.format(value=degree, lowest=FIRST_DEGREE))
+        if type(degree) is not int or degree < note.FIRST_DEGREE:
+            raise ValueError(errors.ERR_BAD_DEGREE.format(value=degree, lowest=note.FIRST_DEGREE))
         steps = self._typ.value
-        octaves, index = divmod(degree - FIRST_DEGREE + scale_notes, len(steps))
+        octaves, index = divmod(degree - note.FIRST_DEGREE + scale_notes, len(steps))
         name, octave_number = self._root.spelled_half_step(octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps)
         return Note(name=name, octave_number=octave_number, length=length, velocity=velocity, glide=glide)
 
@@ -144,11 +145,11 @@ class Scale:
         MIDI range raises what note_at raises. The degree is one a pattern or a Degree checked.
         """
         steps = self._typ.value
-        octaves, index = divmod(degree - FIRST_DEGREE + scale_notes, len(steps))
+        octaves, index = divmod(degree - note.FIRST_DEGREE + scale_notes, len(steps))
         root = self._root
         midi = root.get_midi_number() + octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps
         if midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
-            names = FLAT_NAMES if root.get_name().endswith(FLAT_SIGN) else SHARP_NAMES
+            names = note.FLAT_NAMES if root.get_name().endswith(note.FLAT_SIGN) else note.SHARP_NAMES
             return Sound.note(length=length, midi=midi, velocity=velocity, glide=glide, name=names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
         # The class says what is wrong with the note, in the words it always has.
         number = None if length is None else Length.rational(length)

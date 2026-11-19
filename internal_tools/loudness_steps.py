@@ -33,7 +33,7 @@ import sys
 from llamatron.macro_composer import loudness_steps
 from llamatron.macro_composer.song_plan import CHORUS
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'song'
 USUAL_SEED = 11
@@ -63,12 +63,12 @@ def chorus_step(*, genre, subgenre, seed):
     choices.set_genre(genre)
     choices.set_subgenre(subgenre)
     choices.set_seed(seed)
-    written = choices.written_setlist(name=A_NAME, version=VERSION)
+    written = choices.written_setlist(name=A_NAME, version=version.VERSION)
     place = first_chorus(written.get_song(A_NAME))
     if place is None:
         return None
     before = written.get_song(A_NAME).get_scenes()[place - 1].get_name()
-    return before, step_of(setlist=written, place=place), step_of(setlist=choices.made_setlist(name=A_NAME, version=VERSION), place=place)
+    return before, step_of(setlist=written, place=place), step_of(setlist=choices.made_setlist(name=A_NAME, version=version.VERSION), place=place)
 
 
 def subgenres_of(genre):

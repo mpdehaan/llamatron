@@ -154,9 +154,9 @@ def make_wizard_song(arguments):
     names, or one beside the song file, named after it."""
     # Imported here so that opening a set or exporting doesn't load the MacroComposer.
     from llamatron.macro_composer.wizard_file import made_of_file
-    from llamatron.support.version import VERSION
+    from llamatron.support import version
     path = arguments.out or os.path.join(os.path.dirname(arguments.wizard), MADE_SET_NAME.format(file_stem(arguments.wizard)))
-    made_of_file(path=arguments.wizard, version=VERSION, seed=arguments.seed).write_file(path)
+    made_of_file(path=arguments.wizard, version=version.VERSION, seed=arguments.seed).write_file(path)
     print(cli.MSG_CLI_MADE_SONG.format(path=path))
     return path
 

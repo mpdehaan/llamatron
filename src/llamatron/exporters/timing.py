@@ -21,12 +21,13 @@ from typing import NamedTuple
 from llamatron.composition import defaults
 from llamatron.strings import errors
 from llamatron.composition.file_format import StrumDirection
-from llamatron.support.length import ZERO, Length
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
 from llamatron.support.random_source import random_source
 from llamatron.support.rational import Rational
 from llamatron.music import midi
-from llamatron.music.sound import CHORD, DEGREE, GLIDE, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTE, NOTES, PARTS, PHRASE, REST, Sound
-from llamatron.music.sound import VELOCITY as NOTE_VELOCITY
+from llamatron.music import sound
+from llamatron.music.sound import Sound
 
 # A beat is a quarter note, which matches how MIDI and Live measure both time and tempo.
 BEATS_PER_WHOLE_NOTE = 4
@@ -69,7 +70,7 @@ class ControlEvent(NamedTuple):
 
 def _degree_to_note(*, position, scale):
     """Return the note a degree plays in a scale, leaving anything else as it is."""
-    if position[KIND] != DEGREE:
+    if position[sound.KIND] != sound.DEGREE:
         return position
     if scale is None:
         raise ValueError(errors.ERR_DEGREE_NEEDS_SCALE.format(degree=Sound.position(position)))
@@ -78,23 +79,23 @@ def _degree_to_note(*, position, scale):
 
 def _sounding_notes(position):
     """Return {MIDI number: note} for one position in a clip, keeping the longest of any pitch."""
-    kind = position[KIND]
-    if kind == REST:
+    kind = position[sound.KIND]
+    if kind == sound.REST:
         return {}
-    if kind == NOTE:
-        return {position[MIDI]: position}
-    if kind == CHORD:
+    if kind == sound.NOTE:
+        return {position[sound.MIDI]: position}
+    if kind == sound.CHORD:
         notes = {}
-        for note in position[NOTES]:
-            if note[MIDI] not in notes or Length.less(notes[note[MIDI]][LENGTH], note[LENGTH]):
-                notes[note[MIDI]] = note
+        for note in position[sound.NOTES]:
+            if note[sound.MIDI] not in notes or Length.less(notes[note[sound.MIDI]][sound.LENGTH], note[sound.LENGTH]):
+                notes[note[sound.MIDI]] = note
         return notes
     raise ValueError(errors.ERR_TIMING_NOT_A_POSITION.format(value=Sound.position(position)))
 
 
 def _glide_end(*, note, end, following):
     """Return when a note ends, running into what follows if it glides to a different pitch."""
-    if note[GLIDE] and following and note[MIDI] not in following:
+    if note[sound.GLIDE] and following and note[sound.MIDI] not in following:
         return end + GLIDE_OVERLAP
     return end
 
@@ -129,10 +130,10 @@ def timed_events(*, clip, scale, grooved=True):
             strummed += 1
         for midi_number, note, delay, fading in strings:
             start = min(onset + delay, clip_length)
-            end = _glide_end(note=note, end=onset + Length.rational(note[LENGTH]), following=following)
+            end = _glide_end(note=note, end=onset + Length.rational(note[sound.LENGTH]), following=following)
             end = min(end, clip_length)
             if end > start:
-                velocity = VELOCITY if note[NOTE_VELOCITY] is None else note[NOTE_VELOCITY]
+                velocity = VELOCITY if note[sound.VELOCITY] is None else note[sound.VELOCITY]
                 timed.append(NoteEvent(start, end, midi_number, _faded(velocity=velocity, fading=fading)))
     handed = clip.get_handed()
     if handed:
@@ -246,10 +247,10 @@ def _slots(*, positions, scale):
     each slot's is a Rational, which is what the exporters are given.
     """
     slots = []
-    start = ZERO
+    start = length_values.ZERO
     for position in positions:
         _place(position=position, start=start, scale=scale, slots=slots)
-        start = Length.add(start, position[LENGTH])
+        start = Length.add(start, position[sound.LENGTH])
     return sorted(slots, key=_slot_start)
 
 
@@ -259,13 +260,13 @@ def _slot_start(slot):
 
 def _place(*, position, start, scale, slots):
     """Add the slots a position sounds, starting at a time, including everything a held sound holds."""
-    kind = position[KIND]
-    if kind == HELD:
-        _place(position=position[HELD_SOUND], start=start, scale=scale, slots=slots)
-    elif kind == PHRASE:
-        for part in position[PARTS]:
+    kind = position[sound.KIND]
+    if kind == sound.HELD:
+        _place(position=position[sound.HELD_SOUND], start=start, scale=scale, slots=slots)
+    elif kind == sound.PHRASE:
+        for part in position[sound.PARTS]:
             _place(position=part, start=start, scale=scale, slots=slots)
-            start = Length.add(start, part[LENGTH])
+            start = Length.add(start, part[sound.LENGTH])
     else:
         slots.append((Length.rational(start), _sounding_notes(_degree_to_note(position=position, scale=scale))))
 
@@ -274,7 +275,7 @@ def _clip_length(*, clip, positions):
     """Return how long a clip lasts: its own length if it has one, or else all its positions end to end."""
     if clip.get_length() is not None:
         return Rational(clip.get_length())
-    return Length.rational(Length.total([position[LENGTH] for position in positions]))
+    return Length.rational(Length.total([position[sound.LENGTH] for position in positions]))
 
 
 def _what_follows(*, slots, place):

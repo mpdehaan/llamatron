@@ -22,7 +22,7 @@ import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from llamatron.support.files import READ_BYTES, WRITE_BYTES
+from llamatron.support import files
 from llamatron.support.rational import Rational
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
 from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_points, keyswitch_events, timed_events
@@ -252,13 +252,13 @@ class AbletonProject(WritesOneFile, Exporter):
 
         # Built before anything is written, so that an invalid clip doesn't leave a broken file.
         contents = gzip.compress(self._build(), mtime=NO_TIME_STAMP)
-        with open(self.path(), WRITE_BYTES) as file:
+        with open(self.path(), files.WRITE_BYTES) as file:
             file.write(contents)
 
     def _build(self):
         """Return the XML of the finished set as bytes."""
         self._check_song_fits_live()
-        with open(self._template, READ_BYTES) as file:
+        with open(self._template, files.READ_BYTES) as file:
             root = ET.fromstring(gzip.decompress(file.read()))
         if not _saved_by_live_12(root):
             raise ValueError(errors.ERR_NOT_LIVE_12.format(template=self._template, attributes=root.attrib))

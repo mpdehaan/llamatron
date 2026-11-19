@@ -35,7 +35,8 @@ from fractions import Fraction
 from llamatron.composition.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.generators.base import ClipGenerator
 from llamatron.music import midi as midi_numbers
-from llamatron.music.sound import CHORD, DEGREE, HELD, GLIDE, HELD_SOUND, KIND, LENGTH, MIDI, NAME, NOTE, NOTES, REST, VELOCITY, Sound
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 from llamatron.support.length import Length
 from llamatron.support.random_source import random_source
 from llamatron.support.rational import Rational
@@ -155,38 +156,38 @@ class Guitarify(ClipGenerator):
 
     def _shaped_position(self, *, sound, scale):
         """Return one position with what it plays settled into notes and, with Shape on, shaped; a rest and anything that can't be settled as they are."""
-        kind = sound[KIND]
-        if kind == HELD:
-            return (HELD, sound[LENGTH], self._shaped(sound=sound[HELD_SOUND], scale=scale))
-        if kind in (NOTE, CHORD, DEGREE):
+        kind = sound[sound_values.KIND]
+        if kind == sound_values.HELD:
+            return (sound_values.HELD, sound[sound_values.LENGTH], self._shaped(sound=sound[sound_values.HELD_SOUND], scale=scale))
+        if kind in (sound_values.NOTE, sound_values.CHORD, sound_values.DEGREE):
             return self._shaped(sound=sound, scale=scale)
         return sound
 
     def _shaped(self, *, sound, scale):
         """Return a note, chord or degree as Shape plays it."""
-        if sound[KIND] == DEGREE:
+        if sound[sound_values.KIND] == sound_values.DEGREE:
             if scale is None:
                 return sound
             sound = Sound.settled(sound, scale)
         if not self._shape:
             return sound
-        if sound[KIND] == CHORD and len(sound[NOTES]) > 1:
+        if sound[sound_values.KIND] == sound_values.CHORD and len(sound[sound_values.NOTES]) > 1:
             return self._voiced(sound)
-        note = sound[NOTES][0] if sound[KIND] == CHORD else sound
+        note = sound[sound_values.NOTES][0] if sound[sound_values.KIND] == sound_values.CHORD else sound
         if self._single_notes == SingleNotes.POWER_CHORD:
             return self._power_chord(note)
         if self._single_notes == SingleNotes.SCALE_CHORD and scale is not None:
             above = _triad_above(note=note, scale=scale)
             if above:
                 return self._voiced(Sound.chord_above(note, above))
-        if self._single_notes == SingleNotes.OCTAVE and note[MIDI] + midi_numbers.HALF_STEPS_PER_OCTAVE <= midi_numbers.MAX_MIDI_NUMBER:
+        if self._single_notes == SingleNotes.OCTAVE and note[sound_values.MIDI] + midi_numbers.HALF_STEPS_PER_OCTAVE <= midi_numbers.MAX_MIDI_NUMBER:
             return Sound.chord_above(note, OCTAVE_ABOVE)
         if self._single_notes == SingleNotes.THIRD_ABOVE and scale is not None:
             above = _triad_above(note=note, scale=scale)
-            if above and note[MIDI] + above[0] <= midi_numbers.MAX_MIDI_NUMBER:
+            if above and note[sound_values.MIDI] + above[0] <= midi_numbers.MAX_MIDI_NUMBER:
                 return Sound.chord_above(note, above[:1])
-        if self._single_notes == SingleNotes.DOUBLE_STOP and note[MIDI] >= FOURTH_BELOW:
-            return Sound.chord([_moved(note=note, midi=note[MIDI] - FOURTH_BELOW), note])
+        if self._single_notes == SingleNotes.DOUBLE_STOP and note[sound_values.MIDI] >= FOURTH_BELOW:
+            return Sound.chord([_moved(note=note, midi=note[sound_values.MIDI] - FOURTH_BELOW), note])
         return sound
 
     def _colored(self, notes):
@@ -195,34 +196,34 @@ class Guitarify(ClipGenerator):
             return notes
         root = notes[0]
         if self._color == ChordColor.ADD_9:
-            return [*notes, _moved(note=root, midi=root[MIDI] + NINTH_ABOVE)] if root[MIDI] + NINTH_ABOVE <= midi_numbers.MAX_MIDI_NUMBER else notes
+            return [*notes, _moved(note=root, midi=root[sound_values.MIDI] + NINTH_ABOVE)] if root[sound_values.MIDI] + NINTH_ABOVE <= midi_numbers.MAX_MIDI_NUMBER else notes
         colored = []
         for note in notes:
-            above = (note[MIDI] - root[MIDI]) % midi_numbers.HALF_STEPS_PER_OCTAVE
+            above = (note[sound_values.MIDI] - root[sound_values.MIDI]) % midi_numbers.HALF_STEPS_PER_OCTAVE
             if above not in THIRDS:
                 colored.append(note)
             elif self._color in THIRD_MOVED_TO:
-                colored.append(_moved(note=note, midi=note[MIDI] - above + THIRD_MOVED_TO[self._color]))
+                colored.append(_moved(note=note, midi=note[sound_values.MIDI] - above + THIRD_MOVED_TO[self._color]))
         return colored
 
     def _power_chord(self, note):
         """Return a single note as a power chord on the low strings: its root on the lowest string that can play it, the fifth and the octave above."""
         lowest = self._open[0] + (self._position if self._position != OPEN_POSITION else 0)
-        root = lowest + (note[MIDI] - lowest) % midi_numbers.HALF_STEPS_PER_OCTAVE
+        root = lowest + (note[sound_values.MIDI] - lowest) % midi_numbers.HALF_STEPS_PER_OCTAVE
         return Sound.chord([_moved(note=note, midi=root + above) for above in POWER_CHORD if root + above <= midi_numbers.MAX_MIDI_NUMBER])
 
     def _voiced(self, chord):
         """Return a chord as a hand holds it on the strings: its root first, then the rest from the lowest string up, every note as long and as loud as the chord's own."""
-        notes = self._colored(sorted(chord[NOTES], key=_pitch_of))
-        classes = tuple(sorted({note[MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE for note in notes}))
-        root = notes[0][MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE
+        notes = self._colored(sorted(chord[sound_values.NOTES], key=_pitch_of))
+        classes = tuple(sorted({note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE for note in notes}))
+        root = notes[0][sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE
         key = (classes, root)
         if key not in self._voicings:
             self._voicings[key] = self._best_voicing(classes=classes, root=root)
         pitches = self._voicings[key]
         if not pitches:
             return chord
-        by_class = {note[MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE: note for note in reversed(notes)}
+        by_class = {note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE: note for note in reversed(notes)}
         return Sound.chord([_moved(note=by_class[pitch % midi_numbers.HALF_STEPS_PER_OCTAVE], midi=pitch) for pitch in pitches])
 
     def _frets(self):
@@ -277,9 +278,9 @@ class Guitarify(ClipGenerator):
         time = NO_TIME
         before = None
         for place, sound in enumerate(sounds):
-            length = Length.rational(sound[LENGTH])
-            played = sound[HELD_SOUND] if sound[KIND] == HELD else sound
-            if played[KIND] in (NOTE, CHORD):
+            length = Length.rational(sound[sound_values.LENGTH])
+            played = sound[sound_values.HELD_SOUND] if sound[sound_values.KIND] == sound_values.HELD else sound
+            if played[sound_values.KIND] in (sound_values.NOTE, sound_values.CHORD):
                 end = time + self._sounding_length(sound=sound, played=played, length=length)
                 strokes = self._strokes_on(played=played, start=time, end=end, place=place)
                 pitches = _pitches_of(played)
@@ -287,7 +288,7 @@ class Guitarify(ClipGenerator):
                     strokes = self._approached(played=played, strokes=strokes, start=time, end=end)
                 before = pitches
                 events.extend(strokes)
-            elif played[KIND] != REST:
+            elif played[sound_values.KIND] != sound_values.REST:
                 events.append((time, PASSED_ON, sound, time + length))
             time += length
         return _positions(events=events, total=time)
@@ -297,10 +298,10 @@ class Guitarify(ClipGenerator):
         moment = min(APPROACH_LENGTH, (end - start) / 2)
         lands = start + moment
         from_fret = APPROACH_FROM[self._approach]
-        strings = played[NOTES] if played[KIND] == CHORD else [played]
-        if not all(0 <= note[MIDI] + from_fret <= midi_numbers.MAX_MIDI_NUMBER for note in strings):
+        strings = played[sound_values.NOTES] if played[sound_values.KIND] == sound_values.CHORD else [played]
+        if not all(0 <= note[sound_values.MIDI] + from_fret <= midi_numbers.MAX_MIDI_NUMBER for note in strings):
             return strokes
-        events = [(start, STRUCK, Sound.with_length(_moved(note=note, midi=note[MIDI] + from_fret), Length.of(moment)), lands) for note in strings]
+        events = [(start, STRUCK, Sound.with_length(_moved(note=note, midi=note[sound_values.MIDI] + from_fret), Length.of(moment)), lands) for note in strings]
         for begins, kind, note, stops in strokes:
             if begins < lands:
                 begins = begins + moment
@@ -312,13 +313,13 @@ class Guitarify(ClipGenerator):
 
     def _sounding_length(self, *, sound, played, length):
         """Return how long what a position plays sounds: its own length when it is held past its place, and its place's otherwise."""
-        if sound[KIND] == HELD and played[LENGTH] is not None:
-            return Length.rational(played[LENGTH])
+        if sound[sound_values.KIND] == sound_values.HELD and played[sound_values.LENGTH] is not None:
+            return Length.rational(played[sound_values.LENGTH])
         return length
 
     def _strokes_on(self, *, played, start, end, place):
         """Return the events of the strokes that fall while one note or chord sounds, from start to end."""
-        strings = sorted(played[NOTES], key=_pitch_of) if played[KIND] == CHORD else [played]
+        strings = sorted(played[sound_values.NOTES], key=_pitch_of) if played[sound_values.KIND] == sound_values.CHORD else [played]
         struck = []
         for time, cell in self._cells(start=start, end=end):
             stroke = self._bar[cell]
@@ -377,11 +378,11 @@ class Guitarify(ClipGenerator):
         if stroke in (Stroke.BASS, Stroke.MUTED_BASS):
             return strings[:1]
         if stroke == Stroke.SQUEAL:
-            high = strings[0][MIDI] + SQUEAL_ABOVE
+            high = strings[0][sound_values.MIDI] + SQUEAL_ABOVE
             return [_moved(note=strings[0], midi=high)] if high <= midi_numbers.MAX_MIDI_NUMBER else strings[-1:]
         if stroke == Stroke.ALT_BASS:
-            fifth = (strings[0][MIDI] + FIFTH) % midi_numbers.HALF_STEPS_PER_OCTAVE
-            fifths = [note for note in strings[1:] if note[MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE == fifth]
+            fifth = (strings[0][sound_values.MIDI] + FIFTH) % midi_numbers.HALF_STEPS_PER_OCTAVE
+            fifths = [note for note in strings[1:] if note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE == fifth]
             return fifths[:1] or strings[1:2] or strings[:1]
         # A string the chord lacks is the nearest it has.
         return [strings[max(len(strings) - STRING_OF[stroke], 0)]]
@@ -405,7 +406,7 @@ class Guitarify(ClipGenerator):
         if not self._let_ring:
             return following
         for time, _, _, chosen in struck[index + 1:]:
-            if any(other[MIDI] == note[MIDI] for other in chosen):
+            if any(other[sound_values.MIDI] == note[sound_values.MIDI] for other in chosen):
                 return time
         return end
 
@@ -416,32 +417,32 @@ def _on_the_grid(time):
 
 
 def _pitch_of(note):
-    return note[MIDI]
+    return note[sound_values.MIDI]
 
 
 def _pitches_of(played):
     """Return the pitches a note or chord plays, to tell one chord from the next."""
-    return tuple(sorted(note[MIDI] for note in played[NOTES])) if played[KIND] == CHORD else (played[MIDI],)
+    return tuple(sorted(note[sound_values.MIDI] for note in played[sound_values.NOTES])) if played[sound_values.KIND] == sound_values.CHORD else (played[sound_values.MIDI],)
 
 
 def _moved(*, note, midi):
     """Return a note at another pitch, spelled as Sound.half_step spells it, everything else kept."""
-    return Sound.half_step(note, midi - note[MIDI])
+    return Sound.half_step(note, midi - note[sound_values.MIDI])
 
 
 def _softened(*, note, share):
     """Return a note at a share of its loudness, never silent; a note with no velocity of its own is taken as full."""
     if share == 1:
         return note
-    velocity = FULL_VELOCITY if note[VELOCITY] is None else note[VELOCITY]
+    velocity = FULL_VELOCITY if note[sound_values.VELOCITY] is None else note[sound_values.VELOCITY]
     softer = max(round(velocity * share), LOWEST_VELOCITY)
-    return (NOTE, note[LENGTH], note[MIDI], softer, note[GLIDE], note[NAME])
+    return (sound_values.NOTE, note[sound_values.LENGTH], note[sound_values.MIDI], softer, note[sound_values.GLIDE], note[sound_values.NAME])
 
 
 def _triad_above(*, note, scale):
     """Return how many half steps above a note the third and the fifth of the chord its place in a scale builds are, or nothing for a note outside the scale."""
     steps = scale.get_type().value
-    place = (note[MIDI] - scale.get_root().get_midi_number()) % midi_numbers.HALF_STEPS_PER_OCTAVE
+    place = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % midi_numbers.HALF_STEPS_PER_OCTAVE
     if place not in steps:
         return ()
     index = steps.index(place)
@@ -485,7 +486,7 @@ def _positions(*, events, total):
             continue
         notes = [sound for _, sound, _ in groups[start]]
         played = notes[0] if len(notes) == 1 else Sound.chord(notes)
-        positions.append((HELD, Length.of(following - start), played))
+        positions.append((sound_values.HELD, Length.of(following - start), played))
         time = following
     if total > time:
         positions.append(Sound.rest(Length.of(total - time)))

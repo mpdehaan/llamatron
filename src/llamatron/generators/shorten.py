@@ -16,7 +16,8 @@
 """The Shorten generator: a row of on-or-off steps that makes the notes starting on the steps that are on play short, a share of their length with a rest after."""
 
 from llamatron.generators.glide import StepRow
-from llamatron.music.sound import LENGTH, Sound
+from llamatron.music import sound
+from llamatron.music.sound import Sound
 from llamatron.support.length import Length
 from llamatron.support.rational import Rational
 
@@ -33,5 +34,5 @@ class Shorten(StepRow):
         self._shorten = shorten
 
     def _changed(self, *, note, following):
-        short = Length.multiplied(note[LENGTH], Length.of(Rational(self._shorten, PERCENT)))
-        return [Sound.with_length(note, short), Sound.rest(Length.subtract(note[LENGTH], short))]
+        short = Length.multiplied(note[sound.LENGTH], Length.of(Rational(self._shorten, PERCENT)))
+        return [Sound.with_length(note, short), Sound.rest(Length.subtract(note[sound.LENGTH], short))]

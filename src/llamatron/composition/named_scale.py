@@ -24,7 +24,8 @@ from llamatron.composition.checks import reading
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked, check_settings, described
 from llamatron.music import midi
-from llamatron.music.note import NOTE_NAMES, Note
+from llamatron.music import note
+from llamatron.music.note import Note
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.support.revised import notes_change
 
@@ -142,7 +143,7 @@ class NamedScale(LlamaData):
 
 def is_root_note(text):
     """Return whether text names a root note, like F, C# or Bb."""
-    return isinstance(text, str) and text in NOTE_NAMES
+    return isinstance(text, str) and text in note.NOTE_NAMES
 
 
 def is_scale_type(kind):

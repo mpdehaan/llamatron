@@ -22,7 +22,7 @@ from llamatron.generators import musician
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY, USUAL_CONTRAST
 from llamatron.macro_composer.wizard_choices import AFTER_FIRST_VERSE, AFTER_THE_INTRO, FROM_THE_START, IN_BREAKDOWNS, NEVER_LAYS_OUT, WHEN_QUIET
 from llamatron.strings import labels, messages
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.musician_editor import MusicianEditor
@@ -56,7 +56,7 @@ class TestWizardPeople(WizardTest):
         return [role in choices.section_plays(place) for place in range(len(choices.section_labels()))]
 
     def patterns(self, choices):
-        return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+        return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
 
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)

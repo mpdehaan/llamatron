@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from llamatron.composition.file_format import ACCIDENTALS, FIXED_CHORDS, SCALE_CHORDS, TENSIONS, Accidental, ChordSymbol, Tension
 from llamatron.composition.named_scale import NamedScale
 from llamatron.music import midi
-from llamatron.music.note import FLAT_NAMES, SEMITONES_ABOVE_C, SHARP_NAMES
+from llamatron.music import note
 from llamatron.strings import labels, marks
 
 # The place of each of a chord's notes among the notes of a scale of seven, counted up from the chord's root at 0: the notes a
@@ -92,10 +92,10 @@ def _plain_letter_steps(within):
 def spelled_note(*, root, half_steps):
     """Return the name of the note some half steps above a root's name, on the letter a chord spells it with: Ab's third is C, A's flat ninth is Bb."""
     letter = LETTERS[(LETTERS.index(root[0]) + letter_steps(half_steps)) % len(LETTERS)]
-    pitch = (SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
-    signs = (pitch - SEMITONES_ABOVE_C[letter] + midi.HALF_STEPS_PER_OCTAVE // 2) % midi.HALF_STEPS_PER_OCTAVE - midi.HALF_STEPS_PER_OCTAVE // 2
+    pitch = (note.SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
+    signs = (pitch - note.SEMITONES_ABOVE_C[letter] + midi.HALF_STEPS_PER_OCTAVE // 2) % midi.HALF_STEPS_PER_OCTAVE - midi.HALF_STEPS_PER_OCTAVE // 2
     if abs(signs) > MOST_SIGNS:
-        return (FLAT_NAMES if marks.MSG_FLAT_SPELLED in root else SHARP_NAMES)[pitch]
+        return (note.FLAT_NAMES if marks.MSG_FLAT_SPELLED in root else note.SHARP_NAMES)[pitch]
     return letter + (marks.MSG_SHARP_SPELLED * signs if signs > 0 else marks.MSG_FLAT_SPELLED * -signs)
 
 
@@ -105,13 +105,13 @@ def root_name(*, scale, degree, accidental):
     shape = SHAPE_WITHOUT_A_SCALE if scale is None else scale.get_half_steps()
     place = (degree - 1) % len(shape)
     half_steps = shape[place] + ACCIDENTALS.get(accidental, 0)
-    pitch = (SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
+    pitch = (note.SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
     if len(shape) != PLACED_SCALE_SIZE:
-        return (FLAT_NAMES if accidental == Accidental.FLAT or marks.MSG_FLAT_SPELLED in root else SHARP_NAMES)[pitch]
+        return (note.FLAT_NAMES if accidental == Accidental.FLAT or marks.MSG_FLAT_SPELLED in root else note.SHARP_NAMES)[pitch]
     letter = LETTERS[(LETTERS.index(root[0]) + place) % len(LETTERS)]
-    signs = (pitch - SEMITONES_ABOVE_C[letter] + midi.HALF_STEPS_PER_OCTAVE // 2) % midi.HALF_STEPS_PER_OCTAVE - midi.HALF_STEPS_PER_OCTAVE // 2
+    signs = (pitch - note.SEMITONES_ABOVE_C[letter] + midi.HALF_STEPS_PER_OCTAVE // 2) % midi.HALF_STEPS_PER_OCTAVE - midi.HALF_STEPS_PER_OCTAVE // 2
     if abs(signs) > MOST_SIGNS:
-        return (FLAT_NAMES if accidental == Accidental.FLAT else SHARP_NAMES)[pitch]
+        return (note.FLAT_NAMES if accidental == Accidental.FLAT else note.SHARP_NAMES)[pitch]
     return letter + (marks.MSG_SHARP_SPELLED * signs if signs > 0 else marks.MSG_FLAT_SPELLED * -signs)
 
 

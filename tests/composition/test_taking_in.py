@@ -24,7 +24,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import SECTIONS_TAKEN_IN, Setlist
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
 from llamatron.strings import names
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from tests.support.rendering import render_song
 
 # Names the tests give songs, a seed for each, and a file's name.
@@ -49,7 +49,7 @@ def made(*, name, genre=0, subgenre=0, seed=A_SEED):
     choices.set_genre(genre_names()[genre])
     choices.set_subgenre(choices.subgenres()[subgenre])
     choices.set_seed(seed)
-    return choices.made_setlist(name=name, version=VERSION)
+    return choices.made_setlist(name=name, version=version.VERSION)
 
 
 def a_new_set():

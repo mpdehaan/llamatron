@@ -24,7 +24,7 @@ from llamatron.macro_composer import wizard_file
 from llamatron.macro_composer.song_plan import BY_PLACE, ENERGY, PLAN_OF_SONG
 from llamatron.macro_composer.wizard_choices import EXTRAS_KEPT, FORM, WizardChoices
 from llamatron.strings import errors
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 SONG_FILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'wizard_songs')
 EVERYTHING = os.path.join(SONG_FILES, 'rock_everything.yml')
@@ -58,7 +58,7 @@ def choices(data, *, seed=None):
 class TestSongFile(unittest.TestCase):
 
     def test_the_trial_song_is_made_with_every_scene_of_its_form(self):
-        made = wizard_file.made_of_file(path=EVERYTHING, version=VERSION)
+        made = wizard_file.made_of_file(path=EVERYTHING, version=version.VERSION)
         song = made.get_item(section=Section.SONGS, name=SONG_NAME)
         names = [scene.get_name() for scene in song.get_scenes()]
         self.assertIn(DRUM_SOLO, names)
@@ -66,9 +66,9 @@ class TestSongFile(unittest.TestCase):
         self.assertIn(PLAN_OF_SONG, song.get_wizard_choices()[EXTRAS_KEPT])
 
     def test_the_same_file_makes_the_same_song_and_a_seed_given_makes_another(self):
-        one = wizard_file.made_of_file(path=EVERYTHING, version=VERSION).to_data()
-        self.assertEqual(one, wizard_file.made_of_file(path=EVERYTHING, version=VERSION).to_data())
-        self.assertNotEqual(one, wizard_file.made_of_file(path=EVERYTHING, version=VERSION, seed=OTHER_SEED).to_data())
+        one = wizard_file.made_of_file(path=EVERYTHING, version=version.VERSION).to_data()
+        self.assertEqual(one, wizard_file.made_of_file(path=EVERYTHING, version=version.VERSION).to_data())
+        self.assertNotEqual(one, wizard_file.made_of_file(path=EVERYTHING, version=version.VERSION, seed=OTHER_SEED).to_data())
 
     def test_a_song_is_named_by_the_file_where_it_gives_no_name(self):
         self.assertEqual(wizard_file.song_name(data=BASIC, path=A_PATH), FILE_NAME)
@@ -77,7 +77,7 @@ class TestSongFile(unittest.TestCase):
     def test_a_song_is_planned_unless_the_file_says_otherwise(self):
         self.assertIn(PLAN_OF_SONG, choices(BASIC).get_song_extras())
         self.assertEqual(choices({**BASIC, PLAN_OF_SONG: False}).get_song_extras(), {})
-        self.assertNotEqual(choices(BASIC).made_setlist(name=FILE_NAME, version=VERSION).to_data(), choices({**BASIC, PLAN_OF_SONG: False}).made_setlist(name=FILE_NAME, version=VERSION).to_data())
+        self.assertNotEqual(choices(BASIC).made_setlist(name=FILE_NAME, version=version.VERSION).to_data(), choices({**BASIC, PLAN_OF_SONG: False}).made_setlist(name=FILE_NAME, version=version.VERSION).to_data())
 
     def test_a_written_form_is_the_songs_own_and_what_a_place_is_given_goes_to_the_plan(self):
         form = [VERSE, {KIND: CHORUS, ENERGY: AN_ENERGY}, ENDING]

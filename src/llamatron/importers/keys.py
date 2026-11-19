@@ -28,7 +28,7 @@ from llamatron.composition.file_format import Accidental
 from llamatron.composition import limits
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music import midi
-from llamatron.music.note import FLAT_NAMES, FLAT_SIGN, ROOT_NAMES, SHARP_NAMES
+from llamatron.music import note as note_values
 from llamatron.music.scale import ScaleType
 
 # A key signature as mido writes it ends in m for a minor key.
@@ -62,19 +62,19 @@ class Key(NamedTuple):
 
 def pitch_class_of(name):
     """Return a note name's place in the octave, 0 for C, whether it is spelled with a sharp or a flat."""
-    if name in SHARP_NAMES:
-        return SHARP_NAMES.index(name)
-    return FLAT_NAMES.index(name)
+    if name in note_values.SHARP_NAMES:
+        return note_values.SHARP_NAMES.index(name)
+    return note_values.FLAT_NAMES.index(name)
 
 
 def key_of_signature(text):
     """Return the key a MIDI key signature names, like Bbm, with a root a scale can have: Cb, which no scale has, is B."""
     minor = text.endswith(MINOR_MARK)
     root = text[:-len(MINOR_MARK)] if minor else text
-    flats = root.endswith(FLAT_SIGN) or text in FLAT_KEYS
-    if root not in ROOT_NAMES:
+    flats = root.endswith(note_values.FLAT_SIGN) or text in FLAT_KEYS
+    if root not in note_values.ROOT_NAMES:
         # A flat no scale has, Cb or Fb, is the white key a half step below its letter.
-        root = SHARP_NAMES[(pitch_class_of(root[0]) - 1) % midi.HALF_STEPS_PER_OCTAVE]
+        root = note_values.SHARP_NAMES[(pitch_class_of(root[0]) - 1) % midi.HALF_STEPS_PER_OCTAVE]
     kind = scale_type_name(ScaleType.MINOR if minor else ScaleType.MAJOR)
     return Key(root=root, kind=kind, flats=flats)
 
@@ -91,7 +91,7 @@ def key_of_notes(notes):
             if best is None or fit > best[0]:
                 best = (fit, names[root], kind)
     _, root, kind = best
-    return Key(root=root, kind=scale_type_name(kind), flats=root.endswith(FLAT_SIGN))
+    return Key(root=root, kind=scale_type_name(kind), flats=root.endswith(note_values.FLAT_SIGN))
 
 
 def correlation(*, first, second):
@@ -133,6 +133,6 @@ def within_octaves(*, degree, accidental, octave):
 def drum_note_of(pitch):
     """Return how a drum pattern writes a MIDI number: its letter, its sharp or None, and its octave."""
     octave, place = divmod(pitch, midi.HALF_STEPS_PER_OCTAVE)
-    name = SHARP_NAMES[place]
+    name = note_values.SHARP_NAMES[place]
     letter = name[0]
     return (letter, Accidental.SHARP if name != letter else None, octave)

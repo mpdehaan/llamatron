@@ -24,7 +24,7 @@ from llamatron.macro_composer.melody import LINE_NOTES
 from llamatron.macro_composer.notation import REST
 from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY, LONGEST_BREATH, NO_BREATH
 from llamatron.macro_composer.wizard_choices import LINE_BREATHES, LINE_OWN, LINE_PLAYER, WizardChoices
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'made'
 A_SEED = 11
@@ -50,7 +50,7 @@ def chosen(*, genre=A_GENRE, subgenre=A_SUBGENRE, plan=None):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
 
 
 def notes_of(choices, *, line, place=A_VERSE):

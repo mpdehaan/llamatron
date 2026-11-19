@@ -21,7 +21,8 @@ from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.composition import limits
 from llamatron.strings import errors, marks, messages, names
 from llamatron.composition.generator_settings import written_name
-from llamatron.music.time_signature import MAX_BEATS, MIN_BEATS, UNITS_LISTED, is_time_signature
+from llamatron.music import time_signature
+from llamatron.music.time_signature import is_time_signature
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.generators.arp import ChordOrder
 from llamatron.tui.drawing import SPACE
@@ -102,7 +103,7 @@ def ask_time_signature(*, page, title, current, then, blank_allowed):
         elif is_time_signature(text):
             then(text)
         else:
-            page.refuse(errors.ERR_TYPED_NOT_A_TIME_SIGNATURE.format(text=text, lowest=MIN_BEATS, highest=MAX_BEATS, units=UNITS_LISTED))
+            page.refuse(errors.ERR_TYPED_NOT_A_TIME_SIGNATURE.format(text=text, lowest=time_signature.MIN_BEATS, highest=time_signature.MAX_BEATS, units=time_signature.UNITS_LISTED))
     page.ask(dialog=PromptDialog(title=title, value=current), then=answered)
 
 

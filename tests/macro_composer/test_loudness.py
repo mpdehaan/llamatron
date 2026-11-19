@@ -24,7 +24,7 @@ from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS, MOST_DYNAM
 from llamatron.macro_composer.notation import ACCENT, DEGREE, GHOST, HIGHEST_VELOCITY, LEVEL, LOUD, LOWEST_VELOCITY, NONE, PEAK, PICKUP, SOFT, STEP_SIZE, STEPS, STRESS, VELOCITY, drum_rows, tune_rows
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from tests.support.ui_testing import fixed_text
 
 A_NAME = 'a_song'
@@ -66,7 +66,7 @@ def chosen(*, genre=ROCK, subgenre=HARD_ROCK):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.PATTERNS]
+    return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
 
 
 def sounded(pattern):

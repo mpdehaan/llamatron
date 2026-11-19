@@ -36,7 +36,8 @@ from llamatron.generators.arp import Arp, ChordOrder, OctaveJump, along_scale
 from llamatron.music.chord import Chord
 from llamatron.generators.blend import BlendMode
 from llamatron.music import midi
-from llamatron.music.note import MAX_OCTAVE, Note, NoteName, Rest
+from llamatron.music import note as note_values
+from llamatron.music.note import Note, NoteName, Rest
 from llamatron.music.sound import Sound
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
@@ -144,7 +145,7 @@ class TestTracks(unittest.TestCase):
         data = song_data()
         tune = data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.PATTERN]
         steps = data[Section.PATTERNS][tune][PatternSetting.STEPS]
-        data[Section.PATTERNS][tune][Row.OCTAVE] = [MAX_OCTAVE] * steps
+        data[Section.PATTERNS][tune][Row.OCTAVE] = [note_values.MAX_OCTAVE] * steps
         self.assertEqual(pitches(lead_clip(data)), [120, 124, 127])
         data[Section.TRACKS][LEAD][TrackSetting.TRANSPOSE] = 2
         moved = pitches(lead_clip(data))

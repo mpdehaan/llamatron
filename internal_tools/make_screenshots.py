@@ -34,7 +34,7 @@ from dataclasses import dataclass
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from llamatron.tui.key_table import first_key
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
@@ -216,7 +216,7 @@ async def take(shot):
         for name in shot.keys:
             await pilot.press(name if isinstance(name, str) else first_key(name))
             await pilot.pause()
-        svg = app.export_screenshot(title=TITLE).replace(VERSION, VERSION_PLACEHOLDER)
+        svg = app.export_screenshot(title=TITLE).replace(version.VERSION, VERSION_PLACEHOLDER)
         return re.sub(HASHED_ID, SHOT_ID.format(name=shot.name), svg)
 
 

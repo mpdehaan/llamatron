@@ -31,7 +31,7 @@ from llamatron.macro_composer.wizard_choices import BRIDGE, DRUM_SOLO_KIND, ONE_
 from llamatron.composition import limits
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'made'
 A_DEGREE = 7
@@ -137,7 +137,7 @@ class TestWizardSongPlan(unittest.TestCase):
         self.assertEqual(again.get_contrast(), A_HIGH_CONTRAST)
         self.assertFalse(again.has_phrasing())
         self.assertEqual(again.get_hook_behavior(), hook_writing.CHANT)
-        self.assertEqual(again.made_setlist(name=A_NAME, version=VERSION).to_data(), choices.made_setlist(name=A_NAME, version=VERSION).to_data())
+        self.assertEqual(again.made_setlist(name=A_NAME, version=version.VERSION).to_data(), choices.made_setlist(name=A_NAME, version=version.VERSION).to_data())
 
     def test_switching_the_plan_off_or_choosing_another_genre_drops_it(self):
         choices = chosen()
@@ -152,7 +152,7 @@ class TestWizardSongPlan(unittest.TestCase):
         self.assertFalse(choices.has_song_plan())
 
     def test_a_planned_song_differs_from_the_song_without_a_plan(self):
-        self.assertNotEqual(chosen().made_setlist(name=A_NAME, version=VERSION).to_data(), chosen(plan=False).made_setlist(name=A_NAME, version=VERSION).to_data())
+        self.assertNotEqual(chosen().made_setlist(name=A_NAME, version=version.VERSION).to_data(), chosen(plan=False).made_setlist(name=A_NAME, version=version.VERSION).to_data())
 
 
 class TestWizardPhrasing(unittest.TestCase):
@@ -271,7 +271,7 @@ class TestWizardSectionOwn(unittest.TestCase):
     __slots__ = ()
 
     def scene(self, *, choices, place=A_VERSE):
-        return choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME).get_scenes()[place]
+        return choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME).get_scenes()[place]
 
     def test_a_section_has_fields_of_its_own_only_under_a_plan_and_a_join_only_where_it_leaves(self):
         # Without a plan a section still takes chords, a tempo, a key and a scale of its own, in every genre.
@@ -307,13 +307,13 @@ class TestWizardSectionOwn(unittest.TestCase):
         choices.set_section_own(place=A_VERSE, field=TEMPO_OF_PLACE, value=A_SLOW_TEMPO)
         self.assertEqual(self.scene(choices=choices).get_tempo_setting(), A_SLOW_TEMPO)
         choices.set_section_own(place=A_VERSE, field=TEMPO_END_OF_PLACE, value=A_FAST_TEMPO)
-        data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
+        data = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
         # The scene keeps its tempo and ramps in to the tempo at its end, over every bar of the section.
         self.assertEqual((data[SceneSetting.TEMPO], data[SceneSetting.TEMPO_IN_END]), (A_SLOW_TEMPO, A_FAST_TEMPO))
         self.assertEqual(data[SceneSetting.TEMPO_IN_OVER], choices.section_bars(A_VERSE))
         choices.set_section_own(place=A_VERSE, field=ROOT_OF_PLACE, value=ANOTHER_ROOT)
         choices.set_section_own(place=A_VERSE, field=TYPE_OF_PLACE, value=MINOR)
-        made = choices.made_setlist(name=A_NAME, version=VERSION)
+        made = choices.made_setlist(name=A_NAME, version=version.VERSION)
         name = made.get_song(A_NAME).get_scenes()[A_VERSE].get_scale_name()
         scale = made.to_data()[Section.SCALES][name]
         self.assertEqual((scale[ROOT_OF_PLACE], scale[TYPE_OF_PLACE]), (ANOTHER_ROOT, MINOR))
@@ -323,7 +323,7 @@ class TestWizardSectionOwn(unittest.TestCase):
     def test_a_tempo_at_the_end_alone_starts_from_the_song_s_tempo(self):
         choices = chosen()
         choices.set_section_own(place=A_VERSE, field=TEMPO_END_OF_PLACE, value=A_SLOW_TEMPO)
-        data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
+        data = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
         self.assertEqual(data[SceneSetting.TEMPO_IN_END], A_SLOW_TEMPO)
         self.assertNotIn(SceneSetting.TEMPO, data)
 
@@ -339,26 +339,26 @@ class TestWizardSectionOwn(unittest.TestCase):
 
     def test_chords_are_typed_as_degrees_and_change_the_song(self):
         choices = chosen()
-        before = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        before = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()
         choices.set_section_own(place=A_VERSE, field=CHORDS, value=SOME_CHORDS)
         self.assertEqual(chords_as_text(choices.section_own(place=A_VERSE, field=CHORDS)), SOME_CHORDS)
-        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), before)
+        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=version.VERSION).to_data(), before)
         for wrong in NOT_CHORDS:
             with self.assertRaises(ValueError):
                 chords_from_text(wrong)
 
     def test_two_chords_joined_by_a_dash_share_a_bar_and_are_played_by_the_half_bar(self):
         choices = chosen()
-        usual = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        usual = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()
         choices.set_section_own(place=A_VERSE, field=CHORDS, value=CHORDS_SHARING_A_BAR)
         own = choices.section_own(place=A_VERSE, field=CHORDS)
         self.assertEqual(chords_as_text(own), CHORDS_SHARING_A_BAR)
         self.assertTrue(arranger_shares_a_bar(own[-1]))
-        shared = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+        shared = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()
         self.assertNotEqual(shared, usual)
         # The same bars with their first chords alone are another song.
         choices.set_section_own(place=A_VERSE, field=CHORDS, value=THE_BARS_FIRST_CHORDS)
-        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=VERSION).to_data(), shared)
+        self.assertNotEqual(choices.made_setlist(name=A_NAME, version=version.VERSION).to_data(), shared)
 
     def test_shared_bars_are_refused_past_what_a_progression_holds_and_three_never_share(self):
         too_many = ' '.join([CHORDS_SHARING_A_BAR] * limits.MAX_PROGRESSION_CHORDS)
@@ -383,7 +383,7 @@ class TestWizardSectionOwn(unittest.TestCase):
             choices.set_section_own(place=A_VERSE, field=TEMPO_OF_PLACE, value=A_SLOW_TEMPO)
             choices.set_section_own(place=A_VERSE, field=ROOT_OF_PLACE, value=ANOTHER_ROOT)
             choices.set_section_own(place=A_VERSE, field=TYPE_OF_PLACE, value=MINOR)
-            made = choices.made_setlist(name=A_NAME, version=VERSION)
+            made = choices.made_setlist(name=A_NAME, version=version.VERSION)
             scene = made.get_song(A_NAME).get_scenes()[A_VERSE]
             self.assertEqual(scene.get_tempo_setting(), A_SLOW_TEMPO)
             scale = made.to_data()[Section.SCALES][scene.get_scale_name()]
@@ -391,7 +391,7 @@ class TestWizardSectionOwn(unittest.TestCase):
             # The sections beside it keep the song's.
             self.assertIsNone(made.get_song(A_NAME).get_scenes()[A_VERSE + 1].get_tempo_setting())
             again = WizardChoices.from_data(choices.to_data())
-            self.assertEqual(again.made_setlist(name=A_NAME, version=VERSION).to_data(), made.to_data())
+            self.assertEqual(again.made_setlist(name=A_NAME, version=version.VERSION).to_data(), made.to_data())
 
     def test_what_a_section_was_given_goes_with_it_when_moved_and_copied_and_is_kept(self):
         choices = chosen()
@@ -403,7 +403,7 @@ class TestWizardSectionOwn(unittest.TestCase):
             self.assertEqual(choices.section_own(place=place, field=ENERGY), HIGHEST_ENERGY)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.to_data(), choices.to_data())
-        self.assertEqual(again.made_setlist(name=A_NAME, version=VERSION).to_data(), choices.made_setlist(name=A_NAME, version=VERSION).to_data())
+        self.assertEqual(again.made_setlist(name=A_NAME, version=version.VERSION).to_data(), choices.made_setlist(name=A_NAME, version=version.VERSION).to_data())
         choices.remove_section(A_VERSE)
         choices.remove_section(A_VERSE)
         self.assertIsNone(choices.section_own(place=A_VERSE, field=ENERGY))
@@ -445,7 +445,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         self.assertFalse(choices.section_from_plan(place=A_VERSE, field=RISES))
         choices.set_section_own(place=A_VERSE, field=RISES, value=True)
         self.assertIn(composer_text.MSG_PLAN_LEAVES_TAIL.format(BUILD), choices.said_of_sections()[A_VERSE])
-        scene = choices.made_setlist(name=A_NAME, version=VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
+        scene = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.SONGS][A_NAME][Section.SCENES][A_VERSE]
         self.assertLess(scene[VelocitySetting.IN_START], scene[VelocitySetting.LEVEL])
         # The climb takes every bar of the section.
         self.assertEqual(scene[VelocitySetting.IN_OVER], choices.section_bars(A_VERSE))
@@ -459,7 +459,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
             choices.set_intro_hook(role)
             self.assertEqual(choices.get_intro_hook(), role)
             self.assertEqual(WizardChoices.from_data(choices.to_data()).get_intro_hook(), role)
-            song = choices.made_setlist(name=A_NAME, version=VERSION).get_song(A_NAME)
+            song = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)
             self.assertIsNotNone(song.get_scenes()[THE_INTRO].get_clip_slot(role))
         choices.set_intro_hook(None)
         self.assertIsNone(choices.get_intro_hook())
@@ -483,7 +483,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
                 choices.set_intro_pattern(pattern=own)
                 self.assertTrue(choices.intro_is_own())
                 self.assertEqual(choices.intro_pattern()[Row.DEGREE], own[Row.DEGREE])
-                setlist = choices.made_setlist(name=A_NAME, version=VERSION)
+                setlist = choices.made_setlist(name=A_NAME, version=version.VERSION)
                 slot = setlist.get_song(A_NAME).get_scenes()[THE_INTRO].get_clip_slot(role)
                 self.assertEqual(setlist.get_pattern(slot.get_pattern_name()).to_data()[Row.DEGREE], own[Row.DEGREE])
                 again = WizardChoices.from_data(choices.to_data())
@@ -516,7 +516,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         own[Row.DEGREE][step] = A_DEGREE if own[Row.DEGREE][step] != A_DEGREE else ANOTHER_DEGREE
         choices.set_solo_pattern(place=last, pattern=own)
         self.assertEqual([choices.solo_is_own(place) for place in places], [place == last for place in places])
-        setlist = choices.made_setlist(name=A_NAME, version=VERSION)
+        setlist = choices.made_setlist(name=A_NAME, version=version.VERSION)
         scenes = setlist.get_song(A_NAME).get_scenes()
         played = [setlist.get_pattern(scenes[place].get_clip_slot(choices.solo_player()).get_pattern_name()).to_data()[Row.DEGREE] for place in places]
         self.assertEqual(played[-1], own[Row.DEGREE])
@@ -594,7 +594,7 @@ class TestWizardFormQuestions(unittest.TestCase):
         for form in sorted(forms)[::A_FEW_FORMS_APART]:
             made = chosen()
             made.set_own_sections(sections=[{KIND_OF_SECTION: kind} for kind in form])
-            made.made_setlist(name=A_NAME, version=VERSION)
+            made.made_setlist(name=A_NAME, version=version.VERSION)
 
     def test_the_answers_become_the_song_s_own_form_and_a_wrong_answer_changes_nothing(self):
         choices = chosen(plan=False)

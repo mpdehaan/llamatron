@@ -18,7 +18,8 @@
 import unittest
 from fractions import Fraction
 
-from llamatron.music.time_signature import MAX_BEATS, MIN_BEATS, TimeSignature, is_time_signature
+from llamatron.music import time_signature
+from llamatron.music.time_signature import TimeSignature, is_time_signature
 
 # Time signatures the tests use, written as a file writes them.
 COMMON_TIME = '4/4'
@@ -49,10 +50,10 @@ class TestTimeSignature(unittest.TestCase):
         self.assertNotEqual(signature, TimeSignature.from_text(WALTZ))
 
     def test_the_limits_are_the_constants(self):
-        self.assertTrue(is_time_signature(f'{MIN_BEATS}/4'))
-        self.assertTrue(is_time_signature(f'{MAX_BEATS}/4'))
-        self.assertFalse(is_time_signature(f'{MAX_BEATS + 1}/4'))
-        self.assertFalse(is_time_signature(f'{MIN_BEATS - 1}/4'))
+        self.assertTrue(is_time_signature(f'{time_signature.MIN_BEATS}/4'))
+        self.assertTrue(is_time_signature(f'{time_signature.MAX_BEATS}/4'))
+        self.assertFalse(is_time_signature(f'{time_signature.MAX_BEATS + 1}/4'))
+        self.assertFalse(is_time_signature(f'{time_signature.MIN_BEATS - 1}/4'))
 
     def test_it_refuses_what_is_not_a_time_signature(self):
         for text in NOT_SIGNATURES:

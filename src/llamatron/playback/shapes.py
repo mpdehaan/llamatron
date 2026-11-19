@@ -30,8 +30,10 @@ from typing import NamedTuple
 from llamatron.composition import defaults
 from llamatron.composition.file_format import ShapeThen
 from llamatron.music import midi
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTE, NOTES, PARTS, PHRASE, REST, VELOCITY, Sound
-from llamatron.support.length import ZERO, Length
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
 from llamatron.support.rational import Rational
 
 FULL = 100
@@ -122,20 +124,20 @@ def reshaped(*, sounds, density=None, swell=None, articulate=None, velocity=None
     span is the clip's length, which a note's lengthening never reaches past.
     """
     starts = []
-    now = ZERO
+    now = length_values.ZERO
     for sound in sounds:
         starts.append(now)
-        now = Length.add(now, sound[LENGTH])
-    sounding = [place for place, sound in enumerate(sounds) if sound[KIND] != REST]
+        now = Length.add(now, sound[sound_values.LENGTH])
+    sounding = [place for place, sound in enumerate(sounds) if sound[sound_values.KIND] != sound_values.REST]
     result = []
     for place, sound in enumerate(sounds):
-        if sound[KIND] == REST:
+        if sound[sound_values.KIND] == sound_values.REST:
             result.append(sound)
             continue
         time = Length.rational(starts[place])
         level = strength(time=time, bar=bar, beat=beat)
         if density is not None and not plays_at(density=percent_at(values=density[0], time=time + density[2], span=density[1]), level=level):
-            result.append(Sound.rest(sound[LENGTH]))
+            result.append(Sound.rest(sound[sound_values.LENGTH]))
             continue
         if swell is not None:
             scale = percent_at(values=swell[0], time=time + swell[2], span=swell[1])
@@ -160,30 +162,30 @@ def _rational(number):
 
 def _with_velocity(*, sound, scale):
     """Return a sound with every note's velocity scaled by a percentage, held from 1 to 127."""
-    kind = sound[KIND]
-    if kind == NOTE:
-        velocity = defaults.DEFAULT_VELOCITY if sound[VELOCITY] is None else sound[VELOCITY]
+    kind = sound[sound_values.KIND]
+    if kind == sound_values.NOTE:
+        velocity = defaults.DEFAULT_VELOCITY if sound[sound_values.VELOCITY] is None else sound[sound_values.VELOCITY]
         scaled = max(min(round(velocity * scale / FULL), midi.MAX_VELOCITY), midi.MIN_VELOCITY)
-        return sound[:VELOCITY] + (scaled,) + sound[VELOCITY + 1:]
-    if kind == CHORD:
-        return (CHORD, sound[LENGTH], tuple(_with_velocity(sound=note, scale=scale) for note in sound[NOTES]))
-    if kind == HELD:
-        return (HELD, sound[LENGTH], _with_velocity(sound=sound[HELD_SOUND], scale=scale))
-    if kind == PHRASE:
-        return (PHRASE, sound[LENGTH], tuple(_with_velocity(sound=part, scale=scale) for part in sound[PARTS]))
+        return sound[:sound_values.VELOCITY] + (scaled,) + sound[sound_values.VELOCITY + 1:]
+    if kind == sound_values.CHORD:
+        return (sound_values.CHORD, sound[sound_values.LENGTH], tuple(_with_velocity(sound=note, scale=scale) for note in sound[sound_values.NOTES]))
+    if kind == sound_values.HELD:
+        return (sound_values.HELD, sound[sound_values.LENGTH], _with_velocity(sound=sound[sound_values.HELD_SOUND], scale=scale))
+    if kind == sound_values.PHRASE:
+        return (sound_values.PHRASE, sound[sound_values.LENGTH], tuple(_with_velocity(sound=part, scale=scale) for part in sound[sound_values.PARTS]))
     return sound
 
 
 def _with_length(*, sound, share, room):
     """Return the positions a sound becomes when it sounds for a share of its written length, held past its place if longer but never past room, the time until the track's next note."""
-    if sound[KIND] == PHRASE:
+    if sound[sound_values.KIND] == sound_values.PHRASE:
         return [sound]
-    held = sound[KIND] == HELD
-    played = sound[HELD_SOUND] if held else sound
-    written = played[LENGTH] if played[KIND] != CHORD else Length.longest([note[LENGTH] for note in played[NOTES]])
-    place = sound[LENGTH]
+    held = sound[sound_values.KIND] == sound_values.HELD
+    played = sound[sound_values.HELD_SOUND] if held else sound
+    written = played[sound_values.LENGTH] if played[sound_values.KIND] != sound_values.CHORD else Length.longest([note[sound_values.LENGTH] for note in played[sound_values.NOTES]])
+    place = sound[sound_values.LENGTH]
     wanted = Length.multiplied(written, Length.of(_rational(share) / FULL))
-    lasting = Length.shorter(wanted, room) if Length.less(ZERO, room) else wanted
+    lasting = Length.shorter(wanted, room) if Length.less(length_values.ZERO, room) else wanted
     if lasting == place:
         return [Sound.lasting(played, lasting)]
     if Length.less(lasting, place):

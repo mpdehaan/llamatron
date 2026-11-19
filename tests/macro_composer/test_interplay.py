@@ -23,7 +23,7 @@ from llamatron.macro_composer.melody import GRID
 from llamatron.macro_composer.notation import LINES, REST, STEPS
 from llamatron.macro_composer.wizard_choices import BESIDE_KEPT, BY, WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 ROCK = 'rock'
 BLUES = 'blues'
@@ -305,6 +305,6 @@ class TestWizardInterplayChoices(unittest.TestCase):
         songs = []
         for busy in range(interplay.LEAST_BUSY, interplay.MOST_BUSY + 1):
             choices.set_fills_busy(busy)
-            song = choices.made_setlist(name=SONG_NAME, version=VERSION).to_data()
+            song = choices.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()
             self.assertNotIn(song, songs, busy)
             songs.append(song)

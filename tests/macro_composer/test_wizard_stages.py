@@ -24,7 +24,7 @@ from llamatron.macro_composer.song_plan import FADE_LEVEL, FADE_OVER, FADED, FAD
 from llamatron.macro_composer.wizard_choices import (
     DRUM_FILL_IN, DRUMS_FIRST, ENDS, FADE_IN, FADE_OUT, FULL_BAND, HARD_STOP, HELD_CHORD, LAYERS, ONE_PLAYER_ALONE, ONE_PLAYER_FIRST, OUTRO_KIND, REPEAT_AND_FADE, SLOWS_DOWN, STARTS, STRAIGHT_IN, STRIPS_DOWN, WizardChoices,
 )
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 A_NAME = 'made'
 A_SEED = 11
@@ -60,7 +60,7 @@ def subgenres_of(genre):
 
 
 def made(choices):
-    return choices.made_setlist(name=A_NAME, version=VERSION)
+    return choices.made_setlist(name=A_NAME, version=version.VERSION)
 
 
 class TestWizardStarts(unittest.TestCase):

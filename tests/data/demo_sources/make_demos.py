@@ -35,7 +35,7 @@ from pathlib import Path
 import mido
 
 from llamatron.music.scale import ScaleType
-from llamatron.music.note import SEMITONES_ABOVE_C
+from llamatron.music import note as note_values
 from llamatron.composition.file_format import PATTERN_ROWS
 from llamatron.composition.row_descriptions import ROW_DESCRIPTIONS
 from llamatron.composition.setlist import as_setlist_data
@@ -51,7 +51,7 @@ SOURCES = os.path.dirname(os.path.abspath(__file__))
 # The public domain MIDI files, which people can import too.
 MIDI_FILES = os.path.join(SOURCES, os.pardir, os.pardir, os.pardir, 'examples', 'midi')
 # Half steps above C for each note name, from the note names llamatron defines.
-PCS = SEMITONES_ABOVE_C
+PCS = note_values.SEMITONES_ABOVE_C
 
 
 def midi(name):

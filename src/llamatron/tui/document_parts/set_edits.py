@@ -26,7 +26,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.groove import new_groove
 from llamatron.composition.instrument import Instrument
 from llamatron.composition.generator_settings import GENERATOR_SETTINGS, ProgressionSetting
-from llamatron.music.note import FLAT_SIGN
+from llamatron.music import note
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.sections import GENERATOR_KINDS
 from llamatron.importers.writing import add_imported
@@ -143,7 +143,7 @@ class SetEdits:
 
     def scale_spells_flats(self, name):
         """Return whether a scale's root is spelled with a flat, so that a note between two of its degrees is named as a flat too."""
-        return self._scale(name).get_root().endswith(FLAT_SIGN)
+        return self._scale(name).get_root().endswith(note.FLAT_SIGN)
 
     def scale_note_at(self, *, name, octave, half_steps):
         """Return the name and sounding octave of the note some half steps above a scale's root in an octave, spelled as the root is, for a piano roll row between two degrees."""

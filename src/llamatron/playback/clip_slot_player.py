@@ -22,7 +22,8 @@ from llamatron.support.length import Length
 from llamatron.support.rational import Rational
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.blend import Blend
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, NOTE, Sound
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_order import ordered_patterns
 from llamatron.playback.pattern_player import Pass, PatternPlayer
@@ -468,13 +469,13 @@ def _tied_on(*, sounds, extra):
     if not sounds:
         return sounds
     last = sounds[-1]
-    kind = last[KIND]
-    place = last[LENGTH]
-    if kind == NOTE or kind == CHORD:
+    kind = last[sound_values.KIND]
+    place = last[sound_values.LENGTH]
+    if kind == sound_values.NOTE or kind == sound_values.CHORD:
         held = Sound.held(Sound.lasting(last, Length.add(place, extra)), place)
-    elif kind == HELD and Length.at_most(place, last[HELD_SOUND][LENGTH]):
-        sound = last[HELD_SOUND]
-        held = Sound.held(Sound.lasting(sound, Length.add(sound[LENGTH], extra)), place)
+    elif kind == sound_values.HELD and Length.at_most(place, last[sound_values.HELD_SOUND][sound_values.LENGTH]):
+        sound = last[sound_values.HELD_SOUND]
+        held = Sound.held(Sound.lasting(sound, Length.add(sound[sound_values.LENGTH], extra)), place)
     else:
         return sounds
     return [*sounds[:-1], held]

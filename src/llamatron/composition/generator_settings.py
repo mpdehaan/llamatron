@@ -29,14 +29,13 @@ from llamatron.composition.file_format import (
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.strum import strum_part_settings, strum_values
 from llamatron.composition.shapes import NO_ACCENT, UNCHANGED, ShapeValues, shape_part_settings, shape_values
-from llamatron.music.note import ROOT_NAMES
+from llamatron.music import note
 from llamatron.composition import limits
 from llamatron.strings import errors
 from llamatron.composition.llama_data import LlamaData, or_default, own_copy
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE
 from llamatron.composition.setting import Checked, Choice, Flag, Text, WholeNumber, check_settings, described
-from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE
 from llamatron.support.rational import Rational
 from llamatron.generators import musician
 from llamatron.generators.follow_chords import FollowChords
@@ -139,8 +138,8 @@ def _check_scale_name(value):
 
 
 def _check_root(value):
-    if value not in ROOT_NAMES:
-        raise InvalidValue(errors.ERR_DRIFT_BAD_ROOT.format(roots=listed(ROOT_NAMES), value=value))
+    if value not in note.ROOT_NAMES:
+        raise InvalidValue(errors.ERR_DRIFT_BAD_ROOT.format(roots=listed(note.ROOT_NAMES), value=value))
 
 
 class AutoRatchetSetting:
@@ -587,8 +586,8 @@ class VoiceLeadingSettings(GeneratorSettings):
 
     GENERATOR = VoiceLeading
     SETTINGS = described(
-        WholeNumber(name=VoiceLeadingSetting.LOWEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=VoiceLeadingSetting.HIGHEST_OCTAVE, lowest=MIN_OCTAVE, highest=MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=VoiceLeadingSetting.LOWEST_OCTAVE, lowest=note.MIN_OCTAVE, highest=note.MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=VoiceLeadingSetting.HIGHEST_OCTAVE, lowest=note.MIN_OCTAVE, highest=note.MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
         Flag(name=VoiceLeadingSetting.ROOT_IN_BASS, error=errors.ERR_ROOT_IN_BASS_NOT_TRUE_OR_FALSE),
         RESTART_SETTING,
     )

@@ -36,7 +36,7 @@ from llamatron.macro_composer.song_plan import BY_PLACE, PLAN_OF_SONG
 from llamatron.macro_composer.wizard_choices import EXTRAS_KEPT, FORM, OWN_SECTIONS, SEED, WizardChoices, data_laid_over
 from llamatron.strings import errors
 from llamatron.support.safe_yaml import load_safely
-from llamatron.support.files import FILE_ENCODING
+from llamatron.support import files
 
 NAME = 'name'
 KIND = 'kind'
@@ -90,6 +90,6 @@ def song_name(*, data, path):
 
 def made_of_file(*, path, version, seed=None):
     """The set a song file makes: the one song, with all it uses, the song keeping the choices that made it."""
-    with open(path, encoding=FILE_ENCODING) as file:
+    with open(path, encoding=files.FILE_ENCODING) as file:
         data = load_safely(file)
     return choices_of(data=data, path=path, seed=seed).made_setlist(name=song_name(data=data, path=path), version=version)

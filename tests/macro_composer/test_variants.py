@@ -21,7 +21,7 @@ import unittest
 from llamatron.macro_composer.arranger import NAME, SHARE, STYLE, TEMPLATES, VARIANT, VARIANTS, VARIANT_SAYS, style_in, style_named, style_names
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from tests.support.ui_testing import fixed_text
 
 SONG_NAME = 'a_song'
@@ -44,7 +44,7 @@ def chosen(*, subgenre=HARD_ROCK, variant=None):
 
 
 def made(choices):
-    return choices.made_setlist(name=SONG_NAME, version=VERSION).to_data()
+    return choices.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()
 
 
 class TestVariants(unittest.TestCase):

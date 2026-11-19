@@ -17,7 +17,8 @@
 import unittest
 from fractions import Fraction
 
-from llamatron.music.note import MAX_OCTAVE, MIN_OCTAVE, SEMITONES_ABOVE_C, Note, NoteName, Rest
+from llamatron.music import note as note_values
+from llamatron.music.note import Note, NoteName, Rest
 
 ALL_NAMES = [
     'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'Fb', 'E#', 'F', 'F#', 'Gb',
@@ -50,7 +51,7 @@ class TestConstruction(unittest.TestCase):
         self.assertEqual(note.get_octave_number(), 4)
 
     def test_all_names_are_supported(self):
-        self.assertCountEqual(ALL_NAMES, SEMITONES_ABOVE_C)
+        self.assertCountEqual(ALL_NAMES, note_values.SEMITONES_ABOVE_C)
         for name in ALL_NAMES:
             with self.subTest(name=name):
                 self.assertEqual(Note(name=name, octave_number=4, length=0.25).get_name(), name)
@@ -308,14 +309,14 @@ class TestCopies(unittest.TestCase):
         self.assertEqual(self.fields(moved), self.fields(self.note(name=NoteName.E_FLAT, glide=True)))
 
     def test_a_half_step_out_of_the_midi_range_is_refused_in_the_constructors_words(self):
-        top = self.note(name=NoteName.G, octave_number=MAX_OCTAVE)
-        self.assertEqual(self.refusal(lambda: top.half_step(1)), self.refusal(lambda: self.note(name=NoteName.G_SHARP, octave_number=MAX_OCTAVE)))
-        bottom = self.note(name=NoteName.C, octave_number=MIN_OCTAVE)
-        self.assertEqual(self.refusal(lambda: bottom.half_step(-1)), self.refusal(lambda: self.note(name=NoteName.B, octave_number=MIN_OCTAVE - 1)))
+        top = self.note(name=NoteName.G, octave_number=note_values.MAX_OCTAVE)
+        self.assertEqual(self.refusal(lambda: top.half_step(1)), self.refusal(lambda: self.note(name=NoteName.G_SHARP, octave_number=note_values.MAX_OCTAVE)))
+        bottom = self.note(name=NoteName.C, octave_number=note_values.MIN_OCTAVE)
+        self.assertEqual(self.refusal(lambda: bottom.half_step(-1)), self.refusal(lambda: self.note(name=NoteName.B, octave_number=note_values.MIN_OCTAVE - 1)))
 
     def test_the_lowest_and_highest_notes_can_be_reached_by_half_steps(self):
-        self.assertEqual(self.fields(self.note(name=NoteName.F_SHARP, octave_number=MAX_OCTAVE).half_step(1)), self.fields(self.note(name=NoteName.G, octave_number=MAX_OCTAVE)))
-        self.assertEqual(self.fields(self.note(name=NoteName.D_FLAT, octave_number=MIN_OCTAVE).half_step(-1)), self.fields(self.note(name=NoteName.C, octave_number=MIN_OCTAVE)))
+        self.assertEqual(self.fields(self.note(name=NoteName.F_SHARP, octave_number=note_values.MAX_OCTAVE).half_step(1)), self.fields(self.note(name=NoteName.G, octave_number=note_values.MAX_OCTAVE)))
+        self.assertEqual(self.fields(self.note(name=NoteName.D_FLAT, octave_number=note_values.MIN_OCTAVE).half_step(-1)), self.fields(self.note(name=NoteName.C, octave_number=note_values.MIN_OCTAVE)))
 
 
 if __name__ == '__main__':

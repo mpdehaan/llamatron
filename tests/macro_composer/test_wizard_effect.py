@@ -34,7 +34,7 @@ from llamatron.generators import musician
 from llamatron.generators.phrasing import BREATHS, JOINS, RISES
 from llamatron.macro_composer import interplay
 from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT
-from llamatron.support.version import VERSION
+from llamatron.support import version
 from llamatron.macro_composer import hook_writing, line_edits, phrasing
 from llamatron.macro_composer.song_plan import FADE_LEVEL, FADE_OVER, FADES, HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.melody import LINE_NOTES
@@ -179,7 +179,7 @@ PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: LINES_IN_BARS, PhrasingSet
 def song_of(choices):
     """The music of the song some choices make: the set's data without its notes, which say who plays in words, and without
     the choices the song keeps, both of which differ where nothing that is heard does."""
-    data = choices.made_setlist(name=A_NAME, version=VERSION).to_data()
+    data = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()
     song = {field: value for field, value in data[Section.SONGS][A_NAME].items() if field != WIZARD_CHOICES_KEPT}
     return {**{field: value for field, value in data.items() if field not in (NOTES_KEPT, Section.SONGS)}, Section.SONGS: song}
 

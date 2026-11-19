@@ -26,7 +26,8 @@ is.
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.music import midi
-from llamatron.music.sound import CHORD, HELD, HELD_SOUND, KIND, LENGTH, MIDI, NOTES, Sound
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 
 HALF_STEPS_PER_OCTAVE = 12
 # How many octaves either way a voicing is tried from where its chord was written.
@@ -53,13 +54,13 @@ class VoiceLeading(ClipGenerator):
         before = self._first_before
         result = []
         for sound in clip.resolved_sounds():
-            chord = sound[HELD_SOUND] if sound[KIND] == HELD else sound
-            if chord[KIND] != CHORD:
+            chord = sound[sound_values.HELD_SOUND] if sound[sound_values.KIND] == sound_values.HELD else sound
+            if chord[sound_values.KIND] != sound_values.CHORD:
                 result.append(sound)
                 continue
             voiced = chord if before is None else self._voiced(chord=chord, before=before)
-            before = sorted(note[MIDI] for note in voiced[NOTES])
-            result.append((HELD, sound[LENGTH], voiced) if sound[KIND] == HELD else voiced)
+            before = sorted(note[sound_values.MIDI] for note in voiced[sound_values.NOTES])
+            result.append((sound_values.HELD, sound[sound_values.LENGTH], voiced) if sound[sound_values.KIND] == sound_values.HELD else voiced)
         self._before = before
         return result, clip.get_length()
 
@@ -71,14 +72,14 @@ class VoiceLeading(ClipGenerator):
 
     def _voiced(self, *, chord, before):
         """Return a chord voiced nearest the pitches of the chord before it, its notes kept in the order it was built, so that its first is still its root for a grab."""
-        order = list(chord[NOTES])
-        notes = sorted(order, key=lambda note: note[MIDI])
+        order = list(chord[sound_values.NOTES])
+        notes = sorted(order, key=lambda note: note[sound_values.MIDI])
         fixed = notes[:1] if self._root_in_bass else []
         moving = notes[1:] if self._root_in_bass else notes
         target = before[1:] if self._root_in_bass and len(before) > 1 else before
-        floor = fixed[0][MIDI] if fixed else None
+        floor = fixed[0][sound_values.MIDI] if fixed else None
         best = None
-        for shape in _inversions([note[MIDI] for note in moving]):
+        for shape in _inversions([note[sound_values.MIDI] for note in moving]):
             for octaves in range(-OCTAVES_TRIED, OCTAVES_TRIED + 1):
                 pitches = [pitch + octaves * HALF_STEPS_PER_OCTAVE for pitch in shape]
                 if not self._fits(pitches) or (floor is not None and min(pitches) <= floor):
@@ -88,7 +89,7 @@ class VoiceLeading(ClipGenerator):
                     best = (score, pitches)
         if best is None:
             return chord
-        moved = [Sound.half_step(note, pitch - note[MIDI]) for note, pitch in zip(moving, best[1])]
+        moved = [Sound.half_step(note, pitch - note[sound_values.MIDI]) for note, pitch in zip(moving, best[1])]
         voiced = {id(note): placed for note, placed in zip([*fixed, *moving], [*fixed, *moved])}
         return Sound.chord([voiced[id(note)] for note in order])
 

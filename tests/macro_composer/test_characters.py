@@ -21,7 +21,7 @@ import unittest
 from llamatron.macro_composer import arranger, characters, players
 from llamatron.macro_composer.wizard_choices import USUAL_BUSY, WizardChoices
 from llamatron.strings import errors
-from llamatron.support.version import VERSION
+from llamatron.support import version
 
 ROCK = 'rock'
 SONG_NAME = 'anthem'
@@ -46,7 +46,7 @@ def wizard():
 
 
 def patterns_of(choices):
-    return choices.made_setlist(name=SONG_NAME, version=VERSION).to_data()
+    return choices.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()
 
 
 class TestCharacters(unittest.TestCase):
