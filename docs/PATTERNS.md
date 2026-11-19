@@ -130,43 +130,44 @@ These keys work throughout the rows view:
 
 ### Munge
 
-`M` (Munge) opens a list of ways to rearrange, copy and clear the pattern's steps, under six headings that open and close: Clear, Copy, Notes, Other Patterns, Rearrange and Smooth. `Space` or `ENTER` on a heading opens it, `PgUp` and `PgDn` jump between headings, and the headings left open stay open the next time. Typing searches every choice, whatever its heading. Many of the choices work around the step the cursor is on, and every choice is one change to undo. In the examples, a pattern's steps are written A B C D E F G H and the cursor is on C.
+`M` (Munge) opens a list of ways to change the whole pattern at once, under nine headings that open and close. `Space` or `ENTER` on a heading opens it, `PgUp` and `PgDn` jump between headings, and the headings left open stay open the next time. Typing searches every choice, whatever its heading. A choice whose name ends in `(cursor)` works around the step the cursor is on, `(N)` asks for a number, and `(pattern)` asks for another pattern. Every choice is one change to undo. In the examples, a pattern's steps are written A B C D E F G H and the cursor is on C.
 
-| Choice | What it does |
-| --- | --- |
-| clear all data except pitch | Blank everything but which notes play: Degree, Octave, #/b and the chord rows stay, and every note goes back to one step long |
-| clear all register conditions | Blank every step's Stop When, Restart When and Mute When |
-| clear all register modifications | Blank the rows that set a register and that add to one; the rows that use a register stay |
-| clear chords | Blank every chord, with its tension, scale and inversion, leaving the note each chord was built on |
-| clear every Nth step (N) | Asks for a number and makes a rest of every step that far apart, to thin a busy line: with 4, the 4th, the 8th and so on |
-| convert adjacent notes to legato | Steps next to each other at the same pitch become one long note: the first keeps the note and the rest become ties |
-| convert legato notes to step divisions | The opposite: a note that lasts several steps, by ties or a long gate, becomes a note on every step it covered |
-| copy after to start (cursor) | C D E F G H A B C D E F G H |
-| copy after to end (cursor) | A B C D E F G H C D E F G H |
-| copy before to start (cursor) | A B C A B C D E F G H |
-| copy before to end (cursor) | A B C D E F G H A B C |
-| crop (cursor) | Remove every step after the cursor's step |
-| humanize velocity (N) | Asks for a number and moves each typed velocity up or down at random by no more than that |
-| interleave (pattern) | Asks for another pattern and puts one of its steps after each step of this one, which is then twice as long: A w B x C y and so on. The other pattern is read round and round, and is not changed |
-| mirror | Add the steps again, backwards: A B C D becomes A B C D D C B A |
-| pivot around step (cursor) | Swap what's before the cursor with what's after it |
-| randomize | Shuffle the steps into a random order. The shuffle is an ordinary edit, not seeded, so every randomize is different. |
-| randomize pitches | Shuffle which pitch each note plays; the rhythm stays |
-| randomize rhythm | Move the notes earlier and later among the rests; the notes keep their order and their lengths |
-| randomize after (cursor) | Shuffle the cursor's step and the steps after it among themselves |
-| randomize before (cursor) | Shuffle the cursor's step and the steps before it among themselves |
-| reverse | Reverse the whole pattern |
-| reverse pitches | The pitches play in backwards order on the same rhythm |
-| reverse after step (cursor) | Reverse every step after the cursor |
-| reverse before step (cursor) | Reverse every step before the cursor |
-| roll left (cursor), roll right (cursor) | Turn one side of the cursor by one step, asking nothing: roll left turns the cursor's step and the steps before it, A B C becoming B C A, and roll right turns the cursor's step and the steps after it, C D E F G H becoming H C D E F G |
-| roll left (N), roll right (N) | Asks how many steps and turns the pattern that far: a step pushed off one end comes in at the other. Rolling A B C D E F G H left 3 gives D E F G H A B C |
-| smooth AX=, smooth BX=, smooth CX=, smooth DX= | On the row that sets the register, fill the blank steps between two values from a straight line between them |
-| smooth CCs | The same on each of CC 1 to CC 4: 20, blank, blank, blank, 100 becomes 20, 40, 60, 80, 100. The Slide row makes a finer sweep as the pattern plays; smooth CCs writes the values where they can be seen and changed |
-| smooth velocity | The same on Velocity, on the steps that hold a note |
-| transpose (N) | Asks for a number and moves every note that many steps up the scale, or down for a negative number |
-| splice (pattern), splice before (pattern), splice (pattern, cursor) | Asks for another pattern and adds a copy of its steps after this one's last step, before its first, or before the cursor's step |
-| split into new patterns (steps) | Asks how many steps each new pattern has, 16 to start, and makes new patterns of this one's steps, that many each: a pattern of 64 steps called `p1` gives `p1-split-1` to `p1-split-4`. The pattern itself is left as it is, and a dialog names the patterns made |
+| Heading | Choice | What it does |
+| --- | --- | --- |
+| Clear | clear all except pitch | Blank everything but which notes play: Degree, Octave, #/b and the chord rows stay, and every note goes back to one step long |
+| Clear | clear chords | Blank every chord, with its tension, scale and inversion, leaving the note each chord was built on |
+| Clear | clear every Nth step (N) | Make a rest of every step that far apart, to thin a busy line: with 4, the 4th, the 8th and so on |
+| Clear | crop (cursor) | Remove every step after the cursor's step |
+| Copy | copy after to end (cursor) | A B C D E F G H C D E F G H |
+| Copy | copy after to start (cursor) | C D E F G H A B C D E F G H |
+| Copy | copy before to end (cursor) | A B C D E F G H A B C |
+| Copy | copy before to start (cursor) | A B C A B C D E F G H |
+| Copy | mirror | Add the steps again, backwards: A B C D becomes A B C D D C B A |
+| Other Patterns | interleave (pattern) | Put one step of the other pattern after each step of this one, which is then twice as long: A w B x C y and so on. The other pattern is read round and round, and is not changed |
+| Other Patterns | splice after (pattern), splice before (pattern), splice (pattern, cursor) | Add a copy of the other pattern's steps after this one's last step, before its first, or before the cursor's step |
+| Other Patterns | split into new patterns (N) | Make new patterns of this one's steps, N each, 16 to start: a pattern of 64 steps called `p1` gives `p1-split-1` to `p1-split-4`. The pattern itself is left as it is, and a dialog names the patterns made |
+| Pitch | apply voice leading (no octave shift) | Give every chord after the first the inversion that moves its notes the least from the chord before, as a keyboard player keeps the hand in one place. The first chord stays as written |
+| Pitch | apply voice leading (octave shift) | The same, and a chord may also move an octave down or up where that is nearer still |
+| Pitch | invert melody (cursor) | Mirror every note around the cursor's note: a note 2 scale steps above it ends 2 below, so a line that rose now falls |
+| Pitch | randomize pitches | Shuffle which pitch each note plays; the rhythm stays |
+| Pitch | reverse pitches | The pitches play in backwards order on the same rhythm |
+| Pitch | transpose (N) | Move every note N steps up the scale, or down for a negative number |
+| Registers | clear register conditions | Blank every step's Stop When, Restart When and Mute When |
+| Registers | clear register modifications | Blank the rows that set a register and that add to one; the rows that use a register stay |
+| Registers | smooth AX=, smooth BX=, smooth CX=, smooth DX= | On the row that sets the register, fill the blank steps between two values from a straight line between them |
+| Reorder | pivot (cursor) | Swap what's before the cursor with what's after it |
+| Reorder | randomize all | Shuffle the steps into a random order. The shuffle is an ordinary edit, not seeded, so every randomize is different |
+| Reorder | randomize after (cursor), randomize before (cursor) | Shuffle the cursor's step and the steps after it, or before it, among themselves |
+| Reorder | reverse all | Reverse the whole pattern |
+| Reorder | reverse after (cursor), reverse before (cursor) | Reverse every step after the cursor, or before it |
+| Rhythm | divide long notes | A note that lasts several steps, by ties or a long gate, becomes a note on every step it covered |
+| Rhythm | join repeated notes | Steps next to each other at the same pitch become one long note: the first keeps the note and the rest become ties |
+| Rhythm | randomize rhythm | Move the notes earlier and later among the rests; the notes keep their order and their lengths |
+| Roll | roll left (cursor), roll right (cursor) | Turn one side of the cursor by one step: roll left turns the cursor's step and the steps before it, A B C becoming B C A, and roll right turns the cursor's step and the steps after it, C D E F G H becoming H C D E F G |
+| Roll | roll left (N), roll right (N) | Turn the whole pattern N steps: a step pushed off one end comes in at the other. Rolling A B C D E F G H left 3 gives D E F G H A B C |
+| Velocity and CCs | humanize velocity (N) | Move each typed velocity up or down at random by no more than N |
+| Velocity and CCs | smooth CCs | Fill the blanks between two values on each of CC 1 to CC 4: 20, blank, blank, blank, 100 becomes 20, 40, 60, 80, 100. The Slide row makes a finer sweep as the pattern plays; smooth CCs writes the values where they can be seen and changed |
+| Velocity and CCs | smooth velocity | The same on Velocity, on the steps that hold a note |
 
 A choice that would make the pattern longer than a pattern may be is refused, and a drum pattern is never combined with a pattern of notes. After a reverse, a pivot or a roll the cursor stays on its step; after steps are added in front, the cursor stays on its note.
 

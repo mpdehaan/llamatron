@@ -23,13 +23,19 @@ wherever it goes, with a velocity on every step that moves with the step.
 import unittest
 
 from llamatron.composition import limits
-from llamatron.composition.file_format import Operator, PatternSetting, RegisterName, Row, StatementPart, StepStatement
+from llamatron.composition.file_format import ChordSymbol, Operator, PatternSetting, RegisterName, Row, StatementPart, StepStatement
 from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.music import midi
+from llamatron.music.note import NoteName
+from llamatron.music.scale import ScaleType
 from llamatron.support.rational import Rational
 
 SIXTEENTH = Rational(1, 16)
+C_MAJOR = NamedScale(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))
+SCALE_SIZE = 7
+OCTAVE = 4
 
 HERE = 'a test'
 STEPS = 8
@@ -318,3 +324,67 @@ class TestMungesOfNotes(unittest.TestCase):
             self.assertTrue(midi.MIN_VELOCITY <= low <= midi.MIN_VELOCITY + FOURTH)
             self.assertTrue(HIGH - FOURTH <= middle <= HIGH + FOURTH)
             self.assertTrue(midi.MAX_VELOCITY - FOURTH <= high <= midi.MAX_VELOCITY)
+
+
+class TestInvertMelody(unittest.TestCase):
+
+    def test_every_note_is_mirrored_around_the_cursors_note(self):
+        pattern = pattern_of(degrees=[1, 2, 3, 5, 3, 2, 1, None])
+        pattern.invert_melody(step=THIRD, scale_size=SCALE_SIZE, default_octave=OCTAVE)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [5, 4, 3, 1, 3, 4, 5, None])
+        self.assertFalse(any(pattern.get_row(Row.OCTAVE) or []))
+
+    def test_a_note_mirrored_under_the_first_degree_is_written_an_octave_lower(self):
+        pattern = pattern_of(degrees=[1, 3])
+        pattern.invert_melody(step=0, scale_size=SCALE_SIZE, default_octave=OCTAVE)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 6])
+        self.assertEqual(pattern.get_row(Row.OCTAVE), [None, OCTAVE - 1])
+
+    def test_a_rest_a_drum_pattern_and_an_octave_out_of_range_refuse_it_all(self):
+        with self.assertRaises(InvalidValue):
+            pattern_of(degrees=[None, 1]).invert_melody(step=0, scale_size=SCALE_SIZE, default_octave=OCTAVE)
+        with self.assertRaises(InvalidValue):
+            pattern_of(degrees=[None], drum=True).invert_melody(step=0, scale_size=SCALE_SIZE, default_octave=OCTAVE)
+        low = pattern_of(degrees=[1, 2, 3])
+        with self.assertRaises(InvalidValue):
+            low.invert_melody(step=0, scale_size=SCALE_SIZE, default_octave=limits.MIN_OCTAVE)
+        self.assertEqual(low.get_row(Row.DEGREE), [1, 2, 3])
+
+
+class TestVoiceLeading(unittest.TestCase):
+
+    def chords(self, *, degrees, octaves, inversions=None):
+        rows = {Row.CHORD: [ChordSymbol.SCALE_TRIAD] * len(degrees), Row.OCTAVE: octaves}
+        if inversions:
+            rows[Row.INVERSION] = inversions
+        return pattern_of(degrees=degrees, **rows)
+
+    def test_a_chord_takes_the_inversion_nearest_the_chord_before_and_the_first_stays(self):
+        pattern = self.chords(degrees=[1, 5], octaves=[OCTAVE, OCTAVE - 1], inversions=[None, 3])
+        self.assertEqual(pattern.apply_voice_leading(scale=C_MAJOR, default_octave=OCTAVE), 2)
+        self.assertEqual(pattern.get_row(Row.INVERSION), [None, 1])
+        self.assertEqual(pattern.get_row(Row.OCTAVE), [OCTAVE, OCTAVE - 1])
+
+    def test_an_inversion_is_blanked_where_root_position_is_nearest(self):
+        pattern = self.chords(degrees=[1, 1], octaves=[OCTAVE, OCTAVE], inversions=[None, 2])
+        pattern.apply_voice_leading(scale=C_MAJOR, default_octave=OCTAVE)
+        self.assertFalse(any(pattern.get_row(Row.INVERSION)))
+
+    def test_the_first_chords_inversion_is_what_the_next_is_led_from(self):
+        pattern = self.chords(degrees=[5, 1], octaves=[OCTAVE - 1, OCTAVE], inversions=[1, None])
+        pattern.apply_voice_leading(scale=C_MAJOR, default_octave=OCTAVE)
+        self.assertEqual(pattern.get_row(Row.INVERSION), [1, None])
+
+    def test_with_octaves_a_chord_may_move_an_octave_to_be_nearer(self):
+        still = self.chords(degrees=[1, 4], octaves=[OCTAVE, OCTAVE])
+        still.apply_voice_leading(scale=C_MAJOR, default_octave=OCTAVE)
+        self.assertFalse(any(still.get_row(Row.INVERSION) or []))
+        moved = self.chords(degrees=[1, 4], octaves=[OCTAVE, None])
+        moved.apply_voice_leading(scale=C_MAJOR, default_octave=OCTAVE, octaves=True)
+        self.assertEqual(moved.get_row(Row.INVERSION), [None, 2])
+        self.assertEqual(moved.get_row(Row.OCTAVE), [OCTAVE, OCTAVE - 1])
+
+    def test_notes_with_no_chord_are_passed_over(self):
+        pattern = pattern_of(degrees=[1, 2, 3])
+        self.assertEqual(pattern.apply_voice_leading(scale=C_MAJOR, default_octave=OCTAVE), 0)
+        self.assertIsNone(pattern.get_row(Row.INVERSION))

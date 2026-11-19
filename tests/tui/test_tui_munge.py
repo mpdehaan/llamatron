@@ -22,7 +22,7 @@ tested on Pattern alone, in tests/composition/test_pattern_munges.py.
 
 from llamatron.composition import limits
 from llamatron.composition.checks import listed
-from llamatron.composition.file_format import Row
+from llamatron.composition.file_format import ChordSymbol, Row
 from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -41,6 +41,7 @@ THIRD = 2
 TWO = '2'
 TOO_MANY = '6'
 NOT_A_NUMBER = 'many'
+FIRST_INVERSION = 1
 FAR_DOWN = '-9'
 # The one step of the pattern called other holds degree 5.
 OTHER_DEGREE = 5
@@ -196,6 +197,19 @@ class TestMunge(UITest):
         self.assertEqual(self.row(row=Row.TIE), [False, True])
         await munge(test=self, choice=Munge.DIVIDE_NOTES)
         self.assertEqual(self.row(), [1, 1])
+
+    async def test_invert_melody_mirrors_around_the_cursors_note_and_voice_leading_needs_chords(self):
+        await self.press(Key.RIGHT, Key.RIGHT)
+        await munge(test=self, choice=Munge.INVERT_MELODY)
+        self.assertEqual(self.row(), [5, 4, 3, 2, 1])
+        for choice in (Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES):
+            await munge(test=self, choice=choice)
+            self.assertIn(errors.ERR_VOICE_LEADING_NEEDS_CHORDS, self.text())
+        self.document.set_step_value(name=LONG, row=Row.CHORD, step=THIRD, value=ChordSymbol.SCALE_TRIAD)
+        self.document.set_step_value(name=LONG, row=Row.INVERSION, step=THIRD, value=FIRST_INVERSION)
+        await munge(test=self, choice=Munge.VOICE_LEADING)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertNotIn(errors.ERR_VOICE_LEADING_NEEDS_CHORDS, self.text())
 
     async def test_the_mirror_doubles_the_pattern(self):
         await munge(test=self, choice=Munge.MIRROR)
