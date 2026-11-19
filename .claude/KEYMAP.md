@@ -269,8 +269,8 @@ settings page's fields. The keys that work everywhere are listed once:
 ## PatternEditor
 
 - **the piano roll**: `ESC` back · `←↑↓→` move · `Home/End` ends · `Tab` to editor · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` note · `H` chord · `K` keyswitch · `[` shrink · `]` stretch · `X` split · `.` #/b · `Bksp` erase · `G` grab · `E` entry size
-- **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc · `Bksp` clear
-- **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc
+- **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc · `Space` toggle · `Bksp` clear
+- **the degree row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename · `1-7` degree · `[` dec · `]` inc · `Space` toggle
 - **the octave row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename · `0-8` type octave · `[` dec · `]` inc · `Bksp` default
 - **the octave row, the accidental row, the velocity row, the accent row, the keyswitch row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the stop_c2 row, the stop_c3 row, the stop_c4 row, the stop_c5 row, the restart_c1 row, the restart_c2 row, the restart_c3 row, the restart_c4 row, the restart_c5 row, the mute_c2 row, the mute_c3 row, the mute_c4 row, the mute_c5 row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename
 - **the basics row, the chord_section row, the timing row, the advanced row, the cc row, the register_mod row, the register_apply row, the stop_when row, the restart_when row, the mute_when row**: `ESC` back · `←↑↓→` move · `Home/End` ends · `PgUp/PgDn` next section · `Tab` to piano roll · `I` insert step · `D` remove step · `S` size · `M` munge · `R` reconfigure · `L` listen · `F2` rename · `Space/ENTER` close section
@@ -1103,6 +1103,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: play scene (a scene's name)
 - ArrangePage: play clip (a clip)
 - ChordsEditor: next (anywhere)
+- PatternEditor: toggle (the degree row)
 - PatternEditor: next (the chord row, the chord_scale row, the stop_c1 row, the restart_c1 row, the mute_c1 row)
 - SongsPage: make current (a row)
 

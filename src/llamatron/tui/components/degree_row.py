@@ -126,9 +126,19 @@ class DegreeRow(PatternRow):
                 self.bind(self.KEYS.DEGREE, action=self.type_degree, wants_key=True, keys=digits, name=legends.MSG_DIGITS_RANGE_LABEL.format(low=limits.MIN_DEGREE, high=limit)),
                 *self.adjust_keys(),
             ]
+        if not self.editor.is_drum():
+            result.append(self.bind(self.KEYS.TOGGLE_NOTE, action=self.toggle_note))
         if self.is_note():
             result.append(self.bind(self.KEYS.CLEAR, action=self.clear))
         return result
+
+    def toggle_note(self):
+        """Take the note off a step that has one, as Bksp does, or put the scale's first degree on an empty step."""
+        if self.is_note():
+            self.clear()
+        else:
+            self.set_value(limits.MIN_DEGREE)
+            self.editor.fill_in()
 
     def type_degree(self, digit):
         number = self.editor.typed_number(digit=digit, low=limits.MIN_DEGREE, high=self.limit())

@@ -89,6 +89,15 @@ class TestPatternEditor(PatternEditorTest):
         await self.press(Key.HOME)
         self.assertEqual(self.editor.step, 0)
 
+    async def test_space_on_the_degree_row_takes_a_note_off_and_puts_the_first_degree_on(self):
+        pattern = self.document.song().get_pattern(TUNE)
+        self.assertEqual(self.editor.rows_view.row_name(), Row.DEGREE)
+        self.assertIsNotNone(pattern.get_value(row=Row.DEGREE, step=self.editor.step))
+        await self.press(keybindings.DegreeRow.TOGGLE_NOTE)
+        self.assertIsNone(pattern.get_value(row=Row.DEGREE, step=self.editor.step))
+        await self.press(keybindings.DegreeRow.TOGGLE_NOTE)
+        self.assertEqual(pattern.get_value(row=Row.DEGREE, step=self.editor.step), limits.MIN_DEGREE)
+
     async def test_r_offers_the_whole_pattern_actions_in_order_and_esc_leaves_the_pattern_alone(self):
         before = self.document.song().get_pattern(TUNE).to_data()
         await self.press(keybindings.PatternEditor.RECONFIGURE)
