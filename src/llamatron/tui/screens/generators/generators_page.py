@@ -24,6 +24,7 @@ from llamatron.composition import file_format
 from llamatron.composition.naming import name_order, new_name, suggested_word
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, key_table, keybindings, themes
+from llamatron.tui.cursor import Cursor
 from llamatron.tui.drawing import Align, Style
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind, generator_type_dialog
@@ -58,7 +59,7 @@ class GeneratorsPage(ListPage):
     def __init__(self, holder):
         super().__init__(holder)
         # The page opens with the cursor on the first generator showing, so that ENTER edits at once, or on the first heading when every type is closed.
-        self.place = self.first_generator_place()
+        self.cursor = Cursor(place=self.first_generator_place())
 
     # The rows.
 
@@ -117,7 +118,7 @@ class GeneratorsPage(ListPage):
     def listed(self):
         """Return what the cursor is on, which is never nothing, since the page always ends with the row that adds."""
         self.clamp()
-        return self.remembered_rows()[self.place][0]
+        return self.remembered_rows()[self.cursor.get_place()][0]
 
     def current(self):
         """Return the generator the cursor is on as (kind, name), or nothing on a heading or the row that adds."""
@@ -160,9 +161,9 @@ class GeneratorsPage(ListPage):
     def jump_type(self, direction):
         """Move the cursor to the next type's heading, or the one before, staying put past the last or the first."""
         places = [place for place, (what, _) in enumerate(self.remembered_rows()) if what.row == HEADING]
-        ahead = [place for place in places if place > self.place] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.place]
+        ahead = [place for place in places if place > self.cursor.get_place()] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.cursor.get_place()]
         if ahead:
-            self.place = ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1]
+            self.cursor.set_place(ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1])
 
     def open_item(self):
         kind, name = self.current()

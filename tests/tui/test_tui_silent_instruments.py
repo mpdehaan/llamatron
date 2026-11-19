@@ -115,7 +115,7 @@ class TestSilentInstrumentsWhenTheTrackerStarts(SilentInstrumentsTest):
     async def test_opening_the_set_again_from_the_open_page_tells_it_again(self):
         await self.press(Key.ENTER, Key.CTRL_O)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index(SAVED)
+        self.app.screen.cursor.set_place(rows.index(SAVED))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assert_told(errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND)

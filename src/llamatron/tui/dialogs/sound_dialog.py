@@ -34,7 +34,7 @@ from rich.text import Text
 
 from llamatron.strings import errors, marks
 from llamatron.tui import drawing, keybindings, keys as keys_values, note_names
-from llamatron.tui.dialogs.choice_dialog import completed, places_matching
+from llamatron.tui.cursor import completed, Cursor, places_matching
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import cursor_mark, fit, legend, Style
 from llamatron.tui.key_table import cursor_moved
@@ -64,7 +64,7 @@ class SoundDialog(Dialog):
         # The note the sound plays on, where the asker gave one, and what is being typed as another, or None while nothing is.
         self.note = note
         self.note_typed = None
-        self.place = self.row_of(current)
+        self.cursor = Cursor(place=self.row_of(current))
         # The group whose flyout is open, or None, and the cursor's place in it.
         self.flyout = None
         self.flyout_place = 0
@@ -102,7 +102,7 @@ class SoundDialog(Dialog):
             return None
         if self.flyout is not None:
             return self.groups[self.flyout][1][self.flyout_place][1]
-        return self.top[self.place][1] if self.place < len(self.top) else None
+        return self.top[self.cursor.get_place()][1] if self.cursor.get_place() < len(self.top) else None
 
     # The keys, by what is open.
 
@@ -126,7 +126,7 @@ class SoundDialog(Dialog):
             ]
         if self.on_note_row():
             return self.note_keys()
-        on_group = self.place >= len(self.top)
+        on_group = self.cursor.get_place() >= len(self.top)
         return [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
             self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
@@ -172,12 +172,12 @@ class SoundDialog(Dialog):
     def move(self, name):
         self.hush()
         self.note_typed = None
-        self.place = cursor_moved(place=self.place, name=name, count=self.rows())
+        self.cursor.move(name=name, count=self.rows())
 
     # The Note row.
 
     def on_note_row(self):
-        return self.note is not None and self.typed is None and self.flyout is None and self.place == len(self.top) + len(self.groups)
+        return self.note is not None and self.typed is None and self.flyout is None and self.cursor.get_place() == len(self.top) + len(self.groups)
 
     def note_keys(self):
         result = [
@@ -219,7 +219,7 @@ class SoundDialog(Dialog):
 
     def open_flyout(self):
         """Open the flyout of the group under the cursor, on the current sound where the group holds it."""
-        group = self.place - len(self.top)
+        group = self.cursor.get_place() - len(self.top)
         values = [held for _, held in self.groups[group][1]]
         self.flyout = group
         self.flyout_place = values.index(self.current) if self.current in values else 0
@@ -274,7 +274,7 @@ class SoundDialog(Dialog):
             return
         group, place, _ = found[min(self.found_place, len(found) - 1)]
         self.typed = None
-        self.place = len(self.top) + group
+        self.cursor.set_place(len(self.top) + group)
         self.flyout = group
         self.flyout_place = place
 
@@ -311,12 +311,12 @@ class SoundDialog(Dialog):
             return [Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
         rows = [self.row_text(row) for row in range(len(self.top) + len(self.groups))]
         if self.note is None:
-            return self.padded([self.row_line(row=row, selected=place == self.place, width=width) for place, row in self.windowed(rows=rows, at=self.place)])
+            return self.padded([self.row_line(row=row, selected=place == self.cursor.get_place(), width=width) for place, row in self.windowed(rows=rows, at=self.cursor.get_place())])
         # The Note row stays in view under the list, after a blank line, however far the list is scrolled.
         listed = SHOWN - NOTE_ROW_LINES
-        on_note = self.place == len(rows)
+        on_note = self.cursor.get_place() == len(rows)
         note = marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(self.note)) if self.note_typed is None else marks.MSG_SOUND_NOTE_TYPED.format(text=self.note_typed)
-        lines = [self.row_line(row=row, selected=place == self.place, width=width) for place, row in self.windowed(rows=rows, at=min(self.place, len(rows) - 1), shown=listed)]
+        lines = [self.row_line(row=row, selected=place == self.cursor.get_place(), width=width) for place, row in self.windowed(rows=rows, at=min(self.cursor.get_place(), len(rows) - 1), shown=listed)]
         return self.padded([*lines, *[Text(drawing.NOTHING)] * (listed - len(lines)), Text(drawing.NOTHING), self.row_line(row=note, selected=on_note, width=width)])
 
     def row_line(self, *, row, selected, width):

@@ -101,7 +101,7 @@ def place_of(page):
         fields = page.shown_fields()
         if not fields:
             return ANYWHERE
-        field = fields[min(page.place, len(fields) - 1)]
+        field = fields[min(page.cursor.get_place(), len(fields) - 1)]
         if isinstance(field, Heading):
             return HEADING_PLACE.format(label=field.label)
         if isinstance(field, Button):

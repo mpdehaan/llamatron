@@ -233,7 +233,7 @@ class TestChoiceField(unittest.TestCase):
         self.assertEqual(field.enter_what, legends.What.CHOOSE)
         field.enter()
         self.assertIsInstance(kept.dialog, ChoiceDialog)
-        self.assertEqual(kept.dialog.place, 2)
+        self.assertEqual(kept.dialog.cursor.get_place(), 2)
         kept.answer(0)
         self.assertEqual(kept.stored, [CHOICES[0]])
 
@@ -243,12 +243,12 @@ class TestChoiceField(unittest.TestCase):
         self.assertEqual(field.value(), SHOWN)
         field.enter()
         self.assertEqual(kept.dialog.options, CHOICE_NAMES)
-        self.assertEqual(kept.dialog.place, 1)
+        self.assertEqual(kept.dialog.cursor.get_place(), 1)
 
     def test_a_value_outside_the_list_opens_the_picker_on_the_first_choice(self):
         kept = Kept()
         self.field(kept=kept, current=NOT_A_CHOICE).enter()
-        self.assertEqual(kept.dialog.place, 0)
+        self.assertEqual(kept.dialog.cursor.get_place(), 0)
 
 
 AN_INSTRUMENT = 'synth'
@@ -293,7 +293,7 @@ class TestFieldsOnThePages(UITest):
             for place, field in enumerate(page.fields()):
                 if not isinstance(field, NumberField) or field.lowest is None or field.highest is None:
                     continue
-                page.place = place
+                page.cursor.set_place(place)
                 for direction in (key_table.STEP_FORWARD, key_table.STEP_BACK):
                     for _ in range(MORE_THAN_ANY_RANGE):
                         before = page.fields()[place].number
@@ -317,7 +317,7 @@ class TestFieldsOnThePages(UITest):
                 if not field.is_toggle() or isinstance(field, Heading):
                     continue
                 found += 1
-                page.place = place
+                page.cursor.set_place(place)
                 before = page.shown_fields()[place].on
                 await self.press(Key.SPACE)
                 if self.app.screen is not page:

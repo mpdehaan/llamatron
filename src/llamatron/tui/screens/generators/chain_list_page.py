@@ -61,19 +61,19 @@ class ChainListPage(ListPage):
 
         def picked(item):
             self.store([*self.names(), chains[item]])
-            self.place = len(self.names()) - 1
+            self.cursor.set_place(len(self.names()) - 1)
         self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_CHAIN_TITLE, options=chains), then=picked)
 
     def remove_chain(self):
         names = self.names()
-        names.pop(self.place)
+        names.pop(self.cursor.get_place())
         self.store(names)
         self.clamp()
 
     def shift(self, offset):
         names = self.names()
-        moved = self.place + offset
+        moved = self.cursor.get_place() + offset
         if 0 <= moved < len(names):
-            names[self.place], names[moved] = names[moved], names[self.place]
+            names[self.cursor.get_place()], names[moved] = names[moved], names[self.cursor.get_place()]
             self.store(names)
-            self.place = moved
+            self.cursor.set_place(moved)

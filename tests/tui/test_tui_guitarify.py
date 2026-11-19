@@ -228,7 +228,7 @@ class TestGuitarBarEditor(GuitarifyTest):
 
     async def test_the_picker_opens_on_the_bar_it_holds_and_esc_changes_nothing(self):
         await self.press(keybindings.GuitarBarEditor.READY_BARS)
-        self.assertEqual(self.app.screen.options[self.app.screen.place], labels.MSG_READY_BAR_NAMES[guitar_bars.DEFAULT_BAR])
+        self.assertEqual(self.app.screen.options[self.app.screen.cursor.get_place()], labels.MSG_READY_BAR_NAMES[guitar_bars.DEFAULT_BAR])
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, GuitarBarEditor)
         self.assertEqual(self.guitar().to_data(), {})

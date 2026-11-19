@@ -84,7 +84,7 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         return [*numbers[:-2], DriftValue.SCALE, numbers[-2], DriftValue.ROOT, numbers[-1]]
 
     def is_version_row(self):
-        return self.place >= len(self.own_fields())
+        return self.cursor.get_place() >= len(self.own_fields())
 
     def keys(self):
         result = super().keys()

@@ -104,7 +104,7 @@ class OpenPage(ListPage):
         path = os.path.normpath(os.path.join(self.folder, name))
         if os.path.isdir(path):
             self.folder = path
-            self.place = 0
+            self.cursor.set_place(0)
             self.remember_folder()
             return
         self.remember_folder()

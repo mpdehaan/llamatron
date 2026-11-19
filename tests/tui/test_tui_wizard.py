@@ -1191,9 +1191,9 @@ class TestRowDialog(UITest):
     async def test_the_cursor_stops_at_both_ends_and_a_number_at_the_lowest_and_highest(self):
         dialog = await self.open()
         await self.press(Key.LEFT)
-        self.assertEqual(dialog.place, 0)
+        self.assertEqual(dialog.cursor.get_place(), 0)
         await self.press(*[Key.RIGHT] * (len(A_ROW) + 1))
-        self.assertEqual(dialog.place, len(A_ROW) - 1)
+        self.assertEqual(dialog.cursor.get_place(), len(A_ROW) - 1)
         await self.press(*[keybindings.RowDialog.MORE] * (A_ROWS_HIGHEST - A_ROWS_LOWEST + 1))
         self.assertEqual(dialog.values[-1], A_ROWS_HIGHEST)
         await self.press(*[keybindings.RowDialog.LESS] * (A_ROWS_HIGHEST - A_ROWS_LOWEST + 1))
@@ -1203,13 +1203,13 @@ class TestRowDialog(UITest):
         dialog = await self.open()
         await self.press(keybindings.RowDialog.INSERT_CELL)
         self.assertEqual(dialog.values, [A_ROW[0], *A_ROW])
-        self.assertEqual(dialog.place, 1)
+        self.assertEqual(dialog.cursor.get_place(), 1)
         await self.press(*[keybindings.RowDialog.INSERT_CELL] * A_ROWS_MOST)
         self.assertEqual(len(dialog.values), A_ROWS_MOST)
         self.assertNotIn(first_key(keybindings.RowDialog.INSERT_CELL), [key for item in dialog.keys() for key in item.keys])
         await self.press(*[keybindings.RowDialog.REMOVE_CELL] * A_ROWS_MOST)
         self.assertEqual(len(dialog.values), A_ROWS_FEWEST)
-        self.assertEqual(dialog.place, 0)
+        self.assertEqual(dialog.cursor.get_place(), 0)
 
     async def test_ok_answers_with_the_row_cancel_with_nothing_and_the_usual_row_is_put_back(self):
         await self.open()

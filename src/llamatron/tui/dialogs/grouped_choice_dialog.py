@@ -59,7 +59,7 @@ class GroupedChoiceDialog(ChoiceDialog):
         return self.rows()[self.row][1] is None
 
     def keys(self):
-        if self.typed:
+        if self.search.get_typed():
             return super().keys()
         heading = self.headings[self.rows()[self.row][0]]
         if self.on_heading():
@@ -97,8 +97,8 @@ class GroupedChoiceDialog(ChoiceDialog):
 
     def erase(self):
         super().erase()
-        if not self.typed:
-            self.row = self.row_showing(self.place)
+        if not self.search.get_typed():
+            self.row = self.row_showing(self.cursor.get_place())
 
     def row_showing(self, place):
         """Return the row of a choice where its heading is open, and its heading's row otherwise."""
@@ -114,7 +114,7 @@ class GroupedChoiceDialog(ChoiceDialog):
         return 0
 
     def lines(self, width):
-        if self.typed:
+        if self.search.get_typed():
             return super().lines(width)
         rows = self.rows()
         start = max(min(self.row - self.SHOWN // 2, len(rows) - self.SHOWN), 0)

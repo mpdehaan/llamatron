@@ -317,7 +317,7 @@ class TutorialPlan:
         """Move a picker's cursor to the option at a place in its whole list, and press Enter: Up and Down through a list, and the arrows and Tab through a grid."""
         dialog = self.screen()
         for _ in range(MOST_MOVES):
-            if dialog.place == place:
+            if dialog.cursor.get_place() == place:
                 yield from self.press(keybindings.ChoiceDialog.CHOOSE)
                 return
             yield from self.press(self.towards_option(dialog=dialog, place=place))
@@ -326,7 +326,7 @@ class TutorialPlan:
     def towards_option(self, *, dialog, place):
         """Return the key that brings a picker's cursor nearer an option."""
         if not isinstance(dialog, GridChoiceDialog):
-            return Key.UP if place < dialog.place else Key.DOWN
+            return Key.UP if place < dialog.cursor.get_place() else Key.DOWN
         page, target_row, target_column = grid_place(dialog=dialog, place=place)
         if page != dialog.page:
             return Key.TAB
@@ -340,9 +340,9 @@ class TutorialPlan:
         page = self.screen()
         for _ in range(MOST_MOVES):
             labels = [field.label for field in page.fields()]
-            if labels[page.place] == label:
+            if labels[page.cursor.get_place()] == label:
                 return
-            yield from self.press(Key.UP if labels.index(label) < page.place else Key.DOWN)
+            yield from self.press(Key.UP if labels.index(label) < page.cursor.get_place() else Key.DOWN)
         raise TutorialStuck(label)
 
     def set_field(self, *, label, answer):
@@ -369,7 +369,7 @@ class TutorialPlan:
             if page.current() == key:
                 return
             keys = page.row_names()
-            yield from self.press(Key.UP if keys.index(key) < page.place else Key.DOWN)
+            yield from self.press(Key.UP if keys.index(key) < page.cursor.get_place() else Key.DOWN)
         raise TutorialStuck(key)
 
     # The song and the scales.
@@ -572,7 +572,7 @@ class TutorialPlan:
             rows = [what for what, _ in page.remembered_rows()]
             if page.listed() == listed:
                 return
-            yield from self.press(Key.UP if rows.index(listed) < page.place else Key.DOWN)
+            yield from self.press(Key.UP if rows.index(listed) < page.cursor.get_place() else Key.DOWN)
         raise TutorialStuck(listed.name)
 
     def add_to_group(self, *, name, group, scale_length):

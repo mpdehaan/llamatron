@@ -19,11 +19,10 @@
 from rich.text import Text
 
 from llamatron.strings import marks
-from llamatron.tui import drawing, keybindings, keys as keys_values
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.cursor import Cursor, Search, shown_around
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import cursor_mark, fit, Style
-from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.keys import Key
 
 
 class ChoiceDialog(Dialog):
@@ -42,8 +41,8 @@ class ChoiceDialog(Dialog):
         super().__init__()
         self.title = title
         self.options = list(options)
-        self.place = max(min(current, len(self.options) - 1), 0)
-        self.typed = drawing.NOTHING
+        self.cursor = Cursor(place=max(min(current, len(self.options) - 1), 0))
+        self.search = Search()
 
     def keys(self):
         result = [
@@ -52,7 +51,7 @@ class ChoiceDialog(Dialog):
             self.bind(self.KEYS.CHOOSE, action=self.choose),
             self.bind(self.KEYS.SEARCH, action=self.type_character, wants_key=True),
         ]
-        if self.typed:
+        if self.search.get_typed():
             result += [
                 self.bind(self.KEYS.ERASE, action=self.erase),
                 self.bind(self.KEYS.COMPLETE, action=self.complete),
@@ -63,74 +62,41 @@ class ChoiceDialog(Dialog):
         self.dismiss(None)
 
     def choose(self):
-        if self.place in self.matches():
-            self.dismiss(self.place)
+        if self.cursor.get_place() in self.matches():
+            self.dismiss(self.cursor.get_place())
 
     def takes_text(self):
         return True
 
     def matches(self):
         """Return the places of the options that contain what was typed, ignoring case: all of them with nothing typed."""
-        return places_matching(options=self.options, text=self.typed)
+        return self.search.places_matching(self.options)
 
     def move(self, name):
-        matches = self.matches()
-        if not matches:
-            return
-        if self.place not in matches:
-            self.place = matches[0]
-            return
-        self.place = matches[cursor_moved(place=matches.index(self.place), name=name, count=len(matches))]
+        self.cursor.move_among(name=name, places=self.matches())
 
     def type_character(self, name):
-        self.typed += keys_values.SPACE_CHARACTER if name == Key.SPACE else name
+        self.search.type_key(name)
         self.settle()
 
     def erase(self):
-        self.typed = self.typed[:-1]
+        self.search.erase()
         self.settle()
 
     def complete(self):
-        self.typed = completed(options=self.options, matches=self.matches(), typed=self.typed)
+        self.search.complete(self.options)
         self.settle()
 
     def settle(self):
         """Keep the highlight on a match, moving it to the first one when what was typed left it out."""
-        matches = self.matches()
-        if matches and self.place not in matches:
-            self.place = matches[0]
+        self.cursor.keep_among(self.matches())
 
     def lines(self, width):
         matches = self.matches()
         result = []
-        if self.typed:
-            result.append(Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM))
-        at = matches.index(self.place) if self.place in matches else 0
-        start = max(min(at - self.SHOWN // 2, len(matches) - self.SHOWN), 0)
-        for place in matches[start:start + self.SHOWN]:
-            result.append(Text(fit(text=cursor_mark(place == self.place) + str(self.options[place]), width=width)))
+        if self.search.get_typed():
+            result.append(Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.search.get_typed()), width=width), style=Style.DIM))
+        at = matches.index(self.cursor.get_place()) if self.cursor.is_on_one_of(matches) else 0
+        for place in shown_around(places=matches, at=at, room=self.SHOWN):
+            result.append(Text(fit(text=cursor_mark(place == self.cursor.get_place()) + str(self.options[place]), width=width)))
         return result
-
-
-# Searching a list, which the list pages share.
-
-def places_matching(*, options, text):
-    """Return the places of the options whose text contains what was typed, ignoring case: every place when nothing was."""
-    wanted = text.casefold()
-    return [place for place, option in enumerate(options) if wanted in str(option).casefold()]
-
-
-def completed(*, options, matches, typed):
-    """Return what was typed, completed as far as every matching option agrees from its start, like a shell does.
-
-    Matching is by containing, so completion only grows what was typed when every match starts
-    with it; otherwise what was typed stays as it is.
-    """
-    names = [str(options[place]) for place in matches]
-    if not names or not all(name.casefold().startswith(typed.casefold()) for name in names):
-        return typed
-    first = names[0]
-    length = len(typed)
-    while length < len(first) and all(name.casefold().startswith(first[:length + 1].casefold()) for name in names):
-        length += 1
-    return first[:length]

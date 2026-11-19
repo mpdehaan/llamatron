@@ -127,7 +127,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.assertIn(marks.MSG_NONE_SHOWN, shown)
         for family in labels.MSG_GM_FAMILIES[:4]:
             self.assertIn(marks.MSG_FLYOUT_CLOSED.format(name=family), shown)
-        self.assertEqual(self.dialog.place, 0)
+        self.assertEqual(self.dialog.cursor.get_place(), 0)
 
     async def test_a_familys_flyout_opens_and_enter_takes_a_sound_which_the_family_then_shows(self):
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN)
@@ -137,7 +137,7 @@ class TestSoundDialog(PatternPreviewTest):
         await self.press(Key.DOWN, keybindings.SoundDialog.CHOOSE)
         self.assertEqual(self.instrument().get_gm_sound(), limits.MIN_GM_SOUND + 1)
         await self.press(Key.ENTER)
-        self.assertEqual(self.app.screen.place, 1)
+        self.assertEqual(self.app.screen.cursor.get_place(), 1)
         self.assertIn(marks.MSG_FLYOUT_CHOSEN.format(name=labels.MSG_GM_FAMILIES[0], chosen=sound_text(limits.MIN_GM_SOUND + 1)), self.text())
         # The flyout opens on the sound the instrument has.
         await self.press(keybindings.SoundDialog.OPEN)
@@ -158,15 +158,15 @@ class TestSoundDialog(PatternPreviewTest):
     async def test_none_takes_the_sound_away(self):
         self.document.change(self.document.setlist().get_instrument(SYNTH).set_gm_sound, A_SOUND)
         await self.press(Key.ESCAPE, Key.ENTER)
-        self.assertEqual(self.app.screen.place, 1 + ITS_FAMILY)
+        self.assertEqual(self.app.screen.cursor.get_place(), 1 + ITS_FAMILY)
         await self.press(*[Key.UP] * (1 + ITS_FAMILY), keybindings.SoundDialog.CHOOSE)
         self.assertIsNone(self.instrument().get_gm_sound())
 
     async def test_the_cursor_stops_at_the_first_and_the_last_row_and_in_the_flyout(self):
         await self.press(Key.UP)
-        self.assertEqual(self.dialog.place, 0)
+        self.assertEqual(self.dialog.cursor.get_place(), 0)
         await self.press(*[Key.DOWN] * (len(labels.MSG_GM_FAMILIES) + 3))
-        self.assertEqual(self.dialog.place, len(labels.MSG_GM_FAMILIES))
+        self.assertEqual(self.dialog.cursor.get_place(), len(labels.MSG_GM_FAMILIES))
         self.assertIn(marks.MSG_FLYOUT_CLOSED.format(name=labels.MSG_GM_FAMILIES[-1]), self.text())
         await self.press(keybindings.SoundDialog.OPEN, *[Key.DOWN] * (limits.GM_FAMILY_SIZE + 2))
         self.assertEqual(self.dialog.flyout_place, limits.GM_FAMILY_SIZE - 1)

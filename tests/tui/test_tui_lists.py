@@ -250,13 +250,13 @@ class TestScalePage(UITest):
         self.assertIn(messages.MSG_ROOT_TITLE, self.dialog_text())
         lines = self.dialog_text().splitlines()
         self.assertIn('C   C#   D   D#   E   F   F#   G   G#   A   A#   B', '\n'.join(lines))
-        dialog.place = dialog.options.index(NoteName.C)
+        dialog.cursor.set_place(dialog.options.index(NoteName.C))
         await self.press(Key.RIGHT)
-        self.assertEqual(dialog.options[dialog.place], NoteName.C_SHARP)
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], NoteName.C_SHARP)
         await self.press(Key.DOWN)
-        self.assertEqual(dialog.options[dialog.place], NoteName.D_FLAT)
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], NoteName.D_FLAT)
         await self.press(Key.RIGHT)
-        self.assertEqual(dialog.options[dialog.place], NoteName.D)
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], NoteName.D)
         await self.press(Key.ENTER)
         self.assertEqual(self.root_and_kind(D_MAJOR), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
 
@@ -268,9 +268,9 @@ class TestScalePage(UITest):
         self.assertNotIn(DIMINISHED, text)
         self.assertNotIn(scale_type_name(ScaleType.HIRAJOSHI), text)
         self.assertLessEqual(len(text.splitlines()), 22)
-        dialog.place = dialog.options.index(scale_type_name(ScaleType.DORIAN))
+        dialog.cursor.set_place(dialog.options.index(scale_type_name(ScaleType.DORIAN)))
         await self.press(Key.DOWN)
-        self.assertEqual(dialog.options[dialog.place], scale_type_name(ScaleType.PHRYGIAN))
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], scale_type_name(ScaleType.PHRYGIAN))
         await self.press(Key.UP)
         self.assertIn(D_DORIAN_NOTES, self.dialog_text())
         await self.press(Key.ENTER)
@@ -278,7 +278,7 @@ class TestScalePage(UITest):
 
     async def test_the_scale_picker_shows_its_other_page(self):
         dialog = await self.open_scale_kinds()
-        dialog.place = dialog.options.index(scale_type_name(ScaleType.DORIAN))
+        dialog.cursor.set_place(dialog.options.index(scale_type_name(ScaleType.DORIAN)))
         first = self.dialog_text().splitlines()
         for word in [' COMMON ', ' JAZZ & WORLD ', marks.MSG_NEXT_PAGE_MARK, legends.KeyName.TAB_SHIFT_TAB, OTHER_PAGE]:
             self.assertIn(word, '\n'.join(first))
@@ -293,7 +293,7 @@ class TestScalePage(UITest):
         self.assertLessEqual(len(lines), 22)
         self.assertLessEqual(max(len(line) for line in lines), 76)
         # The cursor stays in its column, on the nearest row.
-        self.assertEqual(dialog.options[dialog.place], LYDIAN_AUGMENTED)
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], LYDIAN_AUGMENTED)
         await self.press(Key.TAB)
         self.assertEqual(dialog.page, 1)
         await self.press(Key.SHIFT_TAB, Key.SHIFT_TAB)
@@ -304,7 +304,7 @@ class TestScalePage(UITest):
         sizes = []
         for page in range(len(dialog.pages)):
             dialog.page = page
-            dialog.place = next(cell for row in dialog.grid() for cell in row if isinstance(cell, int))
+            dialog.cursor.set_place(next(cell for row in dialog.grid() for cell in row if isinstance(cell, int)))
             dialog.draw()
             lines = self.dialog_text().splitlines()
             sizes.append((len(lines), {len(line) for line in lines}))
@@ -321,26 +321,26 @@ class TestScalePage(UITest):
 
     async def test_arrows_cross_to_the_other_page(self):
         dialog = await self.open_scale_kinds()
-        dialog.place = dialog.options.index(scale_type_name(ScaleType.BLUES))
+        dialog.cursor.set_place(dialog.options.index(scale_type_name(ScaleType.BLUES)))
         await self.press(Key.RIGHT)
         self.assertEqual(dialog.page, 1)
-        self.assertEqual(dialog.options[dialog.place], LYDIAN_AUGMENTED)
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], LYDIAN_AUGMENTED)
         await self.press(Key.LEFT)
         self.assertEqual(dialog.page, 0)
-        self.assertEqual(dialog.options[dialog.place], scale_type_name(ScaleType.BLUES))
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], scale_type_name(ScaleType.BLUES))
         await self.press(Key.LEFT, Key.LEFT, Key.LEFT)
         # The first page doesn't go round to the last.
         self.assertEqual(dialog.page, 0)
-        self.assertEqual(dialog.options[dialog.place], scale_type_name(ScaleType.DORIAN))
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], scale_type_name(ScaleType.DORIAN))
         await self.press(Key.TAB, Key.RIGHT, Key.RIGHT, Key.RIGHT)
         self.assertEqual(dialog.page, 1)
-        self.assertEqual(dialog.options[dialog.place], scale_type_name(ScaleType.IWATO))
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], scale_type_name(ScaleType.IWATO))
 
     async def test_picking_a_world_scale(self):
         dialog = await self.open_scale_kinds()
-        dialog.place = dialog.options.index(scale_type_name(ScaleType.MAJOR))
+        dialog.cursor.set_place(dialog.options.index(scale_type_name(ScaleType.MAJOR)))
         await self.press(Key.TAB, Key.RIGHT, Key.RIGHT)
-        self.assertEqual(dialog.options[dialog.place], scale_type_name(ScaleType.HIRAJOSHI))
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], scale_type_name(ScaleType.HIRAJOSHI))
         self.assertIn('D hirajoshi: D E F A A#', self.dialog_text())
         await self.press(Key.ENTER)
         self.assertEqual(self.root_and_kind(D_HIRAJOSHI), (NoteName.D, scale_type_name(ScaleType.HIRAJOSHI)))
@@ -368,7 +368,7 @@ class TestGeneratorsPage(UITest):
         self.assertEqual([cells[0] for _, cells in page.rows()][:-1], [self.heading(kind=kind, closed=True) for kind in page.kinds()])
         self.assertEqual(set(page.kinds()), set(held))
         self.assertIsNone(page.current())
-        self.assertEqual(page.place, 0)
+        self.assertEqual(page.cursor.get_place(), 0)
 
     async def test_a_heading_opens_its_type_and_enter_on_a_generator_opens_its_editor(self):
         await self.press(keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE))
@@ -404,10 +404,10 @@ class TestGeneratorsPage(UITest):
         page = await self.open_page_on_the_arp()
         await self.press(forward_key(keybindings.GeneratorsPage.NEXT_TYPE))
         self.assertIsNone(page.current())
-        second = page.place
+        second = page.cursor.get_place()
         await self.press(back_key(keybindings.GeneratorsPage.NEXT_TYPE))
-        self.assertEqual(page.place, 0)
-        self.assertGreater(second, page.place)
+        self.assertEqual(page.cursor.get_place(), 0)
+        self.assertGreater(second, page.cursor.get_place())
 
     async def test_the_last_row_adds_with_enter(self):
         await self.press(keybindings.MainPage.GENERATORS)
@@ -525,9 +525,9 @@ class TestArpEditorFields(UITest):
     async def test_choosing_a_step_and_an_order(self):
         await self.select_field(labels.MSG_STEP_LABEL)
         await self.press(Key.ENTER)
-        self.app.screen.place = self.app.screen.options.index(QUARTER)
+        self.app.screen.cursor.set_place(self.app.screen.options.index(QUARTER))
         await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
-        self.app.screen.place = self.app.screen.options.index(Direction.RANDOM)
+        self.app.screen.cursor.set_place(self.app.screen.options.index(Direction.RANDOM))
         await self.press(Key.ENTER)
         self.assertEqual((self.up().get_step(), self.up().get_order()), (QUARTER, written_name(ChordOrder.RANDOM)))
 
@@ -546,11 +546,11 @@ class TestArpEditorFields(UITest):
         await self.select_field(labels.MSG_OCTAVE_JUMP_LABEL)
         await self.press(Key.ENTER)
         self.assertEqual(self.app.screen.options, [AFTER_CHORD, AFTER_EACH_NOTE])
-        self.app.screen.place = 1
+        self.app.screen.cursor.set_place(1)
         await self.press(Key.ENTER)
         self.assertEqual(self.up().get_octave_jump(), written_name(OctaveJump.AFTER_EACH_NOTE))
         await self.press(Key.ENTER)
-        self.app.screen.place = 0
+        self.app.screen.cursor.set_place(0)
         await self.press(Key.ENTER)
         self.assertIsNone(self.up().get_octave_jump())
 
@@ -840,11 +840,11 @@ class TestChainEditor(UITest):
             (GeneratorKind.GUITARIFY, ui_testing.PICKED), (GeneratorKind.FOLLOW_CHORDS, ui_testing.FOLLOWS), (GeneratorKind.PHRASING, ui_testing.BREATHES), (GeneratorKind.MUSICIAN, ui_testing.STRUMMER),
         ]
         self.assertEqual(self.app.screen.options[1:], [step_shown(kind=kind, name=name) for kind, name in named])
-        self.app.screen.place = 2
+        self.app.screen.cursor.set_place(2)
         await self.press(Key.ENTER)
         self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS)])
         await self.press(Key.DOWN, Key.ENTER)
-        self.app.screen.place = 1
+        self.app.screen.cursor.set_place(1)
         await self.press(Key.ENTER)
         self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.ARP, UP)])
         await self.press(keybindings.ChainEditor.COPY)

@@ -135,7 +135,7 @@ class TestKeyswitchMap(UITest):
         self.assertIn(cursor_mark(True) + SUSTAIN, self.text())
         # Down keeps the cursor on the names, so that one slot after another is named.
         await self.press(Key.DOWN)
-        self.assertEqual((dialog.place, dialog.cell), (STACCATO_SLOT, keyswitch_map_dialog.NAME_CELL))
+        self.assertEqual((dialog.cursor.get_place(), dialog.cell), (STACCATO_SLOT, keyswitch_map_dialog.NAME_CELL))
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertEqual(dialog.cell, keyswitch_map_dialog.NOTE_CELL)
         await self.press(MAP.NOTE)
@@ -296,7 +296,7 @@ class TestKeyswitchRow(PatternEditorTest):
         self.assertIn(messages.MSG_KEYSWITCH_DIALOG_TITLE.format(step=FIRST_STEP + 1), self.text())
         await self.press(PICK.FLIP)
         await self.press(keys.DIGITS[3])
-        self.assertEqual(dialog.place, 3)
+        self.assertEqual(dialog.cursor.get_place(), 3)
         await self.press(keys.DIGITS[9], keys.DIGITS[9])
         self.assertIsNone(self.value(row=Row.KEYSWITCH))
         await self.press(PICK.DONE)

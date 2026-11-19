@@ -87,7 +87,7 @@ class PatternsPageTest(UITest):
         """Move the cursor to a row by what the row is."""
         self.assertIn(listed, self.rows())
         while self.page.listed() != listed:
-            await self.press(Key.UP if self.rows().index(listed) < self.page.place else Key.DOWN)
+            await self.press(Key.UP if self.rows().index(listed) < self.page.cursor.get_place() else Key.DOWN)
 
     async def go_to_pattern(self, name):
         await self.go_to(Listed(patterns_page.PATTERN, name))
@@ -200,7 +200,7 @@ class TestPatternsPage(PatternsPageTest):
         self.assertIn(messages.MSG_SEARCH_STATUS.format(text=SEARCH_TEXT), self.text())
         self.assertNotIn(ui_testing.BEAT, self.text())
         await self.press(Key.TAB)
-        self.assertEqual(self.page.typed, SEARCH_HIT)
+        self.assertEqual(self.page.search.get_typed(), SEARCH_HIT)
         await self.press(Key.ENTER)
         self.assertEqual(self.page.current(), SEARCH_HIT)
         self.assertIn(ui_testing.BEAT, self.text())
@@ -337,7 +337,7 @@ class TestPatternGroups(PatternsPageTest):
         dialog = self.app.screen
         self.assertIsInstance(dialog, ChoiceDialog)
         self.assertEqual(dialog.options, [ui_testing.MELODIES, ui_testing.RHYTHMS, labels.MSG_NEW_GROUP_BUTTON])
-        self.assertEqual(dialog.options[dialog.place], ui_testing.MELODIES)
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], ui_testing.MELODIES)
         await self.press(Key.DOWN, Key.ENTER)
         self.assertEqual(self.group_of(ui_testing.TUNE), ui_testing.RHYTHMS)
         self.assertEqual(self.page.current(), ui_testing.TUNE)

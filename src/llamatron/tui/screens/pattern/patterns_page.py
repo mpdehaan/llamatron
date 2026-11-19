@@ -7,6 +7,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.naming import copy_name, is_taken, name_order, new_name
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
 from llamatron.tui import drawing, key_table, keybindings
+from llamatron.tui.cursor import Cursor
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
@@ -61,7 +62,7 @@ class PatternsPage(NamedListPage):
         # What the cursor was on when a search began, which ESC goes back to.
         self.before_search = None
         # The page opens with the cursor on its first pattern, where one shows, so that ENTER edits at once, as on every list.
-        self.place = self.first_pattern_place()
+        self.cursor = Cursor(place=self.first_pattern_place())
 
     # The rows.
 
@@ -136,7 +137,7 @@ class PatternsPage(NamedListPage):
     def listed(self):
         """Return what the cursor is on, which is never nothing, since the page always ends with its button."""
         self.clamp()
-        return self.remembered_rows()[self.place][0]
+        return self.remembered_rows()[self.cursor.get_place()][0]
 
     def remember_place(self):
         """Return what the cursor is on, a heading and a button included, for a redraw to find again."""
@@ -150,7 +151,7 @@ class PatternsPage(NamedListPage):
     def put_cursor_on_row(self, listed):
         rows = [what for what, _ in self.remembered_rows()]
         if listed in rows:
-            self.place = rows.index(listed)
+            self.cursor.set_place(rows.index(listed))
         self.clamp()
 
     def put_cursor_on(self, name):
@@ -192,9 +193,9 @@ class PatternsPage(NamedListPage):
     def jump_group(self, direction):
         """Move the cursor to the next group's heading, or the one before, staying put past the last or the first."""
         places = [place for place, (what, _) in enumerate(self.remembered_rows()) if what.kind == HEADING]
-        ahead = [place for place in places if place > self.place] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.place]
+        ahead = [place for place in places if place > self.cursor.get_place()] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.cursor.get_place()]
         if ahead:
-            self.place = ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1]
+            self.cursor.set_place(ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1])
 
     # A pattern.
 
@@ -333,13 +334,13 @@ class PatternsPage(NamedListPage):
         rows = self.remembered_rows()
         if not self.searching:
             return list(range(len(rows)))
-        typed = self.typed.lower()
+        typed = self.search.get_typed().lower()
         return [place for place, (what, _) in enumerate(rows) if what.kind == PATTERN and typed in what.name.lower()]
 
     def start_search(self):
         self.before_search = self.listed()
         self.searching = True
-        self.typed = drawing.NOTHING
+        self.search.clear()
         self.put_cursor_on_row(self.before_search)
         self.settle()
 

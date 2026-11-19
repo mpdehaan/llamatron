@@ -27,9 +27,9 @@ from rich.text import Text
 from llamatron.strings import labels, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
+from llamatron.tui.cursor import Cursor
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import legend, Style
-from llamatron.tui.key_table import cursor_moved
 
 # The OK button is the one Enter presses, so it is the one drawn selected.
 OK = 0
@@ -56,7 +56,7 @@ class RowDialog(Dialog):
         self.most = most
         # The row Bksp puts back.
         self.usual = list(usual)
-        self.place = 0
+        self.cursor = Cursor(place=0)
 
     def keys(self):
         result = [
@@ -72,24 +72,24 @@ class RowDialog(Dialog):
         return [*result, self.bind(self.KEYS.USUAL, action=self.put_back), self.bind(self.KEYS.DONE, action=lambda: self.dismiss(list(self.values)))]
 
     def move(self, name):
-        self.place = cursor_moved(place=self.place, name=name, count=len(self.values))
+        self.cursor.move(name=name, count=len(self.values))
 
     def nudge(self, offset):
         """Make the cursor's number one more or one less, stopping at the row's lowest and highest."""
-        self.values[self.place] = max(min(self.values[self.place] + offset, self.highest), self.lowest)
+        self.values[self.cursor.get_place()] = max(min(self.values[self.cursor.get_place()] + offset, self.highest), self.lowest)
 
     def insert_cell(self):
         """Insert a cell like the cursor's after it, and move onto it."""
-        self.values.insert(self.place + 1, self.values[self.place])
-        self.place += 1
+        self.values.insert(self.cursor.get_place() + 1, self.values[self.cursor.get_place()])
+        self.cursor.shift(1)
 
     def remove_cell(self):
-        del self.values[self.place]
-        self.place = min(self.place, len(self.values) - 1)
+        del self.values[self.cursor.get_place()]
+        self.cursor.set_place(min(self.cursor.get_place(), len(self.values) - 1))
 
     def put_back(self):
         self.values = list(self.usual)
-        self.place = min(self.place, len(self.values) - 1)
+        self.cursor.set_place(min(self.cursor.get_place(), len(self.values) - 1))
 
     def legend_lines(self, width):
         """Return the keys listed under the row, leaving out OK and CANCEL, which the buttons name."""
@@ -126,7 +126,7 @@ class RowDialog(Dialog):
     def number_line(self):
         line = Text(drawing.SPACE * len(self.level_label(ZERO)))
         for place, value in enumerate(self.values):
-            if place == self.place:
+            if place == self.cursor.get_place():
                 # The cursor's number is in reverse video, as the cursor's cell of the pattern and groove editors is.
                 line.append(str(value).center(CELL_WIDTH), style=Style.REVERSE)
             else:

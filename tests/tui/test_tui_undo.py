@@ -238,7 +238,7 @@ class TestOpenPageUndo(UndoTest):
         self.assertTrue(self.app.get_document().can_undo())
         await self.press(Key.CTRL_O, keybindings.ConfirmDialog.YES)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index(OTHER_FILE)
+        self.app.screen.cursor.set_place(rows.index(OTHER_FILE))
         await self.press(Key.ENTER)
         self.assertEqual(self.app.get_document().get_path(), OTHER_FILE)
         self.assertFalse(self.app.get_document().can_undo())

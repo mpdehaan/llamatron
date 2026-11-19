@@ -98,12 +98,12 @@ class RegistersPage(FieldPage):
 
     def move_in_grid(self, name):
         """Move the cursor a register up or down or a setting left or right, stopping at every edge."""
-        row, column = divmod(self.place, GRID_COLUMNS)
+        row, column = divmod(self.cursor.get_place(), GRID_COLUMNS)
         if name in (Key.UP, Key.DOWN):
             row = cursor_moved(place=row, name=name, count=len(file_format.REGISTER_NAMES))
         else:
             column = cursor_moved(place=column, name=name, count=GRID_COLUMNS)
-        self.place = row * GRID_COLUMNS + column
+        self.cursor.set_place(row * GRID_COLUMNS + column)
 
     def body(self, *, width, height):
         """Return the grid: the settings' names over their columns, then a row for each register, the cursor's cell in reverse
@@ -118,12 +118,12 @@ class RegistersPage(FieldPage):
         lines = [Text(drawing.NOTHING), heading]
         for row, register in enumerate(file_format.REGISTER_NAMES):
             line = Text(no_wrap=True)
-            line.append(cursor_mark(self.place // GRID_COLUMNS == row) + register.ljust(NAME_WIDTH - len(cursor_mark(False))), style=Style.BOLD)
+            line.append(cursor_mark(self.cursor.get_place() // GRID_COLUMNS == row) + register.ljust(NAME_WIDTH - len(cursor_mark(False))), style=Style.BOLD)
             for column in range(GRID_COLUMNS):
-                selected = self.place == row * GRID_COLUMNS + column
+                selected = self.cursor.get_place() == row * GRID_COLUMNS + column
                 line.append(padded(str(cells[row][column]).ljust(widths[column] - CELL_PADDING)), style=Style.REVERSE if selected else Style.PLAIN)
             lines.append(line)
-        lines += [Text(drawing.NOTHING), Text(drawing.SPACE + fields[self.place].label, style=Style.DIM)]
+        lines += [Text(drawing.NOTHING), Text(drawing.SPACE + fields[self.cursor.get_place()].label, style=Style.DIM)]
         return lines
 
     def number_field(self, *, name, setting, what, value):
