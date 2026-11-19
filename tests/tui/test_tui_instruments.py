@@ -42,7 +42,7 @@ SYNTH = 'synth'
 PORTS = ['IAC Driver Bus 1', 'Analog Four']
 GONE_PORT = 'Old Synth'
 # Where the editor asks for the ports.
-PORT_NAMES = 'llamatron.tui.screens.set.instrument_editor.output_port_names'
+PORT_NAMES = 'llamatron.tui.transport.output_port_names'
 SEED = 1
 
 

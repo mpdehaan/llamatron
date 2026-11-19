@@ -35,7 +35,7 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.document import Document
 from llamatron.tui.screens.shared import shared
-from llamatron.tui.silent_instruments import fluidsynth_installed, warn_of_silent_instruments
+from llamatron.tui.silent_instruments import warn_of_silent_instruments
 from llamatron.tui.uses import loop_error_lines
 
 # Where Save as starts when the set has no file yet.
@@ -267,7 +267,7 @@ def export_chosen(page, *, to):
     """Write the kind of export chosen. The WAV export says first that only the tracks playing through FluidSynth are in it, or that FluidSynth isn't installed."""
     if to != ExportKind.WAV:
         export_as(page, to=to)
-    elif not fluidsynth_installed():
+    elif not page.app.transport.fluidsynth_installed():
         page.tell(errors.ERR_CANT_EXPORT_TITLE, errors.ERR_WAV_NEEDS_FLUIDSYNTH)
     else:
         page.ask(dialog=ConfirmDialog(title=messages_text.MSG_WAV_EXPORT_TITLE, messages=[messages_text.MSG_WAV_EXPORT_NOTE]), then=lambda _: export_as(page, to=to))

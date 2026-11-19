@@ -18,11 +18,9 @@
 
 from llamatron.composition import limits
 from llamatron.composition.generator_settings import written_name
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import ChordOrder
 from llamatron.music import time_signature
 from llamatron.music.time_signature import is_time_signature
-from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors, marks, messages, names
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -80,12 +78,11 @@ def play_through(*, page, play, what, said):
     if problem is not None:
         page.tell(problem.title, *problem.lines)
         return
-    try:
-        waits = play()
-    except (SongFileError, SenderNotStarted) as error:
-        page.tell(errors.ERR_CANT_PLAY_TITLE, str(error))
+    tried = page.app.transport.try_play(play)
+    if tried.refusal is not None:
+        page.tell(errors.ERR_CANT_PLAY_TITLE, tried.refusal)
         return
-    page.say(messages.MSG_STARTS_AT_NEXT_BAR.format(what=what) if waits else said)
+    page.say(messages.MSG_STARTS_AT_NEXT_BAR.format(what=what) if tried.answer else said)
 
 
 def scene_name(*, scene, index):
