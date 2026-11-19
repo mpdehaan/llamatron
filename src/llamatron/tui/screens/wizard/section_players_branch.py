@@ -52,7 +52,7 @@ class SectionPlayersBranch(Branch):
         own = choices.tune_player()
         for role in choices.section_players(kind):
             part = choices.section_part(kind=kind, role=role)
-            usual = part == wizard_limits.ACCOMPANIMENT if role != own else part != wizard_limits.RESTS_PART or kind not in choices.tune_kinds()
+            usual = part == wizard_limits.ACCOMPANIMENT if role != own else part != wizard_limits.RESTS_PART or kind not in choices.get_tunes().tune_kinds()
             if not usual:
                 return True
         return False

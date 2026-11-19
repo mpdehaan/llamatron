@@ -255,9 +255,9 @@ class HookChoices(ChoicesPart):
         many steps a bar has, and each note. The notes are the section's as they stand, a person's own where the section was
         edited by hand. None where the song has no hook or the section's notes do not divide into the melody's bars."""
         kind = self.hook_kind()
-        if kind is None or not self.has_hook() or self._choices.tune_place(kind) is None or self._choices.tune_player_in(kind) is None:
+        if kind is None or not self.has_hook() or self._choices.get_tunes().tune_place(kind) is None or self._choices.get_tunes().tune_player_in(kind) is None:
             return None
-        pattern = self._choices.tune_pattern(kind)
+        pattern = self._choices.get_tunes().tune_pattern(kind)
         bar = self._choices.melody_habits()[melody_writer.GRID]
         if pattern is None or pattern[tune_notation.STEPS] % bar:
             return None

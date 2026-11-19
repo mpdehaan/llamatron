@@ -136,12 +136,12 @@ class TestWizardMelody(CompositionTest):
 
     async def test_the_melody_is_given_to_another_player(self):
         choices = self.choices()
-        other = next(role for role in choices.tune_players_offered() if role != choices.tune_played_by())
+        other = next(role for role in choices.get_tunes().tune_players_offered() if role != choices.get_tunes().tune_played_by())
         title = self.title(other)
         await self.select_field(labels.MSG_WIZARD_TUNE_LABEL)
         await self.press(Key.ENTER)
         await self.pick(title)
-        self.assertEqual(choices.tune_played_by(), other)
+        self.assertEqual(choices.get_tunes().tune_played_by(), other)
 
 
 class TestWizardSectionMelody(CompositionTest):
@@ -182,27 +182,27 @@ class TestWizardSectionMelody(CompositionTest):
         self.change_first_step()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertTrue(choices.tune_is_own(A_KIND))
+        self.assertTrue(choices.get_tunes().tune_is_own(A_KIND))
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         self.assertEqual(self.wizard().field().label, labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertFalse(choices.tune_is_own(A_KIND))
+        self.assertFalse(choices.get_tunes().tune_is_own(A_KIND))
 
     async def test_regenerate_asks_first_starting_on_no_and_writes_another_melody_with_nothing_kept(self):
         choices = self.choices()
-        first = choices.tune_pattern(A_KIND)
+        first = choices.get_tunes().tune_pattern(A_KIND)
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         name = messages.MSG_WIZARD_MELODY_OF.format(kind=A_KIND)
         self.assertEqual(self.app.screen.title, messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name))
         await self.press(Key.ENTER)
-        self.assertEqual(choices.tune_pattern(A_KIND), first)
+        self.assertEqual(choices.get_tunes().tune_pattern(A_KIND), first)
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.tune_pattern(A_KIND), first)
+        self.assertNotEqual(choices.get_tunes().tune_pattern(A_KIND), first)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=name), self.text())
 
     async def test_the_panel_has_four_buttons_edit_first_with_no_key_of_their_own_and_listen_names_the_melody(self):
@@ -233,7 +233,7 @@ class TestWizardSectionMelody(CompositionTest):
         self.assertEqual(wizard.field().label, buttons[-2])
         what, place, track = self.wizard().branch().listens()
         self.assertEqual(what, messages.MSG_WIZARD_MELODY_OF.format(kind=A_KIND))
-        self.assertEqual((place, track), (self.choices().tune_place(A_KIND), self.choices().tune_player_in(A_KIND)))
+        self.assertEqual((place, track), (self.choices().get_tunes().tune_place(A_KIND), self.choices().get_tunes().tune_player_in(A_KIND)))
 
     async def test_the_chorus_with_the_hook_shows_where_the_hook_sits_and_the_gauges_of_its_other_lines(self):
         choices = self.choices()
@@ -469,8 +469,8 @@ class TestWizardHooks(CompositionTest):
         choices = self.choices()
         what, scene, player = self.wizard().branch().listens()
         self.assertEqual((scene, player), (choices.get_hook().hook_scene(), choices.tune_player()))
-        other = next(role for role in choices.tune_players_offered() if role != choices.tune_player())
-        choices.set_tune_played_by(other)
+        other = next(role for role in choices.get_tunes().tune_players_offered() if role != choices.tune_player())
+        choices.get_tunes().set_tune_played_by(other)
         await self.press(Key.DOWN, Key.UP)
         what, scene, player = self.wizard().branch().listens()
         self.assertEqual(player, other)
@@ -487,7 +487,7 @@ class TestWizardHooks(CompositionTest):
         self.change_first_step()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertTrue(choices.tune_is_own(kind))
+        self.assertTrue(choices.get_tunes().tune_is_own(kind))
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         # Notes written by hand are never written over by another hook.
         self.assertNotIn(labels.MSG_WIZARD_REGENERATE_BUTTON, self.field_labels())

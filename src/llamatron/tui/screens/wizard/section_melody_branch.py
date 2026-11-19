@@ -56,9 +56,9 @@ class SectionMelodyBranch(Branch):
     def summary(self):
         """Return whether the melody was edited by hand, or who plays it."""
         choices = self.get_choices()
-        if choices.tune_is_own(self._kind):
+        if choices.get_tunes().tune_is_own(self._kind):
             return labels.MSG_WIZARD_NOTES_EDITED
-        player = choices.tune_player_in(self._kind)
+        player = choices.get_tunes().tune_player_in(self._kind)
         return choices.role_title(player) if player is not None else labels.MSG_WIZARD_NOBODY
 
     def fields(self):
@@ -133,7 +133,7 @@ class SectionMelodyBranch(Branch):
     def buttons(self):
         """Return the buttons that open the melody's notes in the pattern editor, that have the melody written again, and that
         hear it, alone and with the band, each reached with the arrows."""
-        if self.get_choices().tune_player_in(self._kind) is None:
+        if self.get_choices().get_tunes().tune_player_in(self._kind) is None:
             return []
         page = self.get_page()
         choices = self.get_choices()
@@ -142,9 +142,9 @@ class SectionMelodyBranch(Branch):
         def give_back():
             question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=kind)
             page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True),
-                     then=page.choosing(lambda _: choices.set_tune_pattern(kind=kind, pattern=None)))
+                     then=page.choosing(lambda _: choices.get_tunes().set_tune_pattern(kind=kind, pattern=None)))
         # On notes edited by hand, the delete key on the button gives the notes back to the wizard, after a question.
-        own = choices.tune_is_own(kind)
+        own = choices.get_tunes().tune_is_own(kind)
         return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=give_back if own else None,
                        clear_what=legends.MSG_TUNE_USUAL_WHAT),
                 Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT),
@@ -154,13 +154,13 @@ class SectionMelodyBranch(Branch):
     def remarks(self, width):
         """Return the line under the buttons that says whose the melody's notes are: the wizard's, or edited by hand."""
         choices = self.get_choices()
-        if not choices.is_ready() or choices.tune_player_in(self._kind) is None:
+        if not choices.is_ready() or choices.get_tunes().tune_player_in(self._kind) is None:
             return []
-        return [Text(drawing.INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.tune_is_own(self._kind) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
+        return [Text(drawing.INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.get_tunes().tune_is_own(self._kind) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
 
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the first section of the kind."""
-        return messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=self._kind), self.get_choices().tune_place(self._kind), None
+        return messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=self._kind), self.get_choices().get_tunes().tune_place(self._kind), None
 
     def regenerate(self):
         """Have the kind's melody written again, with nothing kept of the old one, after asking."""
@@ -169,7 +169,7 @@ class SectionMelodyBranch(Branch):
         name = messages.MSG_WIZARD_MELODY_OF.format(kind=self._kind)
 
         def written(_):
-            page.choosing(choices.new_tune_take)(self._kind)
+            page.choosing(choices.get_tunes().new_tune_take)(self._kind)
             page.say(messages.MSG_WIZARD_REGENERATED.format(name=name))
         page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True), then=written)
 
@@ -179,6 +179,6 @@ class SectionMelodyBranch(Branch):
     def listens(self):
         """Listen plays the melody's player alone in the first section of the kind."""
         choices = self.get_choices()
-        if choices.tune_place(self._kind) is None or choices.tune_player_in(self._kind) is None:
+        if choices.get_tunes().tune_place(self._kind) is None or choices.get_tunes().tune_player_in(self._kind) is None:
             return None
-        return messages.MSG_WIZARD_MELODY_OF.format(kind=self._kind), choices.tune_place(self._kind), choices.tune_player_in(self._kind)
+        return messages.MSG_WIZARD_MELODY_OF.format(kind=self._kind), choices.get_tunes().tune_place(self._kind), choices.get_tunes().tune_player_in(self._kind)

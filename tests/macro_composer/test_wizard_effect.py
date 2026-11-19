@@ -304,7 +304,7 @@ def every_choice(choices):
     for character in choices.melody_characters_offered():
         yield MELODY_CHARACTER_CHOICE, character, lambda made, character=character: made.set_melody_character(character), [nothing_first]
     # A kind of section's own melody: each height but the genre's, and each way of busy but the song's.
-    for kind in choices.tune_kinds():
+    for kind in choices.get_tunes().tune_kinds():
         for field in choices.section_melody_fields(kind):
             for value in choices.section_melody_ways_offered(kind=kind, field=field):
                 if value != choices.get_section_melody(kind=kind, field=field):
@@ -395,17 +395,17 @@ def every_choice(choices):
         if field in without_plan(choices).section_own_fields(A_SECOND_PLACE) and value != without_plan(choices).section_from_plan(place=A_SECOND_PLACE, field=field):
             yield SECTION_OWN, (field, value, NO_PLAN), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [switch_plan_off]
     # A tune written by hand, for each kind of section that has one: its first note another degree.
-    for kind in choices.tune_kinds():
-        if choices.tune_pattern(kind) is not None:
-            yield OWN_TUNE, kind, lambda made, kind=kind: made.set_tune_pattern(kind=kind, pattern=first_degree_changed(made.tune_pattern(kind))), [nothing_first]
+    for kind in choices.get_tunes().tune_kinds():
+        if choices.get_tunes().tune_pattern(kind) is not None:
+            yield OWN_TUNE, kind, lambda made, kind=kind: made.get_tunes().set_tune_pattern(kind=kind, pattern=first_degree_changed(made.get_tunes().tune_pattern(kind))), [nothing_first]
         for place in choices.get_solos().solo_places():
             yield SOLO_TAKE, place, lambda made, place=place: made.get_solos().new_solo_take(place), [nothing_first]
             yield OWN_SOLO_NOTES, place, lambda made, place=place: made.get_solos().set_solo_pattern(place=place, pattern=first_degree_changed(made.get_solos().solo_pattern(place))), [nothing_first]
     # Who plays the tune: each other player for the song, and for each kind of section each other player and nobody.
     # A song with no tune, as some electronic kinds, offers neither.
-    for role in choices.tune_players_offered() if choices.tune_kinds() else []:
-        if role != choices.tune_played_by():
-            yield TUNE_BY_SONG_CHOICE, role, lambda made, role=role: made.set_tune_played_by(role), [nothing_first]
+    for role in choices.get_tunes().tune_players_offered() if choices.get_tunes().tune_kinds() else []:
+        if role != choices.get_tunes().tune_played_by():
+            yield TUNE_BY_SONG_CHOICE, role, lambda made, role=role: made.get_tunes().set_tune_played_by(role), [nothing_first]
     # What each player plays in each kind of section: each part offered but the one the player has. A riff is written for the
     # first player who can have one and known by every such player, so that it is among what each is offered.
     def with_a_riff(made):
@@ -420,7 +420,7 @@ def every_choice(choices):
             for part in staged.section_parts_offered(kind=kind, role=role):
                 if part != staged.section_part(kind=kind, role=role):
                     yield PART_IN_KIND, (kind, role, part), lambda made, kind=kind, role=role, part=part: made.set_section_part(kind=kind, role=role, part=part), [with_a_riff if staged.get_riffs().riff_instruments() else nothing_first]
-    if choices.tune_kinds():
+    if choices.get_tunes().tune_kinds():
         # The tune delivered with no Phrasing, and with each setting of a Phrasing moved from what one starts with.
         yield TUNE_PHRASING_CHOICE, False, lambda made: made.set_tune_phrasing(False), [nothing_first]
         for setting, offered in PHRASING_OFFERED_VALUES.items():
@@ -451,8 +451,8 @@ def every_choice(choices):
             other = wizard_limits.RIFF_SETTINGS[field][1]
             yield A_RIFF_SETTING, (field, other), lambda made, role=role, kind=kind, field=field, other=other: played(made, role=role, kind=kind, settings={field: other}), [nothing_first]
     # Another take of a tune, for each kind of section that has one.
-    for kind in choices.tune_kinds():
-        yield TUNE_TAKE, kind, lambda made, kind=kind: made.new_tune_take(kind), [nothing_first]
+    for kind in choices.get_tunes().tune_kinds():
+        yield TUNE_TAKE, kind, lambda made, kind=kind: made.get_tunes().new_tune_take(kind), [nothing_first]
     # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
     for place in range(len(choices.section_labels())):
         lines = choices.section_lines(place)

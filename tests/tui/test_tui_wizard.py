@@ -1450,7 +1450,7 @@ class TestWizardComposition(WizardTest):
         choices = self.choices()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
         shown = self.text()
-        player = choices.role_title(choices.tune_played_by())
+        player = choices.role_title(choices.get_tunes().tune_played_by())
         for name, value in ((labels_text.MSG_WIZARD_CHORDS_BRANCH, labels_text.MSG_WIZARD_ANY_PROGRESSION), (labels_text.MSG_WIZARD_MELODY_BRANCH, player),
                             (labels_text.MSG_WIZARD_RIFFS_BRANCH, str(len(choices.get_riffs().riff_names())))):
             self.assertIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=len(WIDEST_COMPOSITION_BRANCH), value=value), shown)
@@ -1459,7 +1459,7 @@ class TestWizardComposition(WizardTest):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         names = [branch.name() for _, branch in self.wizard().rows()]
         start = names.index(labels_text.MSG_WIZARD_MELODY_BRANCH) + 1
-        kinds = self.choices().tune_kinds()
+        kinds = self.choices().get_tunes().tune_kinds()
         # The melodies are a group of their own, open from the start, the hook's panel first in it.
         # The intro's panel is last in the group, since the intro's melody is made from the hook.
         # Each solo has a panel after the sections' melodies, the first named for the kind alone.
