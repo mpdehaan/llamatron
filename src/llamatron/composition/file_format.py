@@ -745,6 +745,10 @@ STATEMENT_OF_ROW = {row: (kind, part) for kind, rows in STATEMENT_ROWS.items() f
 # The kinds that change how long a pass lasts, so that what the clip plays and changes is known only by playing it with the registers.
 STATEMENTS_CUTTING_A_PASS = (StepStatement.STOP, StepStatement.RESTART)
 
+# The rows that say which notes a step plays, which clearing a pattern down to its pitch keeps, and those of them that make a note a chord.
+CHORD_ROWS = [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION]
+PITCH_ROWS = [Row.DEGREE, Row.OCTAVE, Row.ACCIDENTAL, *CHORD_ROWS]
+
 PATTERN_ROWS = [
     Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.ACCENT, Row.PROBABILITY, Row.GLIDE,
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,

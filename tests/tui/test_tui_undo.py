@@ -65,6 +65,7 @@ from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
+from tests.support.pattern_editor_testing import munge
 from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
 from tests.support.ui_testing import SWAY, a_song, fixed_text, LEAD, leaf_pages, RHYTHMS, ROLLS, TUNE, UITest, UP_ARP, key_of
 
@@ -367,9 +368,7 @@ class TestPatternEditorUndo(UndoTest):
     async def test_a_munge_is_one_step(self):
         before = self.data()
         await self.press(Key.RIGHT)
-        await self.reconfigure(Reconfigure.MUNGE)
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        await self.press(*[Key.DOWN] * Munge.REVERSE, Key.ENTER)
+        await munge(test=self, choice=Munge.REVERSE)
         self.assertNotEqual(self.data(), before)
         await self.check_undo_and_redo(before=before, after=self.data())
 

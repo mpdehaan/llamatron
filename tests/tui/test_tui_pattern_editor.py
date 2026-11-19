@@ -94,7 +94,7 @@ class TestPatternEditor(PatternEditorTest):
         await self.press(keybindings.PatternEditor.RECONFIGURE)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options, reconfigure_choices(drum=False))
-        self.assertEqual(self.app.screen.options[Reconfigure.MUNGE], legends.What.MUNGE)
+        self.assertNotIn(legends.What.MUNGE, self.app.screen.options)
         self.assertEqual(self.app.screen.options[Reconfigure.RENAME], legends.What.RENAME)
         self.assertEqual(self.app.screen.options[Reconfigure.DRUM], legends.MSG_DRUM_ON_WHAT)
         await self.press(Key.ESCAPE)

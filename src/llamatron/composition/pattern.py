@@ -23,9 +23,11 @@ values, editing single values, resizing and rearranging it, and working out what
 from llamatron.composition.conditions import check_statement, statement_of
 from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, reading, time_signature, written_length
 from llamatron.composition.file_format import (
-    ACCIDENTALS, CC_ROWS, DIRECTIONS, PATTERN_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Direction, PatternSetting, Row,
-    REGISTER_SET_ROWS, STATEMENT_PARTS, STATEMENT_ROWS, STATEMENTS_CUTTING_A_PASS, StepStatement,
+    ACCIDENTALS, CC_ROWS, CHORD_ROWS, DIRECTIONS, PATTERN_ROWS, PITCH_ROWS, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_VELOCITY_ROWS, Direction, PatternSetting, Row,
+    REGISTER_SET_ROWS, STATEMENT_OF_ROW, STATEMENT_PARTS, STATEMENT_ROWS, STATEMENTS_CUTTING_A_PASS, StepStatement,
 )
+from math import floor
+
 from llamatron.music.note import Note
 from llamatron.support.random_source import random_source
 from llamatron.composition import limits
@@ -43,6 +45,8 @@ from llamatron.support.revised import notes_change
 FIRST_STEP_NUMBER = 1
 # The first step, which cannot start the pattern over, since that would take no time, and where a statement's register stands among its rows.
 FIRST_STEP = 0
+# What is added before rounding down, so that a value halfway between two whole numbers goes up.
+HALF = 0.5
 REGISTER_PART = 0
 # A pattern's settings besides its steps and rows, each described once, in the order they're written to a file.
 SETTINGS = described(
@@ -470,9 +474,145 @@ class Pattern(PatternNotes, LlamaData):
         """Put the steps in a new order, given as the old place of each new step, with every value of a step moving together."""
         if sorted(order) != list(range(self._steps)):
             raise InvalidValue(errors.ERR_PATTERN_NOT_AN_ORDER.format(order=order))
+        self.take_steps(order)
+
+    @notes_change
+    def take_steps(self, order):
+        """Make the pattern of its own steps in a new order, given as the old place of each new step, where a step may come more than once: the pattern is then as long as the order."""
+        if not order or len(order) > limits.MAX_STEPS or any(not is_whole_number_from(value=step, lowest=0, highest=self._steps - 1) for step in order):
+            raise InvalidValue(errors.ERR_PATTERN_NOT_AN_ORDER.format(order=order))
         for row, values in self._rows.items():
             if values is not None:
-                self._rows[row] = [values[step] for step in order]
+                self._rows[row] = [own_step_value(values[step]) for step in order]
+        self._steps = len(order)
+        # The first step can never start the pattern over, since the pattern would never get past it.
+        for row in STATEMENT_ROWS[StepStatement.RESTART]:
+            if self._rows[row] is not None:
+                self._rows[row][FIRST_STEP] = blank_value(row)
+
+    def repeat_at_end(self, *, first, last):
+        """Add a copy of the steps from first through last after the last step."""
+        self._check_step(first)
+        self._check_step(last)
+        self.take_steps([*range(self._steps), *range(first, last + 1)])
+
+    def repeat_at_start(self, *, first, last):
+        """Put a copy of the steps from first through last before the first step."""
+        self._check_step(first)
+        self._check_step(last)
+        self.take_steps([*range(first, last + 1), *range(self._steps)])
+
+    def roll(self, steps):
+        """Turn the pattern so many steps to the left, or to the right when negative: a step pushed off one end comes in at the other."""
+        self.take_steps([(step + steps) % self._steps for step in range(self._steps)])
+
+    def shuffle_from(self, step):
+        """Put a step and every step after it in a random order among themselves."""
+        self._check_step(step)
+        self._shuffle_part(first=step, last=self._steps - 1)
+
+    def shuffle_through(self, step):
+        """Put a step and every step before it in a random order among themselves."""
+        self._check_step(step)
+        self._shuffle_part(first=FIRST_STEP, last=step)
+
+    def _shuffle_part(self, *, first, last):
+        order = list(range(self._steps))
+        part = order[first:last + 1]
+        random_source(None).shuffle(part)
+        self.rearrange([*order[:first], *part, *order[last + 1:]])
+
+    @notes_change
+    def clear_rows(self, rows):
+        """Blank every step of some rows."""
+        for row in rows:
+            if self._rows[row] is not None:
+                self._rows[row] = _blank_row(row=row, steps=self._steps)
+
+    def clear_all_but_pitch(self):
+        """Blank everything a step holds but which notes it plays: its degree, octave, sharp or flat and chord stay."""
+        self.clear_rows([row for row in PATTERN_ROWS if row not in PITCH_ROWS])
+
+    def clear_chords(self):
+        """Blank every step's chord, with its tensions, borrowed scale and inversion, leaving the note each chord was built on."""
+        self.clear_rows(CHORD_ROWS)
+
+    def clear_register_changes(self):
+        """Blank the rows that set a register and that add to one."""
+        self.clear_rows([*REGISTER_SET_ROWS.values(), *REGISTER_ADD_ROWS.values()])
+
+    def clear_statements(self):
+        """Blank every step's statements about the registers: what stops the clip, starts the pattern over and mutes the step."""
+        self.clear_rows(list(STATEMENT_OF_ROW))
+
+    def mirror(self):
+        """Add its steps again after the last, backwards, so that it plays forward and then back and is twice as long."""
+        steps = list(range(self._steps))
+        self.take_steps([*steps, *steps[::-1]])
+
+    @notes_change
+    def interleave(self, other):
+        """Put a step of another pattern after each of its own, so that it is twice as long: the other's steps are read round and round, or as far as needed, and the other is not changed."""
+        if self._steps * 2 > limits.MAX_STEPS or other.is_drum() != self.is_drum():
+            raise InvalidValue(errors.ERR_PATTERN_CANNOT_INTERLEAVE)
+        for row in PATTERN_ROWS:
+            own = self._rows[row]
+            others = other._row_values(row)
+            if own is None and others is None:
+                continue
+            own = own or _blank_row(row=row, steps=self._steps)
+            others = others or _blank_row(row=row, steps=other.get_steps())
+            woven = []
+            for step in range(self._steps):
+                woven += [own[step], own_step_value(others[step % len(others)])]
+            self._rows[row] = woven
+        self._steps *= 2
+
+    @notes_change
+    def splice(self, *, other, before=False):
+        """Add another pattern's steps after its own last step, or before its first; the other is not changed."""
+        if self._steps + other.get_steps() > limits.MAX_STEPS or other.is_drum() != self.is_drum():
+            raise InvalidValue(errors.ERR_PATTERN_CANNOT_INTERLEAVE)
+        for row in PATTERN_ROWS:
+            own = self._rows[row]
+            others = other._row_values(row)
+            if own is None and others is None:
+                continue
+            own = own or _blank_row(row=row, steps=self._steps)
+            others = others or _blank_row(row=row, steps=other.get_steps())
+            taken = [own_step_value(value) for value in others]
+            self._rows[row] = [*taken, *own] if before else [*own, *taken]
+        self._steps += other.get_steps()
+
+    def _row_values(self, row):
+        """Return a row's values as held, or None for a row no step uses, for another pattern that takes copies of them."""
+        return self._rows[row]
+
+    @notes_change
+    def smooth_rows(self, *, rows, notes_only=False):
+        """Fill the blank steps between two values of a row from a straight line between the two, on each of some rows; with notes_only, a step that plays nothing is left blank, though it still counts along the line."""
+        for row in rows:
+            values = self._rows[row]
+            if values is None:
+                continue
+            given = [step for step, value in enumerate(values) if value is not None]
+            for start, end in zip(given, given[1:]):
+                for step in range(start + 1, end):
+                    if notes_only and not self.has_sound(step):
+                        continue
+                    values[step] = floor(values[start] + (values[end] - values[start]) * (step - start) / (end - start) + HALF)
+
+    def smooth_ccs(self):
+        """Fill the blank steps between two values of each CC row."""
+        self.smooth_rows(rows=CC_ROWS)
+
+    def smooth_velocity(self):
+        """Fill the blank velocities between two typed ones, on the steps that play a note."""
+        self.smooth_rows(rows=[Row.VELOCITY], notes_only=True)
+
+    def smooth_register_sets(self, register):
+        """Fill the blank steps between two values of the row that sets a register."""
+        self.smooth_rows(rows=[REGISTER_SET_ROWS[register]])
 
     def reverse_after(self, step):
         """Reverse every step after a step, leaving it and the steps before it where they are."""
@@ -513,6 +653,11 @@ class Pattern(PatternNotes, LlamaData):
 def _copied_rows(rows):
     """Return a copy of every row's list of values as the pattern holds them, with None for a row that isn't given, so the pattern owns its lists."""
     return {row: (None if rows.get(row) is None else ROW_DESCRIPTIONS[row].read(rows[row])) for row in PATTERN_ROWS}
+
+
+def own_step_value(value):
+    """Return a step's value as a step of its own may hold it: a list, such as a step's keyswitch slots, is copied, so that two steps never share one."""
+    return list(value) if isinstance(value, list) else value
 
 
 def blank_value(row):
