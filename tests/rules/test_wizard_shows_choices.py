@@ -30,12 +30,13 @@ from llamatron.macro_composer.kit_choices import KitChoices
 from llamatron.macro_composer.riff_choices import RiffChoices
 from llamatron.macro_composer.solo_choices import SoloChoices
 from llamatron.macro_composer.sound_choices import SoundChoices
+from llamatron.macro_composer.tune_choices import TuneChoices
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.tui.screens import wizard
 
 SETTER_START = 'set_'
 # The choices and every part of them.
-CHOICES_CLASSES = (WizardChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices)
+CHOICES_CLASSES = (WizardChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
 # What changes a choice without being named a setter.
 OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section', 'new_hook', 'new_second_hook')
 # Changes with no field of their own: the sections a song kept are taken back one by one through the other setters, and

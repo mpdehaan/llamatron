@@ -103,10 +103,10 @@ class HooksBranch(Branch):
             return []
         kind = choices.get_hook().hook_kind()
         buttons = []
-        if choices.tune_player_in(kind) is not None:
+        if choices.get_tunes().tune_player_in(kind) is not None:
             # The hook's notes are its section's: the editor opens on the whole section.
             buttons.append(Button(label=labels.MSG_WIZARD_EDIT_KIND_NOTES_BUTTON.format(kind=kind.capitalize()), enter=lambda: page.edit_tune(kind), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT))
-        if not choices.get_hook().hook_is_own() and not choices.tune_is_own(kind):
+        if not choices.get_hook().hook_is_own() and not choices.get_tunes().tune_is_own(kind):
             # Notes written by hand are never written over by another hook.
             buttons.append(Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT))
         buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT))
@@ -147,7 +147,7 @@ class HooksBranch(Branch):
             return None
         second = self.on_second_hook() and choices.get_hook().has_second_hook()
         scene = choices.get_hook().second_hook_scene() if second else choices.get_hook().hook_scene()
-        player = None if scene is None else choices.tune_player_in(choices.section_kind(scene))
+        player = None if scene is None else choices.get_tunes().tune_player_in(choices.section_kind(scene))
         if player is None:
             return None
         return (messages.MSG_WIZARD_LISTEN_SECOND_HOOK if second else messages.MSG_WIZARD_LISTEN_HOOK), scene, player
@@ -168,7 +168,7 @@ class HooksBranch(Branch):
         if choices.get_hook().hook_is_own():
             made = messages.MSG_WIZARD_HOOK_OWN
         else:
-            made = messages.MSG_WIZARD_NOTES_BY_HAND if choices.tune_is_own(kind) else messages.MSG_WIZARD_HOOK_MADE
+            made = messages.MSG_WIZARD_NOTES_BY_HAND if choices.get_tunes().tune_is_own(kind) else messages.MSG_WIZARD_HOOK_MADE
         if hook is not None and (section is None or bars is None or choices.get_hook().hook_is_own()):
             return [*(Text(drawing.INDENT + line) for line in picture_of(hook=hook, width=width)), Text(drawing.INDENT + made, style=Style.DIM)]
         said = messages.MSG_WIZARD_HOOK_IS_BARS.format(first=bars[0], last=bars[1], kind=kind)

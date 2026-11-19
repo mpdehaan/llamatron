@@ -276,7 +276,7 @@ class RiffChoices(ChoicesPart):
         trial = self._choices.trial_for_riffs()
         trial.get_riffs().play_alone(kind=kind, role=role, riff=riff)
         # The melody stays with whoever has it, so the riff's player is free of it in the trial's section.
-        if trial.tune_player_in(kind) == role:
+        if trial.get_tunes().tune_player_in(kind) == role:
             trial.set_extra(name=arranger.TUNE_BY, value={**(trial.get_extra(arranger.TUNE_BY) or {}), kind: arranger.NOBODY})
         setlist, name = trial.written_for_trial()
         pattern = composer_text.MSG_PART_OF_SECTION.format(role, riff)

@@ -58,21 +58,21 @@ class TestLostWithGenre(unittest.TestCase):
 
     def test_each_setting_of_the_band_changed_is_counted_once_and_a_setting_put_back_is_not(self):
         choices = chosen()
-        player = next(role for role in choices.roles_in() if role != choices.tune_player() and role in choices.tune_players_offered())
-        choices.set_tune_played_by(player)
+        player = next(role for role in choices.roles_in() if role != choices.tune_player() and role in choices.get_tunes().tune_players_offered())
+        choices.get_tunes().set_tune_played_by(player)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_BAND_SETTINGS: 1}, {}))
-        left_out = next(role for role in choices.roles_in() if role != player and role in choices.tune_players_offered())
+        left_out = next(role for role in choices.roles_in() if role != player and role in choices.get_tunes().tune_players_offered())
         choices.set_role_in(role=left_out, on=False)
         self.assertEqual(choices.lost_with_genre()[0][wizard_limits.LOST_BAND_SETTINGS], 2)
         choices.set_role_in(role=left_out, on=True)
-        choices.set_tune_played_by(None)
+        choices.get_tunes().set_tune_played_by(None)
         self.assertEqual(choices.lost_with_genre(), NOTHING_LOST)
 
     def test_chords_written_by_hand_the_form_and_new_takes_are_lost_and_counted_by_kind(self):
         choices = chosen()
-        choices.new_tune_take(A_KIND)
-        choices.new_tune_take(A_KIND)
-        choices.new_tune_take(ANOTHER_KIND)
+        choices.get_tunes().new_tune_take(A_KIND)
+        choices.get_tunes().new_tune_take(A_KIND)
+        choices.get_tunes().new_tune_take(ANOTHER_KIND)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_TUNE_TAKES: 2}, {}))
         choices.set_section_own(place=A_PLACE, field=arranger.CHORDS, value=OWN_CHORDS)
         lost, kept = choices.lost_with_genre()
@@ -82,7 +82,7 @@ class TestLostWithGenre(unittest.TestCase):
 
     def test_tunes_written_by_hand_are_kept_and_alone_lose_nothing(self):
         choices = chosen()
-        choices.set_tune_pattern(kind=A_KIND, pattern=choices.tune_pattern(A_KIND))
+        choices.get_tunes().set_tune_pattern(kind=A_KIND, pattern=choices.get_tunes().tune_pattern(A_KIND))
         self.assertEqual(choices.lost_with_genre(), ({}, {wizard_limits.KEPT_OWN_TUNES: 1}))
-        choices.new_tune_take(ANOTHER_KIND)
+        choices.get_tunes().new_tune_take(ANOTHER_KIND)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_TUNE_TAKES: 1}, {wizard_limits.KEPT_OWN_TUNES: 1}))

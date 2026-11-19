@@ -143,7 +143,7 @@ class WizardPage(FieldPage):
         """Return a setter that also notes that something was chosen, so that closing the wizard asks before the choices are lost."""
         def chosen(value):
             label = self.label_under_cursor()
-            chords = self._choices.own_tune_chords()
+            chords = self._choices.get_tunes().own_tune_chords()
             # What the panel offers is held while this cell is changed, and found again once the cursor leaves the cell.
             self._choices.hold_offers()
             result = setter(value)
@@ -159,7 +159,7 @@ class WizardPage(FieldPage):
     def ask_to_fit_tunes(self, *, before):
         """Ask whether to fit each tune written by hand whose chords a choice just changed: YES moves its long notes that clash to
         the nearest note of the new chord, and NO keeps the tune as written."""
-        after = self._choices.own_tune_chords()
+        after = self._choices.get_tunes().own_tune_chords()
         kinds = [kind for kind in after if kind in before and after[kind] != before[kind]]
         if not kinds:
             return
@@ -167,7 +167,7 @@ class WizardPage(FieldPage):
         def fit(_):
             for kind in kinds:
                 try:
-                    self._choices.fit_tune(kind)
+                    self._choices.get_tunes().fit_tune(kind)
                 except ValueError as problem:
                     self.refuse(str(problem))
                     return
@@ -211,14 +211,14 @@ class WizardPage(FieldPage):
         app until the editor closes; the notes are kept as the kind's own tune then, if they were changed."""
         try:
             setlist, _ = self._choices.made_for_listening()
-            name = self._choices.tune_pattern_name(kind)
+            name = self._choices.get_tunes().tune_pattern_name(kind)
         except (ValueError, SongFileError) as problem:
             self.refuse(str(problem))
             return
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_tune_pattern(kind=kind, pattern=pattern),
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.get_tunes().set_tune_pattern(kind=kind, pattern=pattern),
                           kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=kind), unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=kind))
 
     def edit_intro(self, *, place=None):
