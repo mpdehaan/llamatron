@@ -5,7 +5,7 @@ Reference notes for Claude, one part of `.claude/format/`: the packages, the mus
 Reference notes for Claude on what a set file holds, how it's played into clips and how those are
 written out, one short section per topic. `.claude/STYLE.md` holds the rules; this is the detail.
 `GUIDE.md` says the same things for people using the tracker, and `docs/ARCHITECTURE.md` for people
-reading the code. What a choice here replaced is in `.claude/DECISIONS.md`. When a module moves
+reading the code. When a module moves
 or is renamed, the paths in this file move with it: `tests/rules/test_doc_paths.py` checks that every
 source path named in the documents exists.
 

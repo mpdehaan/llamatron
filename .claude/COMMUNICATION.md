@@ -176,7 +176,7 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   to it only when the user asks. Nothing in it is started or proposed unprompted: the user picks
   what to do from it, one item at a time.
 - The rules carry no dates: a choice is marked as the user's design or rule, never dated (the user's
-  rule). `.claude/DECISIONS.md`, the history of the choices, is where dates belong.
+  rule).
 - Questions about undo, redo and what they should do to a page come to the user before anything is
   built, since the behaviour was agreed in detail (`.claude/tracker/SHARED.md`, "Undo and redo").
 - Claude records what it understands of what the user said, never the user's literal words: a rule, a decision or a note

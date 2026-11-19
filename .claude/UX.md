@@ -3,7 +3,7 @@
 The user's rules for what every page, dialog and message of the text UI does, kept apart from the
 rules for the code (`.claude/STYLE.md`) and the notes on how each page is built
 (`.claude/tracker/`) so that they can be reviewed on their own. `CLAUDE.md` imports this file,
-so it's in force in every session. What each rule replaced, and when, is in `.claude/DECISIONS.md`. `docs/GETTING_STARTED.md` tells people the same rules in its own words, under
+so it's in force in every session. `docs/GETTING_STARTED.md` tells people the same rules in its own words, under
 "Keyboard Control", and a change here changes it too. Consistency and usability matter
 more to the user than novelty: a new thing looks like the existing thing it's most like, and where
 a feature that already exists does what's being asked, that's pointed out first

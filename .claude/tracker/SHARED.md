@@ -6,9 +6,7 @@ Reference notes for Claude on the text UI in `src/llamatron/tui`, which is meant
 way people use the program. One short section per page or topic, so that the part about one thing
 can be found and read on its own. `.claude/UX.md` holds the rules for how the tracker behaves,
 `.claude/STYLE.md` the rules for the code, `GUIDE.md` is the user's guide to the same pages, and
-`.claude/format/` covers what the pages edit. Why each thing is the way it is, with the choices
-that were tried and dropped and their dates, is in `.claude/DECISIONS.md`, which isn't loaded into
-a session: read it before proposing to change something a section here says the user chose.
+`.claude/format/` covers what the pages edit.
 `tests/rules/test_doc_paths.py` checks that every source path named here exists, so paths move with the
 code.
 

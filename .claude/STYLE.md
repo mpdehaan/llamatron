@@ -188,8 +188,7 @@ rule being about the imports a file opens with: `internal_tools/sort_imports.sh 
 
 **A comment gives its reason, never whose choice it was.** A comment or a docstring in the code says what a thing is for and why, for a
 person maintaining the code: never that a choice was the user's, that the user asked for it, or the date it was made. Whose a choice
-was is kept in the notes of `.claude/`, which mark the user's rules and designs so that Claude asks before changing one, and the
-dates are in `.claude/DECISIONS.md` (the user's rule).
+was is kept in the notes of `.claude/`, which mark the user's rules and designs so that Claude asks before changing one (the user's rule).
 
 **A line whose purpose isn't obvious gets a name.** A regular expression or a long expression is
 given a function or method whose name says what it means, such as `is_root_note(text)`. That
@@ -347,7 +346,7 @@ as soon as it's built, without being asked, and the finished parts are trimmed o
 that's partly built; check it whenever a feature lands, since a change often finishes an idea
 noted under another heading, and add to it only when the user asks. When a module moves or is
 renamed, every path that names it in `CLAUDE.md`, `.claude/`, `docs/ARCHITECTURE.md`, `GUIDE.md`,
-`README.md` and `.claude/IDEAS.yml` moves with it, which `tests/rules/test_doc_paths.py` checks. The rules carry no dates; `.claude/DECISIONS.md`, the history, keeps them. A change to Python under `src/`
+`README.md` and `.claude/IDEAS.yml` moves with it, which `tests/rules/test_doc_paths.py` checks. The rules carry no dates. A change to Python under `src/`
 bumps the last number of `VERSION`; commits that only change docs, notes, tests or examples don't.
 
 **Working with the user** is covered by `.claude/COMMUNICATION.md`: committing, asking before
