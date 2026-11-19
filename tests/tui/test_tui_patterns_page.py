@@ -221,14 +221,14 @@ class TestPatternsPage(PatternsPageTest):
         self.assertEqual(self.page.current(), ui_testing.BEAT)
         await self.press(Key.ENTER)
         self.assertEqual(self.page.current(), ui_testing.BEAT)
-        self.assertFalse(self.document.setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertFalse(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
 
     async def test_a_search_left_with_esc_leaves_a_closed_group_closed(self):
         self.document.show_pattern_group(group=ui_testing.RHYTHMS, closed=True)
         await self.press(keybindings.PatternsPage.SEARCH)
         await self.type(ui_testing.BEAT)
         await self.press(Key.ESCAPE)
-        self.assertTrue(self.document.setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertTrue(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
         self.assertEqual(self.page.current(), ui_testing.TUNE)
 
 
@@ -254,7 +254,7 @@ class TestPatternGroups(PatternsPageTest):
         self.assertEqual(rows[1:1 + len(NUMBERED)], [Listed(patterns_page.PATTERN, name) for name in NUMBERED])
 
     async def test_the_ungrouped_heading_shows_only_while_a_pattern_is_in_no_group(self):
-        self.document.change(self.document.setlist().get_pattern(ui_testing.OTHER).set_group, ui_testing.RHYTHMS)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.OTHER).set_group, ui_testing.RHYTHMS)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(Listed(patterns_page.HEADING, patterns_page.UNGROUPED), self.rows())
         self.assertNotIn(labels.MSG_UNGROUPED, self.text())
@@ -270,16 +270,16 @@ class TestPatternGroups(PatternsPageTest):
 
     async def test_closing_a_group_is_kept_in_the_file_and_is_no_change_and_no_undo_step(self):
         dirty = self.document.is_dirty()
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.go_to_heading(ui_testing.RHYTHMS)
         await self.press(keybindings.PatternsPage.TOGGLE_GROUP)
         self.assertEqual(self.document.is_dirty(), dirty)
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
         await self.press(keybindings.Page.UNDO)
-        self.assertTrue(self.document.setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertTrue(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertEqual(self.document.get_setlist().to_data(), before)
         path = os.path.join(self.folder, SAVED_FILE)
-        self.document.setlist().write_file(path)
+        self.document.get_setlist().write_file(path)
         self.assertEqual(Setlist.read_file(path).get_closed_pattern_groups(), [ui_testing.RHYTHMS])
 
     async def test_page_down_and_page_up_jump_between_the_headings_and_stop_at_the_ends(self):
@@ -306,18 +306,18 @@ class TestPatternGroups(PatternsPageTest):
         self.assertEqual(self.group_of(NEW), ui_testing.RHYTHMS)
 
     async def test_the_last_button_makes_a_group_that_shows_with_its_button_alone_until_a_pattern_is_made(self):
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.go_to(Listed(patterns_page.NEW_GROUP, None))
         await self.press(keybindings.PatternsPage.NEW_GROUP)
         await self.answer(BASSES)
         self.assertEqual(self.page.listed(), Listed(patterns_page.NEW_PATTERN, BASSES))
         self.assertIn(self.heading(group=BASSES, count=0), self.text())
         # A group is only what its patterns hold, so an empty one is not in the set.
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
         await self.press(keybindings.PatternsPage.NEW_PATTERN, keybindings.NewPatternDialog.OK)
         await self.answer(NEW)
         self.assertEqual(self.group_of(NEW), BASSES)
-        self.assertEqual(self.document.setlist().get_pattern_groups(), [BASSES, ui_testing.MELODIES, ui_testing.RHYTHMS])
+        self.assertEqual(self.document.get_setlist().get_pattern_groups(), [BASSES, ui_testing.MELODIES, ui_testing.RHYTHMS])
 
     async def test_a_new_group_cannot_take_a_groups_name(self):
         await self.go_to(Listed(patterns_page.NEW_GROUP, None))
@@ -401,7 +401,7 @@ class TestPatternGroups(PatternsPageTest):
         self.assertIn(labels.MSG_NEW_GROUP_NAME_LABEL + MELODIES_COPY, self.text())
         await self.press(Key.ENTER)
         # The new group's name goes at the front: joined to a name that lacked the old group's, and in its place where the name began with it.
-        self.assertEqual(self.document.setlist().patterns_in_group(MELODIES_COPY), [MELODIES_COPY + MELODIES_RIFF[len(ui_testing.MELODIES):], TUNE_IN_COPY])
+        self.assertEqual(self.document.get_setlist().patterns_in_group(MELODIES_COPY), [MELODIES_COPY + MELODIES_RIFF[len(ui_testing.MELODIES):], TUNE_IN_COPY])
         self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, MELODIES_COPY))
         self.assertEqual(self.document.song().get_pattern(TUNE_IN_COPY).to_data(), {**self.document.song().get_pattern(ui_testing.TUNE).to_data(), **self.document.song().get_pattern(TUNE_IN_COPY).to_data()})
         await self.press(keybindings.Page.UNDO)
@@ -412,7 +412,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.go_to_heading(ui_testing.MELODIES)
         await self.press(keybindings.PatternsPage.COPY)
         await self.answer(SONGS)
-        self.assertIn(SONGS_RIFF, self.document.setlist().patterns_in_group(SONGS))
+        self.assertIn(SONGS_RIFF, self.document.get_setlist().patterns_in_group(SONGS))
 
     async def test_a_copy_whose_names_would_be_too_long_is_refused_whole_with_the_reason(self):
         names = self.names()
@@ -420,7 +420,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(keybindings.PatternsPage.COPY)
         await self.answer(LONG_GROUP)
         self.assertEqual(self.names(), names)
-        self.assertIn(errors.ERR_GROUP_COPY_NAME_TOO_LONG.format(name=self.document.setlist().names_in_copied_group(group=ui_testing.MELODIES, new=LONG_GROUP)[ui_testing.TUNE], most=limits.MAX_NAME_LENGTH)[:40], self.text())
+        self.assertIn(errors.ERR_GROUP_COPY_NAME_TOO_LONG.format(name=self.document.get_setlist().names_in_copied_group(group=ui_testing.MELODIES, new=LONG_GROUP)[ui_testing.TUNE], most=limits.MAX_NAME_LENGTH)[:40], self.text())
 
     async def test_a_copy_cannot_take_a_groups_name_and_esc_copies_nothing(self):
         names = self.names()
@@ -435,12 +435,12 @@ class TestPatternGroups(PatternsPageTest):
         self.document.show_pattern_group(group=ui_testing.RHYTHMS, closed=True)
         self.page.put_cursor_on(ui_testing.BEAT)
         self.assertEqual(self.page.current(), ui_testing.BEAT)
-        self.assertFalse(self.document.setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertFalse(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
 
     async def test_the_closed_groups_in_a_file_are_only_groups_that_exist(self):
         self.document.show_pattern_group(group=ui_testing.RHYTHMS, closed=True)
-        self.document.change(self.document.setlist().rename_pattern_group, old=ui_testing.RHYTHMS, new=BASSES)
-        self.assertEqual(self.document.setlist().get_closed_pattern_groups(), [BASSES])
-        self.document.change(self.document.setlist().ungroup_patterns, BASSES)
-        self.assertNotIn(BASSES, self.document.setlist().get_closed_pattern_groups())
-        self.assertNotIn(file_format.CLOSED_PATTERN_GROUPS, self.document.setlist().to_data())
+        self.document.change(self.document.get_setlist().rename_pattern_group, old=ui_testing.RHYTHMS, new=BASSES)
+        self.assertEqual(self.document.get_setlist().get_closed_pattern_groups(), [BASSES])
+        self.document.change(self.document.get_setlist().ungroup_patterns, BASSES)
+        self.assertNotIn(BASSES, self.document.get_setlist().get_closed_pattern_groups())
+        self.assertNotIn(file_format.CLOSED_PATTERN_GROUPS, self.document.get_setlist().to_data())

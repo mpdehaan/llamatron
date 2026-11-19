@@ -150,7 +150,7 @@ class TestRecordDemo(unittest.TestCase):
     def test_assigning_makes_one_recorder_instrument_per_channel_on_the_port_and_turns_real_time_on(self):
         with contextlib.redirect_stdout(io.StringIO()) as said:
             self.tool.assign_tracks(document=self.document, channels=[2, 2], port=PORT)
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         name = self.tool.INSTRUMENT_NAME.format(channel=2)
         self.assertEqual(setlist.get_instrument_names(), [name])
         self.assertEqual(setlist.get_instrument(name).get_device(), PORT)
@@ -162,14 +162,14 @@ class TestRecordDemo(unittest.TestCase):
 
     def test_a_dash_keeps_a_tracks_own_instrument_and_a_track_with_none_stays_silent(self):
         self.document.add_instrument(OWN)
-        self.document.change(self.document.setlist().get_instrument(OWN).set_device, OWN_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(OWN).set_device, OWN_PORT)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=OWN)
         with contextlib.redirect_stdout(io.StringIO()) as said:
             self.tool.assign_tracks(document=self.document, channels=[None, None], port=PORT)
         song = self.document.song()
         self.assertEqual(song.get_track(ui_testing.LEAD).get_instrument_name(), OWN)
         self.assertFalse(song.get_track(ui_testing.DRUMS).get_instrument_name())
-        self.assertEqual(self.document.setlist().get_instrument_names(), [OWN])
+        self.assertEqual(self.document.get_setlist().get_instrument_names(), [OWN])
         self.assertIn(self.tool.TRACK_KEPT.format(track=ui_testing.LEAD, instrument=OWN), said.getvalue())
         self.assertIn(self.tool.TRACK_SILENT.format(track=ui_testing.DRUMS), said.getvalue())
 
@@ -412,7 +412,7 @@ class TestRecordDemo(unittest.TestCase):
 
     def give_lead_fluidsynth(self):
         self.document.add_instrument(FLUID)
-        self.document.change(self.document.setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
 
     def test_with_fluidsynth_the_sets_own_instruments_play_into_the_recorded_device_with_no_port(self):
@@ -422,8 +422,8 @@ class TestRecordDemo(unittest.TestCase):
         self.assertEqual(sent_to, self.tool.DEFAULT_AUDIO_DEVICE)
         self.assertIn(self.tool.TRACK_FLUIDSYNTH.format(track=ui_testing.LEAD, instrument=FLUID), printed)
         self.assertIn(self.tool.TRACK_SILENT.format(track=ui_testing.DRUMS), printed)
-        self.assertNotIn(self.tool.INSTRUMENT_NAME.format(channel=midi.MIN_CHANNEL), self.document.setlist().get_instrument_names())
-        self.assertTrue(self.document.setlist().is_real_time())
+        self.assertNotIn(self.tool.INSTRUMENT_NAME.format(channel=midi.MIN_CHANNEL), self.document.get_setlist().get_instrument_names())
+        self.assertTrue(self.document.get_setlist().is_real_time())
         self.assertTrue(app.call_args.kwargs['launch'].for_recording)
 
     def test_with_fluidsynth_an_output_given_is_where_fluidsynth_plays(self):

@@ -88,7 +88,7 @@ class Memory:
         out keeps a wrong answer after that thing changes, which checking finds.
         """
         # This is asked hundreds of times for every key press, so the revisions are gathered here rather than through a function.
-        revisions = tuple([thing.revision() for thing in on])
+        revisions = tuple([thing.get_revision() for thing in on])
         kept = self._kept.get(key)
         if kept is not None and kept.revisions == revisions:
             if self._checks:

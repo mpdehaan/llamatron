@@ -186,30 +186,30 @@ class TestDescribingAChange(unittest.TestCase):
 
     def setUp(self):
         self.document = a_song()
-        self.before = self.document.setlist().to_data()
+        self.before = self.document.get_setlist().to_data()
 
     def described(self):
-        return describe_change(leaving=Snapshot(data=self.document.setlist().to_data(), song=ui_testing.ONE), arriving=Snapshot(data=self.before, song=ui_testing.ONE))
+        return describe_change(leaving=Snapshot(data=self.document.get_setlist().to_data(), song=ui_testing.ONE), arriving=Snapshot(data=self.before, song=ui_testing.ONE))
 
     def test_names_a_shared_item(self):
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
         self.assertEqual(self.described(), messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[Section.PATTERNS], name=ui_testing.TUNE))
 
     def test_names_a_track_in_its_song(self):
         self.document.add_track(NEW_TRACK)
         what = messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[Section.TRACKS], name=NEW_TRACK)
-        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=what))
+        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.get_current_song_name(), what=what))
 
     def test_names_a_scene_by_its_number(self):
         self.document.add_clip_slot(index=1, track=ui_testing.LEAD, pattern=ui_testing.TUNE)
-        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=messages.MSG_CHANGED_SCENE.format(number=SECOND_SCENE)))
+        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.get_current_song_name(), what=messages.MSG_CHANGED_SCENE.format(number=SECOND_SCENE)))
 
     def test_names_a_song_setting(self):
         self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
-        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=messages.MSG_CHANGED_WORDS[SongSetting.TEMPO]))
+        self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.get_current_song_name(), what=messages.MSG_CHANGED_WORDS[SongSetting.TEMPO]))
 
     def test_names_a_setting_of_the_set(self):
-        self.document.change(self.document.setlist().set_title, NEW_TRACK)
+        self.document.change(self.document.get_setlist().set_title, NEW_TRACK)
         self.assertEqual(self.described(), messages.MSG_CHANGED_WORDS[SetlistSetting.TITLE])
 
     def test_names_a_song_that_came_or_went(self):
@@ -225,10 +225,10 @@ class TestFindingRenames(unittest.TestCase):
 
     def setUp(self):
         self.document = a_song()
-        self.before = Snapshot(data=self.document.setlist().to_data(), song=self.document.current_song_name())
+        self.before = Snapshot(data=self.document.get_setlist().to_data(), song=self.document.get_current_song_name())
 
     def renames(self):
-        return renamed_items(leaving=self.before, arriving=Snapshot(data=self.document.setlist().to_data(), song=self.document.current_song_name()))
+        return renamed_items(leaving=self.before, arriving=Snapshot(data=self.document.get_setlist().to_data(), song=self.document.get_current_song_name()))
 
     def test_a_renamed_pattern_is_found_though_the_clips_naming_it_changed_too(self):
         self.document.rename_named(section=Section.PATTERNS, old=ui_testing.TUNE, new=RENAMED)
@@ -245,7 +245,7 @@ class TestFindingRenames(unittest.TestCase):
     def test_a_scale_named_after_its_root_is_the_same_scale_when_the_root_moves(self):
         name = default_scale_name(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))
         self.document.rename_named(section=Section.SCALES, old=self.document.song().get_scale_names()[0], new=name)
-        self.before = Snapshot(data=self.document.setlist().to_data(), song=self.document.current_song_name())
+        self.before = Snapshot(data=self.document.get_setlist().to_data(), song=self.document.get_current_song_name())
         renamed = self.document.set_scale_root(name=name, root=NoteName.D)
         self.assertNotEqual(renamed, name)
         self.assertEqual(self.renames(), {Section.SCALES: {name: renamed}})
@@ -256,7 +256,7 @@ class TestFindingRenames(unittest.TestCase):
 
     def test_an_edit_is_not_a_rename(self):
         self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
         self.assertEqual(self.renames(), {})
 
     def test_the_undo_returns_its_renames_the_other_way_round(self):
@@ -273,7 +273,7 @@ class TestDocumentHistory(unittest.TestCase):
         self.document = a_song()
 
     def data(self):
-        return self.document.setlist().to_data()
+        return self.document.get_setlist().to_data()
 
     def test_edits_are_recorded_when_asked_and_undone_as_one_step(self):
         before = self.data()
@@ -288,16 +288,16 @@ class TestDocumentHistory(unittest.TestCase):
         self.assertEqual(self.document.song().get_track_names()[-1], NEW_TRACK)
 
     def test_an_undo_keeps_what_the_edit_did_not_change_and_builds_what_it_did(self):
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         tune = setlist.get_pattern(ui_testing.TUNE)
         other = setlist.get_pattern(ui_testing.OTHER)
         song = self.document.song()
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         self.document.record_edit()
         edited = self.data()
         self.document.undo()
         # The set is the same set, the pattern that was edited is read again, and everything else is the object it was.
-        self.assertIs(self.document.setlist(), setlist)
+        self.assertIs(self.document.get_setlist(), setlist)
         self.assertIsNot(setlist.get_pattern(ui_testing.TUNE), tune)
         self.assertIsNone(setlist.get_pattern(ui_testing.TUNE).get_value(row=Row.VELOCITY, step=0))
         self.assertIs(setlist.get_pattern(ui_testing.OTHER), other)
@@ -308,7 +308,7 @@ class TestDocumentHistory(unittest.TestCase):
         self.assertIs(self.document.song(), song)
 
     def test_an_undo_of_a_change_to_a_song_reads_the_song_again_and_keeps_the_patterns(self):
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         tune = setlist.get_pattern(ui_testing.TUNE)
         song = self.document.song()
         before = self.data()
@@ -320,21 +320,21 @@ class TestDocumentHistory(unittest.TestCase):
         self.assertIs(setlist.get_pattern(ui_testing.TUNE), tune)
 
     def test_snapshots_share_every_piece_that_no_edit_between_them_changed(self):
-        first = self.document.setlist().kept_data()
-        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        first = self.document.get_setlist().kept_data()
+        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         self.document.record_edit()
-        second = self.document.setlist().kept_data()
+        second = self.document.get_setlist().kept_data()
         self.assertIsNot(second[Section.PATTERNS][ui_testing.TUNE], first[Section.PATTERNS][ui_testing.TUNE])
         self.assertIs(second[Section.PATTERNS][ui_testing.OTHER], first[Section.PATTERNS][ui_testing.OTHER])
         # After the undo, the pattern read again keeps data of its own, equal to the first snapshot's.
         self.document.undo()
-        third = self.document.setlist().kept_data()
+        third = self.document.get_setlist().kept_data()
         self.assertEqual(third, first)
         self.assertIs(third[Section.PATTERNS][ui_testing.OTHER], first[Section.PATTERNS][ui_testing.OTHER])
 
     def test_a_document_that_checks_refuses_data_kept_past_a_change(self):
         document = a_song()
-        pattern = document.setlist().get_pattern(ui_testing.TUNE)
+        pattern = document.get_setlist().get_pattern(ui_testing.TUNE)
         pattern.kept_data()
         # A change made behind the pattern's back, as a method that forgot @notes_change would make it: the data kept is now wrong.
         behind_its_back(pattern)
@@ -345,16 +345,16 @@ class TestDocumentHistory(unittest.TestCase):
 
     def test_a_document_that_does_not_check_takes_the_data_kept_as_it_is(self):
         document = unchecked_song(self)
-        pattern = document.setlist().get_pattern(ui_testing.TUNE)
+        pattern = document.get_setlist().get_pattern(ui_testing.TUNE)
         kept = pattern.kept_data()
         behind_its_back(pattern)
         document.changed()
         document.record_edit()
-        self.assertIs(document.setlist().kept_data()[Section.PATTERNS][ui_testing.TUNE], kept)
+        self.assertIs(document.get_setlist().kept_data()[Section.PATTERNS][ui_testing.TUNE], kept)
 
     def test_a_document_that_checks_refuses_an_undo_that_differs_from_loading_the_snapshot(self):
         document = a_song()
-        document.change(document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        document.change(document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         document.record_edit()
         # The set is told that the pattern it has is the one the snapshot holds, so the undo keeps the edited pattern: the mistake the check is there for.
         with mock.patch.object(NamedItems, NamedItems.same_item.__name__, lambda self, *, name, data: self.find(name)):
@@ -409,7 +409,7 @@ class TestDocumentHistory(unittest.TestCase):
             self.document.save(path=path)
             loaded = Document.load(path)
             self.assertFalse(loaded.can_undo())
-            self.assertEqual(loaded.setlist().to_data(), self.data())
+            self.assertEqual(loaded.get_setlist().to_data(), self.data())
 
     def test_undo_goes_back_to_the_song_the_edit_was_made_in(self):
         self.document.add_song(SECOND_SONG)
@@ -419,9 +419,9 @@ class TestDocumentHistory(unittest.TestCase):
         self.document.record_edit()
         self.document.select_song(self.document.song_names()[0])
         self.document.undo()
-        self.assertEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
         self.document.undo()
-        self.assertEqual(self.document.song_names(), [self.document.current_song_name()])
+        self.assertEqual(self.document.song_names(), [self.document.get_current_song_name()])
 
     def test_undoing_the_deletion_of_the_current_song_makes_it_current_again(self):
         self.document.add_song(SECOND_SONG)
@@ -429,9 +429,9 @@ class TestDocumentHistory(unittest.TestCase):
         self.document.select_song(SECOND_SONG)
         self.document.delete_named(section=Section.SONGS, name=SECOND_SONG)
         self.document.record_edit()
-        self.assertNotEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertNotEqual(self.document.get_current_song_name(), SECOND_SONG)
         self.document.undo()
-        self.assertEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
 
     def test_the_lengths_follow_an_undo(self):
         seconds = self.document.lengths().song_seconds()

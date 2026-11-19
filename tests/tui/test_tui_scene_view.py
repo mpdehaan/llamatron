@@ -210,12 +210,12 @@ class TestSceneViewOnArrange(UITest):
 
     async def test_minus_and_equals_zoom_from_one_to_five_cells_and_pgdn_scrolls_the_sidebar(self):
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
-        self.assertEqual(self.page.inset.zoom(), scene_view.START_CELLS)
+        self.assertEqual(self.page.inset.get_zoom(), scene_view.START_CELLS)
         for _ in range(scene_view.MOST_CELLS):
             await self.press(forward_key(keybindings.ArrangePage.INSET_ZOOM))
-        self.assertEqual(self.page.inset.zoom(), scene_view.MOST_CELLS)
+        self.assertEqual(self.page.inset.get_zoom(), scene_view.MOST_CELLS)
         await self.press(back_key(keybindings.ArrangePage.INSET_ZOOM))
-        self.assertEqual(self.page.inset.zoom(), scene_view.MOST_CELLS - 1)
+        self.assertEqual(self.page.inset.get_zoom(), scene_view.MOST_CELLS - 1)
         await self.press(forward_key(keybindings.ArrangePage.INSET_SCROLL))
         self.assertIsNotNone(self.page.inset)
 
@@ -257,10 +257,10 @@ class TestSceneViewOnArrange(UITest):
         bar = int(view.notes().bar * SIXTEENTHS_PER_WHOLE)
         start = view.notes().length * SIXTEENTHS_PER_WHOLE
         await self.press(forward_key(keybindings.ArrangePage.INSET_BARS))
-        self.assertEqual(view.cursor_column() % bar, 0)
-        moved = view.cursor_column()
+        self.assertEqual(view.get_cursor_column() % bar, 0)
+        moved = view.get_cursor_column()
         await self.press(back_key(keybindings.ArrangePage.INSET_BARS))
-        self.assertLess(view.cursor_column(), moved)
+        self.assertLess(view.get_cursor_column(), moved)
         self.assertLessEqual(moved, start)
 
 

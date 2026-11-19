@@ -196,7 +196,7 @@ class TestTrackEditor(UITest):
     async def test_the_default_velocity_shows_the_instrument_s_until_the_track_has_its_own(self):
         self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), defaults.DEFAULT_VELOCITY)
         self.document.add_instrument(SYNTH)
-        self.document.setlist().get_instrument(SYNTH).set_default_velocity(QUIET)
+        self.document.get_setlist().get_instrument(SYNTH).set_default_velocity(QUIET)
         self.track(LEAD).set_instrument_name(name=SYNTH, song=self.document.song())
         self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=QUIET))
         await self.select_field(labels.MSG_DEFAULT_VELOCITY_LABEL)

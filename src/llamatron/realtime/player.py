@@ -130,10 +130,10 @@ class Player:
         self._count = 0
         self._play_count = 0
 
-    def score(self):
+    def get_score(self):
         return self._score
 
-    def sender(self):
+    def get_sender(self):
         return self._sender
 
     def set_score(self, score):

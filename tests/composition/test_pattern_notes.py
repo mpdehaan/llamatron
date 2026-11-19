@@ -238,15 +238,15 @@ class TestDrawingNotes(unittest.TestCase):
 
     def test_a_gate_is_cut_only_when_it_reaches_the_step(self):
         pattern = pattern_of(degree=[1, None, None, None, 2], gate=[WRITTEN_EIGHTH], tie=ties(5, 6))
-        before = pattern.revision()
+        before = pattern.get_revision()
         # Nothing covers step 3, step 0 is the note's own, and the note on step 4 reaches step 6 by ties alone.
         for step in (3, 0, 6):
             with self.subTest(step=step):
                 self.assertFalse(pattern.cut_gate_before(step=step, step_size=SIXTEENTH))
-        self.assertEqual(pattern.revision(), before)
+        self.assertEqual(pattern.get_revision(), before)
         self.assertTrue(pattern.cut_gate_before(step=1, step_size=SIXTEENTH))
         self.assertEqual(pattern.get_value(row=Row.GATE, step=0), WRITTEN_SIXTEENTH)
-        self.assertNotEqual(pattern.revision(), before)
+        self.assertNotEqual(pattern.get_revision(), before)
 
     def test_drawing_inside_a_tied_note_leaves_what_it_held_beyond_as_a_note_of_its_own(self):
         pattern = pattern_of(degree=[1], octave=[OCTAVE], velocity=[A_VELOCITY], tie=ties(1, 2, 3, 4))
@@ -283,10 +283,10 @@ class TestDraggingANotesEnd(unittest.TestCase):
     def test_a_note_stops_at_the_next_note_and_at_the_end_and_nothing_changes(self):
         pattern = pattern_of(steps=3, degree=[1, None, 2])
         self.assertTrue(pattern.lengthen_note(start=0, step_size=SIXTEENTH))
-        before = pattern.revision()
+        before = pattern.get_revision()
         self.assertFalse(pattern.lengthen_note(start=0, step_size=SIXTEENTH))
         self.assertFalse(pattern.lengthen_note(start=2, step_size=SIXTEENTH))
-        self.assertEqual(pattern.revision(), before)
+        self.assertEqual(pattern.get_revision(), before)
         self.assertEqual(pattern.get_row(Row.TIE), ties(1, count=3))
 
     def test_a_grab_step_stops_a_note_too(self):
@@ -311,9 +311,9 @@ class TestDraggingANotesEnd(unittest.TestCase):
         for rows in ({Row.DEGREE: [1]}, {Row.DEGREE: [1], Row.GATE: [WRITTEN_SIXTEENTH]}, {Row.DEGREE: [1], Row.GATE: [WRITTEN_THIRTY_SECOND]}):
             with self.subTest(rows=rows):
                 pattern = pattern_of(**rows)
-                before = pattern.revision()
+                before = pattern.get_revision()
                 self.assertFalse(pattern.shorten_note(start=0, step_size=SIXTEENTH))
-                self.assertEqual(pattern.revision(), before)
+                self.assertEqual(pattern.get_revision(), before)
 
     def test_a_step_off_a_gate_is_a_step_of_the_step_size_given(self):
         pattern = pattern_of(degree=[1], gate=[WRITTEN_THREE_QUARTERS])

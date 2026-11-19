@@ -150,7 +150,7 @@ class TestPatternEditor(PatternEditorTest):
         self.assertEqual([row.name for row in self.editor.rows_view.scrolled_rows()], ROWS_AT_START[len(pattern_rows.PINNED_ROWS):])
 
     async def test_a_new_note_gets_the_default_octave_and_a_gate_of_one_step(self):
-        self.document.change(self.document.setlist().set_default_octave, 4)
+        self.document.change(self.document.get_setlist().set_default_octave, 4)
         await self.press(Key.RIGHT, Key.RIGHT, Key.RIGHT, '5')
         self.assertEqual(self.value(row=Row.DEGREE), 5)
         self.assertIsNone(self.value(row=Row.GATE))
@@ -185,7 +185,7 @@ class TestPatternEditor(PatternEditorTest):
 
     async def test_a_degree_past_the_scale_in_a_file_is_shown_within_the_scale_an_octave_up(self):
         # Seven notes in C major, so 9 is degree 2 of the next octave: the gauge and the number say 2, Octave one higher, and the file keeps 9.
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.DEGREE, step=0, value=9)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.DEGREE, step=0, value=9)
         self.document.changed()
         await self.press(Key.RIGHT, Key.LEFT)
         degree = self.editor.row_for(Row.DEGREE)
@@ -225,7 +225,7 @@ class TestPatternEditor(PatternEditorTest):
         await self.go_to_row(Row.GATE)
         await self.press(keybindings.GateRow.MORE)
         self.assertNotIn(messages.MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.TIE, step=1, value=True)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.TIE, step=1, value=True)
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertIn(messages.MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
         # A blank gate is one step, which ties only lengthen, so there's nothing to warn about.
@@ -233,8 +233,8 @@ class TestPatternEditor(PatternEditorTest):
         self.assertNotIn(messages.MSG_DESCRIBE_GATE_OVERRIDDEN, self.text())
 
     async def test_deleting_a_note_clears_the_ties_that_followed_it(self):
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.TIE, step=2, value=True)
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.TIE, step=3, value=True)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.TIE, step=2, value=True)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.TIE, step=3, value=True)
         await self.press(Key.RIGHT, Key.BACKSPACE)
         self.assertIsNone(self.value(row=Row.DEGREE))
         self.assertEqual([self.value(row=Row.TIE, step=step) for step in range(4)], [False, False, False, False])
@@ -404,7 +404,7 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         self.assertEqual(song.shown_octave(limits.MIN_OCTAVE), -2)
 
     async def test_octave_is_typed_and_shown_from_0_with_llamatrons_labels(self):
-        self.document.change(self.document.setlist().set_octave_labels, OctaveLabels.LLAMATRON)
+        self.document.change(self.document.get_setlist().set_octave_labels, OctaveLabels.LLAMATRON)
         await self.go_to_row(Row.OCTAVE)
         await self.press('1', '0')
         self.assertEqual(self.value(row=Row.OCTAVE), limits.MAX_OCTAVE)
@@ -458,9 +458,9 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         every = [name for item in self.editor.key_table() for name in item.keys]
         for name in (*keys.SHIFT_UP_DOWN, *keys.SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.press(Key.RIGHT, *keys.SHIFT_UP_DOWN, *keys.SHIFT_LEFT_RIGHT)
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
         self.assertEqual(self.editor.step, 1)
 
     async def test_the_rules_are_dim_with_a_plain_joint_where_a_beat_edge_crosses(self):
@@ -500,8 +500,8 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertNotIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET), self.text())
         self.assertIn(ui_testing.REVERSED.format(text=fit(text=marks.MSG_BLOCKED_CELL, width=grid_drawing.CELL_WIDTH, align=Align.CENTER)), self.text())
         # Marking the step to grab opens Octave, Velocity and Chord, since the step's chord is built on the grabbed note.
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.GRAB, step=EMPTY_STEP, value=True)
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.DEGREE, step=EMPTY_STEP, value=limits.MIN_DEGREE)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.GRAB, step=EMPTY_STEP, value=True)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.DEGREE, step=EMPTY_STEP, value=limits.MIN_DEGREE)
         self.document.changed()
         await self.press(Key.LEFT, Key.RIGHT)
         self.assertTrue(self.editor.row_for(Row.VELOCITY).editable())
@@ -529,7 +529,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertEqual(beats, [True, False, True, False])
         self.document.change(self.document.song().set_time_signature, THREE_EIGHT)
         self.assertEqual([self.editor.drawing.starts_a_beat(step) for step in range(4)], [True, True, True, True])
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_time_signature, CUT_TIME)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_time_signature, CUT_TIME)
         self.assertEqual([self.editor.drawing.starts_a_beat(step) for step in range(4)], [True, False, False, False])
         # The step heading, the one step on a beat and its double left edge are the only bold spans on the numbers line.
         lines = self.editor.drawing.grid_lines(first=0, last=4)

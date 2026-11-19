@@ -73,7 +73,7 @@ class TestDetails(unittest.TestCase):
     def setUp(self):
         self.document = a_song()
         self.song = self.document.song()
-        self.setlist = self.document.setlist()
+        self.setlist = self.document.get_setlist()
 
     def clip_slot(self):
         return self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD)
@@ -234,7 +234,7 @@ class TestArrangeDetailsView(UITest):
     async def test_every_row_grows_by_its_tallest_cells_details_and_a_cell_with_none_says_stock(self):
         usual = len(self.drawn())
         await self.press(keybindings.ArrangePage.SHOW_DETAILS)
-        chained = len(clip_details(setlist=self.document.setlist(), song=self.document.song(), clip_slot=self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD)))
+        chained = len(clip_details(setlist=self.document.get_setlist(), song=self.document.song(), clip_slot=self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD)))
         # The header's track names and the second scene have no details of their own, so each grows by stock's line and the + line.
         self.assertEqual(len(self.drawn()), usual + 2 + chained + 2)
         self.assertIn(marks.MSG_DETAILS_STOCK, self.text())
@@ -363,7 +363,7 @@ class TestPickingDetails(UITest):
         self.assertTrue(self.page.picking())
         self.assertFalse(self.page.shows_details())
         opened = [line.plain for line in self.page.drawing.body(width=width, height=height)]
-        lines = clip_details(setlist=self.document.setlist(), song=self.document.song(), clip_slot=self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD))
+        lines = clip_details(setlist=self.document.get_setlist(), song=self.document.song(), clip_slot=self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD))
         self.assertEqual(len(opened), len(usual) + len(lines))
         self.assertIn(marks.MSG_DETAILS_CHAIN.format(name=ui_testing.NAMED), self.text())
         self.assertGreater(self.page.drawing.track_width(self.document.track_names().index(ui_testing.LEAD)), arrange_drawing.CELL_WIDTH)

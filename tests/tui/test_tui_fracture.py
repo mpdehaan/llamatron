@@ -67,7 +67,7 @@ class TestFracture(UITest):
         await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
         self.assertEqual(self.patterns_played(), [ui_testing.TUNE, ui_testing.BEAT, TUNE_2, TUNE_3])
         self.assertIn(messages.MSG_FRACTURED.format(count=COPIES), self.text())
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         # A copy holds what the pattern held, in the pattern's group, and is a pattern apart.
         self.assertEqual(setlist.get_pattern(TUNE_2).get_group(), setlist.get_pattern(ui_testing.TUNE).get_group())
         self.assertEqual(setlist.get_pattern(TUNE_3).get_steps(), setlist.get_pattern(ui_testing.TUNE).get_steps())
@@ -92,10 +92,10 @@ class TestFracture(UITest):
         self.assertIn(messages.MSG_NOTHING_TO_FRACTURE, self.text())
 
     async def test_one_undo_puts_every_clip_back_on_the_shared_pattern(self):
-        names = self.document.setlist().get_pattern_names()
+        names = self.document.get_setlist().get_pattern_names()
         await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.patterns_played(), [ui_testing.TUNE, ui_testing.BEAT, ui_testing.TUNE, ui_testing.TUNE])
-        self.assertEqual(self.document.setlist().get_pattern_names(), names)
+        self.assertEqual(self.document.get_setlist().get_pattern_names(), names)
         await self.press(keybindings.Page.REDO)
         self.assertEqual(self.patterns_played(), [ui_testing.TUNE, ui_testing.BEAT, TUNE_2, TUNE_3])

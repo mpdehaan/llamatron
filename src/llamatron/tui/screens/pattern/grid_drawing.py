@@ -118,7 +118,7 @@ class GridDrawing:
         editor = self._editor
         document = editor.document()
         # The pattern's own time signature and step size, or else the song's signature and the set's step size.
-        on = (editor.pattern(), document.song(), document.setlist())
+        on = (editor.pattern(), document.song(), document.get_setlist())
         return document.remembered(key=(GridDrawing.beat_steps.__name__, editor.item), on=on, compute=self.steps_starting_a_beat)
 
     def steps_starting_a_beat(self):

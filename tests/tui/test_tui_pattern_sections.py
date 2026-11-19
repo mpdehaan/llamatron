@@ -207,7 +207,7 @@ class TestSections(UITest):
         # tune is played by lead alone, whose lanes send nothing yet, so the lane is off; the value stays a one-line number.
         self.assertEqual(row.labels(), [labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=marks.MSG_CC_LANE_OFF)])
         self.assertEqual(row.cell_lines(step=0), [ui_testing.QUIET_VALUE])
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.CC1, step=0, value=midi.MAX_CC_VALUE)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.CC1, step=0, value=midi.MAX_CC_VALUE)
         self.assertEqual(row.cell_lines(step=0), [str(midi.MAX_CC_VALUE)])
         # Giving lead a number puts it in the label, and a second track playing tune with another number makes the label say they differ.
         self.document.change(self.document.song().get_track(LEAD).set_cc_number, lane=0, number=BRIGHTNESS)

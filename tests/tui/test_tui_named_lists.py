@@ -90,7 +90,7 @@ class NamedListChecks:
 
     def own_names(self):
         """Return the names of the section's own items, in the set's order."""
-        return self.document.setlist().get_item_names(self.PAGE.LISTED_SECTION)
+        return self.document.get_setlist().get_item_names(self.PAGE.LISTED_SECTION)
 
     async def copy_the_first(self):
         """Copy the first thing with the page's key and return the copy's name."""
@@ -196,7 +196,7 @@ class TestNamesAreHeldToTheirLength(UITest):
         await self.type(A_LETTER * MORE_THAN_A_NAME_HOLDS)
         self.assertEqual(self.app.screen.value, A_LETTER * limits.MAX_NAME_LENGTH)
         await self.press(Key.ENTER)
-        self.assertIn(A_LETTER * limits.MAX_NAME_LENGTH, self.document.setlist().get_item_names(Section.PATTERNS))
+        self.assertIn(A_LETTER * limits.MAX_NAME_LENGTH, self.document.get_setlist().get_item_names(Section.PATTERNS))
 
     async def test_a_new_patterns_name_stops_there_too(self):
         await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK)
@@ -230,7 +230,7 @@ class TestNamesAreHeldToTheirLength(UITest):
         await self.press(keybindings.MainPage.PATTERNS)
         self.assertIn(fit(text=patterns_page.INDENT + A_LONG_NAME, width=limits.MAX_NAME_LENGTH + len(patterns_page.INDENT)), self.text())
         self.assertNotIn(A_LONG_NAME, self.text().split(labels.Column.SELECT_PATTERN)[-1])
-        self.assertIn(A_LONG_NAME, self.document.setlist().get_item_names(Section.PATTERNS))
+        self.assertIn(A_LONG_NAME, self.document.get_setlist().get_item_names(Section.PATTERNS))
 
 
 class TestPatternsPageAsANamedList(NamedListChecks, UITest):

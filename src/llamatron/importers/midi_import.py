@@ -100,7 +100,7 @@ class MidiImport:
         # play everywhere, so they are read, the byte held to 127.
         return cls(midi_file=mido.MidiFile(path, clip=True))
 
-    def contents(self):
+    def get_contents(self):
         return self._contents
 
     def keys(self):

@@ -95,7 +95,7 @@ class Page(BindsKeys, Screen):
 
     def say(self, text):
         """Show a message on the status line, which every page shares, until the next key press."""
-        self.holder.status_line().say(text)
+        self.holder.get_status_line().say(text)
 
     def resting_status(self):
         """Return what the status line says while nothing else is said, which is nothing unless a page has something to say of where its cursor rests, as the pattern editor says a chord's name."""
@@ -103,7 +103,7 @@ class Page(BindsKeys, Screen):
 
     def refuse(self, text):
         """Show why a key did nothing or what went wrong on the status line, in amber, so that a refusal isn't missed."""
-        self.holder.status_line().say(text, refusal=True)
+        self.holder.get_status_line().say(text, refusal=True)
 
     # What an undo or redo asks of a page, since it may take away what the page shows or move what it shows.
 
@@ -205,7 +205,7 @@ class Page(BindsKeys, Screen):
         table = self.key_table()
         for item in table:
             if name in item.keys:
-                self.holder.status_line().clear()
+                self.holder.get_status_line().clear()
                 item.press(name)
                 self.document().record_edit()
                 # An undo can have closed this page, and a closed page has nothing to draw on.
@@ -302,7 +302,7 @@ class Page(BindsKeys, Screen):
 
     def song_crumb(self):
         """Return the words naming the current song, or (none)."""
-        return labels.MSG_SONG_CRUMB.format(song=self.document().current_song_name() or marks_text.MSG_NONE_SHOWN)
+        return labels.MSG_SONG_CRUMB.format(song=self.document().get_current_song_name() or marks_text.MSG_NONE_SHOWN)
 
     def save_mark(self):
         """Return the mark at the header's right: unsaved for a set that has no file yet, unsaved changes for a set changed since its file was written or read, and saved otherwise."""
@@ -385,7 +385,7 @@ class Page(BindsKeys, Screen):
         width, height = self.size
         if width <= 0 or height <= 0:
             return
-        strip = self.holder.caption_strip()
+        strip = self.holder.get_caption_strip()
         # The video tutorial's captions take the foot of the screen, and the page moves up to make room.
         if strip is not None:
             height = max(height - caption_strip.CAPTION_LINES, 1)
@@ -402,8 +402,8 @@ class Page(BindsKeys, Screen):
         bottom = legend(keys=self.shown_keys(), width=width) if self.shows_legend else []
         rule = [Text(Box.RULE * width, style=Style.DIM)] if bottom else []
         # The status line is dim, so that it reads as a note rather than part of the page.
-        line = self.holder.status_line()
-        status = Text(drawing.SPACE + fit(text=line.text() or self.resting_status(), width=width - 1), style=Style.REFUSAL if line.is_refusal() else Style.DIM)
+        line = self.holder.get_status_line()
+        status = Text(drawing.SPACE + fit(text=line.get_text() or self.resting_status(), width=width - 1), style=Style.REFUSAL if line.is_refusal() else Style.DIM)
         room = max(height - len(top) - len(rule) - len(bottom) - 1, 1)
         lines = self.body(width=width, height=room)[:room]
         lines += [Text(drawing.NOTHING) for _ in range(room - len(lines))]

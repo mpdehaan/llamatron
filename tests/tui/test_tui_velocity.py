@@ -160,7 +160,7 @@ class TestVelocityInTheDetailsView(VelocityTest):
         return [line.text.strip() for line in details if line.target is None]
 
     async def test_a_scene_and_a_clip_show_their_own_velocity_and_a_mark_where_a_ramp_moves_it(self):
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         song = self.document.song()
         self.assertEqual(self.lines(scene_details(song=song, scene=self.scene())), [])
         self.document.change(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)

@@ -291,7 +291,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         self.rows_view.clamp()
 
     def set_value(self, *, value, row=None, step=None):
-        self.document().change(self.document().setlist().get_pattern(self.item).set_value, row=row or self.row_name(), step=self.step if step is None else step, value=value)
+        self.document().change(self.document().get_setlist().get_pattern(self.item).set_value, row=row or self.row_name(), step=self.step if step is None else step, value=value)
 
     def keyswitch_instrument(self):
         """Return the instrument whose keyswitches the pattern's steps are named by, and what the keyswitch dialog says over its slots: the instrument's name, or why none is named.
@@ -308,7 +308,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             names = document.instruments_of_pattern(self.item)
         known = [name for name in names if name is not None]
         if len(names) == 1 and known:
-            return document.setlist().get_instrument(known[0]), known[0]
+            return document.get_setlist().get_instrument(known[0]), known[0]
         return None, messages.MSG_KEYSWITCH_SEVERAL_INSTRUMENTS if len(names) > 1 else messages.MSG_KEYSWITCH_NO_INSTRUMENT
 
     def known_scale(self):
@@ -410,20 +410,20 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def ask_step_size(self):
         current = self.pattern().get_written_step_size() or drawing.NOTHING
-        self.ask_length(title=messages.MSG_STEP_SIZE_PROMPT, current=current, most=limits.MAX_STEP_SIZE, then=lambda text: self.document().change(self.document().setlist().get_pattern(self.item).set_step_size, text), blank_allowed=True)
+        self.ask_length(title=messages.MSG_STEP_SIZE_PROMPT, current=current, most=limits.MAX_STEP_SIZE, then=lambda text: self.document().change(self.document().get_setlist().get_pattern(self.item).set_step_size, text), blank_allowed=True)
 
     def ask_time_signature(self):
         current = self.pattern().get_written_time_signature() or drawing.NOTHING
         ask_time_signature(
             page=self, title=messages.MSG_TIME_SIGNATURE_PROMPT, current=current, blank_allowed=True,
-            then=lambda text: self.document().change(self.document().setlist().get_pattern(self.item).set_time_signature, text),
+            then=lambda text: self.document().change(self.document().get_setlist().get_pattern(self.item).set_time_signature, text),
         )
 
     def pick_direction(self):
         current = self.pattern().get_direction()
         self.ask(
             dialog=ChoiceDialog(title=messages.MSG_PLAY_DIRECTION_TITLE, options=direction_choices(file_format.DIRECTIONS), current=file_format.DIRECTIONS.index(current)),
-            then=lambda chosen: self.document().change(self.document().setlist().get_pattern(self.item).set_direction, file_format.DIRECTIONS[chosen]),
+            then=lambda chosen: self.document().change(self.document().get_setlist().get_pattern(self.item).set_direction, file_format.DIRECTIONS[chosen]),
         )
 
     def pick_scale_length(self):
@@ -432,7 +432,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         options = [marks.MSG_ANY_SCALE_LENGTH, *[str(length) for length in SCALE_LENGTHS]]
         self.ask(
             dialog=ChoiceDialog(title=messages.MSG_SCALE_LENGTH_TITLE, options=options, current=0 if current is None else SCALE_LENGTHS.index(current) + 1),
-            then=lambda chosen: self.document().change(self.document().setlist().get_pattern(self.item).set_scale_length, SCALE_LENGTHS[chosen - 1] if chosen else None),
+            then=lambda chosen: self.document().change(self.document().get_setlist().get_pattern(self.item).set_scale_length, SCALE_LENGTHS[chosen - 1] if chosen else None),
         )
 
     def munge(self):
@@ -450,28 +450,28 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             if self.step >= last:
                 self.refuse(errors.ERR_NOTHING_AFTER)
                 return
-            document.change(document.setlist().get_pattern(name).reverse_after, self.step)
+            document.change(document.get_setlist().get_pattern(name).reverse_after, self.step)
         elif choice == Munge.REVERSE_BEFORE:
             if self.step == 0:
                 self.refuse(errors.ERR_NOTHING_BEFORE)
                 return
-            document.change(document.setlist().get_pattern(name).reverse_before, self.step)
+            document.change(document.get_setlist().get_pattern(name).reverse_before, self.step)
         elif choice == Munge.REVERSE:
             if self.steps() < 2:
                 self.refuse(errors.ERR_ONE_STEP)
                 return
-            document.change(document.setlist().get_pattern(name).reverse)
+            document.change(document.get_setlist().get_pattern(name).reverse)
         elif choice == Munge.PIVOT:
             if self.steps() < 2:
                 self.refuse(errors.ERR_NOTHING_TO_PIVOT)
                 return
-            self.step = document.change(document.setlist().get_pattern(name).pivot_around, self.step)
+            self.step = document.change(document.get_setlist().get_pattern(name).pivot_around, self.step)
         elif choice in (Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE):
             if self.steps() < 2:
                 self.refuse(errors.ERR_ONE_STEP)
                 return
             if choice == Munge.RANDOMIZE:
-                document.change(document.setlist().get_pattern(name).shuffle)
+                document.change(document.get_setlist().get_pattern(name).shuffle)
             else:
                 document.munge_pattern(name=name, way=Pattern.shuffle_from if choice == Munge.RANDOMIZE_AFTER else Pattern.shuffle_through, step=self.step)
         elif choice in (Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START):
@@ -486,7 +486,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             if self.step >= last:
                 self.refuse(errors.ERR_NOTHING_TO_CROP)
                 return
-            document.change(document.setlist().get_pattern(name).set_steps, self.step + 1)
+            document.change(document.get_setlist().get_pattern(name).set_steps, self.step + 1)
         elif choice == Munge.CLEAR_EVERY:
             self.ask_number(title=messages.MSG_CLEAR_EVERY_PROMPT, low=limits.MIN_STEPS, high=self.steps(), way=Pattern.clear_every, named=EVERY)
         elif choice == Munge.HUMANIZE_VELOCITY:
@@ -581,7 +581,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.refuse(errors.ERR_SPLIT_OUT_OF_RANGE.format(low=FIRST_ROLL, high=most))
                 return
             try:
-                made = self.document().change(self.document().setlist().split_pattern, name=self.item, steps=steps)
+                made = self.document().change(self.document().get_setlist().split_pattern, name=self.item, steps=steps)
             except ValueError as problem:
                 self.refuse(str(problem))
                 return
@@ -680,9 +680,9 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             lost = self.document().steps_with_anything_past(name=self.item, steps=steps)
             if lost:
                 question = messages.MSG_SHORTEN_QUESTION.format(count=lost)
-                self.confirm(title=messages.MSG_SHORTEN_TITLE, lines=[question], then=lambda: self.document().change(self.document().setlist().get_pattern(self.item).set_steps, steps))
+                self.confirm(title=messages.MSG_SHORTEN_TITLE, lines=[question], then=lambda: self.document().change(self.document().get_setlist().get_pattern(self.item).set_steps, steps))
             else:
-                self.document().change(self.document().setlist().get_pattern(self.item).set_steps, steps)
+                self.document().change(self.document().get_setlist().get_pattern(self.item).set_steps, steps)
         self.ask_text(title=messages.MSG_STEPS_PROMPT, value=self.steps(), then=answered)
 
     def toggle_drum(self):
@@ -690,17 +690,17 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         drum = not self.is_drum()
 
         def change(_):
-            self.document().change(self.document().setlist().get_pattern(self.item).set_drum, drum)
+            self.document().change(self.document().get_setlist().get_pattern(self.item).set_drum, drum)
             self.rows_view.go_to_top()
         what = legends.MSG_LETTERS_WHAT if drum else legends.MSG_DEGREES_WHAT
         question = messages.MSG_CHANGE_TYPE_QUESTION if self.document().has_notes(self.item) else messages.MSG_CHANGE_TYPE_EMPTY_QUESTION
         self.ask(dialog=ConfirmDialog(title=messages.MSG_CHANGE_TYPE_TITLE, messages=[question.format(what=what)]), then=change)
 
     def insert_step(self):
-        self.document().change(self.document().setlist().get_pattern(self.item).insert_step, self.step)
+        self.document().change(self.document().get_setlist().get_pattern(self.item).insert_step, self.step)
 
     def remove_step(self):
-        self.document().change(self.document().setlist().get_pattern(self.item).remove_step, self.step)
+        self.document().change(self.document().get_setlist().get_pattern(self.item).remove_step, self.step)
         self.clamp()
 
     # Drawing, which the showing view's drawing does: RollDrawing on the roll and PatternDrawing from the rows.

@@ -55,13 +55,13 @@ class TestInstrumentsPage(UITest):
         self.assertIsInstance(self.app.screen, InstrumentsPage)
 
     def instruments(self):
-        return self.document.setlist().get_instrument_names()
+        return self.document.get_setlist().get_instrument_names()
 
     async def test_a_adds_a_numbered_instrument_with_no_device_and_opens_it(self):
         await self.press(keybindings.InstrumentsPage.ADD)
         self.assertIsInstance(self.app.screen, InstrumentEditor)
         self.assertEqual(self.instruments(), [INSTRUMENT_1])
-        instrument = self.document.setlist().get_instrument(INSTRUMENT_1)
+        instrument = self.document.get_setlist().get_instrument(INSTRUMENT_1)
         self.assertIsNone(instrument.get_device())
         self.assertEqual(instrument.get_channel(), defaults.DEFAULT_CHANNEL)
         await self.press(Key.ESCAPE, keybindings.InstrumentsPage.ADD, Key.ESCAPE)
@@ -69,8 +69,8 @@ class TestInstrumentsPage(UITest):
 
     async def test_the_list_shows_each_instruments_device_channel_and_uses(self):
         self.document.add_instrument(SYNTH)
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, PORTS[0])
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_channel, midi.MAX_CHANNEL)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, PORTS[0])
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_channel, midi.MAX_CHANNEL)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
         await self.press(Key.DOWN, Key.UP)
         rows = dict(self.app.screen.rows())
@@ -80,16 +80,16 @@ class TestInstrumentsPage(UITest):
         self.assertEqual(dict(self.app.screen.rows())[INSTRUMENT_1], [INSTRUMENT_1, marks.MSG_NO_DEVICE_SHOWN, defaults.DEFAULT_CHANNEL, 0])
 
     async def test_the_first_instrument_turns_real_time_on_and_deleting_the_last_turns_it_off(self):
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
         await self.press(keybindings.InstrumentsPage.ADD, Key.ESCAPE, keybindings.InstrumentsPage.ADD, Key.ESCAPE)
-        self.assertTrue(self.document.setlist().is_real_time())
+        self.assertTrue(self.document.get_setlist().is_real_time())
         await self.press(keybindings.InstrumentsPage.DELETE, keybindings.ConfirmDialog.YES)
         self.assertEqual(self.instruments(), [INSTRUMENT_1])
-        self.assertTrue(self.document.setlist().is_real_time())
+        self.assertTrue(self.document.get_setlist().is_real_time())
         self.app.screen.put_cursor_on(INSTRUMENT_1)
         await self.press(keybindings.InstrumentsPage.DELETE, keybindings.ConfirmDialog.YES)
         self.assertEqual(self.instruments(), [])
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
 
     async def test_an_instrument_a_track_plays_through_cannot_be_deleted_and_a_rename_follows(self):
         self.document.add_instrument(SYNTH)
@@ -116,7 +116,7 @@ class TestInstrumentEditor(UITest):
         self.assertIsInstance(self.app.screen, InstrumentEditor)
 
     def instrument(self):
-        return self.document.setlist().get_instrument(SYNTH)
+        return self.document.get_setlist().get_instrument(SYNTH)
 
     def field_text(self, label):
         return next(field.value() for field in self.app.screen.fields() if field.label == label)
@@ -164,7 +164,7 @@ class TestInstrumentEditor(UITest):
         self.assertIsNone(self.instrument().get_device())
 
     async def test_a_device_that_has_gone_is_still_offered_so_that_it_can_be_kept(self):
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_device, GONE_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_device, GONE_PORT)
         with mock.patch(PORT_NAMES, return_value=list(PORTS)):
             await self.select_field(labels.MSG_DEVICE_LABEL)
             await self.press(Key.ENTER)
@@ -201,7 +201,7 @@ class TestInstrumentEditor(UITest):
         await self.type(str(defaults.DEFAULT_CHANNEL + 2))
         await self.press(Key.ENTER)
         self.assertEqual(self.instrument().get_channel(), defaults.DEFAULT_CHANNEL + 2)
-        self.assertEqual(self.document.setlist().to_data()[Section.INSTRUMENTS][SYNTH], {'channel': defaults.DEFAULT_CHANNEL + 2})
+        self.assertEqual(self.document.get_setlist().to_data()[Section.INSTRUMENTS][SYNTH], {'channel': defaults.DEFAULT_CHANNEL + 2})
 
 
 class TestTrackInstrumentField(UITest):
@@ -227,7 +227,7 @@ class TestTrackInstrumentField(UITest):
         self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, INSTRUMENT_1, SYNTH])
         await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
         self.assertEqual(self.track().get_instrument_name(), SYNTH)
-        self.assertEqual(self.document.setlist().to_data()[Section.SONGS][self.document.current_song_name()][Section.TRACKS][ui_testing.LEAD][TrackSetting.INSTRUMENT], SYNTH)
+        self.assertEqual(self.document.get_setlist().to_data()[Section.SONGS][self.document.get_current_song_name()][Section.TRACKS][ui_testing.LEAD][TrackSetting.INSTRUMENT], SYNTH)
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertIsNone(self.track().get_instrument_name())
 
@@ -246,7 +246,7 @@ class TestRealTimeSwitch(UITest):
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(errors.ERR_NO_INSTRUMENTS_TITLE, self.text())
         await self.press(Key.ESCAPE)
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
 
     def arrange_name(self):
         page = self.app.screen
@@ -268,13 +268,13 @@ class TestRealTimeSwitch(UITest):
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertEqual(self.app.screen.count(self.cell()), marks.MSG_REAL_TIME_ON_MARK)
         await self.press(keybindings.MainPage.REAL_TIME)
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
         self.assertEqual(self.app.screen.count(self.cell()), marks.MSG_REAL_TIME_OFF_MARK)
         self.assertIn(messages.MSG_REAL_TIME_OFF, self.text())
         await self.press(keybindings.MainPage.REAL_TIME)
-        self.assertTrue(self.document.setlist().is_real_time())
+        self.assertTrue(self.document.get_setlist().is_real_time())
         self.assertIn(messages.MSG_REAL_TIME_ON, self.text())
-        self.assertEqual(self.document.setlist().to_data()[SetlistSetting.REAL_TIME], True)
+        self.assertEqual(self.document.get_setlist().to_data()[SetlistSetting.REAL_TIME], True)
 
     async def test_the_cell_is_named_and_enter_on_it_presses_the_switch(self):
         self.document.add_instrument(SYNTH)
@@ -282,4 +282,4 @@ class TestRealTimeSwitch(UITest):
         page.select(self.cell().binding)
         self.assertIn(labels.PageName.REAL_TIME, self.text())
         await self.press(Key.ENTER)
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())

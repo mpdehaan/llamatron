@@ -41,7 +41,7 @@ class StatusLine:
     def is_refusal(self):
         return self._refusal
 
-    def text(self):
+    def get_text(self):
         return self._text
 
     def clear(self):

@@ -353,7 +353,7 @@ class TutorialPlan:
     def build_scales(self):
         """Add each scale of the target the set doesn't have: a new scale on the Scales page, its root and kind picked, and its name set when the kind's own name isn't the one wanted."""
         for name in self.target.get_scale_names():
-            if name in self.document().setlist().get_scale_names():
+            if name in self.document().get_setlist().get_scale_names():
                 continue
             scale = self.target.get_named_scale(name)
             yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_A_SCALE, name=name))
@@ -361,12 +361,12 @@ class TutorialPlan:
             yield from self.press(keybindings.ListPage.ADD)
             yield from self.set_field(label=labels_text.MSG_ROOT_LABEL, answer=scale.get_root())
             yield from self.set_field(label=labels_text.MSG_KIND_LABEL, answer=scale_label(scale.get_kind()))
-            if name not in self.document().setlist().get_scale_names():
+            if name not in self.document().get_setlist().get_scale_names():
                 yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=name)
 
     def drop_spare_scales(self):
         """Delete the new set's scales that the target doesn't have, once the song no longer uses them."""
-        for name in list(self.document().setlist().get_scale_names()):
+        for name in list(self.document().get_setlist().get_scale_names()):
             if name in self.target.get_scale_names():
                 continue
             if self.document().uses(section=Section.SCALES, name=name):
@@ -383,10 +383,10 @@ class TutorialPlan:
         yield Say(narration.MSG_NARRATE_SONG)
         yield from self.open_page(keybindings.MainPage.SONGS)
         # A rename is said on the list of the things renamed, where the thing already there shows.
-        if self.document().current_song_name() != name:
+        if self.document().get_current_song_name() != name:
             yield Say(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_SONG))
         yield from self.press(keybindings.SongsPage.SETTINGS)
-        if self.document().current_song_name() != name:
+        if self.document().get_current_song_name() != name:
             yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=name)
         wanted = song.to_data()
         for setting, (label, _) in SONG_FIELDS.items():
@@ -465,7 +465,7 @@ class TutorialPlan:
     def build_clip(self, *, song, index, track):
         wanted = song.get_scene(index).get_clip_slot(track)
         pattern = wanted.get_pattern_name()
-        if pattern not in self.document().setlist().get_pattern_names():
+        if pattern not in self.document().get_setlist().get_pattern_names():
             yield from self.build_pattern(song=song, name=pattern)
         yield Say(narration.MSG_NARRATE_CLIP.format(pattern=pattern, track=track, scene=song.get_scene(index).get_name()))
         yield from self.open_arrange()
@@ -530,7 +530,7 @@ class TutorialPlan:
         yield Say(narration.MSG_NARRATE_PATTERN_ROWS.format(name=name))
         yield from self.set_rows(wanted)
         for setting in wanted.to_data():
-            if setting not in row_descriptions.ROW_DESCRIPTIONS and setting not in self.document().setlist().get_pattern(name).to_data():
+            if setting not in row_descriptions.ROW_DESCRIPTIONS and setting not in self.document().get_setlist().get_pattern(name).to_data():
                 self.left_out.append(narration.MSG_LEFT_OUT_PATTERN_SETTING.format(setting=setting, name=name))
 
     def group_wanted(self, name):
@@ -584,7 +584,7 @@ class TutorialPlan:
 
     def starter_pattern_is_spare(self):
         """Return whether the new set's starter pattern is still there and the target has no pattern of that name, so that it becomes the first pattern built."""
-        return STARTER_PATTERN in self.document().setlist().get_pattern_names() and STARTER_PATTERN not in self.target.get_pattern_names()
+        return STARTER_PATTERN in self.document().get_setlist().get_pattern_names() and STARTER_PATTERN not in self.target.get_pattern_names()
 
     def drop_starter_pattern(self):
         """Delete the starter pattern when no pattern was built over it, since the target doesn't have it."""
@@ -773,7 +773,7 @@ class TutorialPlan:
         for number, track in enumerate(song.get_track_names()):
             yield from self.open_page(keybindings.MainPage.INSTRUMENTS)
             yield from self.press(keybindings.ListPage.ADD)
-            self.instruments[track] = self.document().setlist().get_instrument_names()[-1]
+            self.instruments[track] = self.document().get_setlist().get_instrument_names()[-1]
             yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_AN_INSTRUMENT, name=self.instruments[track]))
             yield from self.set_field(label=labels_text.MSG_DEVICE_LABEL, answer=self.driver)
             yield from self.set_field(label=labels_text.MSG_CHANNEL_LABEL, answer=FIRST_CHANNEL + number)
@@ -782,7 +782,7 @@ class TutorialPlan:
             yield from self.go_to_cell(row=arrange_page.HEADER_ROW, column=place + arrange_page.FIRST_TRACK_COLUMN)
             yield from self.press(keybindings.ArrangePage.TRACK_SETTINGS)
             yield from self.set_field(label=labels_text.MSG_INSTRUMENT_LABEL, answer=self.instruments[track])
-        if not self.document().setlist().is_real_time():
+        if not self.document().get_setlist().is_real_time():
             yield from self.open_page(keybindings.MainPage.REAL_TIME)
 
     def play(self):

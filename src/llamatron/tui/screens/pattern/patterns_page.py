@@ -86,11 +86,11 @@ class PatternsPage(NamedListPage):
 
     def groups(self):
         """Return every group's name, sorted: the ones patterns are in, and the ones made here that hold none yet."""
-        held = self.document().setlist().get_pattern_groups()
+        held = self.document().get_setlist().get_pattern_groups()
         return sorted([*held, *(group for group in self.new_groups if group not in held)], key=name_order)
 
     def is_closed(self, group):
-        return self.document().setlist().is_pattern_group_closed(group)
+        return self.document().get_setlist().is_pattern_group_closed(group)
 
     def rows_depend_on(self):
         """Return what the rows depend on besides the set: which groups are closed, the groups made here, and a search, which looks inside every group."""
@@ -100,7 +100,7 @@ class PatternsPage(NamedListPage):
         rows = []
         for group in self.groups():
             rows += self.group_rows(group)
-        if self.document().setlist().patterns_in_group(UNGROUPED):
+        if self.document().get_setlist().patterns_in_group(UNGROUPED):
             rows += self.group_rows(UNGROUPED)
         rows.append((Listed(NEW_GROUP, None), self.one_cell(labels.MSG_NEW_GROUP_BUTTON)))
         return rows
@@ -108,7 +108,7 @@ class PatternsPage(NamedListPage):
     def group_rows(self, group):
         """Return a group's rows: its heading, and while it is open, or a search looks inside it, its patterns and its button."""
         document = self.document()
-        names = document.setlist().patterns_in_group(group)
+        names = document.get_setlist().patterns_in_group(group)
         closed = self.is_closed(group) and not self.searching
         heading = labels.MSG_GROUP_HEADING.format(mark=marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK, name=labels.MSG_UNGROUPED if group is UNGROUPED else group, count=len(names))
         rows = [(Listed(HEADING, group), self.one_cell(heading))]
@@ -269,7 +269,7 @@ class PatternsPage(NamedListPage):
         current = self.document().pattern_group(name)
 
         def moved(group):
-            self.document().change(self.document().setlist().get_pattern(name).set_group, group)
+            self.document().change(self.document().get_setlist().get_pattern(name).set_group, group)
             self.new_groups = [made for made in self.new_groups if made != group]
             self.put_cursor_on(name)
 
@@ -312,7 +312,7 @@ class PatternsPage(NamedListPage):
         def renamed(new):
             if group in self.new_groups:
                 self.new_groups = [new if made == group else made for made in self.new_groups]
-            self.document().change(self.document().setlist().rename_pattern_group, old=group, new=new)
+            self.document().change(self.document().get_setlist().rename_pattern_group, old=group, new=new)
             self.put_cursor_on_row(Listed(HEADING, new))
         self.ask_name(title=messages.MSG_RENAME_GROUP_PROMPT, value=group, taken=self.groups(), then=renamed)
 
@@ -322,7 +322,7 @@ class PatternsPage(NamedListPage):
 
         def confirmed(_):
             self.new_groups = [made for made in self.new_groups if made != group]
-            self.document().change(self.document().setlist().ungroup_patterns, group)
+            self.document().change(self.document().get_setlist().ungroup_patterns, group)
             self.put_cursor_on_row(Listed(HEADING, UNGROUPED))
         self.ask(dialog=ConfirmDialog(title=messages.MSG_UNGROUP_TITLE, messages=[messages.MSG_UNGROUP_QUESTION.format(name=group)]), then=confirmed)
 
@@ -337,7 +337,7 @@ class PatternsPage(NamedListPage):
                 self.refuse(errors.ERR_NAME_EMPTY_OR_IN_USE)
                 return
             try:
-                copies = self.document().change(self.document().setlist().copy_pattern_group, group=group, new=text)
+                copies = self.document().change(self.document().get_setlist().copy_pattern_group, group=group, new=text)
             except ValueError as problem:
                 self.refuse(str(problem))
                 return

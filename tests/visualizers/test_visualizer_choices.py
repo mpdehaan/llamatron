@@ -96,7 +96,7 @@ class TestArrangeVisualizerChoices(UITest):
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIs(self.showing(), modes.MODES[0])
         await self.press(Key.ESCAPE)
-        self.document.change(self.document.setlist().set_visualizer, SPECTRUM)
+        self.document.change(self.document.get_setlist().set_visualizer, SPECTRUM)
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIs(self.showing(), mode_called(SPECTRUM))
         await self.press(Key.ESCAPE)
@@ -105,7 +105,7 @@ class TestArrangeVisualizerChoices(UITest):
         self.assertIs(self.showing(), mode_called(PIANO_ROLL))
 
     async def test_brackets_step_through_the_modes_going_round_and_skip_the_hidden(self):
-        self.document.change(self.document.setlist().set_visualizer_hidden, name=modes.MODES[1].OPTION, hidden=True)
+        self.document.change(self.document.get_setlist().set_visualizer_hidden, name=modes.MODES[1].OPTION, hidden=True)
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIs(self.showing(), modes.MODES[0])
         await self.press(forward_key(keybindings.ArrangePage.STEP_VISUALIZER))
@@ -115,13 +115,13 @@ class TestArrangeVisualizerChoices(UITest):
         self.assertIs(self.showing(), modes.MODES[-1])
 
     async def test_a_hidden_choice_is_passed_over_and_with_every_mode_hidden_the_key_says_so(self):
-        self.document.change(self.document.setlist().set_visualizer, SPECTRUM)
-        self.document.change(self.document.setlist().set_visualizer_hidden, name=SPECTRUM, hidden=True)
+        self.document.change(self.document.get_setlist().set_visualizer, SPECTRUM)
+        self.document.change(self.document.get_setlist().set_visualizer_hidden, name=SPECTRUM, hidden=True)
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIs(self.showing(), modes.MODES[0])
         await self.press(Key.ESCAPE)
         for name in file_format.VISUALIZER_NAMES:
-            self.document.change(self.document.setlist().set_visualizer_hidden, name=name, hidden=True)
+            self.document.change(self.document.get_setlist().set_visualizer_hidden, name=name, hidden=True)
         await self.press(keybindings.ArrangePage.VISUALIZER)
         self.assertIsNone(self.page.visualizer)
         self.assertIn(messages.MSG_EVERY_VISUALIZER_HIDDEN, self.text())
@@ -138,12 +138,12 @@ class TestHideVisualizersSection(UITest):
         self.assertIsInstance(self.app.screen, PickManyDialog)
         place = list(file_format.VISUALIZER_NAMES).index(PLASMA)
         await self.press(*[Key.DOWN] * place, keybindings.PickManyDialog.FLIP, keybindings.PickManyDialog.DONE)
-        self.assertEqual(self.document.setlist().get_hidden_visualizers(), [PLASMA])
+        self.assertEqual(self.document.get_setlist().get_hidden_visualizers(), [PLASMA])
         self.assertIn(mode_called(PLASMA).NAME, self.text())
         await self.press(Key.ENTER, keybindings.PickManyDialog.FLIP, Key.ESCAPE)
-        self.assertEqual(self.document.setlist().get_hidden_visualizers(), [PLASMA])
+        self.assertEqual(self.document.get_setlist().get_hidden_visualizers(), [PLASMA])
         await self.press(Key.ENTER, *[Key.DOWN] * place, keybindings.PickManyDialog.FLIP, keybindings.PickManyDialog.DONE)
-        self.assertEqual(self.document.setlist().get_hidden_visualizers(), [])
+        self.assertEqual(self.document.get_setlist().get_hidden_visualizers(), [])
 
 
 if __name__ == '__main__':

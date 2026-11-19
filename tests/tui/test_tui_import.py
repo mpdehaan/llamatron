@@ -102,27 +102,27 @@ class TestImportDialog(UITest):
         self.assertIn(importing.MSG_IMPORT_TITLE, self.text())
 
     async def test_import_adds_the_song_makes_it_current_and_says_what_it_made(self):
-        before = self.document.setlist().get_item_names(Section.PATTERNS)
+        before = self.document.get_setlist().get_item_names(Section.PATTERNS)
         await self.open_the_dialog()
         made = self.app.screen.made()
         await self.import_and_close()
         self.assertIsInstance(self.app.screen, MainPage)
-        self.assertEqual(self.document.current_song_name(), SAMPLE_SONG)
-        self.assertEqual(len(self.document.setlist().get_item_names(Section.PATTERNS)), len(before) + made.patterns)
+        self.assertEqual(self.document.get_current_song_name(), SAMPLE_SONG)
+        self.assertEqual(len(self.document.get_setlist().get_item_names(Section.PATTERNS)), len(before) + made.patterns)
         self.assertIn(importing.MSG_IMPORTED.format(name=SAMPLE_SONG, tracks=made.tracks, patterns=made.patterns, scenes=made.scenes), self.text())
         self.assertTrue(self.document.is_dirty())
 
     async def test_one_undo_takes_the_whole_import_away(self):
-        songs = self.document.setlist().get_song_names()
-        patterns = self.document.setlist().get_item_names(Section.PATTERNS)
+        songs = self.document.get_setlist().get_song_names()
+        patterns = self.document.get_setlist().get_item_names(Section.PATTERNS)
         await self.open_the_dialog()
         await self.import_and_close()
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.setlist().get_song_names(), songs)
-        self.assertEqual(self.document.setlist().get_item_names(Section.PATTERNS), patterns)
+        self.assertEqual(self.document.get_setlist().get_song_names(), songs)
+        self.assertEqual(self.document.get_setlist().get_item_names(Section.PATTERNS), patterns)
 
     async def test_esc_and_the_cancel_button_add_nothing(self):
-        songs = self.document.setlist().get_song_names()
+        songs = self.document.get_setlist().get_song_names()
         await self.open_the_dialog()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, OpenPage)
@@ -130,7 +130,7 @@ class TestImportDialog(UITest):
         self.app.screen.row = import_dialog.BUTTONS
         self.app.screen.button = import_dialog.CANCEL_BUTTON
         await self.press(keybindings.ImportDialog.PRESS)
-        self.assertEqual(self.document.setlist().get_song_names(), songs)
+        self.assertEqual(self.document.get_setlist().get_song_names(), songs)
 
     async def test_the_fields_change_what_the_import_makes(self):
         await self.open_the_dialog()
@@ -149,15 +149,15 @@ class TestImportDialog(UITest):
         await self.type(RENAMED)
         await self.press(Key.ENTER)
         await self.import_and_close()
-        self.assertEqual(self.document.current_song_name(), RENAMED)
+        self.assertEqual(self.document.get_current_song_name(), RENAMED)
 
     async def test_a_second_import_of_one_file_is_numbered(self):
         await self.open_the_dialog()
         await self.import_and_close()
         await self.open_the_dialog()
         await self.import_and_close()
-        self.assertIn(SAMPLE_SONG, self.document.setlist().get_song_names())
-        self.assertNotEqual(self.document.current_song_name(), SAMPLE_SONG)
+        self.assertIn(SAMPLE_SONG, self.document.get_setlist().get_song_names())
+        self.assertNotEqual(self.document.get_current_song_name(), SAMPLE_SONG)
 
     async def test_after_an_import_a_dialog_says_the_songs_name_and_that_there_were_no_warnings(self):
         await self.open_the_dialog()

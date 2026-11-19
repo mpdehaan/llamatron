@@ -141,10 +141,10 @@ class WizardTest(UITest):
         await self.choose_genre_and_subgenre()
         await self.create()
         await self.press(keybindings.Page.WIZARD)
-        return self.document.current_song_name()
+        return self.document.get_current_song_name()
 
     def song_data(self, name):
-        return self.document.setlist().get_item(section=Section.SONGS, name=name).to_data()
+        return self.document.get_setlist().get_item(section=Section.SONGS, name=name).to_data()
 
 
 class TestWizardPage(WizardTest):
@@ -420,44 +420,44 @@ class TestWizardPage(WizardTest):
         self.assertEqual(choices.get_form(), forms[1])
 
     async def test_create_refuses_until_a_genre_and_a_subgenre_are_chosen(self):
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CREATE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertFalse(self.wizard().in_fields)
         self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
 
     async def test_create_adds_the_song_with_all_it_uses_makes_it_current_and_shows_arrange(self):
-        patterns = self.document.setlist().get_pattern_names()
+        patterns = self.document.get_setlist().get_pattern_names()
         await self.choose_genre_and_subgenre()
         name = self.wizard().song_name()
         kept = self.choices().to_data()
         await self.create()
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertEqual([type(page) for page in self.app.pages()], [MainPage, ArrangePage])
-        self.assertEqual(self.document.current_song_name(), name)
+        self.assertEqual(self.document.get_current_song_name(), name)
         self.assertEqual(self.document.song_names(), [names.MSG_DEFAULT_SONG_NAME, name])
         self.assertIn(messages.MSG_WIZARD_CREATED.format(name=name), self.text())
         song = self.document.song()
         self.assertTrue(song.get_scenes())
-        self.assertGreater(len(self.document.setlist().get_pattern_names()), len(patterns))
+        self.assertGreater(len(self.document.get_setlist().get_pattern_names()), len(patterns))
         # The song keeps what the wizard was told, with the seed drawn for it.
         self.assertEqual({field: value for field, value in song.get_wizard_choices().items() if field in kept}, kept)
         self.assertTrue(self.document.is_dirty())
 
     async def test_create_turns_real_time_on_so_that_the_song_can_be_played_and_undo_turns_it_off_again(self):
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
         await self.choose_genre_and_subgenre()
         await self.create()
-        self.assertTrue(self.document.setlist().is_real_time())
+        self.assertTrue(self.document.get_setlist().is_real_time())
         await self.press(keybindings.Page.UNDO)
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
 
     async def test_a_second_song_of_the_same_choices_gets_a_name_of_its_own_and_touches_nothing_of_the_first(self):
         await self.choose_genre_and_subgenre()
         await self.create()
-        first = self.document.current_song_name()
-        first_data = self.document.setlist().get_item(section=Section.SONGS, name=first).to_data()
+        first = self.document.get_current_song_name()
+        first_data = self.document.get_setlist().get_item(section=Section.SONGS, name=first).to_data()
         await self.press(keybindings.Page.WIZARD)
         await self.start_with(starts.NEW_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
@@ -465,7 +465,7 @@ class TestWizardPage(WizardTest):
         self.assertNotEqual(first, second)
         await self.create()
         self.assertEqual(self.document.song_names(), [names.MSG_DEFAULT_SONG_NAME, first, second])
-        self.assertEqual(self.document.setlist().get_item(section=Section.SONGS, name=first).to_data(), first_data)
+        self.assertEqual(self.document.get_setlist().get_item(section=Section.SONGS, name=first).to_data(), first_data)
 
     async def test_esc_in_the_tree_asks_even_with_nothing_chosen_and_enter_alone_keeps_the_wizard(self):
         await self.press(keybindings.WizardPage.INTO_FIELDS, keybindings.WizardPage.TO_TREE, Key.ESCAPE)
@@ -663,7 +663,7 @@ class TestWizardSounds(WizardTest):
         self.assertTrue(choices.has_own_sound(role))
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.create()
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         instrument = setlist.get_instrument(self.document.song().get_track(role).get_instrument_name())
         self.assertEqual(instrument.get_gm_sound(), picked)
 
@@ -1570,7 +1570,7 @@ class TestWizardStart(WizardTest):
     async def test_replacing_from_the_last_settings_keeps_the_settings_rolls_the_dice_again_and_leaves_nothing_behind(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         kept = self.document.song().get_wizard_choices()
-        patterns = len(self.document.setlist().get_pattern_names())
+        patterns = len(self.document.get_setlist().get_pattern_names())
         await self.start_with(starts.REPLACE_FROM_LAST)
         self.assertIn(first, self.wizard().caption())
         await self.create()
@@ -1582,7 +1582,7 @@ class TestWizardStart(WizardTest):
         self.assertEqual({**now, arranger.SEED: None}, {**kept, arranger.SEED: None})
         # Another roll of the dice may need a pattern more or fewer, so the set holds what it held, less the old song's
         # patterns and with the new song's.
-        self.assertEqual(len(self.document.setlist().get_pattern_names()), patterns - self.patterns_made_from(kept) + self.patterns_made_from(now))
+        self.assertEqual(len(self.document.get_setlist().get_pattern_names()), patterns - self.patterns_made_from(kept) + self.patterns_made_from(now))
 
     def patterns_made_from(self, kept):
         """How many patterns the song made from the kept choices has."""
@@ -1596,7 +1596,7 @@ class TestWizardStart(WizardTest):
         await self.start_with(starts.NEW_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         await self.create()
-        third = self.document.current_song_name()
+        third = self.document.get_current_song_name()
         third_data = self.song_data(third)
         self.document.select_song(first)
         await self.press(keybindings.Page.WIZARD)
@@ -1610,25 +1610,25 @@ class TestWizardStart(WizardTest):
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.create()
         self.assertEqual(self.document.song_names(), [names.MSG_DEFAULT_SONG_NAME, first, third])
-        self.assertEqual(self.document.current_song_name(), first)
+        self.assertEqual(self.document.get_current_song_name(), first)
         self.assertEqual(self.song_data(third), third_data)
 
     async def test_one_undo_puts_a_replaced_song_back_with_its_hand_edits_and_one_redo_replaces_it_again(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         await self.press(Key.ESCAPE)
         self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
-        edited = self.document.setlist().to_data()
+        edited = self.document.get_setlist().to_data()
         await self.press(keybindings.Page.WIZARD)
         await self.start_with(starts.REPLACE_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         await self.create()
-        replaced = self.document.setlist().to_data()
+        replaced = self.document.get_setlist().to_data()
         self.assertNotEqual(replaced, edited)
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.setlist().to_data(), edited)
-        self.assertEqual(self.document.current_song_name(), first)
+        self.assertEqual(self.document.get_setlist().to_data(), edited)
+        self.assertEqual(self.document.get_current_song_name(), first)
         await self.press(keybindings.Page.REDO)
-        self.assertEqual(self.document.setlist().to_data(), replaced)
+        self.assertEqual(self.document.get_setlist().to_data(), replaced)
 
 
 class TestWizardFillsAnUntouchedSong(WizardTest):
@@ -1639,18 +1639,18 @@ class TestWizardFillsAnUntouchedSong(WizardTest):
         return LlamatronApp(document=self.document)
 
     async def test_a_new_sets_song_is_filled_under_the_wizards_name_and_its_starter_pattern_goes(self):
-        before = self.document.setlist().to_data()
-        starter = self.document.setlist().get_pattern_names()
+        before = self.document.get_setlist().to_data()
+        starter = self.document.get_setlist().get_pattern_names()
         await self.choose_genre_and_subgenre()
         name = self.wizard().song_name()
         await self.create()
         self.assertEqual(self.document.song_names(), [name])
-        self.assertEqual(self.document.current_song_name(), name)
+        self.assertEqual(self.document.get_current_song_name(), name)
         self.assertIn(messages.MSG_WIZARD_CREATED.format(name=name), self.text())
         for pattern in starter:
-            self.assertFalse(self.document.setlist().has_pattern(pattern))
+            self.assertFalse(self.document.get_setlist().has_pattern(pattern))
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.setlist().to_data(), before)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
         self.assertEqual(self.document.song_names(), [names.MSG_DEFAULT_SONG_NAME])
 
     async def test_a_song_that_was_changed_is_kept_and_the_new_song_added_beside_it(self):
@@ -1674,18 +1674,18 @@ class TestWizardPageUndo(WizardTest):
             self.assertEqual(self.choices().to_data(), chosen)
 
     async def test_create_is_one_step_which_undo_takes_away_whole_and_redo_brings_back(self):
-        before = self.document.setlist().to_data()
+        before = self.document.get_setlist().to_data()
         await self.choose_genre_and_subgenre()
         name = self.wizard().song_name()
         await self.create()
-        after = self.document.setlist().to_data()
+        after = self.document.get_setlist().to_data()
         self.assertNotEqual(before, after)
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.setlist().to_data(), before)
-        self.assertEqual(self.document.current_song_name(), names.MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(self.document.get_setlist().to_data(), before)
+        self.assertEqual(self.document.get_current_song_name(), names.MSG_DEFAULT_SONG_NAME)
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertIn(fixed_text(messages.MSG_UNDONE), self.text())
         await self.press(keybindings.Page.REDO)
-        self.assertEqual(self.document.setlist().to_data(), after)
-        self.assertEqual(self.document.current_song_name(), name)
+        self.assertEqual(self.document.get_setlist().to_data(), after)
+        self.assertEqual(self.document.get_current_song_name(), name)
         self.assertIn(fixed_text(messages.MSG_RESTORED), self.text())

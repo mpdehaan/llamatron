@@ -155,7 +155,7 @@ class PatternEdits:
 
     def pattern_octave_range(self, name):
         """Return the lowest and highest octave of the one track that plays a pattern, or None when no track or more than one does."""
-        return self.remembered(key=(PatternEdits.pattern_octave_range.__name__, name), on=(self.outside_patterns(),), compute=lambda: self._pattern_octave_range(name))
+        return self.remembered(key=(PatternEdits.pattern_octave_range.__name__, name), on=(self.get_outside_patterns(),), compute=lambda: self._pattern_octave_range(name))
 
     def _pattern_octave_range(self, name):
         plays = {(song, track) for song, _, _, track in self._setlist.clip_slots_naming(section=Section.PATTERNS, name=name)}
@@ -167,7 +167,7 @@ class PatternEdits:
 
     def cc_numbers_for_pattern(self, *, name, lane):
         """Return the distinct CC numbers one of a pattern's CC lanes sends on the tracks that play it, in any song, None among them for a track where the lane sends nothing, and nothing when no track plays it."""
-        return self.remembered(key=(PatternEdits.cc_numbers_for_pattern.__name__, name, lane), on=(self.outside_patterns(),), compute=lambda: self._cc_numbers_for_pattern(name=name, lane=lane))
+        return self.remembered(key=(PatternEdits.cc_numbers_for_pattern.__name__, name, lane), on=(self.get_outside_patterns(),), compute=lambda: self._cc_numbers_for_pattern(name=name, lane=lane))
 
     def _cc_numbers_for_pattern(self, *, name, lane):
         plays = dict.fromkeys((song, track) for song, _, _, track in self._setlist.clip_slots_naming(section=Section.PATTERNS, name=name))
@@ -177,7 +177,7 @@ class PatternEdits:
     def allowed_inc_max(self, *, pattern, register):
         """Return the most a step of a pattern may add to a register or take from it: the narrowest of the songs that play the pattern, or the current song's when none does."""
         return self.remembered(
-            key=(PatternEdits.allowed_inc_max.__name__, pattern, register), on=(self.outside_patterns(),),
+            key=(PatternEdits.allowed_inc_max.__name__, pattern, register), on=(self.get_outside_patterns(),),
             compute=lambda: self._setlist.allowed_inc_max_for_pattern(name=pattern, register=register) or self.song().get_register(register).get_allowed_inc_max(),
         )
 
@@ -219,7 +219,7 @@ class PatternEdits:
         Scales come from the scene and then the song, in every song of the set, so a pattern used
         in several places can play in several scales, and the largest of those sets the limit.
         """
-        return self.remembered(key=(PatternEdits.degree_limit.__name__, name), on=(self.outside_patterns(),), compute=lambda: self._degree_limit(name))
+        return self.remembered(key=(PatternEdits.degree_limit.__name__, name), on=(self.get_outside_patterns(),), compute=lambda: self._degree_limit(name))
 
     def _degree_limit(self, name):
         names = [self.song().get_scale_name(), *self._setlist.scales_for_pattern(name)]
@@ -228,7 +228,7 @@ class PatternEdits:
 
     def scales_of_pattern(self, name):
         """Return the distinct scales a pattern plays under, in order: its uses' scenes' or songs', or the current song's when nothing uses it."""
-        return self.remembered(key=(PatternEdits.scales_of_pattern.__name__, name), on=(self.outside_patterns(),), compute=lambda: self._scales_of_pattern(name))
+        return self.remembered(key=(PatternEdits.scales_of_pattern.__name__, name), on=(self.get_outside_patterns(),), compute=lambda: self._scales_of_pattern(name))
 
     def _scales_of_pattern(self, name):
         if self._setlist.clip_slots_naming(section=Section.PATTERNS, name=name):
@@ -239,7 +239,7 @@ class PatternEdits:
 
     def instruments_of_pattern(self, name):
         """Return the distinct instruments of the tracks that play a pattern, by name, in order, None among them for a track with none."""
-        return self.remembered(key=(PatternEdits.instruments_of_pattern.__name__, name), on=(self.outside_patterns(),), compute=lambda: self._instruments_of_pattern(name))
+        return self.remembered(key=(PatternEdits.instruments_of_pattern.__name__, name), on=(self.get_outside_patterns(),), compute=lambda: self._instruments_of_pattern(name))
 
     def _instruments_of_pattern(self, name):
         uses = self._setlist.clip_slots_naming(section=Section.PATTERNS, name=name)

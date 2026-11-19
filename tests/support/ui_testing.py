@@ -360,7 +360,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         self.document.add_pattern(name=name, steps=steps)
         for row, values in rows.items():
             for step, value in enumerate(values):
-                self.document.change(self.document.setlist().get_pattern(name).set_value, row=row, step=step, value=value)
+                self.document.change(self.document.get_setlist().get_pattern(name).set_value, row=row, step=step, value=value)
 
     def delete_every_generator(self):
         """Delete every arp and AutoRatchet, which the chains must have stopped using first."""

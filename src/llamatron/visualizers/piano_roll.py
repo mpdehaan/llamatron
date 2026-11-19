@@ -129,7 +129,7 @@ class PianoRoll(Visualizer):
         """Return a track's colour, by the order it was first heard in."""
         return nth_colour(self._heard_tracks.index(track))
 
-    def centre(self):
+    def get_centre(self):
         """Return the pitch the rows centre on now."""
         return self._centre
 

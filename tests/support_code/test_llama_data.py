@@ -98,10 +98,10 @@ class TestLlamaData(unittest.TestCase):
         self.assertEqual(track.to_data(), {TrackSetting.ACCENT: limits.MAX_STEP_ACCENT})
         with self.assertRaises(InvalidValue):
             track.set_written(name=TrackSetting.ACCENT, value=limits.MAX_STEP_ACCENT + 1)
-        before = track.revision()
+        before = track.get_revision()
         track.set_written(name=TrackSetting.ACCENT, value=None)
         self.assertEqual(track.to_data(), {})
-        self.assertNotEqual(track.revision(), before)
+        self.assertNotEqual(track.get_revision(), before)
         track.set_written_unless_default(name=TrackSetting.ACCENT, value=defaults.DEFAULT_TRACK_ACCENT, default=defaults.DEFAULT_TRACK_ACCENT)
         self.assertIsNone(track.get_written(TrackSetting.ACCENT))
 

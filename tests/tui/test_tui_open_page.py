@@ -113,7 +113,7 @@ class TestOpenPage(UITest):
         rows = [row[0] for row in self.app.screen.rows()]
         self.app.screen.cursor.set_place(rows.index('two songs.yml'))
         await self.press(Key.ENTER)
-        self.assertEqual(self.app.get_document().current_song_name(), names.MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(self.app.get_document().get_current_song_name(), names.MSG_DEFAULT_SONG_NAME)
         self.assertEqual(self.app.get_document().song().get_track_names(), [LEAD, DRUMS])
         self.assert_header(set_crumb=labels.MSG_SET_CRUMB.format(file='two songs.yml'), song_crumb=labels.MSG_SONG_CRUMB.format(song=names.MSG_DEFAULT_SONG_NAME))
 

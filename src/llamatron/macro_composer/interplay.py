@@ -92,8 +92,8 @@ class UnderLead:
         self._scale_type = scale_type
         self._seed = seed
         self._walk = StepWalk(habits=habits, chords=[], scale_type=scale_type, seed=seed, answers=True)
-        self._ladder = self._walk.ladder()
-        self._home = self._walk.home()
+        self._ladder = self._walk.get_ladder()
+        self._home = self._walk.get_home()
 
     def unit(self):
         """The shortest note, in steps."""

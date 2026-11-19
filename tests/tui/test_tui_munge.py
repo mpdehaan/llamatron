@@ -106,7 +106,7 @@ class TestMunge(UITest):
         self.assertEqual(self.row(), [3, 4, 5, 1, 2, 3, 4, 5])
 
     async def test_a_copy_that_would_pass_the_most_steps_is_refused(self):
-        self.document.change(self.document.setlist().get_pattern(LONG).set_steps, limits.MAX_STEPS)
+        self.document.change(self.document.get_setlist().get_pattern(LONG).set_steps, limits.MAX_STEPS)
         await self.press(Key.RIGHT)
         for choice in (Munge.COPY_BEFORE_TO_END, Munge.MIRROR):
             with self.subTest(choice=choice):
@@ -196,8 +196,8 @@ class TestMunge(UITest):
         for choice in (Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES):
             await munge(test=self, choice=choice)
             self.assertIn(errors.ERR_VOICE_LEADING_NEEDS_CHORDS, self.text())
-        self.document.change(self.document.setlist().get_pattern(LONG).set_value, row=Row.CHORD, step=THIRD, value=ChordSymbol.SCALE_TRIAD)
-        self.document.change(self.document.setlist().get_pattern(LONG).set_value, row=Row.INVERSION, step=THIRD, value=FIRST_INVERSION)
+        self.document.change(self.document.get_setlist().get_pattern(LONG).set_value, row=Row.CHORD, step=THIRD, value=ChordSymbol.SCALE_TRIAD)
+        self.document.change(self.document.get_setlist().get_pattern(LONG).set_value, row=Row.INVERSION, step=THIRD, value=FIRST_INVERSION)
         await munge(test=self, choice=Munge.VOICE_LEADING)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertNotIn(errors.ERR_VOICE_LEADING_NEEDS_CHORDS, self.text())
@@ -265,14 +265,14 @@ class TestMunge(UITest):
         self.assertEqual(self.row(), ROWS[Row.DEGREE])
         # One undo takes every new pattern away.
         await self.press(keybindings.Page.UNDO)
-        self.assertFalse(any(self.document.setlist().has_pattern(part) for part in PARTS))
+        self.assertFalse(any(self.document.get_setlist().has_pattern(part) for part in PARTS))
 
     async def test_a_second_split_takes_no_name_of_the_first(self):
         for _ in range(2):
             await munge(test=self, choice=Munge.SPLIT)
             self.app.screen.value = str(THIRD + 1)
             await self.press(Key.ENTER, Key.ENTER)
-        names = self.document.setlist().get_pattern_names()
+        names = self.document.get_setlist().get_pattern_names()
         for part in (*PARTS[:2], LATER_PART_1, LATER_PART_2):
             self.assertIn(part, names)
 
@@ -281,7 +281,7 @@ class TestMunge(UITest):
         self.app.screen.value = str(STEPS)
         await self.press(Key.ENTER)
         self.assertIn(errors.ERR_SPLIT_OUT_OF_RANGE.format(low=1, high=STEPS - 1), self.text())
-        self.assertNotIn(PARTS[0], self.document.setlist().get_pattern_names())
+        self.assertNotIn(PARTS[0], self.document.get_setlist().get_pattern_names())
 
     async def test_a_drum_pattern_is_not_interleaved_with_a_pattern_of_notes(self):
         await munge(test=self, choice=Munge.INTERLEAVE)

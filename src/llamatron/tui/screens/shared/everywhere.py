@@ -258,7 +258,7 @@ def export(page):
 
 def choose_export(page):
     """Ask which kind of export to write for the current song, and write it."""
-    title = messages_text.MSG_EXPORT_TITLE.format(name=page.document().current_song_name())
+    title = messages_text.MSG_EXPORT_TITLE.format(name=page.document().get_current_song_name())
     page.ask(dialog=ChoiceDialog(title=title, options=labels.MSG_EXPORT_CHOICES), then=lambda place: export_chosen(page, to=exports.EXPORT_KINDS[place]))
 
 

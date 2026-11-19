@@ -277,7 +277,7 @@ def auto_assignment(tracks):
 def has_a_device(*, document, track):
     """Return whether a track plays through an instrument with a device, since an example's instruments may carry only a General MIDI sound and stay silent in real time."""
     name = document.song().get_track(track).get_instrument_name()
-    return name is not None and document.setlist().get_instrument(name).has_device()
+    return name is not None and document.get_setlist().get_instrument(name).has_device()
 
 
 def assign_tracks(*, document, channels, port):
@@ -287,8 +287,8 @@ def assign_tracks(*, document, channels, port):
     for channel in sorted({channel for channel in channels if channel is not None}):
         name = INSTRUMENT_NAME.format(channel=channel)
         document.add_instrument(name)
-        document.change(document.setlist().get_instrument(name).set_device, port)
-        document.change(document.setlist().get_instrument(name).set_channel, channel)
+        document.change(document.get_setlist().get_instrument(name).set_device, port)
+        document.change(document.get_setlist().get_instrument(name).set_channel, channel)
     plays = 0
     for track, channel in zip(tracks, channels):
         if channel is not None:
@@ -301,7 +301,7 @@ def assign_tracks(*, document, channels, port):
             plays += 1
         else:
             print(TRACK_SILENT.format(track=track))
-    document.change(document.setlist().set_real_time, True)
+    document.change(document.get_setlist().set_real_time, True)
     if not plays:
         raise ValueError(NO_TRACK_PLAYS)
 
@@ -329,7 +329,7 @@ def output_for_fluidsynth(*, given, recorded, outputs):
 def through_fluidsynth(*, document):
     """Print what each track plays through when FluidSynth plays the set's own instruments, and refuse a song where no track plays through FluidSynth."""
     song = document.song()
-    setlist = document.setlist()
+    setlist = document.get_setlist()
     through = 0
     for track in song.get_track_names():
         name = song.get_track(track).get_instrument_name()
@@ -342,7 +342,7 @@ def through_fluidsynth(*, document):
             print(TRACK_SILENT.format(track=track))
     if not through:
         raise ValueError(NO_FLUIDSYNTH_TRACK)
-    document.change(document.setlist().set_real_time, True)
+    document.change(document.get_setlist().set_real_time, True)
 
 
 def explain_setup(*, plays, port, device):

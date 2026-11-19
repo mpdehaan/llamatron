@@ -37,16 +37,16 @@ class MadeSong:
         self._setlist = setlist
         self._name = name
 
-    def setlist(self):
+    def get_setlist(self):
         return self._setlist
 
     def song(self):
         return self._setlist.get_song(self._name)
 
-    def current_song_name(self):
+    def get_current_song_name(self):
         return self._name
 
-    def revision(self):
+    def get_revision(self):
         """Return the one revision the set ever has: it is made, heard and thrown away, never edited."""
         return MADE_REVISION
 

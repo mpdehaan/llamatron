@@ -187,7 +187,7 @@ class TestMainPage(UITest):
         await self.type(ESCAPED_TITLE)
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, FilePage)
-        self.assertFalse(self.document.setlist().get_title())
+        self.assertFalse(self.document.get_setlist().get_title())
         self.assertFalse(self.document.is_dirty())
 
     async def test_a_large_console_shows_the_same_block_of_buttons_at_the_top_left_never_stretched(self):
@@ -278,7 +278,7 @@ class TestMainPageOnAUsualConsole(UITest):
 
     async def test_each_cell_counts_what_its_page_lists_with_a_space_before_the_border(self):
         page = self.app.screen
-        setlist = self.document.setlist()
+        setlist = self.document.get_setlist()
         counts = {item.keys[0]: page.count(item) for item in page.menu_items()}
         self.assertEqual(counts[first_key(keybindings.MainPage.SONGS)], len(self.document.song_names()))
         self.assertEqual(counts[first_key(keybindings.MainPage.PATTERNS)], len(setlist.get_pattern_names()))

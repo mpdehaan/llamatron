@@ -402,7 +402,7 @@ class ClipPage(FieldPage):
 
     def follow_action_field(self):
         """Return the Follow action field: what the clip sends down in real-time playback when its scene is done, shown as the set's default when the clip sets none, with no (default) choice."""
-        advance = self.document().setlist().follow_action_of(self.clip_slot())
+        advance = self.document().get_setlist().follow_action_of(self.clip_slot())
         return ChoiceField(page=self, label=labels_text.MSG_FOLLOW_ACTION_LABEL, choices=file_format.FOLLOW_ACTION_CHOICES, current=advance,
                            names=[labels_text.MSG_FOLLOW_ACTION_NAMES[choice] for choice in file_format.FOLLOW_ACTION_CHOICES],
                            shown=labels_text.MSG_FOLLOW_ACTION_NAMES[advance] if self.clip_slot().get_written_follow_action() is not None

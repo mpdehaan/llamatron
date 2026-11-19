@@ -40,8 +40,8 @@ class SongsPage(NamedListPage):
 
     def rows(self):
         document = self.document()
-        setlist = document.setlist()
-        return [(name, self.row_of(name=name, song=setlist.get_song(name), current=name == document.current_song_name())) for name in self.names()]
+        setlist = document.get_setlist()
+        return [(name, self.row_of(name=name, song=setlist.get_song(name), current=name == document.get_current_song_name())) for name in self.names()]
 
     def row_of(self, *, name, song, current):
         mark = marks.MSG_CURRENT_SONG_MARK if current else drawing.NOTHING

@@ -99,16 +99,16 @@ class TestSoundDialog(PatternPreviewTest):
         self.assertIsInstance(self.dialog, SoundDialog)
 
     def instrument(self):
-        return self.document.setlist().get_instrument(SYNTH)
+        return self.document.get_setlist().get_instrument(SYNTH)
 
     def play_through(self):
         """Move the clock on a little at a time until the trial has played through, ticking the preview as its timer would and sending what is due."""
         for _ in range(MOMENTS_IN_A_WHILE):
             self.clock.advance(A_MOMENT)
             self.preview().tick()
-            if self.preview().player() is None:
+            if self.preview().get_player() is None:
                 return
-            self.preview().player().sender().send_due()
+            self.preview().get_player().get_sender().send_due()
 
     async def find(self, text):
         await self.press(keybindings.SoundDialog.SEARCH)
@@ -156,7 +156,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.assertIsNone(self.instrument().get_gm_sound())
 
     async def test_none_takes_the_sound_away(self):
-        self.document.change(self.document.setlist().get_instrument(SYNTH).set_gm_sound, A_SOUND)
+        self.document.change(self.document.get_setlist().get_instrument(SYNTH).set_gm_sound, A_SOUND)
         await self.press(Key.ESCAPE, Key.ENTER)
         self.assertEqual(self.app.screen.cursor.get_place(), 1 + ITS_FAMILY)
         await self.press(*[Key.UP] * (1 + ITS_FAMILY), keybindings.SoundDialog.CHOOSE)
@@ -244,7 +244,7 @@ class TestSoundDialog(PatternPreviewTest):
     async def test_without_fluidsynth_a_sound_is_tried_on_the_songs_preview_instrument_which_is_sent_no_sound(self):
         self.fluidsynth_installed = False
         self.document.add_instrument(PREVIEW)
-        self.document.change(self.document.setlist().get_instrument(PREVIEW).set_device, test_tui_playback.SYNTH_PORT)
+        self.document.change(self.document.get_setlist().get_instrument(PREVIEW).set_device, test_tui_playback.SYNTH_PORT)
         self.document.change(self.document.song().set_preview_instrument_name, PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().playing_sound(), limits.MIN_GM_SOUND)
@@ -259,10 +259,10 @@ class TestSoundDialog(PatternPreviewTest):
         self.document.change(self.document.song().set_preview_instrument_name, PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), drawing.SPACE.join(self.text().replace(Box.HEAVY_BAR, drawing.SPACE).split()))
-        self.document.change(self.document.setlist().get_instrument(PREVIEW).set_device, NOT_CONNECTED)
+        self.document.change(self.document.get_setlist().get_instrument(PREVIEW).set_device, NOT_CONNECTED)
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
-        self.document.change(self.document.setlist().get_instrument(PREVIEW).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.get_setlist().get_instrument(PREVIEW).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=PREVIEW))
         self.fluidsynth_installed = True
         self.assertIsNone(self.preview().sound_refusal())
@@ -376,7 +376,7 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
         for _ in range(MOMENTS_IN_A_WHILE):
             self.clock.advance(A_MOMENT)
             self.preview().tick()
-            if self.preview().player() is None:
+            if self.preview().get_player() is None:
                 break
-            self.preview().player().sender().send_due()
+            self.preview().get_player().get_sender().send_due()
         self.assertEqual([data[1] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], hits_of(C_SHARP))

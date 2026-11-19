@@ -35,7 +35,7 @@ SLOT_ROW_NAME = 'keyswitch slot {slot}'
 def pick_keyswitches(*, editor, step):
     """Open the dialog that picks a step's keyswitches on a step of the pattern editor, and store what it answers on the step's Keyswitch row: the roll's keyswitch key."""
     instrument, said = editor.keyswitch_instrument()
-    setlist = editor.document().setlist()
+    setlist = editor.document().get_setlist()
     keyswitches = keyswitches_of(instrument)
     dialog = KeyswitchDialog(
         title=messages.MSG_KEYSWITCH_DIALOG_TITLE.format(step=step + 1), heading=said,

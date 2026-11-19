@@ -259,7 +259,7 @@ class TestFieldsOnThePages(UITest):
 
     def pages(self):
         holder = self.app.screen.holder
-        if not self.document.setlist().has_instrument(AN_INSTRUMENT):
+        if not self.document.get_setlist().has_instrument(AN_INSTRUMENT):
             self.document.add_instrument(AN_INSTRUMENT)
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=ui_testing.LEAD), ArpEditor(holder=holder, name=ui_testing.UP_ARP),

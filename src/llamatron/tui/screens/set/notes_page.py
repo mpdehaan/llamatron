@@ -71,7 +71,7 @@ class NotesPage(Page):
             self.start_editing()
 
     def is_protected(self):
-        return self.document().setlist().is_protected()
+        return self.document().get_setlist().is_protected()
 
     def text_lines(self):
         if self.editing:
@@ -79,7 +79,7 @@ class NotesPage(Page):
         return self.stored_lines()
 
     def stored_lines(self):
-        text = self.document().setlist().get_notes()
+        text = self.document().get_setlist().get_notes()
         lines = text.split(drawing.LINE_BREAK)
         if text.endswith(drawing.LINE_BREAK):
             lines.pop()
@@ -91,7 +91,7 @@ class NotesPage(Page):
             self.draft = lines
             return
         # The notes end with a newline, so that it reads as plain text in the file.
-        self.document().change(self.document().setlist().set_notes, drawing.LINE_BREAK.join(lines) + drawing.LINE_BREAK)
+        self.document().change(self.document().get_setlist().set_notes, drawing.LINE_BREAK.join(lines) + drawing.LINE_BREAK)
 
     def keys(self):
         if self.editing and self.on_buttons:
@@ -172,10 +172,10 @@ class NotesPage(Page):
         self.editing = False
         self.on_buttons = False
         self.draft = None
-        self.holder.status_line().clear()
+        self.holder.get_status_line().clear()
 
     def clear(self):
-        if self.document().setlist().has_notes():
+        if self.document().get_setlist().has_notes():
             self.confirm(title=messages.MSG_CLEAR_NOTES_TITLE, lines=[messages.MSG_CLEAR_NOTES_QUESTION], then=lambda: self.store([drawing.NOTHING]))
 
     def move(self, name):
@@ -265,7 +265,7 @@ class NotesPage(Page):
             shown += [Text(drawing.NOTHING)] * (room - len(shown) + 1)
             shown.append(self.button_line())
             return shown
-        if not self.document().setlist().has_notes():
+        if not self.document().get_setlist().has_notes():
             return [Text(messages.MSG_NO_NOTES_PROTECTED if self.is_protected() else messages.MSG_NO_NOTES_NOTE, style=Style.DIM)]
         wrapped = []
         for line in self.text_lines():

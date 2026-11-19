@@ -101,7 +101,7 @@ class UndoTest(UITest):
     """Makes an edit on a page by pressing keys, then checks Ctrl+Z and Ctrl+Y against the set, the cursor and the status line."""
 
     def data(self):
-        return self.document.setlist().to_data()
+        return self.document.get_setlist().to_data()
 
     async def undo(self):
         await self.press(keybindings.Page.UNDO)
@@ -153,7 +153,7 @@ class UndoTest(UITest):
         self.assertEqual(screen.item, new)
 
     def in_song(self, what):
-        return messages.MSG_CHANGED_IN_SONG.format(song=self.document.current_song_name(), what=what)
+        return messages.MSG_CHANGED_IN_SONG.format(song=self.document.get_current_song_name(), what=what)
 
     def named(self, *, section, name):
         return messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[section], name=name)
@@ -185,7 +185,7 @@ class TestFilePageUndo(UndoTest):
         await self.press(keybindings.MainPage.FILE)
         await self.select_field(labels.MSG_PROTECTED_LABEL)
         await self.press(Key.ENTER)
-        self.assertTrue(self.document.setlist().is_protected())
+        self.assertTrue(self.document.get_setlist().is_protected())
         await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_a_prompt_answered_is_one_step(self):
@@ -195,7 +195,7 @@ class TestFilePageUndo(UndoTest):
         await self.press(Key.ENTER)
         await self.type(A_TITLE)
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.setlist().get_title(), A_TITLE)
+        self.assertEqual(self.document.get_setlist().get_title(), A_TITLE)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
@@ -215,7 +215,7 @@ class TestNotesPageUndo(UndoTest):
         await self.type(ANOTHER_LINE)
         # Tab reaches the buttons, and Enter presses Save, the first of them.
         await self.press(Key.TAB, Key.ENTER)
-        self.assertEqual(self.document.setlist().get_notes(), f'{A_LINE}\n{ANOTHER_LINE}\n')
+        self.assertEqual(self.document.get_setlist().get_notes(), f'{A_LINE}\n{ANOTHER_LINE}\n')
         await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_undo_waits_while_editing(self):
@@ -223,9 +223,9 @@ class TestNotesPageUndo(UndoTest):
         await self.undo()
         self.assertTrue(self.app.screen.editing)
         await self.press(Key.TAB, Key.ENTER)
-        self.assertEqual(self.document.setlist().get_notes(), TWO_LETTERS + '\n')
+        self.assertEqual(self.document.get_setlist().get_notes(), TWO_LETTERS + '\n')
         await self.undo()
-        self.assertFalse(self.document.setlist().has_notes())
+        self.assertFalse(self.document.get_setlist().has_notes())
 
 
 class TestOpenPageUndo(UndoTest):
@@ -266,11 +266,11 @@ class TestSongsPageUndo(UndoTest):
     async def test_undoing_the_deletion_of_the_current_song_makes_it_current_again(self):
         await self.add_second_song()
         await self.press(keybindings.SongsPage.CURRENT)
-        self.assertEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
         await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.document.current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(self.document.get_current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
         await self.undo()
-        self.assertEqual(self.document.current_song_name(), SECOND_SONG)
+        self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
         self.assertEqual(self.app.screen.current(), SECOND_SONG)
         self.assertIn(messages.MSG_UNDONE.format(what=messages.MSG_CHANGED_IN_SONG.format(song=SECOND_SONG, what=messages.MSG_CHANGED_WORDS[Section.SONGS])), self.text())
 
@@ -296,7 +296,7 @@ class TestSongPageUndo(UndoTest):
         self.assertIn(RENAMED, self.crumbs_line())
         await self.undo()
         self.assertIsInstance(self.app.screen, SongPage)
-        self.assertEqual(self.document.current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
+        self.assertEqual(self.document.get_current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
         self.assertNotIn(RENAMED, self.crumbs_line())
 
 
@@ -881,10 +881,10 @@ class TestInstrumentsPageUndo(UndoTest):
 
     async def test_adding_the_first_instrument_turns_real_time_on_and_is_one_step(self):
         before = self.data()
-        self.assertFalse(self.document.setlist().is_real_time())
+        self.assertFalse(self.document.get_setlist().is_real_time())
         await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD, Key.ESCAPE)
         self.assertIsInstance(self.app.screen, InstrumentsPage)
-        self.assertTrue(self.document.setlist().is_real_time())
+        self.assertTrue(self.document.get_setlist().is_real_time())
         await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_undoing_the_add_while_the_editor_is_open_goes_back_to_the_list(self):
@@ -902,7 +902,7 @@ class TestInstrumentEditorUndo(UndoTest):
         before = self.data()
         await self.select_field(labels.MSG_CHANNEL_LABEL)
         await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.document.setlist().get_instrument(name).get_channel(), defaults.DEFAULT_CHANNEL + 1)
+        self.assertEqual(self.document.get_setlist().get_instrument(name).get_channel(), defaults.DEFAULT_CHANNEL + 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

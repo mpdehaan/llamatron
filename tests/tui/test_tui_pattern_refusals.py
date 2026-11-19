@@ -158,7 +158,7 @@ class TestPatternEditorRefusals(UITest):
         self.assertEqual(self.document.step_value(name=OTHER, row=Row.OCTAVE, step=0), self.document.song().get_default_octave() + 1)
 
     async def test_a_long_pattern_draws_one_grid_and_says_which_steps_show(self):
-        self.document.change(self.document.setlist().get_pattern(TUNE).set_steps, LONG)
+        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_steps, LONG)
         await self.open(TUNE)
         self.assertEqual(self.text().count(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE])), 1)
         shown = self.app.screen.drawing.steps_shown(self.SIZE[0])

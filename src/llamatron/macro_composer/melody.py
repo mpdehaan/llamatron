@@ -303,15 +303,15 @@ class StepWalk:
     def within(self, place):
         return max(self._low, min(self._high, place))
 
-    def ladder(self):
+    def get_ladder(self):
         """The notes the engine walks, lowest first, each with its half steps above the root."""
         return self._ladder
 
-    def home(self):
+    def get_home(self):
         """The place on the ladder a tune sits around."""
         return self._home
 
-    def seed(self):
+    def get_seed(self):
         """What the engine draws each line's dice from."""
         return self._seed
 
@@ -1145,7 +1145,7 @@ class Hooked(StepWalk):
         self._bodies = Bodies(habits=habits, chords=chords, scale_type=scale_type, seed=seed, answers=answers, voice=voice, letters=letters)
         self._bodies.set_take(hook_take)
         # Each line's dice are drawn as the writer draws them, so that a line the writer makes is the line the writer would make alone, lowered.
-        self._seed = self._writer.seed()
+        self._seed = self._writer.get_seed()
         # The first take of the hook is rolled with its line's dice, as every song made before takes could be asked for; a later take with dice of its own.
         self._take_seed = None if hook_take == FIRST_HOOK_TAKE else HOOK_TAKE_SEED.format(seed, hook_take)
 
