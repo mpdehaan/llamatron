@@ -42,7 +42,13 @@ class Visualizer:
         self._last = None
 
     def frame(self, *, width, height, now, heard=heard_values.SILENCE):
-        """Return the lines that draw the frame for an area width columns by height rows, at a moment in seconds, from what it hears (heard.py)."""
+        """Return the lines that draw the frame for an area width columns by height rows, at a moment in seconds, from what it hears (heard.py): none for an area with no room."""
+        if not width or not height:
+            return []
+        return self.frame_of(width=width, height=height, now=now, heard=heard)
+
+    def frame_of(self, *, width, height, now, heard):
+        """Return the lines that draw the frame for an area that has room: the mode's big pixels painted, unless a mode draws its own lines."""
         size = pixel_size(width=width, height=height)
         if size != self._size:
             self._size = size

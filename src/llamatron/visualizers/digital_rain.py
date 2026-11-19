@@ -29,7 +29,6 @@ import numpy
 import random
 
 from llamatron.strings import visualizers
-from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -99,9 +98,7 @@ class DigitalRain(Visualizer):
         """Return how many streams are falling, for the tests."""
         return len(self._streams)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
-        if not width or not height:
-            return []
+    def frame_of(self, *, width, height, now, heard):
         if (height, width) != (self._rows, self._columns):
             self.cleared(rows=height, columns=width)
         seconds = self.seconds_since_last_frame(now)

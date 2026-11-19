@@ -27,7 +27,7 @@ import numpy
 import random
 
 from llamatron.strings import visualizers
-from llamatron.visualizers import cells, heard as heard_values
+from llamatron.visualizers import cells
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
@@ -159,9 +159,7 @@ class Maze(Visualizer):
         """Return how many walkers there are: one for each track that has played."""
         return len(self._walkers)
 
-    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
-        if not width or not height:
-            return []
+    def frame_of(self, *, width, height, now, heard):
         if (height, width) != (self._rows, self._columns):
             self.made(rows=height, columns=width)
         seconds = self.seconds_since_last_frame(now)
