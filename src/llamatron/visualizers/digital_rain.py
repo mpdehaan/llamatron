@@ -30,6 +30,7 @@ import random
 
 from llamatron.strings import visualizers
 from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.energy import Energy
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
@@ -68,7 +69,7 @@ BEATS_PER_SECOND_AT_120 = 2.0
 class DigitalRain(Visualizer):
     """Green ones and zeros falling, a stream for each note."""
 
-    __slots__ = ('_cells', '_chooser', '_rows', '_columns', '_glyphs', '_streams', '_energy', '_target', '_owed')
+    __slots__ = ('_cells', '_chooser', '_rows', '_columns', '_glyphs', '_streams', '_energy', '_owed')
 
     NAME = visualizers.MSG_DIGITAL_RAIN
     OPTION = 'digital_rain'
@@ -83,8 +84,7 @@ class DigitalRain(Visualizer):
         self._glyphs = []
         # Each stream is a row of: its column, its head's row, its speed in rows a beat, its tail's length in rows and its brightness.
         self._streams = numpy.zeros((0, 5))
-        self._energy = 0.0
-        self._target = 0.0
+        self._energy = Energy(per_note=ENERGY_PER_NOTE, rise_per_second=ENERGY_RISE_PER_SECOND, kept_per_second=ENERGY_KEPT_PER_SECOND)
         self._owed = 0.0
 
     def cleared(self, *, rows, columns):
@@ -104,9 +104,7 @@ class DigitalRain(Visualizer):
         seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
         self.fall_quietly(seconds)
-        rise = ENERGY_RISE_PER_SECOND * seconds
-        self._energy += max(-rise, min(rise, self._target - self._energy))
-        self._target *= ENERGY_KEPT_PER_SECOND ** seconds
+        self._energy.settle(seconds)
         beats = seconds * BEATS_PER_SECOND_AT_120 * heard.tempo_factor()
         if len(self._streams):
             self._streams[:, 1] += self._streams[:, 2] * beats
@@ -122,7 +120,7 @@ class DigitalRain(Visualizer):
                 height = min(max((note.pitch - LOWEST_PITCH) / (HIGHEST_PITCH - LOWEST_PITCH), 0.0), 1.0)
                 column = round(height * (self._columns - 1)) + self._chooser.randint(-COLUMN_SPREAD, COLUMN_SPREAD)
                 self.send(column=min(max(column, 0), self._columns - 1), brightness=SOFTEST_STREAM + (1.0 - SOFTEST_STREAM) * loudness)
-                self._target = min(self._target + ENERGY_PER_NOTE * loudness, 1.0)
+                self._energy.strike(loudness)
 
     def fall_quietly(self, seconds):
         """Send down the streams of the rain that falls by itself, dim, in columns chosen at random."""
@@ -158,7 +156,7 @@ class DigitalRain(Visualizer):
             head_row = int(head)
             if 0 <= head_row < self._rows:
                 heads[head_row, int(column)] = max(heads[head_row, int(column)], brightness)
-        brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * self._energy
+        brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * self._energy.get_level()
         colours = levels[:, :, None] * numpy.array(TAIL_COLOUR) * brightness
         colours = numpy.where((heads > 0)[:, :, None], heads[:, :, None] * numpy.array(HEAD_COLOUR) * brightness, colours)
         return (numpy.clip(colours, 0, CEILING).astype(numpy.int32) // COLOUR_STEP) * COLOUR_STEP

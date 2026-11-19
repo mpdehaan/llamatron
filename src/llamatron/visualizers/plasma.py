@@ -32,6 +32,7 @@ import numpy
 from llamatron.strings import visualizers
 from llamatron.visualizers import colour as colour_values, heard as heard_values
 from llamatron.visualizers.colour import Limiter, note_colour
+from llamatron.visualizers.energy import Energy
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -92,7 +93,7 @@ def palette_of(colours):
 class Plasma(Visualizer):
     """Sine waves drifting in the playing tracks' colours."""
 
-    __slots__ = ('_rows', '_columns', '_grid', '_edges', '_time', '_nudge', '_energy', '_target', '_colours', '_palette', '_limiter')
+    __slots__ = ('_rows', '_columns', '_grid', '_edges', '_time', '_nudge', '_energy', '_colours', '_palette', '_limiter')
 
     NAME = visualizers.MSG_PLASMA
     OPTION = 'plasma'
@@ -102,8 +103,7 @@ class Plasma(Visualizer):
         super().__init__()
         self._time = 0.0
         self._nudge = 0.0
-        self._energy = 0.0
-        self._target = 0.0
+        self._energy = Energy(per_note=ENERGY_PER_NOTE, rise_per_second=ENERGY_RISE_PER_SECOND, kept_per_second=ENERGY_KEPT_PER_SECOND)
         self._colours = {}
         self._palette = palette_of(QUIET_COLOURS)
         self._limiter = Limiter(
@@ -123,11 +123,9 @@ class Plasma(Visualizer):
     def pixels(self, *, now, heard=heard_values.SILENCE):
         seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
-        rise = ENERGY_RISE_PER_SECOND * seconds
-        self._energy += max(-rise, min(rise, self._target - self._energy))
-        self._target *= ENERGY_KEPT_PER_SECOND ** seconds
+        self._energy.settle(seconds)
         self._nudge *= NUDGE_KEPT_PER_SECOND ** seconds
-        self._time += seconds * heard.tempo_factor() * (1.0 + ENERGY_SPEED * self._energy)
+        self._time += seconds * heard.tempo_factor() * (1.0 + ENERGY_SPEED * self._energy.get_level())
         down, across = self._grid
         stretch = 1.0 + self._nudge
         time = self._time
@@ -140,7 +138,7 @@ class Plasma(Visualizer):
             + numpy.sin(math.tau * RING_WAVES * stretch * numpy.hypot(down - middle_down, (across - middle_across) * 2) - time * RING_SPEED)
         )
         places = ((value + 4) / 8 * (PALETTE_SIZE - 1)).astype(numpy.intp)
-        brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * self._energy
+        brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * self._energy.get_level()
         picture = (self._palette[places] * brightness * self._edges).astype(numpy.int32)
         small = derezzed(fine=picture, factor=SUPERSAMPLE)
         held = self._limiter.limited(picture=small, seconds=seconds)
@@ -157,7 +155,7 @@ class Plasma(Visualizer):
             if note.started:
                 loudness = note.velocity / FULL_VELOCITY
                 self._nudge += NUDGE_PER_NOTE * loudness
-                self._target = min(self._target + ENERGY_PER_NOTE * loudness, 1.0)
+                self._energy.strike(loudness)
         if changed:
             colours = [self._colours[track] for track in sorted(self._colours)]
             self._palette = palette_of(colours if len(colours) > 1 else colours + list(QUIET_COLOURS[:1]))
