@@ -23,7 +23,7 @@ import unittest
 
 from llamatron.composition import limits
 from llamatron.composition.file_format import Row, SceneSetting, Section, VelocitySetting
-from llamatron.macro_composer import arranger, hook_writing, joins, notation, phrasing, song_plan, wizard_choices
+from llamatron.macro_composer import arranger, hook_writing, joins, notation, phrasing, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
 from llamatron.macro_composer.wizard_choices import chords_as_text, chords_from_text, WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
@@ -158,7 +158,7 @@ class TestWizardPhrasing(unittest.TestCase):
 
     def test_each_respect_starts_as_usual_takes_what_is_offered_and_is_kept(self):
         choices = chosen()
-        for name, offered in wizard_choices.PHRASING_OFFERED.items():
+        for name, offered in wizard_limits.PHRASING_OFFERED.items():
             self.assertEqual(choices.phrasing_way(name), phrasing.USUAL_WAYS[name])
             for value in offered:
                 choices.set_phrasing_way(name=name, value=value)
@@ -195,7 +195,7 @@ class TestWizardHookKind(unittest.TestCase):
         choices.set_hook_behavior(other)
         self.assertEqual(choices.get_hook_behavior(), other)
         choices.set_hook_behavior(usual)
-        self.assertEqual(choices.to_data().get(wizard_choices.WRITING_KEPT), None)
+        self.assertEqual(choices.to_data().get(wizard_limits.WRITING_KEPT), None)
         for name in choices.hook_gauges():
             position = choices.genre_hook_gauge(name)
             moved = hook_writing.LOWEST if position != hook_writing.LOWEST else hook_writing.HIGHEST
@@ -205,7 +205,7 @@ class TestWizardHookKind(unittest.TestCase):
             self.assertEqual(choices.get_hook_gauge(name), moved)
             choices.set_hook_gauge(name=name, position=None)
             self.assertEqual(choices.get_hook_gauge(name), position)
-        self.assertEqual(choices.to_data().get(wizard_choices.WRITING_KEPT), None)
+        self.assertEqual(choices.to_data().get(wizard_limits.WRITING_KEPT), None)
 
     def test_a_behavior_and_a_gauge_chosen_stay_through_a_new_hook_and_are_kept_with_the_song(self):
         choices = chosen()
@@ -271,8 +271,8 @@ class TestWizardSectionOwn(unittest.TestCase):
 
     def test_a_section_has_fields_of_its_own_only_under_a_plan_and_a_join_only_where_it_leaves(self):
         # Without a plan a section still takes chords, a tempo, a key and a scale of its own, in every genre.
-        self.assertEqual(chosen(plan=False).section_own_fields(A_VERSE), list(wizard_choices.OWN_WITHOUT_PLAN))
-        self.assertEqual(chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False).section_own_fields(A_VERSE), list(wizard_choices.OWN_WITHOUT_PLAN))
+        self.assertEqual(chosen(plan=False).section_own_fields(A_VERSE), list(wizard_limits.OWN_WITHOUT_PLAN))
+        self.assertEqual(chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False).section_own_fields(A_VERSE), list(wizard_limits.OWN_WITHOUT_PLAN))
         choices = chosen()
         last = len(choices.section_labels()) - 1
         self.assertIn(joins.LEAVES, choices.section_own_fields(A_VERSE))
@@ -308,11 +308,11 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertEqual((data[SceneSetting.TEMPO], data[SceneSetting.TEMPO_IN_END]), (A_SLOW_TEMPO, A_FAST_TEMPO))
         self.assertEqual(data[SceneSetting.TEMPO_IN_OVER], choices.section_bars(A_VERSE))
         choices.set_section_own(place=A_VERSE, field=song_plan.ROOT_OF_PLACE, value=ANOTHER_ROOT)
-        choices.set_section_own(place=A_VERSE, field=song_plan.TYPE_OF_PLACE, value=wizard_choices.MINOR)
+        choices.set_section_own(place=A_VERSE, field=song_plan.TYPE_OF_PLACE, value=wizard_limits.MINOR)
         made = choices.made_setlist(name=A_NAME, version=version.VERSION)
         name = made.get_song(A_NAME).get_scenes()[A_VERSE].get_scale_name()
         scale = made.to_data()[Section.SCALES][name]
-        self.assertEqual((scale[song_plan.ROOT_OF_PLACE], scale[song_plan.TYPE_OF_PLACE]), (ANOTHER_ROOT, wizard_choices.MINOR))
+        self.assertEqual((scale[song_plan.ROOT_OF_PLACE], scale[song_plan.TYPE_OF_PLACE]), (ANOTHER_ROOT, wizard_limits.MINOR))
         # The section before keeps the song's.
         self.assertIsNone(made.get_song(A_NAME).get_scenes()[A_VERSE - 1].get_scale_name())
 
@@ -326,12 +326,12 @@ class TestWizardSectionOwn(unittest.TestCase):
     def test_each_way_of_leaving_is_what_the_plan_says_of_the_section(self):
         choices = chosen()
         said = set()
-        for way in wizard_choices.LEAVES_AS_JOIN:
+        for way in wizard_limits.LEAVES_AS_JOIN:
             choices.set_section_own(place=A_VERSE, field=joins.LEAVES, value=way)
             said.add(choices.said_of_sections()[A_VERSE])
             if way in (joins.STOPS, joins.DROP_OUT, joins.BUILD):
                 self.assertIn(composer_text.MSG_PLAN_LEAVES_TAIL.format(way), choices.said_of_sections()[A_VERSE])
-        self.assertEqual(len(said), len(wizard_choices.LEAVES_AS_JOIN))
+        self.assertEqual(len(said), len(wizard_limits.LEAVES_AS_JOIN))
 
     def test_chords_are_typed_as_degrees_and_change_the_song(self):
         choices = chosen()
@@ -378,12 +378,12 @@ class TestWizardSectionOwn(unittest.TestCase):
             choices.set_section_own(place=A_VERSE, field=arranger.CHORDS, value=SOME_CHORDS)
             choices.set_section_own(place=A_VERSE, field=song_plan.TEMPO_OF_PLACE, value=A_SLOW_TEMPO)
             choices.set_section_own(place=A_VERSE, field=song_plan.ROOT_OF_PLACE, value=ANOTHER_ROOT)
-            choices.set_section_own(place=A_VERSE, field=song_plan.TYPE_OF_PLACE, value=wizard_choices.MINOR)
+            choices.set_section_own(place=A_VERSE, field=song_plan.TYPE_OF_PLACE, value=wizard_limits.MINOR)
             made = choices.made_setlist(name=A_NAME, version=version.VERSION)
             scene = made.get_song(A_NAME).get_scenes()[A_VERSE]
             self.assertEqual(scene.get_tempo_setting(), A_SLOW_TEMPO)
             scale = made.to_data()[Section.SCALES][scene.get_scale_name()]
-            self.assertEqual((scale[song_plan.ROOT_OF_PLACE], scale[song_plan.TYPE_OF_PLACE]), (ANOTHER_ROOT, wizard_choices.MINOR))
+            self.assertEqual((scale[song_plan.ROOT_OF_PLACE], scale[song_plan.TYPE_OF_PLACE]), (ANOTHER_ROOT, wizard_limits.MINOR))
             # The sections beside it keep the song's.
             self.assertIsNone(made.get_song(A_NAME).get_scenes()[A_VERSE + 1].get_tempo_setting())
             again = WizardChoices.from_data(choices.to_data())
@@ -427,14 +427,14 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         solo = choices.section_kinds_in_form().index(A_KIND_WITH_SHAPES)
         self.assertTrue(choices.section_shapes(solo))
         self.assertEqual(choices.section_shapes(A_VERSE), [])
-        self.assertNotIn(wizard_choices.SHAPE_OF_SECTION, choices.section_own_fields(A_VERSE))
+        self.assertNotIn(wizard_limits.SHAPE_OF_SECTION, choices.section_own_fields(A_VERSE))
         for shape in choices.section_shapes(solo):
-            choices.set_section_own(place=solo, field=wizard_choices.SHAPE_OF_SECTION, value=shape)
-            self.assertEqual(choices.section_own(place=solo, field=wizard_choices.SHAPE_OF_SECTION), shape)
+            choices.set_section_own(place=solo, field=wizard_limits.SHAPE_OF_SECTION, value=shape)
+            self.assertEqual(choices.section_own(place=solo, field=wizard_limits.SHAPE_OF_SECTION), shape)
         with self.assertRaises(ValueError):
-            choices.set_section_own(place=solo, field=wizard_choices.SHAPE_OF_SECTION, value=NOT_A_PART)
+            choices.set_section_own(place=solo, field=wizard_limits.SHAPE_OF_SECTION, value=NOT_A_PART)
         with self.assertRaises(ValueError):
-            choices.set_section_own(place=A_VERSE, field=wizard_choices.SHAPE_OF_SECTION, value=choices.section_shapes(solo)[0])
+            choices.set_section_own(place=A_VERSE, field=wizard_limits.SHAPE_OF_SECTION, value=choices.section_shapes(solo)[0])
 
     def test_a_section_made_to_rise_leaves_with_a_build_and_grows_louder(self):
         choices = chosen()
@@ -550,7 +550,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         choices = chosen()
         places = choices.solo_places()
         self.assertTrue(places)
-        choices.set_guitarists(wizard_choices.ONE_GUITARIST_COUNT)
+        choices.set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
         self.assertEqual(choices.solo_places(), places)
         self.assertIsNotNone(choices.solo_pattern(places[0]))
 
@@ -568,7 +568,7 @@ class TestWizardFormQuestions(unittest.TestCase):
 
     def test_only_the_kinds_the_subgenre_plays_are_asked_about_and_a_genre_with_no_chorus_is_asked_nothing(self):
         asked = [name for name, _, _ in chosen(plan=False).form_questions()]
-        self.assertEqual(asked, [wizard_choices.VERSES_FIRST, wizard_choices.PRE_CHORUSES, wizard_choices.BRIDGE, wizard_choices.SOLOS, wizard_choices.DRUM_SOLO_KIND, wizard_choices.LAST_CHORUSES])
+        self.assertEqual(asked, [wizard_limits.VERSES_FIRST, wizard_limits.PRE_CHORUSES, wizard_limits.BRIDGE, wizard_limits.SOLOS, wizard_limits.DRUM_SOLO_KIND, wizard_limits.LAST_CHORUSES])
         other = chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False)
         self.assertEqual(other.form_questions(), [])
         with self.assertRaises(ValueError):
@@ -582,10 +582,10 @@ class TestWizardFormQuestions(unittest.TestCase):
             given = {name: answer for (name, _, _), answer in zip(questions, answers)}
             form = choices.form_of_answers(given)
             forms.add(tuple(form))
-            self.assertEqual(form.count(wizard_choices.SOLO), wizard_choices.SOLO_COUNTS.index(given[wizard_choices.SOLOS]))
-            self.assertEqual(wizard_choices.BRIDGE in form, given[wizard_choices.BRIDGE] == wizard_choices.YES)
-            self.assertEqual(wizard_choices.DRUM_SOLO_KIND in form, given[wizard_choices.DRUM_SOLO_KIND] == wizard_choices.YES)
-            self.assertEqual(wizard_choices.PRE_CHORUS in form, given[wizard_choices.PRE_CHORUSES] != wizard_choices.NO)
+            self.assertEqual(form.count(wizard_limits.SOLO), wizard_limits.SOLO_COUNTS.index(given[wizard_limits.SOLOS]))
+            self.assertEqual(wizard_limits.BRIDGE in form, given[wizard_limits.BRIDGE] == wizard_limits.YES)
+            self.assertEqual(wizard_limits.DRUM_SOLO_KIND in form, given[wizard_limits.DRUM_SOLO_KIND] == wizard_limits.YES)
+            self.assertEqual(wizard_limits.PRE_CHORUS in form, given[wizard_limits.PRE_CHORUSES] != wizard_limits.NO)
         self.assertEqual(len(forms), len(list(itertools.product(*(offered for _, offered, _ in questions)))))
         for form in sorted(forms)[::A_FEW_FORMS_APART]:
             made = chosen()
@@ -594,11 +594,11 @@ class TestWizardFormQuestions(unittest.TestCase):
 
     def test_the_answers_become_the_song_s_own_form_and_a_wrong_answer_changes_nothing(self):
         choices = chosen(plan=False)
-        choices.set_form_from_answers({wizard_choices.SOLOS: wizard_choices.SOLO_COUNTS[2], wizard_choices.DRUM_SOLO_KIND: wizard_choices.YES})
+        choices.set_form_from_answers({wizard_limits.SOLOS: wizard_limits.SOLO_COUNTS[2], wizard_limits.DRUM_SOLO_KIND: wizard_limits.YES})
         self.assertTrue(choices.has_own_form())
         kinds = choices.section_kinds_in_form()
-        self.assertEqual((kinds.count(wizard_choices.SOLO), kinds.count(wizard_choices.DRUM_SOLO_KIND)), (2, 1))
-        for wrong in ({wizard_choices.SOLOS: NOT_A_PART}, {NOT_A_PART: wizard_choices.YES}):
+        self.assertEqual((kinds.count(wizard_limits.SOLO), kinds.count(wizard_limits.DRUM_SOLO_KIND)), (2, 1))
+        for wrong in ({wizard_limits.SOLOS: NOT_A_PART}, {NOT_A_PART: wizard_limits.YES}):
             with self.assertRaises(ValueError):
                 choices.set_form_from_answers(wrong)
         self.assertEqual(choices.section_kinds_in_form(), kinds)

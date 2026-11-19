@@ -22,7 +22,7 @@ from llamatron.composition import generator_settings
 from llamatron.composition.file_format import GeneratorKind, PatternSetting, Row
 from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing
-from llamatron.macro_composer import arranger, wizard_choices
+from llamatron.macro_composer import arranger, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
 from tests.support.ui_testing import fixed_text
@@ -158,7 +158,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         first = choices.tune_pattern(A_KIND)
         usual_name = choices.tune_pattern_name(A_KIND)
         choices.new_tune_take(A_KIND)
-        self.assertEqual(choices.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE + 1)
+        self.assertEqual(choices.tune_take(A_KIND), wizard_limits.FIRST_TUNE_TAKE + 1)
         taken = choices.tune_pattern(A_KIND)
         self.assertNotEqual(taken[Row.DEGREE], first[Row.DEGREE])
         self.assertEqual(len(taken[Row.DEGREE]), len(first[Row.DEGREE]))
@@ -178,7 +178,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         choices.new_tune_take(A_KIND)
         self.assertNotEqual(choices.tune_pattern(A_KIND)[Row.DEGREE], second[Row.DEGREE])
         read = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(read.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE + 2)
+        self.assertEqual(read.tune_take(A_KIND), wizard_limits.FIRST_TUNE_TAKE + 2)
         self.assertEqual(read.tune_pattern(A_KIND), choices.tune_pattern(A_KIND))
 
     def test_a_new_take_gives_up_notes_written_by_hand_and_notes_written_by_hand_win_over_a_take(self):
@@ -190,7 +190,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         self.assertNotEqual(choices.tune_pattern(A_KIND), own)
         choices.set_tune_pattern(kind=A_KIND, pattern=own)
         self.assertEqual(choices.tune_pattern(A_KIND), own)
-        self.assertEqual(choices.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE + 1)
+        self.assertEqual(choices.tune_take(A_KIND), wizard_limits.FIRST_TUNE_TAKE + 1)
 
     def test_a_kind_with_no_tune_has_no_take_and_another_genre_starts_from_the_first_take(self):
         choices = chosen()
@@ -200,7 +200,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         choices.set_genre(ANOTHER_GENRE)
         choices.set_genre(A_GENRE)
         choices.set_subgenre(A_SUBGENRE)
-        self.assertEqual(choices.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE)
+        self.assertEqual(choices.tune_take(A_KIND), wizard_limits.FIRST_TUNE_TAKE)
 
 
 class TestWhoPlaysTheTune(unittest.TestCase):

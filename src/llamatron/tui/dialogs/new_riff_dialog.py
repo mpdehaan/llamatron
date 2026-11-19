@@ -24,7 +24,7 @@ chords, the one kind that has gaps between its accents.
 
 from rich.text import Text
 
-from llamatron.macro_composer import riffs, wizard_choices
+from llamatron.macro_composer import riffs, wizard_limits
 from llamatron.strings import labels, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
@@ -50,7 +50,7 @@ class NewRiffDialog(Dialog):
         super().__init__()
         self.title = labels.MSG_NEW_RIFF_TITLE.format(player=player)
         # Each setting starts at what a riff has until another is chosen.
-        self.settings = {row: wizard_choices.RIFF_SETTINGS[row][0] for row in ROWS}
+        self.settings = {row: wizard_limits.RIFF_SETTINGS[row][0] for row in ROWS}
         self.row = 0
         self.button = WRITE_BUTTON
 
@@ -80,7 +80,7 @@ class NewRiffDialog(Dialog):
     def step(self, direction):
         """Step the row's choice, stopping at either end."""
         row = self.rows()[self.row]
-        ways = wizard_choices.RIFF_SETTINGS[row]
+        ways = wizard_limits.RIFF_SETTINGS[row]
         self.settings[row] = ways[max(0, min(ways.index(self.settings[row]) + direction, len(ways) - 1))]
 
     def toggle(self):

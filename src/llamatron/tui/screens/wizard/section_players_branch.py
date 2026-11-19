@@ -21,13 +21,13 @@ something to choose there: the accompaniment the genre writes for the player, th
 riff the player knows. The player the genre gives the melody to rests where another has it.
 """
 
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import wizard_limits
 from llamatron.strings import labels
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
 
 # What a player plays where nothing was chosen for the player.
-UNCHOSEN_PARTS = (wizard_choices.ACCOMPANIMENT, wizard_choices.RESTS_PART)
+UNCHOSEN_PARTS = (wizard_limits.ACCOMPANIMENT, wizard_limits.RESTS_PART)
 
 
 class SectionPlayersBranch(Branch):
@@ -52,7 +52,7 @@ class SectionPlayersBranch(Branch):
         own = choices.tune_player()
         for role in choices.section_players(kind):
             part = choices.section_part(kind=kind, role=role)
-            usual = part == wizard_choices.ACCOMPANIMENT if role != own else part != wizard_choices.RESTS_PART or kind not in choices.tune_kinds()
+            usual = part == wizard_limits.ACCOMPANIMENT if role != own else part != wizard_limits.RESTS_PART or kind not in choices.tune_kinds()
             if not usual:
                 return True
         return False

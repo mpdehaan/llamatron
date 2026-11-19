@@ -20,7 +20,7 @@ import random
 import unittest
 
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer import arranger, composer, drum_solo, joins, melody, notation, phrasing, song_plan, wizard_choices
+from llamatron.macro_composer import arranger, composer, drum_solo, joins, melody, notation, phrasing, song_plan, wizard_limits
 from llamatron.macro_composer.song_plan import level_at, loudness_at, SongPlan
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import macro_composer as composer_text
@@ -338,11 +338,11 @@ class TestStagedSolos(unittest.TestCase):
         solos = [place for place, label in enumerate(choices.section_labels()) if label.startswith(SOLO)]
         self.assertGreater(len(solos), 1)
         names = choices.section_shapes(solos[0])
-        said = [choices.section_from_plan(place=place, field=wizard_choices.SHAPE_OF_SECTION) for place in solos]
-        self.assertEqual(said, [wizard_choices.SHAPE_USUAL, *names[:len(solos) - 1]])
+        said = [choices.section_from_plan(place=place, field=wizard_limits.SHAPE_OF_SECTION) for place in solos]
+        self.assertEqual(said, [wizard_limits.SHAPE_USUAL, *names[:len(solos) - 1]])
         before = choices.made_for_listening()[0].to_data()
-        choices.set_section_own(place=solos[1], field=wizard_choices.SHAPE_OF_SECTION, value=names[-1])
-        self.assertEqual(choices.section_own(place=solos[1], field=wizard_choices.SHAPE_OF_SECTION), names[-1])
+        choices.set_section_own(place=solos[1], field=wizard_limits.SHAPE_OF_SECTION, value=names[-1])
+        self.assertEqual(choices.section_own(place=solos[1], field=wizard_limits.SHAPE_OF_SECTION), names[-1])
         self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
 
 

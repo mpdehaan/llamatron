@@ -19,7 +19,7 @@
 import unittest
 
 from llamatron.composition.file_format import Section, VelocitySetting
-from llamatron.macro_composer import song_plan, wizard_choices
+from llamatron.macro_composer import song_plan, wizard_limits
 from llamatron.macro_composer.arranger import style_names
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.support import version
@@ -68,15 +68,15 @@ class TestWizardStarts(unittest.TestCase):
 
     def test_a_song_starts_with_the_full_band_until_asked_and_every_way_offered_is_a_way(self):
         choices = chosen()
-        self.assertEqual(choices.get_start(), wizard_choices.FULL_BAND)
-        self.assertEqual(choices.starts(), list(wizard_choices.STARTS))
+        self.assertEqual(choices.get_start(), wizard_limits.FULL_BAND)
+        self.assertEqual(choices.starts(), list(wizard_limits.STARTS))
         self.assertEqual(WizardChoices().starts(), [])
 
     def test_each_way_puts_its_stages_before_the_first_verse_and_leaves_the_rest_alone(self):
         choices = chosen()
         body = choices.section_kinds_in_form()[1:]
         players = choices.first_players()
-        expected = {wizard_choices.STRAIGHT_IN: [], wizard_choices.FULL_BAND: [players], wizard_choices.DRUMS_FIRST: [[THE_DRUMS], players], wizard_choices.DRUM_FILL_IN: [[THE_DRUMS]]}
+        expected = {wizard_limits.STRAIGHT_IN: [], wizard_limits.FULL_BAND: [players], wizard_limits.DRUMS_FIRST: [[THE_DRUMS], players], wizard_limits.DRUM_FILL_IN: [[THE_DRUMS]]}
         for way, stages in expected.items():
             choices.set_start(way)
             self.assertEqual(choices.get_start(), way)
@@ -86,7 +86,7 @@ class TestWizardStarts(unittest.TestCase):
 
     def test_layers_bring_the_players_in_one_at_a_time_the_first_player_first(self):
         choices = chosen()
-        choices.set_start(wizard_choices.LAYERS)
+        choices.set_start(wizard_limits.LAYERS)
         count = len(choices.first_players())
         first = choices.get_first_player()
         self.assertNotEqual(first, THE_DRUMS)
@@ -94,19 +94,19 @@ class TestWizardStarts(unittest.TestCase):
         self.assertEqual(choices.section_plays(FIRST), [first])
         choices.set_first_player(THE_BASS)
         self.assertEqual(choices.section_plays(FIRST), [THE_BASS])
-        self.assertEqual(choices.get_start(), wizard_choices.LAYERS)
-        choices.set_start(wizard_choices.ONE_PLAYER_FIRST)
+        self.assertEqual(choices.get_start(), wizard_limits.LAYERS)
+        choices.set_start(wizard_limits.ONE_PLAYER_FIRST)
         self.assertEqual(choices.section_plays(FIRST), [THE_BASS])
         self.assertEqual(sorted(choices.section_plays(FIRST + 1)), sorted(choices.first_players()))
 
     def test_the_setup_s_bars_are_the_length_of_every_stage(self):
         choices = chosen()
-        choices.set_start(wizard_choices.DRUMS_FIRST)
+        choices.set_start(wizard_limits.DRUMS_FIRST)
         usual = choices.get_setup_bars()
         for bars in choices.setup_bars_offered():
             choices.set_setup_bars(bars)
             self.assertEqual(choices.section_bars(FIRST), bars)
-            self.assertEqual(choices.get_start(), wizard_choices.DRUMS_FIRST)
+            self.assertEqual(choices.get_start(), wizard_limits.DRUMS_FIRST)
         self.assertIn(usual, choices.setup_bars_offered())
         with self.assertRaises(ValueError):
             choices.set_setup_bars(NOT_BARS)
@@ -114,16 +114,16 @@ class TestWizardStarts(unittest.TestCase):
     def test_a_drum_fill_in_is_the_drums_alone_leaving_with_a_big_fill_and_needs_a_plan(self):
         choices = chosen()
         choices.set_song_plan(False)
-        self.assertNotIn(wizard_choices.DRUM_FILL_IN, choices.starts())
+        self.assertNotIn(wizard_limits.DRUM_FILL_IN, choices.starts())
         with self.assertRaises(ValueError):
-            choices.set_start(wizard_choices.DRUM_FILL_IN)
+            choices.set_start(wizard_limits.DRUM_FILL_IN)
 
     def test_opening_sections_a_person_changed_read_as_nobody_s_way_and_a_new_way_replaces_them(self):
         choices = chosen()
-        choices.set_start(wizard_choices.DRUMS_FIRST)
+        choices.set_start(wizard_limits.DRUMS_FIRST)
         choices.set_section_plays(place=FIRST, role=THE_BASS, on=True)
         self.assertIsNone(choices.get_start())
-        choices.set_start(wizard_choices.FULL_BAND)
+        choices.set_start(wizard_limits.FULL_BAND)
         self.assertEqual(choices.section_kinds_in_form().count(THE_INTRO), 1)
 
     def test_what_is_not_a_way_or_a_player_is_refused_and_the_ways_are_kept_with_the_choices(self):
@@ -131,31 +131,31 @@ class TestWizardStarts(unittest.TestCase):
         for setter in (choices.set_start, choices.set_end, choices.set_first_player):
             with self.assertRaises(ValueError):
                 setter(NOT_A_WAY)
-        choices.set_start(wizard_choices.LAYERS)
-        choices.set_end(wizard_choices.STRIPS_DOWN)
+        choices.set_start(wizard_limits.LAYERS)
+        choices.set_end(wizard_limits.STRIPS_DOWN)
         choices.set_first_player(THE_BASS)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual((again.get_start(), again.get_end(), again.get_first_player()), (wizard_choices.LAYERS, wizard_choices.STRIPS_DOWN, THE_BASS))
+        self.assertEqual((again.get_start(), again.get_end(), again.get_first_player()), (wizard_limits.LAYERS, wizard_limits.STRIPS_DOWN, THE_BASS))
         self.assertEqual(made(again).to_data()[Section.PATTERNS], made(choices).to_data()[Section.PATTERNS])
         # Another form keeps how the song was chosen to start and to end, and who starts alone.
         choices.set_form(choices.forms()[-1])
-        self.assertEqual((choices.get_start(), choices.get_end(), choices.get_first_player()), (wizard_choices.LAYERS, wizard_choices.STRIPS_DOWN, THE_BASS))
+        self.assertEqual((choices.get_start(), choices.get_end(), choices.get_first_player()), (wizard_limits.LAYERS, wizard_limits.STRIPS_DOWN, THE_BASS))
 
     def test_another_form_keeps_how_the_song_starts_and_ends_and_a_form_chosen_with_neither_is_the_forms_own(self):
         choices = chosen()
         another = next(form for form in choices.forms() if form != choices.get_form())
-        choices.set_start(wizard_choices.LAYERS)
-        choices.set_end(wizard_choices.STRIPS_DOWN)
+        choices.set_start(wizard_limits.LAYERS)
+        choices.set_end(wizard_limits.STRIPS_DOWN)
         choices.set_setup_bars(choices.setup_bars_offered()[-1])
         bars = choices.get_setup_bars()
         choices.set_form(another)
         self.assertEqual(choices.get_form(), another)
-        self.assertEqual((choices.get_start(), choices.get_end(), choices.get_setup_bars()), (wizard_choices.LAYERS, wizard_choices.STRIPS_DOWN, bars))
+        self.assertEqual((choices.get_start(), choices.get_end(), choices.get_setup_bars()), (wizard_limits.LAYERS, wizard_limits.STRIPS_DOWN, bars))
         made(choices)
         plain = chosen()
         plain.set_form(another)
         self.assertFalse(plain.has_own_form())
-        self.assertEqual((plain.get_start(), plain.get_end()), (wizard_choices.FULL_BAND, chosen().get_end()))
+        self.assertEqual((plain.get_start(), plain.get_end()), (wizard_limits.FULL_BAND, chosen().get_end()))
         body = plain.section_kinds_in_form()[1:-1]
         kinds = choices.section_kinds_in_form()
         self.assertEqual([kind for kind in kinds if kind in body], body)
@@ -181,18 +181,18 @@ class TestWizardEnds(unittest.TestCase):
     __slots__ = ()
 
     def test_a_song_ends_on_its_form_s_ending_until_asked(self):
-        self.assertEqual(chosen().get_end(), wizard_choices.HELD_CHORD)
-        self.assertEqual(chosen().ends(), list(wizard_choices.ENDS))
+        self.assertEqual(chosen().get_end(), wizard_limits.HELD_CHORD)
+        self.assertEqual(chosen().ends(), list(wizard_limits.ENDS))
         dance = chosen(genre=AN_ELECTRONIC_GENRE, subgenre=A_DANCE_SUBGENRE)
         self.assertIn(dance.get_end(), dance.ends())
-        self.assertNotEqual(dance.get_end(), wizard_choices.HELD_CHORD)
+        self.assertNotEqual(dance.get_end(), wizard_limits.HELD_CHORD)
 
     def test_each_way_puts_its_stages_after_the_last_chorus(self):
         choices = chosen()
         body = choices.section_kinds_in_form()[:-1]
         count = len(choices.first_players())
-        expected = {wizard_choices.HARD_STOP: [], wizard_choices.HELD_CHORD: [THE_ENDING], wizard_choices.SLOWS_DOWN: [wizard_choices.OUTRO_KIND, THE_ENDING], wizard_choices.ONE_PLAYER_ALONE: [wizard_choices.OUTRO_KIND, THE_ENDING], wizard_choices.REPEAT_AND_FADE: [wizard_choices.OUTRO_KIND],
-                    wizard_choices.STRIPS_DOWN: [wizard_choices.OUTRO_KIND] * (count - 1) + [THE_ENDING]}
+        expected = {wizard_limits.HARD_STOP: [], wizard_limits.HELD_CHORD: [THE_ENDING], wizard_limits.SLOWS_DOWN: [wizard_limits.OUTRO_KIND, THE_ENDING], wizard_limits.ONE_PLAYER_ALONE: [wizard_limits.OUTRO_KIND, THE_ENDING], wizard_limits.REPEAT_AND_FADE: [wizard_limits.OUTRO_KIND],
+                    wizard_limits.STRIPS_DOWN: [wizard_limits.OUTRO_KIND] * (count - 1) + [THE_ENDING]}
         for way, stages in expected.items():
             choices.set_end(way)
             self.assertEqual(choices.get_end(), way)
@@ -202,14 +202,14 @@ class TestWizardEnds(unittest.TestCase):
     def test_slowing_down_ends_slower_stripping_down_loses_a_player_a_stage_and_a_fade_grows_softer(self):
         choices = chosen()
         last = len(choices.section_kinds_in_form())
-        choices.set_end(wizard_choices.SLOWS_DOWN)
+        choices.set_end(wizard_limits.SLOWS_DOWN)
         self.assertLess(choices.section_own(place=last - 1, field=song_plan.TEMPO_END_OF_PLACE), choices.get_tempo())
-        choices.set_end(wizard_choices.STRIPS_DOWN)
+        choices.set_end(wizard_limits.STRIPS_DOWN)
         stages = range(last - 1, len(choices.section_kinds_in_form()) - 1)
         counts = [len(choices.section_plays(place)) for place in stages]
         self.assertEqual(counts, sorted(counts, reverse=True))
         self.assertEqual(choices.section_plays(stages[-1]), [choices.get_first_player()])
-        choices.set_end(wizard_choices.REPEAT_AND_FADE)
+        choices.set_end(wizard_limits.REPEAT_AND_FADE)
         self.assertTrue(choices.section_own(place=last - 1, field=song_plan.FADES))
         scene = made(choices).get_song(A_NAME).get_scenes()[last - 1]
         self.assertEqual(scene.to_data()[VelocitySetting.OUT_END], song_plan.FADED)
@@ -218,9 +218,9 @@ class TestWizardEnds(unittest.TestCase):
         for plan in (True, False):
             choices = chosen()
             choices.set_song_plan(plan)
-            choices.set_end(wizard_choices.REPEAT_AND_FADE)
+            choices.set_end(wizard_limits.REPEAT_AND_FADE)
             last = len(choices.section_kinds_in_form()) - 1
-            self.assertEqual((choices.fade_way(FIRST), choices.fade_way(A_VERSE), choices.fade_way(last)), (wizard_choices.FADE_IN, None, wizard_choices.FADE_OUT))
+            self.assertEqual((choices.fade_way(FIRST), choices.fade_way(A_VERSE), choices.fade_way(last)), (wizard_limits.FADE_IN, None, wizard_limits.FADE_OUT))
             self.assertNotIn(song_plan.FADES, choices.section_own_fields(A_VERSE))
             with self.assertRaises(ValueError):
                 choices.set_section_own(place=A_VERSE, field=song_plan.FADES, value=True)

@@ -24,7 +24,7 @@ section under Form.
 
 from rich.text import Text
 
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import wizard_limits
 from llamatron.strings import labels, legends, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -50,7 +50,7 @@ class SoloMelodyBranch(Branch):
         return SOLO_MELODY_KEY.format(number=self._number)
 
     def name(self):
-        return wizard_choices.SOLO.capitalize() if self._number == FIRST_SOLO else labels.MSG_WIZARD_SOLO_NUMBERED.format(kind=wizard_choices.SOLO.capitalize(), number=self._number)
+        return wizard_limits.SOLO.capitalize() if self._number == FIRST_SOLO else labels.MSG_WIZARD_SOLO_NUMBERED.format(kind=wizard_limits.SOLO.capitalize(), number=self._number)
 
     def place(self):
         """Return the solo's place in the form, or None once the song has fewer solos."""
@@ -80,7 +80,7 @@ class SoloMelodyBranch(Branch):
         place = self.place()
 
         def give_back():
-            question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_choices.SOLO)
+            question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_limits.SOLO)
             page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True),
                      then=page.choosing(lambda _: choices.set_solo_pattern(place=place, pattern=None)))
         # On notes edited by hand, the delete key on the button gives the notes back to the wizard, after a question.
@@ -95,7 +95,7 @@ class SoloMelodyBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         place = self.place()
-        name = messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_choices.SOLO)
+        name = messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_limits.SOLO)
 
         def written(_):
             page.choosing(choices.new_solo_take)(place)
@@ -109,11 +109,11 @@ class SoloMelodyBranch(Branch):
         """Listen plays the solo's player alone in the solo."""
         if self.place() is None:
             return None
-        return messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_choices.SOLO), self.place(), self.get_choices().solo_player()
+        return messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_limits.SOLO), self.place(), self.get_choices().solo_player()
 
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the solo."""
-        return messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=wizard_choices.SOLO), self.place(), None
+        return messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=wizard_limits.SOLO), self.place(), None
 
     def remarks(self, width):
         """Return the line under the buttons that says whose the solo's notes are: the wizard's, or edited by hand."""
