@@ -113,11 +113,10 @@ class Munge:
     REVERSE_PITCHES = 35
     CLEAR_EVERY = 36
     CROP = 37
-    TRANSPOSE = 38
-    HUMANIZE_VELOCITY = 39
-    INVERT_MELODY = 40
-    VOICE_LEADING = 41
-    VOICE_LEADING_OCTAVES = 42
+    HUMANIZE_VELOCITY = 38
+    INVERT_MELODY = 39
+    VOICE_LEADING = 40
+    VOICE_LEADING_OCTAVES = 41
 
 
 # The heading each munge is listed under.
@@ -125,7 +124,7 @@ MUNGE_GROUPS = {
     labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_CHORDS, Munge.CLEAR_EVERY, Munge.CROP],
     labels.MungeGroup.COPY: [Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START, Munge.MIRROR],
     labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLICE_AT_CURSOR, Munge.SPLIT],
-    labels.MungeGroup.PITCH: [Munge.TRANSPOSE, Munge.REVERSE_PITCHES, Munge.RANDOMIZE_PITCHES, Munge.INVERT_MELODY, Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES],
+    labels.MungeGroup.PITCH: [Munge.REVERSE_PITCHES, Munge.RANDOMIZE_PITCHES, Munge.INVERT_MELODY, Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES],
     labels.MungeGroup.REGISTERS: [Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX],
     labels.MungeGroup.REORDER: [Munge.REVERSE_AFTER, Munge.REVERSE_BEFORE, Munge.REVERSE, Munge.PIVOT, Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE],
     labels.MungeGroup.RHYTHM: [Munge.JOIN_NOTES, Munge.DIVIDE_NOTES, Munge.RANDOMIZE_RHYTHM],
@@ -158,7 +157,6 @@ SPLIT_STEPS = 16
 SPLIT_NAMES_SHOWN = 8
 # What the munges that take a number call it.
 EVERY = 'every'
-DEGREES = 'degrees'
 MOST = 'most'
 # Voice leading moves a chord toward the chord before it, so a pattern needs this many chords.
 FEWEST_CHORDS_TO_LEAD = 2
@@ -496,8 +494,6 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             document.set_steps(name=name, steps=self.step + 1)
         elif choice == Munge.CLEAR_EVERY:
             self.ask_number(title=messages.MSG_CLEAR_EVERY_PROMPT, low=limits.MIN_STEPS, high=self.steps(), way=Pattern.clear_every, named=EVERY)
-        elif choice == Munge.TRANSPOSE:
-            self.ask_number(title=messages.MSG_TRANSPOSE_PROMPT, low=-limits.MAX_MUNGE_TRANSPOSE, high=limits.MAX_MUNGE_TRANSPOSE, way=Pattern.transpose, named=DEGREES)
         elif choice == Munge.HUMANIZE_VELOCITY:
             self.ask_number(title=messages.MSG_HUMANIZE_PROMPT, low=midi.MIN_VELOCITY, high=midi.MAX_VELOCITY, way=Pattern.humanize_velocity, named=MOST)
         elif choice == Munge.ROLL_LEFT_AT_CURSOR:

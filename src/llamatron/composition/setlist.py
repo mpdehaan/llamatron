@@ -953,7 +953,8 @@ class Setlist(LlamaData):
 
         The first clip to play a pattern, reading the scenes from the top and each scene's tracks from the left, keeps the
         pattern; every later clip that plays the same one plays a copy, named as a duplicate is and kept in the pattern's group,
-        so that each clip can be edited without changing another.
+        so that each clip can be edited without changing another. A clip that plays a list of patterns gets a copy of each one
+        another clip plays, and a pattern it names twice in its own list stays one pattern.
         """
         seen = set()
         copies = []
@@ -962,15 +963,19 @@ class Setlist(LlamaData):
                 clip_slot = scene.get_clip_slot(track)
                 if clip_slot is None:
                     continue
-                name = clip_slot.get_pattern_name()
-                if name not in seen:
-                    seen.add(name)
-                    continue
-                copied = copy_name(name=name, taken=self.get_pattern_names())
-                self.copy_item(section=Section.PATTERNS, name=name, new=copied)
-                clip_slot.set_pattern_name(name=copied, song=song)
-                seen.add(copied)
-                copies.append(copied)
+                # A pattern the clip names twice stays one pattern inside the clip: only what another clip plays is copied.
+                own = {}
+                for name in clip_slot.get_pattern_names():
+                    if name in own:
+                        continue
+                    own[name] = name
+                    if name in seen:
+                        own[name] = copy_name(name=name, taken=self.get_pattern_names())
+                        self.copy_item(section=Section.PATTERNS, name=name, new=own[name])
+                        copies.append(own[name])
+                seen.update(own.values())
+                if any(new != name for name, new in own.items()):
+                    clip_slot.set_pattern_names(names=[own[name] for name in clip_slot.get_pattern_names()], song=song)
         return copies
 
     @notes_change

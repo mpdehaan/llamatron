@@ -151,7 +151,6 @@ These keys work throughout the rows view:
 | Pitch | invert melody (cursor) | Mirror every note around the cursor's note: a note 2 scale steps above it ends 2 below, so a line that rose now falls |
 | Pitch | randomize pitches | Shuffle which pitch each note plays; the rhythm stays |
 | Pitch | reverse pitches | The pitches play in backwards order on the same rhythm |
-| Pitch | transpose (N) | Move every note N steps up the scale, or down for a negative number |
 | Registers | clear register conditions | Blank every step's Stop When, Restart When and Mute When |
 | Registers | clear register modifications | Blank the rows that set a register and that add to one; the rows that use a register stay |
 | Registers | smooth AX=, smooth BX=, smooth CX=, smooth DX= | On the row that sets the register, fill the blank steps between two values from a straight line between them |

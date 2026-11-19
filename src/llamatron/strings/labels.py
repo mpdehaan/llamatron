@@ -579,7 +579,7 @@ MSG_MUNGE_CHOICES = [
     'splice after (pattern)', 'splice before (pattern)', 'split into new patterns (N)', 'splice (pattern, cursor)',
     'roll left (cursor)', 'roll right (cursor)',
     'join repeated notes', 'divide long notes', 'randomize rhythm', 'randomize pitches', 'reverse pitches',
-    'clear every Nth step (N)', 'crop (cursor)', 'transpose (N)', 'humanize velocity (N)',
+    'clear every Nth step (N)', 'crop (cursor)', 'humanize velocity (N)',
     'invert melody (cursor)', 'apply voice leading (no octave shift)', 'apply voice leading (octave shift)',
 ]
 # The clip page's extra choice, for a clip that follows its pattern's direction.

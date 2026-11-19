@@ -42,7 +42,6 @@ TWO = '2'
 TOO_MANY = '6'
 NOT_A_NUMBER = 'many'
 FIRST_INVERSION = 1
-FAR_DOWN = '-9'
 # The one step of the pattern called other holds degree 5.
 OTHER_DEGREE = 5
 # What the pattern's parts are called when the pattern is split, and when split again.
@@ -161,25 +160,15 @@ class TestMunge(UITest):
     async def test_the_munges_of_notes(self):
         await munge(test=self, choice=Munge.REVERSE_PITCHES)
         self.assertEqual(self.row(), [5, 4, 3, 2, 1])
-        await munge(test=self, choice=Munge.TRANSPOSE)
-        self.assertIn(messages.MSG_TRANSPOSE_PROMPT, self.text())
-        await self.type(TWO)
-        await self.press(Key.ENTER)
-        self.assertEqual(self.row(), [7, 6, 5, 4, 3])
-        await munge(test=self, choice=Munge.TRANSPOSE)
-        await self.type(FAR_DOWN)
-        await self.press(Key.ENTER)
-        self.assertIn(errors.ERR_TRANSPOSE_TOO_LOW.format(lowest=limits.MIN_DEGREE), self.text())
-        self.assertEqual(self.row(), [7, 6, 5, 4, 3])
         await munge(test=self, choice=Munge.CLEAR_EVERY)
         self.assertIn(messages.MSG_CLEAR_EVERY_PROMPT, self.text())
         await self.type(TWO)
         await self.press(Key.ENTER)
-        self.assertEqual(self.row(), [7, None, 5, None, 3])
+        self.assertEqual(self.row(), [5, None, 3, None, 1])
         await munge(test=self, choice=Munge.RANDOMIZE_RHYTHM)
-        self.assertEqual([degree for degree in self.row() if degree is not None], [7, 5, 3])
+        self.assertEqual([degree for degree in self.row() if degree is not None], [5, 3, 1])
         await munge(test=self, choice=Munge.RANDOMIZE_PITCHES)
-        self.assertEqual(sorted(degree for degree in self.row() if degree is not None), [3, 5, 7])
+        self.assertEqual(sorted(degree for degree in self.row() if degree is not None), [1, 3, 5])
         await munge(test=self, choice=Munge.HUMANIZE_VELOCITY)
         self.assertIn(messages.MSG_HUMANIZE_PROMPT, self.text())
         await self.type(TOO_MANY)
