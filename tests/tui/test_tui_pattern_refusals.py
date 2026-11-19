@@ -20,7 +20,7 @@ from tests.support.ui_testing import fixed_text, ROW_SHOWN, UITest
 from llamatron.composition.file_format import Row, Section
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks, messages
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
@@ -162,7 +162,7 @@ class TestPatternEditorRefusals(UITest):
         await self.open(TUNE)
         self.assertEqual(self.text().count(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE])), 1)
         shown = self.app.screen.drawing.steps_shown(self.SIZE[0])
-        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
+        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=drawing.NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
 
     async def test_a_pattern_that_fits_says_nothing_about_which_steps_show(self):
         await self.open(TUNE)

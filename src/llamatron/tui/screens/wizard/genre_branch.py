@@ -21,7 +21,7 @@ from llamatron.macro_composer.wizard_choices import (
 from llamatron.music import note
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
@@ -55,8 +55,8 @@ class GenreBranch(Branch):
             return
         said = [messages.MSG_CHANGE_GENRE_LOST, *(LOST_SHOWN[kind].format(count=count) for kind, count in lost.items())]
         if kept:
-            said += [NOTHING, messages.MSG_CHANGE_GENRE_KEPT, *(KEPT_SHOWN[kind].format(count=count) for kind, count in kept.items())]
-        dialog = ConfirmDialog(title=messages.MSG_CHANGE_GENRE_TITLE, messages=[*said, NOTHING, messages.MSG_CHANGE_GENRE_QUESTION], starts_on_no=True)
+            said += [drawing.NOTHING, messages.MSG_CHANGE_GENRE_KEPT, *(KEPT_SHOWN[kind].format(count=count) for kind, count in kept.items())]
+        dialog = ConfirmDialog(title=messages.MSG_CHANGE_GENRE_TITLE, messages=[*said, drawing.NOTHING, messages.MSG_CHANGE_GENRE_QUESTION], starts_on_no=True)
         self.page().ask(dialog=dialog, then=lambda _: self.page().choosing(choices.set_genre)(genre))
 
     def fields(self):

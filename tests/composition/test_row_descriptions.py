@@ -37,7 +37,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.tui.components.number_row import NumberRow
-from llamatron.tui.components.pattern_rows import PINNED_ROWS, ROW_CLASSES, SECTIONS
+from llamatron.tui.components import pattern_rows
 
 TUNE = 'tune'
 STEPS = 2
@@ -339,15 +339,15 @@ class TestEveryRowIsDescribedOnce(unittest.TestCase):
         self.assertEqual(str(refused.exception), errors.ERR_NO_SUCH_ROW.format(row=NOT_A_ROW))
 
     def test_the_tracker_has_a_component_and_a_label_for_every_described_row_and_no_other(self):
-        self.assertEqual(set(ROW_CLASSES), set(row_descriptions.ROW_DESCRIPTIONS))
+        self.assertEqual(set(pattern_rows.ROW_CLASSES), set(row_descriptions.ROW_DESCRIPTIONS))
         self.assertEqual(set(labels.MSG_ROW_LABELS), set(row_descriptions.ROW_DESCRIPTIONS))
 
     def test_the_pattern_editor_shows_every_described_row_in_one_place(self):
-        shown = [*PINNED_ROWS, *[name for names in SECTIONS.values() for name in names]]
+        shown = [*pattern_rows.PINNED_ROWS, *[name for names in pattern_rows.SECTIONS.values() for name in names]]
         self.assertEqual(sorted(shown), sorted(row_descriptions.ROW_DESCRIPTIONS))
 
     def test_the_editors_number_rows_are_the_rows_described_as_numbers(self):
-        numbers = {name for name, component in ROW_CLASSES.items() if issubclass(component, NumberRow)}
+        numbers = {name for name, component in pattern_rows.ROW_CLASSES.items() if issubclass(component, NumberRow)}
         self.assertEqual(numbers, set(rows_of(RowOfNumbers)))
 
     def test_what_a_rest_keeps_and_what_changes_with_drums_come_from_the_descriptions(self):

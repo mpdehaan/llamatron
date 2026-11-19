@@ -42,11 +42,13 @@ from llamatron.music import midi
 from llamatron.tui import app as tui_app
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.dialogs.corrections_dialog import MOST_SHOWN, CorrectionsDialog
-from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_VIEW_SELECTOR, DIALOG_WIDTH
+from llamatron.tui.dialogs import corrections_dialog
+from llamatron.tui.dialogs.corrections_dialog import CorrectionsDialog
+from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.document import Document
-from llamatron.tui.drawing import ELLIPSIS, Box, fit
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, fit
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.open_page import OpenPage
@@ -109,11 +111,11 @@ class CorrectionsTest(UITest):
     def inner_width(self):
         """Return how wide a line inside a dialog can be on this console."""
         columns, _ = self.SIZE
-        return min(columns - DIALOG_MARGIN, DIALOG_WIDTH) - DIALOG_MARGIN
+        return min(columns - dialog.DIALOG_MARGIN, dialog.DIALOG_WIDTH) - dialog.DIALOG_MARGIN
 
     def said(self):
         """Return what the dialog on screen drew as one run of words, so that a sentence the dialog wrapped over two lines can be looked for."""
-        drawn = self.app.screen.query_one(DIALOG_VIEW_SELECTOR, Static).content.plain
+        drawn = self.app.screen.query_one(dialog.DIALOG_VIEW_SELECTOR, Static).content.plain
         return SPACE.join(drawn.replace(Box.HEAVY_BAR, SPACE).split())
 
 
@@ -131,13 +133,13 @@ class TestCorrectionsDialog(CorrectionsTest):
     async def test_only_the_first_few_are_listed_with_a_count_of_the_rest(self):
         await self.choose(copy_of(SAMPLE))
         lines = corrections_of(SAMPLE)
-        self.assertGreater(len(lines), MOST_SHOWN)
+        self.assertGreater(len(lines), corrections_dialog.MOST_SHOWN)
         text = self.text()
-        for line in lines[:MOST_SHOWN]:
+        for line in lines[:corrections_dialog.MOST_SHOWN]:
             self.assertIn(fit(text=line, width=self.inner_width()).rstrip(), text)
-        for line in lines[MOST_SHOWN:]:
+        for line in lines[corrections_dialog.MOST_SHOWN:]:
             self.assertNotIn(line, text)
-        self.assertIn(messages.MSG_CORRECTIONS_MORE.format(count=len(lines) - MOST_SHOWN), text)
+        self.assertIn(messages.MSG_CORRECTIONS_MORE.format(count=len(lines) - corrections_dialog.MOST_SHOWN), text)
 
     async def test_a_few_are_all_listed_with_no_count(self):
         write_set(path=ONE_WRONG, data={SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1})
@@ -153,7 +155,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         (line,) = corrections_of(LONG_NAMES)
         self.assertGreater(len(line), self.inner_width())
         cut = fit(text=line, width=self.inner_width())
-        self.assertTrue(cut.endswith(ELLIPSIS))
+        self.assertTrue(cut.endswith(drawing.ELLIPSIS))
         self.assertIn(cut, self.text())
         self.assertNotIn(line, self.text())
 

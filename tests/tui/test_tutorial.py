@@ -42,7 +42,7 @@ from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime import timeline
 from llamatron.realtime.timeline import Route, song_timeline
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -54,7 +54,8 @@ from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
-from llamatron.tui.keys import Key, SPACE_CHARACTER
+from llamatron.tui import keys
+from llamatron.tui.keys import Key
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key, key_event
 from llamatron.tui.screens.set.main_page import MainPage
@@ -195,7 +196,7 @@ class TutorialTest(UITest):
 
 def opened_before(*, said, text):
     """Return the last "Opening" line said before a line, which names the page the line was said on."""
-    openings = [line for line in said[:said.index(text)] if line.startswith(narration.MSG_NARRATE_OPENING.format(cell=NOTHING))]
+    openings = [line for line in said[:said.index(text)] if line.startswith(narration.MSG_NARRATE_OPENING.format(cell=drawing.NOTHING))]
     return openings[-1]
 
 
@@ -220,7 +221,7 @@ class TestHelloWorldTutorial(TutorialTest):
         for kind in (narration.MSG_A_TRACK, narration.MSG_A_SCENE):
             self.assertEqual(opened_before(said=said, text=narration.MSG_NARRATE_RENAMING.format(kind=kind)), narration.MSG_NARRATE_OPENING.format(cell=labels.PageName.ARRANGE))
         # A page that is open already is gone back to, never opened again, so no two "Opening" lines come together.
-        openings = [index for index, line in enumerate(said) if line.startswith(narration.MSG_NARRATE_OPENING.format(cell=NOTHING))]
+        openings = [index for index, line in enumerate(said) if line.startswith(narration.MSG_NARRATE_OPENING.format(cell=drawing.NOTHING))]
         self.assertEqual([index for index in openings if index - 1 in openings], [])
         self.assertEqual(said.count(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_SCENE)), 1)
         self.assertEqual(said.count(narration.MSG_EXPLAIN_ENTER), 1)
@@ -345,7 +346,7 @@ class TestTutorialPace(unittest.TestCase):
 
     def test_text_typed_outside_a_dialog_goes_at_the_pace_and_is_never_called_or_explained(self):
         plan = TutorialPlan(app=ScreenShown(page_of(PatternsPage)), target=Setlist.new())
-        typed = list(plan.type_text(SPACE_CHARACTER.join(TYPED_NAME)))
+        typed = list(plan.type_text(keys.SPACE_CHARACTER.join(TYPED_NAME)))
         self.assertEqual([press.key for press in typed][:2], [TYPED_NAME[0], Key.SPACE])
         self.assertEqual(typed, [Press(key) for key in [press.key for press in typed]])
 
@@ -422,7 +423,7 @@ class TestTutorialCallsKeys(unittest.TestCase):
 
     def test_typing_explains_nothing(self):
         self.app.screen = pattern_editor_on(PianoRoll)
-        self.assertEqual(list(self.plan.type_text(SPACE_CHARACTER)), [Press(Key.SPACE)])
+        self.assertEqual(list(self.plan.type_text(keys.SPACE_CHARACTER)), [Press(Key.SPACE)])
 
 
 class StepsOnly:

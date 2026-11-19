@@ -30,7 +30,8 @@ from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Section
 from llamatron.importers import midi_import
 from llamatron.strings import importing, labels
-from llamatron.tui.dialogs.import_dialog import BUTTONS, CANCEL_BUTTON, CHORDS, LONGEST, ImportDialog
+from llamatron.tui.dialogs import import_dialog
+from llamatron.tui.dialogs.import_dialog import ImportDialog
 from llamatron.tui.dialogs.imported_dialog import ImportedDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -127,17 +128,17 @@ class TestImportDialog(UITest):
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, OpenPage)
         await self.press(Key.ENTER)
-        self.app.screen.row = BUTTONS
-        self.app.screen.button = CANCEL_BUTTON
+        self.app.screen.row = import_dialog.BUTTONS
+        self.app.screen.button = import_dialog.CANCEL_BUTTON
         await self.press(keybindings.ImportDialog.PRESS)
         self.assertEqual(self.document.setlist().get_song_names(), songs)
 
     async def test_the_fields_change_what_the_import_makes(self):
         await self.open_the_dialog()
         dialog = self.app.screen
-        await self.press(*[Key.DOWN] * LONGEST, keybindings.ImportDialog.MORE)
+        await self.press(*[Key.DOWN] * import_dialog.LONGEST, keybindings.ImportDialog.MORE)
         self.assertEqual(dialog.choices.longest_pattern, midi_import.LONGEST_PATTERN_CHOICES[midi_import.LONGEST_PATTERN_CHOICES.index(midi_import.DEFAULT_LONGEST_PATTERN) + 1])
-        await self.press(*[Key.DOWN] * (CHORDS - LONGEST), keybindings.ImportDialog.TOGGLE)
+        await self.press(*[Key.DOWN] * (import_dialog.CHORDS - import_dialog.LONGEST), keybindings.ImportDialog.TOGGLE)
         self.assertFalse(dialog.choices.chords)
         self.assertIn(importing.MSG_IMPORT_AS_TRACKS, self.text())
 

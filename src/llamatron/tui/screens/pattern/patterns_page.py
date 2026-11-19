@@ -11,8 +11,9 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import Align, NOTHING, Style
-from llamatron.tui.key_table import STEP_FORWARD
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align, Style
+from llamatron.tui import key_table
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
@@ -107,7 +108,7 @@ class PatternsPage(NamedListPage):
 
     def one_cell(self, text):
         """Return the cells of a row that holds only its first."""
-        return [text, *[NOTHING] * (len(self.columns) - 1)]
+        return [text, *[drawing.NOTHING] * (len(self.columns) - 1)]
 
     def row_of(self, *, name, pattern, document):
         kind = labels.MSG_DRUM_KIND if pattern.is_drum() else labels.MSG_NOTES_KIND
@@ -193,9 +194,9 @@ class PatternsPage(NamedListPage):
     def jump_group(self, direction):
         """Move the cursor to the next group's heading, or the one before, staying put past the last or the first."""
         places = [place for place, (what, _) in enumerate(self.remembered_rows()) if what.kind == HEADING]
-        ahead = [place for place in places if place > self.place] if direction == STEP_FORWARD else [place for place in places if place < self.place]
+        ahead = [place for place in places if place > self.place] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.place]
         if ahead:
-            self.place = ahead[0] if direction == STEP_FORWARD else ahead[-1]
+            self.place = ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1]
 
     # A pattern.
 
@@ -328,7 +329,7 @@ class PatternsPage(NamedListPage):
     # Searching, which looks at the patterns alone, inside every group, closed or open.
 
     def row_texts(self):
-        return [what.name if what.kind == PATTERN else NOTHING for what, _ in self.remembered_rows()]
+        return [what.name if what.kind == PATTERN else drawing.NOTHING for what, _ in self.remembered_rows()]
 
     def matches(self):
         rows = self.remembered_rows()
@@ -340,7 +341,7 @@ class PatternsPage(NamedListPage):
     def start_search(self):
         self.before_search = self.listed()
         self.searching = True
-        self.typed = NOTHING
+        self.typed = drawing.NOTHING
         self.put_cursor_on_row(self.before_search)
         self.settle()
 

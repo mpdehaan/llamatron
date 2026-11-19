@@ -25,7 +25,7 @@ from llamatron.music import time_signature
 from llamatron.music.time_signature import is_time_signature
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.generators.arp import ChordOrder
-from llamatron.tui.drawing import SPACE
+from llamatron.tui import drawing
 
 
 SONG_SUFFIX = '.yml'
@@ -52,7 +52,7 @@ def stepped(*, values, current, offset):
 
 def numbers_text(numbers):
     """Return numbers with a space between them and a dash for each that isn't set, like 74 - - 1."""
-    return SPACE.join(marks.MSG_NO_NUMBER_MARK if number is None else str(number) for number in numbers)
+    return drawing.SPACE.join(marks.MSG_NO_NUMBER_MARK if number is None else str(number) for number in numbers)
 
 
 def list_keys(*, page, extra, always=()):
@@ -71,7 +71,7 @@ def move_key(page):
 
 def counts_text(counts):
     """Return an AutoRatchet's counts as typed, like 1 1 4, or nothing when it has none yet."""
-    return SPACE.join(str(count) for count in counts or [])
+    return drawing.SPACE.join(str(count) for count in counts or [])
 
 
 def play_through(*, page, play, what, said):

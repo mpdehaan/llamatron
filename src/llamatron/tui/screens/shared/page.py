@@ -26,7 +26,7 @@ from rich.color import Color
 from llamatron.composition import limits
 from llamatron.strings import errors, help as help_text, labels, marks as marks_text
 from llamatron.composition.naming import is_taken
-from llamatron.tui.caption_strip import CAPTION_LINES
+from llamatron.tui import caption_strip
 from llamatron.tui.themes import luminance
 from rich.style import Style as RichStyle
 from rich.text import Text
@@ -38,7 +38,8 @@ from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock
-from llamatron.tui.drawing import Box, fit, legend, LINE_BREAK, NOTHING, SELECTOR, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, fit, legend, Style
 from llamatron.tui.key_table import pressed_key, BindsKeys, quits_at_once
 from llamatron.tui.screens.shared.everywhere import everywhere_keys
 from llamatron.tui import keybindings
@@ -46,7 +47,7 @@ from llamatron.tui import keybindings
 
 PROGRAM_NAME = 'llamatron'
 VIEW_ID = 'view'
-VIEW_SELECTOR = SELECTOR.format(id=VIEW_ID)
+VIEW_SELECTOR = drawing.SELECTOR.format(id=VIEW_ID)
 # How Rich cuts a line that's too wide.
 OVERFLOW_ELLIPSIS = 'ellipsis'
 
@@ -98,7 +99,7 @@ class Page(BindsKeys, Screen):
 
     def resting_status(self):
         """Return what the status line says while nothing else is said, which is nothing unless a page has something to say of where its cursor rests, as the pattern editor says a chord's name."""
-        return NOTHING
+        return drawing.NOTHING
 
     def refuse(self, text):
         """Show why a key did nothing or what went wrong on the status line, in amber, so that a refusal isn't missed."""
@@ -189,7 +190,7 @@ class Page(BindsKeys, Screen):
     def time_text(self):
         """Return the text at the right of the crumbs: the duration as a clock, or nothing."""
         seconds = self.duration()
-        return clock(seconds) if seconds is not False else NOTHING
+        return clock(seconds) if seconds is not False else drawing.NOTHING
 
     def on_key(self, event):
         event.stop()
@@ -269,7 +270,7 @@ class Page(BindsKeys, Screen):
         """Return the mark at the header's right: unsaved for a set that has no file yet, unsaved changes for a set changed since its file was written or read, and saved otherwise."""
         if self.app.launch.for_recording:
             # A set launched for recording holds the recorder's instruments, which are never saved, so the mark would say unsaved changes in every video.
-            return NOTHING
+            return drawing.NOTHING
         document = self.document()
         if not document.get_path():
             return marks_text.MSG_UNSAVED_MARK
@@ -293,16 +294,16 @@ class Page(BindsKeys, Screen):
         names_start = max(width - 1 - marks_width - len(HEADER_GAP) - names_width, 1)
         crumbs = marks_text.MSG_CRUMB_SEPARATOR.join(self.crumb_trail())
         first = self.header_line(width=width, left=crumbs, names=names[0], names_start=names_start, mark=marks[0], centre=PROGRAM_NAME)
-        second = self.header_line(width=width, left=NOTHING, names=names[1], names_start=names_start, mark=marks[1])
+        second = self.header_line(width=width, left=drawing.NOTHING, names=names[1], names_start=names_start, mark=marks[1])
         theme = self.theme()
         if theme is None:
             return [first, second, Text(Box.HEAVY_RULE * width)]
         # The page's theme colour: a solid stripe in place of the rule carrying the page's caption, and a blank line
         # under it before the page where the screen has room, so that an 80 by 24 console keeps every line it had.
         caption = fit(text=self.caption(), width=max(width - 2, 1)).rstrip()
-        text = Text((SPACE + caption).ljust(width)[:width], style=RichStyle(bold=True, color=Color.from_rgb(*caption_colour(theme)), bgcolor=Color.from_rgb(*theme)))
+        text = Text((drawing.SPACE + caption).ljust(width)[:width], style=RichStyle(bold=True, color=Color.from_rgb(*caption_colour(theme)), bgcolor=Color.from_rgb(*theme)))
         stripe = [first, second, text]
-        return stripe + [Text(NOTHING)] if self.has_room_for_the_gap() else stripe
+        return stripe + [Text(drawing.NOTHING)] if self.has_room_for_the_gap() else stripe
 
     def caption(self):
         """Return what the theme's stripe says the page is doing: its own crumb, in capitals, unless the page says more."""
@@ -310,19 +311,19 @@ class Page(BindsKeys, Screen):
 
     def header_line(self, *, width, left, names, names_start, mark, centre=None):
         """Return one bold header line: the left text in the left corner, the names from names_start, the mark in the right corner, and the centre text, when given, exactly in the middle, giving way when the left text or the names need its room; the left text is cut to leave room for the rest."""
-        characters = [SPACE] * width
+        characters = [drawing.SPACE] * width
         mark_start = max(width - len(mark) - 1, 0)
         left_end = names_start - len(HEADER_GAP)
-        centre_start = max((width - len(centre or NOTHING)) // 2, 0)
+        centre_start = max((width - len(centre or drawing.NOTHING)) // 2, 0)
         if centre and len(left) + 2 <= centre_start and centre_start + len(centre) + len(HEADER_GAP) <= names_start:
             characters[centre_start:centre_start + len(centre)] = list(centre)
             left_end = min(left_end, centre_start - 1)
-        shown = fit(text=left, width=max(left_end - 1, 1)).rstrip() if left else NOTHING
+        shown = fit(text=left, width=max(left_end - 1, 1)).rstrip() if left else drawing.NOTHING
         characters[1:1 + len(shown)] = list(shown)
         shown_names = names[:max(mark_start - len(HEADER_GAP) - names_start, 0)]
         characters[names_start:names_start + len(shown_names)] = list(shown_names)
         characters[mark_start:mark_start + len(mark)] = list(mark)
-        return Text(NOTHING.join(characters[:width]), style=Style.BOLD, no_wrap=True)
+        return Text(drawing.NOTHING.join(characters[:width]), style=Style.BOLD, no_wrap=True)
 
     def has_room_for_the_gap(self):
         """Return whether the screen is tall enough for the blank line under a theme's stripe."""
@@ -349,13 +350,13 @@ class Page(BindsKeys, Screen):
         strip = self.holder.caption_strip()
         # The video tutorial's captions take the foot of the screen, and the page moves up to make room.
         if strip is not None:
-            height = max(height - CAPTION_LINES, 1)
+            height = max(height - caption_strip.CAPTION_LINES, 1)
         self.screen_height = height
         lines = self.page_lines(width=width, height=height)
         screen = self.staged_screen(screen=lines, width=width, height=height)
         if strip is not None:
             screen = screen + strip.lines(width)
-        self.query_one(VIEW_SELECTOR, Static).update(Text(LINE_BREAK).join(screen))
+        self.query_one(VIEW_SELECTOR, Static).update(Text(drawing.LINE_BREAK).join(screen))
 
     def page_lines(self, *, width, height):
         """Return the page's lines at a size: the header, the body, the status line, the rule and the legend, which draw shows and a batch video's stage draws again smaller inside its frame."""
@@ -364,10 +365,10 @@ class Page(BindsKeys, Screen):
         rule = [Text(Box.RULE * width, style=Style.DIM)] if bottom else []
         # The status line is dim, so that it reads as a note rather than part of the page.
         line = self.holder.status_line()
-        status = Text(SPACE + fit(text=line.text() or self.resting_status(), width=width - 1), style=Style.REFUSAL if line.is_refusal() else Style.DIM)
+        status = Text(drawing.SPACE + fit(text=line.text() or self.resting_status(), width=width - 1), style=Style.REFUSAL if line.is_refusal() else Style.DIM)
         room = max(height - len(top) - len(rule) - len(bottom) - 1, 1)
         lines = self.body(width=width, height=room)[:room]
-        lines += [Text(NOTHING) for _ in range(room - len(lines))]
+        lines += [Text(drawing.NOTHING) for _ in range(room - len(lines))]
         # A line that wrapped would push the keys off the bottom of the screen.
         for line in lines:
             line.truncate(width, overflow=OVERFLOW_ELLIPSIS)

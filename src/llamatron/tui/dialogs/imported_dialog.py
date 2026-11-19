@@ -25,7 +25,8 @@ from rich.text import Text
 from llamatron.strings import importing
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.drawing import NOTHING, wrapped
+from llamatron.tui import drawing
+from llamatron.tui.drawing import wrapped
 from llamatron.tui import keybindings
 
 
@@ -47,6 +48,6 @@ class ImportedDialog(MessageDialog):
     def lines(self, width):
         lines = self.message_lines(width)
         for warning in self.warnings:
-            lines += [Text(NOTHING), *wrapped(text=warning, width=width)]
+            lines += [Text(drawing.NOTHING), *wrapped(text=warning, width=width)]
         _, key_name, _ = self.KEYS.CLOSE
-        return [*lines, Text(NOTHING), *button_row(buttons=[(key_name, importing.MSG_IMPORTED_BUTTON)], selected=0)]
+        return [*lines, Text(drawing.NOTHING), *button_row(buttons=[(key_name, importing.MSG_IMPORTED_BUTTON)], selected=0)]

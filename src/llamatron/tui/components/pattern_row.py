@@ -16,8 +16,9 @@
 """One row of the pattern editor: what each of its cells shows, and what its keys do when the cursor is on it."""
 
 from llamatron.composition import row_descriptions
-from llamatron.tui.drawing import NOTHING
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, BindsKeys
+from llamatron.tui import drawing
+from llamatron.tui import key_table
+from llamatron.tui.key_table import BindsKeys
 from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 
@@ -97,8 +98,8 @@ class PatternRow(BindsKeys):
     def adjust_keys(self):
         """Return the keys that nudge the cursor's value: [ for less and ] for more on the legend and in the help, with -, + and = working too."""
         return [
-            self.bind(self.KEYS.LESS, action=lambda: self.nudge(STEP_BACK)),
-            self.bind(self.KEYS.MORE, action=lambda: self.nudge(STEP_FORWARD)),
+            self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)),
+            self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
         ]
 
     def keys(self):
@@ -108,12 +109,12 @@ class PatternRow(BindsKeys):
     def cell_text(self, *, step):
         """Return what a cell shows: nothing on a rest unless rests hold this row, and a dot for a value that isn't set."""
         if not self.is_note(step=step) and not self.on_rests():
-            return NOTHING
+            return drawing.NOTHING
         value = self.value(step=step)
         return marks.MSG_UNSET_MARK if value is None else str(value)
 
     def cell_lines(self, *, step):
         """Return what a step's cell shows on each of the row's lines, top to bottom: its text, or the blocked mark on the value's line where the step can't take one."""
         if self.blocked(step=step):
-            return [NOTHING] * (self.height() - 1) + [marks.MSG_BLOCKED_CELL]
+            return [drawing.NOTHING] * (self.height() - 1) + [marks.MSG_BLOCKED_CELL]
         return [self.cell_text(step=step)]

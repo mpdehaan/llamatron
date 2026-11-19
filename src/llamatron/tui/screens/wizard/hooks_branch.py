@@ -28,7 +28,8 @@ from rich.text import Text
 
 from llamatron.strings import labels, legends, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.hook_picture import picture_of
@@ -169,7 +170,7 @@ class HooksBranch(Branch):
         else:
             made = messages.MSG_WIZARD_NOTES_BY_HAND if choices.tune_is_own(kind) else messages.MSG_WIZARD_HOOK_MADE
         if hook is not None and (section is None or bars is None or choices.hook_is_own()):
-            return [*(Text(INDENT + line) for line in picture_of(hook=hook, width=width)), Text(INDENT + made, style=Style.DIM)]
+            return [*(Text(drawing.INDENT + line) for line in picture_of(hook=hook, width=width)), Text(drawing.INDENT + made, style=Style.DIM)]
         said = messages.MSG_WIZARD_HOOK_IS_BARS.format(first=bars[0], last=bars[1], kind=kind)
         # The two lines that say which bars and whose notes come first, so that a tall picture never pushes them off the page.
-        return [Text(INDENT + said, style=Style.DIM), Text(INDENT + made, style=Style.DIM), *(Text(INDENT + line) for line in picture_of(hook=section, width=width, lit=bars))]
+        return [Text(drawing.INDENT + said, style=Style.DIM), Text(drawing.INDENT + made, style=Style.DIM), *(Text(drawing.INDENT + line) for line in picture_of(hook=section, width=width, lit=bars))]

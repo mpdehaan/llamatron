@@ -33,8 +33,10 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Span, Text
 
-from llamatron.tui.components.title_card import LETTER_GAP, NARROW, eased, letter_rows, words_width
-from llamatron.tui.drawing import SPACE, Box, laid_over
+from llamatron.tui.components import title_card
+from llamatron.tui.components.title_card import eased, letter_rows, words_width
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, laid_over
 from llamatron.strings import about
 
 BLACK = (0, 0, 0)
@@ -104,13 +106,13 @@ def faded(*, line, level):
 
 
 def black_line(width):
-    return Text(SPACE * max(width, 0), style=BLACK_STYLE)
+    return Text(drawing.SPACE * max(width, 0), style=BLACK_STYLE)
 
 
 def ready_box(*, width, height):
     """Return the READY box centred on a screen: big enough for its border, the track, the gap and READY in single-width blocks."""
-    across = words_width(word=about.MSG_READY_WORD, scale=NARROW) + 2 * (GAP_COLUMNS + SIDE_TRACK + 1)
-    down = len(letter_rows(word=about.MSG_READY_WORD, scale=NARROW)[0]) + 2 * (GAP_ROWS + 2)
+    across = words_width(word=about.MSG_READY_WORD, scale=title_card.NARROW) + 2 * (GAP_COLUMNS + SIDE_TRACK + 1)
+    down = len(letter_rows(word=about.MSG_READY_WORD, scale=title_card.NARROW)[0]) + 2 * (GAP_ROWS + 2)
     top = max((height - down) // 2, 0)
     left = max((width - across) // 2, 0)
     return Rect(top=top, bottom=top + down - 1, left=left, right=left + across - 1)
@@ -225,8 +227,8 @@ def pulse_cells(*, rect, head, direction, colour, level):
 def ready_cells(*, rect, level):
     """Return READY in red block letters, centred inside a box, as cells."""
     inside = inside_of(rect)
-    rows = letter_rows(word=about.MSG_READY_WORD, scale=NARROW)
-    across = words_width(word=about.MSG_READY_WORD, scale=NARROW)
+    rows = letter_rows(word=about.MSG_READY_WORD, scale=title_card.NARROW)
+    across = words_width(word=about.MSG_READY_WORD, scale=title_card.NARROW)
     top = inside.top + max((inside.bottom - inside.top + 1 - len(rows[0])) // 2, 0)
     left = inside.left + max((inside.right - inside.left + 1 - across) // 2, 0)
     style = coloured(colour=READY_RED, level=level)
@@ -235,9 +237,9 @@ def ready_cells(*, rect, level):
     for letter in rows:
         for row, text in enumerate(letter):
             for offset, character in enumerate(text):
-                if character != SPACE:
+                if character != drawing.SPACE:
                     cells[(top + row, column + offset)] = (character, style)
-        column += len(letter[0]) + LETTER_GAP
+        column += len(letter[0]) + title_card.LETTER_GAP
     return cells
 
 

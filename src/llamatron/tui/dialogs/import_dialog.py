@@ -34,8 +34,10 @@ from llamatron.importers.midi_import import ImportChoices
 from llamatron.support.rational import Rational
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, padded, wrapped
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, cursor_mark, padded, wrapped
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved
 from llamatron.tui import keybindings
 
 # The rows the cursor moves over: the fields in the order drawn, then the buttons.
@@ -88,7 +90,7 @@ class ImportDialog(Dialog):
         if self.row == SONG_NAME:
             bound.append(self.bind(self.KEYS.RENAME, action=self.rename))
         elif self.row in (LONGEST, STEP_SIZE):
-            bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(STEP_FORWARD))]
+            bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(key_table.STEP_FORWARD))]
         elif self.row in (UNIQUE_NAMES, CHORDS, CONTROLS):
             bound.append(self.bind(self.KEYS.TOGGLE, action=self.toggle))
         else:
@@ -149,8 +151,8 @@ class ImportDialog(Dialog):
         made = self.made()
         choices = self.choices
         return (
-            made.song.name, importing.MSG_IMPORT_STEPS.format(count=choices.longest_pattern), marks.MSG_TOGGLE_ON if choices.unique_names else NOTHING,
-            importing.MSG_IMPORT_AS_CHORDS if choices.chords else importing.MSG_IMPORT_AS_TRACKS, marks.MSG_TOGGLE_ON if choices.controls else NOTHING,
+            made.song.name, importing.MSG_IMPORT_STEPS.format(count=choices.longest_pattern), marks.MSG_TOGGLE_ON if choices.unique_names else drawing.NOTHING,
+            importing.MSG_IMPORT_AS_CHORDS if choices.chords else importing.MSG_IMPORT_AS_TRACKS, marks.MSG_TOGGLE_ON if choices.controls else drawing.NOTHING,
             importing.MSG_IMPORT_AUTO_STEP.format(size=fraction_text(made.step_size)) if choices.step_size is None else fraction_text(choices.step_size),
         )
 
@@ -172,18 +174,18 @@ class ImportDialog(Dialog):
 
     def lines(self, width):
         made = self.made()
-        lines = [*dimmed(wrapped(text=self.found_text(), width=width)), Text(NOTHING)]
+        lines = [*dimmed(wrapped(text=self.found_text(), width=width)), Text(drawing.NOTHING)]
         for row, (label, value) in enumerate(zip(LABELS, self.values())):
             line = Text(cursor_mark(row == self.row) + label.ljust(LABEL_WIDTH))
             line.append(value, style=Style.BOLD if row == self.row else Style.PLAIN)
             lines.append(line)
-        lines.append(Text(NOTHING))
+        lines.append(Text(drawing.NOTHING))
         lines += wrapped(text=self.makes_text(), width=width)
         if made.song.shared:
             lines.append(Text(importing.MSG_IMPORT_SHARED.format(count=made.song.shared), style=Style.DIM))
         for warning in made.warnings:
             lines += dimmed(wrapped(text=warning, width=width))
-        lines += [Text(NOTHING), self.buttons_line()]
+        lines += [Text(drawing.NOTHING), self.buttons_line()]
         return lines
 
     def buttons_line(self):
@@ -194,7 +196,7 @@ class ImportDialog(Dialog):
             _, key_name, _ = binding
             line.append(cursor_mark(selected))
             line.append(padded(key_name), style=Style.REVERSE)
-            line.append(SPACE)
+            line.append(drawing.SPACE)
             line.append(label, style=Style.BOLD if selected else Style.PLAIN)
             line.append(marks.MSG_CONFIRM_BUTTON_GAP)
         return line

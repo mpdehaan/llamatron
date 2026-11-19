@@ -18,7 +18,8 @@
 from rich.text import Text
 
 from llamatron.strings import errors, labels, marks, messages
-from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.chords_branch import ChordsBranch
 from llamatron.tui.screens.wizard.melodies_branch import MelodiesBranch
@@ -46,7 +47,7 @@ class CompositionBranch(Branch):
     def notes(self, width):
         """Return each branch under this one with what it is set to, leaving out a branch the subgenre has nothing to choose in; or what to choose first."""
         if not self.choices().is_ready():
-            return [Text(INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
+            return [Text(drawing.INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
         shown = [(child.name(), child.summary()) for child in self.children() if child.summary() is not None]
         longest = max((len(name) for name, _ in shown), default=0)
-        return [Text(INDENT + marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=longest, value=value)) for name, value in shown]
+        return [Text(drawing.INDENT + marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=longest, value=value)) for name, value in shown]

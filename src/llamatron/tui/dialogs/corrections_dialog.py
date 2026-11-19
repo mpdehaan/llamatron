@@ -20,7 +20,8 @@ from rich.text import Text
 from llamatron.strings import messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import NOTHING, Style, fit, wrapped
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, fit, wrapped
 
 # The most corrections listed, so that the dialog fits an 80 by 24 console with its sentences and its buttons. The rest are counted on one line.
 MOST_SHOWN = 5
@@ -46,11 +47,11 @@ class CorrectionsDialog(ConfirmDialog):
     def message_lines(self, width):
         shown = self.corrections[:MOST_SHOWN]
         more = len(self.corrections) - len(shown)
-        lines = [*wrapped(text=messages.MSG_CORRECTIONS_INTRO.format(file=self.file), width=width), Text(NOTHING)]
+        lines = [*wrapped(text=messages.MSG_CORRECTIONS_INTRO.format(file=self.file), width=width), Text(drawing.NOTHING)]
         lines += [Text(fit(text=correction, width=width).rstrip()) for correction in shown]
         if more:
             lines.append(Text(messages.MSG_CORRECTIONS_MORE.format(count=more), style=Style.DIM))
-        lines.append(Text(NOTHING))
+        lines.append(Text(drawing.NOTHING))
         lines += wrapped(text=messages.MSG_CORRECTIONS_WARNING, width=width)
         lines += wrapped(text=messages.MSG_CORRECTIONS_QUESTION, width=width)
         return lines

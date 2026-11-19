@@ -22,7 +22,8 @@ from llamatron.music.note import NoteName
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.keys import HOME_END, Key
+from llamatron.tui import keys
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, Reconfigure
 from llamatron.strings import errors, legends
 from llamatron.tui import keybindings
@@ -202,7 +203,7 @@ class TestTheEditorsTwoViews(UITest):
         editor = self.app.screen
         for view in (editor.roll, editor.rows_view):
             moving = [name for item in view.move_keys() for name in item.keys]
-            for name in (Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT, *HOME_END):
+            for name in (Key.UP, Key.DOWN, Key.LEFT, Key.RIGHT, *keys.HOME_END):
                 self.assertIn(name, moving)
         # Only the rows have section headings to jump between.
         self.assertNotIn(Key.PAGE_DOWN, [name for item in editor.roll.move_keys() for name in item.keys])

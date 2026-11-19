@@ -24,7 +24,8 @@ from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from rich.text import Text
 
-from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, padded
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, cursor_mark, padded
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui import themes
@@ -114,10 +115,10 @@ class RegistersPage(FieldPage):
         self.field()
         cells = [[fields[row * GRID_COLUMNS + column].value() for column in range(GRID_COLUMNS)] for row in range(len(file_format.REGISTER_NAMES))]
         widths = [max(len(labels.MSG_REGISTER_COLUMNS[column]), *(len(str(cells[row][column])) for row in range(len(file_format.REGISTER_NAMES)))) + CELL_PADDING for column in range(GRID_COLUMNS)]
-        heading = Text(SPACE * NAME_WIDTH, style=Style.BOLD, no_wrap=True)
+        heading = Text(drawing.SPACE * NAME_WIDTH, style=Style.BOLD, no_wrap=True)
         for column, name in enumerate(labels.MSG_REGISTER_COLUMNS):
             heading.append(padded(name.ljust(widths[column] - CELL_PADDING)), style=Style.BOLD)
-        lines = [Text(NOTHING), heading]
+        lines = [Text(drawing.NOTHING), heading]
         for row, register in enumerate(file_format.REGISTER_NAMES):
             line = Text(no_wrap=True)
             line.append(cursor_mark(self.place // GRID_COLUMNS == row) + register.ljust(NAME_WIDTH - len(cursor_mark(False))), style=Style.BOLD)
@@ -125,7 +126,7 @@ class RegistersPage(FieldPage):
                 selected = self.place == row * GRID_COLUMNS + column
                 line.append(padded(str(cells[row][column]).ljust(widths[column] - CELL_PADDING)), style=Style.REVERSE if selected else Style.PLAIN)
             lines.append(line)
-        lines += [Text(NOTHING), Text(SPACE + fields[self.place].label, style=Style.DIM)]
+        lines += [Text(drawing.NOTHING), Text(drawing.SPACE + fields[self.place].label, style=Style.DIM)]
         return lines
 
     def number_field(self, *, name, setting, what, value):

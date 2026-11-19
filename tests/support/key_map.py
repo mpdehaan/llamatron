@@ -23,7 +23,8 @@ import os
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.shared.field import Button, Heading
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.pattern.patterns_page import HEADING, NEW_PATTERN, PATTERN, UNGROUPED, PatternsPage
+from llamatron.tui.screens.pattern import patterns_page
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui import keybindings
@@ -116,11 +117,11 @@ def place_of(page):
 def patterns_place(page):
     """Return the words for where the Patterns page's cursor is: a pattern, a group's heading or one of the two buttons, and whether the group is the patterns in none."""
     listed = page.listed()
-    if listed.kind == PATTERN:
-        return A_PATTERN_IN_NO_GROUP if page.group_under_cursor() is UNGROUPED else A_PATTERN
-    if listed.kind == HEADING:
-        return THE_UNGROUPED_HEADING if listed.name is UNGROUPED else A_GROUP_HEADING
-    return THE_NEW_PATTERN_BUTTON if listed.kind == NEW_PATTERN else THE_NEW_GROUP_BUTTON
+    if listed.kind == patterns_page.PATTERN:
+        return A_PATTERN_IN_NO_GROUP if page.group_under_cursor() is patterns_page.UNGROUPED else A_PATTERN
+    if listed.kind == patterns_page.HEADING:
+        return THE_UNGROUPED_HEADING if listed.name is patterns_page.UNGROUPED else A_GROUP_HEADING
+    return THE_NEW_PATTERN_BUTTON if listed.kind == patterns_page.NEW_PATTERN else THE_NEW_GROUP_BUTTON
 
 
 def arrange_place(page):

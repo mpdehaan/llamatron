@@ -29,7 +29,7 @@ A mode that stays well under its budget leaves the computer cool and the screen 
 import random
 import time
 
-from llamatron.tui.screens.arrange.arrange_page import FRAME_SECONDS
+from llamatron.tui.screens.arrange import arrange_page
 from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.visualizers import modes
 
@@ -70,9 +70,9 @@ def timed(*, mode, tracks, columns, rows):
     visualizer = mode()
     costs = []
     for number in range(FRAMES):
-        heard = Heard(notes=made_up_notes(tracks=tracks, chooser=chooser), seconds_per_beat=SECONDS_PER_BEAT, beats=number * FRAME_SECONDS / SECONDS_PER_BEAT)
+        heard = Heard(notes=made_up_notes(tracks=tracks, chooser=chooser), seconds_per_beat=SECONDS_PER_BEAT, beats=number * arrange_page.FRAME_SECONDS / SECONDS_PER_BEAT)
         start = time.perf_counter()
-        visualizer.frame(width=columns, height=rows, now=number * FRAME_SECONDS, heard=heard)
+        visualizer.frame(width=columns, height=rows, now=number * arrange_page.FRAME_SECONDS, heard=heard)
         costs.append(time.perf_counter() - start)
     return sum(costs) / len(costs), max(costs)
 
@@ -84,7 +84,7 @@ def main():
             for columns, rows in SIZES:
                 mean, worst = timed(mode=mode, tracks=tracks, columns=columns, rows=rows)
                 print(LINE.format(mode=mode.OPTION, tracks=tracks, size=SIZE.format(columns=columns, rows=rows), mean=mean * MILLISECONDS,
-                                  worst=worst * MILLISECONDS, budget=mean / FRAME_SECONDS * 100))
+                                  worst=worst * MILLISECONDS, budget=mean / arrange_page.FRAME_SECONDS * 100))
 
 
 if __name__ == '__main__':

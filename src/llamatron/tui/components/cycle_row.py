@@ -16,7 +16,7 @@
 """A row whose values go round a short fixed cycle, like the Dot and accidental rows."""
 
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui.key_table import STEP_FORWARD
+from llamatron.tui import key_table
 from llamatron.tui import keybindings
 
 
@@ -28,7 +28,7 @@ class CycleRow(PatternRow):
     __slots__ = ()
     def keys(self):
         return [
-            self.bind(self.KEYS.NEXT, action=lambda: self.cycle(STEP_FORWARD)),
+            self.bind(self.KEYS.NEXT, action=lambda: self.cycle(key_table.STEP_FORWARD)),
             *self.adjust_keys(),
             self.bind(self.KEYS.CLEAR, action=lambda: self.set_value(None)),
         ]

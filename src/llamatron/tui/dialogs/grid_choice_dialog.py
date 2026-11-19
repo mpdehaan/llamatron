@@ -19,8 +19,10 @@
 from rich.text import Text
 
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.drawing import fit, NOTHING, padded, SPACE, Style
-from llamatron.tui.keys import ARROWS_UP_DOWN, Key
+from llamatron.tui import drawing
+from llamatron.tui.drawing import fit, padded, Style
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key
 from llamatron.strings import marks
 from llamatron.tui import keybindings
 
@@ -105,13 +107,13 @@ class GridChoiceDialog(ChoiceDialog):
             tabs.append(marks.MSG_PREVIOUS_PAGE_MARK, style=Style.BOLD)
         for number, (name, _) in enumerate(self.pages):
             tabs.append(marks.MSG_PAGE_TAB.format(name=name), style=Style.REVERSE if number == self.page else Style.DIM)
-            tabs.append(SPACE)
+            tabs.append(drawing.SPACE)
         if self.page < len(self.pages) - 1:
             tabs.append(marks.MSG_NEXT_PAGE_MARK, style=Style.BOLD)
         tabs.rstrip()
         # The page names always fit, so the title is cut short rather than widening the dialog.
         line = Text(fit(text=self.title, width=max(width - tabs.cell_len - 2, 0)), style=Style.BOLD)
-        line.append(SPACE * max(width - line.cell_len - tabs.cell_len, 0))
+        line.append(drawing.SPACE * max(width - line.cell_len - tabs.cell_len, 0))
         line.append_text(tabs)
         return line
 
@@ -158,7 +160,7 @@ class GridChoiceDialog(ChoiceDialog):
     def move(self, name):
         row, column = self.where()
         width = len(self.cells()[0])
-        if name in ARROWS_UP_DOWN:
+        if name in keys_values.ARROWS_UP_DOWN:
             step = -1 if name == Key.UP else 1
             others = list(range(row + step, -1 if step < 0 else len(self.cells()), step))
             # Keep to the column, or else take the nearest option in any column, like the top line.
@@ -198,7 +200,7 @@ class GridChoiceDialog(ChoiceDialog):
     def option_text(self, *, place, size):
         text = Text(no_wrap=True)
         text.append(padded(self.options[place]), style=Style.REVERSE if place == self.place else Style.PLAIN)
-        text.append(SPACE * max(size - len(str(self.options[place])) - 2, 0))
+        text.append(drawing.SPACE * max(size - len(str(self.options[place])) - 2, 0))
         return text
 
     def lines(self, width):
@@ -208,21 +210,21 @@ class GridChoiceDialog(ChoiceDialog):
             line = Text(no_wrap=True)
             for place in self.top:
                 line.append_text(self.option_text(place=place, size=0))
-                line.append(SPACE)
-            result += [line, Text(NOTHING)]
+                line.append(drawing.SPACE)
+            result += [line, Text(drawing.NOTHING)]
         for cells in self.grid():
             line = Text(no_wrap=True)
             for column, cell in enumerate(cells):
                 size = sizes[column]
                 if cell is None:
-                    line.append(SPACE * size)
+                    line.append(drawing.SPACE * size)
                 elif isinstance(cell, Heading):
-                    line.append(fit(text=SPACE + cell, width=size), style=Style.BOLD)
+                    line.append(fit(text=drawing.SPACE + cell, width=size), style=Style.BOLD)
                 else:
                     line.append_text(self.option_text(place=cell, size=size))
             result.append(line)
         # Shorter pages are padded to the height of the tallest.
-        result += [Text(NOTHING)] * (max(len(grid) for _, grid in self.pages) - len(self.grid()))
+        result += [Text(drawing.NOTHING)] * (max(len(grid) for _, grid in self.pages) - len(self.grid()))
         if self.details is not None:
-            result += [Text(NOTHING), Text(fit(text=self.details(self.place), width=width))]
+            result += [Text(drawing.NOTHING), Text(fit(text=self.details(self.place), width=width))]
         return result

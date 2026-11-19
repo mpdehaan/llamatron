@@ -24,8 +24,9 @@ from unittest import mock
 from textual.app import App
 from textual.screen import Screen
 from tests.support.ui_testing import CHROMATIC_SCALE, UITest, key_name
-from llamatron.tui.drawing import Box, NOTHING, SELECTED_MARK, SPACE, Style
-from llamatron.tui.screens.set.main_page import BAR_ROWS, COLUMNS
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style
+from llamatron.tui.screens.set import main_page
 from llamatron.composition.file_format import ChordSymbol, PatternSetting, Row, Section
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.setlist import new_setlist
@@ -34,17 +35,18 @@ from llamatron.music.scale import ScaleType
 from llamatron.tui import app as tui_app
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui import themes
-from llamatron.tui.screens.shared.page import ROOM_FOR_THE_GAP
+from llamatron.tui.screens.shared import page as page_values
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.dialogs.chord_dialog import QUALITY_LIST, ChordDialog
+from llamatron.tui.dialogs import chord_dialog
+from llamatron.tui.dialogs.chord_dialog import ChordDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.shared.page import Page, PROGRAM_NAME
+from llamatron.tui.screens.shared.page import Page
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -109,7 +111,7 @@ class TestLookAndNewKeys(UITest):
     async def test_the_title_is_plain_text_and_nothing_sits_between_the_rule_and_the_cells(self):
         # No set-and-song line: the crumbs say the first and the cells count the set's things.
         lines = self.text().splitlines()
-        self.assertIn(SPACE + PROGRAM_NAME + SPACE, lines[0])
+        self.assertIn(drawing.SPACE + page_values.PROGRAM_NAME + drawing.SPACE, lines[0])
         self.assertNotIn(about.MSG_SITE, self.text())
         # No title drawn in block letters over the cells.
         self.assertNotIn(BLOCK_LETTER, LINE_SEPARATOR.join(lines[:lines.index(next(line for line in lines if labels.PageName.ARRANGE in line))]))
@@ -145,15 +147,15 @@ class TestLookAndNewKeys(UITest):
         await self.press(Key.ENTER)
         dialog = self.app.screen
         self.assertIsInstance(dialog, ChordDialog)
-        self.assertEqual(dialog.part, QUALITY_LIST)
+        self.assertEqual(dialog.part, chord_dialog.QUALITY_LIST)
         self.assertIsNone(dialog.choice().quality)
-        dialog.places[QUALITY_LIST] = dialog.qualities.index(ChordSymbol.MINOR7)
+        dialog.places[chord_dialog.QUALITY_LIST] = dialog.qualities.index(ChordSymbol.MINOR7)
         await self.press(Key.ENTER)
         self.assertEqual(self.value(Row.CHORD), ChordSymbol.MINOR7)
         await self.press(Key.ENTER)
         self.assertEqual(self.app.screen.choice().quality, ChordSymbol.MINOR7)
         self.assertIn(MINOR_SEVENTH.lower(), self.dialog_text())
-        self.app.screen.places[QUALITY_LIST] = self.app.screen.qualities.index(ChordSymbol.SCALE_TRIAD)
+        self.app.screen.places[chord_dialog.QUALITY_LIST] = self.app.screen.qualities.index(ChordSymbol.SCALE_TRIAD)
         await self.press(Key.ENTER)
         self.assertEqual(self.value(Row.CHORD), 3)
         render_song(self.document.song())
@@ -222,22 +224,22 @@ class TestArrowsAndTheMark(UITest):
 
     def marked_line(self):
         """Return the one line of the page with the mark on it."""
-        lines = [line for line in self.text().splitlines() if SELECTED_MARK in line]
+        lines = [line for line in self.text().splitlines() if drawing.SELECTED_MARK in line]
         self.assertEqual(len(lines), 1, self.text())
         return lines[0]
 
     def marked_dialog_line(self):
         """Return the one line inside the open dialog with the mark on it; the page beneath can show its own."""
-        lines = [line.split('┃')[1] for line in self.text().splitlines() if line.count('┃') >= 2 and SELECTED_MARK in line.split('┃')[1]]
+        lines = [line.split('┃')[1] for line in self.text().splitlines() if line.count('┃') >= 2 and drawing.SELECTED_MARK in line.split('┃')[1]]
         self.assertEqual(len(lines), 1, self.text())
         return lines[0]
 
     async def test_the_main_screen_boxes_every_cell_and_the_selected_one_double_in_place_of_the_mark(self):
-        self.assertNotIn(SELECTED_MARK, self.text())
+        self.assertNotIn(drawing.SELECTED_MARK, self.text())
         self.assertIn(labels.PageName.ARRANGE, boxed_line(self.text()))
         # Every cell has a box, and the selected one's is double-lined, the only such box; a cell's name starts one space after the key.
         # The bar's six actions share one box, and Arrange's, selected, is the double one.
-        self.assertEqual(self.text().count(Box.TOP_LEFT), len(self.app.screen.menu_items()) - BAR_ROWS * COLUMNS)
+        self.assertEqual(self.text().count(Box.TOP_LEFT), len(self.app.screen.menu_items()) - main_page.BAR_ROWS * main_page.COLUMNS)
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
         await self.press(*self.app.screen.arrows_to(keybindings.MainPage.SONGS))
         self.assertIn(f'« {key_name(keybindings.MainPage.SONGS)} » {labels.PageName.SONGS}', boxed_line(self.text()))
@@ -391,8 +393,8 @@ class TestTitleInTheMiddle(UITest):
         self.assert_title(set_crumb=self.app.screen.set_crumb())
         page = self.app.screen
         long_crumb = LONG_SONG_WORD * page.size.width
-        line = page.header_line(width=page.size.width, left=long_crumb, names=NOTHING, names_start=page.size.width - 1, mark=marks.MSG_UNSAVED_MARK, centre=PROGRAM_NAME).plain
-        self.assertNotIn(PROGRAM_NAME, line)
+        line = page.header_line(width=page.size.width, left=long_crumb, names=drawing.NOTHING, names_start=page.size.width - 1, mark=marks.MSG_UNSAVED_MARK, centre=page_values.PROGRAM_NAME).plain
+        self.assertNotIn(page_values.PROGRAM_NAME, line)
         self.assertTrue(line.rstrip().endswith(marks.MSG_UNSAVED_MARK))
     """Each kind of page has a theme colour, drawn as a stripe under the header in place of its rule; the main screen and Arrange keep the rule."""
 
@@ -412,7 +414,7 @@ class TestTitleInTheMiddle(UITest):
         lines = page.header(page.size.width)
         self.assertEqual(lines[2].plain.strip(), page.caption())
         self.assertEqual(len(lines), page.header_lines())
-        self.assertEqual(page.has_room_for_the_gap(), page.size.height >= ROOM_FOR_THE_GAP)
+        self.assertEqual(page.has_room_for_the_gap(), page.size.height >= page_values.ROOM_FOR_THE_GAP)
 
 
 class TestCaptionsAndNames(UITest):
@@ -429,4 +431,4 @@ class TestCaptionsAndNames(UITest):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         lines = [line.plain for line in self.app.screen.body(width=self.SIZE[0], height=self.SIZE[1])]
         name_line = next(place for place, line in enumerate(lines) if labels.MSG_NAME_LABEL in line)
-        self.assertEqual(lines[name_line + 1].strip(), NOTHING)
+        self.assertEqual(lines[name_line + 1].strip(), drawing.NOTHING)

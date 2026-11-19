@@ -16,7 +16,8 @@
 """The Songs page: the set's songs, which one is current, and each one's settings."""
 
 from llamatron.composition.file_format import Section
-from llamatron.tui.drawing import Align, NOTHING
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.screens.set.song_page import SongPage
@@ -44,7 +45,7 @@ class SongsPage(NamedListPage):
         return [(name, self.row_of(name=name, song=setlist.get_song(name), current=name == document.current_song_name())) for name in self.names()]
 
     def row_of(self, *, name, song, current):
-        mark = marks.MSG_CURRENT_SONG_MARK if current else NOTHING
+        mark = marks.MSG_CURRENT_SONG_MARK if current else drawing.NOTHING
         return [name, mark, tempo_text(song.get_tempo()), song.get_scale_name() or marks.MSG_NONE_SHOWN, len(song.get_track_names()), len(song.get_scenes())]
 
     def enter_binding(self):
@@ -65,7 +66,7 @@ class SongsPage(NamedListPage):
         def named(text):
             self.document().add_song(text)
             self.put_cursor_on(text)
-        self.ask_name(title=messages.MSG_NEW_SONG_PROMPT, value=NOTHING, taken=self.names(), then=named)
+        self.ask_name(title=messages.MSG_NEW_SONG_PROMPT, value=drawing.NOTHING, taken=self.names(), then=named)
 
     def delete(self):
         """Delete the selected song after asking, unless it's the last, since there is always a current song."""

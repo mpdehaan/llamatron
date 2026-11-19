@@ -21,7 +21,7 @@ Chord dialog all say it through here, so that a chord reads the same wherever it
 from llamatron.composition.chords import borrowed, root_name, spelled_chord
 from llamatron.composition.naming import words
 from llamatron.strings import marks, messages
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 
 
 def scale_shown(scale):
@@ -31,7 +31,7 @@ def scale_shown(scale):
 
 def degree_shown(*, degree, accidental):
     """Return a degree as it is read out, a sharp or flat sign in front."""
-    return marks.MSG_ACCIDENTAL_MARKS.get(accidental, NOTHING) + str(degree)
+    return marks.MSG_ACCIDENTAL_MARKS.get(accidental, drawing.NOTHING) + str(degree)
 
 
 class ChordInWords:
@@ -95,7 +95,7 @@ class ChordInWords:
     def resting(self, *, where):
         """Return what the status line says of the chord while the cursor rests on it, or nothing for one note or a scale that isn't known."""
         if self._scale is None or self.is_one_note():
-            return NOTHING
+            return drawing.NOTHING
         text = messages.MSG_CHORD_RESTING.format(
             where=where, scale=scale_shown(borrowed(scale=self._scale, kind=self._kind)), degree=degree_shown(degree=self._degree, accidental=self._accidental),
             name=self.spelled(kind=self._kind).long_name, notes=self.notes(),

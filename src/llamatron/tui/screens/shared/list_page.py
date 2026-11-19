@@ -22,9 +22,11 @@ from llamatron.composition import limits
 from llamatron.strings import errors, marks, messages
 from llamatron.tui.dialogs.choice_dialog import completed, places_matching
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import cursor_mark, fit, NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import cursor_mark, fit, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.keys import Key, SPACE_CHARACTER
+from llamatron.tui import keys
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.page import Page
 from llamatron.tui import keybindings
 
@@ -55,7 +57,7 @@ class ListPage(Page):
         super().__init__(holder)
         self.place = 0
         self.searching = False
-        self.typed = NOTHING
+        self.typed = drawing.NOTHING
         self.place_before_search = 0
         # Move mode: whether M has picked up the cursor's row, and whether it has been carried yet, so that one move is one undo step.
         self.moving = False
@@ -80,7 +82,7 @@ class ListPage(Page):
     def rows_with_plus(self):
         rows = self.remembered_rows()
         if self.can_add():
-            return [*rows, (None, [marks.MSG_ADD_ROW_MARK, *[NOTHING] * (len(self.columns) - 1)])]
+            return [*rows, (None, [marks.MSG_ADD_ROW_MARK, *[drawing.NOTHING] * (len(self.columns) - 1)])]
         return rows
 
     def page_key_table(self):
@@ -122,12 +124,12 @@ class ListPage(Page):
 
     def start_search(self):
         self.searching = True
-        self.typed = NOTHING
+        self.typed = drawing.NOTHING
         self.place_before_search = self.place
         self.show_search()
 
     def type_character(self, name):
-        self.typed += SPACE_CHARACTER if name == Key.SPACE else name
+        self.typed += keys.SPACE_CHARACTER if name == Key.SPACE else name
         self.settle()
 
     def erase(self):
@@ -234,12 +236,12 @@ class ListPage(Page):
                 if carried and column == 0:
                     end = len(shown.rstrip())
                     shown = shown[:end] + marks.MSG_MOVING_CLOSE + shown[end + 1:] if end < size else shown + marks.MSG_MOVING_CLOSE
-                    line.append(shown if end >= size else shown + SPACE, style=Style.BOLD)
+                    line.append(shown if end >= size else shown + drawing.SPACE, style=Style.BOLD)
                     continue
-                line.append(shown + SPACE)
+                line.append(shown + drawing.SPACE)
             return line
 
-        lines = [cells(values=[name for name, _, _ in self.columns], style=Style.BOLD), Text(NOTHING)]
+        lines = [cells(values=[name for name, _, _ in self.columns], style=Style.BOLD), Text(drawing.NOTHING)]
         rows = self.rows_with_plus()
         matches = self.matches()
         if not matches:

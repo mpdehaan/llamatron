@@ -20,7 +20,7 @@ from typing import NamedTuple
 from llamatron.support.rational import Rational
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.tui.text import SECONDS_PER_MINUTE
+from llamatron.tui import text
 
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 NO_SECONDS = Rational(0)
@@ -141,7 +141,7 @@ class Lengths:
 
     def pattern_seconds(self, name):
         """Return how long one play of a pattern lasts at the song's tempo."""
-        return self.pattern_length(name) * SECONDS_PER_MINUTE * QUARTER_NOTES_PER_WHOLE_NOTE / self._song.get_tempo()
+        return self.pattern_length(name) * text.SECONDS_PER_MINUTE * QUARTER_NOTES_PER_WHOLE_NOTE / self._song.get_tempo()
 
     def pattern_length(self, name):
         """Return how long one play of a pattern lasts, in fractions of a whole note."""

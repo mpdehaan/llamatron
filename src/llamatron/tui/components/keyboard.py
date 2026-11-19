@@ -30,7 +30,7 @@ from llamatron.composition import named_scale
 from llamatron.music import midi
 from llamatron.music import note
 from llamatron.music.note import Note
-from llamatron.tui.drawing import NOTHING, SPACE
+from llamatron.tui import drawing
 from llamatron.strings import marks
 
 # The white keys of an octave as half steps above C, and the black key after each white key that has one.
@@ -112,35 +112,35 @@ class Keyboard:
         return keys
 
     def black_row(self):
-        line = SPACE * (WHITE_ROW_INDENT + BLACK_KEY_SHIFT)
+        line = drawing.SPACE * (WHITE_ROW_INDENT + BLACK_KEY_SHIFT)
         for pitch_class, _ in self.white_keys():
             black = BLACK_KEY_AFTER.get(pitch_class)
-            line += (self.key_text(black) if black is not None else SPACE * KEY_WIDTH) + SPACE * KEY_GAP
+            line += (self.key_text(black) if black is not None else drawing.SPACE * KEY_WIDTH) + drawing.SPACE * KEY_GAP
         return line.rstrip()
 
     def white_row(self):
-        line = SPACE * WHITE_ROW_INDENT
+        line = drawing.SPACE * WHITE_ROW_INDENT
         for pitch_class, _ in self.white_keys():
-            line += self.key_text(pitch_class) + SPACE * KEY_GAP
+            line += self.key_text(pitch_class) + drawing.SPACE * KEY_GAP
         return line.rstrip()
 
     def names_row(self):
         """Return the white keys' names, with the root bracketed: under its white key, or under its black key in place of the two names beside it."""
         root = self.root_pitch_class()
         keys = self.white_keys()
-        characters = list(SPACE * (WHITE_ROW_INDENT + len(keys) * KEY_STRIDE))
+        characters = list(drawing.SPACE * (WHITE_ROW_INDENT + len(keys) * KEY_STRIDE))
         for place, (pitch_class, column) in enumerate(keys):
             name = marks.MSG_ROOT_KEY_NAME.format(name=note.SHARP_NAMES[pitch_class]) if pitch_class == root else note.SHARP_NAMES[pitch_class].center(KEY_WIDTH)
             if BLACK_KEY_AFTER.get(pitch_class) == root or (place > 0 and BLACK_KEY_AFTER.get(keys[place - 1][0]) == root):
                 # The root's name sits under its black key, so the white names either side make room for it.
-                name = NOTHING
+                name = drawing.NOTHING
             characters[column:column + len(name)] = list(name)
         for pitch_class, column in keys:
             if BLACK_KEY_AFTER.get(pitch_class) == root:
                 name = marks.MSG_ROOT_KEY_NAME.format(name=self.root)
                 start = column + BLACK_KEY_SHIFT + (KEY_WIDTH - len(name)) // 2
                 characters[start:start + len(name)] = list(name)
-        return NOTHING.join(characters).rstrip()
+        return drawing.NOTHING.join(characters).rstrip()
 
     def lines(self):
         return [self.black_row(), self.white_row(), self.names_row()]
@@ -159,16 +159,16 @@ class Keyboard:
     def rows(self):
         """Return the keyboard's three lines as pieces, each a text and a KeyKind, or None for what is no key: the black keys, the
         white keys, and the names, with the chord's keys told apart from the scale's, for the Chord dialog."""
-        black = [(SPACE * (WHITE_ROW_INDENT + BLACK_KEY_SHIFT), None)]
-        white = [(SPACE * WHITE_ROW_INDENT, None)]
+        black = [(drawing.SPACE * (WHITE_ROW_INDENT + BLACK_KEY_SHIFT), None)]
+        white = [(drawing.SPACE * WHITE_ROW_INDENT, None)]
         for octave in range(OCTAVES):
             for pitch_class in WHITE_KEYS:
                 first = octave * midi.HALF_STEPS_PER_OCTAVE
                 after = BLACK_KEY_AFTER.get(pitch_class)
-                black.append(self.key_piece(first + after) if after is not None else (SPACE * KEY_WIDTH, None))
-                black.append((SPACE * KEY_GAP, None))
+                black.append(self.key_piece(first + after) if after is not None else (drawing.SPACE * KEY_WIDTH, None))
+                black.append((drawing.SPACE * KEY_GAP, None))
                 white.append(self.key_piece(first + pitch_class))
-                white.append((SPACE * KEY_GAP, None))
+                white.append((drawing.SPACE * KEY_GAP, None))
         return [black, white, [(self.names_row(), None)]]
 
 

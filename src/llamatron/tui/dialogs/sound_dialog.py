@@ -36,10 +36,13 @@ from llamatron.strings import errors, marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import completed, places_matching
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, cursor_mark, fit, legend
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.keys import Key, SPACE_CHARACTER
-from llamatron.tui.note_names import HIGHEST_NOTE, LOWEST_NOTE, note_shown, note_typed
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key
+from llamatron.tui import note_names
+from llamatron.tui.note_names import note_shown, note_typed
 
 # How many rows show at once, the list scrolling to keep the cursor's in view, so that the dialog fits an 80 by 24 console.
 SHOWN = 12
@@ -72,7 +75,7 @@ class SoundDialog(Dialog):
         self.typed = None
         self.found_place = 0
         # Why the sound last tried did not play, shown until the next key.
-        self.said = NOTHING
+        self.said = drawing.NOTHING
 
     # Where things are.
 
@@ -146,7 +149,7 @@ class SoundDialog(Dialog):
 
     def listen(self, value):
         """Try the sound under the cursor, and keep what the trial says where nothing plays."""
-        self.said = self.trial.start(value) or NOTHING
+        self.said = self.trial.start(value) or drawing.NOTHING
 
     def hush(self):
         """Stop a sound being tried, as moving the cursor and closing do."""
@@ -194,10 +197,10 @@ class SoundDialog(Dialog):
 
     def step_note(self, offset):
         self.note_typed = None
-        self.note = max(min(self.note + offset, HIGHEST_NOTE), LOWEST_NOTE)
+        self.note = max(min(self.note + offset, note_names.HIGHEST_NOTE), note_names.LOWEST_NOTE)
 
     def type_note(self, name):
-        self.note_typed = (self.note_typed or NOTHING) + name
+        self.note_typed = (self.note_typed or drawing.NOTHING) + name
 
     def erase_note(self):
         self.note_typed = self.note_typed[:-1] or None
@@ -243,14 +246,14 @@ class SoundDialog(Dialog):
 
     def start_search(self):
         self.hush()
-        self.typed = NOTHING
+        self.typed = drawing.NOTHING
         self.found_place = 0
 
     def end_search(self):
         self.typed = None
 
     def type_character(self, name):
-        self.typed += SPACE_CHARACTER if name == Key.SPACE else name
+        self.typed += keys_values.SPACE_CHARACTER if name == Key.SPACE else name
         self.found_place = 0
 
     def erase(self):
@@ -295,11 +298,11 @@ class SoundDialog(Dialog):
 
     def padded(self, lines, *, rows=SHOWN):
         """Return lines made up to so many rows with blank ones, and under them the line that says why a sound did not play, blank while there is nothing to say."""
-        return [*lines, *[Text(NOTHING)] * (rows - len(lines)), Text(self.said, style=Style.REFUSAL)]
+        return [*lines, *[Text(drawing.NOTHING)] * (rows - len(lines)), Text(self.said, style=Style.REFUSAL)]
 
     def on_key(self, event):
         """Clear what was said at the next key, as the status line is cleared."""
-        self.said = NOTHING
+        self.said = drawing.NOTHING
         super().on_key(event)
 
     def lines(self, width):
@@ -307,8 +310,8 @@ class SoundDialog(Dialog):
             found = self.found()
             at = min(self.found_place, max(len(found) - 1, 0))
             rows = [marks.MSG_SOUND_FOUND.format(sound=label, group=self.groups[group][0]) for group, _, label in found]
-            shown = [Text(fit(text=cursor_mark(place == at) + row, width=width), style=Style.BOLD if place == at else NOTHING) for place, row in self.windowed(rows=rows, at=at)]
-            return [Text(fit(text=SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
+            shown = [Text(fit(text=cursor_mark(place == at) + row, width=width), style=Style.BOLD if place == at else drawing.NOTHING) for place, row in self.windowed(rows=rows, at=at)]
+            return [Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
         rows = [self.row_text(row) for row in range(len(self.top) + len(self.groups))]
         if self.note is None:
             return self.padded([self.row_line(row=row, selected=place == self.place, width=width) for place, row in self.windowed(rows=rows, at=self.place)])
@@ -317,11 +320,11 @@ class SoundDialog(Dialog):
         on_note = self.place == len(rows)
         note = marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(self.note)) if self.note_typed is None else marks.MSG_SOUND_NOTE_TYPED.format(text=self.note_typed)
         lines = [self.row_line(row=row, selected=place == self.place, width=width) for place, row in self.windowed(rows=rows, at=min(self.place, len(rows) - 1), shown=listed)]
-        return self.padded([*lines, *[Text(NOTHING)] * (listed - len(lines)), Text(NOTHING), self.row_line(row=note, selected=on_note, width=width)])
+        return self.padded([*lines, *[Text(drawing.NOTHING)] * (listed - len(lines)), Text(drawing.NOTHING), self.row_line(row=note, selected=on_note, width=width)])
 
     def row_line(self, *, row, selected, width):
         """Return a row as drawn: the cursor's with the triangle, in bold."""
-        return Text(fit(text=cursor_mark(selected) + row, width=width), style=Style.BOLD if selected else NOTHING)
+        return Text(fit(text=cursor_mark(selected) + row, width=width), style=Style.BOLD if selected else drawing.NOTHING)
 
     def flyout_lines(self, width):
         """Return the open flyout's lines, or None: its group as the heading, a sound a row with the cursor's marked, and its own keys."""
@@ -329,6 +332,6 @@ class SoundDialog(Dialog):
             return None
         name, sounds = self.groups[self.flyout]
         rows = [label for label, _ in sounds]
-        shown = [Text(fit(text=cursor_mark(place == self.flyout_place) + row, width=width), style=Style.BOLD if place == self.flyout_place else NOTHING)
+        shown = [Text(fit(text=cursor_mark(place == self.flyout_place) + row, width=width), style=Style.BOLD if place == self.flyout_place else drawing.NOTHING)
                  for place, row in self.windowed(rows=rows, at=self.flyout_place)]
-        return [Text(name, style=Style.BOLD), Text(NOTHING), *self.padded(shown), Text(NOTHING), *legend(keys=self.keys(), width=width)]
+        return [Text(name, style=Style.BOLD), Text(drawing.NOTHING), *self.padded(shown), Text(drawing.NOTHING), *legend(keys=self.keys(), width=width)]

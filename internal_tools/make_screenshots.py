@@ -37,7 +37,7 @@ from llamatron.tui.keys import Key
 from llamatron.support import version
 from llamatron.tui.key_table import first_key
 from llamatron.tui import keybindings
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators import generator_pages
 from llamatron.composition.file_format import Section
 from llamatron.strings import labels
 
@@ -205,7 +205,7 @@ async def take(shot):
         if shot.generator is not None:
             await pilot.press(first_key(keybindings.MainPage.GENERATORS))
             await pilot.pause()
-            kind = GENERATOR_PAGES[shot.generator].kind
+            kind = generator_pages.GENERATOR_PAGES[shot.generator].kind
             place = next(place for place, (each, _) in enumerate(app.screen.generators()) if each == kind)
             for _ in range(place):
                 await pilot.press(Key.DOWN)

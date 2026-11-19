@@ -20,7 +20,7 @@ from llamatron.realtime import fluidsynth
 from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.wizard.section_melody_branch import MELODY_KEY
+from llamatron.tui.screens.wizard import section_melody_branch
 from tests.tui.test_tui_playback import PlaybackTest
 
 GENRE = 'rock'
@@ -69,7 +69,7 @@ class TestWizardListening(PlaybackTest):
     async def go_to_hook(self):
         """Move the tree's cursor to the panel of the melody of the kind of section that says the hook line."""
         wizard = self.app.screen
-        wizard.tree_place = [branch.key() for _, branch in wizard.rows()].index(MELODY_KEY.format(kind=self.hook_kind()))
+        wizard.tree_place = [branch.key() for _, branch in wizard.rows()].index(section_melody_branch.MELODY_KEY.format(kind=self.hook_kind()))
         await self.press(Key.DOWN, Key.UP)
 
     async def let_the_preview_play(self, seconds):

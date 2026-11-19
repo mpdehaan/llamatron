@@ -58,7 +58,7 @@ from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
-from llamatron.tui.screens.generators.chords_editor import QUALITY_ROW
+from llamatron.tui.screens.generators import chords_editor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.set.notes_page import NotesPage
@@ -67,7 +67,7 @@ from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.composition.naming import new_name
 from llamatron.tui import keybindings
 from tests.support.pattern_editor_testing import munge
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators import generator_pages
 from tests.support.ui_testing import SWAY, a_song, fixed_text, LEAD, leaf_pages, RHYTHMS, ROLLS, TUNE, UITest, UP_ARP, key_of
 
 # Names the tests give to what they add, and what they type.
@@ -456,7 +456,7 @@ class TestGeneratorsPageUndo(UndoTest):
         self.assertIn(messages.MSG_NOTHING_TO_UNDO, self.text())
         before = self.data()
         await self.press(keybindings.GeneratorsPage.ADD)
-        await self.pick(GENERATOR_PAGES[Section.ARPS].label)
+        await self.pick(generator_pages.GENERATOR_PAGES[Section.ARPS].label)
         # The new arpeggiator sits after the set's other one; the cursor goes back up to that one, which the undo leaves.
         await self.press(Key.ESCAPE, Key.UP)
         self.assertIsInstance(self.app.screen, GeneratorsPage)
@@ -562,7 +562,7 @@ class TestChordsEditorUndo(UndoTest):
     async def test_a_chord_chosen_in_the_chord_dialog_is_one_step(self):
         await self.open_generator(section=Section.PROGRESSIONS)
         await self.select_field(labels.MSG_CHORDS_LABEL)
-        await self.press(Key.ENTER, *[Key.DOWN] * QUALITY_ROW)
+        await self.press(Key.ENTER, *[Key.DOWN] * chords_editor.QUALITY_ROW)
         before = self.data()
         # A quality, a tension and a scale together: Down picks the first quality, Tab twice reaches the tensions, past the inversions, Space turns the first on, Tab reaches the scales, where Down
         # and Enter open the first category's flyout and Enter picks its first scale, and the last Enter takes the chord.

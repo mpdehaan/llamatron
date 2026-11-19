@@ -21,10 +21,12 @@ import textwrap
 from rich.text import Text
 
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import cursor_mark, INDENT, LINE_BREAK, NOTHING, padded, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui.key_table import cursor_moved, pressed_key, quits_at_once
-from llamatron.tui.keys import ARROWS_UP_DOWN, Key
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.page import Page
 from llamatron.tui import themes
 from llamatron.tui import keybindings
@@ -83,10 +85,10 @@ class NotesPage(Page):
 
     def stored_lines(self):
         text = self.document().setlist().get_notes()
-        lines = text.split(LINE_BREAK)
-        if text.endswith(LINE_BREAK):
+        lines = text.split(drawing.LINE_BREAK)
+        if text.endswith(drawing.LINE_BREAK):
             lines.pop()
-        return lines or [NOTHING]
+        return lines or [drawing.NOTHING]
 
     def store(self, lines):
         """Keep the lines in the draft while editing, and otherwise put them in the set."""
@@ -94,7 +96,7 @@ class NotesPage(Page):
             self.draft = lines
             return
         # The notes end with a newline, so that it reads as plain text in the file.
-        self.document().set_notes(LINE_BREAK.join(lines) + LINE_BREAK)
+        self.document().set_notes(drawing.LINE_BREAK.join(lines) + drawing.LINE_BREAK)
 
     def keys(self):
         if self.editing and self.on_buttons:
@@ -179,11 +181,11 @@ class NotesPage(Page):
 
     def clear(self):
         if self.document().setlist().has_notes():
-            self.ask(dialog=ConfirmDialog(title=messages.MSG_CLEAR_NOTES_TITLE, messages=[messages.MSG_CLEAR_NOTES_QUESTION]), then=lambda _: self.store([NOTHING]))
+            self.ask(dialog=ConfirmDialog(title=messages.MSG_CLEAR_NOTES_TITLE, messages=[messages.MSG_CLEAR_NOTES_QUESTION]), then=lambda _: self.store([drawing.NOTHING]))
 
     def move(self, name):
         lines = self.text_lines()
-        if name in ARROWS_UP_DOWN:
+        if name in keys_values.ARROWS_UP_DOWN:
             self.row = max(min(self.row + (-1 if name == Key.UP else 1), len(lines) - 1), 0)
             self.column = min(self.column, len(lines[self.row]))
         elif name == Key.LEFT:
@@ -257,21 +259,21 @@ class NotesPage(Page):
             for number in range(self.top, min(self.top + room, len(lines))):
                 line = lines[number]
                 if number != self.row:
-                    shown.append(Text(INDENT + line, no_wrap=True))
+                    shown.append(Text(drawing.INDENT + line, no_wrap=True))
                     continue
                 # The cursor's line scrolls sideways to keep the cursor on screen.
                 start = max(self.column - (width - 6), 0)
-                text = Text(INDENT + line[start:self.column], no_wrap=True)
-                text.append(line[self.column:self.column + 1] or SPACE, style=Style.REVERSE)
+                text = Text(drawing.INDENT + line[start:self.column], no_wrap=True)
+                text.append(line[self.column:self.column + 1] or drawing.SPACE, style=Style.REVERSE)
                 text.append(line[self.column + 1:])
                 shown.append(text)
-            shown += [Text(NOTHING)] * (room - len(shown) + 1)
+            shown += [Text(drawing.NOTHING)] * (room - len(shown) + 1)
             shown.append(self.button_line())
             return shown
         if not self.document().setlist().has_notes():
             return [Text(messages.MSG_NO_NOTES_PROTECTED if self.is_protected() else messages.MSG_NO_NOTES_NOTE, style=Style.DIM)]
         wrapped = []
         for line in self.text_lines():
-            wrapped += [Text(INDENT + part) for part in (textwrap.wrap(line, width - 4) or [NOTHING])]
+            wrapped += [Text(drawing.INDENT + part) for part in (textwrap.wrap(line, width - 4) or [drawing.NOTHING])]
         self.top = min(self.top, max(len(wrapped) - room, 0))
         return wrapped[self.top:self.top + room]

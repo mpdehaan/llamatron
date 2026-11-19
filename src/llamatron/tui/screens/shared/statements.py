@@ -30,7 +30,7 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import StatementPart
 from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField
 
 # A page's first table and its second, which keep their lines' labels apart.
@@ -52,7 +52,7 @@ def statement_section(*, page, label, table, statements, store):
     statements() is the table as its object keeps it, and store(place, statement) writes one
     statement, or removes it for None. table is the table's place among the page's tables.
     """
-    heading = page.heading(label=label, is_set=None, said=lambda: NOTHING)
+    heading = page.heading(label=label, is_set=None, said=lambda: drawing.NOTHING)
     lines = [_line(page=page, place=place, table=table, statements=statements, store=store) for place in range(limits.MAX_STATEMENTS)]
     return [heading, *lines]
 

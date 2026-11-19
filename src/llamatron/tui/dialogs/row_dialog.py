@@ -27,8 +27,10 @@ from rich.text import Text
 from llamatron.strings import labels, marks
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, SPACE, Style, legend
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, legend
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved
 from llamatron.tui import keybindings
 
 # The OK button is the one Enter presses, so it is the one drawn selected.
@@ -62,8 +64,8 @@ class RowDialog(Dialog):
         result = [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
             self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
-            self.bind(self.KEYS.LESS, action=lambda: self.nudge(STEP_BACK)),
-            self.bind(self.KEYS.MORE, action=lambda: self.nudge(STEP_FORWARD)),
+            self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)),
+            self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
         ]
         if len(self.values) < self.most:
             result.append(self.bind(self.KEYS.INSERT_CELL, action=self.insert_cell))
@@ -120,11 +122,11 @@ class RowDialog(Dialog):
         line = Text(self.level_label(level), style=Style.DIM)
         for value in self.values:
             reaches = value > level - size if level > ZERO else value < level + size
-            line.append((marks.MSG_ROW_DIALOG_BAR if reaches and (value > ZERO) == (level > ZERO) and value != ZERO else NOTHING).center(CELL_WIDTH))
+            line.append((marks.MSG_ROW_DIALOG_BAR if reaches and (value > ZERO) == (level > ZERO) and value != ZERO else drawing.NOTHING).center(CELL_WIDTH))
         return line
 
     def number_line(self):
-        line = Text(SPACE * len(self.level_label(ZERO)))
+        line = Text(drawing.SPACE * len(self.level_label(ZERO)))
         for place, value in enumerate(self.values):
             if place == self.place:
                 # The cursor's number is in reverse video, as the cursor's cell of the pattern and groove editors is.
@@ -138,4 +140,4 @@ class RowDialog(Dialog):
         buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         zero = [Text(self.level_label(ZERO) + marks.MSG_ROW_DIALOG_ZERO * (len(self.values) * CELL_WIDTH), style=Style.DIM)] if below else []
         return [*[self.bar_line(level) for level in above], *zero, *[self.bar_line(level) for level in below], self.number_line(),
-                Text(NOTHING), *button_row(buttons=buttons, selected=OK)]
+                Text(drawing.NOTHING), *button_row(buttons=buttons, selected=OK)]

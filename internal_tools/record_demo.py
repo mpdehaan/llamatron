@@ -73,10 +73,11 @@ from llamatron.realtime.fluidsynth import fluidsynth_path, is_installed, soundfo
 from llamatron.realtime.outputs import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
-from llamatron.tui.batch_stage import GROW_SECONDS, READY_SECONDS
+from llamatron.tui import batch_stage
 from llamatron.tui.components.scroll_text import scroll_text_for
 from llamatron.tui.components.title_card import whole_title_seconds
-from llamatron.tui.launch import Launch, LEAD_IN_SECONDS, LEAD_OUT_SECONDS, recording_problem, SPLASH_SECONDS
+from llamatron.tui import launch as launch_values
+from llamatron.tui.launch import Launch, recording_problem
 from llamatron.visualizers import modes
 from llamatron.visualizers.modes import mode_options
 
@@ -362,7 +363,7 @@ def wait_for_go(*, go):
 
 def batch_take_seconds(*, song_seconds, max_seconds):
     """Return how long a batch video's screen is recorded: the title, READY, the box growing, the song, the lead-out, the hold on black and a margin, or the limit if that is less."""
-    return min(whole_title_seconds() + READY_SECONDS + GROW_SECONDS + song_seconds + LEAD_OUT_SECONDS + HOLD_SECONDS + MARGIN_SECONDS, max_seconds)
+    return min(whole_title_seconds() + batch_stage.READY_SECONDS + batch_stage.GROW_SECONDS + song_seconds + launch_values.LEAD_OUT_SECONDS + HOLD_SECONDS + MARGIN_SECONDS, max_seconds)
 
 
 def cells_region(*, window, size=None, region=None):
@@ -404,7 +405,7 @@ def batch_video_path(*, path, mode):
 
 def take_seconds(*, song_seconds, max_seconds):
     """Return how long the screen is recorded: the splash, the lead-in, the song, the lead-out, the splash again, the hold and a margin, or the limit if that is less."""
-    return min(SPLASH_SECONDS + LEAD_IN_SECONDS + song_seconds + LEAD_OUT_SECONDS + SPLASH_SECONDS + HOLD_SECONDS + MARGIN_SECONDS, max_seconds)
+    return min(launch_values.SPLASH_SECONDS + launch_values.LEAD_IN_SECONDS + song_seconds + launch_values.LEAD_OUT_SECONDS + launch_values.SPLASH_SECONDS + HOLD_SECONDS + MARGIN_SECONDS, max_seconds)
 
 
 def remove_trim_leftovers(folder):
@@ -543,7 +544,7 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
         seconds = batch_take_seconds(song_seconds=float(song_seconds), max_seconds=max_seconds)
     else:
         seconds = take_seconds(song_seconds=float(song_seconds), max_seconds=max_seconds)
-        print(TAKE.format(window=window, seconds=seconds, splash=SPLASH_SECONDS, lead_in=LEAD_IN_SECONDS, song=float(song_seconds), lead_out=LEAD_OUT_SECONDS))
+        print(TAKE.format(window=window, seconds=seconds, splash=launch_values.SPLASH_SECONDS, lead_in=launch_values.LEAD_IN_SECONDS, song=float(song_seconds), lead_out=launch_values.LEAD_OUT_SECONDS))
     wait_for_go(go=go)
     region_argument = None
     if batch:

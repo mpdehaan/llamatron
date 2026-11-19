@@ -29,7 +29,7 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
 
-from llamatron.tui.drawing import NOTHING, SPACE
+from llamatron.tui import drawing
 
 # The lines the strip takes at the foot of the screen, the spaces kept clear at either end of a caption, and the narrowest a part is ever wrapped to.
 CAPTION_LINES = 2
@@ -44,7 +44,7 @@ class CaptionStrip:
     __slots__ = ('_text',)
 
     def __init__(self):
-        self._text = NOTHING
+        self._text = drawing.NOTHING
 
     def show(self, text):
         self._text = text
@@ -55,9 +55,9 @@ class CaptionStrip:
     def lines(self, width):
         """Return the strip's two lines at a width: the caption centred, then a white line."""
         shown = self._text[:max(width - 2 * CAPTION_MARGIN, 0)]
-        return [Text(shown.center(width), style=CAPTION_STYLE, no_wrap=True), Text(SPACE * width, style=CAPTION_STYLE)]
+        return [Text(shown.center(width), style=CAPTION_STYLE, no_wrap=True), Text(drawing.SPACE * width, style=CAPTION_STYLE)]
 
 
 def parts(*, text, width):
     """Return a sentence as the parts that each fit one caption at a width, broken between words."""
-    return textwrap.wrap(text, max(width - 2 * CAPTION_MARGIN, FEWEST_COLUMNS)) or [NOTHING]
+    return textwrap.wrap(text, max(width - 2 * CAPTION_MARGIN, FEWEST_COLUMNS)) or [drawing.NOTHING]

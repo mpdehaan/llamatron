@@ -25,11 +25,12 @@ import os
 
 from rich.text import Text
 
-from llamatron.tui.drawing import Align, INDENT, NOTHING, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align, Style
 from llamatron.strings import help as help_text, labels, marks
 from llamatron.tui.screens.shared.everywhere import open_file
 from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.shared.shared import SONG_SUFFIXES
+from llamatron.tui.screens.shared import shared
 from llamatron.tui import themes
 from llamatron.tui import keybindings
 
@@ -54,7 +55,7 @@ class OpenPage(ListPage):
     # Files' names are as long as they are.
     NAME_COLUMN_WIDTH = None
 
-    def __init__(self, *, holder, then, suffixes=SONG_SUFFIXES, folder=None, crumbs=None, chosen=None):
+    def __init__(self, *, holder, then, suffixes=shared.SONG_SUFFIXES, folder=None, crumbs=None, chosen=None):
         super().__init__(holder)
         self.then = then
         # The files shown, by their endings, and what Enter on one does: open it as a set, or hand its path to chosen.
@@ -99,7 +100,7 @@ class OpenPage(ListPage):
         return [self.bind(self.KEYS.BACK, action=self.go_back), *self.move_keys(), self.bind(self.KEYS.OPEN, action=self.open)]
 
     def body(self, *, width, height):
-        return [Text(INDENT + os.path.abspath(self.folder), style=Style.DIM), Text(NOTHING), *super().body(width=width, height=height - 2)]
+        return [Text(drawing.INDENT + os.path.abspath(self.folder), style=Style.DIM), Text(drawing.NOTHING), *super().body(width=width, height=height - 2)]
 
     def open(self):
         name = self.current()

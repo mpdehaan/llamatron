@@ -21,9 +21,11 @@ from llamatron.composition.chords import root_name
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.progressions import quality_of, roman_numeral
 from llamatron.strings import labels, marks, messages
-from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import ChoiceField
-from llamatron.tui.screens.wizard.song_ways_branch import A_CHOICE, SongWaysBranch
+from llamatron.tui.screens.wizard import song_ways_branch
+from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
 
 
 class ChordsBranch(SongWaysBranch):
@@ -42,7 +44,7 @@ class ChordsBranch(SongWaysBranch):
         """Return whether the subgenre has more than one progression, since one is nothing to choose."""
         choices = self.choices()
         trait = choices.progression_trait() if choices.is_ready() else None
-        return trait is not None and len(choices.song_ways(trait)) >= A_CHOICE
+        return trait is not None and len(choices.song_ways(trait)) >= song_ways_branch.A_CHOICE
 
     def progression(self):
         """Return the progression chosen, or the word for one left to chance."""
@@ -101,11 +103,11 @@ class ChordsBranch(SongWaysBranch):
             return super().notes(width)
         choices = self.choices()
         if choices.has_any_progression():
-            return [Text(), Text(INDENT + messages.MSG_WIZARD_CHORDS_DRAWN_LATER, style=Style.DIM)]
+            return [Text(), Text(drawing.INDENT + messages.MSG_WIZARD_CHORDS_DRAWN_LATER, style=Style.DIM)]
         sections = choices.progression_chords(self.progression())
         if not sections:
             return []
         longest = max(len(kind) for kind, _ in sections)
         key = marks.MSG_WIZARD_CHORDS_KEY.format(root=choices.get_root(), scale=labels.MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()])
-        return [Text(), Text(INDENT + key, style=Style.DIM),
-                *(Text(INDENT + marks.MSG_WIZARD_CHORDS_LINE.format(kind=kind, width=longest, chords=self.chord_names(chords))) for kind, chords in sections)]
+        return [Text(), Text(drawing.INDENT + key, style=Style.DIM),
+                *(Text(drawing.INDENT + marks.MSG_WIZARD_CHORDS_LINE.format(kind=kind, width=longest, chords=self.chord_names(chords))) for kind, chords in sections)]

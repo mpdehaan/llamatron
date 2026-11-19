@@ -19,7 +19,7 @@
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import AutoRatchetSetting
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import SPACE
+from llamatron.tui import drawing
 from llamatron.strings import errors, help as help_text, labels, messages
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField
@@ -49,7 +49,7 @@ class AutoRatchetEditor(ShowsNamedItem, FieldPage):
 
     def ask_counts(self):
         def answered(text):
-            parts = text.replace(COUNT_SEPARATOR, SPACE).split()
+            parts = text.replace(COUNT_SEPARATOR, drawing.SPACE).split()
             if not parts or not all(part.isdigit() and int(part) >= 1 for part in parts):
                 self.refuse(errors.ERR_BAD_COUNTS)
                 return

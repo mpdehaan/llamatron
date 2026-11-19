@@ -31,7 +31,7 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.screens.arrange.arrange_page import SCENE_COLUMN
+from llamatron.tui.screens.arrange import arrange_page
 from llamatron.exporters import midi_arrangement
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
@@ -44,11 +44,12 @@ from llamatron.strings import about, errors, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.drawing import Style
-from llamatron.tui.pattern_preview import CHOSEN_PASSES, PIANO_PROGRAM, PREVIEW_CHANNEL_BYTE, passes_to_come_round
+from llamatron.tui import pattern_preview
+from llamatron.tui.pattern_preview import passes_to_come_round
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.batch_stage import GROW_SECONDS
+from llamatron.tui import batch_stage
 from llamatron.tui.launch import Launch, recording_problem
-from llamatron.tui.screens.arrange.arrange_page import ANNOUNCED_ROWS_UP, NAME_SECONDS, ArrangePage, announced
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage, announced
 from llamatron.tui.components.stage_drawing import Rect
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.screens.set.demo_scroll import DemoScroll
@@ -488,13 +489,13 @@ class TestArrangePlayback(PlaybackTest):
         self.assert_told(errors.ERR_TRACK_PLAYING_SHOWN)
         await self.press(Key.ENTER)
         await self.go_to_clip(index=FIRST_INDEX, track=LEAD)
-        self.page.column = SCENE_COLUMN
+        self.page.column = arrange_page.SCENE_COLUMN
         self.page.draw()
         await self.press(keybindings.ArrangePage.DELETE_SCENE)
         self.assert_told(errors.ERR_SCENE_PLAYING_SHOWN)
         await self.press(Key.ENTER)
         await self.go_to_clip(index=SECOND_INDEX, track=LEAD)
-        self.page.column = SCENE_COLUMN
+        self.page.column = arrange_page.SCENE_COLUMN
         self.page.draw()
         await self.press(keybindings.ArrangePage.DELETE_SCENE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
@@ -707,8 +708,8 @@ class TestClipPagePlayback(PlaybackTest):
         preview.player().sender().send_due()
         # The lead's clip plays General MIDI's piano, on the preview's channel.
         sent = [list(data) for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
-        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], sent)
-        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | PREVIEW_CHANNEL_BYTE])
+        self.assertIn([timeline.PROGRAM_CHANGE | pattern_preview.PREVIEW_CHANNEL_BYTE, pattern_preview.PIANO_PROGRAM], sent)
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | pattern_preview.PREVIEW_CHANNEL_BYTE])
         await self.press(keybindings.ClipPage.STOP_LISTENING)
         self.assertFalse(self.page.is_listening())
         self.assertIn(messages.MSG_STOPPED, self.text())
@@ -796,8 +797,8 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.let_the_preview_play(A_MOMENT)
         self.assertEqual(self.fluidsynth.starts, 1)
         sent = [data for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
-        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM], [list(data) for data in sent])
-        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | PREVIEW_CHANNEL_BYTE])
+        self.assertIn([timeline.PROGRAM_CHANGE | pattern_preview.PREVIEW_CHANNEL_BYTE, pattern_preview.PIANO_PROGRAM], [list(data) for data in sent])
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | pattern_preview.PREVIEW_CHANNEL_BYTE])
 
     async def test_a_preview_instrument_through_fluidsynth_sends_its_sound(self):
         self.document.add_instrument(FLUID)
@@ -808,7 +809,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(A_MOMENT)
         sent = [list(data) for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
-        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, VIOLIN_PROGRAM], sent)
+        self.assertIn([timeline.PROGRAM_CHANGE | pattern_preview.PREVIEW_CHANNEL_BYTE, VIOLIN_PROGRAM], sent)
 
     async def test_a_drum_pattern_plays_general_midis_drum_kit_whatever_the_preview_instrument(self):
         self.name_a_preview_instrument()
@@ -959,7 +960,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         preview = self.preview()
         # The lead plays on FluidSynth's first channel, not the preview's, so nothing is shared.
         self.assertFalse(preview.shares_a_channel_with(pattern=TUNE, routes=self.transport().routes()))
-        shared = {LEAD: Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE)}
+        shared = {LEAD: Route(fluidsynth.FLUIDSYNTH_PORT, pattern_preview.PREVIEW_CHANNEL_BYTE)}
         self.assertTrue(preview.shares_a_channel_with(pattern=TUNE, routes=shared))
         # A drum pattern chooses no sound, and a Preview instrument on a device of its own uses no FluidSynth channel.
         self.assertFalse(preview.shares_a_channel_with(pattern=BEAT, routes=shared))
@@ -1024,7 +1025,7 @@ class TestDirectionsComeRound(unittest.TestCase):
         # A direction that chooses as it goes plays as many choices as the pattern has steps, one pass.
         for direction in (Direction.RANDOM, Direction.BROWNIAN, Direction.EITHERWAY):
             self.assertEqual(passes_to_come_round(steps=LAST_TUNE_STEP + 1, direction=direction), 1)
-        self.assertEqual(CHOSEN_PASSES, 1)
+        self.assertEqual(pattern_preview.CHOSEN_PASSES, 1)
 
 
 class TestHeard(PlaybackTest):
@@ -1331,10 +1332,10 @@ class TestRecordingAnnouncesScenes(LaunchTest):
         size = self.app.size
         self.assertIn(self.announcement(FIRST_INDEX), NEW_LINE.join(line.plain for line in page.body(width=size.width, height=size.height)))
         began = page._scene_since
-        self.assertEqual(page.scene_to_announce(began + NAME_SECONDS - A_MOMENT), self.announcement(FIRST_INDEX))
-        self.assertIsNone(page.scene_to_announce(began + NAME_SECONDS))
+        self.assertEqual(page.scene_to_announce(began + arrange_page.NAME_SECONDS - A_MOMENT), self.announcement(FIRST_INDEX))
+        self.assertIsNone(page.scene_to_announce(began + arrange_page.NAME_SECONDS))
         # The same scene playing on is not announced again, however long after.
-        self.assertIsNone(page.scene_to_announce(began + NAME_SECONDS + NAME_SECONDS))
+        self.assertIsNone(page.scene_to_announce(began + arrange_page.NAME_SECONDS + arrange_page.NAME_SECONDS))
 
     async def test_a_visualizers_name_gives_way_to_the_scenes(self):
         await self.wait_until(self.shows(ArrangePage))
@@ -1351,7 +1352,7 @@ class TestRecordingAnnouncesScenes(LaunchTest):
         lines = [Text(SPACE * 50) for _ in range(15)]
         words = self.announcement(FIRST_INDEX)
         shown = announced(lines=lines, text=words, inside=inside)
-        row = inside.bottom - ANNOUNCED_ROWS_UP
+        row = inside.bottom - arrange_page.ANNOUNCED_ROWS_UP
         column = shown[row].plain.index(words)
         self.assertIn(Style.REVERSE, styles_at(line=shown[row], column=column))
         self.assertLessEqual(abs((column - inside.left) - (inside.right - (column + len(words)) + 1)), 1)
@@ -1396,7 +1397,7 @@ class TestBatchVideoLaunch(LaunchTest):
         self.assertIn(Box.DOUBLE_TOP_LEFT, self.text())
         self.assertFalse(self.transport().is_playing())
         await self.wait_until(self.transport().is_playing)
-        await self.wait_a_moment(GROW_SECONDS)
+        await self.wait_a_moment(batch_stage.GROW_SECONDS)
         self.assertNotIn(Box.DOUBLE_TOP_LEFT, self.text())
         await self.let_time_pass(SCENE_ONE_SECONDS + A_MOMENT)
         await self.wait_until(self.has_quit)

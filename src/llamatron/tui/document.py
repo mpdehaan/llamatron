@@ -43,7 +43,8 @@ from llamatron.support.revised import ChangeMark, Revised
 from llamatron.tui.history import History
 from llamatron.tui.lengths import Lengths, measured
 from llamatron.tui.uses import uses_of
-from llamatron.tui.document_parts.files import NOT_READ, DocumentFiles, file_data
+from llamatron.tui.document_parts import files
+from llamatron.tui.document_parts.files import DocumentFiles, file_data
 from llamatron.tui.document_parts.named_edits import NamedEdits
 from llamatron.tui.document_parts.pattern_edits import PatternEdits
 from llamatron.tui.document_parts.set_edits import SetEdits
@@ -68,7 +69,7 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
 
     __slots__ = ('_setlist', '_current', '_path', '_dirty', '_memory', '_outside_patterns', '_saved_data', '_clean_data', '_history', '_edited', '_continues')
 
-    def __init__(self, *, setlist=None, path=None, saved_data=NOT_READ):
+    def __init__(self, *, setlist=None, path=None, saved_data=files.NOT_READ):
         """Hold a set, or a new one, saved at path if it has one.
 
         Saving writes every setting a new set has, even where a file left it out. A set from a
@@ -89,7 +90,7 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         self.note_change()
         # What the file held when it was opened or last saved, so that a change made to it by
         # something else can be noticed before it's written over.
-        self._saved_data = (None if path is None else file_data(path)) if saved_data is NOT_READ else saved_data
+        self._saved_data = (None if path is None else file_data(path)) if saved_data is files.NOT_READ else saved_data
         # What the set was when it was opened or last saved, so that undoing back to it reads as saved.
         self._clean_data = self._own_data()
         self._history = History(checks=self._memory.checks())

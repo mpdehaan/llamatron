@@ -25,7 +25,7 @@ from llamatron.strings import marks, messages
 from llamatron.composition import instrument as instrument_values
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.keyswitch_text import keyswitch_note_text, keyswitches_of, slot_name
 from llamatron.tui import keybindings
 
@@ -41,7 +41,7 @@ def pick_keyswitches(*, editor, step):
     dialog = KeyswitchDialog(
         title=messages.MSG_KEYSWITCH_DIALOG_TITLE.format(step=step + 1), heading=said,
         names=[marks.MSG_NONE_SHOWN if keyswitch.name is None else keyswitch.name for keyswitch in keyswitches],
-        notes=[NOTHING if keyswitch.note is None else keyswitch_note_text(setlist=setlist, note=keyswitch.note) for keyswitch in keyswitches],
+        notes=[drawing.NOTHING if keyswitch.note is None else keyswitch_note_text(setlist=setlist, note=keyswitch.note) for keyswitch in keyswitches],
         picked=editor.value(row=Row.KEYSWITCH, step=step) or (),
     )
     editor.ask(dialog=dialog, then=lambda slots: editor.set_value(value=slots or None, row=Row.KEYSWITCH, step=step))

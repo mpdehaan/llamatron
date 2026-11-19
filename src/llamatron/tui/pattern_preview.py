@@ -48,7 +48,8 @@ from llamatron.music import note
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.timeline import Route
-from llamatron.tui.transport import CHANNEL_OFFSET, Transport
+from llamatron.tui import transport
+from llamatron.tui.transport import Transport
 
 # The one scene of the copy the preview plays.
 PREVIEW_SCENE = 0
@@ -268,7 +269,7 @@ class PatternPreview(Transport):
             if not self._fluidsynth_installed():
                 # Without FluidSynth a sound is tried on the song's Preview instrument, which plays the notes in whatever sound the device has.
                 instrument = real.setlist().get_instrument(real.song().get_preview_instrument_name())
-                return Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
+                return Route(instrument.get_device(), instrument.get_channel() - transport.CHANNEL_OFFSET)
             return Route(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False) if program is None else Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, program, keyswitches=False)
         if self._clip is not None:
             return Route(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False) if self._clip_is_drums() else Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
@@ -281,7 +282,7 @@ class PatternPreview(Transport):
         if instrument.uses_fluidsynth():
             sound = instrument.get_gm_sound()
             return Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
-        return Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
+        return Route(instrument.get_device(), instrument.get_channel() - transport.CHANNEL_OFFSET)
 
     # Playing.
 

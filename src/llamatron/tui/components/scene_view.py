@@ -36,11 +36,12 @@ from rich.text import Text
 from llamatron.composition.checks import fraction_text
 from llamatron.music import note as note_values
 from llamatron.strings import marks, visualizers
-from llamatron.tui.components.title_card import TITLE_BLUE
+from llamatron.tui.components import title_card
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, effective_values, scene_notes
-from llamatron.tui.screens.arrange.arrange_details import ADD_CHAIN, clip_details, or_stock, track_details
+from llamatron.tui.screens.arrange import arrange_details
+from llamatron.tui.screens.arrange.arrange_details import clip_details, or_stock, track_details
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers import piano_roll
 from llamatron.visualizers.piano_roll import drum_lane
@@ -81,7 +82,7 @@ LINE_COLOUR = (80, 80, 100)
 LABEL_COLOUR = (150, 150, 170)
 NOTE_LABEL_COLOUR = (210, 210, 225)
 WRITTEN_COLOUR = (150, 80, 230)
-PLAYED_COLOUR = TITLE_BLUE
+PLAYED_COLOUR = title_card.TITLE_BLUE
 # The tracks' colours, pure where they can be: the drum tracks take the warm ones, reds, oranges, yellows and
 # white, and the others the cool ones, green first and the colours most unlike it next; a group that needs more borrows the other's that are left.
 WARM_COLOURS = [
@@ -435,7 +436,7 @@ class SceneView:
             lines.append(Text(track_label(name=name, place=place), style=self._cells.style_of(colour=self.track_colour(place)) + BOLD))
             details = clip_details(setlist=setlist, song=song, clip_slot=clip_slot) + track_details(song=song, track=song.get_track(name))
             # Scene View only shows, so the + that adds a chain on Arrange is left out, and stock stands for a track with nothing.
-            details = [detail for detail in details if detail.target is None or detail.target.kind != ADD_CHAIN]
+            details = [detail for detail in details if detail.target is None or detail.target.kind != arrange_details.ADD_CHAIN]
             for detail in details or or_stock([]):
                 lines.append(Text(SPACE + detail.text, style=detail.style))
             lines.append(Text())

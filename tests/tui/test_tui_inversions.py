@@ -18,7 +18,7 @@
 from tests.support.ui_testing import TUNE, UITest
 from llamatron.composition.file_format import Row
 from llamatron.strings import marks
-from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH
+from llamatron.tui.screens.pattern import grid_drawing
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui import keybindings
@@ -71,9 +71,9 @@ class TestInversionRow(UITest):
         self.document.set_step_value(name=TUNE, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
         self.assertTrue(roll.root_is_lifted(FIRST_STEP))
         self.editor.draw()
-        self.assertIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR * CELL_WIDTH, self.text())
+        self.assertIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR * grid_drawing.CELL_WIDTH, self.text())
         await self.press(Key.RIGHT)
-        self.assertIn(marks.MSG_NOTE_HOLLOW * CELL_WIDTH, self.text())
+        self.assertIn(marks.MSG_NOTE_HOLLOW * grid_drawing.CELL_WIDTH, self.text())
         # Root position again, and the bar is solid.
         self.document.set_step_value(name=TUNE, row=Row.INVERSION, step=FIRST_STEP, value=None)
         self.editor.draw()

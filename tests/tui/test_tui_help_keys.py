@@ -34,14 +34,14 @@ import inspect
 import re
 import unittest
 
-from llamatron.tui.screens.arrange.arrange_page import FIRST_TRACK_COLUMN, HEADER_ROW, SCENE_COLUMN
+from llamatron.tui.screens.arrange import arrange_page
 from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tui.components.pattern_rows import SECTIONS
+from llamatron.tui.components import pattern_rows
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -225,7 +225,7 @@ class KeyTour(UITest):
 
     async def open_every_section(self):
         """Open each section of the pattern editor's rows, so that the walk reaches every row."""
-        for _ in SECTIONS:
+        for _ in pattern_rows.SECTIONS:
             await self.press(Key.PAGE_DOWN)
             opened = len(self.app.open_sections)
             await self.press(Key.SPACE)
@@ -333,8 +333,8 @@ class KeyTour(UITest):
         # Arrange's details view, and Tab inside the first track's name, which shows the chain the track editor gave it above.
         await self.press(keybindings.ArrangePage.SHOW_DETAILS)
         await self.walk()
-        self.app.screen.row = HEADER_ROW
-        self.app.screen.column = FIRST_TRACK_COLUMN
+        self.app.screen.row = arrange_page.HEADER_ROW
+        self.app.screen.column = arrange_page.FIRST_TRACK_COLUMN
         await self.press(keybindings.ArrangePage.INTO_DETAILS)
         self.note()
         await self.press(keybindings.ArrangePage.OUT_OF_DETAILS, keybindings.ArrangePage.HIDE_DETAILS)
@@ -343,13 +343,13 @@ class KeyTour(UITest):
         self.note()
         await self.press(Key.ENTER)
         self.app.screen.row = FIRST_SCENE
-        self.app.screen.column = SCENE_COLUMN
+        self.app.screen.column = arrange_page.SCENE_COLUMN
         await self.press(keybindings.ArrangePage.MOVE_SCENE)
         self.note()
         await self.press(Key.ENTER, keybindings.ArrangePage.SCENE_VIEW)
         self.note()
         await self.press(keybindings.ArrangePage.CLOSE_INSET)
-        self.app.screen.column = FIRST_TRACK_COLUMN
+        self.app.screen.column = arrange_page.FIRST_TRACK_COLUMN
         await self.press(keybindings.ArrangePage.MOVE_CLIP)
         self.note()
         await self.press(Key.ENTER)

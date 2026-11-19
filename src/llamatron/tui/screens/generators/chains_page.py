@@ -17,7 +17,8 @@
 """The Chains page."""
 
 from llamatron.composition.file_format import Section
-from llamatron.tui.drawing import Align, NOTHING
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align
 from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
@@ -48,4 +49,4 @@ class ChainsPage(NamedListPage):
         def named(text):
             self.document().add_chain(text)
             self.put_cursor_on(text)
-        self.ask_name(title=messages.MSG_NEW_CHAIN_PROMPT, value=NOTHING, taken=self.names(), then=named)
+        self.ask_name(title=messages.MSG_NEW_CHAIN_PROMPT, value=drawing.NOTHING, taken=self.names(), then=named)

@@ -30,8 +30,10 @@ from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, Style, cursor_mark
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, cursor_mark
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved
 
 # The rows the cursor moves over, in the order drawn.
 SCALE_LENGTH = 0
@@ -73,7 +75,7 @@ class NewPatternDialog(Dialog):
         bound = [self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)), self.bind(self.KEYS.SELECT, action=self.move, wants_key=True)]
         if self.row == SCALE_LENGTH:
             if not self.drum:
-                bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(STEP_FORWARD))]
+                bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(key_table.STEP_FORWARD))]
             bound.append(self.bind(self.KEYS.OK, action=self.accept))
         elif self.row == DRUM:
             bound.append(self.bind(self.KEYS.TOGGLE, action=self.toggle))
@@ -107,7 +109,7 @@ class NewPatternDialog(Dialog):
     def values(self):
         """Return each field's value as shown: a drum pattern's scale length is the blocked cell's mark."""
         length = marks.MSG_ANY_SCALE_LENGTH if self.scale_length is None else str(self.scale_length)
-        return (marks.MSG_BLOCKED_CELL if self.drum else length, marks.MSG_TOGGLE_ON if self.drum else NOTHING)
+        return (marks.MSG_BLOCKED_CELL if self.drum else length, marks.MSG_TOGGLE_ON if self.drum else drawing.NOTHING)
 
     def lines(self, width):
         lines = []
@@ -117,4 +119,4 @@ class NewPatternDialog(Dialog):
             line.append(value, style=Style.DIM if blocked else Style.BOLD if row == self.row else Style.PLAIN)
             lines.append(line)
         buttons = [(binding[1], label) for label, binding in zip(labels.MSG_NEW_PATTERN_BUTTONS, BUTTON_BINDINGS)]
-        return [*lines, Text(NOTHING), *button_row(buttons=buttons, selected=self.button if self.row == BUTTONS else NO_BUTTON)]
+        return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.row == BUTTONS else NO_BUTTON)]

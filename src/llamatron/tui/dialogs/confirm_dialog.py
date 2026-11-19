@@ -20,7 +20,7 @@ from rich.text import Text
 
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.components.button_row import button_row
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.key_table import cursor_moved
 from llamatron.strings import labels
 from llamatron.tui import keybindings
@@ -65,4 +65,4 @@ class ConfirmDialog(MessageDialog):
     def lines(self, width):
         """Return the message, a blank line and Yes and No as boxed buttons, the selected one double-lined."""
         buttons = [(binding[1], label) for label, binding in zip(labels.MSG_CONFIRM_BUTTONS, BUTTON_BINDINGS)]
-        return [*self.message_lines(width), Text(NOTHING), *button_row(buttons=buttons, selected=self.choice)]
+        return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.choice)]

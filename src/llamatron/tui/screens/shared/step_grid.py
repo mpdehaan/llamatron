@@ -17,7 +17,8 @@
 
 from rich.text import Text
 
-from llamatron.tui.drawing import Align, Box, fit, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align, Box, fit, Style
 
 LABEL_WIDTH = 8
 GRID_MARGIN = 4
@@ -59,6 +60,6 @@ class StepGrid:
         shown = self.steps_shown_text(first=first, last=last)
         if not shown:
             return Text(text, style=style)
-        line = Text(fit(text=text, width=width - len(shown) - 1) + SPACE, style=style, no_wrap=True)
+        line = Text(fit(text=text, width=width - len(shown) - 1) + drawing.SPACE, style=style, no_wrap=True)
         line.append(shown, style=Style.DIM)
         return line

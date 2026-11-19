@@ -25,7 +25,8 @@ from llamatron.composition.file_format import RampPart, Section, shape_setting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
-from llamatron.tui.drawing import NOTHING, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
@@ -33,7 +34,8 @@ from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.generators.shape_fields import shape_section
 from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.tui.screens.shared.statements import FIRST_TABLE, register_fields, statement_section
+from llamatron.tui.screens.shared import statements
+from llamatron.tui.screens.shared.statements import register_fields, statement_section
 from llamatron.tui import themes
 from llamatron.tui import keybindings
 
@@ -81,7 +83,7 @@ class ScenePage(FieldPage):
                 self.document().set_scene_name(index=self.index, name=text)
                 self.shown_name = text
                 self.crumbs = (labels.Crumb.ARRANGE, labels.MSG_SCENE_CRUMB.format(name=text))
-        self.ask(dialog=PromptDialog(title=messages.MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or NOTHING, max_length=limits.MAX_NAME_LENGTH), then=named)
+        self.ask(dialog=PromptDialog(title=messages.MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or drawing.NOTHING, max_length=limits.MAX_NAME_LENGTH), then=named)
 
     def pick_scale(self):
         scales = sorted_names(self.document().song().get_scale_names())
@@ -167,7 +169,7 @@ class ScenePage(FieldPage):
         repeat = scene.get_repeat()
         own_velocity, velocity_above, store_velocity = self.velocity_values()
         return [
-            NameField(value=lambda: scene.get_name() or NOTHING, rename=self.rename),
+            NameField(value=lambda: scene.get_name() or drawing.NOTHING, rename=self.rename),
             self.section_field(),
             Field(label=labels.MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=legends.What.CHOOSE, clear=self.clear_scale, clear_what=legends.MSG_USE_SONG_SCALE_WHAT),
             self.groove_field(),
@@ -209,7 +211,7 @@ class ScenePage(FieldPage):
                 store=lambda register, value: document.set_scene_register_add(index=self.index, register=register, value=value),
             ),
             *statement_section(
-                page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=FIRST_TABLE, statements=scene.get_bypass_when,
+                page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE, statements=scene.get_bypass_when,
                 store=lambda place, statement: document.set_scene_bypass_statement(index=self.index, place=place, statement=statement),
             ),
         ]

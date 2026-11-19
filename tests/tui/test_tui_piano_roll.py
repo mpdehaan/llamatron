@@ -25,21 +25,25 @@ from llamatron.strings import errors, labels, legends, marks
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Accidental, Direction, Row
 from llamatron.composition import row_descriptions
-from llamatron.tui.drawing import Box, NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style
 from llamatron.composition.file_format import ChordSymbol
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.chord_dialog import QUALITY_LIST, ChordDialog
+from llamatron.tui.dialogs import chord_dialog
+from llamatron.tui.dialogs.chord_dialog import ChordDialog
 from llamatron.composition import setlist
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.tui.keys import Key, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
-from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH
+from llamatron.tui import keys
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.pattern import grid_drawing
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.support.rational import Rational
-from llamatron.tui.screens.pattern.roll_drawing import MARK_COLUMN, filled_columns
+from llamatron.tui.screens.pattern import roll_drawing
+from llamatron.tui.screens.pattern.roll_drawing import filled_columns
 from llamatron.composition.naming import words
 import re
 
@@ -87,7 +91,7 @@ class RollTest(UITest):
 
     def header_cell_starts(self, line):
         """Return the columns at which the cells of a header line start, after the first: where a run of at least the cell gap's spaces ends at a word."""
-        return [match.end() for match in re.finditer(SPACE + '{' + str(len(marks.MSG_HEADER_CELL_GAP)) + ',}(?=\\S)', line.rstrip())]
+        return [match.end() for match in re.finditer(drawing.SPACE + '{' + str(len(marks.MSG_HEADER_CELL_GAP)) + ',}(?=\\S)', line.rstrip())]
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -147,7 +151,7 @@ class TestPianoRoll(RollTest):
         self.assertIn(labels.MSG_SCALE_HEADER.format(scale=setlist.DEFAULT_SCALE), self.text())
         self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=EIGHTH, whose=marks.MSG_FROM_SONG_SHOWN), self.text())
         await self.pick_entry_size(QUARTER)
-        self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=QUARTER, whose=NOTHING), self.text())
+        self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=QUARTER, whose=drawing.NOTHING), self.text())
 
     async def test_rows_are_labelled_with_the_note_its_octave_and_the_degree(self):
         self.assertIn(labels.MSG_ROLL_ROW_LABEL.format(note=f'{NoteName.E}{SHOWN_OCTAVE}', degree=3), self.text())
@@ -249,7 +253,7 @@ class TestPlacingNotes(RollTest):
         self.assertEqual(self.app.screen.options[self.app.screen.place], labels.MSG_SONG_ENTRY_SIZE_CHOICE)
         await self.pick(HALF)
         self.assertEqual(pattern.get_written_entry_size(), HALF)
-        self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=HALF, whose=NOTHING), self.text())
+        self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=HALF, whose=drawing.NOTHING), self.text())
         # The picker opens on the pattern's own size, and the song's choice takes the pattern's own away.
         await self.press(keybindings.PianoRoll.ENTRY_SIZE)
         self.assertEqual(self.app.screen.options[self.app.screen.place], HALF)
@@ -271,10 +275,10 @@ class TestPlacingNotes(RollTest):
     async def test_nothing_on_the_roll_takes_shift_with_an_arrow(self):
         """The roll's keys are plain ones: the octave jump went, and [ and ] drag."""
         every = [name for item in self.editor.key_table() for name in item.keys]
-        for name in (*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT):
+        for name in (*keys.SHIFT_UP_DOWN, *keys.SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
         before = (self.editor.step, self.roll.pitch)
-        await self.press(*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT)
+        await self.press(*keys.SHIFT_UP_DOWN, *keys.SHIFT_LEFT_RIGHT)
         self.assertEqual((self.editor.step, self.roll.pitch), before)
 
     async def test_a_note_running_past_the_end_is_cut_there(self):
@@ -366,17 +370,17 @@ class TestPlacingNotes(RollTest):
         self.document.set_step_value(name=TUNE, row=Row.GATE, step=E_STEP, value=THREE_SIXTEENTHS)
         self.document.changed()
         await self.press(Key.RIGHT, Key.LEFT)
-        self.assertIn(marks.MSG_NOTE_CELL + marks.MSG_NOTE_EDGE + marks.MSG_NOTE_EDGE * columns + SPACE * (CELL_WIDTH - columns), self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_CELL + marks.MSG_NOTE_EDGE + marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}'))
         # A 1/16 note on 1/8 steps fills half its cell, shaded under the cursor, and cuts E's gate to the step.
         await self.pick_entry_size(SIXTEENTH)
         await self.press(Key.RIGHT, Key.RIGHT, Key.UP, keybindings.PianoRoll.PLACE)
-        self.assertIn(marks.MSG_CURSOR_BLOCK * columns + SPACE * (CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_CURSOR_BLOCK * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
         self.assertEqual(self.value(row=Row.GATE, step=E_STEP), EIGHTH)
         await self.press(Key.UP)
-        self.assertIn(marks.MSG_NOTE_EDGE * columns + SPACE * (CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
         # The bar is never empty and never full, so that a short note is seen to be short.
         self.assertEqual(filled_columns(Rational(1, 100)), 1)
-        self.assertEqual(filled_columns(Rational(99, 100)), CELL_WIDTH - 1)
+        self.assertEqual(filled_columns(Rational(99, 100)), grid_drawing.CELL_WIDTH - 1)
 
     async def test_the_rows_show_what_was_painted(self):
         await self.pick_entry_size(QUARTER)
@@ -445,7 +449,7 @@ class TestShapingNotes(RollTest):
         self.assertIn(marks.MSG_NOTE_CELL_WITH_MARK.format(mark=REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
         # The mark is in reverse video so that it reads against the bar, and it stays on the note when a sharp moves it to a row of its own.
         cell = self.editor.roll_drawing.note_cell(mark=marks.MSG_GRAB_NOTE_MARK, selected=False)
-        self.assertEqual([(span.start, span.end, span.style) for span in cell.spans], [(MARK_COLUMN, MARK_COLUMN + 1, Style.REVERSE)])
+        self.assertEqual([(span.start, span.end, span.style) for span in cell.spans], [(roll_drawing.MARK_COLUMN, roll_drawing.MARK_COLUMN + 1, Style.REVERSE)])
         await self.press(Key.DOWN, keybindings.PianoRoll.ACCIDENTAL)
         self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C_SHARP}{SHOWN_OCTAVE}'))
         # G again unmarks it, leaving a plain bar, and G on an empty cell says so.
@@ -499,7 +503,7 @@ class TestChordsOnTheRoll(RollTest):
 
     def ghost(self):
         """Return the thin line of a chord's note over one step."""
-        return marks.MSG_GHOST_LINE * CELL_WIDTH
+        return marks.MSG_GHOST_LINE * grid_drawing.CELL_WIDTH
 
     async def test_a_scale_chords_other_notes_are_thin_lines_on_their_degrees(self):
         # The C on step 1 as a scale triad: lines on E and G, over that step alone, and the C itself stays solid.
@@ -564,7 +568,7 @@ class TestChordsOnTheRoll(RollTest):
         self.document.set_step_value(name=TUNE, row=Row.TIE, step=LAST_STEP, value=True)
         self.document.set_step_value(name=TUNE, row=Row.CHORD, step=EMPTY_STEP, value=chord_value(ChordSymbol.SCALE_FIFTH))
         await self.press(Key.RIGHT, Key.LEFT)
-        self.assertIn(marks.MSG_GHOST_LINE * (CELL_WIDTH * 2 + 1), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_GHOST_LINE * (grid_drawing.CELL_WIDTH * 2 + 1), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
 
     async def test_a_named_chord_has_no_ghosts_when_the_scale_is_not_known_and_a_scale_chord_still_has(self):
         self.document.set_step_value(name=TUNE, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
@@ -580,11 +584,11 @@ class TestChordsOnTheRoll(RollTest):
 
     def rows_with_ghosts(self):
         """Return the roll's row lines that hold a chord's thin line, which the rules, made of the same character, are not."""
-        return [line for line in self.text().splitlines() if line.startswith(ROW_SHOWN.format(label=NOTHING).rstrip()) and self.ghost() in line.split(Box.DOUBLE_BAR, 1)[-1]]
+        return [line for line in self.text().splitlines() if line.startswith(ROW_SHOWN.format(label=drawing.NOTHING).rstrip()) and self.ghost() in line.split(Box.DOUBLE_BAR, 1)[-1]]
 
     def pick_quality(self, symbol):
         """Put the Chord dialog's cursor on a quality, which Enter then takes."""
-        self.app.screen.places[QUALITY_LIST] = self.app.screen.qualities.index(symbol)
+        self.app.screen.places[chord_dialog.QUALITY_LIST] = self.app.screen.qualities.index(symbol)
 
     async def test_h_picks_the_chord_of_the_note_under_the_cursor_from_any_of_its_cells_and_none_takes_it_away(self):
         await self.press(keybindings.PianoRoll.CHORD)

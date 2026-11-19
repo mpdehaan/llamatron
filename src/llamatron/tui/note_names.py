@@ -18,12 +18,12 @@
 
 from llamatron.music import note as note_values
 from llamatron.strings import marks
-from llamatron.tui.keys import SHARP_CHARACTER
+from llamatron.tui import keys
 
 NOTES_IN_OCTAVE = 12
 LOWEST_NOTE = 0
 HIGHEST_NOTE = 127
-SHARP = SHARP_CHARACTER
+SHARP = keys.SHARP_CHARACTER
 FLAT = 'b'
 HALF_STEPS_OF_LETTER = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
 HALF_STEPS_OF_MARK = {SHARP: 1, FLAT: -1}

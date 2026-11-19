@@ -22,7 +22,8 @@ from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.composition.naming import new_name
 from llamatron.strings import help as help_text, labels, legends, marks, messages, names
-from llamatron.tui.drawing import Align, NOTHING
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui import keybindings
@@ -47,7 +48,7 @@ class ScalesPage(NamedListPage):
         song = self.document().song()
         return [
             (name, [
-                name + (marks.MSG_SONG_SCALE_MARK if song.get_scale_name() == name else NOTHING),
+                name + (marks.MSG_SONG_SCALE_MARK if song.get_scale_name() == name else drawing.NOTHING),
                 document.scale_notes_text(name), document.scale_size(name), len(self.uses(name)),
             ])
             for name in self.names()

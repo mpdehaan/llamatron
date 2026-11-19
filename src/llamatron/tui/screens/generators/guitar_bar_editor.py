@@ -33,8 +33,10 @@ from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.drawing import Box, NOTHING, Style
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.step_editor import StepEditor
@@ -85,7 +87,7 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         self.keep_step()
         result = [
             self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
-            self.bind(self.KEYS.LESS, action=lambda: self.nudge(STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.nudge(STEP_FORWARD)),
+            self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
             self.bind(self.KEYS.ACCENT, action=self.accent),
         ]
         if self.steps() < generator_settings.MAX_GUITAR_BAR:
@@ -147,7 +149,7 @@ class GuitarBarEditor(ShowsNamedItem, StepGrid, StepEditor):
         return [
             self.with_steps_shown(text=messages.MSG_GUITAR_BAR_NOTE.format(cell=self.guitar().get_cell()), style=Style.DIM, width=width, first=first, last=last),
             Text(note.format(number=self.step + 1, stroke=labels.MSG_GUITAR_STROKE_NAMES[strokes[self.step]])),
-            Text(NOTHING),
+            Text(drawing.NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
             self.grid_line(label=labels.MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
             self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)),

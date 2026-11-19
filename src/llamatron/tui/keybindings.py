@@ -35,10 +35,8 @@ one key.
 """
 
 from llamatron.strings import labels, legends
-from llamatron.tui.keys import (
-    ARROWS, ARROWS_LEFT_RIGHT, ARROWS_UP_DOWN, CANCEL_KEYS, MOVE_DROP_KEYS, DIGITS, LESS_KEYS, MORE_KEYS, NOTE_CHARACTERS, NOTE_LETTER_KEYS, NUDGE_LESS_KEYS,
-    NUDGE_MORE_KEYS, SEARCH_CHARACTERS, SEARCH_STARTERS, TOGGLE_KEYS, Key, Steps,
-)
+from llamatron.tui import keys
+from llamatron.tui.keys import Key, Steps
 
 
 def all_but(*, bindings, hidden):
@@ -105,7 +103,7 @@ class MainPage(Page):
     # Import MIDI, in the row of actions after Export.
     IMPORT_HERE = (Key.M, legends.KeyName.M, legends.What.IMPORT_MIDI)
     QUIT = (Key.Q, legends.KeyName.Q, legends.What.QUIT)
-    SELECT = (ARROWS, legends.KeyName.ARROWS, legends.What.SELECT)
+    SELECT = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.SELECT)
     OPEN = (Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
     # Help and About work everywhere and have no cell, so the main screen's legend reminds of them, in lower case.
     FOOTER_HELP = (Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
@@ -119,7 +117,7 @@ class MainPage(Page):
 class ListPage(Page):
     """A page of rows with a + row at the bottom: the keys every list of named things shares, and the keys of a search."""
 
-    SELECT = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
     ADD = (Key.A, legends.KeyName.A, legends.What.ADD)
     # Enter on the + row adds, as A does on any row.
     ADD_HERE = (Key.ENTER, legends.KeyName.ENTER, legends.What.ADD)
@@ -131,12 +129,12 @@ class ListPage(Page):
     # Move mode: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it where it is.
     MOVE = (Key.M, legends.KeyName.M, legends.What.MOVE)
     CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
-    DROP = (MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     SORT = (Key.S, legends.KeyName.S, legends.What.SORT)
     SEARCH = (Key.SLASH, legends.KeyName.SLASH, legends.What.SEARCH)
     # While a search is typed, the page's letters are text.
     SEARCH_CANCEL = (Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CANCEL)
-    SEARCH_TYPE = (SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    SEARCH_TYPE = (keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
     SEARCH_ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
     SEARCH_COMPLETE = (Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
     SEARCH_KEEP = (Key.ENTER, legends.KeyName.ENTER, legends.What.KEEP)
@@ -171,7 +169,7 @@ class PatternsPage(NamedListPage):
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     GROUP = (Key.G, legends.KeyName.G, legends.MSG_GROUP_WHAT)
     # A group's heading opens and closes as a settings page's section does, and PgUp and PgDn jump between the headings.
-    TOGGLE_GROUP = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    TOGGLE_GROUP = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     NEXT_GROUP = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_GROUP_WHAT)
     NEW_PATTERN = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_PATTERN_WHAT)
     NEW_GROUP = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_GROUP_WHAT)
@@ -197,7 +195,7 @@ class GeneratorsPage(ListPage):
     A adds one of a type asked for, the usual keys rename, copy and delete one, and a type's heading opens and closes."""
 
     # A type's heading opens and closes as a settings page's section does, and PgUp and PgDn jump between the headings.
-    TOGGLE_TYPE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    TOGGLE_TYPE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     NEXT_TYPE = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TYPE_WHAT)
     IN_HELP = [
         Page.BACK, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, *ListPage.SEARCHING[1:], TOGGLE_TYPE, ListPage.ADD, ListPage.EDIT, ListPage.RENAME, ListPage.COPY,
@@ -253,12 +251,12 @@ class ChainListPage(ListPage):
 class FieldPage(Page):
     """A page of settings: Up and Down pick a field, Left and Right change its value, and what Enter and Bksp do is said by the field."""
 
-    SELECT = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
     # [ dec and ] inc, the one adjust system, named the same way everywhere; Left and Right do the same, off the legend.
-    LESS = ((Key.LEFT, *LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     # A field that's true or false answers to Space and Enter alike.
-    TOGGLE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     # What Enter and Bksp do depends on the field, which says so itself: these words stand for the field's own.
     ENTER = (Key.ENTER, legends.KeyName.ENTER, legends.What.EDIT)
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
@@ -267,9 +265,9 @@ class FieldPage(Page):
     # F2 renames from any field of a page that has a Name, as on Windows; off the legend, where Enter on Name says rename.
     RENAME = (Key.F2, legends.KeyName.F2, legends.What.RENAME)
     # On the row of buttons under the settings, Left and Right move along it.
-    ALONG_BUTTONS = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    ALONG_BUTTONS = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
     # In a row of cells side by side, Left and Right move between the cells, and step nothing.
-    ALONG_CELLS = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    ALONG_CELLS = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
@@ -279,8 +277,8 @@ class WizardPage(FieldPage):
     In the tree, Up and Down move, Left and Right close and open a part, and ENTER or Tab moves into the settings; there the
     settings' own keys work, and ESC or Tab moves back to the tree. ESC in the tree closes the wizard."""
 
-    TREE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    FOLD = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_WIZARD_FOLD_WHAT)
+    TREE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    FOLD = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_WIZARD_FOLD_WHAT)
     INTO_FIELDS = ((Key.ENTER, Key.TAB), legends.KeyName.ENTER, legends.What.EDIT)
     TO_TREE = ((Key.ESCAPE, Key.TAB), legends.KeyName.ESCAPE, legends.MSG_WIZARD_TO_TREE_WHAT)
     CLOSE = (Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CLOSE)
@@ -291,7 +289,7 @@ class WizardPage(FieldPage):
     DELETE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DELETE)
     MOVE = (Key.M, legends.KeyName.M, legends.What.MOVE)
     CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
-    DROP = (MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     # On a part with something to hear, as the hook, a tune or a section: the part of the song as it would be made, through FluidSynth.
     LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
@@ -323,9 +321,9 @@ class RegistersPage(FieldPage):
     """The Registers page, a grid of the four registers by their settings: the arrows move over it, stopping at
     every edge, [ and ] make the value under the cursor less and more, and Enter, Space and Bksp act on it as on a settings page."""
 
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    LESS = (LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR]
     IN_LEGEND = IN_HELP
 
@@ -342,7 +340,7 @@ class ClipPage(FieldPage):
     ADD_PATTERN = (Key.A, legends.KeyName.A, legends.MSG_ADD_PATTERN_WHAT)
     MOVE_PATTERN = (Key.M, legends.KeyName.M, legends.MSG_MOVE_PATTERN_WHAT)
     CARRY = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
-    DROP = (MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     # Real-time playback: L plays the clip as its scene would, looping until stopped, and L again stops it, with the Play and Stop buttons below the fields doing the same.
     LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
@@ -457,9 +455,9 @@ class ArticulateEditor(ShapeEditor):
 class DriftEditor(FieldPage):
     """The drift's editor: the settings keys, except that Left and Right pick version A or B on a row that has both, so only [ and ] change a value."""
 
-    LESS = (LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    VERSION = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_A_OR_B_WHAT)
+    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    VERSION = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_A_OR_B_WHAT)
     IN_HELP = [Page.BACK, FieldPage.SELECT, VERSION, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION, FieldPage.RENAME, FieldPage.ALONG_BUTTONS]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
@@ -472,12 +470,12 @@ class NotesPage(Page):
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     # While the text is edited.
     CANCEL = (Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CANCEL)
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     NEW_LINE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_LINE_WHAT)
     ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
     TO_BUTTONS = (Key.TAB, legends.KeyName.TAB, legends.MSG_TO_BUTTONS_WHAT)
     # On the Save and Cancel buttons.
-    SELECT_BUTTON = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
     PRESS_BUTTON = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     TO_TEXT = (Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TEXT_WHAT)
     IN_HELP = [Page.BACK, CANCEL, SCROLL, MOVE, SELECT_BUTTON, NEW_LINE, PRESS_BUTTON, EDIT, CLEAR, ERASE, TO_BUTTONS, TO_TEXT]
@@ -491,11 +489,11 @@ class StepEditor(Page):
 class OneRowEditor(StepEditor):
     """An editor of one row of numbers: Left and Right move along the row, and Up and Down change the number, since no row lies below the cursor."""
 
-    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # [ dec and ] inc as everywhere; Up and Down do the same, off the legend, since no row lies below the cursor.
-    LESS = (NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TYPE = (DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
+    LESS = (keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = (keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, TYPE]
     IN_LEGEND = IN_HELP
 
@@ -504,8 +502,8 @@ class OffsetsEditor(OneRowEditor):
     """The offsets editor, one row of an arp's offsets."""
 
     # Space or Enter silences a step that plays and plays a step that's silent.
-    SILENT = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_SILENT_WHAT)
-    PLAY = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLAY_WHAT)
+    SILENT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_SILENT_WHAT)
+    PLAY = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLAY_WHAT)
     INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
     REMOVE_STEP = (Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
     # Tab moves between the Offset row and the register add rows under it.
@@ -517,12 +515,12 @@ class OffsetsEditor(OneRowEditor):
 class ChordsEditor(StepEditor):
     """The chord editor, a progression's chords: the arrows move along the chords and between the Chord, #/b and Inv. rows."""
 
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    LESS = (LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TYPE = (DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
     # On the #/b and Inv. rows, Space or Enter goes to the next choice, as on the pattern editor's cycle rows.
-    NEXT = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
+    NEXT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
     INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
     REMOVE_STEP = (Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
     PICK = (Key.H, legends.KeyName.H, legends.MSG_PICK_PROGRESSION_WHAT)
@@ -537,9 +535,9 @@ class ChordsEditor(StepEditor):
 class StepRowEditor(StepEditor):
     """A row of on-or-off steps: Left and Right move, Space or Enter turns a step on or off, I and D insert and remove."""
 
-    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # As in the one-row editors, Up and Down change the step under the cursor too, off the legend, since no row lies below it.
-    TOGGLE = ((*TOGGLE_KEYS, *ARROWS_UP_DOWN), legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    TOGGLE = ((*keys.TOGGLE_KEYS, *keys.ARROWS_UP_DOWN), legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
     REMOVE_STEP = (Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
     IN_HELP = [Page.BACK, MOVE, TOGGLE, INSERT_STEP, REMOVE_STEP]
@@ -549,11 +547,11 @@ class StepRowEditor(StepEditor):
 class GuitarBarEditor(StepEditor):
     """A Guitarify's bar of strokes: Left and Right move, [ and ] change the stroke, Space or ENTER accents, I and D insert and remove, S the cell length, R a ready-made bar."""
 
-    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # Up and Down change the stroke too, off the legend, since no row lies below the cursor.
-    LESS = (NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    ACCENT = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_ACCENT_WHAT)
+    LESS = (keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = (keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    ACCENT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_ACCENT_WHAT)
     INSERT_CELL = (Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
     REMOVE_CELL = (Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
     CELL_LENGTH = (Key.S, legends.KeyName.S, legends.MSG_CELL_LENGTH_WHAT)
@@ -593,7 +591,7 @@ class GrooveEditor(OneRowEditor):
 class ArrangePage(Page):
     """Arrange: the keys change with what the cursor is on, a track's name, a scene's name, a clip or a +, so each meaning has a binding of its own."""
 
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     # Real-time playback, bound only while the set's Real Time switch is on: Space plays what the cursor is on, or stops it, and the mark before each bar says which.
     PLAY_SONG = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_SONG_WHAT)
     PLAY_SCENE = (Key.SPACE, legends.KeyName.SPACE, legends.MSG_PLAY_SCENE_WHAT)
@@ -621,8 +619,8 @@ class ArrangePage(Page):
     MOVE_CLIP = (Key.M, legends.KeyName.M, legends.MSG_MOVE_CLIP_WHAT)
     CARRY_SCENE = (Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
     CARRY_TRACK = (Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), legends.KeyName.LEFT_RIGHT, legends.What.CARRY)
-    CARRY_CLIP = (ARROWS, legends.KeyName.ARROWS, legends.What.CARRY)
-    DROP = (MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
+    CARRY_CLIP = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.CARRY)
+    DROP = (keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
     # On a clip, or the empty cell where one would be.
     ADD_CLIP = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_CLIP_WHAT)
     # B on an empty cell makes a blank pattern named after the track, puts a clip of it there and opens it, as Live makes a new clip in an empty slot.
@@ -650,7 +648,7 @@ class ArrangePage(Page):
     # and Tab again or Esc leaves, closing the cell's details in the usual view, Esc closing the topmost thing as everywhere.
     INTO_DETAILS = (Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_DETAILS_WHAT)
     OUT_OF_DETAILS = (Key.TAB, legends.KeyName.TAB, legends.MSG_OUT_OF_DETAILS_WHAT)
-    PICK_DETAIL = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    PICK_DETAIL = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
     OPEN_DETAIL = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_OPEN_DETAIL_WHAT)
     # On the + under a cell's chains Enter adds a chain to the cell, and on a chain's line Bksp takes it out of the cell.
     ADD_CHAIN = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_CHAIN_WHAT)
@@ -666,13 +664,13 @@ class ArrangePage(Page):
     TO_PLAYED = (Key.V, legends.KeyName.V, legends.MSG_TO_PLAYED_WHAT)
     TO_WRITTEN = (Key.V, legends.KeyName.V, legends.MSG_TO_WRITTEN_WHAT)
     INSET_BARS = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_JUMP_BAR_WHAT)
-    INSET_MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    ESCAPE_INSET = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_CLOSE_INSET_ESC_WHAT)
+    INSET_MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    ESCAPE_INSET = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_CLOSE_INSET_ESC_WHAT)
     # In Scene View, [ and ] switch between as written and as played, - and = draw each sixteenth narrower or wider, and PgUp and PgDn scroll the sidebar of the tracks' details.
     INSET_ZOOM = (Steps(back=(Key.MINUS,), forward=(Key.EQUALS,)), legends.KeyName.MINUS_EQUALS, legends.MSG_ZOOM_WHAT)
     INSET_SCROLL = (Steps(back=(Key.LEFT_BRACKET,), forward=(Key.RIGHT_BRACKET,)), legends.KeyName.BRACKETS, legends.MSG_SCROLL_SIDEBAR_WHAT)
-    ESCAPE_CELL = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_LEAVE_CELL_WHAT)
-    TO_CLIPS = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_TO_CLIPS_WHAT)
+    ESCAPE_CELL = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_LEAVE_CELL_WHAT)
+    TO_CLIPS = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.MSG_TO_CLIPS_WHAT)
     IN_HELP = [
         Page.BACK, DROP, TO_CLIPS, ESCAPE_CELL, ESCAPE_INSET, CLOSE_INSET, INSET_MOVE, INSET_BARS, TO_PLAYED, TO_WRITTEN, INSET_ZOOM, INSET_SCROLL, STEP_VISUALIZER, OUT_OF_DETAILS, MOVE, CARRY_SCENE, CARRY_TRACK, CARRY_CLIP, PICK_DETAIL, OPEN_DETAIL, ADD_CHAIN, REMOVE_CHAIN, CLOSE_DETAILS, PLAY_SONG, PLAY_SCENE, PLAY_CLIP, STOP_PLAYING, STOP_CLIP,
         ADD_TRACK, ADD_TRACK_HERE, TRACK_SETTINGS, COPY_TRACK, INSERT_TRACK, MOVE_TRACK, DELETE_TRACK,
@@ -710,7 +708,7 @@ class PatternEditor(StepEditor):
 class PatternRows:
     """The rows view of the pattern editor: the cursor's keys, and the keys that insert and remove a step, which its legend shows."""
 
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
     SECTION = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
     INSERT_STEP = (Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
@@ -726,9 +724,9 @@ class PianoRoll:
     Enter draws as Space does, since the two do the same everywhere else, so the chord picker took the free letter H.
     """
 
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
-    PLACE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLACE_NOTE_WHAT)
+    PLACE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLACE_NOTE_WHAT)
     CHORD = (Key.H, legends.KeyName.H, legends.MSG_CHORD_WHAT)
     # [ and ] drag the note's end a step earlier and later, called shrink and stretch, since a note is not a number.
     SHORTER = (Key.LEFT_BRACKET, legends.KeyName.LEFT_BRACKET, legends.MSG_SHRINK_WHAT)
@@ -749,8 +747,8 @@ class PianoRoll:
 class PatternRow:
     """What the rows share: [ and ] step the value under the cursor, with -, + and = working too, as two legend entries, less and more."""
 
-    LESS = (LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     IN_HELP = [LESS, MORE]
     IN_LEGEND = IN_HELP
 
@@ -758,9 +756,9 @@ class PatternRow:
 class DegreeRow(PatternRow):
     """The Degree row: digits type a degree, or on a drum pattern, where the row is called Note, letters type a note."""
 
-    NOTE = (NOTE_LETTER_KEYS, legends.KeyName.NOTE_LETTERS, legends.MSG_NOTE_WHAT)
+    NOTE = (keys.NOTE_LETTER_KEYS, legends.KeyName.NOTE_LETTERS, legends.MSG_NOTE_WHAT)
     # The digits bound, and their name, are the degrees of the scale: 1-7 in a scale of seven notes.
-    DEGREE = (DIGITS, legends.KeyName.DIGITS, legends.MSG_DEGREE_WHAT)
+    DEGREE = (keys.DIGITS, legends.KeyName.DIGITS, legends.MSG_DEGREE_WHAT)
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     # Space puts a note on an empty step, the first degree, and takes the note off a step that has one.
     TOGGLE_NOTE = (Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
@@ -772,7 +770,7 @@ class OctaveRow(PatternRow):
     """The Octave row: digits type an octave, and Bksp goes back to the default."""
 
     # The name shown is the range of octaves in the set's octave labels.
-    TYPE = (DIGITS, legends.KeyName.DIGITS, legends.MSG_TYPE_OCTAVE_WHAT)
+    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.MSG_TYPE_OCTAVE_WHAT)
     DEFAULT = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DEFAULT)
     IN_HELP = [TYPE, PatternRow.LESS, PatternRow.MORE, DEFAULT]
     IN_LEGEND = IN_HELP
@@ -790,7 +788,7 @@ class GateRow(PatternRow):
 class NumberRow(PatternRow):
     """A row of numbers, like Velocity: digits type into the cell, and Enter asks for the number."""
 
-    TYPE = (DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
+    TYPE = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
     ASK = (Key.ENTER, legends.KeyName.ENTER, legends.What.TYPE)
     DEFAULT = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.DEFAULT)
     IN_HELP = [TYPE, PatternRow.LESS, PatternRow.MORE, ASK, DEFAULT]
@@ -816,7 +814,7 @@ class SetRow(ControlRow):
 class CycleRow(PatternRow):
     """A row with a cycle of choices, like Dot: Space or Enter goes to the next, and [ and ] step back and forward as on every row, the one adjust system."""
 
-    NEXT = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
+    NEXT = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.NEXT)
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     IN_HELP = [NEXT, PatternRow.LESS, PatternRow.MORE, CLEAR]
     IN_LEGEND = IN_HELP
@@ -855,7 +853,7 @@ class ChordScaleRow(ChordRow):
 class ToggleRow(PatternRow):
     """A row that's on or off on each step: Space or Enter toggles."""
 
-    TOGGLE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     IN_HELP = [TOGGLE, CLEAR]
     IN_LEGEND = IN_HELP
@@ -902,8 +900,8 @@ class StatementRow(PatternRow):
 class SectionRow(PatternRow):
     """A section's heading: Space or Enter opens a closed section and closes an open one."""
 
-    OPEN = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_OPEN_SECTION_WHAT)
-    CLOSE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_CLOSE_SECTION_WHAT)
+    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_OPEN_SECTION_WHAT)
+    CLOSE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_CLOSE_SECTION_WHAT)
     IN_HELP = [OPEN, CLOSE]
     IN_LEGEND = IN_HELP
 
@@ -913,7 +911,7 @@ class SectionRow(PatternRow):
 class Dialog:
     """What every dialog has: Esc cancels."""
 
-    CANCEL = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CANCEL)
+    CANCEL = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CANCEL)
     IN_HELP = [CANCEL]
     IN_LEGEND = IN_HELP
 
@@ -929,7 +927,7 @@ class StartScreen:
 class MessageDialog(Dialog):
     """A message: Enter or Esc closes it."""
 
-    CLOSE = ((Key.ENTER, *CANCEL_KEYS), legends.KeyName.ENTER, legends.What.CLOSE)
+    CLOSE = ((Key.ENTER, *keys.CANCEL_KEYS), legends.KeyName.ENTER, legends.What.CLOSE)
     IN_HELP = [CLOSE]
     IN_LEGEND = IN_HELP
 
@@ -937,7 +935,7 @@ class MessageDialog(Dialog):
 class ConfirmDialog(MessageDialog):
     """A Yes or No question: Left and Right move between the buttons, Enter presses one, and Y and N answer at once."""
 
-    SELECT = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
     ANSWER = (Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
     YES = (Key.Y, legends.KeyName.Y, legends.What.YES)
     NO = (Key.N, legends.KeyName.N, legends.What.NO)
@@ -948,7 +946,7 @@ class ConfirmDialog(MessageDialog):
 class QuitDialog(MessageDialog):
     """Quitting with unsaved changes: Left and Right choose a button, Enter presses it, Q quits without saving, S saves and then quits, and Esc cancels."""
 
-    SELECT = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
     PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
     QUIT = (Key.Q, legends.KeyName.Q, legends.MSG_QUIT_WITHOUT_SAVING_WHAT)
     SAVE = (Key.S, legends.KeyName.S, legends.MSG_SAVE_THEN_QUIT_WHAT)
@@ -973,11 +971,11 @@ class ImportedDialog(MessageDialog):
 class ImportDialog(Dialog):
     """The MIDI import's dialog of fields: Up and Down pick a field, [ and ] step one, Space or Enter flips a toggle, Enter renames the song, and on the buttons Left and Right choose and Enter presses; I imports from anywhere."""
 
-    SELECT = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    LESS = ((Key.LEFT, *LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TOGGLE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    CHOOSE_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     RENAME = (Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
     PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
     IMPORT = (Key.I, legends.KeyName.I, legends.MSG_IMPORT_WHAT)
@@ -988,11 +986,11 @@ class ImportDialog(Dialog):
 class NewPatternDialog(Dialog):
     """The New Pattern dialog: Up and Down pick a row, [ and ] step the scale length, where Enter is OK, Space or Enter flips the drum toggle, and on the buttons Left and Right choose and Enter presses."""
 
-    SELECT = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    LESS = ((Key.LEFT, *LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TOGGLE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    CHOOSE_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     OK = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_OK_WHAT)
     PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, OK, PRESS]
@@ -1002,11 +1000,11 @@ class NewPatternDialog(Dialog):
 class NewRiffDialog(Dialog):
     """The New Riff dialog: Up and Down pick a row, [ and ] step a choice, where Enter writes the riff, Space or Enter flips the toggle, and on the buttons Left and Right choose and Enter presses."""
 
-    SELECT = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
-    LESS = ((Key.LEFT, *LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = ((Key.RIGHT, *MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TOGGLE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
+    SELECT = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    CHOOSE_BUTTON = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    LESS = ((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = ((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TOGGLE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     WRITE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_WRITE_RIFF_WHAT)
     PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, WRITE, PRESS]
@@ -1016,7 +1014,7 @@ class NewRiffDialog(Dialog):
 class PromptDialog(Dialog):
     """A prompt for text: Left and Right move the cursor in it."""
 
-    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     DONE = (Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
     ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
     IN_HELP = [Dialog.CANCEL, MOVE, DONE, ERASE]
@@ -1026,9 +1024,9 @@ class PromptDialog(Dialog):
 class ChoiceDialog(Dialog):
     """A picker, which searches as you type: Tab completes and Bksp erases once something is typed."""
 
-    MOVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    SEARCH = (SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    SEARCH = (keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
     ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
     COMPLETE = (Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
     IN_HELP = [Dialog.CANCEL, MOVE, CHOOSE, SEARCH, ERASE, COMPLETE]
@@ -1038,10 +1036,10 @@ class ChoiceDialog(Dialog):
 class GroupedChoiceDialog(ChoiceDialog):
     """A picker under headings: Space or Enter opens and closes a heading, PgUp and PgDn jump between headings, and typing searches every choice."""
 
-    OPEN = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
-    CLOSE = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.CLOSE)
+    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
+    CLOSE = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.CLOSE)
     HEADING = (Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_SECTION_WHAT)
-    START_SEARCH = (SEARCH_STARTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    START_SEARCH = (keys.SEARCH_STARTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
     IN_HELP = [Dialog.CANCEL, ChoiceDialog.MOVE, OPEN, CLOSE, ChoiceDialog.CHOOSE, HEADING, START_SEARCH, ChoiceDialog.SEARCH, ChoiceDialog.ERASE, ChoiceDialog.COMPLETE]
     IN_LEGEND = IN_HELP
 
@@ -1050,23 +1048,23 @@ class SoundDialog(Dialog):
     """The Sound dialog: Up and Down move, Space or Enter opens a group's flyout, where Enter takes a sound and Esc or Left closes it; / searches every
     sound, where Enter goes to the sound found; L tries the sound under the cursor."""
 
-    MOVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    MOVE_IN_FLYOUT = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    OPEN = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
+    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    MOVE_IN_FLYOUT = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
     CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     # While a flyout or the search is open, Esc closes it alone, the topmost thing.
-    CLOSE = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
+    CLOSE = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
     SEARCH = (Key.SLASH, legends.KeyName.SLASH, legends.What.SEARCH)
-    TYPE = (SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
+    TYPE = (keys.SEARCH_CHARACTERS, legends.KeyName.SEARCH_CHARACTERS, legends.What.SEARCH)
     FIND = (Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
     ERASE = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
     COMPLETE = (Key.TAB, legends.KeyName.TAB, legends.What.COMPLETE)
     LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     # On the Note row, where the asker's sound plays on one note: [ and ] step the note, a note's name is typed, and Enter sets what was typed or takes the note.
-    NOTE_LESS = (LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    NOTE_MORE = (MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    TYPE_NOTE = (NOTE_CHARACTERS, legends.KeyName.NOTE_LETTERS, legends.MSG_TYPE_NOTE_WHAT)
+    NOTE_LESS = (keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    NOTE_MORE = (keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    TYPE_NOTE = (keys.NOTE_CHARACTERS, legends.KeyName.NOTE_LETTERS, legends.MSG_TYPE_NOTE_WHAT)
     TAKE_NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     IN_HELP = [Dialog.CANCEL, CLOSE, MOVE, MOVE_IN_FLYOUT, OPEN, CHOOSE, SEARCH, TYPE, FIND, ERASE, COMPLETE, LISTEN, STOP_LISTENING, NOTE_LESS, NOTE_MORE, TYPE_NOTE, TAKE_NOTE]
     IN_LEGEND = IN_HELP
@@ -1075,7 +1073,7 @@ class SoundDialog(Dialog):
 class PickManyDialog(Dialog):
     """A list where several choices can be picked: Up and Down move, Space turns one on or off, Enter finishes and Esc cancels."""
 
-    MOVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     FLIP = (Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
     DONE = (Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
     IN_HELP = [Dialog.CANCEL, MOVE, FLIP, DONE]
@@ -1088,7 +1086,7 @@ class KeyswitchMapDialog(Dialog):
     On the buttons, Left and Right choose one and Enter presses it. In the note picker, drawn over the map, Left and Right move along the octave's keys, Up and Down change the octave, Enter takes the note and Esc closes the picker with nothing changed.
     """
 
-    MOVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    MOVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     RENAME = ((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
     NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_KEYSWITCH_NOTE_WHAT)
     # The cursor is on a slot's name or its note: Enter renames on the name and opens the note picker on the note, and the legend says which arrow reaches the other.
@@ -1097,12 +1095,12 @@ class KeyswitchMapDialog(Dialog):
     RENAME_HERE = (Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     OK = (Key.O, legends.KeyName.O, legends.MSG_OK_WHAT)
-    ALONG_BUTTONS = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    ALONG_BUTTONS = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
     PRESS = (Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
-    PICK_NOTE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
-    PICK_OCTAVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.MSG_KEYSWITCH_OCTAVE_WHAT)
+    PICK_NOTE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
+    PICK_OCTAVE = (keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.MSG_KEYSWITCH_OCTAVE_WHAT)
     TAKE_NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
-    CLOSE_PICKER = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
+    CLOSE_PICKER = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
     IN_HELP = [Dialog.CANCEL, MOVE, TO_NOTE, TO_NAME, RENAME, RENAME_HERE, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[Dialog.CANCEL, OK])
 
@@ -1110,9 +1108,9 @@ class KeyswitchMapDialog(Dialog):
 class RowDialog(Dialog):
     """The Row dialog, one row of numbers: Left and Right move, [ and ] change the number, I inserts a cell and D removes one, Bksp puts back the usual row, Enter is OK and Esc is CANCEL."""
 
-    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
-    LESS = (NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = (NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    LESS = (keys.NUDGE_LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = (keys.NUDGE_MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     INSERT_CELL = (Key.I, legends.KeyName.I, legends.What.INSERT_CELL)
     REMOVE_CELL = (Key.D, legends.KeyName.D, legends.What.REMOVE_CELL)
     USUAL = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_USUAL_ROW_WHAT)
@@ -1124,7 +1122,7 @@ class RowDialog(Dialog):
 class KeyswitchDialog(PickManyDialog):
     """The dialog that picks a step's keyswitches: Up and Down move, Space turns the slot under the cursor on or off, a digit turns its slot on or off, Enter is OK and Esc is CANCEL, the two shown as buttons."""
 
-    TOGGLE_SLOT = (DIGITS, legends.KeyName.DIGITS, legends.What.TOGGLE)
+    TOGGLE_SLOT = (keys.DIGITS, legends.KeyName.DIGITS, legends.What.TOGGLE)
     IN_HELP = [Dialog.CANCEL, PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT, PickManyDialog.DONE]
     IN_LEGEND = [PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT]
 
@@ -1132,14 +1130,14 @@ class KeyswitchDialog(PickManyDialog):
 class ChordDialog(Dialog):
     """The Chord dialog, three lists side by side: the arrows move, Tab goes to the next list, Space turns a tension on or off, Space or Enter on a category of scales opens its flyout, where Enter picks, and Enter elsewhere takes the chord."""
 
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     NEXT_LIST = (Key.TAB, legends.KeyName.TAB, legends.MSG_NEXT_LIST_WHAT)
     FLIP = (Key.SPACE, legends.KeyName.SPACE, legends.What.TOGGLE)
     CHOOSE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     # On a category of scale types, which opens its flyout, and on the row that borrows no scale.
-    OPEN = (TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
+    OPEN = (keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.OPEN)
     # While a flyout is open, Esc closes the flyout alone, the topmost thing.
-    CLOSE_FLYOUT = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
+    CLOSE_FLYOUT = (keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
     IN_HELP = [Dialog.CANCEL, CLOSE_FLYOUT, MOVE, NEXT_LIST, FLIP, OPEN, CHOOSE]
     IN_LEGEND = IN_HELP
 
@@ -1147,7 +1145,7 @@ class ChordDialog(Dialog):
 class GridChoiceDialog(ChoiceDialog):
     """A picker laid out as a grid, which all four arrows move over and which doesn't search: Tab and Shift+Tab turn its pages."""
 
-    MOVE = (ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    MOVE = (keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     OTHER_PAGE = (Steps(back=(Key.SHIFT_TAB,), forward=(Key.TAB,)), legends.KeyName.TAB_SHIFT_TAB, legends.What.OTHER_PAGE)
     IN_HELP = [Dialog.CANCEL, MOVE, ChoiceDialog.CHOOSE, OTHER_PAGE]
     IN_LEGEND = IN_HELP
@@ -1157,7 +1155,7 @@ class HelpDialog(Dialog):
     """The F1 dialog: Tab, Left and Right turn between its two panels, and F1 closes it like Enter and Esc, off the legend."""
 
     CLOSE = ((Key.ENTER, Key.ESCAPE, Key.F1), legends.KeyName.ENTER_ESCAPE, legends.What.CLOSE)
-    OTHER_PANEL = ((Key.TAB, *ARROWS_LEFT_RIGHT), legends.KeyName.TAB_ARROWS, legends.What.OTHER_PANEL)
+    OTHER_PANEL = ((Key.TAB, *keys.ARROWS_LEFT_RIGHT), legends.KeyName.TAB_ARROWS, legends.What.OTHER_PANEL)
     IN_HELP = [CLOSE, OTHER_PANEL]
     IN_LEGEND = IN_HELP
 
@@ -1165,6 +1163,6 @@ class HelpDialog(Dialog):
 class AboutDialog(Dialog):
     """The About dialog: Enter or Esc closes it."""
 
-    CLOSE = ((Key.ENTER, *CANCEL_KEYS), legends.KeyName.ENTER_ESCAPE, legends.What.CLOSE)
+    CLOSE = ((Key.ENTER, *keys.CANCEL_KEYS), legends.KeyName.ENTER_ESCAPE, legends.What.CLOSE)
     IN_HELP = [CLOSE]
     IN_LEGEND = IN_HELP

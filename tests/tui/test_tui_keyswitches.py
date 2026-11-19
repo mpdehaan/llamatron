@@ -26,13 +26,15 @@ from llamatron.strings import errors, labels, marks, messages
 from llamatron.music import midi
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
 from llamatron.tui.components.keyswitch_row import slot_row_name
-from llamatron.tui.dialogs.keyswitch_map_dialog import BUTTONS_PLACE, NAME_CELL, NOTE_CELL, KeyswitchMapDialog, first_note_offered
+from llamatron.tui.dialogs import keyswitch_map_dialog
+from llamatron.tui.dialogs.keyswitch_map_dialog import KeyswitchMapDialog, first_note_offered
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import Style, cursor_mark
-from llamatron.tui.keys import RowSection, DIGITS, Key
+from llamatron.tui import keys
+from llamatron.tui.keys import RowSection, Key
 from llamatron.tui.keyswitch_text import keyswitch_note_text
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.pattern.roll_drawing import TOP_PITCH_LINE
+from llamatron.tui.screens.pattern import roll_drawing
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui import keybindings
 from tests.support.pattern_editor_testing import PatternEditorTest, open_section
@@ -119,14 +121,14 @@ class TestKeyswitchMap(UITest):
         self.assertIn(key_name(MAP.TO_NOTE), shown)
         self.assertNotIn(key_name(MAP.TO_NAME), shown)
         await self.press(MAP.TO_NOTE)
-        self.assertEqual(dialog.cell, NOTE_CELL)
+        self.assertEqual(dialog.cell, keyswitch_map_dialog.NOTE_CELL)
         self.assertIn(key_name(MAP.TO_NAME), self.text())
 
     async def test_the_cursor_is_on_the_name_where_enter_renames_or_on_the_note_where_enter_picks(self):
         dialog = await self.open_map()
-        self.assertEqual(dialog.cell, NAME_CELL)
+        self.assertEqual(dialog.cell, keyswitch_map_dialog.NAME_CELL)
         await self.press(Key.LEFT)
-        self.assertEqual(dialog.cell, NAME_CELL)
+        self.assertEqual(dialog.cell, keyswitch_map_dialog.NAME_CELL)
         self.assertIn(cursor_mark(True) + marks.MSG_NONE_SHOWN, self.text())
         await self.press(MAP.RENAME_HERE)
         self.assertIsInstance(self.app.screen, PromptDialog)
@@ -136,9 +138,9 @@ class TestKeyswitchMap(UITest):
         self.assertIn(cursor_mark(True) + SUSTAIN, self.text())
         # Down keeps the cursor on the names, so that one slot after another is named.
         await self.press(Key.DOWN)
-        self.assertEqual((dialog.place, dialog.cell), (STACCATO_SLOT, NAME_CELL))
+        self.assertEqual((dialog.place, dialog.cell), (STACCATO_SLOT, keyswitch_map_dialog.NAME_CELL))
         await self.press(Key.RIGHT, Key.RIGHT)
-        self.assertEqual(dialog.cell, NOTE_CELL)
+        self.assertEqual(dialog.cell, keyswitch_map_dialog.NOTE_CELL)
         await self.press(MAP.NOTE)
         self.assertIsNotNone(dialog.picking)
         await self.press(MAP.TAKE_NOTE)
@@ -164,7 +166,7 @@ class TestKeyswitchMap(UITest):
         self.assertIn(MAP.NOTE, [item.binding for item in dialog.keys()])
 
     async def test_cancel_changes_nothing_by_its_key_or_its_button(self):
-        for presses in ([Key.ESCAPE], [*[Key.DOWN] * BUTTONS_PLACE, Key.RIGHT, MAP.PRESS]):
+        for presses in ([Key.ESCAPE], [*[Key.DOWN] * keyswitch_map_dialog.BUTTONS_PLACE, Key.RIGHT, MAP.PRESS]):
             with self.subTest(presses=presses):
                 await self.open_map()
                 await self.name_slot(SUSTAIN)
@@ -175,7 +177,7 @@ class TestKeyswitchMap(UITest):
     async def test_the_ok_button_is_reached_with_down_and_pressed_with_enter(self):
         dialog = await self.open_map()
         await self.name_slot(SUSTAIN)
-        await self.press(*[Key.DOWN] * (BUTTONS_PLACE + 1))
+        await self.press(*[Key.DOWN] * (keyswitch_map_dialog.BUTTONS_PLACE + 1))
         self.assertTrue(dialog.on_buttons())
         await self.press(MAP.PRESS)
         self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, None))
@@ -296,9 +298,9 @@ class TestKeyswitchRow(PatternEditorTest):
         dialog = await self.open_dialog()
         self.assertIn(messages.MSG_KEYSWITCH_DIALOG_TITLE.format(step=FIRST_STEP + 1), self.text())
         await self.press(PICK.FLIP)
-        await self.press(DIGITS[3])
+        await self.press(keys.DIGITS[3])
         self.assertEqual(dialog.place, 3)
-        await self.press(DIGITS[9], DIGITS[9])
+        await self.press(keys.DIGITS[9], keys.DIGITS[9])
         self.assertIsNone(self.value(row=Row.KEYSWITCH))
         await self.press(PICK.DONE)
         self.assertEqual(self.value(row=Row.KEYSWITCH), (0, 3))
@@ -309,8 +311,8 @@ class TestKeyswitchRow(PatternEditorTest):
         dialog = await self.open_dialog()
         shown = [item.binding for item in dialog.keys() if item.shown]
         self.assertEqual(shown, [PICK.MOVE, PICK.FLIP, PICK.TOGGLE_SLOT])
-        self.assertEqual(PICK.TOGGLE_SLOT[0], DIGITS)
-        self.assertEqual(first_key(PICK.TOGGLE_SLOT), DIGITS[0])
+        self.assertEqual(PICK.TOGGLE_SLOT[0], keys.DIGITS)
+        self.assertEqual(first_key(PICK.TOGGLE_SLOT), keys.DIGITS[0])
 
     async def test_cancel_changes_nothing_and_turning_every_slot_off_clears_the_step(self):
         await self.open_dialog()
@@ -336,13 +338,13 @@ class TestKeyswitchRow(PatternEditorTest):
         self.assertIn(VIOLIN, text)
         self.assertIn(STACCATO, text)
         self.assertIn(keyswitch_note_text(setlist=self.document.setlist(), note=STACCATO_NOTE), text)
-        await self.press(DIGITS[STACCATO_SLOT], PICK.DONE)
+        await self.press(keys.DIGITS[STACCATO_SLOT], PICK.DONE)
         self.assertIn(messages.MSG_DESCRIBE_KEYSWITCHES.format(names=STACCATO), self.text())
 
     async def test_a_slot_with_no_note_can_still_be_turned_on(self):
         add_violin(self.document)
         await self.open_dialog()
-        await self.press(DIGITS[file_format.KEYSWITCH_SLOT_COUNT - 1], PICK.DONE)
+        await self.press(keys.DIGITS[file_format.KEYSWITCH_SLOT_COUNT - 1], PICK.DONE)
         self.assertEqual(self.value(row=Row.KEYSWITCH), (file_format.KEYSWITCH_SLOT_COUNT - 1,))
 
     async def test_two_instruments_playing_the_pattern_leave_the_slots_numbered(self):
@@ -387,12 +389,12 @@ class TestKeyswitchesOnTheRoll(UITest):
         """Return the roll's top row as drawn, the line under the header's lines, the step numbers and the heading's rule."""
         drawing = self.editor.roll_drawing
         first, last = self.editor.first_step, self.editor.first_step + self.editor.steps()
-        return drawing.grid_lines(first=first, last=last, pitches=drawing.pitches_shown(self.app.size.height))[TOP_PITCH_LINE]
+        return drawing.grid_lines(first=first, last=last, pitches=drawing.pitches_shown(self.app.size.height))[roll_drawing.TOP_PITCH_LINE]
 
     async def test_the_key_opens_the_dialog_for_the_note_on_the_cursors_step_whatever_the_row(self):
         await self.press(Key.DOWN, Key.DOWN, keybindings.PianoRoll.KEYSWITCH)
         self.assertIsInstance(self.app.screen, KeyswitchDialog)
-        await self.press(DIGITS[STACCATO_SLOT], PICK.DONE)
+        await self.press(keys.DIGITS[STACCATO_SLOT], PICK.DONE)
         self.assertEqual(self.value(FIRST_STEP), (STACCATO_SLOT,))
 
     async def test_a_step_no_note_covers_is_refused_and_no_note_is_drawn(self):

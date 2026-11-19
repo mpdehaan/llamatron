@@ -26,7 +26,7 @@ import unittest
 
 from llamatron.composition.setlist import file_stem
 from llamatron.tui.document import Document
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.text import clock
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'demo_summary.py'
@@ -82,7 +82,7 @@ class TestDemoSummary(unittest.TestCase):
         self.assertEqual(self.cell(row=row, heading=self.tool.TRACKS_HEADING), HELLO_WORLD_TRACKS)
         self.assertEqual(self.cell(row=row, heading=CHORDS_COLUMN), self.tool.USED)
         self.assertEqual(self.cell(row=row, heading=REGISTERS_COLUMN), self.tool.UNUSED)
-        self.assertEqual(self.tool.UNUSED, NOTHING)
+        self.assertEqual(self.tool.UNUSED, drawing.NOTHING)
 
     def test_a_set_that_uses_a_registers_feature_is_marked_in_that_column(self):
         row = self.tool.summary_row(path=TIE_DEMO, features=self.features)
@@ -112,7 +112,7 @@ class TestDemoSummary(unittest.TestCase):
         self.assertEqual(len(lines), HEADING_LINES + 2)
         for heading in self.tool.headings():
             self.assertIn(heading, lines[0])
-        self.assertEqual(set(lines[1].replace(self.tool.COLUMN_GAP, NOTHING)), {self.tool.RULE})
+        self.assertEqual(set(lines[1].replace(self.tool.COLUMN_GAP, drawing.NOTHING)), {self.tool.RULE})
         self.assertTrue(lines[2].startswith(self.features.short_name(HELLO_WORLD)))
         self.assertEqual(len(lines[1]), max(len(line) for line in lines))
 

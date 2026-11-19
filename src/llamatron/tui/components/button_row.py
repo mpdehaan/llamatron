@@ -19,12 +19,13 @@ real window's buttons."""
 
 from rich.text import Text
 
-from llamatron.tui.drawing import Box, NOTHING, SPACE, Style, padded
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style, padded
 
 # The space between two buttons, and inside a box before its key's reversed label and after its name, so that the label stands clear of the box's side as on the
 # main screen.
-BUTTON_GAP = SPACE
-INSIDE = SPACE
+BUTTON_GAP = drawing.SPACE
+INSIDE = drawing.SPACE
 ROW_LINES = 3
 
 
@@ -37,8 +38,8 @@ def button_row(*, buttons, selected):
             (Box.DOUBLE_TOP_LEFT, Box.DOUBLE_TOP_RIGHT, Box.DOUBLE_BOTTOM_LEFT, Box.DOUBLE_BOTTOM_RIGHT, Box.DOUBLE_RULE, Box.DOUBLE_BAR) if double
             else (Box.TOP_LEFT, Box.TOP_RIGHT, Box.BOTTOM_LEFT, Box.BOTTOM_RIGHT, Box.RULE, Box.BAR))
         # A button with no key of its own shows its name alone.
-        key = padded(key_name) if key_name else NOTHING
-        inner = len(INSIDE) + len(key) + (len(SPACE) if key else 0) + len(label) + len(INSIDE)
+        key = padded(key_name) if key_name else drawing.NOTHING
+        inner = len(INSIDE) + len(key) + (len(drawing.SPACE) if key else 0) + len(label) + len(INSIDE)
         if place:
             for line in lines:
                 line.append(BUTTON_GAP)
@@ -46,7 +47,7 @@ def button_row(*, buttons, selected):
         lines[1].append(bar + INSIDE)
         if key:
             lines[1].append(key, style=Style.REVERSE)
-            lines[1].append(SPACE)
+            lines[1].append(drawing.SPACE)
         lines[1].append(label, style=Style.BOLD if double else Style.PLAIN)
         lines[1].append(INSIDE + bar)
         lines[2].append(bottom_left + rule * inner + bottom_right)

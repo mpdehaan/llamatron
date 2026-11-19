@@ -27,7 +27,7 @@ from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_riff_dialog import NewRiffDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.screens.shared.field import Field
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -56,7 +56,7 @@ class RiffsBranch(Branch):
             riffs = choices.riffs_for(role)
             fields.append(self.player_heading(role=role, count=len(riffs), columns=labels.MSG_WIZARD_RIFF_COLUMNS))
             fields += [self.riff_field(riff) for riff in riffs]
-            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: NOTHING, enter=lambda role=role: self.add_riff(role), enter_what=legends.What.ADD))
+            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: drawing.NOTHING, enter=lambda role=role: self.add_riff(role), enter_what=legends.What.ADD))
         return fields
 
     def player_heading(self, *, role, count, columns):

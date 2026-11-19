@@ -28,7 +28,7 @@ from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.shared.field import Cells
-from llamatron.tui.screens.shared.statements import FIRST_TABLE, SECOND_TABLE
+from llamatron.tui.screens.shared import statements
 from tests.support.ui_testing import LEAD, ROLLS, UITest
 
 AX = RegisterName.AX
@@ -47,7 +47,7 @@ def line_label(*, table, line):
 class StatementsTest(UITest):
     """What every test of a table shares: reaching a line, and writing AX % 3 = 0 on it by pressing keys."""
 
-    async def to_line(self, *, table=FIRST_TABLE, line=0):
+    async def to_line(self, *, table=statements.FIRST_TABLE, line=0):
         await self.select_field(line_label(table=table, line=line))
         self.assertIsInstance(self.app.screen.field(), Cells)
 
@@ -175,7 +175,7 @@ class TestStatementsOnOtherPages(StatementsTest):
     async def test_a_clip_has_two_tables(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
         self.assertIsInstance(self.app.screen, ClipPage)
-        await self.write_every_third(table=SECOND_TABLE)
+        await self.write_every_third(table=statements.SECOND_TABLE)
         clip_slot = self.document.clip_slot(index=0, track=LEAD)
         self.assertEqual(clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), [self.every_third()])
         self.assertEqual(clip_slot.get_statements(ClipSlotSetting.BYPASS_WHEN), [])

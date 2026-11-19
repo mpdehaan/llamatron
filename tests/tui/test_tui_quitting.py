@@ -20,7 +20,7 @@ from unittest import mock
 
 from tests.support.ui_testing import UITest, key_name
 from llamatron.tui.drawing import Box
-from llamatron.tui.dialogs.dialog import DIALOG_VIEW_SELECTOR
+from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
@@ -70,7 +70,7 @@ class TestQuitting(UITest):
     async def test_the_quit_dialogs_buttons_are_inside_its_box(self):
         self.document.changed()
         await self.press(keybindings.MainPage.QUIT)
-        lines = str(self.app.screen.query_one(DIALOG_VIEW_SELECTOR).render()).splitlines()
+        lines = str(self.app.screen.query_one(dialog.DIALOG_VIEW_SELECTOR).render()).splitlines()
         # The box is as wide as its three buttons need: every line is the box's width and ends at its side.
         self.assertEqual({len(line) for line in lines}, {len(lines[0])})
         for line in lines[1:-1]:

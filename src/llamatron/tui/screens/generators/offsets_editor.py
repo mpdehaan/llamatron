@@ -29,7 +29,8 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.generators import arp as arp_values
 from llamatron.tui.components.signed_gauge import SignedGauge
-from llamatron.tui.drawing import Box, NOTHING, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
@@ -140,15 +141,15 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
         gauge = SignedGauge(values=self.offsets(), levels=self.gauge_levels(height), cursor=self.step)
         lines = [
             self.with_steps_shown(text=messages.MSG_OFFSETS_NOTE, style=Style.DIM, width=width, first=first, last=last),
-            Text(NOTHING),
+            Text(drawing.NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
         ]
         lines.append(self.grid_line(label=labels.MSG_STEP_ROW_LABEL, cells=[(place, gauge.step_text(place)) for place in places], selected=self.step, bold=True))
         for level in gauge.levels_above():
-            lines.append(self.grid_line(label=NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
+            lines.append(self.grid_line(label=drawing.NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
         lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
         for level in gauge.levels_below():
-            lines.append(self.grid_line(label=NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
+            lines.append(self.grid_line(label=drawing.NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
         on_offsets = self.register_edited() is None
         lines.append(self.grid_line(label=labels.MSG_OFFSET_ROW_LABEL, cells=[(place, gauge.value_text(place)) for place in places], selected=self.step if on_offsets else None))
         shown = self.shown_add_rows()

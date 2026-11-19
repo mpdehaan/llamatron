@@ -20,7 +20,7 @@ from tests.support.ui_testing import (
     STRUMMER, BREATHES, CLAVE, CLIPPED, CLIPS, FADE, FOLK, FOLLOWS, KEY_SHOWN, LAZY, PICKED, POP, PUSH, ROLLS, SLIDES, SMOOTH, SWAY, THIN, TRADE, UP_ARP, UITest, back_key, first_key, fixed_text, forward_key, key_name, key_of,
 )
 from llamatron.strings import labels, legends, marks, messages, names as names_text
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section
 from llamatron.composition.generator_settings import ArpSetting, written_name
@@ -29,7 +29,8 @@ from llamatron.generators import arp
 from llamatron.generators.arp import ChordOrder, OctaveJump
 from llamatron.music import note
 from llamatron.music.note import NoteName
-from llamatron.tui.components.keyboard import Keyboard, KEY_WIDTH as KEYBOARD_KEY_WIDTH
+from llamatron.tui.components import keyboard
+from llamatron.tui.components.keyboard import Keyboard
 from llamatron.music.scale import ScaleType
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
@@ -210,9 +211,9 @@ class TestScalePage(UITest):
         lines = Keyboard(root=NoteName.C_SHARP, half_steps=ScaleType.MAJOR.value).lines()
         self.assertEqual(lines[0].count(marks.MSG_KEY_IN_SCALE), 10)
         self.assertEqual(lines[1].count(marks.MSG_KEY_IN_SCALE), 4)
-        self.assertNotIn(note.SHARP_NAMES[0].center(KEYBOARD_KEY_WIDTH), lines[2])
-        self.assertNotIn(note.SHARP_NAMES[2].center(KEYBOARD_KEY_WIDTH), lines[2])
-        self.assertIn(note.SHARP_NAMES[4].center(KEYBOARD_KEY_WIDTH), lines[2])
+        self.assertNotIn(note.SHARP_NAMES[0].center(keyboard.KEY_WIDTH), lines[2])
+        self.assertNotIn(note.SHARP_NAMES[2].center(keyboard.KEY_WIDTH), lines[2])
+        self.assertIn(note.SHARP_NAMES[4].center(keyboard.KEY_WIDTH), lines[2])
 
     async def test_the_scale_page_renames_the_scale_and_what_uses_it(self):
         self.document.set_scene_scale(index=0, name=setlist.DEFAULT_SCALE)
@@ -687,15 +688,15 @@ class TestOffsetsEditor(UITest):
         # A tall console gives seven levels either side, so 9 fills its column and is marked.
         self.assertEqual(text.count(marks.MSG_GAUGE_BAR), 3 + 2 + GAUGE_LEVELS_ON_A_TALL_CONSOLE)
         self.assertIn(marks.MSG_POSITIVE_VALUE.format(value=9, mark=marks.MSG_OVER_THE_TOP_MARK), text)
-        self.assertIn(marks.MSG_OTHER_VALUE.format(value=-2, mark=NOTHING), text)
-        self.assertIn(marks.MSG_OTHER_VALUE.format(value=0, mark=NOTHING), text)
-        self.assertNotIn(marks.MSG_POSITIVE_VALUE.format(value=0, mark=NOTHING), text)
+        self.assertIn(marks.MSG_OTHER_VALUE.format(value=-2, mark=drawing.NOTHING), text)
+        self.assertIn(marks.MSG_OTHER_VALUE.format(value=0, mark=drawing.NOTHING), text)
+        self.assertNotIn(marks.MSG_POSITIVE_VALUE.format(value=0, mark=drawing.NOTHING), text)
 
     async def test_the_cursors_column_is_marked_at_both_ends(self):
         await self.open_offsets([3, -9])
         text = self.text()
         self.assertIn(marks.MSG_CURSOR_STEP_MARKS.format(text=1), text)
-        self.assertIn(marks.MSG_CURSOR_VALUE_MARKS.format(text=marks.MSG_POSITIVE_VALUE.format(value=3, mark=NOTHING)), text)
+        self.assertIn(marks.MSG_CURSOR_VALUE_MARKS.format(text=marks.MSG_POSITIVE_VALUE.format(value=3, mark=drawing.NOTHING)), text)
         await self.press(Key.RIGHT)
         text = self.text()
         self.assertIn(marks.MSG_CURSOR_STEP_MARKS.format(text=2), text)

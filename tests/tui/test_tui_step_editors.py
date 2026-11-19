@@ -30,7 +30,8 @@ from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
 from llamatron.strings import legends, marks
 from llamatron.tui import keybindings
-from llamatron.tui.drawing import Box, NOTHING
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
 from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
@@ -152,7 +153,7 @@ class OneRowChecks:
         await self.press(*[self.PAGE.REMOVE] * max(len(self.values()) - fits, 0))
         self.assertLessEqual(len(self.values()), fits)
         self.assertGreater(len(self.values()), self.PAGE.FEWEST_STEPS)
-        self.assertNotIn(self.SHOWN.format(before=NOTHING, first=1, last=len(self.values()), after=NOTHING), self.text())
+        self.assertNotIn(self.SHOWN.format(before=drawing.NOTHING, first=1, last=len(self.values()), after=drawing.NOTHING), self.text())
         self.assertEqual(self.text().count(Box.TOP_LEFT), 1)
 
     async def test_a_row_wider_than_the_screen_scrolls_sideways_and_says_which_steps_are_shown(self):
@@ -162,7 +163,7 @@ class OneRowChecks:
         count = self.PAGE.MOST_STEPS
         self.assertLess(shown, count)
         self.assertEqual(self.page.first_step, FIRST_STEP)
-        self.assertIn(self.SHOWN.format(before=NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
+        self.assertIn(self.SHOWN.format(before=drawing.NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
         # The grid is one block however long the row is: it scrolls, and never wraps onto a second block.
         self.assertEqual(self.text().count(Box.TOP_LEFT), 1)
         await self.press(*[Key.RIGHT] * shown)
@@ -171,7 +172,7 @@ class OneRowChecks:
         await self.press(*[Key.RIGHT] * count)
         self.assertEqual(self.page.step, count - 1)
         self.assertEqual(self.page.first_step, count - shown)
-        self.assertIn(self.SHOWN.format(before=marks.MSG_MORE_BEFORE, first=count - shown + 1, last=count, after=NOTHING), self.text())
+        self.assertIn(self.SHOWN.format(before=marks.MSG_MORE_BEFORE, first=count - shown + 1, last=count, after=drawing.NOTHING), self.text())
         await self.press(*[Key.LEFT] * count)
         self.assertEqual(self.page.first_step, FIRST_STEP)
 

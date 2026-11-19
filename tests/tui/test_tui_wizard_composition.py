@@ -24,18 +24,19 @@ from llamatron.macro_composer.song_plan import FADES
 from llamatron.macro_composer.wizard_choices import ACCOMPANIMENT, FADE_IN, FIRST_TUNE_TAKE, LAYERS, MELODY_BUSY, MELODY_RANGE, MELODY_SPARSE, MELODY_WAYS, MELODY_WIDE, SMOOTH
 from llamatron.strings import errors, labels, marks, messages, names
 from llamatron.tui import keybindings
-from llamatron.tui.components.button_row import ROW_LINES
+from llamatron.tui.components import button_row
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_riff_dialog import NewRiffDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import NOTHING, SELECTED_MARK, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.field import Heading
-from llamatron.tui.screens.wizard.intro_melody_branch import FIRST_PART, INTRO_MELODY_KEY
-from llamatron.tui.screens.wizard.section_melody_branch import MELODY_KEY
-from llamatron.tui.screens.wizard.solo_melody_branch import FIRST_SOLO, SOLO_MELODY_KEY
+from llamatron.tui.screens.wizard import intro_melody_branch
+from llamatron.tui.screens.wizard import section_melody_branch
+from llamatron.tui.screens.wizard import solo_melody_branch
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
@@ -154,7 +155,7 @@ class TestWizardSectionMelody(CompositionTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_panel(MELODY_KEY.format(kind=A_KIND))
+        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=A_KIND))
 
     async def test_height_is_the_genres_until_chosen_and_busy_is_the_songs_until_chosen(self):
         choices = self.choices()
@@ -214,18 +215,18 @@ class TestWizardSectionMelody(CompositionTest):
     async def test_the_panel_has_four_buttons_edit_first_with_no_key_of_their_own_and_listen_names_the_melody(self):
         buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON]
         self.assertEqual(self.field_labels()[-len(buttons):], buttons)
-        self.assertEqual([field.key_name for field in self.wizard().shown_fields()[-len(buttons):]], [NOTHING] * len(buttons))
+        self.assertEqual([field.key_name for field in self.wizard().shown_fields()[-len(buttons):]], [drawing.NOTHING] * len(buttons))
         self.assertIsNone(self.wizard().branch().heard_with_band()[2])
 
     async def test_buttons_too_wide_for_a_row_stand_one_under_another_and_up_and_down_go_through_them(self):
         wizard = self.wizard()
         buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON]
         fields = wizard.shown_fields()[-len(buttons):]
-        self.assertEqual(len(wizard.row_of_buttons(buttons=fields, selected=0, width=A_WIDE_ROOM)), ROW_LINES)
+        self.assertEqual(len(wizard.row_of_buttons(buttons=fields, selected=0, width=A_WIDE_ROOM)), button_row.ROW_LINES)
         self.assertFalse(wizard.buttons_stacked())
         lines = wizard.row_of_buttons(buttons=fields, selected=1, width=A_NARROW_ROOM)
         self.assertEqual([line.plain.strip() for line in lines],
-                         [marks.MSG_STACKED_BUTTON.format(name=name) if place != 1 else SELECTED_MARK + marks.MSG_STACKED_BUTTON.format(name=name) for place, name in enumerate(buttons)])
+                         [marks.MSG_STACKED_BUTTON.format(name=name) if place != 1 else drawing.SELECTED_MARK + marks.MSG_STACKED_BUTTON.format(name=name) for place, name in enumerate(buttons)])
         self.assertTrue(wizard.buttons_stacked())
         await self.select_field(buttons[0])
         wizard.stacked_buttons = True
@@ -245,7 +246,7 @@ class TestWizardSectionMelody(CompositionTest):
         choices = self.choices()
         kind, _ = choices.hook_line_place()
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.open_panel(MELODY_KEY.format(kind=kind))
+        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=kind))
         self.assertTrue(choices.is_body_of_hook(kind))
         for label in (labels.MSG_WIZARD_PLACEMENT_LABEL, *(labels.MSG_WIZARD_BODY_GAUGE_LABELS[name] for name in choices.body_gauges()), labels.MSG_WIZARD_HOOK_HEADING,
                       labels.MSG_WIZARD_BEHAVIOR_LABEL, *(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name] for name in choices.hook_gauges())):
@@ -259,7 +260,7 @@ class TestWizardSectionMelody(CompositionTest):
         choices = self.choices()
         kind, _ = choices.hook_line_place()
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.open_panel(MELODY_KEY.format(kind=kind))
+        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=kind))
         usual = labels.MSG_WIZARD_VALUE_FROM.format(value=choices.genre_hook_placement(), origin=labels.MSG_WIZARD_USUAL_MELODY)
         await self.select_field(labels.MSG_WIZARD_PLACEMENT_LABEL)
         self.assertEqual(self.wizard().field().value(), usual)
@@ -276,7 +277,7 @@ class TestWizardSectionMelody(CompositionTest):
         choices = self.choices()
         kind, _ = choices.hook_line_place()
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.open_panel(MELODY_KEY.format(kind=kind))
+        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=kind))
         usual = choices.genre_body_gauge(hook_writing.SPACE)
         await self.select_field(labels.MSG_WIZARD_BODY_GAUGE_LABELS[hook_writing.SPACE])
         self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=labels.MSG_WIZARD_USUAL_MELODY), self.wizard().field().value())
@@ -289,7 +290,7 @@ class TestWizardSectionMelody(CompositionTest):
     async def test_no_panel_of_a_kinds_melody_holds_the_hook(self):
         kind, _ = self.choices().hook_line_place()
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.open_panel(MELODY_KEY.format(kind=kind))
+        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=kind))
         self.assertNotIn(labels.MSG_WIZARD_INTRO_HOOK_LABEL, self.field_labels())
         self.assertNotIn(marks.MSG_WIZARD_HOOK_CELL, self.text())
 
@@ -301,7 +302,7 @@ class TestWizardIntroMelody(CompositionTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_panel(INTRO_MELODY_KEY)
+        await self.open_panel(intro_melody_branch.INTRO_MELODY_KEY)
 
     def part(self, number):
         return labels.MSG_WIZARD_INTRO_PART.format(number=number)
@@ -310,7 +311,7 @@ class TestWizardIntroMelody(CompositionTest):
         await self.select_field(self.part(number))
         await self.press(Key.ENTER)
 
-    async def choose_first_player(self, number=FIRST_PART):
+    async def choose_first_player(self, number=intro_melody_branch.FIRST_PART):
         choices = self.choices()
         await self.open_part(number)
         await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
@@ -320,19 +321,19 @@ class TestWizardIntroMelody(CompositionTest):
         choices = self.choices()
         buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON, labels.MSG_WIZARD_ADD_PART_BUTTON]
         self.assertEqual(len(choices.intro_parts()), ONE_PART)
-        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_STARTS_LABEL, self.part(FIRST_PART), *buttons])
+        self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_STARTS_LABEL, self.part(intro_melody_branch.FIRST_PART), *buttons])
         # With nobody saying the hook, the panel says where to choose a player, and Edit Notes and Listen say so too.
-        self.assertIn(messages.MSG_WIZARD_PART_NO_MELODY.format(number=FIRST_PART), self.text())
+        self.assertIn(messages.MSG_WIZARD_PART_NO_MELODY.format(number=intro_melody_branch.FIRST_PART), self.text())
         self.assertIsNone(self.wizard().branch().listens())
         await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertIn(errors.ERR_WIZARD_PART_NO_MELODY.format(number=FIRST_PART), self.text())
+        self.assertIn(errors.ERR_WIZARD_PART_NO_MELODY.format(number=intro_melody_branch.FIRST_PART), self.text())
         # Listen With Band plays the part whether or not it has a melody.
         self.assertEqual(self.wizard().branch().heard_with_band()[1:], (choices.intro_parts()[0], None))
         await self.choose_first_player()
         self.assertEqual(choices.intro_melody_player(choices.intro_parts()[0]), choices.intro_hook_players()[0])
-        self.assertIn(messages.MSG_WIZARD_PART_NOTES.format(number=FIRST_PART, notes=messages.MSG_WIZARD_HOOK_MADE), self.text())
+        self.assertIn(messages.MSG_WIZARD_PART_NOTES.format(number=intro_melody_branch.FIRST_PART, notes=messages.MSG_WIZARD_HOOK_MADE), self.text())
         what, place, track = self.wizard().branch().listens()
         self.assertEqual((place, track), (choices.intro_parts()[0], choices.intro_hook_players()[0]))
         self.assertTrue(self.wizard().branch().listens_alone())
@@ -344,7 +345,7 @@ class TestWizardIntroMelody(CompositionTest):
         await self.pick(LAYERS)
         parts = choices.intro_parts()
         self.assertGreater(len(parts), ONE_PART)
-        self.assertEqual([label for label in self.field_labels() if label.startswith(self.part(FIRST_PART)[:-1])], [self.part(number) for number, _ in enumerate(parts, start=FIRST_PART)])
+        self.assertEqual([label for label in self.field_labels() if label.startswith(self.part(intro_melody_branch.FIRST_PART)[:-1])], [self.part(number) for number, _ in enumerate(parts, start=intro_melody_branch.FIRST_PART)])
         last = len(parts)
         await self.open_part(last)
         fade = labels.MSG_WIZARD_FADE_LABELS[FADE_IN][FADES]
@@ -399,7 +400,7 @@ class TestWizardSoloMelody(CompositionTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_panel(SOLO_MELODY_KEY.format(number=FIRST_SOLO))
+        await self.open_panel(solo_melody_branch.SOLO_MELODY_KEY.format(number=solo_melody_branch.FIRST_SOLO))
 
     async def test_the_panel_says_who_plays_the_solo_and_in_which_section_and_has_its_buttons_edit_first(self):
         choices = self.choices()
@@ -508,7 +509,7 @@ class TestWizardHooks(CompositionTest):
         usual = labels.MSG_WIZARD_VALUE_FROM.format(value=choices.genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY)
         before = choices.hook_notes()
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.open_panel(MELODY_KEY.format(kind=choices.hook_kind()))
+        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=choices.hook_kind()))
         await self.select_field(labels.MSG_WIZARD_BEHAVIOR_LABEL)
         self.assertEqual(self.wizard().field().value(), usual)
         await self.press(Key.ENTER)

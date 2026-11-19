@@ -45,19 +45,22 @@ from llamatron.tui.components.number_row import NumberRow
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.new_pattern_dialog import SCALE_LENGTHS
+from llamatron.tui.dialogs import new_pattern_dialog
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.key_table import first_key
-from llamatron.tui.keys import ARROWS, Key, SPACE_CHARACTER
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage, FIRST_TRACK_COLUMN, HEADER_ROW, SCENE_COLUMN
+from llamatron.tui.screens.arrange import arrange_page
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import cell_opened_by, MainPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.tui.screens.pattern.patterns_page import HEADING, NEW_GROUP, NEW_PATTERN, Listed, PatternsPage
+from llamatron.tui.screens.pattern import patterns_page
+from llamatron.tui.screens.pattern.patterns_page import Listed, PatternsPage
 from llamatron.tui.screens.set.scale_page import scale_label
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -214,7 +217,7 @@ class TutorialPlan:
     def type_text(self, text, *, in_dialog=False):
         """Type the text a key at a time, into a dialog when in_dialog says so, and never called out, since what is typed shows where it goes."""
         for character in text:
-            yield from self.pressing(Key.SPACE if character == SPACE_CHARACTER else character, in_dialog=in_dialog, typed=True)
+            yield from self.pressing(Key.SPACE if character == keys_values.SPACE_CHARACTER else character, in_dialog=in_dialog, typed=True)
 
     def pressing(self, key, *, in_dialog=False, what=None, typed=False):
         """Return the steps of a key's press: what it says first, and the press. The arrows, Enter and Space are explained once where they matter, a letter is called the first time on each kind of page with its legend's words, and what is typed is never called."""
@@ -232,12 +235,12 @@ class TutorialPlan:
     def explaining(self, key):
         """Return the sentences that explain a key the first time it matters: the arrows the first time anywhere and again on the piano roll and in the rows view, Enter and Esc the first time anywhere, and Space once on each kind of page."""
         kind = self.page_kind()
-        if key in ARROWS:
-            if ARROWS not in self.explained:
-                self.explained.add(ARROWS)
+        if key in keys_values.ARROWS:
+            if keys_values.ARROWS not in self.explained:
+                self.explained.add(keys_values.ARROWS)
                 yield Say(narration.MSG_EXPLAIN_ARROWS)
-            if kind in (PianoRoll, PatternRows) and (ARROWS, kind) not in self.explained:
-                self.explained.add((ARROWS, kind))
+            if kind in (PianoRoll, PatternRows) and (keys_values.ARROWS, kind) not in self.explained:
+                self.explained.add((keys_values.ARROWS, kind))
                 yield Say(ARROWS_EXPLAINED.get(kind, narration.MSG_EXPLAIN_ARROWS_IN_ROWS))
         elif key == Key.ESCAPE and Key.ESCAPE not in self.explained:
             self.explained.add(Key.ESCAPE)
@@ -430,13 +433,13 @@ class TutorialPlan:
         if not was_there:
             yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_A_TRACK, name=track))
             yield from self.open_arrange()
-            yield from self.go_to_cell(row=HEADER_ROW, column=len(current.get_track_names()) + FIRST_TRACK_COLUMN)
+            yield from self.go_to_cell(row=arrange_page.HEADER_ROW, column=len(current.get_track_names()) + arrange_page.FIRST_TRACK_COLUMN)
             yield from self.press(keybindings.ArrangePage.ADD_TRACK_HERE)
         old = self.document().song().get_track_names()[place]
         yield from self.open_arrange()
         if was_there and old != track:
             yield Say(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_TRACK))
-        yield from self.go_to_cell(row=HEADER_ROW, column=place + FIRST_TRACK_COLUMN)
+        yield from self.go_to_cell(row=arrange_page.HEADER_ROW, column=place + arrange_page.FIRST_TRACK_COLUMN)
         yield from self.press(keybindings.ArrangePage.TRACK_SETTINGS)
         if old != track:
             yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=track)
@@ -463,14 +466,14 @@ class TutorialPlan:
         if not was_there:
             yield Say(narration.MSG_NARRATE_MAKING.format(kind=narration.MSG_A_SCENE, name=wanted.get_name()))
             yield from self.open_arrange()
-            yield from self.go_to_cell(row=len(current.get_scenes()), column=SCENE_COLUMN)
+            yield from self.go_to_cell(row=len(current.get_scenes()), column=arrange_page.SCENE_COLUMN)
             yield from self.press(keybindings.ArrangePage.ADD_SCENE_HERE)
         built = self.document().song().get_scene(index)
         if (built.get_name(), built.get_repeat(), built.launches_together()) != (wanted.get_name(), wanted.get_repeat(), wanted.launches_together()):
             yield from self.open_arrange()
             if was_there and built.get_name() != wanted.get_name():
                 yield Say(narration.MSG_NARRATE_RENAMING.format(kind=narration.MSG_A_SCENE))
-            yield from self.go_to_cell(row=index, column=SCENE_COLUMN)
+            yield from self.go_to_cell(row=index, column=arrange_page.SCENE_COLUMN)
             yield from self.press(keybindings.ArrangePage.SCENE_SETTINGS)
             if built.get_name() != wanted.get_name():
                 yield from self.set_field(label=labels_text.MSG_NAME_LABEL, answer=wanted.get_name())
@@ -493,7 +496,7 @@ class TutorialPlan:
             yield from self.build_pattern(song=song, name=pattern)
         yield Say(narration.MSG_NARRATE_CLIP.format(pattern=pattern, track=track, scene=song.get_scene(index).get_name()))
         yield from self.open_arrange()
-        yield from self.go_to_cell(row=index, column=song.get_track_names().index(track) + FIRST_TRACK_COLUMN)
+        yield from self.go_to_cell(row=index, column=song.get_track_names().index(track) + arrange_page.FIRST_TRACK_COLUMN)
         scene = self.document().song().get_scene(index)
         if scene.has_clip_slot(track):
             yield from self.press(keybindings.ArrangePage.EDIT_CLIP)
@@ -515,7 +518,7 @@ class TutorialPlan:
 
     def delete_clip(self, *, index, track):
         yield from self.open_arrange()
-        yield from self.go_to_cell(row=index, column=self.document().song().get_track_names().index(track) + FIRST_TRACK_COLUMN)
+        yield from self.go_to_cell(row=index, column=self.document().song().get_track_names().index(track) + arrange_page.FIRST_TRACK_COLUMN)
         yield from self.press(keybindings.ArrangePage.DELETE_CLIP)
         yield from self.confirm()
 
@@ -578,17 +581,17 @@ class TutorialPlan:
     def add_to_group(self, *, name, group, scale_length):
         """Add a pattern written for a scale of so many notes to a group on the Patterns page: on the group's heading when the set has the group, and after making the group with the page's last button when it doesn't."""
         if group in self.screen().groups():
-            yield from self.go_to_patterns_row(Listed(HEADING, group))
+            yield from self.go_to_patterns_row(Listed(patterns_page.HEADING, group))
             yield from self.press(keybindings.PatternsPage.ADD)
         else:
-            yield from self.go_to_patterns_row(Listed(NEW_GROUP, None))
+            yield from self.go_to_patterns_row(Listed(patterns_page.NEW_GROUP, None))
             yield from self.press(keybindings.PatternsPage.NEW_GROUP)
             yield from self.answer_prompt(group)
-            yield from self.go_to_patterns_row(Listed(NEW_PATTERN, group))
+            yield from self.go_to_patterns_row(Listed(patterns_page.NEW_PATTERN, group))
             yield from self.press(keybindings.PatternsPage.NEW_PATTERN)
         # The New Pattern dialog's first row is stepped to the scale length wanted and takes OK; the pattern is made a drum pattern later where the set says so.
         dialog = self.screen()
-        for _ in range(len(SCALE_LENGTHS)):
+        for _ in range(len(new_pattern_dialog.SCALE_LENGTHS)):
             if dialog.scale_length == scale_length:
                 break
             higher = dialog.scale_length is None or (scale_length is not None and scale_length > dialog.scale_length)
@@ -803,7 +806,7 @@ class TutorialPlan:
             yield from self.set_field(label=labels_text.MSG_CHANNEL_LABEL, answer=FIRST_CHANNEL + number)
         for place, track in enumerate(song.get_track_names()):
             yield from self.open_arrange()
-            yield from self.go_to_cell(row=HEADER_ROW, column=place + FIRST_TRACK_COLUMN)
+            yield from self.go_to_cell(row=arrange_page.HEADER_ROW, column=place + arrange_page.FIRST_TRACK_COLUMN)
             yield from self.press(keybindings.ArrangePage.TRACK_SETTINGS)
             yield from self.set_field(label=labels_text.MSG_INSTRUMENT_LABEL, answer=self.instruments[track])
         if not self.document().setlist().is_real_time():
@@ -813,5 +816,5 @@ class TutorialPlan:
         """Say so, go into Arrange, and play the song from the corner."""
         yield Say(narration.MSG_NARRATE_PLAY)
         yield from self.open_page(keybindings.MainPage.ARRANGE)
-        yield from self.go_to_cell(row=HEADER_ROW, column=SCENE_COLUMN)
+        yield from self.go_to_cell(row=arrange_page.HEADER_ROW, column=arrange_page.SCENE_COLUMN)
         yield from self.press(keybindings.ArrangePage.PLAY_SONG)

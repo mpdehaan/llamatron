@@ -16,7 +16,7 @@
 """The accidental row: a sharp or flat on a note's degree, or neither."""
 
 from llamatron.tui.components.cycle_row import CycleRow
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui import keybindings
 
 
@@ -28,4 +28,4 @@ class AccidentalRow(CycleRow):
     __slots__ = ()
     def cell_text(self, *, step):
         value = self.value(step=step)
-        return NOTHING if value is None or not self.is_note(step=step) else str(value)
+        return drawing.NOTHING if value is None or not self.is_note(step=step) else str(value)

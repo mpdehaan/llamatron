@@ -37,11 +37,12 @@ from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks
 from llamatron.tui.components.chord_row import pick_chord
 from llamatron.tui.components.keyswitch_row import pick_keyswitches
-from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
+from llamatron.tui.components import degree_row
 from llamatron.music import midi
 from llamatron.music import note as note_values
-from llamatron.tui.drawing import NOTHING
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved, BindsKeys
+from llamatron.tui import drawing as drawing_values
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved, BindsKeys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui import keybindings
@@ -113,7 +114,7 @@ class PianoRoll(BindsKeys):
         scale = self.scale_name()
         if scale is not None:
             return self.document().scale_size(scale)
-        return max(self.document().degree_limit(self.name()), GAUGE_ROWS_WITHOUT_SCALE)
+        return max(self.document().degree_limit(self.name()), degree_row.GAUGE_ROWS_WITHOUT_SCALE)
 
     def per_octave(self):
         """Return how many pitches an octave has: twelve half steps when the scale is known, so that a sharp or flat has a row between two degrees, and otherwise one per row."""
@@ -218,7 +219,7 @@ class PianoRoll(BindsKeys):
             return labels.MSG_ROLL_ROW_LABEL.format(note=marks.MSG_ROLL_OCTAVE_ONLY.format(octave=song.shown_octave(octave)), degree=degree)
         if accidental is not NO_ACCIDENTAL:
             name, sounding = self.document().scale_note_at(name=scale, octave=octave, half_steps=pitch % self.per_octave())
-            return labels.MSG_ROLL_ROW_LABEL.format(note=name + str(song.shown_octave(sounding)), degree=NOTHING).rstrip()
+            return labels.MSG_ROLL_ROW_LABEL.format(note=name + str(song.shown_octave(sounding)), degree=drawing_values.NOTHING).rstrip()
         place = degree - limits.MIN_DEGREE
         sounding = self.document().scale_degree_octave(name=scale, octave=octave, place=place)
         return labels.MSG_ROLL_ROW_LABEL.format(note=self.document().scale_note_names(scale)[place] + str(song.shown_octave(sounding)), degree=degree)
@@ -340,8 +341,8 @@ class PianoRoll(BindsKeys):
             self.bind(self.KEYS.PLACE, action=self.place_or_erase),
             self.bind(self.KEYS.CHORD, action=self.pick_chord),
             self.bind(self.KEYS.KEYSWITCH, action=self.pick_keyswitches),
-            self.bind(self.KEYS.SHORTER, action=lambda: self.drag(STEP_BACK)),
-            self.bind(self.KEYS.LONGER, action=lambda: self.drag(STEP_FORWARD)),
+            self.bind(self.KEYS.SHORTER, action=lambda: self.drag(key_table.STEP_BACK)),
+            self.bind(self.KEYS.LONGER, action=lambda: self.drag(key_table.STEP_FORWARD)),
             self.bind(self.KEYS.KNIFE, action=self.split),
             self.bind(self.KEYS.ACCIDENTAL, action=self.cycle_accidental),
             self.bind(self.KEYS.ERASE, action=self.erase),
@@ -351,7 +352,7 @@ class PianoRoll(BindsKeys):
 
     def drag(self, direction):
         """Drag the end of the note under the cursor a step later, which ] does, or a step earlier, which [ does."""
-        if direction == STEP_FORWARD:
+        if direction == key_table.STEP_FORWARD:
             self.lengthen()
         else:
             self.shorten()

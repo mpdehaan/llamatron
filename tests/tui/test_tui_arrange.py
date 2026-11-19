@@ -23,9 +23,10 @@ from llamatron.strings import errors, labels as labels_text, legends, marks, mes
 from llamatron.composition import file_format
 from llamatron.composition.file_format import PatternOrder, FollowAction, ClipSlotSetting, Direction, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
 from llamatron.generators.blend import BlendMode
-from llamatron.tui.screens.arrange.arrange_drawing import CELL_WIDTH, CLIP_BAR, SCENE_BAR, SCENE_BAR_COLUMN, SCENE_WIDTH
+from llamatron.tui.screens.arrange import arrange_drawing
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.drawing import Box, NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.generators.chain_list_page import ChainListPage
 from llamatron.tui.screens.arrange.clip_page import AddRow, ClipPage, PatternRow
 from llamatron.tui.screens.arrange.scene_page import ScenePage
@@ -35,11 +36,12 @@ from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.composition import setlist
 from llamatron.tui.document import Document
-from llamatron.tui.keys import Key, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.arrange.arrange_page import MOVING_CLIP, MOVING_SCENE
+from llamatron.tui.screens.arrange import arrange_page
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import Heading
 from tests.support.rendering import render_song
@@ -120,7 +122,7 @@ class TestArrangePage(UITest):
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual(self.app.screen.item, clip_slot.get_pattern_name())
         trail = marks.MSG_CRUMB_SEPARATOR.join([labels_text.Crumb.ARRANGE, labels_text.MSG_PATTERN_CRUMB.format(name=clip_slot.get_pattern_name())])
-        self.assertIn(SPACE + trail + SPACE, self.crumbs_line())
+        self.assertIn(drawing.SPACE + trail + drawing.SPACE, self.crumbs_line())
         self.assertNotIn(labels_text.Crumb.PATTERNS, self.crumbs_line())
         await self.press(Key.ESCAPE)
         self.assertIs(self.app.screen, self.page)
@@ -172,11 +174,11 @@ class TestArrangePage(UITest):
 
     async def test_an_empty_clip_slot_shows_plus_and_add_only_under_the_cursor(self):
         # The + row and the + after the track names are always there; an empty clip slot is blank until the cursor arrives.
-        self.assertNotIn(legends.What.ADD.center(CELL_WIDTH), self.text())
-        self.assertEqual(self.text().count(marks.MSG_ADD_ROW_MARK.center(CELL_WIDTH)), 1)
+        self.assertNotIn(legends.What.ADD.center(arrange_drawing.CELL_WIDTH), self.text())
+        self.assertEqual(self.text().count(marks.MSG_ADD_ROW_MARK.center(arrange_drawing.CELL_WIDTH)), 1)
         await self.press(Key.RIGHT, Key.DOWN)
-        self.assertIn(legends.What.ADD.center(CELL_WIDTH), self.text())
-        self.assertEqual(self.text().count(marks.MSG_ADD_ROW_MARK.center(CELL_WIDTH)), 2)
+        self.assertIn(legends.What.ADD.center(arrange_drawing.CELL_WIDTH), self.text())
+        self.assertEqual(self.text().count(marks.MSG_ADD_ROW_MARK.center(arrange_drawing.CELL_WIDTH)), 2)
 
     async def test_a_frame_marks_the_scene_the_clip_the_track_or_the_plus_row_under_the_cursor(self):
         self.assert_framed(text=ONE, height=2)
@@ -190,19 +192,19 @@ class TestArrangePage(UITest):
         self.assertTrue(self.page.on_plus_row())
         # The + row's frame starts at the left edge, so the + is looked for just inside it, past the header's own +.
         lines = self.grid_lines()
-        number = self.line_with(Box.DOUBLE_BAR + SPACE * (SCENE_BAR_COLUMN - 1) + marks.MSG_ADD_ROW_MARK)
+        number = self.line_with(Box.DOUBLE_BAR + drawing.SPACE * (arrange_drawing.SCENE_BAR_COLUMN - 1) + marks.MSG_ADD_ROW_MARK)
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
         self.assertEqual(lines[number - 1][0], Box.DOUBLE_TOP_LEFT)
         self.assertEqual(lines[number + 1][0], Box.DOUBLE_BOTTOM_LEFT)
-        self.assertEqual(lines[number][SCENE_WIDTH - 1], Box.DOUBLE_BAR)
+        self.assertEqual(lines[number][arrange_drawing.SCENE_WIDTH - 1], Box.DOUBLE_BAR)
 
     async def test_the_header_and_the_scene_column_keep_their_rule_and_the_corner_is_blank(self):
         lines = self.grid_lines()
         rule = self.line_with(Box.CROSS)
-        self.assertEqual(lines[rule][:SCENE_WIDTH], Box.RULE * SCENE_WIDTH)
-        self.assertEqual(lines[rule - 1][:SCENE_WIDTH].strip(), NOTHING)
-        self.assertEqual(lines[rule - 1][SCENE_WIDTH], Box.BAR)
-        self.assertEqual(lines[self.line_with(ONE)][SCENE_WIDTH], Box.BAR)
+        self.assertEqual(lines[rule][:arrange_drawing.SCENE_WIDTH], Box.RULE * arrange_drawing.SCENE_WIDTH)
+        self.assertEqual(lines[rule - 1][:arrange_drawing.SCENE_WIDTH].strip(), drawing.NOTHING)
+        self.assertEqual(lines[rule - 1][arrange_drawing.SCENE_WIDTH], Box.BAR)
+        self.assertEqual(lines[self.line_with(ONE)][arrange_drawing.SCENE_WIDTH], Box.BAR)
 
     async def test_length_bars_show_each_clip_against_its_scene_and_each_scene_against_the_longest(self):
         # In scene two, tune plays twice and other once for half as long, and scene one is half as long as scene two.
@@ -211,27 +213,27 @@ class TestArrangePage(UITest):
         self.document.add_clip_slot(index=1, track=DRUMS, pattern=OTHER)
         await self.press(Key.DOWN)
         lines = self.grid_lines()
-        self.assertIn(CLIP_BAR.draw(amount=1, total=2), lines[self.line_with(OTHER) + 1])
-        self.assertIn(CLIP_BAR.full(), lines[self.line_with(TUNE) + 1])
-        self.assertIn(SCENE_BAR.draw(amount=1, total=2), lines[self.line_with(ONE) + 1])
-        self.assertIn(SCENE_BAR.full(), lines[self.line_with(TWO) + 1])
+        self.assertIn(arrange_drawing.CLIP_BAR.draw(amount=1, total=2), lines[self.line_with(OTHER) + 1])
+        self.assertIn(arrange_drawing.CLIP_BAR.full(), lines[self.line_with(TUNE) + 1])
+        self.assertIn(arrange_drawing.SCENE_BAR.draw(amount=1, total=2), lines[self.line_with(ONE) + 1])
+        self.assertIn(arrange_drawing.SCENE_BAR.full(), lines[self.line_with(TWO) + 1])
 
     async def test_a_looping_clip_fills_its_bar(self):
-        self.assertIn(CLIP_BAR.full(), self.grid_lines()[self.line_with(BEAT) + 1])
+        self.assertIn(arrange_drawing.CLIP_BAR.full(), self.grid_lines()[self.line_with(BEAT) + 1])
 
     async def test_the_last_scene_and_the_last_track_cannot_be_deleted(self):
         await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
         self.assertEqual(len(self.scenes()), 1)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(SPACE.join(errors.ERR_LAST_SCENE_SHOWN.split()[:FIRST_WORDS]), self.text())
+        self.assertIn(drawing.SPACE.join(errors.ERR_LAST_SCENE_SHOWN.split()[:FIRST_WORDS]), self.text())
         await self.press(Key.ENTER)
         self.assertEqual(len(self.scenes()), 1)
         await self.press(Key.UP, Key.BACKSPACE, keybindings.ConfirmDialog.YES)
         self.assertEqual(len(self.document.song().get_track_names()), 1)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(SPACE.join(errors.ERR_LAST_TRACK_SHOWN.split()[:FIRST_WORDS]), self.text())
+        self.assertIn(drawing.SPACE.join(errors.ERR_LAST_TRACK_SHOWN.split()[:FIRST_WORDS]), self.text())
         await self.press(Key.ENTER)
         self.assertEqual(len(self.document.song().get_track_names()), 1)
 
@@ -246,7 +248,7 @@ class TestArrangePage(UITest):
     async def test_move_mode_carries_a_scene_in_render_order_and_one_move_is_one_undo_step(self):
         # Move mode: M on a scene's name picks it up, Up and Down carry it, and Enter, Esc or M drops it.
         await self.press(keybindings.ArrangePage.MOVE_SCENE)
-        self.assertEqual(self.page.moving, MOVING_SCENE)
+        self.assertEqual(self.page.moving, arrange_page.MOVING_SCENE)
         self.assertIn(messages.MSG_MOVING.format(what=messages.MSG_MOVING_SCENE.format(name=ONE)), self.text())
         await self.press(forward_key(keybindings.ArrangePage.CARRY_SCENE))
         self.assertEqual(self.scenes(), [TWO, ONE])
@@ -282,7 +284,7 @@ class TestArrangePage(UITest):
         moved = self.document.clip_slot(index=0, track=self.page.track())
         track = self.page.track()
         await self.press(keybindings.ArrangePage.MOVE_CLIP)
-        self.assertEqual(self.page.moving, MOVING_CLIP)
+        self.assertEqual(self.page.moving, arrange_page.MOVING_CLIP)
         empty = [index for index in range(len(self.scenes())) if self.document.clip_slot(index=index, track=track) is None]
         await self.press(Key.DOWN)
         if empty:
@@ -297,10 +299,10 @@ class TestArrangePage(UITest):
     async def test_nothing_on_arrange_takes_shift_with_an_arrow_and_the_legend_names_the_move_keys(self):
         """Scenes and tracks move in Move mode, M, since a terminal may not send Shift with an arrow."""
         every = [name for item in self.page.key_table() for name in item.keys]
-        for name in (*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT):
+        for name in (*keys_values.SHIFT_UP_DOWN, *keys_values.SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
         before = self.document.setlist().to_data()
-        await self.press(*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT)
+        await self.press(*keys_values.SHIFT_UP_DOWN, *keys_values.SHIFT_LEFT_RIGHT)
         self.assertEqual(self.document.setlist().to_data(), before)
         self.assertIn(KEY_SHOWN.format(label=legends.KeyName.M) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_MOVE_SCENE_WHAT), self.text())
         await self.press(Key.UP, Key.RIGHT)
@@ -458,7 +460,7 @@ class TestClipPage(UITest):
         lines = [line.strip() for line in self.text().splitlines()]
         add = next(place for place, line in enumerate(lines) if line.endswith(marks.MSG_ADD_ROW) and len(line) <= len(marks.MSG_ADD_ROW) + 2)
         self.assertIn(labels_text.MSG_PATTERNS_LABEL, lines[add - 1])
-        self.assertEqual(lines[add + 1], NOTHING)
+        self.assertEqual(lines[add + 1], drawing.NOTHING)
 
     async def test_adding_an_existing_pattern_puts_it_last_and_bksp_takes_one_out_but_never_the_last(self):
         first = self.patterns()
@@ -574,7 +576,7 @@ class TestClipPage(UITest):
                 trail = marks.MSG_CRUMB_SEPARATOR.join([
                     labels_text.Crumb.ARRANGE, labels_text.MSG_CLIP_CRUMB.format(scene=scene, track=LEAD), labels_text.MSG_PATTERN_CRUMB.format(name=self.clip_slot().get_pattern_name()),
                 ])
-                self.assertIn(SPACE + trail + SPACE, self.crumbs_line())
+                self.assertIn(drawing.SPACE + trail + drawing.SPACE, self.crumbs_line())
                 await self.press(Key.ESCAPE)
                 self.assertIs(self.app.screen, self.page)
                 self.assertEqual(self.page.field().label, label)

@@ -31,7 +31,7 @@ from llamatron.composition.file_format import ClipSlotSetting
 from llamatron.realtime import fluidsynth
 from llamatron.music import midi
 from llamatron.strings import about, errors
-from llamatron.tui.launch import LEAD_IN_SECONDS, LEAD_OUT_SECONDS, SPLASH_SECONDS
+from llamatron.tui import launch as launch_values
 from llamatron.tui.uses import looping_scenes
 from tests.support.ui_testing import a_song, DRUMS, LEAD
 from llamatron.visualizers import modes
@@ -177,7 +177,7 @@ class TestRecordDemo(unittest.TestCase):
             self.tool.assign_tracks(document=self.document, channels=[None, None], port=PORT)
 
     def test_a_take_is_the_splash_the_lead_in_the_song_the_lead_out_the_splash_again_the_hold_and_a_margin_or_the_limit(self):
-        expected = SPLASH_SECONDS + LEAD_IN_SECONDS + A_SONG_SECONDS + LEAD_OUT_SECONDS + SPLASH_SECONDS + self.tool.HOLD_SECONDS + self.tool.MARGIN_SECONDS
+        expected = launch_values.SPLASH_SECONDS + launch_values.LEAD_IN_SECONDS + A_SONG_SECONDS + launch_values.LEAD_OUT_SECONDS + launch_values.SPLASH_SECONDS + self.tool.HOLD_SECONDS + self.tool.MARGIN_SECONDS
         self.assertEqual(self.tool.take_seconds(song_seconds=A_SONG_SECONDS, max_seconds=self.tool.DEFAULT_MAX_SECONDS), expected)
         self.assertEqual(self.tool.take_seconds(song_seconds=A_SONG_SECONDS, max_seconds=SMALL_LIMIT), SMALL_LIMIT)
 

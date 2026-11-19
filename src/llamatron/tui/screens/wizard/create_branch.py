@@ -17,7 +17,7 @@
 
 from llamatron.macro_composer.wizard_choices import genre_title
 from llamatron.strings import errors, labels, legends, marks
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import Button, Field
 from llamatron.tui.screens.wizard.branch import Branch
@@ -32,7 +32,7 @@ class CreateBranch(Branch):
         return labels.MSG_WIZARD_CREATE_BRANCH
 
     def note(self):
-        return NOTHING if self.choices().is_ready() else marks.MSG_WIZARD_NEEDS_GENRE
+        return drawing.NOTHING if self.choices().is_ready() else marks.MSG_WIZARD_NEEDS_GENRE
 
     def refusal(self):
         return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE

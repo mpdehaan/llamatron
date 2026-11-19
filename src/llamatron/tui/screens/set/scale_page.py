@@ -29,7 +29,8 @@ from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.tui.components.keyboard import Keyboard
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
-from llamatron.tui.drawing import INDENT, NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -86,7 +87,7 @@ def scale_label(kind):
 
 def scale_notes(*, root, kind):
     """Return a scale's notes as one line, like D E F G A B C, spelled as the rest of the program spells them."""
-    return SPACE.join(note_names(root=root, half_steps=ScaleType[kind.upper()].value))
+    return drawing.SPACE.join(note_names(root=root, half_steps=ScaleType[kind.upper()].value))
 
 
 def kind_pages():
@@ -168,8 +169,8 @@ class ScalePage(ShowsNamedItem, FieldPage):
         uses = len(self.document().uses(section=Section.SCALES, name=self.item))
         keyboard = Keyboard(root=self.root(), half_steps=self.scale().get_half_steps())
         return [
-            Text(INDENT + messages.MSG_SCALE_NOTES_DETAIL.format(root=self.root(), kind=scale_label(self.kind()), notes=scale_notes(root=self.root(), kind=self.kind())), style=Style.DIM),
+            Text(drawing.INDENT + messages.MSG_SCALE_NOTES_DETAIL.format(root=self.root(), kind=scale_label(self.kind()), notes=scale_notes(root=self.root(), kind=self.kind())), style=Style.DIM),
             Text(messages.MSG_SCALE_USES_NOTE.format(count=uses), style=Style.DIM),
-            Text(NOTHING),
+            Text(drawing.NOTHING),
             *[Text(line, no_wrap=True) for line in keyboard.lines()],
         ]

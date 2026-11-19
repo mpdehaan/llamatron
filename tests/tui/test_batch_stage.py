@@ -21,12 +21,12 @@ import unittest
 from rich.text import Text
 
 from llamatron.strings import about
-from llamatron.tui.batch_stage import ALTERNATE_FADE_SECONDS, ALTERNATE_SECONDS, FRAME_COLOURS, FRAME_LAP_BARS, GROW_SECONDS, READY_SECONDS, BatchStage
-from llamatron.tui.components.stage_drawing import (
-    BLACK, FRAME_GAP_COLUMNS, FRAME_GAP_ROWS, GAP_COLUMNS, GAP_ROWS, PULSE_CEILING, SIDE_TRACK, faded, frame_box, inside_of, pulse_levels, ready_box,
-    track_cells, visualizer_area,
-)
-from llamatron.tui.components.title_card import NARROW, words_width
+from llamatron.tui import batch_stage
+from llamatron.tui.batch_stage import BatchStage
+from llamatron.tui.components import stage_drawing
+from llamatron.tui.components.stage_drawing import faded, frame_box, inside_of, pulse_levels, ready_box, track_cells, visualizer_area
+from llamatron.tui.components import title_card
+from llamatron.tui.components.title_card import words_width
 from llamatron.tui.drawing import Box
 
 WIDTH = 100
@@ -47,7 +47,7 @@ UNEVEN_LONG = 1.4
 CLIPS_FIRST_WORD = 'llamatron'
 SPACE = ' '
 SHOWN = 1.0
-PLAYING = READY_SECONDS + GROW_SECONDS + 1.0
+PLAYING = batch_stage.READY_SECONDS + batch_stage.GROW_SECONDS + 1.0
 CLOCKWISE = 1
 ANTICLOCKWISE = -1
 LINE_BREAK = '\n'
@@ -65,9 +65,9 @@ def colours(lines):
 # Moments of an alternating frame, in seconds after the box has grown: on the clips, half way through the fade to the
 # visualizer, on the visualizer, and back on the clips after a whole round.
 ON_CLIPS = 1.0
-MID_FADE = ALTERNATE_SECONDS + ALTERNATE_FADE_SECONDS / 2
-ON_VISUALIZER = ALTERNATE_SECONDS + ALTERNATE_FADE_SECONDS + 1.0
-CLIPS_AGAIN = 2 * (ALTERNATE_SECONDS + ALTERNATE_FADE_SECONDS) + 1.0
+MID_FADE = batch_stage.ALTERNATE_SECONDS + batch_stage.ALTERNATE_FADE_SECONDS / 2
+ON_VISUALIZER = batch_stage.ALTERNATE_SECONDS + batch_stage.ALTERNATE_FADE_SECONDS + 1.0
+CLIPS_AGAIN = 2 * (batch_stage.ALTERNATE_SECONDS + batch_stage.ALTERNATE_FADE_SECONDS) + 1.0
 
 
 def visualizer_frame():
@@ -84,15 +84,15 @@ def inside_text(lines):
 def alternating_at(after_grown):
     """Return an alternating stage's screen a number of seconds after its box has grown, and the stage."""
     stage = BatchStage(began=0.0, bar_length=WHOLE_BAR, alternate=True)
-    stage.start_song(at=READY_SECONDS)
-    now = READY_SECONDS + GROW_SECONDS + after_grown
+    stage.start_song(at=batch_stage.READY_SECONDS)
+    now = batch_stage.READY_SECONDS + batch_stage.GROW_SECONDS + after_grown
     return stage.screen(arrange=arrange(), width=WIDTH, height=HEIGHT, now=now, frame=visualizer_frame(), seconds_per_beat=SECONDS_PER_BEAT, scene=0, clips=arrange()), stage
 
 
 def stage_at(now, *, stage=None, scene=0, seconds_per_beat=None):
     stage = stage or BatchStage(began=0.0, bar_length=WHOLE_BAR)
-    if now >= READY_SECONDS and not stage.is_growing_or_grown(now):
-        stage.start_song(at=READY_SECONDS)
+    if now >= batch_stage.READY_SECONDS and not stage.is_growing_or_grown(now):
+        stage.start_song(at=batch_stage.READY_SECONDS)
     return stage, stage.screen(arrange=arrange(), width=WIDTH, height=HEIGHT, now=now, frame=visualizer_frame(), seconds_per_beat=seconds_per_beat or SECONDS_PER_BEAT, scene=scene)
 
 
@@ -101,15 +101,15 @@ class TestGeometry(unittest.TestCase):
     def test_the_ready_box_holds_ready_with_two_rows_and_four_columns_of_gap(self):
         # The gap is the black gap inside the track, which the frame keeps too, and the room left inside it.
         inside = inside_of(ready_box(width=WIDTH, height=HEIGHT))
-        self.assertEqual(inside.right - inside.left + 1 + 2 * FRAME_GAP_COLUMNS, words_width(word=about.MSG_READY_WORD, scale=NARROW) + 2 * GAP_COLUMNS)
-        self.assertEqual(inside.bottom - inside.top + 1 + 2 * FRAME_GAP_ROWS, READY_ROWS + 2 * GAP_ROWS)
+        self.assertEqual(inside.right - inside.left + 1 + 2 * stage_drawing.FRAME_GAP_COLUMNS, words_width(word=about.MSG_READY_WORD, scale=title_card.NARROW) + 2 * stage_drawing.GAP_COLUMNS)
+        self.assertEqual(inside.bottom - inside.top + 1 + 2 * stage_drawing.FRAME_GAP_ROWS, READY_ROWS + 2 * stage_drawing.GAP_ROWS)
 
     def test_the_frame_leaves_the_outermost_cells_black_then_the_track_then_a_gap(self):
         frame = frame_box(width=WIDTH, height=HEIGHT)
         self.assertEqual((frame.top, frame.bottom), (0, HEIGHT - 1))
         area = visualizer_area(width=WIDTH, height=HEIGHT)
-        self.assertEqual(area.top, frame.top + 2 + FRAME_GAP_ROWS)
-        self.assertEqual(area.left, frame.left + 1 + SIDE_TRACK + FRAME_GAP_COLUMNS)
+        self.assertEqual(area.top, frame.top + 2 + stage_drawing.FRAME_GAP_ROWS)
+        self.assertEqual(area.left, frame.left + 1 + stage_drawing.SIDE_TRACK + stage_drawing.FRAME_GAP_COLUMNS)
         self.assertGreater(frame.left, 0)
 
     def test_the_track_goes_round_clockwise_two_columns_wide_down_the_sides(self):
@@ -117,7 +117,7 @@ class TestGeometry(unittest.TestCase):
         places = track_cells(box)
         self.assertEqual(places[0], [(box.top + 1, box.left + 1)])
         self.assertEqual(places[1][0], (box.top + 1, box.left + 2))
-        sides = [place for place in places if len(place) == SIDE_TRACK]
+        sides = [place for place in places if len(place) == stage_drawing.SIDE_TRACK]
         self.assertEqual(len(sides), 2 * (box.bottom - box.top - 3))
 
 
@@ -126,7 +126,7 @@ class TestPulse(unittest.TestCase):
     def test_the_head_is_brightest_and_the_tail_trails_behind_the_way_it_goes(self):
         levels = pulse_levels(count=COUNT, head=0.5, direction=CLOCKWISE)
         head = COUNT // 2
-        self.assertAlmostEqual(levels[head], PULSE_CEILING)
+        self.assertAlmostEqual(levels[head], stage_drawing.PULSE_CEILING)
         self.assertGreater(levels[head - 2], levels[head - 4])
         self.assertEqual(levels[head + 2], 0.0)
         turned = pulse_levels(count=COUNT, head=0.5, direction=ANTICLOCKWISE)
@@ -135,11 +135,11 @@ class TestPulse(unittest.TestCase):
 
     def test_a_change_of_scene_turns_the_pulse_round_and_takes_the_next_colour(self):
         stage, _ = stage_at(PLAYING, scene=0)
-        self.assertEqual(stage.colour(PLAYING), FRAME_COLOURS[0])
+        self.assertEqual(stage.colour(PLAYING), batch_stage.FRAME_COLOURS[0])
         before = stage.direction()
         stage_at(PLAYING + 0.1, stage=stage, scene=1)
         self.assertEqual(stage.direction(), -before)
-        self.assertEqual(stage.colour(PLAYING + 10), FRAME_COLOURS[1])
+        self.assertEqual(stage.colour(PLAYING + 10), batch_stage.FRAME_COLOURS[1])
 
 
 class TestStage(unittest.TestCase):
@@ -171,13 +171,13 @@ class TestStage(unittest.TestCase):
         text = inside_text(lines)
         self.assertNotIn(ARRANGE_WORD, text)
         self.assertNotIn(about.MSG_BLOCK, text)
-        self.assertFalse(stage.shows_visualizer(READY_SECONDS + GROW_SECONDS + ON_CLIPS))
-        self.assertTrue(stage.shows_visualizer(READY_SECONDS + GROW_SECONDS + ON_VISUALIZER))
+        self.assertFalse(stage.shows_visualizer(batch_stage.READY_SECONDS + batch_stage.GROW_SECONDS + ON_CLIPS))
+        self.assertTrue(stage.shows_visualizer(batch_stage.READY_SECONDS + batch_stage.GROW_SECONDS + ON_VISUALIZER))
 
     def test_the_clips_are_arrange_drawn_whole_at_the_frames_inside_from_its_top_left(self):
         stage = BatchStage(began=0.0, bar_length=WHOLE_BAR, alternate=True)
-        stage.start_song(at=READY_SECONDS)
-        now = READY_SECONDS + GROW_SECONDS + ON_CLIPS
+        stage.start_song(at=batch_stage.READY_SECONDS)
+        now = batch_stage.READY_SECONDS + batch_stage.GROW_SECONDS + ON_CLIPS
         self.assertTrue(stage.shows_clips(now))
         inside = inside_of(frame_box(width=WIDTH, height=HEIGHT))
         clips = [Text(CLIPS_FIRST_WORD + SPACE * (inside.right - inside.left))] * (inside.bottom - inside.top + 1)
@@ -187,7 +187,7 @@ class TestStage(unittest.TestCase):
     def test_the_pulse_goes_a_lap_every_four_bars_at_the_songs_tempo_however_unevenly_frames_come(self):
         stage = BatchStage(began=0.0, bar_length=WHOLE_BAR)
         stage.start_song(at=0.0)
-        now = GROW_SECONDS
+        now = batch_stage.GROW_SECONDS
         stage.move_pulse(now=now, seconds_per_beat=SECONDS_PER_BEAT, scene=None)
         moves = []
         for number in range(PULSE_FRAMES):
@@ -196,20 +196,20 @@ class TestStage(unittest.TestCase):
             stage.move_pulse(now=now, seconds_per_beat=SECONDS_PER_BEAT, scene=None)
             moves.append((stage.head() - before) % 1.0)
         settled = moves[PULSE_FRAMES // 2:]
-        lap_seconds = FRAME_LAP_BARS * QUARTERS * SECONDS_PER_BEAT
+        lap_seconds = batch_stage.FRAME_LAP_BARS * QUARTERS * SECONDS_PER_BEAT
         self.assertAlmostEqual(sum(settled) / len(settled), FRAME / lap_seconds, delta=FRAME / lap_seconds / 10)
         self.assertLess(max(settled) - min(settled), FRAME * (UNEVEN_LONG - UNEVEN_SHORT) / lap_seconds / 2)
 
     def test_without_alternating_the_visualizer_alone_fills_the_frame(self):
         stage = BatchStage(began=0.0, bar_length=WHOLE_BAR)
         for after in (ON_CLIPS, ON_VISUALIZER):
-            self.assertEqual(stage.visualizer_share(READY_SECONDS + GROW_SECONDS + after), SHOWN)
+            self.assertEqual(stage.visualizer_share(batch_stage.READY_SECONDS + batch_stage.GROW_SECONDS + after), SHOWN)
 
     def test_after_the_end_everything_fades_to_black(self):
         stage, _ = stage_at(PLAYING)
         stage.end(at=PLAYING, seconds=1.0)
         _, lines = stage_at(PLAYING + 2.0, stage=stage)
-        self.assertTrue(all(colour == BLACK for colour in colours(lines)))
+        self.assertTrue(all(colour == stage_drawing.BLACK for colour in colours(lines)))
 
     def test_the_opening_alone_cuts_to_black(self):
         stage = BatchStage(began=0.0, bar_length=WHOLE_BAR)
@@ -220,7 +220,7 @@ class TestStage(unittest.TestCase):
     def test_fading_keeps_a_colour_and_turns_it_down(self):
         line = Text('x', style='rgb(200,100,50)')
         self.assertEqual(colours([faded(line=line, level=0.5)])[0], (100, 50, 25))
-        self.assertEqual(colours([faded(line=line, level=0.0)])[0], BLACK)
+        self.assertEqual(colours([faded(line=line, level=0.0)])[0], stage_drawing.BLACK)
 
 
 if __name__ == '__main__':

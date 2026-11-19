@@ -33,7 +33,8 @@ from llamatron.tui.components.add_row import AddRow
 from llamatron.tui.components.cc_row import CcRow
 from llamatron.tui.components.chord_row import ChordRow
 from llamatron.tui.components.chord_scale_row import ChordScaleRow
-from llamatron.tui.components.degree_row import DegreeRow, GAUGE_ROWS_WITHOUT_SCALE
+from llamatron.tui.components import degree_row
+from llamatron.tui.components.degree_row import DegreeRow
 from llamatron.tui.components.dot_row import DotRow
 from llamatron.tui.components.inversion_row import InversionRow
 from llamatron.tui.components.gate_row import GateRow
@@ -51,7 +52,8 @@ from llamatron.tui.components.tension_row import TensionRow
 from llamatron.tui.components.keyswitch_row import KeyswitchSlotRow, slot_row_name, slot_rows
 from llamatron.tui.components.tie_row import TieRow
 from llamatron.strings import labels as labels_text
-from llamatron.tui.key_table import STEP_BACK, cursor_moved, BindsKeys
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved, BindsKeys
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui import keybindings
 
@@ -110,7 +112,7 @@ class PatternRows(BindsKeys):
         self.row = TOP_ROW
         self.first_row = 0
         # How many rows the Degree gauge is drawn with, which the drawing caps to what fits the screen.
-        self.gauge_rows = GAUGE_ROWS_WITHOUT_SCALE
+        self.gauge_rows = degree_row.GAUGE_ROWS_WITHOUT_SCALE
         # The row objects, one per row name, built as they're first needed.
         self.row_objects = {}
 
@@ -175,7 +177,7 @@ class PatternRows(BindsKeys):
     def jump_section(self, direction):
         """Move the cursor to the next section's heading, which PgDn does, or the one before, which PgUp does, stopping at the first and the last like every cursor."""
         headings = [place for place, row in enumerate(self.reachable()) if row.marks_label()]
-        if direction == STEP_BACK:
+        if direction == key_table.STEP_BACK:
             self.row = next((place for place in reversed(headings) if place < self.row), self.row if self.row < headings[0] else headings[0])
         else:
             self.row = next((place for place in headings if place > self.row), self.row if self.row > headings[-1] else headings[-1])

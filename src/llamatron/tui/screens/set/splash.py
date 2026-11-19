@@ -28,7 +28,7 @@ from textual.screen import Screen
 from textual.widgets import Static
 
 from llamatron.tui.components.title_card import title_lines
-from llamatron.tui.drawing import LINE_BREAK, NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.key_table import pressed_key, quits_at_once
 
 SPLASH_VIEW_ID = 'splash-view'
@@ -80,9 +80,9 @@ class Splash(Screen):
         if not self.is_attached:
             return
         lines = self.lines(width=self.app.size.width, height=self.app.size.height)
-        text = Text(NOTHING)
+        text = Text(drawing.NOTHING)
         for place, line in enumerate(lines):
             text.append_text(line)
             if place < len(lines) - 1:
-                text.append(LINE_BREAK)
+                text.append(drawing.LINE_BREAK)
         self.query_one(Static).update(text)

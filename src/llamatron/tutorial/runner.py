@@ -34,7 +34,7 @@ from llamatron.strings import narration
 from llamatron.tui.key_table import key_event
 from llamatron.tui.caption_strip import CaptionStrip, parts
 from llamatron.tutorial.plan import TutorialPlan
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tutorial.steps import Gap, Press, Say, Wait
 
 # The seconds between two keys when a video is made, how many of those a sentence is given, and the share of them a key typed into a dialog waits: typing into a dialog goes twice as fast.
@@ -91,7 +91,7 @@ class CaptionNarrator(Narrator):
         self.app.redraw_pages()
 
     def gap(self):
-        self.show(NOTHING)
+        self.show(drawing.NOTHING)
 
 
 class TutorialRunner:

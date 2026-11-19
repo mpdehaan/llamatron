@@ -22,7 +22,7 @@ ends, <<4>> around the step number and <+7▲> around the value. It returns plai
 knows nothing of any toolkit, so the offsets editor draws the rules and styles around them.
 """
 
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.strings import marks
 
 
@@ -48,18 +48,18 @@ class SignedGauge:
         """Return a cell of the gauge: a bar where the value at a place reaches the level, and nothing where it doesn't."""
         value = self.values[place]
         if value is None:
-            return NOTHING
+            return drawing.NOTHING
         if level > 0:
-            return marks.MSG_GAUGE_BAR if value >= level else NOTHING
-        return marks.MSG_GAUGE_BAR if value <= level else NOTHING
+            return marks.MSG_GAUGE_BAR if value >= level else drawing.NOTHING
+        return marks.MSG_GAUGE_BAR if value <= level else drawing.NOTHING
 
     def value_text(self, place):
         """Return a value as the row under the gauge shows it: signed, marked when the gauge is too short to reach it, and bracketed under the cursor."""
         value = self.values[place]
         if value is None:
-            text = NOTHING
+            text = drawing.NOTHING
         else:
-            mark = NOTHING
+            mark = drawing.NOTHING
             if value > self.levels:
                 mark = marks.MSG_OVER_THE_TOP_MARK
             elif value < -self.levels:

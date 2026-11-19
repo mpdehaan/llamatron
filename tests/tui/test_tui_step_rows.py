@@ -22,7 +22,8 @@ from llamatron.composition import limits
 from llamatron.strings import labels
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.drag_editor import DragEditor
-from llamatron.tui.screens.generators.glide_editor import DEFAULT_GLIDE_AMOUNT_WRITTEN, GLIDE_AMOUNTS, GlideEditor
+from llamatron.tui.screens.generators import glide_editor
+from llamatron.tui.screens.generators.glide_editor import GlideEditor
 from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
 from llamatron.tui.screens.generators.rush_editor import RushEditor
 from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
@@ -50,7 +51,7 @@ class TestGlideEditor(UITest):
         self.assertIsInstance(self.app.screen, GlideEditor)
         await self.select_field(labels.MSG_GLIDE_AMOUNT_LABEL)
         await self.press(keybindings.GlideEditor.MORE)
-        expected = GLIDE_AMOUNTS[GLIDE_AMOUNTS.index(DEFAULT_GLIDE_AMOUNT_WRITTEN) + 1]
+        expected = glide_editor.GLIDE_AMOUNTS[glide_editor.GLIDE_AMOUNTS.index(glide_editor.DEFAULT_GLIDE_AMOUNT_WRITTEN) + 1]
         self.assertEqual(str(self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=SLIDES).get_glide_amount()), expected)
 
 

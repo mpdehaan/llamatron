@@ -29,11 +29,15 @@ from llamatron.music.note import NoteName
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.note_names import HIGHEST_NOTE, LOWEST_NOTE, note_shown, note_typed
-from llamatron.tui.pattern_preview import PREVIEW_CHANNEL_BYTE, TRIAL_VELOCITY, trial_pattern
+from llamatron.tui import note_names
+from llamatron.tui.note_names import note_shown, note_typed
+from llamatron.tui import pattern_preview
+from llamatron.tui.pattern_preview import trial_pattern
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_families, sound_text
-from llamatron.tui.screens.shared.sound_trial import HITS, HITS_STEP, MAJOR_STEPS, NOTES_IN_OCTAVE, USUAL_OCTAVE, SoundTrial, hits_of, run_of
-from llamatron.tui.drawing import Box, SPACE
+from llamatron.tui.screens.shared import sound_trial
+from llamatron.tui.screens.shared.sound_trial import SoundTrial, hits_of, run_of
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box
 from tests.tui.test_tui_playback import KIND_MASK, SYNTH_PORT, PatternPreviewTest
 
 SYNTH = 'synth'
@@ -66,24 +70,24 @@ class TestSoundTrialNotes(unittest.TestCase):
 
     def test_a_run_goes_up_an_octave_of_the_scale_from_the_root_and_back_down(self):
         run = run_of(root=A_ROOT, steps=MINOR_STEPS, octave=AN_OCTAVE)
-        low = AN_OCTAVE * NOTES_IN_OCTAVE + A_ROOT
-        up = [low + step for step in MINOR_STEPS] + [low + NOTES_IN_OCTAVE]
+        low = AN_OCTAVE * sound_trial.NOTES_IN_OCTAVE + A_ROOT
+        up = [low + step for step in MINOR_STEPS] + [low + sound_trial.NOTES_IN_OCTAVE]
         self.assertEqual(run, up + up[-2::-1])
-        self.assertEqual(run_of()[0], USUAL_OCTAVE * NOTES_IN_OCTAVE)
-        self.assertEqual(len(run_of()), 2 * len(MAJOR_STEPS) + 1)
+        self.assertEqual(run_of()[0], sound_trial.USUAL_OCTAVE * sound_trial.NOTES_IN_OCTAVE)
+        self.assertEqual(len(run_of()), 2 * len(sound_trial.MAJOR_STEPS) + 1)
 
     def test_a_drum_is_hit_four_times(self):
-        self.assertEqual(hits_of(A_DRUM), [A_DRUM] * HITS)
+        self.assertEqual(hits_of(A_DRUM), [A_DRUM] * sound_trial.HITS)
 
     def test_the_trials_pattern_holds_each_note_by_name_and_octave_a_step_each(self):
-        data = trial_pattern(numbers=[MIDDLE_C, C_SHARP], step_size=HITS_STEP)
+        data = trial_pattern(numbers=[MIDDLE_C, C_SHARP], step_size=sound_trial.HITS_STEP)
         self.assertEqual(data[PatternSetting.STEPS], 2)
-        self.assertEqual(data[PatternSetting.STEP_SIZE], HITS_STEP)
+        self.assertEqual(data[PatternSetting.STEP_SIZE], sound_trial.HITS_STEP)
         self.assertTrue(data[PatternSetting.DRUM])
         self.assertEqual(data[Row.DEGREE], ['C', 'C'])
         self.assertEqual(data[Row.ACCIDENTAL], [None, SHARP])
-        self.assertEqual(data[Row.OCTAVE], [MIDDLE_C // NOTES_IN_OCTAVE] * 2)
-        self.assertEqual(data[Row.VELOCITY], [TRIAL_VELOCITY] * 2)
+        self.assertEqual(data[Row.OCTAVE], [MIDDLE_C // sound_trial.NOTES_IN_OCTAVE] * 2)
+        self.assertEqual(data[Row.VELOCITY], [pattern_preview.TRIAL_VELOCITY] * 2)
 
 
 class TestSoundDialog(PatternPreviewTest):
@@ -209,9 +213,9 @@ class TestSoundDialog(PatternPreviewTest):
         self.assertEqual(self.preview().playing_sound(), sound)
         self.play_through()
         sent = [list(data) for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
-        self.assertIn([timeline.PROGRAM_CHANGE | PREVIEW_CHANNEL_BYTE, sound - limits.MIN_GM_SOUND], sent)
+        self.assertIn([timeline.PROGRAM_CHANGE | pattern_preview.PREVIEW_CHANNEL_BYTE, sound - limits.MIN_GM_SOUND], sent)
         self.assertEqual([data[1] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], run_of())
-        self.assertEqual({data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)}, {timeline.NOTE_ON | PREVIEW_CHANNEL_BYTE})
+        self.assertEqual({data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)}, {timeline.NOTE_ON | pattern_preview.PREVIEW_CHANNEL_BYTE})
         # Played once: the run does not come round again.
         self.assertIsNone(self.preview().playing_sound())
         # The set is untouched by the trial.
@@ -259,7 +263,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.document.add_instrument(PREVIEW)
         self.document.set_preview_instrument_name(PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
-        self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
+        self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), drawing.SPACE.join(self.text().replace(Box.HEAVY_BAR, drawing.SPACE).split()))
         self.document.set_instrument_device(name=PREVIEW, device=NOT_CONNECTED)
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
@@ -270,9 +274,9 @@ class TestSoundDialog(PatternPreviewTest):
 
     async def test_a_drum_of_the_kit_is_tried_on_the_drum_channel_with_no_sound_chosen(self):
         await self.press(Key.ESCAPE)
-        self.preview().play_sound(numbers=hits_of(A_DRUM), step_size=HITS_STEP, sound=None, key=A_DRUM)
+        self.preview().play_sound(numbers=hits_of(A_DRUM), step_size=sound_trial.HITS_STEP, sound=None, key=A_DRUM)
         self.play_through()
-        self.assertEqual([list(data[:2]) for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [[timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE, A_DRUM]] * HITS)
+        self.assertEqual([list(data[:2]) for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [[timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE, A_DRUM]] * sound_trial.HITS)
         self.assertNotIn(timeline.PROGRAM_CHANGE | midi_arrangement.DRUM_CHANNEL_BYTE, [data[0] for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent])
 
 
@@ -280,11 +284,11 @@ class TestNoteNames(unittest.TestCase):
     """A MIDI note shown by name and octave, and a typed name read back."""
 
     def test_a_note_is_shown_by_its_name_and_octave_a_black_key_as_a_sharp(self):
-        self.assertEqual(note_shown(MIDDLE_C), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C, octave=MIDDLE_C // NOTES_IN_OCTAVE))
-        self.assertEqual(note_shown(C_SHARP), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C_SHARP, octave=C_SHARP // NOTES_IN_OCTAVE))
+        self.assertEqual(note_shown(MIDDLE_C), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C, octave=MIDDLE_C // sound_trial.NOTES_IN_OCTAVE))
+        self.assertEqual(note_shown(C_SHARP), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C_SHARP, octave=C_SHARP // sound_trial.NOTES_IN_OCTAVE))
 
     def test_every_note_typed_as_shown_is_that_note_in_capitals_or_not(self):
-        for note in range(LOWEST_NOTE, HIGHEST_NOTE + 1):
+        for note in range(note_names.LOWEST_NOTE, note_names.HIGHEST_NOTE + 1):
             self.assertEqual(note_typed(note_shown(note)), note)
             self.assertEqual(note_typed(note_shown(note).lower()), note)
 
@@ -308,7 +312,7 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
 
     async def open(self, *, note, current=None):
         self.dialog = SoundDialog(title=A_TITLE, groups=sound_families(), top=[(marks.MSG_NONE_SHOWN, None)], current=current, note=note,
-                                  trial=SoundTrial(page=self.app.screen, played=lambda sound: None if sound is None else (hits_of(self.dialog.note), HITS_STEP, sound)))
+                                  trial=SoundTrial(page=self.app.screen, played=lambda sound: None if sound is None else (hits_of(self.dialog.note), sound_trial.HITS_STEP, sound)))
         self.app.push_screen(self.dialog, self.answers.append)
         await self.settle()
 
@@ -332,17 +336,17 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
         self.assertFalse(self.dialog.takes_text())
 
     async def test_the_note_is_stepped_between_the_lowest_and_the_highest_and_a_sound_taken_answers_with_it(self):
-        await self.open(note=HIGHEST_NOTE - 1)
+        await self.open(note=note_names.HIGHEST_NOTE - 1)
         await self.to_note_row()
         await self.press(*[keybindings.SoundDialog.NOTE_MORE] * 3)
-        self.assertEqual(self.dialog.note, HIGHEST_NOTE)
+        self.assertEqual(self.dialog.note, note_names.HIGHEST_NOTE)
         await self.press(Key.ESCAPE)
-        await self.open(note=LOWEST_NOTE + 1)
+        await self.open(note=note_names.LOWEST_NOTE + 1)
         await self.to_note_row()
         await self.press(*[keybindings.SoundDialog.NOTE_LESS] * 3)
-        self.assertEqual(self.dialog.note, LOWEST_NOTE)
+        self.assertEqual(self.dialog.note, note_names.LOWEST_NOTE)
         await self.press(Key.UP, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.CHOOSE)
-        self.assertEqual(self.answers[-1], (limits.MAX_GM_SOUND - limits.GM_FAMILY_SIZE + 1, LOWEST_NOTE))
+        self.assertEqual(self.answers[-1], (limits.MAX_GM_SOUND - limits.GM_FAMILY_SIZE + 1, note_names.LOWEST_NOTE))
 
     async def test_a_note_is_typed_by_name_and_set_with_enter_and_enter_again_takes_the_sound_the_dialog_opened_on(self):
         await self.open(note=MIDDLE_C, current=A_SOUND)
@@ -364,7 +368,7 @@ class TestSoundDialogNoteRow(PatternPreviewTest):
         await self.type(NOT_NOTES[0])
         await self.press(keybindings.SoundDialog.TAKE_NOTE)
         self.assertEqual(self.dialog.note, MIDDLE_C)
-        self.assertIn(errors.ERR_NOT_A_NOTE_NAME.format(text=NOT_NOTES[0]), SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split()))
+        self.assertIn(errors.ERR_NOT_A_NOTE_NAME.format(text=NOT_NOTES[0]), drawing.SPACE.join(self.text().replace(Box.HEAVY_BAR, drawing.SPACE).split()))
         await self.type(D_FLAT_TYPED)
         await self.press(Key.UP, Key.DOWN)
         self.assertIn(marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(MIDDLE_C)), self.text())

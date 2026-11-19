@@ -31,8 +31,10 @@ from typing import NamedTuple
 from rich.text import Text
 
 from llamatron.composition.file_format import Row
-from llamatron.tui.drawing import Box, fit, NOTHING, SPACE, Style
-from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH, GridDrawing
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, fit, Style
+from llamatron.tui.screens.pattern import grid_drawing
+from llamatron.tui.screens.pattern.grid_drawing import GridDrawing
 from llamatron.composition.checks import fraction_text
 from llamatron.strings import marks
 
@@ -47,15 +49,15 @@ LINES_AROUND_ROWS = 7
 # The fewest pitch rows drawn, however short the screen.
 MIN_ROWS = 1
 # The column of a cell that holds a note's mark, its sharp, flat or G, in the middle, or the bar's last column when the bar is shorter.
-MARK_COLUMN = CELL_WIDTH // 2
+MARK_COLUMN = grid_drawing.CELL_WIDTH // 2
 # Which of the grid's lines is the roll's top row, under the top rule, the step numbers and the heading's rule: where the keyswitch lights go.
 TOP_PITCH_LINE = 3
 
 
 def filled_columns(part):
     """Return how many of a cell's columns a part of a step fills, rounded to the nearest, and never none or all, so that a short note is seen to be short."""
-    columns = (part.numerator * CELL_WIDTH * 2 + part.denominator) // (part.denominator * 2)
-    return max(min(columns, CELL_WIDTH - 1), 1)
+    columns = (part.numerator * grid_drawing.CELL_WIDTH * 2 + part.denominator) // (part.denominator * 2)
+    return max(min(columns, grid_drawing.CELL_WIDTH - 1), 1)
 
 
 class DrawnNotes(NamedTuple):
@@ -87,7 +89,7 @@ class RollDrawing(GridDrawing):
     def header_extra(self):
         """Return the second header line's cells after Time: the scale and the entry size, how long Space draws a note, said to be the song's when the pattern sets none."""
         editor = self._editor
-        whose = NOTHING if editor.pattern().get_written_entry_size() else marks.MSG_FROM_SONG_SHOWN
+        whose = drawing.NOTHING if editor.pattern().get_written_entry_size() else marks.MSG_FROM_SONG_SHOWN
         entry = marks.MSG_ENTRY_SIZE_SHOWN.format(size=fraction_text(editor.document().entry_size(editor.item)), whose=whose)
         return [self.scale_header(), entry]
 
@@ -132,7 +134,7 @@ class RollDrawing(GridDrawing):
         # A sharp or flat has a row of its own when the scale is known, so the mark is only for numbered rows.
         return roll.accidental_symbol(start) if roll.scale_name() is None else None
 
-    def note_cell(self, *, mark, selected, columns=CELL_WIDTH, hollow=False):
+    def note_cell(self, *, mark, selected, columns=grid_drawing.CELL_WIDTH, hollow=False):
         """Return a note's cell, shaded under the cursor, with its mark in reverse video in the middle so that it reads against the bar, and hollow for a note an inversion
         plays an octave up.
         """
@@ -146,9 +148,9 @@ class RollDrawing(GridDrawing):
         columns of bar and then blank, with the mark in the bar's last column when the middle is
         past its end.
         """
-        if columns == CELL_WIDTH and mark is None:
+        if columns == grid_drawing.CELL_WIDTH and mark is None:
             return Text(marks.MSG_NOTE_UNDER_CURSOR if selected else marks.MSG_NOTE_CELL, no_wrap=True)
-        if columns == CELL_WIDTH:
+        if columns == grid_drawing.CELL_WIDTH:
             cell = Text((marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK if selected else marks.MSG_NOTE_CELL_WITH_MARK).format(mark=mark), no_wrap=True)
             cell.stylize(Style.REVERSE, MARK_COLUMN, MARK_COLUMN + len(mark))
             return cell
@@ -157,7 +159,7 @@ class RollDrawing(GridDrawing):
         if mark is not None:
             column = min(MARK_COLUMN, columns - 1)
             bar = bar[:column] + mark + bar[column + 1:]
-        cell = Text(fit(text=bar, width=CELL_WIDTH), no_wrap=True)
+        cell = Text(fit(text=bar, width=grid_drawing.CELL_WIDTH), no_wrap=True)
         if mark is not None:
             cell.stylize(Style.REVERSE, column, column + len(mark))
         return cell
@@ -167,9 +169,9 @@ class RollDrawing(GridDrawing):
         start = notes.covering.get(step)
         roll = self.roll()
         if step != start + roll.note_span(start) - 1:
-            return CELL_WIDTH
+            return grid_drawing.CELL_WIDTH
         part = roll.partial_cell(start)
-        return CELL_WIDTH if part is None else filled_columns(part)
+        return grid_drawing.CELL_WIDTH if part is None else filled_columns(part)
 
     def continues(self, *, notes, pitch, step):
         """Return whether a note at this pitch runs from the step before into this one, so the bar replaces the divider."""
@@ -205,7 +207,7 @@ class RollDrawing(GridDrawing):
     def ghost_cell(self, *, notes, step, selected):
         """Return the thin dim line of a chord's added note over one step, as far as the chord's note fills the cell."""
         columns = self.columns_filled(notes=notes, step=step)
-        return Text(fit(text=marks.MSG_GHOST_LINE * columns, width=CELL_WIDTH), style=Style.REVERSE if selected else Style.CHORD_NOTE, no_wrap=True)
+        return Text(fit(text=marks.MSG_GHOST_LINE * columns, width=grid_drawing.CELL_WIDTH), style=Style.REVERSE if selected else Style.CHORD_NOTE, no_wrap=True)
 
     def cursor_edges(self):
         """Return the edges the cursor's bold double bars stand on: the left edge of the cursor's step and of the step after it, which is the right border on the last step."""
@@ -238,7 +240,7 @@ class RollDrawing(GridDrawing):
         line = Text(no_wrap=True)
         line.append(Box.BAR, style=Style.DIM)
         # A row between two degrees is dim even in range, so the scale's own rows stand out.
-        line.append(fit(text=SPACE + roll.row_label(pitch), width=self.label_width()), style=Style.BOLD if on_row else (Style.PLAIN if in_range and roll.is_degree(pitch) else Style.DIM))
+        line.append(fit(text=drawing.SPACE + roll.row_label(pitch), width=self.label_width()), style=Style.BOLD if on_row else (Style.PLAIN if in_range and roll.is_degree(pitch) else Style.DIM))
         for step in range(first, last):
             mark = self.note_mark(notes=notes, pitch=pitch, step=step)
             ghost = mark is False and self.ghost_here(notes=notes, pitch=pitch, step=step)
@@ -258,9 +260,9 @@ class RollDrawing(GridDrawing):
             elif ghost:
                 line.append_text(self.ghost_cell(notes=notes, step=step, selected=selected))
             elif selected:
-                line.append(SPACE * CELL_WIDTH, style=Style.REVERSE)
+                line.append(drawing.SPACE * grid_drawing.CELL_WIDTH, style=Style.REVERSE)
             elif in_range:
-                line.append(SPACE * CELL_WIDTH)
+                line.append(drawing.SPACE * grid_drawing.CELL_WIDTH)
             else:
                 line.append(marks.MSG_OUT_OF_RANGE_CELL, style=Style.DIM)
         if last in cursor_edges:
@@ -301,7 +303,7 @@ class RollDrawing(GridDrawing):
             return line
         marked = line.copy()
         for step in steps:
-            column = EDGE_WIDTH + self.label_width() + (step - first) * (CELL_WIDTH + EDGE_WIDTH) + EDGE_WIDTH + MARK_COLUMN
+            column = EDGE_WIDTH + self.label_width() + (step - first) * (grid_drawing.CELL_WIDTH + EDGE_WIDTH) + EDGE_WIDTH + MARK_COLUMN
             after = marked[column + 1:]
             marked = marked[:column]
             marked.append(marks.MSG_KEYSWITCH_LIGHT, style=Style.KEYSWITCH_LIGHT)
@@ -314,7 +316,7 @@ class RollDrawing(GridDrawing):
         step = self._editor.playing_step()
         if step is None or not first <= step < last:
             return lines
-        column = EDGE_WIDTH + self.label_width() + (step - first) * (CELL_WIDTH + EDGE_WIDTH)
+        column = EDGE_WIDTH + self.label_width() + (step - first) * (grid_drawing.CELL_WIDTH + EDGE_WIDTH)
         return [self.read_head_on(line=line, column=column) for line in lines]
 
     def read_head_on(self, *, line, column):

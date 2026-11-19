@@ -25,12 +25,10 @@ from llamatron.strings import about
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components import scroll_text, title_card
-from llamatron.tui.components.scroll_text import BANNER_ROWS, COLUMNS_PER_SECOND, banner, demo_name, words_of, scroll_lines, scroll_seconds, scroll_text_for
-from llamatron.tui.components.title_card import (
-    ADDRESS_ROW, BLACK, LETTER_ROWS, NARROW, PROMPT_ROW, SCANNER_ROW, WIDE, Entrance, prompt_level, scan_end, scan_start, scanner_level,
-    title_lines, whole_title_seconds, words_width,
-)
-from llamatron.tui.launch import NO_SPLASH, NO_SPLASH_VARIABLE, Launch, start_screen_wanted
+from llamatron.tui.components.scroll_text import banner, demo_name, words_of, scroll_lines, scroll_seconds, scroll_text_for
+from llamatron.tui.components.title_card import Entrance, prompt_level, scan_end, scan_start, scanner_level, title_lines, whole_title_seconds, words_width
+from llamatron.tui import launch
+from llamatron.tui.launch import Launch, start_screen_wanted
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.start_screen import StartScreen
 from tests.support.ui_testing import UITest
@@ -88,14 +86,14 @@ class TestTitleCard(unittest.TestCase):
         for elapsed in (0.0, WAVING, DURING_SCAN, LONG_AFTER):
             for line in lines_at(elapsed=elapsed):
                 self.assertEqual(len(line.plain), WIDE_SCREEN[0])
-                self.assertTrue(all(tuple(background) == BLACK for _, background in colours_of(line)))
+                self.assertTrue(all(tuple(background) == title_card.BLACK for _, background in colours_of(line)))
 
     def test_the_word_is_twice_as_wide_where_it_fits_and_single_width_where_it_does_not(self):
-        for screen, scale in ((WIDE_SCREEN, WIDE), (NARROW_SCREEN, NARROW)):
+        for screen, scale in ((WIDE_SCREEN, title_card.WIDE), (NARROW_SCREEN, title_card.NARROW)):
             with self.subTest(screen=screen):
                 lines = lines_at(elapsed=settled(), screen=screen)
                 rows = block_rows(lines)
-                self.assertEqual(len(rows), LETTER_ROWS)
+                self.assertEqual(len(rows), title_card.LETTER_ROWS)
                 first = min(line.plain.index(about.MSG_BLOCK) for line in (lines[row] for row in rows))
                 last = max(len(line.plain.rstrip()) for line in (lines[row] for row in rows))
                 self.assertEqual(last - first, words_width(word=about.MSG_SPLASH_WORD, scale=scale))
@@ -103,11 +101,11 @@ class TestTitleCard(unittest.TestCase):
 
     def test_the_letters_ride_waves_as_they_come_in_and_settle_onto_five_rows(self):
         self.assertEqual(title_card.ENTRANCE, Entrance.SINE_WAVES)
-        self.assertGreater(len(block_rows(lines_at(elapsed=WAVING))), LETTER_ROWS)
-        self.assertEqual(len(block_rows(lines_at(elapsed=settled()))), LETTER_ROWS)
+        self.assertGreater(len(block_rows(lines_at(elapsed=WAVING))), title_card.LETTER_ROWS)
+        self.assertEqual(len(block_rows(lines_at(elapsed=settled()))), title_card.LETTER_ROWS)
 
     def test_the_scanner_sweeps_right_then_left_between_the_letters_settling_and_its_end(self):
-        width = words_width(word=about.MSG_SPLASH_WORD, scale=WIDE)
+        width = words_width(word=about.MSG_SPLASH_WORD, scale=title_card.WIDE)
         self.assertEqual(scanner_level(column=width // 2, width=width, elapsed=scan_start() - 0.01), 0.0)
         self.assertEqual(scanner_level(column=width // 2, width=width, elapsed=scan_end()), 0.0)
         quarter = scan_start() + (scan_end() - scan_start()) / 4
@@ -123,16 +121,16 @@ class TestTitleCard(unittest.TestCase):
     def test_the_address_is_two_lines_under_the_scanner_and_centred(self):
         lines = lines_at(elapsed=settled())
         top = block_rows(lines)[0]
-        address = lines[top + ADDRESS_ROW].plain
+        address = lines[top + title_card.ADDRESS_ROW].plain
         self.assertEqual(address.index(about.MSG_SPLASH_ADDRESS), (WIDE_SCREEN[0] - len(about.MSG_SPLASH_ADDRESS)) // 2)
-        self.assertEqual(ADDRESS_ROW, SCANNER_ROW + 2)
+        self.assertEqual(title_card.ADDRESS_ROW, title_card.SCANNER_ROW + 2)
 
     def test_the_prompt_waits_for_the_scanner_then_pulses_without_going_dark(self):
         self.assertEqual(prompt_level(scan_end() - 0.01), 0.0)
         top = block_rows(lines_at(elapsed=settled()))[0]
-        self.assertNotIn(about.MSG_START_PROMPT, lines_at(elapsed=DURING_SCAN)[top + PROMPT_ROW].plain)
-        self.assertIn(about.MSG_START_PROMPT, lines_at(elapsed=LONG_AFTER)[top + PROMPT_ROW].plain)
-        self.assertEqual(PROMPT_ROW, ADDRESS_ROW + 6)
+        self.assertNotIn(about.MSG_START_PROMPT, lines_at(elapsed=DURING_SCAN)[top + title_card.PROMPT_ROW].plain)
+        self.assertIn(about.MSG_START_PROMPT, lines_at(elapsed=LONG_AFTER)[top + title_card.PROMPT_ROW].plain)
+        self.assertEqual(title_card.PROMPT_ROW, title_card.ADDRESS_ROW + 6)
         pulse = [prompt_level(LONG_AFTER + step / STEPS * 3) for step in range(STEPS)]
         self.assertGreater(min(pulse), 0.0)
         self.assertGreater(max(pulse) - min(pulse), 0.3)
@@ -141,8 +139,8 @@ class TestTitleCard(unittest.TestCase):
     def test_a_title_shown_for_a_time_fades_to_black_at_its_end(self):
         seconds = whole_title_seconds()
         for line in lines_at(elapsed=seconds, seconds=seconds):
-            self.assertTrue(all(tuple(colour) == BLACK for colour, _ in colours_of(line)))
-        self.assertTrue(any(tuple(colour) != BLACK for line in lines_at(elapsed=DURING_SCAN, seconds=seconds) for colour, _ in colours_of(line)))
+            self.assertTrue(all(tuple(colour) == title_card.BLACK for colour, _ in colours_of(line)))
+        self.assertTrue(any(tuple(colour) != title_card.BLACK for line in lines_at(elapsed=DURING_SCAN, seconds=seconds) for colour, _ in colours_of(line)))
 
 
 class TestScrollText(unittest.TestCase):
@@ -165,7 +163,7 @@ class TestScrollText(unittest.TestCase):
     def test_every_letter_is_a_capital_of_one_size(self):
         # The block letters have no lower case, so the words are capitals.
         self.assertEqual(banner(A_CAPITAL), banner(A_CAPITAL.lower()))
-        self.assertEqual(len(banner(A_CAPITAL)), BANNER_ROWS)
+        self.assertEqual(len(banner(A_CAPITAL)), scroll_text.BANNER_ROWS)
         self.assertEqual(len(banner(A_CAPITAL)[0]), scroll_text.LETTER_ROWS * scroll_text.BLOCK_COLUMNS)
         self.assertIn(about.MSG_BLOCK, banner(A_CAPITAL)[0])
 
@@ -176,16 +174,16 @@ class TestScrollText(unittest.TestCase):
         rows = banner(scroll_text_for(A_LEARNING_DEMO))
         seconds = scroll_seconds(text=scroll_text_for(A_LEARNING_DEMO), width=WIDE_SCREEN[0])
         self.assertEqual(self.blocks_at(rows=rows, elapsed=0.0), [])
-        early = self.blocks_at(rows=rows, elapsed=A_FEW_COLUMNS / COLUMNS_PER_SECOND)
+        early = self.blocks_at(rows=rows, elapsed=A_FEW_COLUMNS / scroll_text.COLUMNS_PER_SECOND)
         self.assertTrue(early)
         self.assertGreaterEqual(min(early), WIDE_SCREEN[0] - A_FEW_COLUMNS)
-        later = self.blocks_at(rows=rows, elapsed=MANY_COLUMNS / COLUMNS_PER_SECOND)
+        later = self.blocks_at(rows=rows, elapsed=MANY_COLUMNS / scroll_text.COLUMNS_PER_SECOND)
         self.assertLess(min(later), min(early))
         self.assertEqual(self.blocks_at(rows=rows, elapsed=seconds), [])
 
     def test_every_line_is_as_wide_as_the_screen_and_the_words_are_light_orange_alone(self):
         width, height = WIDE_SCREEN
-        lines = scroll_lines(rows=banner(scroll_text_for(A_LEARNING_DEMO)), width=width, height=height, elapsed=MANY_COLUMNS / COLUMNS_PER_SECOND)
+        lines = scroll_lines(rows=banner(scroll_text_for(A_LEARNING_DEMO)), width=width, height=height, elapsed=MANY_COLUMNS / scroll_text.COLUMNS_PER_SECOND)
         self.assertEqual(len(lines), height)
         self.assertEqual({len(line.plain) for line in lines}, {width})
         colours = {span.style.color.triplet for line in lines for span in line.spans if line.plain[span.start] == about.MSG_BLOCK}
@@ -203,7 +201,7 @@ class TestStartScreenWanted(unittest.TestCase):
 
     def test_the_command_line_wants_it_unless_the_environment_says_not(self):
         self.assertTrue(start_screen_wanted({}))
-        self.assertFalse(start_screen_wanted({NO_SPLASH_VARIABLE: NO_SPLASH}))
+        self.assertFalse(start_screen_wanted({launch.NO_SPLASH_VARIABLE: launch.NO_SPLASH}))
 
 
 class TestStartScreen(UITest):

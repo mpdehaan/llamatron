@@ -19,13 +19,13 @@
 from unittest import mock
 
 from tests.support.ui_testing import UITest, fixed_text
-from llamatron.tui.drawing import Box, NOTHING, SPACE
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box
 from llamatron.tui.dialogs import about_dialog
-from llamatron.tui.dialogs.about_dialog import EIGHT_BALL_CHANCE, QUOTE_LINES
-from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_WIDTH
+from llamatron.tui.dialogs import dialog as dialog_values
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
-from llamatron.tui.screens.shared.page import PROGRAM_NAME
+from llamatron.tui.screens.shared import page as page_values
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
@@ -100,7 +100,7 @@ class TestHelp(UITest):
         # The gauge, its number and the octave are pinned, and the first section's heading and at least one of its rows show under them.
         self.assertIn('│ Degree', text)
         self.assertIn('│ Octave', text)
-        self.assertIn(Box.BAR + SPACE + labels.MSG_SECTION_LABEL.format(mark=marks.MSG_SECTION_OPEN_MARK, name=labels.MSG_SECTION_NAMES[RowSection.BASICS]), text)
+        self.assertIn(Box.BAR + drawing.SPACE + labels.MSG_SECTION_LABEL.format(mark=marks.MSG_SECTION_OPEN_MARK, name=labels.MSG_SECTION_NAMES[RowSection.BASICS]), text)
         self.assertIn('│ #/b', text)
         self.assertIn('Step 1:', text)
         self.assertIn('« ESC »', text)
@@ -165,7 +165,7 @@ class TestAboutDialog(UITest):
             await self.press(*keys)
             self.assertIsInstance(self.app.screen, AboutDialog)
             text = self.text()
-            self.assertIn(about.MSG_COW_BUBBLE_TEXT.format(text=PROGRAM_NAME), text)
+            self.assertIn(about.MSG_COW_BUBBLE_TEXT.format(text=page_values.PROGRAM_NAME), text)
             self.assertIn(about.MSG_COW[-1].strip(), text)
             self.assertIn(about.MSG_ABOUT_VERSION.format(version=version.VERSION, date=version.BUILD_DATE, time=version.BUILD_TIME), text)
             self.assertIn(about.MSG_ABOUT_WEB, text)
@@ -181,7 +181,7 @@ class TestAboutDialog(UITest):
             self.assertNotIsInstance(self.app.screen, AboutDialog)
 
     async def test_the_quote_is_the_eight_balls_answer_when_the_roll_falls_under_its_chance(self):
-        with mock.patch.object(about_dialog.random, 'random', return_value=EIGHT_BALL_CHANCE / 2), mock.patch.object(about_dialog.random, 'choice', side_effect=lambda options: options[-1]):
+        with mock.patch.object(about_dialog.random, 'random', return_value=about_dialog.EIGHT_BALL_CHANCE / 2), mock.patch.object(about_dialog.random, 'choice', side_effect=lambda options: options[-1]):
             await self.press(keybindings.MainPage.ABOUT)
         self.assertEqual(self.app.screen.quote, about.MSG_EIGHT_BALL.format(answer=about.MSG_EIGHT_BALL_ANSWERS[-1]))
         await self.press(Key.ENTER)
@@ -193,7 +193,7 @@ class TestAboutDialog(UITest):
     async def test_a_long_quote_wraps_onto_more_lines_in_place_of_the_blank_ones_and_the_box_stays_whole(self):
         with mock.patch.object(about_dialog, 'random_quote', return_value=LONG_QUOTE):
             await self.press(keybindings.MainPage.ABOUT)
-        inner = DIALOG_WIDTH - DIALOG_MARGIN
+        inner = dialog_values.DIALOG_WIDTH - dialog_values.DIALOG_MARGIN
         self.assertTrue(all(len(line.plain) <= inner for line in self.app.screen.lines(inner)))
         self.assertEqual(len(self.app.screen.quote_lines(inner)), 2)
         self.assertEqual(sum(LONG_QUOTE_WORD in line for line in self.dialog_lines()), 2)
@@ -202,19 +202,19 @@ class TestAboutDialog(UITest):
 
     async def test_a_one_line_quote_has_a_blank_line_above_and_below_it(self):
         await self.press(keybindings.MainPage.ABOUT)
-        quote = self.app.screen.quote_lines(DIALOG_WIDTH - DIALOG_MARGIN)
+        quote = self.app.screen.quote_lines(dialog_values.DIALOG_WIDTH - dialog_values.DIALOG_MARGIN)
         self.assertEqual(len(quote), 1)
-        lines = [line.plain for line in self.app.screen.lines(DIALOG_WIDTH - DIALOG_MARGIN)]
+        lines = [line.plain for line in self.app.screen.lines(dialog_values.DIALOG_WIDTH - dialog_values.DIALOG_MARGIN)]
         at = lines.index(quote[0])
-        self.assertEqual((lines[at - 1], lines[at + 1]), (NOTHING, NOTHING))
+        self.assertEqual((lines[at - 1], lines[at + 1]), (drawing.NOTHING, drawing.NOTHING))
         self.assertIn(Box.HEAVY_BOTTOM_LEFT, self.text())
         await self.press(Key.ENTER)
 
     async def test_a_quote_longer_than_four_lines_is_cut_there(self):
         with mock.patch.object(about_dialog, 'random_quote', return_value=LONG_QUOTE * 4):
             await self.press(keybindings.MainPage.ABOUT)
-        self.assertEqual(len(self.app.screen.quote_lines(DIALOG_WIDTH - DIALOG_MARGIN)), QUOTE_LINES)
-        self.assertEqual(sum(LONG_QUOTE_WORD in line for line in self.dialog_lines()), QUOTE_LINES)
+        self.assertEqual(len(self.app.screen.quote_lines(dialog_values.DIALOG_WIDTH - dialog_values.DIALOG_MARGIN)), about_dialog.QUOTE_LINES)
+        self.assertEqual(sum(LONG_QUOTE_WORD in line for line in self.dialog_lines()), about_dialog.QUOTE_LINES)
         await self.press(Key.ENTER)
 
     async def test_every_quote_keeps_the_dialog_on_a_usual_console(self):
@@ -225,7 +225,7 @@ class TestAboutDialog(UITest):
             await self.press(Key.ENTER)
 
     async def test_the_quote_is_one_of_the_quotes_when_the_roll_falls_over_the_eight_balls_chance(self):
-        with mock.patch.object(about_dialog.random, 'random', return_value=EIGHT_BALL_CHANCE + (1 - EIGHT_BALL_CHANCE) / 2):
+        with mock.patch.object(about_dialog.random, 'random', return_value=about_dialog.EIGHT_BALL_CHANCE + (1 - about_dialog.EIGHT_BALL_CHANCE) / 2):
             await self.press(keybindings.MainPage.ABOUT)
         self.assertIn(self.app.screen.quote, about.MSG_ABOUT_QUOTES)
         self.assertNotIn(fixed_text(about.MSG_EIGHT_BALL), self.app.screen.quote)

@@ -33,10 +33,13 @@ from rich.text import Text
 from llamatron.composition import file_format
 from llamatron.composition.naming import words
 from llamatron.strings import labels, marks, messages
-from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, Dialog
-from llamatron.tui.drawing import NOTHING, SPACE, Style, cursor_mark, fit, legend
+from llamatron.tui.dialogs import dialog
+from llamatron.tui.dialogs.dialog import Dialog
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, cursor_mark, fit, legend
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key
 from llamatron.tui import keybindings
 
 # The four lists, left to right: quality, inversion, tensions, scale.
@@ -154,7 +157,7 @@ class ChordDialog(Dialog):
 
     def move(self, name):
         """Move within the cursor's list with Up and Down and from list to list with Left and Right, stopping at every edge."""
-        if name in ARROWS_LEFT_RIGHT:
+        if name in keys_values.ARROWS_LEFT_RIGHT:
             self.part = cursor_moved(place=self.part, name=Key.UP if name == Key.LEFT else Key.DOWN, count=LISTS)
         else:
             self.places[self.part] = cursor_moved(place=self.places[self.part], name=name, count=self.counts()[self.part])
@@ -200,7 +203,7 @@ class ChordDialog(Dialog):
         """Move in the flyout with Up and Down, stopping at its edges; Left closes it, and Right does nothing."""
         if name == Key.LEFT:
             self.close_flyout()
-        elif name not in ARROWS_LEFT_RIGHT:
+        elif name not in keys_values.ARROWS_LEFT_RIGHT:
             self.flyout_place = cursor_moved(place=self.flyout_place, name=name, count=len(self.kinds_of_row(self.flyout)))
 
     def pick_in_flyout(self):
@@ -230,7 +233,7 @@ class ChordDialog(Dialog):
         if self.kind in kinds and row == self.row_of_kind(self.kind):
             # The scale type borrowed is shown whole, and the category's name gives way to it where both don't fit.
             chosen = words(self.kind).title()
-            room = LIST_WIDTHS[SCALE_LIST] - len(cursor_mark(False)) - len(marks.MSG_FLYOUT_CHOSEN.format(name=NOTHING, chosen=chosen))
+            room = LIST_WIDTHS[SCALE_LIST] - len(cursor_mark(False)) - len(marks.MSG_FLYOUT_CHOSEN.format(name=drawing.NOTHING, chosen=chosen))
             if room < SHORTEST_CATEGORY_NAME:
                 return marks.MSG_FLYOUT_CHOSEN_ALONE.format(chosen=chosen)
             return marks.MSG_FLYOUT_CHOSEN.format(name=fit(text=name, width=room).rstrip(), chosen=chosen)
@@ -244,7 +247,7 @@ class ChordDialog(Dialog):
             return marks.MSG_NONE_SHOWN if self.inversions[place] is None else str(self.inversions[place])
         if part == TENSION_LIST:
             tension = list(file_format.TENSIONS)[place]
-            return (marks.MSG_TOGGLE_ON if tension in self.picked else marks.MSG_FIELD_TOGGLE_OFF) + SPACE + tension
+            return (marks.MSG_TOGGLE_ON if tension in self.picked else marks.MSG_FIELD_TOGGLE_OFF) + drawing.SPACE + tension
         return self.scale_row_text(place)
 
     def list_lines(self, part):
@@ -256,10 +259,10 @@ class ChordDialog(Dialog):
         lines = []
         for place in range(start, start + self.SHOWN):
             if place >= count:
-                lines.append(Text(SPACE * width))
+                lines.append(Text(drawing.SPACE * width))
                 continue
             text = fit(text=cursor_mark(place == cursor) + self.row_text(part=part, place=place), width=width)
-            lines.append(Text(text, style=Style.BOLD if place == cursor and part == self.part else NOTHING))
+            lines.append(Text(text, style=Style.BOLD if place == cursor and part == self.part else drawing.NOTHING))
         return lines
 
     def flyout_lines(self, width):
@@ -267,43 +270,43 @@ class ChordDialog(Dialog):
         if self.flyout is None:
             return None
         name, kinds = self.categories[self.flyout - 1]
-        lines = [Text(marks.MSG_FLYOUT_TITLE.format(name=name), style=Style.BOLD), Text(NOTHING)]
+        lines = [Text(marks.MSG_FLYOUT_TITLE.format(name=name), style=Style.BOLD), Text(drawing.NOTHING)]
         for place, kind in enumerate(kinds):
-            lines.append(Text(cursor_mark(place == self.flyout_place) + words(kind).title(), style=Style.BOLD if place == self.flyout_place else NOTHING))
+            lines.append(Text(cursor_mark(place == self.flyout_place) + words(kind).title(), style=Style.BOLD if place == self.flyout_place else drawing.NOTHING))
         # The scale types take the room the lists take underneath, so that the sentences and the keys sit where the dialog's do.
-        lines += [Text(NOTHING)] * (self.SHOWN + 2 - len(kinds))
-        return [*lines, *self.sentences(width), Text(NOTHING), *legend(keys=self.keys(), width=width)]
+        lines += [Text(drawing.NOTHING)] * (self.SHOWN + 2 - len(kinds))
+        return [*lines, *self.sentences(width), Text(drawing.NOTHING), *legend(keys=self.keys(), width=width)]
 
     def legend_lines(self, width):
         """Return the keys of the cursor's list, in as many lines as the list with the most keys takes, so that the dialog keeps its height from list to list."""
         most = max(len(legend(keys=self.list_keys(part), width=width)) for part in range(LISTS))
         lines = legend(keys=self.list_keys(self.part), width=width)
-        return [*lines, *[Text(NOTHING)] * (most - len(lines))]
+        return [*lines, *[Text(drawing.NOTHING)] * (most - len(lines))]
 
     def wanted_width(self):
         """Return the width at which every list's keys fit on one line, so that the dialog is one size on every list."""
-        return max(legend(keys=self.list_keys(part), width=WIDEST)[0].cell_len for part in range(LISTS)) + DIALOG_MARGIN
+        return max(legend(keys=self.list_keys(part), width=WIDEST)[0].cell_len for part in range(LISTS)) + dialog.DIALOG_MARGIN
 
     def sentences(self, width):
         """Return what is said of the choice, as SENTENCE_LINES lines."""
         said = [fit(text=text, width=width).rstrip() for text in self.said(self.choice())][:SENTENCE_LINES]
-        return [*[Text(text) for text in said], *[Text(NOTHING) for _ in range(SENTENCE_LINES - len(said))]]
+        return [*[Text(text) for text in said], *[Text(drawing.NOTHING) for _ in range(SENTENCE_LINES - len(said))]]
 
     def lines(self, width):
         headings = (labels.Column.SELECT_QUALITY, labels.Column.INVERSION, labels.Column.TENSIONS, labels.Column.BORROW_SCALE)
-        heading = Text(NOTHING)
+        heading = Text(drawing.NOTHING)
         for part, name in enumerate(headings):
-            heading.append(fit(text=SPACE * len(cursor_mark(False)) + name, width=LIST_WIDTHS[part]), style=Style.BOLD if part == self.part else Style.DIM)
-            heading.append(SPACE * LIST_GAP if part < LISTS - 1 else NOTHING)
+            heading.append(fit(text=drawing.SPACE * len(cursor_mark(False)) + name, width=LIST_WIDTHS[part]), style=Style.BOLD if part == self.part else Style.DIM)
+            heading.append(drawing.SPACE * LIST_GAP if part < LISTS - 1 else drawing.NOTHING)
         result = [heading]
         columns = [self.list_lines(part) for part in range(LISTS)]
         for row in range(self.SHOWN):
-            line = Text(NOTHING)
+            line = Text(drawing.NOTHING)
             for part in range(LISTS):
                 line.append_text(columns[part][row])
-                line.append(SPACE * LIST_GAP if part < LISTS - 1 else NOTHING)
+                line.append(drawing.SPACE * LIST_GAP if part < LISTS - 1 else drawing.NOTHING)
             result.append(line)
-        result.append(Text(NOTHING))
+        result.append(Text(drawing.NOTHING))
         return [*result, *self.sentences_and_keyboard(width)]
 
     def has_room_for_keyboard(self, width):
@@ -319,4 +322,4 @@ class ChordDialog(Dialog):
         if keyboard is None:
             return self.sentences(width)
         said = [Text(fit(text=text, width=width).rstrip()) for text in self.said(self.choice())][:SENTENCE_LINES]
-        return [*said, *[Text(NOTHING)] * KEYBOARD_GAP, *keyboard, *[Text(NOTHING)] * (SENTENCE_LINES - len(said))]
+        return [*said, *[Text(drawing.NOTHING)] * KEYBOARD_GAP, *keyboard, *[Text(drawing.NOTHING)] * (SENTENCE_LINES - len(said))]

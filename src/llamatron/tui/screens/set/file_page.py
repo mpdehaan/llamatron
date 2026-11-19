@@ -21,7 +21,8 @@ from rich.text import Text
 
 from llamatron.composition import file_format
 from llamatron.tui.document import Document
-from llamatron.tui.drawing import LINE_BREAK, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.shared.everywhere import open_set, save, save_as, unless_unsaved
@@ -101,7 +102,7 @@ class FilePage(FieldPage):
     def notes_first_line(self):
         """Return the notes' first line, which is what fits on the field, or that there are none."""
         text = self.setlist().get_notes()
-        return text.split(LINE_BREAK)[0].strip() or marks.MSG_NOT_SET if text else marks.MSG_NOT_SET
+        return text.split(drawing.LINE_BREAK)[0].strip() or marks.MSG_NOT_SET if text else marks.MSG_NOT_SET
 
     def edit_notes(self):
         """Open the Notes page editing, so that Enter on the field starts typing and Tab comes back; a protected set's opens for reading."""

@@ -20,7 +20,8 @@ from rich.text import Text
 from llamatron.macro_composer.song_plan import HIGHEST_ENERGY, LOWEST_ENERGY
 from llamatron.macro_composer.wizard_choices import WAYS_WITH_FIRST_PLAYER, WAYS_WITH_SETUP_BARS
 from llamatron.strings import errors, labels, legends, marks, messages
-from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NumberField, Toggle, gauge_shown
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
@@ -93,8 +94,8 @@ class FormBranch(Branch):
         """Return the form's sections in order, each with its bars, so that the whole form reads at a glance; or what to choose first."""
         choices = self.choices()
         if not choices.is_ready():
-            return [Text(INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
-        hint = [Text(INDENT + messages.MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
+            return [Text(drawing.INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
+        hint = [Text(drawing.INDENT + messages.MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
         sections = choices.section_labels()
         longest = max((len(name) for name in sections), default=0)
         if choices.has_song_plan():
@@ -104,8 +105,8 @@ class FormBranch(Branch):
             except (ValueError, KeyError, IndexError):
                 said = []
             if len(said) == len(sections):
-                return hint + [Text(INDENT + labels.MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
-        return hint + [Text(INDENT + marks.MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
+                return hint + [Text(drawing.INDENT + labels.MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
+        return hint + [Text(drawing.INDENT + marks.MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
                 for place, name in enumerate(sections)]
 
     # A new section is added at the end of the form from here, and after a section from the section.

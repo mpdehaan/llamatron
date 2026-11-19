@@ -30,7 +30,8 @@ from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.tui.screens.pattern.pattern_editor import MUNGE_GROUPS, Munge, PatternEditor, munge_groups, munges_in_order
+from llamatron.tui.screens.pattern import pattern_editor
+from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, munge_groups, munges_in_order
 from tests.support.pattern_editor_testing import munge
 from tests.support.ui_testing import BEAT, OTHER, UITest
 
@@ -69,8 +70,8 @@ class TestMunge(UITest):
         dialog = self.app.screen
         self.assertIsInstance(dialog, GroupedChoiceDialog)
         # The headings are sorted, closed until opened, and each heading's choices are sorted; every munge is under one heading.
-        self.assertEqual(dialog.headings, sorted(MUNGE_GROUPS))
-        self.assertEqual(len(dialog.rows()), len(MUNGE_GROUPS))
+        self.assertEqual(dialog.headings, sorted(pattern_editor.MUNGE_GROUPS))
+        self.assertEqual(len(dialog.rows()), len(pattern_editor.MUNGE_GROUPS))
         for heading, choices in munge_groups():
             names = [labels.MSG_MUNGE_CHOICES[choice] for choice in choices]
             self.assertEqual(names, sorted(names, key=str.lower))
@@ -78,7 +79,7 @@ class TestMunge(UITest):
         self.assertEqual(len(labels.MSG_MUNGE_CHOICES), len([name for name in vars(Munge) if name.isupper()]))
         # A heading opens to its choices, and stays open the next time.
         await self.press(Key.ENTER)
-        self.assertEqual(len(dialog.rows()), len(MUNGE_GROUPS) + len(MUNGE_GROUPS[dialog.headings[0]]))
+        self.assertEqual(len(dialog.rows()), len(pattern_editor.MUNGE_GROUPS) + len(pattern_editor.MUNGE_GROUPS[dialog.headings[0]]))
         self.assertIn(labels.MSG_MUNGE_CHOICES[Munge.CLEAR_CHORDS], self.text())
         await self.press(Key.ESCAPE, keybindings.PatternEditor.MUNGE)
         self.assertIn(labels.MSG_MUNGE_CHOICES[Munge.CLEAR_CHORDS], self.text())

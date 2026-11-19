@@ -23,9 +23,11 @@ from llamatron.composition.setlist import Setlist
 from llamatron.strings import marks
 from llamatron.support.example_sets import example_sets
 from llamatron.tui import keybindings
-from llamatron.tui.components.inset_window import BORDER, INSET, PADDING, drawn_over, inside_size
+from llamatron.tui.components import inset_window
+from llamatron.tui.components.inset_window import drawn_over, inside_size
 from llamatron.tui.drawing import Box
-from llamatron.tui.components.scene_view import MOST_CELLS, OVERLAP_CHARACTER, PLAYED_COLOUR, COOL_COLOURS, WARM_COLOURS, coloured, START_CELLS, WRITTEN_COLOUR, SceneView, track_label
+from llamatron.tui.components import scene_view
+from llamatron.tui.components.scene_view import coloured, SceneView, track_label
 from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, chord_of, chord_texts, effective_values, marked_tracks, scene_notes, written_song
 from rich.text import Text
@@ -155,13 +157,13 @@ class TestInsetWindow(unittest.TestCase):
         screen = [Text(SPACE * SCREEN_WIDTH) for _ in range(SCREEN_HEIGHT)]
         inner_width, inner_height = inside_size(width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
         lines = drawn_over(screen=screen, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, title=TITLE, inside=[Text(INSIDE_LINE)] * inner_height,
-                           colour=WRITTEN_COLOUR, closing=CLOSING)
-        self.assertEqual(lines[INSET - 1].plain[INSET - 1], Box.TOP_LEFT)
-        self.assertEqual(lines[SCREEN_HEIGHT - INSET].plain[SCREEN_WIDTH - INSET], Box.BOTTOM_RIGHT)
-        self.assertIn(CLOSING, lines[SCREEN_HEIGHT - 1 - INSET].plain)
-        title_row = INSET + BORDER + PADDING
-        self.assertTrue(lines[title_row].plain[INSET + BORDER + PADDING:].startswith(TITLE))
-        self.assertTrue(lines[title_row + 1].plain[INSET + BORDER + PADDING:].startswith(INSIDE_LINE))
+                           colour=scene_view.WRITTEN_COLOUR, closing=CLOSING)
+        self.assertEqual(lines[inset_window.INSET - 1].plain[inset_window.INSET - 1], Box.TOP_LEFT)
+        self.assertEqual(lines[SCREEN_HEIGHT - inset_window.INSET].plain[SCREEN_WIDTH - inset_window.INSET], Box.BOTTOM_RIGHT)
+        self.assertIn(CLOSING, lines[SCREEN_HEIGHT - 1 - inset_window.INSET].plain)
+        title_row = inset_window.INSET + inset_window.BORDER + inset_window.PADDING
+        self.assertTrue(lines[title_row].plain[inset_window.INSET + inset_window.BORDER + inset_window.PADDING:].startswith(TITLE))
+        self.assertTrue(lines[title_row + 1].plain[inset_window.INSET + inset_window.BORDER + inset_window.PADDING:].startswith(INSIDE_LINE))
         self.assertEqual(lines[0].plain.strip(), NOTHING)
 
 
@@ -177,10 +179,10 @@ class TestSceneViewOnArrange(UITest):
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
         self.assertIsInstance(self.page.inset, SceneView)
         self.assertIn(marks.MSG_SCENE_VIEW_WRITTEN, self.text())
-        self.assertEqual(self.page.inset.border_colour(), WRITTEN_COLOUR)
+        self.assertEqual(self.page.inset.border_colour(), scene_view.WRITTEN_COLOUR)
         self.assertIn(track_label(name=LEAD, place=self.document.track_names().index(LEAD)), self.text())
         await self.press(keybindings.ArrangePage.TO_PLAYED)
-        self.assertEqual(self.page.inset.border_colour(), PLAYED_COLOUR)
+        self.assertEqual(self.page.inset.border_colour(), scene_view.PLAYED_COLOUR)
         self.assertIn(marks.MSG_SCENE_VIEW_PLAYED.format(take=marks.MSG_SCENE_VIEW_ONE_TAKE)[:40], self.text())
         await self.press(keybindings.ArrangePage.TO_WRITTEN)
         self.assertIn(marks.MSG_SCENE_VIEW_WRITTEN, self.text())
@@ -208,12 +210,12 @@ class TestSceneViewOnArrange(UITest):
 
     async def test_minus_and_equals_zoom_from_one_to_five_cells_and_pgdn_scrolls_the_sidebar(self):
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
-        self.assertEqual(self.page.inset.zoom(), START_CELLS)
-        for _ in range(MOST_CELLS):
+        self.assertEqual(self.page.inset.zoom(), scene_view.START_CELLS)
+        for _ in range(scene_view.MOST_CELLS):
             await self.press(forward_key(keybindings.ArrangePage.INSET_ZOOM))
-        self.assertEqual(self.page.inset.zoom(), MOST_CELLS)
+        self.assertEqual(self.page.inset.zoom(), scene_view.MOST_CELLS)
         await self.press(back_key(keybindings.ArrangePage.INSET_ZOOM))
-        self.assertEqual(self.page.inset.zoom(), MOST_CELLS - 1)
+        self.assertEqual(self.page.inset.zoom(), scene_view.MOST_CELLS - 1)
         await self.press(forward_key(keybindings.ArrangePage.INSET_SCROLL))
         self.assertIsNotNone(self.page.inset)
 
@@ -221,7 +223,7 @@ class TestSceneViewOnArrange(UITest):
     async def test_tracks_at_once_show_the_firsts_colour_behind_the_seconds_x_or_their_count(self):
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
         character, style = self.page.inset.overlap([0, 1])
-        self.assertEqual(character, OVERLAP_CHARACTER)
+        self.assertEqual(character, scene_view.OVERLAP_CHARACTER)
         self.assertEqual(style.bgcolor.get_truecolor(), self.page.inset.track_colour(0))
         self.assertEqual(style.color.get_truecolor(), self.page.inset.track_colour(1))
         character, style = self.page.inset.overlap([0, 1, 2])
@@ -235,16 +237,16 @@ class TestSceneViewOnArrange(UITest):
         lead = names.index(LEAD)
         drums = names.index(DRUMS)
         self.document.set_track_drum(name=DRUMS, drum=True)
-        self.assertEqual(self.page.inset.track_colour(lead), COOL_COLOURS[0])
-        self.assertEqual(self.page.inset.track_colour(drums), WARM_COLOURS[0])
-        self.assertEqual(COOL_COLOURS[0], PURE_GREEN)
-        self.assertEqual(WARM_COLOURS[0], PURE_RED)
+        self.assertEqual(self.page.inset.track_colour(lead), scene_view.COOL_COLOURS[0])
+        self.assertEqual(self.page.inset.track_colour(drums), scene_view.WARM_COLOURS[0])
+        self.assertEqual(scene_view.COOL_COLOURS[0], PURE_GREEN)
+        self.assertEqual(scene_view.WARM_COLOURS[0], PURE_RED)
 
     def test_a_group_with_more_tracks_than_its_colours_borrows_the_others_that_are_left(self):
-        others = list(range(len(COOL_COLOURS) + 1))
+        others = list(range(len(scene_view.COOL_COLOURS) + 1))
         colours = coloured(drums=[len(others)], others=others)
-        self.assertEqual(colours[others[-1]], WARM_COLOURS[0])
-        self.assertEqual(colours[len(others)], WARM_COLOURS[1])
+        self.assertEqual(colours[others[-1]], scene_view.WARM_COLOURS[0])
+        self.assertEqual(colours[len(others)], scene_view.WARM_COLOURS[1])
         self.assertEqual(len(set(colours.values())), len(colours))
 
     async def test_tab_jumps_the_cursor_to_the_next_bar_and_shift_tab_back(self):
