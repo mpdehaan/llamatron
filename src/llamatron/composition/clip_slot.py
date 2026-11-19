@@ -24,21 +24,19 @@ reading a file does and raise InvalidValue if it's wrong, with the song passed i
 setting names something the song holds.
 """
 
-from llamatron.composition.checks import check_keys, check_name, reading
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, marks
-from llamatron.composition import file_format
-from llamatron.composition.file_format import strum_setting, ClipSlotSetting, PatternOrder, Section
-from llamatron.composition.llama_data import own_copy, LlamaData, settings_by_name, written_settings
-from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.chain import check_chain_names
+from llamatron.composition.checks import check_keys, check_name, reading
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
+from llamatron.composition.file_format import ClipSlotSetting, PatternOrder, Section, strum_setting
+from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.llama_data import LlamaData, own_copy, settings_by_name, written_settings
+from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.composition.shapes import shape_settings, shape_values
-from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.composition.strum import strum_settings, strum_values
-from llamatron.composition import corrections
-from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
+from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.generators.blend import BlendMode
+from llamatron.strings import errors, marks
 from llamatron.support.revised import notes_change
 
 

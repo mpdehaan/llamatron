@@ -16,18 +16,18 @@
 
 """Play directions on patterns and clips."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.generators.blend import BlendMode
-from llamatron.music.note import Note, NoteName, Rest
-from tests.support.rendering import render_data
 from llamatron.composition.file_format import ClipSlotSetting, Direction, PatternSetting, Row, Section
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.generators.blend import BlendMode
+from llamatron.music.note import Note, NoteName, Rest
 from llamatron.playback.step_order import StepOrder
 from llamatron.support.random_source import random_source
 from tests.support import song_testing
+from tests.support.rendering import render_data
 from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'

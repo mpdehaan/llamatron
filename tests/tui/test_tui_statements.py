@@ -27,8 +27,8 @@ from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
-from llamatron.tui.screens.shared.field import Cells
 from llamatron.tui.screens.shared import statements
+from llamatron.tui.screens.shared.field import Cells
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

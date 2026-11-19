@@ -22,8 +22,8 @@ import unittest.mock
 
 from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import composer, decomposer, notation, shaping
-from llamatron.support.safe_yaml import load_safely
 from llamatron.support import version
+from llamatron.support.safe_yaml import load_safely
 
 FILE_ENCODING = 'utf-8'
 # Demos of three feels: dance music with a sung lead, a shanty in a minor key, and swung jazz.

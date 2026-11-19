@@ -16,12 +16,12 @@
 
 """Helpers the tests of the pattern editor share: the class that opens the editor on a pattern, and a section's heading as drawn."""
 
-from tests.support.ui_testing import UITest
+from llamatron.strings import labels
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import munges_in_order
-from llamatron.strings import labels
-from llamatron.tui import keybindings
+from tests.support.ui_testing import UITest
 
 TUNE = 'tune'
 

@@ -23,22 +23,20 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 
 import unittest
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ResetBehavior, ClipSlotSetting, GeneratorKind, RegisterSetting, Row, SceneSetting, Section, TrackSetting
-from llamatron.composition import defaults as set_defaults, limits
+from llamatron.composition import defaults as set_defaults, file_format, generator_settings, limits
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
+from llamatron.composition.generator_settings import ArpSetting, ArpSettings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.register import Register
+from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
-from tests.playback import test_registers
+from llamatron.generators import arp as arp_values
 from llamatron.music import midi
 from llamatron.support.rational import Rational
-from llamatron.composition.setlist import Setlist
-from llamatron.composition import generator_settings
-from llamatron.composition.generator_settings import ArpSetting, ArpSettings
-from llamatron.generators import arp as arp_values
-from tests.support.rendering import as_setlist, render_data
+from tests.playback import test_registers
 from tests.playback.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
+from tests.support.rendering import as_setlist, render_data
 
 # The other track the tests use, which changes the registers the lead or the pad reads.
 DRIVER = 'driver'

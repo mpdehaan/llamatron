@@ -16,20 +16,19 @@
 """The row of track names at the top of the Arrange page, where tracks are added, duplicated, inserted, moved,
 renamed and deleted since the Tracks page went, and the track editor it opens."""
 
-from tests.support.ui_testing import UITest, back_key, forward_key, key_of
-from llamatron.composition import file_format
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, TrackSetting
-from llamatron.composition import defaults, limits
 from llamatron.strings import labels, marks, names as names_text
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.screens.generators.chain_list_page import ChainListPage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui import keybindings
-from llamatron.tui.key_table import first_key
+from llamatron.tui.screens.generators.chain_list_page import ChainListPage
 from tests.support.rendering import render_song
+from tests.support.ui_testing import back_key, forward_key, key_of, UITest
 
 
 LEAD = 'lead'

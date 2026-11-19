@@ -17,26 +17,19 @@
 """The song wizard's Composition panels: Melody, a kind of section's melody, Riffs, Riff Assign and Section Players."""
 
 from llamatron.composition.file_format import Row
-from llamatron.macro_composer import hook_writing
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import riffs
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import hook_writing, melody, riffs, song_plan, wizard_choices
 from llamatron.strings import errors, labels, marks, messages, names
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import button_row
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_riff_dialog import NewRiffDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.field import Heading
-from llamatron.tui.screens.wizard import intro_melody_branch
-from llamatron.tui.screens.wizard import section_melody_branch
-from llamatron.tui.screens.wizard import solo_melody_branch
+from llamatron.tui.screens.wizard import intro_melody_branch, section_melody_branch, solo_melody_branch
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest

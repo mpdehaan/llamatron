@@ -25,17 +25,17 @@ import tempfile
 import unittest
 from unittest import mock
 
-from llamatron.composition.checks import listed
 from llamatron.composition import file_format
+from llamatron.composition.checks import listed
 from llamatron.composition.file_format import ClipSlotSetting
-from llamatron.realtime import fluidsynth
 from llamatron.music import midi
+from llamatron.realtime import fluidsynth
 from llamatron.strings import about, errors
 from llamatron.tui import launch as launch_values
 from llamatron.tui.uses import looping_scenes
+from llamatron.visualizers import modes
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song
-from llamatron.visualizers import modes
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'record_demo.py'
 MODULE_NAME = 'record_demo'

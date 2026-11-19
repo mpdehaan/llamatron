@@ -16,18 +16,16 @@
 """Sound says as tuples exactly what Note, Chord, Rest, Degree and Held say as objects, and the render makes only the tuples."""
 
 import ast
+from fractions import Fraction
 import pathlib
 import unittest
-from fractions import Fraction
 
 import llamatron
+from llamatron.music import midi, note as note_values, sound as sound_values
 from llamatron.music.chord import Chord, ChordType
 from llamatron.music.held import Held, phrase
-from llamatron.music import midi
-from llamatron.music import note as note_values
 from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.music import sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.strings import errors
 from llamatron.support.length import Length

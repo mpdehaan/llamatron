@@ -24,22 +24,21 @@ here checks that what is declared is real and that the two can't disagree, in ev
 
 import unittest
 
-from llamatron.composition.clip_slot import ClipSlot
+from llamatron.composition import defaults, sections as sections_values
 from llamatron.composition.chain import Chain
-from llamatron.composition import defaults
-from llamatron.composition.generator_settings import FollowChordsSetting, FollowChordsSettings, HocketSetting, HocketSettings, MusicianSetting, MusicianSettings
+from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.composition.generator_settings import FollowChordsSetting, FollowChordsSettings, HocketSetting, HocketSettings, MusicianSetting, MusicianSettings
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.scene import Scene
-from llamatron.composition import sections as sections_values
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.track import Track
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
+from llamatron.support.example_sets import example_sets
 from llamatron.tui.document import Document
 from llamatron.tui.uses import grabbers, uses_of
-from llamatron.support.example_sets import example_sets
 from tests.support.rendering import render_song
 from tests.support_code.test_llama_data import every_subclass
 

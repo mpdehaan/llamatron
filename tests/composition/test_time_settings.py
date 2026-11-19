@@ -17,21 +17,21 @@
 
 import unittest
 
-from llamatron.composition.checks import Bars, in_whole_notes, time_length
 from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, SceneSetting, Section, Shape, ShapePart, ShapeThen, SongSetting, shape_setting
+from llamatron.composition.checks import Bars, in_whole_notes, time_length
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen, SongSetting
 from llamatron.composition.generator_settings import ArpSetting, DriftSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.drift import DriftPlay
 from llamatron.strings import labels
 from llamatron.support.rational import Rational
-from tests.generators.test_drift import drifting
-from tests.playback.test_shapes import notes, one_scene
-from tests.support.rendering import setlist_from_data, song_from_data
 from llamatron.tui.screens.generators.time_field import time_field
+from tests.generators.test_drift import drifting
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
+from tests.playback.test_shapes import notes, one_scene
+from tests.support.rendering import setlist_from_data, song_from_data
 
 TWO_BARS = '2 bars'
 THREE_FOUR = '3/4'

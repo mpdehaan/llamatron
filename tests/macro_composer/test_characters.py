@@ -18,8 +18,7 @@
 
 import unittest
 
-from llamatron.macro_composer import arranger, characters, players
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger, characters, players, wizard_choices
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version

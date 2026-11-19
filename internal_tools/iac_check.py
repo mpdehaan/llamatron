@@ -49,13 +49,11 @@ import time
 
 from llamatron.composition.file_format import Row
 from llamatron.composition.setlist import Setlist
-from llamatron.music import midi
-from llamatron.music import note
+from llamatron.music import midi, note
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime import engine
+from llamatron.realtime import engine, timeline
 from llamatron.realtime.outputs import midi_library, output_port_names
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
-from llamatron.realtime import timeline
 from llamatron.realtime.timeline import Route, song_timeline
 
 DEFAULT_SECONDS = 10.0

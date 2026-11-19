@@ -21,8 +21,8 @@ steps start a beat, and the exporters write it so that a DAW draws its bars in t
 
 import re
 
-from llamatron.support.rational import Rational
 from llamatron.strings import errors, reprs
+from llamatron.support.rational import Rational
 
 # How a time signature is written, in a file and on screen: beats over the note that is one beat.
 TIME_SIGNATURE_TEXT = '{beats}/{unit}'

@@ -18,18 +18,18 @@
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
-from llamatron.tui.text import sorted_names
+from llamatron.composition.naming import new_name, suggested_word
+from llamatron.strings import help as help_text, labels as labels_text, marks, messages
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
-from llamatron.strings import help as help_text, labels as labels_text, marks, messages
-from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.generators import generator_pages
+from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind, generator_type_dialog
-from llamatron.composition.naming import new_name, suggested_word
+from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui import keybindings
+from llamatron.tui.text import sorted_names
 
 
 # The number a generator listed again in one chain is shown with, the second time.

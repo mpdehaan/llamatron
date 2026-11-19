@@ -20,7 +20,7 @@ real window's buttons."""
 from rich.text import Text
 
 from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, Style, padded
+from llamatron.tui.drawing import Box, padded, Style
 
 # The space between two buttons, and inside a box before its key's reversed label and after its name, so that the label stands clear of the box's side as on the
 # main screen.

@@ -18,25 +18,24 @@
 
 from rich.text import Text
 
-from llamatron.composition import defaults, limits
-from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.composition import file_format
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.file_format import EuclidPart, Section, TrackSetting
-from llamatron.tui.screens.shared import statements
-from llamatron.tui.screens.shared.statements import statement_section
-from llamatron.tui.screens.shared.octave_field import octave_field
-from llamatron.tui.screens.generators.strum_fields import strum_section
-from llamatron.tui.screens.generators.euclid_fields import euclid_section, pick_rhythm
 from llamatron.music import midi
+from llamatron.strings import help as help_text, labels, legends, marks, messages
+from llamatron.tui import keybindings
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Style
+from llamatron.tui.screens.arrange.chains_field import chains_field
+from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
+from llamatron.tui.screens.generators.euclid_fields import euclid_section, pick_rhythm
+from llamatron.tui.screens.generators.strum_fields import strum_section
+from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
+from llamatron.tui.screens.shared.octave_field import octave_field
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.screens.shared.statements import statement_section
 from llamatron.tui.text import sorted_names
-from llamatron.tui.screens.arrange.chains_field import chains_field
-from llamatron.tui import keybindings
 
 # The place of (none) in the instrument picker, before the names.
 NO_INSTRUMENT_PLACE = 0

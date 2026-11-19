@@ -23,9 +23,10 @@ goes through the modes in an order of its own, and keeps that order for the whol
 
 import random
 
+from llamatron.strings import visualizers
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.digital_rain import DigitalRain
 from llamatron.visualizers.fireworks import Fireworks
-from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.hypercube import Hypercube
 from llamatron.visualizers.laser_llama import LaserLlama
 from llamatron.visualizers.lava_lamp import LavaLamp
@@ -39,9 +40,8 @@ from llamatron.visualizers.piano_roll import PianoRoll
 from llamatron.visualizers.pipes import Pipes
 from llamatron.visualizers.plasma import Plasma
 from llamatron.visualizers.spectrum import Spectrum
-from llamatron.visualizers.warpzone import WarpZone
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings import visualizers
+from llamatron.visualizers.warpzone import WarpZone
 
 # How long each mode shows before the next, hard-coded for now, and the modes it goes through.
 CYCLE_SECONDS = 15.0

@@ -31,41 +31,39 @@ This page keeps the cursor, how far the grid has scrolled, the keys and what eac
 the song. ArrangeDrawing (arrange_drawing.py) draws the grid from them.
 """
 
+from rich.text import Text
 import time
 
 from llamatron.composition.file_format import ClipSlotSetting, Section
+from llamatron.composition.naming import new_name
+from llamatron.strings import errors, help as help_text, labels, marks, messages, names as names_text
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.components.inset_window import drawn_over, inside_size
+from llamatron.tui.components.scene_view import SceneView
+from llamatron.tui.components.stage_drawing import frame_box, inside_of, visualizer_area
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.composition.naming import new_name
-from llamatron.tui.text import sorted_names
-from llamatron.strings import errors, help as help_text, labels, marks, messages, names as names_text
+from llamatron.tui.drawing import laid_over, padded, Style
+from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
-from llamatron.tui.components.stage_drawing import frame_box, inside_of, visualizer_area
 from llamatron.tui.screens.arrange import arrange_details
 from llamatron.tui.screens.arrange.arrange_details import clip_cell, scene_cell, track_cell
 from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing
-from llamatron.tui.components.inset_window import drawn_over, inside_size
-from llamatron.tui.components.scene_view import SceneView
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.arrange.scene_page import ScenePage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.scale_page import ScalePage
-from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.page import Page
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.screens.shared.shared import play_through, scene_name
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from llamatron.tui.text import sorted_names
 from llamatron.tui.uses import grabbers
-from llamatron.tui import keybindings
 from llamatron.visualizers import modes
 from llamatron.visualizers.modes import mode_called
-from rich.text import Text
-
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style, laid_over, padded
 
 
 # How often the visualizer draws a frame while it shows, in seconds, and how long a mode's name shows when it changes.

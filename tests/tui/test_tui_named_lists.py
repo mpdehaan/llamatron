@@ -19,32 +19,29 @@ The same checks run on each of them: the Patterns, Scales, Chains, Grooves, Song
 and AutoRatchets pages. What a page alone does, like adding, is tested with the page.
 """
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, leaf_pages
-from llamatron.composition import file_format
+import unittest
+
+from llamatron.composition import file_format, groove, limits, setlist
 from llamatron.composition.file_format import ClipSlotSetting, Section
-from llamatron.tui.screens.generators import generator_pages
-from llamatron.composition import groove
 from llamatron.composition.groove import FactoryGroove
-from llamatron.composition import limits
 from llamatron.strings import errors, labels, messages, names
-from llamatron.composition import setlist
-from llamatron.tui import drawing
-from llamatron.tui.drawing import fit
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.tui.drawing import fit
 from llamatron.tui.keys import Key
+from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.generators.chains_page import ChainsPage
-from llamatron.tui.screens.set.grooves_page import GroovesPage
-from llamatron.tui.screens.set.instruments_page import InstrumentsPage
-from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.screens.pattern import patterns_page
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.grooves_page import GroovesPage
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-import unittest
+from llamatron.tui.screens.shared.named_list_page import NamedListPage
+from tests.support import ui_testing
+from tests.support.ui_testing import leaf_pages, UITest
 
 RENAMED = 'renamed'
 A_GROOVE = 'shuffle'

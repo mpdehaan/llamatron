@@ -17,40 +17,37 @@
 """Track settings, the arpeggiator's offsets and octaves, and CC values with slides."""
 
 import contextlib
+from fractions import Fraction
 import glob
 import gzip
 import io
+import mido
 import os
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
-from fractions import Fraction
-
-import mido
 import yaml
 
-from llamatron.composition.clip_slot import morph_style_name
 from llamatron.composition import file_format
+from llamatron.composition.clip_slot import morph_style_name
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, TrackSetting
 from llamatron.composition.generator_settings import ArpSetting, written_name
-from llamatron.generators.arp import Arp, ChordOrder, OctaveJump, along_scale
-from llamatron.music.chord import Chord
-from llamatron.generators.blend import BlendMode
-from llamatron.music import midi
-from llamatron.music import note as note_values
-from llamatron.music.note import Note, NoteName, Rest
-from llamatron.music.sound import Sound
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters import midi_messages, timing
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters import midi_messages
-from llamatron.exporters import timing
 from llamatron.exporters.timing import control_events, timed_events
-from llamatron.music.scale import Scale, ScaleType
+from llamatron.generators.arp import along_scale, Arp, ChordOrder, OctaveJump
+from llamatron.generators.blend import BlendMode
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
-from llamatron.composition.song_file_error import SongFileError
-from tests.support.rendering import as_setlist, dump_song_data, render_data, setlist_from_data, song_from_data
+from llamatron.music import midi, note as note_values
+from llamatron.music.chord import Chord
+from llamatron.music.note import Note, NoteName, Rest
+from llamatron.music.scale import Scale, ScaleType
+from llamatron.music.sound import Sound
 from llamatron.tui.document import Document
+from tests.support.rendering import as_setlist, dump_song_data, render_data, setlist_from_data, song_from_data
 
 C_MAJOR = Scale(root=Note(name='C', octave_number=5), typ=ScaleType.MAJOR)
 

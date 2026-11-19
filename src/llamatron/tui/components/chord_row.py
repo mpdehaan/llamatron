@@ -15,23 +15,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Chord row: a chord symbol on a note, picked from a grid or cycled through."""
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Row
-from llamatron.composition import limits
-from llamatron.strings import labels, marks, messages
-
 from rich.text import Text
 
+from llamatron.composition import file_format, limits
+from llamatron.composition.file_format import Row
+from llamatron.strings import labels, marks, messages
+from llamatron.tui import drawing, key_table, keybindings, scale_categories
+from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.keyboard import chord_keys, Keyboard, KeyKind
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style
-from llamatron.tui import key_table
-from llamatron.tui.chord_text import ChordInWords
-from llamatron.tui import scale_categories
 from llamatron.tui.dialogs import chord_dialog
 from llamatron.tui.dialogs.chord_dialog import ChordChoice, ChordDialog
-from llamatron.tui import keybindings
+from llamatron.tui.drawing import Style
 
 def chord_text(value):
     return None if value is None else str(value)

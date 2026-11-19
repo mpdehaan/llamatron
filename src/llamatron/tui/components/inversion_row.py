@@ -16,9 +16,8 @@
 """The Inversion row of the pattern editor: how many of a step's chord's lowest notes move up an octave."""
 
 from llamatron.composition.file_format import Row
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.cycle_row import CycleRow
-from llamatron.tui import drawing
-from llamatron.tui import keybindings
 
 
 class InversionRow(CycleRow):

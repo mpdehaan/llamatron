@@ -15,22 +15,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Drift editor page: a drift's own settings, then each of its values for version A and version B side by side."""
 
-from llamatron.composition import file_format
-from llamatron.tui.screens.generators.restart_field import restart_field
-from llamatron.tui.screens.generators.time_field import time_field
+from llamatron.composition import file_format, generator_settings
 from llamatron.composition.file_format import DriftValue, GeneratorKind, Section
-from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import DriftSetting, versioned
 from llamatron.music import note
 from llamatron.strings import help as help_text, labels, legends, marks, messages
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.key_table import cursor_moved
+from llamatron.tui.screens.generators.restart_field import restart_field
+from llamatron.tui.screens.generators.time_field import time_field
+from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.text import sorted_names
-from llamatron.tui import keybindings
 
 # What a value of a version is when the drift leaves it out.
 NOTHING = 0

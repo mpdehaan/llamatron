@@ -18,15 +18,14 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import AutoRatchetSetting
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import drawing
 from llamatron.strings import errors, help as help_text, labels, messages
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import counts_text
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui import keybindings
 
 
 COUNT_SEPARATOR = ','

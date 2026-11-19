@@ -19,9 +19,9 @@
 from llamatron.composition.file_format import Section
 from llamatron.strings import help as help_text, labels
 from llamatron.tui import keybindings
+from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.statements import statement_section
 
 

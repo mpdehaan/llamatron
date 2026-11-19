@@ -32,13 +32,11 @@ A seed left out is drawn anew at every run, so that each run makes another song 
 
 import os
 
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer.wizard_choices import WizardChoices, data_laid_over
+from llamatron.macro_composer import arranger, song_plan, wizard_choices
+from llamatron.macro_composer.wizard_choices import data_laid_over, WizardChoices
 from llamatron.strings import errors
-from llamatron.support.safe_yaml import load_safely
 from llamatron.support import files
+from llamatron.support.safe_yaml import load_safely
 
 NAME = 'name'
 KIND = 'kind'

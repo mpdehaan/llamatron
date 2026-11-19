@@ -36,12 +36,12 @@ import copy
 from dataclasses import dataclass
 from typing import NamedTuple
 
-from llamatron.support.ordered_data import same_in_order
-from llamatron.composition.file_format import ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition import sections
+from llamatron.composition.file_format import ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.naming import is_default_scale_name
 from llamatron.strings import errors, messages
 from llamatron.support.memory import StaleAnswer
+from llamatron.support.ordered_data import same_in_order
 
 # How many edits can be undone. A snapshot holds only the data of what its edit changed and shares
 # the rest with its neighbours, so a full history is a little more than the set itself.

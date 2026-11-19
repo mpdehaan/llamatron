@@ -24,8 +24,8 @@ of its own, since ties are optional and only ever added on the steps after a not
 longer gate.
 """
 
-from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui import keybindings
+from llamatron.tui.components.toggle_row import ToggleRow
 
 
 class TieRow(ToggleRow):

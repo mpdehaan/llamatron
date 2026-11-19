@@ -21,9 +21,9 @@ from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Re
 from llamatron.composition.generator_settings import HocketSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from tests.support.rendering import render_data, setlist_from_data
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
+from tests.support.rendering import render_data, setlist_from_data
 
 TUNE = 'tune'
 REST = 'rest'

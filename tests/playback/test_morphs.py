@@ -19,12 +19,12 @@
 import unittest
 
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.generators.blend import BlendMode
-from tests.support.rendering import render_data, song_from_data
 from llamatron.composition.file_format import ClipSlotSetting, Direction, PatternSetting, Row, SceneSetting, Section, TrackSetting
-from llamatron.exporters.timing import timed_events
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters.timing import timed_events
+from llamatron.generators.blend import BlendMode
 from tests.support import song_testing
+from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'

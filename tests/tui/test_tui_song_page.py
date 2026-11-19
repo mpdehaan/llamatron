@@ -16,22 +16,20 @@
 
 """The Song page and the Songs page."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, key_of, key_name
-from llamatron.tui.dialogs import dialog
-from llamatron.composition import file_format
-from llamatron.composition.file_format import SongSetting, LiveResponsiveness, Section
-from llamatron.composition import defaults
+from llamatron.composition import defaults, file_format, genres
+from llamatron.composition.file_format import LiveResponsiveness, Section, SongSetting
+from llamatron.composition.genres import subgenres_of, variants_of
+from llamatron.music import time_signature
 from llamatron.strings import errors, labels as labels_text, legends, marks, names as names_text
+from llamatron.tui import keybindings
+from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.music import time_signature
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.composition import genres
-from llamatron.composition.genres import subgenres_of, variants_of
-from llamatron.tui import keybindings
+from tests.support import ui_testing
+from tests.support.ui_testing import key_name, key_of, UITest
 
 A_GENRE_WITH_VARIANTS = 'Rock'
 A_SUBGENRE_WITH_VARIANTS = 'hard rock'

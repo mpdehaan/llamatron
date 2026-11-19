@@ -21,10 +21,10 @@ from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Pa
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import timing
 from llamatron.support.rational import Rational
-from tests.support.rendering import setlist_from_data
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
+from tests.support.rendering import setlist_from_data
 
 STEPS = 4
 QUARTER = Rational(1, 4)

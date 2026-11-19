@@ -28,7 +28,7 @@ from llamatron.tui.launch import Launch
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.silent_instruments import silent_instrument_lines
 from tests.support import ui_testing
-from tests.support.ui_testing import UITest, a_song
+from tests.support.ui_testing import a_song, UITest
 
 FLUID = 'fluid'
 KEYS = 'keys'

@@ -32,11 +32,10 @@ Every change is made through the pattern's own set_value and clear_sound, which 
 values and move the pattern's revision, so nothing here is written under @notes_change.
 """
 
+from llamatron.composition import file_format, limits
 from llamatron.composition.checks import fraction_text, written_length
 from llamatron.composition.chords import borrowed, chord_half_steps
-from llamatron.composition import file_format
 from llamatron.composition.file_format import Row
-from llamatron.composition import limits
 from llamatron.music import midi
 from llamatron.support.rational import Rational
 

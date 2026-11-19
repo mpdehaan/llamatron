@@ -26,15 +26,14 @@ long for one line, each part given time to read in proportion to its length.
 """
 
 import asyncio
+from textual.pilot import Pilot
 import time
 
-from textual.pilot import Pilot
-
 from llamatron.strings import narration
-from llamatron.tui.key_table import key_event
-from llamatron.tui.caption_strip import CaptionStrip, parts
-from llamatron.tutorial.plan import TutorialPlan
 from llamatron.tui import drawing
+from llamatron.tui.caption_strip import CaptionStrip, parts
+from llamatron.tui.key_table import key_event
+from llamatron.tutorial.plan import TutorialPlan
 from llamatron.tutorial.steps import Gap, Press, Say, Wait
 
 # The seconds between two keys when a video is made, how many of those a sentence is given, and the share of them a key typed into a dialog waits: typing into a dialog goes twice as fast.

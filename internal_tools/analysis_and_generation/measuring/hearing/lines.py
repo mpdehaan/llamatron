@@ -22,9 +22,8 @@ person could sing it; and how the bass moves."""
 
 from collections import Counter
 from math import log2
-from statistics import median, pstdev
-
 from measuring.measures.traits import Bass, BassMotion, Expectation, Melody, Phrasing, Vocal
+from statistics import median, pstdev
 
 # Notes that start within this many beats of each other start together, as the notes of a chord under a hand do.
 TOGETHER = 0.06

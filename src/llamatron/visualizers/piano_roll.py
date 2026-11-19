@@ -28,8 +28,8 @@ The amounts are named constants here, to tune by eye.
 
 from llamatron.composition import file_format
 from llamatron.strings import visualizers
-from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers import heard as heard_values
+from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.visualizer import Visualizer
 
 # How fast the notes roll, in columns a beat, so a sixteenth is one column.

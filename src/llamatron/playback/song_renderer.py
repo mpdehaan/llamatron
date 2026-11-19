@@ -19,37 +19,36 @@
 from fractions import Fraction
 from typing import NamedTuple
 
-from llamatron.composition.strum import strums_at_all
-from llamatron.grid.strum_plan import StrumPlan
-from llamatron.exporters.timing import timed_events
-from llamatron.grid.handed_note import HandedNote
-from llamatron.grid.nudge_plan import MovingRow, NudgePlan, amount_moved
-from llamatron.support.rational import Rational
 from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, RampWay, Restart, Section, StepStatement
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.composition.strum import strums_at_all
+from llamatron.exporters.timing import timed_events
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.musician import Surroundings
-from llamatron.music import sound as sound_values
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.support.random_source import random_source
+from llamatron.grid.clip_column import ClipColumn
+from llamatron.grid.clip_grid import ClipGrid
+from llamatron.grid.clip_row import ClipRow
+from llamatron.grid.control import Control
+from llamatron.grid.handed_note import HandedNote
+from llamatron.grid.nudge_plan import amount_moved, MovingRow, NudgePlan
+from llamatron.grid.row_clock import RowClock
+from llamatron.grid.strum_plan import StrumPlan
+from llamatron.music import midi, sound as sound_values
+from llamatron.playback import registers as registers_values
 from llamatron.playback.chord_source import ChordSource
 from llamatron.playback.clip_slot_player import ClipSlotPlayer
 from llamatron.playback.drift import DriftPlay, drifts_named
-from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.grab_source import GrabSource
-from llamatron.playback.tune_source import TuneSource
-from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
-from llamatron.playback import registers as registers_values
+from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
+from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
+from llamatron.playback.tune_source import TuneSource
 from llamatron.playback.written_scene import WrittenScene
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.row_clock import RowClock
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.grid.control import Control
-from llamatron.music import midi
 from llamatron.strings import errors
+from llamatron.support.random_source import random_source
+from llamatron.support.rational import Rational
 
 # How a circular grab's tracks are joined in its message, like a → b → a.
 GRAB_ARROW = ' → '

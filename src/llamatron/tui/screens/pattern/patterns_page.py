@@ -2,18 +2,16 @@
 
 from typing import NamedTuple
 
-from llamatron.composition.file_format import Section
 from llamatron.composition import limits
-from llamatron.strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
+from llamatron.composition.file_format import Section
 from llamatron.composition.naming import copy_name, is_taken, name_order, new_name
-from llamatron.tui import keybindings
+from llamatron.strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
+from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Align, Style
-from llamatron.tui import key_table
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.screens.shared.named_list_page import NamedListPage

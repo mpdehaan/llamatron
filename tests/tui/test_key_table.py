@@ -19,10 +19,8 @@
 import unittest
 
 from llamatron.strings import legends
-from llamatron.tui import keybindings
-from llamatron.tui import key_table
+from llamatron.tui import key_table, keybindings, keys
 from llamatron.tui.key_table import BindsKeys, bound, cursor_moved, every_key, first_key, key_event, keys_of, place_of, pressed_key
-from llamatron.tui import keys
 from llamatron.tui.keys import Key, Steps
 
 # How many places a cursor moves among in these tests, the first and last of them, and one in the middle with the places either side of it.

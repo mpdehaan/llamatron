@@ -20,26 +20,23 @@ Everything that reads or changes a pattern's steps is here: reading and saving i
 values, editing single values, resizing and rearranging it, and working out what a step plays.
 """
 
-from llamatron.composition.conditions import check_statement, statement_of
-from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, reading, time_signature, written_length
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Direction, PatternSetting, Row, StepStatement
 from math import floor
 
-from llamatron.music.note import Note
-from llamatron.support.random_source import random_source
-from llamatron.composition import limits
-from llamatron.strings import errors
-from llamatron.music import midi
+from llamatron.composition import corrections, file_format, limits, row_descriptions
+from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, reading, time_signature, written_length
+from llamatron.composition.conditions import check_statement, statement_of
+from llamatron.composition.corrections import Correction
+from llamatron.composition.file_format import Direction, PatternSetting, Row, StepStatement
+from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import LlamaData, written_settings
 from llamatron.composition.pattern_munges import PatternMunges
 from llamatron.composition.pattern_notes import PatternNotes
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition import corrections
-from llamatron.composition.corrections import Correction
-from llamatron.composition import row_descriptions
 from llamatron.composition.row_descriptions import row_described, rows_where
-from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, WholeNumber, described, settings_held
+from llamatron.composition.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
+from llamatron.music import midi
+from llamatron.music.note import Note
+from llamatron.strings import errors
+from llamatron.support.random_source import random_source
 from llamatron.support.revised import notes_change
 
 # Steps are counted from 1 in messages, as the editor shows them.

@@ -16,15 +16,13 @@
 
 """A register: one of the song's four values, AX to DX, that pattern steps change and read as the song plays."""
 
+from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.checks import check_keys, listed, reading
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors
-from llamatron.composition import corrections
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ResetBehavior, RegisterSetting
-from llamatron.composition.llama_data import LlamaData, written_settings
+from llamatron.composition.file_format import RegisterSetting, ResetBehavior
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.setting import Choice, Flag, WholeNumber, described
+from llamatron.composition.llama_data import LlamaData, written_settings
+from llamatron.composition.setting import Choice, described, Flag, WholeNumber
+from llamatron.strings import errors
 from llamatron.support.revised import notes_change
 
 # A register's settings, each described once, in the order they're written to a file.

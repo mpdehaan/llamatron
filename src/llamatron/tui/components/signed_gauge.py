@@ -22,8 +22,8 @@ ends, <<4>> around the step number and <+7▲> around the value. It returns plai
 knows nothing of any toolkit, so the offsets editor draws the rules and styles around them.
 """
 
-from llamatron.tui import drawing
 from llamatron.strings import marks
+from llamatron.tui import drawing
 
 
 class SignedGauge:

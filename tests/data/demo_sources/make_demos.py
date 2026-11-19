@@ -26,20 +26,18 @@ Mutopia Project's public domain typesetting, kept here with its LilyPond source 
 has to be downloaded again. Nothing here uses the network.
 """
 import collections
+from fractions import Fraction as F
+import mido
 import os
+from pathlib import Path
 import re
 import sys
-from fractions import Fraction as F
-from pathlib import Path
 
-import mido
-
-from llamatron.music.scale import ScaleType
-from llamatron.music import note as note_values
-from llamatron.composition import file_format
-from llamatron.composition import row_descriptions
+from llamatron.composition import file_format, row_descriptions
 from llamatron.composition.setlist import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
+from llamatron.music import note as note_values
+from llamatron.music.scale import ScaleType
 from llamatron.tui.screens.set import scale_page
 
 # The demos are written with durations, as they were first written, and gate_conversion, in the

@@ -20,14 +20,10 @@ import random
 import unittest
 
 from llamatron.composition.setlist import Setlist
-from llamatron.strings import macro_composer as composer_text
-from llamatron.macro_composer import arranger, composer, drum_solo, joins, phrasing
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import notation
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer.song_plan import SongPlan, level_at, loudness_at
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger, composer, drum_solo, joins, melody, notation, phrasing, song_plan, wizard_choices
+from llamatron.macro_composer.song_plan import level_at, loudness_at, SongPlan
 from llamatron.macro_composer.wizard_choices import WizardChoices
+from llamatron.strings import macro_composer as composer_text
 from llamatron.support import version
 
 ROCK = 'rock'

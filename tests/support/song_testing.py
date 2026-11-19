@@ -18,10 +18,10 @@
 
 import yaml
 
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, Section
 from llamatron.exporters.timing import timed_events
 from tests.support.gate_conversion import to_gates
 from tests.support.rendering import render_data
-from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, Section
 
 # Names the tests give to their own things, and other values they use.
 DURATION = 'duration'

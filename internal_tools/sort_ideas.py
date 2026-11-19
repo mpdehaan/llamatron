@@ -28,8 +28,8 @@ order they have. The comment lines at the top of a file, which say what the file
 
 import argparse
 import json
-import sys
 from pathlib import Path
+import sys
 
 from llamatron.support.safe_yaml import load_safely
 

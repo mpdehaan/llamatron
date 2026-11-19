@@ -19,7 +19,6 @@ move, whether they move in contrary, oblique, similar or parallel motion, how of
 and how independent their rhythms are. The measures of counterpoint, kept as measures of every style, not a rule for all."""
 
 from bisect import bisect_right
-
 from measuring.measures.traits import VoiceLeading
 
 PERFECT_INTERVALS = (0, 7)

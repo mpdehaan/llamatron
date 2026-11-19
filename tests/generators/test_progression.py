@@ -21,19 +21,17 @@ progression a chord a bar, so that each bar shows where one chord moved the figu
 
 import unittest
 
-from llamatron.composition.file_format import (
-    Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension,
-)
+from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension
 from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.progressions import named_progression_in, roman_numeral
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import NoteName
 from llamatron.support.rational import Rational
-from tests.support.rendering import setlist_from_data
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
+from tests.support.rendering import setlist_from_data
 
 PROGRESSION = 'changes'
 CHAIN = 'chords'

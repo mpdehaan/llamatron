@@ -28,13 +28,12 @@ from rich.text import Text
 from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.generators import arp as arp_values
-from llamatron.tui.components.signed_gauge import SignedGauge
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, Style
 from llamatron.strings import help as help_text, labels, messages
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.components.signed_gauge import SignedGauge
+from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui import keybindings
 
 
 # The lines around the gauge: the note, a blank line, the top rule, the Step row, the zero line, the Offset row and the bottom rule; and the rule over the add rows, when any shows.

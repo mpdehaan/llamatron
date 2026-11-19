@@ -16,18 +16,16 @@
 
 """A scale the song names, like main: { root: F, type: minor }, for the song and scenes to use."""
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Accidental, ScaleSetting
-from llamatron.composition import limits
-from llamatron.strings import errors
-from llamatron.composition.llama_data import LlamaData
+from llamatron.composition import file_format, limits
 from llamatron.composition.checks import reading
+from llamatron.composition.file_format import Accidental, ScaleSetting
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.setting import Checked, check_settings, described
-from llamatron.music import midi
-from llamatron.music import note
+from llamatron.composition.llama_data import LlamaData
+from llamatron.composition.setting import check_settings, Checked, described
+from llamatron.music import midi, note
 from llamatron.music.note import Note
 from llamatron.music.scale import Scale, ScaleType
+from llamatron.strings import errors
 from llamatron.support.revised import notes_change
 
 # Scale type names, as error messages list them.

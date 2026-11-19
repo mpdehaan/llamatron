@@ -21,15 +21,13 @@ Each test plays clips of four quarter-note steps, a bar of
 
 import unittest
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, DriftDirection, GeneratorKind, RegisterSetting, Row, SceneSetting, Section
-from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import DriftValue, DriftVersion
+from llamatron.composition import defaults, file_format, limits
+from llamatron.composition.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, GeneratorKind, RegisterSetting, Row, SceneSetting, Section
 from llamatron.composition.generator_settings import DriftSetting, versioned
 from llamatron.playback.drift import DriftPlay
-from tests.support.rendering import song_from_data
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, pitches, scale_notes, song, velocities
+from tests.support.rendering import song_from_data
 
 DRIFT = 'sway'
 CHAIN = 'swaying'

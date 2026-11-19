@@ -18,18 +18,14 @@
 of a few notes, sound effects, percussion on ordinary channels joined to the drums, what is doubtful about a kit, and a MIDI
 file's length by every tempo it passes through, with the time signature it holds longest."""
 
-import tempfile
-import unittest
-from pathlib import Path
-
-import mido
-
-from measuring.hearing.cleaning import (
-    COWBELL, DRUM_HIT_BEATS, EFFECT_PROGRAMS, ENOUGH_HITS, JUNK_NOTES, KICK, PERCUSSION_PROGRAMS, SNARE, STUCK_BARS, WORTH_SAYING, drum_named, is_percussion, tidied,
-)
+from measuring.hearing.cleaning import COWBELL, DRUM_HIT_BEATS, drum_named, EFFECT_PROGRAMS, ENOUGH_HITS, is_percussion, JUNK_NOTES, KICK, PERCUSSION_PROGRAMS, SNARE, STUCK_BARS, tidied, WORTH_SAYING
 from measuring.hearing.midi_file import performance_of_midi, seconds_at
 from measuring.hearing.performance import PlayedNote, PlayedTrack
 from measuring.strings import MSG_DOUBT_NO_KICK, MSG_DOUBT_ONE_DRUM, MSG_DOUBT_STUCK
+import mido
+from pathlib import Path
+import tempfile
+import unittest
 
 BEATS_PER_BAR = 4
 BARS = 16

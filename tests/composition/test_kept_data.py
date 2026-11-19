@@ -35,8 +35,8 @@ from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.llama_data import LlamaData, own_copy
 from llamatron.composition.named_items import NamedItems
 from llamatron.composition.setlist import Setlist
-from llamatron.support.safe_yaml import load_safely
 from llamatron.support.example_sets import example_sets
+from llamatron.support.safe_yaml import load_safely
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song
 

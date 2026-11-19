@@ -32,8 +32,8 @@ numbered in the scene's scale, with the bass after a slash when it isn't the roo
 from typing import NamedTuple
 
 from llamatron.composition import file_format
-from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.euclid import euclid_settings
+from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.shapes import shape_settings
 from llamatron.composition.strum import strum_settings

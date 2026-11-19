@@ -16,16 +16,16 @@
 
 """Scenes and clips in song files: repeats, loops, tempos, scales and what each clip slot plays."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
+from llamatron.composition.file_format import ClipSlotSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.named_scale import scale_type_name
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from tests.support.rendering import estimate_data, render_data, song_from_data
-from llamatron.composition.file_format import ClipSlotSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
-from llamatron.composition.song_file_error import SongFileError
 from tests.support import song_testing
+from tests.support.rendering import estimate_data, render_data, song_from_data
 from tests.support.song_testing import build, clip, pitches, with_parts
 
 YES = 'yes'

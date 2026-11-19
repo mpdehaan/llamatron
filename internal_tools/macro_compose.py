@@ -25,9 +25,8 @@ It reads its input file and nothing else: it fetches nothing and looks nothing u
 """
 
 import argparse
-import sys
 from pathlib import Path
-
+import sys
 import yaml
 
 from llamatron.composition.setlist import Setlist
@@ -35,8 +34,8 @@ from llamatron.macro_composer import arranger
 from llamatron.macro_composer.arranger import arranged, style_named
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer.decomposer import decomposed, same_music
-from llamatron.support.safe_yaml import load_safely
 from llamatron.support import version
+from llamatron.support.safe_yaml import load_safely
 
 FILE_ENCODING = 'utf-8'
 WRITE_TEXT = 'w'

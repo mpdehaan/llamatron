@@ -16,22 +16,17 @@
 
 """The wizard's choices of a planned song: the plan switched on, its contrast, its phrasing and the hook's kind."""
 
+import copy
 import itertools
 import random
-import copy
 import unittest
 
-from llamatron.composition.file_format import Row, SceneSetting, Section, VelocitySetting
-from llamatron.macro_composer import hook_writing, phrasing
-from llamatron.macro_composer import notation
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer import joins
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
-from llamatron.macro_composer.wizard_choices import WizardChoices, chords_as_text, chords_from_text
 from llamatron.composition import limits
-from llamatron.strings import errors, macro_composer as composer_text
+from llamatron.composition.file_format import Row, SceneSetting, Section, VelocitySetting
+from llamatron.macro_composer import arranger, hook_writing, joins, notation, phrasing, song_plan, wizard_choices
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
+from llamatron.macro_composer.wizard_choices import chords_as_text, chords_from_text, WizardChoices
+from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
 
 A_NAME = 'made'

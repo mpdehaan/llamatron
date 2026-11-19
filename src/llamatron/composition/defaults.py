@@ -20,7 +20,7 @@ Every setting has a default, so that a file written by an older version of llama
 loads, and an empty file is an empty song.
 """
 
-from llamatron.composition.file_format import ResetBehavior, FollowAction, OctaveLabels
+from llamatron.composition.file_format import FollowAction, OctaveLabels, ResetBehavior
 
 DEFAULT_TEMPO = 120
 FIRST_NUMBER = 1

@@ -28,30 +28,23 @@ pattern editor opens, on that row's list. The Name row and the status line say w
 """
 
 
-from llamatron.composition.chords import chord_half_steps, borrowed
-from llamatron.composition import file_format
+from llamatron.composition import file_format, generator_settings, limits, progressions
+from llamatron.composition.chords import borrowed, chord_half_steps
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition import generator_settings
-from llamatron.composition import limits
-from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.composition.naming import words
-from llamatron.composition import progressions
 from llamatron.composition.progressions import named_progression_in, shown_numerals
-from llamatron.tui import keybindings
+from llamatron.strings import help as help_text, labels, marks, messages
+from llamatron.tui import drawing, key_table, keybindings, keys as keys_values, scale_categories
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.chord_row import quality_names
-from llamatron.tui import scale_categories
 from llamatron.tui.dialogs import chord_dialog
 from llamatron.tui.dialogs.chord_dialog import ChordChoice, ChordDialog
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, Style
-from llamatron.tui import key_table
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui import keys as keys_values
+from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
 # The rows the cursor edits, top to bottom, in the order that is the same wherever a chord is chosen: its root, with the root's sharp or flat, then its quality, its
 # tensions, the scale it borrows, and how it is voiced.

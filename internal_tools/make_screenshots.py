@@ -27,19 +27,19 @@ of the same size shows. Run it again when a page changes or when asked, and comm
 """
 
 import asyncio
-import re
-import pathlib
 from dataclasses import dataclass
+import pathlib
+import re
 
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
-from llamatron.tui.keys import Key
-from llamatron.support import version
-from llamatron.tui.key_table import first_key
-from llamatron.tui import keybindings
-from llamatron.tui.screens.generators import generator_pages
 from llamatron.composition.file_format import Section
 from llamatron.strings import labels
+from llamatron.support import version
+from llamatron.tui import keybindings
+from llamatron.tui.app import LlamatronApp
+from llamatron.tui.document import Document
+from llamatron.tui.key_table import first_key
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.generators import generator_pages
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'

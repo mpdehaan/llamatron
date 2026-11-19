@@ -18,7 +18,7 @@
 
 import unittest
 
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, SectionKind, Section, TrackSetting
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SectionKind, TrackSetting
 from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events

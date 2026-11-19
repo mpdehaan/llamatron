@@ -31,11 +31,9 @@ stay quick. The drummer's timekeeping cymbals, the closed hat, the open hat and 
 drummer moves from one to another. The trade is written as each clip's own velocity, the scene's velocity lowered.
 """
 
-from llamatron.composition import defaults
+from llamatron.composition import defaults, file_format, velocity_ramps
 from llamatron.composition.checks import time_length
-from llamatron.composition import file_format
 from llamatron.composition.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
-from llamatron.composition import velocity_ramps
 from llamatron.macro_composer import breaks
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held

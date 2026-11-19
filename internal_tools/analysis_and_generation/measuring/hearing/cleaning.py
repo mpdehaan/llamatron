@@ -22,12 +22,9 @@ Whatever was done is said, as doubts, so that an opinion can say how sure it is 
 none of this and is never passed through it."""
 
 from dataclasses import replace
-from statistics import median
-
 from measuring.hearing.performance import PlayedNote, PlayedTrack
-from measuring.strings import (
-    MSG_DOUBT_DUPLICATES, MSG_DOUBT_EFFECTS, MSG_DOUBT_JUNK, MSG_DOUBT_NO_KICK, MSG_DOUBT_ONE_DRUM, MSG_DOUBT_PERCUSSION, MSG_DOUBT_STUCK, MSG_GENRE_LIST_JOIN,
-)
+from measuring.strings import MSG_DOUBT_DUPLICATES, MSG_DOUBT_EFFECTS, MSG_DOUBT_JUNK, MSG_DOUBT_NO_KICK, MSG_DOUBT_ONE_DRUM, MSG_DOUBT_PERCUSSION, MSG_DOUBT_STUCK, MSG_GENRE_LIST_JOIN
+from statistics import median
 
 # A track playing this few notes holds a credit, a count-in or a test, not a part, where the busiest track plays at least
 # BUSIER times as many: a short piece's parts are all small, and are kept.

@@ -25,22 +25,24 @@ each is headed by a row (SectionRow) that Space or Enter opens or closes, PgUp a
 PgDn jump between the headings, and which sections are open is kept on the app for the session.
 """
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, row_descriptions
 from llamatron.composition.file_format import Row, StepStatement
-from llamatron.composition import row_descriptions
+from llamatron.strings import labels as labels_text
+from llamatron.tui import key_table, keybindings
+from llamatron.tui.components import degree_row
+from llamatron.tui.components.accent_row import AccentRow
 from llamatron.tui.components.accidental_row import AccidentalRow
 from llamatron.tui.components.add_row import AddRow
 from llamatron.tui.components.cc_row import CcRow
 from llamatron.tui.components.chord_row import ChordRow
 from llamatron.tui.components.chord_scale_row import ChordScaleRow
-from llamatron.tui.components import degree_row
 from llamatron.tui.components.degree_row import DegreeRow
 from llamatron.tui.components.dot_row import DotRow
-from llamatron.tui.components.inversion_row import InversionRow
 from llamatron.tui.components.gate_row import GateRow
-from llamatron.tui.components.accent_row import AccentRow
 from llamatron.tui.components.glide_row import GlideRow
 from llamatron.tui.components.grab_row import GrabRow
+from llamatron.tui.components.inversion_row import InversionRow
+from llamatron.tui.components.keyswitch_row import KeyswitchSlotRow, slot_row_name, slot_rows
 from llamatron.tui.components.number_row import NumberRow
 from llamatron.tui.components.octave_row import OctaveRow
 from llamatron.tui.components.register_row import RegisterRow
@@ -49,13 +51,9 @@ from llamatron.tui.components.set_row import SetRow
 from llamatron.tui.components.slide_row import SlideRow
 from llamatron.tui.components.statement_row import StatementRow
 from llamatron.tui.components.tension_row import TensionRow
-from llamatron.tui.components.keyswitch_row import KeyswitchSlotRow, slot_row_name, slot_rows
 from llamatron.tui.components.tie_row import TieRow
-from llamatron.strings import labels as labels_text
-from llamatron.tui import key_table
-from llamatron.tui.key_table import cursor_moved, BindsKeys
+from llamatron.tui.key_table import BindsKeys, cursor_moved
 from llamatron.tui.keys import Key, RowSection
-from llamatron.tui import keybindings
 
 # The rows at the top, which stay in place while the rows beneath them scroll: the note's gauge and its octave right under it.
 PINNED_ROWS = [Row.DEGREE, Row.OCTAVE]

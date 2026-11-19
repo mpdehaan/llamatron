@@ -15,23 +15,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Grooves page, the groove editor, and the Groove field on the Song, Scene and Track pages."""
 
-from llamatron.tui.text import sorted_names
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, key_of
-from llamatron.composition import defaults, limits
-from llamatron.strings import labels, legends, marks, messages, names as names_text
+from llamatron.composition import defaults, groove as groove_values, limits
 from llamatron.composition.file_format import GrooveSetting
-from llamatron.composition import groove as groove_values
 from llamatron.composition.groove import FactoryGroove
+from llamatron.strings import labels, legends, marks, messages, names as names_text
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
+from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.grooves_page import GroovesPage
-from llamatron.tui import keybindings
-from llamatron.tui.key_table import first_key
+from llamatron.tui.text import sorted_names
+from tests.support import ui_testing
 from tests.support.rendering import render_song
+from tests.support.ui_testing import key_of, UITest
 
 GROOVE_1 = names_text.MSG_NUMBERED_NAME.format(base=names_text.MSG_NEW_GROOVE_WORD, number=1)
 GROOVE_2 = names_text.MSG_NUMBERED_NAME.format(base=names_text.MSG_NEW_GROOVE_WORD, number=2)

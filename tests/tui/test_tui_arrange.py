@@ -16,36 +16,31 @@
 
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, fixed_text, back_key, forward_key, key_of, key_name
-from llamatron.composition import defaults, limits
+from llamatron.composition import defaults, file_format, limits, setlist
+from llamatron.composition.file_format import ClipSlotSetting, Direction, FollowAction, PatternOrder, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
 from llamatron.composition.scene import TempoRamp
-from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
-from llamatron.composition import file_format
-from llamatron.composition.file_format import PatternOrder, FollowAction, ClipSlotSetting, Direction, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
 from llamatron.generators.blend import BlendMode
-from llamatron.tui.screens.arrange import arrange_drawing
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, Style
-from llamatron.tui.screens.generators.chain_list_page import ChainListPage
-from llamatron.tui.screens.arrange.clip_page import AddRow, ClipPage, PatternRow
-from llamatron.tui.screens.arrange.scene_page import ScenePage
+from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
+from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.composition import setlist
 from llamatron.tui.document import Document
-from llamatron.tui import keys as keys_values
+from llamatron.tui.drawing import Box, Style
 from llamatron.tui.keys import Key
+from llamatron.tui.screens.arrange import arrange_drawing, arrange_page
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.clip_page import AddRow, ClipPage, PatternRow
+from llamatron.tui.screens.arrange.scene_page import ScenePage
+from llamatron.tui.screens.generators.chain_list_page import ChainListPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.arrange import arrange_page
-from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import Heading
+from tests.support import ui_testing
 from tests.support.rendering import render_song
+from tests.support.ui_testing import back_key, fixed_text, forward_key, key_name, key_of, UITest
 
 # Names the tests give to their own things, and other values they use.
 PATTERNS_PAGE = 'Patterns page'

@@ -16,26 +16,26 @@
 
 import collections
 import contextlib
+from fractions import Fraction
 import gzip
 import io
 import os
+from pathlib import Path
 import re
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
-from fractions import Fraction
-from pathlib import Path
 
-from llamatron.music.chord import Chord
-from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.exporters import ableton_project
 from llamatron.exporters.ableton_project import AbletonProject, Attribute, ElementPath, Tag
-from llamatron.music.scale import Scale, ScaleType
-from llamatron.music.time_signature import TimeSignature
 from llamatron.grid.clip import Clip
+from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.clip_column import ClipColumn
+from llamatron.music.chord import Chord
+from llamatron.music.note import Degree, Note, NoteName, Rest
+from llamatron.music.scale import Scale, ScaleType
+from llamatron.music.time_signature import TimeSignature
 
 QUARTER = 0.25
 C4 = Note(name='C', octave_number=4, length=QUARTER)

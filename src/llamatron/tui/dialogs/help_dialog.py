@@ -18,11 +18,10 @@
 
 from rich.text import Text
 
-from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import padded, Style, wrapped
 from llamatron.strings import labels, messages
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.dialogs.dialog import Dialog
+from llamatron.tui.drawing import padded, Style, wrapped
 
 
 # The panel that opens first, listing the keys, and how many columns it lays them out in.

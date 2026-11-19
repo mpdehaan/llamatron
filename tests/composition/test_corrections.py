@@ -25,22 +25,18 @@ test the program never lives in examples/.
 import copy
 import os
 import unittest
-
 import yaml
 
-from llamatron.composition import clip_slot
-from llamatron.composition import corrections as corrections_values
-from llamatron.composition.corrections import Correction, changed_count, place_without
-from llamatron.composition import file_format
+from llamatron.composition import clip_slot, corrections as corrections_values, file_format, limits
+from llamatron.composition.corrections import changed_count, Correction, place_without
 from llamatron.composition.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, RegisterName, RegisterSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.composition.generator_settings import ArpSetting
-from llamatron.composition import limits
-from llamatron.strings import errors, messages, names
 from llamatron.composition.pattern import nearest_step_value
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators import arp
 from llamatron.music import midi
+from llamatron.strings import errors, messages, names
 
 # The two sets made for these tests.
 SAMPLE_SETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'sample_sets')

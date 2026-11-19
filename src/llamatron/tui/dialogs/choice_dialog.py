@@ -18,14 +18,12 @@
 
 from rich.text import Text
 
+from llamatron.strings import marks
+from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
 from llamatron.tui.drawing import cursor_mark, fit, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui import keys as keys_values
 from llamatron.tui.keys import Key
-from llamatron.strings import marks
-from llamatron.tui import keybindings
 
 
 class ChoiceDialog(Dialog):

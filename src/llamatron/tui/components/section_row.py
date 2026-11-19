@@ -24,10 +24,9 @@ has no cells; Space or Enter opens or closes the section, and which sections are
 the app for the session.
 """
 
-from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui import drawing
 from llamatron.strings import labels, marks
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.components.pattern_row import PatternRow
 
 
 class SectionRow(PatternRow):

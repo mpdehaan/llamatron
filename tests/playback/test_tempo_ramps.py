@@ -16,11 +16,10 @@
 
 """A scene's tempo ramps: the tempo of each step, the ramps across a scene's repeats, and every length and export that has to agree about them."""
 
+from fractions import Fraction
+import mido
 import os
 import unittest
-from fractions import Fraction
-
-import mido
 
 from llamatron.composition.file_format import ClipSlotSetting, SceneSetting, SongSetting
 from llamatron.composition.scene import TempoRamp
@@ -30,8 +29,8 @@ from llamatron.playback.song_renderer import SongRenderer
 from llamatron.playback.tempo_ramps import ramped_tempos
 from llamatron.realtime import timeline
 from llamatron.realtime.timeline import Route, song_timeline
-from tests.support.rendering import render_data, song_from_data
 from tests.support import song_testing
+from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import with_parts
 
 A = 'a'

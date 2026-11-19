@@ -30,9 +30,8 @@ trade's numbers. It makes its songs in memory and writes nothing.
 import argparse
 import sys
 
-from llamatron.macro_composer import loudness_steps
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
+from llamatron.macro_composer import loudness_steps, song_plan
+from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
 from llamatron.support import version
 
 A_NAME = 'song'

@@ -15,14 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields of a Euclidean mask, which the track editor's + Euclid section and the Euclid editor share: hits, steps, rotation and step, and the picker of named rhythms that H opens on Hits."""
 
-from llamatron.composition import euclid
+from llamatron.composition import euclid, limits
 from llamatron.composition.euclid import rhythm
 from llamatron.composition.file_format import EuclidPart
-from llamatron.composition import limits
 from llamatron.strings import labels, marks, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.screens.shared.field import NumberField
 from llamatron.tui.screens.generators.time_field import time_field
+from llamatron.tui.screens.shared.field import NumberField
 
 
 def drawn_rhythm(*, hits, steps, rotate=limits.NO_ROTATION):

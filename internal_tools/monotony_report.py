@@ -30,13 +30,13 @@ import argparse
 import re
 import sys
 
-from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
+from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held
 from llamatron.music.note import Note, Rest
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.rational import Rational
 from llamatron.support import version
+from llamatron.support.rational import Rational
 
 A_NAME = 'song'
 USUAL_SONGS = 3

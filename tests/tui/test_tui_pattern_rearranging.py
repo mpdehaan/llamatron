@@ -16,20 +16,19 @@
 
 """Rearranging a pattern: Reconfigure and Munge, and the editor's two views."""
 
-from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import ClipSlotSetting, Row
 from llamatron.music.note import NoteName
+from llamatron.strings import errors, legends
+from llamatron.tui import keybindings, keys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import keys
+from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, Reconfigure
-from llamatron.strings import errors, legends
-from llamatron.tui import keybindings
-from llamatron.tui.key_table import first_key
-from tests.support.rendering import render_song
 from tests.support.pattern_editor_testing import munge
+from tests.support.rendering import render_song
+from tests.support.ui_testing import UITest
 
 BEAT = 'beat'
 OTHER = 'other'

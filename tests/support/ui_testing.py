@@ -22,36 +22,33 @@ import os
 import pkgutil
 import string
 import tempfile
+from textual.widgets import Static
 import unittest
 from unittest import mock
-
-from llamatron.realtime.fluidsynth import FluidSynth
-
-from textual.widgets import Static
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, FollowChordsSetting, HocketSetting, ProgressionSetting, StepRowSetting, written_name
+from llamatron.composition.setlist import new_setlist, Setlist
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
-from llamatron.tui.app import LlamatronApp
-from llamatron.composition.setlist import Setlist, new_setlist
+from llamatron.realtime.fluidsynth import FluidSynth
 from llamatron.strings import names as names_text
-from llamatron.tui.screens.shared import page as page_values
 from llamatron.support.memory import Memory
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.app import LlamatronApp
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.document import Document
-from llamatron.tui import drawing
+from llamatron.tui.key_table import every_key, first_key, key_event
+from llamatron.tui.keys import Key, Steps
 import llamatron.tui.screens
+from llamatron.tui.screens.generators import generator_pages
+from llamatron.tui.screens.shared import page as page_values
 from llamatron.tui.screens.shared.field import Button, Heading
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.page import Page
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.key_table import every_key, first_key, key_event
-from llamatron.tui.keys import Key, Steps
-from llamatron.tui import keybindings
-from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.tui.screens.generators import generator_pages
 
 # Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (support/memory.py).
 Memory.check_every_answer()

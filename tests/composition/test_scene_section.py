@@ -24,8 +24,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version
-from tests.support.rendering import render_song, song_from_data
 from tests.support import song_testing
+from tests.support.rendering import render_song, song_from_data
 from tests.support.song_testing import clip, lead_data, pitches
 from tests.support.ui_testing import fixed_text
 

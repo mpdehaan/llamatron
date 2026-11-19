@@ -19,10 +19,9 @@ Debussy in MAESTRO and debussy in a composer's collection, and a band is "The Be
 every creator is resolved to a canonical key and a display name before anything is grouped, merged or compared, and conclusions
 drawn across sources neither split one person in two nor count them twice."""
 
+from corpus.composers import PERIODS, surname_of
 import re
 import unicodedata
-
-from corpus.composers import PERIODS, surname_of
 
 # The display name of each composer the corpus knows, by surname key.
 COMPOSER_NAMES = {

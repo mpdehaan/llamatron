@@ -23,9 +23,8 @@ pass with two notes is one the generator ran on.
 
 import unittest
 
-from llamatron.composition import conditions, limits
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ResetBehavior, ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
+from llamatron.composition import conditions, file_format, limits
+from llamatron.composition.file_format import ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
 from llamatron.composition.generator_settings import AutoRatchetSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import scale_type_name

@@ -42,9 +42,9 @@ from dataclasses import dataclass, field
 from math import ceil
 from typing import NamedTuple
 
-from llamatron.support.rational import Rational
 from llamatron.importers.midi_reading import HeardNote, MidiPart, value_at
-from llamatron.importers.steps import NoteStep, control_error, controls_between_steps, repeated_pattern, scene_steps
+from llamatron.importers.steps import control_error, controls_between_steps, NoteStep, repeated_pattern, scene_steps
+from llamatron.support.rational import Rational
 
 # The step sizes the import tries, longest first, down to the one that holds triplets and 32nd notes together, and
 # the one it uses when none fits every note's start, moving the notes to it. Each pattern takes the longest step its

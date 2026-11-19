@@ -21,21 +21,19 @@ No real FluidSynth runs: a stand-in writes a WAV file where FluidSynth would, an
 
 import contextlib
 import io
+import mido
+import numpy
 import os
 import pathlib
 import tempfile
-import unittest
-import wave
 from types import SimpleNamespace
+import unittest
 from unittest import mock
-
-import mido
-import numpy
+import wave
 
 from llamatron.composition import file_format
-from llamatron.exporters import wave_fluidsynth
+from llamatron.exporters import exports, wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
-from llamatron.exporters import exports
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
 from llamatron.playback.song_renderer import SongRenderer
@@ -46,7 +44,7 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
 from tests.support import ui_testing
-from tests.support.ui_testing import UITest, a_song, fixed_text
+from tests.support.ui_testing import a_song, fixed_text, UITest
 
 FLUID = 'fluid'
 KEYS = 'keys'

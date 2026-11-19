@@ -20,7 +20,6 @@ fixed beat. Each groove is a bar or two of every voice it uses, written as text 
 sixteenths. The grooves are the standard ones drummers learn for each style, described in measuring/strings.py."""
 
 from dataclasses import dataclass
-
 from measuring.strings import GrooveName
 
 STRONG = 'x'

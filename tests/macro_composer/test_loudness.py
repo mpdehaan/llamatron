@@ -15,12 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """How loud a player is: the four named levels, a player's dynamics, a style's lean on each beat, and the wizard's choices of them."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.composition.file_format import Section
-from llamatron.macro_composer import arranger, loudness
-from llamatron.macro_composer import notation
+from llamatron.macro_composer import arranger, loudness, notation
 from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors

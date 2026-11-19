@@ -23,14 +23,14 @@ how far the grid has scrolled, and this draws from them, as the pattern editor's
 from the editor.
 """
 
-from llamatron.composition import defaults
-from llamatron.strings import legends, marks as marks_text
-from llamatron.tui.components.frame import Frame
-from llamatron.tui.components.length_bar import LengthBar
 from rich.text import Text
 
+from llamatron.composition import defaults
+from llamatron.strings import legends, marks as marks_text
 from llamatron.tui import drawing
-from llamatron.tui.drawing import laid_over, padded, Box, Canvas, fit, Style
+from llamatron.tui.components.frame import Frame
+from llamatron.tui.components.length_bar import LengthBar
+from llamatron.tui.drawing import Box, Canvas, fit, laid_over, padded, Style
 from llamatron.tui.screens.arrange import arrange_details
 from llamatron.tui.screens.arrange.arrange_details import clip_cell, detailed_clip_text, details_layout, scene_cell, track_cell
 from llamatron.tui.screens.shared.shared import scene_name

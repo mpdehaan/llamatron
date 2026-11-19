@@ -25,14 +25,13 @@ settles back, gently, and a sparse dim rain keeps falling in silence. It draws o
 heads never white. The amounts are named constants here, to tune.
 """
 
+import numpy
 import random
 
-import numpy
-
-from llamatron.visualizers.cells import CellPainter
-from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
+from llamatron.visualizers import heard as heard_values
+from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2

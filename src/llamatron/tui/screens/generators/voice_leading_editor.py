@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Voice leading editor page: one voice leading's name, the octaves its chords stay within, and whether the root stays in the bass."""
 
-from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition import generator_settings
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import VoiceLeadingSetting
 from llamatron.music import note
 from llamatron.strings import help as help_text, labels, messages

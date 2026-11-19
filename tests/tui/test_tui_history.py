@@ -23,19 +23,19 @@ import tempfile
 import unittest
 from unittest import mock
 
-from llamatron.music.scale import ScaleType
+from llamatron.composition import limits
+from llamatron.composition.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
+from llamatron.composition.named_items import NamedItems
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name
-from llamatron.composition.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
-from llamatron.composition import limits
-from llamatron.strings import errors, messages
-from llamatron.composition.named_items import NamedItems
 from llamatron.composition.pattern import Pattern
 from llamatron.music.note import NoteName
-from llamatron.tui.document import Document
-from llamatron.tui import history as history_values
-from llamatron.tui.history import describe_change, History, renamed_items, Snapshot
+from llamatron.music.scale import ScaleType
+from llamatron.strings import errors, messages
 from llamatron.support.memory import Memory, StaleAnswer
+from llamatron.tui import history as history_values
+from llamatron.tui.document import Document
+from llamatron.tui.history import describe_change, History, renamed_items, Snapshot
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text
 

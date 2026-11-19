@@ -17,21 +17,21 @@
 grooves and swing, melodic motion and expectation, hooks, the sawtooth of unprepared jumps, and a demo measured end to end
 from its render."""
 
+from measuring.hearing.harmony import chord_of, chromatic_of, fifths_between, Key, MAJOR, travel_of
+from measuring.hearing.lines import bass_of, bottom_line, expectation_of, is_pentatonic, melody_of, phrases_of, top_line, vocal_of
+from measuring.hearing.performance import Performance, performance_of, PlayedNote, PlayedTrack
+from measuring.hearing.profile import bass_track, LOW_REGISTER, profile_of_performance
+from measuring.hearing.rhythm import ghosts_of, swing_of, track_voices
+from measuring.hearing.roles import roles_of
+from measuring.hearing.shape import bar_energy, shape_of, span_of
+from measuring.hearing.sonorities import BAR_SPAN, CHORDAL, PLANING, RICH, sonorities_of, WHOLE_TONE
+from measuring.hearing.transitions import Sign
+from measuring.measures.drum_patterns import Voice
+from measuring.measures.traits import BassMotion, Role, Trait, TRAITS
 import os
 import unittest
 
 from llamatron.composition.setlist import Setlist
-from measuring.hearing.harmony import MAJOR, Key, chord_of, chromatic_of, fifths_between, travel_of
-from measuring.hearing.lines import bass_of, bottom_line, expectation_of, is_pentatonic, melody_of, phrases_of, top_line, vocal_of
-from measuring.hearing.transitions import Sign
-from measuring.hearing.performance import Performance, PlayedNote, PlayedTrack, performance_of
-from measuring.hearing.profile import LOW_REGISTER, bass_track, profile_of_performance
-from measuring.hearing.rhythm import ghosts_of, swing_of, track_voices
-from measuring.measures.drum_patterns import Voice
-from measuring.hearing.roles import roles_of
-from measuring.hearing.shape import bar_energy, shape_of, span_of
-from measuring.hearing.sonorities import BAR_SPAN, CHORDAL, PLANING, RICH, WHOLE_TONE, sonorities_of
-from measuring.measures.traits import TRAITS, BassMotion, Role, Trait
 
 BEATS = 4
 TEMPO = 120

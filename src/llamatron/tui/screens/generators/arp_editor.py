@@ -16,23 +16,22 @@
 
 """The Arp editor page."""
 
-from llamatron.tui.screens.generators.restart_field import restart_field
-from llamatron.tui.screens.generators.time_field import time_field
-from llamatron.composition import file_format
+from llamatron.composition import file_format, generator_settings
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import ArpSetting, written_name
+from llamatron.composition.naming import words
 from llamatron.generators import arp as arp_values
 from llamatron.generators.arp import OctaveJump
-from llamatron.composition.naming import words
 from llamatron.strings import help as help_text, labels, legends, marks, messages
+from llamatron.tui import keybindings
+from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
+from llamatron.tui.screens.generators.restart_field import restart_field
+from llamatron.tui.screens.generators.time_field import time_field
+from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.shared import numbers_text
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui import keybindings
 
 
 JUMPS = [written_name(jump) for jump in OctaveJump]

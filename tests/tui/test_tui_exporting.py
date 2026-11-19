@@ -18,21 +18,20 @@
 
 import os
 
-from tests.support.ui_testing import UITest, fixed_text
 from llamatron.composition.file_format import ClipSlotSetting
+from llamatron.exporters import exports
+from llamatron.exporters.exports import earlier_export, ExportKind, shown_export_path
+from llamatron.strings import errors, labels, messages, names
+from llamatron.tui import keybindings, uses
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.exporters import exports
-from llamatron.exporters.exports import earlier_export, shown_export_path, ExportKind
 from llamatron.tui.document import Document
-from llamatron.tui import uses
-from llamatron.strings import errors, labels, messages, names
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui import keybindings
+from llamatron.tui.screens.set.main_page import MainPage
+from tests.support.ui_testing import fixed_text, UITest
 
 SET_FILE = 'my_set.yml'
 # A set file name a test saves to when SET_FILE is taken already, and what its untitled song's Live set is then called.

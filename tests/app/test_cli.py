@@ -20,31 +20,27 @@ import contextlib
 import glob
 import gzip
 import io
+import mido
 import os
 import shutil
 import tempfile
 import unittest
-import xml.etree.ElementTree as ET
 from unittest import mock
-
-import mido
+import xml.etree.ElementTree as ET
 import yaml
 
-from llamatron.visualizers import modes
 from llamatron import cli as cli_values
 from llamatron.cli import main
-from llamatron.exporters import midi_messages
-from llamatron.exporters import midi_arrangement
-from llamatron.exporters import exports
-from llamatron.exporters.exports import export_name
-from llamatron.exporters.exports import ExportKind
 from llamatron.composition.file_format import Row
-from llamatron.composition.setlist import Setlist, file_stem
+from llamatron.composition.setlist import file_stem, Setlist
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters import exports, midi_arrangement, midi_messages
+from llamatron.exporters.exports import export_name, ExportKind
 from llamatron.strings import cli, errors
-from tests.support.rendering import as_setlist, dump_song_data
+from llamatron.visualizers import modes
 from tests.support import song_testing
+from tests.support.rendering import as_setlist, dump_song_data
 from tests.support.song_testing import lead_data
 
 SIXTEENTH = '1/16'

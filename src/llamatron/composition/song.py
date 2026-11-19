@@ -23,22 +23,19 @@ holds what. Its tracks and registers are changed the same way as the set's secti
 remove_item, rename_item and so on, and renaming or removing a track tells the scenes.
 """
 
+from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.checks import check_keys, is_whole_number, listed, number, reading, time_signature, written_length
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, names
-from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.file_format import GeneratorKind, SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
 from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
-from llamatron.composition import corrections
-from llamatron.composition.setting import Checked, Choice, Length, described, settings_held
-from llamatron.composition import file_format
-from llamatron.composition.file_format import sensible_visualizer, GeneratorKind, SceneSetting, Section, SongSetting, StepStatement
-from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
-from llamatron.composition.named_items import NamedItems, moved_in_list
+from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.llama_data import data_as_kept, data_built_anew, LlamaData, or_default, own_copy, written_settings
+from llamatron.composition.named_items import moved_in_list, NamedItems
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
-from llamatron.composition import sections
+from llamatron.composition.setting import Checked, Choice, described, Length, settings_held
 from llamatron.composition.track import Track
+from llamatron.strings import errors, names
 from llamatron.support.revised import notes_change
 
 

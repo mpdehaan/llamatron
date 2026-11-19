@@ -15,9 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A row whose values go round a short fixed cycle, like the Dot and accidental rows."""
 
+from llamatron.tui import key_table, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui import key_table
-from llamatron.tui import keybindings
 
 
 class CycleRow(PatternRow):

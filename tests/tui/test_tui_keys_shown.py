@@ -16,14 +16,14 @@
 
 """Every key of every page is shown in its legend or in the F1 dialog, on a large console and a usual one."""
 
-from tests.support.ui_testing import UITest
-from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.composition.file_format import ClipSlotSetting, Direction, GeneratorKind, Section, SetlistSetting
-from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.strings import labels
 from llamatron.tui import keybindings
+from llamatron.tui.dialogs.dialog import Dialog
+from llamatron.tui.dialogs.help_dialog import HelpDialog
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.set.main_page import MainPage
+from tests.support.ui_testing import UITest
 
 MAIN = 'main'
 FILE = 'file'

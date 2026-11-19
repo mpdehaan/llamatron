@@ -19,10 +19,10 @@ from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
+from llamatron.tui.screens.generators.strum_fields import strum_fields
 from llamatron.tui.screens.shared.field import NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.screens.generators.strum_fields import strum_fields
 
 
 class StrumEditor(ShowsNamedItem, FieldPage):

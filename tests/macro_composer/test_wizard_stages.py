@@ -19,9 +19,8 @@
 import unittest
 
 from llamatron.composition.file_format import Section, VelocitySetting
+from llamatron.macro_composer import song_plan, wizard_choices
 from llamatron.macro_composer.arranger import style_names
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.support import version
 

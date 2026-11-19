@@ -23,10 +23,8 @@ from typing import NamedTuple
 from llamatron.composition import file_format
 from llamatron.composition.naming import name_order, new_name, suggested_word
 from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.tui import keybindings, themes
-from llamatron.tui import drawing
+from llamatron.tui import drawing, key_table, keybindings, themes
 from llamatron.tui.drawing import Align, Style
-from llamatron.tui import key_table
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind, generator_type_dialog
 from llamatron.tui.screens.shared.list_page import ListPage

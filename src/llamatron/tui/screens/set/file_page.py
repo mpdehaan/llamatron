@@ -16,22 +16,19 @@
 """The File page: the set's own settings, its description, and starting a new file or saving under a new name."""
 
 import os
-
 from rich.text import Text
 
 from llamatron.composition import file_format
-from llamatron.tui.document import Document
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style
 from llamatron.strings import help as help_text, labels, legends, marks, messages
+from llamatron.tui import drawing, keybindings, themes
+from llamatron.tui.document import Document
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.set.notes_page import NotesPage
+from llamatron.tui.screens.set.visualizer_fields import hidden_visualizers_field, visualizer_field
 from llamatron.tui.screens.shared.everywhere import open_set, save, save_as, unless_unsaved
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import octave_moved
-from llamatron.tui.screens.set.visualizer_fields import hidden_visualizers_field, visualizer_field
-from llamatron.tui import themes
-from llamatron.tui import keybindings
 
 
 class FilePage(FieldPage):

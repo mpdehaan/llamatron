@@ -19,24 +19,19 @@ The look is tuned by eye, so these tests hold what doesn't change with the tunin
 the sizes, the averaging down and the drawing.
 """
 
+import numpy
 import random
 import unittest
 
-import numpy
-
-from llamatron.visualizers.heard import Heard, HeardNote
-from llamatron.visualizers.lava_lamp import LavaLamp, derezzed
-from llamatron.visualizers.visualizer import Visualizer
-from llamatron.visualizers import modes
-from llamatron.visualizers.modes import mode_called, mode_options
-from llamatron.visualizers import cycle as cycle_values
+from llamatron.visualizers import cycle as cycle_values, llamas as llamas_values, modes, pixels as pixels_values, spectrum as spectrum_values
 from llamatron.visualizers.cycle import Cycle, shuffled
-from llamatron.visualizers import llamas as llamas_values
+from llamatron.visualizers.heard import Heard, HeardNote
+from llamatron.visualizers.lava_lamp import derezzed, LavaLamp
 from llamatron.visualizers.llamas import Llamas, mirrored
-from llamatron.visualizers import spectrum as spectrum_values
+from llamatron.visualizers.modes import mode_called, mode_options
+from llamatron.visualizers.pixels import pixel_size, PixelPainter
 from llamatron.visualizers.spectrum import Spectrum
-from llamatron.visualizers import pixels as pixels_values
-from llamatron.visualizers.pixels import PixelPainter, pixel_size
+from llamatron.visualizers.visualizer import Visualizer
 
 WIDTH = 56
 SHUFFLES_TRIED = 10

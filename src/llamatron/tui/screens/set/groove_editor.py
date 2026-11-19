@@ -22,17 +22,15 @@ that the one-row editors could share OneRowEditor (one_row_editor.py).
 
 from rich.text import Text
 
+from llamatron.composition import groove as groove_values, limits
 from llamatron.composition.file_format import Section
-from llamatron.composition import groove as groove_values
 from llamatron.composition.groove import is_factory_groove
-from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, marks, messages
-from llamatron.tui import drawing
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui import keybindings
 
 
 class GrooveEditor(ShowsNamedItem, OneRowEditor):

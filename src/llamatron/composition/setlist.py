@@ -28,40 +28,32 @@ wrong, leaving the set as it was.
 
 import copy
 import os
-
 import yaml
 
-from llamatron.support import files
-from llamatron.support.safe_yaml import load_safely
+from llamatron.composition import checks, corrections as corrections_values, defaults, file_format, generator_settings, groove, limits as set_limits, sections
 from llamatron.composition.chain import Chain
-from llamatron.composition import checks
 from llamatron.composition.checks import check_keys, is_whole_number, reading, written_length
-from llamatron.composition import corrections as corrections_values
 from llamatron.composition.corrections import Correction
-from llamatron.composition.setting import Checked, Choice, Flag, Length, Text, WholeNumber, described, settings_held
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition import defaults, limits as set_limits
-from llamatron.strings import errors, names as names_text
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
-from llamatron.composition import generator_settings
-from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, or_default, own_copy, written_settings
-from llamatron.composition.named_items import NamedItems
-from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
-from llamatron.composition.named_scale import NamedScale, scale_type_name
-from llamatron.composition.pattern import Pattern, held_add
-from llamatron.composition import sections
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting, SongSetting
+from llamatron.composition.groove import check_groove_name, factory_groove, Groove, is_factory_groove
 from llamatron.composition.instrument import Instrument
-from llamatron.composition import groove
-from llamatron.composition.groove import Groove, check_groove_name, factory_groove, is_factory_groove
+from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.llama_data import data_as_kept, data_built_anew, LlamaData, or_default, own_copy, written_settings
+from llamatron.composition.named_items import NamedItems
+from llamatron.composition.named_scale import NamedScale, scale_type_name
+from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
+from llamatron.composition.pattern import held_add, Pattern
 from llamatron.composition.setlist_writer import dump_setlist
+from llamatron.composition.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.composition.song import Song, started_song
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music import note
 from llamatron.music.scale import ScaleType
-from llamatron.support import version as version_values
-from llamatron.support.version import is_version, version_numbers
+from llamatron.strings import errors, names as names_text
+from llamatron.support import files, version as version_values
 from llamatron.support.revised import notes_change
+from llamatron.support.safe_yaml import load_safely
+from llamatron.support.version import is_version, version_numbers
 
 
 

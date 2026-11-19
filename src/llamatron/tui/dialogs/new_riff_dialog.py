@@ -24,15 +24,12 @@ chords, the one kind that has gaps between its accents.
 
 from rich.text import Text
 
-from llamatron.macro_composer import riffs
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import riffs, wizard_choices
 from llamatron.strings import labels, marks
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style, cursor_mark
-from llamatron.tui import key_table
+from llamatron.tui.drawing import cursor_mark, Style
 from llamatron.tui.key_table import cursor_moved
 
 # The rows in the order drawn; the last is asked only of a riff of notes and chords.

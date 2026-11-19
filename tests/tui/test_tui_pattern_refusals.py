@@ -16,17 +16,16 @@
 
 """What the pattern editor refuses, and says."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import fixed_text, UITest
-from llamatron.composition.file_format import Row, Section
 from llamatron.composition import limits
+from llamatron.composition.file_format import Row, Section
 from llamatron.strings import errors, labels, marks, messages
-from llamatron.tui import drawing
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
-from llamatron.tui import keybindings
+from tests.support import ui_testing
 from tests.support.pattern_editor_testing import munge, open_section
+from tests.support.ui_testing import fixed_text, UITest
 
 BEAT = 'beat'
 TUNE = 'tune'

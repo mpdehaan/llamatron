@@ -19,12 +19,9 @@
 import unittest
 
 from llamatron.composition.file_format import SectionKind
-from llamatron.macro_composer import arranger
+from llamatron.macro_composer import arranger, melody, notation, wizard_choices
 from llamatron.macro_composer.arranger import arranged
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import notation
 from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed, plan_with_tag
-from llamatron.macro_composer import wizard_choices
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import macro_composer as composer_text
 

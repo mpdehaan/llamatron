@@ -16,11 +16,9 @@
 """The Octave row, typed and shown in the set's octave labels and stored as the file numbers octaves."""
 
 from llamatron.composition.file_format import Row
-from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui import drawing
-from llamatron.tui import keys as keys_values
 from llamatron.strings import legends
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings, keys as keys_values
+from llamatron.tui.components.pattern_row import PatternRow
 
 
 class OctaveRow(PatternRow):

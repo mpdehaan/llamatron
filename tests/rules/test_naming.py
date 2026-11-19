@@ -17,8 +17,8 @@
 """Only composition/naming.py numbers a name, so that every name the tracker makes follows the one rule (.claude/UX.md, "Names the tracker makes")."""
 
 import ast
-import unittest
 from pathlib import Path
+import unittest
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 SOURCE = ROOT / 'src' / 'llamatron'

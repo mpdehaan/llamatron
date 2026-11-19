@@ -21,37 +21,33 @@ first few corrections and cuts a long one short, so that it always fits an 80 by
 The two sets opened here are in tests/data/sample_sets.
 """
 
+from contextlib import redirect_stderr
 import io
 import os
 import shutil
 import tempfile
+from textual.widgets import Static
 import unittest
-from contextlib import redirect_stderr
 from unittest import mock
 
-from textual.widgets import Static
-
-from tests.support.ui_testing import UITest, a_song
-from llamatron.composition.file_format import PatternSetting, Row, Section, SetlistSetting
 from llamatron.composition import limits
-from llamatron.strings import errors as errors_text, labels, marks, messages
+from llamatron.composition.file_format import PatternSetting, Row, Section, SetlistSetting
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music import midi
-from llamatron.tui import app as tui_app
-from llamatron.tui import keybindings
+from llamatron.strings import errors as errors_text, labels, marks, messages
+from llamatron.tui import app as tui_app, drawing, keybindings
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.dialogs import corrections_dialog
+from llamatron.tui.dialogs import corrections_dialog, dialog
 from llamatron.tui.dialogs.corrections_dialog import CorrectionsDialog
-from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.document import Document
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, fit
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.open_page import OpenPage
+from tests.support.ui_testing import a_song, UITest
 
 # The two sets made for these tests, and the names their copies go by in a test's own folder.
 SAMPLE_SETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'sample_sets')

@@ -21,9 +21,8 @@ the tune's last note of a line has landed, and ends with the line."""
 
 import random
 
-from llamatron.macro_composer import melody
-from llamatron.macro_composer.melody import StepWalk, chord_notes, nearest_chord_rung
-from llamatron.macro_composer import notation
+from llamatron.macro_composer import melody, notation
+from llamatron.macro_composer.melody import chord_notes, nearest_chord_rung, StepWalk
 
 # What a player beside the tune does in a section.
 WAITS = 'waits'

@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Slide row: a step that ramps its CC values to the next ones, which a rest can do too."""
 
-from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui import keybindings
+from llamatron.tui.components.toggle_row import ToggleRow
 
 
 class SlideRow(ToggleRow):

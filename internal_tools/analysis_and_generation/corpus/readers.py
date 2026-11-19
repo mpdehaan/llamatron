@@ -17,18 +17,16 @@
 """A reader for every source in .corpus/, each yielding the corpus's pieces: up to a limit, taken evenly through the source so a
 sample spans it, in the same order every time; a file that can't be read is passed over (the data isn't assumed to be good)."""
 
+from corpus.chord_files import billboard_song, billboard_years, expanded_rules, numeral_root
+from corpus.piece import CorpusNote, Piece
 import csv
 import json
+from music21 import converter, harmony, key as m21key, meter as m21meter
+import numpy
 import pathlib
+import pretty_midi
 import re
 import sqlite3
-
-import numpy
-import pretty_midi
-from music21 import converter, harmony, key as m21key, meter as m21meter
-
-from corpus.piece import CorpusNote, Piece
-from corpus.chord_files import billboard_song, billboard_years, expanded_rules, numeral_root
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent / '.corpus'
 KERN = '*.krn'

@@ -27,17 +27,16 @@ Everything here is Rich text and knows nothing of Textual or of time: tui/batch_
 shows when.
 """
 
-from typing import NamedTuple
-
 from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Span, Text
+from typing import NamedTuple
 
+from llamatron.strings import about
+from llamatron.tui import drawing
 from llamatron.tui.components import title_card
 from llamatron.tui.components.title_card import eased, letter_rows, words_width
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, laid_over
-from llamatron.strings import about
 
 BLACK = (0, 0, 0)
 BORDER_BLUE = (60, 120, 255)

@@ -18,16 +18,16 @@
 itself from a style and from a song alike; every style's values and a demo's keep to their units' bounds; and one trait is
 heard from a performance on its own, the same as with the rest."""
 
+from measuring.hearing.performance import performance_of
+from measuring.hearing.profile import HEARERS, Listening, profile_of_performance
+from measuring.measures.comparing import Unit, UNIT_BOUNDS
+from measuring.measures.registry import measure, MEASURES, MEASURES_BY_NAME, NoSuchMeasure, SPACING
+from measuring.measures.traits import Spacing, Trait, TRAIT_KINDS, TRAITS
+from measuring.strings import MSG_MEASURE_LABELS
 import os
 import unittest
 
 from llamatron.composition.setlist import Setlist
-from measuring.hearing.performance import performance_of
-from measuring.hearing.profile import HEARERS, Listening, profile_of_performance
-from measuring.measures.comparing import UNIT_BOUNDS, Unit
-from measuring.measures.registry import MEASURES, MEASURES_BY_NAME, SPACING, NoSuchMeasure, measure
-from measuring.measures.traits import TRAIT_KINDS, TRAITS, Spacing, Trait
-from measuring.strings import MSG_MEASURE_LABELS
 
 DEMO = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, 'examples', 'by_genre', 'rock', 'green_men.yml')
 SEED = 1

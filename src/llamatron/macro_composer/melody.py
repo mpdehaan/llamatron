@@ -26,10 +26,8 @@ import copy
 import math
 import random
 
-from llamatron.macro_composer import hook_kinds, hook_writing
-from llamatron.macro_composer import notation
+from llamatron.macro_composer import hook_kinds, hook_writing, notation, phrasing
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
-from llamatron.macro_composer import phrasing
 from llamatron.macro_composer.phrasing import breathed, ended_early, is_shorter
 from llamatron.strings import errors
 

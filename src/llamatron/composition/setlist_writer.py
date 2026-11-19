@@ -24,12 +24,11 @@ name. Comments aren't kept, because a set is only data by the time it gets here.
 import functools
 import json
 import re
-
 import yaml
 
-from llamatron.support.safe_yaml import load_safely
 from llamatron.composition import file_format
-from llamatron.composition.file_format import PatternSetting, Section, SceneSetting, SetlistSetting, SongSetting
+from llamatron.composition.file_format import PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.support.safe_yaml import load_safely
 
 # Text that can be written without quotes: it starts with a letter, digit or underscore, and
 # holds only those, #, ., /, spaces and hyphens.

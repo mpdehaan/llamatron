@@ -24,8 +24,7 @@ cover that path, and tests/playback/test_registers.py the path every other scene
 
 import unittest
 
-from llamatron.composition import limits
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting, StatementPart, StepStatement
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import Pattern

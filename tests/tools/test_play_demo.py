@@ -23,8 +23,8 @@ import os
 import pathlib
 import tempfile
 import unittest
-import wave
 from unittest import mock
+import wave
 
 from llamatron.composition.setlist import Setlist
 

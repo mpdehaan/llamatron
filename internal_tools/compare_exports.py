@@ -27,6 +27,7 @@ anything else by mistake. compare exits with 1 if anything differs.
 """
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor
 import contextlib
 import filecmp
 import glob
@@ -36,17 +37,15 @@ import os
 import shutil
 import sys
 import tempfile
-from concurrent.futures import ProcessPoolExecutor
 
 from llamatron.composition.file_format import SetlistSetting
-from llamatron.composition.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
+from llamatron.composition.setlist import file_stem, Setlist
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
-from llamatron.tui.document import Document
-from llamatron.composition.setlist import file_stem
 from llamatron.exporters.exports import export_name
+from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
+from llamatron.playback.song_renderer import SongRenderer
+from llamatron.tui.document import Document
 
 EXAMPLES = 'examples/**/*.yml'
 CAPTURE = 'capture'

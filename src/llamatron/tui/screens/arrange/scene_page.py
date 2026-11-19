@@ -18,26 +18,23 @@
 
 from rich.text import Text
 
-from llamatron.composition import limits
-from llamatron.strings import help as help_text, labels, legends, marks, messages
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RampPart, Section, shape_setting
+from llamatron.strings import help as help_text, labels, legends, marks, messages
+from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
+from llamatron.tui.screens.arrange.chains_field import chains_field
+from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
+from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
+from llamatron.tui.screens.generators.shape_fields import shape_section
+from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.shared.shared import scene_name
-from llamatron.tui.screens.arrange.chains_field import chains_field
-from llamatron.tui.screens.generators.shape_fields import shape_section
-from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.statements import register_fields, statement_section
-from llamatron.tui import themes
-from llamatron.tui import keybindings
+from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
 
 
 class ScenePage(FieldPage):

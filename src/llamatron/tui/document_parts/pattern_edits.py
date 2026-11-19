@@ -19,8 +19,8 @@
 
 from types import MethodType
 
-from llamatron.composition.file_format import Section
 from llamatron.composition import limits
+from llamatron.composition.file_format import Section
 from llamatron.composition.pattern import Pattern
 
 # How many steps a new pattern has.

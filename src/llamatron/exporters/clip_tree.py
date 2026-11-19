@@ -16,12 +16,11 @@
 
 """Writes a ClipGrid as MIDI files, one per clip, named after the song and the clip's scene and track."""
 
+import mido
 import os
 
-import mido
-
-from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles
 from llamatron.exporters import midi_messages
+from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles
 from llamatron.exporters.midi_messages import clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event
 from llamatron.exporters.timing import timed_events
 from llamatron.strings import names

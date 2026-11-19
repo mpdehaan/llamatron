@@ -23,11 +23,10 @@ version has changed since a table was measured, or always with --rebuild (114 C:
 """
 
 import argparse
+from corpus.readers import COMPOSER_COLLECTIONS, is_fetched, READERS
+from corpus.tables import table_of
 import sys
 import time
-
-from corpus.readers import COMPOSER_COLLECTIONS, READERS, is_fetched
-from corpus.tables import table_of
 
 REBUILD = '--rebuild'
 NAMES_HELP = 'the sources to measure; every one when none is named'

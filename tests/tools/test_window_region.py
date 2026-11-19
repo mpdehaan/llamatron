@@ -16,13 +16,12 @@
 
 """Tests internal_tools/window_region.py, which finds the rectangle a terminal window's cells cover, on stills made in memory: the BMP reading, rows stored either way and channels by masks or by default, the cells found inside a title bar, margins and rounded corners, and the screen's points."""
 
+import numpy
 import os
 import struct
 import sys
 import tempfile
 import unittest
-
-import numpy
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'internal_tools'))
 

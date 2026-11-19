@@ -20,10 +20,10 @@ that adds a package, an import between packages or a screen moves a diagram. Thi
 which fails until the script is run again, so the pictures in the documents can't go stale.
 """
 
+from pathlib import Path
 import subprocess
 import sys
 import unittest
-from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / 'internal_tools' / 'make_diagrams.py'

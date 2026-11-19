@@ -20,10 +20,10 @@ import pathlib
 import tempfile
 import unittest
 
-from llamatron.composition.file_format import Section
 from llamatron.composition import setlist as setlist_values
+from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
+from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
 from llamatron.strings import names
 from llamatron.support import version
 from tests.support.rendering import render_song

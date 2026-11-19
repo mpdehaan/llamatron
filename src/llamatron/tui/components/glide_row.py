@@ -16,8 +16,8 @@
 
 """The Glide row, a toggle drawn with the dot like Tie: the dot was chosen over a bar into the next step, since the bar didn't read well."""
 
-from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui import keybindings
+from llamatron.tui.components.toggle_row import ToggleRow
 
 
 class GlideRow(ToggleRow):

@@ -15,8 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Hocket pages: the list of hockets and the editor, whose Source track picks a track of the current song."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import HocketSetting
 from llamatron.strings import labels, marks
@@ -24,6 +22,8 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.hocket_editor import HocketEditor
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 NEW_ONE = 'swap'
 GONE = 'nobody'

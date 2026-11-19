@@ -14,19 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import mido
 import os
 import tempfile
 import unittest
 
-import mido
-
-from llamatron.music.note import Note
+from llamatron.exporters import midi_messages
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.grid.clip import Clip
+from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.exporters import midi_messages
+from llamatron.music.note import Note
 
 # Names the tests give to their own things, and other values they use.
 A = 'A'

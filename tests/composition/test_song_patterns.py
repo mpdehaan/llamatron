@@ -16,27 +16,24 @@
 
 """Patterns in song files: steps, rows, gates, chords and drum patterns, and what they play."""
 
+from fractions import Fraction
+import mido
 import os
 import tempfile
 import unittest
-from fractions import Fraction
 
-import mido
-
+from llamatron.composition import file_format, limits
+from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters import midi_messages, timing
+from llamatron.exporters.clip_tree import ClipTree
+from llamatron.exporters.timing import timed_events
 from llamatron.music.chord import Chord
 from llamatron.music.note import Note, NoteName, Rest
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters import midi_messages
-from llamatron.exporters import timing
-from llamatron.exporters.timing import timed_events
-from tests.support.rendering import render_data, song_from_data
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, ChordSymbol, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
-from llamatron.composition import limits
 from llamatron.support import version as version_values
-from llamatron.composition.song_file_error import SongFileError
 from tests.support import song_testing
+from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import build, clip, lead, lead_data, lead_song, pat, pitches, with_parts
 
 QUARTER = '1/4'

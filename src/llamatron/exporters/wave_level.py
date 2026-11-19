@@ -24,10 +24,9 @@ WAV files go through, both use it. It reads and writes 16-bit PCM WAV, which Flu
 anything else; a file is written beside itself and then put in its place, so it is never left half written.
 """
 
+import numpy
 import os
 import wave
-
-import numpy
 
 from llamatron.strings import errors
 

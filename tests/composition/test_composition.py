@@ -21,23 +21,19 @@ setting the data leaves out gets its default, settings left out aren't written b
 data is refused with a message that says where it is.
 """
 
-import re
-import random
-import unittest
 from fractions import Fraction
+import random
+import re
+import unittest
 
-from llamatron.composition.clip_slot import ClipSlot, morph_style_name
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.chain import Chain
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Accidental, ResetBehavior, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
-from llamatron.composition.generator_settings import (
-    ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, written_name,
-)
+from llamatron.composition.clip_slot import ClipSlot, morph_style_name
+from llamatron.composition.file_format import Accidental, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
+from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, written_name
+from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors
-from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene, TempoRamp
 from llamatron.composition.setlist import Setlist
@@ -51,6 +47,7 @@ from llamatron.generators.blend import BlendMode
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.music.time_signature import TimeSignature
+from llamatron.strings import errors
 from tests.support.rendering import song_from_data
 
 # Names the tests give to their own things, and other values they use.

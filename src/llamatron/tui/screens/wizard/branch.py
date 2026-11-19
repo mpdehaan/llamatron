@@ -23,8 +23,8 @@ revise how the wizard is organized).
 
 from llamatron.macro_composer import hook_writing
 from llamatron.strings import labels, legends, marks
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui import drawing
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
 
 # Where a picker opens, and what stepping picks, before anything is chosen.

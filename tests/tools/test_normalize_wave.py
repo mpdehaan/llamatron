@@ -19,13 +19,12 @@
 import contextlib
 import importlib.util
 import io
+import numpy
 import os
 import pathlib
 import tempfile
 import unittest
 import wave
-
-import numpy
 
 from llamatron.exporters import wave_level
 from llamatron.exporters.wave_level import peak_sample

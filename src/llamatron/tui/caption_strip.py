@@ -23,11 +23,10 @@ line is shown a part at a time (parts), which the tutorial's runner times. Only 
 strip; without one the tracker draws as ever.
 """
 
-import textwrap
-
 from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
+import textwrap
 
 from llamatron.tui import drawing
 

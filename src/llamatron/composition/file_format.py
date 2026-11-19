@@ -22,8 +22,8 @@ holds.
 """
 
 
-from llamatron.support.rational import Rational
 from llamatron.music.chord import ChordType
+from llamatron.support.rational import Rational
 
 
 class Section:

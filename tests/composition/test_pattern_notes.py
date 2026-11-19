@@ -23,10 +23,10 @@ so the caller passes the step size, and the tests here ask the same pattern at s
 
 import unittest
 
+from llamatron.composition import pattern_notes
 from llamatron.composition.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, Row, Tension
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
-from llamatron.composition import pattern_notes
 from llamatron.composition.pattern_notes import whole_steps_down, whole_steps_up
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType

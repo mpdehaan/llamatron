@@ -32,9 +32,8 @@ import io
 import os
 import sys
 
-from llamatron.composition import defaults, limits
-from llamatron.composition import file_format
-from llamatron.composition.file_format import shape_setting, StepStatement, ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
+from llamatron.composition import defaults, file_format, limits
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, shape_setting, SongSetting, StepStatement, TrackSetting
 from llamatron.composition.setlist import Setlist
 from llamatron.support.example_sets import example_sets
 

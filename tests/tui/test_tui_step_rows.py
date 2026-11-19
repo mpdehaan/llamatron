@@ -15,23 +15,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Glide, Shorten, Rush and Drag: their list pages, their editors and their steps pages."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
-from llamatron.composition.file_format import Section, GeneratorKind
-from llamatron.composition import generator_settings
-from llamatron.composition import limits
+from llamatron.composition import generator_settings, limits
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.strings import labels
+from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators.drag_editor import DragEditor
 from llamatron.tui.screens.generators import glide_editor
+from llamatron.tui.screens.generators.drag_editor import DragEditor
+from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
 from llamatron.tui.screens.generators.glide_editor import GlideEditor
 from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
 from llamatron.tui.screens.generators.rush_editor import RushEditor
+from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
 from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
 from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
-from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
-from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
-from llamatron.tui import keybindings
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 NEW_ONE = 'squelch'
 MORE_THAN_ENOUGH = 5

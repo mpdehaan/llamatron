@@ -17,16 +17,14 @@
 """The About dialog, which F2 opens on every page: the cow, the version and build date, the links, a quote and the license."""
 
 import random
-
 from rich.text import Text
 
-from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import wrapped
+from llamatron.strings import about
 from llamatron.support import version
 from llamatron.support.version import build_year
-from llamatron.strings import about
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.dialogs.dialog import Dialog
+from llamatron.tui.drawing import wrapped
 
 
 # What the speech bubble is drawn with: its top and bottom rules, as wide as the text and the space either side of it.

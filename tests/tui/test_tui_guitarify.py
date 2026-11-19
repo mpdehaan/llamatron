@@ -16,18 +16,16 @@
 
 """Tests for the Guitarify editor, its two sections, and the editor of its bar of strokes."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
-from llamatron.composition import file_format
+from llamatron.composition import file_format, generator_settings, guitar_bars
 from llamatron.composition.file_format import GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
-from llamatron.composition import generator_settings
-from llamatron.composition import guitar_bars
 from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import guitar_bar_editor
 from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 FIRST_CELL = 0
 SECOND_CELL = 1

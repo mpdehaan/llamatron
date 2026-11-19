@@ -24,27 +24,26 @@ The pattern editor shares StepEditor with them, and its own tests cover its scro
 
 import unittest
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, key_name, leaf_pages
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
 from llamatron.strings import legends, marks
-from llamatron.tui import keybindings
-from llamatron.tui import drawing
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
+from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
 from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
 from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
-from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
-from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
-from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
-from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
+from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
+from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
+from tests.support import ui_testing
+from tests.support.ui_testing import key_name, leaf_pages, UITest
 
 A_GROOVE = 'shuffle'
 SOME_OFFSETS = [0, 0, 0, 0]

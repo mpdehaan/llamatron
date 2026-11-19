@@ -23,8 +23,7 @@ A new editor of this kind says what its values are, how one is stored, and how i
 drawn.
 """
 
-from llamatron.tui import keybindings
-from llamatron.tui import key_table
+from llamatron.tui import key_table, keybindings
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid

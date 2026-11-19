@@ -15,10 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """How keyswitches are written on screen: a note in the set's octave labels with its MIDI number, a slot's name, and a step's keyswitches in words."""
 
-from llamatron.composition import file_format
-from llamatron.composition import instrument as instrument_values
-from llamatron.music import midi
-from llamatron.music import note as note_values
+from llamatron.composition import file_format, instrument as instrument_values
+from llamatron.music import midi, note as note_values
 from llamatron.strings import marks
 
 # The room a slot's note takes at the right of its row, in both keyswitch dialogs.

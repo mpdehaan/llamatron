@@ -37,24 +37,23 @@ nothing, so that nothing sleeps.
 
 import random
 
+from llamatron.composition import limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition import limits
-from llamatron.strings import errors, messages
 from llamatron.exporters import midi_arrangement
-from llamatron.realtime import fluidsynth as fluidsynth_values
-from llamatron.realtime.fluidsynth import FluidSynth, is_installed
-from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.heard import Heard, HeardNote
-from llamatron.realtime.engine import MonotonicClock
-from llamatron.realtime.outputs import output_port_names
 from llamatron.playback.step_order import walk_order
-from llamatron.realtime import player as player_values
+from llamatron.realtime import fluidsynth as fluidsynth_values, player as player_values
+from llamatron.realtime.engine import MonotonicClock
+from llamatron.realtime.fluidsynth import FluidSynth, is_installed
+from llamatron.realtime.outputs import output_port_names
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
 from llamatron.realtime.timeline import Route
+from llamatron.strings import errors, messages
 from llamatron.tui.uses import loop_error_lines
+from llamatron.visualizers import heard as heard_values
+from llamatron.visualizers.heard import Heard, HeardNote
 
 # How often the player plans ahead and the page redraws while something plays.
 TICK_SECONDS = 0.1

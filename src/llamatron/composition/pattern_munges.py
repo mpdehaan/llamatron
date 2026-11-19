@@ -21,8 +21,7 @@ the pattern editor's Munge dialog offers. The munges that only reorder, copy or 
 on Pattern itself.
 """
 
-from llamatron.composition import limits
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import Row
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.row_descriptions import row_described, rows_where

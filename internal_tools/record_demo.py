@@ -66,17 +66,16 @@ import sys
 import tempfile
 import time
 
-from llamatron.music import midi
 from llamatron.composition.setlist import file_stem
+from llamatron.music import midi
 from llamatron.realtime import fluidsynth as fluidsynth_values
 from llamatron.realtime.fluidsynth import fluidsynth_path, is_installed, soundfont_path
 from llamatron.realtime.outputs import output_port_names
+from llamatron.tui import batch_stage, launch as launch_values
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
-from llamatron.tui import batch_stage
 from llamatron.tui.components.scroll_text import scroll_text_for
 from llamatron.tui.components.title_card import whole_title_seconds
-from llamatron.tui import launch as launch_values
+from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch, recording_problem
 from llamatron.visualizers import modes
 from llamatron.visualizers.modes import mode_options

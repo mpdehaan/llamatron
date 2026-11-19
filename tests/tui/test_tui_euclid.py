@@ -15,17 +15,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Euclidean mask: the Euclids page and editor, the track editor's + Euclid section, and the picker of named rhythms that H opens on Hits."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
 from llamatron.composition import euclid
-from llamatron.composition.file_format import Section, EuclidPart, GeneratorKind, NamedRhythm
+from llamatron.composition.file_format import EuclidPart, GeneratorKind, NamedRhythm, Section
 from llamatron.strings import labels
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
 from llamatron.tui.screens.generators.euclid_fields import drawn_rhythm
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui import keybindings
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 NEW_ONE = 'bell'
 TRESILLO_HITS, TRESILLO_STEPS = euclid.NAMED_RHYTHMS[NamedRhythm.TRESILLO]

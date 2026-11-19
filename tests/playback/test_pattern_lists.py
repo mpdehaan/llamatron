@@ -26,8 +26,8 @@ from llamatron.composition.file_format import ClipSlotSetting, Direction, Operat
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.pattern_order import ordered_patterns
 from llamatron.support.random_source import random_source
-from tests.support.rendering import render_data
 from tests.support import song_testing
+from tests.support.rendering import render_data
 from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'

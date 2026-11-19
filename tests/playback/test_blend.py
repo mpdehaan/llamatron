@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.generators.blend import Blend, BlendMode
+from llamatron.grid.clip import Clip
 from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.grid.clip import Clip
 
 C_MAJOR = Scale(root=Note(name='C', octave_number=4), typ=ScaleType.MAJOR)
 A_MINOR = Scale(root=Note(name='A', octave_number=3), typ=ScaleType.MINOR)

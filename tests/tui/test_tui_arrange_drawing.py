@@ -22,18 +22,17 @@ shows what the drawing drew.
 
 import unittest
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, a_song
 from llamatron.composition import defaults
-from llamatron.strings import marks, names
 from llamatron.composition.file_format import ClipSlotSetting, Direction
-from llamatron.tui import keybindings
-from llamatron.tui import drawing
-from llamatron.tui.keys import Key
+from llamatron.strings import marks, names
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import length_bar
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange import arrange_drawing
 from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing, clip_text
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from tests.support import ui_testing
+from tests.support.ui_testing import a_song, UITest
 
 FIRST_SCENE = 0
 SOME_REPEATS = 4

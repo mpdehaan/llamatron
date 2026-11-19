@@ -31,36 +31,33 @@ Arrange. Whatever the plan can't set yet is reported as left out, so a demo that
 the plan knows still builds the rest.
 """
 
+from llamatron.composition import file_format, limits, row_descriptions
 from llamatron.composition.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.naming import new_name
-from llamatron.composition import row_descriptions
-from llamatron.composition import limits
 from llamatron.strings import labels as labels_text, names as names_text, narration
-from llamatron.tui import keybindings
-from llamatron.composition import file_format
-from llamatron.tui.components.chord_row import ChordRow, chord_text
+from llamatron.tui import keybindings, keys as keys_values
+from llamatron.tui.components.chord_row import chord_text, ChordRow
 from llamatron.tui.components.cycle_row import CycleRow
 from llamatron.tui.components.gate_row import GateRow
 from llamatron.tui.components.number_row import NumberRow
-from llamatron.tui.components.toggle_row import ToggleRow
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs import new_pattern_dialog
-from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.key_table import first_key
-from llamatron.tui import keys as keys_values
-from llamatron.tui.keys import Key
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
+from llamatron.tui.components.toggle_row import ToggleRow
+from llamatron.tui.dialogs import new_pattern_dialog
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.tui.dialogs.quit_dialog import QuitDialog
+from llamatron.tui.key_table import first_key
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange import arrange_page
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.dialogs.quit_dialog import QuitDialog
+from llamatron.tui.screens.pattern import patterns_page
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
+from llamatron.tui.screens.pattern.patterns_page import Listed, PatternsPage
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import cell_opened_by, MainPage
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.tui.screens.pattern import patterns_page
-from llamatron.tui.screens.pattern.patterns_page import Listed, PatternsPage
 from llamatron.tui.screens.set.scale_page import scale_label
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage

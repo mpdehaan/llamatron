@@ -19,11 +19,11 @@ The hook comes first, since the chorus is written around it and every other melo
 """
 
 from llamatron.strings import labels
+from llamatron.tui.screens.wizard import solo_melody_branch
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.hooks_branch import HooksBranch
 from llamatron.tui.screens.wizard.intro_melody_branch import IntroMelodyBranch
 from llamatron.tui.screens.wizard.section_melody_branch import SectionMelodyBranch
-from llamatron.tui.screens.wizard import solo_melody_branch
 from llamatron.tui.screens.wizard.solo_melody_branch import SoloMelodyBranch
 
 

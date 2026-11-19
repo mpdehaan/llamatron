@@ -23,10 +23,10 @@ starts with something else: a name that is asked for, a numbered name, or a C ma
 """
 
 from llamatron.strings import messages
-from llamatron.tui.themes import theme_of
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
+from llamatron.tui.themes import theme_of
 
 
 class NamedListPage(ListPage):

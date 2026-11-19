@@ -19,9 +19,8 @@
 import unittest
 
 from llamatron.composition.file_format import Section
-from llamatron.macro_composer import line_edits
+from llamatron.macro_composer import line_edits, notation
 from llamatron.macro_composer.line_edits import found, moved, place_of, steps_of, stretched, tidied, toggled
-from llamatron.macro_composer import notation
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.support import version
 

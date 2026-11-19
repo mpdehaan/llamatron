@@ -26,15 +26,13 @@ constants here, to tune by eye.
 """
 
 import math
-
 import numpy
 
-from llamatron.visualizers import cells
+from llamatron.strings import visualizers
+from llamatron.visualizers import cells, heard as heard_values
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
-from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings import visualizers
 
 LONGEST_FRAME_SECONDS = 0.2
 FULL_VELOCITY = 127

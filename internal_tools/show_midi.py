@@ -31,14 +31,12 @@ Run it from the top folder of the project, on one or more files:
     .venv/bin/python internal_tools/show_midi.py songs/my_set_my_song_clip_s_001-verse-t_001-lead.mid
 """
 
-import sys
 from fractions import Fraction
-
 import mido
+import sys
 
 from llamatron.composition import file_format
-from llamatron.music import midi as midi_numbers
-from llamatron.music import note
+from llamatron.music import midi as midi_numbers, note
 
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 # Lengths are shown as fractions no finer than this, so rounding in the file doesn't show.

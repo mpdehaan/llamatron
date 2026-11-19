@@ -16,6 +16,7 @@ kept by reading.
 | A commit that changes Python under `src/` carries a version bump, made by `internal_tools/bump.sh`. | `internal_tools/check_before_commit.sh`, which Claude runs before committing code, through `internal_tools/bump_version.py --check`, tested by `tests/tools/test_bump_version.py` |
 | No unused import, undefined name or name defined twice, in `src/`, `tests/` or `internal_tools/`. | `tests/rules/test_pyflakes.py` |
 | No module imports a constant by name from any module of llamatron, the tests or the tools: the module is imported and the constant named through it, `sound.KIND`. A class or a function keeps its import. From a module of the `strings` package, `composition/limits.py`, `composition/defaults.py` and `music/midi.py`, nothing at all is imported by name. | `tests/rules/test_constants_by_module.py`, with `internal_tools/constants_by_module.sh --write` to rewrite a file that breaks it |
+| Every file's opening imports are sorted: the libraries, one blank line, then the project's, each group by module, each line's names in order, one line a module. | `tests/rules/test_import_order.py`, with `internal_tools/sort_imports.sh --write` to sort a file |
 | No function or method carries a type hint, on a parameter or on what it returns. | `tests/rules/test_no_type_hints.py` |
 | Each screen lists its keys once, in `keys()`, so no key works without being shown in the legend or the F1 dialog, and every page's help fits an 80 by 24 console. | `tests/tui/test_tui_keys_shown.py`, `tests/tui/test_tui_help.py` |
 | A screen's method is never named after one Textual has, like `render` or `remove`. | `tests/tui/test_tui_look.py` |
@@ -167,8 +168,8 @@ never given a module's name. The strings package's own modules import names from
 **Imports are sorted, in two groups.** A module's imports come as two groups with one blank line between them: first the system
 libraries, then everything from this project, together. In each group the import lines are in alphabetical order by the package
 or module they import from, and the names one line imports are in alphabetical order too. The one exception is an import that
-has to stand elsewhere to avoid a circular import (the user's rule). New and changed modules follow it; the modules written
-before it are brought over as agreed with the user.
+has to stand elsewhere to avoid a circular import (the user's rule). Two lines that import from one module are one line. Every module follows it, the
+rule being about the imports a file opens with: `internal_tools/sort_imports.sh --write` sorts them, and leaves an import after other code or inside a function where it stands.
 
 **A comment gives its reason, never whose choice it was.** A comment or a docstring in the code says what a thing is for and why, for a
 person maintaining the code: never that a choice was the user's, that the user asked for it, or the date it was made. Whose a choice

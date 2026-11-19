@@ -27,14 +27,13 @@ other way, later tracks' llamas over earlier ones. The amounts are named constan
 
 import colorsys
 import math
-
 from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
+from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings import visualizers
 
 # The drawings, smallest first, each facing left, its head at the left, and mirrored to face right.
 SIZES = (visualizers.MSG_LLAMA_SMALL, visualizers.MSG_LLAMA_MEDIUM, visualizers.MSG_LLAMA_LARGE)

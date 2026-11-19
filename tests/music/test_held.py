@@ -16,16 +16,16 @@
 
 """Held: a sound that keeps sounding while the positions after it start, as a long gate does."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
-from llamatron.music.chord import Chord
-from llamatron.grid.clip import Clip
+from llamatron.exporters.timing import timed_events
 from llamatron.generators.arp import Arp
 from llamatron.generators.auto_ratchet import AutoRatchet
+from llamatron.grid.clip import Clip
+from llamatron.music.chord import Chord
 from llamatron.music.held import Held, phrase
 from llamatron.music.note import Note, NoteName, Rest
-from llamatron.exporters.timing import timed_events
 
 C = Note(name='C', octave_number=5, length=Fraction(1, 2))
 D = Note(name='D', octave_number=5, length=Fraction(1, 8))

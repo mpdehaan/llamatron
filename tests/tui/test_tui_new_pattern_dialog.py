@@ -25,7 +25,7 @@ from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from tests.support import ui_testing
-from tests.support.ui_testing import UITest, fixed_text
+from tests.support.ui_testing import fixed_text, UITest
 
 NEW = 'riff'
 PENTATONIC = 5

@@ -16,18 +16,18 @@
 
 """Chains, arpeggiators and ratchet offsets as a song file uses them."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
-from llamatron.generators.arp import ChordOrder
-from llamatron.music.note import Note, NoteName
-from llamatron.exporters import timing
-from llamatron.exporters.timing import timed_events
-from tests.support.rendering import render_data
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters import timing
+from llamatron.exporters.timing import timed_events
+from llamatron.generators.arp import ChordOrder
+from llamatron.music.note import Note, NoteName
 from tests.support import song_testing
+from tests.support.rendering import render_data
 from tests.support.song_testing import clip, lead, pat, pitches, with_parts
 
 QUARTER = '1/4'

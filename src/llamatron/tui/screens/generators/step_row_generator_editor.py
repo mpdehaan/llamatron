@@ -17,12 +17,12 @@
 
 from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.strings import labels, legends, marks
+from llamatron.tui import keybindings
+from llamatron.tui.screens.generators.restart_field import restart_field
+from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.screens.generators.time_field import time_field
-from llamatron.tui import keybindings
 
 
 def steps_text(values):

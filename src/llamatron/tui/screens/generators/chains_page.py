@@ -17,12 +17,11 @@
 """The Chains page."""
 
 from llamatron.composition.file_format import Section
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Align
 from llamatron.strings import help as help_text, labels, legends, messages
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.drawing import Align
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
-from llamatron.tui import keybindings
 
 
 class ChainsPage(NamedListPage):

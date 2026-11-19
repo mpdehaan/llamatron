@@ -24,19 +24,18 @@ or CSafeLoader when PyYAML has libyaml, which is the same safe loader on a faste
 
 import glob
 import os
+from pathlib import Path
 import re
 import tempfile
 import unittest
-from pathlib import Path
-
 import yaml
 
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.support import safe_yaml
-from llamatron.support.safe_yaml import load_safely, uses_c_parser
-from tests.support.rendering import render_file
-from llamatron.tui.document import Document
 from llamatron.support.example_sets import example_sets
+from llamatron.support.safe_yaml import load_safely, uses_c_parser
+from llamatron.tui.document import Document
+from tests.support.rendering import render_file
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 # The one module allowed to name a loader, and the loaders it may name.

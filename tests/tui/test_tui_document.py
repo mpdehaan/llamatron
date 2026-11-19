@@ -14,38 +14,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fractions import Fraction
 import os
 import tempfile
 import unittest
-from fractions import Fraction
-
 import yaml
 
+from llamatron.composition import defaults, limits, setlist
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, labels as labels_text, marks as marks_text, names as names_text
-from llamatron.composition.file_format import (
-    SetlistSetting,
-    Accidental, OctaveLabels, ClipSlotSetting, ChordSymbol, Direction, GeneratorKind, PatternSetting, Row, SceneSetting, Section,
-)
+from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, GeneratorKind, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
-from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.named_scale import scale_type_name
+from llamatron.composition.naming import copy_name, unique_name
+from llamatron.composition.setlist import new_setlist, Setlist
 from llamatron.composition.song_file_error import SongFileError
-from tests.support.rendering import render_song
+from llamatron.exporters.exports import export_name, ExportKind
 from llamatron.generators.arp import ChordOrder
 from llamatron.generators.blend import BlendMode
 from llamatron.music.note import Note, NoteName
-from llamatron.exporters.exports import ExportKind, export_name
 from llamatron.music.scale import ScaleType
-from llamatron.composition import setlist
-from llamatron.composition.setlist import Setlist, new_setlist
+from llamatron.strings import errors, labels as labels_text, marks as marks_text, names as names_text
+from llamatron.support.example_sets import example_sets
 from llamatron.tui.document import Document
 from llamatron.tui.document_parts import pattern_edits
-from llamatron.composition.naming import copy_name, unique_name
 from llamatron.tui.text import clock
 from llamatron.tui.uses import grabbers, uses_of
-from llamatron.support.example_sets import example_sets
+from tests.support.rendering import render_song
 
 # A setting from an early version of the format, which a new song must not write.
 # How many of the examples a test that reads each twice takes.

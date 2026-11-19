@@ -18,16 +18,16 @@ import copy
 import gzip
 import itertools
 import os
+from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
-from llamatron.support import files
-from llamatron.support.rational import Rational
-from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
 from llamatron.exporters import timing
+from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
 from llamatron.exporters.timing import control_points, keyswitch_events, timed_events
 from llamatron.strings import errors, names
+from llamatron.support import files
+from llamatron.support.rational import Rational
 
 # Installed along with the code, so that a set can be written from anywhere.
 DEFAULT_TEMPLATE = Path(__file__).resolve().parents[1] / 'templates' / 'live12.als'

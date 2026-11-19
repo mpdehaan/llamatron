@@ -18,12 +18,11 @@
 
 from rich.text import Text
 
-from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.components.button_row import button_row
-from llamatron.tui import drawing
-from llamatron.tui.key_table import cursor_moved
 from llamatron.strings import labels
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.components.button_row import button_row
+from llamatron.tui.dialogs.message_dialog import MessageDialog
+from llamatron.tui.key_table import cursor_moved
 
 
 # The two buttons' places, in the order MSG_CONFIRM_BUTTONS draws them, and the binding whose key each shows.

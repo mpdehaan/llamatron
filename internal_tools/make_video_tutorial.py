@@ -66,9 +66,9 @@ from llamatron.realtime.outputs import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch, recording_problem
-from llamatron.tutorial.subtitles import subtitles
 from llamatron.tutorial import runner
 from llamatron.tutorial.runner import tutorial
+from llamatron.tutorial.subtitles import subtitles
 
 RECORDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'record_demo.py')
 RECORDER_MODULE = 'record_demo'

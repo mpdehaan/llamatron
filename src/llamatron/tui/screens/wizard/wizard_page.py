@@ -31,37 +31,35 @@ from llamatron.composition.checks import listed
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.composition.naming import new_name
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import notation, wizard_choices
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
-from llamatron.macro_composer import notation
-from llamatron.support.memory import Memory, StaleAnswer
 from llamatron.support import version
-from llamatron.tui import keybindings, themes
+from llamatron.support.memory import Memory, StaleAnswer
+from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.document import Document
-from llamatron.tui.screens.generators.musician_editor import MusicianEditor
-from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.dialogs.sound_dialog import SoundDialog
-from llamatron.tui.screens.set.instrument_editor import sound_families
-from llamatron.tui.screens.shared import sound_trial
-from llamatron.tui.screens.shared.sound_trial import SoundTrial, hits_of, run_of
-from llamatron.tui.text import clock
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui import drawing
+from llamatron.tui.dialogs.sound_dialog import SoundDialog
+from llamatron.tui.document import Document
 from llamatron.tui.drawing import Box, cursor_mark, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
+from llamatron.tui.screens.generators.musician_editor import MusicianEditor
+from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.instrument_editor import sound_families
+from llamatron.tui.screens.shared import sound_trial
 from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.sound_trial import hits_of, run_of, SoundTrial
+from llamatron.tui.screens.wizard import starts
 from llamatron.tui.screens.wizard.band_branch import BandBranch
 from llamatron.tui.screens.wizard.composition_branch import CompositionBranch
 from llamatron.tui.screens.wizard.create_branch import CreateBranch
 from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
-from llamatron.tui.screens.wizard import starts
 from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
+from llamatron.tui.text import clock
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
 TREE_WIDTH = 24

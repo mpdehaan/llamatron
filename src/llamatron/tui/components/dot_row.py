@@ -15,9 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Dot row: a gate made dotted, half as long again, or a triplet, two thirds."""
 
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.cycle_row import CycleRow
-from llamatron.tui import drawing
-from llamatron.tui import keybindings
 
 
 class DotRow(CycleRow):

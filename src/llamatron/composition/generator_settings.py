@@ -21,39 +21,31 @@ that a problem is reported with the name of the generator, whether or not a chai
 are checked again when a chain makes the generator, since settings can be built without a file.
 """
 
+from llamatron.composition import corrections, euclid, file_format, guitar_bars, limits, shapes as shapes_values
+from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, is_whole_number, is_whole_number_from, listed, number, reading, time_length
 from llamatron.composition.conditions import statements_setting, with_statement
-from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, number, is_whole_number, is_whole_number_from, listed, reading, time_length
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section
-from llamatron.composition.named_scale import scale_type_names
-from llamatron.composition.strum import strum_part_settings, strum_values
-from llamatron.composition import shapes as shapes_values
-from llamatron.composition.shapes import ShapeValues, shape_part_settings, shape_values
-from llamatron.music import note
-from llamatron.composition import limits
-from llamatron.strings import errors
-from llamatron.composition.llama_data import LlamaData, or_default, own_copy
+from llamatron.composition.euclid import euclid_part_settings, euclid_values
+from llamatron.composition.file_format import Accidental, Approach, ChordColor, DriftValue, EuclidPart, GeneratorKind, GuitarifySetting, NamedRhythm, RegisterName, Restart, Section, Shape, shape_setting, ShapePart, SingleNotes, StrumDirection, StrumPart, Tuning
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition import corrections
-from llamatron.composition.setting import Checked, Choice, Flag, Text, WholeNumber, check_settings, described
-from llamatron.support.rational import Rational
-from llamatron.generators import musician
+from llamatron.composition.llama_data import LlamaData, or_default, own_copy
+from llamatron.composition.named_scale import scale_type_names
+from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, Text, WholeNumber
+from llamatron.composition.shapes import shape_part_settings, shape_values, ShapeValues
+from llamatron.composition.strum import strum_part_settings, strum_values
+from llamatron.generators import arp, musician, phrasing
+from llamatron.generators.arp import _check_offsets, Arp, ChordOrder, OctaveJump
+from llamatron.generators.auto_ratchet import AutoRatchet
+from llamatron.generators.euclid import EuclidMask
 from llamatron.generators.follow_chords import FollowChords
-from llamatron.generators import phrasing
+from llamatron.generators.glide import Glide
+from llamatron.generators.guitarify import Guitarify
 from llamatron.generators.phrasing import Phrasing
 from llamatron.generators.progression import Progression
-from llamatron.generators.voice_leading import VoiceLeading
-from llamatron.generators.guitarify import Guitarify
-from llamatron.composition.file_format import Approach, ChordColor, GuitarifySetting, SingleNotes, Tuning
-from llamatron.composition import guitar_bars
-from llamatron.generators.euclid import EuclidMask
-from llamatron.generators.glide import Glide
 from llamatron.generators.shorten import Shorten
-from llamatron.composition import euclid
-from llamatron.composition.euclid import euclid_part_settings, euclid_values
-from llamatron.generators import arp
-from llamatron.generators.arp import Arp, ChordOrder, OctaveJump, _check_offsets
-from llamatron.generators.auto_ratchet import AutoRatchet
+from llamatron.generators.voice_leading import VoiceLeading
+from llamatron.music import note
+from llamatron.strings import errors
+from llamatron.support.rational import Rational
 from llamatron.support.revised import notes_change
 
 MIN_OCTAVE_RANGE = 1

@@ -15,16 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Grooves: what a file can hold, the factory grooves, and how a groove moves notes and CC values at export."""
 
+from fractions import Fraction
+import mido
 import os
 import tempfile
 import unittest
-from fractions import Fraction
 
-import mido
-
-from llamatron.composition import defaults, limits
+from llamatron.composition import defaults, groove as groove_values, limits
 from llamatron.composition.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition import groove as groove_values
 from llamatron.composition.groove import FactoryGroove, Groove, new_groove
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setlist import Setlist
@@ -33,8 +31,8 @@ from llamatron.exporters import clip_tree
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.timing import control_events, timed_events
 from llamatron.support.rational import Rational
-from tests.support.rendering import render_data, song_from_data
 from tests.support import song_testing
+from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, with_parts
 
 SIXTEENTH = Fraction(1, 16)

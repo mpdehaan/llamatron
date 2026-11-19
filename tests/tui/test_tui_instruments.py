@@ -17,24 +17,23 @@
 
 from unittest import mock
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, labels, marks, messages, names
-from llamatron.composition import file_format
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.music import midi
+from llamatron.realtime import fluidsynth
+from llamatron.strings import errors, labels, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.shared.field import Heading
-from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_text
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
-from llamatron.realtime import fluidsynth
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_text
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.shared.field import Heading
+from tests.support import ui_testing
 from tests.support.rendering import render_song
+from tests.support.ui_testing import UITest
 
 INSTRUMENT_1 = names.MSG_NUMBERED_NAME.format(base=names.MSG_NEW_INSTRUMENT_WORD, number=1)
 INSTRUMENT_2 = names.MSG_NUMBERED_NAME.format(base=names.MSG_NEW_INSTRUMENT_WORD, number=2)

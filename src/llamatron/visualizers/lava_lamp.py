@@ -42,15 +42,14 @@ The amounts are named constants here, grouped by what they shape, to tune by eye
 """
 
 import math
-
 import numpy
 
-from llamatron.visualizers.colour import Limiter, note_colour
-from llamatron.visualizers.fields import Discs, blurred, ripple_step
+from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
+from llamatron.visualizers.colour import Limiter, note_colour
+from llamatron.visualizers.fields import blurred, Discs, ripple_step
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.visualizers.warp import Rotozoom
-from llamatron.strings import visualizers
 
 # The derez: how much finer the simulation is than the big pixels, each way, and the colour steps the big pixels are rounded to.
 SUPERSAMPLE = 2

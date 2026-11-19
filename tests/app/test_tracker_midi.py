@@ -21,32 +21,26 @@ These check that the song comes out, and leave timing and exact octaves free to 
 
 import glob
 import gzip
+import mido
 import os
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
-import mido
-
-from tests.support.gate_conversion import to_gates
-
-from tests.support.rendering import bare_document
-
-from llamatron.composition.file_format import (
-    ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting,
-)
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting
 from llamatron.composition.generator_settings import ArpSetting, written_name
+from llamatron.composition.setlist import new_setlist, Setlist
+from llamatron.exporters import exports, midi_messages
+from llamatron.exporters.exports import ExportKind
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
-from llamatron.exporters import midi_messages
-from llamatron.exporters import exports
-from llamatron.exporters.exports import ExportKind
-from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.strings import names as names_text
-from llamatron.tui.document import Document
-from tests.support.ui_testing import UITest
-from llamatron.tui.keys import Key
 from llamatron.tui import keybindings
+from llamatron.tui.document import Document
+from llamatron.tui.keys import Key
+from tests.support.gate_conversion import to_gates
+from tests.support.rendering import bare_document
+from tests.support.ui_testing import UITest
 
 NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 FIRST_VERSE = 'E D C D E E E D D D E G G'.split()

@@ -16,16 +16,16 @@
 
 """What several screens share: the scale and root pickers, the note lengths, the file suffixes and the key lists that list pages build from."""
 
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.composition import limits
-from llamatron.strings import errors, marks, messages, names
 from llamatron.composition.generator_settings import written_name
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.generators.arp import ChordOrder
 from llamatron.music import time_signature
 from llamatron.music.time_signature import is_time_signature
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.generators.arp import ChordOrder
+from llamatron.realtime.sender_process import SenderNotStarted
+from llamatron.strings import errors, marks, messages, names
 from llamatron.tui import drawing
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 
 
 SONG_SUFFIX = '.yml'

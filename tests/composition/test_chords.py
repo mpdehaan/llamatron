@@ -20,19 +20,18 @@ what a chord comes to in a scale, its names and its notes, as the editors show i
 
 import unittest
 
-from llamatron.composition import chords
+from llamatron.composition import chords, file_format
 from llamatron.composition.chords import chord_half_steps, replaced_places, spelled_chord
-from llamatron.composition import file_format
 from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Tension
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from tests.support.rendering import setlist_from_data
 from tests.generators import test_progression
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
+from tests.support.rendering import setlist_from_data
 
 MINOR = scale_type_name(ScaleType.MINOR)
 C_MAJOR = NamedScale(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))

@@ -28,14 +28,13 @@ bursts never flashes. The amounts are named constants here, to tune by eye.
 """
 
 import math
+import numpy
 import random
 
-import numpy
-
-from llamatron.visualizers.colour import Limiter
-from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
+from llamatron.visualizers import heard as heard_values
+from llamatron.visualizers.colour import Limiter
+from llamatron.visualizers.visualizer import Visualizer
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3

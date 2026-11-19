@@ -21,17 +21,16 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 """
 
 
+from llamatron.composition import generator_settings, sections
 from llamatron.composition.chain import Chain
 from llamatron.composition.file_format import Section
+from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.groove import new_groove
 from llamatron.composition.instrument import Instrument
-from llamatron.composition import generator_settings
-from llamatron.composition.generator_settings import ProgressionSetting
-from llamatron.music import note
 from llamatron.composition.named_scale import NamedScale, scale_type_name
-from llamatron.composition import sections
-from llamatron.importers.writing import add_imported
 from llamatron.composition.naming import default_scale_name, is_default_scale_name, words
+from llamatron.importers.writing import add_imported
+from llamatron.music import note
 from llamatron.strings import marks
 
 

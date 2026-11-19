@@ -25,8 +25,7 @@ is.
 """
 
 from llamatron.generators.base import ClipGenerator
-from llamatron.music import midi
-from llamatron.music import sound as sound_values
+from llamatron.music import midi, sound as sound_values
 from llamatron.music.sound import Sound
 
 HALF_STEPS_PER_OCTAVE = 12

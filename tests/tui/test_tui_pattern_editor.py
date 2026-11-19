@@ -18,31 +18,26 @@
 
 from fractions import Fraction
 
-from tests.support import ui_testing
-from tests.support.ui_testing import key_of
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, labels as labels_text, legends, marks, messages
-from llamatron.composition import file_format
+from llamatron.composition import defaults, file_format, limits, setlist
 from llamatron.composition.file_format import Accidental, ChordSymbol, GateModifier, OctaveLabels, Row
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.tui import drawing as drawing_values
-from llamatron.tui.drawing import Align, Box, Style, fit
-from llamatron.tui.screens.pattern import grid_drawing
+from llamatron.strings import errors, labels as labels_text, legends, marks, messages
+from llamatron.tui import drawing as drawing_values, keybindings, keys
+from llamatron.tui.components import degree_row, pattern_rows
+from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
-from llamatron.tui import keys
+from llamatron.tui.drawing import Align, Box, fit, Style
 from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.components.chord_row import chord_value
-from llamatron.tui.components import pattern_rows
+from llamatron.tui.screens.pattern import grid_drawing
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
-from llamatron.tui.components import degree_row
-from llamatron.composition import setlist
-from llamatron.tui import keybindings
+from tests.support import ui_testing
+from tests.support.pattern_editor_testing import open_section, PatternEditorTest
 from tests.support.rendering import render_song
-from tests.support.pattern_editor_testing import PatternEditorTest, open_section
+from tests.support.ui_testing import key_of
 
 # Names the tests give to their own things, and other values they use.
 # Patterns added out of order, with a capital, to see a picker sort them.

@@ -39,9 +39,9 @@ import sys
 import time
 
 from llamatron.composition.setlist import Setlist
+from llamatron.grid.row_clock import seconds_per_whole
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
-from llamatron.grid.row_clock import seconds_per_whole
 from llamatron.realtime.timeline import Route, song_timeline
 
 DEFAULT_SONG = 'examples/by_genre/ragtime/entertainer.yml'

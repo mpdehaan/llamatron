@@ -20,9 +20,9 @@ import unittest
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, SceneSetting, Section, TrackSetting
 from llamatron.composition.generator_settings import AutoRatchetSetting
 from llamatron.playback.song_renderer import SongRenderer
-from tests.support.rendering import song_from_data
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, pitches, song
+from tests.support.rendering import song_from_data
 
 TWICE = 'twice'
 OTHER_CHAIN = 'other'

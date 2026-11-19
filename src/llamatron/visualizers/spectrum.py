@@ -29,9 +29,9 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
+from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings import visualizers
 
 # The bars: each this many columns wide with a gap of this many after it, and the pitches they span, low to high.
 BAR_COLUMNS = 2

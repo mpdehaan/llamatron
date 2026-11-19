@@ -42,8 +42,8 @@ from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, effective_values, scene_notes
 from llamatron.tui.screens.arrange import arrange_details
 from llamatron.tui.screens.arrange.arrange_details import clip_details, or_stock, track_details
-from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers import piano_roll
+from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.piano_roll import drum_lane
 
 # Each column of the roll is a sixteenth note, in whole notes, drawn as many cells wide as the zoom, from FEWEST_CELLS to MOST_CELLS.

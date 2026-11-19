@@ -31,14 +31,13 @@ that are the chord's third, fifth and seventh. Its tensions set the notes betwee
 
 import math
 
-from llamatron.composition import chords as chords_values
+from llamatron.composition import chords as chords_values, file_format
 from llamatron.composition.chords import replaced_places
-from llamatron.composition import file_format
 from llamatron.composition.named_scale import scale_type_called
 from llamatron.generators.arp import along_scale
 from llamatron.generators.base import ClipGenerator
-from llamatron.music.scale import Scale, ScaleType
 from llamatron.music import sound as sound_values
+from llamatron.music.scale import Scale, ScaleType
 from llamatron.music.sound import Sound
 from llamatron.support import length
 from llamatron.support.length import Length

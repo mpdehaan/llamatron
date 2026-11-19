@@ -15,9 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The accidental row: a sharp or flat on a note's degree, or neither."""
 
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.cycle_row import CycleRow
-from llamatron.tui import drawing
-from llamatron.tui import keybindings
 
 
 class AccidentalRow(CycleRow):

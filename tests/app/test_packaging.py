@@ -19,8 +19,8 @@
 import ast
 import contextlib
 import io
-import unittest
 from pathlib import Path
+import unittest
 
 import llamatron
 from llamatron.cli import main

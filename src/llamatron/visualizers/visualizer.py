@@ -16,7 +16,7 @@
 """What every visualizer mode is: a name, and the frame it draws for an area at a moment."""
 
 from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.pixels import PixelPainter, pixel_size
+from llamatron.visualizers.pixels import pixel_size, PixelPainter
 
 
 class Visualizer:

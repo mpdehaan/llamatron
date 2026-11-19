@@ -24,10 +24,10 @@ it yet: who knows it is chosen on Riff Assign, and where it is played on Section
 
 from llamatron.composition.checks import listed
 from llamatron.strings import labels, legends, marks, messages
+from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_riff_dialog import NewRiffDialog
-from llamatron.tui import drawing
 from llamatron.tui.screens.shared.field import Field
 from llamatron.tui.screens.wizard.branch import Branch
 

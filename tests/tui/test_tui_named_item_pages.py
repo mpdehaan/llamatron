@@ -22,50 +22,50 @@ tested with the page, so these checks call the page's rename and answer its prom
 
 import unittest
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, leaf_pages
+from llamatron.composition import setlist
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
-from llamatron.composition import setlist
 from llamatron.strings import errors, marks
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui import drawing
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
+from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
 from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.tui.screens.generators.drift_editor import DriftEditor
-from llamatron.tui.screens.generators.density_editor import DensityEditor
-from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
-from llamatron.tui.screens.generators.chords_editor import ChordsEditor
-from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
-from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
-from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
-from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
-from llamatron.tui.screens.generators.musician_editor import MusicianEditor
-from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
-from llamatron.tui.screens.generators.hocket_editor import HocketEditor
-from llamatron.tui.screens.generators.strum_editor import StrumEditor
-from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
-from llamatron.tui.screens.generators.glide_editor import GlideEditor
-from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
-from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
-from llamatron.tui.screens.generators.rush_editor import RushEditor
-from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
+from llamatron.tui.screens.generators.chords_editor import ChordsEditor
+from llamatron.tui.screens.generators.density_editor import DensityEditor
 from llamatron.tui.screens.generators.drag_editor import DragEditor
 from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
+from llamatron.tui.screens.generators.drift_editor import DriftEditor
+from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
+from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
+from llamatron.tui.screens.generators.glide_editor import GlideEditor
 from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
+from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
+from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
+from llamatron.tui.screens.generators.hocket_editor import HocketEditor
+from llamatron.tui.screens.generators.musician_editor import MusicianEditor
+from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
+from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
+from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
+from llamatron.tui.screens.generators.rush_editor import RushEditor
+from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
+from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
+from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
+from llamatron.tui.screens.generators.strum_editor import StrumEditor
 from llamatron.tui.screens.generators.swell_editor import SwellEditor
-from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from tests.support import ui_testing
+from tests.support.ui_testing import leaf_pages, UITest
 
 RENAMED = 'renamed'
 A_GROOVE = 'shuffle'

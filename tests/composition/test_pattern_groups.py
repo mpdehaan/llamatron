@@ -20,13 +20,12 @@ import os
 import tempfile
 import unittest
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, SceneSetting, Section
-from llamatron.composition import limits
-from llamatron.strings import errors, names as names_text
 from llamatron.composition.naming import name_in_copied_group
-from llamatron.composition.setlist import Setlist, new_setlist
+from llamatron.composition.setlist import new_setlist, Setlist
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.strings import errors, names as names_text
 
 # The tests' own names.
 BASS = 'bass'

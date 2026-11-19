@@ -18,7 +18,6 @@
 compared with any song: the profile of a song, made from its performance."""
 
 from dataclasses import dataclass, replace
-
 from measuring.hearing.counterpoint import voice_leading_of
 from measuring.hearing.harmony import harmony_of, modulation_of
 from measuring.hearing.hooks import hook_of
@@ -26,10 +25,10 @@ from measuring.hearing.lines import bass_of, bottom_line, expectation_of, melody
 from measuring.hearing.performance import PlayedTrack
 from measuring.hearing.rhythm import drums_of, groove_of
 from measuring.hearing.roles import roles_of, tracks_in_role
+from measuring.hearing.shape import bar_energy, energy_of, familiarity_of, shape_of, texture_of
+from measuring.hearing.sonorities import BAR_SPAN, CHORDAL, PLANING, RICH, sonorities_of, WHOLE_TONE
 from measuring.hearing.spacing import spacing_of
 from measuring.hearing.transitions import transitions_of
-from measuring.hearing.shape import bar_energy, energy_of, familiarity_of, shape_of, texture_of
-from measuring.hearing.sonorities import BAR_SPAN, CHORDAL, PLANING, RICH, WHOLE_TONE, sonorities_of
 from measuring.measures.subject import Basis, Evidence, Subject, SubjectKind
 from measuring.measures.traits import BassMotion, Meter, Role, Sounds, Tempo, Trait
 

@@ -23,20 +23,19 @@ where in the file the value is and raises SongFileError instead, so a file's pro
 reported with their place and an edit's problems without one.
 """
 
-import re
 from contextlib import contextmanager
 from math import isfinite
+import re
 from typing import NamedTuple
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
+from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import _check_length
 from llamatron.music.scale import Scale
 from llamatron.music.time_signature import TimeSignature
-from llamatron.support.rational import Rational
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition import limits
 from llamatron.strings import errors
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.support.rational import Rational
 
 # A length has to be longer than nothing.
 NO_LENGTH = 0

@@ -18,14 +18,14 @@
 
 from unittest import mock
 
-from tests.support.ui_testing import UITest, key_name
-from llamatron.tui.drawing import Box
-from llamatron.tui.dialogs import dialog
-from llamatron.tui.dialogs.quit_dialog import QuitDialog
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.strings import labels, legends
 from llamatron.tui import keybindings
+from llamatron.tui.dialogs import dialog
+from llamatron.tui.dialogs.quit_dialog import QuitDialog
+from llamatron.tui.drawing import Box
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.set.main_page import MainPage
+from tests.support.ui_testing import key_name, UITest
 
 EXIT = 'exit'
 

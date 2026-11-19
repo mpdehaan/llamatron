@@ -20,11 +20,10 @@ and what kind, the voice that keeps time; and its groove: how swung its offbeats
 notes fall, how many of its drum hits are ghost notes, and its feel."""
 
 from collections import Counter
-from statistics import median
-
 from measuring.measures.comparing import groove_gap
 from measuring.measures.drum_patterns import COMMON_STEPS_PER_BEAT, DrumPattern, Voice
 from measuring.measures.traits import Drums, Feel, FillKind, Groove
+from statistics import median
 
 # General MIDI's drum notes, by the voice they're sorted into; any other drum note is percussion.
 VOICE_OF_NOTE = {

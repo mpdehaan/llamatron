@@ -15,15 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The shape generators' editors: a Density's, Swell's or Articulate's name, start, end, over and then, and a Swell's accent."""
 
-from llamatron.composition.generator_settings import ShapeSetting
 from llamatron.composition import limits
+from llamatron.composition.generator_settings import ShapeSetting
 from llamatron.strings import labels, marks
+from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
+from llamatron.tui.screens.generators.shape_fields import shape_fields
 from llamatron.tui.screens.shared.field import NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.generators.shape_fields import shape_fields
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui import keybindings
 
 NO_ACCENT = 0
 

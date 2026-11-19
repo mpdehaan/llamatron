@@ -20,12 +20,10 @@ tempo it passes through, and its tracks tidied (hearing/cleaning.py), so that a 
 own are. Read with mido, which the tracker already needs, so the explain tool needs nothing more."""
 
 from collections import Counter
-
-import mido
-
 from measuring.hearing.cleaning import tidied
 from measuring.hearing.performance import Performance, PlayedNote, PlayedTrack
 from measuring.strings import MSG_DOUBT_METERS, MSG_DOUBT_TEMPOS, MSG_GENRE_LIST_JOIN
+import mido
 
 # General MIDI's drum channel, counted from 0 as mido counts.
 DRUM_CHANNEL = 9

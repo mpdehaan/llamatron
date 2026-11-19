@@ -38,17 +38,17 @@ and tests/tools/test_demo_summary.py checks it is current, so that readers see w
 
 import argparse
 import csv
-import io
-import re
 import importlib.util
+import io
 import pathlib
+import re
 import sys
 
-from llamatron.tui.document import Document
-from llamatron.tui.text import clock
+from llamatron.composition.setlist import file_stem
 from llamatron.support.example_sets import example_sets
 from llamatron.support.safe_yaml import load_safely
-from llamatron.composition.setlist import file_stem
+from llamatron.tui.document import Document
+from llamatron.tui.text import clock
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DEMOS_DOCUMENT = ROOT / 'docs' / 'DEMOS.md'

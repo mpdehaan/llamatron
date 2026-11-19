@@ -17,21 +17,19 @@
 """Loading song files: what a file can hold, what it refuses, and the text at its top."""
 
 import unittest
-
 import yaml
 
+from llamatron.composition import file_format, sections
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from tests.support.rendering import as_setlist, dump_song_data, render_data, render_file, setlist_from_data, song_from_data
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
-from llamatron.composition.generator_settings import ArpSetting, written_name
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition import sections
 from llamatron.strings import errors
 from tests.support import song_testing
+from tests.support.rendering import as_setlist, dump_song_data, render_data, render_file, setlist_from_data, song_from_data
 from tests.support.song_testing import pat, with_parts
 
 QUARTER = '1/4'

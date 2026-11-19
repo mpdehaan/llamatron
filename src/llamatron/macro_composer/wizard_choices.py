@@ -27,40 +27,25 @@ import functools
 import random
 import zlib
 
+from llamatron.composition import generator_settings, limits, naming
 from llamatron.composition.file_format import PatternSetting, Section, SectionKind
-from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings, PhrasingSettings
 from llamatron.composition.groove import FactoryGroove
-from llamatron.composition import limits, naming
-from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer import interplay as interplay_values
-from llamatron.macro_composer import characters
+from llamatron.composition.song_file_error import SongFileError
+from llamatron.macro_composer import arranger, band, breaks as breaks_values, characters, composer as set_writer, hook_writing, interplay as interplay_values, joins as joins_values, line_edits, loudness, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, players as players_values, riffs as riffs_values, song_plan, tune_fit
+from llamatron.macro_composer.arranger import arranged, bar_length, chord_of, fits, fits_by_halves, form_of, forms_of, in_octaves_of, picked, player_of, section_of, share_in, share_of, shares_a_bar, style_in, style_named, style_names, values_of, variant_named, variants_of
+from llamatron.macro_composer.breaks import break_names
 from llamatron.macro_composer.characters import gauges_of, preset
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer.arranger import chord_of, fits_by_halves, shares_a_bar, bar_length, fits, arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of
-from llamatron.macro_composer import composer as set_writer
-from llamatron.macro_composer import melody as melody_writer
 from llamatron.macro_composer.composer import composed
-from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, notation as tune_notation, phrasing, tune_fit
-from llamatron.macro_composer.arranger import in_octaves_of
-from llamatron.macro_composer import players as players_values
-from llamatron.macro_composer.arranger import form_of
-from llamatron.macro_composer import loudness
 from llamatron.macro_composer.loudness import drum_levels, note_levels, with_own
 from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed
-from llamatron.macro_composer import riffs as riffs_values
 from llamatron.macro_composer.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
-from llamatron.macro_composer import joins as joins_values
-from llamatron.macro_composer import song_plan
 from llamatron.macro_composer.song_plan import faded, SongPlan
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer import breaks as breaks_values
-from llamatron.macro_composer.breaks import break_names
 from llamatron.music import note as note_values
 from llamatron.playback.song_renderer import SongRenderer
+from llamatron.strings import errors, labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
 from llamatron.support import version as version_values
-from llamatron.strings import errors
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'

@@ -21,14 +21,13 @@ as the way the block letters come in. The start screen (start_screen.py) is the 
 prompt, waiting for Enter.
 """
 
-import time
-
 from rich.text import Text
 from textual.screen import Screen
 from textual.widgets import Static
+import time
 
-from llamatron.tui.components.title_card import title_lines
 from llamatron.tui import drawing
+from llamatron.tui.components.title_card import title_lines
 from llamatron.tui.key_table import pressed_key, quits_at_once
 
 SPLASH_VIEW_ID = 'splash-view'

@@ -22,19 +22,18 @@ MAXIMUM, MAXIMUM], and scale_notes turns those into the notes of C major they mo
 
 import unittest
 
-from llamatron.music import midi
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.composition import defaults, limits
-from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.generators.blend import BlendMode
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings import errors
-from llamatron.music.note import NoteName
 from llamatron.exporters.timing import timed_events
-from tests.support.rendering import render_data, setlist_from_data, song_from_data
+from llamatron.generators.blend import BlendMode
+from llamatron.music import midi
+from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
+from llamatron.strings import errors
+from tests.support.rendering import render_data, setlist_from_data, song_from_data
 
 AX = RegisterName.AX
 BX = RegisterName.BX

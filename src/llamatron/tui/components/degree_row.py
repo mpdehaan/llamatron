@@ -26,13 +26,11 @@ a degree above the rows that fit fills the bar and marks the number. A drum patt
 note letters and has no gauge.
 """
 
-from llamatron.composition.file_format import Row
 from llamatron.composition import limits
+from llamatron.composition.file_format import Row
 from llamatron.strings import errors, labels as labels_text, legends, marks
+from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui import drawing
-from llamatron.tui import keys as keys_values
-from llamatron.tui import keybindings
 
 # The gauge's rows when the scale isn't known, one per degree of a seven-note scale.
 GAUGE_ROWS_WITHOUT_SCALE = 7

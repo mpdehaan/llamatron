@@ -15,24 +15,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Progression: the Progressions page, the progression editor and the chord editor, with the picker of named progressions."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Section, Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Tension
+from llamatron.composition import file_format, generator_settings, limits
+from llamatron.composition.file_format import Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Section, Tension
 from llamatron.composition.named_scale import scale_type_name
+from llamatron.composition.progressions import named_progression
 from llamatron.music.scale import ScaleType
-from llamatron.composition import limits
 from llamatron.strings import labels, messages
-from llamatron.composition import generator_settings
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs import chord_dialog
 from llamatron.tui.dialogs.chord_dialog import ChordDialog
-from llamatron.composition.progressions import named_progression
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import chords_editor
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
 from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
-from llamatron.tui import keybindings
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 # The test song's progression, pop, and what the chord editor shows for it in C major.
 POP_CHORDS = [1, 5, 6, 4]

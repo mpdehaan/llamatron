@@ -34,10 +34,9 @@ that takes the clip's note_length:
     a phrase    (PHRASE, length, parts), sounds played one after another from a held place
 """
 
+from llamatron.music import midi as midi_numbers, note as note_values
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held, is_phrase, phrase
-from llamatron.music import midi as midi_numbers
-from llamatron.music import note as note_values
 from llamatron.music.note import Degree, Note, Rest
 from llamatron.strings import errors
 from llamatron.support.length import Length

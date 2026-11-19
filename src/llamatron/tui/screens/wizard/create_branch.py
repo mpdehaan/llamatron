@@ -18,9 +18,9 @@
 from llamatron.macro_composer.wizard_choices import genre_title
 from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui import drawing
-from llamatron.tui.text import clock
 from llamatron.tui.screens.shared.field import Button, Field
 from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.tui.text import clock
 
 
 class CreateBranch(Branch):
