@@ -31,6 +31,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Musician](#musician): `26_musician.yml`
 - [Advanced Conditionals](#advanced_conditionals): `27_advanced_conditionals.yml`
 - [Accents](#accents): `28_accents.yml`
+- [Pattern Lists](#pattern_lists): `29_pattern_lists.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -562,3 +563,22 @@ threes across the beat. The last scene plays the first again, to hear what the s
 | accents |
 | :---: |
 | [✓](../TRACKS.md) |
+
+<a id="pattern_lists"></a>
+## Pattern Lists: `29_pattern_lists.yml`
+
+A hard rock riff in E minor made of four patterns of one bar each: the main figure, an answer, a
+run up and a stop. Every clip of the riff plays a list of those patterns, as
+[Pattern Lists](../CLIPS.md#pattern-lists) describes, and every section of the song is the same four
+bars in another order. The first scene plays the four bars once. The verse and the chorus list them
+two ways, with the bass listing bars of its own and the drums playing three bars of the beat and a
+fill. The scenes after show Pattern order: alternate, pendulum, and first, then random. The seventh
+scene sets Step direction, which plays the steps inside each pattern backward while the patterns
+keep their order.
+
+[`examples/learning/29_pattern_lists.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/29_pattern_lists.yml) · E minor · 120 BPM · 2:24 · 8 scenes · 5 tracks
+
+| chains | guitarify | directions |
+| :---: | :---: | :---: |
+| [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
+<!-- end of the generated summary of 29_pattern_lists -->
