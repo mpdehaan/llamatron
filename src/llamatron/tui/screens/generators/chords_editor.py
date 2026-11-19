@@ -131,7 +131,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
     def move(self, name):
         """Move along the chords with Left and Right, and between the rows with Up and Down, stopping at every edge."""
         if name in keys_values.ARROWS_LEFT_RIGHT:
-            self.step = cursor_moved(place=self.step, name=name, count=self.steps())
+            self.move_step(name)
         else:
             self.edited_row = cursor_moved(place=self.edited_row, name=name, count=EDITED_ROWS)
 
