@@ -29,7 +29,7 @@ from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import setlist
 from llamatron.strings import errors, marks
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
@@ -148,7 +148,7 @@ class NamedItemChecks:
         before = self.document.names_of(self.PAGE.SECTION)
         await self.rename_to(other)
         self.assertIn(errors.ERR_NAME_IN_USE.format(name=other), self.text())
-        await self.rename_to(NOTHING)
+        await self.rename_to(drawing.NOTHING)
         self.assertIn(errors.ERR_EMPTY_NAME, self.text())
         self.assertEqual(self.document.names_of(self.PAGE.SECTION), before)
         self.assertEqual(self.page.item, self.FIRST)

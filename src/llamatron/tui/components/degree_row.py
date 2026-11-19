@@ -30,8 +30,8 @@ from llamatron.composition.file_format import Row
 from llamatron.composition import limits
 from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui.drawing import NOTHING
-from llamatron.tui.keys import DIGITS
+from llamatron.tui import drawing
+from llamatron.tui import keys as keys_values
 from llamatron.tui import keybindings
 
 # The gauge's rows when the scale isn't known, one per degree of a seven-note scale.
@@ -121,7 +121,7 @@ class DegreeRow(PatternRow):
             result = [self.bind(self.KEYS.NOTE, action=self.type_letter, wants_key=True)]
         else:
             limit = self.limit()
-            digits = DIGITS if limit > int(DIGITS[-1]) else tuple(str(number) for number in range(limits.MIN_DEGREE, limit + 1))
+            digits = keys_values.DIGITS if limit > int(keys_values.DIGITS[-1]) else tuple(str(number) for number in range(limits.MIN_DEGREE, limit + 1))
             result = [
                 self.bind(self.KEYS.DEGREE, action=self.type_degree, wants_key=True, keys=digits, name=legends.MSG_DIGITS_RANGE_LABEL.format(low=limits.MIN_DEGREE, high=limit)),
                 *self.adjust_keys(),
@@ -185,15 +185,15 @@ class DegreeRow(PatternRow):
         """Return the number under the gauge, marked when the gauge is too short to show it, or the drum note's letter."""
         if not self.has_gauge():
             value = self.value(step=step)
-            return NOTHING if value is None else str(value)
+            return drawing.NOTHING if value is None else str(value)
         degree = self.shown_degree(step=step)
         if degree is None:
-            return NOTHING
-        return str(degree) + (marks.MSG_OVER_THE_TOP_MARK if degree > self.rows_shown() else NOTHING)
+            return drawing.NOTHING
+        return str(degree) + (marks.MSG_OVER_THE_TOP_MARK if degree > self.rows_shown() else drawing.NOTHING)
 
     def cell_lines(self, *, step):
         if not self.has_gauge():
             return [self.cell_text(step=step)]
         degree = self.shown_degree(step=step) or 0
-        bars = [marks.MSG_GAUGE_BAR if degree >= level else NOTHING for level in range(self.rows_shown(), 0, -1)]
+        bars = [marks.MSG_GAUGE_BAR if degree >= level else drawing.NOTHING for level in range(self.rows_shown(), 0, -1)]
         return [*bars, self.cell_text(step=step)]

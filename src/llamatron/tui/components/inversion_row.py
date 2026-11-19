@@ -17,7 +17,7 @@
 
 from llamatron.composition.file_format import Row
 from llamatron.tui.components.cycle_row import CycleRow
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui import keybindings
 
 
@@ -33,4 +33,4 @@ class InversionRow(CycleRow):
 
     def cell_text(self, *, step):
         value = self.value(step=step)
-        return NOTHING if self.blocked(step=step) or value is None else str(value)
+        return drawing.NOTHING if self.blocked(step=step) or value is None else str(value)

@@ -33,7 +33,8 @@ import llamatron.tui
 from llamatron.strings import legends
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import BindsKeys, every_key, place_of
-from llamatron.tui.keys import Key, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN, Steps
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key, Steps
 
 SOURCE = pathlib.Path(llamatron.tui.__file__).parent
 PYTHON_FILES = '*.py'
@@ -54,7 +55,7 @@ BOUND_BY_CLASS = r'\bkeybindings\.\w+\.{name}\b'
 # How the bindings module names a key's name.
 NAMED = r'\bKeyName\.{name}\b'
 # The keys no binding has, and why: Delete is read as Backspace, Shift with an arrow is never bound, which tests check, and F4 is a key that does nothing, which a test presses.
-NEVER_BOUND = (Key.DELETE, *SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT, Key.F4)
+NEVER_BOUND = (Key.DELETE, *keys_values.SHIFT_UP_DOWN, *keys_values.SHIFT_LEFT_RIGHT, Key.F4)
 
 
 def every_module():

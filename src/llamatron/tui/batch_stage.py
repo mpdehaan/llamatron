@@ -26,10 +26,8 @@ tui/components/stage_drawing.py; Arrange's page hands this its lines, the visual
 what it hears, and the app says when the song starts and ends.
 """
 
-from llamatron.tui.components.stage_drawing import (
-    BLACK, BORDER_BLUE, black_line, blacked, border_cells, faded, frame_box, grown, inside_of, overlaid, pulse_cells, ready_box, ready_cells,
-    visualizer_area, visualizer_laid_in, clips_laid_in,
-)
+from llamatron.tui.components import stage_drawing
+from llamatron.tui.components.stage_drawing import black_line, blacked, border_cells, faded, frame_box, grown, inside_of, overlaid, pulse_cells, ready_box, ready_cells, visualizer_area, visualizer_laid_in, clips_laid_in
 from llamatron.tui.components.title_card import eased
 
 # How long Arrange takes to fade in, how long READY shows before the song starts, and how long the box takes to grow into the frame.
@@ -54,7 +52,7 @@ LONGEST_STEP_SECONDS = 0.2
 QUARTERS_IN_A_WHOLE = 4
 CLOCKWISE = 1
 # The frame's colours, a scene each in turn, starting from the READY box's blue so that the pulse keeps its colour as the box grows.
-FRAME_COLOURS = (BORDER_BLUE, (230, 60, 230), (240, 50, 40), (255, 190, 30), (40, 230, 80), (30, 215, 255))
+FRAME_COLOURS = (stage_drawing.BORDER_BLUE, (230, 60, 230), (240, 50, 40), (255, 190, 30), (40, 230, 80), (30, 215, 255))
 
 
 class BatchStage:
@@ -208,5 +206,5 @@ class BatchStage:
         cells.update(ready_cells(rect=rect, level=showing * (1.0 - eased(share / READY_FADE_SHARE))))
         cells.update(pulse_cells(rect=rect, head=self._head, direction=self._direction, colour=self.colour(now), level=showing * ending))
         # A cell drawn black adds nothing, so it is left out.
-        return overlaid(lines=lines, cells={place: cell for place, cell in cells.items() if tuple(cell[1].color.get_truecolor()) != BLACK})
+        return overlaid(lines=lines, cells={place: cell for place, cell in cells.items() if tuple(cell[1].color.get_truecolor()) != stage_drawing.BLACK})
 

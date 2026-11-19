@@ -23,11 +23,13 @@ from llamatron.music.scale import ScaleType
 from llamatron.composition import limits
 from llamatron.strings import labels, messages
 from llamatron.composition import generator_settings
-from llamatron.tui.dialogs.chord_dialog import INVERSION_LIST, LISTS, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
+from llamatron.tui.dialogs import chord_dialog
+from llamatron.tui.dialogs.chord_dialog import ChordDialog
 from llamatron.composition.progressions import named_progression
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators.chords_editor import ACCIDENTAL_ROW, CHORD_ROW, INVERSION_ROW, QUALITY_CYCLE, QUALITY_ROW, SCALE_ROW, TENSION_ROW, ChordsEditor
+from llamatron.tui.screens.generators import chords_editor
+from llamatron.tui.screens.generators.chords_editor import ChordsEditor
 from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
 from llamatron.tui import keybindings
 
@@ -115,12 +117,12 @@ class TestChordsEditor(UITest):
 
     async def test_up_and_down_reach_the_flat_and_inversion_rows_and_stop(self):
         await self.press(Key.UP)
-        self.assertEqual(self.page.edited_row, CHORD_ROW)
+        self.assertEqual(self.page.edited_row, chords_editor.CHORD_ROW)
         await self.press(Key.DOWN, keybindings.ChordsEditor.NEXT, keybindings.ChordsEditor.NEXT)
-        self.assertEqual(self.page.edited_row, ACCIDENTAL_ROW)
+        self.assertEqual(self.page.edited_row, chords_editor.ACCIDENTAL_ROW)
         self.assertEqual(self.progression().get_accidentals()[0], Accidental.FLAT)
-        await self.press(*[Key.DOWN] * (INVERSION_ROW - ACCIDENTAL_ROW + 1), TWO)
-        self.assertEqual(self.page.edited_row, INVERSION_ROW)
+        await self.press(*[Key.DOWN] * (chords_editor.INVERSION_ROW - chords_editor.ACCIDENTAL_ROW + 1), TWO)
+        self.assertEqual(self.page.edited_row, chords_editor.INVERSION_ROW)
         self.assertEqual(self.progression().get_inversions()[0], int(TWO))
         await self.press(ZERO)
         self.assertIsNone(self.progression().get_inversions()[0])
@@ -130,7 +132,7 @@ class TestChordsEditor(UITest):
         self.assertEqual(self.page.edited_row, row)
 
     async def test_a_quality_is_stepped_and_cleared_and_names_the_chord(self):
-        await self.go_to(row=QUALITY_ROW, chord=SIXTH_CHORD)
+        await self.go_to(row=chords_editor.QUALITY_ROW, chord=SIXTH_CHORD)
         await self.press(keybindings.ChordsEditor.NEXT_CHOICE)
         self.assertEqual(self.progression().get_qualities()[SIXTH_CHORD], ChordSymbol.MAJOR)
         self.assertIn(A_MAJOR + ' Major', self.text())
@@ -140,15 +142,15 @@ class TestChordsEditor(UITest):
         # A quality stops at the first choice and at the last, never going round.
         await self.press(keybindings.ChordsEditor.LESS)
         self.assertIsNone(self.progression().get_qualities()[SIXTH_CHORD])
-        await self.press(*[keybindings.ChordsEditor.MORE] * (len(QUALITY_CYCLE) + 1))
-        self.assertEqual(self.progression().get_qualities()[SIXTH_CHORD], QUALITY_CYCLE[-1])
+        await self.press(*[keybindings.ChordsEditor.MORE] * (len(chords_editor.QUALITY_CYCLE) + 1))
+        self.assertEqual(self.progression().get_qualities()[SIXTH_CHORD], chords_editor.QUALITY_CYCLE[-1])
 
     async def test_a_scale_borrows_the_chord_and_the_status_line_says_both_names_and_the_notes(self):
-        await self.go_to(row=SCALE_ROW, chord=SIXTH_CHORD)
+        await self.go_to(row=chords_editor.SCALE_ROW, chord=SIXTH_CHORD)
         await self.press(keybindings.ChordsEditor.CHOOSE)
         dialog = self.app.screen
         self.assertIsInstance(dialog, ChordDialog)
-        self.assertEqual(dialog.part, SCALE_LIST)
+        self.assertEqual(dialog.part, chord_dialog.SCALE_LIST)
         dialog.set_kind(MINOR)
         await self.settle()
         dialog.draw()
@@ -166,25 +168,25 @@ class TestChordsEditor(UITest):
         self.assertIn(resting[:20], self.text())
 
     async def test_tensions_are_toggled_in_the_dialog_and_tab_goes_round_its_lists(self):
-        await self.go_to(row=TENSION_ROW, chord=1)
+        await self.go_to(row=chords_editor.TENSION_ROW, chord=1)
         await self.press(keybindings.ChordsEditor.CHOOSE)
         dialog = self.app.screen
-        self.assertEqual(dialog.part, TENSION_LIST)
+        self.assertEqual(dialog.part, chord_dialog.TENSION_LIST)
         await self.press(keybindings.ChordDialog.FLIP, keybindings.ChordDialog.NEXT_LIST)
-        self.assertEqual(dialog.part, SCALE_LIST)
+        self.assertEqual(dialog.part, chord_dialog.SCALE_LIST)
         await self.press(keybindings.ChordDialog.NEXT_LIST)
-        self.assertEqual(dialog.part, QUALITY_LIST)
-        dialog.places[QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
+        self.assertEqual(dialog.part, chord_dialog.QUALITY_LIST)
+        dialog.places[chord_dialog.QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
         # Right stops at the scales, the last list, and Left goes back and stops at the qualities, the first.
-        await self.press(*[Key.RIGHT] * LISTS)
-        self.assertEqual(dialog.part, SCALE_LIST)
-        await self.press(*[Key.LEFT] * LISTS)
-        self.assertEqual(dialog.part, QUALITY_LIST)
+        await self.press(*[Key.RIGHT] * chord_dialog.LISTS)
+        self.assertEqual(dialog.part, chord_dialog.SCALE_LIST)
+        await self.press(*[Key.LEFT] * chord_dialog.LISTS)
+        self.assertEqual(dialog.part, chord_dialog.QUALITY_LIST)
         # The inversions come next, where Down picks the first inversion, and then the tensions.
         await self.press(Key.RIGHT, Key.DOWN)
-        self.assertEqual(dialog.part, INVERSION_LIST)
+        self.assertEqual(dialog.part, chord_dialog.INVERSION_LIST)
         await self.press(Key.RIGHT)
-        self.assertEqual(dialog.part, TENSION_LIST)
+        self.assertEqual(dialog.part, chord_dialog.TENSION_LIST)
         await self.press(Key.ENTER)
         self.assertEqual(self.progression().get_tensions()[1], (Tension.FLAT_NINTH,))
         self.assertEqual(self.progression().get_qualities()[1], ChordSymbol.DOMINANT7)
@@ -193,13 +195,13 @@ class TestChordsEditor(UITest):
 
     async def test_escape_in_the_dialog_changes_nothing(self):
         before = self.progression().to_data()
-        await self.go_to(row=QUALITY_ROW)
+        await self.go_to(row=chords_editor.QUALITY_ROW)
         await self.press(keybindings.ChordsEditor.CHOOSE, Key.DOWN, Key.DOWN, keybindings.ChordDialog.CANCEL)
         self.assertIsInstance(self.app.screen, ChordsEditor)
         self.assertEqual(self.progression().to_data(), before)
 
     async def test_inserting_and_removing_a_chord_carries_every_row(self):
-        await self.go_to(row=QUALITY_ROW, chord=1)
+        await self.go_to(row=chords_editor.QUALITY_ROW, chord=1)
         await self.press(keybindings.ChordsEditor.NEXT_CHOICE, keybindings.ChordsEditor.INSERT_STEP)
         self.assertEqual(self.progression().get_qualities(), [None, None, ChordSymbol.MAJOR, None, None])
         await self.press(keybindings.ChordsEditor.REMOVE_STEP)

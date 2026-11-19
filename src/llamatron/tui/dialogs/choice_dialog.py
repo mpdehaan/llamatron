@@ -19,9 +19,11 @@
 from rich.text import Text
 
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import cursor_mark, fit, NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import cursor_mark, fit, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.keys import Key, SPACE_CHARACTER
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key
 from llamatron.strings import marks
 from llamatron.tui import keybindings
 
@@ -43,7 +45,7 @@ class ChoiceDialog(Dialog):
         self.title = title
         self.options = list(options)
         self.place = max(min(current, len(self.options) - 1), 0)
-        self.typed = NOTHING
+        self.typed = drawing.NOTHING
 
     def keys(self):
         result = [
@@ -83,7 +85,7 @@ class ChoiceDialog(Dialog):
         self.place = matches[cursor_moved(place=matches.index(self.place), name=name, count=len(matches))]
 
     def type_character(self, name):
-        self.typed += SPACE_CHARACTER if name == Key.SPACE else name
+        self.typed += keys_values.SPACE_CHARACTER if name == Key.SPACE else name
         self.settle()
 
     def erase(self):
@@ -104,7 +106,7 @@ class ChoiceDialog(Dialog):
         matches = self.matches()
         result = []
         if self.typed:
-            result.append(Text(fit(text=SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM))
+            result.append(Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM))
         at = matches.index(self.place) if self.place in matches else 0
         start = max(min(at - self.SHOWN // 2, len(matches) - self.SHOWN), 0)
         for place in matches[start:start + self.SHOWN]:

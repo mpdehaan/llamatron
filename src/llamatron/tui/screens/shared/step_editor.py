@@ -24,7 +24,7 @@ that say which steps are on screen. They are here once.
 
 from llamatron.strings import marks
 from llamatron.tui import keybindings
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.key_table import pressed_key
 from llamatron.tui.screens.shared.page import Page
 
@@ -42,7 +42,7 @@ class StepEditor(Page):
         self.step = 0
         self.first_step = 0
         # The digits typed so far into the cursor's cell, so that 1 and then 2 makes 12.
-        self.typed = NOTHING
+        self.typed = drawing.NOTHING
 
     def steps(self):
         """Return how many steps there are."""
@@ -52,7 +52,7 @@ class StepEditor(Page):
         # Any key but a digit ends the number being typed, so that the next digit starts a new one.
         name = pressed_key(event)
         if not (name and name.isdigit()):
-            self.typed = NOTHING
+            self.typed = drawing.NOTHING
         super().on_key(event)
 
     def keep_step(self):
@@ -71,7 +71,7 @@ class StepEditor(Page):
                     self.document().continue_edit()
                 self.typed = text
                 return int(text)
-        self.typed = NOTHING
+        self.typed = drawing.NOTHING
         return None
 
     def window_of_steps(self, shown):
@@ -91,5 +91,5 @@ class StepEditor(Page):
         """Return which steps are on screen, with a mark on each side that has more, or nothing when every step is on screen."""
         count = self.steps()
         if last - first >= count:
-            return NOTHING
-        return self.STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE if first > 0 else NOTHING, first=first + 1, last=last, after=marks.MSG_MORE_AFTER if last < count else NOTHING)
+            return drawing.NOTHING
+        return self.STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE if first > 0 else drawing.NOTHING, first=first + 1, last=last, after=marks.MSG_MORE_AFTER if last < count else drawing.NOTHING)

@@ -40,7 +40,7 @@ from llamatron.composition import file_format
 from llamatron.composition import row_descriptions
 from llamatron.composition.setlist import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
-from llamatron.tui.screens.set.scale_page import SCALE_PAGES
+from llamatron.tui.screens.set import scale_page
 
 # The demos are written with durations, as they were first written, and gate_conversion, in the
 # tests' support folder, turns them into gates, so the top folder has to be on the path before this import.
@@ -239,7 +239,7 @@ def title_case(kind):
 # Scales: every distinct scale in the picker's order, run up and down an octave from D.
 
 def scale():
-    order = [kind for _, columns in SCALE_PAGES for column in columns for _, kinds in column for kind in kinds]
+    order = [kind for _, columns in scale_page.SCALE_PAGES for column in columns for _, kinds in column for kind in kinds]
     distinct = []
     for kind in order:
         if all(ScaleType[kind.upper()].value != ScaleType[other.upper()].value for other in distinct):

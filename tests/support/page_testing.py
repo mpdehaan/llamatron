@@ -17,7 +17,7 @@
 """Helpers the tests of the tracker's pages share: reading the main screen's selected cell from what is drawn."""
 
 from llamatron.tui.drawing import Box
-from llamatron.tui.screens.set.main_page import BAR_ROWS
+from llamatron.tui.screens.set import main_page
 
 # The marks the screen's text puts around anything in reverse video, and what joins a cell's lines.
 REVERSED_STARTS = '«'
@@ -31,7 +31,7 @@ def boxed_line(text):
     selected action, the one whose name is in reverse video with its key."""
     insides = [line[line.index(Box.DOUBLE_BAR):line.rindex(Box.DOUBLE_BAR) + 1] for line in text.splitlines() if line.count(Box.DOUBLE_BAR) >= 2]
     assert insides, text
-    if len(insides) == BAR_ROWS:
+    if len(insides) == main_page.BAR_ROWS:
         reversed_pieces = [piece.split(REVERSED_ENDS)[0] for inside in insides for piece in inside.split(REVERSED_STARTS)[1:]]
         return max(reversed_pieces, key=len)
     return LINE_SEPARATOR.join(insides)

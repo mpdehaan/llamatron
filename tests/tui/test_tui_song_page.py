@@ -17,7 +17,7 @@
 """The Song page and the Songs page."""
 
 from tests.support.ui_testing import BEAT, KEY_SHOWN, UITest, key_of, key_name
-from llamatron.tui.dialogs.dialog import DIALOG_VIEW_SELECTOR
+from llamatron.tui.dialogs import dialog
 from llamatron.composition import file_format
 from llamatron.composition.file_format import SongSetting, LiveResponsiveness, Section
 from llamatron.composition import defaults
@@ -83,7 +83,7 @@ class TestSongPage(UITest):
         self.assertIsNone(song.get_preview_instrument_name())
         # ENTER picks from the list, where the pattern's own track comes first.
         await self.press(Key.ENTER)
-        self.assertIn(labels_text.MSG_PREVIEW_INSTRUMENT_UNSET, str(self.app.screen.query_one(DIALOG_VIEW_SELECTOR).render()))
+        self.assertIn(labels_text.MSG_PREVIEW_INSTRUMENT_UNSET, str(self.app.screen.query_one(dialog.DIALOG_VIEW_SELECTOR).render()))
         await self.press(Key.DOWN, Key.ENTER)
         self.assertEqual(song.get_preview_instrument_name(), KEYS_INSTRUMENT)
         # The song is a use of the instrument, and a rename is followed.

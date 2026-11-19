@@ -24,11 +24,13 @@ from rich.text import Text
 
 from llamatron.tui.components.keyboard import chord_keys, Keyboard, KeyKind
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui.drawing import NOTHING, Style
-from llamatron.tui.key_table import STEP_FORWARD
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
+from llamatron.tui import key_table
 from llamatron.tui.chord_text import ChordInWords
-from llamatron.tui.scale_categories import SCALE_CATEGORIES
-from llamatron.tui.dialogs.chord_dialog import QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordChoice, ChordDialog
+from llamatron.tui import scale_categories
+from llamatron.tui.dialogs import chord_dialog
+from llamatron.tui.dialogs.chord_dialog import ChordChoice, ChordDialog
 from llamatron.tui import keybindings
 
 def chord_text(value):
@@ -43,7 +45,7 @@ def chord_value(text):
 # The style of each kind of key on the Chord dialog's keyboard.
 KEY_STYLES = {KeyKind.CHORD: Style.CHORD_KEY, KeyKind.SCALE: Style.SCALE_KEY, KeyKind.OUTSIDE: Style.DIM}
 # The rows the Chord dialog edits together, and the list it opens on from each.
-OPENS_ON = {Row.CHORD: QUALITY_LIST, Row.TENSION: TENSION_LIST, Row.CHORD_SCALE: SCALE_LIST}
+OPENS_ON = {Row.CHORD: chord_dialog.QUALITY_LIST, Row.TENSION: chord_dialog.TENSION_LIST, Row.CHORD_SCALE: chord_dialog.SCALE_LIST}
 
 
 def quality_names(symbols):
@@ -80,7 +82,7 @@ def keyboard_lines(keyboard):
     """Return a keyboard's lines as the Chord dialog draws them, each kind of key in its style."""
     lines = []
     for row in keyboard.rows():
-        line = Text(NOTHING, no_wrap=True)
+        line = Text(drawing.NOTHING, no_wrap=True)
         for text, kind in row:
             line.append(text, style=KEY_STYLES.get(kind, Style.PLAIN))
         lines.append(line)
@@ -94,7 +96,7 @@ def step_choice(*, editor, step):
     )
 
 
-def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
+def pick_chord(*, editor, step, opens_on=chord_dialog.QUALITY_LIST):
     """Open the Chord dialog on a step of the pattern editor and store what it answers on the step's Chord, Tension and Scale rows:
     the Chord, Tension and Scale rows' Enter, and the roll's chord key. A single note takes no tensions and no inversion, and the Inversion row is stored with them. The editor underneath
     shows the chord as the choice moves, the roll its thin lines and the rows their cells."""
@@ -112,7 +114,7 @@ def pick_chord(*, editor, step, opens_on=QUALITY_LIST):
 
     dialog = ChordDialog(
         title=messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_STEP.format(step=step + 1, pattern=editor.item)),
-        qualities=[None, *file_format.CHORD_SYMBOLS], quality_names=[messages.MSG_QUALITY_SINGLE_NOTE, *quality_names(file_format.CHORD_SYMBOLS)], inversions=[None, *limits.INVERSIONS], categories=SCALE_CATEGORIES,
+        qualities=[None, *file_format.CHORD_SYMBOLS], quality_names=[messages.MSG_QUALITY_SINGLE_NOTE, *quality_names(file_format.CHORD_SYMBOLS)], inversions=[None, *limits.INVERSIONS], categories=scale_categories.SCALE_CATEGORIES,
         current=step_choice(editor=editor, step=step), opens_on=opens_on, moved=moved,
         said=lambda choice: step_chord_in_words(editor=editor, step=step, choice=choice).sentences(),
         keyboard=lambda choice: step_keyboard(editor=editor, step=step, choice=choice),
@@ -130,7 +132,7 @@ class ChordRow(PatternRow):
     def keys(self):
         return [
             self.bind(self.KEYS.CHOOSE, action=self.pick),
-            self.bind(self.KEYS.NEXT, action=lambda: self.cycle(STEP_FORWARD)),
+            self.bind(self.KEYS.NEXT, action=lambda: self.cycle(key_table.STEP_FORWARD)),
             *self.adjust_keys(),
             self.bind(self.KEYS.CLEAR, action=lambda: self.set_value(None)),
         ]

@@ -22,13 +22,14 @@ and AutoRatchets pages. What a page alone does, like adding, is tested with the 
 from tests.support.ui_testing import LEAD, NAMED, TUNE, UITest, leaf_pages
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, Section
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators import generator_pages
 from llamatron.composition import groove
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, messages, names
 from llamatron.composition import setlist
-from llamatron.tui.drawing import NOTHING, SPACE, fit
+from llamatron.tui import drawing
+from llamatron.tui.drawing import fit
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -38,7 +39,8 @@ from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
-from llamatron.tui.screens.pattern.patterns_page import INDENT, PatternsPage
+from llamatron.tui.screens.pattern import patterns_page
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 import unittest
@@ -192,7 +194,7 @@ class TestNamesAreHeldToTheirLength(UITest):
     async def test_a_name_typed_stops_at_the_longest_a_name_may_be(self):
         await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.RENAME)
         self.assertIsInstance(self.app.screen, PromptDialog)
-        self.app.screen.value = NOTHING
+        self.app.screen.value = drawing.NOTHING
         await self.type(A_LETTER * MORE_THAN_A_NAME_HOLDS)
         self.assertEqual(self.app.screen.value, A_LETTER * limits.MAX_NAME_LENGTH)
         await self.press(Key.ENTER)
@@ -200,7 +202,7 @@ class TestNamesAreHeldToTheirLength(UITest):
 
     async def test_a_new_patterns_name_stops_there_too(self):
         await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK)
-        self.app.screen.value = NOTHING
+        self.app.screen.value = drawing.NOTHING
         await self.type(A_LETTER * MORE_THAN_A_NAME_HOLDS)
         self.assertEqual(len(self.app.screen.value), limits.MAX_NAME_LENGTH)
 
@@ -216,19 +218,19 @@ class TestNamesAreHeldToTheirLength(UITest):
         self.assertEqual(self.app.screen.value, A_LONG_NAME[:-1])
 
     async def test_a_number_typed_is_not_held_to_a_names_length(self):
-        dialog = PromptDialog(title=NOTHING, value=A_LETTER * limits.MAX_NAME_LENGTH)
+        dialog = PromptDialog(title=drawing.NOTHING, value=A_LETTER * limits.MAX_NAME_LENGTH)
         dialog.insert(A_LETTER)
         self.assertEqual(len(dialog.value), limits.MAX_NAME_LENGTH + 1)
 
     async def test_the_columns_after_the_names_start_right_after_the_room_a_name_has(self):
         await self.press(keybindings.MainPage.PATTERNS)
         heading = next(line for line in self.text().splitlines() if labels.Column.SELECT_PATTERN in line and labels.Column.TYPE in line)
-        self.assertEqual(heading.index(labels.Column.TYPE), heading.index(labels.Column.SELECT_PATTERN) + limits.MAX_NAME_LENGTH + len(INDENT) + len(SPACE))
+        self.assertEqual(heading.index(labels.Column.TYPE), heading.index(labels.Column.SELECT_PATTERN) + limits.MAX_NAME_LENGTH + len(patterns_page.INDENT) + len(drawing.SPACE))
 
     async def test_an_older_files_longer_name_is_shown_cut_in_the_list(self):
         self.document.rename_named(section=Section.PATTERNS, old=TUNE, new=A_LONG_NAME)
         await self.press(keybindings.MainPage.PATTERNS)
-        self.assertIn(fit(text=INDENT + A_LONG_NAME, width=limits.MAX_NAME_LENGTH + len(INDENT)), self.text())
+        self.assertIn(fit(text=patterns_page.INDENT + A_LONG_NAME, width=limits.MAX_NAME_LENGTH + len(patterns_page.INDENT)), self.text())
         self.assertNotIn(A_LONG_NAME, self.text().split(labels.Column.SELECT_PATTERN)[-1])
         self.assertIn(A_LONG_NAME, self.document.setlist().get_item_names(Section.PATTERNS))
 
@@ -323,7 +325,7 @@ class TestEveryNamedListPageIsChecked(unittest.TestCase):
 
     def test_every_named_section_of_the_set_has_a_page(self):
         self.assertEqual(sorted(checks.PAGE.LISTED_SECTION for checks in CHECKED), sorted(EVERY_NAMED_SECTION_OF_THE_SET))
-        self.assertEqual(sorted(GENERATOR_PAGES), sorted(file_format.NAMED_GENERATORS.values()))
+        self.assertEqual(sorted(generator_pages.GENERATOR_PAGES), sorted(file_format.NAMED_GENERATORS.values()))
 
     def test_every_page_says_how_it_words_a_rename_and_a_question(self):
         for checks in CHECKED:

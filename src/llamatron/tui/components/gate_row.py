@@ -17,7 +17,7 @@
 
 from llamatron.composition import file_format
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.composition.checks import fraction_text
 from llamatron.tui.text import fraction
 from llamatron.strings import messages
@@ -57,9 +57,9 @@ class GateRow(PatternRow):
             self.set_gate(choices[-1])
 
     def ask(self):
-        self.editor.ask_length(title=messages.MSG_GATE_PROMPT, current=self.value() or NOTHING, most=self.described().get_most(), then=self.set_value, blank_allowed=False)
+        self.editor.ask_length(title=messages.MSG_GATE_PROMPT, current=self.value() or drawing.NOTHING, most=self.described().get_most(), then=self.set_value, blank_allowed=False)
 
     def cell_text(self, *, step):
         """A rest has no gate, and a blank gate is one step."""
         value = self.value(step=step)
-        return NOTHING if not self.is_note(step=step) or value is None else str(value)
+        return drawing.NOTHING if not self.is_note(step=step) or value is None else str(value)

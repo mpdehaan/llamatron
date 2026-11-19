@@ -31,7 +31,7 @@ that presses keys into it, the video tutorial (tutorial/runner.py), which the tr
 
 from llamatron.composition.checks import listed
 from llamatron.strings import errors
-from llamatron.tui.batch_stage import READY_SECONDS
+from llamatron.tui import batch_stage
 from llamatron.tui.components.title_card import whole_title_seconds
 from llamatron.tui.uses import looping_scenes
 
@@ -59,7 +59,7 @@ class Launch:
     def __init__(self, *, autoplay=False, quit_when_finished=False, for_recording=False, test_splash=False, max_seconds=None,
                  splash_seconds=SPLASH_SECONDS, lead_in_seconds=LEAD_IN_SECONDS, lead_out_seconds=LEAD_OUT_SECONDS,
                  driven_by=None, visualizer=None, hold_seconds=NO_HOLD, interactive=False, batch_video=False, opening_only=False,
-                 ready_seconds=READY_SECONDS, title_seconds=None, alternate=True, scroll_text=None, scroll_seconds=None, announce=False, details=False):
+                 ready_seconds=batch_stage.READY_SECONDS, title_seconds=None, alternate=True, scroll_text=None, scroll_seconds=None, announce=False, details=False):
         """quit_when_finished implies autoplay, and so does visualizer, which opens Arrange with that mode showing; test_splash shows the start screen for splash_seconds, fading out, and quits (internal_tools/demo_splash_screen.py), and max_seconds quits after that many seconds whatever plays. The three timings are for the tests, which can't wait.
 
         driven_by is a function of the app that returns what drives the tracker from outside, the

@@ -25,7 +25,7 @@ the app for the session.
 """
 
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 
@@ -57,10 +57,10 @@ class SectionRow(PatternRow):
         return False
 
     def cell_text(self, *, step):
-        return NOTHING
+        return drawing.NOTHING
 
     def cell_lines(self, *, step):
-        return [NOTHING]
+        return [drawing.NOTHING]
 
     def keys(self):
         return [self.bind(self.KEYS.CLOSE if self.is_open() else self.KEYS.OPEN, action=self.toggle)]

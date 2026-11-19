@@ -41,7 +41,7 @@ from llamatron.music.scale import ScaleType
 from llamatron.composition import setlist
 from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.tui.document import Document
-from llamatron.tui.document_parts.pattern_edits import NEW_PATTERN_STEPS
+from llamatron.tui.document_parts import pattern_edits
 from llamatron.composition.naming import copy_name, unique_name
 from llamatron.tui.text import clock
 from llamatron.tui.uses import grabbers, uses_of
@@ -229,7 +229,7 @@ class TestNewSong(unittest.TestCase):
     def test_a_new_pattern_is_one_bar_of_the_song_time_signature(self):
         document = Document()
         document.add_pattern(name=A)
-        self.assertEqual(document.song().get_pattern(A).get_steps(), NEW_PATTERN_STEPS)
+        self.assertEqual(document.song().get_pattern(A).get_steps(), pattern_edits.NEW_PATTERN_STEPS)
         document.set_time_signature(WALTZ)
         document.add_pattern(name=B)
         self.assertEqual(document.song().get_pattern(B).get_steps(), WALTZ_SIXTEENTHS)
@@ -239,7 +239,7 @@ class TestNewSong(unittest.TestCase):
         document.set_time_signature(SEVEN_EIGHT)
         document.set_default_step_size(QUARTER)
         document.add_pattern(name=A)
-        self.assertEqual(document.song().get_pattern(A).get_steps(), NEW_PATTERN_STEPS)
+        self.assertEqual(document.song().get_pattern(A).get_steps(), pattern_edits.NEW_PATTERN_STEPS)
         document.add_pattern(name=B, steps=1)
         self.assertEqual(document.song().get_pattern(B).get_steps(), 1)
 
@@ -998,8 +998,8 @@ class TestPickerLayouts(unittest.TestCase):
 
     def test_scale_pages_hold_every_kind_once_except_melodic_minor(self):
         from llamatron.composition import named_scale
-        from llamatron.tui.screens.set.scale_page import SCALE_PAGES
-        flat = [kind for _, columns in SCALE_PAGES for groups in columns for _, kinds in groups for kind in kinds]
+        from llamatron.tui.screens.set import scale_page
+        flat = [kind for _, columns in scale_page.SCALE_PAGES for groups in columns for _, kinds in groups for kind in kinds]
         flat.remove(scale_type_name(ScaleType.MELODIC_MINOR))
         self.assertEqual(sorted(flat), sorted(named_scale.SCALE_TYPE_NAMES))
 
@@ -1012,8 +1012,8 @@ class TestPickerLayouts(unittest.TestCase):
 
     def test_the_keyboard_holds_every_root_once(self):
         from llamatron.music import note as note_values
-        from llamatron.tui.screens.set.scale_page import ROOT_KEYBOARD
-        flat = [name for row in ROOT_KEYBOARD for name in row if name]
+        from llamatron.tui.screens.set import scale_page
+        flat = [name for row in scale_page.ROOT_KEYBOARD for name in row if name]
         self.assertEqual(sorted(flat), sorted(note_values.ROOT_NAMES))
 
     def test_scale_notes(self):

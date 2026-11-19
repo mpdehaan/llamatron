@@ -21,7 +21,8 @@ import random
 from rich.text import Text
 
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, wrapped
+from llamatron.tui import drawing
+from llamatron.tui.drawing import wrapped
 from llamatron.support import version
 from llamatron.support.version import build_year
 from llamatron.strings import about
@@ -86,8 +87,8 @@ class AboutDialog(Dialog):
     def lines(self, width):
         quote = self.quote_lines(width)
         # The dialog is exactly 24 lines with a one-line quote, so the blank line below the quote gives way when the quote wraps onto two lines, and the one above when it wraps onto three.
-        above = [NOTHING] if len(quote) <= 2 else []
-        below = [NOTHING] if len(quote) == 1 else []
+        above = [drawing.NOTHING] if len(quote) <= 2 else []
+        below = [drawing.NOTHING] if len(quote) == 1 else []
         words = [
             *cow_saying(self.shown_name),
             about.MSG_ABOUT_POWERED,

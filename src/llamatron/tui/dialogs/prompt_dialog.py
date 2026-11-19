@@ -18,7 +18,8 @@
 from rich.text import Text
 
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.key_table import pressed_key, quits_at_once
 from llamatron.tui.keys import Key
 from llamatron.strings import marks
@@ -37,7 +38,7 @@ class PromptDialog(Dialog):
 
     KEYS = keybindings.PromptDialog
 
-    def __init__(self, *, title, value=NOTHING, max_length=None, label=NOTHING):
+    def __init__(self, *, title, value=drawing.NOTHING, max_length=None, label=drawing.NOTHING):
         super().__init__()
         self.title = title
         # What the text is, written before it, for a prompt whose title says something else, as a confirmation's does.
@@ -88,7 +89,7 @@ class PromptDialog(Dialog):
         text = self.value[start:start + shown]
         at = cursor - start
         line = Text(marks.MSG_PROMPT_MARK + self.label + text[:at])
-        line.append(text[at:at + 1] or SPACE, style=Style.REVERSE)
+        line.append(text[at:at + 1] or drawing.SPACE, style=Style.REVERSE)
         line.append(text[at + 1:])
         return [line]
 

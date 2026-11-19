@@ -17,7 +17,7 @@
 """The Notes page."""
 
 from tests.support.ui_testing import KEY_SHOWN, UITest
-from llamatron.tui.drawing import SELECTED_MARK
+from llamatron.tui import drawing
 from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
@@ -73,15 +73,15 @@ class TestNotesPage(UITest):
         await self.type(ONE)
         # Tab reaches the buttons, Right moves to Cancel, and Tab again goes back to the text, where letters type again.
         await self.press(Key.TAB)
-        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[0]), self.text())
+        self.assertIn(drawing.SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[0]), self.text())
         await self.press(Key.RIGHT)
-        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[1]), self.text())
+        self.assertIn(drawing.SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[1]), self.text())
         await self.press(Key.TAB)
         self.assertFalse(self.app.screen.on_buttons)
         await self.type(ONE)
         # The buttons remember that Cancel was chosen, so Tab and ENTER press it.
         await self.press(Key.TAB)
-        self.assertIn(SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[1]), self.text())
+        self.assertIn(drawing.SELECTED_MARK + KEY_SHOWN.format(label=labels.MSG_NOTES_BUTTONS[1]), self.text())
         await self.press(Key.ENTER)
         self.assertFalse(self.app.screen.editing)
         self.assertFalse(self.document.setlist().has_notes())

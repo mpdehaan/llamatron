@@ -28,8 +28,9 @@ import re
 from rich.text import Text
 
 from llamatron.strings import about
-from llamatron.tui.components.title_card import BLACK_STYLE, blank_line, shaded
-from llamatron.tui.drawing import NOTHING, SPACE
+from llamatron.tui.components import title_card
+from llamatron.tui.components.title_card import blank_line, shaded
+from llamatron.tui import drawing
 
 # The words' colour, a light orange.
 SCROLL_ORANGE = (255, 180, 100)
@@ -51,13 +52,13 @@ LEADING_NUMBER = re.compile(r'^[0-9]+[^A-Za-z0-9]+(?=.)')
 
 def words_of(name):
     """Return a name's words with a space between them, each starting with a capital: hocket_shanty gives Hocket Shanty."""
-    return SPACE.join(word[:1].upper() + word[1:] for word in WORD_BREAK.split(name) if word)
+    return drawing.SPACE.join(word[:1].upper() + word[1:] for word in WORD_BREAK.split(name) if word)
 
 
 def demo_name(path):
     """Return a set's name for the scroll from its file: no folder, no ending, no number in front, as words."""
     name = os.path.splitext(os.path.basename(path))[0]
-    return words_of(LEADING_NUMBER.sub(NOTHING, name))
+    return words_of(LEADING_NUMBER.sub(drawing.NOTHING, name))
 
 
 def scroll_text_for(path):
@@ -67,10 +68,10 @@ def scroll_text_for(path):
 
 def letter_lines(character):
     """Return one character's rows, BANNER_ROWS of them, in its capital's shape. A character with no shape is a space."""
-    shape = about.MSG_BLOCK_LETTERS.get(character.upper(), about.MSG_BLOCK_LETTERS[SPACE])
+    shape = about.MSG_BLOCK_LETTERS.get(character.upper(), about.MSG_BLOCK_LETTERS[drawing.SPACE])
     drawn = []
     for row in shape:
-        line = NOTHING.join((about.MSG_BLOCK if block != SPACE else SPACE) * BLOCK_COLUMNS for block in row)
+        line = drawing.NOTHING.join((about.MSG_BLOCK if block != drawing.SPACE else drawing.SPACE) * BLOCK_COLUMNS for block in row)
         drawn.extend([line] * BLOCK_ROWS)
     return drawn
 
@@ -78,7 +79,7 @@ def letter_lines(character):
 def banner(text):
     """Return the words as BANNER_ROWS rows of blocks and spaces, every row as wide as the words."""
     letters = [letter_lines(character) for character in text]
-    return [(SPACE * LETTER_GAP).join(letter[row] for letter in letters) for row in range(BANNER_ROWS)]
+    return [(drawing.SPACE * LETTER_GAP).join(letter[row] for letter in letters) for row in range(BANNER_ROWS)]
 
 
 def scroll_seconds(*, text, width):
@@ -95,7 +96,7 @@ def scroll_lines(*, rows, width, height, elapsed):
     for place, row in enumerate(rows):
         if top + place >= height:
             break
-        shown = (SPACE * width + row + SPACE * width)[shift:shift + width].ljust(width)
+        shown = (drawing.SPACE * width + row + drawing.SPACE * width)[shift:shift + width].ljust(width)
         lines[top + place] = drawn_row(shown=shown, style=style)
     return lines
 
@@ -104,5 +105,5 @@ def drawn_row(*, shown, style):
     """Return one row of the words, its blocks in the style and the rest black."""
     line = Text()
     for run in re.findall(r' +|[^ ]+', shown):
-        line.append(run, style=BLACK_STYLE if run[0] == SPACE else style)
+        line.append(run, style=title_card.BLACK_STYLE if run[0] == drawing.SPACE else style)
     return line

@@ -29,7 +29,8 @@ from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.pattern.patterns_page import HEADING, INDENT, NEW_GROUP, NEW_PATTERN, PATTERN, UNGROUPED, Listed
+from llamatron.tui.screens.pattern import patterns_page
+from llamatron.tui.screens.pattern.patterns_page import Listed
 from llamatron.tui.screens.set.main_page import MainPage
 from tests.support.ui_testing import BEAT, LEAD, MELODIES, OTHER, RHYTHMS, TUNE, UITest, back_key, every_key, first_key, forward_key, key_name
 
@@ -89,10 +90,10 @@ class PatternsPageTest(UITest):
             await self.press(Key.UP if self.rows().index(listed) < self.page.place else Key.DOWN)
 
     async def go_to_pattern(self, name):
-        await self.go_to(Listed(PATTERN, name))
+        await self.go_to(Listed(patterns_page.PATTERN, name))
 
     async def go_to_heading(self, group):
-        await self.go_to(Listed(HEADING, group))
+        await self.go_to(Listed(patterns_page.HEADING, group))
 
     async def answer(self, text):
         """Type an answer over what a prompt offers and press ENTER."""
@@ -220,7 +221,7 @@ class TestPatternsPage(PatternsPageTest):
     async def test_a_search_finds_a_pattern_in_a_closed_group_and_enter_opens_the_group(self):
         self.document.show_pattern_group(group=RHYTHMS, closed=True)
         await self.press(Key.DOWN, Key.UP)
-        self.assertNotIn(Listed(PATTERN, BEAT), self.rows())
+        self.assertNotIn(Listed(patterns_page.PATTERN, BEAT), self.rows())
         await self.press(keybindings.PatternsPage.SEARCH)
         await self.type(BEAT)
         self.assertEqual(self.page.current(), BEAT)
@@ -242,12 +243,12 @@ class TestPatternGroups(PatternsPageTest):
 
     async def test_the_rows_are_each_group_sorted_then_the_ungrouped_then_the_button(self):
         self.assertEqual(self.rows(), [
-            Listed(HEADING, MELODIES), Listed(PATTERN, TUNE), Listed(NEW_PATTERN, MELODIES),
-            Listed(HEADING, RHYTHMS), Listed(PATTERN, BEAT), Listed(NEW_PATTERN, RHYTHMS),
-            Listed(HEADING, UNGROUPED), Listed(PATTERN, OTHER), Listed(NEW_GROUP, None),
+            Listed(patterns_page.HEADING, MELODIES), Listed(patterns_page.PATTERN, TUNE), Listed(patterns_page.NEW_PATTERN, MELODIES),
+            Listed(patterns_page.HEADING, RHYTHMS), Listed(patterns_page.PATTERN, BEAT), Listed(patterns_page.NEW_PATTERN, RHYTHMS),
+            Listed(patterns_page.HEADING, patterns_page.UNGROUPED), Listed(patterns_page.PATTERN, OTHER), Listed(patterns_page.NEW_GROUP, None),
         ])
         text = self.text()
-        for line in (self.heading(group=MELODIES, count=1), self.heading(group=labels.MSG_UNGROUPED, count=1), INDENT + TUNE, INDENT + labels.MSG_NEW_PATTERN_BUTTON, labels.MSG_NEW_GROUP_BUTTON):
+        for line in (self.heading(group=MELODIES, count=1), self.heading(group=labels.MSG_UNGROUPED, count=1), patterns_page.INDENT + TUNE, patterns_page.INDENT + labels.MSG_NEW_PATTERN_BUTTON, labels.MSG_NEW_GROUP_BUTTON):
             self.assertIn(line, text)
 
     async def test_a_groups_patterns_are_sorted_with_a_number_at_the_end_read_as_a_number(self):
@@ -255,23 +256,23 @@ class TestPatternGroups(PatternsPageTest):
             self.document.add_pattern(name=name, group=BASSES)
         await self.press(Key.DOWN, Key.UP)
         rows = self.rows()
-        self.assertEqual(rows[0], Listed(HEADING, BASSES))
-        self.assertEqual(rows[1:1 + len(NUMBERED)], [Listed(PATTERN, name) for name in NUMBERED])
+        self.assertEqual(rows[0], Listed(patterns_page.HEADING, BASSES))
+        self.assertEqual(rows[1:1 + len(NUMBERED)], [Listed(patterns_page.PATTERN, name) for name in NUMBERED])
 
     async def test_the_ungrouped_heading_shows_only_while_a_pattern_is_in_no_group(self):
         self.document.set_pattern_group(name=OTHER, group=RHYTHMS)
         await self.press(Key.DOWN, Key.UP)
-        self.assertNotIn(Listed(HEADING, UNGROUPED), self.rows())
+        self.assertNotIn(Listed(patterns_page.HEADING, patterns_page.UNGROUPED), self.rows())
         self.assertNotIn(labels.MSG_UNGROUPED, self.text())
 
     async def test_space_or_enter_on_a_heading_closes_and_opens_its_group(self):
         await self.go_to_heading(MELODIES)
         for key in every_key(keybindings.PatternsPage.TOGGLE_GROUP):
             await self.press(key)
-            self.assertNotIn(Listed(PATTERN, TUNE), self.rows())
+            self.assertNotIn(Listed(patterns_page.PATTERN, TUNE), self.rows())
             self.assertIn(self.heading(group=MELODIES, count=1, closed=True), self.text())
             await self.press(key)
-            self.assertIn(Listed(PATTERN, TUNE), self.rows())
+            self.assertIn(Listed(patterns_page.PATTERN, TUNE), self.rows())
 
     async def test_closing_a_group_is_kept_in_the_file_and_is_no_change_and_no_undo_step(self):
         dirty = self.document.is_dirty()
@@ -290,14 +291,14 @@ class TestPatternGroups(PatternsPageTest):
     async def test_page_down_and_page_up_jump_between_the_headings_and_stop_at_the_ends(self):
         await self.go_to_pattern(TUNE)
         await self.press(forward_key(keybindings.PatternsPage.NEXT_GROUP))
-        self.assertEqual(self.page.listed(), Listed(HEADING, RHYTHMS))
+        self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, RHYTHMS))
         await self.press(forward_key(keybindings.PatternsPage.NEXT_GROUP), forward_key(keybindings.PatternsPage.NEXT_GROUP))
-        self.assertEqual(self.page.listed(), Listed(HEADING, UNGROUPED))
+        self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, patterns_page.UNGROUPED))
         await self.press(back_key(keybindings.PatternsPage.NEXT_GROUP), back_key(keybindings.PatternsPage.NEXT_GROUP), back_key(keybindings.PatternsPage.NEXT_GROUP))
-        self.assertEqual(self.page.listed(), Listed(HEADING, MELODIES))
+        self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, MELODIES))
 
     async def test_a_groups_button_makes_a_pattern_in_that_group(self):
-        await self.go_to(Listed(NEW_PATTERN, RHYTHMS))
+        await self.go_to(Listed(patterns_page.NEW_PATTERN, RHYTHMS))
         self.assertIn(key_name(keybindings.PatternsPage.NEW_PATTERN), self.text())
         await self.press(keybindings.PatternsPage.NEW_PATTERN, keybindings.NewPatternDialog.OK)
         await self.answer(NEW)
@@ -312,10 +313,10 @@ class TestPatternGroups(PatternsPageTest):
 
     async def test_the_last_button_makes_a_group_that_shows_with_its_button_alone_until_a_pattern_is_made(self):
         before = self.document.setlist().to_data()
-        await self.go_to(Listed(NEW_GROUP, None))
+        await self.go_to(Listed(patterns_page.NEW_GROUP, None))
         await self.press(keybindings.PatternsPage.NEW_GROUP)
         await self.answer(BASSES)
-        self.assertEqual(self.page.listed(), Listed(NEW_PATTERN, BASSES))
+        self.assertEqual(self.page.listed(), Listed(patterns_page.NEW_PATTERN, BASSES))
         self.assertIn(self.heading(group=BASSES, count=0), self.text())
         # A group is only what its patterns hold, so an empty one is not in the set.
         self.assertEqual(self.document.setlist().to_data(), before)
@@ -325,11 +326,11 @@ class TestPatternGroups(PatternsPageTest):
         self.assertEqual(self.document.setlist().get_pattern_groups(), [BASSES, MELODIES, RHYTHMS])
 
     async def test_a_new_group_cannot_take_a_groups_name(self):
-        await self.go_to(Listed(NEW_GROUP, None))
+        await self.go_to(Listed(patterns_page.NEW_GROUP, None))
         await self.press(keybindings.PatternsPage.NEW_GROUP)
         await self.answer(MELODIES.upper())
         self.assertIn(ALREADY_IN_USE, self.text())
-        self.assertNotIn(Listed(HEADING, MELODIES.upper()), self.rows())
+        self.assertNotIn(Listed(patterns_page.HEADING, MELODIES.upper()), self.rows())
 
     async def test_g_moves_a_pattern_to_a_group_picked_from_the_sorted_groups(self):
         await self.press(keybindings.PatternsPage.GROUP)
@@ -341,7 +342,7 @@ class TestPatternGroups(PatternsPageTest):
         self.assertEqual(self.group_of(TUNE), RHYTHMS)
         self.assertEqual(self.page.current(), TUNE)
         # The group left with no pattern is gone.
-        self.assertNotIn(Listed(HEADING, MELODIES), self.rows())
+        self.assertNotIn(Listed(patterns_page.HEADING, MELODIES), self.rows())
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.group_of(TUNE), MELODIES)
 
@@ -351,18 +352,18 @@ class TestPatternGroups(PatternsPageTest):
         await self.answer(BASSES)
         self.assertEqual(self.group_of(OTHER), BASSES)
         self.assertEqual(self.page.current(), OTHER)
-        self.assertNotIn(Listed(HEADING, UNGROUPED), self.rows())
+        self.assertNotIn(Listed(patterns_page.HEADING, patterns_page.UNGROUPED), self.rows())
 
     async def test_nothing_can_be_added_to_ungrouped_and_its_heading_only_opens_and_closes(self):
         await self.go_to_pattern(OTHER)
         self.assertNotIn(first_key(keybindings.PatternsPage.ADD), self.bound())
-        await self.go_to_heading(UNGROUPED)
+        await self.go_to_heading(patterns_page.UNGROUPED)
         for binding in (keybindings.PatternsPage.ADD, keybindings.PatternsPage.RENAME, keybindings.PatternsPage.COPY, keybindings.PatternsPage.UNGROUP):
             for key in every_key(binding):
                 self.assertNotIn(key, self.bound())
-        self.assertNotIn(Listed(NEW_PATTERN, UNGROUPED), self.rows())
+        self.assertNotIn(Listed(patterns_page.NEW_PATTERN, patterns_page.UNGROUPED), self.rows())
         await self.press(keybindings.PatternsPage.TOGGLE_GROUP)
-        self.assertNotIn(Listed(PATTERN, OTHER), self.rows())
+        self.assertNotIn(Listed(patterns_page.PATTERN, OTHER), self.rows())
 
     async def test_n_on_a_heading_renames_the_group_of_every_pattern_in_it_as_one_step(self):
         self.document.add_pattern(name=NEW, group=MELODIES)
@@ -370,7 +371,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(keybindings.PatternsPage.RENAME)
         await self.answer(SONGS)
         self.assertEqual((self.group_of(TUNE), self.group_of(NEW)), (SONGS, SONGS))
-        self.assertEqual(self.page.listed(), Listed(HEADING, SONGS))
+        self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, SONGS))
         await self.press(keybindings.Page.UNDO)
         self.assertEqual((self.group_of(TUNE), self.group_of(NEW)), (MELODIES, MELODIES))
 
@@ -391,7 +392,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(keybindings.PatternsPage.UNGROUP, keybindings.ConfirmDialog.YES)
         self.assertIsNone(self.group_of(TUNE))
         self.assertEqual(self.names(), names)
-        self.assertEqual(self.page.listed(), Listed(HEADING, UNGROUPED))
+        self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, patterns_page.UNGROUPED))
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.group_of(TUNE), MELODIES)
 
@@ -407,7 +408,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(Key.ENTER)
         # The new group's name goes at the front: joined to a name that lacked the old group's, and in its place where the name began with it.
         self.assertEqual(self.document.setlist().patterns_in_group(MELODIES_COPY), [MELODIES_COPY + MELODIES_RIFF[len(MELODIES):], TUNE_IN_COPY])
-        self.assertEqual(self.page.listed(), Listed(HEADING, MELODIES_COPY))
+        self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, MELODIES_COPY))
         self.assertEqual(self.document.song().get_pattern(TUNE_IN_COPY).to_data(), {**self.document.song().get_pattern(TUNE).to_data(), **self.document.song().get_pattern(TUNE_IN_COPY).to_data()})
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.names(), names)

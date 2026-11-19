@@ -26,16 +26,18 @@ from llamatron.composition.file_format import Accidental, ChordSymbol, GateModif
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.tui.drawing import Align, Box, NOTHING, Style, fit
-from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH
+from llamatron.tui import drawing as drawing_values
+from llamatron.tui.drawing import Align, Box, Style, fit
+from llamatron.tui.screens.pattern import grid_drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
-from llamatron.tui.keys import HOME_END, Key, OPEN_AT_START, RowSection, SHIFT_LEFT_RIGHT, SHIFT_UP_DOWN
+from llamatron.tui import keys
+from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.components.chord_row import chord_value
-from llamatron.tui.components.pattern_rows import PINNED_ROWS, SECTIONS
+from llamatron.tui.components import pattern_rows
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
-from llamatron.tui.components.degree_row import GAUGE_ROWS_WITHOUT_SCALE
+from llamatron.tui.components import degree_row
 from llamatron.composition import setlist
 from llamatron.tui import keybindings
 from tests.support.rendering import render_song
@@ -68,7 +70,7 @@ C_MAJOR_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 # The step of tune that holds nothing.
 EMPTY_STEP = 2
 # The rows open when the editor opens: the pinned rows, then each section's heading with its rows where the section starts open.
-ROWS_AT_START = [*PINNED_ROWS, *[name for section in SECTIONS for name in (section, *(SECTIONS[section] if section in OPEN_AT_START else []))]]
+ROWS_AT_START = [*pattern_rows.PINNED_ROWS, *[name for section in pattern_rows.SECTIONS for name in (section, *(pattern_rows.SECTIONS[section] if section in keys.OPEN_AT_START else []))]]
 SIXTEENTH = '1/16'
 
 
@@ -82,7 +84,7 @@ class TestPatternEditor(PatternEditorTest):
     async def test_home_and_end_work_but_stay_off_the_legend(self):
         shown = [name for item in self.editor.shown_keys() for name in item.keys]
         every = [name for item in self.editor.keys() for name in item.keys]
-        for name in HOME_END:
+        for name in keys.HOME_END:
             self.assertIn(name, every)
             self.assertNotIn(name, shown)
         await self.press(Key.END)
@@ -148,8 +150,8 @@ class TestPatternEditor(PatternEditorTest):
     async def test_the_rows_are_all_there_in_order(self):
         # The pinned rows come first, then each section's heading, with its rows under the headings of the sections open at the start.
         self.assertEqual([row.name for row in self.editor.rows_view.reachable()], ROWS_AT_START)
-        self.assertEqual([row.name for row in self.editor.rows_view.pinned_rows()], PINNED_ROWS)
-        self.assertEqual([row.name for row in self.editor.rows_view.scrolled_rows()], ROWS_AT_START[len(PINNED_ROWS):])
+        self.assertEqual([row.name for row in self.editor.rows_view.pinned_rows()], pattern_rows.PINNED_ROWS)
+        self.assertEqual([row.name for row in self.editor.rows_view.scrolled_rows()], ROWS_AT_START[len(pattern_rows.PINNED_ROWS):])
 
     async def test_a_new_note_gets_the_default_octave_and_a_gate_of_one_step(self):
         self.document.set_default_octave(4)
@@ -207,8 +209,8 @@ class TestPatternEditor(PatternEditorTest):
         self.assertEqual(degree.labels(), [*reversed(C_MAJOR_NOTES), labels_text.MSG_ROW_LABELS[Row.DEGREE]])
         # Step 2 is degree 3: the three lowest rows are bars, and the rest blank.
         lines = degree.cell_lines(step=1)
-        self.assertEqual(lines, [*[NOTHING] * 4, *[marks.MSG_GAUGE_BAR] * 3, '3'])
-        self.assertEqual(degree.cell_lines(step=2), [NOTHING] * 8)
+        self.assertEqual(lines, [*[drawing_values.NOTHING] * 4, *[marks.MSG_GAUGE_BAR] * 3, '3'])
+        self.assertEqual(degree.cell_lines(step=2), [drawing_values.NOTHING] * 8)
         self.assertTrue(degree.rule_after())
         self.assertIn(labels_text.MSG_SCALE_HEADER.format(scale=setlist.DEFAULT_SCALE), self.text())
 
@@ -220,7 +222,7 @@ class TestPatternEditor(PatternEditorTest):
         await self.press(Key.LEFT, Key.RIGHT)
         degree = self.editor.row_for(Row.DEGREE)
         self.assertIsNone(degree.scale_name())
-        self.assertEqual(degree.labels(), [str(number) for number in range(GAUGE_ROWS_WITHOUT_SCALE, 0, -1)] + [labels_text.MSG_ROW_LABELS[Row.DEGREE]])
+        self.assertEqual(degree.labels(), [str(number) for number in range(degree_row.GAUGE_ROWS_WITHOUT_SCALE, 0, -1)] + [labels_text.MSG_ROW_LABELS[Row.DEGREE]])
         self.assertIn(labels_text.MSG_SEVERAL_SCALES, self.text())
 
     async def test_the_description_says_when_ties_override_the_gate(self):
@@ -357,7 +359,7 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         self.app.screen.value = EIGHTH
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song().get_pattern(TUNE).get_step_size(), Fraction(1, 8))
-        self.assertIn(marks.MSG_STEP_SIZE_SHOWN.format(size=EIGHTH, whose=NOTHING), self.text())
+        self.assertIn(marks.MSG_STEP_SIZE_SHOWN.format(size=EIGHTH, whose=drawing_values.NOTHING), self.text())
         await self.reconfigure(Reconfigure.STEP_SIZE)
         self.app.screen.value = ''
         await self.press(Key.ENTER)
@@ -458,10 +460,10 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
     async def test_nothing_on_the_rows_takes_shift_with_an_arrow(self):
         """The rows' keys are plain ones: the bar jump and the Shift+Up and Shift+Down nudge went."""
         every = [name for item in self.editor.key_table() for name in item.keys]
-        for name in (*SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT):
+        for name in (*keys.SHIFT_UP_DOWN, *keys.SHIFT_LEFT_RIGHT):
             self.assertNotIn(name, every)
         before = self.document.setlist().to_data()
-        await self.press(Key.RIGHT, *SHIFT_UP_DOWN, *SHIFT_LEFT_RIGHT)
+        await self.press(Key.RIGHT, *keys.SHIFT_UP_DOWN, *keys.SHIFT_LEFT_RIGHT)
         self.assertEqual(self.document.setlist().to_data(), before)
         self.assertEqual(self.editor.step, 1)
 
@@ -487,7 +489,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         # Two empty steps, where every row open but Degree, Tie and the headings is blocked, and two notes, where only Tie is; the Chord section is opened, where Inversion and Tension are blocked on every step, since neither note has a chord.
         await open_section(test=self, section=RowSection.CHORD)
         await self.press(*[Key.UP] * len(self.editor.rows_view.reachable()))
-        blocked_rows = [Row.OCTAVE, *[row for section in (*OPEN_AT_START, RowSection.CHORD) for row in SECTIONS[section] if row != Row.TIE]]
+        blocked_rows = [Row.OCTAVE, *[row for section in (*keys.OPEN_AT_START, RowSection.CHORD) for row in pattern_rows.SECTIONS[section] if row != Row.TIE]]
         rows = [*self.editor.rows_view.pinned_rows(), *self.editor.rows_view.scrolled_rows()]
         blocked_cells = [(row.name, step) for row in rows for step in range(self.editor.steps()) if row.cell_lines(step=step) == [marks.MSG_BLOCKED_CELL]]
         self.assertEqual(len(blocked_cells), 2 * len(blocked_rows) + 2 + 2 + 2)
@@ -500,7 +502,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
             await self.press(Key.DOWN)
         self.assertFalse(self.editor.row_for(Row.VELOCITY).editable())
         self.assertNotIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET), self.text())
-        self.assertIn(REVERSED.format(text=fit(text=marks.MSG_BLOCKED_CELL, width=CELL_WIDTH, align=Align.CENTER)), self.text())
+        self.assertIn(REVERSED.format(text=fit(text=marks.MSG_BLOCKED_CELL, width=grid_drawing.CELL_WIDTH, align=Align.CENTER)), self.text())
         # Marking the step to grab opens Octave, Velocity and Chord, since the step's chord is built on the grabbed note.
         self.document.set_step_value(name=TUNE, row=Row.GRAB, step=EMPTY_STEP, value=True)
         self.document.set_step_value(name=TUNE, row=Row.DEGREE, step=EMPTY_STEP, value=limits.MIN_DEGREE)
@@ -518,9 +520,9 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.app.screen.value = WALTZ
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song().get_pattern(TUNE).get_written_time_signature(), WALTZ)
-        self.assertIn(marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=WALTZ, whose=NOTHING), self.text())
+        self.assertIn(marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=WALTZ, whose=drawing_values.NOTHING), self.text())
         await self.reconfigure(Reconfigure.TIME_SIGNATURE)
-        self.app.screen.value = NOTHING
+        self.app.screen.value = drawing_values.NOTHING
         await self.press(Key.ENTER)
         self.assertIsNone(self.document.song().get_pattern(TUNE).get_written_time_signature())
         self.assertIn(marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=defaults.DEFAULT_TIME_SIGNATURE, whose=marks.MSG_FROM_SONG_SHOWN), self.text())
@@ -611,12 +613,12 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
 
     async def test_the_accidental_shows_only_a_sharp_or_a_flat(self):
         await self.go_to_row(Row.ACCIDENTAL)
-        self.assertEqual(self.editor.cell_text(name=Row.ACCIDENTAL, step=0), NOTHING)
+        self.assertEqual(self.editor.cell_text(name=Row.ACCIDENTAL, step=0), drawing_values.NOTHING)
         await self.press(Key.SPACE)
         self.assertEqual(self.editor.cell_text(name=Row.ACCIDENTAL, step=0), Accidental.SHARP)
         await self.press(Key.SPACE)
         self.assertEqual(self.editor.cell_text(name=Row.ACCIDENTAL, step=0), Accidental.FLAT)
-        self.assertEqual(self.editor.cell_text(name=Row.ACCIDENTAL, step=2), NOTHING)
+        self.assertEqual(self.editor.cell_text(name=Row.ACCIDENTAL, step=2), drawing_values.NOTHING)
 
     async def test_an_empty_step_has_nothing_to_change_but_cc_values(self):
         await self.press(Key.RIGHT, Key.RIGHT)
@@ -674,7 +676,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.app.screen.value = str(LONG)
         await self.press(Key.ENTER)
         shown = self.editor.drawing.steps_shown(self.SIZE[0])
-        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
+        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=drawing_values.NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
         await self.press(*[Key.RIGHT] * HALFWAY)
         self.assertEqual(self.editor.step, HALFWAY)
         self.assertEqual(self.editor.first_step, HALFWAY - shown + 1)
@@ -690,7 +692,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertEqual(self.editor.first_step, 0)
         await self.press(Key.END)
         self.assertEqual(self.editor.step, LONG - 1)
-        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE, first=LONG - shown + 1, last=LONG, after=NOTHING), self.text())
+        self.assertIn(marks.MSG_STEPS_SHOWN.format(before=marks.MSG_MORE_BEFORE, first=LONG - shown + 1, last=LONG, after=drawing_values.NOTHING), self.text())
 
     async def test_home_and_end_go_to_the_ends(self):
         await self.press(keybindings.PatternEditor.RESIZE)

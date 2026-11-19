@@ -21,7 +21,7 @@ page, so that a message set as a page closes is still read on the page underneat
 are lower-case fragments with no full stop, as `.claude/STYLE.md` says, since they aren't sentences.
 """
 
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 
 
 class StatusLine:
@@ -30,7 +30,7 @@ class StatusLine:
     __slots__ = ('_text', '_refusal')
 
     def __init__(self):
-        self._text = NOTHING
+        self._text = drawing.NOTHING
         self._refusal = False
 
     def say(self, text, *, refusal=False):
@@ -45,7 +45,7 @@ class StatusLine:
         return self._text
 
     def clear(self):
-        self._text = NOTHING
+        self._text = drawing.NOTHING
         self._refusal = False
 
     def is_empty(self):

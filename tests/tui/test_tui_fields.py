@@ -31,7 +31,7 @@ from llamatron.composition import setlist
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD
+from llamatron.tui import key_table
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
@@ -168,26 +168,26 @@ class TestNumberField(unittest.TestCase):
         kept = Kept()
         field = self.field(kept=kept)
         self.assertEqual(field.value(), IN_THE_MIDDLE)
-        field.adjust(STEP_FORWARD)
-        field.adjust(STEP_BACK)
+        field.adjust(key_table.STEP_FORWARD)
+        field.adjust(key_table.STEP_BACK)
         self.assertEqual(kept.stored, [IN_THE_MIDDLE + 1, IN_THE_MIDDLE - 1])
 
     def test_stepping_stops_at_both_ends(self):
         kept = Kept()
-        self.field(kept=kept, number=HIGHEST).adjust(STEP_FORWARD)
-        self.field(kept=kept, number=LOWEST).adjust(STEP_BACK)
+        self.field(kept=kept, number=HIGHEST).adjust(key_table.STEP_FORWARD)
+        self.field(kept=kept, number=LOWEST).adjust(key_table.STEP_BACK)
         self.assertEqual(kept.stored, [HIGHEST, LOWEST])
 
     def test_a_number_with_no_ends_steps_without_stopping(self):
         kept = Kept()
         field = NumberField(page=kept, label=A_LABEL, number=HIGHEST, set=kept.set)
-        field.adjust(STEP_FORWARD)
+        field.adjust(key_table.STEP_FORWARD)
         self.assertEqual(kept.stored, [HIGHEST + 1])
 
     def test_a_setting_with_no_number_steps_and_types_from_its_start(self):
         kept = Kept()
         field = self.field(kept=kept, number=None, start=A_START)
-        field.adjust(STEP_FORWARD)
+        field.adjust(key_table.STEP_FORWARD)
         self.assertEqual(kept.stored, [A_START + 1])
         field.enter()
         self.assertEqual(kept.asked, (A_LABEL, A_START, LOWEST, HIGHEST))
@@ -196,7 +196,7 @@ class TestNumberField(unittest.TestCase):
         kept = Kept()
         field = NumberField(page=kept, label=A_LABEL, number=0, start=A_START, set=kept.set)
         self.assertEqual(field.value(), 0)
-        field.adjust(STEP_FORWARD)
+        field.adjust(key_table.STEP_FORWARD)
         self.assertEqual(kept.stored, [1])
 
     def test_enter_asks_for_a_number_between_the_ends_and_stores_the_answer(self):
@@ -222,10 +222,10 @@ class TestChoiceField(unittest.TestCase):
     def test_it_shows_the_choice_and_steps_through_the_list_stopping_at_both_ends(self):
         kept = Kept()
         self.assertEqual(self.field(kept=kept).value(), CHOICES[1])
-        self.field(kept=kept).adjust(STEP_FORWARD)
-        self.field(kept=kept).adjust(STEP_BACK)
-        self.field(kept=kept, current=CHOICES[-1]).adjust(STEP_FORWARD)
-        self.field(kept=kept, current=CHOICES[0]).adjust(STEP_BACK)
+        self.field(kept=kept).adjust(key_table.STEP_FORWARD)
+        self.field(kept=kept).adjust(key_table.STEP_BACK)
+        self.field(kept=kept, current=CHOICES[-1]).adjust(key_table.STEP_FORWARD)
+        self.field(kept=kept, current=CHOICES[0]).adjust(key_table.STEP_BACK)
         self.assertEqual(kept.stored, [CHOICES[2], CHOICES[0], CHOICES[-1], CHOICES[0]])
 
     def test_enter_opens_a_picker_on_the_current_choice_and_stores_the_one_picked(self):
@@ -295,7 +295,7 @@ class TestFieldsOnThePages(UITest):
                 if not isinstance(field, NumberField) or field.lowest is None or field.highest is None:
                     continue
                 page.place = place
-                for direction in (STEP_FORWARD, STEP_BACK):
+                for direction in (key_table.STEP_FORWARD, key_table.STEP_BACK):
                     for _ in range(MORE_THAN_ANY_RANGE):
                         before = page.fields()[place].number
                         page.fields()[place].adjust(direction)

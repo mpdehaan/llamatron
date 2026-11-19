@@ -27,7 +27,7 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.exporters import exports
 from llamatron.exporters.exports import earlier_export, shown_export_path, ExportKind
 from llamatron.tui.document import Document
-from llamatron.tui.uses import LOOP_ERRORS_SHOWN
+from llamatron.tui import uses
 from llamatron.strings import errors, labels, messages, names
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
@@ -52,7 +52,7 @@ SECOND_SONG = 'second'
 # Scenes named for the loop errors dialog, and how many scenes make it say 'and 1 more'.
 VERSE = 'verse'
 CHORUS = 'chorus'
-ONE_MORE_THAN_SHOWN = LOOP_ERRORS_SHOWN + 1
+ONE_MORE_THAN_SHOWN = uses.LOOP_ERRORS_SHOWN + 1
 TEMPO = 'Tempo'
 
 
@@ -188,6 +188,6 @@ class TestExporting(UITest):
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, MessageDialog)
         words = self.dialog_words()
-        self.assertIn(names.MSG_NUMBERED_NAME.format(base=VERSE, number=LOOP_ERRORS_SHOWN - 1), words)
-        self.assertNotIn(names.MSG_NUMBERED_NAME.format(base=VERSE, number=LOOP_ERRORS_SHOWN), words)
+        self.assertIn(names.MSG_NUMBERED_NAME.format(base=VERSE, number=uses.LOOP_ERRORS_SHOWN - 1), words)
+        self.assertNotIn(names.MSG_NUMBERED_NAME.format(base=VERSE, number=uses.LOOP_ERRORS_SHOWN), words)
         self.assertIn(errors.ERR_AND_MORE.format(count=1), words)

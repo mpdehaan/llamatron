@@ -17,8 +17,8 @@
 
 from llamatron.composition.file_format import Row
 from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui.drawing import NOTHING
-from llamatron.tui.keys import DIGITS
+from llamatron.tui import drawing
+from llamatron.tui import keys as keys_values
 from llamatron.strings import legends
 from llamatron.tui import keybindings
 
@@ -53,7 +53,7 @@ class OctaveRow(PatternRow):
 
     def digits_label(self):
         """Return the digits label, which runs up to the top octave in the song's octave labels."""
-        return legends.MSG_DIGITS_RANGE_LABEL.format(low=DIGITS[0], high=self.song().shown_octave(self.highest()))
+        return legends.MSG_DIGITS_RANGE_LABEL.format(low=keys_values.DIGITS[0], high=self.song().shown_octave(self.highest()))
 
     def type_octave(self, digit):
         """Take a typed octave, which is typed in the song's octave labels, and store it as the file numbers it."""
@@ -72,6 +72,6 @@ class OctaveRow(PatternRow):
     def cell_text(self, *, step):
         """Return the octave the note plays in, which a degree past the scale's top moves up."""
         if not self.is_note(step=step):
-            return NOTHING
+            return drawing.NOTHING
         shift = self.editor.row_for(Row.DEGREE).octave_shift(step=step)
         return str(self.song().shown_octave(self.octave_now(step=step) + shift))

@@ -19,8 +19,8 @@
 from llamatron.composition.naming import words
 from llamatron.strings import marks
 from llamatron.tui.components.chord_row import ChordRow
-from llamatron.tui.scale_categories import SCALE_TYPES_IN_ORDER
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import scale_categories
+from llamatron.tui import drawing
 from llamatron.tui import keybindings
 
 # How much of a scale type's name a cell shows; the status line and the Chord dialog say it whole.
@@ -35,10 +35,10 @@ class ChordScaleRow(ChordRow):
     __slots__ = ()
 
     def options(self):
-        return [None, *SCALE_TYPES_IN_ORDER]
+        return [None, *scale_categories.SCALE_TYPES_IN_ORDER]
 
     def cell_text(self, *, step):
         if self.blocked(step=step):
-            return NOTHING
+            return drawing.NOTHING
         value = self.value(step=step)
         return marks.MSG_UNSET_MARK if value is None else words(value).title()[:CELL_ROOM]

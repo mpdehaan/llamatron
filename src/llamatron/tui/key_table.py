@@ -21,7 +21,8 @@ from typing import Callable
 
 from textual import events
 
-from llamatron.tui.keys import Key, SPACE_CHARACTER, Steps
+from llamatron.tui import keys as keys_values
+from llamatron.tui.keys import Key, Steps
 
 # The keys matched by name rather than by the character they type: a control key's character is an
 # unprintable control code, and a function key has none, so neither can be matched any other way.
@@ -172,7 +173,7 @@ def cursor_moved(*, place, name, count):
 TEXTUAL_NAMES = {Key.PLUS: 'plus', Key.MINUS: 'minus', Key.SLASH: 'slash'}
 # The character a terminal sends with each named key, or None for a key that types nothing. A control key's character is its control code, not the key's name.
 KEY_CHARACTERS = {
-    Key.SPACE: SPACE_CHARACTER, Key.PLUS: Key.PLUS, Key.MINUS: Key.MINUS, Key.SLASH: Key.SLASH,
+    Key.SPACE: keys_values.SPACE_CHARACTER, Key.PLUS: Key.PLUS, Key.MINUS: Key.MINUS, Key.SLASH: Key.SLASH,
     Key.ENTER: '\r', Key.BACKSPACE: '\x7f', Key.ESCAPE: '\x1b', Key.UP: None, Key.DOWN: None,
     Key.LEFT: None, Key.RIGHT: None, Key.TAB: '\t', Key.SHIFT_TAB: None, Key.F1: None, Key.F2: None, Key.F3: None, Key.F4: None, Key.F5: None,
     Key.HOME: None, Key.END: None, Key.PAGE_UP: None, Key.PAGE_DOWN: None,
@@ -194,7 +195,7 @@ def pressed_key(event):
         return Key.BACKSPACE
     if name in _NAMED_KEYS:
         return name
-    if name == Key.SPACE or event.character == SPACE_CHARACTER:
+    if name == Key.SPACE or event.character == keys_values.SPACE_CHARACTER:
         return Key.SPACE
     if event.character and event.character.isprintable():
         return event.character.lower()

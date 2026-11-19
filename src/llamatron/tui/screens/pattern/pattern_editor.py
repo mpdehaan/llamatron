@@ -56,8 +56,8 @@ from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.drawing import NOTHING
-from llamatron.tui.key_table import STEP_BACK
+from llamatron.tui import drawing
+from llamatron.tui import key_table
 from llamatron.tui.screens.pattern.pattern_drawing import PatternDrawing
 from llamatron.tui.screens.pattern.roll_drawing import RollDrawing
 from llamatron.tui.screens.shared.shared import ask_time_signature, columns
@@ -328,7 +328,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         """Say the chord under the cursor, in the scale the pattern is known to play under, while the cursor rests on a step that holds one."""
         self.clamp()
         if self.is_drum() or not self.is_note() or not isinstance(self.value(row=Row.DEGREE), int):
-            return NOTHING
+            return drawing.NOTHING
         return step_chord_in_words(editor=self, step=self.step).resting(where=messages.MSG_RESTING_STEP.format(step=self.step + 1))
 
     def gate_now(self, *, step=None):
@@ -388,7 +388,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def jump_end(self, direction):
         """Go to the first step, which Home does, or the last, which End does."""
-        self.step = 0 if direction == STEP_BACK else self.steps() - 1
+        self.step = 0 if direction == key_table.STEP_BACK else self.steps() - 1
 
     # What the rows share when they edit a step.
 
@@ -415,11 +415,11 @@ class PatternEditor(ShowsNamedItem, StepEditor):
     # The pattern's own settings.
 
     def ask_step_size(self):
-        current = self.pattern().get_written_step_size() or NOTHING
+        current = self.pattern().get_written_step_size() or drawing.NOTHING
         self.ask_length(title=messages.MSG_STEP_SIZE_PROMPT, current=current, most=limits.MAX_STEP_SIZE, then=lambda text: self.document().set_step_size(name=self.item, step_size=text), blank_allowed=True)
 
     def ask_time_signature(self):
-        current = self.pattern().get_written_time_signature() or NOTHING
+        current = self.pattern().get_written_time_signature() or drawing.NOTHING
         ask_time_signature(
             page=self, title=messages.MSG_TIME_SIGNATURE_PROMPT, current=current, blank_allowed=True,
             then=lambda text: self.document().set_pattern_time_signature(name=self.item, time_signature=text),
@@ -635,7 +635,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.document().munge_pattern(name=self.item, way=way, **{named: number})
             except InvalidValue as problem:
                 self.refuse(str(problem))
-        self.ask(dialog=PromptDialog(title=title, value=NOTHING), then=answered)
+        self.ask(dialog=PromptDialog(title=title, value=drawing.NOTHING), then=answered)
 
     def ask_roll(self, *, left):
         """Ask how many steps to turn the pattern, and turn it: a step pushed off one end comes in at the other. The cursor stays on its step."""
@@ -649,7 +649,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.refuse(errors.ERR_ROLL_OUT_OF_RANGE.format(low=FIRST_ROLL, high=self.steps()))
                 return
             self.document().munge_pattern(name=self.item, way=Pattern.roll, steps=steps if left else -steps)
-        self.ask(dialog=PromptDialog(title=messages.MSG_ROLL_LEFT_PROMPT if left else messages.MSG_ROLL_RIGHT_PROMPT, value=NOTHING), then=answered)
+        self.ask(dialog=PromptDialog(title=messages.MSG_ROLL_LEFT_PROMPT if left else messages.MSG_ROLL_RIGHT_PROMPT, value=drawing.NOTHING), then=answered)
 
     def load_over(self):
         others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)

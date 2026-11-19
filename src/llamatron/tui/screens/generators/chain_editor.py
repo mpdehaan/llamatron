@@ -24,7 +24,8 @@ from llamatron.tui.drawing import Align
 from llamatron.strings import help as help_text, labels as labels_text, marks, messages
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
+from llamatron.tui.screens.generators import generator_pages
+from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind, generator_type_dialog
 from llamatron.composition.naming import new_name, suggested_word
 from llamatron.tui.screens.shared.shared import list_keys, move_key
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
@@ -105,8 +106,8 @@ class ChainEditor(ShowsNamedItem, ListPage):
 
     def new_generator(self, *, then):
         """Ask which kind of generator to make, make one of it named after its kind, hand it to then(kind=, name=), and open its editor, its crumbs after the chain's."""
-        sections = list(GENERATOR_PAGES)
-        listings = [GENERATOR_PAGES[section] for section in sections]
+        sections = list(generator_pages.GENERATOR_PAGES)
+        listings = [generator_pages.GENERATOR_PAGES[section] for section in sections]
 
         def chosen(place):
             listing = listings[place]

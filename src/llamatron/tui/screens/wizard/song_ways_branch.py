@@ -19,7 +19,8 @@
 from rich.text import Text
 
 from llamatron.strings import errors, messages
-from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -60,5 +61,5 @@ class SongWaysBranch(Branch):
     def notes(self, width):
         """Say so where the subgenre leaves nothing to choose, so that an empty branch explains itself."""
         if self.choices().is_ready() and not self.fields():
-            return [Text(INDENT + messages.MSG_WIZARD_NOTHING_TO_CHOOSE, style=Style.DIM)]
+            return [Text(drawing.INDENT + messages.MSG_WIZARD_NOTHING_TO_CHOOSE, style=Style.DIM)]
         return []

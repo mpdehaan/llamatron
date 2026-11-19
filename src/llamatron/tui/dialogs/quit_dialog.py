@@ -22,9 +22,10 @@ from rich.text import Text
 
 from llamatron.strings import labels
 from llamatron.tui.components.button_row import button_row
-from llamatron.tui.dialogs.dialog import DIALOG_MARGIN
+from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.drawing import NOTHING, legend
+from llamatron.tui import drawing
+from llamatron.tui.drawing import legend
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui import keybindings
 
@@ -57,7 +58,7 @@ class QuitDialog(MessageDialog):
     def wanted_width(self):
         """Return a width that holds the dialog's keys on one line, where the console has the room, since they are too many for the usual width."""
         keys_on_one_line = max(line.cell_len for line in legend(keys=self.keys(), width=UNLIMITED_WIDTH))
-        return max(super().wanted_width(), keys_on_one_line + DIALOG_MARGIN)
+        return max(super().wanted_width(), keys_on_one_line + dialog.DIALOG_MARGIN)
 
     def move(self, name):
         self.choice = cursor_moved(place=self.choice, name=name, count=len(labels.MSG_QUIT_BUTTONS))
@@ -68,4 +69,4 @@ class QuitDialog(MessageDialog):
     def lines(self, width):
         keys = (self.KEYS.QUIT[1], self.KEYS.SAVE[1], self.KEYS.CANCEL[1])
         buttons = list(zip(keys, labels.MSG_QUIT_BUTTONS))
-        return [*self.message_lines(width), Text(NOTHING), *button_row(buttons=buttons, selected=self.choice)]
+        return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.choice)]

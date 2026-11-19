@@ -24,7 +24,8 @@ drawn.
 """
 
 from llamatron.tui import keybindings
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
 
@@ -93,8 +94,8 @@ class OneRowEditor(StepGrid, StepEditor):
         result = [self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True)]
         if self.can_edit():
             result += [
-                self.bind(self.KEYS.LESS, action=lambda: self.nudge(STEP_BACK)),
-                self.bind(self.KEYS.MORE, action=lambda: self.nudge(STEP_FORWARD)),
+                self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)),
+                self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
                 self.bind(self.KEYS.TYPE, action=self.type_digit, wants_key=True),
             ]
             if self.steps() < self.MOST_STEPS:

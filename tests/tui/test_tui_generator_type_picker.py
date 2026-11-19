@@ -21,7 +21,7 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from tests.support.ui_testing import UITest, back_key, forward_key
 
@@ -51,12 +51,12 @@ class TestGeneratorTypePicker(UITest):
         self.assertNotIn(labels.MSG_FOLLOW_CHORDS_LABEL, shown)
 
     async def test_every_type_is_under_a_heading_once_by_name(self):
-        self.assertEqual(sorted(self.dialog.options), sorted(listing.label for listing in GENERATOR_PAGES.values()))
+        self.assertEqual(sorted(self.dialog.options), sorted(listing.label for listing in generator_pages.GENERATOR_PAGES.values()))
         self.assertEqual(self.dialog.headings, HEADINGS)
-        in_harmony = [listing.label for listing in GENERATOR_PAGES.values() if listing.group == labels.GeneratorGroup.HARMONY]
+        in_harmony = [listing.label for listing in generator_pages.GENERATOR_PAGES.values() if listing.group == labels.GeneratorGroup.HARMONY]
         self.assertEqual(in_harmony, [labels.MSG_FOLLOW_CHORDS_LABEL, labels.MSG_PROGRESSION_LABEL])
-        self.assertEqual(GENERATOR_PAGES[Section.STRUMS].group, labels.GeneratorGroup.RHYTHM)
-        self.assertEqual(GENERATOR_PAGES[Section.VOICE_LEADINGS].group, labels.GeneratorGroup.VOICING)
+        self.assertEqual(generator_pages.GENERATOR_PAGES[Section.STRUMS].group, labels.GeneratorGroup.RHYTHM)
+        self.assertEqual(generator_pages.GENERATOR_PAGES[Section.VOICE_LEADINGS].group, labels.GeneratorGroup.VOICING)
 
     async def test_space_or_enter_opens_a_heading_and_closes_it_again(self):
         await self.press(*[Key.DOWN] * HARMONY_PLACE, Key.SPACE)

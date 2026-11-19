@@ -24,7 +24,8 @@ from llamatron.composition import guitar_bars
 from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators.guitar_bar_editor import CELL_LENGTHS, GuitarBarEditor
+from llamatron.tui.screens.generators import guitar_bar_editor
+from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
 
 FIRST_CELL = 0
@@ -215,10 +216,10 @@ class TestGuitarBarEditor(GuitarifyTest):
         self.assertEqual(self.app.screen.step, len(self.default().strokes) - 1)
 
     async def test_the_cell_length_steps_round_its_choices(self):
-        start = CELL_LENGTHS.index(self.default().cell)
-        for step in range(1, len(CELL_LENGTHS) + 1):
+        start = guitar_bar_editor.CELL_LENGTHS.index(self.default().cell)
+        for step in range(1, len(guitar_bar_editor.CELL_LENGTHS) + 1):
             await self.press(keybindings.GuitarBarEditor.CELL_LENGTH)
-            self.assertEqual(self.guitar().get_cell(), CELL_LENGTHS[(start + step) % len(CELL_LENGTHS)])
+            self.assertEqual(self.guitar().get_cell(), guitar_bar_editor.CELL_LENGTHS[(start + step) % len(guitar_bar_editor.CELL_LENGTHS)])
 
     async def test_a_ready_made_bar_replaces_strokes_accents_and_cell_length(self):
         await self.press(keybindings.GuitarBarEditor.READY_BARS)

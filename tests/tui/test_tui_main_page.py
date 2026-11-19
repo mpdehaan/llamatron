@@ -19,8 +19,10 @@
 from unittest import mock
 
 from tests.support.ui_testing import UITest, key_name
-from llamatron.tui.drawing import Box, NOTHING, SPACE
-from llamatron.tui.screens.set.main_page import arrows_between, cell_positions, COLUMNS, GRID_WIDTH, moved
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box
+from llamatron.tui.screens.set import main_page
+from llamatron.tui.screens.set.main_page import arrows_between, cell_positions, moved
 from llamatron.composition import file_format
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -74,10 +76,10 @@ class TestMainPage(UITest):
         unsaved = labels.MSG_SET_CRUMB.format(file=labels.MSG_NO_FILE_CRUMB)
         song = labels.MSG_SONG_CRUMB.format(song=names.MSG_DEFAULT_SONG_NAME)
         self.assert_header(set_crumb=unsaved, song_crumb=song)
-        self.assertTrue(self.crumbs_line().startswith(SPACE + labels.Crumb.MAIN_SCREEN + SPACE))
+        self.assertTrue(self.crumbs_line().startswith(drawing.SPACE + labels.Crumb.MAIN_SCREEN + drawing.SPACE))
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         self.assert_header(set_crumb=unsaved, song_crumb=song)
-        self.assertTrue(self.crumbs_line().startswith(SPACE + labels.Crumb.PATTERNS + marks.MSG_CRUMB_SEPARATOR))
+        self.assertTrue(self.crumbs_line().startswith(drawing.SPACE + labels.Crumb.PATTERNS + marks.MSG_CRUMB_SEPARATOR))
         # The rule, or on a page with a theme its stripe, which is drawn in the theme's colour behind the page's caption.
         self.assertNotIn(Box.RULE * 3, self.text().splitlines()[2])
         # The version is left to the About dialog, and the length sits at the right of the song's line.
@@ -192,12 +194,12 @@ class TestMainPage(UITest):
 
     async def test_a_large_console_shows_the_same_block_of_buttons_at_the_top_left_never_stretched(self):
         # The buttons are the size they are on an 80 by 24 console, however large the window.
-        lines = [line.replace(REVERSED_STARTS + SPACE, NOTHING).replace(SPACE + REVERSED_ENDS, NOTHING).rstrip() for line in self.text().splitlines()]
+        lines = [line.replace(REVERSED_STARTS + drawing.SPACE, drawing.NOTHING).replace(drawing.SPACE + REVERSED_ENDS, drawing.NOTHING).rstrip() for line in self.text().splitlines()]
         boxed = [line for line in lines if line.startswith((Box.TOP_LEFT, Box.DOUBLE_TOP_LEFT, Box.BOTTOM_LEFT, Box.DOUBLE_BOTTOM_LEFT))]
         self.assertTrue(boxed)
-        self.assertEqual({len(line) for line in boxed}, {GRID_WIDTH})
-        self.assertLess(GRID_WIDTH, self.SIZE[0])
-        self.assertEqual(sum(self.app.screen.column_widths()) + COLUMNS - 1, GRID_WIDTH)
+        self.assertEqual({len(line) for line in boxed}, {main_page.GRID_WIDTH})
+        self.assertLess(main_page.GRID_WIDTH, self.SIZE[0])
+        self.assertEqual(sum(self.app.screen.column_widths()) + main_page.COLUMNS - 1, main_page.GRID_WIDTH)
 
     async def test_the_fewest_arrows_reach_every_cell_from_every_cell(self):
         # What the video tutorial walks by: the arrows found are pressed and reach the cell.
@@ -209,7 +211,7 @@ class TestMainPage(UITest):
                 position = cell_positions(rows=rows, binding=start)[0]
                 arrows = arrows_between(rows=rows, position=position, binding=end)
                 self.assertIsNotNone(arrows, (start, end))
-                self.assertLess(len(arrows), len(rows) + COLUMNS)
+                self.assertLess(len(arrows), len(rows) + main_page.COLUMNS)
                 for arrow in arrows:
                     position = moved(rows=rows, position=position, key=arrow)
                 self.assertIs(rows[position[0]][position[1]].binding, end)
@@ -226,12 +228,12 @@ class TestMainPageOnAUsualConsole(UITest):
     async def test_the_screen_is_named_once_and_the_stripe_carries_no_caption(self):
         # The crumbs name the main screen, so the theme's stripe under the header says nothing.
         self.assertEqual(self.text().count(labels.Crumb.MAIN_SCREEN), 1)
-        self.assertEqual(self.app.screen.caption(), NOTHING)
+        self.assertEqual(self.app.screen.caption(), drawing.NOTHING)
 
     async def test_the_status_line_stays_empty_until_something_is_refused_or_said(self):
         # No description of the selected button: the line is for refusals and warnings here.
         page = self.app.screen
-        self.assertEqual(page.resting_status(), NOTHING)
+        self.assertEqual(page.resting_status(), drawing.NOTHING)
         lines = self.text().splitlines()
         self.assertFalse(lines[-3].strip())
         await self.press(Key.DOWN, Key.RIGHT)
@@ -256,7 +258,7 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertLess(arrange, next(number for number, line in enumerate(lines) if '« S »' in line))
         self.assertEqual(sum(1 for line in lines if '« F »' in line), 1)
         for row in ('« S »', '« G »', '« I »'):
-            self.assertEqual(next(line for line in lines if row in line).count('«'), COLUMNS)
+            self.assertEqual(next(line for line in lines if row in line).count('«'), main_page.COLUMNS)
         self.assertIn('« P »', next(line for line in lines if '« S »' in line))
         self.assertIn('« Z »', next(line for line in lines if '« S »' in line))
         self.assertIn('« C »', next(line for line in lines if '« G »' in line))
@@ -370,7 +372,7 @@ class TestMainPageOnAUsualConsole(UITest):
         songs = next(line for line in lines if labels.PageName.SONGS in line)
         self.assertEqual(save.index(REVERSED_STARTS), opened.index(REVERSED_STARTS))
         self.assertEqual(save.index(REVERSED_STARTS), songs.index(REVERSED_STARTS))
-        plain = [line.replace(REVERSED_STARTS + SPACE, NOTHING).replace(SPACE + REVERSED_ENDS, NOTHING) for line in (save, opened)]
+        plain = [line.replace(REVERSED_STARTS + drawing.SPACE, drawing.NOTHING).replace(drawing.SPACE + REVERSED_ENDS, drawing.NOTHING) for line in (save, opened)]
         self.assertEqual(plain[0].index(labels.PageName.SAVE), plain[1].index(labels.PageName.OPEN))
         self.assertEqual(plain[0].index(labels.PageName.EXPORT), plain[1].index(labels.PageName.IMPORT))
         self.assertEqual(plain[0].index(labels.PageName.QUIT), plain[1].index(labels.PageName.FILE))

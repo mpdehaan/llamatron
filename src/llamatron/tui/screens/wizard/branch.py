@@ -24,7 +24,7 @@ revise how the wizard is organized).
 from llamatron.macro_composer import hook_writing
 from llamatron.strings import labels, legends, marks
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
 
 # Where a picker opens, and what stepping picks, before anything is chosen.
@@ -64,7 +64,7 @@ class Branch:
 
     def note(self):
         """Return a few words after the branch's name in the tree, such as what it waits for, or nothing."""
-        return NOTHING
+        return drawing.NOTHING
 
     def children(self):
         """Return the branches under this one, in order."""

@@ -32,7 +32,7 @@ from typing import Callable
 
 from llamatron.strings import labels, legends, marks
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui.screens.shared.shared import stepped
 
 # Where a picker opens when the value isn't one of the choices.
@@ -218,8 +218,8 @@ class Button(Field):
     what edits the set and what acts on it never run together.
     """
 
-    key_name: str = NOTHING
-    value: Callable = lambda: NOTHING
+    key_name: str = drawing.NOTHING
+    value: Callable = lambda: drawing.NOTHING
 
 
 @dataclass(slots=True, kw_only=True)

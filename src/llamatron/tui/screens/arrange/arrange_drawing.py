@@ -29,8 +29,10 @@ from llamatron.tui.components.frame import Frame
 from llamatron.tui.components.length_bar import LengthBar
 from rich.text import Text
 
-from llamatron.tui.drawing import laid_over, padded, Box, Canvas, fit, NOTHING, SPACE, Style
-from llamatron.tui.screens.arrange.arrange_details import CLIP_CELL, DETAIL_WIDTH, DETAILS_LAYOUT, TRACK_CELL, clip_cell, detailed_clip_text, details_layout, scene_cell, track_cell
+from llamatron.tui import drawing
+from llamatron.tui.drawing import laid_over, padded, Box, Canvas, fit, Style
+from llamatron.tui.screens.arrange import arrange_details
+from llamatron.tui.screens.arrange.arrange_details import clip_cell, detailed_clip_text, details_layout, scene_cell, track_cell
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.text import clock
 
@@ -73,7 +75,7 @@ SCENE_DETAIL_ROOM = SCENE_WIDTH - SCENE_BAR_COLUMN - 2
 def clip_text(clip_slot, *, repeats_left=None):
     """Return what a clip shows on the grid: its name, or its pattern's, with marks for anything beyond its pattern. While the clip plays, its repeat mark counts down the repeats left."""
     name = clip_slot.get_display_name()
-    marks = NOTHING
+    marks = drawing.NOTHING
     if clip_slot.get_direction():
         marks += marks_text.MSG_DIRECTION_MARK
     if clip_slot.get_grab_track():
@@ -104,7 +106,7 @@ class ArrangeDrawing:
     def layout(self):
         """Return the current song's details and the room they need, worked out once for each change to the set."""
         document = self._page.document()
-        return document.remembered(key=DETAILS_LAYOUT, on=(document,), compute=lambda: details_layout(
+        return document.remembered(key=arrange_details.DETAILS_LAYOUT, on=(document,), compute=lambda: details_layout(
             document=document, least_width=CELL_WIDTH, name_room=NAME_ROOM, detail_room=DETAIL_ROOM, track_name_room=TRACK_NAME_ROOM))
 
     def opened_cell(self):
@@ -149,7 +151,7 @@ class ArrangeDrawing:
         if self.shows_details():
             return self.layout().track_widths[place]
         opened = self.opened_cell()
-        if opened in (track_cell(tracks[place]),) or (opened[0] == CLIP_CELL and opened[2] == tracks[place]):
+        if opened in (track_cell(tracks[place]),) or (opened[0] == arrange_details.CLIP_CELL and opened[2] == tracks[place]):
             return self.layout().cell_widths.get(opened, CELL_WIDTH)
         return CELL_WIDTH
 
@@ -158,7 +160,7 @@ class ArrangeDrawing:
         if self.shows_details():
             return HEADER_LINES + self.layout().header_extra_lines
         opened = self.opened_cell()
-        if opened is not None and opened[0] == TRACK_CELL:
+        if opened is not None and opened[0] == arrange_details.TRACK_CELL:
             return HEADER_LINES + len(self.layout().track_details[self._page.tracks().index(opened[1])])
         return HEADER_LINES
 
@@ -169,7 +171,7 @@ class ArrangeDrawing:
         opened = self.opened_cell()
         if opened == scene_cell(index):
             return SCENE_LINES + len(self.layout().scene_details[index])
-        if opened is not None and opened[0] == CLIP_CELL and opened[1] == index:
+        if opened is not None and opened[0] == arrange_details.CLIP_CELL and opened[1] == index:
             return SCENE_LINES + len(self.layout().clip_details.get((index, opened[2]), []))
         return SCENE_LINES
 
@@ -267,9 +269,9 @@ class ArrangeDrawing:
         repeat = scene.get_repeat()
         name = scene_name(scene=scene, index=index)
         if repeat > defaults.DEFAULT_REPEAT:
-            name += SPACE + marks_text.MSG_REPEAT_MARK.format(repeat=repeat)
+            name += drawing.SPACE + marks_text.MSG_REPEAT_MARK.format(repeat=repeat)
         if not scene.launches_together():
-            name += SPACE + marks_text.MSG_LAUNCH_APART_MARK
+            name += drawing.SPACE + marks_text.MSG_LAUNCH_APART_MARK
         length = clock(self._page.document().lengths().scene_seconds(index))
         return fit(text=marks_text.MSG_SCENE_ROW.format(number=index + 1, name=name), width=SCENE_LABEL_WIDTH - len(length) - 1) + length
 
@@ -294,11 +296,11 @@ class ArrangeDrawing:
             if place < len(tracks):
                 shown = self.shown_track_name(tracks[place])
                 if self._page.real_time_on():
-                    names.write(column=column, text=fit(text=SPACE + shown, width=width - SOUNDING_MARK_WIDTH), style=Style.BOLD)
+                    names.write(column=column, text=fit(text=drawing.SPACE + shown, width=width - SOUNDING_MARK_WIDTH), style=Style.BOLD)
                     if transport.is_track_sounding(tracks[place]):
                         names.write(column=column + width - 1, text=marks_text.MSG_SOUNDING_MARK, style=Style.SOUNDING)
                 else:
-                    names.write(column=column, text=fit(text=SPACE + shown, width=width), style=Style.BOLD)
+                    names.write(column=column, text=fit(text=drawing.SPACE + shown, width=width), style=Style.BOLD)
                 if self.cell_open(track_cell(tracks[place])):
                     here = self._page.on_track_name() and self._page.track_place() == place
                     self.draw_details(lines[2:-1], details=self.layout().track_details[place], column=column + TRACK_DETAIL_INDENT, here=here)
@@ -310,8 +312,8 @@ class ArrangeDrawing:
 
     def shown_track_name(self, name):
         """Return a track's name as the header shows it: whole, cut to its column, or in the details view cut at DETAIL_WIDTH, its column widened to fit."""
-        if self.widened() and len(name) > DETAIL_WIDTH:
-            return fit(text=name, width=DETAIL_WIDTH).rstrip()
+        if self.widened() and len(name) > arrange_details.DETAIL_WIDTH:
+            return fit(text=name, width=arrange_details.DETAIL_WIDTH).rstrip()
         return name
 
     def draw_scene(self, lines, *, index, first, last, clips=True):
@@ -346,13 +348,13 @@ class ArrangeDrawing:
                 playing = transport.is_clip_playing(index=index, track=tracks[place])
                 repeats_left = transport.repeats_left(index=index, track=tracks[place]) if playing else None
                 clip_played = transport.clip_elapsed(index=index, track=tracks[place]) if playing else None
-                lines[1].write(column=column, text=fit(text=SPACE + named(clip_slot, repeats_left=repeats_left), width=width))
+                lines[1].write(column=column, text=fit(text=drawing.SPACE + named(clip_slot, repeats_left=repeats_left), width=width))
                 self.play_button(lines[2], column=column, playing=playing)
                 bar = CLIP_BAR_WITH_BUTTON if width == CELL_WIDTH else LengthBar(width=width - 2 - PLAY_BUTTON_WIDTH, hatched=False)
                 lines[2].write(column=column + 1 + PLAY_BUTTON_WIDTH,
                                text=self.clip_bar(bar, lengths=lengths, clip_slot=clip_slot, index=index, track=tracks[place], played=clip_played))
             else:
-                lines[1].write(column=column, text=fit(text=SPACE + named(clip_slot), width=width))
+                lines[1].write(column=column, text=fit(text=drawing.SPACE + named(clip_slot), width=width))
                 bar = CLIP_BAR if width == CELL_WIDTH else LengthBar(width=width - 2, hatched=False)
                 lines[2].write(column=column + 1, text=self.clip_bar(bar, lengths=lengths, clip_slot=clip_slot, index=index, track=tracks[place]))
             if details:

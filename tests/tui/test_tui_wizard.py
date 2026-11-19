@@ -29,9 +29,10 @@ from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.dialog import DIALOG_MARGIN
-from llamatron.tui.drawing import LINE_BREAK
-from llamatron.tui.dialogs.row_dialog import CELL_WIDTH, RowDialog
+from llamatron.tui.dialogs import dialog as dialog_values
+from llamatron.tui import drawing
+from llamatron.tui.dialogs import row_dialog
+from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown, note_typed
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.keys import Key
@@ -40,10 +41,11 @@ from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.wizard.hook_picture import picture_of
-from llamatron.tui.screens.wizard.starts import NEW_FROM_LAST, NEW_FROM_SCRATCH, REPLACE_FROM_LAST, REPLACE_FROM_SCRATCH, STARTS
+from llamatron.tui.screens.wizard import starts
 from llamatron.support.memory import StaleAnswer
-from llamatron.tui.screens.wizard.solo_melody_branch import FIRST_SOLO
-from llamatron.tui.screens.wizard.wizard_page import ROWS_KEPT, WizardPage
+from llamatron.tui.screens.wizard import solo_melody_branch
+from llamatron.tui.screens.wizard import wizard_page
+from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_of
 
 # The tree's first branch, by its place from the top.
@@ -137,7 +139,7 @@ class WizardTest(UITest):
     async def start_with(self, start):
         """Choose one of the four ways to start in the dialog that F5 opens on a song the wizard made, which then opens the wizard."""
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        await self.press(*[Key.DOWN] * STARTS.index(start), Key.ENTER)
+        await self.press(*[Key.DOWN] * starts.STARTS.index(start), Key.ENTER)
 
     async def make_a_song_and_open_the_wizard_on_it(self):
         """Make a song with the wizard, which becomes current, and press F5 again, which asks how to start; return the song's name."""
@@ -226,7 +228,7 @@ class TestWizardPage(WizardTest):
         wizard = self.wizard()
         wizard.rows()
         with self.assertRaises(StaleAnswer):
-            wizard.kept(key=ROWS_KEPT, compute=lambda: [])
+            wizard.kept(key=wizard_page.ROWS_KEPT, compute=lambda: [])
 
     async def test_the_cursor_stops_at_both_ends_of_the_tree(self):
         await self.press(Key.UP)
@@ -451,7 +453,7 @@ class TestWizardPage(WizardTest):
         first = self.document.current_song_name()
         first_data = self.document.setlist().get_item(section=Section.SONGS, name=first).to_data()
         await self.press(keybindings.Page.WIZARD)
-        await self.start_with(NEW_FROM_SCRATCH)
+        await self.start_with(starts.NEW_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         second = self.wizard().song_name()
         self.assertNotEqual(first, second)
@@ -1025,7 +1027,7 @@ class TestWizardForm(WizardTest):
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertEqual(len(self.document.song().get_scenes()), len(sections))
         await self.press(keybindings.Page.WIZARD)
-        await self.start_with(NEW_FROM_LAST)
+        await self.start_with(starts.NEW_FROM_LAST)
         self.assertEqual(self.sections(), sections)
         self.assertTrue(self.choices().has_own_form())
 
@@ -1189,7 +1191,7 @@ class TestRowDialog(UITest):
 
     def drawn_by(self, dialog):
         """The dialog's own lines as text, apart from the page under the dialog."""
-        return LINE_BREAK.join(line.plain for line in dialog.lines(CONSOLE_WIDTH - DIALOG_MARGIN))
+        return drawing.LINE_BREAK.join(line.plain for line in dialog.lines(CONSOLE_WIDTH - dialog_values.DIALOG_MARGIN))
 
     async def test_the_cursor_stops_at_both_ends_and_a_number_at_the_lowest_and_highest(self):
         dialog = await self.open()
@@ -1229,17 +1231,17 @@ class TestRowDialog(UITest):
         dialog = await self.open()
         drawn = self.drawn_by(dialog)
         self.assertEqual(drawn.count(marks.MSG_ROW_DIALOG_BAR), sum(A_ROW))
-        self.assertNotIn(marks.MSG_ROW_DIALOG_ZERO * len(A_ROW) * CELL_WIDTH, drawn.split(LINE_BREAK * 2)[0])
+        self.assertNotIn(marks.MSG_ROW_DIALOG_ZERO * len(A_ROW) * row_dialog.CELL_WIDTH, drawn.split(drawing.LINE_BREAK * 2)[0])
         await self.press(keybindings.RowDialog.CANCEL)
         dialog = await self.open(values=A_SIGNED_ROW, lowest=-A_ROWS_HIGHEST, highest=A_ROWS_HIGHEST)
         drawn = self.drawn_by(dialog)
-        self.assertIn(marks.MSG_ROW_DIALOG_ZERO * len(A_SIGNED_ROW) * CELL_WIDTH, drawn.split(LINE_BREAK * 2)[0])
+        self.assertIn(marks.MSG_ROW_DIALOG_ZERO * len(A_SIGNED_ROW) * row_dialog.CELL_WIDTH, drawn.split(drawing.LINE_BREAK * 2)[0])
         self.assertEqual(drawn.count(marks.MSG_ROW_DIALOG_BAR), sum(abs(value) for value in A_SIGNED_ROW))
 
     async def test_the_longest_row_fits_an_80_column_console(self):
         dialog = await self.open(values=[A_ROWS_LOWEST] * A_ROWS_MOST)
-        for line in dialog.lines(CONSOLE_WIDTH - DIALOG_MARGIN):
-            self.assertLessEqual(line.cell_len, CONSOLE_WIDTH - DIALOG_MARGIN)
+        for line in dialog.lines(CONSOLE_WIDTH - dialog_values.DIALOG_MARGIN):
+            self.assertLessEqual(line.cell_len, CONSOLE_WIDTH - dialog_values.DIALOG_MARGIN)
 
 
 class TestWizardComposition(WizardTest):
@@ -1455,8 +1457,8 @@ class TestWizardComposition(WizardTest):
         # The melodies are a group of their own, open from the start, the hook's panel first in it.
         # The intro's panel is last in the group, since the intro's melody is made from the hook.
         # Each solo has a panel after the sections' melodies, the first named for the kind alone.
-        solos = [SOLO.capitalize() if number == FIRST_SOLO else labels_text.MSG_WIZARD_SOLO_NUMBERED.format(kind=SOLO.capitalize(), number=number)
-                 for number, _ in enumerate(self.choices().solo_places(), start=FIRST_SOLO)]
+        solos = [SOLO.capitalize() if number == solo_melody_branch.FIRST_SOLO else labels_text.MSG_WIZARD_SOLO_NUMBERED.format(kind=SOLO.capitalize(), number=number)
+                 for number, _ in enumerate(self.choices().solo_places(), start=solo_melody_branch.FIRST_SOLO)]
         self.assertTrue(solos)
         self.assertEqual(names[start:start + len(kinds) + len(solos) + 6],
                          [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), *solos, INTRO.capitalize(), labels_text.MSG_WIZARD_RIFFS_BRANCH,
@@ -1514,7 +1516,7 @@ class TestWizardStart(WizardTest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         text = self.text()
         self.assertIn(labels_text.MSG_WIZARD_START_TITLE, text)
-        for start in STARTS:
+        for start in starts.STARTS:
             self.assertIn(labels_text.MSG_WIZARD_START_NAMES[start], text)
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, ArrangePage)
@@ -1522,12 +1524,12 @@ class TestWizardStart(WizardTest):
     async def test_the_last_row_of_the_dialog_is_cancel_which_opens_no_wizard(self):
         await self.make_a_song_and_open_the_wizard_on_it()
         self.assertIn(labels_text.MSG_WIZARD_START_CANCEL, self.text())
-        await self.press(*[Key.DOWN] * len(STARTS), Key.ENTER)
+        await self.press(*[Key.DOWN] * len(starts.STARTS), Key.ENTER)
         self.assertIsInstance(self.app.screen, ArrangePage)
 
     async def test_the_wizard_asks_before_closing_and_names_no_choices_until_something_is_changed_after_the_start(self):
         await self.make_a_song_and_open_the_wizard_on_it()
-        await self.start_with(NEW_FROM_LAST)
+        await self.start_with(starts.NEW_FROM_LAST)
         self.assertIsInstance(self.app.screen, WizardPage)
         await self.press(Key.ESCAPE)
         self.assertIn(messages.MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, self.text())
@@ -1537,8 +1539,8 @@ class TestWizardStart(WizardTest):
     async def test_a_new_song_from_the_last_settings_starts_with_the_songs_choices_and_a_name_of_its_own(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         kept = self.document.song().get_wizard_choices()
-        await self.start_with(NEW_FROM_LAST)
-        self.assertEqual(self.wizard().start(), NEW_FROM_LAST)
+        await self.start_with(starts.NEW_FROM_LAST)
+        self.assertEqual(self.wizard().start(), starts.NEW_FROM_LAST)
         # The run keeps the song's choices and draws a seed of its own at once, so that what a panel shows is what Apply makes.
         self.assertEqual({**self.choices().to_data(), SEED: None}, {**kept, SEED: None})
         drawn = self.choices().get_seed()
@@ -1553,7 +1555,7 @@ class TestWizardStart(WizardTest):
 
     async def test_a_new_song_from_scratch_starts_with_nothing_chosen(self):
         await self.make_a_song_and_open_the_wizard_on_it()
-        await self.start_with(NEW_FROM_SCRATCH)
+        await self.start_with(starts.NEW_FROM_SCRATCH)
         self.assertEqual(list(self.choices().to_data()), [SEED])
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CREATE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
@@ -1563,7 +1565,7 @@ class TestWizardStart(WizardTest):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         kept = self.document.song().get_wizard_choices()
         patterns = len(self.document.setlist().get_pattern_names())
-        await self.start_with(REPLACE_FROM_LAST)
+        await self.start_with(starts.REPLACE_FROM_LAST)
         self.assertIn(first, self.wizard().caption())
         await self.create()
         self.assertIsInstance(self.app.screen, ArrangePage)
@@ -1585,14 +1587,14 @@ class TestWizardStart(WizardTest):
         await self.press(Key.ESCAPE)
         # A third song after it, so that the replaced song's place is not the last.
         await self.press(keybindings.Page.WIZARD)
-        await self.start_with(NEW_FROM_SCRATCH)
+        await self.start_with(starts.NEW_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         await self.create()
         third = self.document.current_song_name()
         third_data = self.song_data(third)
         self.document.select_song(first)
         await self.press(keybindings.Page.WIZARD)
-        await self.start_with(REPLACE_FROM_SCRATCH)
+        await self.start_with(starts.REPLACE_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         # The name is only shown, since a replaced song keeps it.
         await self.press(keybindings.WizardPage.INTO_FIELDS)
@@ -1611,7 +1613,7 @@ class TestWizardStart(WizardTest):
         self.document.set_tempo(self.document.song().get_tempo() + 1)
         edited = self.document.setlist().to_data()
         await self.press(keybindings.Page.WIZARD)
-        await self.start_with(REPLACE_FROM_SCRATCH)
+        await self.start_with(starts.REPLACE_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         await self.create()
         replaced = self.document.setlist().to_data()

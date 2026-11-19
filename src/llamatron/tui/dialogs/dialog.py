@@ -22,15 +22,16 @@ from textual.screen import ModalScreen
 from textual.widgets import Static
 
 from llamatron.strings import messages
-from llamatron.tui.drawing import Box, legend, LINE_BREAK, NOTHING, SELECTOR, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, legend, Style
 from llamatron.tui.key_table import pressed_key, quits_at_once, BindsKeys
 from llamatron.tui import keybindings
 
 
 DIALOG_ID = 'dialog'
 DIALOG_VIEW_ID = 'dialog-view'
-DIALOG_VIEW_SELECTOR = SELECTOR.format(id=DIALOG_VIEW_ID)
-DIALOG_SELECTOR = SELECTOR.format(id=DIALOG_ID)
+DIALOG_VIEW_SELECTOR = drawing.SELECTOR.format(id=DIALOG_VIEW_ID)
+DIALOG_SELECTOR = drawing.SELECTOR.format(id=DIALOG_ID)
 # The widest a dialog is, and the margin around it.
 DIALOG_WIDTH = 70
 DIALOG_MARGIN = 4
@@ -45,7 +46,7 @@ class Dialog(BindsKeys, ModalScreen):
 
     KEYS = keybindings.Dialog
 
-    title = NOTHING
+    title = drawing.NOTHING
     # Whether the keys are listed under the dialog: a dialog whose one button names its key leaves the list off.
     shows_legend = True
     # Whether the dialog's yes deletes something, so that its title is red whatever it reads.
@@ -94,7 +95,7 @@ class Dialog(BindsKeys, ModalScreen):
             # The flyout's box is as tall as the dialog's, whatever it holds, or shorter by what a short console has no room for.
             closed_top = (size.height - len(boxed)) // 2
             short_of = max(closed_top + FLYOUT_SHIFT + len(boxed) - size.height, 0)
-            over = [*over, *[Text(NOTHING)] * len(result)][:len(result) - short_of]
+            over = [*over, *[Text(drawing.NOTHING)] * len(result)][:len(result) - short_of]
             closed = len(boxed)
             boxed = self.stacked(under=boxed, over=self.boxed(lines=over, width=width))
             # The box is centred, so a box that has grown would move the dialog back: the box, with the view inside it, is moved forward by as much, and the dialog
@@ -102,14 +103,14 @@ class Dialog(BindsKeys, ModalScreen):
             across = (size.width - width) // 2 - (size.width - width - FLYOUT_SHIFT) // 2
             down = (size.height - closed) // 2 - (size.height - len(boxed)) // 2
         self.query_one(DIALOG_SELECTOR, Container).styles.offset = (across, down)
-        self.query_one(DIALOG_VIEW_SELECTOR, Static).update(Text(LINE_BREAK).join(boxed))
+        self.query_one(DIALOG_VIEW_SELECTOR, Static).update(Text(drawing.LINE_BREAK).join(boxed))
 
     def contents(self, inner):
         """Return the lines inside the box at a width: the heading, the dialog's own lines, and its keys."""
-        result = [self.heading(inner), Text(NOTHING)]
+        result = [self.heading(inner), Text(drawing.NOTHING)]
         result += self.lines(inner)
         if self.shows_legend:
-            result += [Text(NOTHING), *self.legend_lines(inner)]
+            result += [Text(drawing.NOTHING), *self.legend_lines(inner)]
         return result
 
     def wanted_width(self):
@@ -129,10 +130,10 @@ class Dialog(BindsKeys, ModalScreen):
         inner = width - DIALOG_MARGIN
         boxed = [Text(Box.HEAVY_TOP_LEFT + Box.HEAVY_RULE * (width - 2) + Box.HEAVY_TOP_RIGHT)]
         for line in lines:
-            framed = Text(Box.HEAVY_BAR + SPACE)
+            framed = Text(Box.HEAVY_BAR + drawing.SPACE)
             framed.append_text(line)
-            framed.append(SPACE * max(inner - line.cell_len, 0))
-            framed.append(SPACE + Box.HEAVY_BAR)
+            framed.append(drawing.SPACE * max(inner - line.cell_len, 0))
+            framed.append(drawing.SPACE + Box.HEAVY_BAR)
             boxed.append(framed)
         boxed.append(Text(Box.HEAVY_BOTTOM_LEFT + Box.HEAVY_RULE * (width - 2) + Box.HEAVY_BOTTOM_RIGHT))
         return boxed
@@ -143,9 +144,9 @@ class Dialog(BindsKeys, ModalScreen):
         for row in range(max(len(under), len(over) + FLYOUT_SHIFT)):
             if row < FLYOUT_SHIFT:
                 line = under[row].copy()
-                line.append(SPACE * FLYOUT_SHIFT)
+                line.append(drawing.SPACE * FLYOUT_SHIFT)
             else:
-                line = under[row][:FLYOUT_SHIFT] if row < len(under) else Text(SPACE * FLYOUT_SHIFT)
+                line = under[row][:FLYOUT_SHIFT] if row < len(under) else Text(drawing.SPACE * FLYOUT_SHIFT)
                 line.append_text(over[row - FLYOUT_SHIFT])
             result.append(line)
         return result

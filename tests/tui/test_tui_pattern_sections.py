@@ -22,9 +22,11 @@ from llamatron.composition.file_format import RegisterName, RegisterUse, Row
 from llamatron.composition import limits
 from llamatron.strings import labels as labels_text, legends, marks
 from llamatron.music.note import NoteName
-from llamatron.tui.drawing import Box, SPACE, fit
-from llamatron.tui.keys import Key, OPEN_AT_START, RowSection
-from llamatron.tui.components.pattern_rows import SECTIONS
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, fit
+from llamatron.tui import keys
+from llamatron.tui.keys import Key, RowSection
+from llamatron.tui.components import pattern_rows
 from llamatron.music import midi
 from llamatron.tui import keybindings
 from tests.support.rendering import render_song
@@ -60,7 +62,7 @@ class TestSections(UITest):
 
     def heading_shown(self, section):
         """Return a section's heading as the screen shows it, after the bar, or after the reversed mark when the cursor is on it."""
-        label = SPACE + section_label(section, open_=self.editor.rows_view.section_is_open(section))
+        label = drawing.SPACE + section_label(section, open_=self.editor.rows_view.section_is_open(section))
         return REVERSED.format(text=fit(text=label, width=self.editor.drawing.label_width())) if self.editor.row_name() == section else Box.BAR + label
 
     def grid_lines_shown(self):
@@ -101,7 +103,7 @@ class TestSections(UITest):
         # With Basics and Timing closed and the cursor on the last heading, the last row is the closed Mute When heading, so the bottom rule under it has no tees.
         await self.press(back_key(keybindings.PatternRows.SECTION), back_key(keybindings.PatternRows.SECTION), keybindings.SectionRow.CLOSE)
         self.assertEqual(self.editor.row_name(), RowSection.BASICS)
-        await self.press(*[forward_key(keybindings.PatternRows.SECTION)] * len(SECTIONS))
+        await self.press(*[forward_key(keybindings.PatternRows.SECTION)] * len(pattern_rows.SECTIONS))
         self.assertEqual(self.editor.row_name(), RowSection.MUTE_WHEN)
         _, lines = self.line_of_heading(RowSection.MUTE_WHEN)
         bottom = lines[-1].rstrip()
@@ -109,13 +111,13 @@ class TestSections(UITest):
         self.assertEqual(bottom, Box.BOTTOM_LEFT + Box.RULE * (len(bottom) - 2) + Box.BOTTOM_RIGHT)
 
     async def test_the_sections_open_at_the_start_show_their_rows_and_the_rest_show_only_their_headings(self):
-        self.assertEqual(self.app.open_sections, set(OPEN_AT_START))
+        self.assertEqual(self.app.open_sections, set(keys.OPEN_AT_START))
         text = self.text()
         names = [row.name for row in self.editor.rows_view.reachable()]
-        for section, rows in SECTIONS.items():
+        for section, rows in pattern_rows.SECTIONS.items():
             self.assertIn(section, names)
             for row in rows:
-                if section in OPEN_AT_START:
+                if section in keys.OPEN_AT_START:
                     self.assertIn(row, names, row)
                 else:
                     self.assertNotIn(row, names, row)
@@ -123,21 +125,21 @@ class TestSections(UITest):
         self.assertIn(self.heading_shown(RowSection.BASICS), text)
 
     async def test_page_down_goes_from_heading_to_heading_and_stops_at_the_last_and_page_up_goes_back_and_stops_at_the_first(self):
-        for section in SECTIONS:
+        for section in pattern_rows.SECTIONS:
             await self.press(Key.PAGE_DOWN)
             self.assertEqual(self.editor.row_name(), section)
         await self.press(Key.PAGE_DOWN)
-        self.assertEqual(self.editor.row_name(), list(SECTIONS)[-1])
-        for section in reversed(list(SECTIONS)[:-1]):
+        self.assertEqual(self.editor.row_name(), list(pattern_rows.SECTIONS)[-1])
+        for section in reversed(list(pattern_rows.SECTIONS)[:-1]):
             await self.press(Key.PAGE_UP)
             self.assertEqual(self.editor.row_name(), section)
         await self.press(Key.PAGE_UP)
-        self.assertEqual(self.editor.row_name(), list(SECTIONS)[0])
+        self.assertEqual(self.editor.row_name(), list(pattern_rows.SECTIONS)[0])
         # From the Degree row, above every heading, PgUp stays put and PgDn reaches the first heading.
         await self.press(Key.UP, Key.UP, Key.PAGE_UP)
         self.assertEqual(self.editor.row_name(), Row.DEGREE)
         await self.press(Key.PAGE_DOWN)
-        self.assertEqual(self.editor.row_name(), list(SECTIONS)[0])
+        self.assertEqual(self.editor.row_name(), list(pattern_rows.SECTIONS)[0])
         self.assertFalse(self.editor.on_roll())
 
     async def test_space_and_enter_open_and_close_a_section_and_the_cursor_stays_on_its_heading(self):
@@ -160,7 +162,7 @@ class TestSections(UITest):
         self.assertIn(self.heading_shown(RowSection.BASICS), self.text())
         await self.press(Key.DOWN)
         self.assertEqual((self.editor.row_name(), self.editor.step), (Row.ACCIDENTAL, 1))
-        self.assertIn(Box.BAR + SPACE + section_label(RowSection.BASICS, open_=True), self.text())
+        self.assertIn(Box.BAR + drawing.SPACE + section_label(RowSection.BASICS, open_=True), self.text())
         await self.press(Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN)
         self.assertIn(self.heading_shown(RowSection.CC), self.text())
 
@@ -345,7 +347,7 @@ class TestSectionsOnAUsualConsole(UITest):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         self.assert_fits()
         await self.press(keybindings.PatternEditor.TO_EDITOR)
-        for section in SECTIONS:
+        for section in pattern_rows.SECTIONS:
             await open_section(test=self, section=section)
             self.assert_fits()
         # Down through every row: the rows scroll so that the cursor's row, its heading included, is always on screen.
@@ -353,5 +355,5 @@ class TestSectionsOnAUsualConsole(UITest):
         for _ in editor.rows_view.reachable():
             await self.press(Key.DOWN)
             # The label follows the bar, or the reversed mark on a heading under the cursor.
-            self.assertIn(SPACE + editor.rows_view.current_row().labels()[-1], self.text(), editor.row_name())
+            self.assertIn(drawing.SPACE + editor.rows_view.current_row().labels()[-1], self.text(), editor.row_name())
             self.assert_fits()

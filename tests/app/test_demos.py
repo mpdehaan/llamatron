@@ -36,7 +36,7 @@ from fractions import Fraction
 import yaml
 
 from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
-from llamatron.tui.drawing import LINE_BREAK
+from llamatron.tui import drawing
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.timing import timed_events
@@ -134,7 +134,7 @@ class TestDemos(TemporaryFolderTest):
             with self.subTest(path=path):
                 self.assertTrue(data.get(SetlistSetting.TITLE))
                 self.assertTrue(data.get(SetlistSetting.DESCRIPTION))
-                self.assertNotIn(LINE_BREAK, data.get(SetlistSetting.DESCRIPTION).strip())
+                self.assertNotIn(drawing.LINE_BREAK, data.get(SetlistSetting.DESCRIPTION).strip())
                 self.assertIn('When changing this demo:', data.get(SetlistSetting.NOTES, ''))
 
     def test_every_demo_is_described_on_a_genre_page_and_nothing_else_is(self):

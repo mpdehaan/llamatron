@@ -30,7 +30,8 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.composition.naming import new_name, words
 from llamatron.tui.text import clock, sorted_names
-from llamatron.tui.drawing import NOTHING, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
@@ -40,7 +41,8 @@ from llamatron.tui.uses import loop_error_lines
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.generators.shape_fields import shape_section
 from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.tui.screens.shared.statements import FIRST_TABLE, SECOND_TABLE, register_fields, statement_section
+from llamatron.tui.screens.shared import statements
+from llamatron.tui.screens.shared.statements import register_fields, statement_section
 from llamatron.tui.screens.generators.strum_fields import strum_section
 from llamatron.tui import themes
 from llamatron.tui import keybindings
@@ -201,13 +203,13 @@ class ClipPage(FieldPage):
         names = self.clip_slot().get_pattern_names()
         rows = [
             PatternRow(
-                label=labels_text.MSG_PATTERNS_LABEL if place == 0 else NOTHING, place=place, adjust=None,
+                label=labels_text.MSG_PATTERNS_LABEL if place == 0 else drawing.NOTHING, place=place, adjust=None,
                 value=lambda name=name, place=place: marks.MSG_MOVING_OPEN + name + marks.MSG_MOVING_CLOSE if self.is_carrying(place) else name,
                 enter=lambda place=place: self.open_pattern_at(place), enter_what=legends.What.EDIT,
                 clear=lambda place=place: self.remove_pattern(place), clear_what=legends.What.REMOVE,
             ) for place, name in enumerate(names)
         ]
-        return [*rows, AddRow(label=NOTHING, value=lambda: marks.MSG_ADD_ROW, adjust=None, enter=self.add_pattern, enter_what=legends.What.ADD)]
+        return [*rows, AddRow(label=drawing.NOTHING, value=lambda: marks.MSG_ADD_ROW, adjust=None, enter=self.add_pattern, enter_what=legends.What.ADD)]
 
     def ends_a_list(self, field):
         return isinstance(field, AddRow)
@@ -387,7 +389,7 @@ class ClipPage(FieldPage):
         """Return the clip's sections about the registers: what it sets them to as it launches, what it adds every time its pattern starts over, and the statements that bypass its generators, and that make it sit out."""
         clip_slot = self.clip_slot()
         document = self.document()
-        tables = ((labels_text.MSG_BYPASS_WHEN_LABEL, FIRST_TABLE, ClipSlotSetting.BYPASS_WHEN), (labels_text.MSG_SKIP_WHEN_LABEL, SECOND_TABLE, ClipSlotSetting.SKIP_WHEN))
+        tables = ((labels_text.MSG_BYPASS_WHEN_LABEL, statements.FIRST_TABLE, ClipSlotSetting.BYPASS_WHEN), (labels_text.MSG_SKIP_WHEN_LABEL, statements.SECOND_TABLE, ClipSlotSetting.SKIP_WHEN))
         return [
             *register_fields(
                 page=self, label=labels_text.MSG_SET_REGISTERS_LABEL, name_label=labels_text.MSG_SET_REGISTER_LABEL, values=clip_slot.get_register_sets,
@@ -427,7 +429,7 @@ class ClipPage(FieldPage):
 
     def rename(self):
         """Give the clip a name of its own; a blank goes back to its pattern's name."""
-        self.ask(dialog=PromptDialog(title=messages.MSG_CLIP_NAME_PROMPT, value=self.clip_slot().get_name() or NOTHING, max_length=limits.MAX_NAME_LENGTH), then=lambda text: self.set_value(setting=ClipSlotSetting.NAME, value=text.strip()))
+        self.ask(dialog=PromptDialog(title=messages.MSG_CLIP_NAME_PROMPT, value=self.clip_slot().get_name() or drawing.NOTHING, max_length=limits.MAX_NAME_LENGTH), then=lambda text: self.set_value(setting=ClipSlotSetting.NAME, value=text.strip()))
 
     def notes(self, width):
         document = self.document()

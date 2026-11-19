@@ -21,8 +21,9 @@ import unittest
 from tests.support.ui_testing import UITest
 from llamatron.tui.keys import Key
 from llamatron.tui.drawing import Style
-from llamatron.tui.screens.arrange.arrange_drawing import CLIP_AREA_LEFT, HEADER_LINES, NAME_ROWS_UP
-from llamatron.tui.screens.arrange.arrange_page import NAME_SECONDS, ArrangePage
+from llamatron.tui.screens.arrange import arrange_drawing
+from llamatron.tui.screens.arrange import arrange_page
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.visualizers import modes
 from llamatron.visualizers import pixels
 from llamatron.tui import keybindings
@@ -53,7 +54,7 @@ class TestArrangeVisualizer(UITest):
         self.assertIsInstance(page.visualizer, modes.MODES[0])
         lines = page.body(width=WIDTH, height=HEIGHT)
         self.assertEqual(len(lines), HEIGHT)
-        self.assertTrue(all(line.plain[CLIP_AREA_LEFT] == pixels.FULL_BLOCK for line in lines[HEADER_LINES:]))
+        self.assertTrue(all(line.plain[arrange_drawing.CLIP_AREA_LEFT] == pixels.FULL_BLOCK for line in lines[arrange_drawing.HEADER_LINES:]))
         for track in self.document.track_names():
             self.assertIn(track, lines[1].plain)
         self.assertIn(self.document.song().get_scenes()[0].get_name(), self.text())
@@ -77,10 +78,10 @@ class TestArrangeVisualizer(UITest):
         await self.press(keybindings.ArrangePage.VISUALIZER)
         changed = time.monotonic()
         self.assertEqual(page.name_to_show(changed), modes.MODES[0].NAME)
-        self.assertEqual(page.name_to_show(changed + NAME_SECONDS / 2), modes.MODES[0].NAME)
-        self.assertIsNone(page.name_to_show(changed + NAME_SECONDS + A_MOMENT))
+        self.assertEqual(page.name_to_show(changed + arrange_page.NAME_SECONDS / 2), modes.MODES[0].NAME)
+        self.assertIsNone(page.name_to_show(changed + arrange_page.NAME_SECONDS + A_MOMENT))
         lines = page.drawing.with_name(lines=page.body(width=WIDTH, height=HEIGHT), name=modes.MODES[0].NAME)
-        named = lines[HEIGHT - 1 - NAME_ROWS_UP]
+        named = lines[HEIGHT - 1 - arrange_drawing.NAME_ROWS_UP]
         self.assertIn(modes.MODES[0].NAME, named.plain)
         self.assertTrue(any(span.style == Style.REVERSE for span in named.spans))
 

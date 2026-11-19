@@ -46,10 +46,12 @@ from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.screens.set.instrument_editor import sound_families
-from llamatron.tui.screens.shared.sound_trial import HITS_STEP, RUN_STEP, SoundTrial, hits_of, run_of
+from llamatron.tui.screens.shared import sound_trial
+from llamatron.tui.screens.shared.sound_trial import SoundTrial, hits_of, run_of
 from llamatron.tui.text import clock
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import Box, cursor_mark, INDENT, NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, cursor_mark, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -58,7 +60,7 @@ from llamatron.tui.screens.wizard.composition_branch import CompositionBranch
 from llamatron.tui.screens.wizard.create_branch import CreateBranch
 from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
-from llamatron.tui.screens.wizard.starts import FROM_LAST, REPLACING
+from llamatron.tui.screens.wizard import starts
 from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
@@ -70,7 +72,7 @@ FIRST_PLACE = 0
 # What the picker of a kit piece's sound answers for the piece's own drum, which is no drum's name.
 OWN_DRUM = ''
 # The line and the space between the tree and the fields.
-DIVIDER = Box.BAR + SPACE
+DIVIDER = Box.BAR + drawing.SPACE
 # The style of the tree's selected branch: bold, in the wizard's theme colour.
 BOLD_IN_COLOUR = '{bold} {colour}'
 
@@ -392,7 +394,7 @@ class WizardPage(FieldPage):
         """Start the run one of the four ways: from the choices the current song kept or from none, a new song or the current song replaced.
         Nothing is chosen yet, so the wizard still closes without asking."""
         self._start = start
-        self._choices = WizardChoices.from_data(self._last) if start in FROM_LAST else WizardChoices()
+        self._choices = WizardChoices.from_data(self._last) if start in starts.FROM_LAST else WizardChoices()
         # Every run of the wizard rolls the dice afresh, and at its start, so that what a panel shows of the song, as its hook, is
         # what Apply makes: a run from the last settings keeps the settings and never the seed.
         self._choices.draw_seed()
@@ -401,7 +403,7 @@ class WizardPage(FieldPage):
 
     def replaces(self):
         """Return whether Create replaces the current song, where otherwise a song is added."""
-        return self._start in REPLACING
+        return self._start in starts.REPLACING
 
     def refusal_of(self, branch):
         """Return why the cursor cannot move into a branch's fields yet, or None when it can."""
@@ -586,7 +588,7 @@ class WizardPage(FieldPage):
         """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the player's octave."""
         choices = self._choices
         run = run_of(root=choices.root_half_steps(), steps=choices.scale_half_steps(), octave=choices.role_octave(role))
-        dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, RUN_STEP, sound)))
+        dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, sound_trial.RUN_STEP, sound)))
 
         def chosen(sound):
             if sound is not None:
@@ -602,8 +604,8 @@ class WizardPage(FieldPage):
 
         def played(sound):
             if isinstance(sound, str):
-                return hits_of(KIT[piece if sound == OWN_DRUM else sound]), HITS_STEP, None
-            return hits_of(dialog.note), HITS_STEP, sound
+                return hits_of(KIT[piece if sound == OWN_DRUM else sound]), sound_trial.HITS_STEP, None
+            return hits_of(dialog.note), sound_trial.HITS_STEP, sound
 
         def chosen(answer):
             sound, note = answer
@@ -754,18 +756,18 @@ class WizardPage(FieldPage):
             under_cursor = place == self.tree_place
             line = Text(no_wrap=True)
             line.append(cursor_mark(under_cursor and not self.in_fields))
-            line.append(INDENT * depth)
+            line.append(drawing.INDENT * depth)
             if branch.children():
-                line.append((marks.MSG_WIZARD_BRANCH_OPEN if self.shows_children(branch) else marks.MSG_WIZARD_BRANCH_CLOSED) + SPACE)
+                line.append((marks.MSG_WIZARD_BRANCH_OPEN if self.shows_children(branch) else marks.MSG_WIZARD_BRANCH_CLOSED) + drawing.SPACE)
             else:
-                line.append(INDENT)
+                line.append(drawing.INDENT)
             carried = self.moving and under_cursor
             line.append(marks.MSG_WIZARD_CARRIED.format(name=branch.name()) if carried else branch.name(), style=self.name_style(branch=branch, under_cursor=under_cursor))
             if branch.note():
-                line.append(SPACE + branch.note(), style=Style.DIM)
+                line.append(drawing.SPACE + branch.note(), style=Style.DIM)
             line.truncate(TREE_WIDTH - 2)
             line.pad_right(TREE_WIDTH - 2 - len(line.plain))
-            line.append((marks.MSG_WIZARD_EDITED_BRANCH if under_cursor and self.in_fields else SPACE) + SPACE)
+            line.append((marks.MSG_WIZARD_EDITED_BRANCH if under_cursor and self.in_fields else drawing.SPACE) + drawing.SPACE)
             lines.append(line)
         return lines
 
@@ -781,7 +783,7 @@ class WizardPage(FieldPage):
         place = self.place
         if not self.in_fields:
             self.place = NO_PLACE
-        lines = [Text(SPACE + self.branch().title(), style=Style.BOLD), *FieldPage.body(self, width=width, height=max(height - 1, 1))]
+        lines = [Text(drawing.SPACE + self.branch().title(), style=Style.BOLD), *FieldPage.body(self, width=width, height=max(height - 1, 1))]
         self.place = place
         if not self.in_fields:
             for line in lines:
@@ -794,9 +796,9 @@ class WizardPage(FieldPage):
         lines = []
         for place in range(max(len(tree), len(fields), height)):
             line = Text(no_wrap=True)
-            line.append_text(tree[place] if place < len(tree) else Text(SPACE * TREE_WIDTH))
+            line.append_text(tree[place] if place < len(tree) else Text(drawing.SPACE * TREE_WIDTH))
             line.append(DIVIDER, style=Style.DIM)
-            line.append_text(fields[place] if place < len(fields) else Text(NOTHING))
+            line.append_text(fields[place] if place < len(fields) else Text(drawing.NOTHING))
             lines.append(line)
         return lines
 

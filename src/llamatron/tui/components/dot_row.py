@@ -16,7 +16,7 @@
 """The Dot row: a gate made dotted, half as long again, or a triplet, two thirds."""
 
 from llamatron.tui.components.cycle_row import CycleRow
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui import keybindings
 
 
@@ -28,4 +28,4 @@ class DotRow(CycleRow):
     __slots__ = ()
     def cell_text(self, *, step):
         value = self.value(step=step)
-        return NOTHING if not self.is_note(step=step) or value is None else str(value)
+        return drawing.NOTHING if not self.is_note(step=step) or value is None else str(value)

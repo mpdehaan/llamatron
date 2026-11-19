@@ -24,8 +24,10 @@ and under each section's heading, two neighbouring rules drawn as one.
 from rich.text import Text
 
 from llamatron.composition.file_format import Row
-from llamatron.tui.drawing import Align, Box, fit, SPACE, Style
-from llamatron.tui.screens.pattern.grid_drawing import CELL_WIDTH, GridDrawing
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align, Box, fit, Style
+from llamatron.tui.screens.pattern import grid_drawing
+from llamatron.tui.screens.pattern.grid_drawing import GridDrawing
 
 # The lines around the rows: the two header lines, the top rule, the Step row, the bottom rule and the description.
 LINES_AROUND_GRID = 6
@@ -165,16 +167,16 @@ class PatternDrawing(GridDrawing):
         for number, label in enumerate(labels):
             line = Text(no_wrap=True)
             line.append(Box.BAR, style=Style.DIM)
-            line.append(fit(text=SPACE + label, width=self.label_width()), style=self.label_style(row=row, on_row=on_row, number=number))
+            line.append(fit(text=drawing.SPACE + label, width=self.label_width()), style=self.label_style(row=row, on_row=on_row, number=number))
             if row.marks_label():
                 # A section heading has no cells, so no divider crosses it: the dividers above end in the rule over it and the ones below start in the rule under it.
-                line.append(SPACE * ((last - first) * (CELL_WIDTH + 1)))
+                line.append(drawing.SPACE * ((last - first) * (grid_drawing.CELL_WIDTH + 1)))
                 line.append(Box.BAR, style=Style.DIM)
                 lines.append(line)
                 continue
             for step in range(first, last):
                 self.append_edge(line=line, step=step, beats=beats, single=Box.BAR, double=Box.DOUBLE_BAR, replaced=row.edge_text(step=step))
-                text = fit(text=cells[step - first][number], width=CELL_WIDTH, align=Align.CENTER)
+                text = fit(text=cells[step - first][number], width=grid_drawing.CELL_WIDTH, align=Align.CENTER)
                 selected = on_row and not row.marks_label() and step == editor.step and number == row.cursor_line()
                 # A blocked cell's mark is dim, so that the values stand out from the places that can't hold one.
                 line.append(text, style=Style.REVERSE if selected else (Style.DIM if row.blocked(step=step) else Style.PLAIN))

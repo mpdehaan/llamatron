@@ -37,7 +37,8 @@ from rich.text import Text
 
 from llamatron.composition import sections
 from llamatron.composition.sections import Section
-from llamatron.tui.drawing import Box, Canvas, NOTHING, padded, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Canvas, padded, Style
 from llamatron.strings import errors, help as help_text, labels as labels_text, marks, messages
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -64,8 +65,8 @@ COLUMNS = 3
 GRID_WIDTH = 80
 CELL_GAP = 1
 # Between the box's left edge and the key, and between the key and the name, and the borders either side.
-EDGE_GAP = SPACE
-NAME_GAP = SPACE
+EDGE_GAP = drawing.SPACE
+NAME_GAP = drawing.SPACE
 BORDERS = 2
 # A cell's three lines: its top edge, its key and name, and its bottom edge.
 CELL_LINES = 3
@@ -310,7 +311,7 @@ class MainPage(Page):
 
     def caption(self):
         """The theme's stripe carries no words here: the crumbs already name the main screen, and the name shows once."""
-        return NOTHING
+        return drawing.NOTHING
 
     def count(self, item):
         """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Arrange and the actions."""
@@ -368,7 +369,7 @@ class MainPage(Page):
         for canvas in canvases[1:-1]:
             canvas.write(column=left, text=bar, style=style)
             if fill is not None:
-                canvas.write(column=left + 1, text=SPACE * inner, style=fill)
+                canvas.write(column=left + 1, text=drawing.SPACE * inner, style=fill)
             canvas.write(column=left + width - 1, text=bar, style=style)
 
     def draw_cell(self, *, canvases, left, item, selected, width):
@@ -401,7 +402,7 @@ class MainPage(Page):
                 item = row[column]
                 canvas.write(column=start, text=label, style=Style.KEY)
                 chosen = item.binding is selected.binding
-                canvas.write(column=start + key_room, text=NAME_GAP + self.shown_name(item) + (SPACE if chosen else NOTHING), style=Style.REVERSE if chosen else Style.PLAIN)
+                canvas.write(column=start + key_room, text=NAME_GAP + self.shown_name(item) + (drawing.SPACE if chosen else drawing.NOTHING), style=Style.REVERSE if chosen else Style.PLAIN)
 
     def body(self, *, width, height):
         """Return the block of buttons, the same on every console: Arrange's bar, the three rows of buttons, a blank line and the bar of the file's actions."""
@@ -418,5 +419,5 @@ class MainPage(Page):
                 self.draw_cell(canvases=lines, left=lefts[column], item=item, selected=item.binding is selected.binding, width=widths[column])
         bar = [Canvas(total) for _ in range(BAR_ROWS + BORDERS)]
         self.draw_bar(canvases=bar, rows=rows[1 + BUTTON_ROWS:], lefts=lefts, left=0, width=total)
-        blank = [Text(NOTHING)]
+        blank = [Text(drawing.NOTHING)]
         return blank * LINES_ABOVE_GRID + [canvas.text() for canvas in grid] + blank * LINES_ABOVE_BAR + [canvas.text() for canvas in bar]

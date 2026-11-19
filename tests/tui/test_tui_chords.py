@@ -30,10 +30,12 @@ from llamatron.strings import labels, marks, messages
 from llamatron.composition.named_scale import scale_type_name, scale_type_names
 from llamatron.music.scale import ScaleType
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.chord_dialog import INVERSION_LIST, LISTS, NOT_BORROWED_ROW, QUALITY_LIST, SCALE_LIST, TENSION_LIST, ChordDialog
-from llamatron.tui.dialogs.dialog import DIALOG_MARGIN, DIALOG_SELECTOR, FLYOUT_SHIFT
-from llamatron.tui.drawing import Box, NOTHING, SPACE
-from llamatron.tui.scale_categories import COMMON_SCALE_TYPES, SCALE_CATEGORIES, SCALE_TYPES_IN_ORDER, SORTED_SCALE_CATEGORIES
+from llamatron.tui.dialogs import chord_dialog
+from llamatron.tui.dialogs.chord_dialog import ChordDialog
+from llamatron.tui.dialogs import dialog as dialog_values
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box
+from llamatron.tui import scale_categories
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 
@@ -87,15 +89,15 @@ class TestPatternEditorChords(UITest):
     async def test_the_scale_row_steps_through_the_scale_types_and_clears(self):
         await self.go_to_row(Row.CHORD_SCALE)
         await self.press(keybindings.ChordScaleRow.NEXT)
-        self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[0])
+        self.assertEqual(self.value(Row.CHORD_SCALE), scale_categories.SCALE_TYPES_IN_ORDER[0])
         await self.press(keybindings.ChordScaleRow.MORE, keybindings.ChordScaleRow.LESS, keybindings.ChordScaleRow.LESS)
         self.assertIsNone(self.value(Row.CHORD_SCALE))
         # The scale types stop at the last and never go round to none, and [ goes back from the last.
-        self.set(row=Row.CHORD_SCALE, value=SCALE_TYPES_IN_ORDER[-1])
+        self.set(row=Row.CHORD_SCALE, value=scale_categories.SCALE_TYPES_IN_ORDER[-1])
         await self.press(keybindings.ChordScaleRow.MORE, keybindings.ChordScaleRow.NEXT)
-        self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[-1])
+        self.assertEqual(self.value(Row.CHORD_SCALE), scale_categories.SCALE_TYPES_IN_ORDER[-1])
         await self.press(keybindings.ChordScaleRow.LESS)
-        self.assertEqual(self.value(Row.CHORD_SCALE), SCALE_TYPES_IN_ORDER[-2])
+        self.assertEqual(self.value(Row.CHORD_SCALE), scale_categories.SCALE_TYPES_IN_ORDER[-2])
         self.set(row=Row.CHORD_SCALE, value=MINOR)
         self.assertEqual(self.editor.row_for(Row.CHORD_SCALE).cell_text(step=FIRST_STEP), SCALE_CELL)
         await self.press(keybindings.ChordScaleRow.CLEAR)
@@ -119,7 +121,7 @@ class TestPatternEditorChords(UITest):
 
     async def test_each_row_opens_the_dialog_on_its_own_list(self):
         self.set(row=Row.CHORD, value=ChordSymbol.DOMINANT7)
-        for row, part in ((Row.CHORD_SCALE, SCALE_LIST), (Row.CHORD, QUALITY_LIST), (Row.TENSION, TENSION_LIST)):
+        for row, part in ((Row.CHORD_SCALE, chord_dialog.SCALE_LIST), (Row.CHORD, chord_dialog.QUALITY_LIST), (Row.TENSION, chord_dialog.TENSION_LIST)):
             await self.go_to_row(row)
             await self.press(keybindings.ChordRow.CHOOSE)
             self.assertIsInstance(self.app.screen, ChordDialog, row)
@@ -134,7 +136,7 @@ class TestPatternEditorChords(UITest):
         # A single note is said as a note, in the scale the pattern is known to play under.
         degree = self.value(Row.DEGREE)
         self.assertIn(messages.MSG_NOTE_SENTENCE.format(scale=C_MAJOR, degree=degree, name='')[:-1].rstrip(), self.dialog_text())
-        dialog.places[QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
+        dialog.places[chord_dialog.QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
         dialog.picked = set(ALTERED)
         dialog.set_kind(MINOR)
         self.assertIn(C_MINOR, self.dialog_text())
@@ -151,7 +153,7 @@ class TestPatternEditorChords(UITest):
         await self.go_to_row(Row.CHORD_SCALE)
         await self.press(keybindings.ChordRow.CHOOSE)
         dialog = self.app.screen
-        self.assertEqual((dialog.part, dialog.places[SCALE_LIST]), (SCALE_LIST, NOT_BORROWED_ROW))
+        self.assertEqual((dialog.part, dialog.places[chord_dialog.SCALE_LIST]), (chord_dialog.SCALE_LIST, chord_dialog.NOT_BORROWED_ROW))
         return dialog
 
     async def test_a_category_opens_a_flyout_where_enter_picks_and_the_next_enter_takes_the_chord(self):
@@ -165,7 +167,7 @@ class TestPatternEditorChords(UITest):
         self.assertIsNone(dialog.kind)
         await self.press(keybindings.ChordDialog.CHOOSE)
         self.assertIsNone(dialog.flyout)
-        self.assertEqual((dialog.kind, dialog.part), (COMMON_SCALE_TYPES[0], QUALITY_LIST))
+        self.assertEqual((dialog.kind, dialog.part), (scale_categories.COMMON_SCALE_TYPES[0], chord_dialog.QUALITY_LIST))
         self.assertIn(marks.MSG_FLYOUT_CHOSEN.format(name=labels.MSG_SCALE_CATEGORY_COMMON, chosen=SCALE_CELL), self.dialog_text())
         # Every category is drawn as a button, and only the one whose scale type was picked carries the mark.
         for name, _ in dialog.categories:
@@ -180,13 +182,13 @@ class TestPatternEditorChords(UITest):
         dialog = await self.open_on_scales()
         await self.press(Key.DOWN, keybindings.ChordDialog.OPEN, Key.UP)
         self.assertEqual(dialog.flyout_place, 0)
-        await self.press(*[Key.DOWN] * (len(COMMON_SCALE_TYPES) + 1), Key.RIGHT)
-        self.assertEqual(dialog.flyout_place, len(COMMON_SCALE_TYPES) - 1)
+        await self.press(*[Key.DOWN] * (len(scale_categories.COMMON_SCALE_TYPES) + 1), Key.RIGHT)
+        self.assertEqual(dialog.flyout_place, len(scale_categories.COMMON_SCALE_TYPES) - 1)
         await self.press(keybindings.ChordDialog.CLOSE_FLYOUT)
         self.assertIsInstance(self.app.screen, ChordDialog)
         self.assertEqual((dialog.flyout, dialog.kind), (None, None))
         await self.press(keybindings.ChordDialog.OPEN, Key.LEFT)
-        self.assertEqual((dialog.flyout, dialog.part), (None, SCALE_LIST))
+        self.assertEqual((dialog.flyout, dialog.part), (None, chord_dialog.SCALE_LIST))
         self.assertNotIn(C_MINOR, self.dialog_text())
 
     async def test_the_dialog_opens_on_the_category_of_the_scale_borrowed_and_its_flyout_on_that_scale(self):
@@ -195,28 +197,28 @@ class TestPatternEditorChords(UITest):
         await self.go_to_row(Row.CHORD_SCALE)
         await self.press(keybindings.ChordRow.CHOOSE)
         dialog = self.app.screen
-        name, kinds = dialog.categories[dialog.places[SCALE_LIST] - 1]
+        name, kinds = dialog.categories[dialog.places[chord_dialog.SCALE_LIST] - 1]
         self.assertIn(ScaleKind.LYDIAN_DOMINANT, kinds)
         await self.press(keybindings.ChordDialog.OPEN)
         self.assertEqual(kinds[dialog.flyout_place], ScaleKind.LYDIAN_DOMINANT)
         # The row that borrows none takes the scale away and goes on to the qualities.
         await self.press(keybindings.ChordDialog.CLOSE_FLYOUT, *[Key.UP] * len(dialog.categories), keybindings.ChordDialog.OPEN)
-        self.assertEqual((dialog.kind, dialog.part), (None, QUALITY_LIST))
+        self.assertEqual((dialog.kind, dialog.part), (None, chord_dialog.QUALITY_LIST))
 
     async def test_a_flyout_is_a_box_of_the_dialogs_size_stacked_over_it_and_the_dialog_stays_where_it_was(self):
         dialog = await self.open_on_scales()
         closed = self.dialog_text().splitlines()
-        view = dialog.query_one(DIALOG_SELECTOR)
+        view = dialog.query_one(dialog_values.DIALOG_SELECTOR)
         await self.settle()
         corner = (view.region.x, view.region.y)
         await self.press(Key.DOWN, keybindings.ChordDialog.OPEN)
         stacked = self.dialog_text().splitlines()
         await self.settle()
         # The stack is the dialog and a box as large, FLYOUT_SHIFT down and to the right, and the dialog's corner has not moved.
-        self.assertEqual(len(stacked), len(closed) + FLYOUT_SHIFT)
-        self.assertEqual(max(len(line) for line in stacked), len(closed[0]) + FLYOUT_SHIFT)
+        self.assertEqual(len(stacked), len(closed) + dialog_values.FLYOUT_SHIFT)
+        self.assertEqual(max(len(line) for line in stacked), len(closed[0]) + dialog_values.FLYOUT_SHIFT)
         self.assertEqual(stacked[0].rstrip(), closed[0])
-        self.assertEqual(stacked[FLYOUT_SHIFT][FLYOUT_SHIFT:], closed[0])
+        self.assertEqual(stacked[dialog_values.FLYOUT_SHIFT][dialog_values.FLYOUT_SHIFT:], closed[0])
         self.assertEqual(stacked[-1].strip(), closed[-1])
         self.assertEqual((view.region.x, view.region.y), corner)
         # The dialog's lists are covered, and the flyout says what the chord comes to and lists its own keys.
@@ -227,14 +229,14 @@ class TestPatternEditorChords(UITest):
     async def test_the_dialog_is_one_size_on_every_list_wide_enough_for_the_most_keys_on_one_line(self):
         dialog = await self.open_on_scales()
         sizes = set()
-        for _ in range(LISTS):
+        for _ in range(chord_dialog.LISTS):
             lines = self.dialog_text().splitlines()
             sizes.add((len(lines), len(lines[0])))
             await self.press(keybindings.ChordDialog.NEXT_LIST)
         self.assertEqual(len(sizes), 1)
         # With the room this console has, the tension list's keys, the most, are on one line.
-        dialog.part = TENSION_LIST
-        self.assertEqual(len(dialog.legend_lines(dialog.wanted_width() - DIALOG_MARGIN)), 1)
+        dialog.part = chord_dialog.TENSION_LIST
+        self.assertEqual(len(dialog.legend_lines(dialog.wanted_width() - dialog_values.DIALOG_MARGIN)), 1)
         self.assertEqual(len(self.dialog_text().splitlines()[0]), dialog.wanted_width())
 
     async def test_the_pattern_shows_the_chord_as_the_choice_moves_and_escape_puts_it_back_with_no_undo_step(self):
@@ -248,8 +250,8 @@ class TestPatternEditorChords(UITest):
         self.assertNotEqual(moved_to, ChordSymbol.MAJOR)
         self.assertEqual(self.value(Row.CHORD), moved_to)
         # The flyout's cursor is shown too, before anything is picked.
-        await self.press(*[Key.RIGHT] * LISTS, *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
-        self.assertEqual(self.value(Row.CHORD_SCALE), COMMON_SCALE_TYPES[0])
+        await self.press(*[Key.RIGHT] * chord_dialog.LISTS, *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
+        self.assertEqual(self.value(Row.CHORD_SCALE), scale_categories.COMMON_SCALE_TYPES[0])
         await self.press(keybindings.ChordDialog.CLOSE_FLYOUT)
         self.assertIsNone(self.value(Row.CHORD_SCALE))
         await self.press(keybindings.ChordDialog.CANCEL)
@@ -265,7 +267,7 @@ class TestPatternEditorChords(UITest):
         self.assertEqual(dialog.inversions, [None, *limits.INVERSIONS])
         # Right reaches the inversions, where the cursor's row is the choice, shown in the pattern underneath as it moves.
         await self.press(Key.RIGHT, Key.DOWN, Key.DOWN)
-        self.assertEqual((dialog.part, dialog.choice().inversion), (INVERSION_LIST, limits.INVERSIONS[1]))
+        self.assertEqual((dialog.part, dialog.choice().inversion), (chord_dialog.INVERSION_LIST, limits.INVERSIONS[1]))
         self.assertEqual(self.value(Row.INVERSION), limits.INVERSIONS[1])
         await self.press(keybindings.ChordDialog.CHOOSE)
         self.assertIsInstance(self.app.screen, PatternEditor)
@@ -273,7 +275,7 @@ class TestPatternEditorChords(UITest):
         # The dialog opens on the step's inversion, and a single note keeps none.
         await self.press(keybindings.ChordRow.CHOOSE)
         dialog = self.app.screen
-        self.assertEqual(dialog.places[INVERSION_LIST], dialog.inversions.index(limits.INVERSIONS[1]))
+        self.assertEqual(dialog.places[chord_dialog.INVERSION_LIST], dialog.inversions.index(limits.INVERSIONS[1]))
         await self.press(*[Key.UP] * len(dialog.qualities), keybindings.ChordDialog.CHOOSE)
         self.assertEqual((self.value(Row.CHORD), self.value(Row.INVERSION)), (None, None))
 
@@ -319,7 +321,7 @@ class TestPatternEditorChords(UITest):
         await self.go_to_row(Row.CHORD)
         await self.press(keybindings.ChordRow.CHOOSE)
         dialog = self.app.screen
-        dialog.places[QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
+        dialog.places[chord_dialog.QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
         dialog.picked = set(ALTERED)
         dialog.set_kind(MINOR)
         await self.press(keybindings.ChordDialog.CHOOSE)
@@ -349,18 +351,18 @@ class TestPatternEditorChords(UITest):
         keyboard, first = self.keyboard_lines()
         self.assertEqual(len(keyboard), KEYBOARD_ROWS_OF_KEYS)
         # A single note: one key filled.
-        self.assertEqual(NOTHING.join(keyboard).count(marks.MSG_KEY_IN_CHORD), 1)
+        self.assertEqual(drawing.NOTHING.join(keyboard).count(marks.MSG_KEY_IN_CHORD), 1)
         lines = self.dialog_text().splitlines()
-        self.assertEqual(lines[first - 1].strip(Box.HEAVY_BAR + SPACE), NOTHING)
-        self.assertNotEqual(lines[first - 2].strip(Box.HEAVY_BAR + SPACE), NOTHING)
+        self.assertEqual(lines[first - 1].strip(Box.HEAVY_BAR + drawing.SPACE), drawing.NOTHING)
+        self.assertNotEqual(lines[first - 2].strip(Box.HEAVY_BAR + drawing.SPACE), drawing.NOTHING)
         # Major: three keys filled, and the dialog is as tall as it was, the keyboard still one blank line under the last sentence.
         await self.press(Key.DOWN)
         keyboard, first = self.keyboard_lines()
-        self.assertEqual(NOTHING.join(keyboard).count(marks.MSG_KEY_IN_CHORD), MAJOR_TRIAD_NOTES)
+        self.assertEqual(drawing.NOTHING.join(keyboard).count(marks.MSG_KEY_IN_CHORD), MAJOR_TRIAD_NOTES)
         lines = self.dialog_text().splitlines()
         self.assertEqual(len(lines), height)
-        self.assertEqual(lines[first - 1].strip(Box.HEAVY_BAR + SPACE), NOTHING)
-        self.assertNotEqual(lines[first - 2].strip(Box.HEAVY_BAR + SPACE), NOTHING)
+        self.assertEqual(lines[first - 1].strip(Box.HEAVY_BAR + drawing.SPACE), drawing.NOTHING)
+        self.assertNotEqual(lines[first - 2].strip(Box.HEAVY_BAR + drawing.SPACE), drawing.NOTHING)
         self.assertEqual([item.keys for item in dialog.keys()], keys_before)
 
     async def test_no_keyboard_where_the_patterns_uses_play_it_under_more_than_one_scale(self):
@@ -385,15 +387,15 @@ class TestChordDialogOnASmallConsole(TestPatternEditorChords):
     async def test_the_dialog_is_one_size_on_every_list_and_every_flyout_is_whole_on_the_console(self):
         dialog = await self.open_on_scales()
         sizes = set()
-        for _ in range(LISTS):
+        for _ in range(chord_dialog.LISTS):
             lines = self.dialog_text().splitlines()
             sizes.add((len(lines), len(lines[0])))
             await self.press(keybindings.ChordDialog.NEXT_LIST)
         self.assertEqual(len(sizes), 1)
-        box = dialog.query_one(DIALOG_SELECTOR)
+        box = dialog.query_one(dialog_values.DIALOG_SELECTOR)
         corner = (box.region.x, box.region.y)
         for row in range(1, len(dialog.categories) + 1):
-            dialog.places[SCALE_LIST] = row
+            dialog.places[chord_dialog.SCALE_LIST] = row
             dialog.open_row()
             text = self.dialog_text()
             await self.settle()
@@ -412,9 +414,9 @@ class TestChordDialogOnASmallConsole(TestPatternEditorChords):
 class TestScaleCategories(unittest.TestCase):
 
     def test_every_scale_type_is_in_one_category_after_common_and_common_repeats_some(self):
-        listed = [kind for _, kinds in SORTED_SCALE_CATEGORIES for kind in kinds]
+        listed = [kind for _, kinds in scale_categories.SORTED_SCALE_CATEGORIES for kind in kinds]
         self.assertEqual(sorted(listed), sorted(set(scale_type_names())))
-        self.assertEqual(SCALE_TYPES_IN_ORDER, listed)
+        self.assertEqual(scale_categories.SCALE_TYPES_IN_ORDER, listed)
         self.assertEqual(len(listed), len(set(listed)))
-        self.assertTrue(set(COMMON_SCALE_TYPES) <= set(listed))
-        self.assertEqual(SCALE_CATEGORIES[0], (labels.MSG_SCALE_CATEGORY_COMMON, COMMON_SCALE_TYPES))
+        self.assertTrue(set(scale_categories.COMMON_SCALE_TYPES) <= set(listed))
+        self.assertEqual(scale_categories.SCALE_CATEGORIES[0], (labels.MSG_SCALE_CATEGORY_COMMON, scale_categories.COMMON_SCALE_TYPES))

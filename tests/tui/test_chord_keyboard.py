@@ -27,8 +27,9 @@ from llamatron.music import note
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.strings import marks
-from llamatron.tui.components.keyboard import chord_keys, KEY_COUNT, Keyboard, KeyKind, pitch_class_of
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui.components import keyboard as keyboard_values
+from llamatron.tui.components.keyboard import chord_keys, Keyboard, KeyKind, pitch_class_of
+from llamatron.tui import drawing
 
 MAJOR = scale_type_name(ScaleType.MAJOR)
 # Note names with their half steps above C, the awkward spellings among them.
@@ -70,7 +71,7 @@ class TestChordKeys(unittest.TestCase):
                 with self.subTest(root=root, symbol=symbol):
                     notes = spelled_chord(scale=scale, degree=FIRST_DEGREE, symbol=symbol).notes
                     keys = chord_keys(note_names=notes)
-                    self.assertTrue(all(0 <= key < KEY_COUNT for key in keys))
+                    self.assertTrue(all(0 <= key < keyboard_values.KEY_COUNT for key in keys))
                     self.assertEqual({key % OCTAVE for key in keys}, {pitch_class_of(name) for name in notes})
 
 
@@ -81,7 +82,7 @@ class TestKeyboardRows(unittest.TestCase):
         return Keyboard(root=scale.get_root(), half_steps=scale.get_half_steps(), chord=chord)
 
     def row_text(self, row):
-        return NOTHING.join(text for text, _ in row)
+        return drawing.NOTHING.join(text for text, _ in row)
 
     def test_the_pieces_draw_the_keys_where_the_plain_lines_do(self):
         keyboard = self.keyboard()

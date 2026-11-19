@@ -18,7 +18,7 @@
 from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui import keybindings
 
 # Where a nudge or Enter starts from on a row whose blank step plays as no number at all, which is a CC row: 0, since the
@@ -87,7 +87,7 @@ class NumberRow(PatternRow):
     def cell_text(self, *, step):
         """A value that isn't set shows the default, or a dot where the default means nothing happens."""
         if not self.is_note(step=step) and not self.on_rests():
-            return NOTHING
+            return drawing.NOTHING
         value = self.value(step=step)
         if value is None:
             return marks.MSG_UNSET_MARK if self.described().is_quiet() else str(self.default())

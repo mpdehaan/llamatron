@@ -25,7 +25,8 @@ piano roll (RollDrawing) and the rows (PatternDrawing) draw their own cells betw
 from rich.text import Text
 
 from llamatron.composition.file_format import Row
-from llamatron.tui.drawing import Align, Box, fit, NOTHING, SPACE, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align, Box, fit, Style
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import words
 from llamatron.strings import labels, marks, messages
@@ -94,18 +95,18 @@ class GridDrawing:
         """Return the two header lines as aligned cells: Steps, Step size, Drum and Direction over Time and what the view adds."""
         pattern = self._editor.pattern()
         drum = marks.MSG_DRUM_ON if pattern.is_drum() else marks.MSG_DRUM_OFF
-        whose = NOTHING if pattern.get_written_step_size() else marks.MSG_FROM_SONG_SHOWN
+        whose = drawing.NOTHING if pattern.get_written_step_size() else marks.MSG_FROM_SONG_SHOWN
         step_size = marks.MSG_STEP_SIZE_SHOWN.format(size=fraction_text(self._editor.document().lengths().step_size(self._editor.item)), whose=whose)
         first_cells = [
             marks.MSG_STEPS_HEADER.format(steps=pattern.get_steps()), step_size, marks.MSG_DRUM_HEADER.format(drum=drum),
             marks.MSG_DIRECTION_HEADER.format(direction=words(pattern.get_direction())),
         ]
-        signature_whose = NOTHING if pattern.get_written_time_signature() else marks.MSG_FROM_SONG_SHOWN
+        signature_whose = drawing.NOTHING if pattern.get_written_time_signature() else marks.MSG_FROM_SONG_SHOWN
         second_cells = [marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=self.time_signature().to_text(), whose=signature_whose), *self.header_extra()]
         header, second = header_cells(lines=[first_cells, second_cells])
         shown = self._editor.steps_shown_text(first=first, last=last)
         if shown:
-            second = fit(text=second, width=width - len(shown) - 1) + SPACE + shown
+            second = fit(text=second, width=width - len(shown) - 1) + drawing.SPACE + shown
         return [Text(header, no_wrap=True), Text(second, no_wrap=True)]
 
     def time_signature(self):
@@ -230,7 +231,7 @@ class GridDrawing:
         if not self._editor.is_note():
             return (messages.MSG_DESCRIBE_TIED if self._editor.value(row=Row.TIE) else messages.MSG_DESCRIBE_EMPTY).format(step=step)
         document = self._editor.document()
-        where = NOTHING if self._editor.is_drum() else messages.MSG_IN_SCALE.format(scale=document.pattern_scale(self._editor.item) or document.song().get_scale_name() or messages.MSG_NO_SCALE)
+        where = drawing.NOTHING if self._editor.is_drum() else messages.MSG_IN_SCALE.format(scale=document.pattern_scale(self._editor.item) or document.song().get_scale_name() or messages.MSG_NO_SCALE)
         played = self._editor.document().note_name(name=self._editor.item, step=self._editor.step)
         if self._editor.value(row=Row.GRAB):
             # What a grab step plays is whatever the other track played, moved by whatever else is at work, so the line names no note.
@@ -240,8 +241,8 @@ class GridDrawing:
         else:
             sound = messages.MSG_DEGREE_WITHOUT_SCALE.format(degree=self._editor.value(row=Row.DEGREE))
         chord = self._editor.value(row=Row.CHORD)
-        chord_text = messages.MSG_DESCRIBE_CHORD.format(chord=chord) if chord is not None else NOTHING
-        gate = str(fraction_text(self._editor.gate_now())) + labels.MSG_DOT_NAMES.get(self._editor.value(row=Row.DOT), NOTHING)
+        chord_text = messages.MSG_DESCRIBE_CHORD.format(chord=chord) if chord is not None else drawing.NOTHING
+        gate = str(fraction_text(self._editor.gate_now())) + labels.MSG_DOT_NAMES.get(self._editor.value(row=Row.DOT), drawing.NOTHING)
         if self._editor.gate_is_overridden():
             gate += messages.MSG_DESCRIBE_GATE_OVERRIDDEN
         return messages.MSG_DESCRIBE_NOTE.format(step=step, sound=sound, gate=gate, chord=chord_text) + self.keyswitches_described()
@@ -250,14 +251,14 @@ class GridDrawing:
         """Return the end of the description that names the cursor's keyswitches, each by its instrument's name for it or by its number, or nothing for none."""
         slots = self._editor.value(row=Row.KEYSWITCH)
         if not slots:
-            return NOTHING
+            return drawing.NOTHING
         instrument, _ = self._editor.keyswitch_instrument()
         return messages.MSG_DESCRIBE_KEYSWITCHES.format(names=slots_in_words(keyswitches=keyswitches_of(instrument), slots=slots))
 
     def with_description(self, *, lines, width, height):
         """Return the header and grid lines with the description after them, set apart by a blank line unless the console is too short for one."""
-        description = Text(SPACE + fit(text=self.describe(), width=width - 1), style=Style.BOLD)
-        spacer = [Text(NOTHING)] if len(lines) + LINES_AFTER_GRID <= height else []
+        description = Text(drawing.SPACE + fit(text=self.describe(), width=width - 1), style=Style.BOLD)
+        spacer = [Text(drawing.NOTHING)] if len(lines) + LINES_AFTER_GRID <= height else []
         return lines + spacer + [description]
 
 

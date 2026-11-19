@@ -30,8 +30,10 @@ from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, Style, cursor_mark
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, cursor_moved
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, cursor_mark
+from llamatron.tui import key_table
+from llamatron.tui.key_table import cursor_moved
 
 # The rows in the order drawn; the last is asked only of a riff of notes and chords.
 ROWS = (RIFF_BAR_COUNT, RIFF_NOTES, RIFF_WITH_CHORDS, RIFF_BETWEEN)
@@ -69,7 +71,7 @@ class NewRiffDialog(Dialog):
         elif self.rows()[self.row] == RIFF_WITH_CHORDS:
             bound.append(self.bind(self.KEYS.TOGGLE, action=self.toggle))
         else:
-            bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(STEP_FORWARD)), self.bind(self.KEYS.WRITE, action=self.accept)]
+            bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(key_table.STEP_FORWARD)), self.bind(self.KEYS.WRITE, action=self.accept)]
         return self.in_order(bound)
 
     def move(self, name):
@@ -99,7 +101,7 @@ class NewRiffDialog(Dialog):
     def shown(self, row):
         """Return a row's value as drawn: the toggle's dot, or the choice's name."""
         if row == RIFF_WITH_CHORDS:
-            return marks.MSG_TOGGLE_ON if self.settings[row] == MOVES_WHOLE else NOTHING
+            return marks.MSG_TOGGLE_ON if self.settings[row] == MOVES_WHOLE else drawing.NOTHING
         return labels.MSG_NEW_RIFF_VALUES[self.settings[row]]
 
     def lines(self, width):
@@ -109,4 +111,4 @@ class NewRiffDialog(Dialog):
             line.append(self.shown(row), style=Style.BOLD if place == self.row else Style.PLAIN)
             lines.append(line)
         buttons = [(binding[1], label) for label, binding in zip(labels.MSG_NEW_RIFF_BUTTONS, BUTTON_BINDINGS)]
-        return [*lines, Text(NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else NO_BUTTON)]
+        return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else NO_BUTTON)]

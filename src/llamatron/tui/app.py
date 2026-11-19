@@ -28,7 +28,8 @@ from textual.app import App
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.tui.batch_stage import BatchStage
 from llamatron.tui.document import Document
-from llamatron.tui.launch import FINISHED_CHECK_SECONDS, Launch, recording_problem
+from llamatron.tui import launch as launch_values
+from llamatron.tui.launch import Launch, recording_problem
 from llamatron.visualizers.modes import mode_called
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.shared.everywhere import offer_corrected
@@ -38,9 +39,9 @@ from llamatron.tui.components.scroll_text import scroll_seconds
 from llamatron.tui.screens.set.demo_scroll import DemoScroll
 from llamatron.tui.screens.set.splash import Splash
 from llamatron.tui.screens.set.start_screen import StartScreen
-from llamatron.tui.screens.wizard.starts import STARTS
+from llamatron.tui.screens.wizard import starts
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
-from llamatron.tui.keys import OPEN_AT_START
+from llamatron.tui import keys
 from llamatron.tui.status_line import StatusLine
 from llamatron.tui.made_preview import MadePreview
 from llamatron.tui.pattern_preview import PatternPreview
@@ -90,7 +91,7 @@ class LlamatronApp(App, inherit_bindings=False):
         self._caption_strip = None
         # Which page the pattern editor shows, the piano roll or a set of rows, which stays as you move between patterns.
         # The pattern editor's open sections, kept for the session like the choice of the roll, so every pattern opens the way the last was left.
-        self.open_sections = set(OPEN_AT_START)
+        self.open_sections = set(keys.OPEN_AT_START)
         # The settings pages' sections open now, by name, closed until opened and remembered for the session.
         self.open_field_sections = set()
         # The headings open in the picker of a new generator's type, kept for the session.
@@ -218,11 +219,11 @@ class LlamatronApp(App, inherit_bindings=False):
         else:
             # On a song the wizard made, a dialog asks how to start first; ESC opens no wizard.
             # The last row is CANCEL, which opens no wizard, as ESC does.
-            names = [*(labels.MSG_WIZARD_START_NAMES[start] for start in STARTS), labels.MSG_WIZARD_START_CANCEL]
+            names = [*(labels.MSG_WIZARD_START_NAMES[start] for start in starts.STARTS), labels.MSG_WIZARD_START_CANCEL]
 
             def answered(place):
-                if place < len(STARTS):
-                    page.show_page(WizardPage(self, start=STARTS[place]))
+                if place < len(starts.STARTS):
+                    page.show_page(WizardPage(self, start=starts.STARTS[place]))
             page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_START_TITLE, options=names), then=answered)
 
     def show_arrange_on_new_song(self):
@@ -316,7 +317,7 @@ class LlamatronApp(App, inherit_bindings=False):
             if not self._autoplay_started:
                 self.set_timer(self.launch.lead_out_seconds, self.exit)
             else:
-                self.set_interval(FINISHED_CHECK_SECONDS, self._quit_when_finished)
+                self.set_interval(launch_values.FINISHED_CHECK_SECONDS, self._quit_when_finished)
 
     def _open_arrange(self, page):
         arrange = ArrangePage(self)
@@ -376,7 +377,7 @@ class LlamatronApp(App, inherit_bindings=False):
                 # Nothing could play, and the page is telling why in a dialog: a launch that would quit when finished has nothing to wait for.
                 self.set_timer(self.launch.lead_out_seconds, self.exit)
             else:
-                self.set_interval(FINISHED_CHECK_SECONDS, self._quit_when_finished)
+                self.set_interval(launch_values.FINISHED_CHECK_SECONDS, self._quit_when_finished)
 
     def _quit_when_finished(self):
         if self._autoplay_started and not self.transport.is_playing():

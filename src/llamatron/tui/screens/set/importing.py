@@ -30,7 +30,7 @@ from llamatron.strings import errors, importing, labels
 from llamatron.tui.dialogs.import_dialog import ImportDialog
 from llamatron.tui.dialogs.imported_dialog import ImportedDialog
 from llamatron.tui.screens.set.open_page import OpenPage
-from llamatron.tui.screens.shared.shared import MIDI_SUFFIXES
+from llamatron.tui.screens.shared import shared
 
 # What reading a MIDI file can raise: mido raises these for a file that isn't MIDI or stops short, and the import its own
 # MidiImportProblem, a ValueError, for one with no notes.
@@ -44,7 +44,7 @@ def home_folder():
 
 def import_midi(page):
     """Show the file picker for a MIDI file to import, over the page."""
-    picker = OpenPage(holder=page.holder, then=None, suffixes=MIDI_SUFFIXES, folder=home_folder(), crumbs=(labels.Crumb.IMPORT_MIDI,))
+    picker = OpenPage(holder=page.holder, then=None, suffixes=shared.MIDI_SUFFIXES, folder=home_folder(), crumbs=(labels.Crumb.IMPORT_MIDI,))
     picker.chosen = lambda path: offer_import(page=picker, path=path)
     page.show_page(picker)
 

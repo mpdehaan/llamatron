@@ -24,8 +24,9 @@ from llamatron.tui import keybindings
 from llamatron.tui import themes
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arrange.arrange_details import ADD_CHAIN, DETAIL_WIDTH, clip_details, detailed_clip_text, details_layout, scene_details, track_details
-from llamatron.tui.screens.arrange.arrange_drawing import CELL_WIDTH, SCENE_WIDTH
+from llamatron.tui.screens.arrange import arrange_details
+from llamatron.tui.screens.arrange.arrange_details import clip_details, detailed_clip_text, details_layout, scene_details, track_details
+from llamatron.tui.screens.arrange import arrange_drawing
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
@@ -34,7 +35,7 @@ from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
-from llamatron.tui.screens.arrange.arrange_page import HEADER_ROW
+from llamatron.tui.screens.arrange import arrange_page
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.tui.drawing import Style
 from llamatron.visualizers import modes
@@ -67,7 +68,7 @@ def texts(lines):
 
 def own_texts(lines):
     """Return a cell's lines of details without the + that adds a chain, which every cell has."""
-    return [line.text for line in lines if line.target is None or line.target.kind != ADD_CHAIN]
+    return [line.text for line in lines if line.target is None or line.target.kind != arrange_details.ADD_CHAIN]
 
 
 class TestDetails(unittest.TestCase):
@@ -103,7 +104,7 @@ class TestDetails(unittest.TestCase):
         # A chain is drawn in the chains' theme colour and a generator in the generators', since a kind has one colour everywhere.
         lines = clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot())
         self.assertEqual(lines[0].style, themes.text_style(themes.CHAINS))
-        self.assertEqual(lines[1].target.kind, ADD_CHAIN)
+        self.assertEqual(lines[1].target.kind, arrange_details.ADD_CHAIN)
         self.document.set_scene_chains(index=FIRST_SCENE, names=[NAMED, NAMED])
         self.assertEqual(self.scene_lines().count(marks.MSG_DETAILS_CHAIN.format(name=NAMED)), 2)
         self.document.set_track_chains(name=LEAD, names=[NAMED])
@@ -180,11 +181,11 @@ class TestDetails(unittest.TestCase):
         self.document.add_chain(LONG_CHAIN)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[LONG_CHAIN])
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.NAME, value=A_LONG_NAME)
-        self.assertTrue(all(len(line) <= DETAIL_WIDTH for line in self.clip_lines()))
-        layout = details_layout(document=self.document, least_width=CELL_WIDTH, name_room=NO_ROOM, detail_room=ROOM, track_name_room=ROOM)
+        self.assertTrue(all(len(line) <= arrange_details.DETAIL_WIDTH for line in self.clip_lines()))
+        layout = details_layout(document=self.document, least_width=arrange_drawing.CELL_WIDTH, name_room=NO_ROOM, detail_room=ROOM, track_name_room=ROOM)
         lead = self.document.track_names().index(LEAD)
         self.assertEqual(layout.track_widths[lead], len(A_LONG_NAME) + NO_ROOM)
-        self.assertEqual(layout.track_widths[self.document.track_names().index(DRUMS)], CELL_WIDTH)
+        self.assertEqual(layout.track_widths[self.document.track_names().index(DRUMS)], arrange_drawing.CELL_WIDTH)
         self.assertEqual(layout.scene_extra_lines[FIRST_SCENE], 2)
         # The second scene holds nothing but its own stock line and the + that adds a chain.
         self.assertEqual(layout.scene_extra_lines[SECOND_SCENE], 2)
@@ -226,11 +227,11 @@ class TestArrangeDetailsView(UITest):
         self.assertEqual(self.drawn(), usual)
 
     async def test_the_details_view_draws_a_double_divider_after_the_scenes_and_one_between_the_tracks(self):
-        self.assertTrue(all(line[SCENE_WIDTH] != Box.DOUBLE_BAR for line in self.drawn()))
+        self.assertTrue(all(line[arrange_drawing.SCENE_WIDTH] != Box.DOUBLE_BAR for line in self.drawn()))
         await self.press(keybindings.ArrangePage.SHOW_DETAILS)
         lines = self.drawn()
-        self.assertTrue(any(line[SCENE_WIDTH] == Box.DOUBLE_BAR for line in lines))
-        self.assertTrue(any(line[SCENE_WIDTH] == Box.DOUBLE_CROSS for line in lines))
+        self.assertTrue(any(line[arrange_drawing.SCENE_WIDTH] == Box.DOUBLE_BAR for line in lines))
+        self.assertTrue(any(line[arrange_drawing.SCENE_WIDTH] == Box.DOUBLE_CROSS for line in lines))
         divider = self.page.drawing.cell_column(1)
         self.assertTrue(any(line[divider] == Box.BAR for line in lines))
 
@@ -369,9 +370,9 @@ class TestPickingDetails(UITest):
         lines = clip_details(setlist=self.document.setlist(), song=self.document.song(), clip_slot=self.document.clip_slot(index=FIRST_SCENE, track=LEAD))
         self.assertEqual(len(opened), len(usual) + len(lines))
         self.assertIn(marks.MSG_DETAILS_CHAIN.format(name=NAMED), self.text())
-        self.assertGreater(self.page.drawing.track_width(self.document.track_names().index(LEAD)), CELL_WIDTH)
-        self.assertEqual(self.page.drawing.track_width(drums), CELL_WIDTH)
-        self.assertTrue(all(line[SCENE_WIDTH] != Box.DOUBLE_BAR for line in opened if len(line) > SCENE_WIDTH))
+        self.assertGreater(self.page.drawing.track_width(self.document.track_names().index(LEAD)), arrange_drawing.CELL_WIDTH)
+        self.assertEqual(self.page.drawing.track_width(drums), arrange_drawing.CELL_WIDTH)
+        self.assertTrue(all(line[arrange_drawing.SCENE_WIDTH] != Box.DOUBLE_BAR for line in opened if len(line) > arrange_drawing.SCENE_WIDTH))
         await self.press(keybindings.ArrangePage.OUT_OF_DETAILS)
         self.assertEqual([line.plain for line in self.page.drawing.body(width=width, height=height)], usual)
 
@@ -396,7 +397,7 @@ class TestPickingDetails(UITest):
         self.document.set_track_instrument(name=LEAD, instrument=INSTRUMENT)
         self.document.set_track_groove(name=LEAD, choice=SONG_GROOVE)
         self.document.record_edit()
-        self.page.row = HEADER_ROW
+        self.page.row = arrange_page.HEADER_ROW
         await self.press(Key.RIGHT, Key.LEFT)
         for downs, page, word, name in ((1, InstrumentEditor, names.MSG_INSTRUMENT_WORD, INSTRUMENT), (2, GrooveEditor, names.MSG_GROOVE_WORD, SONG_GROOVE)):
             with self.subTest(page=page.__name__):

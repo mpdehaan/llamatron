@@ -27,7 +27,8 @@ from llamatron.composition import groove as groove_values
 from llamatron.composition.groove import is_factory_groove
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, marks, messages
-from llamatron.tui.drawing import Box, NOTHING, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
@@ -102,7 +103,7 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
         if self.is_factory():
             lines.append(Text(messages.MSG_FACTORY_GROOVE_NOTE, style=Style.DIM))
         lines += [
-            Text(NOTHING),
+            Text(drawing.NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
             self.grid_line(label=labels.MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
             self.grid_line(label=labels.MSG_AMOUNT_ROW_LABEL, cells=[(place, str(cells[place])) for place in places], selected=self.step),

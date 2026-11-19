@@ -32,10 +32,11 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.corrections_dialog import CorrectionsDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.shared.shared import SONG_SUFFIX, SONG_SUFFIXES
+from llamatron.tui.screens.shared import shared
 from llamatron.tui.uses import loop_error_lines
 from llamatron.strings import errors, labels, marks, messages as messages_text
-from llamatron.tui.dialogs.quit_dialog import SAVE_THEN_QUIT, QuitDialog
+from llamatron.tui.dialogs import quit_dialog
+from llamatron.tui.dialogs.quit_dialog import QuitDialog
 
 # Where Save as starts when the set has no file yet.
 DEFAULT_SAVE_FOLDER = 'songs'
@@ -167,8 +168,8 @@ def save_as(page, *, then=None):
         path = path.strip()
         if not path:
             return
-        if not path.endswith(SONG_SUFFIXES):
-            path += SONG_SUFFIX
+        if not path.endswith(shared.SONG_SUFFIXES):
+            path += shared.SONG_SUFFIX
         if document.file_is_protected(path=path):
             page.tell(messages_text.MSG_PROTECTED_TITLE, messages_text.MSG_PROTECTED_EXPLAINED.format(path=path), messages_text.MSG_PROTECTED_CHOOSE_ANOTHER_NAME)
         elif path != document.get_path() and os.path.exists(path):
@@ -315,7 +316,7 @@ def quit_program(page):
     title = UNSAVED_TITLE.format(title=messages_text.MSG_QUIT_TITLE, note=messages_text.MSG_QUIT_UNSAVED_NOTE)
 
     def chosen(answer):
-        if answer == SAVE_THEN_QUIT:
+        if answer == quit_dialog.SAVE_THEN_QUIT:
             save(page, then=page.app.exit)
         else:
             page.app.exit()

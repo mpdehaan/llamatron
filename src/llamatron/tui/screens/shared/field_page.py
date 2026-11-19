@@ -22,11 +22,13 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.keys import Key
-from llamatron.tui.drawing import cursor_mark, INDENT, NOTHING, padded, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.screens.shared.field import Button, CELL_GAP, Cells, Field, Heading, NameField
+from llamatron.tui.screens.shared import field as field_values
+from llamatron.tui.screens.shared.field import Button, Cells, Field, Heading, NameField
 from llamatron.composition import setlist
-from llamatron.tui.key_table import STEP_FORWARD
+from llamatron.tui import key_table
 from llamatron.tui.screens.shared.page import Page
 from llamatron.tui import keybindings
 
@@ -101,9 +103,9 @@ class FieldPage(Page):
     def jump_section(self, direction):
         """Move the cursor to the next section's heading, or the one before, staying put past the last or the first."""
         places = [place for place, field in enumerate(self.shown_fields()) if isinstance(field, Heading)]
-        ahead = [place for place in places if place > self.place] if direction == STEP_FORWARD else [place for place in places if place < self.place]
+        ahead = [place for place in places if place > self.place] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.place]
         if ahead:
-            self.place = ahead[0] if direction == STEP_FORWARD else ahead[-1]
+            self.place = ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1]
 
     def ends_a_list(self, field):
         """Return whether a field is the last row of a list among the settings, which leaves a blank line after it. No field is, unless the page says so."""
@@ -140,7 +142,7 @@ class FieldPage(Page):
     def row_of_buttons(self, *, buttons, selected, width):
         """Return the lines of the page's buttons: boxed in one row where the row fits the width, and otherwise one a line, each
         in brackets, the selected one marked and bold."""
-        row = [Text(INDENT) + line for line in button_row(buttons=[(button.key_name, button.label) for button in buttons], selected=selected)]
+        row = [Text(drawing.INDENT) + line for line in button_row(buttons=[(button.key_name, button.label) for button in buttons], selected=selected)]
         self.stacked_buttons = width is not None and max(line.cell_len for line in row) > width
         if not self.stacked_buttons:
             return row
@@ -221,7 +223,7 @@ class FieldPage(Page):
         fields = self.shown_fields()
         self.field()
         label_width = max((len(self.label_text(field)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
-        lines = [Text(NOTHING)]
+        lines = [Text(drawing.NOTHING)]
         selected = 0
         seen_heading = False
         buttons = [field for field in fields if isinstance(field, Button)]
@@ -231,7 +233,7 @@ class FieldPage(Page):
             if isinstance(field, Heading) and not seen_heading:
                 seen_heading = True
                 if place:
-                    lines.append(Text(NOTHING))
+                    lines.append(Text(drawing.NOTHING))
             if place == self.place:
                 selected = len(lines)
             line = Text(no_wrap=True)
@@ -253,20 +255,20 @@ class FieldPage(Page):
             lines.append(line)
             # A page that starts with its thing's Name leaves a blank line before its other settings.
             if place == 0 and field.label == labels_text.MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
-                lines.append(Text(NOTHING))
+                lines.append(Text(drawing.NOTHING))
             elif self.ends_a_list(field):
-                lines.append(Text(NOTHING))
+                lines.append(Text(drawing.NOTHING))
         if buttons:
             # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
             first_button = self.first_button_place()
-            lines.append(Text(NOTHING))
+            lines.append(Text(drawing.NOTHING))
             row = self.row_of_buttons(buttons=buttons, selected=self.place - first_button, width=width)
             if self.place >= first_button:
                 selected = len(lines) + (self.place - first_button if self.buttons_stacked() else 1)
             lines += row
         notes = self.notes(width)
         if notes:
-            lines += [Text(NOTHING), *notes]
+            lines += [Text(drawing.NOTHING), *notes]
         return self.window_of_lines(lines=lines, selected=selected, height=height)
 
     def append_cells(self, *, line, row, selected):
@@ -276,7 +278,7 @@ class FieldPage(Page):
             line.append(padded(cell.value()), style=Style.REVERSE if on_cell else Style.PLAIN)
             if cell.enter_what == legends.What.CHOOSE:
                 line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
-            line.append(CELL_GAP)
+            line.append(field_values.CELL_GAP)
 
     def label_text(self, field):
         """Return a field's label as drawn: a section's heading with its open or closed mark, any other field's label as it is."""

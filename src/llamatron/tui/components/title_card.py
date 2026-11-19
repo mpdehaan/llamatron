@@ -34,7 +34,7 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
 
-from llamatron.tui.drawing import NOTHING, SPACE
+from llamatron.tui import drawing
 from llamatron.strings import about
 
 
@@ -116,7 +116,7 @@ def scale_for(*, word, width):
 
 def letter_rows(*, word, scale):
     """Return, for each letter of a word, its rows drawn scale columns to a block."""
-    return [[row.replace(about.MSG_BLOCK, about.MSG_BLOCK * scale).replace(SPACE, SPACE * scale) for row in about.MSG_BLOCK_LETTERS[letter]] for letter in word]
+    return [[row.replace(about.MSG_BLOCK, about.MSG_BLOCK * scale).replace(drawing.SPACE, drawing.SPACE * scale) for row in about.MSG_BLOCK_LETTERS[letter]] for letter in word]
 
 
 def words_width(*, word, scale):
@@ -181,7 +181,7 @@ BLACK_STYLE = style_of(colour=BLACK, step=0)
 
 
 def blank_line(width):
-    return Text(SPACE * width, style=BLACK_STYLE)
+    return Text(drawing.SPACE * width, style=BLACK_STYLE)
 
 
 def centred_text(*, text, width, colour, level):
@@ -189,9 +189,9 @@ def centred_text(*, text, width, colour, level):
     if level <= 0:
         return blank_line(width)
     left = max((width - len(text)) // 2, 0)
-    line = Text(SPACE * left, style=BLACK_STYLE)
+    line = Text(drawing.SPACE * left, style=BLACK_STYLE)
     line.append(text[:width], style=shaded(colour=colour, level=level))
-    line.append(SPACE * max(width - left - len(text), 0), style=BLACK_STYLE)
+    line.append(drawing.SPACE * max(width - left - len(text), 0), style=BLACK_STYLE)
     return line
 
 
@@ -214,7 +214,7 @@ def title_lines(*, width, height, elapsed, prompt=False, seconds=None):
             line = top + row - lift
             if 0 <= line < height:
                 for offset, character in enumerate(text):
-                    if character != SPACE and 0 <= column + offset < width:
+                    if character != drawing.SPACE and 0 <= column + offset < width:
                         cells[line][column + offset] = (character, TITLE_BLUE, letters)
         column += len(letter[0]) + gap
     scanner_line = top + SCANNER_ROW
@@ -243,16 +243,16 @@ def drawn_line(*, cells, width):
     for cell in cells:
         if cell is None:
             cell_style = BLACK_STYLE
-            character = SPACE
+            character = drawing.SPACE
         else:
             character, colour, level = cell
             cell_style = shaded(colour=colour, level=level)
         if cell_style is not style and run:
-            line.append(NOTHING.join(run), style=style)
+            line.append(drawing.NOTHING.join(run), style=style)
             run = []
         style = cell_style
         run.append(character)
     if run:
-        line.append(NOTHING.join(run), style=style)
+        line.append(drawing.NOTHING.join(run), style=style)
     return line if width else Text()
 

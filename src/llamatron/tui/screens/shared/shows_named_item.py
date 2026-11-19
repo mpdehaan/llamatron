@@ -25,7 +25,8 @@ they share is a mixin beside whichever of those a page is.
 from llamatron.composition.file_format import Section
 from llamatron.composition import sections
 from llamatron.strings import labels
-from llamatron.tui.screens.shared.statements import FIRST_TABLE, statement_section
+from llamatron.tui.screens.shared import statements
+from llamatron.tui.screens.shared.statements import statement_section
 
 NOTHING = ''
 from llamatron.tui.themes import theme_of
@@ -60,7 +61,7 @@ class ShowsNamedItem:
             return []
         document = self.document()
         return statement_section(
-            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=FIRST_TABLE,
+            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE,
             statements=lambda: document.song().get_generator_settings(kind=sections.GENERATOR_KINDS[self.SECTION], name=self.item).get_bypass_when(),
             store=lambda place, statement: document.set_generator_bypass_statement(section=self.SECTION, name=self.item, place=place, statement=statement),
         )

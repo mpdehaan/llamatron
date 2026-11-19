@@ -27,7 +27,8 @@ from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import keybindings
-from llamatron.tui.drawing import Box, NOTHING, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Box, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.step_editor import StepEditor
@@ -95,7 +96,7 @@ class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
         values = self.values()
         return [
             self.with_steps_shown(text=messages.MSG_STEP_ROW_NOTES[self.SECTION], style=Style.DIM, width=width, first=first, last=last),
-            Text(NOTHING),
+            Text(drawing.NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
             self.grid_line(label=labels.MSG_STEP_NUMBER_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
             self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)),

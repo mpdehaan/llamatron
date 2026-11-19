@@ -33,7 +33,8 @@ from llamatron.composition.named_items import NamedItems
 from llamatron.composition.pattern import Pattern
 from llamatron.music.note import NoteName
 from llamatron.tui.document import Document
-from llamatron.tui.history import describe_change, History, HISTORY_DEPTH, renamed_items, Snapshot
+from llamatron.tui import history as history_values
+from llamatron.tui.history import describe_change, History, renamed_items, Snapshot
 from llamatron.support.memory import Memory, StaleAnswer
 from tests.support.ui_testing import a_song, fixed_text, LEAD, ONE, OTHER, TUNE
 
@@ -81,7 +82,7 @@ class TestHistory(unittest.TestCase):
         self.assertIsNone(self.history.redo())
 
     def test_the_depth_defaults_to_the_trackers(self):
-        self.assertEqual(History().depth(), HISTORY_DEPTH)
+        self.assertEqual(History().depth(), history_values.HISTORY_DEPTH)
 
     def test_records_a_step_and_walks_it_back_and_forward(self):
         self.assertTrue(self.history.record(snapshot(1)))

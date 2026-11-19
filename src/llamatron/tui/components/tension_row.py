@@ -19,7 +19,7 @@
 from llamatron.composition.file_format import Row
 from llamatron.strings import marks
 from llamatron.tui.components.chord_row import ChordRow
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 from llamatron.tui import keybindings
 
 # The widest a step's tensions are written out in a cell; more are counted.
@@ -41,11 +41,11 @@ class TensionRow(ChordRow):
 
     def cell_text(self, *, step):
         if self.blocked(step=step):
-            return NOTHING
+            return drawing.NOTHING
         value = self.value(step=step)
         if value is None:
             return marks.MSG_UNSET_MARK
-        for separator in (marks.MSG_TENSIONS_IN_CELL_SEPARATOR, NOTHING):
+        for separator in (marks.MSG_TENSIONS_IN_CELL_SEPARATOR, drawing.NOTHING):
             if len(separator.join(value)) <= CELL_ROOM:
                 return separator.join(value)
         return marks.MSG_TENSIONS_COUNTED.format(count=len(value))

@@ -32,7 +32,8 @@ from llamatron.macro_composer.melody import HEIGHT
 from llamatron.macro_composer.wizard_choices import MELODY_BUSY, SECTION_MELODY_WAYS
 from llamatron.strings import labels, legends, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -158,7 +159,7 @@ class SectionMelodyBranch(Branch):
         choices = self.choices()
         if not choices.is_ready() or choices.tune_player_in(self._kind) is None:
             return []
-        return [Text(INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.tune_is_own(self._kind) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
+        return [Text(drawing.INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.tune_is_own(self._kind) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
 
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the first section of the kind."""

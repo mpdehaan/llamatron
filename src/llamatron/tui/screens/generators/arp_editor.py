@@ -29,7 +29,8 @@ from llamatron.strings import help as help_text, labels, legends, marks, message
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.shared.shared import DEFAULT_ORDER, NO_SEED, numbers_text, ORDERS
+from llamatron.tui.screens.shared import shared
+from llamatron.tui.screens.shared.shared import numbers_text
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui import keybindings
 
@@ -80,20 +81,20 @@ class ArpEditor(ShowsNamedItem, FieldPage):
     def fields(self):
         arp = self.arp()
         step = arp.get_step()
-        order = arp.get_order() or DEFAULT_ORDER
+        order = arp.get_order() or shared.DEFAULT_ORDER
         octaves = arp.get_octave_range() or arp_values.MIN_OCTAVE_RANGE
         jump = arp.get_octave_jump() or JUMPS[0]
         seed = arp.get_seed()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(page=self, label=labels.MSG_STEP_LABEL, written=step, first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.set_value(setting=ArpSetting.STEP, value=value)),
-            ChoiceField(page=self, label=labels.MSG_ORDER_LABEL, choices=ORDERS, current=order, set=lambda value: self.set_value(setting=ArpSetting.ORDER, value=value)),
+            ChoiceField(page=self, label=labels.MSG_ORDER_LABEL, choices=shared.ORDERS, current=order, set=lambda value: self.set_value(setting=ArpSetting.ORDER, value=value)),
             NumberField(page=self, label=labels.MSG_OCTAVE_RANGE_LABEL, number=octaves, lowest=arp_values.MIN_OCTAVE_RANGE, highest=arp_values.MAX_OCTAVE_RANGE, set=self.set_range),
             ChoiceField(page=self, label=labels.MSG_OCTAVE_JUMP_LABEL, choices=JUMPS, current=jump, names=[words(name) for name in JUMPS], shown=words(jump), set=self.set_jump),
             Field(label=labels.MSG_OFFSETS_LABEL, value=lambda: offsets_text(arp.get_offsets()), adjust=None, enter=self.edit_offsets, enter_what=legends.What.EDIT,
                   clear=lambda: self.set_value(setting=ArpSetting.OFFSETS, value=None), clear_what=legends.What.REMOVE),
             NumberField(
-                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=NO_SEED, shown=marks.MSG_SONG_SEED_SHOWN if seed is None else None,
+                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_SONG_SEED_SHOWN if seed is None else None,
                 set=lambda number: self.set_value(setting=ArpSetting.SEED, value=number),
                 clear=lambda: self.set_value(setting=ArpSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
             ),

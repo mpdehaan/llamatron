@@ -27,10 +27,11 @@ from llamatron.composition import defaults
 from llamatron.strings import marks, names
 from llamatron.composition.file_format import ClipSlotSetting, Direction
 from llamatron.tui import keybindings
-from llamatron.tui.drawing import ELLIPSIS
+from llamatron.tui import drawing
 from llamatron.tui.keys import Key
-from llamatron.tui.components.length_bar import TO_PLAY
-from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing, CELL_WIDTH, CLIP_BAR, FOOTER_LINES, HEADER_LINES, SCENE_LINES, clip_text
+from llamatron.tui.components import length_bar
+from llamatron.tui.screens.arrange import arrange_drawing
+from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing, clip_text
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 
 FIRST_SCENE = 0
@@ -88,8 +89,8 @@ class TestCellText(unittest.TestCase):
         self.set(setting=ClipSlotSetting.LOOP, value=True)
         text = clip_text(self.clip_slot())
         self.assertTrue(text.endswith(marks.MSG_LOOP_MARK))
-        self.assertLess(len(text), CELL_WIDTH)
-        self.assertTrue(A_CLIP_NAME.startswith(text[:-len(marks.MSG_LOOP_MARK)].strip().rstrip(ELLIPSIS)))
+        self.assertLess(len(text), arrange_drawing.CELL_WIDTH)
+        self.assertTrue(A_CLIP_NAME.startswith(text[:-len(marks.MSG_LOOP_MARK)].strip().rstrip(drawing.ELLIPSIS)))
 
 
 class TestArrangeDrawing(UITest):
@@ -112,7 +113,7 @@ class TestArrangeDrawing(UITest):
 
     async def test_the_grid_is_the_header_three_lines_a_scene_and_the_footer(self):
         scenes = len(self.document.song().get_scenes())
-        self.assertEqual(len(self.drawn()), HEADER_LINES + scenes * SCENE_LINES + FOOTER_LINES)
+        self.assertEqual(len(self.drawn()), arrange_drawing.HEADER_LINES + scenes * arrange_drawing.SCENE_LINES + arrange_drawing.FOOTER_LINES)
 
     async def test_only_the_scenes_that_fit_are_drawn_and_the_cursors_scene_is_among_them(self):
         for number in range(MANY_SCENES):
@@ -121,7 +122,7 @@ class TestArrangeDrawing(UITest):
         width, height = self.SIZE
         shown = self.page.drawing.visible_scenes(height)
         self.assertLess(len(shown), MANY_SCENES)
-        self.assertEqual(len(self.drawn()), HEADER_LINES + len(shown) * SCENE_LINES + FOOTER_LINES)
+        self.assertEqual(len(self.drawn()), arrange_drawing.HEADER_LINES + len(shown) * arrange_drawing.SCENE_LINES + arrange_drawing.FOOTER_LINES)
         for _ in range(MANY_SCENES):
             self.press_at_once(Key.DOWN)
         self.assertIn(self.page.row, self.page.drawing.visible_scenes(height))
@@ -148,21 +149,21 @@ class TestClipBar(UITest):
 
     def bar_for(self, *, track, played=None):
         clip_slot = self.document.clip_slot(index=FIRST_SCENE, track=track)
-        return ArrangeDrawing.clip_bar(CLIP_BAR, lengths=self.lengths, clip_slot=clip_slot, index=FIRST_SCENE, track=track, played=played)
+        return ArrangeDrawing.clip_bar(arrange_drawing.CLIP_BAR, lengths=self.lengths, clip_slot=clip_slot, index=FIRST_SCENE, track=track, played=played)
 
     def test_a_clip_that_is_not_playing_is_drawn_as_its_length_and_a_looping_clip_full(self):
         self.assertTrue(self.document.clip_slot(index=FIRST_SCENE, track=DRUMS).loops())
-        self.assertEqual(self.bar_for(track=DRUMS), CLIP_BAR.full())
-        self.assertEqual(self.bar_for(track=LEAD), CLIP_BAR.draw(amount=self.lengths.clip_seconds(index=FIRST_SCENE, track=LEAD), total=self.lengths.scene_play_seconds(FIRST_SCENE)))
-        self.assertNotIn(TO_PLAY, self.bar_for(track=LEAD))
+        self.assertEqual(self.bar_for(track=DRUMS), arrange_drawing.CLIP_BAR.full())
+        self.assertEqual(self.bar_for(track=LEAD), arrange_drawing.CLIP_BAR.draw(amount=self.lengths.clip_seconds(index=FIRST_SCENE, track=LEAD), total=self.lengths.scene_play_seconds(FIRST_SCENE)))
+        self.assertNotIn(length_bar.TO_PLAY, self.bar_for(track=LEAD))
 
     def test_a_playing_clips_bar_fills_from_the_left_as_it_plays_and_a_looping_clips_over_one_play_of_the_scene(self):
         scene_seconds = self.lengths.scene_play_seconds(FIRST_SCENE)
         half_way = self.bar_for(track=LEAD, played=scene_seconds / 2)
-        self.assertIn(TO_PLAY, half_way)
-        self.assertTrue(half_way.index(TO_PLAY) > 0)
+        self.assertIn(length_bar.TO_PLAY, half_way)
+        self.assertTrue(half_way.index(length_bar.TO_PLAY) > 0)
         self.assertEqual(self.bar_for(track=LEAD, played=scene_seconds), self.bar_for(track=LEAD))
         looping = self.bar_for(track=DRUMS, played=scene_seconds / 2)
-        self.assertIn(TO_PLAY, looping)
-        self.assertEqual(len(looping), len(CLIP_BAR.full()))
-        self.assertEqual(self.bar_for(track=DRUMS, played=0.0), TO_PLAY * len(CLIP_BAR.full()))
+        self.assertIn(length_bar.TO_PLAY, looping)
+        self.assertEqual(len(looping), len(arrange_drawing.CLIP_BAR.full()))
+        self.assertEqual(self.bar_for(track=DRUMS, played=0.0), length_bar.TO_PLAY * len(arrange_drawing.CLIP_BAR.full()))

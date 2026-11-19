@@ -21,7 +21,8 @@ from llamatron.strings import help as help_text, labels
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.screens.shared.statements import FIRST_TABLE, statement_section
+from llamatron.tui.screens.shared import statements
+from llamatron.tui.screens.shared.statements import statement_section
 
 
 class ChainStatementsPage(ShowsNamedItem, FieldPage):
@@ -42,6 +43,6 @@ class ChainStatementsPage(ShowsNamedItem, FieldPage):
     def fields(self):
         document = self.document()
         return statement_section(
-            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=FIRST_TABLE, statements=lambda: document.song().get_chain(self.item).get_bypass_when(),
+            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE, statements=lambda: document.song().get_chain(self.item).get_bypass_when(),
             store=lambda place, statement: document.set_chain_bypass_statement(chain=self.item, place=place, statement=statement),
         )

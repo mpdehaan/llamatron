@@ -30,7 +30,7 @@ from llamatron.tui import keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.key_table import STEP_FORWARD
+from llamatron.tui import key_table
 
 # The first step, which cannot start the pattern over.
 FIRST_STEP = 0
@@ -84,7 +84,7 @@ class StatementRow(PatternRow):
     def keys(self):
         return [
             self.bind(self.KEYS.CHOOSE, action=self.choose),
-            self.bind(self.KEYS.NEXT, action=lambda: self.nudge(STEP_FORWARD)),
+            self.bind(self.KEYS.NEXT, action=lambda: self.nudge(key_table.STEP_FORWARD)),
             *self.adjust_keys(),
             self.bind(self.KEYS.CLEAR, action=lambda: self.store(None)),
         ]

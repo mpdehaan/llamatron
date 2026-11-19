@@ -24,9 +24,11 @@ from llamatron.composition import file_format
 from llamatron.composition.naming import name_order, new_name, suggested_word
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings, themes
-from llamatron.tui.drawing import NOTHING, Align, Style
-from llamatron.tui.key_table import STEP_FORWARD
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES, generator_page_of_kind, generator_type_dialog
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Align, Style
+from llamatron.tui import key_table
+from llamatron.tui.screens.generators import generator_pages
+from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind, generator_type_dialog
 from llamatron.tui.screens.shared.list_page import ListPage
 
 # The kinds of row the page lists: a generator, a type's heading, and the row that adds a generator.
@@ -105,7 +107,7 @@ class GeneratorsPage(ListPage):
 
     def one_cell(self, text):
         """Return the cells of a row that holds only its first."""
-        return [text, *[NOTHING] * (len(self.columns) - 1)]
+        return [text, *[drawing.NOTHING] * (len(self.columns) - 1)]
 
     def row_style(self, what):
         return Style.BOLD if what.row == HEADING else Style.PLAIN
@@ -160,9 +162,9 @@ class GeneratorsPage(ListPage):
     def jump_type(self, direction):
         """Move the cursor to the next type's heading, or the one before, staying put past the last or the first."""
         places = [place for place, (what, _) in enumerate(self.remembered_rows()) if what.row == HEADING]
-        ahead = [place for place in places if place > self.place] if direction == STEP_FORWARD else [place for place in places if place < self.place]
+        ahead = [place for place in places if place > self.place] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.place]
         if ahead:
-            self.place = ahead[0] if direction == STEP_FORWARD else ahead[-1]
+            self.place = ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1]
 
     def open_item(self):
         kind, name = self.current()
@@ -170,7 +172,7 @@ class GeneratorsPage(ListPage):
 
     def add(self):
         """Ask which type of generator to make, make one named after the type, numbered, put the cursor on it and open it."""
-        listings = list(GENERATOR_PAGES.values())
+        listings = list(generator_pages.GENERATOR_PAGES.values())
 
         def chosen(place):
             listing = listings[place]

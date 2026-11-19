@@ -41,7 +41,8 @@ from llamatron.tui.text import sorted_names
 from llamatron.strings import errors, help as help_text, labels, marks, messages, names as names_text
 from llamatron.tui.keys import Key
 from llamatron.tui.components.stage_drawing import frame_box, inside_of, visualizer_area
-from llamatron.tui.screens.arrange.arrange_details import ADD_CHAIN, SCENE_CELL, TRACK_CELL, clip_cell, scene_cell, track_cell
+from llamatron.tui.screens.arrange import arrange_details
+from llamatron.tui.screens.arrange.arrange_details import clip_cell, scene_cell, track_cell
 from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing
 from llamatron.tui.components.inset_window import drawn_over, inside_size
 from llamatron.tui.components.scene_view import SceneView
@@ -63,7 +64,8 @@ from llamatron.visualizers import modes
 from llamatron.visualizers.modes import mode_called
 from rich.text import Text
 
-from llamatron.tui.drawing import NOTHING, Style, laid_over, padded
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style, laid_over, padded
 
 
 # How often the visualizer draws a frame while it shows, in seconds, and how long a mode's name shows when it changes.
@@ -225,7 +227,7 @@ class ArrangePage(Page):
             if self.pickable():
                 keys.append(self.bind(self.KEYS.PICK_DETAIL, action=self.pick, wants_key=True))
                 target = self.picked_target()
-                if target is not None and target.kind == ADD_CHAIN:
+                if target is not None and target.kind == arrange_details.ADD_CHAIN:
                     keys.append(self.bind(self.KEYS.ADD_CHAIN, action=self.add_chain_to_cell))
                 else:
                     keys.append(self.bind(self.KEYS.OPEN_DETAIL, action=self.open_picked))
@@ -355,18 +357,18 @@ class ArrangePage(Page):
         """Return the chains the cursor's cell runs, a clip's, a scene's or a track's, in order."""
         cell = self.cursor_cell()
         song = self.document().song()
-        if cell[0] == TRACK_CELL:
+        if cell[0] == arrange_details.TRACK_CELL:
             return list(song.get_track(cell[1]).get_chain_names())
-        if cell[0] == SCENE_CELL:
+        if cell[0] == arrange_details.SCENE_CELL:
             return list(song.get_scenes()[cell[1]].get_chain_names())
         return list(self.document().clip_slot(index=cell[1], track=cell[2]).get_chain_names())
 
     def set_cell_chain_names(self, names):
         """Set the chains the cursor's cell runs, through the setter of a clip, a scene or a track."""
         cell = self.cursor_cell()
-        if cell[0] == TRACK_CELL:
+        if cell[0] == arrange_details.TRACK_CELL:
             self.document().set_track_chains(name=cell[1], names=names)
-        elif cell[0] == SCENE_CELL:
+        elif cell[0] == arrange_details.SCENE_CELL:
             self.document().set_scene_chains(index=cell[1], names=names)
         else:
             self.document().set_clip_slot_setting(index=cell[1], track=cell[2], setting=ClipSlotSetting.CHAINS, value=names)
@@ -410,7 +412,7 @@ class ArrangePage(Page):
         """Return the mode the visualizer key shows first: the song's choice, else the set's, when it isn't hidden, and otherwise the first shown."""
         shown = self.shown_modes()
         setlist = self.document().setlist()
-        chosen = mode_called(setlist.visualizer_for(self.document().song()) or NOTHING)
+        chosen = mode_called(setlist.visualizer_for(self.document().song()) or drawing.NOTHING)
         return chosen if chosen in shown else shown[0]
 
     def next_visualizer(self):

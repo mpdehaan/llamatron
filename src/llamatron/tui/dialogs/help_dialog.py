@@ -19,7 +19,8 @@
 from rich.text import Text
 
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.drawing import NOTHING, padded, SPACE, Style, wrapped
+from llamatron.tui import drawing
+from llamatron.tui.drawing import padded, Style, wrapped
 from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
 
@@ -60,7 +61,7 @@ class HelpDialog(Dialog):
 
     def lines(self, width):
         if self.panel == KEYS_PANEL:
-            return [*key_columns(items=self.everywhere, width=width), Text(NOTHING), *key_columns(items=self.own, width=width)]
+            return [*key_columns(items=self.everywhere, width=width), Text(drawing.NOTHING), *key_columns(items=self.own, width=width)]
         return [wrapped_line for line in self.about for wrapped_line in wrapped(text=line, width=width)]
 
 
@@ -83,7 +84,7 @@ def key_cell(*, item, width):
     """Return one key as a cell of the given width: its label in reverse video, then what it does."""
     cell = Text(no_wrap=True)
     cell.append(padded(item.shown_label()), style=Style.REVERSE)
-    cell.append(SPACE + item.what)
+    cell.append(drawing.SPACE + item.what)
     cell.truncate(width)
-    cell.append(SPACE * (width - cell.cell_len))
+    cell.append(drawing.SPACE * (width - cell.cell_len))
     return cell

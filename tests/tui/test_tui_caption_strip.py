@@ -18,7 +18,8 @@
 
 import unittest
 
-from llamatron.tui.caption_strip import CAPTION_LINES, CAPTION_STYLE, CaptionStrip, parts
+from llamatron.tui import caption_strip
+from llamatron.tui.caption_strip import CaptionStrip, parts
 from llamatron.tutorial.subtitles import subtitle_time, subtitles
 from tests.support.ui_testing import UITest
 
@@ -39,9 +40,9 @@ class TestCaptionStrip(unittest.TestCase):
         self.assertEqual(len(first.plain), WIDE)
         self.assertEqual(first.plain.strip(), SENTENCE)
         self.assertEqual(first.plain.index(SENTENCE), (WIDE - len(SENTENCE)) // 2)
-        self.assertEqual(first.style, CAPTION_STYLE)
+        self.assertEqual(first.style, caption_strip.CAPTION_STYLE)
         self.assertEqual(second.plain.strip(), '')
-        self.assertEqual(second.style, CAPTION_STYLE)
+        self.assertEqual(second.style, caption_strip.CAPTION_STYLE)
 
     def test_a_long_sentence_is_shown_a_part_at_a_time_broken_between_words(self):
         shown = parts(text=SENTENCE, width=NARROW)
@@ -66,5 +67,5 @@ class TestCaptionStripOnAPage(UITest):
         await self.settle()
         after = self.text().splitlines()
         self.assertEqual(len(after), len(before))
-        self.assertIn(SENTENCE, after[-CAPTION_LINES])
-        self.assertEqual(after[-CAPTION_LINES - 1], before[-1])
+        self.assertIn(SENTENCE, after[-caption_strip.CAPTION_LINES])
+        self.assertEqual(after[-caption_strip.CAPTION_LINES - 1], before[-1])

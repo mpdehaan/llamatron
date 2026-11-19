@@ -37,21 +37,21 @@ from llamatron.music.note import NoteName
 from llamatron.tui.app import LlamatronApp
 from llamatron.composition.setlist import Setlist, new_setlist
 from llamatron.strings import names as names_text
-from llamatron.tui.screens.shared.page import PROGRAM_NAME
+from llamatron.tui.screens.shared import page as page_values
 from llamatron.support.memory import Memory
 from llamatron.tui.document import Document
-from llamatron.tui.drawing import NOTHING
+from llamatron.tui import drawing
 import llamatron.tui.screens
 from llamatron.tui.screens.shared.field import Button, Heading
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.shared.page import Page, VIEW_SELECTOR
+from llamatron.tui.screens.shared.page import Page
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.key_table import every_key, first_key, key_event
 from llamatron.tui.keys import Key, Steps
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.tui.screens.generators.generator_pages import GENERATOR_PAGES
+from llamatron.tui.screens.generators import generator_pages
 
 # Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (support/memory.py).
 Memory.check_every_answer()
@@ -320,7 +320,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
 
     def drawn(self):
         """Return what the page on screen last drew, to compare before and after a key: two drawings are equal when their text and styles are."""
-        return self.app.screen.query_one(VIEW_SELECTOR, Static).content
+        return self.app.screen.query_one(page_values.VIEW_SELECTOR, Static).content
 
     async def type(self, text):
         """Type text into the prompt, the picker's search, the list's search or the description that is open, and fail when none is.
@@ -393,8 +393,8 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         """Check the set is named on the header's first line, with llamatron centred when there's room for it."""
         line = self.title_line()
         self.assertIn(set_crumb, line)
-        if PROGRAM_NAME in line:
-            self.assertEqual(line.index(PROGRAM_NAME), (len(line) - len(PROGRAM_NAME)) // 2)
+        if page_values.PROGRAM_NAME in line:
+            self.assertEqual(line.index(page_values.PROGRAM_NAME), (len(line) - len(page_values.PROGRAM_NAME)) // 2)
 
     def crumbs_line(self):
         """Return the header's line with the crumbs, which say where the page was reached from, in its left corner: the first."""
@@ -411,7 +411,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         row = next(index for index, line in enumerate(lines) if buttons[0].label in line)
         for button in buttons:
             self.assertIn(button.label, lines[row])
-        self.assertEqual(lines[row - 2].strip(), NOTHING)
+        self.assertEqual(lines[row - 2].strip(), drawing.NOTHING)
         self.assertIn(fields[-len(buttons) - 1].label, lines[row - 3])
 
     async def reconfigure(self, choice):
@@ -429,7 +429,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     async def open_generator(self, *, section, name=None):
         """Open a generator's editor from the Generators page, where each is under its type's heading: the one named, or the first of its section's kind."""
         await self.press(keybindings.MainPage.GENERATORS)
-        kind = GENERATOR_PAGES[section].kind
+        kind = generator_pages.GENERATOR_PAGES[section].kind
         found_kind, found_name = next(pair for pair in self.app.screen.generators() if pair[0] == kind and (name is None or pair[1] == name))
         self.app.screen.put_cursor_on(kind=found_kind, name=found_name)
         await self.press(Key.ENTER)
@@ -437,7 +437,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     async def add_generator(self, section):
         """Add a generator of a section's kind from the Generators page, which names it and opens its editor, and return its name."""
         await self.press(keybindings.MainPage.GENERATORS, keybindings.GeneratorsPage.ADD)
-        await self.pick(GENERATOR_PAGES[section].label)
+        await self.pick(generator_pages.GENERATOR_PAGES[section].label)
         return self.app.screen.item
 
     async def pick(self, option):

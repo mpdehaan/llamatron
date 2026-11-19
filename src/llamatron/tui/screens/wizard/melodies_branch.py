@@ -23,7 +23,8 @@ from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.hooks_branch import HooksBranch
 from llamatron.tui.screens.wizard.intro_melody_branch import IntroMelodyBranch
 from llamatron.tui.screens.wizard.section_melody_branch import SectionMelodyBranch
-from llamatron.tui.screens.wizard.solo_melody_branch import FIRST_SOLO, SoloMelodyBranch
+from llamatron.tui.screens.wizard import solo_melody_branch
+from llamatron.tui.screens.wizard.solo_melody_branch import SoloMelodyBranch
 
 
 class MelodiesBranch(Branch):
@@ -49,5 +50,5 @@ class MelodiesBranch(Branch):
         # which is under this group in the tree, never moves the rows above the cursor.
         intro = [IntroMelodyBranch(page=page)] if choices.can_have_hook() else []
         # A solo is its player's, never the tune's player's, so each solo has a panel of its own after the sections' melodies.
-        solos = [SoloMelodyBranch(page=page, number=number) for number, _ in enumerate(choices.solo_places(), start=FIRST_SOLO)]
+        solos = [SoloMelodyBranch(page=page, number=number) for number, _ in enumerate(choices.solo_places(), start=solo_melody_branch.FIRST_SOLO)]
         return [*hook, *(SectionMelodyBranch(page=page, kind=kind) for kind in choices.tune_kinds()), *solos, *intro]

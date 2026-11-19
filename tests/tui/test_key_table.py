@@ -20,8 +20,10 @@ import unittest
 
 from llamatron.strings import legends
 from llamatron.tui import keybindings
-from llamatron.tui.key_table import STEP_BACK, STEP_FORWARD, BindsKeys, bound, cursor_moved, every_key, first_key, key_event, keys_of, place_of, pressed_key
-from llamatron.tui.keys import ARROWS_LEFT_RIGHT, Key, LESS_KEYS, MORE_KEYS, Steps
+from llamatron.tui import key_table
+from llamatron.tui.key_table import BindsKeys, bound, cursor_moved, every_key, first_key, key_event, keys_of, place_of, pressed_key
+from llamatron.tui import keys
+from llamatron.tui.keys import Key, Steps
 
 # How many places a cursor moves among in these tests, the first and last of them, and one in the middle with the places either side of it.
 PLACES = 4
@@ -40,10 +42,10 @@ class Bindings:
     """A class of bindings like those of tui/keybindings.py: two bindings that hold the same keys and words, one binding the legend leaves out, and a part's bindings in an order of their own."""
 
     RENAME = (Key.N, legends.KeyName.N, legends.What.RENAME)
-    MOVE = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
-    ADJUST = (Steps(back=LESS_KEYS, forward=MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
+    MOVE = (keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
+    ADJUST = (Steps(back=keys.LESS_KEYS, forward=keys.MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
     ENDS = (Steps(back=(Key.HOME,), forward=(Key.END,)), legends.KeyName.HOME_END, legends.What.ENDS)
-    ADJUST_AGAIN = (Steps(back=LESS_KEYS, forward=MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
+    ADJUST_AGAIN = (Steps(back=keys.LESS_KEYS, forward=keys.MORE_KEYS), legends.KeyName.BRACKETS, legends.What.MORE)
     IN_HELP = [MOVE, ADJUST, ENDS, RENAME, ADJUST_AGAIN]
     IN_LEGEND = [MOVE, ADJUST, RENAME, ADJUST_AGAIN]
 
@@ -104,27 +106,27 @@ class TestKeyTable(unittest.TestCase):
     def test_one_key_or_several_are_a_tuple_of_names(self):
         self.assertEqual(keys_of(Key.TAB), (Key.TAB,))
         self.assertEqual(keys_of([Key.HOME, Key.END]), (Key.HOME, Key.END))
-        self.assertEqual(keys_of(Steps(back=LESS_KEYS, forward=MORE_KEYS)), (*LESS_KEYS, *MORE_KEYS))
+        self.assertEqual(keys_of(Steps(back=keys.LESS_KEYS, forward=keys.MORE_KEYS)), (*keys.LESS_KEYS, *keys.MORE_KEYS))
 
     def test_a_binding_says_every_key_it_has_and_its_first(self):
         self.assertEqual(every_key(Bindings.RENAME), (Key.N,))
-        self.assertEqual(every_key(Bindings.MOVE), ARROWS_LEFT_RIGHT)
+        self.assertEqual(every_key(Bindings.MOVE), keys.ARROWS_LEFT_RIGHT)
         self.assertEqual(every_key(Bindings.ENDS), (Key.HOME, Key.END))
-        self.assertEqual(first_key(Bindings.MOVE), ARROWS_LEFT_RIGHT[0])
+        self.assertEqual(first_key(Bindings.MOVE), keys.ARROWS_LEFT_RIGHT[0])
 
     def test_stepping_keys_pass_their_direction_and_never_the_key(self):
         binding = self.bind(Bindings.ADJUST)
-        self.assertEqual(binding.keys, (*LESS_KEYS, *MORE_KEYS))
-        for name in (*LESS_KEYS, *MORE_KEYS):
+        self.assertEqual(binding.keys, (*keys.LESS_KEYS, *keys.MORE_KEYS))
+        for name in (*keys.LESS_KEYS, *keys.MORE_KEYS):
             binding.press(name)
-        self.assertEqual(self.recorder.calls, [(STEP_BACK,)] * len(LESS_KEYS) + [(STEP_FORWARD,)] * len(MORE_KEYS))
+        self.assertEqual(self.recorder.calls, [(key_table.STEP_BACK,)] * len(keys.LESS_KEYS) + [(key_table.STEP_FORWARD,)] * len(keys.MORE_KEYS))
 
     def test_stepping_keys_take_one_key_each_way_too(self):
         binding = self.bind(Bindings.ENDS)
         self.assertEqual(binding.keys, (Key.HOME, Key.END))
         binding.press(Key.END)
         binding.press(Key.HOME)
-        self.assertEqual(self.recorder.calls, [(STEP_FORWARD,), (STEP_BACK,)])
+        self.assertEqual(self.recorder.calls, [(key_table.STEP_FORWARD,), (key_table.STEP_BACK,)])
 
     def test_a_binding_shows_the_name_its_class_gives_it(self):
         self.assertEqual(self.bind(Bindings.ADJUST).shown_label(), legends.KeyName.BRACKETS)

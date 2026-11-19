@@ -30,7 +30,8 @@ from llamatron.composition.checks import listed
 from llamatron.macro_composer.wizard_choices import INTRO
 from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.drawing import INDENT, Style
+from llamatron.tui import drawing
+from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Heading, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import fade_field
@@ -273,4 +274,4 @@ class IntroMelodyBranch(Branch):
             said = messages.MSG_WIZARD_PART_NO_MELODY.format(number=number)
         else:
             said = messages.MSG_WIZARD_PART_NOTES.format(number=number, notes=messages.MSG_WIZARD_NOTES_BY_HAND if choices.intro_is_own(place=place) else messages.MSG_WIZARD_HOOK_MADE)
-        return [Text(INDENT + said, style=Style.DIM)]
+        return [Text(drawing.INDENT + said, style=Style.DIM)]
