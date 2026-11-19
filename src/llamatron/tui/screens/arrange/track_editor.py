@@ -49,10 +49,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
     ITEM_CRUMB = labels.MSG_TRACK_CRUMB
     RENAME_PROMPT = messages.MSG_RENAME_TRACK_PROMPT
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
     def track(self):
         return self.document().song().get_track(self.item)
 

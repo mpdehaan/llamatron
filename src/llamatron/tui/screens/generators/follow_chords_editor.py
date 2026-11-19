@@ -16,17 +16,17 @@
 
 """The Follow Chords editor: its name and the track whose chords it follows."""
 
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import FollowChordsSetting
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.text import sorted_names
 
 
-class FollowChordsEditor(ShowsNamedItem, FieldPage):
+class FollowChordsEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.FollowChordsEditor
     HELP = help_text.HELP_FOLLOW_CHORDS_EDITOR
@@ -34,25 +34,18 @@ class FollowChordsEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_FOLLOW_CHORDS_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def follow_chords(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=self.item)
-
     def store_chords_from(self, track):
-        self.document().change(self.document().generator(section=Section.FOLLOW_CHORDS, name=self.item).set_setting, name=FollowChordsSetting.CHORDS_FROM, value=track)
+        self.store(setting=FollowChordsSetting.CHORDS_FROM, value=track)
 
     def tracks(self):
         """Return the tracks that can be followed: the current song's, sorted, and the one followed among them even when the song has no such track, so that it is seen and kept."""
         names = set(self.document().song().get_track_names())
-        if self.follow_chords().get_chords_from() is not None:
-            names.add(self.follow_chords().get_chords_from())
+        if self.settings().get_chords_from() is not None:
+            names.add(self.settings().get_chords_from())
         return sorted_names(names)
 
     def fields(self):
-        followed = self.follow_chords().get_chords_from()
+        followed = self.settings().get_chords_from()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             ChoiceField(

@@ -35,8 +35,7 @@ class ChainStatementsPage(ShowsNamedItem, FieldPage):
     CRUMBS_AFTER = (labels.Crumb.STATEMENTS,)
 
     def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
+        super().__init__(holder=holder, name=name)
         # The table is what the page is for, so its heading starts open.
         self.app.open_field_sections |= {labels.MSG_BYPASS_WHEN_LABEL}
 

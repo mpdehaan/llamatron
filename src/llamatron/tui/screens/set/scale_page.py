@@ -112,10 +112,6 @@ class ScalePage(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.SCALES,)
     RENAME_PROMPT = messages.MSG_RENAME_SCALE_PROMPT
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
     def scale(self):
         return self.document().song().get_named_scale(self.item)
 

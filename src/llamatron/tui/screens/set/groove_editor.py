@@ -50,10 +50,6 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
     REMOVE = KEYS.REMOVE_CELL
     STEPS_SHOWN = marks.MSG_CELLS_SHOWN
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
     def groove(self):
         return self.document().song().get_groove(self.item)
 

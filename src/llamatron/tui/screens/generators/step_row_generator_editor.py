@@ -22,7 +22,7 @@ from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 
 def steps_text(values):
@@ -30,23 +30,13 @@ def steps_text(values):
     return ' '.join(marks.MSG_TOGGLE_ON if value else marks.MSG_STEP_OFF for value in values)
 
 
-class StepRowGeneratorEditor(ShowsNamedItem, FieldPage):
+class StepRowGeneratorEditor(GeneratorEditor, FieldPage):
     """What the Glide, Shorten, Rush and Drag editors share: name, step, the generator's own amounts, the row of steps, and Restart."""
 
     KEYS = keybindings.StepRowGeneratorEditor
     KIND = None
     # The page that edits the generator's row of steps.
     STEPS_EDITOR = None
-
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def generator(self):
-        return self.document().song().get_generator_settings(kind=self.KIND, name=self.item)
-
-    def store(self, *, setting, value):
-        self.document().change(self.document().generator(section=self.SECTION, name=self.item).set_setting, name=setting, value=value)
 
     def amount_fields(self):
         """Return the fields of the generator's own amounts."""
@@ -57,12 +47,12 @@ class StepRowGeneratorEditor(ShowsNamedItem, FieldPage):
                            set=lambda number: self.store(setting=setting, value=None if number == default else number), clear=lambda: self.store(setting=setting, value=None))
 
     def fields(self):
-        generator = self.generator()
+        generator = self.settings()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(page=self, label=labels.MSG_STEP_LABEL, written=generator.get_step(), first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=StepRowSetting.STEP, value=value)),
             *self.amount_fields(),
-            Field(label=labels.MSG_STEPS_LABEL, value=lambda: steps_text(self.generator().get_steps()), adjust=None,
+            Field(label=labels.MSG_STEPS_LABEL, value=lambda: steps_text(self.settings().get_steps()), adjust=None,
                   enter=lambda: self.show_page(self.STEPS_EDITOR(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),
             restart_field(self),
         ]

@@ -35,5 +35,5 @@ class ShortenEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_SHORTEN_LABEL_NAME)
 
     def amount_fields(self):
-        return [self.percent_field(label=labels.MSG_SHORTEN_LABEL, setting=StepRowSetting.SHORTEN, current=self.generator().get_shorten(), default=generator_settings.DEFAULT_SHORTEN,
+        return [self.percent_field(label=labels.MSG_SHORTEN_LABEL, setting=StepRowSetting.SHORTEN, current=self.settings().get_shorten(), default=generator_settings.DEFAULT_SHORTEN,
                                    lowest=limits.MIN_SHORTEN, highest=limits.MAX_SHORTEN)]

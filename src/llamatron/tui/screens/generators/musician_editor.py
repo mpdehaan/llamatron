@@ -17,18 +17,18 @@
 """The musician's editor: the instrument, the tracks the chords and the tune are read from, the player's touch, and a heading for each kind of section the song has."""
 
 from llamatron.composition import file_format, generator_settings
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, gauge_shown, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.text import sorted_names
 
 
-class MusicianEditor(ShowsNamedItem, FieldPage):
+class MusicianEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.MusicianEditor
     HELP = help_text.HELP_MUSICIAN_EDITOR
@@ -36,16 +36,9 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_MUSICIAN_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def musician(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=self.item)
-
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a musician does unasked."""
-        self.document().change(self.document().generator(section=Section.MUSICIANS, name=self.item).set_setting, name=setting, value=None if value == generator_settings.MUSICIAN_DEFAULTS.get(setting) else value)
+        self.document().change(self.settings().set_setting, name=setting, value=None if value == generator_settings.MUSICIAN_DEFAULTS.get(setting) else value)
 
     def store_section(self, *, section, name, value):
         """Keep what a kind of section has of its own, left out where it is what a section does unasked."""
@@ -67,11 +60,11 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
 
     def choice(self, *, label, setting, choices):
         """Return a field that chooses one of a setting's values from a list, in the list's own order."""
-        return ChoiceField(page=self, label=label, choices=list(choices), current=self.musician().get_own(setting), set=lambda chosen: self.store(setting=setting, value=chosen))
+        return ChoiceField(page=self, label=label, choices=list(choices), current=self.settings().get_own(setting), set=lambda chosen: self.store(setting=setting, value=chosen))
 
     def habit(self, *, label, setting, choices):
         """Return a field for what the instrument decides until the musician is told otherwise: left to the instrument, the field shows the instrument's way and says so, and the list's first choice leaves it to the instrument again."""
-        own = self.musician()
+        own = self.settings()
         offered = [labels.MSG_MUSICIAN_INSTRUMENT_CHOICE, *choices]
         left_to_instrument = own.follows_instrument(setting)
         usual = own.get_own(setting)
@@ -83,7 +76,7 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
 
     def gauge(self, *, label, setting, lowest, highest):
         """Return a number stepped or typed and drawn as a horizontal gauge, which is empty at the lowest."""
-        number = self.musician().get_own(setting)
+        number = self.settings().get_own(setting)
         return NumberField(page=self, label=label, number=number, shown=gauge_shown(place=number, lowest=lowest + 1, highest=highest), lowest=lowest, highest=highest,
                            set=lambda chosen: self.store(setting=setting, value=chosen))
 
@@ -93,11 +86,11 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
         return [kind for kind in file_format.SECTION_KINDS if kind in used or self.section_is_set(kind)]
 
     def section_is_set(self, section):
-        own = self.musician()
+        own = self.settings()
         return any(own.get_section_own(section=section, name=name) is not None for name in generator_settings.MUSICIAN_SECTION_DEFAULTS)
 
     def section_fields(self, section):
-        own = self.musician()
+        own = self.settings()
         plays = own.get_for(section=section, name=musician.PLAYS)
         fields = [
             self.heading(label=labels.MSG_MUSICIAN_SECTION_HEADING.format(section=section), is_set=lambda: self.section_is_set(section)),
@@ -109,7 +102,7 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
         return fields
 
     def fields(self):
-        own = self.musician()
+        own = self.settings()
         pitched = own.musician_class().LOWEST is not None
         fields = [
             NameField(value=lambda: self.item, rename=self.rename),

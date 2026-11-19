@@ -17,7 +17,7 @@
 """The Arp editor page."""
 
 from llamatron.composition import file_format, generator_settings
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.naming import words
 from llamatron.generators import arp as arp_values
@@ -30,8 +30,8 @@ from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.shared import numbers_text
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
 
 JUMPS = [written_name(jump) for jump in OctaveJump]
@@ -47,7 +47,7 @@ def offsets_text(offsets):
     return numbers_text(offsets)
 
 
-class ArpEditor(ShowsNamedItem, FieldPage):
+class ArpEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.ArpEditor
     HELP = help_text.HELP_ARP_EDITOR
@@ -55,30 +55,19 @@ class ArpEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_ARP_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def arp(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.ARP, name=self.item)
-
-    def set_value(self, *, setting, value):
-        """Set one of the arp's settings, or None to leave it out and use its default."""
-        self.document().change(self.document().generator(section=Section.ARPS, name=self.item).set_setting, name=setting, value=value)
-
     def set_range(self, octaves):
-        self.set_value(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == arp_values.MIN_OCTAVE_RANGE else octaves)
+        self.store(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == arp_values.MIN_OCTAVE_RANGE else octaves)
 
     def set_jump(self, jump):
-        self.set_value(setting=ArpSetting.OCTAVE_JUMP, value=None if jump == JUMPS[0] else jump)
+        self.store(setting=ArpSetting.OCTAVE_JUMP, value=None if jump == JUMPS[0] else jump)
 
     def edit_offsets(self):
-        if self.arp().get_offsets() is None:
-            self.set_value(setting=ArpSetting.OFFSETS, value=[generator_settings.NO_OFFSET] * DEFAULT_OFFSET_STEPS)
+        if self.settings().get_offsets() is None:
+            self.store(setting=ArpSetting.OFFSETS, value=[generator_settings.NO_OFFSET] * DEFAULT_OFFSET_STEPS)
         self.show_page(OffsetsEditor(holder=self.holder, name=self.item))
 
     def fields(self):
-        arp = self.arp()
+        arp = self.settings()
         step = arp.get_step()
         order = arp.get_order() or shared.DEFAULT_ORDER
         octaves = arp.get_octave_range() or arp_values.MIN_OCTAVE_RANGE
@@ -86,16 +75,16 @@ class ArpEditor(ShowsNamedItem, FieldPage):
         seed = arp.get_seed()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            time_field(page=self, label=labels.MSG_STEP_LABEL, written=step, first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.set_value(setting=ArpSetting.STEP, value=value)),
-            ChoiceField(page=self, label=labels.MSG_ORDER_LABEL, choices=shared.ORDERS, current=order, set=lambda value: self.set_value(setting=ArpSetting.ORDER, value=value)),
+            time_field(page=self, label=labels.MSG_STEP_LABEL, written=step, first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=ArpSetting.STEP, value=value)),
+            ChoiceField(page=self, label=labels.MSG_ORDER_LABEL, choices=shared.ORDERS, current=order, set=lambda value: self.store(setting=ArpSetting.ORDER, value=value)),
             NumberField(page=self, label=labels.MSG_OCTAVE_RANGE_LABEL, number=octaves, lowest=arp_values.MIN_OCTAVE_RANGE, highest=arp_values.MAX_OCTAVE_RANGE, set=self.set_range),
             ChoiceField(page=self, label=labels.MSG_OCTAVE_JUMP_LABEL, choices=JUMPS, current=jump, names=[words(name) for name in JUMPS], shown=words(jump), set=self.set_jump),
             Field(label=labels.MSG_OFFSETS_LABEL, value=lambda: offsets_text(arp.get_offsets()), adjust=None, enter=self.edit_offsets, enter_what=legends.What.EDIT,
-                  clear=lambda: self.set_value(setting=ArpSetting.OFFSETS, value=None), clear_what=legends.What.REMOVE),
+                  clear=lambda: self.store(setting=ArpSetting.OFFSETS, value=None), clear_what=legends.What.REMOVE),
             NumberField(
                 page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_SONG_SEED_SHOWN if seed is None else None,
-                set=lambda number: self.set_value(setting=ArpSetting.SEED, value=number),
-                clear=lambda: self.set_value(setting=ArpSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
+                set=lambda number: self.store(setting=ArpSetting.SEED, value=number),
+                clear=lambda: self.store(setting=ArpSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
             ),
             *[self.note_add_field(register) for register in file_format.REGISTER_NAMES],
             restart_field(self),
@@ -106,6 +95,6 @@ class ArpEditor(ShowsNamedItem, FieldPage):
         most = self.document().song().get_register(register).get_allowed_inc_max()
         setting = generator_settings.ARP_NOTE_ADDS[register]
         return NumberField(
-            page=self, label=labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register), number=self.arp().get_note_add(register) or NO_ADD, lowest=-most, highest=most,
-            set=lambda number: self.set_value(setting=setting, value=number or None), clear=lambda: self.set_value(setting=setting, value=None),
+            page=self, label=labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register), number=self.settings().get_note_add(register) or NO_ADD, lowest=-most, highest=most,
+            set=lambda number: self.store(setting=setting, value=number or None), clear=lambda: self.store(setting=setting, value=None),
         )

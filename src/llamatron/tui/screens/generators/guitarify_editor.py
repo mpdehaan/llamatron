@@ -17,7 +17,7 @@
 """The Guitarify editor: Shape, the fretting hand, and Strokes, the other hand, each a section with a switch of its own."""
 
 from llamatron.composition import file_format, generator_settings
-from llamatron.composition.file_format import Approach, ChordColor, GeneratorKind, GuitarifySetting, Section, SingleNotes, Tuning
+from llamatron.composition.file_format import Approach, ChordColor, GuitarifySetting, Section, SingleNotes, Tuning
 from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
@@ -25,7 +25,7 @@ from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 SHAPE_SETTINGS = (GuitarifySetting.SHAPE, GuitarifySetting.TUNING, GuitarifySetting.POSITION, GuitarifySetting.CAPO, GuitarifySetting.STRINGS, GuitarifySetting.SINGLE_NOTES, GuitarifySetting.COLOR)
 STROKE_SETTINGS = (
@@ -42,7 +42,7 @@ def bar_shown(guitar):
     return marks.MSG_GUITAR_BAR_SHOWN.format(name=name, count=len(guitar.get_bar()), cell=guitar.get_cell())
 
 
-class GuitarifyEditor(ShowsNamedItem, FieldPage):
+class GuitarifyEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.GuitarifyEditor
     HELP = help_text.HELP_GUITARIFY_EDITOR
@@ -50,18 +50,8 @@ class GuitarifyEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_GUITARIFY_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def guitar(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=self.item)
-
-    def store(self, *, setting, value):
-        self.document().change(self.document().generator(section=Section.GUITARIFIES, name=self.item).set_setting, name=setting, value=value)
-
     def any_written(self, settings):
-        written = self.guitar().to_data()
+        written = self.settings().to_data()
         return any(setting in written for setting in settings)
 
     def number(self, *, label, setting, current, default, lowest, highest, shown=None):
@@ -83,7 +73,7 @@ class GuitarifyEditor(ShowsNamedItem, FieldPage):
         return Toggle(label=label, on=on, set=lambda chosen: self.store(setting=setting, value=None if chosen == default else chosen))
 
     def fields(self):
-        guitar = self.guitar()
+        guitar = self.settings()
         position = guitar.get_position()
         capo = guitar.get_capo()
         upstroke = guitar.get_upstroke()
@@ -108,7 +98,7 @@ class GuitarifyEditor(ShowsNamedItem, FieldPage):
             self.choice(label=labels.MSG_GUITAR_COLOR_LABEL, setting=GuitarifySetting.COLOR, current=guitar.get_color(), default=ChordColor.AS_WRITTEN, choices=file_format.CHORD_COLORS, names=labels.MSG_GUITAR_COLOR_NAMES),
             self.heading(label=labels.MSG_GUITAR_STROKES_SECTION, is_set=lambda: self.any_written(STROKE_SETTINGS)),
             self.switch(label=labels.MSG_GUITAR_STROKES_LABEL, setting=GuitarifySetting.STROKES, on=guitar.strikes(), default=True),
-            Field(label=labels.MSG_GUITAR_BAR_LABEL, value=lambda: bar_shown(self.guitar()), enter=lambda: self.show_page(GuitarBarEditor(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),
+            Field(label=labels.MSG_GUITAR_BAR_LABEL, value=lambda: bar_shown(self.settings()), enter=lambda: self.show_page(GuitarBarEditor(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),
             self.switch(label=labels.MSG_GUITAR_LET_RING_LABEL, setting=GuitarifySetting.LET_RING, on=guitar.lets_ring(), default=False),
             self.number(
                 label=labels.MSG_GUITAR_SPREAD_LABEL, setting=GuitarifySetting.SPREAD, current=guitar.get_spread(), default=generator_settings.DEFAULT_GUITAR_SPREAD, lowest=0, highest=generator_settings.MAX_GUITAR_SPREAD,

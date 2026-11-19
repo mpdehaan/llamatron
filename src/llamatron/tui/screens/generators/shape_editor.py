@@ -23,12 +23,12 @@ from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.shape_fields import shape_fields
 from llamatron.tui.screens.shared.field import NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 NO_ACCENT = 0
 
 
-class ShapeEditor(ShowsNamedItem, FieldPage):
+class ShapeEditor(GeneratorEditor, FieldPage):
     """One shape generator's settings. A subclass names its SECTION, KIND, SHAPE, its label and whether it has an accent."""
 
     KEYS = keybindings.ShapeEditor
@@ -36,16 +36,6 @@ class ShapeEditor(ShowsNamedItem, FieldPage):
     SHAPE = None
     LABEL = None
     HAS_ACCENT = False
-
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def settings(self):
-        return self.document().song().get_generator_settings(kind=self.KIND, name=self.item)
-
-    def store(self, *, setting, value):
-        self.document().change(self.document().generator(section=self.SECTION, name=self.item).set_setting, name=setting, value=value)
 
     def fields(self):
         settings = self.settings()

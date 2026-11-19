@@ -16,21 +16,21 @@
 
 """The Auto ratchet editor page."""
 
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import AutoRatchetSetting
 from llamatron.strings import errors, help as help_text, labels, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.shared import counts_text
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 
 
 COUNT_SEPARATOR = ','
 
 
-class AutoRatchetEditor(ShowsNamedItem, FieldPage):
+class AutoRatchetEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.AutoRatchetEditor
     HELP = help_text.HELP_AUTO_RATCHET_EDITOR
@@ -38,12 +38,8 @@ class AutoRatchetEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_AUTO_RATCHET_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
     def counts(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.AUTO_RATCHET, name=self.item).get_counts()
+        return self.settings().get_counts()
 
     def ask_counts(self):
         def answered(text):
@@ -51,7 +47,7 @@ class AutoRatchetEditor(ShowsNamedItem, FieldPage):
             if not parts or not all(part.isdigit() and int(part) >= 1 for part in parts):
                 self.refuse(errors.ERR_BAD_COUNTS)
                 return
-            self.document().change(self.document().generator(section=Section.AUTO_RATCHETS, name=self.item).set_setting, name=AutoRatchetSetting.COUNTS, value=[int(part) for part in parts])
+            self.document().change(self.settings().set_setting, name=AutoRatchetSetting.COUNTS, value=[int(part) for part in parts])
         self.ask_text(title=labels.MSG_COUNTS_LABEL, value=counts_text(self.counts()), then=answered)
 
     def fields(self):

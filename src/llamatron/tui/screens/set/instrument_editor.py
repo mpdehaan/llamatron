@@ -58,10 +58,6 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.INSTRUMENTS,)
     RENAME_PROMPT = messages.MSG_RENAME_INSTRUMENT_PROMPT
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
     def instrument(self):
         return self.document().setlist().get_instrument(self.item)
 

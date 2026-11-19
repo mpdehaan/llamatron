@@ -67,10 +67,6 @@ class ChainEditor(ShowsNamedItem, ListPage):
     CRUMBS_BEFORE = (labels_text.Crumb.CHAINS,)
     RENAME_PROMPT = messages.MSG_RENAME_CHAIN_PROMPT
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
     def steps(self):
         """Return the chain's steps, each (kind of generator, its name)."""
         return self.document().song().get_chain(self.item).get_steps()

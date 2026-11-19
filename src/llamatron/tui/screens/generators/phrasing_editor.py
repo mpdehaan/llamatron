@@ -16,17 +16,17 @@
 """The Phrasing editor: how long a line is, how the lines breathe, and a table of what each kind of section does of its own."""
 
 from llamatron.composition import generator_settings
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing as phrasing_values
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 
-class PhrasingEditor(ShowsNamedItem, FieldPage):
+class PhrasingEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.PhrasingEditor
     HELP = help_text.HELP_PHRASING_EDITOR
@@ -34,20 +34,13 @@ class PhrasingEditor(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_PHRASING_LABEL)
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder)
-        self.show_item(name)
-
-    def phrasing(self):
-        return self.document().song().get_generator_settings(kind=GeneratorKind.PHRASING, name=self.item)
-
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a Phrasing starts with."""
-        self.document().change(self.document().generator(section=Section.PHRASINGS, name=self.item).set_setting, name=setting, value=None if value == generator_settings.PHRASING_DEFAULTS[setting] else value)
+        self.document().change(self.settings().set_setting, name=setting, value=None if value == generator_settings.PHRASING_DEFAULTS[setting] else value)
 
     def choice(self, *, label, setting, choices, names=None):
         """Return a field that chooses one of a setting's values from a list, shown by its name where its value is not a word."""
-        current = self.phrasing().get_own(setting)
+        current = self.settings().get_own(setting)
         return ChoiceField(
             page=self, label=label, choices=list(choices), names=names, current=current, shown=None if names is None else names[list(choices).index(current)],
             set=lambda chosen: self.store(setting=setting, value=chosen),
