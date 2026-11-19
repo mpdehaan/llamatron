@@ -22,6 +22,7 @@ from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RegisterSetting
 from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui import drawing, keybindings, themes
+from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
@@ -95,6 +96,15 @@ class RegistersPage(FieldPage):
         if field.clear:
             result.append(self.bind(self.KEYS.CLEAR, action=field.clear, what=field.clear_what))
         return result
+
+    def key_toward(self, target):
+        """Return the key that brings the cursor nearer the cell with a label: Up or Down to its register, then Left or Right to its setting."""
+        labels = [field.label for field in self.fields()]
+        if target not in labels:
+            raise NoSuchPlace(screen=self, target=target)
+        row, column = divmod(labels.index(target), GRID_COLUMNS)
+        here_row, here_column = divmod(self.cursor.get_place(), GRID_COLUMNS)
+        return key_between(here=here_row, there=row) or key_between(here=here_column, there=column, back=Key.LEFT, forward=Key.RIGHT)
 
     def move_in_grid(self, name):
         """Move the cursor a register up or down or a setting left or right, stopping at every edge."""

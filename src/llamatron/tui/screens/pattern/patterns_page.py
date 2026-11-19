@@ -1,3 +1,19 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 """The Patterns page, which lists the patterns by group."""
 
 from typing import NamedTuple
@@ -7,7 +23,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.naming import copy_name, is_taken, name_order, new_name
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
 from llamatron.tui import drawing, key_table, keybindings
-from llamatron.tui.cursor import Cursor
+from llamatron.tui.cursor import Cursor, key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
@@ -129,6 +145,15 @@ class PatternsPage(NamedListPage):
         """Return the name of the pattern the cursor is on, or nothing on a heading or a button, as a list answers on its + row."""
         listed = self.listed()
         return listed.name if listed.kind == PATTERN else None
+
+    def under_cursor(self):
+        """Return what the cursor is on: a pattern, a group's heading or a button, as a Listed."""
+        return self.listed()
+
+    def key_toward(self, target):
+        """Return the key that brings the cursor nearer a row, named by what it lists (a Listed) or, for a pattern, by the pattern's name; None when the cursor is on it."""
+        rows = [what for what, _ in self.remembered_rows()] if isinstance(target, Listed) else self.row_names()
+        return key_between(here=self.cursor.get_place(), there=place_of(screen=self, names=rows, target=target))
 
     def row_names(self):
         """Return each row's pattern's name, in the rows' order, with nothing for a heading or a button."""

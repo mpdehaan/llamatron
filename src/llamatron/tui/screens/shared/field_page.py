@@ -22,7 +22,7 @@ from llamatron.composition import setlist
 from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
-from llamatron.tui.cursor import Cursor
+from llamatron.tui.cursor import Cursor, key_between, NoSuchPlace
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved
@@ -114,6 +114,46 @@ class FieldPage(Page):
         fields = self.shown_fields()
         self.cursor.set_place(max(min(self.cursor.get_place(), len(fields) - 1), 0))
         return fields[self.cursor.get_place()] if fields else None
+
+    def under_cursor(self):
+        """Return the label of the field or the button the cursor is on."""
+        field = self.field()
+        return field.label if field else None
+
+    def closed_heading_over(self, label):
+        """Return the heading of the closed section a field is in, by the field's label, or raise NoSuchPlace where the page has no such field.
+
+        A page that builds a section's fields only once the section is open cannot say which closed section holds
+        a field, so there the last closed section is the one opened, and the next asking finds the field or opens the one before.
+        """
+        heading = None
+        closed = []
+        for field in self.every_field():
+            if isinstance(field, Heading):
+                heading = field
+                if not self.is_open(field):
+                    closed.append(field)
+            if field.label == label and heading is not None:
+                return heading
+        if not closed:
+            raise NoSuchPlace(screen=self, target=label)
+        return closed[-1]
+
+    def key_toward(self, target):
+        """Return the key that brings the cursor nearer the field or the button with a label, or None when the cursor is on it.
+
+        A field in a closed section is reached as a person reaches it: the way to its section's heading, then the key that opens the section.
+        Down from the last field reaches the buttons, which Left and Right go along, or Up and Down where they are stacked.
+        """
+        labels = [field.label for field in self.shown_fields()]
+        if target not in labels:
+            return self.key_toward(self.closed_heading_over(target).label) or Key.ENTER
+        there = labels.index(target)
+        here = self.cursor.get_place()
+        first_button = self.first_button_place()
+        if here < first_button or there < first_button or self.buttons_stacked():
+            return key_between(here=here, there=there)
+        return key_between(here=here, there=there, back=Key.LEFT, forward=Key.RIGHT)
 
     def move_cursor(self, name):
         """Move between the fields with Up and Down, Down from the last field reaching the row of buttons and Up from any button

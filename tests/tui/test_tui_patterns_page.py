@@ -83,12 +83,6 @@ class PatternsPageTest(UITest):
     def group_of(self, name):
         return self.document.pattern_group(name)
 
-    async def go_to(self, listed):
-        """Move the cursor to a row by what the row is."""
-        self.assertIn(listed, self.rows())
-        while self.page.listed() != listed:
-            await self.press(Key.UP if self.rows().index(listed) < self.page.cursor.get_place() else Key.DOWN)
-
     async def go_to_pattern(self, name):
         await self.go_to(Listed(patterns_page.PATTERN, name))
 

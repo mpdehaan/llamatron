@@ -20,6 +20,7 @@ from rich.text import Text
 
 from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings, keys as keys_values
+from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import fit, padded, Style
 from llamatron.tui.keys import Key
@@ -127,6 +128,25 @@ class GridChoiceDialog(ChoiceDialog):
                 if self.option_at(row=row, column=column, cells=cells) == self.cursor.get_place():
                     return row, column
         return None
+
+    def place_in_pages(self, place):
+        """Return the page, row and column an option is drawn at."""
+        for page, cells in enumerate(self.page_cells):
+            for row in range(len(cells)):
+                for column in range(len(cells[row])):
+                    if self.option_at(row=row, column=column, cells=cells) == place:
+                        return page, row, column
+        raise NoSuchPlace(screen=self, target=place)
+
+    def key_toward_place(self, place):
+        """Return the key that brings the cursor nearer an option: Tab to its page, Up or Down to its row, then Left or Right to its column."""
+        if self.cursor.is_on(place):
+            return None
+        page, target_row, target_column = self.place_in_pages(place)
+        if page != self.page:
+            return Key.TAB
+        row, column = self.where()
+        return key_between(here=row, there=target_row) or key_between(here=column, there=target_column, back=Key.LEFT, forward=Key.RIGHT)
 
     def where(self):
         return self.find(self.cells()) or (0, 0)

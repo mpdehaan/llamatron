@@ -150,6 +150,8 @@ ERR_NEEDS_CHECK = '{kind} needs a check() method'
 # composition/llama_data.py
 ERR_NEEDS_TO_DATA = '{kind} needs a to_data() method'
 ERR_NEEDS_FROM_DATA = '{kind} needs a from_data() class method'
+# What a screen says when asked the way to something its cursor cannot reach, which a test or the tutorial asked for by name.
+ERR_NO_SUCH_PLACE = '{screen} has no place for its cursor called ({target})'
 
 # composition/named_scale.py
 ERR_EXPECTED_ROOT_AND_TYPE = 'expected a root and a type, got {data!r}'

@@ -20,7 +20,7 @@ from rich.text import Text
 
 from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings
-from llamatron.tui.cursor import Cursor, Search, shown_around
+from llamatron.tui.cursor import Cursor, key_between, place_of, Search, shown_around
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import cursor_mark, fit, Style
 
@@ -71,6 +71,18 @@ class ChoiceDialog(Dialog):
     def matches(self):
         """Return the places of the options that contain what was typed, ignoring case: all of them with nothing typed."""
         return self.search.places_matching(self.options)
+
+    def under_cursor(self):
+        """Return the option the cursor is on, as the picker shows it."""
+        return self.options[self.cursor.get_place()]
+
+    def key_toward(self, target):
+        """Return the key that brings the cursor nearer an option, named as the picker shows it, or None when the cursor is on it."""
+        return self.key_toward_place(place_of(screen=self, names=self.options, target=target))
+
+    def key_toward_place(self, place):
+        """Return the key that brings the cursor nearer the option at a place in the whole list, or None when the cursor is on it."""
+        return key_between(here=self.cursor.get_place(), there=place)
 
     def move(self, name):
         self.cursor.move_among(name=name, places=self.matches())

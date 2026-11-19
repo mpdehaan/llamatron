@@ -577,11 +577,6 @@ class TestClipPage(UITest):
                 self.assertIs(self.app.screen, self.page)
                 self.assertEqual(self.page.field().label, label)
 
-    async def go_to(self, label):
-        self.page.cursor.set_place(self.labels().index(label))
-        self.page.draw()
-        await self.pilot.pause()
-
     async def test_the_name_field_names_the_clip_and_the_grid_shows_it(self):
         self.assertEqual(self.labels()[0], labels_text.MSG_NAME_LABEL)
         self.assertIn(marks.MSG_CLIP_NAMED_FOR_PATTERN.format(pattern=TUNE), self.text())
@@ -676,11 +671,6 @@ class TestRhythmAndNotesFromOnAClip(UITest):
 
     def clip_slot(self):
         return self.document.clip_slot(index=0, track=LEAD)
-
-    async def go_to(self, label):
-        self.page.cursor.set_place([field.label for field in self.page.fields()].index(label))
-        self.page.draw()
-        await self.pilot.pause()
 
     async def test_they_are_at_the_bottom_of_the_page(self):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.REPEAT, value=2)
@@ -788,11 +778,6 @@ class TestScenePage(UITest):
 
     def scene(self):
         return self.document.song().get_scenes()[0]
-
-    async def go_to(self, label):
-        self.page.cursor.set_place([field.label for field in self.page.fields()].index(label))
-        self.page.draw()
-        await self.pilot.pause()
 
     async def test_shows_the_length_of_its_longest_clip(self):
         self.assertIn(LENGTH, self.text())

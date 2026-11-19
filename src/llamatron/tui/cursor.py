@@ -21,12 +21,34 @@ list. Both know nothing of what is drawn, so the rules every cursor keeps, stopp
 staying on a row a search still shows, are written once and are tested without a screen.
 """
 
+from llamatron.strings import errors
 from llamatron.tui import keys
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 
 FIRST_PLACE = 0
 NOTHING_TYPED = ''
+
+
+class NoSuchPlace(LookupError):
+    """A screen was asked the way to something its cursor cannot reach."""
+
+    def __init__(self, *, screen, target):
+        super().__init__(errors.ERR_NO_SUCH_PLACE.format(screen=type(screen).__name__, target=target))
+
+
+def key_between(*, here, there, back=Key.UP, forward=Key.DOWN):
+    """Return the key that takes a cursor one place nearer another place, or None when it is there."""
+    if here == there:
+        return None
+    return back if there < here else forward
+
+
+def place_of(*, screen, names, target):
+    """Return the place of a target among a screen's names, or raise NoSuchPlace."""
+    if target not in names:
+        raise NoSuchPlace(screen=screen, target=target)
+    return names.index(target)
 
 
 class Cursor:
