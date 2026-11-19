@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The Hocket: the tracks whose clips name it take turns at its source track's notes, one note each, left to right, the source playing its own pattern as ever."""
 """Keyswitches: an instrument's ten slots, a pattern's Keyswitch row, the notes a clip sends for them, and which exports carry them."""
 
 import gzip
@@ -21,27 +20,25 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
-from llamatron.composition import defaults, limits
-from llamatron.composition import file_format
+from llamatron.composition import defaults, file_format, instrument as instrument_values, limits
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition import instrument as instrument_values
 from llamatron.composition.instrument import Instrument, Keyswitch
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
-from llamatron.exporters import midi_messages
 from llamatron.exporters.timing import keyswitch_events, timed_events
 from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime.score import Score
 from llamatron.realtime import timeline as timeline_values
+from llamatron.realtime.score import Score
 from llamatron.realtime.timeline import Route, song_timeline
 from llamatron.support.rational import Rational
-from tests.support.rendering import song_from_data
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
+from tests.support.rendering import song_from_data
 
 TUNE = 'tune'
 VIOLIN = 'violin'

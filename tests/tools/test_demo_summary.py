@@ -13,8 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""internal_tools/show_keys.py prints the key bindings of tui/keybindings.py: every class's, one class's, or every binding that has one key."""
-
 """Tests of internal_tools/demo_summary.py: every column it names is a feature the feature report knows, the hello world demo's row reads as the set does, and the table lines up."""
 
 import contextlib
@@ -25,8 +23,8 @@ import pathlib
 import unittest
 
 from llamatron.composition.setlist import file_stem
-from llamatron.tui.document import Document
 from llamatron.tui import drawing
+from llamatron.tui.document import Document
 from llamatron.tui.text import clock
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'demo_summary.py'

@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""A register's = row: the value a step sets the register to before anything adds to it, or blank to leave the register as it is."""
 """A row of a step's statement about the registers in the pattern editor: one of the five parts of a Stop When, Restart When or Mute When statement.
 
 The five rows of a section are one statement stood on end, so each step holds one statement of
@@ -22,15 +21,13 @@ its result and what the result is compared with. A row writes its part through t
 one setter of a whole statement, so that no step is left holding half of one.
 """
 
-from llamatron.composition import conditions, limits
-from llamatron.composition import file_format
+from llamatron.composition import conditions, file_format, limits
 from llamatron.composition.file_format import StatementPart, StepStatement
 from llamatron.strings import errors, labels, marks
-from llamatron.tui import keybindings
+from llamatron.tui import key_table, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import key_table
 
 # The first step, which cannot start the pattern over.
 FIRST_STEP = 0

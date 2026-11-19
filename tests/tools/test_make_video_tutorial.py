@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""internal_tools/show_keys.py prints the key bindings of tui/keybindings.py: every class's, one class's, or every binding that has one key."""
 """Tests of the video tutorial tool's recording, which need no screen: the screen recording stops when a character is typed into its own terminal, as screencapture does, and the tutorial is recorded from just before the tracker runs until it quits, into recordings/<set>_tutorial.mov."""
 
 import contextlib

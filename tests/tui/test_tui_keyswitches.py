@@ -13,32 +13,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""The pattern editor's Inversion row, in Basics under Chord: blocked on a step with no chord, cycling blank, 1, 2 and 3 on one with a chord."""
 """Keyswitches in the tracker: an instrument's Keyswitch Map and its note picker, the pattern editor's Keyswitch row, the dialog that picks a step's keyswitches from both views, and the piano roll's lights."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, first_key, key_name
-from llamatron.composition import file_format
+from llamatron.composition import file_format, instrument as instrument_values, limits
 from llamatron.composition.file_format import Row
-from llamatron.composition import instrument as instrument_values
 from llamatron.composition.instrument import Keyswitch
-from llamatron.composition import limits
-from llamatron.strings import errors, labels, marks, messages
 from llamatron.music import midi
-from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
+from llamatron.strings import errors, labels, marks, messages
+from llamatron.tui import keybindings, keys
 from llamatron.tui.components.keyswitch_row import slot_row_name
 from llamatron.tui.dialogs import keyswitch_map_dialog
-from llamatron.tui.dialogs.keyswitch_map_dialog import KeyswitchMapDialog, first_note_offered
+from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
+from llamatron.tui.dialogs.keyswitch_map_dialog import first_note_offered, KeyswitchMapDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.drawing import Style, cursor_mark
-from llamatron.tui import keys
-from llamatron.tui.keys import RowSection, Key
+from llamatron.tui.drawing import cursor_mark, Style
+from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.keyswitch_text import keyswitch_note_text
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern import roll_drawing
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
-from llamatron.tui import keybindings
-from tests.support.pattern_editor_testing import PatternEditorTest, open_section
+from tests.support import ui_testing
+from tests.support.pattern_editor_testing import open_section, PatternEditorTest
+from tests.support.ui_testing import first_key, key_name, UITest
 
 VIOLIN = 'violin'
 CELLO = 'cello'
