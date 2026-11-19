@@ -30,6 +30,7 @@ import numpy
 from llamatron.strings import visualizers
 from llamatron.visualizers import colour as colour_values, heard as heard_values, plasma
 from llamatron.visualizers.colour import Limiter, note_colour
+from llamatron.visualizers.energy import Energy
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.plasma import palette_of
 from llamatron.visualizers.visualizer import Visualizer
@@ -68,7 +69,7 @@ LOG_TWO = math.log(2.0)
 class Mandelbrot(Visualizer):
     """The Mandelbrot set, turning and breathing, coloured by the tracks."""
 
-    __slots__ = ('_rows', '_columns', '_offsets', '_time', '_phase', '_energy', '_target', '_colours', '_palette', '_limiter')
+    __slots__ = ('_rows', '_columns', '_offsets', '_time', '_phase', '_energy', '_colours', '_palette', '_limiter')
 
     NAME = visualizers.MSG_MANDELBROT
     OPTION = 'mandelbrot'
@@ -78,8 +79,7 @@ class Mandelbrot(Visualizer):
         super().__init__()
         self._time = 0.0
         self._phase = 0.0
-        self._energy = 0.0
-        self._target = 0.0
+        self._energy = Energy(per_note=ENERGY_PER_NOTE, rise_per_second=ENERGY_RISE_PER_SECOND, kept_per_second=ENERGY_KEPT_PER_SECOND)
         self._colours = {}
         self._palette = palette_of(QUIET_COLOURS)
         self._limiter = Limiter(
@@ -97,9 +97,7 @@ class Mandelbrot(Visualizer):
     def pixels(self, *, now, heard=heard_values.SILENCE):
         seconds = self.seconds_since_last_frame(now)
         self.hear(heard)
-        rise = ENERGY_RISE_PER_SECOND * seconds
-        self._energy += max(-rise, min(rise, self._target - self._energy))
-        self._target *= ENERGY_KEPT_PER_SECOND ** seconds
+        self._energy.settle(seconds)
         self._time += seconds * heard.tempo_factor()
         self._phase += DRIFT_PER_SECOND * seconds
         breath = 0.5 - 0.5 * math.cos(math.tau * self._time / BREATH_SECONDS)
@@ -108,7 +106,7 @@ class Mandelbrot(Visualizer):
         escapes = escape_times(self._offsets * height * turn + FOCUS)
         outside = escapes >= 0
         places = ((escapes / MOST_ITERATIONS * PALETTE_REPEATS + self._phase) % 1.0 * (plasma.PALETTE_SIZE - 1)).astype(numpy.intp)
-        brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * self._energy
+        brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * self._energy.get_level()
         picture = numpy.where(outside[:, :, None], self._palette[places] * brightness, 0).astype(numpy.int32)
         small = derezzed(fine=picture, factor=SUPERSAMPLE)
         held = self._limiter.limited(picture=small, seconds=seconds)
@@ -124,7 +122,7 @@ class Mandelbrot(Visualizer):
                 changed = True
             if note.started:
                 self._phase += TURN_PER_NOTE * note.velocity / FULL_VELOCITY
-                self._target = min(self._target + ENERGY_PER_NOTE * note.velocity / FULL_VELOCITY, 1.0)
+                self._energy.strike(note.velocity / FULL_VELOCITY)
         if changed:
             colours = [self._colours[track] for track in sorted(self._colours)]
             self._palette = palette_of(colours if len(colours) > 1 else colours + list(QUIET_COLOURS[:2]))

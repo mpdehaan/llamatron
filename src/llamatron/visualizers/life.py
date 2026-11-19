@@ -34,6 +34,7 @@ from llamatron.strings import visualizers
 from llamatron.visualizers import cells, colour
 from llamatron.visualizers.cells import CellPainter, packed
 from llamatron.visualizers.colour import note_colour
+from llamatron.visualizers.energy import Energy
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
@@ -81,7 +82,7 @@ def stepped(alive):
 class Life(Visualizer):
     """Conway's Game of Life, its live cells the inverse of a drifting gradient, outlined with the beat."""
 
-    __slots__ = ('_alive', '_colours', '_energy', '_target', '_drift', '_since_step', '_last_beat', '_chooser', '_cells', '_shape', '_left_bits', '_right_bits')
+    __slots__ = ('_alive', '_colours', '_energy', '_drift', '_since_step', '_last_beat', '_chooser', '_cells', '_shape', '_left_bits', '_right_bits')
 
     NAME = visualizers.MSG_LIFE
     OPTION = 'life'
@@ -92,8 +93,7 @@ class Life(Visualizer):
         self._chooser = random.Random(SEED)
         self._cells = CellPainter()
         self._colours = {}
-        self._energy = 0.0
-        self._target = 0.0
+        self._energy = Energy(per_note=ENERGY_PER_NOTE, rise_per_second=ENERGY_RISE_PER_SECOND, kept_per_second=ENERGY_KEPT_PER_SECOND)
         self._drift = 0.0
         self._since_step = 0.0
         self._last_beat = None
@@ -121,9 +121,7 @@ class Life(Visualizer):
         tempo = heard.tempo_factor()
         self._drift += seconds * tempo
         self.hear(heard)
-        rise = ENERGY_RISE_PER_SECOND * seconds
-        self._energy += max(-rise, min(rise, self._target - self._energy))
-        self._target *= ENERGY_KEPT_PER_SECOND ** seconds
+        self._energy.settle(seconds)
         self._since_step += seconds
         beat = math.floor(heard.beats)
         if beat != self._last_beat and self._since_step >= 1.0 / MOST_STEPS_PER_SECOND:
@@ -141,7 +139,7 @@ class Life(Visualizer):
             self._colours[note.track] = note_colour(track=note.track, pitch=note.pitch, drum=note.drum)
             if not note.started:
                 continue
-            self._target = min(self._target + ENERGY_PER_NOTE * note.velocity / FULL_VELOCITY, 1.0)
+            self._energy.strike(note.velocity / FULL_VELOCITY)
             share = (min(max(note.pitch, LOWEST_PITCH), HIGHEST_PITCH) - LOWEST_PITCH) / (HIGHEST_PITCH - LOWEST_PITCH)
             column = int(share * (columns - 1))
             row = (note.track * 7) % rows
@@ -161,7 +159,7 @@ class Life(Visualizer):
         along = ((across / max(width - 1, 1) - 0.5) * math.cos(angle) + (down / max(height - 1, 1) - 0.5) * math.sin(angle)) + 0.5
         share = numpy.clip(along + (drift % 1.0) - 0.5, 0.0, 1.0)[:, :, None]
         mixed = first * (1 - share) + second * share
-        level = RESTING_LEVEL + (PLAYING_LEVEL - RESTING_LEVEL) * self._energy
+        level = RESTING_LEVEL + (PLAYING_LEVEL - RESTING_LEVEL) * self._energy.get_level()
         brightest = numpy.maximum(mixed.max(axis=2, keepdims=True), 1.0)
         return mixed / brightest * WHOLE * level
 

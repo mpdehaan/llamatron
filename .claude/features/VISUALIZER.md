@@ -125,3 +125,4 @@ Reference notes for Claude, one of `.claude/features/`: the visualizer and its m
   the modes, the drawing and that the lava lamp never flashes, `tests/tui/test_tui_visualizer.py` the
   page, and `tests/tui/test_tui_playback.py`'s `TestHeard` what the transport hears.
 
+`Visualizer` gives every mode `seconds_since_last_frame(now)` and refuses an area with no room in `frame`; a mode that draws its own lines defines `frame_of`. `Energy` (`visualizers/energy.py`) is a level that notes push up (`strike(loudness)`) and time settles (`settle(seconds)`), never faster than its rise, which is how a mode stays free of flashes.
