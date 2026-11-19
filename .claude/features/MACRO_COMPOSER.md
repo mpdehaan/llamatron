@@ -63,7 +63,7 @@ All in the package `src/llamatron/macro_composer/`, since code that would ship w
   `tests/data/macro_composer_inputs/` holds three demos written as inputs, made again when their demos change.
 - `notation.py`: how a tune's lines and a drum's hits become a pattern's rows, and the drum kit's names.
 - `shaping.py`: the velocity of the parts an input lists, shaped by the song's feel.
-- `arranger.py`: a song's picks and a style template made into an input (`--arrange PICKS --out SET`, `--keep-input INPUT`).
+- `arranger.py`: a song's picks and a style template made into an input (`--arrange PICKS --out SET`, `--keep-input INPUT`). `arranged(style=, song=)` makes an `Arrangement`, which holds what the song and its style say of the whole song, writes the drums (`_write_drums`), seats the pitched players (`_seat_players`), writes each section of the form as a scene (`_write_section`), and hands everything back with `as_input()`.
 - `melody.py`: the melody engines, each a class that makes a section's tune from a style's habits where the song gives none:
   `StepWalk`, the singable first one, and `Serial` and `Evolving`, its subclasses. `operations.py` holds the moves on a row that the serial
   engine makes and that turn a phrase so that repeats evolve: backwards, upside down, moved, rotated.
