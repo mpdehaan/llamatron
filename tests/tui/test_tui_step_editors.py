@@ -230,7 +230,7 @@ class TestOffsetsEditorIsOneRow(OneRowChecks, UITest):
 # The test class of each editor of one row, which the rule below reads.
 CHECKED = [TestGrooveEditorIsOneRow, TestOffsetsEditorIsOneRow]
 # What every editor of one row takes from OneRowEditor, and every editor of steps from StepEditor, without a way of its own.
-SHARED_BY_ONE_ROW_EDITORS = (OneRowEditor.keys, OneRowEditor.move, OneRowEditor.type_digit, OneRowEditor.nudge, OneRowEditor.insert, OneRowEditor.remove_step, OneRowEditor.scroll_to_cursor)
+SHARED_BY_ONE_ROW_EDITORS = (OneRowEditor.keys, OneRowEditor.move_cursor, OneRowEditor.type_digit, OneRowEditor.nudge, OneRowEditor.insert, OneRowEditor.remove_step, OneRowEditor.scroll_to_cursor)
 SHARED_BY_STEP_EDITORS = (StepEditor.on_key, StepEditor.typed_number, StepEditor.window_of_steps, StepEditor.steps_shown_text, StepEditor.keep_step)
 
 

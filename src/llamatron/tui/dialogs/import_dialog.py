@@ -84,7 +84,7 @@ class ImportDialog(Dialog):
         self._made = {}
 
     def keys(self):
-        bound = [self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)), self.bind(self.KEYS.SELECT, action=self.move, wants_key=True)]
+        bound = [self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)), self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True)]
         if self.row == SONG_NAME:
             bound.append(self.bind(self.KEYS.RENAME, action=self.rename))
         elif self.row in (LONGEST, STEP_SIZE):
@@ -104,7 +104,7 @@ class ImportDialog(Dialog):
             self._made[key] = self.midi_import.imported(setlist=self.setlist, choices=choices)
         return self._made[key]
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.row = cursor_moved(place=self.row, name=name, count=ROWS)
 
     def choose_button(self, name):

@@ -150,7 +150,7 @@ class Branch:
     def remove(self):
         raise NotImplementedError
 
-    def move(self, offset):
+    def shift(self, offset):
         """Move the branch earlier or later in its list, and return whether it moved."""
         raise NotImplementedError
 

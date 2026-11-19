@@ -246,7 +246,7 @@ class PatternRows(BindsKeys):
     def move_keys(self):
         """Return the keys that move the cursor, which the editor lists after Esc: the arrows, the ends, which only the F1 dialog names, and the jump between section headings."""
         return [
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.ENDS, action=self.editor.jump_end),
             self.bind(self.KEYS.SECTION, action=self.jump_section),
         ]
@@ -256,7 +256,7 @@ class PatternRows(BindsKeys):
         row = self.current_row()
         return row.in_order(row.keys()) if row.editable() else []
 
-    def move(self, name):
+    def move_cursor(self, name):
         """Move the cursor a step or a row, stopping at the pattern's ends and the first and last row."""
         editor = self.editor
         if name in STEP_ARROWS:

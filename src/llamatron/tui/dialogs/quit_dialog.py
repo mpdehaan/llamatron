@@ -48,7 +48,7 @@ class QuitDialog(MessageDialog):
     def keys(self):
         return [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
-            self.bind(self.KEYS.SELECT, action=self.move, wants_key=True),
+            self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.PRESS, action=self.press_selected),
             self.bind(self.KEYS.QUIT, action=lambda: self.dismiss(QUIT_WITHOUT_SAVING)),
             self.bind(self.KEYS.SAVE, action=lambda: self.dismiss(SAVE_THEN_QUIT)),
@@ -59,7 +59,7 @@ class QuitDialog(MessageDialog):
         keys_on_one_line = max(line.cell_len for line in legend(keys=self.keys(), width=UNLIMITED_WIDTH))
         return max(super().wanted_width(), keys_on_one_line + dialog.DIALOG_MARGIN)
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.choice = cursor_moved(place=self.choice, name=name, count=len(labels.MSG_QUIT_BUTTONS))
 
     def press_selected(self):

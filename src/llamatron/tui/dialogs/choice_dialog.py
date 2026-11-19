@@ -47,7 +47,7 @@ class ChoiceDialog(Dialog):
     def keys(self):
         result = [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.CHOOSE, action=self.choose),
             self.bind(self.KEYS.SEARCH, action=self.type_character, wants_key=True),
         ]
@@ -84,7 +84,7 @@ class ChoiceDialog(Dialog):
         """Return the key that brings the cursor nearer the option at a place in the whole list, or None when the cursor is on it."""
         return key_between(here=self.cursor.get_place(), there=place)
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.cursor.move_among(name=name, places=self.matches())
 
     def type_character(self, name):

@@ -89,7 +89,7 @@ class OneRowEditor(StepGrid, StepEditor):
 
     def keys(self):
         self.keep_step()
-        result = [self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True)]
+        result = [self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True)]
         if self.can_edit():
             result += [
                 self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)),
@@ -103,7 +103,7 @@ class OneRowEditor(StepGrid, StepEditor):
             result += self.more_keys()
         return result
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.move_step(name)
 
     def type_digit(self, digit):

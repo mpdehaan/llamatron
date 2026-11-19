@@ -243,7 +243,7 @@ class SceneView:
         self._column = int(first.start * COLUMNS_PER_WHOLE)
         self._row = self.rows().index(first.pitch)
 
-    def move(self, name):
+    def move_cursor(self, name):
         """Move the cursor a sixteenth left or right, or a row up or down, stopping at the edges."""
         if name in (Key.LEFT, Key.RIGHT):
             self._column = cursor_moved(place=self._column, name=name, count=self.columns())

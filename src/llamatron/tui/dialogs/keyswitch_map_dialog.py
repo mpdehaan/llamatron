@@ -90,7 +90,7 @@ class KeyswitchMapDialog(Dialog):
             ]
         shared = [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.OK, action=self.finish),
         ]
         if self.on_buttons():
@@ -107,7 +107,7 @@ class KeyswitchMapDialog(Dialog):
     def finish(self):
         self.dismiss(list(self.keyswitches))
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.cursor.move(name=name, count=BUTTONS_PLACE + 1)
 
     def go_to_cell(self, cell):

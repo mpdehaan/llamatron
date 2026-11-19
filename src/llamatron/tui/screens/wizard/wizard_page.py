@@ -701,7 +701,7 @@ class WizardPage(FieldPage):
 
     def carry(self, offset):
         """Carry the branch picked up one place earlier or later in its list, the cursor going with it."""
-        if self.choosing(self.branch().move)(offset):
+        if self.choosing(self.branch().shift)(offset):
             self.tree_place += offset
         self.say(messages.MSG_WIZARD_MOVING.format(name=self.branch().name()))
 

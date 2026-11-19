@@ -69,7 +69,7 @@ class NewPatternDialog(Dialog):
         self.button = OK_BUTTON
 
     def keys(self):
-        bound = [self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)), self.bind(self.KEYS.SELECT, action=self.move, wants_key=True)]
+        bound = [self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)), self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True)]
         if self.row == SCALE_LENGTH:
             if not self.drum:
                 bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(key_table.STEP_FORWARD))]
@@ -80,7 +80,7 @@ class NewPatternDialog(Dialog):
             bound += [self.bind(self.KEYS.CHOOSE_BUTTON, action=self.choose_button, wants_key=True), self.bind(self.KEYS.PRESS, action=self.press)]
         return self.in_order(bound)
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.row = cursor_moved(place=self.row, name=name, count=ROWS)
 
     def choose_button(self, name):

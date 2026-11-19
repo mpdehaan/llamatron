@@ -114,7 +114,7 @@ class Llamas(Visualizer):
         tempo = heard.tempo_factor()
         self._motion += seconds * tempo
         self.hear(heard=heard, width=width, height=height)
-        self.move(seconds=seconds, tempo=tempo, width=width)
+        self.advance(seconds=seconds, tempo=tempo, width=width)
         return self.drawn(width=width, height=height, now=now, beats=heard.beats)
 
     def hear(self, *, heard, width, height):
@@ -128,7 +128,7 @@ class Llamas(Visualizer):
                 llama.target = min(llama.target + ENERGY_PER_NOTE * note.velocity / FULL_VELOCITY, 1.0)
                 llama.hop = HOP_ROWS
 
-    def move(self, *, seconds, tempo, width):
+    def advance(self, *, seconds, tempo, width):
         """Stroll each llama on, turning it at the edges, let its hop settle, move its energy toward its target no faster than it may rise while the target fades, and grow or shrink it when its energy says and its size has held long enough."""
         kept = ENERGY_KEPT_PER_SECOND ** seconds
         rise = ENERGY_RISE_PER_SECOND * seconds

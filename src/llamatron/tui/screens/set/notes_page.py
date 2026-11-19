@@ -104,7 +104,7 @@ class NotesPage(Page):
         if self.editing:
             return [
                 self.bind(self.KEYS.CANCEL, action=self.cancel_editing),
-                self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+                self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
                 self.bind(self.KEYS.NEW_LINE, action=self.new_line),
                 self.bind(self.KEYS.ERASE, action=self.erase),
                 self.bind(self.KEYS.TO_BUTTONS, action=self.to_buttons),
@@ -178,7 +178,7 @@ class NotesPage(Page):
         if self.document().get_setlist().has_notes():
             self.confirm(title=messages.MSG_CLEAR_NOTES_TITLE, lines=[messages.MSG_CLEAR_NOTES_QUESTION], then=lambda: self.store([drawing.NOTHING]))
 
-    def move(self, name):
+    def move_cursor(self, name):
         lines = self.text_lines()
         if name in keys_values.ARROWS_UP_DOWN:
             self.row = max(min(self.row + (-1 if name == Key.UP else 1), len(lines) - 1), 0)

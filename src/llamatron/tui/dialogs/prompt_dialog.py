@@ -51,7 +51,7 @@ class PromptDialog(Dialog):
     def keys(self):
         return [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.DONE, action=lambda: self.dismiss(self.value)),
             self.bind(self.KEYS.ERASE, action=self.erase),
         ]
@@ -60,7 +60,7 @@ class PromptDialog(Dialog):
         """Return where the cursor is, from 0 to the text's length, since the text can be replaced from outside."""
         return max(min(self._cursor, len(self.value)), 0)
 
-    def move(self, name):
+    def move_cursor(self, name):
         step = -ONE_CHARACTER if name == Key.LEFT else ONE_CHARACTER
         self._cursor = max(min(self.cursor() + step, len(self.value)), 0)
 
