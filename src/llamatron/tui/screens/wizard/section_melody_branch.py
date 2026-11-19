@@ -151,7 +151,7 @@ class SectionMelodyBranch(Branch):
                 Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=lambda: page.listen_to(self.heard_with_band()), enter_what=legends.MSG_LISTEN_WHAT)]
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return the line under the buttons that says whose the melody's notes are: the wizard's, or edited by hand."""
         choices = self.get_choices()
         if not choices.is_ready() or choices.tune_player_in(self._kind) is None:

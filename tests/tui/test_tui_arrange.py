@@ -732,7 +732,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.assertIsNone(self.clip_slot().get_grab_track())
 
     def notes_text(self):
-        return NEW_LINE.join(line.plain for line in self.page.notes(self.app.size.width))
+        return NEW_LINE.join(line.plain for line in self.page.remarks(self.app.size.width))
 
     async def test_says_when_the_grab_track_has_no_grab_steps_to_change(self):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=DRUMS)

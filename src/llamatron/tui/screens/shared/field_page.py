@@ -82,7 +82,7 @@ class FieldPage(Page):
     def page_keys(self):
         return []
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return lines to show under the settings."""
         return []
 
@@ -320,9 +320,9 @@ class FieldPage(Page):
             if self.cursor.get_place() >= first_button:
                 selected = len(lines) + (self.cursor.get_place() - first_button if self.buttons_stacked() else 1)
             lines += row
-        notes = self.notes(width)
-        if notes:
-            lines += [Text(drawing.NOTHING), *notes]
+        remarks = self.remarks(width)
+        if remarks:
+            lines += [Text(drawing.NOTHING), *remarks]
         return self.window_of_lines(lines=lines, selected=selected, height=height)
 
     def append_cells(self, *, line, row, selected):

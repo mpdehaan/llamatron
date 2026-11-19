@@ -159,7 +159,7 @@ class ScalePage(ShowsNamedItem, FieldPage):
                   enter=self.pick_kind, enter_what=legends.What.CHOOSE),
         ]
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return the scale's notes and uses, then a keyboard with the scale's keys filled and the root bracketed."""
         uses = len(self.document().uses(section=Section.SCALES, name=self.item))
         keyboard = Keyboard(root=self.root(), half_steps=self.scale().get_half_steps())

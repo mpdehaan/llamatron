@@ -175,5 +175,5 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             return [self.bind(self.KEYS.PICK_RHYTHM, action=lambda: pick_rhythm(page=self, store=lambda part, value: self.store_euclid(part=part, value=value)))]
         return []
 
-    def notes(self, width):
+    def remarks(self, width):
         return [Text(messages.MSG_TRANSPOSE_NOTE, style=Style.DIM)]

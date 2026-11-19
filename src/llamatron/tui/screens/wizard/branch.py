@@ -78,7 +78,7 @@ class Branch:
         """Return the branch's fields, as a settings page's, made afresh each time."""
         return []
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return lines shown under the fields, such as an overview of what the branches under this one hold."""
         return []
 

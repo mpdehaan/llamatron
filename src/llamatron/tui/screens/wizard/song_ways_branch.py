@@ -58,7 +58,7 @@ class SongWaysBranch(Branch):
     def fields(self):
         return self.way_fields() if self.get_choices().is_ready() else []
 
-    def notes(self, width):
+    def remarks(self, width):
         """Say so where the subgenre leaves nothing to choose, so that an empty branch explains itself."""
         if self.get_choices().is_ready() and not self.fields():
             return [Text(drawing.INDENT + messages.MSG_WIZARD_NOTHING_TO_CHOOSE, style=Style.DIM)]

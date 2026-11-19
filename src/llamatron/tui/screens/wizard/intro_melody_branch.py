@@ -259,7 +259,7 @@ class IntroMelodyBranch(Branch):
         place = self.place_of(number)
         return None if place is None else (messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=messages.MSG_WIZARD_INTRO_PART_NAME.format(number=number)), place, None)
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return the line under the buttons that says which part the buttons act on and whose its notes are, or how to give the part a melody."""
         choices = self.get_choices()
         if not choices.is_ready():
