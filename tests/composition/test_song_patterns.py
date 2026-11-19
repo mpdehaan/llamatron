@@ -36,7 +36,8 @@ from llamatron.composition.file_format import ClipSlotSetting, ChordSymbol, Gate
 from llamatron.composition import limits
 from llamatron.support import version as version_values
 from llamatron.composition.song_file_error import SongFileError
-from tests.support.song_testing import BASIC, LEAD, ROWS, X, build, clip, lead, lead_data, lead_song, pat, pitches, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import build, clip, lead, lead_data, lead_song, pat, pitches, with_parts
 
 QUARTER = '1/4'
 HALF = '1/2'
@@ -60,7 +61,7 @@ OLD_VERSION = '1.0.24'
 class TestPatterns(unittest.TestCase):
 
     def test_degrees_and_rests_and_lengths(self):
-        found = clip(song=build(BASIC), scene=1, track=LEAD).get_notes()
+        found = clip(song=build(song_testing.BASIC), scene=1, track=song_testing.LEAD).get_notes()
         # Each empty step is a rest of one step.
         self.assertEqual(found, [Note(name=NoteName.C, octave_number=4, length=Fraction(1, 4)), Note(name=NoteName.E, octave_number=4, length=Fraction(1, 4)), Rest(Fraction(1, 4)), Rest(Fraction(1, 4))])
 
@@ -72,30 +73,30 @@ class TestPatterns(unittest.TestCase):
         self.assertEqual(pitches(lead([1, HALF], default_octave=5)), [60])
 
     def test_a_default_song_octave_is_middle_c(self):
-        data = with_parts(patterns={X: pat([1, HALF])}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}])
+        data = with_parts(patterns={song_testing.X: pat([1, HALF])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}])
         del data[SetlistSetting.DEFAULT_OCTAVE]
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [60])
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [60])
 
     def test_a_file_saved_before_the_numbering_changed_has_its_octaves_moved_up(self):
         # Older files numbered octaves as Live labels them, two lower, so an old 3 and a new 5 are both middle C.
-        data = with_parts(patterns={X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}])
+        data = with_parts(patterns={song_testing.X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}])
         data[SetlistSetting.DEFAULT_OCTAVE] = 3
         data[SetlistSetting.DEFAULT_DRUM_OCTAVE] = 1
         data[SetlistSetting.VERSION] = OLD_VERSION
         song = song_from_data(data)
         self.assertEqual((song.get_default_octave(), song.get_default_drum_octave()), (3 + file_format.LIVE_OCTAVE_OFFSET, 1 + file_format.LIVE_OCTAVE_OFFSET))
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [60])
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [60])
 
     def test_a_file_saved_since_the_numbering_changed_or_without_a_version_is_read_as_it_is(self):
         for version in [file_format.LLAMATRON_OCTAVES_SINCE, version_values.VERSION, None]:
             with self.subTest(version=version):
-                data = with_parts(patterns={X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}])
+                data = with_parts(patterns={song_testing.X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}])
                 if version is not None:
                     data[SetlistSetting.VERSION] = version
-                self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [36])
+                self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [36])
 
     def test_an_old_file_still_refuses_octaves_that_are_not_numbers(self):
-        data = with_parts(patterns={X: pat([1, HALF], octave=[YES])})
+        data = with_parts(patterns={song_testing.X: pat([1, HALF], octave=[YES])})
         data[SetlistSetting.VERSION] = OLD_VERSION
         with self.assertRaises(SongFileError):
             song_from_data(data)
@@ -106,7 +107,7 @@ class TestPatterns(unittest.TestCase):
         self.assertEqual(song.get_octave_labels(), OctaveLabels.LLAMATRON)
         self.assertEqual((song.shown_octave(limits.MAX_OCTAVE), song.stored_octave(limits.MAX_OCTAVE)), (limits.MAX_OCTAVE, limits.MAX_OCTAVE))
         with self.assertRaises(SongFileError):
-            song_from_data(with_parts(octave_labels=X))
+            song_from_data(with_parts(octave_labels=song_testing.X))
 
     def test_a_degree_past_the_scale_wraps_up_an_octave(self):
         self.assertEqual(pitches(lead([8, HALF])), [60])
@@ -129,15 +130,15 @@ class TestPatterns(unittest.TestCase):
         self.assertEqual(found.get_notes()[0], Note(name=NoteName.C, octave_number=4, length=Fraction(1, 8)))
 
     def test_the_song_step_size_is_used_unless_the_pattern_has_its_own(self):
-        data = with_parts(patterns={X: {PatternSetting.STEPS: 2, Row.DEGREE: [1, 1]}}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}], step_size=EIGHTH)
-        self.assertEqual(clip(song=render_data(data), scene=1, track=LEAD).total_length(), Fraction(1, 4))
-        data[Section.PATTERNS][X][PatternSetting.STEP_SIZE] = QUARTER
-        self.assertEqual(clip(song=render_data(data), scene=1, track=LEAD).total_length(), Fraction(1, 2))
+        data = with_parts(patterns={song_testing.X: {PatternSetting.STEPS: 2, Row.DEGREE: [1, 1]}}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}], step_size=EIGHTH)
+        self.assertEqual(clip(song=render_data(data), scene=1, track=song_testing.LEAD).total_length(), Fraction(1, 4))
+        data[Section.PATTERNS][song_testing.X][PatternSetting.STEP_SIZE] = QUARTER
+        self.assertEqual(clip(song=render_data(data), scene=1, track=song_testing.LEAD).total_length(), Fraction(1, 2))
 
     def test_a_gate_can_run_past_later_steps_but_not_past_the_end_of_the_pattern(self):
         pattern = {PatternSetting.STEPS: 8, Row.DEGREE: [1, 3, None, 5, None, None, None, None], Row.GATE: [HALF, None, None, '1', None, None, None, None]}
-        data = with_parts(patterns={X: pattern}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X, ClipSlotSetting.REPEAT: 2}}}])
-        events, _ = timed_events(clip=clip(song=render_data(data), scene=1, track=LEAD), scale=None)
+        data = with_parts(patterns={song_testing.X: pattern}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X, ClipSlotSetting.REPEAT: 2}}}])
+        events, _ = timed_events(clip=clip(song=render_data(data), scene=1, track=song_testing.LEAD), scale=None)
         starts_and_ends = sorted((start, end) for start, end, _, _ in events)
         # The first note sounds right through the next two, and the last is cut at the end of the pattern.
         self.assertEqual(starts_and_ends[:3], [(0, Fraction(1, 2)), (Fraction(1, 16), Fraction(1, 8)), (Fraction(3, 16), Fraction(1, 2))])
@@ -157,8 +158,8 @@ class TestPatterns(unittest.TestCase):
 
     def test_values_are_checked(self):
         for row, value in [
-            (Row.GATE, 0), (Row.GATE, '0.25'), (Row.GATE, 0.25), (Row.GATE, 5), (Row.DOT, X),
-            (Row.ACCIDENTAL, X), (Row.OCTAVE, limits.MAX_OCTAVE + 1), (Row.CHORD, NOPE), (Row.VELOCITY, 0),
+            (Row.GATE, 0), (Row.GATE, '0.25'), (Row.GATE, 0.25), (Row.GATE, 5), (Row.DOT, song_testing.X),
+            (Row.ACCIDENTAL, song_testing.X), (Row.OCTAVE, limits.MAX_OCTAVE + 1), (Row.CHORD, NOPE), (Row.VELOCITY, 0),
             (Row.VELOCITY, 128), (Row.PROBABILITY, 101), (Row.RATCHET, 0), (Row.GLIDE, YES),
         ]:
             with self.subTest(row=row, value=value), self.assertRaises(SongFileError):
@@ -236,7 +237,7 @@ class TestChordRow(unittest.TestCase):
 class TestDrumPatterns(unittest.TestCase):
 
     def test_letters_ignore_the_scale_and_use_the_drum_octave(self):
-        self.assertEqual(set(pitches(clip(song=build(BASIC), scene=1, track=KICK))), {36})
+        self.assertEqual(set(pitches(clip(song=build(song_testing.BASIC), scene=1, track=KICK))), {36})
 
     def test_a_drum_step_can_have_an_accidental_and_octave(self):
         found = lead([NoteName.F, QUARTER], rows={PatternSetting.DRUM: True, Row.ACCIDENTAL: ['#'], Row.OCTAVE: [4]})
@@ -297,10 +298,10 @@ class TestStepRows(unittest.TestCase):
         """Return the clip of four sixteenth steps where the note on step 1 has a gate of a quarter, reaching over the note on step 2, and a probability."""
         pattern = {
             PatternSetting.STEPS: 4, Row.DEGREE: [1, 3, None, None], Row.GATE: [QUARTER, None, None, None],
-            Row.PROBABILITY: [probability, None, None, None], **parts.pop(ROWS, {}),
+            Row.PROBABILITY: [probability, None, None, None], **parts.pop(song_testing.ROWS, {}),
         }
-        data = with_parts(patterns={X: pattern}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}], **parts)
-        return clip(song=render_data(data), scene=1, track=LEAD)
+        data = with_parts(patterns={song_testing.X: pattern}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}], **parts)
+        return clip(song=render_data(data), scene=1, track=song_testing.LEAD)
 
     def starts_and_ends(self, found):
         """Return when each note of a clip starts and ends, in time order."""
@@ -358,12 +359,12 @@ class TestStepRows(unittest.TestCase):
     def test_a_seed_given_to_the_renderer_replaces_the_songs(self):
         data = lead_data(*[[1, SIXTEENTH]] * 200, rows={Row.PROBABILITY: [50] * 200}, seed=6)
         rendered = SongRenderer(song_from_data(data), seed=5).render()
-        self.assertEqual(clip(song=rendered, scene=1, track=LEAD).get_notes(), self.many(seed=5).get_notes())
+        self.assertEqual(clip(song=rendered, scene=1, track=song_testing.LEAD).get_notes(), self.many(seed=5).get_notes())
 
     def test_a_seed_in_the_file_must_be_an_integer_or_null(self):
         self.assertIsNone(song_from_data(with_parts(seed=None)).get_seed())
         with self.assertRaises(SongFileError):
-            song_from_data(with_parts(seed=X))
+            song_from_data(with_parts(seed=song_testing.X))
 
     def test_each_repeat_rolls_again(self):
         found = lead(*[[1, SIXTEENTH]] * 100, clip_slot={ClipSlotSetting.REPEAT: 2}, rows={Row.PROBABILITY: [50] * 100})

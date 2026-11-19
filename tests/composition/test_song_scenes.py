@@ -25,7 +25,8 @@ from llamatron.music.scale import ScaleType
 from tests.support.rendering import estimate_data, render_data, song_from_data
 from llamatron.composition.file_format import ClipSlotSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.song_file_error import SongFileError
-from tests.support.song_testing import BASIC, LEAD, X, build, clip, pitches, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import build, clip, pitches, with_parts
 
 YES = 'yes'
 C_MINOR = 'C minor'
@@ -58,11 +59,11 @@ class TestClipsInAScene(unittest.TestCase):
     def test_a_clip_plays_its_pattern_once_and_ends(self):
         song = self.scene(lead={ClipSlotSetting.PATTERN: A}, kick={ClipSlotSetting.PATTERN: HIT})
         self.assertEqual(clip(song=song, scene=1, track=KICK).total_length(), Fraction(1, 4))
-        self.assertEqual(clip(song=song, scene=1, track=LEAD).total_length(), 1)
+        self.assertEqual(clip(song=song, scene=1, track=song_testing.LEAD).total_length(), 1)
 
     def test_a_clip_goes_by_its_own_name_or_its_patterns(self):
         song = self.scene(lead={ClipSlotSetting.PATTERN: A, ClipSlotSetting.NAME: RIFF}, kick={ClipSlotSetting.PATTERN: HIT})
-        self.assertEqual(clip(song=song, scene=1, track=LEAD).get_name(), RIFF)
+        self.assertEqual(clip(song=song, scene=1, track=song_testing.LEAD).get_name(), RIFF)
         self.assertEqual(clip(song=song, scene=1, track=KICK).get_name(), HIT)
 
     def test_repeat_plays_a_pattern_more_times(self):
@@ -80,7 +81,7 @@ class TestClipsInAScene(unittest.TestCase):
         self.assertEqual(clip(song=song, scene=1, track=KICK).total_length(), Fraction(1, 4))
 
     def test_every_clip_looping_is_an_error(self):
-        data = with_parts(scenes=[{SceneSetting.NAME: BIG, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.LOOP: True}, KICK: {ClipSlotSetting.PATTERN: HIT, ClipSlotSetting.LOOP: True}}}])
+        data = with_parts(scenes=[{SceneSetting.NAME: BIG, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.LOOP: True}, KICK: {ClipSlotSetting.PATTERN: HIT, ClipSlotSetting.LOOP: True}}}])
         with self.assertRaises(SongFileError) as caught:
             render_data(data)
         self.assertIn(EVERY_CLIP_LOOPS, str(caught.exception))
@@ -97,23 +98,23 @@ class TestClipsInAScene(unittest.TestCase):
 
     def test_clips_say_whether_live_should_loop_them(self):
         song = self.scene(lead={ClipSlotSetting.PATTERN: A}, kick={ClipSlotSetting.PATTERN: HIT, ClipSlotSetting.LOOP: True})
-        self.assertFalse(clip(song=song, scene=1, track=LEAD).get_loop())
+        self.assertFalse(clip(song=song, scene=1, track=song_testing.LEAD).get_loop())
         self.assertTrue(clip(song=song, scene=1, track=KICK).get_loop())
 
     def test_estimate_gives_seconds_for_scenes_and_clips(self):
-        estimates = estimate_data(with_parts(scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2}, KICK: {ClipSlotSetting.PATTERN: HIT}}}]))
+        estimates = estimate_data(with_parts(scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2}, KICK: {ClipSlotSetting.PATTERN: HIT}}}]))
         number, seconds, clips, problem = estimates[0]
         self.assertEqual((number, seconds, problem), (1, 4, None))
-        self.assertEqual(clips, {LEAD: 4, KICK: Fraction(1, 2)})
+        self.assertEqual(clips, {song_testing.LEAD: 4, KICK: Fraction(1, 2)})
 
     def test_estimate_uses_the_scene_tempo(self):
-        estimates = estimate_data(with_parts(scenes=[{SceneSetting.TEMPO: 60, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}]))
+        estimates = estimate_data(with_parts(scenes=[{SceneSetting.TEMPO: 60, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}]))
         self.assertEqual(estimates[0][1], 4)
 
     def test_estimate_reports_a_problem_in_only_that_scene(self):
         estimates = estimate_data(with_parts(scenes=[
-            {Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.LOOP: True}}},
-            {Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}},
+            {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.LOOP: True}}},
+            {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}},
         ]))
         first, second = estimates
         self.assertIn(EVERY_CLIP, first[3])
@@ -125,26 +126,26 @@ class TestScenes(unittest.TestCase):
 
     def test_a_scene_scale_overrides_only_that_scene(self):
         data = with_parts(scenes=[
-            {SceneSetting.SCALE: C_MINOR, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}},
-            {Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}},
+            {SceneSetting.SCALE: C_MINOR, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}},
+            {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}},
         ])
         song = render_data(data)
-        self.assertEqual(pitches(clip(song=song, scene=1, track=LEAD)), [48, 51])
-        self.assertEqual(pitches(clip(song=song, scene=2, track=LEAD)), [48, 52])
+        self.assertEqual(pitches(clip(song=song, scene=1, track=song_testing.LEAD)), [48, 51])
+        self.assertEqual(pitches(clip(song=song, scene=2, track=song_testing.LEAD)), [48, 52])
 
     def test_degrees_with_no_scale_anywhere_name_the_problem(self):
-        data = with_parts(scale=None, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}])
+        data = with_parts(scale=None, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}])
         with self.assertRaises(SongFileError) as caught:
             render_data(data)
         self.assertIn(NO_SCALE, str(caught.exception))
 
     def test_a_scene_scale_works_when_the_song_has_none(self):
-        data = with_parts(scale=None, scenes=[{SceneSetting.SCALE: C_MINOR, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}])
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [48, 51])
+        data = with_parts(scale=None, scenes=[{SceneSetting.SCALE: C_MINOR, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}])
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [48, 51])
 
     def test_a_scale_can_have_any_name(self):
         data = with_parts(scales={MAIN: {ScaleSetting.ROOT: NoteName.D, ScaleSetting.TYPE: scale_type_name(ScaleType.MINOR)}}, scale=MAIN)
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [50, 53])
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [50, 53])
 
     def test_scales_must_be_in_the_list(self):
         for parts in [{SongSetting.SCALE: D_MAJOR}, {Section.SCENES: [{SceneSetting.SCALE: D_MAJOR, SceneSetting.TRACKS: {}}]}]:
@@ -156,7 +157,7 @@ class TestScenes(unittest.TestCase):
             song_from_data(with_parts(scales={BAD: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: WOBBLY}}))
 
     def test_repeat_writes_numbered_scenes(self):
-        data = with_parts(scenes=[{SceneSetting.NAME: X, SceneSetting.REPEAT: 3, SceneSetting.TRACKS: {}}])
+        data = with_parts(scenes=[{SceneSetting.NAME: song_testing.X, SceneSetting.REPEAT: 3, SceneSetting.TRACKS: {}}])
         self.assertEqual([s.get_name() for s in render_data(data).get_rows()], [X_1, X_2, X_3])
 
 
@@ -165,8 +166,8 @@ class TestScenes(unittest.TestCase):
         self.assertEqual(render_data(data).get_rows()[0].get_tempo(), 90)
 
     def test_no_tempo_uses_the_song_tempo(self):
-        self.assertIsNone(build(BASIC).get_rows()[0].get_tempo())
-        self.assertEqual(build(BASIC).get_tempo(), 120)
+        self.assertIsNone(build(song_testing.BASIC).get_rows()[0].get_tempo())
+        self.assertEqual(build(song_testing.BASIC).get_tempo(), 120)
 
     def test_any_number_of_tracks(self):
         tracks = [f't{n}' for n in range(9)]
@@ -174,7 +175,7 @@ class TestScenes(unittest.TestCase):
         self.assertEqual(len(render_data(data).get_columns()), 9)
 
     def test_a_clip_slot_can_be_empty(self):
-        self.assertIsNone(clip(song=render_data(with_parts(scenes=[{Section.TRACKS: {}}])), scene=1, track=LEAD))
+        self.assertIsNone(clip(song=render_data(with_parts(scenes=[{Section.TRACKS: {}}])), scene=1, track=song_testing.LEAD))
 
     def test_a_song_can_start_with_nothing(self):
         song = render_data({SceneSetting.TEMPO: 120, SceneSetting.TRACKS: {}, Section.SCENES: []})
@@ -185,6 +186,6 @@ class TestScenes(unittest.TestCase):
             song_from_data(with_parts(tracks=[A, A]))
 
     def test_song_settings_are_checked(self):
-        for parts in [{GRANULARITY: THIRD}, {DEFAULT_LENGTH: 0}, {SetlistSetting.DEFAULT_OCTAVE: 20}, {SetlistSetting.DEFAULT_DRUM_OCTAVE: X}]:
+        for parts in [{GRANULARITY: THIRD}, {DEFAULT_LENGTH: 0}, {SetlistSetting.DEFAULT_OCTAVE: 20}, {SetlistSetting.DEFAULT_DRUM_OCTAVE: song_testing.X}]:
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
                 song_from_data(with_parts(**parts))

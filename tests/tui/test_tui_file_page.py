@@ -20,7 +20,8 @@ import os
 from fractions import Fraction
 from unittest import mock
 
-from tests.support.ui_testing import KEY_SHOWN, UITest, key_of, key_name
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, key_of, key_name
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
 from llamatron.composition import setlist as setlist_values
@@ -157,7 +158,7 @@ class TestFilePage(UITest):
     async def test_a_protected_set_offers_a_copy_and_the_file_page_turns_protection_off(self):
         self.assertFalse(self.document.setlist().is_protected())
         await self.select_field(labels_text.MSG_PROTECTED_LABEL)
-        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.SPACE_ENTER), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.SPACE_ENTER), self.text())
         await self.press(Key.ENTER)
         self.assertTrue(self.document.setlist().is_protected())
         # Space toggles too, like ENTER.

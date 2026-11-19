@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Density, Swell and Articulate: their list pages and editors, the sections on the Scene page and the clip page, and the settings pages' sections that hold them."""
 
-from tests.support.ui_testing import CLIPPED, FADE, LEAD, THIN, UITest, back_key, forward_key
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, back_key, forward_key
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section, GeneratorKind, RampWay, Shape, ShapePart, shape_setting
 from llamatron.composition import limits
@@ -69,7 +70,7 @@ class TestDensityEditor(ShapeEditorTest):
     SECTION = Section.DENSITIES
     PAGE = DensityEditor
     KIND = GeneratorKind.DENSITY
-    NAME = THIN
+    NAME = ui_testing.THIN
 
     async def test_start_steps_and_clears(self):
         await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.START])
@@ -105,7 +106,7 @@ class TestSwellEditor(ShapeEditorTest):
     SECTION = Section.SWELLS
     PAGE = SwellEditor
     KIND = GeneratorKind.SWELL
-    NAME = FADE
+    NAME = ui_testing.FADE
 
     async def test_the_accent_steps_up_to_its_most(self):
         await self.select_field(labels_text.MSG_ACCENT_LABEL)
@@ -119,7 +120,7 @@ class TestArticulateEditor(ShapeEditorTest):
     SECTION = Section.ARTICULATES
     PAGE = ArticulateEditor
     KIND = GeneratorKind.ARTICULATE
-    NAME = CLIPPED
+    NAME = ui_testing.CLIPPED
 
     async def test_start_stops_at_its_least(self):
         await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.START])
@@ -195,7 +196,7 @@ class TestShapeSectionsOnTheClipPage(UITest):
     """On the clip page the same sections set the clip's own, over its scene's."""
 
     async def test_a_clips_density_is_its_own(self):
-        self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=0, track=LEAD))
+        self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=0, track=ui_testing.LEAD))
         await self.pilot.pause()
         await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
         await self.press(Key.ENTER)
@@ -203,6 +204,6 @@ class TestShapeSectionsOnTheClipPage(UITest):
         await self.press(Key.ENTER)
         self.app.screen.value = str(HALF)
         await self.press(Key.ENTER)
-        clip_slot = self.document.song().get_scenes()[0].get_clip_slot(LEAD)
+        clip_slot = self.document.song().get_scenes()[0].get_clip_slot(ui_testing.LEAD)
         self.assertEqual(clip_slot.get_setting(shape_setting(shape=Shape.DENSITY, part=ShapePart.END)), HALF)
         self.assertIsNone(self.document.song().get_scenes()[0].get_shape(Shape.DENSITY))

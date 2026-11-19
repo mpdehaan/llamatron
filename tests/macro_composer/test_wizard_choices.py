@@ -27,7 +27,7 @@ from llamatron.macro_composer.wizard_choices import style_of, WizardChoices, gen
 from llamatron.macro_composer import melody
 from llamatron.macro_composer import notation
 from llamatron.macro_composer import arranger
-from llamatron.macro_composer.arranger import values_of, share_in, arranged, GENRE, style_named, style_names
+from llamatron.macro_composer.arranger import values_of, share_in, arranged, style_named, style_names
 from llamatron.music.note import NoteName
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support import version
@@ -175,10 +175,10 @@ class TestWizardChoices(unittest.TestCase):
     def test_reading_leaves_out_what_no_longer_fits_and_keeps_the_rest(self):
         data = chosen().to_data()
         gone = WizardChoices.from_data({**data, wizard_choices.SUBGENRE: NOT_A_CHOICE})
-        self.assertEqual(gone.get_genre(), data[GENRE])
+        self.assertEqual(gone.get_genre(), data[arranger.GENRE])
         self.assertIsNone(gone.get_subgenre())
         self.assertEqual(WizardChoices.from_data(None).to_data(), {})
-        self.assertEqual(WizardChoices.from_data({GENRE: NOT_A_CHOICE}).to_data(), {})
+        self.assertEqual(WizardChoices.from_data({arranger.GENRE: NOT_A_CHOICE}).to_data(), {})
 
     def test_the_same_choices_and_seed_make_the_same_song_and_another_seed_another(self):
         def data_of(seed):

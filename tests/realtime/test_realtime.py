@@ -49,7 +49,7 @@ from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.strings import errors
-from tests.support.sender_under_capture import STARTED
+from tests.support import sender_under_capture
 from llamatron.realtime import timeline as timeline_values
 from llamatron.realtime.timeline import Playing, Route, Tag, song_timeline
 from llamatron.support.example_sets import example_sets
@@ -268,7 +268,7 @@ class TestRealtimeSenderProcess(unittest.TestCase):
         """In a fresh interpreter, whose resource tracker hasn't started, the process starts with a stderr like Textual's capture in place, which once failed."""
         result = subprocess.run([sys.executable, UNDER_CAPTURE], capture_output=True, text=True, timeout=SUBPROCESS_TIMEOUT_SECONDS, check=False)
         self.assertEqual(result.returncode, SUCCESS, result.stderr)
-        self.assertEqual(result.stdout.strip(), STARTED)
+        self.assertEqual(result.stdout.strip(), sender_under_capture.STARTED)
 
     def test_closing_a_sender_whose_process_never_ran_returns_at_once(self):
         sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True)

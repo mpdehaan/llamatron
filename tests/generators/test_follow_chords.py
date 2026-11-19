@@ -24,7 +24,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.music.note import NoteName
 from llamatron.strings import errors
-from tests.playback.test_registers import OCTAVE, STEP_SIZE, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 from tests.support.ui_testing import fixed_text
 
@@ -195,12 +196,12 @@ class TestFollowChordsSettings(unittest.TestCase):
 
     def test_a_track_that_is_not_text_is_refused(self):
         data = following_data()
-        data[Section.FOLLOW_CHORDS][FOLLOW] = {FollowChordsSetting.CHORDS_FROM: OCTAVE}
+        data[Section.FOLLOW_CHORDS][FOLLOW] = {FollowChordsSetting.CHORDS_FROM: test_registers.OCTAVE}
         with self.assertRaises(SongFileError):
             setlist_from_data(data)
 
     def test_the_steps_here_are_a_quarter_each(self):
-        self.assertEqual(STEP_SIZE, ONE_STEP_EACH)
+        self.assertEqual(test_registers.STEP_SIZE, ONE_STEP_EACH)
 
 
 if __name__ == '__main__':

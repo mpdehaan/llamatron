@@ -29,7 +29,8 @@ from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.shared.field import Cells
 from llamatron.tui.screens.shared import statements
-from tests.support.ui_testing import LEAD, ROLLS, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 AX = RegisterName.AX
 BX = RegisterName.BX
@@ -152,7 +153,7 @@ class TestStatementsOnOtherPages(StatementsTest):
     async def test_a_generator(self):
         await self.open_generator(section=Section.AUTO_RATCHETS)
         await self.write_every_third()
-        settings = self.document.song().get_generator_settings(kind=GeneratorKind.AUTO_RATCHET, name=ROLLS)
+        settings = self.document.song().get_generator_settings(kind=GeneratorKind.AUTO_RATCHET, name=ui_testing.ROLLS)
         self.assertEqual(settings.get_bypass_when(), [self.every_third()])
 
     async def test_a_scene(self):
@@ -176,7 +177,7 @@ class TestStatementsOnOtherPages(StatementsTest):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
         self.assertIsInstance(self.app.screen, ClipPage)
         await self.write_every_third(table=statements.SECOND_TABLE)
-        clip_slot = self.document.clip_slot(index=0, track=LEAD)
+        clip_slot = self.document.clip_slot(index=0, track=ui_testing.LEAD)
         self.assertEqual(clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), [self.every_third()])
         self.assertEqual(clip_slot.get_statements(ClipSlotSetting.BYPASS_WHEN), [])
         await self.select_field(labels.MSG_ADD_REGISTER_LABEL.format(name=AX))

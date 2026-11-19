@@ -27,7 +27,8 @@ from llamatron.tui.keys import Key
 from llamatron.tui.launch import Launch
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.silent_instruments import silent_instrument_lines
-from tests.support.ui_testing import DRUMS, LEAD, UITest, a_song
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, a_song
 
 FLUID = 'fluid'
 KEYS = 'keys'
@@ -46,8 +47,8 @@ def with_instruments(document, *, keys_device=GONE_PORT):
     for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, keys_device), (UNUSED, GONE_PORT)):
         document.add_instrument(name)
         document.set_instrument_device(name=name, device=device)
-    document.set_track_instrument(name=LEAD, instrument=FLUID)
-    document.set_track_instrument(name=DRUMS, instrument=KEYS)
+    document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
+    document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)
     return document
 
 

@@ -31,7 +31,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import NoteName
 from llamatron.support.rational import Rational
 from tests.support.rendering import setlist_from_data
-from tests.playback.test_registers import LEAD, X, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
 
 PROGRESSION = 'changes'
@@ -50,7 +51,7 @@ def through(progression, *, repeat=BARS, rows=None, drum=False, time_signature=N
     made = dict(pattern(STEPS, **{Row.DEGREE: list(FIGURE), **(rows or {})}), **{PatternSetting.STEP_SIZE: '1/4'})
     if drum:
         made.update({PatternSetting.DRUM: True, Row.DEGREE: [NoteName.C] * STEPS})
-    data = song(patterns={X: made}, scenes=[{SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]}}}])
+    data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]}}}])
     data[Section.PROGRESSIONS] = {PROGRESSION: progression}
     data[Section.CHAINS] = {CHAIN: [{GeneratorKind.PROGRESSION: PROGRESSION}]}
     if time_signature:

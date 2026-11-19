@@ -22,7 +22,8 @@ tested with the page, so these checks call the page's rename and answer its prom
 
 import unittest
 
-from tests.support.ui_testing import STRUMMER, BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, FOLK, POP, SMOOTH, CLIPPED, FADE, THIN, SWAY, LEAD, NAMED, ROLLS, TUNE, UITest, UP_ARP, leaf_pages
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, leaf_pages
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
@@ -173,7 +174,7 @@ class NamedItemChecks:
 class TestPatternEditorShowsItsPattern(NamedItemChecks, UITest):
 
     PAGE = PatternEditor
-    FIRST = TUNE
+    FIRST = ui_testing.TUNE
 
     async def another(self):
         """Return a second pattern. The first is played by a clip, so the checks that delete the first empty the arrangement."""
@@ -184,7 +185,7 @@ class TestPatternEditorShowsItsPattern(NamedItemChecks, UITest):
 class TestChainEditorShowsItsChain(NamedItemChecks, UITest):
 
     PAGE = ChainEditor
-    FIRST = NAMED
+    FIRST = ui_testing.NAMED
 
 
 class TestInstrumentEditorShowsItsInstrument(NamedItemChecks, UITest):
@@ -217,164 +218,164 @@ class TestGrooveEditorShowsItsGroove(NamedItemChecks, UITest):
 class TestArpEditorShowsItsArp(NamedItemChecks, UITest):
 
     PAGE = ArpEditor
-    FIRST = UP_ARP
+    FIRST = ui_testing.UP_ARP
 
 
 class TestAutoRatchetEditorShowsItsAutoRatchet(NamedItemChecks, UITest):
 
     PAGE = AutoRatchetEditor
-    FIRST = ROLLS
+    FIRST = ui_testing.ROLLS
 
 
 class TestDriftEditorShowsItsDrift(NamedItemChecks, UITest):
 
     PAGE = DriftEditor
-    FIRST = SWAY
+    FIRST = ui_testing.SWAY
 
 
 class TestProgressionEditorShowsItsProgression(NamedItemChecks, UITest):
 
     PAGE = ProgressionEditor
-    FIRST = POP
+    FIRST = ui_testing.POP
 
 
 class TestChordsEditorShowsItsProgression(NamedItemChecks, UITest):
 
     PAGE = ChordsEditor
-    FIRST = POP
+    FIRST = ui_testing.POP
     RENAMES = False
 
 
 class TestVoiceLeadingEditorShowsItsVoiceLeading(NamedItemChecks, UITest):
 
     PAGE = VoiceLeadingEditor
-    FIRST = SMOOTH
+    FIRST = ui_testing.SMOOTH
 
 
 class TestHocketEditorShowsItsHocket(NamedItemChecks, UITest):
 
     PAGE = HocketEditor
-    FIRST = TRADE
+    FIRST = ui_testing.TRADE
 
 
 class TestFollowChordsEditorShowsItsFollowChords(NamedItemChecks, UITest):
 
     PAGE = FollowChordsEditor
-    FIRST = FOLLOWS
+    FIRST = ui_testing.FOLLOWS
 
 
 class TestPhrasingEditorShowsItsPhrasing(NamedItemChecks, UITest):
 
     PAGE = PhrasingEditor
-    FIRST = BREATHES
+    FIRST = ui_testing.BREATHES
 
 
 class TestMusicianEditorShowsItsMusician(NamedItemChecks, UITest):
 
     PAGE = MusicianEditor
-    FIRST = STRUMMER
+    FIRST = ui_testing.STRUMMER
 
 
 class TestGuitarifyEditorShowsItsGuitarify(NamedItemChecks, UITest):
 
     PAGE = GuitarifyEditor
-    FIRST = PICKED
+    FIRST = ui_testing.PICKED
 
 
 class TestGuitarBarEditorShowsItsGuitarify(NamedItemChecks, UITest):
 
     PAGE = GuitarBarEditor
-    FIRST = PICKED
+    FIRST = ui_testing.PICKED
     RENAMES = False
 
 
 class TestChainStatementsPageShowsItsChain(NamedItemChecks, UITest):
 
     PAGE = ChainStatementsPage
-    FIRST = NAMED
+    FIRST = ui_testing.NAMED
     RENAMES = False
 
 
 class TestStrumEditorShowsItsStrum(NamedItemChecks, UITest):
 
     PAGE = StrumEditor
-    FIRST = FOLK
+    FIRST = ui_testing.FOLK
 
 
 class TestEuclidEditorShowsItsEuclid(NamedItemChecks, UITest):
 
     PAGE = EuclidEditor
-    FIRST = CLAVE
+    FIRST = ui_testing.CLAVE
 
 
 class TestGlideEditorShowsItsGlide(NamedItemChecks, UITest):
 
     PAGE = GlideEditor
-    FIRST = SLIDES
+    FIRST = ui_testing.SLIDES
 
 
 class TestGlideStepsEditorShowsItsGlide(NamedItemChecks, UITest):
 
     PAGE = GlideStepsEditor
-    FIRST = SLIDES
+    FIRST = ui_testing.SLIDES
     RENAMES = False
 
 
 class TestShortenEditorShowsItsShorten(NamedItemChecks, UITest):
 
     PAGE = ShortenEditor
-    FIRST = CLIPS
+    FIRST = ui_testing.CLIPS
 
 
 class TestShortenStepsEditorShowsItsShorten(NamedItemChecks, UITest):
 
     PAGE = ShortenStepsEditor
-    FIRST = CLIPS
+    FIRST = ui_testing.CLIPS
     RENAMES = False
 
 
 class TestRushEditorShowsItsRush(NamedItemChecks, UITest):
 
     PAGE = RushEditor
-    FIRST = PUSH
+    FIRST = ui_testing.PUSH
 
 
 class TestRushStepsEditorShowsItsRush(NamedItemChecks, UITest):
 
     PAGE = RushStepsEditor
-    FIRST = PUSH
+    FIRST = ui_testing.PUSH
     RENAMES = False
 
 
 class TestDragEditorShowsItsDrag(NamedItemChecks, UITest):
 
     PAGE = DragEditor
-    FIRST = LAZY
+    FIRST = ui_testing.LAZY
 
 
 class TestDragStepsEditorShowsItsDrag(NamedItemChecks, UITest):
 
     PAGE = DragStepsEditor
-    FIRST = LAZY
+    FIRST = ui_testing.LAZY
     RENAMES = False
 
 
 class TestDensityEditorShowsItsDensity(NamedItemChecks, UITest):
 
     PAGE = DensityEditor
-    FIRST = THIN
+    FIRST = ui_testing.THIN
 
 
 class TestSwellEditorShowsItsSwell(NamedItemChecks, UITest):
 
     PAGE = SwellEditor
-    FIRST = FADE
+    FIRST = ui_testing.FADE
 
 
 class TestArticulateEditorShowsItsArticulate(NamedItemChecks, UITest):
 
     PAGE = ArticulateEditor
-    FIRST = CLIPPED
+    FIRST = ui_testing.CLIPPED
 
 
 class TestScalePageShowsItsScale(NamedItemChecks, UITest):
@@ -386,20 +387,20 @@ class TestScalePageShowsItsScale(NamedItemChecks, UITest):
 class TestTrackEditorShowsItsTrack(NamedItemChecks, UITest):
 
     PAGE = TrackEditor
-    FIRST = LEAD
+    FIRST = ui_testing.LEAD
 
 
 class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
 
     PAGE = OffsetsEditor
-    FIRST = UP_ARP
+    FIRST = ui_testing.UP_ARP
     RENAMES = False
 
     def prepare(self):
-        self.document.set_generator_setting(section=Section.ARPS, name=UP_ARP, setting=ArpSetting.OFFSETS, value=SOME_OFFSETS)
+        self.document.set_generator_setting(section=Section.ARPS, name=ui_testing.UP_ARP, setting=ArpSetting.OFFSETS, value=SOME_OFFSETS)
 
     async def test_the_arp_without_its_offsets_is_nothing_to_edit(self):
-        self.document.set_generator_setting(section=Section.ARPS, name=UP_ARP, setting=ArpSetting.OFFSETS, value=None)
+        self.document.set_generator_setting(section=Section.ARPS, name=ui_testing.UP_ARP, setting=ArpSetting.OFFSETS, value=None)
         self.assertFalse(self.page.still_exists())
 
 

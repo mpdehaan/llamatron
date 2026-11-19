@@ -27,7 +27,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.pattern_order import ordered_patterns
 from llamatron.support.random_source import random_source
 from tests.support.rendering import render_data
-from tests.support.song_testing import LEAD, clip, pat, pitches, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'
 EIGHTH = '1/8'
@@ -57,8 +58,8 @@ def played(*, names=None, repeat=1, order=None, direction=None, changed=None, sl
         clip_slot[ClipSlotSetting.PATTERN_ORDER] = order
     if direction:
         clip_slot[ClipSlotSetting.DIRECTION] = direction
-    data = with_parts(patterns=patterns(**(changed or {})), scenes=[{Section.TRACKS: {LEAD: clip_slot}}])
-    return pitches(clip(song=render_data(data), scene=1, track=LEAD))
+    data = with_parts(patterns=patterns(**(changed or {})), scenes=[{Section.TRACKS: {song_testing.LEAD: clip_slot}}])
+    return pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD))
 
 
 def notes_of(*names):
@@ -85,16 +86,16 @@ class TestAClipOfSeveralPatterns(unittest.TestCase):
 
     def test_each_pattern_keeps_its_own_step_size(self):
         short = {B: {**pat([3, EIGHTH], [4, EIGHTH]), PatternSetting.STEP_SIZE: EIGHTH}}
-        data = with_parts(patterns={**patterns(), **short}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERNS: LIST}}}])
-        a_clip = clip(song=render_data(data), scene=1, track=LEAD)
+        data = with_parts(patterns={**patterns(), **short}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERNS: LIST}}}])
+        a_clip = clip(song=render_data(data), scene=1, track=song_testing.LEAD)
         self.assertEqual(pitches(a_clip), notes_of(A, B, C))
-        whole = clip(song=render_data(with_parts(patterns=patterns(), scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERNS: LIST}}}])), scene=1, track=LEAD)
+        whole = clip(song=render_data(with_parts(patterns=patterns(), scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERNS: LIST}}}])), scene=1, track=song_testing.LEAD)
         self.assertLess(a_clip.total_length(), whole.total_length())
 
     def test_a_drum_pattern_and_a_pattern_of_notes_cannot_share_a_list(self):
         made = {**patterns(), HIT: pat([C.upper(), QUARTER], drum=True)}
         with self.assertRaises(SongFileError):
-            render_data(with_parts(patterns=made, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERNS: [A, HIT]}}}]))
+            render_data(with_parts(patterns=made, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERNS: [A, HIT]}}}]))
 
     def test_a_step_that_starts_the_pattern_over_starts_the_whole_list_over(self):
         statement = {StatementPart.REGISTER: RegisterName.AX, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: RESTARTS_UNDER}

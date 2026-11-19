@@ -31,7 +31,8 @@ from llamatron.playback.tempo_ramps import ramped_tempos
 from llamatron.realtime import timeline
 from llamatron.realtime.timeline import Route, song_timeline
 from tests.support.rendering import render_data, song_from_data
-from tests.support.song_testing import LEAD, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import with_parts
 
 A = 'a'
 # How many bars a scene of the tests' data lasts, which is its lead clip's repeat of the one-bar pattern.
@@ -75,7 +76,7 @@ def data_with(*scenes):
     for settings in scenes:
         settings = dict(settings)
         bars = settings.pop(BARS)
-        written.append({**settings, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: bars}}})
+        written.append({**settings, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: bars}}})
     return with_parts(scenes=written)
 
 
@@ -200,7 +201,7 @@ class TestLengthsAgree(unittest.TestCase):
     def test_a_clips_seconds_are_measured_by_its_scenes_ramp(self):
         song = song_from_data(self.scenes())
         first = SongRenderer(song).estimate()[0]
-        self.assertAlmostEqual(float(first.clip_seconds[LEAD]), float(first.seconds))
+        self.assertAlmostEqual(float(first.clip_seconds[song_testing.LEAD]), float(first.seconds))
         # Two bars from 100 to 120, a sixteenth at a time, then two bars at 120.
         steps = TWO_BARS * SIXTEENTHS_IN_A_BAR
         ramp = sum(float(SIXTEENTH) * seconds_per_whole(SLOW + (BASE - SLOW) * step / steps) for step in range(steps))
@@ -209,7 +210,7 @@ class TestLengthsAgree(unittest.TestCase):
     def test_every_note_of_the_timeline_is_where_the_midi_file_has_it(self):
         song = song_from_data(self.scenes())
         grid = SongRenderer(song).render()
-        events = song_timeline(grid=grid, routes={LEAD: Route(PORT, FIRST_CHANNEL, None)})
+        events = song_timeline(grid=grid, routes={song_testing.LEAD: Route(PORT, FIRST_CHANNEL, None)})
         midi = MidiSong(directory=os.curdir, grid=grid, name=SONG_NAME).midi_file()
         seconds = 0.0
         ons = []

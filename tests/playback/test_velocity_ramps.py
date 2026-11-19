@@ -32,7 +32,9 @@ from llamatron.exporters.timing import timed_events
 from llamatron.music import midi
 from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, velocity_percent_at
 from llamatron.support.rational import Rational
-from tests.playback.test_shapes import LEAD, OTHER_TRACK, SHAPED, STEPS, bar_of_sixteenths, one_scene
+from tests.playback import test_registers
+from tests.playback import test_shapes
+from tests.playback.test_shapes import bar_of_sixteenths, one_scene
 from tests.support.rendering import render_data, setlist_from_data
 
 WRITTEN = 100
@@ -46,10 +48,10 @@ A_NOTE_OF_TWO_BARS = 2
 ONE_BAR = 1
 TWO_BARS = 2
 LONG = 'long'
-ROWS = {Row.VELOCITY: [WRITTEN] * STEPS}
-RISING = [LOW + A_NOTE_OF_ONE_BAR * note for note in range(STEPS)]
-FALLING = [WRITTEN - A_NOTE_OF_ONE_BAR * note for note in range(STEPS)]
-HELD = [WRITTEN] * STEPS
+ROWS = {Row.VELOCITY: [WRITTEN] * test_shapes.STEPS}
+RISING = [LOW + A_NOTE_OF_ONE_BAR * note for note in range(test_shapes.STEPS)]
+FALLING = [WRITTEN - A_NOTE_OF_ONE_BAR * note for note in range(test_shapes.STEPS)]
+HELD = [WRITTEN] * test_shapes.STEPS
 # A setting a scene and a clip held before their velocity took its place.
 OLD_SWELL_START = 'swell_start'
 
@@ -69,9 +71,9 @@ def lead_of(*, scene=None, clip=None, repeat=1, scene_repeat=1):
 def beside_two_bars(*, scene=None, clip=None):
     """Return a song whose lead plays its one bar in a scene that another track makes two bars long."""
     data = one_scene(rows=ROWS, scene=scene, clip=clip)
-    data[Section.TRACKS][OTHER_TRACK] = {}
-    data[Section.PATTERNS][LONG] = dict(bar_of_sixteenths(), **{PatternSetting.STEPS: STEPS})
-    data[Section.SCENES][0][SceneSetting.TRACKS][OTHER_TRACK] = {ClipSlotSetting.PATTERN: LONG, ClipSlotSetting.REPEAT: TWO_BARS}
+    data[Section.TRACKS][test_shapes.OTHER_TRACK] = {}
+    data[Section.PATTERNS][LONG] = dict(bar_of_sixteenths(), **{PatternSetting.STEPS: test_shapes.STEPS})
+    data[Section.SCENES][0][SceneSetting.TRACKS][test_shapes.OTHER_TRACK] = {ClipSlotSetting.PATTERN: LONG, ClipSlotSetting.REPEAT: TWO_BARS}
     return data
 
 
@@ -91,8 +93,8 @@ class TestTheVelocityThatHolds(unittest.TestCase):
         self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: limits.MIN_VELOCITY_PERCENT}))), {midi.MIN_VELOCITY})
 
     def test_a_swell_generator_scales_what_the_scene_already_scaled(self):
-        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALF}, chain=[{GeneratorKind.SWELL: SHAPED}],
-                         generators={Section.SWELLS: {SHAPED: {ShapeSetting.START: HALF, ShapeSetting.END: HALF}}})
+        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALF}, chain=[{GeneratorKind.SWELL: test_shapes.SHAPED}],
+                         generators={Section.SWELLS: {test_shapes.SHAPED: {ShapeSetting.START: HALF, ShapeSetting.END: HALF}}})
         self.assertEqual(set(played(data)), {QUARTER})
 
 
@@ -104,7 +106,7 @@ class TestTheRampIn(unittest.TestCase):
 
     def test_a_blank_start_is_the_velocity_and_an_end_is_where_it_arrives(self):
         data = lead_of(scene={VelocitySetting.LEVEL: LOW, VelocitySetting.IN_END: WRITTEN, VelocitySetting.IN_OVER: ONE_BAR}, repeat=TWO_BARS)
-        self.assertEqual(played(data), RISING + [LOW] * STEPS)
+        self.assertEqual(played(data), RISING + [LOW] * test_shapes.STEPS)
 
     def test_it_needs_its_bars(self):
         self.assertEqual(played(lead_of(scene={VelocitySetting.IN_START: LOW})), HELD)
@@ -114,8 +116,8 @@ class TestTheRampIn(unittest.TestCase):
 
     def test_a_scenes_ramp_goes_on_through_the_scenes_repeats(self):
         data = lead_of(scene={VelocitySetting.IN_START: TWO_BAR_START, VelocitySetting.IN_OVER: TWO_BARS}, scene_repeat=TWO_BARS)
-        self.assertEqual(played(data, row=0), [TWO_BAR_START + A_NOTE_OF_TWO_BARS * note for note in range(STEPS)])
-        self.assertEqual(played(data, row=1), [TWO_BAR_START + A_NOTE_OF_TWO_BARS * (STEPS + note) for note in range(STEPS)])
+        self.assertEqual(played(data, row=0), [TWO_BAR_START + A_NOTE_OF_TWO_BARS * note for note in range(test_shapes.STEPS)])
+        self.assertEqual(played(data, row=1), [TWO_BAR_START + A_NOTE_OF_TWO_BARS * (test_shapes.STEPS + note) for note in range(test_shapes.STEPS)])
 
     def test_a_ramp_whose_bars_the_clip_gives_starts_again_with_the_clip(self):
         data = lead_of(clip={VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}, scene_repeat=TWO_BARS)
@@ -160,7 +162,7 @@ class TestAClipOverItsScene(unittest.TestCase):
     def test_a_clips_velocity_is_where_its_scenes_ramp_ends(self):
         scene = {VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}
         data = lead_of(scene=scene, clip={VelocitySetting.LEVEL: HALF}, repeat=TWO_BARS)
-        self.assertEqual(played(data)[STEPS:], [HALF] * STEPS)
+        self.assertEqual(played(data)[test_shapes.STEPS:], [HALF] * test_shapes.STEPS)
         self.assertEqual(played(data)[0], LOW)
 
     def test_a_scene_alone_says_how_its_clips_play_and_what_stands_for_it(self):
@@ -205,7 +207,7 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
         clip = {VelocitySetting.OUT_END: QUARTER, VelocitySetting.OUT_OVER: TWO_BARS}
         written = next(iter(setlist_from_data(lead_of(scene=scene, clip=clip)).to_data()[Section.SONGS].values()))[Section.SCENES][0]
         self.assertEqual({name: written[name] for name in scene}, scene)
-        self.assertEqual({name: written[SceneSetting.TRACKS][LEAD][name] for name in clip}, clip)
+        self.assertEqual({name: written[SceneSetting.TRACKS][test_registers.LEAD][name] for name in clip}, clip)
 
     def test_the_setters_refuse_what_a_file_refuses(self):
         song = next(iter(setlist_from_data(lead_of()).get_songs()))
@@ -213,7 +215,7 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
         with self.assertRaises(ValueError):
             scene.set_velocity_setting(name=VelocitySetting.LEVEL, value=limits.MAX_VELOCITY_PERCENT + 1)
         with self.assertRaises(ValueError):
-            scene.get_clip_slot(LEAD).set_velocity_setting(name=VelocitySetting.IN_OVER, value=limits.MIN_RAMP_BARS - 1)
+            scene.get_clip_slot(test_registers.LEAD).set_velocity_setting(name=VelocitySetting.IN_OVER, value=limits.MIN_RAMP_BARS - 1)
         scene.set_velocity_setting(name=VelocitySetting.LEVEL, value=HALF)
         scene.set_velocity_setting(name=VelocitySetting.LEVEL, value=None)
         self.assertTrue(scene.get_velocity().changes_nothing())

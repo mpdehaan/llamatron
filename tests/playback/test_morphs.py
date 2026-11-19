@@ -24,7 +24,8 @@ from tests.support.rendering import render_data, song_from_data
 from llamatron.composition.file_format import ClipSlotSetting, Direction, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.exporters.timing import timed_events
 from llamatron.composition.song_file_error import SongFileError
-from tests.support.song_testing import LEAD, clip, pat, pitches, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'
 HALF = '1/2'
@@ -63,9 +64,9 @@ class TestClipMorph(unittest.TestCase):
                 PATTERN_C: pat(*zip([1, 2, 3, 4], fourths)),
                 PATTERN_D: pat(*zip([5, 6, 7, 1], fourths), octave=[4, 4, 4, 5]),
             },
-            scenes=[{Section.TRACKS: {LEAD: settings}}],
+            scenes=[{Section.TRACKS: {song_testing.LEAD: settings}}],
         )
-        return clip(song=render_data(data), scene=1, track=LEAD)
+        return clip(song=render_data(data), scene=1, track=song_testing.LEAD)
 
     def pitches_by_repeat(self, found):
         """Return the pitches of each repeat of a four-beat clip, in the order they play."""
@@ -85,8 +86,8 @@ class TestClipMorph(unittest.TestCase):
         settings = {ClipSlotSetting.PATTERN: PATTERN_C, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.DIRECTION: random}
         fourths = [QUARTER] * 4
         patterns = {PATTERN_C: pat(*zip([1, 2, 3, 4], fourths)), PATTERN_D: pat(*zip([5, 6, 7, 1], fourths))}
-        alone = clip(song=render_data(with_parts(patterns=patterns, seed=A_SEED, scenes=[{Section.TRACKS: {LEAD: settings}}])), scene=1, track=LEAD)
-        morphed = clip(song=render_data(with_parts(patterns=patterns, seed=A_SEED, scenes=[{Section.TRACKS: {LEAD: {**settings, ClipSlotSetting.MORPH_TO: PATTERN_D, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.RIGHT)}}}])), scene=1, track=LEAD)
+        alone = clip(song=render_data(with_parts(patterns=patterns, seed=A_SEED, scenes=[{Section.TRACKS: {song_testing.LEAD: settings}}])), scene=1, track=song_testing.LEAD)
+        morphed = clip(song=render_data(with_parts(patterns=patterns, seed=A_SEED, scenes=[{Section.TRACKS: {song_testing.LEAD: {**settings, ClipSlotSetting.MORPH_TO: PATTERN_D, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.RIGHT)}}}])), scene=1, track=song_testing.LEAD)
         # The first repeat is all source either way, and must be the same draw.
         self.assertEqual(self.pitches_by_repeat(alone)[0], self.pitches_by_repeat(morphed)[0])
 
@@ -97,10 +98,10 @@ class TestClipMorph(unittest.TestCase):
                 SILENT: {PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: QUARTER, Row.CC1: CC_VALUES},
                 PATTERN_D: pat(*zip([5, 6, 7, 1], fourths), octave=[4, 4, 4, 5]),
             },
-            tracks={LEAD: {TrackSetting.CC: [MOD_WHEEL, None, None, None]}},
-            scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: SILENT, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: PATTERN_D, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}}}],
+            tracks={song_testing.LEAD: {TrackSetting.CC: [MOD_WHEEL, None, None, None]}},
+            scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: SILENT, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: PATTERN_D, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}}}],
         )
-        found = clip(song=render_data(data), scene=1, track=LEAD)
+        found = clip(song=render_data(data), scene=1, track=song_testing.LEAD)
         self.assertEqual(self.pitches_by_repeat(found), [[], self.D_NOTES])
         self.assertEqual([control.get_value() for control in found.get_controls() if control.get_time() < 1], CC_VALUES)
 
@@ -123,10 +124,10 @@ class TestClipMorph(unittest.TestCase):
     def test_a_longer_target_is_cut_and_a_shorter_one_is_looped(self):
         data = with_parts(
             patterns={LONG: pat([1, 2]), SHORT: pat([3, HALF])},
-            scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: LONG, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}, KICK: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: SHORT, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}}}],
+            scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: LONG, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}, KICK: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: SHORT, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}}}],
         )
         song = render_data(data)
-        self.assertEqual(clip(song=song, scene=1, track=LEAD).total_length(), 2)
+        self.assertEqual(clip(song=song, scene=1, track=song_testing.LEAD).total_length(), 2)
         self.assertEqual(clip(song=song, scene=1, track=KICK).total_length(), 2)
 
     def test_needs_a_repeat_above_one(self):
@@ -140,12 +141,12 @@ class TestClipMorph(unittest.TestCase):
         bad += [{k: v for k, v in good.items() if k != missing} for missing in [ClipSlotSetting.MORPH_TO, ClipSlotSetting.MORPH_STYLE]]
         for clip_slot in bad:
             with self.subTest(clip_slot=clip_slot), self.assertRaises(SongFileError):
-                song_from_data(with_parts(scenes=[{Section.TRACKS: {LEAD: clip_slot}}]))
+                song_from_data(with_parts(scenes=[{Section.TRACKS: {song_testing.LEAD: clip_slot}}]))
 
     def test_a_clip_slot_names_only_a_scale_the_set_has(self):
         # A clip can set its own scale, but only one of the set's.
         with self.assertRaises(SongFileError):
-            song_from_data(with_parts(scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: NOPE}}}]))
+            song_from_data(with_parts(scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: NOPE}}}]))
 
 
 class TestClipScale(unittest.TestCase):
@@ -154,15 +155,15 @@ class TestClipScale(unittest.TestCase):
     def test_a_clips_scale_wins_over_the_scenes_and_the_songs(self):
         # Pattern a plays degrees 1 and 3: E in C major, E flat in C minor.
         scenes = [
-            {Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}},
-            {SceneSetting.SCALE: C_DORIAN, Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: C_MINOR}}},
-            {Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: C_MINOR}}},
+            {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}},
+            {SceneSetting.SCALE: C_DORIAN, Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: C_MINOR}}},
+            {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: C_MINOR}}},
         ]
         song = render_data(with_parts(scenes=scenes))
-        thirds = [pitches(clip(song=song, scene=number, track=LEAD))[1] for number in (1, 2, 3)]
+        thirds = [pitches(clip(song=song, scene=number, track=song_testing.LEAD))[1] for number in (1, 2, 3)]
         self.assertEqual(thirds, [E_IN_OCTAVE_4, E_FLAT_IN_OCTAVE_4, E_FLAT_IN_OCTAVE_4])
 
     def test_renaming_the_scale_renames_the_clips_choice(self):
-        song = song_from_data(with_parts(scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: C_MINOR}}}]))
+        song = song_from_data(with_parts(scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.SCALE: C_MINOR}}}]))
         song.get_setlist().rename_item(section=Section.SCALES, old=C_MINOR, new=RENAMED)
-        self.assertEqual(song.get_scenes()[0].get_clip_slot(LEAD).get_scale_name(), RENAMED)
+        self.assertEqual(song.get_scenes()[0].get_clip_slot(song_testing.LEAD).get_scale_name(), RENAMED)

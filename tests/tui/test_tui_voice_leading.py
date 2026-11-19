@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Voice leading: its list page and its editor, with the range shown in the set's octave labels."""
 
-from tests.support.ui_testing import SMOOTH, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Section, GeneratorKind
 from llamatron.composition import generator_settings
 from llamatron.strings import labels
@@ -41,7 +42,7 @@ class TestVoiceLeadingEditor(UITest):
         self.assertIsInstance(self.app.screen, VoiceLeadingEditor)
 
     def voicing(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=SMOOTH)
+        return self.document.song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=ui_testing.SMOOTH)
 
     async def test_the_lowest_octave_never_passes_the_highest(self):
         await self.select_field(labels.MSG_LOWEST_OCTAVE_LABEL)

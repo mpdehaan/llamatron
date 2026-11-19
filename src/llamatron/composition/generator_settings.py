@@ -24,7 +24,7 @@ are checked again when a chain makes the generator, since settings can be built 
 from llamatron.composition.conditions import statements_setting, with_statement
 from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, number, is_whole_number, is_whole_number_from, listed, reading, time_length
 from llamatron.composition import file_format
-from llamatron.composition.file_format import TENSIONS, Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section
+from llamatron.composition.file_format import Accidental, EuclidPart, NamedRhythm, Restart, StrumDirection, StrumPart, DriftValue, GeneratorKind, RegisterName, Shape, ShapePart, shape_setting, Section
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.strum import strum_part_settings, strum_values
 from llamatron.composition import shapes as shapes_values
@@ -487,9 +487,9 @@ def _row_of(*, name, allowed):
 def _tensions_row(values):
     """Check a progression's tensions: a list beside the chords, each step a list of some of the tensions, each once, or nothing."""
     def is_tensions(value):
-        return isinstance(value, (list, tuple)) and len(value) > 0 and len(set(value)) == len(value) and all(tension in TENSIONS for tension in value)
+        return isinstance(value, (list, tuple)) and len(value) > 0 and len(set(value)) == len(value) and all(tension in file_format.TENSIONS for tension in value)
     if not isinstance(values, list) or not all(value is None or is_tensions(value) for value in values):
-        raise InvalidValue(errors.ERR_BAD_PROGRESSION_TENSIONS.format(name=ProgressionSetting.TENSIONS, choices=listed(TENSIONS), value=values))
+        raise InvalidValue(errors.ERR_BAD_PROGRESSION_TENSIONS.format(name=ProgressionSetting.TENSIONS, choices=listed(file_format.TENSIONS), value=values))
 
 
 # What a progression's sharp-or-flat and inversion rows may hold beside nothing.
@@ -557,7 +557,7 @@ class ProgressionSettings(GeneratorSettings):
 
     def get_tensions(self):
         """Return each chord's tensions as a tuple, lowest first, or None for none."""
-        return [None if value is None else tuple(tension for tension in TENSIONS if tension in value) for value in _lined_up(values=self._written(ProgressionSetting.TENSIONS), count=len(self.get_chords()))]
+        return [None if value is None else tuple(tension for tension in file_format.TENSIONS if tension in value) for value in _lined_up(values=self._written(ProgressionSetting.TENSIONS), count=len(self.get_chords()))]
 
 
 def _lined_up(*, values, count):

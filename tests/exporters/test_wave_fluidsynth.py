@@ -45,7 +45,8 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
-from tests.support.ui_testing import DRUMS, LEAD, UITest, a_song, fixed_text
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, a_song, fixed_text
 
 FLUID = 'fluid'
 KEYS = 'keys'
@@ -78,8 +79,8 @@ def song_with_instruments():
         document.add_instrument(name)
         document.set_instrument_device(name=name, device=device)
     document.set_instrument_gm_sound(name=FLUID, sound=VIOLIN)
-    document.set_track_instrument(name=LEAD, instrument=FLUID)
-    document.set_track_instrument(name=DRUMS, instrument=KEYS)
+    document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
+    document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)
     return document
 
 
@@ -125,16 +126,16 @@ class TestWaveFluidSynth(unittest.TestCase):
 
     def test_the_grid_says_which_tracks_play_through_fluidsynth(self):
         columns = {column.get_name(): column for column in SongRenderer(self.document.song()).render().get_columns()}
-        self.assertTrue(columns[LEAD].plays_through_fluidsynth())
-        self.assertFalse(columns[DRUMS].plays_through_fluidsynth())
+        self.assertTrue(columns[ui_testing.LEAD].plays_through_fluidsynth())
+        self.assertFalse(columns[ui_testing.DRUMS].plays_through_fluidsynth())
 
     def test_only_the_tracks_through_fluidsynth_are_played_with_their_sound_and_nothing_is_left_behind(self):
         render = StandInFluidSynth()
         self.exporter().export(render=render)
         names = [track.name for track in render.midi.tracks]
-        self.assertIn(LEAD, names)
-        self.assertNotIn(DRUMS, names)
-        lead = next(track for track in render.midi.tracks if track.name == LEAD)
+        self.assertIn(ui_testing.LEAD, names)
+        self.assertNotIn(ui_testing.DRUMS, names)
+        lead = next(track for track in render.midi.tracks if track.name == ui_testing.LEAD)
         self.assertEqual([message.program for message in lead if message.type == PROGRAM_CHANGE], [VIOLIN - 1])
         self.assertFalse(os.path.exists(render.midi_folder))
         self.assertEqual(os.listdir(self.folder), [WaveFluidSynth.FILE.format(name=NAME)])
@@ -151,14 +152,14 @@ class TestWaveFluidSynth(unittest.TestCase):
         with mock.patch(INSTALLED, return_value=False), self.assertRaises(ValueError) as refused:
             self.exporter().export(render=StandInFluidSynth())
         self.assertEqual(str(refused.exception), errors.ERR_WAV_NEEDS_FLUIDSYNTH)
-        self.document.set_track_instrument(name=LEAD, instrument=None)
+        self.document.set_track_instrument(name=ui_testing.LEAD, instrument=None)
         with self.assertRaises(ValueError) as refused:
             self.exporter().export(render=StandInFluidSynth())
         self.assertEqual(str(refused.exception), errors.ERR_NO_FLUIDSYNTH_TRACKS)
         self.assertEqual(os.listdir(self.folder), [])
 
     def test_a_muted_track_is_left_out_as_every_arrangement_export_leaves_it(self):
-        self.document.set_track_mute(name=LEAD, muted=True)
+        self.document.set_track_mute(name=ui_testing.LEAD, muted=True)
         with self.assertRaises(ValueError):
             self.exporter().export(render=StandInFluidSynth())
 

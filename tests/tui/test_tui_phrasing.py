@@ -24,7 +24,8 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
-from tests.support.ui_testing import BREATHES, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 LONGEST_LINE = generator_settings.LINES_IN_BARS[-1]
 
@@ -47,7 +48,7 @@ class TestPhrasingEditor(UITest):
         self.assertIsInstance(self.app.screen, PhrasingEditor)
 
     def phrasing(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=BREATHES)
+        return self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=ui_testing.BREATHES)
 
     async def test_the_page_shows_its_four_fields_each_with_its_value_in_words(self):
         shown = self.text()

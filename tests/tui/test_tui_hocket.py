@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Hocket pages: the list of hockets and the editor, whose Source track picks a track of the current song."""
 
-from tests.support.ui_testing import DRUMS, LEAD, TRADE, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import HocketSetting
 from llamatron.strings import labels, marks
@@ -44,23 +45,23 @@ class TestHocketEditor(UITest):
         await self.select_field(labels.MSG_SOURCE_TRACK_LABEL)
 
     def source(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.HOCKET, name=TRADE).get_source()
+        return self.document.song().get_generator_settings(kind=GeneratorKind.HOCKET, name=ui_testing.TRADE).get_source()
 
     async def test_the_source_is_picked_from_the_songs_tracks_with_none_first(self):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, DRUMS, LEAD])
+        self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, ui_testing.DRUMS, ui_testing.LEAD])
         await self.press(Key.UP, Key.ENTER)
-        self.assertEqual(self.source(), DRUMS)
+        self.assertEqual(self.source(), ui_testing.DRUMS)
         await self.press(keybindings.HocketEditor.CLEAR)
         self.assertIsNone(self.source())
 
     async def test_renaming_the_source_track_renames_the_source(self):
-        self.document.rename_named(section=Section.TRACKS, old=LEAD, new=NEW_ONE)
+        self.document.rename_named(section=Section.TRACKS, old=ui_testing.LEAD, new=NEW_ONE)
         self.assertEqual(self.source(), NEW_ONE)
 
     async def test_a_source_the_song_lacks_is_still_offered_so_that_it_is_kept(self):
-        self.document.set_generator_setting(section=Section.HOCKETS, name=TRADE, setting=HocketSetting.SOURCE, value=GONE)
+        self.document.set_generator_setting(section=Section.HOCKETS, name=ui_testing.TRADE, setting=HocketSetting.SOURCE, value=GONE)
         self.app.screen.draw()
         await self.press(Key.ENTER)
         self.assertIn(GONE, self.app.screen.options)

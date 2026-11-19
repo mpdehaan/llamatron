@@ -31,7 +31,8 @@ from llamatron.music import midi
 from llamatron.music import note as note_values
 from llamatron.music.note import NoteName
 from llamatron.strings import errors
-from tests.support.song_testing import LEAD, X, clip, pat, pitches, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'
 HALF = '1/2'
@@ -58,13 +59,13 @@ class TestGrab(unittest.TestCase):
         riff = riff or pat(*[[1, QUARTER]] * 4, grab=[True, False, True, False])
         bass = bass or pat([1, QUARTER], [2, QUARTER], [3, QUARTER], [None, QUARTER], octave=[5, 5, 5, None])
         data = with_parts(patterns={RIFF: riff, BASS: bass, **parts.pop(Section.PATTERNS, {})}, scenes=[{Section.TRACKS: {
-            LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: KICK, **(lead_clip_slot or {})},
+            song_testing.LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: KICK, **(lead_clip_slot or {})},
             KICK: {ClipSlotSetting.PATTERN: BASS, **(kick_clip_slot or {})},
         }}], **parts)
         return render_data(data)
 
     def lead(self, **parts):
-        return clip(song=self.song(**parts), scene=1, track=LEAD)
+        return clip(song=self.song(**parts), scene=1, track=song_testing.LEAD)
 
     def test_marked_steps_play_what_the_other_track_plays_at_that_moment(self):
         self.assertEqual(pitches(self.lead()), [60, 48, 64, 48])
@@ -79,7 +80,7 @@ class TestGrab(unittest.TestCase):
 
     def test_it_grabs_what_the_track_sounds_like_after_its_chain(self):
         bass = pat([1, 1], chord=['M'], octave=[5])
-        found = self.lead(bass=bass, kick_clip_slot={ClipSlotSetting.CHAIN: X}, arps={UP: {ArpSetting.STEP: QUARTER}}, chains={X: [{GeneratorKind.ARP: UP}]})
+        found = self.lead(bass=bass, kick_clip_slot={ClipSlotSetting.CHAIN: song_testing.X}, arps={UP: {ArpSetting.STEP: QUARTER}}, chains={song_testing.X: [{GeneratorKind.ARP: UP}]})
         self.assertEqual(pitches(found), [60, 48, 67, 48])
 
     def test_a_chord_gives_its_lowest_note(self):
@@ -138,13 +139,13 @@ class TestGrab(unittest.TestCase):
         riff = {PatternSetting.STEPS: 1, Row.GRAB: [True], Row.CHORD: [chord]}
         drums = pat([NoteName.C, QUARTER], drum=True, octave=[5])
         data = with_parts(patterns={RIFF: riff, BASS: drums}, scenes=[{Section.TRACKS: {
-            LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: KICK}, KICK: {ClipSlotSetting.PATTERN: BASS},
+            song_testing.LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: KICK}, KICK: {ClipSlotSetting.PATTERN: BASS},
         }}])
         del data[SongSetting.SCALE]
         return data
 
     def test_without_a_scale_a_named_chord_is_built_on_the_grabbed_note(self):
-        found = clip(song=render_data(self.song_with_no_scale(ChordSymbol.MAJOR)), scene=1, track=LEAD)
+        found = clip(song=render_data(self.song_with_no_scale(ChordSymbol.MAJOR)), scene=1, track=song_testing.LEAD)
         self.assertEqual(self.sounding(found.get_notes()[0]), [60, 64, 67])
 
     def test_without_a_scale_a_scale_chord_on_a_grab_step_is_refused_as_a_degree_is(self):
@@ -171,18 +172,18 @@ class TestGrab(unittest.TestCase):
 
     def test_a_tie_on_a_marked_step_is_refused_like_a_tie_on_a_note(self):
         riff = pat([None, QUARTER], [None, QUARTER], **{Row.GRAB: [False, True], Row.TIE: [False, True]})
-        data = with_parts(patterns={RIFF: riff}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: RIFF}}}])
+        data = with_parts(patterns={RIFF: riff}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: RIFF}}}])
         with self.assertRaises(SongFileError):
             song_from_data(data)
 
     def test_the_grab_track_must_be_a_real_track(self):
-        data = with_parts(patterns={RIFF: pat([1, QUARTER])}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: NOPE}}}])
+        data = with_parts(patterns={RIFF: pat([1, QUARTER])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: NOPE}}}])
         with self.assertRaises(SongFileError):
             song_from_data(data)
 
     def test_marks_without_a_grab_track_do_nothing(self):
-        data = with_parts(patterns={RIFF: pat([1, QUARTER], grab=[True])}, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: RIFF}}}])
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [48])
+        data = with_parts(patterns={RIFF: pat([1, QUARTER], grab=[True])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: RIFF}}}])
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [48])
 
     def test_it_follows_the_other_track_across_repeats(self):
         found = self.lead(lead_clip_slot={ClipSlotSetting.REPEAT: 2}, kick_clip_slot={ClipSlotSetting.LOOP: True})
@@ -195,32 +196,32 @@ class TestGrab(unittest.TestCase):
 
     def test_a_grab_follows_a_grab(self):
         data = with_parts(
-            tracks={LEAD: {}, KICK: {}, PAD: {}},
+            tracks={song_testing.LEAD: {}, KICK: {}, PAD: {}},
             patterns={RIFF: pat([1, QUARTER], grab=[True]), TOP: pat([5, QUARTER], octave=[5])},
             scenes=[{Section.TRACKS: {
-                LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: KICK},
+                song_testing.LEAD: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: KICK},
                 KICK: {ClipSlotSetting.PATTERN: RIFF, ClipSlotSetting.GRAB_TRACK: PAD},
                 PAD: {ClipSlotSetting.PATTERN: TOP},
             }}],
         )
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [67])
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [67])
 
     def test_grabbing_in_a_circle_stops_with_a_message(self):
         with self.assertRaises(SongFileError) as raised:
-            self.song(kick_clip_slot={ClipSlotSetting.GRAB_TRACK: LEAD})
+            self.song(kick_clip_slot={ClipSlotSetting.GRAB_TRACK: song_testing.LEAD})
         self.assertIn('go round in a circle (lead → kick → lead)', str(raised.exception))
 
     def test_a_muted_track_can_still_be_grabbed_from(self):
-        song = self.song(tracks={LEAD: {}, KICK: {TrackSetting.MUTE: True}})
+        song = self.song(tracks={song_testing.LEAD: {}, KICK: {TrackSetting.MUTE: True}})
         self.assertEqual([track.get_mute() for track in song.get_columns()], [False, True])
-        self.assertEqual(pitches(clip(song=song, scene=1, track=LEAD)), [60, 48, 64, 48])
+        self.assertEqual(pitches(clip(song=song, scene=1, track=song_testing.LEAD)), [60, 48, 64, 48])
 
     def test_mute_must_be_true_or_false(self):
         with self.assertRaisesRegex(SongFileError, 'mute must be true or false'):
-            self.song(tracks={LEAD: {}, KICK: {TrackSetting.MUTE: YES}})
+            self.song(tracks={song_testing.LEAD: {}, KICK: {TrackSetting.MUTE: YES}})
 
     def test_transpose_moves_a_grabbed_note_along_this_tracks_scale(self):
-        found = self.lead(tracks={LEAD: {TrackSetting.TRANSPOSE: 1}, KICK: {}})
+        found = self.lead(tracks={song_testing.LEAD: {TrackSetting.TRANSPOSE: 1}, KICK: {}})
         self.assertEqual(pitches(found)[:2], [62, 50])
 
     def test_a_morph_target_does_not_grab(self):
@@ -229,7 +230,7 @@ class TestGrab(unittest.TestCase):
         self.assertEqual(pitches(found), [60, 48])
 
     def test_the_track_must_exist_and_be_another_one(self):
-        for other in [NOPE, LEAD]:
+        for other in [NOPE, song_testing.LEAD]:
             with self.subTest(other=other), self.assertRaises(SongFileError):
                 self.song(lead_clip_slot={ClipSlotSetting.GRAB_TRACK: other})
 
@@ -239,4 +240,4 @@ class TestGrab(unittest.TestCase):
 
     def test_grab_must_be_true_or_false(self):
         with self.assertRaises(SongFileError):
-            song_from_data(with_parts(patterns={X: pat([1, 1], grab=[YES])}))
+            song_from_data(with_parts(patterns={song_testing.X: pat([1, 1], grab=[YES])}))

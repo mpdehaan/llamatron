@@ -25,7 +25,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'internal_tools'))
 
 import serve_docs  # noqa: E402
-from serve_docs import BASE, file_for, goes_to_base  # noqa: E402
+from serve_docs import file_for, goes_to_base  # noqa: E402
 
 PAGE = 'PATTERNS'
 ASSET = 'assets/app.js'
@@ -46,47 +46,47 @@ class TestFileFor(unittest.TestCase):
         return file_for(path=path, root=self.root)
 
     def test_the_base_is_the_front_page(self):
-        self.assertEqual(self.found(BASE), (self.root / serve_docs.INDEX).resolve())
+        self.assertEqual(self.found(serve_docs.BASE), (self.root / serve_docs.INDEX).resolve())
 
     def test_a_page_is_found_with_or_without_its_suffix(self):
         page = (self.root / (PAGE + serve_docs.PAGE_SUFFIX)).resolve()
-        self.assertEqual(self.found(BASE + PAGE), page)
-        self.assertEqual(self.found(BASE + PAGE + serve_docs.PAGE_SUFFIX), page)
+        self.assertEqual(self.found(serve_docs.BASE + PAGE), page)
+        self.assertEqual(self.found(serve_docs.BASE + PAGE + serve_docs.PAGE_SUFFIX), page)
 
     def test_a_query_or_a_fragment_is_ignored(self):
         page = (self.root / (PAGE + serve_docs.PAGE_SUFFIX)).resolve()
-        self.assertEqual(self.found(BASE + PAGE + '?x=1#heading'), page)
+        self.assertEqual(self.found(serve_docs.BASE + PAGE + '?x=1#heading'), page)
 
     def test_an_asset_is_found(self):
-        self.assertEqual(self.found(BASE + ASSET), (self.root / ASSET).resolve())
+        self.assertEqual(self.found(serve_docs.BASE + ASSET), (self.root / ASSET).resolve())
 
     def test_a_missing_page_is_not_found(self):
-        self.assertIsNone(self.found(BASE + 'NOWHERE'))
+        self.assertIsNone(self.found(serve_docs.BASE + 'NOWHERE'))
 
     def test_nothing_outside_the_base_or_the_folder_is_served(self):
         self.assertIsNone(self.found('/' + PAGE))
-        self.assertIsNone(self.found(BASE + '../secret'))
-        self.assertIsNone(self.found(BASE + '%2e%2e/secret'))
+        self.assertIsNone(self.found(serve_docs.BASE + '../secret'))
+        self.assertIsNone(self.found(serve_docs.BASE + '%2e%2e/secret'))
 
 
 class TestGoesToBase(unittest.TestCase):
 
     def test_the_top_and_the_base_without_its_slash_go_to_the_base(self):
         self.assertTrue(goes_to_base('/'))
-        self.assertTrue(goes_to_base(BASE.rstrip('/')))
+        self.assertTrue(goes_to_base(serve_docs.BASE.rstrip('/')))
 
     def test_a_page_stays_where_it_is(self):
-        self.assertFalse(goes_to_base(BASE))
-        self.assertFalse(goes_to_base(BASE + PAGE))
+        self.assertFalse(goes_to_base(serve_docs.BASE))
+        self.assertFalse(goes_to_base(serve_docs.BASE + PAGE))
 
 
 class TestTheBuiltSite(unittest.TestCase):
 
     def test_the_committed_site_has_its_front_page_and_a_page_for_every_chapter(self):
-        self.assertIsNotNone(file_for(path=BASE, root=serve_docs.SITE))
+        self.assertIsNotNone(file_for(path=serve_docs.BASE, root=serve_docs.SITE))
         for chapter in sorted((ROOT / 'docs').glob('*.md')):
             with self.subTest(chapter=chapter.name):
-                self.assertIsNotNone(file_for(path=BASE + chapter.stem, root=serve_docs.SITE))
+                self.assertIsNotNone(file_for(path=serve_docs.BASE + chapter.stem, root=serve_docs.SITE))
 
 
 if __name__ == '__main__':

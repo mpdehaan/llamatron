@@ -33,7 +33,8 @@ from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.pattern import pattern_editor
 from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, munge_groups, munges_in_order
 from tests.support.pattern_editor_testing import munge
-from tests.support.ui_testing import BEAT, OTHER, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 LONG = 'long'
 STEPS = 5
@@ -224,27 +225,27 @@ class TestMunge(UITest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertIn(messages.MSG_INTERLEAVE_CHOICE_TITLE, self.text())
         self.assertNotIn(LONG, self.app.screen.options)
-        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(ui_testing.OTHER), Key.ENTER)
         self.assertEqual(self.row(), [1, OTHER_DEGREE, 2, OTHER_DEGREE, 3, OTHER_DEGREE, 4, OTHER_DEGREE, 5, OTHER_DEGREE])
         # The cursor stays on its note.
         self.assertEqual(self.editor.step, 2)
-        self.assertEqual(self.document.song().get_pattern(OTHER).get_steps(), 1)
+        self.assertEqual(self.document.song().get_pattern(ui_testing.OTHER).get_steps(), 1)
 
     async def test_splice_asks_for_another_pattern_and_adds_it_at_the_end(self):
         await munge(test=self, choice=Munge.SPLICE)
         self.assertIn(messages.MSG_SPLICE_CHOICE_TITLE, self.text())
-        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(ui_testing.OTHER), Key.ENTER)
         self.assertEqual(self.row(), [*ROWS[Row.DEGREE], OTHER_DEGREE])
         self.assertEqual(self.editor.step, 0)
         await munge(test=self, choice=Munge.SPLICE_BEFORE)
         self.assertIn(messages.MSG_SPLICE_BEFORE_CHOICE_TITLE, self.text())
-        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(ui_testing.OTHER), Key.ENTER)
         self.assertEqual(self.row(), [OTHER_DEGREE, *ROWS[Row.DEGREE], OTHER_DEGREE])
         self.assertEqual(self.editor.step, 1)
         await self.press(Key.RIGHT)
         await munge(test=self, choice=Munge.SPLICE_AT_CURSOR)
         self.assertIn(messages.MSG_SPLICE_AT_CURSOR_CHOICE_TITLE, self.text())
-        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(ui_testing.OTHER), Key.ENTER)
         self.assertEqual(self.row(), [OTHER_DEGREE, 1, OTHER_DEGREE, 2, 3, 4, 5, OTHER_DEGREE])
         self.assertEqual(self.editor.step, 3)
 
@@ -284,6 +285,6 @@ class TestMunge(UITest):
 
     async def test_a_drum_pattern_is_not_interleaved_with_a_pattern_of_notes(self):
         await munge(test=self, choice=Munge.INTERLEAVE)
-        await self.press(*[Key.DOWN] * self.app.screen.options.index(BEAT), Key.ENTER)
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(ui_testing.BEAT), Key.ENTER)
         self.assertEqual(self.row(), ROWS[Row.DEGREE])
         self.assertIn(errors.ERR_INTERLEAVE_DRUM_MISMATCH, self.text())

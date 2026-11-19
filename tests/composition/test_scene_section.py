@@ -25,7 +25,8 @@ from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version
 from tests.support.rendering import render_song, song_from_data
-from tests.support.song_testing import LEAD, clip, lead_data, pitches
+from tests.support import song_testing
+from tests.support.song_testing import clip, lead_data, pitches
 from tests.support.ui_testing import fixed_text
 
 NOT_A_SECTION = 'middle bit'
@@ -42,7 +43,7 @@ def a_song():
 
 def heard(song):
     """The pitches the song's one clip plays."""
-    return pitches(clip(song=render_song(song, seed=A_SEED), scene=FIRST_SCENE, track=LEAD))
+    return pitches(clip(song=render_song(song, seed=A_SEED), scene=FIRST_SCENE, track=song_testing.LEAD))
 
 
 class TestSceneSection(unittest.TestCase):

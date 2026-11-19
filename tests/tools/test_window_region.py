@@ -27,7 +27,7 @@ import numpy
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'internal_tools'))
 
 import window_region  # noqa: E402
-from window_region import CALIBRATION_COLOUR, SAFETY_PIXELS, cell_area, read_bmp, screen_region  # noqa: E402
+from window_region import cell_area, read_bmp, screen_region  # noqa: E402
 
 TITLE_BAR = (60, 60, 64)
 MARGIN = (20, 20, 20)
@@ -63,7 +63,7 @@ def still():
     pixels[:, :, 3] = OPAQUE
     pixels[:, :, :3] = MARGIN
     pixels[:TITLE_ROWS, :, :3] = TITLE_BAR
-    pixels[TITLE_ROWS + MARGIN_PIXELS:HEIGHT - MARGIN_PIXELS, MARGIN_PIXELS:WIDTH - MARGIN_PIXELS, :3] = CALIBRATION_COLOUR
+    pixels[TITLE_ROWS + MARGIN_PIXELS:HEIGHT - MARGIN_PIXELS, MARGIN_PIXELS:WIDTH - MARGIN_PIXELS, :3] = window_region.CALIBRATION_COLOUR
     for row in range(HEIGHT - CORNER_ROWS, HEIGHT):
         pixels[row, :MARGIN_PIXELS + CORNER_ROWS, 3] = 0
         pixels[row, WIDTH - MARGIN_PIXELS - CORNER_ROWS:, 3] = 0
@@ -128,10 +128,10 @@ class TestCellArea(unittest.TestCase):
 
     def test_the_cells_leave_out_the_title_bar_the_margins_and_the_rounded_corners(self):
         top, bottom, left, right = cell_area(still())
-        self.assertEqual(top, TITLE_ROWS + MARGIN_PIXELS + SAFETY_PIXELS)
-        self.assertEqual(left, MARGIN_PIXELS + SAFETY_PIXELS)
-        self.assertEqual(right, WIDTH - MARGIN_PIXELS - 1 - SAFETY_PIXELS)
-        self.assertLess(bottom, HEIGHT - MARGIN_PIXELS - 1 - SAFETY_PIXELS)
+        self.assertEqual(top, TITLE_ROWS + MARGIN_PIXELS + window_region.SAFETY_PIXELS)
+        self.assertEqual(left, MARGIN_PIXELS + window_region.SAFETY_PIXELS)
+        self.assertEqual(right, WIDTH - MARGIN_PIXELS - 1 - window_region.SAFETY_PIXELS)
+        self.assertLess(bottom, HEIGHT - MARGIN_PIXELS - 1 - window_region.SAFETY_PIXELS)
 
     def test_a_still_with_no_cells_finds_nothing(self):
         pixels = numpy.zeros((HEIGHT, WIDTH, 4), dtype=numpy.uint8)

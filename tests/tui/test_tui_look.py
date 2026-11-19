@@ -23,7 +23,8 @@ from unittest import mock
 
 from textual.app import App
 from textual.screen import Screen
-from tests.support.ui_testing import CHROMATIC_SCALE, UITest, key_name
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, key_name
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.set import main_page
@@ -212,8 +213,8 @@ class TestLookAndNewKeys(UITest):
         self.assertEqual((self.app.screen.step, self.app.screen.rows_view.row), before)
 
     async def test_a_scale_with_more_than_nine_notes_takes_two_digits(self):
-        self.document.add_scale(name=CHROMATIC_SCALE, root=NoteName.C, kind=scale_type_name(ScaleType.CHROMATIC))
-        self.document.set_scale_name(CHROMATIC_SCALE)
+        self.document.add_scale(name=ui_testing.CHROMATIC_SCALE, root=NoteName.C, kind=scale_type_name(ScaleType.CHROMATIC))
+        self.document.set_scale_name(ui_testing.CHROMATIC_SCALE)
         self.document.changed()
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, '1', '2')
         self.assertEqual(self.value(Row.DEGREE), 12)

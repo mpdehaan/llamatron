@@ -33,7 +33,8 @@ from llamatron.music import midi
 from llamatron.strings import about, errors
 from llamatron.tui import launch as launch_values
 from llamatron.tui.uses import looping_scenes
-from tests.support.ui_testing import a_song, DRUMS, LEAD
+from tests.support import ui_testing
+from tests.support.ui_testing import a_song
 from llamatron.visualizers import modes
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'record_demo.py'
@@ -130,13 +131,13 @@ class TestRecordDemo(unittest.TestCase):
         self.assertIsNone(self.tool.first_matching(names=PORTS, text=NO_SUCH))
 
     def test_auto_assignment_numbers_the_tracks_from_channel_1_and_goes_round_after_16(self):
-        tracks = [LEAD, DRUMS]
+        tracks = [ui_testing.LEAD, ui_testing.DRUMS]
         self.assertEqual(self.tool.auto_assignment(tracks), [midi.MIN_CHANNEL, midi.MIN_CHANNEL + 1])
         many = [str(number) for number in range(midi.MAX_CHANNEL + 2)]
         self.assertEqual(self.tool.auto_assignment(many)[midi.MAX_CHANNEL], midi.MIN_CHANNEL)
 
     def test_a_typed_assignment_gives_each_track_a_channel_or_keeps_its_own_and_refuses_the_wrong_count_or_channel(self):
-        tracks = [LEAD, DRUMS]
+        tracks = [ui_testing.LEAD, ui_testing.DRUMS]
         self.assertEqual(self.tool.parse_assignment(text='1,1', tracks=tracks), [1, 1])
         self.assertEqual(self.tool.parse_assignment(text=' 3 , - ', tracks=tracks), [3, None])
         with self.assertRaises(ValueError):
@@ -156,21 +157,21 @@ class TestRecordDemo(unittest.TestCase):
         self.assertEqual(setlist.get_instrument(name).get_channel(), 2)
         self.assertTrue(setlist.is_real_time())
         song = self.document.song()
-        self.assertEqual([song.get_track(track).get_instrument_name() for track in (LEAD, DRUMS)], [name, name])
+        self.assertEqual([song.get_track(track).get_instrument_name() for track in (ui_testing.LEAD, ui_testing.DRUMS)], [name, name])
         self.assertIn(name, said.getvalue())
 
     def test_a_dash_keeps_a_tracks_own_instrument_and_a_track_with_none_stays_silent(self):
         self.document.add_instrument(OWN)
         self.document.set_instrument_device(name=OWN, device=OWN_PORT)
-        self.document.set_track_instrument(name=LEAD, instrument=OWN)
+        self.document.set_track_instrument(name=ui_testing.LEAD, instrument=OWN)
         with contextlib.redirect_stdout(io.StringIO()) as said:
             self.tool.assign_tracks(document=self.document, channels=[None, None], port=PORT)
         song = self.document.song()
-        self.assertEqual(song.get_track(LEAD).get_instrument_name(), OWN)
-        self.assertFalse(song.get_track(DRUMS).get_instrument_name())
+        self.assertEqual(song.get_track(ui_testing.LEAD).get_instrument_name(), OWN)
+        self.assertFalse(song.get_track(ui_testing.DRUMS).get_instrument_name())
         self.assertEqual(self.document.setlist().get_instrument_names(), [OWN])
-        self.assertIn(self.tool.TRACK_KEPT.format(track=LEAD, instrument=OWN), said.getvalue())
-        self.assertIn(self.tool.TRACK_SILENT.format(track=DRUMS), said.getvalue())
+        self.assertIn(self.tool.TRACK_KEPT.format(track=ui_testing.LEAD, instrument=OWN), said.getvalue())
+        self.assertIn(self.tool.TRACK_SILENT.format(track=ui_testing.DRUMS), said.getvalue())
 
     def test_assigning_nothing_to_any_track_is_refused(self):
         with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(ValueError):
@@ -196,7 +197,7 @@ class TestRecordDemo(unittest.TestCase):
 
     def test_a_scene_whose_every_clip_loops_is_refused_in_the_programs_words(self):
         self.assertIsNone(self.tool.recording_problem(self.document.song()))
-        self.document.set_clip_slot_setting(index=FIRST_INDEX, track=LEAD, setting=ClipSlotSetting.LOOP, value=True)
+        self.document.set_clip_slot_setting(index=FIRST_INDEX, track=ui_testing.LEAD, setting=ClipSlotSetting.LOOP, value=True)
         self.assertEqual(errors.ERR_RECORDING_SONG_LOOPS.format(scenes=listed(looping_scenes(self.document.song()))), self.tool.recording_problem(self.document.song()))
 
     def test_the_take_waits_for_enter_after_the_ready_line_which_is_the_last_thing_printed(self):
@@ -412,15 +413,15 @@ class TestRecordDemo(unittest.TestCase):
     def give_lead_fluidsynth(self):
         self.document.add_instrument(FLUID)
         self.document.set_instrument_device(name=FLUID, device=file_format.FLUIDSYNTH_DEVICE)
-        self.document.set_track_instrument(name=LEAD, instrument=FLUID)
+        self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
 
     def test_with_fluidsynth_the_sets_own_instruments_play_into_the_recorded_device_with_no_port(self):
         self.give_lead_fluidsynth()
         code, app, printed, sent_to = self.record_with_fluidsynth()
         self.assertEqual(code, self.tool.SUCCESS)
         self.assertEqual(sent_to, self.tool.DEFAULT_AUDIO_DEVICE)
-        self.assertIn(self.tool.TRACK_FLUIDSYNTH.format(track=LEAD, instrument=FLUID), printed)
-        self.assertIn(self.tool.TRACK_SILENT.format(track=DRUMS), printed)
+        self.assertIn(self.tool.TRACK_FLUIDSYNTH.format(track=ui_testing.LEAD, instrument=FLUID), printed)
+        self.assertIn(self.tool.TRACK_SILENT.format(track=ui_testing.DRUMS), printed)
         self.assertNotIn(self.tool.INSTRUMENT_NAME.format(channel=midi.MIN_CHANNEL), self.document.setlist().get_instrument_names())
         self.assertTrue(self.document.setlist().is_real_time())
         self.assertTrue(app.call_args.kwargs['launch'].for_recording)
@@ -462,7 +463,7 @@ class TestRecordDemo(unittest.TestCase):
 
     def test_an_interactive_take_records_until_the_tracker_quits_and_welcomes_a_song_that_loops(self):
         devices = [(DEVICE_ID, self.tool.DEFAULT_AUDIO_DEVICE)]
-        for track in (LEAD, DRUMS):
+        for track in (ui_testing.LEAD, ui_testing.DRUMS):
             self.document.set_clip_slot_setting(index=FIRST_INDEX, track=track, setting=ClipSlotSetting.LOOP, value=True)
         recordings = []
 

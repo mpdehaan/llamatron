@@ -23,7 +23,8 @@ from llamatron.tui import keybindings
 from llamatron.tui.screens.arrange.arrange_details import clip_details, scene_details
 from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.scene_page import ScenePage
-from tests.support.ui_testing import LEAD, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 FIRST_SCENE = 0
 SCENE_LEVEL = 80
@@ -46,7 +47,7 @@ class VelocityTest(UITest):
         return self.document.song().get_scenes()[FIRST_SCENE]
 
     def clip_slot(self):
-        return self.scene().get_clip_slot(LEAD)
+        return self.scene().get_clip_slot(ui_testing.LEAD)
 
     async def show(self, page):
         self.app.screen.show_page(page)
@@ -128,7 +129,7 @@ class TestVelocityOnTheClipPage(VelocityTest):
         self.document.set_scene_velocity_setting(index=FIRST_SCENE, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
         self.document.set_scene_velocity_setting(index=FIRST_SCENE, name=VelocitySetting.IN_START, value=RAMP_START)
         self.document.set_scene_velocity_setting(index=FIRST_SCENE, name=VelocitySetting.IN_OVER, value=RAMP_BARS)
-        await self.show(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=LEAD))
+        await self.show(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=ui_testing.LEAD))
 
     async def test_a_blank_field_shows_its_scenes_value_and_says_so(self):
         self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), marks.MSG_FROM_SCENE_SHOWN.format(value=percent(SCENE_LEVEL)))
@@ -166,6 +167,6 @@ class TestVelocityInTheDetailsView(VelocityTest):
         self.document.set_scene_velocity_setting(index=FIRST_SCENE, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
         self.assertEqual(self.lines(scene_details(song=song, scene=self.scene())), [marks.MSG_DETAILS_VELOCITY.format(percent=SCENE_LEVEL)])
         self.assertEqual(self.lines(clip_details(setlist=setlist, song=song, clip_slot=self.clip_slot())), [])
-        self.document.set_clip_velocity_setting(index=FIRST_SCENE, track=LEAD, name=VelocitySetting.LEVEL, value=CLIP_LEVEL)
-        self.document.set_clip_velocity_setting(index=FIRST_SCENE, track=LEAD, name=VelocitySetting.OUT_END, value=RAMP_START)
+        self.document.set_clip_velocity_setting(index=FIRST_SCENE, track=ui_testing.LEAD, name=VelocitySetting.LEVEL, value=CLIP_LEVEL)
+        self.document.set_clip_velocity_setting(index=FIRST_SCENE, track=ui_testing.LEAD, name=VelocitySetting.OUT_END, value=RAMP_START)
         self.assertEqual(self.lines(clip_details(setlist=setlist, song=song, clip_slot=self.clip_slot())), [marks.MSG_DETAILS_VELOCITY_RAMPS.format(percent=CLIP_LEVEL)])

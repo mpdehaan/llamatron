@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Glide, Shorten, Rush and Drag: their list pages, their editors and their steps pages."""
 
-from tests.support.ui_testing import CLIPS, LAZY, PUSH, SLIDES, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Section, GeneratorKind
 from llamatron.composition import generator_settings
 from llamatron.composition import limits
@@ -52,7 +53,7 @@ class TestGlideEditor(UITest):
         await self.select_field(labels.MSG_GLIDE_AMOUNT_LABEL)
         await self.press(keybindings.GlideEditor.MORE)
         expected = glide_editor.GLIDE_AMOUNTS[glide_editor.GLIDE_AMOUNTS.index(glide_editor.DEFAULT_GLIDE_AMOUNT_WRITTEN) + 1]
-        self.assertEqual(str(self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=SLIDES).get_glide_amount()), expected)
+        self.assertEqual(str(self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=ui_testing.SLIDES).get_glide_amount()), expected)
 
 
 class TestShortenEditor(UITest):
@@ -62,7 +63,7 @@ class TestShortenEditor(UITest):
         self.assertIsInstance(self.app.screen, ShortenEditor)
         await self.select_field(labels.MSG_SHORTEN_LABEL)
         await self.press(keybindings.ShortenEditor.LESS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=CLIPS).get_shorten(), generator_settings.DEFAULT_SHORTEN - 1)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=ui_testing.CLIPS).get_shorten(), generator_settings.DEFAULT_SHORTEN - 1)
 
 
 class TestRushEditor(UITest):
@@ -72,7 +73,7 @@ class TestRushEditor(UITest):
         self.assertIsInstance(self.app.screen, RushEditor)
         await self.select_field(labels.MSG_RUSH_AMOUNT_LABEL)
         await self.press(*[keybindings.RushEditor.MORE] * (limits.MAX_RUSH_OR_DRAG - generator_settings.DEFAULT_RUSH + MORE_THAN_ENOUGH))
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=PUSH).get_amount(), limits.MAX_RUSH_OR_DRAG)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=ui_testing.PUSH).get_amount(), limits.MAX_RUSH_OR_DRAG)
 
 
 class TestDragEditor(UITest):
@@ -82,7 +83,7 @@ class TestDragEditor(UITest):
         self.assertIsInstance(self.app.screen, DragEditor)
         await self.select_field(labels.MSG_DRAG_AMOUNT_LABEL)
         await self.press(keybindings.DragEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=LAZY).get_amount(), generator_settings.DEFAULT_DRAG + 1)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=ui_testing.LAZY).get_amount(), generator_settings.DEFAULT_DRAG + 1)
 
 
 class TestGlideStepsEditor(UITest):
@@ -95,7 +96,7 @@ class TestGlideStepsEditor(UITest):
         self.assertIsInstance(self.app.screen, GlideStepsEditor)
 
     def steps(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=SLIDES).get_steps()
+        return self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=ui_testing.SLIDES).get_steps()
 
     async def test_space_turns_a_step_on_and_off(self):
         await self.press(keybindings.GlideStepsEditor.TOGGLE)
@@ -123,9 +124,9 @@ class TestShortenStepsEditor(UITest):
         await self.select_field(labels.MSG_STEPS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ShortenStepsEditor)
-        before = self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=CLIPS).get_steps()[0]
+        before = self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=ui_testing.CLIPS).get_steps()[0]
         await self.press(keybindings.ShortenStepsEditor.TOGGLE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=CLIPS).get_steps()[0], not before)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=ui_testing.CLIPS).get_steps()[0], not before)
 
 
 class TestRushStepsEditor(UITest):
@@ -135,9 +136,9 @@ class TestRushStepsEditor(UITest):
         await self.select_field(labels.MSG_STEPS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, RushStepsEditor)
-        before = self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=PUSH).get_steps()[0]
+        before = self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=ui_testing.PUSH).get_steps()[0]
         await self.press(keybindings.RushStepsEditor.TOGGLE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=PUSH).get_steps()[0], not before)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=ui_testing.PUSH).get_steps()[0], not before)
 
 
 class TestDragStepsEditor(UITest):
@@ -147,6 +148,6 @@ class TestDragStepsEditor(UITest):
         await self.select_field(labels.MSG_STEPS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, DragStepsEditor)
-        before = self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=LAZY).get_steps()[0]
+        before = self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=ui_testing.LAZY).get_steps()[0]
         await self.press(keybindings.DragStepsEditor.TOGGLE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=LAZY).get_steps()[0], not before)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=ui_testing.LAZY).get_steps()[0], not before)

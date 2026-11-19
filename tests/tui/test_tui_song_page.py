@@ -16,7 +16,8 @@
 
 """The Song page and the Songs page."""
 
-from tests.support.ui_testing import BEAT, KEY_SHOWN, UITest, key_of, key_name
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, key_of, key_name
 from llamatron.tui.dialogs import dialog
 from llamatron.composition import file_format
 from llamatron.composition.file_format import SongSetting, LiveResponsiveness, Section
@@ -227,8 +228,8 @@ class TestSongPage(UITest):
         self.assertEqual(self.document.song().get_tempo(), before + 1)
         await self.press(Key.RIGHT, Key.LEFT, Key.LEFT)
         self.assertEqual(self.document.song().get_tempo(), before)
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.FieldPage.MORE)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.FieldPage.LESS)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.FieldPage.MORE)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.FieldPage.LESS)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), self.text())
         # The legend names [ dec and ] inc, as everywhere a value steps, and Left and Right do the same off the legend.
         self.assertEqual((legends.KeyName.RIGHT_BRACKET, legends.KeyName.LEFT_BRACKET), (key_name(keybindings.FieldPage.MORE), key_name(keybindings.FieldPage.LESS)))
 
@@ -319,7 +320,7 @@ class TestSongsPage(UITest):
 
     async def test_songs_share_the_patterns_and_have_their_own_tracks(self):
         self.document.add_song(SECOND_SONG)
-        self.assertEqual(self.document.song().get_pattern_names(), [TUNE, BEAT, OTHER])
+        self.assertEqual(self.document.song().get_pattern_names(), [TUNE, ui_testing.BEAT, OTHER])
         self.assertEqual(self.document.song().get_track_names(), [FIRST_TRACK])
         self.document.select_song(names_text.MSG_DEFAULT_SONG_NAME)
         self.assertEqual(self.document.song().get_track_names(), [LEAD, DRUMS])

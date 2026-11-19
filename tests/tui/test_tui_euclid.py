@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Euclidean mask: the Euclids page and editor, the track editor's + Euclid section, and the picker of named rhythms that H opens on Hits."""
 
-from tests.support.ui_testing import CLAVE, LEAD, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition import euclid
 from llamatron.composition.file_format import Section, EuclidPart, GeneratorKind, NamedRhythm
 from llamatron.strings import labels
@@ -46,7 +47,7 @@ class TestEuclidEditor(UITest):
         self.assertIsInstance(self.app.screen, EuclidEditor)
 
     def mask(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.EUCLID, name=CLAVE).get_euclid()
+        return self.document.song().get_generator_settings(kind=GeneratorKind.EUCLID, name=ui_testing.CLAVE).get_euclid()
 
     async def test_rotate_steps_and_the_drawing_follows(self):
         await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.ROTATE])
@@ -67,12 +68,12 @@ class TestEuclidEditor(UITest):
 class TestTrackEuclidSection(UITest):
 
     async def test_the_track_takes_a_named_rhythm(self):
-        self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=LEAD))
+        self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=ui_testing.LEAD))
         await self.pilot.pause()
         await self.select_field(labels.MSG_EUCLID_LABEL)
         await self.press(Key.ENTER)
         await self.select_field(labels.MSG_EUCLID_FIELD_LABELS[EuclidPart.HITS])
         await self.press(keybindings.TrackEditor.PICK_RHYTHM, Key.DOWN, Key.ENTER)
         hits, steps = list(euclid.NAMED_RHYTHMS.values())[1]
-        mask = self.document.song().get_track(LEAD).get_euclid()
+        mask = self.document.song().get_track(ui_testing.LEAD).get_euclid()
         self.assertEqual((mask.hits, mask.steps), (hits, steps))
