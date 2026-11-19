@@ -148,7 +148,7 @@ class TestWizardListening(PlaybackTest):
         await self.go_to(labels.MSG_WIZARD_RIFFS_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertNotIn(keybindings.WizardPage.LISTEN, wizard.shown_keys())
-        wizard.app.open_field_sections.add(choices.get_band().role_title(role))
+        wizard.app.open_field_sections.add(choices.player(role).title())
         wizard.go_to_field(riff)
         await self.press(Key.DOWN, Key.UP)
         await self.press(keybindings.WizardPage.LISTEN)

@@ -299,7 +299,7 @@ class WizardPage(FieldPage):
 
     def edit_player(self, role):
         """Open the Musician page on the Musician that plays a player's clips, in a draft of the set the choices make."""
-        name = self._choices.get_band().musician_name(role)
+        name = self._choices.player(role).musician_name()
         try:
             setlist, _ = self._choices.made_for_listening()
         except (ValueError, SongFileError) as problem:
@@ -314,7 +314,7 @@ class WizardPage(FieldPage):
             self.refuse(errors.ERR_WIZARD_PLAYER_PLAYS_NOTHING)
             return
         self.open_in_draft(setlist=setlist, read=musician_of, screen=lambda: MusicianEditor(holder=self.holder, name=name),
-                           keep=lambda settings: self._choices.get_band().set_player_musician(role=role, settings=settings), kept=messages.MSG_WIZARD_PLAYER_KEPT, unchanged=messages.MSG_WIZARD_PLAYER_UNCHANGED)
+                           keep=lambda settings: self._choices.player(role).set_musician(settings=settings), kept=messages.MSG_WIZARD_PLAYER_KEPT, unchanged=messages.MSG_WIZARD_PLAYER_UNCHANGED)
 
     def on_screen_resume(self):
         """Take a tune's or a riff's notes back from the pattern editor, which has closed, before the page is drawn again."""
@@ -591,7 +591,7 @@ class WizardPage(FieldPage):
                 self.pick_any_sound(role)
             else:
                 self.choosing(lambda sound: choices.get_sounds().set_sound(role=role, sound=sound))(None if place == FIRST_PLACE else own[place - 1])
-        self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SOUND_TITLE.format(player=choices.get_band().role_title(role)), options=options, current=current), then=chosen)
+        self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SOUND_TITLE.format(player=choices.player(role).title()), options=options, current=current), then=chosen)
 
     def pick_any_sound(self, role):
         """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the player's octave."""

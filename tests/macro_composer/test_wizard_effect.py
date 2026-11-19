@@ -190,8 +190,8 @@ def put_in(role):
 
 def under_each_drummer(*, choices, role, first):
     """Return what to do first for a choice that says what the drummer would do unasked: nothing more, then each other drummer."""
-    others = [level for level in range(wizard_limits.LEAST_BUSY, wizard_limits.MOST_BUSY + 1) if level != choices.get_band().get_busy(role)] if choices.get_band().get_busy(role) is not None else []
-    return [first] + [lambda made, level=level: (first(made), made.get_band().set_busy(role=role, level=level)) for level in others]
+    others = [level for level in range(wizard_limits.LEAST_BUSY, wizard_limits.MOST_BUSY + 1) if level != choices.player(role).get_busy()] if choices.player(role).get_busy() is not None else []
+    return [first] + [lambda made, level=level: (first(made), made.player(role).set_busy(level=level)) for level in others]
 
 
 def first_degree_changed(pattern):
@@ -225,8 +225,8 @@ def every_choice(choices):
     drummer = None
     for role in choices.get_band().roles_in():
         first = put_in(role) if plays_nowhere(choices=choices, role=role) else nothing_first
-        for trait in choices.get_band().role_traits(role):
-            for way in choices.get_band().ways(role=role, trait=trait):
+        for trait in choices.player(role).traits():
+            for way in choices.player(role).ways(trait=trait):
                 if way != choices.get_band().get_way(trait):
                     yield WAY, (trait, way), lambda made, trait=trait, way=way: made.get_band().set_way(trait=trait, value=way), [first]
         if choices.get_sounds().has_sound(role):
@@ -256,7 +256,7 @@ def every_choice(choices):
                     if cut != choices.get_kit().get_break_cut():
                         yield BREAK_CUT, cut, lambda made, cut=cut: made.get_kit().set_break_cut(cut), [with_break]
         if len(choices.get_band().roles_in()) > 1:
-            yield PLAYER_OUT, role, lambda made, role=role: made.get_band().set_role_in(role=role, on=False), [first]
+            yield PLAYER_OUT, role, lambda made, role=role: made.player(role).set_in(on=False), [first]
         if role in choices.get_band().roles_shown():
             on = role not in choices.section_plays(FIRST_PLACE)
             if on or len(choices.section_plays(FIRST_PLACE)) > 1:
@@ -314,9 +314,9 @@ def every_choice(choices):
         chosen = choices if character is None else fresh_with_character(choices=choices, character=character)
         first = nothing_first if character is None else (lambda made, character=character: made.set_melody_character(character))
         for role in chosen.get_band().roles_in():
-            for name in chosen.get_band().player_rows(role):
+            for name in chosen.player(role).rows():
                 row = far_row(choices=chosen, role=role, name=name)
-                yield PLAYER_ROW, (character, role, name), lambda made, role=role, name=name, row=row: made.get_band().set_player_row(role=role, name=name, values=row), [first]
+                yield PLAYER_ROW, (character, role, name), lambda made, role=role, name=name, row=row: made.player(role).set_row(name=name, values=row), [first]
     if choices.get_hook().can_have_hook():
         yield HOOK, not choices.get_hook().has_hook(), lambda made: made.get_hook().set_hook(not made.get_hook().has_hook()), [nothing_first]
     if choices.get_hook().can_have_hook() and choices.get_hook().has_hook():
@@ -431,8 +431,8 @@ def every_choice(choices):
         # A player's Musician of the person's own, for each player whose clips run one: the loudest.
         setlist, name = choices.made_for_listening()
         for role in choices.get_band().roles_in():
-            if setlist.get_song(name).has_generator(kind=GeneratorKind.MUSICIAN, name=choices.get_band().musician_name(role)):
-                yield PLAYER_MUSICIAN, role, lambda made, role=role: made.get_band().set_player_musician(role=role, settings={MusicianSetting.LOUDNESS: musician.LOUDEST}), [nothing_first]
+            if setlist.get_song(name).has_generator(kind=GeneratorKind.MUSICIAN, name=choices.player(role).musician_name()):
+                yield PLAYER_MUSICIAN, role, lambda made, role=role: made.player(role).set_musician(settings={MusicianSetting.LOUDNESS: musician.LOUDEST}), [nothing_first]
     # A riff played by the player it was written for in the first kind of section that takes it: its notes written by hand, written
     # again, drawn each other way, and the riff deleted.
     for role in choices.get_riffs().riff_instruments()[:1]:
@@ -472,11 +472,11 @@ def every_choice(choices):
             # A player who reacts is heard to at one end of the gauge at least: an even player may play as the band does where the band is never held back.
             yield REACTS_TO_ENERGY, role, lambda made, role=role: set_reacts_where_heard(made=made, role=role), [nothing_first]
         # How loud a player is: the player's dynamics at either end, and each level the song plays, moved.
-        if choices.get_band().has_dynamics(role):
+        if choices.player(role).has_dynamics():
             for dynamics in (loudness.LEAST_DYNAMICS, loudness.MOST_DYNAMICS):
-                yield DYNAMICS_OF_PLAYER, (role, dynamics), lambda made, role=role, dynamics=dynamics: made.get_band().set_dynamics(role=role, dynamics=dynamics), [nothing_first]
-        for level in choices.get_band().loudness_levels_offered(role):
-            yield A_LEVEL, (role, level), lambda made, role=role, level=level: made.get_band().set_loudness_level(role=role, level=level, number=another_velocity(made.get_band().loudness_levels(role)[level])), [nothing_first]
+                yield DYNAMICS_OF_PLAYER, (role, dynamics), lambda made, role=role, dynamics=dynamics: made.player(role).set_dynamics(dynamics=dynamics), [nothing_first]
+        for level in choices.player(role).loudness_levels_offered():
+            yield A_LEVEL, (role, level), lambda made, role=role, level=level: made.player(role).set_loudness_level(level=level, number=another_velocity(made.player(role).loudness_levels()[level])), [nothing_first]
     # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
     for way in choices.starts():
         if way != choices.get_start():
@@ -585,7 +585,7 @@ def both(*, first, then):
 def far_row(*, choices, role, name):
     """A player's row with every cell at the end of its range the cell is further from."""
     lowest, highest = choices.get_band().row_limits(name)
-    return [lowest if value - lowest > highest - value else highest for value in choices.get_band().get_player_row(role=role, name=name)]
+    return [lowest if value - lowest > highest - value else highest for value in choices.player(role).get_row(name=name)]
 
 
 def fresh_with_character(*, choices, character):
@@ -604,7 +604,7 @@ def riff_pattern_of(*, choices, riff):
 def busy_gauges(choices):
     """Yield (role, first) for each player whose Busy gauge the wizard shows."""
     for role in choices.get_band().roles_in():
-        if choices.get_band().has_busy(role) and choices.get_band().get_busy(role) is not None:
+        if choices.player(role).has_busy() and choices.player(role).get_busy() is not None:
             yield role, put_in(role) if plays_nowhere(choices=choices, role=role) else nothing_first
 
 
@@ -636,7 +636,7 @@ def positions_alike(*, genre, subgenre, role, first):
     for level in range(wizard_limits.LEAST_BUSY, wizard_limits.MOST_BUSY + 1):
         made = fresh(genre=genre, subgenre=subgenre)
         first(made)
-        made.get_band().set_busy(role=role, level=level)
+        made.player(role).set_busy(level=level)
         songs.add(json.dumps(song_of(made), sort_keys=True, default=str))
     return wizard_limits.MOST_BUSY + 1 - wizard_limits.LEAST_BUSY - len(songs)
 

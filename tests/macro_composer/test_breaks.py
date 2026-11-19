@@ -218,12 +218,12 @@ class TestWizardBreak(unittest.TestCase):
     def test_a_break_takes_the_place_of_every_way_of_the_drums_but_the_percussions(self):
         choices = wizard()
         drums = self.drums(choices)
-        before = choices.get_band().role_traits(drums)
+        before = choices.player(drums).traits()
         self.assertGreater(len(before), 1)
         choices.get_kit().set_break(breaks.TUMBLING)
-        self.assertEqual(choices.get_band().role_traits(drums), [trait for trait in before if trait == PERCUSSION])
+        self.assertEqual(choices.player(drums).traits(), [trait for trait in before if trait == PERCUSSION])
         choices.get_kit().set_break(None)
-        self.assertEqual(choices.get_band().role_traits(drums), before)
+        self.assertEqual(choices.player(drums).traits(), before)
 
     def test_every_break_and_every_cut_makes_a_song_of_its_own_and_both_are_kept(self):
         made = [patterns_of(wizard())]

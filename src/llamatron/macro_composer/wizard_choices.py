@@ -38,6 +38,7 @@ from llamatron.macro_composer.choices_part import set_each_kept
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer.hook_choices import HookChoices
 from llamatron.macro_composer.kit_choices import KitChoices
+from llamatron.macro_composer.player_choices import PlayerChoices
 from llamatron.macro_composer.riff_choices import RiffChoices
 from llamatron.macro_composer.riffs import flattened_in
 from llamatron.macro_composer.solo_choices import SoloChoices
@@ -244,7 +245,7 @@ class WizardChoices:
         kept = [(self._band.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(arranger.PICKS) or {}).items()]),
                 (self._band.take_level, [dict(player=player, level=level) for player, level in (data.get(arranger.PLAYERS) or {}).items()]),
                 (self._band.take_kept_player_gauge, [dict(player=player, gauge=gauge, place=place) for player, places in (data.get(wizard_limits.PLAYER_GAUGES_KEPT) or {}).items() for gauge, place in places.items()]),
-                (self._band.set_role_in, [dict(role=role, on=False) for role in data.get(arranger.WITHOUT) or []]),
+                (self._band.take_kept_without, [dict(role=role) for role in data.get(arranger.WITHOUT) or []]),
                 (self._kit.read, [dict(data=data)]),
                 (self._band.take_kept_guitarists, [dict(count=data[wizard_limits.GUITARISTS_KEPT])] if data.get(wizard_limits.GUITARISTS_KEPT) else []),
                 (self._sounds_part.read, [dict(data=data)]),
@@ -252,7 +253,7 @@ class WizardChoices:
                 (self.set_own_sections, [dict(sections=data[wizard_limits.OWN_SECTIONS])] if data.get(wizard_limits.OWN_SECTIONS) else []),
                 (self._set_kept_melody, [dict(style=data[wizard_limits.MELODY_STYLE])] if data.get(wizard_limits.MELODY_STYLE) else []),
                 (self._hook.read, [dict(data=data)]),
-                (self.set_gauge, [dict(name=name, position=position) for name, position in (data.get(wizard_limits.GAUGES_KEPT) or {}).items()]),
+                (self.set_melody_gauge, [dict(name=name, position=position) for name, position in (data.get(wizard_limits.GAUGES_KEPT) or {}).items()]),
                 (self._band.take_kept_player_row, [dict(role=role, name=name, values=values) for role, rows in (data.get(wizard_limits.PLAYER_ROWS_KEPT) or {}).items() for name, values in rows.items()]
                  if isinstance(data.get(wizard_limits.PLAYER_ROWS_KEPT), dict) and all(isinstance(rows, dict) for rows in data[wizard_limits.PLAYER_ROWS_KEPT].values()) else []),
                 (self._set_kept_melody_setting, [dict(name=name, value=value) for name, value in (data.get(wizard_limits.MELODY_SETTINGS_KEPT) or {}).items()]),
@@ -273,6 +274,10 @@ class WizardChoices:
         return {field: value for field, value in held.items() if value is not None}
 
     # The genre and the subgenre, which everything else follows.
+
+    def player(self, role):
+        """Return the choices of one player of the band, by the player's name in the genre's band."""
+        return PlayerChoices(choices=self, role=role)
 
     def get_band(self):
         """Return the choices of the band, a part of these choices."""
@@ -795,7 +800,7 @@ class WizardChoices:
     # How the song starts and ends: stages before the first section with a tune and after the last, each a section of its own.
 
     def _drums_role(self):
-        return next((role for role in self._band.roles() if self._band.role_named(role).get(arranger.DRUMS) and self._band.role_is_in(role)), None)
+        return next((role for role in self._band.roles() if self._band.role_named(role).get(arranger.DRUMS) and self.player(role).is_in()), None)
 
     def _usual_form_kinds(self):
         return next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == self.get_form()), [])
@@ -819,14 +824,14 @@ class WizardChoices:
 
     def _stage_players(self, kind):
         """Who plays in a kind of section, the first player first and the rest in the band's order."""
-        plays = [role for role in self._band.roles() if role in self.style()[arranger.SECTIONS][kind].get(arranger.PLAYS, []) and self._band.role_is_in(role)]
+        plays = [role for role in self._band.roles() if role in self.style()[arranger.SECTIONS][kind].get(arranger.PLAYS, []) and self.player(role).is_in()]
         first = self.get_first_player()
         return [first, *(role for role in plays if role != first)] if first in plays else plays
 
     def first_players(self):
         """Return who can start the song alone: the players of its opening kind of section."""
         kind = self.intro_kind()
-        return [] if kind is None else [role for role in self._band.roles() if role in self.style()[arranger.SECTIONS][kind].get(arranger.PLAYS, []) and self._band.role_is_in(role)]
+        return [] if kind is None else [role for role in self._band.roles() if role in self.style()[arranger.SECTIONS][kind].get(arranger.PLAYS, []) and self.player(role).is_in()]
 
     def get_first_player(self):
         """Return who starts the song alone and is left alone at its end: the one chosen, or the first of the opening's players who is not the drummer."""
@@ -1147,11 +1152,11 @@ class WizardChoices:
 
     # The smart melody style's gauges, shown while the song's tunes are sketched by it.
 
-    def gauges(self):
+    def melody_gauges(self):
         """Return the names of the smart melody style's gauges while the song's tunes are sketched by it or by the hooks style, and none otherwise."""
         return list(melody_writer.DEFAULT_GAUGES) if self._melody in wizard_limits.GAUGED_STYLES else []
 
-    def get_gauge(self, name):
+    def get_melody_gauge(self, name):
         """Return where a gauge stands, from LOWEST_GAUGE to HIGHEST_GAUGE: where it was moved to, else where the genre sets it."""
         if name in self._gauges:
             return self._gauges[name]
@@ -1159,7 +1164,7 @@ class WizardChoices:
         habits = habits if melody_writer.GRID in habits else habits[self.meter()]
         return habits.get(melody_writer.SMART, {}).get(name, melody_writer.DEFAULT_GAUGES[name])
 
-    def set_gauge(self, *, name, position):
+    def set_melody_gauge(self, *, name, position):
         if name not in melody_writer.DEFAULT_GAUGES or isinstance(position, bool) or not isinstance(position, int) or not melody_writer.LOWEST_GAUGE <= position <= melody_writer.HIGHEST_GAUGE:
             raise ValueError(errors.ERR_WIZARD_GAUGE.format(name=name, low=melody_writer.LOWEST_GAUGE, high=melody_writer.HIGHEST_GAUGE, value=position))
         self._gauges[name] = position
@@ -1214,7 +1219,7 @@ class WizardChoices:
         said = {hook_writing.HOOK_WRITING: {hook_writing.BEHAVIOR: self._hook.get_hook_behavior(), hook_writing.GAUGES: {name: self._hook.get_hook_gauge(name) for name in hook_writing.HOOK_GAUGES}},
                 hook_writing.BODY_WRITING: {hook_writing.GAUGES: {name: self._hook.get_body_gauge(name) for name in hook_writing.BODY_GAUGES}}}
         if self._melody in wizard_limits.GAUGED_STYLES and self._gauges:
-            said[melody_writer.SMART] = {**{name: self.get_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **self._gauges}
+            said[melody_writer.SMART] = {**{name: self.get_melody_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **self._gauges}
         own = {name: value for name, value in self._melody_settings.items() if name in wizard_limits.MELODY_SETTINGS_OF[self._melody]}
         evolve = {name: value for name, value in own.items() if name in wizard_limits.EVOLVE_SETTINGS}
         if evolve:
@@ -1927,7 +1932,7 @@ class WizardChoices:
     def reacts(self, role):
         """Return whether a player answers to Energy more or less than the band: a player of a planned song whose playing the plan holds back or lets go,
         which is found by making the song with the player even and dramatic, and kept until a choice changes."""
-        if not (self.has_song_plan() and self._band.role_is_in(role) and arranger.PLAYER in self._band.role_named(role)):
+        if not (self.has_song_plan() and self.player(role).is_in() and arranger.PLAYER in self._band.role_named(role)):
             return False
         return self.offered(key=(wizard_limits.REACTS_ANSWER, self._band.role_named(role)[arranger.PLAYER]), compute=lambda: self._reacts_is_heard(role))
 
@@ -1972,7 +1977,7 @@ class WizardChoices:
 
     def comes_in_offered(self, role):
         """Return the ways a player may come in, where the song has sections and the player is in the band."""
-        return list(self._comes_in_places()) if self.is_ready() and self._band.role_is_in(role) else []
+        return list(self._comes_in_places()) if self.is_ready() and self.player(role).is_in() else []
 
     def _first_place(self, role):
         return next((place for place in range(len(self.section_entries())) if role in self.section_plays(place)), None)
@@ -2237,7 +2242,7 @@ class WizardChoices:
         if character is not None:
             said[arranger.MELODY_ENGINE] = wizard_limits.CHARACTER_ENGINES[character]
             if character in wizard_limits.CHARACTER_GAUGES:
-                habits[melody_writer.SMART] = {**{name: self.get_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **wizard_limits.CHARACTER_GAUGES[character]}
+                habits[melody_writer.SMART] = {**{name: self.get_melody_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **wizard_limits.CHARACTER_GAUGES[character]}
             if character == wizard_limits.BLUESY:
                 flattened = flattened_in(self._scale_type)
                 habits[melody_writer.LADDER] = [{tune_notation.DEGREE: degree, **({tune_notation.ACCIDENTAL: tune_notation.FLAT} if degree in flattened else {})} for degree in wizard_limits.BLUES_DEGREES]

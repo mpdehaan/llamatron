@@ -59,7 +59,7 @@ class IntroMelodyBranch(Branch):
         if len(parts) > 1:
             return marks.MSG_WIZARD_COUNT_SHOWN.format(count=len(parts))
         player = choices.intro_melody_player(parts[0]) if parts else None
-        return choices.get_band().role_title(player) if player is not None else labels.MSG_WIZARD_NOBODY
+        return choices.player(player).title() if player is not None else labels.MSG_WIZARD_NOBODY
 
     # The parts, each known by its number from 1 in the order they play.
 
@@ -129,9 +129,9 @@ class IntroMelodyBranch(Branch):
         def said():
             bars = choices.section_bars(place)
             player = choices.intro_melody_player(place)
-            melody = marks.MSG_WIZARD_PART_NO_MELODY if player is None else marks.MSG_WIZARD_PART_MELODY.format(player=choices.get_band().role_title(player))
+            melody = marks.MSG_WIZARD_PART_NO_MELODY if player is None else marks.MSG_WIZARD_PART_MELODY.format(player=choices.player(player).title())
             return marks.MSG_WIZARD_PART_ROW.format(bars=marks.MSG_WIZARD_PART_ONE_BAR if bars == 1 else marks.MSG_WIZARD_PART_BARS.format(bars=bars),
-                                                    plays=listed([choices.get_band().role_title(role) for role in choices.section_plays(place) if role in choices.get_band().roles_shown()]), melody=melody)
+                                                    plays=listed([choices.player(role).title() for role in choices.section_plays(place) if role in choices.get_band().roles_shown()]), melody=melody)
         return Heading(label=label, is_set=lambda: True, toggle=lambda: page.toggle_section(label), said=said, clear=lambda: self.remove_part(number), clear_what=legends.What.DELETE)
 
     def part_fields(self, place):
@@ -144,16 +144,16 @@ class IntroMelodyBranch(Branch):
                                set=page.choosing(lambda count: choices.set_section_bars(place=place, bars=count)))
         else:
             bars = Field(label=labels.MSG_WIZARD_BARS_LABEL, value=lambda: choices.section_bars(place))
-        titles = {choices.get_band().role_title(role): role for role in choices.intro_hook_players()}
+        titles = {choices.player(role).title(): role for role in choices.intro_hook_players()}
         now = choices.intro_melody_player(place)
         if titles:
-            melody = ChoiceField(page=page, label=labels.MSG_WIZARD_PART_MELODY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *titles], current=labels.MSG_WIZARD_NOBODY if now is None else choices.get_band().role_title(now),
+            melody = ChoiceField(page=page, label=labels.MSG_WIZARD_PART_MELODY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *titles], current=labels.MSG_WIZARD_NOBODY if now is None else choices.player(now).title(),
                                  set=self.refusing(lambda title: choices.set_intro_melody(place=place, role=titles.get(title))))
         else:
             melody = Field(label=labels.MSG_WIZARD_PART_MELODY_LABEL, value=lambda: labels.MSG_WIZARD_NOBODY)
         fades = [fade_field(branch=self, place=place, field=field) for field in choices.fade_fields(place)]
         plays = choices.section_plays(place)
-        players = [Toggle(label=choices.get_band().role_title(role), on=role in plays,
+        players = [Toggle(label=choices.player(role).title(), on=role in plays,
                           set=self.refusing(lambda on, role=role: choices.set_section_plays(place=place, role=role, on=on)))
                    for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
         return [bars, melody, *fades, *players]

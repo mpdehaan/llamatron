@@ -28,6 +28,7 @@ import unittest
 from llamatron.macro_composer.band_choices import BandChoices
 from llamatron.macro_composer.hook_choices import HookChoices
 from llamatron.macro_composer.kit_choices import KitChoices
+from llamatron.macro_composer.player_choices import PlayerChoices
 from llamatron.macro_composer.riff_choices import RiffChoices
 from llamatron.macro_composer.solo_choices import SoloChoices
 from llamatron.macro_composer.sound_choices import SoundChoices
@@ -37,7 +38,7 @@ from llamatron.tui.screens import wizard
 
 SETTER_START = 'set_'
 # The choices and every part of them.
-CHOICES_CLASSES = (WizardChoices, BandChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
+CHOICES_CLASSES = (WizardChoices, BandChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
 # What changes a choice without being named a setter.
 OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section', 'new_hook', 'new_second_hook')
 # Changes with no field of their own: the sections a song kept are taken back one by one through the other setters, and
@@ -50,7 +51,7 @@ OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section'
 # player of the melody, which Section Players chooses through what each player plays there.
 # Who says the hook in every part of an intro at once is kept from songs made before an intro had parts; the Intro panel sets each part's.
 # One thing laid over the song's picks under a name is set by a part of the choices, whose own setters the pages call.
-NOT_ON_THE_PAGE = ('set_extra', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_gauge', 'set_melody_setting', 'set_tune_played_by_in')
+NOT_ON_THE_PAGE = ('set_extra', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_melody_gauge', 'set_melody_setting', 'set_tune_played_by_in')
 A_CALL = r'\.{name}\b'
 SOURCE_FILES = '*.py'
 

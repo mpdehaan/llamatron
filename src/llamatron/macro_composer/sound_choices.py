@@ -134,4 +134,4 @@ class SoundChoices(ChoicesPart):
 
     def sounds_of_song(self):
         """Return the sounds the song chooses itself, by player: each player in the band whose sound is not its way's usual one."""
-        return {role: self.get_sound(role) for role in self._choices.get_band().roles_in() if self.has_sound(role) and self._choices.get_band().role_can_play(role) and self.get_sound(role) != self._way_sound(role)}
+        return {role: self.get_sound(role) for role in self._choices.get_band().roles_in() if self.has_sound(role) and self._choices.player(role).can_play() and self.get_sound(role) != self._way_sound(role)}

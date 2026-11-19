@@ -49,13 +49,13 @@ class BandBranch(Branch):
         if choices.get_band().answerers():
             # Who has the tune, which is only shown, and who answers that player: one of the players who can, or nobody.
             answerers = choices.get_band().answerers()
-            names = [choices.get_band().role_title(role) for role in answerers]
+            names = [choices.player(role).title() for role in answerers]
             by = choices.get_band().answered_by()
-            fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.get_band().role_title(choices.get_tunes().tune_played_by()) if choices.get_tunes().tune_played_by() else labels.MSG_WIZARD_NOBODY),
+            fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.player(choices.get_tunes().tune_played_by()).title() if choices.get_tunes().tune_played_by() else labels.MSG_WIZARD_NOBODY),
                        ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_ANSWERED_BY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *answerers], names=[labels.MSG_WIZARD_NOBODY, *names],
-                                   current=by or labels.MSG_WIZARD_NOBODY, shown=choices.get_band().role_title(by) if by else labels.MSG_WIZARD_NOBODY,
+                                   current=by or labels.MSG_WIZARD_NOBODY, shown=choices.player(by).title() if by else labels.MSG_WIZARD_NOBODY,
                                    set=self.get_page().choosing(lambda role: choices.get_band().set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]
-        return [*fields, *(Toggle(label=choices.get_band().role_title(role), on=choices.get_band().role_is_in(role), set=self.setter_of(role)) for role in choices.get_band().roles_shown() if choices.get_band().role_can_play(role))]
+        return [*fields, *(Toggle(label=choices.player(role).title(), on=choices.player(role).is_in(), set=self.setter_of(role)) for role in choices.get_band().roles_shown() if choices.player(role).can_play())]
 
     def setter_of(self, role):
         """Return what puts a player in the band or leaves the player out, refusing to leave out the last."""
@@ -67,7 +67,7 @@ class BandBranch(Branch):
                 page.refuse(errors.ERR_WIZARD_LAST_PLAYER)
                 return
             try:
-                page.choosing(lambda wanted: choices.get_band().set_role_in(role=role, on=wanted))(on)
+                page.choosing(lambda wanted: choices.player(role).set_in(on=wanted))(on)
             except ValueError as problem:
                 # A player with no way of playing that fits the subgenre, as a strummed guitar in a waltz that has none written.
                 page.refuse(str(problem))

@@ -62,9 +62,9 @@ class TestLostWithGenre(unittest.TestCase):
         choices.get_tunes().set_tune_played_by(player)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_BAND_SETTINGS: 1}, {}))
         left_out = next(role for role in choices.get_band().roles_in() if role != player and role in choices.get_tunes().tune_players_offered())
-        choices.get_band().set_role_in(role=left_out, on=False)
+        choices.player(left_out).set_in(on=False)
         self.assertEqual(choices.lost_with_genre()[0][wizard_limits.LOST_BAND_SETTINGS], 2)
-        choices.get_band().set_role_in(role=left_out, on=True)
+        choices.player(left_out).set_in(on=True)
         choices.get_tunes().set_tune_played_by(None)
         self.assertEqual(choices.lost_with_genre(), NOTHING_LOST)
 

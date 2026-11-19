@@ -267,7 +267,7 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         read = WizardChoices.from_data(choices.to_data())
         self.assertEqual(read.get_tunes().tune_played_by(), other)
         self.assertEqual(read.get_tunes().tune_played_by_in(A_KIND), arranger.NOBODY)
-        choices.get_band().set_role_in(role=other, on=False)
+        choices.player(other).set_in(on=False)
         self.assertEqual(choices.get_tunes().tune_played_by(), usual)
         choices.set_genre(ANOTHER_GENRE)
         choices.set_genre(A_GENRE)

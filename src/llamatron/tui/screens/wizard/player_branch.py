@@ -38,7 +38,7 @@ class PlayerBranch(Branch):
         self._role = role
 
     def name(self):
-        return self.get_choices().get_band().role_title(self._role)
+        return self.get_choices().player(self._role).title()
 
     def key(self):
         # The player's own name, since what a player is called can follow how the player plays.
@@ -46,19 +46,19 @@ class PlayerBranch(Branch):
 
     def fields(self):
         choices = self.get_choices()
-        traits = choices.get_band().role_traits(self._role)
+        traits = choices.player(self._role).traits()
         # A player of notes plays one way, called Plays; the drums have a way for each of their parts, each called by the part's name.
         fields = [self.way_field(trait=trait, label=labels.MSG_WIZARD_PLAYS_LABEL if len(traits) == 1 else trait.capitalize()) for trait in traits]
         if choices.get_sounds().has_sound(self._role):
             fields.append(self.sound_field())
         fields += self.person_fields()
         fields += self.dynamics_fields()
-        if choices.get_band().has_busy(self._role) and choices.get_band().get_busy(self._role) is not None:
+        if choices.player(self._role).has_busy() and choices.player(self._role).get_busy() is not None:
             fields.append(self.busy_field())
             # The player's own gauges, which the Busy field fills in and which each move alone.
-            fields += [self.player_gauge_field(gauge) for gauge in choices.get_band().player_gauges(self._role)]
+            fields += [self.player_gauge_field(gauge) for gauge in choices.player(self._role).gauges()]
         # The rows of numbers the serial style deals to the player's notes, each opened in a window of its own.
-        fields += [self.row_field(name) for name in choices.get_band().player_rows(self._role)]
+        fields += [self.row_field(name) for name in choices.player(self._role).rows()]
         if choices.get_band().answered_by() == self._role:
             fields += self.beside_fields()
         if not choices.get_sounds().has_sound(self._role):
@@ -81,21 +81,21 @@ class PlayerBranch(Branch):
         role = self._role
         if not choices.is_ready() or not choices.get_band().has_musicians():
             return []
-        own = choices.get_band().player_musician(role) is not None
+        own = choices.player(role).get_musician() is not None
         return [Button(label=labels.MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON if own else labels.MSG_WIZARD_EDIT_PLAYER_BUTTON, key_name=legends.KeyName.ENTER, enter=lambda: page.edit_player(role), enter_what=legends.What.EDIT,
-                       clear=(lambda: page.choosing(lambda _: choices.get_band().set_player_musician(role=role, settings=None))(None)) if own else None, clear_what=legends.MSG_FROM_GENRE_WHAT)]
+                       clear=(lambda: page.choosing(lambda _: choices.player(role).set_musician(settings=None))(None)) if own else None, clear_what=legends.MSG_FROM_GENRE_WHAT)]
 
     def dynamics_fields(self):
         """Return the Dynamics gauge: how far the player's loud and soft notes lie from the normal ones, where that is heard."""
         choices = self.get_choices()
         page = self.get_page()
         role = self._role
-        if not choices.get_band().has_dynamics(role):
+        if not choices.player(role).has_dynamics():
             return []
-        dynamics = choices.get_band().get_dynamics(role)
+        dynamics = choices.player(role).get_dynamics()
         return [NumberField(page=page, label=labels.MSG_WIZARD_DYNAMICS_LABEL, number=dynamics, lowest=loudness.LEAST_DYNAMICS, highest=loudness.MOST_DYNAMICS,
                             shown=gauge_shown(place=dynamics, lowest=loudness.LEAST_DYNAMICS + 1, highest=loudness.MOST_DYNAMICS, said=labels.MSG_WIZARD_DYNAMICS_SAID[dynamics]),
-                            set=page.choosing(lambda number: choices.get_band().set_dynamics(role=role, dynamics=number)))]
+                            set=page.choosing(lambda number: choices.player(role).set_dynamics(dynamics=number)))]
 
     def loudness_fields(self):
         """Return the player's levels under the Loudness heading, a velocity for each level the song plays, the genre's until the song
@@ -103,18 +103,18 @@ class PlayerBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         role = self._role
-        if not choices.get_band().has_loudness(role):
+        if not choices.player(role).has_loudness():
             return []
-        heading = page.heading(label=labels.MSG_WIZARD_GROUP_LOUDNESS, is_set=lambda: any(choices.get_band().loudness_level_is_own(role=role, level=level) for level in loudness.LEVELS))
+        heading = page.heading(label=labels.MSG_WIZARD_GROUP_LOUDNESS, is_set=lambda: any(choices.player(role).loudness_level_is_own(level=level) for level in loudness.LEVELS))
         if not page.is_open(heading):
             return [heading]
-        levels = choices.get_band().loudness_levels(role)
+        levels = choices.player(role).loudness_levels()
         fields = [heading]
-        for level in choices.get_band().loudness_levels_offered(role):
-            own = choices.get_band().loudness_level_is_own(role=role, level=level)
+        for level in choices.player(role).loudness_levels_offered():
+            own = choices.player(role).loudness_level_is_own(level=level)
 
             def set_level(number, level=level):
-                page.choosing(lambda wanted: choices.get_band().set_loudness_level(role=role, level=level, number=wanted))(number)
+                page.choosing(lambda wanted: choices.player(role).set_loudness_level(level=level, number=wanted))(number)
             fields.append(NumberField(page=page, label=labels.MSG_WIZARD_LEVEL_LABELS[level], number=levels[level], lowest=notation.LOWEST_VELOCITY, highest=notation.HIGHEST_VELOCITY,
                                       shown=None if own else marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=levels[level]), set=set_level,
                                       clear=(lambda set_level=set_level: set_level(None)) if own else None, clear_what=legends.MSG_FROM_GENRE_WHAT))
@@ -165,7 +165,7 @@ class PlayerBranch(Branch):
     def way_field(self, *, trait, label):
         choices = self.get_choices()
         page = self.get_page()
-        return ChoiceField(page=page, label=label, choices=choices.get_band().ways(role=self._role, trait=trait), current=choices.get_band().get_way(trait),
+        return ChoiceField(page=page, label=label, choices=choices.player(self._role).ways(trait=trait), current=choices.get_band().get_way(trait),
                            set=page.choosing(lambda value: choices.get_band().set_way(trait=trait, value=value)))
 
     def sound_field(self):
@@ -253,18 +253,18 @@ class PlayerBranch(Branch):
         """Return the Busy field: a number stepped or typed, drawn as a horizontal Busy gauge beside the number."""
         choices = self.get_choices()
         page = self.get_page()
-        level = choices.get_band().get_busy(self._role)
+        level = choices.player(self._role).get_busy()
         gauge = marks.MSG_WIZARD_GAUGE_FULL * level + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_limits.MOST_BUSY - level)
         # A player whose gauges were moved is no longer the preset, and the field says so until a level is chosen again.
-        shown = marks.MSG_WIZARD_BUSY_SHOWN if choices.get_band().player_preset(self._role) is not None else marks.MSG_WIZARD_BUSY_CUSTOM_SHOWN
+        shown = marks.MSG_WIZARD_BUSY_SHOWN if choices.player(self._role).preset() is not None else marks.MSG_WIZARD_BUSY_CUSTOM_SHOWN
         return NumberField(page=page, label=labels.MSG_WIZARD_BUSY_LABEL, number=level, shown=shown.format(gauge=gauge, level=level, most=wizard_limits.MOST_BUSY),
-                           lowest=wizard_limits.LEAST_BUSY, highest=wizard_limits.MOST_BUSY, set=page.choosing(lambda value: choices.get_band().set_busy(role=self._role, level=value)))
+                           lowest=wizard_limits.LEAST_BUSY, highest=wizard_limits.MOST_BUSY, set=page.choosing(lambda value: choices.player(self._role).set_busy(level=value)))
 
     def row_field(self, name):
         """Return the field of one of the player's rows of numbers: the row shown, the genre's own marked so, and Enter opening the row to edit."""
         choices = self.get_choices()
-        row = marks.MSG_WIZARD_ROW_SEPARATOR.join(str(value) for value in choices.get_band().get_player_row(role=self._role, name=name))
-        own = choices.get_band().player_row_is_own(role=self._role, name=name)
+        row = marks.MSG_WIZARD_ROW_SEPARATOR.join(str(value) for value in choices.player(self._role).get_row(name=name))
+        own = choices.player(self._role).row_is_own(name=name)
         shown = (marks.MSG_WIZARD_ROW_SHOWN if own else marks.MSG_WIZARD_GENRE_ROW_SHOWN).format(row=row)
         return Field(label=labels.MSG_WIZARD_ROW_LABELS[name], value=lambda: shown, enter=lambda: self.edit_row(name), enter_what=legends.What.EDIT)
 
@@ -273,15 +273,15 @@ class PlayerBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         lowest, highest = choices.get_band().row_limits(name)
-        dialog = RowDialog(title=messages.MSG_WIZARD_ROW_TITLE.format(row=labels.MSG_WIZARD_ROW_LABELS[name], player=self.name()), values=choices.get_band().get_player_row(role=self._role, name=name),
-                           lowest=lowest, highest=highest, fewest=wizard_limits.FEWEST_ROW_CELLS, most=wizard_limits.MOST_ROW_CELLS, usual=choices.get_band().genre_row(role=self._role, name=name))
-        page.ask(dialog=dialog, then=page.choosing(lambda values: choices.get_band().set_player_row(role=self._role, name=name, values=values)))
+        dialog = RowDialog(title=messages.MSG_WIZARD_ROW_TITLE.format(row=labels.MSG_WIZARD_ROW_LABELS[name], player=self.name()), values=choices.player(self._role).get_row(name=name),
+                           lowest=lowest, highest=highest, fewest=wizard_limits.FEWEST_ROW_CELLS, most=wizard_limits.MOST_ROW_CELLS, usual=choices.player(self._role).genre_row(name=name))
+        page.ask(dialog=dialog, then=page.choosing(lambda values: choices.player(self._role).set_row(name=name, values=values)))
 
     def player_gauge_field(self, gauge):
         """Return the field of one of the player's own gauges: a number stepped or typed, drawn as a horizontal gauge beside the number."""
         choices = self.get_choices()
         page = self.get_page()
-        place = choices.get_band().get_player_gauge(role=self._role, gauge=gauge)
+        place = choices.player(self._role).get_gauge(gauge=gauge)
         drawn = marks.MSG_WIZARD_GAUGE_FULL * (place - characters.LOWEST) + marks.MSG_WIZARD_GAUGE_EMPTY * (characters.HIGHEST - place)
         return NumberField(page=page, label=labels.MSG_WIZARD_PLAYER_GAUGE_LABELS[gauge], number=place, shown=marks.MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place),
-                           lowest=characters.LOWEST, highest=characters.HIGHEST, set=page.choosing(lambda value: choices.get_band().set_player_gauge(role=self._role, gauge=gauge, place=value)))
+                           lowest=characters.LOWEST, highest=characters.HIGHEST, set=page.choosing(lambda value: choices.player(self._role).set_gauge(gauge=gauge, place=value)))
