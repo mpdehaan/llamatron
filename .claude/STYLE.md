@@ -17,6 +17,7 @@ kept by reading.
 | No unused import, undefined name or name defined twice, in `src/`, `tests/` or `internal_tools/`. | `tests/rules/test_pyflakes.py` |
 | No module imports a constant by name from any module of llamatron, the tests or the tools: the module is imported and the constant named through it, `sound.KIND`. A class or a function keeps its import. From a module of the `strings` package, `composition/limits.py`, `composition/defaults.py` and `music/midi.py`, nothing at all is imported by name. | `tests/rules/test_constants_by_module.py`, with `internal_tools/constants_by_module.sh --write` to rewrite a file that breaks it |
 | Every file's opening imports are sorted: the libraries, one blank line, then the project's, each group by module, each line's names in order, one line a module. | `tests/rules/test_import_order.py`, with `internal_tools/sort_imports.sh --write` to sort a file |
+| A package imports only packages below it, only a package's front doors are imported from outside it, and a page imports no other page and of the model only its vocabulary; the crossings that existed when the rule was made are listed, and the list only shrinks. | `tests/rules/test_layers.py`, with `internal_tools/layers.sh` and `tests/rules/layer_exceptions.py` |
 | No function or method carries a type hint, on a parameter or on what it returns. | `tests/rules/test_no_type_hints.py` |
 | Each screen lists its keys once, in `keys()`, so no key works without being shown in the legend or the F1 dialog, and every page's help fits an 80 by 24 console. | `tests/tui/test_tui_keys_shown.py`, `tests/tui/test_tui_help.py` |
 | A screen's method is never named after one Textual has, like `render` or `remove`. | `tests/tui/test_tui_look.py` |
@@ -61,6 +62,14 @@ groups logically, as a matter of cohesion rather than line counts. Code that wou
 (the user's rule). Scripts worth running again live
 in `internal_tools/`, the tools for developing llamatron, or in `user_scripts/`, the scripts for anyone
 using it, each with a docstring or comment saying what for and how, never in a temporary folder.
+
+**The program is layers, each with a front door.** From the bottom: `support`, `strings`, `music`, `composition`, `grid`,
+`generators`, `exporters`, `playback`, `importers`, `realtime`, `macro_composer`, `visualizers`, `tui`, `tutorial`. A package
+imports only packages below it. From outside, `playback` is reached through `song_renderer`, `exporters` through `exports`,
+`importers` through `midi_import`, `macro_composer` through `wizard_choices`, and `realtime` only by `tui/transport.py`,
+`tui/pattern_preview.py` and `cli.py`. A page imports no other page, and of the model only `file_format`'s names: what a page
+needs of the model, the document or the model's objects answer. An import that would cross a layer is the sign of a missing
+object in the layer below, never a reason for a new exception (`internal_tools/layers.py` holds the lists).
 
 **Behaviour lives on the object that owns the data.** Everything about computing, checking or
 editing a pattern is on `Pattern`, a scene keeps its own clip slots and reference updates, and so on, so
