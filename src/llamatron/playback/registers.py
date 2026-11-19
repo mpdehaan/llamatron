@@ -100,12 +100,12 @@ class Turned:
         register = self._registers[name]
         if name not in self._reversing:
             return register.added(value=value, amount=amount, chooser=chooser)
-        result, turned = register.reversed(value=value, amount=amount, turned=name in self._turned)
-        if turned:
+        bounced = register.reversed(value=value, amount=amount, turned=name in self._turned)
+        if bounced.turned:
             self._turned.add(name)
         else:
             self._turned.discard(name)
-        return result
+        return bounced.value
 
     def names(self):
         return frozenset(self._turned)

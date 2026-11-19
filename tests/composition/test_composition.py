@@ -34,7 +34,7 @@ from llamatron.composition.generator_settings import ArpSetting, ArpSettings, Au
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
-from llamatron.composition.register import Register
+from llamatron.composition.register import Bounced, Register
 from llamatron.composition.scene import Scene, TempoRamp
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
@@ -236,15 +236,15 @@ class TestRegister(RoundTrip):
             seen.append(value)
         self.assertEqual(seen, [1, 2, 3, 4, 3, 2, 1, 0, 1])
         # What is left over carries on back the other way: 3 and 3 more is 4 and 2 back down.
-        self.assertEqual(register.reversed(value=3, amount=3, turned=False), (2, True))
+        self.assertEqual(register.reversed(value=3, amount=3, turned=False), Bounced(value=2, turned=True))
         # While turned a subtraction adds, and bounces off the top the same way.
-        self.assertEqual(register.reversed(value=3, amount=-3, turned=True), (2, False))
+        self.assertEqual(register.reversed(value=3, amount=-3, turned=True), Bounced(value=2, turned=False))
         # An amount longer than the range bounces off both ends.
-        self.assertEqual(register.reversed(value=lowest, amount=2 * highest + 1, turned=False), (1, False))
+        self.assertEqual(register.reversed(value=lowest, amount=2 * highest + 1, turned=False), Bounced(value=1, turned=False))
 
     def test_a_register_of_one_value_that_reverses_stays_there(self):
         register = Register.from_data(data={RegisterSetting.MINIMUM: 0, RegisterSetting.MAXIMUM: 0, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}, where=HERE)
-        self.assertEqual(register.reversed(value=0, amount=3, turned=False), (0, False))
+        self.assertEqual(register.reversed(value=0, amount=3, turned=False), Bounced(value=0, turned=False))
 
     def test_refusals(self):
         too_high = limits.MAX_REGISTER_VALUE + 1

@@ -19,6 +19,7 @@ Each test plays a one-bar figure of four quarter notes, C, E, G and A in C major
 two bars, so that where a generator's run carries on shows in the second scene.
 """
 
+from typing import NamedTuple
 import unittest
 
 from llamatron.composition import file_format
@@ -59,18 +60,28 @@ def two_scenes(*, section, kind, settings, restart=None, first_repeat=1, rows=No
     return data
 
 
+class PlayedNote(NamedTuple):
+    """A note of a scene as the tests ask of it: when it starts, its MIDI number, its velocity and how long it lasts."""
+
+    start: object
+    pitch: int
+    velocity: int
+    length: object
+
+
 def played(data):
-    """Return each written scene's notes as (start, pitch, velocity, length)."""
+    """Return each written scene's notes, each a PlayedNote, in the order they start."""
     grid = render_data(data)
     result = []
     for row in grid.get_rows():
         clip = grid.get_clip(row=row, column=grid.get_columns()[0])
-        result.append([(start, pitch, velocity, end - start) for start, end, pitch, velocity in sorted(timed_events(clip=clip, scale=clip.get_scale())[0])])
+        events, _ = timed_events(clip=clip, scale=clip.get_scale())
+        result.append([PlayedNote(start=event.start, pitch=event.midi_number, velocity=event.velocity, length=event.end - event.start) for event in sorted(events)])
     return result
 
 
 def first_names(notes):
-    return [NAMES[pitch % len(NAMES)] for _, pitch, _, _ in notes[:STEPS]]
+    return [NAMES[note.pitch % len(NAMES)] for note in notes[:STEPS]]
 
 
 def progression(*, restart=None, first_repeat=1):
@@ -98,14 +109,14 @@ class TestTimeFollowingGenerators(unittest.TestCase):
         scenes = played(data)
         # Eight quarter notes, a hit every third: the second scene's first hit falls on its second step.
         self.assertEqual(len(scenes[0]), 3)
-        self.assertEqual(scenes[1][0][0] * STEPS, 1)
+        self.assertEqual(scenes[1][0].start * STEPS, 1)
 
     def test_a_swells_ramp_runs_over_the_whole_song(self):
         data = two_scenes(section=Section.SWELLS, kind=GeneratorKind.SWELL, settings={'start': 0, 'end': 100}, restart=Restart.WHOLE_SONG,
                           rows={Row.VELOCITY: [100] * STEPS})
         scenes = played(data)
-        self.assertLess(scenes[0][-1][2], scenes[1][0][2])
-        self.assertLess(scenes[1][-1][2], 100)
+        self.assertLess(scenes[0][-1].velocity, scenes[1][0].velocity)
+        self.assertLess(scenes[1][-1].velocity, 100)
 
 
 class TestStateKeepingGenerators(unittest.TestCase):
@@ -116,7 +127,7 @@ class TestStateKeepingGenerators(unittest.TestCase):
         carried = played(two_scenes(section=Section.AUTO_RATCHETS, kind=GeneratorKind.AUTO_RATCHET, settings=settings, restart=Restart.WHOLE_SONG))
         self.assertEqual(fresh[1], fresh[0])
         # Eight notes used up counts 1 2 3 1 2 3 1 2, so the second scene starts on 3.
-        self.assertEqual(carried[1][0][3] * 3, fresh[0][0][3])
+        self.assertEqual(carried[1][0].length * 3, fresh[0][0].length)
 
     def test_voice_leading_voices_a_clips_first_chord_near_the_chord_it_was_handed(self):
         chord = Clip(notes=[Chord([Note(name=name, octave_number=5, length=QUARTER) for name in (NoteName.C, NoteName.E, NoteName.G)])])

@@ -112,8 +112,8 @@ class TestRatchetOffset(unittest.TestCase):
     def test_every_slice_keeps_its_velocity_and_only_the_last_glides(self):
         found = lead([1, QUARTER], [5, QUARTER], rows={Row.RATCHET: [2, None], Row.RATCHET_OFFSET: [1, None], Row.VELOCITY: [40, None], Row.GLIDE: [True, False]})
         events, _ = timed_events(clip=found, scale=None)
-        self.assertEqual([event[3] for event in sorted(events)[:2]], [40, 40])
-        self.assertEqual(sorted(events)[1][1], Fraction(1, 4) + timing.GLIDE_OVERLAP)
+        self.assertEqual([event.velocity for event in sorted(events)[:2]], [40, 40])
+        self.assertEqual(sorted(events)[1].end, Fraction(1, 4) + timing.GLIDE_OVERLAP)
 
     def test_is_a_whole_number(self):
         with self.assertRaises(SongFileError):
