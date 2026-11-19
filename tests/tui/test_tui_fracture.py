@@ -24,7 +24,7 @@ from llamatron.strings import messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from tests.support.ui_testing import BEAT, TUNE, UITest
+from tests.support.ui_testing import BEAT, OTHER, TUNE, UITest
 
 LEAD = 'lead'
 DRUMS = 'drums'
@@ -32,6 +32,7 @@ FIRST = 0
 SECOND = 1
 TUNE_2 = 'tune-2'
 TUNE_3 = 'tune-3'
+OTHER_2 = 'other-2'
 COPIES = 2
 CHANGED_STEPS = 8
 
@@ -70,6 +71,16 @@ class TestFracture(UITest):
         self.assertEqual(setlist.get_pattern(TUNE_3).get_steps(), setlist.get_pattern(TUNE).get_steps())
         setlist.get_pattern(TUNE_2).set_steps(CHANGED_STEPS)
         self.assertNotEqual(setlist.get_pattern(TUNE).get_steps(), CHANGED_STEPS)
+
+    async def test_a_pattern_a_clip_names_twice_in_its_own_list_stays_one_pattern(self):
+        song = self.document.song()
+        song.get_scenes()[SECOND].get_clip_slot(LEAD).set_pattern_names(names=[TUNE, OTHER, TUNE], song=song)
+        song.get_scenes()[SECOND].get_clip_slot(DRUMS).set_pattern_names(names=[OTHER, TUNE], song=song)
+        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        scene = self.document.song().get_scenes()[SECOND]
+        # The first scene's clip keeps the pattern; a later clip plays a copy, the same copy each time its own list names the pattern.
+        self.assertEqual(scene.get_clip_slot(LEAD).get_pattern_names(), [TUNE_2, OTHER, TUNE_2])
+        self.assertEqual(scene.get_clip_slot(DRUMS).get_pattern_names(), [OTHER_2, TUNE_3])
 
     async def test_a_song_with_nothing_shared_says_so(self):
         await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)

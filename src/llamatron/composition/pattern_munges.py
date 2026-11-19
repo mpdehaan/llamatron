@@ -145,17 +145,6 @@ class PatternMunges:
             self.clear_sound(step)
 
     @notes_change
-    def transpose(self, degrees):
-        """Move every note so many degrees up the scale, or down for a negative number; a drum pattern, or a note that would pass under the lowest degree, refuses it all."""
-        notes = self._written_notes()
-        if self.is_drum():
-            raise InvalidValue(errors.ERR_TRANSPOSE_DRUMS)
-        if type(degrees) is not int or any(self._held(row=Row.DEGREE, step=step) + degrees < limits.MIN_DEGREE for step in notes):
-            raise InvalidValue(errors.ERR_TRANSPOSE_TOO_LOW.format(lowest=limits.MIN_DEGREE))
-        for step in notes:
-            self._rows[Row.DEGREE][step] += degrees
-
-    @notes_change
     def humanize_velocity(self, most):
         """Move each typed velocity by a random amount, at most so much up or down, kept to what a velocity may be; a blank velocity stays blank."""
         velocities = self._rows[Row.VELOCITY] or []

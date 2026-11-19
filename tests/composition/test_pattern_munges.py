@@ -303,18 +303,6 @@ class TestMungesOfNotes(unittest.TestCase):
             with self.assertRaises(InvalidValue):
                 pattern.clear_every(wrong)
 
-    def test_a_transpose_moves_every_note_and_refuses_drums_and_notes_too_low(self):
-        pattern = pattern_of(degrees=[2, None, 4])
-        pattern.transpose(3)
-        self.assertEqual(pattern.get_row(Row.DEGREE), [5, None, 7])
-        pattern.transpose(-4)
-        self.assertEqual(pattern.get_row(Row.DEGREE), [1, None, 3])
-        with self.assertRaises(InvalidValue):
-            pattern.transpose(-1)
-        self.assertEqual(pattern.get_row(Row.DEGREE), [1, None, 3])
-        with self.assertRaises(InvalidValue):
-            pattern_of(degrees=[None], drum=True).transpose(1)
-
     def test_humanize_moves_each_typed_velocity_within_its_limits_and_leaves_a_blank(self):
         for _ in range(TRIES):
             pattern = pattern_of(degrees=[1, 2, 3, 4], **{Row.VELOCITY: [midi.MIN_VELOCITY, None, HIGH, midi.MAX_VELOCITY]})
