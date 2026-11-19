@@ -30,6 +30,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Phrasing](#phrasing): `25_phrasing.yml`
 - [Musician](#musician): `26_musician.yml`
 - [Advanced Conditionals](#advanced_conditionals): `27_advanced_conditionals.yml`
+- [Accents](#accents): `28_accents.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -538,3 +539,26 @@ visits the same five pitches in a shuffled order.
 | conditional execution |
 | :---: |
 | [✓](../REGISTERS.md#conditional-execution) |
+
+<a id="accents"></a>
+## Accents: `28_accents.yml`
+
+A funk groove in E minor with no velocity typed on any step. Each part plays at the Default velocity
+of its track, and a step whose Accent switch is on plays louder by the track's Accent. The first
+scene plays four bars with every switch off, so the groove sounds flat. The scenes after it switch
+accents on a part at a time: the hats on the beat, then off the beat, then a snare whose quiet
+ghost notes sit under an accented backbeat, then the bass and the keys, then hats accented in
+threes across the beat. The last scene plays the first again, to hear what the switches did.
+
+[`examples/learning/28_accents.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/28_accents.yml) · E minor · 100 BPM · 2:19 · 7 scenes · 5 tracks
+
+| chords | accents |
+| :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../TRACKS.md) |
+<!-- end of the generated summary of 28_accents -->
+
+**New Features Introduced**
+
+| accents |
+| :---: |
+| [✓](../TRACKS.md) |

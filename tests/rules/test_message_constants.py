@@ -32,6 +32,7 @@ import unittest
 
 import llamatron
 from llamatron import strings
+from llamatron.composition import defaults, limits
 from llamatron.strings import errors, help, reprs
 
 SOURCE_FOLDER = os.path.dirname(llamatron.__file__)
@@ -122,6 +123,19 @@ def prefixed(names):
     return [name for name in names if name.startswith(PREFIXES)]
 
 
+def defined_twice(path):
+    """Return the names a module assigns at its top level more than once, in order."""
+    with open(path, encoding=FILE_ENCODING) as source:
+        tree = ast.parse(source.read())
+    seen = set()
+    twice = []
+    for node in tree.body:
+        targets = [target.id for target in node.targets if isinstance(target, ast.Name)] if isinstance(node, ast.Assign) else []
+        twice += [target for target in targets if target in seen]
+        seen.update(targets)
+    return twice
+
+
 class TestMessageConstants(unittest.TestCase):
 
     def test_only_the_strings_package_defines_prefixed_constants(self):
@@ -133,18 +147,14 @@ class TestMessageConstants(unittest.TestCase):
 
     def test_no_module_of_the_strings_package_defines_a_name_twice(self):
         """A second definition silently replaces the first, so that whatever used the first shows the second's text."""
-        twice = []
-        for name in sorted(os.listdir(STRINGS_FOLDER)):
-            if not name.endswith(PYTHON_SUFFIX):
-                continue
-            with open(os.path.join(STRINGS_FOLDER, name), encoding=FILE_ENCODING) as source:
-                tree = ast.parse(source.read())
-            seen = set()
-            for node in tree.body:
-                targets = [target.id for target in node.targets if isinstance(target, ast.Name)] if isinstance(node, ast.Assign) else []
-                twice += [(name, target) for target in targets if target in seen]
-                seen.update(targets)
-        self.assertEqual(twice, [])
+        paths = [os.path.join(STRINGS_FOLDER, name) for name in sorted(os.listdir(STRINGS_FOLDER)) if name.endswith(PYTHON_SUFFIX)]
+        self.assertEqual([(os.path.basename(path), name) for path in paths for name in defined_twice(path)], [])
+
+    def test_no_module_of_limits_or_defaults_defines_a_name_twice(self):
+        """A second limit of one name silently replaces the first, which once held a track's accent to a shape's range."""
+        for module in (limits, defaults):
+            with self.subTest(module=module.__name__):
+                self.assertEqual(defined_twice(module.__file__), [])
 
     def test_each_module_holds_only_its_own_prefix(self):
         for path, prefix in OWN_PREFIX.items():
