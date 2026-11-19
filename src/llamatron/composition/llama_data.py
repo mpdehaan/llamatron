@@ -167,6 +167,45 @@ class LlamaData(Revised):
         raise NotImplementedError(errors.ERR_NEEDS_FROM_DATA.format(kind=cls.__name__))
 
 
+class HoldsSettings(LlamaData):
+    """A stored object that holds settings: each a name of its class's SETTINGS with the value the file writes for it, or None where the file leaves it out.
+
+    SETTINGS describes every setting once (composition/setting.py), and set_written() is the one
+    place a value is checked against its description and stored, so that a setter of a subclass
+    says only what is its own: `set_tempo(tempo)` is the readable name, and one line. A subclass
+    whose file data is its settings alone needs no to_data() of its own.
+    """
+
+    __slots__ = ('_settings',)
+
+    # Every setting the class holds, by name, each described once: what a file may hold for it and what a setter accepts.
+    SETTINGS = {}
+
+    def get_written(self, name):
+        """Return a setting as the file holds it, or None where the file leaves it out and its default applies."""
+        return self._settings[name]
+
+    @notes_change
+    def set_written(self, *, name, value, song=None):
+        """Store a setting's value once its description allows it, or None to leave the setting out of the file.
+
+        song is the song the object is in, for a setting that names something of the song or the set.
+        """
+        if value is not None:
+            self.SETTINGS[name].check(value, song=song)
+        self._settings[name] = value
+
+    def set_written_unless_default(self, *, name, value, default, song=None):
+        """Store a setting's value as set_written() does, leaving the setting out of the file where the value is its default."""
+        if value is not None:
+            self.SETTINGS[name].check(value, song=song)
+        self.set_written(name=name, value=None if value == default else value, song=song)
+
+    def to_data(self):
+        """Return the settings the file writes: those that hold a value."""
+        return written_settings(self._settings)
+
+
 def _names(*, value, name):
     """Return whether a setting names an item: holds its name, or a list holding it, as a list of chains does."""
     return name in value if isinstance(value, list) else value == name

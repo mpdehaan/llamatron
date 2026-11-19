@@ -28,7 +28,7 @@ from llamatron.composition.conditions import check_statement, statement_of
 from llamatron.composition.corrections import Correction
 from llamatron.composition.file_format import Direction, PatternSetting, Row, StepStatement
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import LlamaData, written_settings
+from llamatron.composition.llama_data import HoldsSettings, written_settings
 from llamatron.composition.pattern_munges import PatternMunges
 from llamatron.composition.pattern_notes import PatternNotes
 from llamatron.composition.row_descriptions import row_described, rows_where
@@ -73,7 +73,7 @@ REFERENCE_OCTAVE = 5
 NOTE_NAME = '{name}{octave}'
 
 
-class Pattern(PatternNotes, PatternMunges, LlamaData):
+class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     """A number of steps, and for each row, like degree or velocity, a value for every step.
 
     A row the file leaves out is kept as None, which means every step is blank on that row. A
@@ -82,7 +82,9 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
     a piano roll draws, each a note with its gate and ties, is in PatternNotes, and the munges of its notes are in PatternMunges.
     """
 
-    __slots__ = ('_steps', '_rows', '_settings')
+    __slots__ = ('_steps', '_rows')
+
+    SETTINGS = SETTINGS
 
     def __init__(self, *, steps, rows, step_size=None, time_signature=None, entry_size=None, drum=None, direction=None, group=None, scale_length=None):
         self.note_change()
@@ -403,26 +405,17 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
                 values.pop(step)
         self._steps -= 1
 
-    @notes_change
     def set_step_size(self, step_size):
         """Give it a step size of its own, written like 1/8, or None to use the song's."""
-        if step_size is not None:
-            SETTINGS[PatternSetting.STEP_SIZE].check(step_size)
-        self._settings[PatternSetting.STEP_SIZE] = step_size
+        self.set_written(name=PatternSetting.STEP_SIZE, value=step_size)
 
-    @notes_change
     def set_time_signature(self, text):
         """Give it a time signature of its own, written like 6/8, or None to use the song's."""
-        if text is not None:
-            SETTINGS[PatternSetting.TIME_SIGNATURE].check(text)
-        self._settings[PatternSetting.TIME_SIGNATURE] = text
+        self.set_written(name=PatternSetting.TIME_SIGNATURE, value=text)
 
-    @notes_change
     def set_entry_size(self, entry_size):
         """Give it an entry size of its own, written like 1/8, or None to use the song's."""
-        if entry_size is not None:
-            SETTINGS[PatternSetting.ENTRY_SIZE].check(entry_size)
-        self._settings[PatternSetting.ENTRY_SIZE] = entry_size
+        self.set_written(name=PatternSetting.ENTRY_SIZE, value=entry_size)
 
     @notes_change
     def set_drum(self, drum):
@@ -439,12 +432,9 @@ class Pattern(PatternNotes, PatternMunges, LlamaData):
         """Return how many notes the scale has that it was written for, or None for a pattern written for any scale, as a drum pattern and an older file's are."""
         return self._settings[PatternSetting.SCALE_LENGTH]
 
-    @notes_change
     def set_scale_length(self, scale_length):
         """Say how many notes the scale has that it was written for, or None for any; no note changes."""
-        if scale_length is not None:
-            SETTINGS[PatternSetting.SCALE_LENGTH].check(scale_length)
-        self._settings[PatternSetting.SCALE_LENGTH] = scale_length
+        self.set_written(name=PatternSetting.SCALE_LENGTH, value=scale_length)
 
     def suits_scale_of(self, size):
         """Return whether it was written for a scale of this many notes, as a pattern written for any scale is."""

@@ -39,7 +39,7 @@ from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.checks import check_keys, reading
 from llamatron.composition.file_format import InstrumentSetting, KeyswitchSetting
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import LlamaData, or_default, own_copy, settings_by_name, written_settings
+from llamatron.composition.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
 from llamatron.composition.setting import check_settings, Checked, described, Text, WholeNumber
 from llamatron.music import midi
 from llamatron.strings import errors
@@ -119,10 +119,12 @@ SETTINGS = described(
 )
 
 
-class Instrument(LlamaData):
+class Instrument(HoldsSettings):
     """A MIDI device, by its port's name, and a channel from 1 to 16."""
 
-    __slots__ = ('_settings',)
+    __slots__ = ()
+
+    SETTINGS = SETTINGS
 
     def __init__(self, *, device=None, channel=None, gm_sound=None, keyswitches=None, keyswitch_lead=None, default_velocity=None, accent=None):
         self.note_change()
@@ -144,9 +146,6 @@ class Instrument(LlamaData):
                 keyswitches=data.get(InstrumentSetting.KEYSWITCHES), keyswitch_lead=data.get(InstrumentSetting.KEYSWITCH_LEAD),
                 default_velocity=data.get(InstrumentSetting.DEFAULT_VELOCITY), accent=data.get(InstrumentSetting.ACCENT),
             )
-
-    def to_data(self):
-        return written_settings(self._settings)
 
     def copy(self):
         return Instrument(
@@ -174,23 +173,17 @@ class Instrument(LlamaData):
         """Return whether it plays through FluidSynth, which the tracker starts, rather than through a MIDI port: its channel is then chosen for each track and its General MIDI sound sent."""
         return self.get_device() == file_format.FLUIDSYNTH_DEVICE
 
-    @notes_change
     def set_device(self, device):
         """Name its MIDI output port, or None to choose none."""
-        if device is not None:
-            SETTINGS[InstrumentSetting.DEVICE].check(device)
-        self._settings[InstrumentSetting.DEVICE] = device
+        self.set_written(name=InstrumentSetting.DEVICE, value=device)
 
     def get_gm_sound(self):
         """Return the General MIDI sound a General MIDI export gives its tracks, 1 to 128, or None for none."""
         return self._settings[InstrumentSetting.GM_SOUND]
 
-    @notes_change
     def set_gm_sound(self, sound):
         """Choose its General MIDI sound, 1 to 128, or None for none."""
-        if sound is not None:
-            SETTINGS[InstrumentSetting.GM_SOUND].check(sound)
-        self._settings[InstrumentSetting.GM_SOUND] = sound
+        self.set_written(name=InstrumentSetting.GM_SOUND, value=sound)
 
     @notes_change
     def set_channel(self, channel):
@@ -252,19 +245,13 @@ class Instrument(LlamaData):
         """Return its accent as the file holds it, or None for the default."""
         return self._settings[InstrumentSetting.ACCENT]
 
-    @notes_change
     def set_default_velocity(self, velocity):
         """Set the velocity a step with none typed plays at on its tracks, or None for the loudest."""
-        if velocity is not None:
-            SETTINGS[InstrumentSetting.DEFAULT_VELOCITY].check(velocity)
-        self._settings[InstrumentSetting.DEFAULT_VELOCITY] = velocity
+        self.set_written(name=InstrumentSetting.DEFAULT_VELOCITY, value=velocity)
 
-    @notes_change
     def set_accent(self, accent):
         """Set what an accented step adds on its tracks, or None for the default."""
-        if accent is not None:
-            SETTINGS[InstrumentSetting.ACCENT].check(accent)
-        self._settings[InstrumentSetting.ACCENT] = accent
+        self.set_written(name=InstrumentSetting.ACCENT, value=accent)
 
     def get_keyswitch_lead(self):
         """Return how many milliseconds before its note a keyswitch is sent, 0 for at the same moment."""

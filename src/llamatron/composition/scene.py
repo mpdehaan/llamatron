@@ -32,7 +32,7 @@ from llamatron.composition.conditions import register_values_setting, statements
 from llamatron.composition.file_format import RampPart, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import data_as_kept, data_built_anew, LlamaData, own_copy, written_settings
+from llamatron.composition.llama_data import data_as_kept, data_built_anew, HoldsSettings, own_copy, written_settings
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
@@ -101,14 +101,16 @@ SETTINGS = described(
 READ_ANOTHER_WAY = (SceneSetting.NAME, SceneSetting.TEMPO, *RAMP_TEMPOS)
 
 
-class Scene(LlamaData):
+class Scene(HoldsSettings):
     """A name, how many times it repeats, an optional scale and tempo, and a clip slot for each track it plays.
 
     Settings the file leaves out are kept as None, meaning their defaults. Its scale is kept as
     the name of one of the song's scales.
     """
 
-    __slots__ = ('_settings', '_clip_slots')
+    __slots__ = ('_clip_slots')
+
+    SETTINGS = SETTINGS
 
     # A scene names the scale and the groove it chooses. Its clips name things too, and are its referring parts.
     REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,), Section.CHAINS: (SceneSetting.CHAINS,)}
@@ -160,12 +162,9 @@ class Scene(LlamaData):
         """Return the kind of section the scene says it is, or None for a scene that says none."""
         return self._settings[SceneSetting.SECTION]
 
-    @notes_change
     def set_section(self, section):
         """Say what kind of section the scene is, or None for no kind."""
-        if section is not None:
-            SETTINGS[SceneSetting.SECTION].check(section)
-        self._settings[SceneSetting.SECTION] = section
+        self.set_written(name=SceneSetting.SECTION, value=section)
 
     def launches_together(self):
         """Return whether a start reaching any clip of the scene launches the whole scene in real-time playback, which no export reads."""
@@ -279,12 +278,9 @@ class Scene(LlamaData):
             SETTINGS[SceneSetting.NAME].check(name)
         self._settings[SceneSetting.NAME] = name
 
-    @notes_change
     def set_repeat(self, repeat):
         """Set how many times it plays, where None or 1 is once."""
-        if repeat is not None:
-            SETTINGS[SceneSetting.REPEAT].check(repeat)
-        self._settings[SceneSetting.REPEAT] = None if repeat == defaults.DEFAULT_REPEAT else repeat
+        self.set_written_unless_default(name=SceneSetting.REPEAT, value=repeat, default=defaults.DEFAULT_REPEAT)
 
     @notes_change
     def set_scale_name(self, *, name, song):
@@ -303,13 +299,10 @@ class Scene(LlamaData):
         """Make it play at the song's tempo. Its ramps stay."""
         self._settings[SceneSetting.TEMPO] = None
 
-    @notes_change
     def set_tempo_ramp_setting(self, *, way, part, value):
         """Set one part of one of its tempo ramps, or None to leave it blank."""
         name = file_format.TEMPO_RAMP_SETTINGS[(way, part)]
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     @notes_change
     def set_reset(self, *, register, on):
@@ -336,12 +329,9 @@ class Scene(LlamaData):
         """Write the statement at a place of its table, add one just past the last, or remove one with None."""
         self._set_checked(name=SceneSetting.BYPASS_WHEN, value=with_statement(statements=self._settings[SceneSetting.BYPASS_WHEN], place=place, statement=statement))
 
-    @notes_change
     def _set_checked(self, *, name, value):
         """Keep a setting's new value once its description allows it, None leaving the setting out."""
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     @notes_change
     def set_clip_slot(self, *, track, clip_slot, song):
@@ -396,23 +386,17 @@ class Scene(LlamaData):
         """Return how loud the scene plays its clips, as a Velocity, before any clip's own."""
         return velocity_of(scene_settings=self.get_velocity_settings())
 
-    @notes_change
     def set_velocity_setting(self, *, name, value):
         """Set one of its velocity settings by its file name, or None to leave it blank."""
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     def get_shape(self, shape):
         """Return how a shape, Density or Articulate, runs over the scene, or None when the scene sets neither its start nor its end."""
         return shape_values(settings=self._settings, shape=shape)
 
-    @notes_change
     def set_shape_setting(self, *, name, value):
         """Set one part of a shape by its file name, like density_start, or None to leave it out."""
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     def get_chain_names(self):
         """Return the names of the chains every clip of the scene runs, after the clip's own, in order."""

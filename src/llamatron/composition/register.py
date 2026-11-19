@@ -22,7 +22,7 @@ from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.checks import check_keys, listed, reading
 from llamatron.composition.file_format import RegisterSetting, ResetBehavior
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import LlamaData, written_settings
+from llamatron.composition.llama_data import HoldsSettings
 from llamatron.composition.setting import Choice, described, Flag, WholeNumber
 from llamatron.strings import errors
 from llamatron.support.revised import notes_change
@@ -52,7 +52,7 @@ class Bounced(NamedTuple):
     turned: bool
 
 
-class Register(LlamaData):
+class Register(HoldsSettings):
     """A register's default, minimum and maximum, what it does at those limits, whether each scene resets it, and the most a step may add to it.
 
     A register starts at its default when rendering starts, whenever a scene resets it, and as each
@@ -61,7 +61,9 @@ class Register(LlamaData):
     as None, meaning their defaults.
     """
 
-    __slots__ = ('_settings',)
+    __slots__ = ()
+
+    SETTINGS = SETTINGS
 
     def __init__(self, **settings):
         self.note_change()
@@ -75,9 +77,6 @@ class Register(LlamaData):
                 raise InvalidValue(errors.ERR_REGISTER_EXPECTED_SETTINGS.format(data=data))
             check_keys(data=data, allowed=set(SETTINGS))
             return _checked(data)
-
-    def to_data(self):
-        return written_settings(self._settings)
 
     def is_default(self):
         """Return whether every setting is at its default, so the file needn't name the register."""

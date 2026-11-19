@@ -22,7 +22,11 @@ import pkgutil
 import unittest
 
 import llamatron.composition
-from llamatron.composition.llama_data import LlamaData
+from llamatron.composition import defaults, limits
+from llamatron.composition.file_format import TrackSetting
+from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.llama_data import HoldsSettings, LlamaData
+from llamatron.composition.track import Track
 
 
 def every_subclass():
@@ -36,6 +40,9 @@ def every_subclass():
         found.append(subclass)
         waiting += subclass.__subclasses__()
     return found
+
+# The classes that exist to be subclassed, which no file holds and which read nothing themselves.
+SUPERCLASSES = (HoldsSettings,)
 
 
 class TestLlamaData(unittest.TestCase):
@@ -60,11 +67,26 @@ class TestLlamaData(unittest.TestCase):
 
     def test_every_subclass_defines_both_methods(self):
         for subclass in every_subclass():
-            if subclass.__module__ == __name__:
+            if subclass.__module__ == __name__ or subclass in SUPERCLASSES:
                 continue
             with self.subTest(subclass=subclass.__name__):
                 self.assertIsNot(subclass.to_data, LlamaData.to_data)
                 self.assertIsNot(subclass.from_data.__func__, LlamaData.from_data.__func__)
+
+
+    def test_a_holder_of_settings_checks_a_value_by_its_description_and_leaves_none_and_the_default_out(self):
+        track = Track()
+        track.set_written(name=TrackSetting.ACCENT, value=limits.MAX_STEP_ACCENT)
+        self.assertEqual(track.get_written(TrackSetting.ACCENT), limits.MAX_STEP_ACCENT)
+        self.assertEqual(track.to_data(), {TrackSetting.ACCENT: limits.MAX_STEP_ACCENT})
+        with self.assertRaises(InvalidValue):
+            track.set_written(name=TrackSetting.ACCENT, value=limits.MAX_STEP_ACCENT + 1)
+        before = track.revision()
+        track.set_written(name=TrackSetting.ACCENT, value=None)
+        self.assertEqual(track.to_data(), {})
+        self.assertNotEqual(track.revision(), before)
+        track.set_written_unless_default(name=TrackSetting.ACCENT, value=defaults.DEFAULT_TRACK_ACCENT, default=defaults.DEFAULT_TRACK_ACCENT)
+        self.assertIsNone(track.get_written(TrackSetting.ACCENT))
 
 
 if __name__ == '__main__':

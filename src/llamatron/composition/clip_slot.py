@@ -30,7 +30,7 @@ from llamatron.composition.checks import check_keys, check_name, reading
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
 from llamatron.composition.file_format import ClipSlotSetting, PatternOrder, Section, strum_setting
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import LlamaData, own_copy, settings_by_name, written_settings
+from llamatron.composition.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
 from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.strum import strum_settings, strum_values
@@ -104,7 +104,7 @@ SETTINGS = described(
 )
 
 
-class ClipSlot(LlamaData):
+class ClipSlot(HoldsSettings):
     """A pattern to play, and how: its chain, repeats or loop, direction, morph and grab, and its own name if it has one.
 
     Settings the file leaves out are kept as None, meaning their defaults. A clip with no name of
@@ -112,7 +112,9 @@ class ClipSlot(LlamaData):
     other patterns and tracks are kept as names, and looked up when the song renders.
     """
 
-    __slots__ = ('_settings',)
+    __slots__ = ()
+
+    SETTINGS = SETTINGS
 
     # A clip names the pattern it plays and the one it morphs to, the chain it runs and the track it grabs from.
     REFERENCES = {
@@ -186,13 +188,10 @@ class ClipSlot(LlamaData):
         """Return how the clip strums its chords, or None when its Direction is blank and it takes its track's."""
         return strum_values(lambda part: self._settings[strum_setting(part)])
 
-    @notes_change
     def set_strum_setting(self, *, part, value):
         """Set one part of the clip's strum, or None to leave it blank."""
         name = strum_setting(part)
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     def get_velocity_settings(self):
         """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
@@ -202,23 +201,17 @@ class ClipSlot(LlamaData):
         """Return how loud the clip plays in its scene, as a Velocity: its own settings over the scene's, field by field."""
         return velocity_of(scene_settings=scene.get_velocity_settings(), clip_settings=self.get_velocity_settings())
 
-    @notes_change
     def set_velocity_setting(self, *, name, value):
         """Set one of its velocity settings by its file name, or None to leave it blank."""
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     def get_shape(self, shape):
         """Return how a shape, Density or Articulate, runs over the clip, or None when the clip sets neither its start nor its end and takes its scene's."""
         return shape_values(settings=self._settings, shape=shape)
 
-    @notes_change
     def set_shape_setting(self, *, name, value):
         """Set one part of a shape by its file name, like density_start, or None to leave it out."""
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
     def get_chain_names(self):
         """Return the names of the chains it runs, in order, before its scene's and its track's; none when it runs none."""
@@ -272,7 +265,6 @@ class ClipSlot(LlamaData):
         SETTINGS[ClipSlotSetting.NAME].check(name)
         self._settings[ClipSlotSetting.NAME] = name or None
 
-    @notes_change
     def set_pattern_name(self, *, name, song):
         """Make it play one pattern alone."""
         self.set_pattern_names(names=[name], song=song)
@@ -309,19 +301,13 @@ class ClipSlot(LlamaData):
         """Return the order it plays its patterns in on each pass through them, forward unless it says otherwise."""
         return self._settings[ClipSlotSetting.PATTERN_ORDER] or PatternOrder.FORWARD
 
-    @notes_change
     def set_pattern_order(self, order):
         """Set the order it plays its patterns in, or None for forward."""
-        if order is not None:
-            SETTINGS[ClipSlotSetting.PATTERN_ORDER].check(order)
-        self._settings[ClipSlotSetting.PATTERN_ORDER] = None if order == PatternOrder.FORWARD else order
+        self.set_written_unless_default(name=ClipSlotSetting.PATTERN_ORDER, value=order, default=PatternOrder.FORWARD)
 
-    @notes_change
     def set_direction(self, direction):
         """Override its pattern's play direction, or None to use the pattern's."""
-        if direction is not None:
-            SETTINGS[ClipSlotSetting.DIRECTION].check(direction)
-        self._settings[ClipSlotSetting.DIRECTION] = direction
+        self.set_written(name=ClipSlotSetting.DIRECTION, value=direction)
 
     @notes_change
     def set_morph(self, *, target, style, song):
@@ -346,12 +332,9 @@ class ClipSlot(LlamaData):
         self._settings[ClipSlotSetting.MORPH_TO] = None
         self._settings[ClipSlotSetting.MORPH_STYLE] = None
 
-    @notes_change
     def set_scale_name(self, *, name, song):
         """Give it one of the song's scales of its own, which wins over its scene's and its song's, or None to take theirs."""
-        if name is not None:
-            SETTINGS[ClipSlotSetting.SCALE].check(name, song=song)
-        self._settings[ClipSlotSetting.SCALE] = name
+        self.set_written(name=ClipSlotSetting.SCALE, value=name, song=song)
 
     def get_register_sets(self):
         """Return what it sets registers to as it launches, a value for each register it sets."""
@@ -365,7 +348,6 @@ class ClipSlot(LlamaData):
         """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its generators or the one that makes it sit out."""
         return own_copy(self._settings[name] or [])
 
-    @notes_change
     def set_register_set(self, *, register, value):
         """Make it set a register to a value as it launches, or None to leave the register alone."""
         self._set_checked(name=ClipSlotSetting.SET_REGISTERS, value=with_register_value(values=self._settings[ClipSlotSetting.SET_REGISTERS], register=register, value=value))
@@ -380,19 +362,13 @@ class ClipSlot(LlamaData):
         """Write the statement at a place of one of its tables, add one just past the last, or remove one with None."""
         self._set_checked(name=name, value=with_statement(statements=self._settings[name], place=place, statement=statement))
 
-    @notes_change
     def _set_checked(self, *, name, value):
         """Keep a setting's new value once its description allows it, None leaving the setting out."""
-        if value is not None:
-            SETTINGS[name].check(value)
-        self._settings[name] = value
+        self.set_written(name=name, value=value)
 
-    @notes_change
     def set_follow_action(self, advance):
         """Set what it sends down in real-time playback when its scene is done, or None to take the set's default."""
-        if advance is not None:
-            SETTINGS[ClipSlotSetting.FOLLOW_ACTION].check(advance)
-        self._settings[ClipSlotSetting.FOLLOW_ACTION] = advance
+        self.set_written(name=ClipSlotSetting.FOLLOW_ACTION, value=advance)
 
     @notes_change
     def set_grab_track(self, *, name, song, own_track):
