@@ -34,7 +34,7 @@ import re
 import sys
 
 from llamatron.composition import file_format, row_descriptions
-from llamatron.composition.setlist import as_setlist_data
+from llamatron.composition.setlist_reader import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.music import note as note_values
 from llamatron.music.scale import ScaleType

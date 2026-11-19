@@ -40,7 +40,8 @@ import argparse
 import os
 import sys
 
-from llamatron.composition.setlist import file_stem, Setlist
+from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist_reader import file_stem
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import exports
 from llamatron.exporters.exports import export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path

@@ -44,7 +44,7 @@ import pathlib
 import re
 import sys
 
-from llamatron.composition.setlist import file_stem
+from llamatron.composition.setlist_reader import file_stem
 from llamatron.support.example_sets import example_sets
 from llamatron.support.safe_yaml import load_safely
 from llamatron.tui.document import Document

@@ -66,7 +66,7 @@ import sys
 import tempfile
 import time
 
-from llamatron.composition.setlist import file_stem
+from llamatron.composition.setlist_reader import file_stem
 from llamatron.music import midi
 from llamatron.realtime import fluidsynth as fluidsynth_values
 from llamatron.realtime.fluidsynth import fluidsynth_path, is_installed, soundfont_path

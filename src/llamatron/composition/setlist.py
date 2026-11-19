@@ -28,13 +28,12 @@ wrong, leaving the set as it was.
 
 import copy
 import os
-import yaml
 
 from llamatron.composition import checks, corrections as corrections_values, defaults, file_format, generator_settings, groove, limits as set_limits, sections
 from llamatron.composition.chain import Chain
-from llamatron.composition.checks import check_keys, is_whole_number, reading, written_length
+from llamatron.composition.checks import reading, written_length
 from llamatron.composition.corrections import Correction
-from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting, SongSetting
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
 from llamatron.composition.groove import check_groove_name, factory_groove, Groove, is_factory_groove
 from llamatron.composition.instrument import Instrument
 from llamatron.composition.invalid_value import InvalidValue
@@ -43,6 +42,7 @@ from llamatron.composition.named_items import NamedItems
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
 from llamatron.composition.pattern import held_add, Pattern
+from llamatron.composition.setlist_reader import as_a_set_is_written, closed_groups_held, file_data, file_stem, open_types_held, read_corrected
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.composition.song import Song, started_song
@@ -52,8 +52,7 @@ from llamatron.music.scale import ScaleType
 from llamatron.strings import errors, names as names_text
 from llamatron.support import files, version as version_values
 from llamatron.support.revised import notes_change
-from llamatron.support.safe_yaml import load_safely
-from llamatron.support.version import is_version, version_numbers
+from llamatron.support.version import is_version
 
 
 
@@ -87,8 +86,6 @@ SETTINGS = described(
 )
 # The settings whose message names the setting itself, so that a file's problem with one has no place in front of it.
 NAMED_BY_THEIR_MESSAGE = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION, SetlistSetting.NOTES)
-# The most corrections one file is given before it's refused, which only a correction that put nothing right could reach.
-MOST_CORRECTIONS = 10000
 # What a text setting is when the file leaves it out.
 NO_TEXT = ''
 # The class that reads each item of a section of the set.
@@ -107,11 +104,6 @@ SECTIONS_TAKEN_IN = [Section.SCALES, Section.PATTERNS, *file_format.NAMED_GENERA
 READ_WITH_THE_SET = (Section.CHAINS, Section.SONGS)
 # The scale a new set starts with, which can be deleted.
 DEFAULT_SCALE = 'scale-1'
-# The keys a file saved before SETLISTS_SINCE held at the top, which now belong to a song.
-ONE_SONG_KEYS = [
-    SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE,
-    Section.REGISTERS, Section.TRACKS, Section.SCENES,
-]
 
 
 # The starter pattern of a new set: one bar of sixteenths in 4/4, with the root on every beat, so
@@ -177,7 +169,7 @@ class Setlist(HoldsSettings):
         can never run code. A file saved before sets existed holds one song, which is named after
         the file.
         """
-        return cls.from_data(data=_file_data(path), one_song_name=file_stem(path))
+        return cls.from_data(data=file_data(path), one_song_name=file_stem(path))
 
     @classmethod
     def read_file_corrected(cls, path):
@@ -187,7 +179,7 @@ class Setlist(HoldsSettings):
         (SongFileError.get_correction). A problem with no correction still raises
         SongFileError. The file itself isn't changed.
         """
-        return cls.from_data_corrected(data=_file_data(path), one_song_name=file_stem(path))
+        return cls.from_data_corrected(data=file_data(path), one_song_name=file_stem(path))
 
     def write_file(self, path):
         """Write the set to a file, making any directories it needs. Every saved file records the version that wrote it."""
@@ -233,7 +225,7 @@ class Setlist(HoldsSettings):
         set holding that song under one_song_name.
         """
         setlist = cls()
-        written = _as_a_set_is_written(data=data, where=where, one_song_name=one_song_name)
+        written = as_a_set_is_written(data=data, where=where, one_song_name=one_song_name, allowed=SETTINGS)
         setlist._read(written)
         setlist._closed_groups = closed_groups_held(written)
         setlist._open_types = open_types_held(written)
@@ -249,20 +241,13 @@ class Setlist(HoldsSettings):
         problem with no correction raises SongFileError, as it does for from_data. The data
         given isn't changed.
         """
-        data = _as_a_set_is_written(data=copy.deepcopy(data), where=where, one_song_name=one_song_name)
-        corrections = []
-        while True:
-            try:
-                setlist = cls()
-                setlist._read(data)
-                return setlist, corrections
-            except SongFileError as problem:
-                correction = problem.get_correction()
-                # Each correction puts one wrong value right, so a file can't need more of them than MOST_CORRECTIONS unless one fails to.
-                if correction is None or len(corrections) >= MOST_CORRECTIONS:
-                    raise
-                correction.apply()
-                corrections.append(correction)
+        data = as_a_set_is_written(data=copy.deepcopy(data), where=where, one_song_name=one_song_name, allowed=SETTINGS)
+
+        def read(written):
+            setlist = cls()
+            setlist._read(written)
+            return setlist
+        return read_corrected(read=read, data=data)
 
     def restore(self, data):
         """Become what data says: data this set kept earlier (kept_data), which an undo or a redo goes back to.
@@ -1081,105 +1066,3 @@ class Setlist(HoldsSettings):
         """Return the names of the chains, in the set's order."""
         return self._section(Section.CHAINS).names()
 
-
-def file_stem(path):
-    """Return a file's name without its directory or suffix, which names an older file's one song."""
-    return os.path.splitext(os.path.basename(path))[0]
-
-
-def _file_data(path):
-    """Return the plain data a set file holds, or raise SongFileError if the file can't be read or isn't YAML.
-
-    The file is read with load_safely, which only ever makes plain data, so reading a file can
-    never run code.
-    """
-    try:
-        with open(path, encoding=files.FILE_ENCODING) as file:
-            return load_safely(file)
-    except OSError as error:
-        raise SongFileError(errors.ERR_CANT_READ.format(path=path, reason=error.strerror)) from error
-    except yaml.YAMLError as error:
-        raise SongFileError(errors.ERR_NOT_YAML.format(path=path, problem=error)) from error
-
-
-def closed_groups_held(data):
-    """Return the pattern groups a file's data shows closed: its list's names, and none where the file holds anything else, since a view's state is never worth refusing a file for."""
-    held = data.get(file_format.CLOSED_PATTERN_GROUPS)
-    if not isinstance(held, list):
-        return []
-    return [name for name in held if isinstance(name, str)]
-
-
-def open_types_held(data):
-    """Return the types of generator a file's data shows open: its list's kinds of generator, and none where the file holds anything else, as for the closed groups."""
-    held = data.get(file_format.OPEN_GENERATOR_TYPES)
-    if not isinstance(held, list):
-        return []
-    return [kind for kind in held if isinstance(kind, str) and kind in file_format.NAMED_GENERATORS]
-
-
-def _as_a_set_is_written(*, data, where, one_song_name):
-    """Return a file's data in the layout a set is written in now, or raise SongFileError if it isn't a set at all.
-
-    A file saved before sets existed becomes a set holding its one song under one_song_name, and
-    a file saved with Live's octave numbers has them moved to the numbering from C0.
-    """
-    # Every setting has a default, so an empty file is an empty set.
-    data = {} if data is None else data
-    if not isinstance(data, dict):
-        raise SongFileError(errors.ERR_NOT_A_SETLIST)
-    if holds_one_song(data):
-        data = as_setlist_data(data=data, song_name=one_song_name)
-    with reading(where):
-        check_keys(data=data, allowed={*SETTINGS, *sections.SETLIST_SECTIONS, file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES})
-    if _saved_before(data=data, version=file_format.LLAMATRON_OCTAVES_SINCE):
-        data = _with_live_octaves_moved_up(data)
-    if _saved_before(data=data, version=file_format.NOTES_SINCE) and SetlistSetting.DESCRIPTION in data:
-        data = _with_description_as_notes(data)
-    return data
-
-
-def _with_description_as_notes(data):
-    """Return a copy of an older file's data with its description, which was the long text, under notes."""
-    moved = dict(data)
-    moved[SetlistSetting.NOTES] = moved.pop(SetlistSetting.DESCRIPTION)
-    return moved
-
-
-def _saved_before(*, data, version):
-    """Return whether a file records being saved by a version of llamatron older than one.
-
-    A file with no version, or one that isn't a version, counts as current, and the usual checks
-    refuse the latter.
-    """
-    saved = data.get(SetlistSetting.VERSION)
-    return is_version(saved) and version_numbers(saved) < version_numbers(version)
-
-
-def holds_one_song(data):
-    """Return whether a file is from before sets existed, with one song's settings at the top and no songs section."""
-    if Section.SONGS in data:
-        return False
-    return _saved_before(data=data, version=file_format.SETLISTS_SINCE) or any(key in data for key in ONE_SONG_KEYS)
-
-
-def as_setlist_data(*, data, song_name):
-    """Return an older file's data as a set holding its one song under a name."""
-    moved = {key: value for key, value in data.items() if key not in ONE_SONG_KEYS}
-    moved[Section.SONGS] = {song_name: {key: data[key] for key in ONE_SONG_KEYS if key in data}}
-    return moved
-
-
-def _with_live_octaves_moved_up(data):
-    """Return a copy of an older file's data with every octave moved from Live's labels to the numbering from C0.
-
-    Only whole numbers move, so that anything else is still refused by the usual checks.
-    """
-    moved = dict(data)
-    for name in (SetlistSetting.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE):
-        if is_whole_number(moved.get(name)):
-            moved[name] = moved[name] + file_format.LIVE_OCTAVE_OFFSET
-    patterns = moved.get(Section.PATTERNS)
-    if isinstance(patterns, dict):
-        moved[Section.PATTERNS] = {name: Pattern.with_octaves_moved(data=pattern, offset=file_format.LIVE_OCTAVE_OFFSET) for name, pattern in patterns.items()}
-    return moved

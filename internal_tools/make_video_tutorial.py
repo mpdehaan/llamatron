@@ -61,7 +61,8 @@ import pty
 import subprocess
 import sys
 
-from llamatron.composition.setlist import file_stem, Setlist
+from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist_reader import file_stem
 from llamatron.realtime.outputs import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
