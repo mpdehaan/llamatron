@@ -1,0 +1,173 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""Tests of the Munge dialog in the pattern editor: its key, its sorted list, and what its newer choices ask and do with the cursor.
+
+The pattern has five steps whose degrees count from 1 to 5. What each choice does to a pattern is
+tested on Pattern alone, in tests/composition/test_pattern_munges.py.
+"""
+
+from llamatron.composition import limits
+from llamatron.composition.file_format import Row
+from llamatron.strings import errors, labels, messages
+from llamatron.tui import keybindings
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor
+from tests.support.pattern_editor_testing import munge
+from tests.support.ui_testing import BEAT, OTHER, UITest
+
+LONG = 'long'
+STEPS = 5
+ROWS = {Row.DEGREE: [1, 2, 3, 4, 5], Row.VELOCITY: [10, None, None, None, 50], Row.CC1: [0, None, 20, None, None], Row.CHORD: [7, None, None, None, None]}
+THIRD = 2
+TWO = '2'
+TOO_MANY = '6'
+NOT_A_NUMBER = 'many'
+# The one step of the pattern called other holds degree 5.
+OTHER_DEGREE = 5
+
+
+class TestMunge(UITest):
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.add_pattern_with_rows(name=LONG, steps=STEPS, rows=ROWS)
+        await self.open_patterns_on(LONG)
+        await self.press(Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
+        self.editor = self.app.screen
+
+    def row(self, *, row=None):
+        """Return a row of the pattern, its degrees unless another is named."""
+        row = Row.DEGREE if row is None else row
+        return self.document.song().get_pattern(LONG).get_row(row)
+
+    async def test_the_key_opens_the_choices_sorted_by_name_and_esc_changes_nothing(self):
+        await self.press(keybindings.PatternEditor.MUNGE)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        shown = self.app.screen.options
+        self.assertEqual(shown, sorted(labels.MSG_MUNGE_CHOICES, key=str.lower))
+        self.assertEqual(len(set(shown)), len([name for name in vars(Munge) if name.isupper()]))
+        # The list scrolls in a dialog that leaves room above and below.
+        self.assertLess(ChoiceDialog.SHOWN, len(shown))
+        await self.press(Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertEqual(self.row(), ROWS[Row.DEGREE])
+
+    async def test_a_copy_to_the_end_leaves_the_cursor_and_a_copy_before_the_start_keeps_it_on_its_note(self):
+        await self.press(Key.RIGHT, Key.RIGHT)
+        await munge(test=self, choice=Munge.COPY_BEFORE_TO_END)
+        self.assertEqual(self.row(), [1, 2, 3, 4, 5, 1, 2, 3])
+        self.assertEqual(self.editor.step, THIRD)
+        await munge(test=self, choice=Munge.COPY_BEFORE_TO_START)
+        self.assertEqual(self.row(), [1, 2, 3, 1, 2, 3, 4, 5, 1, 2, 3])
+        self.assertEqual(self.editor.step, THIRD + THIRD + 1)
+
+    async def test_the_copies_from_the_cursor(self):
+        await self.press(Key.RIGHT, Key.RIGHT)
+        await munge(test=self, choice=Munge.COPY_AFTER_TO_END)
+        self.assertEqual(self.row(), [1, 2, 3, 4, 5, 3, 4, 5])
+        await self.press(keybindings.Page.UNDO)
+        await munge(test=self, choice=Munge.COPY_AFTER_TO_START)
+        self.assertEqual(self.row(), [3, 4, 5, 1, 2, 3, 4, 5])
+
+    async def test_a_copy_that_would_pass_the_most_steps_is_refused(self):
+        self.document.set_steps(name=LONG, steps=limits.MAX_STEPS)
+        await self.press(Key.RIGHT)
+        for choice in (Munge.COPY_BEFORE_TO_END, Munge.MIRROR):
+            with self.subTest(choice=choice):
+                await munge(test=self, choice=choice)
+                self.assertEqual(self.document.song().get_pattern(LONG).get_steps(), limits.MAX_STEPS)
+                self.assertIn(errors.ERR_MUNGE_TOO_MANY_STEPS.format(steps=limits.MAX_STEPS * 2 if choice == Munge.MIRROR else limits.MAX_STEPS + 2, most=limits.MAX_STEPS), self.text())
+
+    async def test_a_roll_asks_how_many_steps_and_the_cursor_stays(self):
+        await self.press(Key.RIGHT)
+        await munge(test=self, choice=Munge.ROLL_LEFT)
+        self.assertIsInstance(self.app.screen, PromptDialog)
+        self.assertIn(messages.MSG_ROLL_LEFT_PROMPT, self.text())
+        await self.type(TWO)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.row(), [3, 4, 5, 1, 2])
+        self.assertEqual(self.editor.step, 1)
+        await munge(test=self, choice=Munge.ROLL_RIGHT)
+        self.assertIn(messages.MSG_ROLL_RIGHT_PROMPT, self.text())
+        await self.type(TWO)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.row(), ROWS[Row.DEGREE])
+
+    async def test_a_roll_of_too_many_steps_or_of_no_number_is_refused(self):
+        for typed, problem in ((TOO_MANY, errors.ERR_ROLL_OUT_OF_RANGE.format(low=1, high=STEPS)), (NOT_A_NUMBER, errors.ERR_TYPED_NOT_AN_INTEGER.format(text=NOT_A_NUMBER))):
+            with self.subTest(typed=typed):
+                await munge(test=self, choice=Munge.ROLL_LEFT)
+                await self.type(typed)
+                await self.press(Key.ENTER)
+                self.assertEqual(self.row(), ROWS[Row.DEGREE])
+                self.assertIn(problem, self.text())
+
+    async def test_the_shuffles_of_a_part(self):
+        await self.press(Key.RIGHT, Key.RIGHT)
+        await munge(test=self, choice=Munge.RANDOMIZE_AFTER)
+        self.assertEqual(self.row()[:THIRD], [1, 2])
+        await munge(test=self, choice=Munge.RANDOMIZE_BEFORE)
+        self.assertEqual(sorted(self.row()), ROWS[Row.DEGREE])
+
+    async def test_the_mirror_doubles_the_pattern(self):
+        await munge(test=self, choice=Munge.MIRROR)
+        self.assertEqual(self.row(), [1, 2, 3, 4, 5, 5, 4, 3, 2, 1])
+
+    async def test_the_choices_that_clear_and_smooth(self):
+        await munge(test=self, choice=Munge.SMOOTH_VELOCITY)
+        self.assertEqual(self.row(row=Row.VELOCITY), [10, 20, 30, 40, 50])
+        await munge(test=self, choice=Munge.SMOOTH_CCS)
+        self.assertEqual(self.row(row=Row.CC1), [0, 10, 20, None, None])
+        await munge(test=self, choice=Munge.CLEAR_CHORDS)
+        self.assertFalse(any(self.row(row=Row.CHORD) or []))
+        self.assertEqual(self.row(row=Row.VELOCITY), [10, 20, 30, 40, 50])
+        await munge(test=self, choice=Munge.CLEAR_ALL_BUT_PITCH)
+        self.assertFalse(any(self.row(row=Row.VELOCITY) or []))
+        self.assertFalse(any(self.row(row=Row.CC1) or []))
+        self.assertEqual(self.row(), ROWS[Row.DEGREE])
+
+    async def test_interleave_asks_for_another_pattern_and_puts_its_steps_between(self):
+        await self.press(Key.RIGHT)
+        await munge(test=self, choice=Munge.INTERLEAVE)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        self.assertIn(messages.MSG_INTERLEAVE_CHOICE_TITLE, self.text())
+        self.assertNotIn(LONG, self.app.screen.options)
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        self.assertEqual(self.row(), [1, OTHER_DEGREE, 2, OTHER_DEGREE, 3, OTHER_DEGREE, 4, OTHER_DEGREE, 5, OTHER_DEGREE])
+        # The cursor stays on its note.
+        self.assertEqual(self.editor.step, 2)
+        self.assertEqual(self.document.song().get_pattern(OTHER).get_steps(), 1)
+
+    async def test_splice_asks_for_another_pattern_and_adds_it_at_the_end(self):
+        await munge(test=self, choice=Munge.SPLICE)
+        self.assertIn(messages.MSG_SPLICE_CHOICE_TITLE, self.text())
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        self.assertEqual(self.row(), [*ROWS[Row.DEGREE], OTHER_DEGREE])
+        self.assertEqual(self.editor.step, 0)
+        await munge(test=self, choice=Munge.SPLICE_BEFORE)
+        self.assertIn(messages.MSG_SPLICE_BEFORE_CHOICE_TITLE, self.text())
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        self.assertEqual(self.row(), [OTHER_DEGREE, *ROWS[Row.DEGREE], OTHER_DEGREE])
+        self.assertEqual(self.editor.step, 1)
+
+    async def test_a_drum_pattern_is_not_interleaved_with_a_pattern_of_notes(self):
+        await munge(test=self, choice=Munge.INTERLEAVE)
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(BEAT), Key.ENTER)
+        self.assertEqual(self.row(), ROWS[Row.DEGREE])
+        self.assertIn(errors.ERR_INTERLEAVE_DRUM_MISMATCH, self.text())

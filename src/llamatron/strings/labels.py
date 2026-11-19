@@ -556,7 +556,15 @@ MSG_STEP_HEADING = ' Step'
 # A CC row's label says the CC number the tracks playing the pattern send on that lane, off for a lane that sends nothing, or ? when the tracks differ.
 MSG_CC_ROW_LABEL = '{label} ({number})'
 MSG_DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet'}
-MSG_MUNGE_CHOICES = ['reverse after step', 'reverse before step', 'reverse', 'pivot around step', 'randomize']
+MSG_MUNGE_CHOICES = [
+    'reverse after step', 'reverse before step', 'reverse', 'pivot around step', 'randomize',
+    'copy all at/before cursor to end', 'copy all at/after cursor to end', 'copy all at/before cursor before start', 'copy all at/after cursor before start',
+    'randomize at/after cursor', 'randomize at/before cursor',
+    'clear all data except pitch', 'clear all register modifications', 'clear all register conditions',
+    'roll left (N)', 'roll right (N)', 'clear chords',
+    'mirror', 'interleave (pattern)', 'smooth CCs', 'smooth velocity', 'smooth AX=', 'smooth BX=', 'smooth CX=', 'smooth DX=',
+    'splice (pattern)', 'splice before (pattern)',
+]
 # The clip page's extra choice, for a clip that follows its pattern's direction.
 MSG_PATTERN_DIRECTION_OPTION = '(pattern)'
 # What each chord symbol means, as the editor describes it.

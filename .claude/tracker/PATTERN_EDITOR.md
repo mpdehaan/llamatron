@@ -40,12 +40,21 @@ roll or the rows.
   time, so a scene renamed under the clip page renames the editor's crumbs too.
 - `S` sizes the pattern (`keybindings.PatternEditor.RESIZE`). On the rows, `I` and `D` insert and remove a step.
 - `R` (`keybindings.PatternEditor.RECONFIGURE`) opens the Reconfigure `ChoiceDialog` (`MSG_RECONFIGURE_TITLE`,
-  `reconfigure_choices`, indexed by the `Reconfigure` class): munge, load over, step size, time
+  `reconfigure_choices`, indexed by the `Reconfigure` class): load over, step size, time
   signature, drum on or off, direction, rename.
-- Munge opens a `ChoiceDialog` (`MSG_MUNGE_CHOICES`, indexed by the `Munge` class): reverse after
-  the cursor, reverse before it, reverse all, pivot around it, or randomize, which shuffles the
-  steps unseeded as an ordinary edit. Each is a `Pattern` method. The cursor stays on its step, so
-  that choosing a reverse or the pivot again undoes it.
+- `M` (`keybindings.PatternEditor.MUNGE`) opens Munge, a `ChoiceDialog` of `MSG_MUNGE_CHOICES`, the user's design: each choice
+  is its place in that list (the `Munge` class), and the dialog always lists them sorted by name (`munges_in_order`), so a
+  new choice is appended to the list and the class and sorts itself. The choices: the reverses, pivot and randomize; the four
+  copies of the steps at and before, or at and after, the cursor to the end or before the start; randomize of either part;
+  roll left and right, which ask for a number from 1 to the pattern's steps; mirror; interleave, splice and splice before,
+  which ask for another pattern of the same kind, drum or not; the clears (all data except pitch, `PITCH_ROWS`; chords,
+  `CHORD_ROWS`; register modifications, the `=` and `+=` rows only; register conditions, the When statements); and the
+  smooths (CCs, velocity on steps that play, and each register's `=` row), which fill the blanks between two values from a
+  straight line and leave the ends blank. Each is a `Pattern` method, made through `Document.munge_pattern(name=, way=)`;
+  `Pattern.take_steps(order)` is the one that copies and reorders steps, and never leaves a Restart When on the first step.
+  A choice that would pass `MAX_STEPS` is refused on the status line. The cursor stays on its step after a reverse, a pivot
+  or a roll, and on its note after steps are put in front. Categories for the dialog are under discussion with the user.
+  `tests/composition/test_pattern_munges.py`, `tests/tui/test_tui_munge.py`.
 - Load over loads a copy of another pattern over this one. Drum on or off always asks first
   (`MSG_CHANGE_TYPE_EMPTY_QUESTION` when there are no notes to lose).
 - Typing never moves the cursor or grows the grid. Digits build up a number in a cell until the

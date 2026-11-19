@@ -17,6 +17,8 @@
 """The Document's edits to patterns, and the answers the pattern editor asks about one: its notes as the piano roll sees them, its scales and its octaves."""
 
 
+from types import MethodType
+
 from llamatron.composition.file_format import Section
 from llamatron.composition import limits
 from llamatron.composition.pattern import Pattern
@@ -271,6 +273,10 @@ class PatternEdits:
     def shuffle_steps(self, name):
         """Put the steps in a random order, drawn from the program's own random stream rather than any seed."""
         self._change(self._pattern(name).shuffle)
+
+    def munge_pattern(self, *, name, way, **named):
+        """Change a pattern as one of the Munge dialog's choices does: way is the method of Pattern that makes the edit, called with what is named, and what it returns is returned."""
+        return self._change(MethodType(way, self._pattern(name)), **named)
 
     def load_over(self, *, name, other):
         """Replace a pattern's contents with a copy of another's, keeping its name."""

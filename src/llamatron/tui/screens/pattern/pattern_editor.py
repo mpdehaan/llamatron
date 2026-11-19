@@ -40,8 +40,9 @@ on the rows.
 
 
 from llamatron.composition.checks import is_written_length
-from llamatron.composition.file_format import DIRECTIONS, Row, Section
+from llamatron.composition.file_format import DIRECTIONS, REGISTER_NAMES, Row, Section
 from llamatron.composition import limits
+from llamatron.composition.pattern import Pattern
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
@@ -69,35 +70,82 @@ def direction_choices(directions):
 
 
 class Munge:
-    """The munge dialog's choices, in the order of MSG_MUNGE_CHOICES."""
+    """The munge dialog's choices, each its place in MSG_MUNGE_CHOICES; the dialog lists them sorted by name."""
 
     REVERSE_AFTER = 0
     REVERSE_BEFORE = 1
     REVERSE = 2
     PIVOT = 3
     RANDOMIZE = 4
+    COPY_BEFORE_TO_END = 5
+    COPY_AFTER_TO_END = 6
+    COPY_BEFORE_TO_START = 7
+    COPY_AFTER_TO_START = 8
+    RANDOMIZE_AFTER = 9
+    RANDOMIZE_BEFORE = 10
+    CLEAR_ALL_BUT_PITCH = 11
+    CLEAR_REGISTER_CHANGES = 12
+    CLEAR_STATEMENTS = 13
+    ROLL_LEFT = 14
+    ROLL_RIGHT = 15
+    CLEAR_CHORDS = 16
+    MIRROR = 17
+    INTERLEAVE = 18
+    SMOOTH_CCS = 19
+    SMOOTH_VELOCITY = 20
+    SMOOTH_AX = 21
+    SMOOTH_BX = 22
+    SMOOTH_CX = 23
+    SMOOTH_DX = 24
+    SPLICE = 25
+    SPLICE_BEFORE = 26
+
+
+def munges_in_order():
+    """Return the munge dialog's choices, each as its place in MSG_MUNGE_CHOICES, sorted by name, the order the dialog lists them in whatever is added."""
+    return sorted(range(len(labels.MSG_MUNGE_CHOICES)), key=lambda choice: labels.MSG_MUNGE_CHOICES[choice].lower())
 
 
 # The scale lengths a pattern can be written for, in the order the picker lists them after any.
 SCALE_LENGTHS = tuple(range(limits.MIN_SCALE_LENGTH, limits.MAX_SCALE_LENGTH + 1))
 
 
+# The fewest steps a pattern is rolled.
+FIRST_ROLL = 1
+# The munges that blank or fill rows of every step and need nothing else, each with the method of Pattern that does it.
+CLEARING = {
+    Munge.CLEAR_ALL_BUT_PITCH: Pattern.clear_all_but_pitch,
+    Munge.CLEAR_REGISTER_CHANGES: Pattern.clear_register_changes,
+    Munge.CLEAR_STATEMENTS: Pattern.clear_statements,
+    Munge.CLEAR_CHORDS: Pattern.clear_chords,
+    Munge.SMOOTH_CCS: Pattern.smooth_ccs,
+    Munge.SMOOTH_VELOCITY: Pattern.smooth_velocity,
+}
+# The munges that take steps from another pattern, each with the title of the picker that asks which.
+OTHER_PATTERN_TITLES = {
+    Munge.INTERLEAVE: messages.MSG_INTERLEAVE_CHOICE_TITLE,
+    Munge.SPLICE: messages.MSG_SPLICE_CHOICE_TITLE,
+    Munge.SPLICE_BEFORE: messages.MSG_SPLICE_BEFORE_CHOICE_TITLE,
+}
+# The munges that smooth the row setting one register.
+SMOOTHED_REGISTERS = dict(zip((Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX), REGISTER_NAMES))
+
+
 class Reconfigure:
     """The Reconfigure dialog's choices, in the order reconfigure_choices lists them: the whole-pattern actions that R gathers, so that the legend stays short."""
 
-    MUNGE = 0
-    LOAD_OVER = 1
-    STEP_SIZE = 2
-    TIME_SIGNATURE = 3
-    DRUM = 4
-    DIRECTION = 5
-    RENAME = 6
-    SCALE_LENGTH = 7
+    LOAD_OVER = 0
+    STEP_SIZE = 1
+    TIME_SIGNATURE = 2
+    DRUM = 3
+    DIRECTION = 4
+    RENAME = 5
+    SCALE_LENGTH = 6
 
 
 def reconfigure_choices(*, drum):
     """Return the Reconfigure dialog's options, in the order of the Reconfigure class, with the drum entry saying which way it switches. The scale length is last and offered only for a pattern that is not a drum pattern, which has none."""
-    choices = [legends.What.MUNGE, legends.MSG_LOAD_OVER_WHAT, legends.MSG_STEP_SIZE_WHAT, legends.MSG_TIME_SIGNATURE_WHAT, legends.MSG_DRUM_OFF_WHAT if drum else legends.MSG_DRUM_ON_WHAT, legends.MSG_DIRECTION_WHAT, legends.What.RENAME]
+    choices = [legends.MSG_LOAD_OVER_WHAT, legends.MSG_STEP_SIZE_WHAT, legends.MSG_TIME_SIGNATURE_WHAT, legends.MSG_DRUM_OFF_WHAT if drum else legends.MSG_DRUM_ON_WHAT, legends.MSG_DIRECTION_WHAT, legends.What.RENAME]
     return choices if drum else [*choices, legends.MSG_SCALE_LENGTH_WHAT]
 
 
@@ -252,6 +300,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         result += view.step_keys(can_remove=self.steps() > 1 and not view.takes_note_letters())
         result += [
             self.bind(self.KEYS.RESIZE, action=self.ask_steps),
+            self.bind(self.KEYS.MUNGE, action=self.munge),
             self.bind(self.KEYS.RECONFIGURE, action=self.reconfigure),
             self.bind(self.KEYS.RENAME, action=self.rename),
             *pattern_listen_keys(page=self, pattern=self.item),
@@ -269,7 +318,6 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def reconfigure_as(self, choice):
         actions = {
-            Reconfigure.MUNGE: self.munge,
             Reconfigure.LOAD_OVER: self.load_over,
             Reconfigure.STEP_SIZE: self.ask_step_size,
             Reconfigure.TIME_SIGNATURE: self.ask_time_signature,
@@ -338,37 +386,117 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         )
 
     def munge(self):
-        """Offer the ways of rearranging the steps around the cursor, and do the chosen one."""
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_MUNGE_TITLE, options=labels.MSG_MUNGE_CHOICES), then=self.munge_as)
+        """Offer the ways of rearranging, copying and clearing the steps, sorted by name, and do the chosen one."""
+        order = munges_in_order()
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_MUNGE_TITLE, options=[labels.MSG_MUNGE_CHOICES[choice] for choice in order]), then=lambda place: self.munge_as(order[place]))
 
     def munge_as(self, choice):
-        """Rearrange the steps one way, with the cursor staying on its step, so that choosing the same way again undoes it."""
+        """Do one of the munge dialog's choices. A rearranging leaves the cursor on its step, so that choosing the same way again undoes it."""
         name = self.item
+        document = self.document()
+        last = self.steps() - 1
         if choice == Munge.REVERSE_AFTER:
-            if self.step >= self.steps() - 1:
+            if self.step >= last:
                 self.refuse(errors.ERR_NOTHING_AFTER)
                 return
-            self.document().reverse_after(name=name, step=self.step)
+            document.reverse_after(name=name, step=self.step)
         elif choice == Munge.REVERSE_BEFORE:
             if self.step == 0:
                 self.refuse(errors.ERR_NOTHING_BEFORE)
                 return
-            self.document().reverse_before(name=name, step=self.step)
+            document.reverse_before(name=name, step=self.step)
         elif choice == Munge.REVERSE:
             if self.steps() < 2:
                 self.refuse(errors.ERR_ONE_STEP)
                 return
-            self.document().reverse_steps(name)
+            document.reverse_steps(name)
         elif choice == Munge.PIVOT:
             if self.steps() < 2:
                 self.refuse(errors.ERR_NOTHING_TO_PIVOT)
                 return
-            self.step = self.document().pivot_around(name=name, step=self.step)
-        elif choice == Munge.RANDOMIZE:
+            self.step = document.pivot_around(name=name, step=self.step)
+        elif choice in (Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE):
             if self.steps() < 2:
                 self.refuse(errors.ERR_ONE_STEP)
                 return
-            self.document().shuffle_steps(name)
+            if choice == Munge.RANDOMIZE:
+                document.shuffle_steps(name)
+            else:
+                document.munge_pattern(name=name, way=Pattern.shuffle_from if choice == Munge.RANDOMIZE_AFTER else Pattern.shuffle_through, step=self.step)
+        elif choice in (Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START):
+            self.copy_steps(choice)
+        elif choice in (Munge.ROLL_LEFT, Munge.ROLL_RIGHT):
+            self.ask_roll(left=choice == Munge.ROLL_LEFT)
+        elif choice == Munge.MIRROR:
+            if self.grown_too_long(self.steps() * 2):
+                return
+            document.munge_pattern(name=name, way=Pattern.mirror)
+        elif choice in OTHER_PATTERN_TITLES:
+            self.pick_other_pattern(choice)
+        elif choice in SMOOTHED_REGISTERS:
+            document.munge_pattern(name=name, way=Pattern.smooth_register_sets, register=SMOOTHED_REGISTERS[choice])
+        else:
+            document.munge_pattern(name=name, way=CLEARING[choice])
+
+    def copy_steps(self, choice):
+        """Copy the cursor's step with the steps before it, or with the steps after it, to the end of the pattern or before its start, unless the pattern would hold too many steps.
+
+        After a copy before the start the cursor stays on the note it was on, which the copy moved along.
+        """
+        before = choice in (Munge.COPY_BEFORE_TO_END, Munge.COPY_BEFORE_TO_START)
+        first = 0 if before else self.step
+        last = self.step if before else self.steps() - 1
+        copied = last - first + 1
+        if self.grown_too_long(self.steps() + copied):
+            return
+        to_start = choice in (Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START)
+        self.document().munge_pattern(name=self.item, way=Pattern.repeat_at_start if to_start else Pattern.repeat_at_end, first=first, last=last)
+        if to_start:
+            self.step += copied
+
+    def grown_too_long(self, steps):
+        """Return whether a pattern of so many steps would hold more than a pattern may, saying so on the status line when it would."""
+        if steps > limits.MAX_STEPS:
+            self.refuse(errors.ERR_MUNGE_TOO_MANY_STEPS.format(steps=steps, most=limits.MAX_STEPS))
+        return steps > limits.MAX_STEPS
+
+    def pick_other_pattern(self, choice):
+        """Choose another pattern and take its steps into this one, leaving the other as it is: spliced after the last step, spliced before the first, or interleaved, one after each step, which makes this one twice as long. The cursor stays on its note."""
+        others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)
+        if not others:
+            self.refuse(errors.ERR_NO_OTHER_PATTERNS)
+            return
+
+        def chosen(place):
+            other = self.document().song().get_pattern(others[place])
+            added = self.steps() if choice == Munge.INTERLEAVE else other.get_steps()
+            if other.is_drum() != self.is_drum():
+                self.refuse(errors.ERR_INTERLEAVE_DRUM_MISMATCH)
+                return
+            if self.grown_too_long(self.steps() + added):
+                return
+            if choice == Munge.INTERLEAVE:
+                self.document().munge_pattern(name=self.item, way=Pattern.interleave, other=other)
+                self.step *= 2
+                return
+            self.document().munge_pattern(name=self.item, way=Pattern.splice, other=other, before=choice == Munge.SPLICE_BEFORE)
+            if choice == Munge.SPLICE_BEFORE:
+                self.step += added
+        self.ask(dialog=ChoiceDialog(title=OTHER_PATTERN_TITLES[choice], options=others), then=chosen)
+
+    def ask_roll(self, *, left):
+        """Ask how many steps to turn the pattern, and turn it: a step pushed off one end comes in at the other. The cursor stays on its step."""
+        def answered(text):
+            try:
+                steps = int(text.strip())
+            except ValueError:
+                self.refuse(errors.ERR_TYPED_NOT_AN_INTEGER.format(text=text))
+                return
+            if not FIRST_ROLL <= steps <= self.steps():
+                self.refuse(errors.ERR_ROLL_OUT_OF_RANGE.format(low=FIRST_ROLL, high=self.steps()))
+                return
+            self.document().munge_pattern(name=self.item, way=Pattern.roll, steps=steps if left else -steps)
+        self.ask(dialog=PromptDialog(title=messages.MSG_ROLL_LEFT_PROMPT if left else messages.MSG_ROLL_RIGHT_PROMPT, value=NOTHING), then=answered)
 
     def load_over(self):
         others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)

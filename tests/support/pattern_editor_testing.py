@@ -19,7 +19,7 @@
 from tests.support.ui_testing import UITest
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
+from llamatron.tui.screens.pattern.pattern_editor import munges_in_order
 from llamatron.strings import labels
 from llamatron.tui import keybindings
 
@@ -37,10 +37,11 @@ async def open_section(*, test, section):
 
 async def munge(*, test, choice):
     """Open the munge dialog in a test's editor and pick one of its ways of rearranging the steps."""
-    await test.reconfigure(Reconfigure.MUNGE)
+    await test.press(keybindings.PatternEditor.MUNGE)
     test.assertIsInstance(test.app.screen, ChoiceDialog)
-    test.assertEqual(test.app.screen.options, labels.MSG_MUNGE_CHOICES)
-    await test.press(*([Key.DOWN] * choice), Key.ENTER)
+    order = munges_in_order()
+    test.assertEqual(test.app.screen.options, [labels.MSG_MUNGE_CHOICES[place] for place in order])
+    await test.press(*([Key.DOWN] * order.index(choice)), Key.ENTER)
 
 
 class PatternEditorTest(UITest):

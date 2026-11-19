@@ -120,7 +120,6 @@ These keys work throughout the rows view:
 
 | Choice | What it does |
 | --- | --- |
-| `munge` | Rearrange the steps around the cursor, choosing from the list below |
 | `load over` | Load a copy of another pattern over this one, asking first if this one has notes |
 | `step size` | The pattern's own step size, typed as a whole number or a fraction like 1/8. Leave it blank to use the song's. |
 | `time signature` | The pattern's own time signature, typed like 3/4, for a pattern in another meter than the song. Leave it blank to use the song's. The time signature changes which steps are marked as beats, and the grid of the pattern's clips in Live. |
@@ -128,17 +127,38 @@ These keys work throughout the rows view:
 | `direction` | The play direction |
 | `rename` | Rename the pattern |
 
-`munge` opens a list of ways to rearrange the steps around the cursor:
+### Munge
+
+`M` (Munge) opens a list of ways to rearrange, copy and clear the pattern's steps, sorted by name. Typing searches the list. Many of the choices work around the step the cursor is on, and every choice is one change to undo. In the examples, a pattern's steps are written A B C D E F G H and the cursor is on C.
 
 | Choice | What it does |
 | --- | --- |
-| reverse after step | Reverse every step after the cursor |
-| reverse before step | Reverse every step before the cursor |
-| reverse | Reverse the whole pattern |
+| clear all data except pitch | Blank everything but which notes play: Degree, Octave, #/b and the chord rows stay, and every note goes back to one step long |
+| clear all register conditions | Blank every step's Stop When, Restart When and Mute When |
+| clear all register modifications | Blank the rows that set a register and that add to one; the rows that use a register stay |
+| clear chords | Blank every chord, with its tension, scale and inversion, leaving the note each chord was built on |
+| copy all at/after cursor before start | C D E F G H A B C D E F G H |
+| copy all at/after cursor to end | A B C D E F G H C D E F G H |
+| copy all at/before cursor before start | A B C A B C D E F G H |
+| copy all at/before cursor to end | A B C D E F G H A B C |
+| interleave (pattern) | Asks for another pattern and puts one of its steps after each step of this one, which is then twice as long: A w B x C y and so on. The other pattern is read round and round, and is not changed |
+| mirror | Add the steps again, backwards: A B C D becomes A B C D D C B A |
 | pivot around step | Swap what's before the cursor with what's after it |
 | randomize | Shuffle the steps into a random order. The shuffle is an ordinary edit, not seeded, so every randomize is different. |
+| randomize at/after cursor | Shuffle the cursor's step and the steps after it among themselves |
+| randomize at/before cursor | Shuffle the cursor's step and the steps before it among themselves |
+| reverse | Reverse the whole pattern |
+| reverse after step | Reverse every step after the cursor |
+| reverse before step | Reverse every step before the cursor |
+| roll left (N), roll right (N) | Asks how many steps and turns the pattern that far: a step pushed off one end comes in at the other. Rolling A B C D E F G H left 3 gives D E F G H A B C |
+| smooth AX=, smooth BX=, smooth CX=, smooth DX= | On the row that sets the register, fill the blank steps between two values from a straight line between them |
+| smooth CCs | The same on each of CC 1 to CC 4: 20, blank, blank, blank, 100 becomes 20, 40, 60, 80, 100. The Slide row makes a finer sweep as the pattern plays; smooth CCs writes the values where they can be seen and changed |
+| smooth velocity | The same on Velocity, on the steps that hold a note |
+| splice (pattern), splice before (pattern) | Asks for another pattern and adds a copy of its steps after this one's last step, or before its first |
 
-The cursor stays on its step, so choosing the same reverse or pivot again undoes it. On a drum pattern's Note row, `D` types the note D, so move to another row to remove a step.
+A choice that would make the pattern longer than a pattern may be is refused, and a drum pattern is never combined with a pattern of notes. After a reverse, a pivot or a roll the cursor stays on its step; after steps are added in front, the cursor stays on its note.
+
+Choosing the same reverse or pivot again undoes it. On a drum pattern's Note row, `D` types the note D, so move to another row to remove a step.
 
 ## Rows and Sections
 

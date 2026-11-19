@@ -689,12 +689,14 @@ class PatternEditor(StepEditor):
     TO_EDITOR = (Key.TAB, legends.KeyName.TAB, legends.MSG_TO_EDITOR_WHAT)
     RESIZE = (Key.S, legends.KeyName.S, legends.MSG_SIZE_WHAT)
     RECONFIGURE = (Key.R, legends.KeyName.R, legends.MSG_RECONFIGURE_WHAT)
+    # M opens Munge, the list of ways to rearrange, copy and clear the pattern's steps, many of them around the cursor.
+    MUNGE = (Key.M, legends.KeyName.M, legends.What.MUNGE)
     # Real-time playback: L plays the pattern at once through the pattern preview, looping until L again stops it.
     LISTEN = (Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = (Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     # F2 renames the pattern, as on Windows, beside rename in R's menu; off the legend.
     RENAME = (Key.F2, legends.KeyName.F2, legends.What.RENAME)
-    IN_HELP = [Page.BACK, TO_ROLL, TO_EDITOR, RESIZE, RECONFIGURE, LISTEN, STOP_LISTENING, RENAME]
+    IN_HELP = [Page.BACK, TO_ROLL, TO_EDITOR, RESIZE, MUNGE, RECONFIGURE, LISTEN, STOP_LISTENING, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
 

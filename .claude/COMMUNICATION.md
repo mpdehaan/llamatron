@@ -353,7 +353,7 @@ row says which, and a reply says which too.
 | ghosts | the thin dim lines of a chord's other notes on the piano roll | `ghost_cell`, `ghosts_of` |
 | entry size | Entry size, how long a note drawn on the piano roll lasts | `entry_size` |
 | grab | the Grab row of a pattern and the Grab track of a clip | `grab`, `grab_track`, `GrabRow` |
-| munge | Munge, under `R` in the pattern editor | `Munge`, and `Pattern`'s reverse, pivot and shuffle methods |
+| munge | Munge, `M` in the pattern editor | `Munge`, `munges_in_order`, and `Pattern`'s methods that rearrange, copy, clear and smooth its steps |
 | reconfigure | the dialog `R` opens in the pattern editor | `Reconfigure` |
 | generators, arps, AutoRatchets | Generators, with Arpeggiators and AutoRatchets under it | `Arp`, `AutoRatchet`, `ArpSettings`, `AutoRatchetSettings` |
 | chain | a chain of generators a clip runs | `Chain` |

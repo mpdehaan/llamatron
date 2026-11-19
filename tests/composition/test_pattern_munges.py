@@ -1,0 +1,218 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""Tests of the ways the Munge dialog changes a pattern, on Pattern alone: copies of steps, rolls, shuffles of a part, a mirror, an interleave, the rows cleared and the rows smoothed.
+
+The pattern has eight steps whose degrees count from 1 to 8, so that a step is known by its degree
+wherever it goes, with a velocity on every step that moves with the step.
+"""
+
+import unittest
+
+from llamatron.composition import limits
+from llamatron.composition.file_format import Operator, PatternSetting, RegisterName, Row, StatementPart, StepStatement
+from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.pattern import Pattern
+
+HERE = 'a test'
+STEPS = 8
+DEGREES = [1, 2, 3, 4, 5, 6, 7, 8]
+VELOCITIES = [10, 20, 30, 40, 50, 60, 70, 80]
+# The cursor's step in the examples: the third.
+THIRD = 2
+OTHER_DEGREES = [7, 6, 5]
+QUARTER = '1/4'
+MAJOR_SEVENTH = 7
+LOW = 20
+HIGH = 100
+A_STATEMENT = {StatementPart.REGISTER: RegisterName.AX, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: 1}
+FIFTH = 4
+
+
+def pattern_of(*, degrees=None, drum=None, **rows):
+    """Return a pattern of the given degrees, the eight by default, with any other rows."""
+    degrees = DEGREES if degrees is None else degrees
+    data = {PatternSetting.STEPS: len(degrees), Row.DEGREE: list(degrees), **rows}
+    if drum:
+        data[PatternSetting.DRUM] = True
+    return Pattern.from_data(data=data, where=HERE)
+
+
+class TestCopiesOfSteps(unittest.TestCase):
+
+    def test_the_steps_through_the_cursor_are_copied_to_the_end(self):
+        pattern = pattern_of(**{Row.VELOCITY: VELOCITIES})
+        pattern.repeat_at_end(first=0, last=THIRD)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3])
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [*VELOCITIES, 10, 20, 30])
+        self.assertEqual(pattern.get_steps(), STEPS + 3)
+
+    def test_the_steps_from_the_cursor_are_copied_to_the_end(self):
+        pattern = pattern_of()
+        pattern.repeat_at_end(first=THIRD, last=STEPS - 1)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 2, 3, 4, 5, 6, 7, 8, 3, 4, 5, 6, 7, 8])
+
+    def test_steps_are_copied_before_the_start(self):
+        pattern = pattern_of()
+        pattern.repeat_at_start(first=0, last=THIRD)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 2, 3, 1, 2, 3, 4, 5, 6, 7, 8])
+        pattern = pattern_of()
+        pattern.repeat_at_start(first=THIRD, last=STEPS - 1)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8])
+
+    def test_a_copy_past_the_most_steps_is_refused(self):
+        pattern = pattern_of()
+        with self.assertRaises(InvalidValue):
+            pattern.take_steps([0] * (limits.MAX_STEPS + 1))
+        self.assertEqual(pattern.get_steps(), STEPS)
+
+    def test_a_statement_that_starts_the_pattern_over_never_lands_on_the_first_step(self):
+        pattern = pattern_of()
+        pattern.set_statement(kind=StepStatement.RESTART, step=THIRD, statement=A_STATEMENT)
+        pattern.repeat_at_start(first=THIRD, last=THIRD)
+        self.assertIsNone(pattern.get_statement(kind=StepStatement.RESTART, step=0))
+        self.assertEqual(pattern.get_statement(kind=StepStatement.RESTART, step=THIRD + 1), A_STATEMENT)
+
+    def test_a_mirror_adds_the_steps_backwards(self):
+        pattern = pattern_of(degrees=[1, 2, 3, 4])
+        pattern.mirror()
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 2, 3, 4, 4, 3, 2, 1])
+
+
+class TestRollsAndShuffles(unittest.TestCase):
+
+    def test_a_roll_left_sends_the_first_steps_round_to_the_end(self):
+        pattern = pattern_of(**{Row.VELOCITY: VELOCITIES})
+        pattern.roll(3)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [4, 5, 6, 7, 8, 1, 2, 3])
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [40, 50, 60, 70, 80, 10, 20, 30])
+
+    def test_a_roll_right_sends_the_last_steps_round_to_the_start(self):
+        pattern = pattern_of()
+        pattern.roll(-3)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [6, 7, 8, 1, 2, 3, 4, 5])
+
+    def test_a_full_turn_changes_nothing(self):
+        pattern = pattern_of()
+        pattern.roll(STEPS)
+        self.assertEqual(pattern.get_row(Row.DEGREE), DEGREES)
+
+    def test_a_shuffle_from_a_step_leaves_the_steps_before_it(self):
+        pattern = pattern_of()
+        pattern.shuffle_from(THIRD)
+        self.assertEqual(pattern.get_row(Row.DEGREE)[:THIRD], DEGREES[:THIRD])
+        self.assertEqual(sorted(pattern.get_row(Row.DEGREE)[THIRD:]), DEGREES[THIRD:])
+
+    def test_a_shuffle_through_a_step_leaves_the_steps_after_it(self):
+        pattern = pattern_of()
+        pattern.shuffle_through(THIRD)
+        self.assertEqual(pattern.get_row(Row.DEGREE)[THIRD + 1:], DEGREES[THIRD + 1:])
+        self.assertEqual(sorted(pattern.get_row(Row.DEGREE)[:THIRD + 1]), DEGREES[:THIRD + 1])
+
+
+class TestInterleaving(unittest.TestCase):
+
+    def test_the_other_pattern_s_steps_go_between_and_are_read_round(self):
+        pattern = pattern_of(degrees=[1, 2, 3, 4], **{Row.VELOCITY: [10, 20, 30, 40]})
+        other = pattern_of(degrees=OTHER_DEGREES)
+        pattern.interleave(other)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 7, 2, 6, 3, 5, 4, 7])
+        # A row only one of the two holds is blank on the other's steps.
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [10, None, 20, None, 30, None, 40, None])
+        self.assertEqual(other.get_row(Row.DEGREE), OTHER_DEGREES)
+
+    def test_a_longer_pattern_gives_only_as_many_steps_as_are_needed(self):
+        pattern = pattern_of(degrees=[1, 2])
+        pattern.interleave(pattern_of())
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 1, 2, 2])
+
+    def test_a_splice_adds_the_other_pattern_after_the_last_step(self):
+        pattern = pattern_of(degrees=[1, 2], **{Row.VELOCITY: [10, 20]})
+        other = pattern_of(degrees=OTHER_DEGREES, **{Row.CC1: [1, 2, 3]})
+        pattern.splice(other=other)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [1, 2, *OTHER_DEGREES])
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [10, 20, None, None, None])
+        self.assertEqual(pattern.get_row(Row.CC1), [None, None, 1, 2, 3])
+        self.assertEqual(other.get_steps(), len(OTHER_DEGREES))
+        with self.assertRaises(InvalidValue):
+            pattern.splice(other=pattern_of(degrees=[None], drum=True))
+        pattern.splice(other=pattern_of(degrees=[8]), before=True)
+        self.assertEqual(pattern.get_row(Row.DEGREE), [8, 1, 2, *OTHER_DEGREES])
+
+    def test_a_drum_pattern_and_a_pattern_of_notes_are_refused(self):
+        pattern = pattern_of()
+        with self.assertRaises(InvalidValue):
+            pattern.interleave(pattern_of(degrees=[None, None], drum=True))
+        self.assertEqual(pattern.get_steps(), STEPS)
+
+
+class TestClearing(unittest.TestCase):
+
+    def test_everything_but_pitch_is_cleared(self):
+        pattern = pattern_of(**{Row.VELOCITY: VELOCITIES, Row.GATE: [QUARTER] * STEPS, Row.CHORD: [MAJOR_SEVENTH] * STEPS, Row.OCTAVE: [4] * STEPS, Row.CC1: VELOCITIES, Row.AX_ADD: [1] * STEPS})
+        pattern.clear_all_but_pitch()
+        self.assertEqual(pattern.get_row(Row.DEGREE), DEGREES)
+        self.assertEqual(pattern.get_row(Row.CHORD), [MAJOR_SEVENTH] * STEPS)
+        self.assertEqual(pattern.get_row(Row.OCTAVE), [4] * STEPS)
+        for row in (Row.VELOCITY, Row.GATE, Row.CC1, Row.AX_ADD):
+            with self.subTest(row=row):
+                self.assertFalse(any(pattern.get_row(row)))
+
+    def test_chords_are_cleared_and_their_notes_stay(self):
+        pattern = pattern_of(**{Row.CHORD: [MAJOR_SEVENTH] * STEPS, Row.INVERSION: [1] * STEPS, Row.VELOCITY: VELOCITIES})
+        pattern.clear_chords()
+        self.assertFalse(any(pattern.get_row(Row.CHORD)))
+        self.assertFalse(any(pattern.get_row(Row.INVERSION)))
+        self.assertEqual(pattern.get_row(Row.DEGREE), DEGREES)
+        self.assertEqual(pattern.get_row(Row.VELOCITY), VELOCITIES)
+
+    def test_register_changes_are_cleared_and_the_rows_that_use_a_register_stay(self):
+        pattern = pattern_of(**{Row.AX_ADD: [1] * STEPS, Row.BX_SET: [5] * STEPS, Row.AX_NOTE: [1] * STEPS})
+        pattern.clear_register_changes()
+        self.assertFalse(pattern.changes_registers())
+        self.assertEqual(pattern.get_row(Row.AX_NOTE), [1] * STEPS)
+
+    def test_statements_are_cleared_and_register_changes_stay(self):
+        pattern = pattern_of(**{Row.AX_ADD: [1] * STEPS})
+        pattern.set_statement(kind=StepStatement.MUTE, step=THIRD, statement=A_STATEMENT)
+        pattern.set_statement(kind=StepStatement.STOP, step=THIRD, statement=A_STATEMENT)
+        pattern.clear_statements()
+        self.assertFalse(pattern.has_statements(StepStatement.MUTE))
+        self.assertFalse(pattern.has_statements(StepStatement.STOP))
+        self.assertTrue(pattern.changes_registers())
+
+
+class TestSmoothing(unittest.TestCase):
+
+    def test_blank_steps_between_two_cc_values_take_a_straight_line(self):
+        pattern = pattern_of(**{Row.CC1: [LOW, None, None, None, HIGH, None, 70, None], Row.CC3: [None, 0, None, 1, None, None, None, None]})
+        pattern.smooth_ccs()
+        # The steps after the last value stay blank, and a value halfway goes up.
+        self.assertEqual(pattern.get_row(Row.CC1), [LOW, 40, 60, 80, HIGH, 85, 70, None])
+        self.assertEqual(pattern.get_row(Row.CC3), [None, 0, 1, 1, None, None, None, None])
+        self.assertIsNone(pattern.get_row(Row.CC2))
+
+    def test_a_velocity_is_smoothed_only_on_steps_that_play(self):
+        pattern = pattern_of(degrees=[1, 2, None, 4, 5], **{Row.VELOCITY: [40, None, None, None, 120]})
+        pattern.smooth_velocity()
+        self.assertEqual(pattern.get_row(Row.VELOCITY), [40, 60, None, 100, 120])
+
+    def test_one_register_s_sets_are_smoothed_and_another_s_are_left(self):
+        sets = [0, None, None, None, 8, None, None, None]
+        pattern = pattern_of(**{Row.AX_SET: sets, Row.BX_SET: sets})
+        pattern.smooth_register_sets(RegisterName.AX)
+        self.assertEqual(pattern.get_row(Row.AX_SET)[:FIFTH + 1], [0, 2, 4, 6, 8])
+        self.assertEqual(pattern.get_row(Row.BX_SET), sets)

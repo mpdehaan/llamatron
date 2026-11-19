@@ -217,8 +217,13 @@ MSG_DESCRIBE_GATE_OVERRIDDEN = ' (the ties after it override it)'
 MSG_IN_SCALE = ' in {scale}'
 MSG_DEGREE_WITHOUT_SCALE = 'degree {degree}, no scale'
 # What the editor's keys do, in its legend.
-# The munge dialog, which rearranges a pattern's steps around the cursor, in the order of Munge.
+# The munge dialog, which rearranges a pattern's steps around the cursor, and the questions its choices ask.
 MSG_MUNGE_TITLE = 'Munge'
+MSG_INTERLEAVE_CHOICE_TITLE = 'Choose pattern to interleave'
+MSG_SPLICE_CHOICE_TITLE = 'Choose pattern to splice'
+MSG_SPLICE_BEFORE_CHOICE_TITLE = 'Choose pattern to splice before'
+MSG_ROLL_LEFT_PROMPT = 'Roll left how many steps'
+MSG_ROLL_RIGHT_PROMPT = 'Roll right how many steps'
 MSG_RECONFIGURE_TITLE = 'Reconfigure'
 MSG_NEW_PATTERN_TITLE = 'New Pattern'
 MSG_SCALE_LENGTH_TITLE = 'Scale length: notes in the scale the pattern is written for'
