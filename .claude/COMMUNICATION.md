@@ -158,6 +158,9 @@ The user's rules for a reply that puts anything to them, gathered here so that e
 - A clean layout and code quality matter more than a file's history in git: moving, splitting and
   renaming files is always fine. Ideas for a better architecture or layout are brought to the
   user whenever there are any, as proposals to approve.
+- In a refactoring, the shape of the code's own names and calls, such as what a method of a part is called or whether a caller names
+  an argument, is Claude's to decide alone, provided the change has no major effect on what the program does or how fast it runs;
+  only a decision with such an effect, or one about what a person sees, comes to the user (the user's rule).
 - A change made for speed is reported with its timings before and after (`internal_tools/time.sh`), and the
   user is asked whether to commit.
 - Flag names and layouts that don't fit, and suggest better ones. Point out where a feature that
