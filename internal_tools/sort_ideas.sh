@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# What it does: keep the ideas files, .claude/IDEAS.yml and .claude/DOCS_IDEAS.yml, sorted by priority (--check to only look)
+# What it does: keep the ideas file, .claude/IDEAS.yml, sorted by priority (--check to only look)
 
 set -eu
 # Plain sh, so that internal_tools/sort_ideas.sh works. Run from the top folder, the one above this script's, wherever it is started from.
