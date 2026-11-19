@@ -815,28 +815,28 @@ class TestWizardKit(unittest.TestCase):
 
     def test_the_pieces_are_the_drum_tracks_of_the_song_and_all_are_on(self):
         choices = self.rock()
-        pieces = choices.pieces()
+        pieces = choices.get_kit().pieces()
         self.assertTrue(pieces)
-        self.assertTrue(all(choices.piece_is_on(piece) for piece in pieces))
+        self.assertTrue(all(choices.get_kit().piece_is_on(piece) for piece in pieces))
         self.assertLessEqual(set(pieces), set(self.tracks(choices)))
-        self.assertEqual(WizardChoices().pieces(), [])
+        self.assertEqual(WizardChoices().get_kit().pieces(), [])
 
     def test_every_piece_of_every_subgenre_switched_off_is_left_out_and_the_song_plays(self):
         for place in range(len(genre_names())):
             for subgenre in range(len(chosen(genre=place).subgenres())):
                 choices = chosen(genre=place, subgenre=subgenre)
                 choices.set_seed(A_SEED)
-                pieces = choices.pieces()
+                pieces = choices.get_kit().pieces()
                 for piece in pieces[1:]:
-                    choices.set_piece_on(piece=piece, on=False)
+                    choices.get_kit().set_piece_on(piece=piece, on=False)
                     with self.subTest(subgenre=choices.get_subgenre(), piece=piece):
                         self.assertNotIn(piece, self.tracks(choices))
-                    choices.set_piece_on(piece=piece, on=True)
+                    choices.get_kit().set_piece_on(piece=piece, on=True)
 
     def test_the_other_pieces_play_as_they_did(self):
         choices = self.rock()
         before = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
-        choices.set_piece_on(piece=choices.pieces()[-1], on=False)
+        choices.get_kit().set_piece_on(piece=choices.get_kit().pieces()[-1], on=False)
         after = choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
         self.assertLess(len(after), len(before))
         for name, pattern in after.items():
@@ -844,24 +844,24 @@ class TestWizardKit(unittest.TestCase):
 
     def test_the_last_piece_stays_on_and_a_piece_the_kit_has_not_is_refused(self):
         choices = self.rock()
-        pieces = choices.pieces()
+        pieces = choices.get_kit().pieces()
         for piece in pieces[1:]:
-            choices.set_piece_on(piece=piece, on=False)
+            choices.get_kit().set_piece_on(piece=piece, on=False)
         with self.assertRaisesRegex(ValueError, errors.ERR_WIZARD_LAST_PIECE):
-            choices.set_piece_on(piece=pieces[0], on=False)
+            choices.get_kit().set_piece_on(piece=pieces[0], on=False)
         with self.assertRaises(ValueError):
-            choices.set_piece_on(piece=NOT_A_CHOICE, on=False)
+            choices.get_kit().set_piece_on(piece=NOT_A_CHOICE, on=False)
 
     def test_the_pieces_switched_off_are_kept_with_the_choices_and_another_subgenre_has_them_all(self):
         choices = self.rock()
         self.assertNotIn(wizard_limits.PIECES_OFF_KEPT, choices.to_data())
-        piece = choices.pieces()[-1]
-        choices.set_piece_on(piece=piece, on=False)
+        piece = choices.get_kit().pieces()[-1]
+        choices.get_kit().set_piece_on(piece=piece, on=False)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertFalse(again.piece_is_on(piece))
+        self.assertFalse(again.get_kit().piece_is_on(piece))
         self.assertEqual(again.to_data(), choices.to_data())
         again.set_subgenre(again.subgenres()[1])
-        self.assertTrue(all(again.piece_is_on(name) for name in again.pieces()))
+        self.assertTrue(all(again.get_kit().piece_is_on(name) for name in again.get_kit().pieces()))
 
 
 class TestWizardFillsAndQuietNotes(unittest.TestCase):
@@ -885,13 +885,13 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
                     for trait in choices.role_traits(role):
                         for way in choices.ways(role=role, trait=trait):
                             choices.set_way(trait=trait, value=way)
-                            if choices.has_quiet_notes():
+                            if choices.get_kit().has_quiet_notes():
                                 return choices
         raise AssertionError('no groove has quiet notes')
 
     def test_the_drummer_decides_how_often_until_a_position_is_chosen_and_the_song_is_then_the_same(self):
         choices = self.rock()
-        self.assertIn(choices.get_fills(), range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1))
+        self.assertIn(choices.get_kit().get_fills(), range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1))
         self.assertNotIn(wizard_limits.FILLS_KEPT, choices.to_data())
 
     def test_every_position_makes_a_song_that_plays_in_every_subgenre_and_the_positions_differ(self):
@@ -900,13 +900,13 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
                 choices = chosen(genre=place, subgenre=subgenre)
                 choices.set_seed(A_SEED)
                 for position in range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1):
-                    choices.set_fills(position)
+                    choices.get_kit().set_fills(position)
                     with self.subTest(subgenre=choices.get_subgenre(), position=position):
                         SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
         choices = self.rock()
         made = []
         for position in range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1):
-            choices.set_fills(position)
+            choices.get_kit().set_fills(position)
             made.append(self.patterns(choices))
         self.assertNotEqual(made[0], made[-1])
         self.assertNotEqual(made[1], made[-1])
@@ -914,36 +914,36 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
     def test_a_position_that_is_not_one_is_refused(self):
         for refused in (wizard_limits.FEWEST_FILLS - 1, wizard_limits.MOST_FILLS + 1, True, NOT_A_NUMBER):
             with self.assertRaises(ValueError):
-                self.rock().set_fills(refused)
+                self.rock().get_kit().set_fills(refused)
         with self.assertRaises(ValueError):
-            self.rock().set_quiet_notes(NOT_A_NUMBER)
+            self.rock().get_kit().set_quiet_notes(NOT_A_NUMBER)
 
     def test_quiet_notes_switched_off_change_the_song_and_switched_on_again_give_it_back(self):
         choices = self.with_quiet_notes()
         before = self.patterns(choices)
-        choices.set_quiet_notes(False)
+        choices.get_kit().set_quiet_notes(False)
         after = self.patterns(choices)
         self.assertNotEqual(after, before)
         # The groove still has them to switch on again.
-        self.assertTrue(choices.has_quiet_notes())
-        choices.set_quiet_notes(True)
+        self.assertTrue(choices.get_kit().has_quiet_notes())
+        choices.get_kit().set_quiet_notes(True)
         self.assertEqual(self.patterns(choices), before)
 
     def test_a_groove_with_no_quiet_notes_has_none_to_switch_off(self):
-        self.assertTrue(any(not chosen(genre=place).has_quiet_notes() for place in range(len(genre_names()))))
-        self.assertFalse(WizardChoices().has_quiet_notes())
+        self.assertTrue(any(not chosen(genre=place).get_kit().has_quiet_notes() for place in range(len(genre_names()))))
+        self.assertFalse(WizardChoices().get_kit().has_quiet_notes())
 
     def test_both_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
         choices = self.with_quiet_notes()
         self.assertNotIn(wizard_limits.QUIET_NOTES_KEPT, choices.to_data())
-        choices.set_quiet_notes(False)
-        choices.set_fills(wizard_limits.MOST_FILLS)
+        choices.get_kit().set_quiet_notes(False)
+        choices.get_kit().set_fills(wizard_limits.MOST_FILLS)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.to_data(), choices.to_data())
-        self.assertFalse(again.plays_quiet_notes())
-        self.assertEqual(again.get_fills(), wizard_limits.MOST_FILLS)
+        self.assertFalse(again.get_kit().plays_quiet_notes())
+        self.assertEqual(again.get_kit().get_fills(), wizard_limits.MOST_FILLS)
         again.set_subgenre([name for name in again.subgenres() if name != again.get_subgenre()][0])
-        self.assertTrue(again.plays_quiet_notes())
+        self.assertTrue(again.get_kit().plays_quiet_notes())
 
 
 class TestWizardMelodySettings(unittest.TestCase):

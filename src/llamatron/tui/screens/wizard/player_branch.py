@@ -65,10 +65,10 @@ class PlayerBranch(Branch):
             # The drums' break comes first, since it takes the place of the kick's, the snare's and the cymbal's own ways.
             fields = [*self.break_fields(), *fields]
             fields += [*self.fill_pattern_fields(), self.fills_field()]
-            if choices.has_quiet_notes() or not choices.plays_quiet_notes():
-                fields.append(Toggle(label=labels.MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.plays_quiet_notes(), set=self.get_page().choosing(choices.set_quiet_notes)))
+            if choices.get_kit().has_quiet_notes() or not choices.get_kit().plays_quiet_notes():
+                fields.append(Toggle(label=labels.MSG_WIZARD_QUIET_NOTES_LABEL, on=choices.get_kit().plays_quiet_notes(), set=self.get_page().choosing(choices.get_kit().set_quiet_notes)))
             # The drums: a row for each piece of the kit the song plays.
-            fields += [self.piece_row(piece) for piece in choices.pieces()]
+            fields += [self.piece_row(piece) for piece in choices.get_kit().pieces()]
         # The player's levels come last, under a heading that opens and closes, which hides every field after it while closed.
         # The button that opens the player's Musician is a button, and so comes after every setting.
         return [*fields, *self.loudness_fields(), *self.musician_fields()]
@@ -157,7 +157,7 @@ class PlayerBranch(Branch):
 
         def set_on(on):
             try:
-                page.choosing(lambda wanted: choices.set_piece_on(piece=piece, on=wanted))(on)
+                page.choosing(lambda wanted: choices.get_kit().set_piece_on(piece=piece, on=wanted))(on)
             except ValueError as problem:
                 page.refuse(str(problem))
         return set_on
@@ -198,20 +198,20 @@ class PlayerBranch(Branch):
         page = self.get_page()
 
         def shown():
-            sound = choices.piece_sound(piece)
+            sound = choices.get_kit().piece_sound(piece)
             if sound is None:
                 return marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece)
             if isinstance(sound, str):
                 return marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=sound)
-            return marks.MSG_WIZARD_SOUND_ON_NOTE.format(sound=labels.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND], note=note_shown(choices.piece_note(piece)))
-        to_own_drum = page.choosing(lambda sound: choices.set_piece_sound(piece=piece, sound=sound))
+            return marks.MSG_WIZARD_SOUND_ON_NOTE.format(sound=labels.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND], note=note_shown(choices.get_kit().piece_note(piece)))
+        to_own_drum = page.choosing(lambda sound: choices.get_kit().set_piece_sound(piece=piece, sound=sound))
 
         def own_drum():
             to_own_drum(None)
         return Cells(label=labels.MSG_WIZARD_KIT_PIECE.format(piece=piece), cells=[
-            Toggle(label=labels.MSG_WIZARD_KIT_PIECE.format(piece=piece), on=choices.piece_is_on(piece), set=self.piece_setter(piece)),
+            Toggle(label=labels.MSG_WIZARD_KIT_PIECE.format(piece=piece), on=choices.get_kit().piece_is_on(piece), set=self.piece_setter(piece)),
             Field(label=labels.MSG_WIZARD_KIT_PIECE.format(piece=piece), value=shown, enter=lambda: page.pick_piece_sound(piece), enter_what=legends.What.CHOOSE,
-                  clear=None if choices.piece_sound(piece) is None else own_drum, clear_what=legends.MSG_OWN_DRUM_WHAT),
+                  clear=None if choices.get_kit().piece_sound(piece) is None else own_drum, clear_what=legends.MSG_OWN_DRUM_WHAT),
         ])
 
     def break_fields(self):
@@ -219,16 +219,16 @@ class PlayerBranch(Branch):
         a number stepped or typed, drawn as a horizontal gauge that is empty for the break as written."""
         choices = self.get_choices()
         page = self.get_page()
-        breaks = choices.breaks()
+        breaks = choices.get_kit().breaks()
         if not breaks:
             return []
-        fields = [ChoiceField(page=page, label=labels.MSG_WIZARD_BREAK_LABEL, choices=[labels.MSG_WIZARD_NO_BREAK, *breaks], current=choices.get_break() or labels.MSG_WIZARD_NO_BREAK,
-                              set=page.choosing(lambda name: choices.set_break(None if name == labels.MSG_WIZARD_NO_BREAK else name)))]
-        if choices.get_break() is not None:
-            cut = choices.get_break_cut()
+        fields = [ChoiceField(page=page, label=labels.MSG_WIZARD_BREAK_LABEL, choices=[labels.MSG_WIZARD_NO_BREAK, *breaks], current=choices.get_kit().get_break() or labels.MSG_WIZARD_NO_BREAK,
+                              set=page.choosing(lambda name: choices.get_kit().set_break(None if name == labels.MSG_WIZARD_NO_BREAK else name)))]
+        if choices.get_kit().get_break() is not None:
+            cut = choices.get_kit().get_break_cut()
             gauge = marks.MSG_WIZARD_GAUGE_FULL * (cut - breaks_values.LEAST_CUT) + marks.MSG_WIZARD_GAUGE_EMPTY * (breaks_values.MOST_CUT - cut)
             fields.append(NumberField(page=page, label=labels.MSG_WIZARD_BREAK_CUT_LABEL, number=cut, shown=marks.MSG_WIZARD_BUSY_SHOWN.format(gauge=gauge, level=cut, most=breaks_values.MOST_CUT),
-                                      lowest=breaks_values.LEAST_CUT, highest=breaks_values.MOST_CUT, set=page.choosing(choices.set_break_cut)))
+                                      lowest=breaks_values.LEAST_CUT, highest=breaks_values.MOST_CUT, set=page.choosing(choices.get_kit().set_break_cut)))
         return fields
 
     def fill_pattern_fields(self):
@@ -244,10 +244,10 @@ class PlayerBranch(Branch):
         """Return the field for how often a fill comes: a number stepped or typed, drawn as a horizontal gauge that is empty at
         never, beside the words for the position."""
         choices = self.get_choices()
-        position = choices.get_fills()
+        position = choices.get_kit().get_fills()
         gauge = marks.MSG_WIZARD_GAUGE_FULL * (position - wizard_limits.FEWEST_FILLS) + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_limits.MOST_FILLS - position)
         return NumberField(page=self.get_page(), label=labels.MSG_WIZARD_DRUM_FILLS_LABEL, number=position, shown=marks.MSG_WIZARD_FILLS_SHOWN.format(gauge=gauge, often=labels.MSG_WIZARD_FILLS_COME[position - wizard_limits.FEWEST_FILLS]),
-                           lowest=wizard_limits.FEWEST_FILLS, highest=wizard_limits.MOST_FILLS, set=self.get_page().choosing(choices.set_fills))
+                           lowest=wizard_limits.FEWEST_FILLS, highest=wizard_limits.MOST_FILLS, set=self.get_page().choosing(choices.get_kit().set_fills))
 
     def busy_field(self):
         """Return the Busy field: a number stepped or typed, drawn as a horizontal Busy gauge beside the number."""

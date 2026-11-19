@@ -717,46 +717,46 @@ class TestWizardKit(WizardTest):
     async def test_a_piece_is_switched_off_and_on_and_the_last_piece_stays(self):
         await self.open_the_drums()
         choices = self.choices()
-        pieces = choices.pieces()
+        pieces = choices.get_kit().pieces()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=pieces[0]))
         await self.press(Key.SPACE)
-        self.assertFalse(choices.piece_is_on(pieces[0]))
+        self.assertFalse(choices.get_kit().piece_is_on(pieces[0]))
         await self.press(Key.SPACE)
-        self.assertTrue(choices.piece_is_on(pieces[0]))
+        self.assertTrue(choices.get_kit().piece_is_on(pieces[0]))
         for piece in pieces:
             await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
             await self.press(Key.SPACE)
-        self.assertTrue(choices.piece_is_on(pieces[-1]))
+        self.assertTrue(choices.get_kit().piece_is_on(pieces[-1]))
         self.assertIn(errors.ERR_WIZARD_LAST_PIECE, self.text())
 
     async def test_a_break_is_chosen_on_the_drums_branch_and_takes_the_place_of_the_drums_other_ways(self):
         await self.open_the_drums()
         choices = self.choices()
         drums = choices.roles_in()[-1]
-        self.assertEqual(choices.breaks(), break_names())
+        self.assertEqual(choices.get_kit().breaks(), break_names())
         before = choices.role_traits(drums)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_BREAK_LABEL)
         self.assertEqual(self.wizard().field().value(), labels_text.MSG_WIZARD_NO_BREAK)
         self.assertNotIn(labels_text.MSG_WIZARD_BREAK_CUT_LABEL, self.text())
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertIsNotNone(choices.get_break())
-        self.assertIn(choices.get_break(), self.text())
+        self.assertIsNotNone(choices.get_kit().get_break())
+        self.assertIn(choices.get_kit().get_break(), self.text())
         self.assertLess(len(choices.role_traits(drums)), len(before))
         # How far the break is cut up shows under a break chosen: a gauge that is empty for the break as written.
         await self.select_field(labels_text.MSG_WIZARD_BREAK_CUT_LABEL)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_FULL, self.wizard().field().value())
         await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * breaks.MOST_CUT)
-        self.assertEqual(choices.get_break_cut(), breaks.MOST_CUT)
+        self.assertEqual(choices.get_kit().get_break_cut(), breaks.MOST_CUT)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_EMPTY, self.wizard().field().value())
         await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * breaks.MOST_CUT)
-        self.assertEqual(choices.get_break_cut(), breaks.LEAST_CUT)
+        self.assertEqual(choices.get_kit().get_break_cut(), breaks.LEAST_CUT)
 
     async def test_a_piece_is_a_row_of_two_cells_and_left_and_right_move_between_them(self):
         await self.open_the_drums()
         choices = self.choices()
-        piece = choices.pieces()[0]
+        piece = choices.get_kit().pieces()[0]
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
         wizard = self.wizard()
@@ -765,14 +765,14 @@ class TestWizardKit(WizardTest):
         await self.press(Key.LEFT)
         self.assertEqual(wizard.cell, 0)
         await self.press(Key.SPACE)
-        self.assertFalse(choices.piece_is_on(piece))
+        self.assertFalse(choices.get_kit().piece_is_on(piece))
         await self.press(Key.SPACE)
-        self.assertTrue(choices.piece_is_on(piece))
+        self.assertTrue(choices.get_kit().piece_is_on(piece))
         # Right moves to the sound, steps nothing, and stays at the last cell; Left moves back.
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertEqual(wizard.cell, 1)
         self.assertEqual(wizard.cell_field().enter_what, legends.What.CHOOSE)
-        self.assertTrue(choices.piece_is_on(piece))
+        self.assertTrue(choices.get_kit().piece_is_on(piece))
         await self.press(Key.LEFT)
         self.assertEqual(wizard.cell, 0)
         # Another row is come to at its first cell again.
@@ -782,7 +782,7 @@ class TestWizardKit(WizardTest):
     async def test_a_piece_takes_another_drum_or_a_general_midi_sound_on_the_note_of_the_pickers_note_row(self):
         await self.open_the_drums()
         choices = self.choices()
-        piece = choices.pieces()[0]
+        piece = choices.get_kit().pieces()[0]
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
         wizard = self.wizard()
@@ -794,13 +794,13 @@ class TestWizardKit(WizardTest):
         self.assertNotIn(piece, [drum for _, drum in dialog.groups[0][1]])
         self.assertIn(marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(wizard_limits.USUAL_PIECE_NOTE)), self.text())
         await self.press(Key.DOWN, Key.ENTER, Key.ENTER)
-        drum = choices.piece_sound(piece)
-        self.assertIn(drum, choices.kit_drums())
+        drum = choices.get_kit().piece_sound(piece)
+        self.assertIn(drum, choices.get_kit().drums())
         self.assertEqual(wizard.cell_field().value(), marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
         # A General MIDI sound plays the note of the picker's Note row, stepped there, and the cell shows both.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 1), key_of(binding=keybindings.SoundDialog.NOTE_LESS, key=Key.LEFT_BRACKET))
         await self.press(*[Key.UP] * len(labels_text.MSG_GM_FAMILIES), Key.ENTER, Key.ENTER)
-        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (limits.MIN_GM_SOUND, wizard_limits.USUAL_PIECE_NOTE - 1))
+        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (limits.MIN_GM_SOUND, wizard_limits.USUAL_PIECE_NOTE - 1))
         self.assertEqual(wizard.cell_field().value(), marks.MSG_WIZARD_SOUND_ON_NOTE.format(sound=labels_text.MSG_GM_SOUNDS[0], note=note_shown(wizard_limits.USUAL_PIECE_NOTE - 1)))
         # A note typed on the Note row and taken there keeps the sound and changes the note.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 2))
@@ -808,34 +808,34 @@ class TestWizardKit(WizardTest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, SoundDialog)
         await self.press(Key.ENTER)
-        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (limits.MIN_GM_SOUND, note_typed(A_NOTE_TYPED)))
+        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (limits.MIN_GM_SOUND, note_typed(A_NOTE_TYPED)))
         # Bksp on the sound's cell gives the piece its own drum back, and is offered only while the piece has another sound.
         await self.press(keybindings.WizardPage.CLEAR)
-        self.assertIsNone(choices.piece_sound(piece))
+        self.assertIsNone(choices.get_kit().piece_sound(piece))
         self.assertIsNone(wizard.cell_field().clear)
 
     async def test_a_piece_given_a_kit_drum_again_drops_its_note_from_the_row_and_from_the_song(self):
         await self.open_the_drums()
         choices = self.choices()
-        piece = choices.pieces()[0]
-        choices.set_piece_sound(piece=piece, sound=limits.MIN_GM_SOUND)
-        choices.set_piece_note(piece=piece, note=note_typed(A_NOTE_TYPED))
+        piece = choices.get_kit().pieces()[0]
+        choices.get_kit().set_piece_sound(piece=piece, sound=limits.MIN_GM_SOUND)
+        choices.get_kit().set_piece_note(piece=piece, note=note_typed(A_NOTE_TYPED))
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
         await self.press(Key.RIGHT)
         self.assertIn(note_shown(note_typed(A_NOTE_TYPED)), self.wizard().cell_field().value())
         # A drum of the kit taken with a note on the Note row: the note is not used, and the row shows the drum alone.
         await self.press(Key.ENTER, *[Key.UP] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.DOWN, Key.ENTER, Key.ENTER)
-        drum = choices.piece_sound(piece)
-        self.assertIn(drum, choices.kit_drums())
-        self.assertIsNone(choices.piece_note(piece))
+        drum = choices.get_kit().piece_sound(piece)
+        self.assertIn(drum, choices.get_kit().drums())
+        self.assertIsNone(choices.get_kit().piece_note(piece))
         self.assertEqual(self.wizard().cell_field().value(), marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
         self.assertNotIn(composer_text.MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS])
         # ENTER on the Note row then keeps the drum, and so does the piece's own drum.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.ENTER)
-        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (drum, None))
+        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (drum, None))
         await self.press(Key.ENTER, *[Key.UP] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.ENTER)
-        self.assertEqual((choices.piece_sound(piece), choices.piece_note(piece)), (None, None))
+        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (None, None))
         self.assertEqual(self.wizard().cell_field().value(), marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece))
 
     async def test_how_often_fills_come_is_a_gauge_that_is_empty_at_never(self):
@@ -844,12 +844,12 @@ class TestWizardKit(WizardTest):
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_DRUM_FILLS_LABEL)
         await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * wizard_limits.MOST_FILLS)
-        self.assertEqual(choices.get_fills(), wizard_limits.FEWEST_FILLS)
+        self.assertEqual(choices.get_kit().get_fills(), wizard_limits.FEWEST_FILLS)
         shown = self.wizard().field().value()
         self.assertIn(labels_text.MSG_WIZARD_FILLS_COME[0], shown)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_FULL, shown)
         await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * wizard_limits.MOST_FILLS)
-        self.assertEqual(choices.get_fills(), wizard_limits.MOST_FILLS)
+        self.assertEqual(choices.get_kit().get_fills(), wizard_limits.MOST_FILLS)
         shown = self.wizard().field().value()
         self.assertIn(labels_text.MSG_WIZARD_FILLS_COME[-1], shown)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_EMPTY, shown)
@@ -862,25 +862,25 @@ class TestWizardKit(WizardTest):
         without = [(trait, way) for trait in choices.role_traits(drums) for way in choices.ways(role=drums, trait=trait) if not self.has_quiet_notes_with(trait=trait, way=way)]
         if without:
             choices.set_way(trait=without[0][0], value=without[0][1])
-        if not choices.has_quiet_notes():
+        if not choices.get_kit().has_quiet_notes():
             await self.press(Key.UP, Key.DOWN)
             self.assertNotIn(labels_text.MSG_WIZARD_QUIET_NOTES_LABEL, self.text())
         choices.set_way(trait=with_them[0][0], value=with_them[0][1])
         await self.press(Key.UP, Key.DOWN, keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_QUIET_NOTES_LABEL)
         await self.press(Key.SPACE)
-        self.assertFalse(choices.plays_quiet_notes())
+        self.assertFalse(choices.get_kit().plays_quiet_notes())
         # The toggle stays while the quiet notes are off, so that they can be switched on again.
         self.assertIn(labels_text.MSG_WIZARD_QUIET_NOTES_LABEL, self.text())
 
     def has_quiet_notes_with(self, *, trait, way):
         choices = self.choices().__class__.from_data(self.choices().to_data())
         choices.set_way(trait=trait, value=way)
-        return choices.has_quiet_notes()
+        return choices.get_kit().has_quiet_notes()
 
     async def test_the_song_made_has_no_track_for_a_piece_switched_off(self):
         await self.open_the_drums()
-        piece = self.choices().pieces()[-1]
+        piece = self.choices().get_kit().pieces()[-1]
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
         await self.press(Key.SPACE, keybindings.WizardPage.TO_TREE)

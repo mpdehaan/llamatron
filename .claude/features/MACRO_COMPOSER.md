@@ -173,7 +173,7 @@ clouds; generate and test, with motif development and counterpoint last.
   slice more for each position is swapped for another slice that sounds different, every drum cut alike, never the first
   slice, seeded by the song's seed and the bar. A subgenre built on a break names it in its template (big beat and downtempo
   of the electronic style). In the wizard the drums' branch starts with a Break field, (none) first, and under a chosen
-  break a Cut up gauge; a break hides the kick's, the snare's and the cymbal's own fields (`WizardChoices.breaks`,
+  break a Cut up gauge; a break hides the kick's, the snare's and the cymbal's own fields (`KitChoices.breaks`,
   `get_break`, `set_break`, `get_break_cut`, `set_break_cut`, `role_traits`). `tests/macro_composer/test_breaks.py`.
 - **A kit piece's own sound** (the user's design): a song's `piece_sounds` names, by piece of the kit, `{drum: name}`, another
   drum of the kit, or `{sound: General MIDI number, note: MIDI note}`, a sound on one note, so that a kit can be abstract.
@@ -183,7 +183,7 @@ clouds; generate and test, with motif development and counterpoint last.
   away, what the piece sounds as, `kick`, `cowbell (kit)` or `Flute  C3`, where ENTER opens the Sound dialog on the piece's
   own drum above the kit's drums and General MIDI's families and Bksp gives the piece its own drum back. The dialog's Note
   row, under the list, holds the note a General MIDI sound plays, C4 until changed, stepped or typed by name, and the Listen
-  key plays four hits on that note (`WizardChoices.piece_sound`, `set_piece_sound`, `piece_note`, `set_piece_note`,
+  key plays four hits on that note (`KitChoices.piece_sound`, `set_piece_sound`, `piece_note`, `set_piece_note`,
   `PlayerBranch.piece_row`, `WizardPage.pick_piece_sound`). `TestKitPieceSounds` in `tests/macro_composer/test_breaks.py`.
 - **A player's character** (the user's design, `macro_composer/characters.py`): a song's `players` gives an instrument a level, 1
   to 4, or the places of gauges, each 0 to 20 (`notes`, `variety`, `touch`, `timing`, `fills`, `strumming`, `range`). Each field
@@ -415,6 +415,7 @@ clouds; generate and test, with motif development and counterpoint last.
 ## The Wizard's Choices
 
 - `src/llamatron/macro_composer/wizard_limits.py` holds every number, list and name the wizard's choices are held to and kept under, and no behaviour: the choices, each part of them and the wizard's pages name a limit through it, `wizard_limits.FEWEST_FILLS`.
+- The choices have parts, each a class that holds what was chosen of one thing of the song and is reached through the choices (`ChoicesPart` in `src/llamatron/macro_composer/choices_part.py`): `get_kit()` is the drum kit's, `KitChoices` in `src/llamatron/macro_composer/kit_choices.py`, with the pieces, what each sounds as, the fills, the quiet notes and the break, so a page writes `choices.get_kit().set_fills(position)`. A part says what a song keeps of it (`to_data`), takes that back (`read`), goes back to what the subgenre gives (`reset`) and says what it adds to the song made; it asks the choices only for what every part shares (`style()`, `picks()`, `roles()`, `remembered()`).
 - `WizardChoices` (`src/llamatron/macro_composer/wizard_choices.py`) holds one run of the song wizard: the genre, a style
   template by its file's name and shown by its title; the subgenre, one of the template's kinds; the key's root and scale
   type; the tempo; the form, one of the forms the template suggests for the kind; and the seed. Each setter refuses what it
