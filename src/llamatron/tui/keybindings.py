@@ -632,6 +632,8 @@ class ArrangePage(Page):
     # With Real Time on, the visualizer over the clip area: the key steps through its modes and back to
     # the clips, from anywhere on the page, and while it shows, Esc brings the clips back rather than leaving the page.
     VISUALIZER = (Key.Z, legends.KeyName.Z, legends.MSG_VISUALIZER_WHAT)
+    # Fracture: after a question, every clip of the song gets a pattern of its own, so that sections that shared one can be edited apart.
+    FRACTURE = (Key.F, legends.KeyName.F, legends.MSG_FRACTURE_WHAT)
     # While the visualizer shows, [ and ] step to the mode before or after, going round.
     STEP_VISUALIZER = (Steps(back=(Key.LEFT_BRACKET,), forward=(Key.RIGHT_BRACKET,)), legends.KeyName.BRACKETS, legends.MSG_STEP_VISUALIZER_WHAT)
     # The details view: D shows, under every bar, the chains and generators and the settings that aren't
@@ -675,6 +677,7 @@ class ArrangePage(Page):
         HIDE_DETAILS,
         INTO_DETAILS,
         VISUALIZER,
+        FRACTURE,
     ]
     IN_LEGEND = IN_HELP
 

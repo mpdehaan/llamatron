@@ -31,20 +31,20 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## ArrangePage
 
-- **the corner**: `ESC` back · `←↑↓→` move · `Space` play song · `D` details · `Z` visualizer
-- **a track's name**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` details · `Tab` cell details · `Z` visualizer
-- **the + after the tracks**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` details · `Z` visualizer
-- **a scene's name**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` details · `Tab` cell details · `Z` visualizer
-- **a clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer
-- **an empty cell**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` details · `Z` visualizer
-- **the + row**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add scene · `D` details · `Z` visualizer
-- **the corner**: `ESC` back · `←↑↓→` move · `Space` play song · `D` hide details · `Z` visualizer
-- **a track's name**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` hide details · `Tab` cell details · `Z` visualizer
-- **the + after the tracks**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` hide details · `Z` visualizer
-- **a scene's name**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` hide details · `Tab` cell details · `Z` visualizer
-- **a clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` hide details · `Tab` cell details · `Z` visualizer
-- **an empty cell**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` hide details · `Z` visualizer
-- **the + row**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add scene · `D` hide details · `Z` visualizer
+- **the corner**: `ESC` back · `←↑↓→` move · `Space` play song · `D` details · `Z` visualizer · `F` fracture
+- **a track's name**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **the + after the tracks**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` details · `Z` visualizer · `F` fracture
+- **a scene's name**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **a clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **an empty cell**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` details · `Z` visualizer · `F` fracture
+- **the + row**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add scene · `D` details · `Z` visualizer · `F` fracture
+- **the corner**: `ESC` back · `←↑↓→` move · `Space` play song · `D` hide details · `Z` visualizer · `F` fracture
+- **a track's name**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` hide details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **the + after the tracks**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` hide details · `Z` visualizer · `F` fracture
+- **a scene's name**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` hide details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **a clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `V` paste clip · `I` insert scene · `D` hide details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **an empty cell**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `V` paste clip · `I` insert scene · `D` hide details · `Z` visualizer · `F` fracture
+- **the + row**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add scene · `D` hide details · `Z` visualizer · `F` fracture
 - **a locked cell**: `ESC` leave cell · `Tab` leave the cell · `↑↓` select · `ENTER` open · `Bksp` remove chain · `D` close details
 - **Move mode**: `ENTER/ESC/M` drop · `←→` carry
 - **Move mode**: `ENTER/ESC/M` drop · `↑↓` carry
@@ -921,6 +921,7 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## `F`
 
+- ArrangePage: fracture (the corner, a track's name, the + after the tracks, a scene's name, a clip, an empty cell, the + row)
 - MainPage: File/Global (anywhere)
 
 ## `F2`

@@ -246,6 +246,7 @@ class ArrangePage(Page):
             result.append(self.bind(self.KEYS.SHOW_DETAILS, action=self.toggle_details))
         if self.real_time_on():
             result.append(self.bind(self.KEYS.VISUALIZER, action=self.next_visualizer))
+        result.append(self.bind(self.KEYS.FRACTURE, action=self.ask_to_fracture))
         return result
 
     # The details view: D shows under every bar the chains, the generators and the settings that aren't their
@@ -254,6 +255,14 @@ class ArrangePage(Page):
     def shows_details(self):
         """Return whether the grid shows its details view: chosen with R, and never under the visualizer or a batch video's stage."""
         return self.app.shows_arrange_details and self.visualizer is None and self.stage is None
+
+    def ask_to_fracture(self):
+        """Ask before giving every clip of the song a pattern of its own, which a finished song wants so that its sections can be edited apart."""
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_FRACTURE_TITLE, messages=[messages.MSG_FRACTURE_QUESTION]), then=lambda _: self.fracture())
+
+    def fracture(self):
+        copies = self.document().fracture_song()
+        self.say(messages.MSG_FRACTURED.format(count=len(copies)) if copies else messages.MSG_NOTHING_TO_FRACTURE)
 
     def toggle_details(self):
         """Show the details view, or the usual one again."""

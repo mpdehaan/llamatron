@@ -72,6 +72,15 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
   scene's current row, all its repeats together, stopping at the clip's end), and a looping
   clip's, full when still, fills over one play of its scene and starts over, the user's idea.
 
+## Fracture
+
+- `F` (Fracture) on Arrange, the user's design, for a finished song whose sections are to be edited apart: a `ConfirmDialog`
+  titled Fracture asks "Do you really want to give all clips unique patterns?", and yes calls `Document.fracture_song`
+  (`Setlist.fracture(song)`): reading the scenes from the top and each scene's tracks from the left, the first clip to play a
+  pattern keeps it, and each later clip plays a copy named by `copy_name` and kept in the pattern's group. One undo step. Only
+  the pattern a clip plays is copied: a clip's Morph to pattern stays shared, and so does a pattern another song plays. The
+  status line says how many were copied, or that every clip already has its own. `tests/tui/test_tui_fracture.py`.
+
 ## The details view
 
 - On Arrange, `D` (`ArrangePage.SHOW_DETAILS`, and `HIDE_DETAILS` while it shows, `toggle_details`) shows the

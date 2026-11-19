@@ -932,6 +932,32 @@ class Setlist(LlamaData):
         return list(names.values())
 
     @notes_change
+    def fracture(self, song):
+        """Give every clip of a song a pattern of its own, and return the names of the copies made.
+
+        The first clip to play a pattern, reading the scenes from the top and each scene's tracks from the left, keeps the
+        pattern; every later clip that plays the same one plays a copy, named as a duplicate is and kept in the pattern's group,
+        so that each clip can be edited without changing another.
+        """
+        seen = set()
+        copies = []
+        for scene in song.get_scenes():
+            for track in song.get_track_names():
+                clip_slot = scene.get_clip_slot(track)
+                if clip_slot is None:
+                    continue
+                name = clip_slot.get_pattern_name()
+                if name not in seen:
+                    seen.add(name)
+                    continue
+                copied = copy_name(name=name, taken=self.get_pattern_names())
+                self.copy_item(section=Section.PATTERNS, name=name, new=copied)
+                clip_slot.set_pattern_name(name=copied, song=song)
+                seen.add(copied)
+                copies.append(copied)
+        return copies
+
+    @notes_change
     def group_patterns_by_track(self, song):
         """Put every pattern of no group that a song plays in the group named after the first track that plays it, as the song wizard and an import do."""
         for scene in song.get_scenes():

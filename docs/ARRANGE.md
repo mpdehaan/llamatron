@@ -45,7 +45,14 @@ The keys depend on what is under the cursor:
 | Anywhere | `D` | Show or hide the details of every cell (see Details View below) |
 | A track's name, a scene's name or a clip | `Tab` | Lock into its details to pick, open, add or remove chains and open other settings (see Details View below) |
 | A scene's name | `P` | Open Scene View, the scene's notes laid out by track (see Scene View below) |
+| Anywhere | `F` | Fracture: give every clip a pattern of its own, after asking (see Fracture below) |
 
+
+## Fracture
+
+A song often plays one pattern in several clips: every verse shares one bass line, so that a change to the bass line changes every verse. That is what a song being written wants. A finished song may want the opposite, such as a second verse whose bass line differs by a few notes from the first, or the sections of a song the [Song Wizard](WIZARD.md) made edited one by one.
+
+`F` asks "Do you really want to give all clips unique patterns?", and on YES every clip of the song gets a pattern of its own. Reading the scenes from the top and each scene's tracks from the left, the first clip to play a pattern keeps the pattern, and each later clip that plays the same pattern plays a copy, numbered as any duplicate is: a pattern called `bass` used by three clips leaves `bass`, `bass-2` and `bass-3`. The copies stay in the pattern's group, the song sounds exactly as before, and one `Ctrl+Z` undoes the whole thing.
 
 ## Clip Marks
 
