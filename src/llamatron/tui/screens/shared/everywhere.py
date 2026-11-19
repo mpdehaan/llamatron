@@ -31,7 +31,6 @@ from llamatron.tui.dialogs import quit_dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.corrections_dialog import CorrectionsDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
 from llamatron.tui.document import Document
 from llamatron.tui.screens.shared import shared
@@ -176,7 +175,7 @@ def save_as(page, *, then=None):
             page.confirm(title=messages_text.MSG_REPLACE_FILE_TITLE, lines=[messages_text.MSG_REPLACE_FILE_QUESTION.format(path=path)], then=lambda: write(page, path=path, then=then, as_copy=True))
         else:
             write(page, path=path, then=then, as_copy=True)
-    page.ask(dialog=PromptDialog(title=messages_text.MSG_SAVE_AS_PROMPT, value=default), then=chosen)
+    page.ask_text(title=messages_text.MSG_SAVE_AS_PROMPT, value=default, then=chosen)
 
 
 def write(page, *, path, then=None, as_copy=False):

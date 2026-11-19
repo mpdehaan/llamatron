@@ -23,7 +23,6 @@ from llamatron.music import time_signature
 from llamatron.music.time_signature import is_time_signature
 from llamatron.strings import errors, marks, messages, names
 from llamatron.tui import drawing
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 
 
 SONG_SUFFIX = '.yml'
@@ -101,7 +100,7 @@ def ask_time_signature(*, page, title, current, then, blank_allowed):
             then(text)
         else:
             page.refuse(errors.ERR_TYPED_NOT_A_TIME_SIGNATURE.format(text=text, lowest=time_signature.MIN_BEATS, highest=time_signature.MAX_BEATS, units=time_signature.UNITS_LISTED))
-    page.ask(dialog=PromptDialog(title=title, value=current), then=answered)
+    page.ask_text(title=title, value=current, then=answered)
 
 
 def columns(rows):

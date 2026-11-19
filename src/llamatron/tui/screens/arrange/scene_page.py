@@ -22,7 +22,6 @@ from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RampPart, Section, shape_setting
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings, themes
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
@@ -79,7 +78,7 @@ class ScenePage(FieldPage):
                 self.document().change(self.document().song().get_scene(self.index).set_name, text)
                 self.shown_name = text
                 self.crumbs = (labels.Crumb.ARRANGE, labels.MSG_SCENE_CRUMB.format(name=text))
-        self.ask(dialog=PromptDialog(title=messages.MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or drawing.NOTHING, max_length=limits.MAX_NAME_LENGTH), then=named)
+        self.ask_text(title=messages.MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or drawing.NOTHING, then=named, is_name=True)
 
     def pick_scale(self):
         scales = sorted_names(self.document().song().get_scale_names())

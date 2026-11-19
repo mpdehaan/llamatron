@@ -20,7 +20,6 @@ from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import AutoRatchetSetting
 from llamatron.strings import errors, help as help_text, labels, messages
 from llamatron.tui import drawing, keybindings
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -53,7 +52,7 @@ class AutoRatchetEditor(ShowsNamedItem, FieldPage):
                 self.refuse(errors.ERR_BAD_COUNTS)
                 return
             self.document().change(self.document().generator(section=Section.AUTO_RATCHETS, name=self.item).set_setting, name=AutoRatchetSetting.COUNTS, value=[int(part) for part in parts])
-        self.ask(dialog=PromptDialog(title=labels.MSG_COUNTS_LABEL, value=counts_text(self.counts())), then=answered)
+        self.ask_text(title=labels.MSG_COUNTS_LABEL, value=counts_text(self.counts()), then=answered)
 
     def fields(self):
         return [

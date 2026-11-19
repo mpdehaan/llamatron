@@ -21,7 +21,6 @@ from llamatron.macro_composer import arranger, joins, song_plan, wizard_choices
 from llamatron.macro_composer.wizard_choices import chords_as_text
 from llamatron.music import note
 from llamatron.strings import labels, legends, marks, messages
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 
@@ -176,7 +175,7 @@ class SectionBranch(Branch):
             return NumberField(page=page, label=label, number=own, start=usual, shown=shown, lowest=lowest, highest=highest, set=set_own, **clear)
         if field == arranger.CHORDS:
             def ask():
-                page.ask(dialog=PromptDialog(title=messages.MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, max_length=limits.MAX_NAME_LENGTH), then=set_own)
+                page.ask_text(title=messages.MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, then=set_own, is_name=True)
             return Field(label=label, value=lambda: shown if own is None else chords_as_text(own), enter=ask, **clear)
         if field in (song_plan.RISES, song_plan.FADES):
             return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)

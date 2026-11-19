@@ -26,7 +26,6 @@ from llamatron.playback import song_renderer
 from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
@@ -168,7 +167,7 @@ class ClipPage(FieldPage):
     def ask_new_pattern(self):
         """Ask for a new pattern's name, filled in with the track's name and the next free number, make it blank and add it to the list."""
         suggested = self.document().new_name(section=Section.PATTERNS, word=self.track)
-        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=suggested, max_length=limits.MAX_NAME_LENGTH), then=self.add_new)
+        self.ask_text(title=messages.MSG_NEW_PATTERN_PROMPT, value=suggested, then=self.add_new, is_name=True)
 
     def add_new(self, text):
         name = text.strip()
@@ -417,7 +416,7 @@ class ClipPage(FieldPage):
 
     def rename(self):
         """Give the clip a name of its own; a blank goes back to its pattern's name."""
-        self.ask(dialog=PromptDialog(title=messages.MSG_CLIP_NAME_PROMPT, value=self.clip_slot().get_name() or drawing.NOTHING, max_length=limits.MAX_NAME_LENGTH), then=lambda text: self.set_value(setting=ClipSlotSetting.NAME, value=text.strip()))
+        self.ask_text(title=messages.MSG_CLIP_NAME_PROMPT, value=self.clip_slot().get_name() or drawing.NOTHING, then=lambda text: self.set_value(setting=ClipSlotSetting.NAME, value=text.strip()), is_name=True)
 
     def notes(self, width):
         document = self.document()
