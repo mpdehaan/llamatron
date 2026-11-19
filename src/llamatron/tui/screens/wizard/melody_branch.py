@@ -43,7 +43,7 @@ class MelodyBranch(Branch):
     def summary(self):
         """Return who plays the song's melody, or None for a song with none."""
         choices = self.get_choices()
-        return choices.get_band().role_title(choices.get_tunes().tune_played_by()) if self.has_melody() and choices.get_tunes().tune_played_by() else None
+        return choices.player(choices.get_tunes().tune_played_by()).title() if self.has_melody() and choices.get_tunes().tune_played_by() else None
 
     def fields(self):
         if not self.has_melody():
@@ -57,8 +57,8 @@ class MelodyBranch(Branch):
     def player_field(self):
         choices = self.get_choices()
         offered = choices.get_tunes().tune_players_offered()
-        return ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_TUNE_LABEL, choices=offered, names=[choices.get_band().role_title(role) for role in offered],
-                           current=choices.get_tunes().tune_played_by(), shown=choices.get_band().role_title(choices.get_tunes().tune_played_by()), set=self.get_page().choosing(choices.get_tunes().set_tune_played_by))
+        return ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_TUNE_LABEL, choices=offered, names=[choices.player(role).title() for role in offered],
+                           current=choices.get_tunes().tune_played_by(), shown=choices.player(choices.get_tunes().tune_played_by()).title(), set=self.get_page().choosing(choices.get_tunes().set_tune_played_by))
 
     def way_field(self, field):
         """Return the field of how busy the melodies are, how wide they range or how much they repeat."""

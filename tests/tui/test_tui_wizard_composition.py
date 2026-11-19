@@ -86,7 +86,7 @@ class CompositionTest(WizardTest):
         self.assertEqual(page.heading_over_cursor(), heading)
 
     def title(self, role):
-        return self.choices().get_band().role_title(role)
+        return self.choices().player(role).title()
 
     def change_first_step(self):
         """Write another degree on the first step of the pattern the editor shows, as a key in the editor would."""
@@ -308,7 +308,7 @@ class TestWizardIntroMelody(CompositionTest):
         choices = self.choices()
         await self.open_part(number)
         await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
-        await self.pick(choices.get_band().role_title(choices.intro_hook_players()[0]))
+        await self.pick(choices.player(choices.intro_hook_players()[0]).title())
 
     async def test_the_panel_has_how_the_song_starts_a_heading_for_each_part_and_buttons_that_say_how_to_give_a_part_a_melody(self):
         choices = self.choices()
@@ -402,7 +402,7 @@ class TestWizardSoloMelody(CompositionTest):
                                                labels.MSG_WIZARD_LISTEN_BUTTON,
                                                labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
         shown = self.text()
-        self.assertIn(choices.get_band().role_title(choices.get_solos().solo_player()), shown)
+        self.assertIn(choices.player(choices.get_solos().solo_player()).title(), shown)
         self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
         what, heard_at, track = self.wizard().branch().listens()
         self.assertEqual((heard_at, track), (place, choices.get_solos().solo_player()))

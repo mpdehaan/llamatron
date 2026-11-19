@@ -132,32 +132,32 @@ class TestWizardPlayerGauges(unittest.TestCase):
         choices = wizard()
         drums = self.drums(choices)
         usual = patterns_of(choices)
-        self.assertEqual(choices.get_band().player_preset(drums), wizard_limits.USUAL_BUSY)
-        for gauge in choices.get_band().player_gauges(drums):
-            self.assertEqual(choices.get_band().get_player_gauge(role=drums, gauge=gauge), characters.PRESET_PLACE[wizard_limits.USUAL_BUSY])
-        choices.get_band().set_player_gauge(role=drums, gauge=characters.FILLS, place=characters.HIGHEST)
-        self.assertEqual(choices.get_band().get_player_gauge(role=drums, gauge=characters.FILLS), characters.HIGHEST)
-        self.assertIsNone(choices.get_band().player_preset(drums))
+        self.assertEqual(choices.player(drums).preset(), wizard_limits.USUAL_BUSY)
+        for gauge in choices.player(drums).gauges():
+            self.assertEqual(choices.player(drums).get_gauge(gauge=gauge), characters.PRESET_PLACE[wizard_limits.USUAL_BUSY])
+        choices.player(drums).set_gauge(gauge=characters.FILLS, place=characters.HIGHEST)
+        self.assertEqual(choices.player(drums).get_gauge(gauge=characters.FILLS), characters.HIGHEST)
+        self.assertIsNone(choices.player(drums).preset())
         self.assertNotEqual(patterns_of(choices), usual)
         # Moved back to the preset's place, the gauge is the preset's again, and so is the song.
-        choices.get_band().set_player_gauge(role=drums, gauge=characters.FILLS, place=characters.PRESET_PLACE[wizard_limits.USUAL_BUSY])
-        self.assertEqual(choices.get_band().player_preset(drums), wizard_limits.USUAL_BUSY)
+        choices.player(drums).set_gauge(gauge=characters.FILLS, place=characters.PRESET_PLACE[wizard_limits.USUAL_BUSY])
+        self.assertEqual(choices.player(drums).preset(), wizard_limits.USUAL_BUSY)
         self.assertEqual(patterns_of(choices), usual)
 
     def test_a_preset_chosen_puts_every_gauge_back_and_the_gauges_are_kept_with_the_song(self):
         choices = wizard()
         drums = self.drums(choices)
-        choices.get_band().set_player_gauge(role=drums, gauge=characters.LOOSE, place=characters.LOWEST)
-        choices.get_band().set_player_gauge(role=drums, gauge=characters.VARIETY, place=characters.HIGHEST)
+        choices.player(drums).set_gauge(gauge=characters.LOOSE, place=characters.LOWEST)
+        choices.player(drums).set_gauge(gauge=characters.VARIETY, place=characters.HIGHEST)
         # The song is made first, since making a song gives the choices their seed, which is kept with them.
         made = patterns_of(choices)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_band().get_player_gauge(role=drums, gauge=characters.LOOSE), characters.LOWEST)
-        self.assertEqual(again.get_band().get_player_gauge(role=drums, gauge=characters.VARIETY), characters.HIGHEST)
+        self.assertEqual(again.player(drums).get_gauge(gauge=characters.LOOSE), characters.LOWEST)
+        self.assertEqual(again.player(drums).get_gauge(gauge=characters.VARIETY), characters.HIGHEST)
         self.assertEqual(patterns_of(again), made)
-        choices.get_band().set_busy(role=drums, level=HIGHEST_LEVEL)
-        self.assertEqual(choices.get_band().player_preset(drums), HIGHEST_LEVEL)
-        self.assertEqual(choices.get_band().get_player_gauge(role=drums, gauge=characters.LOOSE), characters.PRESET_PLACE[HIGHEST_LEVEL])
+        choices.player(drums).set_busy(level=HIGHEST_LEVEL)
+        self.assertEqual(choices.player(drums).preset(), HIGHEST_LEVEL)
+        self.assertEqual(choices.player(drums).get_gauge(gauge=characters.LOOSE), characters.PRESET_PLACE[HIGHEST_LEVEL])
         self.assertNotIn(characters.LOOSE, str(choices.to_data().get(arranger.PLAYERS)))
 
     def test_what_is_no_gauge_of_the_player_and_no_place_is_refused(self):
@@ -165,11 +165,11 @@ class TestWizardPlayerGauges(unittest.TestCase):
         drums = self.drums(choices)
         for gauge in (NO_SUCH, characters.STRUMMING):
             with self.assertRaises(ValueError) as refused:
-                choices.get_band().set_player_gauge(role=drums, gauge=gauge, place=characters.LOWEST)
+                choices.player(drums).set_gauge(gauge=gauge, place=characters.LOWEST)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
             with self.assertRaises(ValueError):
-                choices.get_band().get_player_gauge(role=drums, gauge=gauge)
+                choices.player(drums).get_gauge(gauge=gauge)
         for place in (characters.LOWEST - 1, characters.HIGHEST + 1, True, NO_SUCH):
             with self.assertRaises(ValueError) as refused:
-                choices.get_band().set_player_gauge(role=drums, gauge=characters.NOTES, place=place)
+                choices.player(drums).set_gauge(gauge=characters.NOTES, place=place)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PLAYER_GAUGE.format(low=characters.LOWEST, high=characters.HIGHEST, value=place))

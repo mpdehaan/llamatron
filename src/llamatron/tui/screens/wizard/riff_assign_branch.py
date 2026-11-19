@@ -65,7 +65,7 @@ class RiffAssignBranch(RiffsBranch):
         """Return how wide the FOR column is: as wide as its widest value on the panel, the name of a player a riff was written
         for, and no narrower than its heading, so that the column after it starts at one place on every row, as a table's."""
         choices = self.get_choices()
-        written_for = [choices.get_band().role_title(choices.get_riffs().riff_written_for(riff)) for role in choices.get_riffs().riff_instruments() for riff in choices.get_riffs().riffs_known_by(role)]
+        written_for = [choices.player(choices.get_riffs().riff_written_for(riff)).title() for role in choices.get_riffs().riff_instruments() for riff in choices.get_riffs().riffs_known_by(role)]
         return max(len(name) for name in [labels.MSG_WIZARD_RIFF_FOR_COLUMN, *written_for])
 
     def known_field(self, *, role, riff):
@@ -73,7 +73,7 @@ class RiffAssignBranch(RiffsBranch):
         choices = self.get_choices()
 
         def shown():
-            return marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=choices.get_band().role_title(choices.get_riffs().riff_written_for(riff)), width=self.for_width(), used=listed(choices.get_riffs().kinds_playing(role=role, riff=riff))).rstrip()
+            return marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=choices.player(choices.get_riffs().riff_written_for(riff)).title(), width=self.for_width(), used=listed(choices.get_riffs().kinds_playing(role=role, riff=riff))).rstrip()
         return Field(label=riff, value=shown, clear=lambda: self.take(role=role, riff=riff), clear_what=legends.What.DELETE)
 
     def field_keys(self):
@@ -85,7 +85,7 @@ class RiffAssignBranch(RiffsBranch):
         """Offer the song's riffs a player does not know, and have the player know the one picked."""
         choices = self.get_choices()
         page = self.get_page()
-        title = choices.get_band().role_title(role)
+        title = choices.player(role).title()
         offered = choices.get_riffs().riffs_to_give(role)
         if not offered:
             page.refuse(errors.ERR_WIZARD_NO_RIFF_TO_GIVE)
@@ -101,7 +101,7 @@ class RiffAssignBranch(RiffsBranch):
         """Take a riff from a player, asking first where the player plays it."""
         choices = self.get_choices()
         page = self.get_page()
-        title = choices.get_band().role_title(role)
+        title = choices.player(role).title()
         used = choices.get_riffs().kinds_playing(role=role, riff=riff)
 
         def taken(_=None):

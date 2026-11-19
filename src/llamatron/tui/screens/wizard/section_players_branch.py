@@ -79,4 +79,4 @@ class SectionPlayersBranch(Branch):
                 page.choosing(lambda value: choices.set_section_part(kind=kind, role=role, part=value))(part)
             except ValueError as problem:
                 page.refuse(str(problem))
-        return ChoiceField(page=page, label=choices.get_band().role_title(role), choices=choices.section_parts_offered(kind=kind, role=role), current=choices.section_part(kind=kind, role=role), set=chosen)
+        return ChoiceField(page=page, label=choices.player(role).title(), choices=choices.section_parts_offered(kind=kind, role=role), current=choices.section_part(kind=kind, role=role), set=chosen)

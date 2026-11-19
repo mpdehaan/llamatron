@@ -63,7 +63,7 @@ class TestWizardPeople(WizardTest):
     async def to_player(self, role):
         choices = self.chosen()
         await self.press(Key.DOWN, Key.UP)
-        await self.go_to_named_branch(choices.get_band().role_title(role))
+        await self.go_to_named_branch(choices.player(role).title())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         return choices
 
@@ -153,18 +153,18 @@ class TestWizardEditPlayer(WizardTest):
 
     async def test_edit_player_opens_the_musician_page_and_what_is_chosen_there_is_kept(self):
         choices = await self.to_player(THE_BASS)
-        self.assertIsNone(choices.get_band().player_musician(THE_BASS))
+        self.assertIsNone(choices.player(THE_BASS).get_musician())
         await self.select_field(labels.MSG_WIZARD_EDIT_PLAYER_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MusicianEditor)
         self.assertTrue(self.app.is_drafting())
-        self.assertEqual(self.app.screen.item, choices.get_band().musician_name(THE_BASS))
+        self.assertEqual(self.app.screen.item, choices.player(THE_BASS).musician_name())
         self.app.screen.store(setting=MusicianSetting.LOUDNESS, value=musician.LOUDEST)
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
         self.assertFalse(self.app.is_drafting())
-        self.assertEqual(choices.get_band().player_musician(THE_BASS)[MusicianSetting.LOUDNESS], musician.LOUDEST)
-        self.assertNotIn(MusicianSetting.TUNE_FROM, choices.get_band().player_musician(THE_BASS))
+        self.assertEqual(choices.player(THE_BASS).get_musician()[MusicianSetting.LOUDNESS], musician.LOUDEST)
+        self.assertNotIn(MusicianSetting.TUNE_FROM, choices.player(THE_BASS).get_musician())
         self.assertIn(messages.MSG_WIZARD_PLAYER_KEPT, self.text())
         self.assertIn(labels.MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON, self.text())
 
@@ -173,21 +173,21 @@ class TestWizardEditPlayer(WizardTest):
         await self.select_field(labels.MSG_WIZARD_EDIT_PLAYER_BUTTON)
         await self.press(Key.ENTER, Key.ESCAPE)
         self.assertIn(messages.MSG_WIZARD_PLAYER_UNCHANGED, self.text())
-        self.assertIsNone(choices.get_band().player_musician(THE_BASS))
+        self.assertIsNone(choices.player(THE_BASS).get_musician())
 
     async def test_clearing_gives_the_player_back_the_usual_musician(self):
         choices = await self.to_player(THE_BASS)
-        choices.get_band().set_player_musician(role=THE_BASS, settings={MusicianSetting.LOUDNESS: musician.LOUDEST})
+        choices.player(THE_BASS).set_musician(settings={MusicianSetting.LOUDNESS: musician.LOUDEST})
         await self.press(Key.DOWN, Key.UP)
         await self.select_field(labels.MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON)
         await self.press(keybindings.WizardPage.CLEAR)
-        self.assertIsNone(choices.get_band().player_musician(THE_BASS))
+        self.assertIsNone(choices.player(THE_BASS).get_musician())
         self.assertIn(labels.MSG_WIZARD_EDIT_PLAYER_BUTTON, self.text())
         self.assertNotIn(labels.MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON, self.text())
 
     async def test_a_genre_of_machines_has_no_edit_player_button(self):
         choices = self.chosen(genre=A_GENRE_OF_MACHINES)
         await self.press(Key.DOWN, Key.UP)
-        await self.go_to_named_branch(choices.get_band().role_title(choices.get_band().roles_in()[0]))
+        await self.go_to_named_branch(choices.player(choices.get_band().roles_in()[0]).title())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertNotIn(labels.MSG_WIZARD_EDIT_PLAYER_BUTTON, self.text())

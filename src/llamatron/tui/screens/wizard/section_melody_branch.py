@@ -59,7 +59,7 @@ class SectionMelodyBranch(Branch):
         if choices.get_tunes().tune_is_own(self._kind):
             return labels.MSG_WIZARD_NOTES_EDITED
         player = choices.get_tunes().tune_player_in(self._kind)
-        return choices.get_band().role_title(player) if player is not None else labels.MSG_WIZARD_NOBODY
+        return choices.player(player).title() if player is not None else labels.MSG_WIZARD_NOBODY
 
     def fields(self):
         choices = self.get_choices()
