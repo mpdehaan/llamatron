@@ -17,7 +17,7 @@
 """A player of the wizard's band: how the player plays, and how busy the player is."""
 
 from llamatron.composition import limits
-from llamatron.macro_composer import breaks as breaks_values, characters, interplay, loudness, notation, song_plan, wizard_choices
+from llamatron.macro_composer import breaks as breaks_values, characters, interplay, loudness, notation, song_plan, wizard_limits
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
@@ -234,7 +234,7 @@ class PlayerBranch(Branch):
     def fill_pattern_fields(self):
         """Return the field for what the drums' fill is, where the genre has more than one, since one is nothing to choose."""
         choices = self.get_choices()
-        trait = choices.song_trait(wizard_choices.FILLS_TRAITS)
+        trait = choices.song_trait(wizard_limits.FILLS_TRAITS)
         if trait is None or len(choices.song_ways(trait)) < A_CHOICE:
             return []
         return [ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_FILLS_LABEL, choices=choices.song_ways(trait), current=choices.get_way(trait),
@@ -245,20 +245,20 @@ class PlayerBranch(Branch):
         never, beside the words for the position."""
         choices = self.get_choices()
         position = choices.get_fills()
-        gauge = marks.MSG_WIZARD_GAUGE_FULL * (position - wizard_choices.FEWEST_FILLS) + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_choices.MOST_FILLS - position)
-        return NumberField(page=self.get_page(), label=labels.MSG_WIZARD_DRUM_FILLS_LABEL, number=position, shown=marks.MSG_WIZARD_FILLS_SHOWN.format(gauge=gauge, often=labels.MSG_WIZARD_FILLS_COME[position - wizard_choices.FEWEST_FILLS]),
-                           lowest=wizard_choices.FEWEST_FILLS, highest=wizard_choices.MOST_FILLS, set=self.get_page().choosing(choices.set_fills))
+        gauge = marks.MSG_WIZARD_GAUGE_FULL * (position - wizard_limits.FEWEST_FILLS) + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_limits.MOST_FILLS - position)
+        return NumberField(page=self.get_page(), label=labels.MSG_WIZARD_DRUM_FILLS_LABEL, number=position, shown=marks.MSG_WIZARD_FILLS_SHOWN.format(gauge=gauge, often=labels.MSG_WIZARD_FILLS_COME[position - wizard_limits.FEWEST_FILLS]),
+                           lowest=wizard_limits.FEWEST_FILLS, highest=wizard_limits.MOST_FILLS, set=self.get_page().choosing(choices.set_fills))
 
     def busy_field(self):
         """Return the Busy field: a number stepped or typed, drawn as a horizontal Busy gauge beside the number."""
         choices = self.get_choices()
         page = self.get_page()
         level = choices.get_busy(self._role)
-        gauge = marks.MSG_WIZARD_GAUGE_FULL * level + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_choices.MOST_BUSY - level)
+        gauge = marks.MSG_WIZARD_GAUGE_FULL * level + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_limits.MOST_BUSY - level)
         # A player whose gauges were moved is no longer the preset, and the field says so until a level is chosen again.
         shown = marks.MSG_WIZARD_BUSY_SHOWN if choices.player_preset(self._role) is not None else marks.MSG_WIZARD_BUSY_CUSTOM_SHOWN
-        return NumberField(page=page, label=labels.MSG_WIZARD_BUSY_LABEL, number=level, shown=shown.format(gauge=gauge, level=level, most=wizard_choices.MOST_BUSY),
-                           lowest=wizard_choices.LEAST_BUSY, highest=wizard_choices.MOST_BUSY, set=page.choosing(lambda value: choices.set_busy(role=self._role, level=value)))
+        return NumberField(page=page, label=labels.MSG_WIZARD_BUSY_LABEL, number=level, shown=shown.format(gauge=gauge, level=level, most=wizard_limits.MOST_BUSY),
+                           lowest=wizard_limits.LEAST_BUSY, highest=wizard_limits.MOST_BUSY, set=page.choosing(lambda value: choices.set_busy(role=self._role, level=value)))
 
     def row_field(self, name):
         """Return the field of one of the player's rows of numbers: the row shown, the genre's own marked so, and Enter opening the row to edit."""
@@ -274,7 +274,7 @@ class PlayerBranch(Branch):
         page = self.get_page()
         lowest, highest = choices.row_limits(name)
         dialog = RowDialog(title=messages.MSG_WIZARD_ROW_TITLE.format(row=labels.MSG_WIZARD_ROW_LABELS[name], player=self.name()), values=choices.get_player_row(role=self._role, name=name),
-                           lowest=lowest, highest=highest, fewest=wizard_choices.FEWEST_ROW_CELLS, most=wizard_choices.MOST_ROW_CELLS, usual=choices.genre_row(role=self._role, name=name))
+                           lowest=lowest, highest=highest, fewest=wizard_limits.FEWEST_ROW_CELLS, most=wizard_limits.MOST_ROW_CELLS, usual=choices.genre_row(role=self._role, name=name))
         page.ask(dialog=dialog, then=page.choosing(lambda values: choices.set_player_row(role=self._role, name=name, values=values)))
 
     def player_gauge_field(self, gauge):

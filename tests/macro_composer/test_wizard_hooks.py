@@ -19,7 +19,7 @@
 import unittest
 
 from llamatron.composition.file_format import SectionKind
-from llamatron.macro_composer import arranger, melody, notation, wizard_choices
+from llamatron.macro_composer import arranger, melody, notation, wizard_limits
 from llamatron.macro_composer.arranger import arranged
 from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed, plan_with_tag
 from llamatron.macro_composer.wizard_choices import WizardChoices
@@ -135,8 +135,8 @@ class TestWizardSecondHook(unittest.TestCase):
         self.assertEqual(choices.second_hook_kinds(), [SectionKind.PRE_CHORUS])
         plain = chosen(subgenre=A_SUBGENRE)
         self.assertEqual(plain.second_hook_kinds(), [])
-        plain.set_end(wizard_choices.OUTRO_THEN_CHORD)
-        self.assertEqual(plain.second_hook_kinds(), [wizard_choices.OUTRO_KIND])
+        plain.set_end(wizard_limits.OUTRO_THEN_CHORD)
+        self.assertEqual(plain.second_hook_kinds(), [wizard_limits.OUTRO_KIND])
 
     def test_a_second_hook_in_the_pre_chorus_is_its_last_line_the_same_bar_twice_and_changes_no_other_section(self):
         choices = chosen()
@@ -151,11 +151,11 @@ class TestWizardSecondHook(unittest.TestCase):
 
     def test_a_second_hook_in_the_outro_has_the_melodys_player_play_there_every_line_the_tag(self):
         choices = chosen(subgenre=A_SUBGENRE)
-        choices.set_end(wizard_choices.OUTRO_THEN_CHORD)
-        choices.set_second_hook(wizard_choices.OUTRO_KIND)
-        lines = self.tag_part(choices=choices, kind=wizard_choices.OUTRO_KIND)[LINES]
+        choices.set_end(wizard_limits.OUTRO_THEN_CHORD)
+        choices.set_second_hook(wizard_limits.OUTRO_KIND)
+        lines = self.tag_part(choices=choices, kind=wizard_limits.OUTRO_KIND)[LINES]
         self.assertTrue(all(line == lines[0] for line in lines))
-        self.assertNotIn(choices.tune_player(), choices._style()[arranger.SECTIONS][wizard_choices.OUTRO_KIND][arranger.PLAYS])
+        self.assertNotIn(choices.tune_player(), choices._style()[arranger.SECTIONS][wizard_limits.OUTRO_KIND][arranger.PLAYS])
 
     def test_the_tags_top_is_under_the_main_hooks(self):
         choices = chosen()

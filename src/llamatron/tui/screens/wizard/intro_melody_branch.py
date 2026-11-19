@@ -27,7 +27,7 @@ the intro's melody is made from the hook and the hook from the chorus.
 from rich.text import Text
 
 from llamatron.composition.checks import listed
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import wizard_limits
 from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -50,7 +50,7 @@ class IntroMelodyBranch(Branch):
         return INTRO_MELODY_KEY
 
     def name(self):
-        return wizard_choices.INTRO.capitalize()
+        return wizard_limits.INTRO.capitalize()
 
     def summary(self):
         """Return how many parts the intro has, where it has more than one, or who says the hook in it."""
@@ -206,7 +206,7 @@ class IntroMelodyBranch(Branch):
         place = self.place_of(self.part_marked())
         if place is None or not choices.intro_is_own(place=place):
             return
-        question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_choices.INTRO)
+        question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_limits.INTRO)
         page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True), then=page.choosing(lambda _: choices.set_intro_pattern(place=place, pattern=None)))
 
     def add_part(self):

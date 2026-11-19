@@ -18,7 +18,7 @@
 
 import unittest
 
-from llamatron.macro_composer import arranger, characters, players, wizard_choices
+from llamatron.macro_composer import arranger, characters, players, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version
@@ -132,16 +132,16 @@ class TestWizardPlayerGauges(unittest.TestCase):
         choices = wizard()
         drums = self.drums(choices)
         usual = patterns_of(choices)
-        self.assertEqual(choices.player_preset(drums), wizard_choices.USUAL_BUSY)
+        self.assertEqual(choices.player_preset(drums), wizard_limits.USUAL_BUSY)
         for gauge in choices.player_gauges(drums):
-            self.assertEqual(choices.get_player_gauge(role=drums, gauge=gauge), characters.PRESET_PLACE[wizard_choices.USUAL_BUSY])
+            self.assertEqual(choices.get_player_gauge(role=drums, gauge=gauge), characters.PRESET_PLACE[wizard_limits.USUAL_BUSY])
         choices.set_player_gauge(role=drums, gauge=characters.FILLS, place=characters.HIGHEST)
         self.assertEqual(choices.get_player_gauge(role=drums, gauge=characters.FILLS), characters.HIGHEST)
         self.assertIsNone(choices.player_preset(drums))
         self.assertNotEqual(patterns_of(choices), usual)
         # Moved back to the preset's place, the gauge is the preset's again, and so is the song.
-        choices.set_player_gauge(role=drums, gauge=characters.FILLS, place=characters.PRESET_PLACE[wizard_choices.USUAL_BUSY])
-        self.assertEqual(choices.player_preset(drums), wizard_choices.USUAL_BUSY)
+        choices.set_player_gauge(role=drums, gauge=characters.FILLS, place=characters.PRESET_PLACE[wizard_limits.USUAL_BUSY])
+        self.assertEqual(choices.player_preset(drums), wizard_limits.USUAL_BUSY)
         self.assertEqual(patterns_of(choices), usual)
 
     def test_a_preset_chosen_puts_every_gauge_back_and_the_gauges_are_kept_with_the_song(self):

@@ -67,7 +67,7 @@ using it, each with a docstring or comment saying what for and how, never in a t
 **The program is layers, each with a front door.** From the bottom: `support`, `strings`, `music`, `composition`, `grid`,
 `generators`, `exporters`, `playback`, `importers`, `realtime`, `macro_composer`, `visualizers`, `tui`, `tutorial`. A package
 imports only packages below it. From outside, `playback` is reached through `song_renderer`, `exporters` through `exports`,
-`importers` through `midi_import`, `macro_composer` through `wizard_choices`, and `realtime` only by `tui/transport.py`,
+`importers` through `midi_import`, `macro_composer` through `wizard_choices` and `wizard_limits`, the wizard's limits and names, which holds no behaviour, and `realtime` only by `tui/transport.py`,
 `tui/pattern_preview.py` and `cli.py`. A page imports no other page, and of the model only `file_format`'s names: what a page
 needs of the model, the document or the model's objects answer. An import that would cross a layer is the sign of a missing
 object in the layer below, never a reason for a new exception (`internal_tools/layers.py` holds the lists).

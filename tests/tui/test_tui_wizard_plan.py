@@ -17,7 +17,7 @@
 """The song wizard's page on a planned song: the plan's fields on the Form panel and the hook's kind on the Hooks panel."""
 
 from llamatron.composition import limits
-from llamatron.macro_composer import arranger, hook_writing, joins, song_plan, wizard_choices
+from llamatron.macro_composer import arranger, hook_writing, joins, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import chords_as_text
 from llamatron.strings import errors, labels, marks
 from llamatron.tui import keybindings
@@ -260,8 +260,8 @@ class TestWizardFormQuestions(WizardTest):
         choices = self.choices()
         await self.press(Key.ENTER)
         for name, _, _ in choices.form_questions():
-            await self.press(*([Key.DOWN] if name == wizard_choices.DRUM_SOLO_KIND else []), Key.ENTER)
-        self.assertIn(wizard_choices.DRUM_SOLO_KIND, choices.section_kinds_in_form())
+            await self.press(*([Key.DOWN] if name == wizard_limits.DRUM_SOLO_KIND else []), Key.ENTER)
+        self.assertIn(wizard_limits.DRUM_SOLO_KIND, choices.section_kinds_in_form())
 
     async def test_esc_at_a_question_leaves_the_form_alone(self):
         choices = self.choices()

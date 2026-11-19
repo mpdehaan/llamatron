@@ -17,7 +17,7 @@
 
 from rich.text import Text
 
-from llamatron.macro_composer import song_plan, wizard_choices
+from llamatron.macro_composer import song_plan, wizard_limits
 from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
@@ -81,10 +81,10 @@ class FormBranch(Branch):
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_STARTS_LABEL, choices=choices.starts(), current=start or choices.starts()[0], shown=None if start is not None else labels.MSG_WIZARD_OWN_START, set=staging(choices.set_start)))
         if choices.ends():
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_ENDS_LABEL, choices=choices.ends(), current=end or choices.ends()[0], shown=None if end is not None else labels.MSG_WIZARD_OWN_START, set=staging(choices.set_end)))
-        if (start in wizard_choices.WAYS_WITH_FIRST_PLAYER or end in wizard_choices.WAYS_WITH_FIRST_PLAYER) and len(choices.first_players()) > 1:
+        if (start in wizard_limits.WAYS_WITH_FIRST_PLAYER or end in wizard_limits.WAYS_WITH_FIRST_PLAYER) and len(choices.first_players()) > 1:
             titles = {choices.role_title(role): role for role in choices.first_players()}
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_FIRST_PLAYER_LABEL, choices=list(titles), current=choices.role_title(choices.get_first_player()), set=staging(lambda title: choices.set_first_player(titles[title]))))
-        if start in wizard_choices.WAYS_WITH_SETUP_BARS or end in wizard_choices.WAYS_WITH_SETUP_BARS:
+        if start in wizard_limits.WAYS_WITH_SETUP_BARS or end in wizard_limits.WAYS_WITH_SETUP_BARS:
             bars = {str(count): count for count in choices.setup_bars_offered()}
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_SETUP_BARS_LABEL, choices=list(bars), current=str(choices.get_setup_bars()), set=staging(lambda count: choices.set_setup_bars(bars[count]))))
         return fields

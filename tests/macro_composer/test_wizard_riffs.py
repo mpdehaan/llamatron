@@ -19,7 +19,7 @@
 import unittest
 
 from llamatron.composition.file_format import Section
-from llamatron.macro_composer import riffs, wizard_choices
+from llamatron.macro_composer import riffs, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import macro_composer as composer_text, names
 from llamatron.support import version
@@ -102,7 +102,7 @@ class TestWizardRiffList(unittest.TestCase):
         choices = chosen()
         riff = choices.add_riff(role=THE_GUITAR)
         before = patterns(choices)
-        self.assertEqual(choices.section_part(kind=A_VERSE, role=THE_GUITAR), wizard_choices.ACCOMPANIMENT)
+        self.assertEqual(choices.section_part(kind=A_VERSE, role=THE_GUITAR), wizard_limits.ACCOMPANIMENT)
         self.assertIn(riff, choices.section_parts_offered(kind=A_VERSE, role=THE_GUITAR))
         self.assertNotIn(riff, choices.section_parts_offered(kind=A_VERSE, role=THE_BASS))
         choices.set_section_part(kind=A_VERSE, role=THE_GUITAR, part=riff)
@@ -110,7 +110,7 @@ class TestWizardRiffList(unittest.TestCase):
         self.assertEqual(choices.riff_kinds_used(riff), [A_VERSE])
         self.assertIn(pattern_of(role=THE_GUITAR, riff=riff), patterns(choices))
         self.assertNotEqual(patterns(choices), before)
-        choices.set_section_part(kind=A_VERSE, role=THE_GUITAR, part=wizard_choices.ACCOMPANIMENT)
+        choices.set_section_part(kind=A_VERSE, role=THE_GUITAR, part=wizard_limits.ACCOMPANIMENT)
         self.assertEqual(patterns(choices), before)
 
     def test_a_riff_is_renamed_wherever_it_is_known_and_played_and_a_taken_name_is_refused(self):
@@ -167,7 +167,7 @@ class TestWizardRiffList(unittest.TestCase):
         choices.delete_riff(riff)
         self.assertEqual(choices.riff_names(), [])
         self.assertEqual(choices.riffs_known_by(THE_BASS), [])
-        self.assertEqual(choices.section_part(kind=A_VERSE, role=THE_BASS), wizard_choices.ACCOMPANIMENT)
+        self.assertEqual(choices.section_part(kind=A_VERSE, role=THE_BASS), wizard_limits.ACCOMPANIMENT)
         self.assertEqual(patterns(choices), before)
         # A name is never given again while the song is made, so the next riff counts on.
         self.assertEqual(choices.add_riff(role=THE_GUITAR), FIRST_RIFF)
@@ -196,7 +196,7 @@ class TestWizardRiffAssign(unittest.TestCase):
         choices.take_riff_from(role=THE_GUITAR, riff=riff)
         self.assertEqual(choices.riffs_known_by(THE_GUITAR), [])
         self.assertEqual(choices.riff_names(), [riff])
-        self.assertEqual(choices.section_part(kind=A_VERSE, role=THE_GUITAR), wizard_choices.ACCOMPANIMENT)
+        self.assertEqual(choices.section_part(kind=A_VERSE, role=THE_GUITAR), wizard_limits.ACCOMPANIMENT)
         self.assertEqual(patterns(choices), before)
 
     def test_what_is_no_riff_or_no_part_is_refused(self):
@@ -215,14 +215,14 @@ class TestWizardSectionPlayers(unittest.TestCase):
     def test_the_melodys_player_has_the_melody_and_another_player_takes_it_in_one_kind_of_section(self):
         choices = chosen()
         singer = choices.tune_player()
-        self.assertEqual(choices.section_part(kind=A_VERSE, role=singer), wizard_choices.MELODY_PART)
-        taker = next(role for role in choices.section_players(A_VERSE) if role != singer and wizard_choices.MELODY_PART in choices.section_parts_offered(kind=A_VERSE, role=role))
+        self.assertEqual(choices.section_part(kind=A_VERSE, role=singer), wizard_limits.MELODY_PART)
+        taker = next(role for role in choices.section_players(A_VERSE) if role != singer and wizard_limits.MELODY_PART in choices.section_parts_offered(kind=A_VERSE, role=role))
         before = patterns(choices)
-        choices.set_section_part(kind=A_VERSE, role=taker, part=wizard_choices.MELODY_PART)
+        choices.set_section_part(kind=A_VERSE, role=taker, part=wizard_limits.MELODY_PART)
         self.assertEqual(choices.tune_player_in(A_VERSE), taker)
-        self.assertEqual(choices.section_part(kind=A_VERSE, role=singer), wizard_choices.RESTS_PART)
+        self.assertEqual(choices.section_part(kind=A_VERSE, role=singer), wizard_limits.RESTS_PART)
         self.assertNotEqual(patterns(choices), before)
-        choices.set_section_part(kind=A_VERSE, role=singer, part=wizard_choices.MELODY_PART)
+        choices.set_section_part(kind=A_VERSE, role=singer, part=wizard_limits.MELODY_PART)
         self.assertEqual(choices.tune_player_in(A_VERSE), singer)
         self.assertEqual(patterns(choices), before)
 

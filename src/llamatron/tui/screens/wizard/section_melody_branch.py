@@ -26,7 +26,7 @@ hook and who else plays them is on the Hook panel (hooks_branch.py).
 
 from rich.text import Text
 
-from llamatron.macro_composer import hook_writing, melody, wizard_choices
+from llamatron.macro_composer import hook_writing, melody, wizard_limits
 from llamatron.strings import labels, legends, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -70,8 +70,8 @@ class SectionMelodyBranch(Branch):
             fields = [*self.placement_fields(), *(self.body_gauge_field(name) for name in choices.body_gauges())]
         elif melody.HEIGHT in choices.section_melody_fields(kind):
             fields.append(self.own_field(field=melody.HEIGHT, label=labels.MSG_WIZARD_HEIGHT_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=melody.HEIGHT), usual=choices.genre_height_in(kind), origin=labels.MSG_WIZARD_USUAL_MELODY))
-        if wizard_choices.MELODY_BUSY in choices.section_melody_fields(kind) and not choices.is_body_of_hook(kind):
-            fields.append(self.own_field(field=wizard_choices.MELODY_BUSY, label=labels.MSG_WIZARD_SECTION_BUSY_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=wizard_choices.MELODY_BUSY), usual=choices.get_melody_way(wizard_choices.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
+        if wizard_limits.MELODY_BUSY in choices.section_melody_fields(kind) and not choices.is_body_of_hook(kind):
+            fields.append(self.own_field(field=wizard_limits.MELODY_BUSY, label=labels.MSG_WIZARD_SECTION_BUSY_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=wizard_limits.MELODY_BUSY), usual=choices.get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
         return fields + self.hook_fields() + self.buttons()
 
     def says_the_hook(self):
@@ -124,7 +124,7 @@ class SectionMelodyBranch(Branch):
         gives said to be so, which gives the field back when picked; a value that makes the same song as that one is left out."""
         choices = self.get_choices()
         chosen = choices.get_section_melody(kind=self._kind, field=field)
-        values = [value for value in wizard_choices.SECTION_MELODY_WAYS[field] if value == usual or value in ways]
+        values = [value for value in wizard_limits.SECTION_MELODY_WAYS[field] if value == usual or value in ways]
         names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=origin) if value == usual else value for value in values]
         now = chosen if chosen in values else usual
         return ChoiceField(page=self.get_page(), label=label, choices=values, names=names, current=now, shown=names[values.index(now)],

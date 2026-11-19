@@ -21,7 +21,7 @@ import unittest
 
 from llamatron.composition import limits
 from llamatron.composition.file_format import InstrumentSetting, Section
-from llamatron.macro_composer import arranger, breaks, characters, notation, wizard_choices
+from llamatron.macro_composer import arranger, breaks, characters, notation, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
@@ -318,7 +318,7 @@ class TestKitPieceSounds(unittest.TestCase):
         as_drum = patterns_of(choices)
         self.assertNotEqual(as_drum, usual)
         choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND)
-        self.assertEqual((choices.piece_sound(breaks.KICK), choices.piece_note(breaks.KICK)), (A_SOUND, wizard_choices.USUAL_PIECE_NOTE))
+        self.assertEqual((choices.piece_sound(breaks.KICK), choices.piece_note(breaks.KICK)), (A_SOUND, wizard_limits.USUAL_PIECE_NOTE))
         choices.set_piece_note(piece=breaks.KICK, note=A_NOTE)
         self.assertNotIn(patterns_of(choices), (usual, as_drum))
         # A piece in a sound of its own is still a piece of the kit, listed and switched on and off.

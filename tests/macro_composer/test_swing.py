@@ -18,7 +18,7 @@
 import unittest
 
 from llamatron.composition.groove import FactoryGroove
-from llamatron.macro_composer import arranger, wizard_choices
+from llamatron.macro_composer import arranger, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version
@@ -68,7 +68,7 @@ class TestSwing(unittest.TestCase):
             style = arranger.style_named(name)
             for template in style[arranger.TEMPLATES]:
                 swing = arranger.style_in(style=style, template=template).get(arranger.GROOVE, arranger.NO_GROOVE)
-                self.assertIn(swing, wizard_choices.SWINGS)
+                self.assertIn(swing, wizard_limits.SWINGS)
 
     def test_a_song_s_own_swing_is_played_kept_and_given_back_to_the_kind(self):
         choices = chosen(subgenre=PUNK)
@@ -106,7 +106,7 @@ class TestSwing(unittest.TestCase):
         choices = chosen()
         with self.assertRaisesRegex(ValueError, fixed_text(errors.ERR_WIZARD_SWING)):
             choices.set_swing(NOT_A_SWING)
-        self.assertEqual(choices.swings(), list(wizard_choices.SWINGS))
+        self.assertEqual(choices.swings(), list(wizard_limits.SWINGS))
 
 
 if __name__ == '__main__':

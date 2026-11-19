@@ -31,7 +31,7 @@ from llamatron.composition import generator_settings
 from llamatron.composition.file_format import GeneratorKind, Row, Section
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.generators import musician, phrasing as phrasing_values
-from llamatron.macro_composer import breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_choices
+from llamatron.macro_composer import breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
 from llamatron.support import version
 
@@ -65,7 +65,7 @@ SECTION_ROLE = "a section's role"
 FILLS_BUSY = 'fills busy'
 # Two drums of the kit, the second for the piece that is the first, and a note that is not the usual one.
 ANOTHER_DRUM = ('cowbell', 'claves')
-ANOTHER_NOTE = wizard_choices.USUAL_PIECE_NOTE + 7
+ANOTHER_NOTE = wizard_limits.USUAL_PIECE_NOTE + 7
 BREAK_CUT = 'cut up'
 MELODY_WAY = 'what every melody shares'
 MELODY_CHARACTER_CHOICE = "the melodies' character"
@@ -190,7 +190,7 @@ def put_in(role):
 
 def under_each_drummer(*, choices, role, first):
     """Return what to do first for a choice that says what the drummer would do unasked: nothing more, then each other drummer."""
-    others = [level for level in range(wizard_choices.LEAST_BUSY, wizard_choices.MOST_BUSY + 1) if level != choices.get_busy(role)] if choices.get_busy(role) is not None else []
+    others = [level for level in range(wizard_limits.LEAST_BUSY, wizard_limits.MOST_BUSY + 1) if level != choices.get_busy(role)] if choices.get_busy(role) is not None else []
     return [first] + [lambda made, level=level: (first(made), made.set_busy(role=role, level=level)) for level in others]
 
 
@@ -233,7 +233,7 @@ def every_choice(choices):
             yield SOUND, role, lambda made, role=role: made.set_sound(role=role, sound=A_SOUND_OF_NO_STYLE), [first]
         else:
             drummer = role
-            for position in range(wizard_choices.FEWEST_FILLS, wizard_choices.MOST_FILLS + 1):
+            for position in range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1):
                 if position != choices.get_fills():
                     yield FILLS_COME, position, lambda made, position=position: made.set_fills(position), under_each_drummer(choices=choices, role=role, first=first)
             for piece in choices.pieces()[1:]:
@@ -261,11 +261,11 @@ def every_choice(choices):
             on = role not in choices.section_plays(FIRST_PLACE)
             if on or len(choices.section_plays(FIRST_PLACE)) > 1:
                 yield PLAYS_IN_SECTION, (role, on), lambda made, role=role, on=on: made.set_section_plays(place=FIRST_PLACE, role=role, on=on), [nothing_first]
-    for sounds in wizard_choices.BAND_SOUNDS:
+    for sounds in wizard_limits.BAND_SOUNDS:
         # A band already of a family is not changed by choosing the family, which is no dead choice.
-        if sounds != wizard_choices.USUAL_SOUNDS and any(choices.has_sound(role) and band_sound_differs(choices=choices, role=role, sounds=sounds) for role in choices.roles_in()):
+        if sounds != wizard_limits.USUAL_SOUNDS and any(choices.has_sound(role) and band_sound_differs(choices=choices, role=role, sounds=sounds) for role in choices.roles_in()):
             yield BAND_SOUND, sounds, lambda made, sounds=sounds: made.set_band_sounds(sounds), [nothing_first]
-    for kind, trait in ((PROGRESSION, choices.progression_trait()), (FILLS, choices.song_trait(wizard_choices.FILLS_TRAITS))):
+    for kind, trait in ((PROGRESSION, choices.progression_trait()), (FILLS, choices.song_trait(wizard_limits.FILLS_TRAITS))):
         firsts = [nothing_first]
         if kind == FILLS and drummer is not None:
             firsts = under_each_drummer(choices=choices, role=drummer, first=put_in(drummer) if plays_nowhere(choices=choices, role=drummer) else nothing_first)
@@ -310,7 +310,7 @@ def every_choice(choices):
                 if value != choices.get_section_melody(kind=kind, field=field):
                     yield MELODY_OF_KIND, (kind, field, value), lambda made, kind=kind, field=field, value=value: made.set_section_melody(kind=kind, field=field, value=value), [nothing_first]
     # A player's rows show under the serial style, and each row with every cell moved to the far end of its range is held against the genre's own.
-    for character in (None, *(offered for offered in choices.melody_characters_offered() if offered == wizard_choices.ATONAL)):
+    for character in (None, *(offered for offered in choices.melody_characters_offered() if offered == wizard_limits.ATONAL)):
         chosen = choices if character is None else fresh_with_character(choices=choices, character=character)
         first = nothing_first if character is None else (lambda made, character=character: made.set_melody_character(character))
         for role in chosen.roles_in():
@@ -337,7 +337,7 @@ def every_choice(choices):
         under_plan = fresh_with_plan(choices)
         if under_plan.counts_in_four():
             yield PHRASING, False, lambda made: made.set_phrasing(False), [planned]
-            for name, offered in wizard_choices.PHRASING_OFFERED.items():
+            for name, offered in wizard_limits.PHRASING_OFFERED.items():
                 for value in offered:
                     if value != phrasing.USUAL_WAYS[name]:
                         yield PHRASING_WAY, (name, value), lambda made, name=name, value=value: made.set_phrasing_way(name=name, value=value), [planned]
@@ -386,7 +386,7 @@ def every_choice(choices):
             made.set_section_own(place=place, field=song_plan.FADES, value=True)
         yield A_FADE, place, fades_first, [nothing_first]
         yield A_FADE_LEVEL, place, lambda made, place=place: made.set_section_own(place=place, field=song_plan.FADE_LEVEL, value=A_VELOCITY), [fades_first]
-        if choices.fade_way(place) == wizard_choices.FADE_IN and choices.section_bars(place) > A_BAR:
+        if choices.fade_way(place) == wizard_limits.FADE_IN and choices.section_bars(place) > A_BAR:
             yield A_FADE_OVER, place, lambda made, place=place: made.set_section_own(place=place, field=song_plan.FADE_OVER, value=A_BAR), [fades_first]
     if choices.intro_parts():
         yield INTRO_PART, None, lambda made: made.add_intro_part(), [nothing_first]
@@ -448,7 +448,7 @@ def every_choice(choices):
         yield A_RIFF, 'regenerated', lambda made, riff=riff: made.regenerate_riff(riff), [played]
         yield A_RIFF, 'deleted', lambda made, riff=riff: made.delete_riff(riff), [played]
         for field in (riffs.RIFF_BAR_COUNT, riffs.RIFF_NOTES):
-            other = wizard_choices.RIFF_SETTINGS[field][1]
+            other = wizard_limits.RIFF_SETTINGS[field][1]
             yield A_RIFF_SETTING, (field, other), lambda made, role=role, kind=kind, field=field, other=other: played(made, role=role, kind=kind, settings={field: other}), [nothing_first]
     # Another take of a tune, for each kind of section that has one.
     for kind in choices.tune_kinds():
@@ -456,7 +456,7 @@ def every_choice(choices):
     # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
     for place in range(len(choices.section_labels())):
         lines = choices.section_lines(place)
-        line = next((count for count, said in enumerate(lines) if said[wizard_choices.LINE_BREATHES]), None)
+        line = next((count for count, said in enumerate(lines) if said[wizard_limits.LINE_BREATHES]), None)
         if line is None:
             continue
         for breath in (phrasing.NO_BREATH, phrasing.LONGEST_BREATH - 1):
@@ -484,7 +484,7 @@ def every_choice(choices):
     for way in choices.ends():
         if way != choices.get_end():
             yield END, way, lambda made, way=way: made.set_end(way), [nothing_first]
-    if wizard_choices.ONE_PLAYER_FIRST in choices.starts():
+    if wizard_limits.ONE_PLAYER_FIRST in choices.starts():
         # What the stages offer is asked of choices that start with one player, since a length is offered only where that player fills it.
         staged = WizardChoices.from_data(choices.to_data())
         one_player_first(staged)
@@ -500,7 +500,7 @@ def every_choice(choices):
             if answer != usual:
                 yield FORM_ANSWER, (name, answer), lambda made, name=name, answer=answer: made.set_form_from_answers({name: answer}), [lambda made: made.set_form_from_answers({})]
     if choices.offers_one_guitarist():
-        yield GUITARISTS, wizard_choices.ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(wizard_choices.ONE_GUITARIST_COUNT), [nothing_first]
+        yield GUITARISTS, wizard_limits.ONE_GUITARIST_COUNT, lambda made: made.set_guitarists(wizard_limits.ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
     yield TEMPO, A_LITTLE_FASTER, lambda made: made.set_tempo(made.get_tempo() + A_LITTLE_FASTER), [nothing_first]
     for variant in choices.variants():
@@ -552,7 +552,7 @@ def set_reacts_where_heard(*, made, role):
 
 
 def one_player_first(made):
-    made.set_start(wizard_choices.ONE_PLAYER_FIRST)
+    made.set_start(wizard_limits.ONE_PLAYER_FIRST)
 
 
 def switch_plan_off(made):
@@ -633,12 +633,12 @@ def usual_song_of(usual):
 def positions_alike(*, genre, subgenre, role, first):
     """Return how many positions of a player's Busy gauge make a song another position makes."""
     songs = set()
-    for level in range(wizard_choices.LEAST_BUSY, wizard_choices.MOST_BUSY + 1):
+    for level in range(wizard_limits.LEAST_BUSY, wizard_limits.MOST_BUSY + 1):
         made = fresh(genre=genre, subgenre=subgenre)
         first(made)
         made.set_busy(role=role, level=level)
         songs.add(json.dumps(song_of(made), sort_keys=True, default=str))
-    return wizard_choices.MOST_BUSY + 1 - wizard_choices.LEAST_BUSY - len(songs)
+    return wizard_limits.MOST_BUSY + 1 - wizard_limits.LEAST_BUSY - len(songs)
 
 
 def band_sound_differs(*, choices, role, sounds):

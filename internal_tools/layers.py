@@ -55,7 +55,7 @@ FRONT_DOORS = {
     'playback': ('song_renderer',),
     'exporters': ('exports',),
     'importers': ('midi_import',),
-    'macro_composer': ('wizard_choices',),
+    'macro_composer': ('wizard_choices', 'wizard_limits'),
     'realtime': (),
 }
 # The only files outside the real-time package that import it.

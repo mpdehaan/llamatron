@@ -18,7 +18,7 @@
 
 import unittest
 
-from llamatron.macro_composer import arranger, interplay, melody, notation, wizard_choices
+from llamatron.macro_composer import arranger, interplay, melody, notation, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
@@ -277,8 +277,8 @@ class TestWizardInterplayChoices(unittest.TestCase):
         choices.set_answered_by(None)
         again = WizardChoices.from_data(choices.to_data())
         self.assertIsNone(again.answered_by())
-        self.assertEqual(again.to_data()[wizard_choices.BESIDE_KEPT][wizard_choices.BY], None)
-        before = {field: value for field, value in choices.to_data().items() if field != wizard_choices.BESIDE_KEPT}
+        self.assertEqual(again.to_data()[wizard_limits.BESIDE_KEPT][wizard_limits.BY], None)
+        before = {field: value for field, value in choices.to_data().items() if field != wizard_limits.BESIDE_KEPT}
         old = WizardChoices.from_data(before)
         self.assertEqual((old.answerers(), old.answered_by()), ([], None))
         self.assertNotIn(arranger.BESIDE, old.song_picks(SONG_NAME))

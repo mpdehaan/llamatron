@@ -414,6 +414,7 @@ clouds; generate and test, with motif development and counterpoint last.
 
 ## The Wizard's Choices
 
+- `src/llamatron/macro_composer/wizard_limits.py` holds every number, list and name the wizard's choices are held to and kept under, and no behaviour: the choices, each part of them and the wizard's pages name a limit through it, `wizard_limits.FEWEST_FILLS`.
 - `WizardChoices` (`src/llamatron/macro_composer/wizard_choices.py`) holds one run of the song wizard: the genre, a style
   template by its file's name and shown by its title; the subgenre, one of the template's kinds; the key's root and scale
   type; the tempo; the form, one of the forms the template suggests for the kind; and the seed. Each setter refuses what it

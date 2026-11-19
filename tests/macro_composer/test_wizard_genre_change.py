@@ -18,7 +18,7 @@
 
 import unittest
 
-from llamatron.macro_composer import arranger, wizard_choices
+from llamatron.macro_composer import arranger, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 
 A_GENRE = 'rock'
@@ -60,10 +60,10 @@ class TestLostWithGenre(unittest.TestCase):
         choices = chosen()
         player = next(role for role in choices.roles_in() if role != choices.tune_player() and role in choices.tune_players_offered())
         choices.set_tune_played_by(player)
-        self.assertEqual(choices.lost_with_genre(), ({wizard_choices.LOST_BAND_SETTINGS: 1}, {}))
+        self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_BAND_SETTINGS: 1}, {}))
         left_out = next(role for role in choices.roles_in() if role != player and role in choices.tune_players_offered())
         choices.set_role_in(role=left_out, on=False)
-        self.assertEqual(choices.lost_with_genre()[0][wizard_choices.LOST_BAND_SETTINGS], 2)
+        self.assertEqual(choices.lost_with_genre()[0][wizard_limits.LOST_BAND_SETTINGS], 2)
         choices.set_role_in(role=left_out, on=True)
         choices.set_tune_played_by(None)
         self.assertEqual(choices.lost_with_genre(), NOTHING_LOST)
@@ -73,16 +73,16 @@ class TestLostWithGenre(unittest.TestCase):
         choices.new_tune_take(A_KIND)
         choices.new_tune_take(A_KIND)
         choices.new_tune_take(ANOTHER_KIND)
-        self.assertEqual(choices.lost_with_genre(), ({wizard_choices.LOST_TUNE_TAKES: 2}, {}))
+        self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_TUNE_TAKES: 2}, {}))
         choices.set_section_own(place=A_PLACE, field=arranger.CHORDS, value=OWN_CHORDS)
         lost, kept = choices.lost_with_genre()
-        self.assertEqual(lost[wizard_choices.LOST_OWN_CHORDS], 1)
-        self.assertEqual(lost[wizard_choices.LOST_FORM], 1)
+        self.assertEqual(lost[wizard_limits.LOST_OWN_CHORDS], 1)
+        self.assertEqual(lost[wizard_limits.LOST_FORM], 1)
         self.assertEqual(kept, {})
 
     def test_tunes_written_by_hand_are_kept_and_alone_lose_nothing(self):
         choices = chosen()
         choices.set_tune_pattern(kind=A_KIND, pattern=choices.tune_pattern(A_KIND))
-        self.assertEqual(choices.lost_with_genre(), ({}, {wizard_choices.KEPT_OWN_TUNES: 1}))
+        self.assertEqual(choices.lost_with_genre(), ({}, {wizard_limits.KEPT_OWN_TUNES: 1}))
         choices.new_tune_take(ANOTHER_KIND)
-        self.assertEqual(choices.lost_with_genre(), ({wizard_choices.LOST_TUNE_TAKES: 1}, {wizard_choices.KEPT_OWN_TUNES: 1}))
+        self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_TUNE_TAKES: 1}, {wizard_limits.KEPT_OWN_TUNES: 1}))

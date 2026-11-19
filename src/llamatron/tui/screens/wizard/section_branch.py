@@ -17,7 +17,7 @@
 """A section of the wizard's form: its kind, how long it lasts and who plays in it; it can be copied, removed and moved."""
 
 from llamatron.composition import limits
-from llamatron.macro_composer import arranger, joins, song_plan, wizard_choices
+from llamatron.macro_composer import arranger, joins, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import chords_as_text
 from llamatron.music import note
 from llamatron.strings import labels, legends, marks, messages
@@ -32,12 +32,12 @@ FIRST_SECTION_NUMBER = 1
 
 # The numbers a section can be given of its own, each with its range, and the choices of each field chosen from a list.
 NUMBERS_OF_SECTION = {song_plan.ENERGY: (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY), song_plan.TEMPO_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO), song_plan.TEMPO_END_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO)}
-CHOICES_OF_SECTION = {joins.LEAVES: list(wizard_choices.LEAVES_AS_JOIN), song_plan.SETUP: [song_plan.NOT_AT_ALL], song_plan.ROOT_OF_PLACE: list(note.ROOT_NAMES), song_plan.TYPE_OF_PLACE: list(wizard_choices.SCALE_TYPES)}
+CHOICES_OF_SECTION = {joins.LEAVES: list(wizard_limits.LEAVES_AS_JOIN), song_plan.SETUP: [song_plan.NOT_AT_ALL], song_plan.ROOT_OF_PLACE: list(note.ROOT_NAMES), song_plan.TYPE_OF_PLACE: list(wizard_limits.SCALE_TYPES)}
 
 
 # The groups of what a section is given of its own, in the order they show, each with its fields in order.
 OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (arranger.CHORDS, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE)),
-              (labels.MSG_WIZARD_GROUP_SHAPE, (wizard_choices.SHAPE_OF_SECTION, song_plan.RISES, song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER, song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_SHAPE, (wizard_limits.SHAPE_OF_SECTION, song_plan.RISES, song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER, song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE)),
               (labels.MSG_WIZARD_GROUP_JOINS, (joins.LEAVES, song_plan.SETUP)))
 
 
@@ -114,7 +114,7 @@ class SectionBranch(Branch):
         panel of its kind of section, so a section with no such line has no such field."""
         choices = self.get_choices()
         place = self._place
-        own = {count: line[wizard_choices.LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[wizard_choices.LINE_OWN]}
+        own = {count: line[wizard_limits.LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[wizard_limits.LINE_OWN]}
         if not own:
             return []
 
@@ -126,7 +126,7 @@ class SectionBranch(Branch):
                       clear=lambda: self.get_page().choosing(give_back)(None), clear_what=legends.MSG_TUNE_USUAL_WHAT)]
 
     def has_own_lines(self):
-        return any(line[wizard_choices.LINE_OWN] for line in self.get_choices().section_lines(self._place))
+        return any(line[wizard_limits.LINE_OWN] for line in self.get_choices().section_lines(self._place))
 
     def has_own_role(self):
         choices = self.get_choices()
@@ -180,7 +180,7 @@ class SectionBranch(Branch):
         if field in (song_plan.RISES, song_plan.FADES):
             return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
         from_above = labels.MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
-        offered = choices.section_shapes(place) if field == wizard_choices.SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
+        offered = choices.section_shapes(place) if field == wizard_limits.SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
         return ChoiceField(page=page, label=label, choices=[from_above, *offered], current=from_above if own is None else own, shown=shown,
                            set=lambda picked: set_own(None if picked == from_above else picked), **clear)
 
