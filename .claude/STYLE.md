@@ -69,6 +69,12 @@ level of the problem, with small, well-named methods and shared helpers for repe
 (`llama_data.py` has `settings_by_name`, `written_settings` and `or_default` for the settings every
 object holds), over low-level code that reads like "Python written in assembly".
 
+**An object stands for a thing a reader would name.** A method belongs to the thing it is about, and a class is a concept a
+musician or a maintainer recognises, a player, a run of passes, a cursor, never a procedure cut into functions. Before adding a
+function, Claude names the thing the function belongs to. Several functions passing the same values along, or a dictionary with
+constant keys standing in for a thing, is a missing object, which Claude proposes to the user before going on (the user's rule).
+`.claude/features/REFACTORING.md` holds the agreed steps that bring the older code to this.
+
 **Objects talk through explicit methods.** A class changes another's data only through a method
 like `set_name(name)`, which validates what it's given with the same check as reading a file,
 the one check its setting's description holds (`composition/setting.py`), and
