@@ -129,7 +129,7 @@ These keys work throughout the rows view:
 
 ### Munge
 
-`M` (Munge) opens a list of ways to rearrange, copy and clear the pattern's steps, sorted by name. Typing searches the list. Many of the choices work around the step the cursor is on, and every choice is one change to undo. In the examples, a pattern's steps are written A B C D E F G H and the cursor is on C.
+`M` (Munge) opens a list of ways to rearrange, copy and clear the pattern's steps, under five headings that open and close: Clear, Copy, Other Patterns, Rearrange and Smooth. `Space` or `ENTER` on a heading opens it, `PgUp` and `PgDn` jump between headings, and the headings left open stay open the next time. Typing searches every choice, whatever its heading. Many of the choices work around the step the cursor is on, and every choice is one change to undo. In the examples, a pattern's steps are written A B C D E F G H and the cursor is on C.
 
 | Choice | What it does |
 | --- | --- |

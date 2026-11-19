@@ -29,7 +29,8 @@ from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
+from llamatron.tui.screens.pattern.pattern_editor import MUNGE_GROUPS, Munge, PatternEditor, munge_groups, munges_in_order
 from tests.support.pattern_editor_testing import munge
 from tests.support.ui_testing import BEAT, OTHER, UITest
 
@@ -64,12 +65,22 @@ class TestMunge(UITest):
 
     async def test_the_key_opens_the_choices_sorted_by_name_and_esc_changes_nothing(self):
         await self.press(keybindings.PatternEditor.MUNGE)
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        shown = self.app.screen.options
-        self.assertEqual(shown, sorted(labels.MSG_MUNGE_CHOICES, key=str.lower))
-        self.assertEqual(len(set(shown)), len([name for name in vars(Munge) if name.isupper()]))
-        # The list scrolls in a dialog that leaves room above and below.
-        self.assertLess(ChoiceDialog.SHOWN, len(shown))
+        dialog = self.app.screen
+        self.assertIsInstance(dialog, GroupedChoiceDialog)
+        # The headings are sorted, closed until opened, and each heading's choices are sorted; every munge is under one heading.
+        self.assertEqual(dialog.headings, sorted(MUNGE_GROUPS))
+        self.assertEqual(len(dialog.rows()), len(MUNGE_GROUPS))
+        for heading, choices in munge_groups():
+            names = [labels.MSG_MUNGE_CHOICES[choice] for choice in choices]
+            self.assertEqual(names, sorted(names, key=str.lower))
+        self.assertEqual(sorted(munges_in_order()), list(range(len(labels.MSG_MUNGE_CHOICES))))
+        self.assertEqual(len(labels.MSG_MUNGE_CHOICES), len([name for name in vars(Munge) if name.isupper()]))
+        # A heading opens to its choices, and stays open the next time.
+        await self.press(Key.ENTER)
+        self.assertEqual(len(dialog.rows()), len(MUNGE_GROUPS) + len(MUNGE_GROUPS[dialog.headings[0]]))
+        self.assertIn(labels.MSG_MUNGE_CHOICES[Munge.CLEAR_CHORDS], self.text())
+        await self.press(Key.ESCAPE, keybindings.PatternEditor.MUNGE)
+        self.assertIn(labels.MSG_MUNGE_CHOICES[Munge.CLEAR_CHORDS], self.text())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual(self.row(), ROWS[Row.DEGREE])

@@ -43,8 +43,10 @@ roll or the rows.
   `reconfigure_choices`, indexed by the `Reconfigure` class): load over, step size, time
   signature, drum on or off, direction, rename.
 - `M` (`keybindings.PatternEditor.MUNGE`) opens Munge, a `ChoiceDialog` of `MSG_MUNGE_CHOICES`, the user's design: each choice
-  is its place in that list (the `Munge` class), and the dialog always lists them sorted by name (`munges_in_order`), so a
-  new choice is appended to the list and the class and sorts itself. The choices: the reverses, pivot and randomize; the four
+  is its place in that list (the `Munge` class), and the dialog is a `GroupedChoiceDialog`, as the picker of a generator's
+  type is: headings sorted by name (`labels.MungeGroup`, `MUNGE_GROUPS`, `munge_groups`), closed until opened and remembered
+  for the session in `app.open_munge_groups`, each heading's choices sorted by name. A new choice is appended to the list and
+  the class and put under a heading; a Notes heading waits for the two legato choices. The choices: the reverses, pivot and randomize; the four
   copies of the steps at and before, or at and after, the cursor to the end or before the start; randomize of either part;
   roll left and right, which ask for a number from 1 to the pattern's steps; mirror; interleave, splice and splice before,
   which ask for another pattern of the same kind, drum or not; the clears (all data except pitch, `PITCH_ROWS`; chords,
@@ -55,7 +57,7 @@ roll or the rows.
   A choice that would pass `MAX_STEPS` is refused on the status line. The cursor stays on its step after a reverse, a pivot
   or a roll, and on its note after steps are put in front. Split into new patterns asks for a number of steps (`SPLIT_STEPS`
   16 to start) and calls `Setlist.split_pattern`, which leaves the pattern alone and names the parts by
-  `naming.split_part_names`, `p1-split-1` on, counted on from any earlier split; a `MessageDialog` names what was made. Categories for the dialog are under discussion with the user.
+  `naming.split_part_names`, `p1-split-1` on, counted on from any earlier split; a `MessageDialog` names what was made. Split into new patterns above and below the cursor was dropped by the user.
   `tests/composition/test_pattern_munges.py`, `tests/tui/test_tui_munge.py`.
 - Load over loads a copy of another pattern over this one. Drum on or off always asks first
   (`MSG_CHANGE_TYPE_EMPTY_QUESTION` when there are no notes to lose).
