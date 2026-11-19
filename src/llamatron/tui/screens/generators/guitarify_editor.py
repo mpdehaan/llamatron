@@ -23,7 +23,7 @@ from llamatron.strings import help as help_text, labels, legends, marks, message
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.restart_field import restart_field
-from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
+from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
@@ -54,13 +54,6 @@ class GuitarifyEditor(GeneratorEditor, FieldPage):
         written = self.settings().to_data()
         return any(setting in written for setting in settings)
 
-    def number(self, *, label, setting, current, default, lowest, highest, shown=None):
-        """Return a whole number's field, left out of the file while it is the default."""
-        return NumberField(
-            page=self, label=label, number=current, lowest=lowest, highest=highest, shown=shown,
-            set=lambda number: self.store(setting=setting, value=None if number == default else number), clear=lambda: self.store(setting=setting, value=None),
-        )
-
     def choice(self, *, label, setting, current, default, choices, names):
         """Return a choice's field, left out of the file while it is the default."""
         return ChoiceField(
@@ -82,15 +75,15 @@ class GuitarifyEditor(GeneratorEditor, FieldPage):
             self.heading(label=labels.MSG_GUITAR_SHAPE_SECTION, is_set=lambda: self.any_written(SHAPE_SETTINGS)),
             self.switch(label=labels.MSG_GUITAR_SHAPE_LABEL, setting=GuitarifySetting.SHAPE, on=guitar.shapes(), default=True),
             self.choice(label=labels.MSG_GUITAR_TUNING_LABEL, setting=GuitarifySetting.TUNING, current=guitar.get_tuning(), default=Tuning.STANDARD, choices=file_format.TUNINGS, names=labels.MSG_GUITAR_TUNING_NAMES),
-            self.number(
-                label=labels.MSG_GUITAR_POSITION_LABEL, setting=GuitarifySetting.POSITION, current=position, default=generator_settings.DEFAULT_GUITAR_POSITION, lowest=NO_FRET, highest=generator_settings.MAX_GUITAR_FRET,
+            self.number_field(
+                label=labels.MSG_GUITAR_POSITION_LABEL, setting=GuitarifySetting.POSITION, current=position, default=generator_settings.DEFAULT_GUITAR_POSITION,
                 shown=marks.MSG_GUITAR_OPEN_POSITION if position == NO_FRET else marks.MSG_GUITAR_FRET.format(fret=position),
             ),
-            self.number(
-                label=labels.MSG_GUITAR_CAPO_LABEL, setting=GuitarifySetting.CAPO, current=capo, default=generator_settings.DEFAULT_GUITAR_CAPO, lowest=NO_FRET, highest=generator_settings.MAX_GUITAR_FRET,
+            self.number_field(
+                label=labels.MSG_GUITAR_CAPO_LABEL, setting=GuitarifySetting.CAPO, current=capo, default=generator_settings.DEFAULT_GUITAR_CAPO,
                 shown=marks.MSG_GUITAR_NO_CAPO if capo == NO_FRET else marks.MSG_GUITAR_FRET.format(fret=capo),
             ),
-            self.number(label=labels.MSG_GUITAR_STRINGS_LABEL, setting=GuitarifySetting.STRINGS, current=guitar.get_strings(), default=generator_settings.DEFAULT_GUITAR_STRINGS, lowest=generator_settings.MIN_GUITAR_STRINGS, highest=generator_settings.MAX_GUITAR_STRINGS),
+            self.number_field(label=labels.MSG_GUITAR_STRINGS_LABEL, setting=GuitarifySetting.STRINGS, current=guitar.get_strings(), default=generator_settings.DEFAULT_GUITAR_STRINGS),
             self.choice(
                 label=labels.MSG_GUITAR_SINGLE_NOTES_LABEL, setting=GuitarifySetting.SINGLE_NOTES, current=guitar.get_single_notes(), default=SingleNotes.LEAVE, choices=file_format.SINGLE_NOTES,
                 names=labels.MSG_GUITAR_SINGLE_NOTES_NAMES,
@@ -100,14 +93,14 @@ class GuitarifyEditor(GeneratorEditor, FieldPage):
             self.switch(label=labels.MSG_GUITAR_STROKES_LABEL, setting=GuitarifySetting.STROKES, on=guitar.strikes(), default=True),
             Field(label=labels.MSG_GUITAR_BAR_LABEL, value=lambda: bar_shown(self.settings()), enter=lambda: self.show_page(GuitarBarEditor(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),
             self.switch(label=labels.MSG_GUITAR_LET_RING_LABEL, setting=GuitarifySetting.LET_RING, on=guitar.lets_ring(), default=False),
-            self.number(
-                label=labels.MSG_GUITAR_SPREAD_LABEL, setting=GuitarifySetting.SPREAD, current=guitar.get_spread(), default=generator_settings.DEFAULT_GUITAR_SPREAD, lowest=0, highest=generator_settings.MAX_GUITAR_SPREAD,
+            self.number_field(
+                label=labels.MSG_GUITAR_SPREAD_LABEL, setting=GuitarifySetting.SPREAD, current=guitar.get_spread(), default=generator_settings.DEFAULT_GUITAR_SPREAD,
                 shown=marks.MSG_GUITAR_MILLISECONDS.format(milliseconds=guitar.get_spread()),
             ),
-            self.number(label=labels.MSG_GUITAR_FADE_LABEL, setting=GuitarifySetting.FADE, current=guitar.get_fade(), default=generator_settings.DEFAULT_GUITAR_FADE, lowest=0, highest=generator_settings.MAX_GUITAR_PERCENT),
-            self.number(label=labels.MSG_GUITAR_LOOSE_TIMING_LABEL, setting=GuitarifySetting.LOOSE_TIMING, current=guitar.get_loose_timing(), default=generator_settings.DEFAULT_GUITAR_LOOSE_TIMING, lowest=0, highest=generator_settings.MAX_GUITAR_PERCENT),
-            self.number(
-                label=labels.MSG_GUITAR_UPSTROKE_LABEL, setting=GuitarifySetting.UPSTROKE, current=upstroke, default=generator_settings.DEFAULT_GUITAR_UPSTROKE, lowest=generator_settings.EVERY_STRING, highest=generator_settings.MAX_GUITAR_STRINGS,
+            self.number_field(label=labels.MSG_GUITAR_FADE_LABEL, setting=GuitarifySetting.FADE, current=guitar.get_fade(), default=generator_settings.DEFAULT_GUITAR_FADE),
+            self.number_field(label=labels.MSG_GUITAR_LOOSE_TIMING_LABEL, setting=GuitarifySetting.LOOSE_TIMING, current=guitar.get_loose_timing(), default=generator_settings.DEFAULT_GUITAR_LOOSE_TIMING),
+            self.number_field(
+                label=labels.MSG_GUITAR_UPSTROKE_LABEL, setting=GuitarifySetting.UPSTROKE, current=upstroke, default=generator_settings.DEFAULT_GUITAR_UPSTROKE,
                 shown=marks.MSG_GUITAR_EVERY_STRING if upstroke == generator_settings.EVERY_STRING else None,
             ),
             self.choice(label=labels.MSG_GUITAR_APPROACH_LABEL, setting=GuitarifySetting.APPROACH, current=guitar.get_approach(), default=Approach.OFF, choices=file_format.APPROACHES, names=labels.MSG_GUITAR_APPROACH_NAMES),
