@@ -46,7 +46,7 @@ roll or the rows.
   is its place in that list (the `Munge` class), and the dialog is a `GroupedChoiceDialog`, as the picker of a generator's
   type is: headings sorted by name (`labels.MungeGroup`, `MUNGE_GROUPS`, `munge_groups`), closed until opened and remembered
   for the session in `app.open_munge_groups`, each heading's choices sorted by name. A new choice is appended to the list and
-  the class and put under a heading; the munges of notes (join and divide long notes, randomize rhythm and pitches, reverse pitches, transpose, humanize velocity) are in `composition/pattern_munges.py`, `PatternMunges`, and the ones that take a number ask through `PatternEditor.ask_number`. The choices: the reverses, pivot and randomize; the four
+  the class and put under a heading; the munges of notes (invert melody, voice leading by inversions with or without an octave's move, measured in `known_scale()`, join and divide long notes, randomize rhythm and pitches, reverse pitches, transpose, humanize velocity) are in `composition/pattern_munges.py`, `PatternMunges`, and the ones that take a number ask through `PatternEditor.ask_number`. The choices: the reverses, pivot and randomize; the four
   copies of the steps at and before, or at and after, the cursor to the end or before the start; randomize of either part;
   roll left and right, which ask for a number from 1 to the pattern's steps, and roll left and right at the cursor, which
   turn the steps at and before it, or at and after it, by one step and ask nothing; a choice that reads the cursor has

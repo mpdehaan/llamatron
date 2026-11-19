@@ -22,7 +22,7 @@ on Pattern itself.
 """
 
 from llamatron.composition import limits
-from llamatron.composition.file_format import PATTERN_ROWS, PITCH_ROWS, Row
+from llamatron.composition.file_format import ACCIDENTALS, PATTERN_ROWS, PITCH_ROWS, Row
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.row_descriptions import row_described, rows_where
 from llamatron.music import midi
@@ -33,6 +33,9 @@ from llamatron.support.revised import notes_change
 # What makes a step's note, which a rest holds none of: every row but the ones a rest keeps.
 REST_ROWS = rows_where(lambda row: row.is_kept_by_a_rest())
 SOUND_ROWS = [row for row in PATTERN_ROWS if row not in REST_ROWS]
+# The octaves a chord may be moved by when voice leading may move one: none first, so that a tie keeps the octave written.
+OCTAVE_SHIFTS = (0, -1, 1)
+NO_SHIFT = (0,)
 # What says how long a note lasts, which a note made of another's steps takes none of.
 LENGTH_ROWS = (Row.GATE, Row.DOT, Row.TIE)
 
@@ -160,3 +163,100 @@ class PatternMunges:
             if velocity is not None:
                 moved = velocity + random_source(None).randint(-most, most)
                 velocities[step] = min(max(moved, midi.MIN_VELOCITY), midi.MAX_VELOCITY)
+
+    @notes_change
+    def invert_melody(self, *, step, scale_size, default_octave):
+        """Mirror every note around the pitch of a step's note, by degrees of a scale of so many notes: a note two degrees above ends two below.
+
+        A note that leaves the scale's degrees is written in the octave it lands in, counted from
+        the default octave where its step had none. Nothing changes when a drum pattern, a step
+        with no note or an octave out of range refuses it.
+        """
+        if self.is_drum() or self._held(row=Row.DEGREE, step=step) is None:
+            raise InvalidValue(errors.ERR_INVERT_NEEDS_A_NOTE)
+
+        def octave_of(note):
+            written = self._held(row=Row.OCTAVE, step=note)
+            return default_octave if written is None else written
+
+        def place(note):
+            return octave_of(note) * scale_size + self._held(row=Row.DEGREE, step=note) - limits.MIN_DEGREE
+        mirrored = {}
+        for note in self._written_notes():
+            octaves, degree = divmod(2 * place(step) - place(note) - octave_of(note) * scale_size, scale_size)
+            if not limits.MIN_OCTAVE <= octave_of(note) + octaves <= limits.MAX_OCTAVE:
+                raise InvalidValue(errors.ERR_INVERT_OUT_OF_RANGE)
+            mirrored[note] = (degree + limits.MIN_DEGREE, octaves)
+        for note, (degree, octaves) in mirrored.items():
+            if octaves:
+                self._hold(row=Row.OCTAVE, step=note, value=octave_of(note) + octaves)
+            self._hold(row=Row.DEGREE, step=note, value=degree)
+
+    def _chord_pitches(self, *, step, scale, default_octave):
+        """Return a step's chord in root position as half steps, the root first and the notes above it in the order the chord is built, or an empty list for a step with no chord."""
+        written = self._held(row=Row.OCTAVE, step=step)
+        octave = default_octave if written is None else written
+        root = (self._held(row=Row.DEGREE, step=step), octave, self._held(row=Row.ACCIDENTAL, step=step))
+        inversion = self._held(row=Row.INVERSION, step=step)
+        self._hold(row=Row.INVERSION, step=step, value=blank_of(Row.INVERSION))
+        tones = self.chord_tones(step=step, octave=octave, scale=scale)
+        self._hold(row=Row.INVERSION, step=step, value=inversion)
+        return [half_steps_of(tone=tone, scale=scale) for tone in (root, *tones)] if tones else []
+
+    @notes_change
+    def apply_voice_leading(self, *, scale, default_octave, octaves=False):
+        """Give every chord after the first the inversion that moves its notes the least from the chord before, and with octaves, the octave one lower or higher where that is nearer still; return how many chords were looked at.
+
+        The first chord stays as written. A chord's Inversion cell is blanked where root position
+        is nearest. The scale is the NamedScale the chords are measured in.
+        """
+        before = None
+        chords = 0
+        for step in self._written_notes():
+            pitches = self._chord_pitches(step=step, scale=scale, default_octave=default_octave)
+            if not pitches:
+                continue
+            chords += 1
+            if before is None:
+                before = sorted(inverted(pitches=pitches, inversion=self._held(row=Row.INVERSION, step=step) or 0))
+                continue
+            written = self._held(row=Row.OCTAVE, step=step)
+            octave = default_octave if written is None else written
+            choices = [
+                (movement(pitches=voiced(pitches=pitches, inversion=inversion, shift=shift), before=before), place, inversion, shift)
+                for place, (shift, inversion) in enumerate((shift, inversion) for shift in (OCTAVE_SHIFTS if octaves else NO_SHIFT) for inversion in (0, *limits.INVERSIONS))
+                if inversion < len(pitches) and limits.MIN_OCTAVE <= octave + shift <= limits.MAX_OCTAVE
+            ]
+            _, _, inversion, shift = min(choices)
+            self._hold(row=Row.INVERSION, step=step, value=inversion or blank_of(Row.INVERSION))
+            if shift:
+                self._hold(row=Row.OCTAVE, step=step, value=octave + shift)
+            before = sorted(voiced(pitches=pitches, inversion=inversion, shift=shift))
+        return chords
+
+
+def half_steps_of(*, tone, scale):
+    """Return a note, given as a degree, an octave and an accidental, as half steps in a scale."""
+    degree, octave, accidental = tone
+    steps = scale.get_half_steps()
+    octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
+    return (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + ACCIDENTALS.get(accidental, 0)
+
+
+def inverted(*, pitches, inversion):
+    """Return a chord's pitches as an inversion plays them: so many of its first notes an octave up, never all of them."""
+    moved = min(inversion, len(pitches) - 1)
+    return [pitch + midi.HALF_STEPS_PER_OCTAVE if place < moved else pitch for place, pitch in enumerate(pitches)]
+
+
+def voiced(*, pitches, inversion, shift):
+    """Return a chord's pitches in an inversion, moved so many octaves."""
+    return [pitch + shift * midi.HALF_STEPS_PER_OCTAVE for pitch in inverted(pitches=pitches, inversion=inversion)]
+
+
+def movement(*, pitches, before):
+    """Return how far a voicing's notes are from the chord before: lowest to lowest when both have as many notes, and otherwise each note to the nearest of the chord before."""
+    now = sorted(pitches)
+    if len(now) == len(before):
+        return sum(abs(pitch - other) for pitch, other in zip(now, before))
+    return sum(min(abs(pitch - other) for other in before) for pitch in now)

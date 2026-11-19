@@ -115,21 +115,22 @@ class Munge:
     CROP = 37
     TRANSPOSE = 38
     HUMANIZE_VELOCITY = 39
+    INVERT_MELODY = 40
+    VOICE_LEADING = 41
+    VOICE_LEADING_OCTAVES = 42
 
 
 # The heading each munge is listed under.
 MUNGE_GROUPS = {
-    labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.CLEAR_CHORDS, Munge.CLEAR_EVERY, Munge.CROP],
-    labels.MungeGroup.NOTES: [
-        Munge.JOIN_NOTES, Munge.DIVIDE_NOTES, Munge.RANDOMIZE_RHYTHM, Munge.RANDOMIZE_PITCHES, Munge.REVERSE_PITCHES, Munge.TRANSPOSE, Munge.HUMANIZE_VELOCITY,
-    ],
+    labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_CHORDS, Munge.CLEAR_EVERY, Munge.CROP],
     labels.MungeGroup.COPY: [Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START, Munge.MIRROR],
     labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLICE_AT_CURSOR, Munge.SPLIT],
-    labels.MungeGroup.REARRANGE: [
-        Munge.REVERSE_AFTER, Munge.REVERSE_BEFORE, Munge.REVERSE, Munge.PIVOT, Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE, Munge.ROLL_LEFT, Munge.ROLL_RIGHT,
-        Munge.ROLL_LEFT_AT_CURSOR, Munge.ROLL_RIGHT_AT_CURSOR,
-    ],
-    labels.MungeGroup.SMOOTH: [Munge.SMOOTH_CCS, Munge.SMOOTH_VELOCITY, Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX],
+    labels.MungeGroup.PITCH: [Munge.TRANSPOSE, Munge.REVERSE_PITCHES, Munge.RANDOMIZE_PITCHES, Munge.INVERT_MELODY, Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES],
+    labels.MungeGroup.REGISTERS: [Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX],
+    labels.MungeGroup.REORDER: [Munge.REVERSE_AFTER, Munge.REVERSE_BEFORE, Munge.REVERSE, Munge.PIVOT, Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE],
+    labels.MungeGroup.RHYTHM: [Munge.JOIN_NOTES, Munge.DIVIDE_NOTES, Munge.RANDOMIZE_RHYTHM],
+    labels.MungeGroup.ROLL: [Munge.ROLL_LEFT, Munge.ROLL_RIGHT, Munge.ROLL_LEFT_AT_CURSOR, Munge.ROLL_RIGHT_AT_CURSOR],
+    labels.MungeGroup.VELOCITY_AND_CCS: [Munge.HUMANIZE_VELOCITY, Munge.SMOOTH_VELOCITY, Munge.SMOOTH_CCS],
 }
 
 
@@ -159,6 +160,8 @@ SPLIT_NAMES_SHOWN = 8
 EVERY = 'every'
 DEGREES = 'degrees'
 MOST = 'most'
+# Voice leading moves a chord toward the chord before it, so a pattern needs this many chords.
+FEWEST_CHORDS_TO_LEAD = 2
 # The fewest steps a pattern is rolled.
 FIRST_ROLL = 1
 # The munges that blank or fill rows of every step and need nothing else, each with the method of Pattern that does it.
@@ -480,6 +483,10 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 document.munge_pattern(name=name, way=Pattern.shuffle_from if choice == Munge.RANDOMIZE_AFTER else Pattern.shuffle_through, step=self.step)
         elif choice in (Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START):
             self.copy_steps(choice)
+        elif choice == Munge.INVERT_MELODY:
+            self.invert_melody()
+        elif choice in (Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES):
+            self.lead_voices(octaves=choice == Munge.VOICE_LEADING_OCTAVES)
         elif choice == Munge.DIVIDE_NOTES:
             document.divide_long_notes(name)
         elif choice == Munge.CROP:
@@ -592,6 +599,29 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             said = messages.MSG_SPLIT_CREATED_MANY.format(count=len(made), names=shown, more=more) if more > 0 else messages.MSG_SPLIT_CREATED.format(count=len(made), names=shown)
             self.tell(messages.MSG_SPLIT_TITLE, said)
         self.ask(dialog=PromptDialog(title=messages.MSG_SPLIT_PROMPT, value=str(min(SPLIT_STEPS, most))), then=answered)
+
+    def invert_melody(self):
+        """Mirror the pattern's notes around the note on the cursor's step, by the degrees of the scale the pattern plays under, or of the scale length it was written for."""
+        scale = self.known_scale()
+        size = len(scale.get_half_steps()) if scale is not None else self.pattern().get_scale_length()
+        if size is None:
+            self.refuse(errors.ERR_MUNGE_NO_SCALE)
+            return
+        try:
+            self.document().munge_pattern(name=self.item, way=Pattern.invert_melody, step=self.step, scale_size=size, default_octave=self.default_octave())
+        except InvalidValue as problem:
+            self.refuse(str(problem))
+
+    def lead_voices(self, *, octaves):
+        """Write the inversions that move each chord the least from the chord before, measured in the scale the pattern plays under."""
+        scale = self.known_scale()
+        if scale is None:
+            self.refuse(errors.ERR_MUNGE_NO_SCALE)
+            return
+        if len([step for step in range(self.steps()) if self.pattern().starts_chord(step)]) < FEWEST_CHORDS_TO_LEAD:
+            self.refuse(errors.ERR_VOICE_LEADING_NEEDS_CHORDS)
+            return
+        self.document().munge_pattern(name=self.item, way=Pattern.apply_voice_leading, scale=scale, default_octave=self.default_octave(), octaves=octaves)
 
     def ask_number(self, *, title, low, high, way, named):
         """Ask for a whole number within limits and munge the pattern with it, handed to the munge under a name, saying on the status line why a number or the munge was refused."""

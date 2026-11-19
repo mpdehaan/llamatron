@@ -560,23 +560,27 @@ MSG_DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet
 class MungeGroup:
     CLEAR = 'Clear'
     COPY = 'Copy'
-    NOTES = 'Notes'
     OTHER_PATTERNS = 'Other Patterns'
-    REARRANGE = 'Rearrange'
-    SMOOTH = 'Smooth'
+    PITCH = 'Pitch'
+    REGISTERS = 'Registers'
+    REORDER = 'Reorder'
+    RHYTHM = 'Rhythm'
+    ROLL = 'Roll'
+    VELOCITY_AND_CCS = 'Velocity and CCs'
 
 
 MSG_MUNGE_CHOICES = [
-    'reverse after step (cursor)', 'reverse before step (cursor)', 'reverse', 'pivot around step (cursor)', 'randomize',
+    'reverse after (cursor)', 'reverse before (cursor)', 'reverse all', 'pivot (cursor)', 'randomize all',
     'copy before to end (cursor)', 'copy after to end (cursor)', 'copy before to start (cursor)', 'copy after to start (cursor)',
     'randomize after (cursor)', 'randomize before (cursor)',
-    'clear all data except pitch', 'clear all register modifications', 'clear all register conditions',
+    'clear all except pitch', 'clear register modifications', 'clear register conditions',
     'roll left (N)', 'roll right (N)', 'clear chords',
     'mirror', 'interleave (pattern)', 'smooth CCs', 'smooth velocity', 'smooth AX=', 'smooth BX=', 'smooth CX=', 'smooth DX=',
-    'splice (pattern)', 'splice before (pattern)', 'split into new patterns (steps)', 'splice (pattern, cursor)',
+    'splice after (pattern)', 'splice before (pattern)', 'split into new patterns (N)', 'splice (pattern, cursor)',
     'roll left (cursor)', 'roll right (cursor)',
-    'convert adjacent notes to legato', 'convert legato notes to step divisions', 'randomize rhythm', 'randomize pitches', 'reverse pitches',
+    'join repeated notes', 'divide long notes', 'randomize rhythm', 'randomize pitches', 'reverse pitches',
     'clear every Nth step (N)', 'crop (cursor)', 'transpose (N)', 'humanize velocity (N)',
+    'invert melody (cursor)', 'apply voice leading (no octave shift)', 'apply voice leading (octave shift)',
 ]
 # The clip page's extra choice, for a clip that follows its pattern's direction.
 MSG_PATTERN_DIRECTION_OPTION = '(pattern)'
