@@ -42,7 +42,7 @@ PLAIN_NAMES = (
     ('VoiceLeading', 'end_state'),
     ('ClipColumn', 'plays_through_fluidsynth'),
     ('WizardChoices', 'holds_offers'),
-    ('WizardChoices', 'plays_quiet_notes'),
+    ('KitChoices', 'plays_quiet_notes'),
     ('RegisterSolo', 'before_step'),
     ('SteppedClock', 'now'),
     ('Memory', 'checks'),

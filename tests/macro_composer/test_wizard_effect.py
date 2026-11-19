@@ -234,27 +234,27 @@ def every_choice(choices):
         else:
             drummer = role
             for position in range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1):
-                if position != choices.get_fills():
-                    yield FILLS_COME, position, lambda made, position=position: made.set_fills(position), under_each_drummer(choices=choices, role=role, first=first)
-            for piece in choices.pieces()[1:]:
-                yield KIT_PIECE, piece, lambda made, piece=piece: made.set_piece_on(piece=piece, on=False), [first]
-            if choices.has_quiet_notes():
-                yield QUIET_NOTES, False, lambda made: made.set_quiet_notes(False), [first]
-            for piece in choices.pieces():
+                if position != choices.get_kit().get_fills():
+                    yield FILLS_COME, position, lambda made, position=position: made.get_kit().set_fills(position), under_each_drummer(choices=choices, role=role, first=first)
+            for piece in choices.get_kit().pieces()[1:]:
+                yield KIT_PIECE, piece, lambda made, piece=piece: made.get_kit().set_piece_on(piece=piece, on=False), [first]
+            if choices.get_kit().has_quiet_notes():
+                yield QUIET_NOTES, False, lambda made: made.get_kit().set_quiet_notes(False), [first]
+            for piece in choices.get_kit().pieces():
                 # A piece sounds as another drum of the kit or as a General MIDI sound, and in such a sound on a note of its own.
-                yield PIECE_SOUND, (piece, ANOTHER_DRUM[piece == ANOTHER_DRUM[0]]), lambda made, piece=piece: made.set_piece_sound(piece=piece, sound=ANOTHER_DRUM[piece == ANOTHER_DRUM[0]]), [first]
-                yield PIECE_SOUND, (piece, A_SOUND_OF_NO_STYLE), lambda made, piece=piece: made.set_piece_sound(piece=piece, sound=A_SOUND_OF_NO_STYLE), [first]
-                in_a_sound = both(first=first, then=lambda made, piece=piece: made.set_piece_sound(piece=piece, sound=A_SOUND_OF_NO_STYLE))
-                yield PIECE_NOTE, (piece, ANOTHER_NOTE), lambda made, piece=piece: made.set_piece_note(piece=piece, note=ANOTHER_NOTE), [in_a_sound]
-            for name in [None, *choices.breaks()] if choices.breaks() else []:
-                if name != choices.get_break():
-                    yield BREAK, name, lambda made, name=name: made.set_break(name), [first]
-            if choices.breaks():
+                yield PIECE_SOUND, (piece, ANOTHER_DRUM[piece == ANOTHER_DRUM[0]]), lambda made, piece=piece: made.get_kit().set_piece_sound(piece=piece, sound=ANOTHER_DRUM[piece == ANOTHER_DRUM[0]]), [first]
+                yield PIECE_SOUND, (piece, A_SOUND_OF_NO_STYLE), lambda made, piece=piece: made.get_kit().set_piece_sound(piece=piece, sound=A_SOUND_OF_NO_STYLE), [first]
+                in_a_sound = both(first=first, then=lambda made, piece=piece: made.get_kit().set_piece_sound(piece=piece, sound=A_SOUND_OF_NO_STYLE))
+                yield PIECE_NOTE, (piece, ANOTHER_NOTE), lambda made, piece=piece: made.get_kit().set_piece_note(piece=piece, note=ANOTHER_NOTE), [in_a_sound]
+            for name in [None, *choices.get_kit().breaks()] if choices.get_kit().breaks() else []:
+                if name != choices.get_kit().get_break():
+                    yield BREAK, name, lambda made, name=name: made.get_kit().set_break(name), [first]
+            if choices.get_kit().breaks():
                 # How far a break is cut up is held under a break, the subgenre's own or the first there is.
-                with_break = first if choices.get_break() is not None else both(first=first, then=lambda made: made.set_break(made.breaks()[0]))
+                with_break = first if choices.get_kit().get_break() is not None else both(first=first, then=lambda made: made.get_kit().set_break(made.get_kit().breaks()[0]))
                 for cut in range(breaks.LEAST_CUT, breaks.MOST_CUT + 1):
-                    if cut != choices.get_break_cut():
-                        yield BREAK_CUT, cut, lambda made, cut=cut: made.set_break_cut(cut), [with_break]
+                    if cut != choices.get_kit().get_break_cut():
+                        yield BREAK_CUT, cut, lambda made, cut=cut: made.get_kit().set_break_cut(cut), [with_break]
         if len(choices.roles_in()) > 1:
             yield PLAYER_OUT, role, lambda made, role=role: made.set_role_in(role=role, on=False), [first]
         if role in choices.roles_shown():

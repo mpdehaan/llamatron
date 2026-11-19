@@ -191,28 +191,28 @@ class TestWizardBreak(unittest.TestCase):
 
     def test_a_song_in_common_time_with_drums_is_offered_every_break_and_starts_with_none(self):
         choices = wizard()
-        self.assertEqual(choices.breaks(), breaks.break_names())
-        self.assertIsNone(choices.get_break())
-        self.assertEqual(choices.get_break_cut(), breaks.LEAST_CUT)
+        self.assertEqual(choices.get_kit().breaks(), breaks.break_names())
+        self.assertIsNone(choices.get_kit().get_break())
+        self.assertEqual(choices.get_kit().get_break_cut(), breaks.LEAST_CUT)
 
     def test_no_break_is_offered_before_a_subgenre_in_another_meter_or_to_a_band_with_no_drums(self):
-        self.assertEqual(WizardChoices().breaks(), [])
-        self.assertEqual(wizard(subgenre=BALLAD).breaks(), [])
+        self.assertEqual(WizardChoices().get_kit().breaks(), [])
+        self.assertEqual(wizard(subgenre=BALLAD).get_kit().breaks(), [])
         without_drums = WizardChoices()
         without_drums.set_genre(EXPERIMENTAL)
         without_drums.set_subgenre(without_drums.subgenres()[0])
-        self.assertEqual(without_drums.breaks(), [])
+        self.assertEqual(without_drums.get_kit().breaks(), [])
 
     def test_a_subgenre_built_on_a_break_starts_with_its_own_and_none_can_be_chosen(self):
         choices = wizard(genre=ELECTRONIC, subgenre=BUILT_ON_A_BREAK)
-        own = choices.get_break()
+        own = choices.get_kit().get_break()
         self.assertIn(own, breaks.break_names())
         with_break = patterns_of(choices)
-        choices.set_break(None)
-        self.assertIsNone(choices.get_break())
+        choices.get_kit().set_break(None)
+        self.assertIsNone(choices.get_kit().get_break())
         self.assertNotEqual(patterns_of(choices), with_break)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertIsNone(again.get_break())
+        self.assertIsNone(again.get_kit().get_break())
         self.assertEqual(patterns_of(again), patterns_of(choices))
 
     def test_a_break_takes_the_place_of_every_way_of_the_drums_but_the_percussions(self):
@@ -220,9 +220,9 @@ class TestWizardBreak(unittest.TestCase):
         drums = self.drums(choices)
         before = choices.role_traits(drums)
         self.assertGreater(len(before), 1)
-        choices.set_break(breaks.TUMBLING)
+        choices.get_kit().set_break(breaks.TUMBLING)
         self.assertEqual(choices.role_traits(drums), [trait for trait in before if trait == PERCUSSION])
-        choices.set_break(None)
+        choices.get_kit().set_break(None)
         self.assertEqual(choices.role_traits(drums), before)
 
     def test_every_break_and_every_cut_makes_a_song_of_its_own_and_both_are_kept(self):
@@ -230,33 +230,33 @@ class TestWizardBreak(unittest.TestCase):
         for name in breaks.break_names():
             for cut in range(breaks.LEAST_CUT, breaks.MOST_CUT + 1):
                 choices = wizard()
-                choices.set_break(name)
-                choices.set_break_cut(cut)
+                choices.get_kit().set_break(name)
+                choices.get_kit().set_break_cut(cut)
                 with self.subTest(name=name, cut=cut):
                     self.assertNotIn(patterns_of(choices), made)
                 made.append(patterns_of(choices))
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_break(), name)
-        self.assertEqual(again.get_break_cut(), cut)
+        self.assertEqual(again.get_kit().get_break(), name)
+        self.assertEqual(again.get_kit().get_break_cut(), cut)
         self.assertEqual(patterns_of(again), patterns_of(choices))
 
     def test_a_break_there_is_none_of_and_a_cut_out_of_range_are_refused(self):
         choices = wizard()
         with self.assertRaises(ValueError) as refused:
-            choices.set_break(NO_SUCH)
+            choices.get_kit().set_break(NO_SUCH)
         self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_BREAK.format(value=NO_SUCH))
         for cut in REFUSED_CUTS:
             with self.assertRaises(ValueError) as refused:
-                choices.set_break_cut(cut)
+                choices.get_kit().set_break_cut(cut)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_BREAK_CUT.format(low=breaks.LEAST_CUT, high=breaks.MOST_CUT, value=cut))
         with self.assertRaises(ValueError):
-            wizard(subgenre=BALLAD).set_break(breaks.TUMBLING)
+            wizard(subgenre=BALLAD).get_kit().set_break(breaks.TUMBLING)
 
     def test_a_kept_break_that_no_longer_fits_is_left_out(self):
         kept = wizard()
-        kept.set_break(breaks.TUMBLING)
+        kept.get_kit().set_break(breaks.TUMBLING)
         data = {**kept.to_data(), 'break': NO_SUCH}
-        self.assertIsNone(WizardChoices.from_data(data).get_break())
+        self.assertIsNone(WizardChoices.from_data(data).get_kit().get_break())
 
 
 class TestKitPieceSounds(unittest.TestCase):
@@ -310,44 +310,44 @@ class TestKitPieceSounds(unittest.TestCase):
     def test_the_wizard_keeps_a_pieces_sound_and_note_and_gives_the_piece_its_drum_back(self):
         choices = wizard()
         usual = patterns_of(choices)
-        self.assertIn(breaks.KICK, choices.pieces())
-        self.assertIsNone(choices.piece_sound(breaks.KICK))
-        choices.set_piece_sound(piece=breaks.KICK, sound=COWBELL)
-        self.assertEqual(choices.piece_sound(breaks.KICK), COWBELL)
-        self.assertIsNone(choices.piece_note(breaks.KICK))
+        self.assertIn(breaks.KICK, choices.get_kit().pieces())
+        self.assertIsNone(choices.get_kit().piece_sound(breaks.KICK))
+        choices.get_kit().set_piece_sound(piece=breaks.KICK, sound=COWBELL)
+        self.assertEqual(choices.get_kit().piece_sound(breaks.KICK), COWBELL)
+        self.assertIsNone(choices.get_kit().piece_note(breaks.KICK))
         as_drum = patterns_of(choices)
         self.assertNotEqual(as_drum, usual)
-        choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND)
-        self.assertEqual((choices.piece_sound(breaks.KICK), choices.piece_note(breaks.KICK)), (A_SOUND, wizard_limits.USUAL_PIECE_NOTE))
-        choices.set_piece_note(piece=breaks.KICK, note=A_NOTE)
+        choices.get_kit().set_piece_sound(piece=breaks.KICK, sound=A_SOUND)
+        self.assertEqual((choices.get_kit().piece_sound(breaks.KICK), choices.get_kit().piece_note(breaks.KICK)), (A_SOUND, wizard_limits.USUAL_PIECE_NOTE))
+        choices.get_kit().set_piece_note(piece=breaks.KICK, note=A_NOTE)
         self.assertNotIn(patterns_of(choices), (usual, as_drum))
         # A piece in a sound of its own is still a piece of the kit, listed and switched on and off.
-        self.assertIn(breaks.KICK, choices.pieces())
+        self.assertIn(breaks.KICK, choices.get_kit().pieces())
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual((again.piece_sound(breaks.KICK), again.piece_note(breaks.KICK)), (A_SOUND, A_NOTE))
+        self.assertEqual((again.get_kit().piece_sound(breaks.KICK), again.get_kit().piece_note(breaks.KICK)), (A_SOUND, A_NOTE))
         self.assertEqual(patterns_of(again), patterns_of(choices))
         data = again.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()
         self.assertEqual(data[Section.INSTRUMENTS][composer_text.MSG_PIECE_INSTRUMENT.format(breaks.KICK)][InstrumentSetting.GM_SOUND], A_SOUND)
         # Another sound keeps the note chosen, and the piece's own name gives it its drum back.
-        choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND + 1)
-        self.assertEqual(choices.piece_note(breaks.KICK), A_NOTE)
-        choices.set_piece_sound(piece=breaks.KICK, sound=None)
+        choices.get_kit().set_piece_sound(piece=breaks.KICK, sound=A_SOUND + 1)
+        self.assertEqual(choices.get_kit().piece_note(breaks.KICK), A_NOTE)
+        choices.get_kit().set_piece_sound(piece=breaks.KICK, sound=None)
         self.assertEqual(patterns_of(choices), usual)
 
     def test_the_wizard_refuses_what_is_no_piece_no_sound_and_no_note(self):
         choices = wizard()
         with self.assertRaises(ValueError) as refused:
-            choices.set_piece_sound(piece=NO_SUCH, sound=COWBELL)
+            choices.get_kit().set_piece_sound(piece=NO_SUCH, sound=COWBELL)
         self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_PIECE.format(value=NO_SUCH))
         for sound in (NO_SUCH, 0, limits.MAX_GM_SOUND + 1, True, 2.5):
             with self.assertRaises(ValueError) as refused:
-                choices.set_piece_sound(piece=breaks.KICK, sound=sound)
+                choices.get_kit().set_piece_sound(piece=breaks.KICK, sound=sound)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PIECE_SOUND.format(value=sound))
         with self.assertRaises(ValueError) as refused:
-            choices.set_piece_note(piece=breaks.KICK, note=A_NOTE)
+            choices.get_kit().set_piece_note(piece=breaks.KICK, note=A_NOTE)
         self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PIECE_HAS_NO_NOTE.format(value=breaks.KICK))
-        choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND)
+        choices.get_kit().set_piece_sound(piece=breaks.KICK, sound=A_SOUND)
         for note in (arranger.LOWEST_NOTE - 1, arranger.HIGHEST_NOTE + 1, True, NO_SUCH):
             with self.assertRaises(ValueError) as refused:
-                choices.set_piece_note(piece=breaks.KICK, note=note)
+                choices.get_kit().set_piece_note(piece=breaks.KICK, note=note)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_PIECE_NOTE.format(low=arranger.LOWEST_NOTE, high=arranger.HIGHEST_NOTE, value=note))

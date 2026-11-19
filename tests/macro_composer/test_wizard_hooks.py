@@ -51,7 +51,7 @@ def chosen(*, subgenre=A_SUBGENRE_WITH_A_PRE_CHORUS):
 
 
 def parts(choices):
-    return arranged(style=choices._style(), song=choices.song_picks(A_NAME))[arranger.PARTS]
+    return arranged(style=choices.style(), song=choices.song_picks(A_NAME))[arranger.PARTS]
 
 
 def marked(plan):
@@ -155,7 +155,7 @@ class TestWizardSecondHook(unittest.TestCase):
         choices.set_second_hook(wizard_limits.OUTRO_KIND)
         lines = self.tag_part(choices=choices, kind=wizard_limits.OUTRO_KIND)[LINES]
         self.assertTrue(all(line == lines[0] for line in lines))
-        self.assertNotIn(choices.tune_player(), choices._style()[arranger.SECTIONS][wizard_limits.OUTRO_KIND][arranger.PLAYS])
+        self.assertNotIn(choices.tune_player(), choices.style()[arranger.SECTIONS][wizard_limits.OUTRO_KIND][arranger.PLAYS])
 
     def test_the_tags_top_is_under_the_main_hooks(self):
         choices = chosen()

@@ -609,7 +609,7 @@ class WizardPage(FieldPage):
         on the Note row under them the note a General MIDI sound plays. A drum is tried as four hits of the kit, and a General MIDI sound
         as four notes, on the note the row shows."""
         choices = self._choices
-        drums = [(marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum), drum) for drum in choices.kit_drums() if drum != piece]
+        drums = [(marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum), drum) for drum in choices.get_kit().drums() if drum != piece]
 
         def played(sound):
             if isinstance(sound, str):
@@ -619,13 +619,13 @@ class WizardPage(FieldPage):
         def chosen(answer):
             sound, note = answer
             if isinstance(sound, str):
-                choices.set_piece_sound(piece=piece, sound=None if sound == OWN_DRUM else sound)
+                choices.get_kit().set_piece_sound(piece=piece, sound=None if sound == OWN_DRUM else sound)
             else:
-                choices.set_piece_sound(piece=piece, sound=sound)
-                choices.set_piece_note(piece=piece, note=note)
+                choices.get_kit().set_piece_sound(piece=piece, sound=sound)
+                choices.get_kit().set_piece_note(piece=piece, note=note)
         dialog = SoundDialog(title=labels.MSG_WIZARD_PIECE_SOUND_TITLE.format(piece=piece), top=[(marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)],
-                             groups=[(labels.MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played),
-                             note=choices.piece_note(piece) or wizard_limits.USUAL_PIECE_NOTE)
+                             groups=[(labels.MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.get_kit().piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played),
+                             note=choices.get_kit().piece_note(piece) or wizard_limits.USUAL_PIECE_NOTE)
         self.ask(dialog=dialog, then=self.choosing(chosen))
 
     def pick_suggested_form(self):

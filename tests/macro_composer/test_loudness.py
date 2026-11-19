@@ -242,7 +242,7 @@ class TestWizardLoudness(unittest.TestCase):
         choices = chosen(genre=SOUL_FUNK, subgenre=FUNK)
         snare = next(pattern for name, pattern in patterns(choices).items() if name.startswith(A_SNARE) and A_SNARE_BAR in name)
         self.assertLess(min(sounded(snare)), max(sounded(snare)) // 2)
-        choices.set_quiet_notes(False)
+        choices.get_kit().set_quiet_notes(False)
         without = next(pattern for name, pattern in patterns(choices).items() if name.startswith(A_SNARE) and A_SNARE_BAR in name)
         self.assertGreater(min(sounded(without)), max(sounded(without)) // 2)
 
