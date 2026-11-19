@@ -134,7 +134,7 @@ class HookChoices(ChoicesPart):
     def second_hook_kinds(self):
         """Return the kinds of section the song's second hook can be sung in: those of the form that can carry a tag, where the song
         has a main hook, a player for its melody, and a bar a tag can be written in."""
-        if not self.can_have_hook() or not self.has_hook() or self._choices.tune_player() is None or not self._choices.counts_in_four():
+        if not self.can_have_hook() or not self.has_hook() or self._choices.get_band().tune_player() is None or not self._choices.counts_in_four():
             return []
         in_form = self._choices.section_kinds_in_form()
         return [kind for kind in wizard_limits.SECOND_HOOK_KINDS if kind in in_form and kind != self._main_hook_kind()]
@@ -183,8 +183,8 @@ class HookChoices(ChoicesPart):
         if placement in melody_writer.PLACEMENTS and self._main_hook_kind() is not None:
             hooks[melody_writer.MAIN_HOOK] = {melody_writer.SUNG_IN: self._main_hook_kind(), melody_writer.PLACEMENT: placement}
         second = chosen.get(melody_writer.SECOND_HOOK)
-        if isinstance(second, dict) and second.get(melody_writer.SUNG_IN) in wizard_limits.SECOND_HOOK_KINDS and self._choices.tune_player() is not None:
-            hooks[melody_writer.SECOND_HOOK] = {melody_writer.SUNG_IN: second[melody_writer.SUNG_IN], melody_writer.SUNG_BY: self._choices.tune_player(), melody_writer.TAG_TAKE: second.get(melody_writer.TAG_TAKE, melody_writer.FIRST_HOOK_TAKE)}
+        if isinstance(second, dict) and second.get(melody_writer.SUNG_IN) in wizard_limits.SECOND_HOOK_KINDS and self._choices.get_band().tune_player() is not None:
+            hooks[melody_writer.SECOND_HOOK] = {melody_writer.SUNG_IN: second[melody_writer.SUNG_IN], melody_writer.SUNG_BY: self._choices.get_band().tune_player(), melody_writer.TAG_TAKE: second.get(melody_writer.TAG_TAKE, melody_writer.FIRST_HOOK_TAKE)}
         return {melody_writer.HOOKS: hooks} if hooks else {}
 
     def usual_hook(self):
@@ -205,7 +205,7 @@ class HookChoices(ChoicesPart):
         return self._choices.remembered(key=wizard_limits.HOOK_PART_ANSWER, compute=self._found_hook_part)
 
     def _found_hook_part(self):
-        player = self._choices.tune_player()
+        player = self._choices.get_band().tune_player()
         if not self.can_have_hook() or not self.has_hook() or player is None:
             return None, None
         kind = self._main_hook_kind()

@@ -126,7 +126,7 @@ class TestWizardSecondHook(unittest.TestCase):
 
     def tag_part(self, *, choices, kind):
         made = parts(choices)
-        name = next(name for name in made if name.startswith(kind) and name.endswith(choices.tune_player()))
+        name = next(name for name in made if name.startswith(kind) and name.endswith(choices.get_band().tune_player()))
         return made[name]
 
     def test_a_song_has_no_second_hook_until_given_one_and_offers_the_kinds_its_form_has(self):
@@ -143,7 +143,7 @@ class TestWizardSecondHook(unittest.TestCase):
         before = parts(choices)
         choices.get_hook().set_second_hook(SectionKind.PRE_CHORUS)
         made = parts(choices)
-        self.assertEqual([name for name in made if made[name] != before.get(name)], [composer_text.MSG_PART_OF_SECTION.format(SectionKind.PRE_CHORUS, choices.tune_player())])
+        self.assertEqual([name for name in made if made[name] != before.get(name)], [composer_text.MSG_PART_OF_SECTION.format(SectionKind.PRE_CHORUS, choices.get_band().tune_player())])
         tag = self.tag_part(choices=choices, kind=SectionKind.PRE_CHORUS)[LINES][-1]
         heard = [{field: value for field, value in note.items() if field != STRESS} for note in tag]
         self.assertEqual(heard[:len(heard) // 2], heard[len(heard) // 2:])
@@ -155,7 +155,7 @@ class TestWizardSecondHook(unittest.TestCase):
         choices.get_hook().set_second_hook(wizard_limits.OUTRO_KIND)
         lines = self.tag_part(choices=choices, kind=wizard_limits.OUTRO_KIND)[LINES]
         self.assertTrue(all(line == lines[0] for line in lines))
-        self.assertNotIn(choices.tune_player(), choices.style()[arranger.SECTIONS][wizard_limits.OUTRO_KIND][arranger.PLAYS])
+        self.assertNotIn(choices.get_band().tune_player(), choices.style()[arranger.SECTIONS][wizard_limits.OUTRO_KIND][arranger.PLAYS])
 
     def test_the_tags_top_is_under_the_main_hooks(self):
         choices = chosen()

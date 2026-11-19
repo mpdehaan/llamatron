@@ -35,7 +35,7 @@ class BandBranch(Branch):
         return None if self.get_choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def children(self):
-        return [PlayerBranch(page=self.get_page(), role=role) for role in self.get_choices().roles_in() if role in self.get_choices().roles_shown()]
+        return [PlayerBranch(page=self.get_page(), role=role) for role in self.get_choices().get_band().roles_in() if role in self.get_choices().get_band().roles_shown()]
 
     def fields(self):
         choices = self.get_choices()
@@ -43,19 +43,19 @@ class BandBranch(Branch):
         # Sounds is the band's, which every player follows unless the player has a Sound of its own.
         sounds = ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_SOUNDS_LABEL, choices=list(wizard_limits.BAND_SOUNDS), current=choices.get_sounds().get_band_sounds(), set=self.get_page().choosing(choices.get_sounds().set_band_sounds))
         fields = [sounds]
-        if choices.offers_one_guitarist() or choices.has_one_guitarist():
+        if choices.get_band().offers_one_guitarist() or choices.get_band().has_one_guitarist():
             # One guitarist plays the chords and takes the solo, and is then one player on the screen.
-            fields.append(ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_limits.GUITARIST_COUNTS), names=[str(count) for count in wizard_limits.GUITARIST_COUNTS], current=choices.get_guitarists(), set=self.get_page().choosing(choices.set_guitarists)))
-        if choices.answerers():
+            fields.append(ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_limits.GUITARIST_COUNTS), names=[str(count) for count in wizard_limits.GUITARIST_COUNTS], current=choices.get_band().get_guitarists(), set=self.get_page().choosing(choices.get_band().set_guitarists)))
+        if choices.get_band().answerers():
             # Who has the tune, which is only shown, and who answers that player: one of the players who can, or nobody.
-            answerers = choices.answerers()
-            names = [choices.role_title(role) for role in answerers]
-            by = choices.answered_by()
-            fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.role_title(choices.get_tunes().tune_played_by()) if choices.get_tunes().tune_played_by() else labels.MSG_WIZARD_NOBODY),
+            answerers = choices.get_band().answerers()
+            names = [choices.get_band().role_title(role) for role in answerers]
+            by = choices.get_band().answered_by()
+            fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.get_band().role_title(choices.get_tunes().tune_played_by()) if choices.get_tunes().tune_played_by() else labels.MSG_WIZARD_NOBODY),
                        ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_ANSWERED_BY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *answerers], names=[labels.MSG_WIZARD_NOBODY, *names],
-                                   current=by or labels.MSG_WIZARD_NOBODY, shown=choices.role_title(by) if by else labels.MSG_WIZARD_NOBODY,
-                                   set=self.get_page().choosing(lambda role: choices.set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]
-        return [*fields, *(Toggle(label=choices.role_title(role), on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles_shown() if choices.role_can_play(role))]
+                                   current=by or labels.MSG_WIZARD_NOBODY, shown=choices.get_band().role_title(by) if by else labels.MSG_WIZARD_NOBODY,
+                                   set=self.get_page().choosing(lambda role: choices.get_band().set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]
+        return [*fields, *(Toggle(label=choices.get_band().role_title(role), on=choices.get_band().role_is_in(role), set=self.setter_of(role)) for role in choices.get_band().roles_shown() if choices.get_band().role_can_play(role))]
 
     def setter_of(self, role):
         """Return what puts a player in the band or leaves the player out, refusing to leave out the last."""
@@ -63,11 +63,11 @@ class BandBranch(Branch):
         page = self.get_page()
 
         def set_in(on):
-            if not on and choices.roles_in() == [role]:
+            if not on and choices.get_band().roles_in() == [role]:
                 page.refuse(errors.ERR_WIZARD_LAST_PLAYER)
                 return
             try:
-                page.choosing(lambda wanted: choices.set_role_in(role=role, on=wanted))(on)
+                page.choosing(lambda wanted: choices.get_band().set_role_in(role=role, on=wanted))(on)
             except ValueError as problem:
                 # A player with no way of playing that fits the subgenre, as a strummed guitar in a waltz that has none written.
                 page.refuse(str(problem))

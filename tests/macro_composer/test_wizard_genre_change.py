@@ -58,13 +58,13 @@ class TestLostWithGenre(unittest.TestCase):
 
     def test_each_setting_of_the_band_changed_is_counted_once_and_a_setting_put_back_is_not(self):
         choices = chosen()
-        player = next(role for role in choices.roles_in() if role != choices.tune_player() and role in choices.get_tunes().tune_players_offered())
+        player = next(role for role in choices.get_band().roles_in() if role != choices.get_band().tune_player() and role in choices.get_tunes().tune_players_offered())
         choices.get_tunes().set_tune_played_by(player)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_BAND_SETTINGS: 1}, {}))
-        left_out = next(role for role in choices.roles_in() if role != player and role in choices.get_tunes().tune_players_offered())
-        choices.set_role_in(role=left_out, on=False)
+        left_out = next(role for role in choices.get_band().roles_in() if role != player and role in choices.get_tunes().tune_players_offered())
+        choices.get_band().set_role_in(role=left_out, on=False)
         self.assertEqual(choices.lost_with_genre()[0][wizard_limits.LOST_BAND_SETTINGS], 2)
-        choices.set_role_in(role=left_out, on=True)
+        choices.get_band().set_role_in(role=left_out, on=True)
         choices.get_tunes().set_tune_played_by(None)
         self.assertEqual(choices.lost_with_genre(), NOTHING_LOST)
 

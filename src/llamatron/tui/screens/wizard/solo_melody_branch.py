@@ -62,14 +62,14 @@ class SoloMelodyBranch(Branch):
         choices = self.get_choices()
         if self.place() is None:
             return None
-        return labels.MSG_WIZARD_NOTES_EDITED if choices.get_solos().solo_is_own(self.place()) else choices.role_title(choices.get_solos().solo_player())
+        return labels.MSG_WIZARD_NOTES_EDITED if choices.get_solos().solo_is_own(self.place()) else choices.get_band().role_title(choices.get_solos().solo_player())
 
     def fields(self):
         choices = self.get_choices()
         place = self.place()
         if place is None:
             return []
-        played_by = Field(label=labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, value=lambda: choices.role_title(choices.get_solos().solo_player()))
+        played_by = Field(label=labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, value=lambda: choices.get_band().role_title(choices.get_solos().solo_player()))
         section = Field(label=labels.MSG_WIZARD_SOLO_SECTION_LABEL, value=lambda: choices.section_labels()[place])
         return [played_by, section, *self.buttons()]
 

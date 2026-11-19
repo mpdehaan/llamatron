@@ -118,8 +118,8 @@ class KitChoices(ChoicesPart):
     def _drummer(self):
         """Return what the genre says of its drummer at the level the drums are busy."""
         choices = self._choices
-        drums = next((role for role in choices.roles() if not choices.get_sounds().has_sound(role)), None)
-        return player_of(style=choices.style(), instrument=arranger.DRUMS, character=choices.character(arranger.DRUMS)) if drums else {}
+        drums = next((role for role in choices.get_band().roles() if not choices.get_sounds().has_sound(role)), None)
+        return player_of(style=choices.style(), instrument=arranger.DRUMS, character=choices.get_band().character(arranger.DRUMS)) if drums else {}
 
     def get_fills(self):
         """Return how often a fill comes, from FEWEST_FILLS, never, to MOST_FILLS: the position chosen, or the one nearest to
@@ -205,7 +205,7 @@ class KitChoices(ChoicesPart):
         """Return the drum breaks the song may play: every break where the band has drums and the meter is the one a break
         is written in, and none otherwise."""
         choices = self._choices
-        if not choices.is_ready() or choices.meter() != arranger.COMMON_TIME or not any(not choices.get_sounds().has_sound(role) for role in choices.roles()):
+        if not choices.is_ready() or choices.meter() != arranger.COMMON_TIME or not any(not choices.get_sounds().has_sound(role) for role in choices.get_band().roles()):
             return []
         return break_names()
 

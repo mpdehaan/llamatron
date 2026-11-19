@@ -125,9 +125,9 @@ class TestWizardMelodyChoices(unittest.TestCase):
         choices = chosen()
         if wizard_limits.ATONAL not in choices.melody_characters_offered():
             self.skipTest(wizard_limits.ATONAL)
-        self.assertFalse(any(choices.player_rows(role) for role in choices.roles_in()))
+        self.assertFalse(any(choices.get_band().player_rows(role) for role in choices.get_band().roles_in()))
         choices.set_melody_character(wizard_limits.ATONAL)
-        self.assertTrue(any(choices.player_rows(role) for role in choices.roles_in()))
+        self.assertTrue(any(choices.get_band().player_rows(role) for role in choices.get_band().roles_in()))
 
     def test_a_kind_of_section_takes_a_height_and_a_busy_of_its_own_and_gives_each_back(self):
         choices = chosen()

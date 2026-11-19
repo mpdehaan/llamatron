@@ -449,7 +449,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
     def test_the_hook_is_said_in_the_intro_by_whoever_is_chosen_and_by_nobody_until_then(self):
         choices = chosen()
         players = choices.intro_hook_players()
-        self.assertEqual(players, [choices.answered_by(), choices.tune_player()])
+        self.assertEqual(players, [choices.get_band().answered_by(), choices.get_band().tune_player()])
         self.assertIsNone(choices.get_intro_hook())
         for role in players:
             choices.set_intro_hook(role)
@@ -550,7 +550,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         choices = chosen()
         places = choices.get_solos().solo_places()
         self.assertTrue(places)
-        choices.set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
+        choices.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
         self.assertEqual(choices.get_solos().solo_places(), places)
         self.assertIsNotNone(choices.get_solos().solo_pattern(places[0]))
 
@@ -613,6 +613,6 @@ class TestWizardListeningPlaces(unittest.TestCase):
         choices = chosen(plan=False)
         kinds = choices.section_kinds_in_form()
         self.assertEqual(kinds[choices.get_hook().hook_scene()], 'chorus')
-        self.assertIn(choices.tune_player(), choices.section_plays(choices.tune_scene()))
+        self.assertIn(choices.get_band().tune_player(), choices.section_plays(choices.tune_scene()))
         setlist, name = choices.made_for_listening()
         self.assertEqual(len(setlist.get_song(name).get_scenes()), len(kinds))

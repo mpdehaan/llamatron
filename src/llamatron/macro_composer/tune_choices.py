@@ -36,7 +36,7 @@ class TuneChoices(ChoicesPart):
 
     def tune_kinds(self):
         """Return each kind of section the song has a tune in, once, in the form's order: the kinds whose sections the tune's player plays in."""
-        player = self._choices.tune_player()
+        player = self._choices.get_band().tune_player()
         kinds = []
         for place, kind in enumerate(self._choices.section_kinds_in_form()):
             if kind not in kinds and player is not None and player in self._choices.section_plays(place) and not self._choices.section_is_held(place):
@@ -45,7 +45,7 @@ class TuneChoices(ChoicesPart):
 
     def tune_place(self, kind):
         """Return the place in the form of the first section of a kind the tune's player plays in, or None."""
-        player = self._choices.tune_player()
+        player = self._choices.get_band().tune_player()
         places = range(len(self._choices.section_labels()))
         return next((place for place in places if self._choices.section_kind(place) == kind and player in self._choices.section_plays(place) and not self._choices.section_is_held(place)), None)
 
@@ -86,18 +86,18 @@ class TuneChoices(ChoicesPart):
 
     def tune_players_offered(self):
         """Return the players who may be given the tune, by name: every player of notes in the band but the bass."""
-        return [role for role in self._choices.roles_in() if self._choices.get_sounds().has_sound(role) and self._choices.role_named(role).get(arranger.PLAYER) != players_values.BASS]
+        return [role for role in self._choices.get_band().roles_in() if self._choices.get_sounds().has_sound(role) and self._choices.get_band().role_named(role).get(arranger.PLAYER) != players_values.BASS]
 
     def tune_played_by(self):
         """Return the player who plays the tune in the song: the one chosen while in the band, or else the player the genre gives the tune."""
         chosen = self._choices.get_extra(arranger.TUNE_BY_SONG)
-        return chosen if chosen in self.tune_players_offered() else self._choices.tune_player()
+        return chosen if chosen in self.tune_players_offered() else self._choices.get_band().tune_player()
 
     def set_tune_played_by(self, role):
         """Give the song's tune to a player, or back to the player the genre gives it with None."""
         if role is not None and role not in self.tune_players_offered():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_TUNE_PLAYER.format(value=role))
-        self._choices.set_extra(name=arranger.TUNE_BY_SONG, value=None if role is None or role == self._choices.tune_player() else role)
+        self._choices.set_extra(name=arranger.TUNE_BY_SONG, value=None if role is None or role == self._choices.get_band().tune_player() else role)
         self._choices.clear_answers()
 
     def tune_played_by_in(self, kind):
@@ -193,7 +193,7 @@ class TuneChoices(ChoicesPart):
         trait = self._choices.progression_trait()
         drawn = self._choices.progressions_by_chance()[:1]
         if trait is not None and drawn:
-            other.set_way(trait=trait, value=drawn[0])
+            other.get_band().set_way(trait=trait, value=drawn[0])
         other.set_seed(zlib.crc32(wizard_limits.TUNE_TAKE_SEED.format(seed=self._choices.get_seed(), kind=kind, take=take).encode()) % (wizard_limits.LAST_SEED + 1))
         try:
             return other.get_tunes()._found_tune_in_made(kind)[1]
