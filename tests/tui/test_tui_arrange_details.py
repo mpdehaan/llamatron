@@ -141,7 +141,7 @@ class TestDetails(unittest.TestCase):
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.AX, on=True)
         self.document.set_reset(index=FIRST_SCENE, register=RegisterName.DX, on=True)
         self.assertEqual(self.scene_lines(), [
-            marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO), marks.MSG_DETAILS_TEMPO_RAMP_IN.format(start=SCENE_TEMPO, end=RAMP_END),
+            marks.MSG_DETAILS_TEMPO_RAMPS.format(tempo=SCENE_TEMPO),
             marks.MSG_DETAILS_NO_GROOVE,
             marks.MSG_DETAILS_RESET.format(registers=RegisterName.AX + ', ' + RegisterName.DX),
         ])

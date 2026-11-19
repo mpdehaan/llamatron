@@ -30,7 +30,7 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.strings import labels, marks as marks_text
-from llamatron.composition.file_format import SHAPES, RampPart, RampWay, Section
+from llamatron.composition.file_format import SHAPES, Section
 from llamatron.tui import themes
 from llamatron.tui.drawing import Style, fit
 from llamatron.tui.text import plain_number
@@ -171,26 +171,16 @@ def clip_details(*, setlist, song, clip_slot):
     return lines + shape_lines(clip_slot)
 
 
-def tempo_ramp_lines(*, song, scene):
-    """Return a line for each tempo ramp of a scene that changes its tempo: the tempo it starts from and the tempo it reaches."""
-    base = plain_number(song.get_tempo()) if scene.get_tempo_setting() is None else scene.get_tempo_setting()
-    lines = []
-    for way, template in ((RampWay.IN, marks_text.MSG_DETAILS_TEMPO_RAMP_IN), (RampWay.OUT, marks_text.MSG_DETAILS_TEMPO_RAMP_OUT)):
-        ramp = scene.get_tempo_ramp_setting
-        start, end = (ramp(way=way, part=part) for part in (RampPart.START, RampPart.END))
-        if scene.get_tempo_ramp(way) is None:
-            continue
-        lines.append(detail(template.format(start=base if start is None else start, end=base if end is None else end)))
-    return lines
-
-
 def scene_details(*, song, scene):
     """Return a scene's lines of details: its chains, its scale, its tempo or tempo ramp, its groove, the registers it resets and its shapes."""
     lines = chain_lines(song=song, names=scene.get_chain_names())
     lines += scale_lines(song=song, name=scene.get_scale_name())
-    if scene.get_tempo_setting() is not None:
+    if scene.has_tempo_ramp():
+        # A ramp in and a ramp out are too much for a cell: the scene's tempo with a mark says that it moves.
+        tempo = plain_number(song.get_tempo()) if scene.get_tempo_setting() is None else scene.get_tempo_setting()
+        lines.append(detail(marks_text.MSG_DETAILS_TEMPO_RAMPS.format(tempo=tempo)))
+    elif scene.get_tempo_setting() is not None:
         lines.append(detail(marks_text.MSG_DETAILS_TEMPO.format(tempo=scene.get_tempo_setting())))
-    lines += tempo_ramp_lines(song=song, scene=scene)
     lines += groove_lines(scene.get_groove_choice())
     if scene.get_reset_names():
         lines.append(detail(marks_text.MSG_DETAILS_RESET.format(registers=marks_text.MSG_DETAILS_LIST_SEPARATOR.join(scene.get_reset_names()))))
