@@ -22,7 +22,8 @@ shows what the drawing drew.
 
 import unittest
 
-from tests.support.ui_testing import DRUMS, LEAD, OTHER, TUNE, UITest, a_song
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, a_song
 from llamatron.composition import defaults
 from llamatron.strings import marks, names
 from llamatron.composition.file_format import ClipSlotSetting, Direction
@@ -50,13 +51,13 @@ class TestCellText(unittest.TestCase):
         self.document = a_song()
 
     def clip_slot(self):
-        return self.document.clip_slot(index=FIRST_SCENE, track=LEAD)
+        return self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD)
 
     def set(self, *, setting, value):
-        self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=setting, value=value)
+        self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=setting, value=value)
 
     def test_a_plain_clip_is_its_patterns_name(self):
-        self.assertEqual(clip_text(self.clip_slot()), TUNE)
+        self.assertEqual(clip_text(self.clip_slot()), ui_testing.TUNE)
 
     def test_a_clip_with_a_name_of_its_own_shows_that_name(self):
         self.set(setting=ClipSlotSetting.NAME, value=A_CLIP_NAME)
@@ -65,24 +66,24 @@ class TestCellText(unittest.TestCase):
     def test_each_setting_beyond_the_pattern_adds_its_mark(self):
         for setting, value, mark in (
             (ClipSlotSetting.DIRECTION, Direction.REVERSE_A, marks.MSG_DIRECTION_MARK),
-            (ClipSlotSetting.GRAB_TRACK, DRUMS, marks.MSG_GRAB_MARK),
+            (ClipSlotSetting.GRAB_TRACK, ui_testing.DRUMS, marks.MSG_GRAB_MARK),
             (ClipSlotSetting.LOOP, True, marks.MSG_LOOP_MARK),
         ):
             with self.subTest(setting=setting):
                 self.setUp()
                 self.set(setting=setting, value=value)
-                self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=mark))
+                self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=ui_testing.TUNE, marks=mark))
 
     def test_repeats_say_how_many_and_a_morph_adds_its_mark(self):
-        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=SOME_REPEATS)
+        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=SOME_REPEATS)
         repeats = marks.MSG_REPEAT_MARK.format(repeat=SOME_REPEATS)
-        self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=repeats))
-        self.document.set_clip_slot_morph_target(index=FIRST_SCENE, track=LEAD, pattern=OTHER)
-        self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=TUNE, marks=marks.MSG_MORPH_MARK + repeats))
+        self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=ui_testing.TUNE, marks=repeats))
+        self.document.set_clip_slot_morph_target(index=FIRST_SCENE, track=ui_testing.LEAD, pattern=ui_testing.OTHER)
+        self.assertEqual(clip_text(self.clip_slot()), marks.MSG_CLIP_WITH_MARKS.format(name=ui_testing.TUNE, marks=marks.MSG_MORPH_MARK + repeats))
 
     def test_one_repeat_is_no_mark(self):
-        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=defaults.DEFAULT_REPEAT)
-        self.assertEqual(clip_text(self.clip_slot()), TUNE)
+        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=defaults.DEFAULT_REPEAT)
+        self.assertEqual(clip_text(self.clip_slot()), ui_testing.TUNE)
 
     def test_a_long_name_gives_way_so_that_the_marks_fit_the_cell(self):
         self.set(setting=ClipSlotSetting.NAME, value=A_CLIP_NAME)
@@ -152,18 +153,18 @@ class TestClipBar(UITest):
         return ArrangeDrawing.clip_bar(arrange_drawing.CLIP_BAR, lengths=self.lengths, clip_slot=clip_slot, index=FIRST_SCENE, track=track, played=played)
 
     def test_a_clip_that_is_not_playing_is_drawn_as_its_length_and_a_looping_clip_full(self):
-        self.assertTrue(self.document.clip_slot(index=FIRST_SCENE, track=DRUMS).loops())
-        self.assertEqual(self.bar_for(track=DRUMS), arrange_drawing.CLIP_BAR.full())
-        self.assertEqual(self.bar_for(track=LEAD), arrange_drawing.CLIP_BAR.draw(amount=self.lengths.clip_seconds(index=FIRST_SCENE, track=LEAD), total=self.lengths.scene_play_seconds(FIRST_SCENE)))
-        self.assertNotIn(length_bar.TO_PLAY, self.bar_for(track=LEAD))
+        self.assertTrue(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.DRUMS).loops())
+        self.assertEqual(self.bar_for(track=ui_testing.DRUMS), arrange_drawing.CLIP_BAR.full())
+        self.assertEqual(self.bar_for(track=ui_testing.LEAD), arrange_drawing.CLIP_BAR.draw(amount=self.lengths.clip_seconds(index=FIRST_SCENE, track=ui_testing.LEAD), total=self.lengths.scene_play_seconds(FIRST_SCENE)))
+        self.assertNotIn(length_bar.TO_PLAY, self.bar_for(track=ui_testing.LEAD))
 
     def test_a_playing_clips_bar_fills_from_the_left_as_it_plays_and_a_looping_clips_over_one_play_of_the_scene(self):
         scene_seconds = self.lengths.scene_play_seconds(FIRST_SCENE)
-        half_way = self.bar_for(track=LEAD, played=scene_seconds / 2)
+        half_way = self.bar_for(track=ui_testing.LEAD, played=scene_seconds / 2)
         self.assertIn(length_bar.TO_PLAY, half_way)
         self.assertTrue(half_way.index(length_bar.TO_PLAY) > 0)
-        self.assertEqual(self.bar_for(track=LEAD, played=scene_seconds), self.bar_for(track=LEAD))
-        looping = self.bar_for(track=DRUMS, played=scene_seconds / 2)
+        self.assertEqual(self.bar_for(track=ui_testing.LEAD, played=scene_seconds), self.bar_for(track=ui_testing.LEAD))
+        looping = self.bar_for(track=ui_testing.DRUMS, played=scene_seconds / 2)
         self.assertIn(length_bar.TO_PLAY, looping)
         self.assertEqual(len(looping), len(arrange_drawing.CLIP_BAR.full()))
-        self.assertEqual(self.bar_for(track=DRUMS, played=0.0), length_bar.TO_PLAY * len(arrange_drawing.CLIP_BAR.full()))
+        self.assertEqual(self.bar_for(track=ui_testing.DRUMS, played=0.0), length_bar.TO_PLAY * len(arrange_drawing.CLIP_BAR.full()))

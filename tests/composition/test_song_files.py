@@ -31,7 +31,8 @@ from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition import sections
 from llamatron.strings import errors
-from tests.support.song_testing import LEAD, X, pat, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import pat, with_parts
 
 QUARTER = '1/4'
 NOPE = 'nope'
@@ -85,25 +86,25 @@ class TestErrors(unittest.TestCase):
         self.assert_error('unknown setting (themes)', themes={})
 
     def test_unknown_chain_in_a_clip_slot(self):
-        self.assert_error('no chain called (nope)', scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: NOPE}}}])
+        self.assert_error('no chain called (nope)', scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: NOPE}}}])
 
     def test_unknown_pattern(self):
-        self.assert_error('no pattern called (nope)', scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: NOPE}}}])
+        self.assert_error('no pattern called (nope)', scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: NOPE}}}])
 
     def test_unknown_track(self):
         self.assert_error('no track called (nope)', scenes=[{Section.TRACKS: {NOPE: {ClipSlotSetting.PATTERN: A}}}])
 
     def test_clip_slots_must_use_the_hash_form(self):
-        self.assert_error(EXPECTED_SETTINGS, scenes=[{Section.TRACKS: {LEAD: A}}])
+        self.assert_error(EXPECTED_SETTINGS, scenes=[{Section.TRACKS: {song_testing.LEAD: A}}])
 
     def test_unknown_generator(self):
-        self.assert_error('unknown generator (wobble)', chains={X: [{WOBBLE: {}}]})
+        self.assert_error('unknown generator (wobble)', chains={song_testing.X: [{WOBBLE: {}}]})
 
     def test_unknown_generator_setting_names_the_generator(self):
-        scenes = [{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: X}}}]
+        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: song_testing.X}}}]
         self.assert_error(
             UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[Section.AUTO_RATCHETS], name=R)),
-            auto_ratchets={R: {COUNT: [2]}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes,
+            auto_ratchets={R: {COUNT: [2]}}, chains={song_testing.X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes,
         )
 
     def test_a_generator_no_chain_uses_is_checked_too(self):
@@ -111,25 +112,25 @@ class TestErrors(unittest.TestCase):
         self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}})
 
     def test_missing_generator_setting(self):
-        scenes = [{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: X}}}]
-        self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes)
+        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: song_testing.X}}}]
+        self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}}, chains={song_testing.X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes)
 
     def test_an_arp_with_no_step_plays_at_the_step_of_the_pattern_its_clip_plays(self):
         # A step left out is "(pattern)", where it was refused before.
-        scenes = [{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: X}}}]
-        data = with_parts(arps={R: {ArpSetting.ORDER: written_name(ChordOrder.UP)}}, chains={X: [{GeneratorKind.ARP: R}]}, scenes=scenes)
+        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: song_testing.X}}}]
+        data = with_parts(arps={R: {ArpSetting.ORDER: written_name(ChordOrder.UP)}}, chains={song_testing.X: [{GeneratorKind.ARP: R}]}, scenes=scenes)
         render_data(data)
 
     def test_bad_scale(self):
-        self.assert_error(UNKNOWN_SCALE_TYPE, scales={X: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: WOBBLY}}, scale=X)
-        self.assert_error(ROOT_NOTE, scales={X: {ScaleSetting.ROOT: NOT_A_ROOT, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}}, scale=X)
-        self.assert_error(ROOT_AND_A_TYPE, scales={X: {ScaleSetting.ROOT: NoteName.C}}, scale=X)
+        self.assert_error(UNKNOWN_SCALE_TYPE, scales={song_testing.X: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: WOBBLY}}, scale=song_testing.X)
+        self.assert_error(ROOT_NOTE, scales={song_testing.X: {ScaleSetting.ROOT: NOT_A_ROOT, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}}, scale=song_testing.X)
+        self.assert_error(ROOT_AND_A_TYPE, scales={song_testing.X: {ScaleSetting.ROOT: NoteName.C}}, scale=song_testing.X)
 
     def test_a_clip_needs_a_pattern(self):
-        self.assert_error(NEEDS_A_PATTERN, scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.LOOP: True}}}])
+        self.assert_error(NEEDS_A_PATTERN, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.LOOP: True}}}])
 
     def test_a_clip_cannot_come_from_another_track(self):
-        self.assert_error('unknown setting (from)', scenes=[{Section.TRACKS: {LEAD: {FROM: KICK}}}])
+        self.assert_error('unknown setting (from)', scenes=[{Section.TRACKS: {song_testing.LEAD: {FROM: KICK}}}])
 
     def test_every_setting_has_a_default_so_an_empty_file_is_an_empty_song(self):
         for data in [None, {}]:

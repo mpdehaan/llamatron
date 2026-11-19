@@ -25,7 +25,8 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'internal_tools'))
 
-from record_batch import MOST_VARIABLE, has_a_video, least_used, mode_for, most_takes, pairings, plan, record_all, recorder  # noqa: E402
+import record_batch  # noqa: E402
+from record_batch import has_a_video, least_used, mode_for, most_takes, pairings, plan, record_all, recorder  # noqa: E402
 from llamatron.composition.setlist import file_stem  # noqa: E402
 from llamatron.visualizers.modes import mode_options  # noqa: E402
 from llamatron.support.example_sets import example_sets  # noqa: E402
@@ -70,7 +71,7 @@ class TestPlan(unittest.TestCase):
 
     def test_the_limit_keeps_the_shortest(self):
         with contextlib.redirect_stderr(io.StringIO()):
-            takes = plan(paths=[LONG, SHORT, MIDDLE], paired={}, most=most_takes({MOST_VARIABLE: TWO}), lengths=LENGTHS.get)
+            takes = plan(paths=[LONG, SHORT, MIDDLE], paired={}, most=most_takes({record_batch.MOST_VARIABLE: TWO}), lengths=LENGTHS.get)
         self.assertEqual([path for path, _, _ in takes], [SHORT, MIDDLE])
 
     def test_a_set_has_a_video_when_any_take_of_it_is_recorded_whatever_its_mode(self):
@@ -98,7 +99,7 @@ class TestPlan(unittest.TestCase):
     def test_the_limit_is_every_take_unless_set_and_a_whole_number(self):
         self.assertIsNone(most_takes({}))
         with self.assertRaises(ValueError):
-            most_takes({MOST_VARIABLE: NOT_A_NUMBER})
+            most_takes({record_batch.MOST_VARIABLE: NOT_A_NUMBER})
 
 ANNOUNCE = 'announce'
 

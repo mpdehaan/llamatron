@@ -24,7 +24,8 @@ The pattern editor shares StepEditor with them, and its own tests cover its scro
 
 import unittest
 
-from tests.support.ui_testing import KEY_SHOWN, UITest, UP_ARP, key_name, leaf_pages
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, key_name, leaf_pages
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
@@ -59,7 +60,7 @@ FIRST_STEP = 0
 def legend_entry(binding):
     """Return a binding as the legend shows it: the key's name and what the key does."""
     _, _, what = binding
-    return KEY_SHOWN.format(label=key_name(binding)) + legends.MSG_LEGEND_WHAT.format(what=what)
+    return ui_testing.KEY_SHOWN.format(label=key_name(binding)) + legends.MSG_LEGEND_WHAT.format(what=what)
 
 
 class OneRowChecks:
@@ -213,11 +214,11 @@ class TestGrooveEditorIsOneRow(OneRowChecks, UITest):
 class TestOffsetsEditorIsOneRow(OneRowChecks, UITest):
 
     PAGE = OffsetsEditor
-    FIRST = UP_ARP
+    FIRST = ui_testing.UP_ARP
     SHOWN = marks.MSG_STEPS_SHOWN
 
     def prepare(self):
-        self.document.set_generator_setting(section=Section.ARPS, name=UP_ARP, setting=ArpSetting.OFFSETS, value=SOME_OFFSETS)
+        self.document.set_generator_setting(section=Section.ARPS, name=ui_testing.UP_ARP, setting=ArpSetting.OFFSETS, value=SOME_OFFSETS)
 
     async def test_a_silent_step_is_stepped_and_typed_from_nothing(self):
         await self.press(OffsetsEditor.KEYS.SILENT)

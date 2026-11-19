@@ -19,7 +19,8 @@ The same checks run on each of them: the Patterns, Scales, Chains, Grooves, Song
 and AutoRatchets pages. What a page alone does, like adding, is tested with the page.
 """
 
-from tests.support.ui_testing import LEAD, NAMED, TUNE, UITest, leaf_pages
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, leaf_pages
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, Section
 from llamatron.tui.screens.generators import generator_pages
@@ -207,7 +208,7 @@ class TestNamesAreHeldToTheirLength(UITest):
         self.assertEqual(len(self.app.screen.value), limits.MAX_NAME_LENGTH)
 
     async def test_an_older_files_longer_name_is_kept_in_the_prompt_and_takes_no_more(self):
-        self.document.rename_named(section=Section.PATTERNS, old=TUNE, new=A_LONG_NAME)
+        self.document.rename_named(section=Section.PATTERNS, old=ui_testing.TUNE, new=A_LONG_NAME)
         await self.press(keybindings.MainPage.PATTERNS)
         self.app.screen.put_cursor_on(A_LONG_NAME)
         await self.press(keybindings.PatternsPage.RENAME)
@@ -228,7 +229,7 @@ class TestNamesAreHeldToTheirLength(UITest):
         self.assertEqual(heading.index(labels.Column.TYPE), heading.index(labels.Column.SELECT_PATTERN) + limits.MAX_NAME_LENGTH + len(patterns_page.INDENT) + len(drawing.SPACE))
 
     async def test_an_older_files_longer_name_is_shown_cut_in_the_list(self):
-        self.document.rename_named(section=Section.PATTERNS, old=TUNE, new=A_LONG_NAME)
+        self.document.rename_named(section=Section.PATTERNS, old=ui_testing.TUNE, new=A_LONG_NAME)
         await self.press(keybindings.MainPage.PATTERNS)
         self.assertIn(fit(text=patterns_page.INDENT + A_LONG_NAME, width=limits.MAX_NAME_LENGTH + len(patterns_page.INDENT)), self.text())
         self.assertNotIn(A_LONG_NAME, self.text().split(labels.Column.SELECT_PATTERN)[-1])
@@ -239,7 +240,7 @@ class TestPatternsPageAsANamedList(NamedListChecks, UITest):
 
     PAGE = PatternsPage
     OPENING = (keybindings.MainPage.PATTERNS,)
-    FIRST = TUNE
+    FIRST = ui_testing.TUNE
     ALWAYS_SORTED = True
 
 
@@ -254,10 +255,10 @@ class TestChainsPageAsANamedList(NamedListChecks, UITest):
 
     PAGE = ChainsPage
     OPENING = (keybindings.MainPage.CHAINS,)
-    FIRST = NAMED
+    FIRST = ui_testing.NAMED
 
     def make_used(self):
-        self.document.set_clip_slot_setting(index=FIRST_SCENE, track=LEAD, setting=ClipSlotSetting.CHAIN, value=NAMED)
+        self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.CHAIN, value=ui_testing.NAMED)
         return True
 
 

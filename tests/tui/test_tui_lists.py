@@ -16,9 +16,8 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from tests.support.ui_testing import (
-    STRUMMER, BREATHES, CLAVE, CLIPPED, CLIPS, FADE, FOLK, FOLLOWS, KEY_SHOWN, LAZY, PICKED, POP, PUSH, ROLLS, SLIDES, SMOOTH, SWAY, THIN, TRADE, UP_ARP, UITest, back_key, first_key, fixed_text, forward_key, key_name, key_of,
-)
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_name, key_of
 from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.tui import drawing
 from llamatron.composition import file_format
@@ -132,7 +131,7 @@ class TestScalesPage(UITest):
         await self.press(keybindings.MainPage.SCALES, OLD_ADD_KEY)
         self.assertIsInstance(self.app.screen, ScalesPage)
         self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE])
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.ScalesPage.ADD)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.ADD), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.ScalesPage.ADD)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.ADD), self.text())
         await self.press(Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
         self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE, SCALE_2])
@@ -447,7 +446,7 @@ class TestGeneratorsPage(UITest):
     async def test_a_copy_is_listed_under_its_type_with_the_cursor_on_it(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
-        page.put_cursor_on(kind=GeneratorKind.AUTO_RATCHET, name=ROLLS)
+        page.put_cursor_on(kind=GeneratorKind.AUTO_RATCHET, name=ui_testing.ROLLS)
         await self.press(keybindings.GeneratorsPage.COPY)
         self.assertEqual(self.auto_ratchet(ROLLS_COPY).get_counts(), [1, 4])
         self.assertEqual(page.current(), (GeneratorKind.AUTO_RATCHET, ROLLS_COPY))
@@ -609,7 +608,7 @@ class TestDriftEditor(UITest):
         self.assertIsInstance(self.app.screen, DriftEditor)
 
     def drift(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.DRIFT, name=SWAY)
+        return self.document.song().get_generator_settings(kind=GeneratorKind.DRIFT, name=ui_testing.SWAY)
 
     async def test_left_and_right_pick_a_version_and_the_brackets_change_only_that_one(self):
         await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.DEGREE])
@@ -725,7 +724,7 @@ class TestOffsetsEditorOnAUsualConsole(UITest):
         self.assertEqual(text.count(marks.MSG_GAUGE_BAR), GAUGE_LEVELS_ON_A_USUAL_CONSOLE)
         self.assertIn(marks.MSG_POSITIVE_VALUE.format(value=7, mark=marks.MSG_OVER_THE_TOP_MARK), text)
         for item in self.app.screen.shown_keys():
-            self.assertIn(KEY_SHOWN.format(label=item.shown_label()), text)
+            self.assertIn(ui_testing.KEY_SHOWN.format(label=item.shown_label()), text)
         self.assertIn(fixed_text(marks.MSG_STEPS_SHOWN) + '1-9' + marks.MSG_MORE_AFTER, text)
         # Left on the first step stays there, since no cursor goes round, and Right to the last step scrolls the row.
         await self.press(Key.LEFT)
@@ -772,7 +771,7 @@ class TestAutoRatchetEditor(UITest):
         await self.press(Key.ENTER)
         self.app.screen.value = '1 x'
         await self.press(Key.ENTER)
-        self.assertEqual(self.auto_ratchet(ROLLS).get_counts(), [1, 4])
+        self.assertEqual(self.auto_ratchet(ui_testing.ROLLS).get_counts(), [1, 4])
         self.assertIn(INTEGERS, self.text())
 
 class TestChainsPage(UITest):
@@ -838,23 +837,23 @@ class TestChainEditor(UITest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options[0], messages.MSG_NEW_GENERATOR_CHOICE)
         named = [
-            (GeneratorKind.ARP, UP_ARP), (GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.DRIFT, SWAY), (GeneratorKind.PROGRESSION, POP), (GeneratorKind.VOICE_LEADING, SMOOTH),
-            (GeneratorKind.STRUM, FOLK), (GeneratorKind.EUCLID, CLAVE), (GeneratorKind.DENSITY, THIN), (GeneratorKind.SWELL, FADE), (GeneratorKind.ARTICULATE, CLIPPED),
-            (GeneratorKind.GLIDE, SLIDES), (GeneratorKind.SHORTEN, CLIPS), (GeneratorKind.RUSH, PUSH), (GeneratorKind.DRAG, LAZY), (GeneratorKind.HOCKET, TRADE),
-            (GeneratorKind.GUITARIFY, PICKED), (GeneratorKind.FOLLOW_CHORDS, FOLLOWS), (GeneratorKind.PHRASING, BREATHES), (GeneratorKind.MUSICIAN, STRUMMER),
+            (GeneratorKind.ARP, ui_testing.UP_ARP), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.DRIFT, ui_testing.SWAY), (GeneratorKind.PROGRESSION, ui_testing.POP), (GeneratorKind.VOICE_LEADING, ui_testing.SMOOTH),
+            (GeneratorKind.STRUM, ui_testing.FOLK), (GeneratorKind.EUCLID, ui_testing.CLAVE), (GeneratorKind.DENSITY, ui_testing.THIN), (GeneratorKind.SWELL, ui_testing.FADE), (GeneratorKind.ARTICULATE, ui_testing.CLIPPED),
+            (GeneratorKind.GLIDE, ui_testing.SLIDES), (GeneratorKind.SHORTEN, ui_testing.CLIPS), (GeneratorKind.RUSH, ui_testing.PUSH), (GeneratorKind.DRAG, ui_testing.LAZY), (GeneratorKind.HOCKET, ui_testing.TRADE),
+            (GeneratorKind.GUITARIFY, ui_testing.PICKED), (GeneratorKind.FOLLOW_CHORDS, ui_testing.FOLLOWS), (GeneratorKind.PHRASING, ui_testing.BREATHES), (GeneratorKind.MUSICIAN, ui_testing.STRUMMER),
         ]
         self.assertEqual(self.app.screen.options[1:], [step_shown(kind=kind, name=name) for kind, name in named])
         self.app.screen.place = 2
         await self.press(Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.AUTO_RATCHET, ROLLS)])
+        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS)])
         await self.press(Key.DOWN, Key.ENTER)
         self.app.screen.place = 1
         await self.press(Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.ARP, UP)])
+        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.ARP, UP)])
         await self.press(keybindings.ChainEditor.COPY)
-        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.ARP, UP), (GeneratorKind.ARP, UP)])
+        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.ARP, UP), (GeneratorKind.ARP, UP)])
         await self.press(Key.UP, Key.UP, keybindings.ChainEditor.MOVE, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ROLLS), (GeneratorKind.ARP, UP)])
+        self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.ARP, UP)])
         await self.press(Key.BACKSPACE, Key.BACKSPACE)
         self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP)])
         render_song(self.document.song())
@@ -871,7 +870,7 @@ class TestChainEditor(UITest):
 
     async def test_a_step_cannot_move_past_the_ends(self):
         await self.press(keybindings.ChainEditor.MOVE, Key.UP, Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ROLLS)])
+        self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS)])
 
     async def test_each_step_shows_its_generators_name_then_its_kind_and_a_repeat_is_numbered_on_screen_only(self):
         self.document.add_chain_step(chain=NAMED, kind=GeneratorKind.ARP, name=UP)

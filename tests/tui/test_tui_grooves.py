@@ -16,7 +16,8 @@
 """The Grooves page, the groove editor, and the Groove field on the Song, Scene and Track pages."""
 
 from llamatron.tui.text import sorted_names
-from tests.support.ui_testing import DRUMS, KEY_SHOWN, LEAD, UITest, key_of
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, key_of
 from llamatron.composition import defaults, limits
 from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.composition.file_format import GrooveSetting
@@ -131,10 +132,10 @@ class TestGroovesPage(UITest):
 
     async def test_a_groove_in_use_cannot_be_deleted(self):
         await self.press(keybindings.GroovesPage.ADD, Key.ESCAPE)
-        self.document.set_track_groove(name=DRUMS, choice=GROOVE_1)
+        self.document.set_track_groove(name=ui_testing.DRUMS, choice=GROOVE_1)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(messages.MSG_USE_SONG_TRACK.format(song=THE_SONG, track=DRUMS), self.text())
+        self.assertIn(messages.MSG_USE_SONG_TRACK.format(song=THE_SONG, track=ui_testing.DRUMS), self.text())
         await self.press(Key.ENTER)
         self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1])
         render_song(self.document.song())
@@ -154,8 +155,8 @@ class TestGrooveEditor(UITest):
     async def test_the_brackets_change_an_amount_and_the_legend_names_up_and_down_alone(self):
         await self.press(Key.RIGHT, keybindings.GrooveEditor.MORE, keybindings.GrooveEditor.MORE, keybindings.GrooveEditor.LESS)
         self.assertEqual(self.groove().get_cells()[1], 1)
-        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), self.text())
-        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
 
     async def test_digits_type_an_amount_and_plus_and_minus_change_it(self):
         await self.press(Key.RIGHT, '1', '6')
@@ -175,14 +176,14 @@ class TestGrooveEditor(UITest):
     async def test_the_name_is_shown_and_n_renames_it_everywhere(self):
         self.assertIn(marks.MSG_GROOVE_NAME_SHOWN.format(label=labels.MSG_NAME_LABEL, name=GROOVE_1).strip(), self.text())
         await self.press(Key.ESCAPE)
-        self.document.set_track_groove(name=DRUMS, choice=GROOVE_1)
+        self.document.set_track_groove(name=ui_testing.DRUMS, choice=GROOVE_1)
         await self.press(Key.ENTER, keybindings.GrooveEditor.RENAME)
         self.app.screen.value = SHUFFLE
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, GrooveEditor)
         self.assertIn(SHUFFLE, self.document.song().get_groove_names())
         self.assertNotIn(GROOVE_1, self.document.song().get_groove_names())
-        self.assertEqual(self.track(DRUMS).get_groove_choice(), SHUFFLE)
+        self.assertEqual(self.track(ui_testing.DRUMS).get_groove_choice(), SHUFFLE)
         self.assertIn(marks.MSG_GROOVE_NAME_SHOWN.format(label=labels.MSG_NAME_LABEL, name=SHUFFLE).strip(), self.text())
         self.assertIn(SHUFFLE, self.crumbs_line())
         await self.press(Key.RIGHT, '7')
@@ -261,13 +262,13 @@ class TestGrooveChoices(UITest):
         await self.select_field(labels.MSG_GROOVE_LABEL)
         self.assertIn(marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN, self.text())
         await self.press(Key.RIGHT)
-        self.assertIs(self.track(LEAD).get_groove_choice(), False)
+        self.assertIs(self.track(ui_testing.LEAD).get_groove_choice(), False)
         await self.press(Key.LEFT, Key.LEFT)
-        self.assertIsNone(self.track(LEAD).get_groove_choice())
+        self.assertIsNone(self.track(ui_testing.LEAD).get_groove_choice())
         await self.press(Key.ENTER)
         await self.pick(FactoryGroove.PUSH)
-        self.assertEqual(self.track(LEAD).get_groove_choice(), FactoryGroove.PUSH)
+        self.assertEqual(self.track(ui_testing.LEAD).get_groove_choice(), FactoryGroove.PUSH)
         self.assertIn(FactoryGroove.PUSH, self.text())
         await self.press(Key.BACKSPACE)
-        self.assertIsNone(self.track(LEAD).get_groove_choice())
+        self.assertIsNone(self.track(ui_testing.LEAD).get_groove_choice())
         render_song(self.document.song())

@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Progression: the Progressions page, the progression editor and the chord editor, with the picker of named progressions."""
 
-from tests.support.ui_testing import POP, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section, Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Tension
 from llamatron.composition.named_scale import scale_type_name
@@ -70,7 +71,7 @@ class TestProgressionEditor(UITest):
         self.assertIsInstance(self.app.screen, ProgressionEditor)
 
     def progression(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP)
+        return self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=ui_testing.POP)
 
     async def test_every_starts_at_a_bar_and_steps_through_the_list(self):
         self.assertIn(file_format.ONE_BAR_WRITTEN, self.text())
@@ -90,12 +91,12 @@ class TestChordsEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.app.screen.show_page(ChordsEditor(holder=self.app.screen.holder, name=POP))
+        self.app.screen.show_page(ChordsEditor(holder=self.app.screen.holder, name=ui_testing.POP))
         await self.pilot.pause()
         self.page = self.app.screen
 
     def progression(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP)
+        return self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=ui_testing.POP)
 
     async def test_it_shows_each_chords_numeral_and_name_in_the_songs_scale(self):
         for name in POP_NAMES:
@@ -244,11 +245,11 @@ class TestRestartField(UITest):
 
     async def test_restart_steps_through_its_choices(self):
         await self.open_generator(section=Section.PROGRESSIONS)
-        progression = self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP)
+        progression = self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=ui_testing.POP)
         self.assertEqual(progression.get_restart(), Restart.EVERY_CLIP)
         self.assertIn(labels.MSG_RESTART_NAMES[Restart.EVERY_CLIP], self.text())
         await self.select_field(labels.MSG_RESTART_LABEL)
         await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP).get_restart(), Restart.ON_NEW_SCENE)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=ui_testing.POP).get_restart(), Restart.ON_NEW_SCENE)
         await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=POP).get_restart(), Restart.WHOLE_SONG)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=ui_testing.POP).get_restart(), Restart.WHOLE_SONG)

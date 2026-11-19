@@ -40,7 +40,8 @@ from llamatron.realtime import timeline as timeline_values
 from llamatron.realtime.timeline import Route, song_timeline
 from llamatron.support.rational import Rational
 from tests.support.rendering import song_from_data
-from tests.playback.test_registers import LEAD, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 
 TUNE = 'tune'
 VIOLIN = 'violin'
@@ -92,10 +93,10 @@ def switched(*, keyswitch, rows=None, repeat=1, instrument=None, track=None, cli
     """Return a song's data whose lead plays one pattern with a Keyswitch row, a step a quarter note, through the violin unless told otherwise."""
     steps = len(keyswitch)
     figure = pattern(steps, **{Row.KEYSWITCH: keyswitch, **(rows or {})})
-    data = song(patterns={TUNE: figure}, scenes=[{SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: repeat, **(clip or {})}}}])
+    data = song(patterns={TUNE: figure}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: repeat, **(clip or {})}}}])
     data[SongSetting.TEMPO] = TEMPO
     data[Section.INSTRUMENTS] = {VIOLIN: violin() if instrument is None else instrument}
-    data[Section.TRACKS][LEAD] = {TrackSetting.INSTRUMENT: VIOLIN, **(track or {})}
+    data[Section.TRACKS][test_registers.LEAD] = {TrackSetting.INSTRUMENT: VIOLIN, **(track or {})}
     data.update(extra or {})
     return data
 
@@ -249,7 +250,7 @@ class TestKeyswitchesPlayed(unittest.TestCase):
 
     def test_a_track_with_no_instrument_sends_none(self):
         data = switched(keyswitch=[[SUSTAIN_SLOT]])
-        del data[Section.TRACKS][LEAD][TrackSetting.INSTRUMENT]
+        del data[Section.TRACKS][test_registers.LEAD][TrackSetting.INSTRUMENT]
         self.assertEqual(sent(data), [])
 
     def test_an_instrument_through_fluidsynth_sends_none(self):
@@ -336,7 +337,7 @@ class TestKeyswitchesInRealTime(unittest.TestCase):
 
     def timeline(self, route):
         grid = rendered(switched(keyswitch=[[STACCATO_SLOT], None]))[0]
-        return song_timeline(grid=grid, routes={LEAD: route})
+        return song_timeline(grid=grid, routes={test_registers.LEAD: route})
 
     def test_a_midi_port_is_sent_the_keyswitch_before_its_note(self):
         ons = [event for event in self.timeline(Route(PORT, 0)) if event.kind == timeline_values.NOTE_ON]

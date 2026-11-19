@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Strum: the Strums page and editor, and the + Strum sections of the track editor and the clip page."""
 
-from tests.support.ui_testing import FOLK, LEAD, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Section, GeneratorKind, StrumDirection, StrumPart, StrumSpread
 from llamatron.strings import labels, marks
 from llamatron.tui.keys import Key
@@ -45,7 +46,7 @@ class TestStrumEditor(UITest):
         self.assertIsInstance(self.app.screen, StrumEditor)
 
     def strum(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.STRUM, name=FOLK)
+        return self.document.song().get_generator_settings(kind=GeneratorKind.STRUM, name=ui_testing.FOLK)
 
     async def test_the_spread_steps_through_its_choices_and_shows_milliseconds(self):
         self.assertIn(spread_name(StrumSpread.NORMAL), self.text())
@@ -65,17 +66,17 @@ class TestStrumSections(UITest):
     """The track editor's + Strum section, and the clip page's, whose (track) takes the track's."""
 
     async def test_the_track_strums_and_the_clip_takes_it_until_set(self):
-        self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=LEAD))
+        self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=ui_testing.LEAD))
         await self.pilot.pause()
         await self.select_field(labels.MSG_STRUM_LABEL)
         await self.press(Key.ENTER)
         await self.select_field(labels.MSG_STRUM_FIELD_LABELS[StrumPart.DIRECTION])
         await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.document.song().get_track(LEAD).get_strum().direction, StrumDirection.BY_THE_BEAT)
-        self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=0, track=LEAD))
+        self.assertEqual(self.document.song().get_track(ui_testing.LEAD).get_strum().direction, StrumDirection.BY_THE_BEAT)
+        self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=0, track=ui_testing.LEAD))
         await self.pilot.pause()
         # The clip shows the track's direction it takes, and where it comes from.
         self.assertIn(marks.MSG_FROM_TRACK_SHOWN.format(value=labels.MSG_STRUM_WORDS[StrumDirection.BY_THE_BEAT]), self.text())
         await self.select_field(labels.MSG_STRUM_FIELD_LABELS[StrumPart.DIRECTION])
         await self.press(*[keybindings.FieldPage.MORE] * 2)
-        self.assertEqual(self.document.song().get_scenes()[0].get_clip_slot(LEAD).get_strum().direction, StrumDirection.DOWN)
+        self.assertEqual(self.document.song().get_scenes()[0].get_clip_slot(ui_testing.LEAD).get_strum().direction, StrumDirection.DOWN)

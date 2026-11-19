@@ -16,7 +16,8 @@
 """The pattern editor's Inversion row, in Basics under Chord: blocked on a step with no chord, cycling blank, 1, 2 and 3 on one with a chord."""
 """Keyswitches in the tracker: an instrument's Keyswitch Map and its note picker, the pattern editor's Keyswitch row, the dialog that picks a step's keyswitches from both views, and the piano roll's lights."""
 
-from tests.support.ui_testing import DRUMS, LEAD, TUNE, UITest, first_key, key_name
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, first_key, key_name
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Row
 from llamatron.composition import instrument as instrument_values
@@ -63,7 +64,7 @@ def add_violin(document):
     document.add_instrument(VIOLIN)
     document.set_instrument_device(name=VIOLIN, device=PORT)
     document.set_instrument_keyswitches(name=VIOLIN, keyswitches=[Keyswitch(SUSTAIN, SUSTAIN_NOTE), Keyswitch(STACCATO, STACCATO_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 2)])
-    document.set_track_instrument(name=LEAD, instrument=VIOLIN)
+    document.set_track_instrument(name=ui_testing.LEAD, instrument=VIOLIN)
 
 
 class TestKeyswitchMap(UITest):
@@ -287,7 +288,7 @@ class TestKeyswitchRow(PatternEditorTest):
 
     async def test_with_no_one_instrument_the_rows_are_the_slots_the_steps_use_by_number_and_the_hint_says_why(self):
         self.assertEqual(self.section_rows(), [])
-        self.document.set_step_value(name=TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[STACCATO_SLOT])
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[STACCATO_SLOT])
         self.document.record_edit()
         self.assertEqual(self.section_rows(), [slot_row_name(STACCATO_SLOT)])
         self.assertEqual(self.slot_row(STACCATO_SLOT).label(), marks.MSG_KEYSWITCH_SLOT_NAMED.format(slot=STACCATO_SLOT))
@@ -350,8 +351,8 @@ class TestKeyswitchRow(PatternEditorTest):
     async def test_two_instruments_playing_the_pattern_leave_the_slots_numbered(self):
         add_violin(self.document)
         self.document.add_instrument(CELLO)
-        self.document.set_track_instrument(name=DRUMS, instrument=CELLO)
-        self.document.add_clip_slot(index=SECOND_SCENE, track=DRUMS, pattern=TUNE)
+        self.document.set_track_instrument(name=ui_testing.DRUMS, instrument=CELLO)
+        self.document.add_clip_slot(index=SECOND_SCENE, track=ui_testing.DRUMS, pattern=ui_testing.TUNE)
         await self.open_dialog()
         self.assertIn(messages.MSG_KEYSWITCH_SEVERAL_INSTRUMENTS, self.text())
         self.assertNotIn(STACCATO, self.text())
@@ -362,12 +363,12 @@ class TestKeyswitchesFromAClip(UITest):
     async def test_a_clips_track_names_the_slots_even_when_two_instruments_play_the_pattern(self):
         add_violin(self.document)
         self.document.add_instrument(CELLO)
-        self.document.set_track_instrument(name=DRUMS, instrument=CELLO)
-        self.document.add_clip_slot(index=SECOND_SCENE, track=DRUMS, pattern=TUNE)
+        self.document.set_track_instrument(name=ui_testing.DRUMS, instrument=CELLO)
+        self.document.add_clip_slot(index=SECOND_SCENE, track=ui_testing.DRUMS, pattern=ui_testing.TUNE)
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, keybindings.ArrangePage.OPEN_PATTERN)
         editor = self.app.screen
         self.assertIsInstance(editor, PatternEditor)
-        self.assertEqual(editor.opened_track, LEAD)
+        self.assertEqual(editor.opened_track, ui_testing.LEAD)
         instrument, said = editor.keyswitch_instrument()
         self.assertEqual(said, VIOLIN)
         self.assertEqual(instrument.get_keyswitch(STACCATO_SLOT), Keyswitch(STACCATO, STACCATO_NOTE))
@@ -383,7 +384,7 @@ class TestKeyswitchesOnTheRoll(UITest):
             await self.press(keybindings.PatternEditor.TO_EDITOR)
 
     def value(self, step):
-        return self.document.step_value(name=TUNE, row=Row.KEYSWITCH, step=step)
+        return self.document.step_value(name=ui_testing.TUNE, row=Row.KEYSWITCH, step=step)
 
     def top_row(self):
         """Return the roll's top row as drawn, the line under the header's lines, the step numbers and the heading's rule."""
@@ -405,7 +406,7 @@ class TestKeyswitchesOnTheRoll(UITest):
 
     async def test_a_step_with_keyswitches_has_a_magenta_light_on_the_top_row_and_no_other_has(self):
         self.assertNotIn(marks.MSG_KEYSWITCH_LIGHT, self.top_row().plain)
-        self.document.set_step_value(name=TUNE, row=Row.KEYSWITCH, step=SECOND_STEP, value=[SUSTAIN_SLOT])
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.KEYSWITCH, step=SECOND_STEP, value=[SUSTAIN_SLOT])
         line = self.top_row()
         self.assertEqual(line.plain.count(marks.MSG_KEYSWITCH_LIGHT), 1)
         column = line.plain.index(marks.MSG_KEYSWITCH_LIGHT)
@@ -415,7 +416,7 @@ class TestKeyswitchesOnTheRoll(UITest):
 
     async def test_the_light_is_drawn_over_a_note_on_the_top_row_and_the_line_keeps_its_width(self):
         before = self.top_row()
-        self.document.set_step_value(name=TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[SUSTAIN_SLOT])
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[SUSTAIN_SLOT])
         after = self.top_row()
         self.assertEqual(after.cell_len, before.cell_len)
         self.assertEqual(len(after.plain), len(before.plain))

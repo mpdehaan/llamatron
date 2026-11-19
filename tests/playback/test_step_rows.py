@@ -22,7 +22,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import timing
 from llamatron.support.rational import Rational
 from tests.support.rendering import setlist_from_data
-from tests.playback.test_registers import LEAD, X, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
 
 STEPS = 4
@@ -36,7 +37,7 @@ def through(*rows):
     """Return a song whose lead plays four quarter notes climbing C, E, G, A through generators, each (section, kind, settings), in one chain."""
     figure = dict(pattern(STEPS, **{Row.DEGREE: [1, 3, 5, 6]}), **{PatternSetting.STEP_SIZE: '1/4'})
     chain = 'chain'
-    data = song(patterns={X: figure}, scenes=[{SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X, ClipSlotSetting.CHAINS: [chain]}}}])
+    data = song(patterns={test_registers.X: figure}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [chain]}}}])
     data[Section.CHAINS] = {chain: []}
     for place, (section, kind, settings) in enumerate(rows):
         name = '{kind} {place}'.format(kind=kind, place=place)

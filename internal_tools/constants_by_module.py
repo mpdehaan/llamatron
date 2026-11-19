@@ -242,6 +242,18 @@ def bound_names_but_imports(tree):
     return names | {node.arg for node in ast.walk(tree) if isinstance(node, ast.arg)}
 
 
+def assigned_outside_classes(tree):
+    """Return every name a file assigns but for a class's own attributes, which are read through the class and hide no import."""
+    of_classes = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            for statement in node.body:
+                if isinstance(statement, (ast.Assign, ast.AnnAssign)):
+                    targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
+                    of_classes.update(id(name) for target in targets for name in ast.walk(target) if isinstance(name, ast.Name))
+    return {node.id for node in ast.walk(tree) if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)) and id(node) not in of_classes}
+
+
 def bound_names(tree):
     """Return every name a file binds itself: what it assigns, its parameters, its functions and classes, and what it imports."""
     names = set()
@@ -324,14 +336,14 @@ def rewritten(*, module, project, prefixes=None):
     moves = moves_of(module=module, project=project, prefixes=prefixes)
     lines = module.source.split('\n')
     path = module.path.relative_to(ROOT).as_posix()
-    assigned = {node.id for node in ast.walk(module.tree) if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))}
+    assigned = assigned_outside_classes(module.tree)
     skipped = []
     kept = []
     for move in moves:
         inside = lines[move.node.lineno - 1:move.node.end_lineno]
         if move.local in assigned:
             skipped.append(SKIPPED.format(path=path, line=move.node.lineno, why=WHY_ASSIGNED.format(name=move.local)))
-        elif any('#' in line for line in inside):
+        elif any('#' in line for line in inside) and move.node.end_lineno != move.node.lineno:
             skipped.append(SKIPPED.format(path=path, line=move.node.lineno, why=WHY_COMMENT))
         else:
             kept.append(move)
@@ -369,7 +381,9 @@ def rewritten(*, module, project, prefixes=None):
         rest = kept_line(node=node, moved={move.local for move in moved}, indent=indent)
         if rest:
             new.append(rest)
-        replaced[node.lineno - 1] = (node.end_lineno, new)
+        # A comment after a one-line import, such as one for a checker, stays on every line the import becomes.
+        after = lines[node.end_lineno - 1].encode(FILE_ENCODING)[node.end_col_offset:].decode(FILE_ENCODING)
+        replaced[node.lineno - 1] = (node.end_lineno, [line + after for line in new])
     uses = {move.local: THROUGH_MODULE.format(module=names[move.module], name=move.name) for move in kept}
     changes = {}
     for node in ast.walk(module.tree):

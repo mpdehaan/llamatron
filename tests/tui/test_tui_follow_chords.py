@@ -23,7 +23,8 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
-from tests.support.ui_testing import DRUMS, FOLLOWS, LEAD, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 NEW_ONE = 'harmony'
 GONE = 'nobody'
@@ -45,23 +46,23 @@ class TestFollowChordsEditor(UITest):
         await self.select_field(labels.MSG_CHORDS_FROM_LABEL)
 
     def followed(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=FOLLOWS).get_chords_from()
+        return self.document.song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=ui_testing.FOLLOWS).get_chords_from()
 
     async def test_the_track_is_picked_from_the_songs_tracks_with_none_first(self):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, DRUMS, LEAD])
+        self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, ui_testing.DRUMS, ui_testing.LEAD])
         await self.press(Key.UP, Key.ENTER)
-        self.assertEqual(self.followed(), DRUMS)
+        self.assertEqual(self.followed(), ui_testing.DRUMS)
         await self.press(keybindings.FollowChordsEditor.CLEAR)
         self.assertIsNone(self.followed())
 
     async def test_renaming_the_track_followed_renames_it_here(self):
-        self.document.rename_named(section=Section.TRACKS, old=LEAD, new=NEW_ONE)
+        self.document.rename_named(section=Section.TRACKS, old=ui_testing.LEAD, new=NEW_ONE)
         self.assertEqual(self.followed(), NEW_ONE)
 
     async def test_a_track_the_song_lacks_is_still_offered_so_that_it_is_kept(self):
-        self.document.set_generator_setting(section=Section.FOLLOW_CHORDS, name=FOLLOWS, setting=FollowChordsSetting.CHORDS_FROM, value=GONE)
+        self.document.set_generator_setting(section=Section.FOLLOW_CHORDS, name=ui_testing.FOLLOWS, setting=FollowChordsSetting.CHORDS_FROM, value=GONE)
         self.app.screen.draw()
         await self.press(Key.ENTER)
         self.assertIn(GONE, self.app.screen.options)

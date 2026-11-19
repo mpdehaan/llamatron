@@ -16,7 +16,8 @@
 
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
-from tests.support.ui_testing import KEY_SHOWN, UITest, fixed_text, back_key, forward_key, key_of, key_name
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, fixed_text, back_key, forward_key, key_of, key_name
 from llamatron.composition import defaults, limits
 from llamatron.composition.scene import TempoRamp
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
@@ -117,7 +118,7 @@ class TestArrangePage(UITest):
         place = (self.page.row, self.page.column)
         self.assertTrue(self.page.on_clip_slot())
         clip_slot = self.document.clip_slot(index=0, track=LEAD)
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.ArrangePage.OPEN_PATTERN)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_OPEN_PATTERN_WHAT), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.ArrangePage.OPEN_PATTERN)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_OPEN_PATTERN_WHAT), self.text())
         await self.press(keybindings.ArrangePage.OPEN_PATTERN)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual(self.app.screen.item, clip_slot.get_pattern_name())
@@ -130,7 +131,7 @@ class TestArrangePage(UITest):
 
     async def test_jump_opens_no_pattern_on_a_scene_a_track_an_empty_cell_or_the_add_row_and_scene_view_has_a_key_of_its_own(self):
         # The page opens on the first scene's name; Down is the second scene's name, Right the empty cell beside it, Up twice the track's name and Down three times the + row.
-        shown = KEY_SHOWN.format(label=key_name(keybindings.ArrangePage.OPEN_PATTERN)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_OPEN_PATTERN_WHAT)
+        shown = ui_testing.KEY_SHOWN.format(label=key_name(keybindings.ArrangePage.OPEN_PATTERN)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_OPEN_PATTERN_WHAT)
         for keys in ([], [Key.DOWN], [Key.RIGHT], [Key.UP, Key.UP], [Key.DOWN, Key.DOWN, Key.DOWN]):
             await self.press(*keys)
             with self.subTest(place=(self.page.row, self.page.column)):
@@ -304,9 +305,9 @@ class TestArrangePage(UITest):
         before = self.document.setlist().to_data()
         await self.press(*keys_values.SHIFT_UP_DOWN, *keys_values.SHIFT_LEFT_RIGHT)
         self.assertEqual(self.document.setlist().to_data(), before)
-        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.M) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_MOVE_SCENE_WHAT), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.M) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_MOVE_SCENE_WHAT), self.text())
         await self.press(Key.UP, Key.RIGHT)
-        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.M) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_MOVE_TRACK_WHAT), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.M) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_MOVE_TRACK_WHAT), self.text())
 
     async def test_insert_puts_a_blank_scene_above_from_anywhere_on_the_row(self):
         await self.press(Key.RIGHT, Key.DOWN, keybindings.ArrangePage.INSERT_SCENE)
@@ -569,7 +570,7 @@ class TestClipPage(UITest):
         for label in (labels_text.MSG_PATTERNS_LABEL, labels_text.MSG_REPEAT_LABEL):
             with self.subTest(label=label):
                 await self.select_field(label)
-                self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.ClipPage.OPEN_PATTERN)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_OPEN_PATTERN_WHAT), self.text())
+                self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.ClipPage.OPEN_PATTERN)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_OPEN_PATTERN_WHAT), self.text())
                 await self.press(keybindings.ClipPage.OPEN_PATTERN)
                 self.assertIsInstance(self.app.screen, PatternEditor)
                 self.assertEqual(self.app.screen.item, self.clip_slot().get_pattern_name())

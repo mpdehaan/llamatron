@@ -16,7 +16,8 @@
 
 """Tests for the Guitarify editor, its two sections, and the editor of its bar of strokes."""
 
-from tests.support.ui_testing import PICKED, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
 from llamatron.composition import generator_settings
@@ -41,7 +42,7 @@ class GuitarifyTest(UITest):
         self.assertIsInstance(self.app.screen, GuitarifyEditor)
 
     def guitar(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=PICKED)
+        return self.document.song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=ui_testing.PICKED)
 
     def written(self):
         return self.guitar().to_data()
@@ -71,7 +72,7 @@ class TestGuitarifyEditor(GuitarifyTest):
 
     async def test_a_closed_section_says_when_something_inside_is_set(self):
         self.assertNotIn(marks.MSG_SECTION_SET, self.text())
-        self.document.set_generator_setting(section=Section.GUITARIFIES, name=PICKED, setting=GuitarifySetting.CAPO, value=2)
+        self.document.set_generator_setting(section=Section.GUITARIFIES, name=ui_testing.PICKED, setting=GuitarifySetting.CAPO, value=2)
         await self.press(Key.DOWN)
         self.assertIn(marks.MSG_SECTION_SET, self.text())
 

@@ -35,7 +35,8 @@ from llamatron.playback.shapes import percent_at, plays_at, strength
 from llamatron.support.rational import Rational
 from llamatron.composition.song_file_error import SongFileError
 from tests.support.rendering import render_data, setlist_from_data
-from tests.playback.test_registers import LEAD, X, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 
 SIXTEENTH = '1/16'
 STEPS = 16
@@ -66,10 +67,10 @@ def bar_of_sixteenths(**rows):
 
 def one_scene(*, scene=None, clip=None, rows=None, repeat=1, chain=None, generators=None):
     """Return a song whose lead plays a bar of sixteenths, the scene and the clip given settings of their own, and the clip's chains naming generators."""
-    clip_slot = {ClipSlotSetting.PATTERN: X, ClipSlotSetting.REPEAT: repeat, **(clip or {})}
+    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, **(clip or {})}
     if chain:
         clip_slot[ClipSlotSetting.CHAINS] = [SHAPED]
-    data = song(patterns={X: bar_of_sixteenths(**(rows or {}))}, scenes=[{**(scene or {}), SceneSetting.TRACKS: {LEAD: clip_slot}}])
+    data = song(patterns={test_registers.X: bar_of_sixteenths(**(rows or {}))}, scenes=[{**(scene or {}), SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
     if chain:
         data[Section.CHAINS] = {SHAPED: chain}
     data.update(generators or {})
@@ -171,7 +172,7 @@ class TestDensity(unittest.TestCase):
 
     def test_a_drum_pattern_is_thinned_too(self):
         data = one_scene(scene=steady(shape=Shape.DENSITY, percent=QUARTER))
-        data[Section.PATTERNS][X].update({PatternSetting.DRUM: True, Row.DEGREE: ['C'] * STEPS})
+        data[Section.PATTERNS][test_registers.X].update({PatternSetting.DRUM: True, Row.DEGREE: ['C'] * STEPS})
         self.assertEqual(len(notes(data)), 4)
 
     def test_a_dropped_note_keeps_its_place(self):

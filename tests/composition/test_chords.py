@@ -29,8 +29,9 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from tests.support.rendering import setlist_from_data
-from tests.generators.test_progression import NAMES
-from tests.playback.test_registers import LEAD, X, pattern, song
+from tests.generators import test_progression
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
 
 MINOR = scale_type_name(ScaleType.MINOR)
@@ -44,7 +45,7 @@ NO_SUCH_SCALE = 'nonsense'
 
 def stepped(**rows):
     """Return a song whose lead plays a pattern of two steps with the rows given."""
-    return song(patterns={X: pattern(STEPS, **rows)}, scenes=[{SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X}}}])
+    return song(patterns={test_registers.X: pattern(STEPS, **rows)}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X}}}])
 
 
 def sounding(data):
@@ -52,7 +53,7 @@ def sounding(data):
     by_start = {}
     for start, _, pitch, _ in notes(data):
         by_start.setdefault(start, []).append(pitch)
-    return [[NAMES[pitch % len(NAMES)] for pitch in sorted(by_start[start])] for start in sorted(by_start)]
+    return [[test_progression.NAMES[pitch % len(test_progression.NAMES)] for pitch in sorted(by_start[start])] for start in sorted(by_start)]
 
 
 class TestAStepsTensions(unittest.TestCase):
@@ -66,7 +67,7 @@ class TestAStepsTensions(unittest.TestCase):
         self.assertEqual(sounding(data), [['G', 'B', 'D', 'F', 'A'], ['G']])
 
     def test_a_pattern_keeps_a_steps_tensions_lowest_first_and_writes_a_list(self):
-        made = setlist_from_data(stepped(**{Row.DEGREE: [5, 5], Row.CHORD: [ChordSymbol.DOMINANT7] * STEPS, Row.TENSION: [None, OUT_OF_ORDER]})).get_pattern(X)
+        made = setlist_from_data(stepped(**{Row.DEGREE: [5, 5], Row.CHORD: [ChordSymbol.DOMINANT7] * STEPS, Row.TENSION: [None, OUT_OF_ORDER]})).get_pattern(test_registers.X)
         self.assertEqual(made.get_value(row=Row.TENSION, step=1), ALTERED)
         made.set_value(row=Row.TENSION, step=0, value=OUT_OF_ORDER)
         self.assertEqual(made.get_value(row=Row.TENSION, step=0), ALTERED)

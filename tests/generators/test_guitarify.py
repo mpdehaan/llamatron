@@ -35,7 +35,8 @@ from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.rational import Rational
 from tests.support.rendering import render_data, setlist_from_data, song_from_data
-from tests.playback.test_registers import LEAD, X, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 
 TRIAD = '3'
 MAJOR = 'M'
@@ -88,8 +89,8 @@ STROKES_ONLY = {GuitarifySetting.SHAPE: False, **PLAIN}
 def guitar(*, settings=None, rows=None, steps=1, step_size=WHOLE, repeat=1):
     """Return a song whose lead plays C major triads, one a step, through a Guitarify with these settings."""
     made = dict(pattern(steps, **{Row.CHORD: [TRIAD] * steps, Row.VELOCITY: [VELOCITY] * steps, **(rows or {})}), **{PatternSetting.STEP_SIZE: step_size})
-    clip_slot = {ClipSlotSetting.PATTERN: X, ClipSlotSetting.CHAINS: [PLAYED], ClipSlotSetting.REPEAT: repeat}
-    data = song(patterns={X: made}, scenes=[{SceneSetting.TRACKS: {LEAD: clip_slot}}])
+    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [PLAYED], ClipSlotSetting.REPEAT: repeat}
+    data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
     data[SongSetting.TEMPO] = TEMPO
     data[Section.GUITARIFIES] = {PLAYED: dict(settings or {})}
     data[Section.CHAINS] = {PLAYED: [{GeneratorKind.GUITARIFY: PLAYED}]}
@@ -326,7 +327,7 @@ class TestTheBarFollowsTheSongsBars(unittest.TestCase):
         if restart is not None:
             settings[file_format.GENERATOR_RESTART] = restart
         data = guitar(settings=settings, steps=3, step_size=QUARTER)
-        data[Section.SCENES].append({SceneSetting.TRACKS: {LEAD: dict(data[Section.SCENES][0][SceneSetting.TRACKS][LEAD])}})
+        data[Section.SCENES].append({SceneSetting.TRACKS: {test_registers.LEAD: dict(data[Section.SCENES][0][SceneSetting.TRACKS][test_registers.LEAD])}})
         return data
 
     def second_clip(self, data):

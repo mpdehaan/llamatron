@@ -29,7 +29,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.support.rational import Rational
 from tests.support.rendering import render_data, setlist_from_data
-from tests.playback.test_registers import LEAD, X, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 
 TRIAD = '3'
 TEMPO = 120
@@ -46,12 +47,12 @@ VELOCITY = 100
 def chords(*, track=None, clip=None, rows=None, chain=None, generator=None, steps=STEPS, step_size='1/4'):
     """Return a song whose lead plays triads on every step, the track and the clip given strum settings, and the clip's chain naming a Strum generator."""
     made = dict(pattern(steps, **{Row.CHORD: [TRIAD] * steps, Row.VELOCITY: [VELOCITY] * steps, **(rows or {})}), **{PatternSetting.STEP_SIZE: step_size})
-    clip_slot = {ClipSlotSetting.PATTERN: X, **(clip or {})}
+    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, **(clip or {})}
     if chain:
         clip_slot[ClipSlotSetting.CHAINS] = [STRUMMED]
-    data = song(patterns={X: made}, scenes=[{SceneSetting.TRACKS: {LEAD: clip_slot}}])
+    data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
     data[SongSetting.TEMPO] = TEMPO
-    data[Section.TRACKS][LEAD] = dict(track or {})
+    data[Section.TRACKS][test_registers.LEAD] = dict(track or {})
     if chain:
         data[Section.STRUMS] = {STRUMMED: generator or {}}
         data[Section.CHAINS] = {STRUMMED: [{GeneratorKind.STRUM: STRUMMED}]}

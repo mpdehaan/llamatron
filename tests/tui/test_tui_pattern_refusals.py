@@ -16,7 +16,8 @@
 
 """What the pattern editor refuses, and says."""
 
-from tests.support.ui_testing import fixed_text, ROW_SHOWN, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import fixed_text, UITest
 from llamatron.composition.file_format import Row, Section
 from llamatron.composition import limits
 from llamatron.strings import errors, labels, marks, messages
@@ -160,7 +161,7 @@ class TestPatternEditorRefusals(UITest):
     async def test_a_long_pattern_draws_one_grid_and_says_which_steps_show(self):
         self.document.set_steps(name=TUNE, steps=LONG)
         await self.open(TUNE)
-        self.assertEqual(self.text().count(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE])), 1)
+        self.assertEqual(self.text().count(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE])), 1)
         shown = self.app.screen.drawing.steps_shown(self.SIZE[0])
         self.assertIn(marks.MSG_STEPS_SHOWN.format(before=drawing.NOTHING, first=1, last=shown, after=marks.MSG_MORE_AFTER), self.text())
 

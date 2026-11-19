@@ -38,7 +38,8 @@ from llamatron.tui.screens.shared import sound_trial
 from llamatron.tui.screens.shared.sound_trial import SoundTrial, hits_of, run_of
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Box
-from tests.tui.test_tui_playback import KIND_MASK, SYNTH_PORT, PatternPreviewTest
+from tests.tui import test_tui_playback
+from tests.tui.test_tui_playback import PatternPreviewTest
 
 SYNTH = 'synth'
 PREVIEW = 'monitor'
@@ -249,13 +250,13 @@ class TestSoundDialog(PatternPreviewTest):
     async def test_without_fluidsynth_a_sound_is_tried_on_the_songs_preview_instrument_which_is_sent_no_sound(self):
         self.fluidsynth_installed = False
         self.document.add_instrument(PREVIEW)
-        self.document.set_instrument_device(name=PREVIEW, device=SYNTH_PORT)
+        self.document.set_instrument_device(name=PREVIEW, device=test_tui_playback.SYNTH_PORT)
         self.document.set_preview_instrument_name(PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().playing_sound(), limits.MIN_GM_SOUND)
         self.play_through()
-        self.assertEqual([data[1] for data in self.note_ons(SYNTH_PORT)], run_of())
-        self.assertNotIn(timeline.PROGRAM_CHANGE, [data[0] & KIND_MASK for _, data in self.outputs[SYNTH_PORT].sent])
+        self.assertEqual([data[1] for data in self.note_ons(test_tui_playback.SYNTH_PORT)], run_of())
+        self.assertNotIn(timeline.PROGRAM_CHANGE, [data[0] & test_tui_playback.KIND_MASK for _, data in self.outputs[test_tui_playback.SYNTH_PORT].sent])
         self.assertEqual(self.fluidsynth.starts, 0)
 
     async def test_a_preview_instrument_that_cannot_sound_says_why(self):

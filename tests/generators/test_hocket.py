@@ -22,7 +22,8 @@ from llamatron.composition.generator_settings import HocketSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from tests.support.rendering import render_data, setlist_from_data
-from tests.playback.test_registers import OCTAVE, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 
 TUNE = 'tune'
 REST = 'rest'
@@ -138,6 +139,6 @@ class TestTheFile(unittest.TestCase):
 
     def test_a_source_that_is_not_text_is_refused(self):
         data = hocket_data(melody=[1])
-        data[Section.HOCKETS][SHARE] = {HocketSetting.SOURCE: OCTAVE}
+        data[Section.HOCKETS][SHARE] = {HocketSetting.SOURCE: test_registers.OCTAVE}
         with self.assertRaises(SongFileError):
             setlist_from_data(data)

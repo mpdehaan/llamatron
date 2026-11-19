@@ -15,7 +15,7 @@ kept by reading.
 | Every string the program shows or raises is a constant: in the `src/llamatron/strings/` package and nowhere else, `ERR_` in `errors.py`, `HELP_` in `help.py`, `REPR_` in `reprs.py` and `MSG_` in the others. Each group comment names a module that exists, the package's modules import only names, and no module there defines a name twice, since the second definition silently replaces the first. | `tests/rules/test_message_constants.py` |
 | A commit that changes Python under `src/` carries a version bump, made by `internal_tools/bump.sh`. | `internal_tools/check_before_commit.sh`, which Claude runs before committing code, through `internal_tools/bump_version.py --check`, tested by `tests/tools/test_bump_version.py` |
 | No unused import, undefined name or name defined twice, in `src/`, `tests/` or `internal_tools/`. | `tests/rules/test_pyflakes.py` |
-| No module imports a name from a module of the `strings` package, from `composition/limits.py`, `composition/defaults.py` or `music/midi.py`: each is imported as a module and its constants named through it. | `tests/rules/test_constants_by_module.py` |
+| No module imports a constant by name from any module of llamatron, the tests or the tools: the module is imported and the constant named through it, `sound.KIND`. A class or a function keeps its import. From a module of the `strings` package, `composition/limits.py`, `composition/defaults.py` and `music/midi.py`, nothing at all is imported by name. | `tests/rules/test_constants_by_module.py`, with `internal_tools/constants_by_module.sh --write` to rewrite a file that breaks it |
 | No function or method carries a type hint, on a parameter or on what it returns. | `tests/rules/test_no_type_hints.py` |
 | Each screen lists its keys once, in `keys()`, so no key works without being shown in the legend or the F1 dialog, and every page's help fits an 80 by 24 console. | `tests/tui/test_tui_keys_shown.py`, `tests/tui/test_tui_help.py` |
 | A screen's method is never named after one Textual has, like `render` or `remove`. | `tests/tui/test_tui_look.py` |
@@ -153,7 +153,7 @@ for people, like key names, file modes, the format's names and the exporters' ta
 descriptive names in their own modules. Text only for people, like docstrings and comments, stays
 where it is.
 
-**Shared constants are named through their module, never imported name by name.** Code that uses the program's text imports the
+**Every constant is named through its module, never imported name by name.** Code that uses the program's text imports the
 modules of the `strings` package and names each constant through its module, `labels.MSG_PHRASING_BREATH_LABEL`,
 `errors.ERR_NO_SUCH_SCALE`, so that no file opens with a wall of names, a use says which file holds the wording, and a new piece of
 text needs no change to the imports: `from llamatron.strings import errors, labels, legends, marks, messages`, with `help.py`
@@ -162,8 +162,7 @@ the modules that hold only numbers and defaults: `from llamatron.composition imp
 `from llamatron.music import midi` and `midi.MAX_VELOCITY` (the user's rule: namespaces are a good thing, for numbers as for
 strings). Where a file already uses a module's name for something of its own, such as a list called `labels` or `names`, the module
 is imported under another name there, `labels as labels_text`, `limits as set_limits`, `midi as midi_numbers`; a new variable is
-never given a module's name. The strings package's own modules import names from each other. The rest of the constants, each
-module's own and the classes of names in `composition/file_format.py`, which are namespaces already, stay as they are.
+never given a module's name. The strings package's own modules import names from each other. The rule holds for every constant of every module, in `src/`, `tests/` and `internal_tools/`: a name in capitals that a module assigns is read as `module.NAME` by every other file, `sound.KIND`, `file_format.DIRECTIONS`, `ui_testing.TUNE`, the tests' shared names included, while a class, a class of names such as `ClipSlotSetting` or `Row`, and a function are imported by name, each being a namespace already or no constant. A constant one module imports and another would take from there is named through the module that defines it. In a loop the render runs for every note or step, a constant may be put in a local variable before the loop, and only there. `internal_tools/constants_by_module.sh` lists what breaks the rule and, with `--write`, rewrites it from the syntax tree, importing a module as `<module>_values` where its name is taken in the file.
 
 **Imports are sorted, in two groups.** A module's imports come as two groups with one blank line between them: first the system
 libraries, then everything from this project, together. In each group the import lines are in alphabetical order by the package

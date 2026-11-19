@@ -17,7 +17,8 @@
 
 from unittest import mock
 
-from tests.support.ui_testing import LEAD, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition import defaults, limits
 from llamatron.strings import errors, labels, marks, messages, names
 from llamatron.composition import file_format
@@ -71,7 +72,7 @@ class TestInstrumentsPage(UITest):
         self.document.add_instrument(SYNTH)
         self.document.set_instrument_device(name=SYNTH, device=PORTS[0])
         self.document.set_instrument_channel(name=SYNTH, channel=midi.MAX_CHANNEL)
-        self.document.set_track_instrument(name=LEAD, instrument=SYNTH)
+        self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
         await self.press(Key.DOWN, Key.UP)
         rows = dict(self.app.screen.rows())
         self.assertEqual(rows[SYNTH], [SYNTH, PORTS[0], midi.MAX_CHANNEL, 1])
@@ -93,7 +94,7 @@ class TestInstrumentsPage(UITest):
 
     async def test_an_instrument_a_track_plays_through_cannot_be_deleted_and_a_rename_follows(self):
         self.document.add_instrument(SYNTH)
-        self.document.set_track_instrument(name=LEAD, instrument=SYNTH)
+        self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
         await self.press(Key.DOWN, Key.UP, keybindings.InstrumentsPage.DELETE)
         self.assertIsInstance(self.app.screen, MessageDialog)
         await self.press(Key.ESCAPE)
@@ -101,7 +102,7 @@ class TestInstrumentsPage(UITest):
         await self.press(keybindings.InstrumentsPage.RENAME, *[Key.BACKSPACE] * len(SYNTH))
         await self.type(INSTRUMENT_2)
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_track(LEAD).get_instrument_name(), INSTRUMENT_2)
+        self.assertEqual(self.document.song().get_track(ui_testing.LEAD).get_instrument_name(), INSTRUMENT_2)
         # No export reads an instrument, so the song still renders with one.
         self.assertTrue(render_song(self.document.song(), seed=SEED).get_rows())
 
@@ -214,7 +215,7 @@ class TestTrackInstrumentField(UITest):
         await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER)
 
     def track(self):
-        return self.document.song().get_track(LEAD)
+        return self.document.song().get_track(ui_testing.LEAD)
 
     async def test_it_is_chosen_from_the_sets_instruments_with_none_first_and_bksp_clears_it(self):
         await self.select_field(labels.MSG_INSTRUMENT_LABEL)
@@ -227,7 +228,7 @@ class TestTrackInstrumentField(UITest):
         self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, INSTRUMENT_1, SYNTH])
         await self.press(Key.DOWN, Key.DOWN, Key.ENTER)
         self.assertEqual(self.track().get_instrument_name(), SYNTH)
-        self.assertEqual(self.document.setlist().to_data()[Section.SONGS][self.document.current_song_name()][Section.TRACKS][LEAD][TrackSetting.INSTRUMENT], SYNTH)
+        self.assertEqual(self.document.setlist().to_data()[Section.SONGS][self.document.current_song_name()][Section.TRACKS][ui_testing.LEAD][TrackSetting.INSTRUMENT], SYNTH)
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertIsNone(self.track().get_instrument_name())
 

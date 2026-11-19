@@ -44,7 +44,8 @@ from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.strings import cli, errors
 from tests.support.rendering import as_setlist, dump_song_data
-from tests.support.song_testing import BASIC, LEAD, lead_data
+from tests.support import song_testing
+from tests.support.song_testing import lead_data
 
 SIXTEENTH = '1/16'
 NOTHING = ''
@@ -103,7 +104,7 @@ class TestCli(unittest.TestCase):
         self.parent = temporary.name
         self.song = os.path.join(self.parent, 'tune.yml')
         with open(self.song, WRITE_TEXT) as file:
-            file.write(BASIC)
+            file.write(song_testing.BASIC)
         self.out = os.path.join(self.parent, OUT)
 
     def run_cli(self, *arguments):
@@ -244,7 +245,7 @@ class TestCli(unittest.TestCase):
     def test_launched_for_recording_a_song_with_a_scene_whose_every_clip_loops_is_refused(self):
         # The basic song's kick loops beside a lead that ends, which plays to its end; with the lead looping too the scene would never end.
         with open(self.song, WRITE_TEXT) as file:
-            file.write(BASIC.replace(LEAD_CLIP, LOOPING_LEAD_CLIP))
+            file.write(song_testing.BASIC.replace(LEAD_CLIP, LOOPING_LEAD_CLIP))
         with mock.patch('llamatron.tui.app.LlamatronApp') as app:
             code, _, stderr = self.run_exactly(self.song, '--launch-for-recording')
             self.assertEqual(code, 1)
@@ -259,7 +260,7 @@ class TestCli(unittest.TestCase):
 
     def two_songs(self):
         """Write the set with a second song, a copy of the first, and return the two songs' names."""
-        data = as_setlist(yaml.safe_load(BASIC))
+        data = as_setlist(yaml.safe_load(song_testing.BASIC))
         first = next(iter(data['songs']))
         data['songs'][SECOND_SONG] = dict(data['songs'][first])
         with open(self.song, WRITE_TEXT) as file:
@@ -305,7 +306,7 @@ class TestCli(unittest.TestCase):
             live_set = ET.fromstring(file.read()).find(LIVESET)
         self.assertEqual(
             [t.find('Name/EffectiveName').get(VALUE) for t in live_set.find(TRACKS).findall(MIDITRACK)],
-            [LEAD, KICK],
+            [song_testing.LEAD, KICK],
         )
 
     def test_live_clips_are_named_after_their_patterns_and_scenes_after_the_scene(self):
@@ -334,11 +335,11 @@ class TestCli(unittest.TestCase):
         self.assertEqual(os.listdir(self.out), [name])
         midi = mido.MidiFile(os.path.join(self.out, name))
         self.assertEqual(midi.type, midi_messages.MULTI_TRACK_FILE)
-        self.assertEqual([track.name for track in midi.tracks], [EXPORT, LEAD, KICK])
+        self.assertEqual([track.name for track in midi.tracks], [EXPORT, song_testing.LEAD, KICK])
 
     def test_to_stems_writes_a_file_per_track_numbered_from_1(self):
         self.run_cli('--to', ExportKind.STEMS)
-        expected = [midi_arrangement.STEM_FILE.format(name=EXPORT, number=1, track=LEAD), midi_arrangement.STEM_FILE.format(name=EXPORT, number=2, track=KICK)]
+        expected = [midi_arrangement.STEM_FILE.format(name=EXPORT, number=1, track=song_testing.LEAD), midi_arrangement.STEM_FILE.format(name=EXPORT, number=2, track=KICK)]
         self.assertEqual(sorted(os.listdir(self.out)), expected)
 
     def test_replacing_stems_keeps_a_clip_tree_in_the_same_folder(self):

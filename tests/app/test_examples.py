@@ -28,7 +28,8 @@ import yaml
 from llamatron.cli import main
 from llamatron.tui.document import Document
 from llamatron.exporters.exports import ExportKind
-from tests.support.rendering import PIECES, is_demo, render_file
+from tests.support import rendering
+from tests.support.rendering import is_demo, render_file
 from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import Setlist
 from llamatron.composition import generator_settings
@@ -91,7 +92,7 @@ class TestExamples(unittest.TestCase):
     songs = SONG_PATHS
 
     def test_the_pieces_are_the_sets_besides_the_demos(self):
-        self.assertEqual([os.path.basename(path) for path in self.songs], sorted(PIECES))
+        self.assertEqual([os.path.basename(path) for path in self.songs], sorted(rendering.PIECES))
 
     def test_every_homage_is_in_the_folder_of_its_genre(self):
         for path in self.paths:

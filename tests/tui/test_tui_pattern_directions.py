@@ -16,7 +16,8 @@
 
 """A pattern's direction and its Grab row, in the pattern editor."""
 
-from tests.support.ui_testing import ROW_SHOWN, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition import limits
 from llamatron.strings import labels, marks, messages
 from llamatron.composition.naming import words
@@ -89,11 +90,11 @@ class TestDirectionsAndGrab(UITest):
 
     async def test_the_grab_row_is_in_the_advanced_section_whose_hint_the_header_shows(self):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
-        self.assertNotIn(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.GRAB]), self.text())
+        self.assertNotIn(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.GRAB]), self.text())
         await open_section(test=self, section=RowSection.ADVANCED)
         while self.app.screen.row_name() != Row.GRAB:
             await self.press(Key.DOWN)
-        self.assertIn(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.GRAB]), self.text())
+        self.assertIn(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.GRAB]), self.text())
         self.assertIn(labels.MSG_SECTION_HINTS[RowSection.ADVANCED], self.text())
 
     async def test_marking_an_empty_step_gives_it_the_root_as_its_own_note_and_opens_the_note_rows_chord_among_them(self):
@@ -159,7 +160,7 @@ class TestDirectionsAndGrabOnAUsualConsole(UITest):
         while self.app.screen.row_name() != Row.GRAB:
             await self.press(Key.DOWN)
         text = self.text()
-        self.assertIn(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.GRAB]), text)
+        self.assertIn(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.GRAB]), text)
         self.assertIn('Step 1:', text)
         for item in self.app.screen.shown_keys():
             self.assertIn(f'« {item.shown_label()} »', text)

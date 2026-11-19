@@ -26,7 +26,8 @@ from llamatron.exporters.timing import timed_events
 from llamatron.generators import phrasing
 from llamatron.strings import errors
 from llamatron.support.rational import Rational
-from tests.playback.test_registers import LEAD, pattern, song
+from tests.playback import test_registers
+from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 from tests.support.ui_testing import fixed_text
 
@@ -71,7 +72,7 @@ def phrased_data(*, settings, rows=None, steps=STEPS):
     """Return a song's data whose lead plays the tune through a chain of one Phrasing."""
     tune = pattern(steps, **(rows or {}))
     tune[PatternSetting.STEP_SIZE] = EIGHTH_STEP
-    scene = {SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.CHAINS: [CHAIN]}}}
+    scene = {SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.CHAINS: [CHAIN]}}}
     data = song(patterns={TUNE: tune}, scenes=[scene])
     data[Section.PHRASINGS] = {DELIVERY: settings}
     data[Section.CHAINS] = {CHAIN: [{GeneratorKind.PHRASING: DELIVERY}]}

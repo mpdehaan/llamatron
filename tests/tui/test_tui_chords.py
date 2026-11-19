@@ -21,7 +21,8 @@ status line naming the chord under the cursor, and the whole choice as one step 
 import unittest
 from unittest import mock
 
-from tests.support.ui_testing import TUNE, UITest, key_name
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, key_name
 from llamatron.composition import setlist
 from llamatron.composition.file_format import ChordSymbol, Row, ScaleKind, Tension
 from llamatron.composition.naming import words
@@ -77,10 +78,10 @@ class TestPatternEditorChords(UITest):
         self.assertEqual(self.editor.row_name(), name)
 
     def value(self, row):
-        return self.document.step_value(name=TUNE, row=row, step=FIRST_STEP)
+        return self.document.step_value(name=ui_testing.TUNE, row=row, step=FIRST_STEP)
 
     def set(self, *, row, value):
-        self.document.set_step_value(name=TUNE, row=row, step=FIRST_STEP, value=value)
+        self.document.set_step_value(name=ui_testing.TUNE, row=row, step=FIRST_STEP, value=value)
 
     def dialog_text(self):
         self.app.screen.draw()
@@ -126,7 +127,7 @@ class TestPatternEditorChords(UITest):
             await self.press(keybindings.ChordRow.CHOOSE)
             self.assertIsInstance(self.app.screen, ChordDialog, row)
             self.assertEqual(self.app.screen.part, part, row)
-            self.assertIn(messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_STEP.format(step=FIRST_STEP + 1, pattern=TUNE)), self.dialog_text())
+            self.assertIn(messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_STEP.format(step=FIRST_STEP + 1, pattern=ui_testing.TUNE)), self.dialog_text())
             await self.press(keybindings.ChordDialog.CANCEL)
 
     async def test_the_dialog_sets_all_three_rows_and_says_the_chord_as_the_choice_moves(self):
@@ -317,7 +318,7 @@ class TestPatternEditorChords(UITest):
         self.assertIsNone(self.value(Row.TENSION))
 
     async def test_the_whole_choice_is_one_step_of_undo(self):
-        before = self.document.song().get_pattern(TUNE).to_data()
+        before = self.document.song().get_pattern(ui_testing.TUNE).to_data()
         await self.go_to_row(Row.CHORD)
         await self.press(keybindings.ChordRow.CHOOSE)
         dialog = self.app.screen
@@ -325,9 +326,9 @@ class TestPatternEditorChords(UITest):
         dialog.picked = set(ALTERED)
         dialog.set_kind(MINOR)
         await self.press(keybindings.ChordDialog.CHOOSE)
-        self.assertNotEqual(self.document.song().get_pattern(TUNE).to_data(), before)
+        self.assertNotEqual(self.document.song().get_pattern(ui_testing.TUNE).to_data(), before)
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.song().get_pattern(TUNE).to_data(), before)
+        self.assertEqual(self.document.song().get_pattern(ui_testing.TUNE).to_data(), before)
 
 
     async def open_on_the_chord(self):

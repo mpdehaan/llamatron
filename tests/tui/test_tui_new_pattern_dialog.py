@@ -24,7 +24,8 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
-from tests.support.ui_testing import BEAT, LEAD, TUNE, UITest, fixed_text
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, fixed_text
 
 NEW = 'riff'
 PENTATONIC = 5
@@ -101,24 +102,24 @@ class TestScaleLengthInTheTracker(UITest):
 
     async def test_a_blank_pattern_on_arrange_takes_the_scale_length_of_its_clips_scale(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.DOWN, keybindings.ArrangePage.BLANK_PATTERN)
-        name = names.MSG_NUMBERED_NAME.format(base=LEAD, number=1)
+        name = names.MSG_NUMBERED_NAME.format(base=ui_testing.LEAD, number=1)
         size = self.document.scale_size(self.document.pattern_scale(name))
         self.assertEqual(self.document.pattern_scale_length(name), size)
 
     async def test_reconfigure_sets_the_scale_length_and_any_clears_it(self):
-        await self.open_patterns_on(TUNE)
+        await self.open_patterns_on(ui_testing.TUNE)
         await self.press(Key.ENTER)
         await self.reconfigure(Reconfigure.SCALE_LENGTH)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options[0], marks.MSG_ANY_SCALE_LENGTH)
         await self.pick(str(PENTATONIC))
-        self.assertEqual(self.document.pattern_scale_length(TUNE), PENTATONIC)
+        self.assertEqual(self.document.pattern_scale_length(ui_testing.TUNE), PENTATONIC)
         await self.reconfigure(Reconfigure.SCALE_LENGTH)
         await self.pick(marks.MSG_ANY_SCALE_LENGTH)
-        self.assertIsNone(self.document.pattern_scale_length(TUNE))
+        self.assertIsNone(self.document.pattern_scale_length(ui_testing.TUNE))
 
     async def test_a_drum_pattern_is_not_offered_a_scale_length_until_it_is_no_drum_pattern(self):
-        await self.open_patterns_on(BEAT)
+        await self.open_patterns_on(ui_testing.BEAT)
         await self.press(Key.ENTER, keybindings.PatternEditor.RECONFIGURE)
         self.assertNotIn(legends.MSG_SCALE_LENGTH_WHAT, self.app.screen.options)
         self.assertEqual(self.app.screen.options, reconfigure_choices(drum=True))
@@ -126,14 +127,14 @@ class TestScaleLengthInTheTracker(UITest):
         self.assertIn(legends.MSG_SCALE_LENGTH_WHAT, reconfigure_choices(drum=False))
 
     async def test_the_header_says_what_a_pattern_was_written_for_only_under_a_scale_of_another_size(self):
-        await self.open_patterns_on(TUNE)
+        await self.open_patterns_on(ui_testing.TUNE)
         await self.press(Key.ENTER)
-        size = self.document.scale_size(self.document.pattern_scale(TUNE))
-        self.document.set_pattern_scale_length(name=TUNE, scale_length=size)
+        size = self.document.scale_size(self.document.pattern_scale(ui_testing.TUNE))
+        self.document.set_pattern_scale_length(name=ui_testing.TUNE, scale_length=size)
         await self.press(Key.RIGHT)
         self.assertNotIn(fixed_text(labels.MSG_WRITTEN_FOR).strip(), self.text())
         other = PENTATONIC if size != PENTATONIC else limits.MAX_SCALE_LENGTH
-        self.document.set_pattern_scale_length(name=TUNE, scale_length=other)
+        self.document.set_pattern_scale_length(name=ui_testing.TUNE, scale_length=other)
         await self.press(Key.RIGHT)
         self.assertIn(labels.MSG_WRITTEN_FOR.format(scale=WARNING_ALONE, length=other).strip(), self.text())
-        self.assertEqual(self.document.scales_unsuited_to_pattern(TUNE), self.document.scales_of_pattern(TUNE))
+        self.assertEqual(self.document.scales_unsuited_to_pattern(ui_testing.TUNE), self.document.scales_of_pattern(ui_testing.TUNE))

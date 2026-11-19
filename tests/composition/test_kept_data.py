@@ -37,7 +37,8 @@ from llamatron.composition.named_items import NamedItems
 from llamatron.composition.setlist import Setlist
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support.example_sets import example_sets
-from tests.support.ui_testing import a_song, LEAD, ONE, OTHER, ROLLS, TUNE, UP_ARP
+from tests.support import ui_testing
+from tests.support.ui_testing import a_song
 
 EXAMPLES = example_sets()
 # The members that aren't part of what an object stores: a song's way back to its set, and the data an object keeps of itself.
@@ -127,7 +128,7 @@ class TestDataAndObjectsShareNothing(unittest.TestCase):
         document = a_song()
         setlist = document.setlist()
         self.assertEqual(shared(setlist=setlist, data=setlist.to_data()), [])
-        stored = members_of(setlist.get_pattern(TUNE))
+        stored = members_of(setlist.get_pattern(ui_testing.TUNE))
         row = next(value for value in stored.values() if isinstance(value, dict) and Row.DEGREE in value)[Row.DEGREE]
         self.assertEqual(len(shared(setlist=setlist, data={Row.DEGREE: row})), 1)
 
@@ -169,7 +170,7 @@ class TestKeptData(unittest.TestCase):
         self.setlist = self.document.setlist()
 
     def test_an_object_keeps_one_piece_of_data_until_it_changes(self):
-        pattern = self.setlist.get_pattern(TUNE)
+        pattern = self.setlist.get_pattern(ui_testing.TUNE)
         kept = pattern.kept_data()
         self.assertEqual(kept, pattern.to_data())
         self.assertIs(pattern.kept_data(), kept)
@@ -187,45 +188,45 @@ class TestKeptData(unittest.TestCase):
     def test_the_sets_data_is_put_together_from_the_pieces_its_items_keep(self):
         before = self.setlist.kept_data()
         self.assertEqual(before, self.setlist.to_data())
-        self.document.set_step_value(name=TUNE, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         after = self.setlist.kept_data()
         self.assertEqual(after, self.setlist.to_data())
-        self.assertIsNot(after[Section.PATTERNS][TUNE], before[Section.PATTERNS][TUNE])
-        self.assertIs(after[Section.PATTERNS][OTHER], before[Section.PATTERNS][OTHER])
-        self.assertIs(after[Section.AUTO_RATCHETS][ROLLS], before[Section.AUTO_RATCHETS][ROLLS])
+        self.assertIsNot(after[Section.PATTERNS][ui_testing.TUNE], before[Section.PATTERNS][ui_testing.TUNE])
+        self.assertIs(after[Section.PATTERNS][ui_testing.OTHER], before[Section.PATTERNS][ui_testing.OTHER])
+        self.assertIs(after[Section.AUTO_RATCHETS][ui_testing.ROLLS], before[Section.AUTO_RATCHETS][ui_testing.ROLLS])
         name = self.document.current_song_name()
         scenes_before = before[Section.SONGS][name][Section.SCENES]
         scenes_after = after[Section.SONGS][name][Section.SCENES]
-        self.assertIs(scenes_after[FIRST_SCENE][SceneSetting.TRACKS][LEAD], scenes_before[FIRST_SCENE][SceneSetting.TRACKS][LEAD])
-        self.assertIs(after[Section.SONGS][name][Section.TRACKS][LEAD], before[Section.SONGS][name][Section.TRACKS][LEAD])
+        self.assertIs(scenes_after[FIRST_SCENE][SceneSetting.TRACKS][ui_testing.LEAD], scenes_before[FIRST_SCENE][SceneSetting.TRACKS][ui_testing.LEAD])
+        self.assertIs(after[Section.SONGS][name][Section.TRACKS][ui_testing.LEAD], before[Section.SONGS][name][Section.TRACKS][ui_testing.LEAD])
 
     def test_a_part_that_changes_without_its_holder_changing_is_still_seen(self):
         # A clip is changed through the clip, not its scene or its song, whose own revisions stay: the holders' data is put together each time.
         name = self.document.current_song_name()
         before = self.setlist.kept_data()
-        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=3)
-        self.document.set_track_cc_number(name=LEAD, lane=FIRST_LANE, number=A_CC_NUMBER)
+        self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=3)
+        self.document.set_track_cc_number(name=ui_testing.LEAD, lane=FIRST_LANE, number=A_CC_NUMBER)
         after = self.setlist.kept_data()
         self.assertEqual(after, self.setlist.to_data())
         self.assertNotEqual(after[Section.SONGS][name], before[Section.SONGS][name])
-        self.assertEqual(after[Section.SONGS][name][Section.TRACKS][LEAD][TrackSetting.CC][FIRST_LANE], A_CC_NUMBER)
+        self.assertEqual(after[Section.SONGS][name][Section.TRACKS][ui_testing.LEAD][TrackSetting.CC][FIRST_LANE], A_CC_NUMBER)
 
     def test_no_later_edit_changes_data_kept_earlier(self):
         # Every kind of object is edited in turn, and what the set kept before each edit is compared with a copy made then.
         edits = [
-            lambda: self.document.set_step_value(name=TUNE, row=Row.VELOCITY, step=0, value=A_VELOCITY),
-            lambda: self.document.set_step_value(name=TUNE, row=Row.VELOCITY, step=0, value=ANOTHER_VELOCITY),
-            lambda: self.document.insert_step(name=TUNE, step=0),
-            lambda: self.document.set_track_cc_number(name=LEAD, lane=FIRST_LANE, number=A_CC_NUMBER),
-            lambda: self.document.set_track_cc_number(name=LEAD, lane=FIRST_LANE + 1, number=A_CC_NUMBER),
+            lambda: self.document.set_step_value(name=ui_testing.TUNE, row=Row.VELOCITY, step=0, value=A_VELOCITY),
+            lambda: self.document.set_step_value(name=ui_testing.TUNE, row=Row.VELOCITY, step=0, value=ANOTHER_VELOCITY),
+            lambda: self.document.insert_step(name=ui_testing.TUNE, step=0),
+            lambda: self.document.set_track_cc_number(name=ui_testing.LEAD, lane=FIRST_LANE, number=A_CC_NUMBER),
+            lambda: self.document.set_track_cc_number(name=ui_testing.LEAD, lane=FIRST_LANE + 1, number=A_CC_NUMBER),
             lambda: self.document.set_reset(index=FIRST_SCENE, register=file_format.REGISTER_NAMES[0], on=True),
             lambda: self.document.set_reset(index=FIRST_SCENE, register=file_format.REGISTER_NAMES[1], on=True),
-            lambda: self.document.set_generator_setting(section=Section.ARPS, name=UP_ARP, setting=ArpSetting.OFFSETS, value=list(SOME_OFFSETS)),
-            lambda: self.document.set_arp_offset(name=UP_ARP, step=0, offset=AN_OFFSET),
-            lambda: self.document.insert_arp_offset(name=UP_ARP, step=0),
-            lambda: self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=3),
+            lambda: self.document.set_generator_setting(section=Section.ARPS, name=ui_testing.UP_ARP, setting=ArpSetting.OFFSETS, value=list(SOME_OFFSETS)),
+            lambda: self.document.set_arp_offset(name=ui_testing.UP_ARP, step=0, offset=AN_OFFSET),
+            lambda: self.document.insert_arp_offset(name=ui_testing.UP_ARP, step=0),
+            lambda: self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=3),
             lambda: self.document.set_title(A_TITLE),
-            lambda: self.document.rename_named(section=Section.PATTERNS, old=OTHER, new=NO_SUCH_ITEM),
+            lambda: self.document.rename_named(section=Section.PATTERNS, old=ui_testing.OTHER, new=NO_SUCH_ITEM),
         ]
         kept = []
         for edit in edits:
@@ -244,43 +245,43 @@ class TestASetGoingBackToDataItKept(unittest.TestCase):
         document = a_song()
         setlist = document.setlist()
         earlier = setlist.kept_data()
-        tune = setlist.get_pattern(TUNE)
-        other = setlist.get_pattern(OTHER)
+        tune = setlist.get_pattern(ui_testing.TUNE)
+        other = setlist.get_pattern(ui_testing.OTHER)
         song = document.song()
-        document.set_step_value(name=TUNE, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        document.set_step_value(name=ui_testing.TUNE, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         later = setlist.kept_data()
         setlist.restore(earlier)
         self.assertEqual(setlist.to_data(), earlier)
-        self.assertIs(setlist.get_pattern(OTHER), other)
-        self.assertIsNot(setlist.get_pattern(TUNE), tune)
+        self.assertIs(setlist.get_pattern(ui_testing.OTHER), other)
+        self.assertIsNot(setlist.get_pattern(ui_testing.TUNE), tune)
         self.assertIs(setlist.get_song(document.current_song_name()), song)
         # And forward again: the pattern is read once more, and the song, which never changed, stays.
         setlist.restore(later)
         self.assertEqual(setlist.to_data(), later)
-        self.assertEqual(setlist.get_pattern(TUNE).get_value(row=Row.VELOCITY, step=0), A_VELOCITY)
+        self.assertEqual(setlist.get_pattern(ui_testing.TUNE).get_value(row=Row.VELOCITY, step=0), A_VELOCITY)
         self.assertIs(setlist.get_song(document.current_song_name()), song)
 
     def test_a_song_that_changed_is_read_again_whole_and_the_patterns_stay(self):
         document = a_song()
         setlist = document.setlist()
         earlier = setlist.kept_data()
-        tune = setlist.get_pattern(TUNE)
+        tune = setlist.get_pattern(ui_testing.TUNE)
         song = document.song()
-        document.set_clip_slot_repeat(index=FIRST_SCENE, track=LEAD, repeat=3)
+        document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=3)
         setlist.restore(earlier)
         self.assertEqual(setlist.to_data(), earlier)
         self.assertIsNot(setlist.get_song(document.current_song_name()), song)
         self.assertIs(setlist.get_song(document.current_song_name()).get_setlist(), setlist)
-        self.assertIs(setlist.get_pattern(TUNE), tune)
+        self.assertIs(setlist.get_pattern(ui_testing.TUNE), tune)
 
     def test_added_removed_renamed_and_reordered_items_and_the_sets_settings_go_back(self):
         document = a_song()
         setlist = document.setlist()
         earlier = setlist.kept_data()
-        document.rename_named(section=Section.PATTERNS, old=OTHER, new=NO_SUCH_ITEM)
-        document.add_pattern(name=ONE)
-        document.delete_named(section=Section.PATTERNS, name=ONE)
-        document.add_pattern(name=LEAD)
+        document.rename_named(section=Section.PATTERNS, old=ui_testing.OTHER, new=NO_SUCH_ITEM)
+        document.add_pattern(name=ui_testing.ONE)
+        document.delete_named(section=Section.PATTERNS, name=ui_testing.ONE)
+        document.add_pattern(name=ui_testing.LEAD)
         document.move_named(section=Section.PATTERNS, place=len(setlist.get_pattern_names()) - 1, offset=-1)
         document.set_title(A_TITLE)
         document.add_track(NO_SUCH_ITEM)
@@ -322,7 +323,7 @@ class TestASetGoingBackToDataItKept(unittest.TestCase):
         document = a_song()
         setlist = document.setlist()
         earlier = setlist.kept_data()
-        document.set_step_size(name=TUNE, step_size=earlier[Section.PATTERNS][OTHER][PatternSetting.STEP_SIZE])
+        document.set_step_size(name=ui_testing.TUNE, step_size=earlier[Section.PATTERNS][ui_testing.OTHER][PatternSetting.STEP_SIZE])
         self.assertEqual(setlist.kept_data(), setlist.to_data())
         self.assertNotEqual(setlist.kept_data(), earlier)
 

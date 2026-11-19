@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The pattern editor's Inversion row, in Basics under Chord: blocked on a step with no chord, cycling blank, 1, 2 and 3 on one with a chord."""
 
-from tests.support.ui_testing import TUNE, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Row
 from llamatron.strings import marks
 from llamatron.tui.screens.pattern import grid_drawing
@@ -53,7 +54,7 @@ class TestInversionRow(UITest):
         self.assertEqual(self.editor.row_name(), Row.INVERSION)
 
     def inversion(self):
-        return self.document.step_value(name=TUNE, row=Row.INVERSION, step=FIRST_STEP)
+        return self.document.step_value(name=ui_testing.TUNE, row=Row.INVERSION, step=FIRST_STEP)
 
     async def test_a_note_with_no_chord_is_blocked(self):
         self.assertEqual(self.editor.row_for(Row.INVERSION).cell_lines(step=FIRST_STEP), [marks.MSG_BLOCKED_CELL])
@@ -65,22 +66,22 @@ class TestInversionRow(UITest):
         self.assertNotIn(marks.MSG_NOTE_HOLLOW, self.text())
         self.assertNotIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR, self.text())
         # An inversion with no chord lifts nothing: one note has no inversion.
-        self.document.set_step_value(name=TUNE, row=Row.INVERSION, step=FIRST_STEP, value=1)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.INVERSION, step=FIRST_STEP, value=1)
         self.assertFalse(roll.root_is_lifted(FIRST_STEP))
         # With a chord, the written note doesn't sound where it is drawn: its bar is hollow, medium under the cursor and light once the cursor has left.
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
         self.assertTrue(roll.root_is_lifted(FIRST_STEP))
         self.editor.draw()
         self.assertIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR * grid_drawing.CELL_WIDTH, self.text())
         await self.press(Key.RIGHT)
         self.assertIn(marks.MSG_NOTE_HOLLOW * grid_drawing.CELL_WIDTH, self.text())
         # Root position again, and the bar is solid.
-        self.document.set_step_value(name=TUNE, row=Row.INVERSION, step=FIRST_STEP, value=None)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.INVERSION, step=FIRST_STEP, value=None)
         self.editor.draw()
         self.assertNotIn(marks.MSG_NOTE_HOLLOW, self.text())
 
     async def test_a_chord_cycles_through_the_inversions_and_back(self):
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
         await self.go_to_the_row()
         await self.press(keybindings.CycleRow.NEXT)
         self.assertEqual(self.inversion(), 1)

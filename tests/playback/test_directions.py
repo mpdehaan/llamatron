@@ -27,7 +27,8 @@ from llamatron.composition.file_format import ClipSlotSetting, Direction, Patter
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.step_order import StepOrder
 from llamatron.support.random_source import random_source
-from tests.support.song_testing import LEAD, X, clip, pat, pitches, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'
 HALF = '1/2'
@@ -51,11 +52,11 @@ class TestPlayDirections(unittest.TestCase):
         pattern = dict(pattern or self.NOTES)
         if pattern_direction:
             pattern[PatternSetting.DIRECTION] = pattern_direction
-        clip_slot = {ClipSlotSetting.PATTERN: X, ClipSlotSetting.REPEAT: repeat}
+        clip_slot = {ClipSlotSetting.PATTERN: song_testing.X, ClipSlotSetting.REPEAT: repeat}
         if clip_direction:
             clip_slot[PatternSetting.DIRECTION] = clip_direction
-        data = with_parts(patterns={X: pattern}, scenes=[{Section.TRACKS: {LEAD: clip_slot}}], **parts)
-        return clip(song=render_data(data), scene=1, track=LEAD)
+        data = with_parts(patterns={song_testing.X: pattern}, scenes=[{Section.TRACKS: {song_testing.LEAD: clip_slot}}], **parts)
+        return clip(song=render_data(data), scene=1, track=song_testing.LEAD)
 
     def order(self, *arguments, **parts):
         return pitches(self.played(*arguments, **parts))
@@ -121,10 +122,10 @@ class TestPlayDirections(unittest.TestCase):
 
     def test_a_looping_clip_carries_on_in_its_direction(self):
         data = with_parts(
-            patterns={X: {**self.NOTES, PatternSetting.DIRECTION: Direction.ALTERNATE}, LONG: pat([1, 2])},
-            scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X, ClipSlotSetting.LOOP: True}, KICK: {ClipSlotSetting.PATTERN: LONG}}}],
+            patterns={song_testing.X: {**self.NOTES, PatternSetting.DIRECTION: Direction.ALTERNATE}, LONG: pat([1, 2])},
+            scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X, ClipSlotSetting.LOOP: True}, KICK: {ClipSlotSetting.PATTERN: LONG}}}],
         )
-        found = clip(song=render_data(data), scene=1, track=LEAD)
+        found = clip(song=render_data(data), scene=1, track=song_testing.LEAD)
         self.assertEqual(pitches(found)[:6], [self.C, self.D, self.E, self.E, self.D, self.C])
 
     def test_rests_play_in_order_too(self):
@@ -134,10 +135,10 @@ class TestPlayDirections(unittest.TestCase):
 
     def test_a_morph_target_uses_its_own_direction_and_not_the_clips(self):
         data = with_parts(
-            patterns={X: pat([1, HALF], [3, HALF]), Y: {**pat([5, HALF], [6, HALF]), PatternSetting.DIRECTION: Direction.REVERSE_B}},
-            scenes=[{Section.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: X, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.DIRECTION: Direction.REVERSE_B, ClipSlotSetting.MORPH_TO: Y, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}}}],
+            patterns={song_testing.X: pat([1, HALF], [3, HALF]), Y: {**pat([5, HALF], [6, HALF]), PatternSetting.DIRECTION: Direction.REVERSE_B}},
+            scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.DIRECTION: Direction.REVERSE_B, ClipSlotSetting.MORPH_TO: Y, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}}}],
         )
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=LEAD)), [52, 48, 57, 55])
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [52, 48, 57, 55])
 
     def test_bad_directions_are_refused(self):
         with self.assertRaises(SongFileError):
@@ -152,7 +153,7 @@ class TestStepOrder(unittest.TestCase):
     COUNT = 4
     PASSES = 3
     SEED = 7
-    KEY = (X,)
+    KEY = (song_testing.X,)
     OTHER_KEY = (Y,)
 
     def passes(self, direction):

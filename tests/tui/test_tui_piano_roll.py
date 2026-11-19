@@ -52,7 +52,8 @@ HEADER_LINES = 3
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import first_key
 from tests.support.rendering import render_song
-from tests.support.ui_testing import fixed_text, BEAT, KEY_SHOWN, LEAD, OTHER, REVERSED, ROW_SHOWN, TUNE, UITest, key_name, key_of
+from tests.support import ui_testing
+from tests.support.ui_testing import fixed_text, UITest, key_name, key_of
 
 # The tune's notes, as the roll numbers its rows: degree 1 and 3 of a seven-note scale in octave 5.
 SCALE_SIZE = 7
@@ -115,7 +116,7 @@ class RollTest(UITest):
         # Each column is as wide as its wider cell, so the second line's cells start where the first's do.
         header = self.app.screen.header_lines()
         first, second = self.text().splitlines()[header:header + 2]
-        self.assertTrue(first.startswith(marks.MSG_HEADER_INDENT + marks.MSG_STEPS_HEADER.format(steps=self.document.song().get_pattern(TUNE).get_steps())))
+        self.assertTrue(first.startswith(marks.MSG_HEADER_INDENT + marks.MSG_STEPS_HEADER.format(steps=self.document.song().get_pattern(ui_testing.TUNE).get_steps())))
         self.assertTrue(second.startswith(marks.MSG_HEADER_INDENT + marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=defaults.DEFAULT_TIME_SIGNATURE, whose=marks.MSG_FROM_SONG_SHOWN)))
         starts = self.header_cell_starts(first)
         self.assertEqual(len(starts), 3)
@@ -126,15 +127,15 @@ class RollTest(UITest):
 
     def row(self, row):
         """Return a row's value on every step, with False where a toggle row was never written."""
-        pattern = self.document.song().get_pattern(TUNE)
+        pattern = self.document.song().get_pattern(ui_testing.TUNE)
         return [bool(pattern.get_value(row=row, step=step)) if row_descriptions.ROW_DESCRIPTIONS[row].is_on_or_off() else pattern.get_value(row=row, step=step) for step in range(pattern.get_steps())]
 
     def value(self, *, row, step):
-        return self.document.step_value(name=TUNE, row=row, step=step)
+        return self.document.step_value(name=ui_testing.TUNE, row=row, step=step)
 
     def roll_line(self, label):
         """Return the screen line of the row with a label, like C3 for the scale's root in octave 5."""
-        return next(line for line in self.text().splitlines() if ROW_SHOWN.format(label=label) in line)
+        return next(line for line in self.text().splitlines() if ui_testing.ROW_SHOWN.format(label=label) in line)
 
 
 class TestPianoRoll(RollTest):
@@ -192,14 +193,14 @@ class TestPianoRoll(RollTest):
         self.assertEqual(self.editor.step, C_STEP)
 
     async def test_tab_goes_to_the_rows_and_tab_again_comes_back_and_the_choice_is_kept_for_other_patterns(self):
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.PatternEditor.TO_EDITOR)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_TO_EDITOR_WHAT), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.PatternEditor.TO_EDITOR)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_TO_EDITOR_WHAT), self.text())
         await self.press(keybindings.PatternEditor.TO_EDITOR)
         self.assertFalse(self.editor.on_roll())
-        self.assertIn(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE]), self.text())
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.PatternEditor.TO_ROLL)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_TO_ROLL_WHAT), self.text())
+        self.assertIn(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.DEGREE]), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.PatternEditor.TO_ROLL)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_TO_ROLL_WHAT), self.text())
         # Another note pattern opens on the rows too, until Tab opens the roll again.
         await self.press(Key.ESCAPE, Key.ESCAPE)
-        await self.open_patterns_on(OTHER)
+        await self.open_patterns_on(ui_testing.OTHER)
         await self.press(Key.ENTER)
         self.assertFalse(self.app.screen.on_roll())
         await self.press(keybindings.PatternEditor.TO_ROLL)
@@ -207,10 +208,10 @@ class TestPianoRoll(RollTest):
 
     async def test_a_drum_pattern_has_no_roll(self):
         await self.press(Key.ESCAPE, Key.ESCAPE)
-        await self.open_patterns_on(BEAT)
+        await self.open_patterns_on(ui_testing.BEAT)
         await self.press(Key.ENTER)
         self.assertFalse(self.app.screen.on_roll())
-        self.assertIn(ROW_SHOWN.format(label=marks.MSG_DRUM_LETTER_ROW), self.text())
+        self.assertIn(ui_testing.ROW_SHOWN.format(label=marks.MSG_DRUM_LETTER_ROW), self.text())
         self.assertFalse(self.app.screen.has_roll())
         self.assertNotIn(first_key(keybindings.PatternEditor.TO_ROLL), [name for item in self.app.screen.keys() for name in item.keys])
 
@@ -244,7 +245,7 @@ class TestPlacingNotes(RollTest):
         self.assertEqual(self.row(Row.TIE), [False, False, False, False])
 
     async def test_e_opens_a_picker_of_entry_sizes_with_the_songs_first_and_the_patterns_own_marked(self):
-        pattern = self.document.song().get_pattern(TUNE)
+        pattern = self.document.song().get_pattern(ui_testing.TUNE)
         await self.press(keybindings.PianoRoll.ENTRY_SIZE)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.title, labels.MSG_ENTRY_SIZE_LABEL)
@@ -268,9 +269,9 @@ class TestPlacingNotes(RollTest):
         self.assertEqual(self.document.setlist().to_data(), before)
 
     async def test_the_legend_shows_the_entry_size_key_and_the_brackets_that_drag(self):
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.PianoRoll.ENTRY_SIZE)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_ENTRY_SIZE_WHAT), self.text())
-        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_SHRINK_WHAT), self.text())
-        self.assertIn(KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_STRETCH_WHAT), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.PianoRoll.ENTRY_SIZE)) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_ENTRY_SIZE_WHAT), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.LEFT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_SHRINK_WHAT), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET) + legends.MSG_LEGEND_WHAT.format(what=legends.MSG_STRETCH_WHAT), self.text())
 
     async def test_nothing_on_the_roll_takes_shift_with_an_arrow(self):
         """The roll's keys are plain ones: the octave jump went, and [ and ] drag."""
@@ -326,10 +327,10 @@ class TestPlacingNotes(RollTest):
 
     async def test_space_on_a_notes_head_erases_the_note_as_backspace_does(self):
         await self.press(keybindings.PianoRoll.PLACE)
-        erased_with_space = self.document.song().get_pattern(TUNE).to_data()
+        erased_with_space = self.document.song().get_pattern(ui_testing.TUNE).to_data()
         self.assertEqual(self.row(Row.DEGREE), [None, 3, None, None])
         await self.press(keybindings.Page.UNDO, keybindings.PianoRoll.ERASE)
-        self.assertEqual(self.document.song().get_pattern(TUNE).to_data(), erased_with_space)
+        self.assertEqual(self.document.song().get_pattern(ui_testing.TUNE).to_data(), erased_with_space)
 
     async def test_space_in_the_middle_of_a_note_held_by_its_gate_erases_the_whole_note(self):
         # E's gate reaches over step 3, so the cursor there is in E's middle.
@@ -343,13 +344,13 @@ class TestPlacingNotes(RollTest):
         await self.press(keybindings.PianoRoll.PLACE)
         self.assertEqual(self.row(Row.DEGREE), [1, None, None, None])
         self.assertEqual(self.row(Row.TIE), [False, True, True, True])
-        drawn = self.document.song().get_pattern(TUNE).to_data()
+        drawn = self.document.song().get_pattern(ui_testing.TUNE).to_data()
         await self.press(Key.RIGHT, Key.RIGHT, keybindings.PianoRoll.PLACE)
         self.assertEqual(self.row(Row.DEGREE), [None, None, None, None])
         self.assertEqual(self.row(Row.TIE), [False, False, False, False])
         # Erasing with Space is one undo step, which brings the whole note back.
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.song().get_pattern(TUNE).to_data(), drawn)
+        self.assertEqual(self.document.song().get_pattern(ui_testing.TUNE).to_data(), drawn)
         await self.press(keybindings.Page.REDO)
         # A second Space draws a new note of the entry size where the cursor is, cut at the pattern's end, not the note that was erased.
         await self.press(keybindings.PianoRoll.PLACE)
@@ -367,7 +368,7 @@ class TestPlacingNotes(RollTest):
     async def test_a_note_shorter_than_a_step_fills_part_of_its_cell_and_so_does_a_gates_last_step(self):
         # E's gate of a step and a half runs through the divider into half of step 3's cell.
         columns = filled_columns(HALF_A_STEP)
-        self.document.set_step_value(name=TUNE, row=Row.GATE, step=E_STEP, value=THREE_SIXTEENTHS)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.GATE, step=E_STEP, value=THREE_SIXTEENTHS)
         self.document.changed()
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertIn(marks.MSG_NOTE_CELL + marks.MSG_NOTE_EDGE + marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}'))
@@ -385,7 +386,7 @@ class TestPlacingNotes(RollTest):
     async def test_the_rows_show_what_was_painted(self):
         await self.pick_entry_size(QUARTER)
         await self.press(Key.RIGHT, Key.RIGHT, keybindings.PianoRoll.PLACE, keybindings.PatternEditor.TO_EDITOR)
-        self.assertIn(ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.TIE]), self.text())
+        self.assertIn(ui_testing.ROW_SHOWN.format(label=labels.MSG_ROW_LABELS[Row.TIE]), self.text())
         self.assertEqual(self.app.screen.row_for(Row.TIE).cell_text(step=LAST_STEP), marks.MSG_TOGGLE_ON)
 
 
@@ -444,14 +445,14 @@ class TestShapingNotes(RollTest):
     async def test_g_marks_the_note_under_the_cursor_to_grab_and_the_bar_shows_a_reversed_g(self):
         await self.press(keybindings.PianoRoll.GRAB)
         self.assertTrue(self.value(row=Row.GRAB, step=C_STEP))
-        self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=ui_testing.REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
         await self.press(Key.UP)
-        self.assertIn(marks.MSG_NOTE_CELL_WITH_MARK.format(mark=REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_CELL_WITH_MARK.format(mark=ui_testing.REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
         # The mark is in reverse video so that it reads against the bar, and it stays on the note when a sharp moves it to a row of its own.
         cell = self.editor.roll_drawing.note_cell(mark=marks.MSG_GRAB_NOTE_MARK, selected=False)
         self.assertEqual([(span.start, span.end, span.style) for span in cell.spans], [(roll_drawing.MARK_COLUMN, roll_drawing.MARK_COLUMN + 1, Style.REVERSE)])
         await self.press(Key.DOWN, keybindings.PianoRoll.ACCIDENTAL)
-        self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C_SHARP}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=ui_testing.REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C_SHARP}{SHOWN_OCTAVE}'))
         # G again unmarks it, leaving a plain bar, and G on an empty cell says so.
         await self.press(keybindings.PianoRoll.GRAB)
         self.assertFalse(self.value(row=Row.GRAB, step=C_STEP))
@@ -460,11 +461,11 @@ class TestShapingNotes(RollTest):
         self.assertIn(errors.ERR_NO_NOTE_HERE, self.text())
 
     async def test_a_grab_on_an_empty_step_from_a_file_sits_on_the_root(self):
-        self.document.set_step_value(name=TUNE, row=Row.GRAB, step=EMPTY_STEP, value=True)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.GRAB, step=EMPTY_STEP, value=True)
         self.document.changed()
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertEqual(self.roll.pitch_of(EMPTY_STEP), C_PITCH)
-        self.assertEqual(self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}').count(marks.MSG_NOTE_CELL_WITH_MARK.format(mark=REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK))), 1)
+        self.assertEqual(self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}').count(marks.MSG_NOTE_CELL_WITH_MARK.format(mark=ui_testing.REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK))), 1)
 
     async def test_the_accidental_cycles_and_the_note_moves_to_the_row_that_sounds_it(self):
         # C sharp gets a row of its own above C, with the bar plain since the row says what it is; C flat sounds as B, a degree, so it sits on the B row.
@@ -507,7 +508,7 @@ class TestChordsOnTheRoll(RollTest):
 
     async def test_a_scale_chords_other_notes_are_thin_lines_on_their_degrees(self):
         # The C on step 1 as a scale triad: lines on E and G, over that step alone, and the C itself stays solid.
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
         await self.press(Key.RIGHT, Key.LEFT)
         e_line = self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}')
         self.assertIn(self.ghost(), e_line)
@@ -519,8 +520,8 @@ class TestChordsOnTheRoll(RollTest):
     async def test_a_named_chords_note_outside_the_scale_gets_a_row_of_its_own_between_two_degrees(self):
         # C minor in C major: Eb is drawn on a D# row between D and E, which exists for it, and G on its own row.
         sharp_row = f'{NoteName.D_SHARP}{SHOWN_OCTAVE}'
-        self.assertNotIn(ROW_SHOWN.format(label=sharp_row), self.text())
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
+        self.assertNotIn(ui_testing.ROW_SHOWN.format(label=sharp_row), self.text())
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertIn(self.ghost(), self.roll_line(sharp_row))
         self.assertIn(self.ghost(), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
@@ -528,9 +529,9 @@ class TestChordsOnTheRoll(RollTest):
             self.assertNotIn(self.ghost(), self.roll_line(label))
         # The row's label is the note alone, the rows around it keep their degrees, and the row goes with the chord.
         self.assertIn(labels.MSG_ROLL_ROW_LABEL.format(note=f'{NoteName.D}{SHOWN_OCTAVE}', degree=D_DEGREE), self.text())
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=C_STEP, value=None)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=C_STEP, value=None)
         await self.press(Key.RIGHT, Key.LEFT)
-        self.assertNotIn(ROW_SHOWN.format(label=sharp_row), self.text())
+        self.assertNotIn(ui_testing.ROW_SHOWN.format(label=sharp_row), self.text())
 
     async def test_the_accidental_key_moves_the_note_to_a_row_of_its_own_and_the_cursor_follows(self):
         # A D drawn on step 4: . makes it D#, on a row above D that appears for it, then Db, on a row below D, then D again.
@@ -543,14 +544,14 @@ class TestChordsOnTheRoll(RollTest):
         # A C major scale spells its rows with sharps, so the Db sits on a row labelled C#3; the description line still says Db.
         self.assertEqual((self.value(row=Row.ACCIDENTAL, step=LAST_STEP), self.roll.pitch), (Accidental.FLAT, C_SHARP_PITCH))
         self.assertIn(marks.MSG_NOTE_UNDER_CURSOR, self.roll_line(f'{NoteName.C_SHARP}{SHOWN_OCTAVE}'))
-        self.assertNotIn(ROW_SHOWN.format(label=f'{NoteName.D_SHARP}{SHOWN_OCTAVE}'), self.text())
+        self.assertNotIn(ui_testing.ROW_SHOWN.format(label=f'{NoteName.D_SHARP}{SHOWN_OCTAVE}'), self.text())
         await self.press(keybindings.PianoRoll.ACCIDENTAL)
         self.assertEqual((self.value(row=Row.ACCIDENTAL, step=LAST_STEP), self.roll.pitch), (None, D_PITCH))
-        self.assertNotIn(ROW_SHOWN.format(label=f'{NoteName.C_SHARP}{SHOWN_OCTAVE}'), self.text())
+        self.assertNotIn(ui_testing.ROW_SHOWN.format(label=f'{NoteName.C_SHARP}{SHOWN_OCTAVE}'), self.text())
 
     async def test_space_on_a_row_between_two_degrees_writes_the_degree_below_sharpened(self):
         # The C minor chord's Eb puts a D# row on the roll, two rows above C; a note drawn there on step 4 is degree 2 with a sharp.
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
         await self.press(Key.RIGHT, Key.RIGHT, Key.RIGHT, Key.UP, Key.UP, keybindings.PianoRoll.PLACE)
         self.assertEqual(self.roll.pitch, D_SHARP_PITCH)
         self.assertEqual((self.value(row=Row.DEGREE, step=LAST_STEP), self.value(row=Row.ACCIDENTAL, step=LAST_STEP)), (D_DEGREE, Accidental.SHARP))
@@ -564,27 +565,27 @@ class TestChordsOnTheRoll(RollTest):
 
     async def test_a_ghost_runs_through_the_dividers_as_far_as_its_note_does(self):
         # A C on step 3 held by a tie on step 4, as a scale fifth: the G's hollow bar covers both steps in one piece.
-        self.document.set_step_value(name=TUNE, row=Row.DEGREE, step=EMPTY_STEP, value=1)
-        self.document.set_step_value(name=TUNE, row=Row.TIE, step=LAST_STEP, value=True)
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=EMPTY_STEP, value=chord_value(ChordSymbol.SCALE_FIFTH))
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.DEGREE, step=EMPTY_STEP, value=1)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.TIE, step=LAST_STEP, value=True)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=EMPTY_STEP, value=chord_value(ChordSymbol.SCALE_FIFTH))
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertIn(marks.MSG_GHOST_LINE * (grid_drawing.CELL_WIDTH * 2 + 1), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
 
     async def test_a_named_chord_has_no_ghosts_when_the_scale_is_not_known_and_a_scale_chord_still_has(self):
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)
         self.document.add_scale(name=SECOND_SCALE, root=NoteName.D, kind=scale_type_name(ScaleType.MINOR))
-        self.document.add_clip_slot(index=SCENE_TWO, track=LEAD, pattern=TUNE)
+        self.document.add_clip_slot(index=SCENE_TWO, track=ui_testing.LEAD, pattern=ui_testing.TUNE)
         self.document.set_scene_scale(index=SCENE_TWO, name=SECOND_SCALE)
         await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.PATTERNS, Key.ENTER)
         self.assertIn(fixed_text(labels.MSG_SEVERAL_SCALES), self.text())
         self.assertFalse(self.rows_with_ghosts())
-        self.document.set_step_value(name=TUNE, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
+        self.document.set_step_value(name=ui_testing.TUNE, row=Row.CHORD, step=C_STEP, value=chord_value(ChordSymbol.SCALE_TRIAD))
         await self.press(Key.RIGHT, Key.LEFT)
         self.assertTrue(self.rows_with_ghosts())
 
     def rows_with_ghosts(self):
         """Return the roll's row lines that hold a chord's thin line, which the rules, made of the same character, are not."""
-        return [line for line in self.text().splitlines() if line.startswith(ROW_SHOWN.format(label=drawing.NOTHING).rstrip()) and self.ghost() in line.split(Box.DOUBLE_BAR, 1)[-1]]
+        return [line for line in self.text().splitlines() if line.startswith(ui_testing.ROW_SHOWN.format(label=drawing.NOTHING).rstrip()) and self.ghost() in line.split(Box.DOUBLE_BAR, 1)[-1]]
 
     def pick_quality(self, symbol):
         """Put the Chord dialog's cursor on a quality, which Enter then takes."""
@@ -643,9 +644,9 @@ class TestChordsOnTheRoll(RollTest):
         await self.press(Key.ENTER)
         self.assertEqual(self.value(row=Row.CHORD, step=C_STEP), ChordSymbol.MINOR7)
         self.assertTrue(self.value(row=Row.GRAB, step=C_STEP))
-        self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=ui_testing.REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
         self.assertNotIn(self.ghost(), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
-        self.assertNotIn(ROW_SHOWN.format(label=f'{NoteName.D_SHARP}{SHOWN_OCTAVE}'), self.text())
+        self.assertNotIn(ui_testing.ROW_SHOWN.format(label=f'{NoteName.D_SHARP}{SHOWN_OCTAVE}'), self.text())
         # Unmarking the grab brings the chord's thin lines back, on the step's own note.
         await self.press(keybindings.PianoRoll.GRAB)
         self.assertIn(self.ghost(), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
@@ -655,19 +656,19 @@ class TestRollRanges(UITest):
     """The rows outside the playing track's octaves, and a pattern played under more than one scale."""
 
     async def test_rows_outside_the_tracks_octaves_are_marked_off(self):
-        self.document.set_track_lowest_octave(name=LEAD, octave=defaults.DEFAULT_OCTAVE)
-        self.document.set_track_highest_octave(name=LEAD, octave=defaults.DEFAULT_OCTAVE)
+        self.document.set_track_lowest_octave(name=ui_testing.LEAD, octave=defaults.DEFAULT_OCTAVE)
+        self.document.set_track_highest_octave(name=ui_testing.LEAD, octave=defaults.DEFAULT_OCTAVE)
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         text = self.text()
         self.assertIn(marks.MSG_OUT_OF_RANGE_CELL, text)
-        in_range = next(line for line in text.splitlines() if ROW_SHOWN.format(label=f'{NoteName.D}{SHOWN_OCTAVE}') in line)
+        in_range = next(line for line in text.splitlines() if ui_testing.ROW_SHOWN.format(label=f'{NoteName.D}{SHOWN_OCTAVE}') in line)
         self.assertNotIn(marks.MSG_OUT_OF_RANGE_CELL, in_range)
-        marked = next(line for line in text.splitlines() if ROW_SHOWN.format(label=f'{NoteName.B}{SHOWN_OCTAVE - 1}') in line)
+        marked = next(line for line in text.splitlines() if ui_testing.ROW_SHOWN.format(label=f'{NoteName.B}{SHOWN_OCTAVE - 1}') in line)
         self.assertIn(marks.MSG_OUT_OF_RANGE_CELL, marked)
 
     async def test_a_pattern_under_several_scales_has_numbered_rows(self):
         self.document.add_scale(name=SECOND_SCALE, root=NoteName.D, kind=scale_type_name(ScaleType.MINOR))
-        self.document.add_clip_slot(index=SCENE_TWO, track=LEAD, pattern=TUNE)
+        self.document.add_clip_slot(index=SCENE_TWO, track=ui_testing.LEAD, pattern=ui_testing.TUNE)
         self.document.set_scene_scale(index=SCENE_TWO, name=SECOND_SCALE)
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         text = self.text()
@@ -675,7 +676,7 @@ class TestRollRanges(UITest):
         self.assertIn(labels.MSG_ROLL_ROW_LABEL.format(note=marks.MSG_ROLL_OCTAVE_ONLY.format(octave=SHOWN_OCTAVE), degree=1), text)
         # Placing still works, by degree.
         await self.press(Key.RIGHT, Key.RIGHT, Key.UP, keybindings.PianoRoll.PLACE)
-        self.assertEqual(self.document.step_value(name=TUNE, row=Row.DEGREE, step=EMPTY_STEP), D_DEGREE)
+        self.assertEqual(self.document.step_value(name=ui_testing.TUNE, row=Row.DEGREE, step=EMPTY_STEP), D_DEGREE)
 
     async def test_an_empty_pattern_opens_on_the_root_in_the_default_octave(self):
         self.document.add_pattern(name=NEW_PATTERN)
@@ -693,9 +694,9 @@ class TestRollOnAUsualConsole(UITest):
         self.assertIn(marks.MSG_NOTE_UNDER_CURSOR, text)
         self.assertIn('Step 1:', text)
         for item in self.app.screen.shown_keys():
-            self.assertIn(KEY_SHOWN.format(label=item.shown_label()), text)
+            self.assertIn(ui_testing.KEY_SHOWN.format(label=item.shown_label()), text)
         # The cursor's row stays on screen as it climbs the octaves.
         for _ in range(SCALE_SIZE * 3):
             await self.press(Key.UP)
-        self.assertIn(KEY_SHOWN.format(label=key_name(keybindings.PatternEditor.BACK)), self.text())
-        self.assertIn(ROW_SHOWN.format(label=f'{NoteName.C}{SHOWN_OCTAVE + 3}'), self.text())
+        self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.PatternEditor.BACK)), self.text())
+        self.assertIn(ui_testing.ROW_SHOWN.format(label=f'{NoteName.C}{SHOWN_OCTAVE + 3}'), self.text())

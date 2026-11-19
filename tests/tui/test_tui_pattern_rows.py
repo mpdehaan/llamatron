@@ -16,7 +16,8 @@
 
 """Kinds of row in the pattern editor: the limits a file holds a row to, the register rows, the Tie row, and a drum pattern's rows."""
 
-from tests.support.ui_testing import ROW_SHOWN, UITest
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 from llamatron.composition import row_descriptions
 from llamatron.composition.row_descriptions import RowOfNumbers
 from llamatron.composition import conditions, limits
@@ -275,7 +276,7 @@ class TestTieRow(UITest):
         return self.document.step_value(name=TUNE, row=Row.TIE, step=step)
 
     async def test_it_is_a_normal_row_and_toggles_on_an_empty_step(self):
-        self.assertIn(ROW_SHOWN.format(label=labels_text.MSG_ROW_LABELS[Row.TIE]), self.text())
+        self.assertIn(ui_testing.ROW_SHOWN.format(label=labels_text.MSG_ROW_LABELS[Row.TIE]), self.text())
         await self.press(*[Key.RIGHT] * self.EMPTY_STEP)
         await self.press(Key.SPACE)
         self.assertIs(self.tie(self.EMPTY_STEP), True)

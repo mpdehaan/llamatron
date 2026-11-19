@@ -17,7 +17,8 @@
 
 import unittest
 
-from tests.support.ui_testing import DRUMS, LEAD, NAMED, UITest, back_key, forward_key
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest, back_key, forward_key
 from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
 from llamatron.composition.setlist import Setlist
 from llamatron.strings import marks
@@ -146,8 +147,8 @@ class TestEffectiveValues(UITest):
         effective = effective_values(song=self.document.song(), index=0)
         self.assertEqual((effective.scale, effective.scale_source, effective.tempo_source), (OWN_SCALE, marks.MSG_SCENE_VIEW_FROM_SCENE, marks.MSG_SCENE_VIEW_FROM_SCENE))
         self.document.set_scene_scale(index=0, name=None)
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.SCALE, value=OWN_SCALE)
-        self.assertEqual(effective_values(song=self.document.song(), index=0).clip_scales, {LEAD: OWN_SCALE})
+        self.document.set_clip_slot_setting(index=0, track=ui_testing.LEAD, setting=ClipSlotSetting.SCALE, value=OWN_SCALE)
+        self.assertEqual(effective_values(song=self.document.song(), index=0).clip_scales, {ui_testing.LEAD: OWN_SCALE})
 
 
 class TestInsetWindow(unittest.TestCase):
@@ -180,7 +181,7 @@ class TestSceneViewOnArrange(UITest):
         self.assertIsInstance(self.page.inset, SceneView)
         self.assertIn(marks.MSG_SCENE_VIEW_WRITTEN, self.text())
         self.assertEqual(self.page.inset.border_colour(), scene_view.WRITTEN_COLOUR)
-        self.assertIn(track_label(name=LEAD, place=self.document.track_names().index(LEAD)), self.text())
+        self.assertIn(track_label(name=ui_testing.LEAD, place=self.document.track_names().index(ui_testing.LEAD)), self.text())
         await self.press(keybindings.ArrangePage.TO_PLAYED)
         self.assertEqual(self.page.inset.border_colour(), scene_view.PLAYED_COLOUR)
         self.assertIn(marks.MSG_SCENE_VIEW_PLAYED.format(take=marks.MSG_SCENE_VIEW_ONE_TAKE)[:40], self.text())
@@ -198,11 +199,11 @@ class TestSceneViewOnArrange(UITest):
         self.assertIsNot(self.app.screen, self.page)
 
     async def test_the_arrows_move_its_cursor_and_the_line_under_the_roll_names_what_is_there(self):
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
+        self.document.set_clip_slot_setting(index=0, track=ui_testing.LEAD, setting=ClipSlotSetting.CHAINS, value=[ui_testing.NAMED])
         self.document.record_edit()
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
         before = self.page.inset.under_cursor(notes=self.page.inset.notes())
-        self.assertIn(LEAD, before)
+        self.assertIn(ui_testing.LEAD, before)
         for _ in range(SIXTEENTHS_PAST_THE_NOTE):
             await self.press(Key.RIGHT)
         self.assertNotEqual(self.page.inset.under_cursor(notes=self.page.inset.notes()), before)
@@ -234,9 +235,9 @@ class TestSceneViewOnArrange(UITest):
     async def test_drum_tracks_take_warm_colours_and_the_others_cool_ones_green_first(self):
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
         names = self.document.track_names()
-        lead = names.index(LEAD)
-        drums = names.index(DRUMS)
-        self.document.set_track_drum(name=DRUMS, drum=True)
+        lead = names.index(ui_testing.LEAD)
+        drums = names.index(ui_testing.DRUMS)
+        self.document.set_track_drum(name=ui_testing.DRUMS, drum=True)
         self.assertEqual(self.page.inset.track_colour(lead), scene_view.COOL_COLOURS[0])
         self.assertEqual(self.page.inset.track_colour(drums), scene_view.WARM_COLOURS[0])
         self.assertEqual(scene_view.COOL_COLOURS[0], PURE_GREEN)
@@ -250,7 +251,7 @@ class TestSceneViewOnArrange(UITest):
         self.assertEqual(len(set(colours.values())), len(colours))
 
     async def test_tab_jumps_the_cursor_to_the_next_bar_and_shift_tab_back(self):
-        self.document.set_clip_slot_repeat(index=0, track=LEAD, repeat=BARS_OF_REPEATS)
+        self.document.set_clip_slot_repeat(index=0, track=ui_testing.LEAD, repeat=BARS_OF_REPEATS)
         self.document.record_edit()
         await self.press(keybindings.ArrangePage.SCENE_VIEW)
         view = self.page.inset

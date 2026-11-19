@@ -21,7 +21,8 @@ then the little that differs by kind: the current song, a factory groove's copy 
 
 import unittest
 
-from tests.support.ui_testing import DRUMS, LEAD, NAMED, ONE, TUNE, a_song
+from tests.support import ui_testing
+from tests.support.ui_testing import a_song
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition.invalid_value import InvalidValue
@@ -136,14 +137,14 @@ class TestWhatDiffersByKind(unittest.TestCase):
 
     def test_a_renamed_pattern_is_still_what_its_clips_play(self):
         document = a_document()
-        document.rename_named(section=Section.PATTERNS, old=TUNE, new=RENAMED)
-        self.assertEqual(document.song().get_scene(FIRST_SCENE).get_clip_slot(LEAD).get_pattern_name(), RENAMED)
+        document.rename_named(section=Section.PATTERNS, old=ui_testing.TUNE, new=RENAMED)
+        self.assertEqual(document.song().get_scene(FIRST_SCENE).get_clip_slot(ui_testing.LEAD).get_pattern_name(), RENAMED)
 
     def test_the_current_song_stays_current_when_it_is_renamed(self):
         document = a_document()
         document.rename_named(section=Section.SONGS, old=names_text.MSG_DEFAULT_SONG_NAME, new=RENAMED)
         self.assertEqual(document.current_song_name(), RENAMED)
-        self.assertEqual(document.song().get_track_names(), [LEAD, DRUMS])
+        self.assertEqual(document.song().get_track_names(), [ui_testing.LEAD, ui_testing.DRUMS])
 
     def test_renaming_another_song_leaves_the_current_one_current(self):
         document = a_document()
@@ -188,23 +189,23 @@ class TestWhatDiffersByKind(unittest.TestCase):
 
     def test_a_copied_track_stands_right_after_the_track_with_its_clips(self):
         document = a_document()
-        new = document.copy_named(section=Section.TRACKS, name=LEAD)
-        self.assertEqual(document.song().get_track_names(), [LEAD, new, DRUMS])
+        new = document.copy_named(section=Section.TRACKS, name=ui_testing.LEAD)
+        self.assertEqual(document.song().get_track_names(), [ui_testing.LEAD, new, ui_testing.DRUMS])
         scene = document.song().get_scene(FIRST_SCENE)
-        self.assertEqual(scene.get_clip_slot(new).get_pattern_name(), scene.get_clip_slot(LEAD).get_pattern_name())
+        self.assertEqual(scene.get_clip_slot(new).get_pattern_name(), scene.get_clip_slot(ui_testing.LEAD).get_pattern_name())
 
     def test_a_deleted_track_takes_its_clips_with_it(self):
         document = a_document()
-        document.delete_named(section=Section.TRACKS, name=LEAD)
-        self.assertEqual(document.song().get_track_names(), [DRUMS])
-        self.assertIsNone(document.song().get_scene(FIRST_SCENE).get_clip_slot(LEAD))
+        document.delete_named(section=Section.TRACKS, name=ui_testing.LEAD)
+        self.assertEqual(document.song().get_track_names(), [ui_testing.DRUMS])
+        self.assertIsNone(document.song().get_scene(FIRST_SCENE).get_clip_slot(ui_testing.LEAD))
 
     def test_a_copy_of_a_chain_or_a_scene_name_does_not_touch_the_other_sections(self):
         document = a_document()
         patterns = document.setlist().get_pattern_names()
-        document.copy_named(section=Section.CHAINS, name=NAMED)
+        document.copy_named(section=Section.CHAINS, name=ui_testing.NAMED)
         self.assertEqual(document.setlist().get_pattern_names(), patterns)
-        self.assertEqual(document.song().get_scene(FIRST_SCENE).get_name(), ONE)
+        self.assertEqual(document.song().get_scene(FIRST_SCENE).get_name(), ui_testing.ONE)
 
 
 if __name__ == '__main__':

@@ -34,7 +34,8 @@ from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.timing import control_events, timed_events
 from llamatron.support.rational import Rational
 from tests.support.rendering import render_data, song_from_data
-from tests.support.song_testing import LEAD, X, clip, pat, with_parts
+from tests.support import song_testing
+from tests.support.song_testing import clip, pat, with_parts
 
 SIXTEENTH = Fraction(1, 16)
 EIGHTH = Fraction(1, 8)
@@ -64,12 +65,12 @@ def groove_song(*, cells, cell_length=None, song_groove=None, scene_groove=None,
     groove = {GrooveSetting.CELLS: cells}
     if cell_length is not None:
         groove[GrooveSetting.CELL_LENGTH] = cell_length
-    cell = {ClipSlotSetting.PATTERN: X}
-    scene = {Section.TRACKS: {LEAD: cell}}
+    cell = {ClipSlotSetting.PATTERN: song_testing.X}
+    scene = {Section.TRACKS: {song_testing.LEAD: cell}}
     if scene_groove is not None:
         scene[SceneSetting.GROOVE] = scene_groove
-    tracks = {LEAD: {} if track_groove is None else {TrackSetting.GROOVE: track_groove}, **parts.pop(Section.TRACKS, {})}
-    data = with_parts(patterns={X: pat(*steps)}, grooves={LATE: groove}, tracks=tracks, scenes=[scene], **parts)
+    tracks = {song_testing.LEAD: {} if track_groove is None else {TrackSetting.GROOVE: track_groove}, **parts.pop(Section.TRACKS, {})}
+    data = with_parts(patterns={song_testing.X: pat(*steps)}, grooves={LATE: groove}, tracks=tracks, scenes=[scene], **parts)
     if song_groove is not None:
         data[SongSetting.GROOVE] = song_groove
     return data
@@ -81,7 +82,7 @@ def onsets(a_clip):
 
 
 def lead_clip(data):
-    return clip(song=render_data(data), scene=1, track=LEAD)
+    return clip(song=render_data(data), scene=1, track=song_testing.LEAD)
 
 
 class TestGrooveFiles(unittest.TestCase):
@@ -112,9 +113,9 @@ class TestGrooveFiles(unittest.TestCase):
             with self.subTest(setting=setting), self.assertRaises(SongFileError):
                 song_from_data(with_parts(**setting))
         with self.assertRaises(SongFileError):
-            song_from_data(with_parts(tracks={LEAD: {TrackSetting.GROOVE: EARLY}}))
+            song_from_data(with_parts(tracks={song_testing.LEAD: {TrackSetting.GROOVE: EARLY}}))
         with self.assertRaises(SongFileError):
-            song_from_data(with_parts(tracks={LEAD: {TrackSetting.GROOVE: True}}))
+            song_from_data(with_parts(tracks={song_testing.LEAD: {TrackSetting.GROOVE: True}}))
         with self.assertRaises(SongFileError):
             song_from_data(with_parts(scenes=[{SceneSetting.GROOVE: EARLY}]))
 
@@ -205,8 +206,8 @@ class TestGrooveTiming(unittest.TestCase):
 
     def test_cc_values_move_with_their_steps(self):
         rows = {Row.CC1: [CC_VALUE] * groove_values.GROOVE_CELLS}
-        data = groove_song(cells=[0, SWING_58_AMOUNT], song_groove=LATE, tracks={LEAD: {TrackSetting.CC: [MOD_WHEEL, None, None, None]}})
-        data[Section.PATTERNS][X].update(rows)
+        data = groove_song(cells=[0, SWING_58_AMOUNT], song_groove=LATE, tracks={song_testing.LEAD: {TrackSetting.CC: [MOD_WHEEL, None, None, None]}})
+        data[Section.PATTERNS][song_testing.X].update(rows)
         a_clip = lead_clip(data)
         times = [Fraction(event.time) for event in control_events(clip=a_clip, length=Rational(1))]
         self.assertEqual(times[:2], [0, SIXTEENTH + SWING_58_DELAY])
@@ -236,7 +237,7 @@ class TestGrooveTiming(unittest.TestCase):
             data = groove_song(cells=cells, song_groove=LATE, steps=[(degree, SIXTEENTH) for degree in [1, 2, 3, 4] * 4])
             data[Section.PATTERNS][EARLY] = grab
             data[Section.TRACKS][DRUMS] = {TrackSetting.GROOVE: False}
-            data[Section.SCENES][0][Section.TRACKS][DRUMS] = {ClipSlotSetting.PATTERN: EARLY, ClipSlotSetting.GRAB_TRACK: LEAD}
+            data[Section.SCENES][0][Section.TRACKS][DRUMS] = {ClipSlotSetting.PATTERN: EARLY, ClipSlotSetting.GRAB_TRACK: song_testing.LEAD}
             song = render_data(data)
             drums = clip(song=song, scene=1, track=DRUMS)
             return [event.midi_number for event in sorted(timed_events(clip=drums, scale=drums.get_scale())[0])]
