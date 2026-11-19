@@ -44,6 +44,6 @@ class EuclidEditor(GeneratorEditor, FieldPage):
             return [self.bind(self.KEYS.PICK_RHYTHM, action=lambda: pick_rhythm(page=self, store=lambda part, value: self.store(setting=part, value=value)))]
         return []
 
-    def notes(self, width):
+    def remarks(self, width):
         mask = self.settings().get_euclid()
         return [] if mask is None else [Text(drawn_rhythm(hits=mask.hits, steps=mask.steps, rotate=mask.rotate), style=Style.DIM)]

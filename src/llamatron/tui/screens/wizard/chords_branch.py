@@ -96,11 +96,11 @@ class ChordsBranch(SongWaysBranch):
         return [ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_PROGRESSION_LABEL, choices=offered, names=[self.shown(progression) for progression in offered],
                             current=self.progression(), shown=self.shown(self.progression()), set=self.get_page().choosing(self.set_progression))]
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return the chords each kind of section plays in the song's key, under the key's name; that they are drawn later while
         the progression is left to chance; or that there is nothing to choose."""
         if not self.offers_progressions():
-            return super().notes(width)
+            return super().remarks(width)
         choices = self.get_choices()
         if choices.has_any_progression():
             return [Text(), Text(drawing.INDENT + messages.MSG_WIZARD_CHORDS_DRAWN_LATER, style=Style.DIM)]

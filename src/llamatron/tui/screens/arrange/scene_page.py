@@ -222,7 +222,7 @@ class ScenePage(FieldPage):
         on = self.document().resets(index=self.index, register=register)
         return Toggle(label=labels.MSG_RESET_LABEL.format(name=register), on=on, set=lambda on: self.document().change(self.document().song().get_scene(self.index).set_reset, register=register, on=on))
 
-    def notes(self, width):
+    def remarks(self, width):
         document = self.document()
         lines = [Text(messages.MSG_SCENE_LENGTH_NOTE.format(length=clock(document.lengths().scene_seconds(self.index))), style=Style.DIM)]
         problem = document.lengths().scene_problem(self.index)

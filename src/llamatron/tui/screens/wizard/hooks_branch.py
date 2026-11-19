@@ -152,7 +152,7 @@ class HooksBranch(Branch):
             return None
         return (messages.MSG_WIZARD_LISTEN_SECOND_HOOK if second else messages.MSG_WIZARD_LISTEN_HOOK), scene, player
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return the picture of the main hook, while the song has one: the notes of the whole section that says the hook, as they
         stand, with the hook's bars in a frame, under which bars those are and whose the notes are. Where the section's notes cannot
         be drawn so, the hook's own two bars are drawn alone."""

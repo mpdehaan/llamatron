@@ -115,7 +115,7 @@ class SoloMelodyBranch(Branch):
         """Return what Listen With Band plays: everybody in the solo."""
         return messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=wizard_choices.SOLO), self.place(), None
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return the line under the buttons that says whose the solo's notes are: the wizard's, or edited by hand."""
         choices = self.get_choices()
         if not choices.is_ready() or self.place() is None:

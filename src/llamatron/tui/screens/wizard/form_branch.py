@@ -89,7 +89,7 @@ class FormBranch(Branch):
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_SETUP_BARS_LABEL, choices=list(bars), current=str(choices.get_setup_bars()), set=staging(lambda count: choices.set_setup_bars(bars[count]))))
         return fields
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return the form's sections in order, each with its bars, so that the whole form reads at a glance; or what to choose first."""
         choices = self.get_choices()
         if not choices.is_ready():

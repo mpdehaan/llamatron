@@ -112,7 +112,7 @@ class WizardTest(UITest):
     def hook_picture(self):
         """The Hooks panel's picture as the page draws it: the whole section that says the hook, with the hook's bars in a frame."""
         choices = self.choices()
-        return [line.plain.strip() for line in self.wizard().branch().notes(A_WIDE_PANEL)], picture_of(hook=choices.hook_section_notes(), width=A_WIDE_PANEL, lit=choices.hook_bars())
+        return [line.plain.strip() for line in self.wizard().branch().remarks(A_WIDE_PANEL)], picture_of(hook=choices.hook_section_notes(), width=A_WIDE_PANEL, lit=choices.hook_bars())
 
     async def choose_genre_and_subgenre(self):
         """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""

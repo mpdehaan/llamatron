@@ -44,7 +44,7 @@ class CompositionBranch(Branch):
         page = self.get_page()
         return [ChordsBranch(page=page), MelodyBranch(page=page), MelodiesBranch(page=page), RiffsBranch(page=page), RiffAssignBranch(page=page), SectionPlayersBranch(page=page)]
 
-    def notes(self, width):
+    def remarks(self, width):
         """Return each branch under this one with what it is set to, leaving out a branch the subgenre has nothing to choose in; or what to choose first."""
         if not self.get_choices().is_ready():
             return [Text(drawing.INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]

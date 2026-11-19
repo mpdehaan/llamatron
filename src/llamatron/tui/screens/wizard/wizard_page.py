@@ -530,8 +530,8 @@ class WizardPage(FieldPage):
     def fields(self):
         return self.kept(key=(FIELDS_KEPT, self.tree_place), compute=lambda: self.branch().fields())
 
-    def notes(self, width):
-        return self.branch().notes(width)
+    def remarks(self, width):
+        return self.branch().remarks(width)
 
     def field(self):
         """Return the field under the cursor, or None while the cursor is in the tree."""

@@ -83,7 +83,7 @@ class FilePage(FieldPage):
             self.button(binding=self.KEYS.OPEN_SET, label=labels.PageName.OPEN, action=lambda: open_set(self)),
         ]
 
-    def notes(self, width):
+    def remarks(self, width):
         return [
             Text(messages.MSG_FILE_NOTE.format(path=self.document().get_path() or marks.MSG_NOT_SAVED_YET), style=Style.DIM),
             Text(messages.MSG_EXPORTS_NOTE.format(where=self.exports_note()), style=Style.DIM),

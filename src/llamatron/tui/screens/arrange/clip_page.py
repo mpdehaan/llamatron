@@ -418,7 +418,7 @@ class ClipPage(FieldPage):
         """Give the clip a name of its own; a blank goes back to its pattern's name."""
         self.ask_text(title=messages.MSG_CLIP_NAME_PROMPT, value=self.clip_slot().get_name() or drawing.NOTHING, then=lambda text: self.set_value(setting=ClipSlotSetting.NAME, value=text.strip()), is_name=True)
 
-    def notes(self, width):
+    def remarks(self, width):
         document = self.document()
         clip_slot = self.clip_slot()
         length = clock(document.lengths().clip_seconds(index=self.index, track=self.track))
