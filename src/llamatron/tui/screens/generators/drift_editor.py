@@ -21,7 +21,6 @@ from llamatron.composition.generator_settings import DriftSetting, versioned
 from llamatron.music import note
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
@@ -137,8 +136,5 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         return sorted_names(self.document().song().get_scale_names()) if value == DriftValue.SCALE else list(note.ROOT_NAMES)
 
     def pick_choice(self, *, setting, value, current):
-        options = [marks.MSG_NONE_SHOWN, *self.choices_of(value)]
-
-        def chosen(item):
-            self.set_value(setting=setting, value=None if item == 0 else options[item])
-        self.ask(dialog=ChoiceDialog(title=labels.MSG_DRIFT_VALUE_LABELS[value], options=options, current=options.index(current) if current in options else 0), then=chosen)
+        choices = self.choices_of(value)
+        self.pick(title=labels.MSG_DRIFT_VALUE_LABELS[value], values=[None, *choices], shown=[marks.MSG_NONE_SHOWN, *choices], current=current, then=lambda chosen: self.set_value(setting=setting, value=chosen))

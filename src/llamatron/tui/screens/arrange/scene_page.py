@@ -22,7 +22,6 @@ from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RampPart, Section, shape_setting
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings, themes
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.chains_field import chains_field
@@ -84,12 +83,10 @@ class ScenePage(FieldPage):
 
     def pick_scale(self):
         scales = sorted_names(self.document().song().get_scale_names())
-        options = [labels.MSG_SONG_OPTION, *scales]
-        current = self.scene().get_scale_name()
 
-        def chosen(place):
-            self.document().change(self.document().song().get_scene(self.index).set_scale_name, name=None if place == 0 else scales[place - 1], song=self.document().song())
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_SCENE_SCALE_TITLE, options=options, current=options.index(current) if current in options else 0), then=chosen)
+        def chosen(name):
+            self.document().change(self.document().song().get_scene(self.index).set_scale_name, name=name, song=self.document().song())
+        self.pick(title=messages.MSG_SCENE_SCALE_TITLE, values=[None, *scales], shown=[labels.MSG_SONG_OPTION, *scales], current=self.scene().get_scale_name(), then=chosen)
 
     def section_field(self):
         """Return the Section field: the kind of section the scene is, chosen from the kinds a scene may be, or none."""

@@ -33,6 +33,7 @@ from llamatron.composition.naming import is_taken
 from llamatron.strings import errors, help as help_text, labels, marks as marks_text
 from llamatron.tui import caption_strip, drawing, keybindings
 from llamatron.tui.dialogs.about_dialog import AboutDialog
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -252,6 +253,17 @@ class Page(BindsKeys, Screen):
             elif text != value:
                 then(text)
         self.ask(dialog=PromptDialog(title=title, value=value, max_length=limits.MAX_NAME_LENGTH), then=named)
+
+    def pick(self, *, title, values, then, current=None, shown=None):
+        """Ask for one of some values in a picker, and pass the value chosen to a function unless the picker was cancelled.
+
+        values are what is chosen among, None among them where nothing can be chosen; shown is what the picker
+        calls each, where that differs from the value; current is the value the picker opens on, the first when
+        it is not among them.
+        """
+        values = list(values)
+        place = values.index(current) if current in values else 0
+        self.ask(dialog=ChoiceDialog(title=title, options=list(values if shown is None else shown), current=place), then=lambda chosen: then(values[chosen]))
 
     def tell(self, title, *lines):
         self.app.push_screen(MessageDialog(title=title, messages=list(lines)))
