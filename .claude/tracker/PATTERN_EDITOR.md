@@ -53,7 +53,9 @@ roll or the rows.
   straight line and leave the ends blank. Each is a `Pattern` method, made through `Document.munge_pattern(name=, way=)`;
   `Pattern.take_steps(order)` is the one that copies and reorders steps, and never leaves a Restart When on the first step.
   A choice that would pass `MAX_STEPS` is refused on the status line. The cursor stays on its step after a reverse, a pivot
-  or a roll, and on its note after steps are put in front. Categories for the dialog are under discussion with the user.
+  or a roll, and on its note after steps are put in front. Split into new patterns asks for a number of steps (`SPLIT_STEPS`
+  16 to start) and calls `Setlist.split_pattern`, which leaves the pattern alone and names the parts by
+  `naming.split_part_names`, `p1-split-1` on, counted on from any earlier split; a `MessageDialog` names what was made. Categories for the dialog are under discussion with the user.
   `tests/composition/test_pattern_munges.py`, `tests/tui/test_tui_munge.py`.
 - Load over loads a copy of another pattern over this one. Drum on or off always asks first
   (`MSG_CHANGE_TYPE_EMPTY_QUESTION` when there are no notes to lose).

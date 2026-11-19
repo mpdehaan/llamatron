@@ -453,6 +453,7 @@ ERR_ONE_STEP = 'a pattern of one step cannot be rearranged'
 ERR_MUNGE_TOO_MANY_STEPS = 'the pattern would have {steps} steps, and {most} is the most'
 ERR_PATTERN_CANNOT_INTERLEAVE = 'a pattern takes steps only from one of its kind, drum or not, and holds no more steps than a pattern may'
 ERR_INTERLEAVE_DRUM_MISMATCH = 'a drum pattern and a pattern of notes cannot be combined'
+ERR_SPLIT_OUT_OF_RANGE = 'steps in each new pattern must be from {low} to {high}'
 ERR_ROLL_OUT_OF_RANGE = 'steps to roll must be from {low} to {high}'
 ERR_NO_OTHER_PATTERNS = 'there are no other patterns to load'
 # The Degree gauge stops at the scale's ends, and says where the octave is changed.

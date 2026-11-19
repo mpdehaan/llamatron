@@ -90,6 +90,10 @@ class PatternEdits:
         """Copy a whole group under a new name and return the copies' names, or raise ValueError when a copy's name would be too long."""
         return self._change(self._setlist.copy_pattern_group, group=group, new=new)
 
+    def split_pattern(self, *, name, steps):
+        """Make new patterns of a pattern's steps, so many each, and return their names, or raise ValueError when a name would be too long."""
+        return self._change(self._setlist.split_pattern, name=name, steps=steps)
+
     def fracture_song(self):
         """Give every clip of the current song a pattern of its own, and return the names of the copies made."""
         return self._change(self._setlist.fracture, self.song())

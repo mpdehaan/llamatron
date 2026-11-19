@@ -39,7 +39,7 @@ on the rows.
 """
 
 
-from llamatron.composition.checks import is_written_length
+from llamatron.composition.checks import is_written_length, listed
 from llamatron.composition.file_format import DIRECTIONS, REGISTER_NAMES, Row, Section
 from llamatron.composition import limits
 from llamatron.composition.pattern import Pattern
@@ -99,6 +99,7 @@ class Munge:
     SMOOTH_DX = 24
     SPLICE = 25
     SPLICE_BEFORE = 26
+    SPLIT = 27
 
 
 def munges_in_order():
@@ -110,6 +111,9 @@ def munges_in_order():
 SCALE_LENGTHS = tuple(range(limits.MIN_SCALE_LENGTH, limits.MAX_SCALE_LENGTH + 1))
 
 
+# The steps a part has when a pattern is split into new patterns, until another number is typed, and the most names the dialog lists.
+SPLIT_STEPS = 16
+SPLIT_NAMES_SHOWN = 8
 # The fewest steps a pattern is rolled.
 FIRST_ROLL = 1
 # The munges that blank or fill rows of every step and need nothing else, each with the method of Pattern that does it.
@@ -431,6 +435,8 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             if self.grown_too_long(self.steps() * 2):
                 return
             document.munge_pattern(name=name, way=Pattern.mirror)
+        elif choice == Munge.SPLIT:
+            self.ask_split()
         elif choice in OTHER_PATTERN_TITLES:
             self.pick_other_pattern(choice)
         elif choice in SMOOTHED_REGISTERS:
@@ -483,6 +489,33 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             if choice == Munge.SPLICE_BEFORE:
                 self.step += added
         self.ask(dialog=ChoiceDialog(title=OTHER_PATTERN_TITLES[choice], options=others), then=chosen)
+
+    def ask_split(self):
+        """Ask how many steps each new pattern has, make new patterns of the pattern's steps, so many each, and say which were made; the pattern itself is left as it is."""
+        most = self.steps() - 1
+        if most < FIRST_ROLL:
+            self.refuse(errors.ERR_ONE_STEP)
+            return
+
+        def answered(text):
+            try:
+                steps = int(text.strip())
+            except ValueError:
+                self.refuse(errors.ERR_TYPED_NOT_AN_INTEGER.format(text=text))
+                return
+            if not FIRST_ROLL <= steps <= most:
+                self.refuse(errors.ERR_SPLIT_OUT_OF_RANGE.format(low=FIRST_ROLL, high=most))
+                return
+            try:
+                made = self.document().split_pattern(name=self.item, steps=steps)
+            except ValueError as problem:
+                self.refuse(str(problem))
+                return
+            shown = listed(made[:SPLIT_NAMES_SHOWN])
+            more = len(made) - SPLIT_NAMES_SHOWN
+            said = messages.MSG_SPLIT_CREATED_MANY.format(count=len(made), names=shown, more=more) if more > 0 else messages.MSG_SPLIT_CREATED.format(count=len(made), names=shown)
+            self.tell(messages.MSG_SPLIT_TITLE, said)
+        self.ask(dialog=PromptDialog(title=messages.MSG_SPLIT_PROMPT, value=str(min(SPLIT_STEPS, most))), then=answered)
 
     def ask_roll(self, *, left):
         """Ask how many steps to turn the pattern, and turn it: a step pushed off one end comes in at the other. The cursor stays on its step."""

@@ -21,10 +21,12 @@ tested on Pattern alone, in tests/composition/test_pattern_munges.py.
 """
 
 from llamatron.composition import limits
+from llamatron.composition.checks import listed
 from llamatron.composition.file_format import Row
 from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor
@@ -40,6 +42,10 @@ TOO_MANY = '6'
 NOT_A_NUMBER = 'many'
 # The one step of the pattern called other holds degree 5.
 OTHER_DEGREE = 5
+# What the pattern's parts are called when the pattern is split, and when split again.
+PARTS = ['long-split-1', 'long-split-2', 'long-split-3']
+LATER_PART_1 = 'long-split-3'
+LATER_PART_2 = 'long-split-4'
 
 
 class TestMunge(UITest):
@@ -165,6 +171,40 @@ class TestMunge(UITest):
         await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
         self.assertEqual(self.row(), [OTHER_DEGREE, *ROWS[Row.DEGREE], OTHER_DEGREE])
         self.assertEqual(self.editor.step, 1)
+
+    async def test_split_asks_for_the_steps_makes_new_patterns_and_names_them(self):
+        await munge(test=self, choice=Munge.SPLIT)
+        self.assertIsInstance(self.app.screen, PromptDialog)
+        self.assertIn(messages.MSG_SPLIT_PROMPT, self.text())
+        # The prompt opens on 16 steps, or on the most a split of this pattern can take.
+        self.assertEqual(self.app.screen.value, str(STEPS - 1))
+        self.app.screen.value = TWO
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, MessageDialog)
+        self.assertIn(messages.MSG_SPLIT_CREATED.format(count=len(PARTS), names=listed(PARTS)), self.text())
+        await self.press(Key.ENTER)
+        song = self.document.song()
+        self.assertEqual([song.get_pattern(part).get_row(Row.DEGREE) for part in PARTS], [[1, 2], [3, 4], [5]])
+        self.assertEqual(self.row(), ROWS[Row.DEGREE])
+        # One undo takes every new pattern away.
+        await self.press(keybindings.Page.UNDO)
+        self.assertFalse(any(self.document.setlist().has_pattern(part) for part in PARTS))
+
+    async def test_a_second_split_takes_no_name_of_the_first(self):
+        for _ in range(2):
+            await munge(test=self, choice=Munge.SPLIT)
+            self.app.screen.value = str(THIRD + 1)
+            await self.press(Key.ENTER, Key.ENTER)
+        names = self.document.setlist().get_pattern_names()
+        for part in (*PARTS[:2], LATER_PART_1, LATER_PART_2):
+            self.assertIn(part, names)
+
+    async def test_a_split_into_parts_as_long_as_the_pattern_is_refused(self):
+        await munge(test=self, choice=Munge.SPLIT)
+        self.app.screen.value = str(STEPS)
+        await self.press(Key.ENTER)
+        self.assertIn(errors.ERR_SPLIT_OUT_OF_RANGE.format(low=1, high=STEPS - 1), self.text())
+        self.assertNotIn(PARTS[0], self.document.setlist().get_pattern_names())
 
     async def test_a_drum_pattern_is_not_interleaved_with_a_pattern_of_notes(self):
         await munge(test=self, choice=Munge.INTERLEAVE)
