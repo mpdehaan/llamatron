@@ -78,7 +78,7 @@ class TestVariants(unittest.TestCase):
         for variant in chosen().variants():
             choices = chosen(variant=variant)
             tempos.add(choices.get_tempo())
-            riffs.add(bool(choices.riff_names()))
+            riffs.add(bool(choices.get_riffs().riff_names()))
         self.assertGreater(len(tempos), 1)
         self.assertEqual(riffs, {True, False})
 

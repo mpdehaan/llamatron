@@ -143,8 +143,8 @@ class TestWizardListening(PlaybackTest):
     async def test_a_riff_nobody_plays_yet_is_heard_from_the_riffs_panel(self):
         wizard = self.app.screen
         choices = wizard.get_choices()
-        role = choices.riff_instruments()[0]
-        riff = choices.add_riff(role=role)
+        role = choices.get_riffs().riff_instruments()[0]
+        riff = choices.get_riffs().add_riff(role=role)
         await self.go_to(labels.MSG_WIZARD_RIFFS_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertNotIn(keybindings.WizardPage.LISTEN, wizard.shown_keys())

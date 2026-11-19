@@ -448,8 +448,8 @@ class TestWizardForm(unittest.TestCase):
         # The lengths a section's own players fill are a matter of the parts as the kind writes them: a planned song writes each section's drums whole.
         choices.set_song_plan(False)
         # And of the players' figures: the kind's riff, which lasts two bars whoever plays it, is taken away.
-        for riff in choices.riff_names():
-            choices.delete_riff(riff)
+        for riff in choices.get_riffs().riff_names():
+            choices.get_riffs().delete_riff(riff)
         return choices
 
     def sit_out_all_but(self, *, choices, role):

@@ -1452,7 +1452,7 @@ class TestWizardComposition(WizardTest):
         shown = self.text()
         player = choices.role_title(choices.tune_played_by())
         for name, value in ((labels_text.MSG_WIZARD_CHORDS_BRANCH, labels_text.MSG_WIZARD_ANY_PROGRESSION), (labels_text.MSG_WIZARD_MELODY_BRANCH, player),
-                            (labels_text.MSG_WIZARD_RIFFS_BRANCH, str(len(choices.riff_names())))):
+                            (labels_text.MSG_WIZARD_RIFFS_BRANCH, str(len(choices.get_riffs().riff_names())))):
             self.assertIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=len(WIDEST_COMPOSITION_BRANCH), value=value), shown)
 
     async def test_composition_has_a_panel_for_each_kind_of_section_with_a_melody_and_the_three_panels_of_riffs(self):

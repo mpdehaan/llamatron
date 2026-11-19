@@ -571,7 +571,7 @@ class TestWizardRiffs(CompositionTest):
     async def test_a_heading_for_each_player_who_can_have_a_riff_is_closed_at_first_and_says_how_many_it_holds(self):
         choices = self.choices()
         headings = [field for field in self.wizard().shown_fields() if isinstance(field, Heading)]
-        self.assertEqual([heading.label for heading in headings], [self.title(role) for role in choices.riff_instruments()])
+        self.assertEqual([heading.label for heading in headings], [self.title(role) for role in choices.get_riffs().riff_instruments()])
         for heading in headings:
             self.assertFalse(self.wizard().is_open(heading))
             self.assertEqual(heading.value(), marks.MSG_WIZARD_COUNT_SHOWN.format(count=0))
@@ -579,7 +579,7 @@ class TestWizardRiffs(CompositionTest):
     async def test_add_opens_the_new_riff_dialog_and_the_riff_written_is_under_the_cursor_with_its_heading_open(self):
         await self.add()
         choices = self.choices()
-        self.assertEqual(choices.riffs_for(THE_GUITAR), [FIRST_RIFF])
+        self.assertEqual(choices.get_riffs().riffs_for(THE_GUITAR), [FIRST_RIFF])
         self.assertEqual(self.wizard().label_under_cursor(), FIRST_RIFF)
         self.assertEqual(self.wizard().heading_over_cursor(), self.title(THE_GUITAR))
         self.assertIn(messages.MSG_WIZARD_RIFF_WRITTEN.format(riff=FIRST_RIFF, player=self.title(THE_GUITAR)), self.text())
@@ -600,21 +600,21 @@ class TestWizardRiffs(CompositionTest):
         await self.press(Key.DOWN, keybindings.NewRiffDialog.TOGGLE)
         self.assertEqual(dialog.settings[riffs.RIFF_WITH_CHORDS], riffs.STAYS_HOME)
         await self.press(Key.DOWN, Key.DOWN, keybindings.NewRiffDialog.PRESS)
-        riff = choices.riffs_for(THE_GUITAR)[0]
-        self.assertEqual(choices.riff_setting(riff=riff, field=riffs.RIFF_NOTES), riffs.ACCENT_CHORDS)
-        self.assertEqual(choices.riff_setting(riff=riff, field=riffs.RIFF_WITH_CHORDS), riffs.STAYS_HOME)
+        riff = choices.get_riffs().riffs_for(THE_GUITAR)[0]
+        self.assertEqual(choices.get_riffs().riff_setting(riff=riff, field=riffs.RIFF_NOTES), riffs.ACCENT_CHORDS)
+        self.assertEqual(choices.get_riffs().riff_setting(riff=riff, field=riffs.RIFF_WITH_CHORDS), riffs.STAYS_HOME)
 
     async def test_escape_in_the_dialog_writes_nothing_and_the_add_row_adds_as_the_key_does(self):
         await self.select_field(self.title(THE_GUITAR))
         await self.press(keybindings.WizardPage.ADD, Key.ESCAPE)
-        self.assertEqual(self.choices().riff_names(), [])
+        self.assertEqual(self.choices().get_riffs().riff_names(), [])
         await self.open_heading(self.title(THE_GUITAR))
         await self.press(Key.DOWN)
         self.assertEqual(self.wizard().label_under_cursor(), marks.MSG_ADD_ROW_MARK)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, NewRiffDialog)
         await self.press(keybindings.NewRiffDialog.WRITE)
-        self.assertEqual(self.choices().riff_names(), [FIRST_RIFF])
+        self.assertEqual(self.choices().get_riffs().riff_names(), [FIRST_RIFF])
 
     async def test_enter_opens_the_riffs_notes_and_notes_changed_mark_the_riff_edited(self):
         await self.add()
@@ -622,7 +622,7 @@ class TestWizardRiffs(CompositionTest):
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.change_first_step()
         await self.press(Key.ESCAPE)
-        self.assertTrue(self.choices().riff_is_edited(FIRST_RIFF))
+        self.assertTrue(self.choices().get_riffs().riff_is_edited(FIRST_RIFF))
         self.assertIn(marks.MSG_WIZARD_TUNE_EDITED.format(name=marks.MSG_WIZARD_RIFF_ROW.format(bars=riffs.RIFF_BARS, used='').rstrip()), self.text())
 
     async def test_a_riff_is_renamed_copied_for_another_player_and_regenerated_after_a_question(self):
@@ -633,22 +633,22 @@ class TestWizardRiffs(CompositionTest):
         await self.press(*[Key.BACKSPACE] * len(FIRST_RIFF))
         await self.type(A_NEW_NAME)
         await self.press(Key.ENTER)
-        self.assertEqual(choices.riff_names(), [A_NEW_NAME])
+        self.assertEqual(choices.get_riffs().riff_names(), [A_NEW_NAME])
         self.assertEqual(self.wizard().label_under_cursor(), A_NEW_NAME)
         bass = self.title(THE_BASS)
         await self.press(keybindings.WizardPage.COPY)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.pick(bass)
-        copy = choices.riffs_for(THE_BASS)[0]
+        copy = choices.get_riffs().riffs_for(THE_BASS)[0]
         self.assertEqual(self.wizard().label_under_cursor(), copy)
         self.assertEqual(self.wizard().heading_over_cursor(), bass)
-        before = choices.riff_heard(copy)[0].to_data()
+        before = choices.get_riffs().riff_heard(copy)[0].to_data()
         await self.press(keybindings.WizardPage.REGENERATE)
         self.assertEqual(self.app.screen.title, messages.MSG_WIZARD_REGENERATE_TITLE.format(name=copy))
         await self.press(Key.ENTER)
-        self.assertEqual(choices.riff_heard(copy)[0].to_data(), before)
+        self.assertEqual(choices.get_riffs().riff_heard(copy)[0].to_data(), before)
         await self.press(keybindings.WizardPage.REGENERATE, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.riff_heard(copy)[0].to_data(), before)
+        self.assertNotEqual(choices.get_riffs().riff_heard(copy)[0].to_data(), before)
 
     async def test_delete_asks_in_red_saying_where_the_riff_is_used_and_starts_on_no(self):
         await self.add()
@@ -661,9 +661,9 @@ class TestWizardRiffs(CompositionTest):
         self.assertEqual(dialog.heading(0).style, Style.DELETE_TITLE)
         self.assertEqual(dialog.messages, [messages.MSG_WIZARD_RIFF_USED_IN.format(kinds=A_KIND)])
         await self.press(Key.ENTER)
-        self.assertEqual(choices.riff_names(), [FIRST_RIFF])
+        self.assertEqual(choices.get_riffs().riff_names(), [FIRST_RIFF])
         await self.press(keybindings.WizardPage.CLEAR, keybindings.ConfirmDialog.YES)
-        self.assertEqual(choices.riff_names(), [])
+        self.assertEqual(choices.get_riffs().riff_names(), [])
         self.assertEqual(choices.section_part(kind=A_KIND, role=THE_GUITAR), wizard_limits.ACCOMPANIMENT)
 
     async def test_listen_plays_the_riff_under_the_cursor_alone_in_a_song_where_its_player_plays_it(self):
@@ -683,11 +683,11 @@ class TestWizardGenreRiff(CompositionTest):
     async def test_the_genres_riff_arrives_written_under_its_players_heading_with_where_it_is_used(self):
         await self.open_panel(labels.MSG_WIZARD_RIFFS_BRANCH)
         choices = self.choices()
-        self.assertEqual(choices.riff_names(), [FIRST_RIFF])
+        self.assertEqual(choices.get_riffs().riff_names(), [FIRST_RIFF])
         heading = next(field for field in self.wizard().shown_fields() if field.label == self.title(THE_GUITAR))
         self.assertEqual(heading.value(), marks.MSG_WIZARD_COUNT_SHOWN.format(count=1))
         await self.select_under(heading=self.title(THE_GUITAR), label=FIRST_RIFF)
-        for kind in choices.riff_kinds_used(FIRST_RIFF):
+        for kind in choices.get_riffs().riff_kinds_used(FIRST_RIFF):
             self.assertIn(kind, self.wizard().field().value())
 
 
@@ -695,7 +695,7 @@ class TestWizardRiffAssign(CompositionTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.riff = self.choices().add_riff(role=THE_GUITAR)
+        self.riff = self.choices().get_riffs().add_riff(role=THE_GUITAR)
         await self.press(Key.DOWN, Key.UP)
         await self.open_panel(labels.MSG_WIZARD_RIFF_ASSIGN_BRANCH)
 
@@ -709,7 +709,7 @@ class TestWizardRiffAssign(CompositionTest):
         choices = self.choices()
         guitar = self.title(THE_GUITAR)
         self.assertGreater(len(guitar), len(labels.MSG_WIZARD_RIFF_FOR_COLUMN))
-        choices.give_riff(role=THE_BASS, riff=self.riff)
+        choices.get_riffs().give_riff(role=THE_BASS, riff=self.riff)
         choices.set_section_part(kind=A_KIND, role=THE_GUITAR, part=self.riff)
         await self.press(Key.DOWN, Key.UP)
         self.wizard().app.open_field_sections.add(guitar)
@@ -729,34 +729,34 @@ class TestWizardRiffAssign(CompositionTest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(list(self.app.screen.options), [self.riff])
         await self.pick(self.riff)
-        self.assertEqual(choices.riffs_known_by(THE_BASS), [self.riff])
+        self.assertEqual(choices.get_riffs().riffs_known_by(THE_BASS), [self.riff])
         self.assertIn(messages.MSG_WIZARD_RIFF_GIVEN.format(player=self.title(THE_BASS), riff=self.riff), self.text())
         await self.press(keybindings.WizardPage.ADD)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertEqual(choices.riffs_known_by(THE_BASS), [self.riff])
+        self.assertEqual(choices.get_riffs().riffs_known_by(THE_BASS), [self.riff])
 
     async def test_bksp_takes_a_riff_from_a_player_asking_first_only_where_the_player_plays_it(self):
         choices = self.choices()
-        choices.give_riff(role=THE_BASS, riff=self.riff)
+        choices.get_riffs().give_riff(role=THE_BASS, riff=self.riff)
         choices.set_section_part(kind=A_KIND, role=THE_GUITAR, part=self.riff)
         await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.INTO_FIELDS)
         await self.select_under(heading=self.title(THE_BASS), label=self.riff)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertEqual(choices.riffs_known_by(THE_BASS), [])
+        self.assertEqual(choices.get_riffs().riffs_known_by(THE_BASS), [])
         await self.select_under(heading=self.title(THE_GUITAR), label=self.riff)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertEqual(choices.riffs_known_by(THE_GUITAR), [])
-        self.assertEqual(choices.riff_names(), [self.riff])
+        self.assertEqual(choices.get_riffs().riffs_known_by(THE_GUITAR), [])
+        self.assertEqual(choices.get_riffs().riff_names(), [self.riff])
 
 
 class TestWizardSectionPlayers(CompositionTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.riff = self.choices().add_riff(role=THE_GUITAR)
+        self.riff = self.choices().get_riffs().add_riff(role=THE_GUITAR)
         await self.press(Key.DOWN, Key.UP)
         await self.open_panel(labels.MSG_WIZARD_SECTION_PLAYERS_BRANCH)
 
@@ -778,6 +778,6 @@ class TestWizardSectionPlayers(CompositionTest):
         self.assertEqual(list(self.app.screen.options), choices.section_parts_offered(kind=A_KIND, role=THE_GUITAR))
         await self.pick(self.riff)
         self.assertEqual(choices.section_part(kind=A_KIND, role=THE_GUITAR), self.riff)
-        self.assertEqual(choices.riff_kinds_used(self.riff), [A_KIND])
+        self.assertEqual(choices.get_riffs().riff_kinds_used(self.riff), [A_KIND])
         shown = next(field for field in self.wizard().shown_fields() if field.label == heading)
         self.assertEqual(shown.value(), marks.MSG_SECTION_SET)
