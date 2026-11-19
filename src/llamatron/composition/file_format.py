@@ -293,7 +293,10 @@ class ClipSlotSetting:
     """What a scene's clip slot for a track can set."""
 
     NAME = 'name'
+    # Only read, from a file saved before a clip held a list of patterns: one pattern's name, read as a list of one.
     PATTERN = 'pattern'
+    # The patterns a clip plays, laid end to end as one long pattern.
+    PATTERNS = 'patterns'
     # Only read, from a file saved before a clip held a list of chains: one chain's name, read as a list of one.
     CHAIN = 'chain'
     # The chains a clip runs, in order, before its scene's and its track's.
