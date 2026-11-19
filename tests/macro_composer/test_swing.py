@@ -19,8 +19,8 @@ import unittest
 
 from llamatron.composition.groove import FactoryGroove
 from llamatron.macro_composer import arranger
-from llamatron.macro_composer.arranger import GROOVE, NO_GROOVE
-from llamatron.macro_composer.wizard_choices import SWINGS, WizardChoices
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version
 from tests.support.ui_testing import fixed_text
@@ -51,7 +51,7 @@ def chosen(*, genre=ROCK, subgenre=ROCK_AND_ROLL):
 
 def groove_of(choices):
     """The groove of the song the choices make, or None for a song with none."""
-    return choices.made_setlist(name=SONG_NAME, version=version.VERSION).get_song(SONG_NAME).to_data().get(GROOVE)
+    return choices.made_setlist(name=SONG_NAME, version=version.VERSION).get_song(SONG_NAME).to_data().get(arranger.GROOVE)
 
 
 class TestSwing(unittest.TestCase):
@@ -62,14 +62,14 @@ class TestSwing(unittest.TestCase):
                 choices = chosen(genre=genre, subgenre=subgenre)
                 self.assertEqual((choices.swing_of_genre(), choices.get_swing(), groove_of(choices)), (swing, swing, swing))
         straight = chosen(subgenre=PUNK)
-        self.assertEqual((straight.get_swing(), groove_of(straight)), (NO_GROOVE, None))
+        self.assertEqual((straight.get_swing(), groove_of(straight)), (arranger.NO_GROOVE, None))
 
     def test_every_groove_a_template_names_is_one_every_set_has(self):
         for name in arranger.style_names():
             style = arranger.style_named(name)
             for template in style[arranger.TEMPLATES]:
-                swing = arranger.style_in(style=style, template=template).get(GROOVE, NO_GROOVE)
-                self.assertIn(swing, SWINGS)
+                swing = arranger.style_in(style=style, template=template).get(arranger.GROOVE, arranger.NO_GROOVE)
+                self.assertIn(swing, wizard_choices.SWINGS)
 
     def test_a_song_s_own_swing_is_played_kept_and_given_back_to_the_kind(self):
         choices = chosen(subgenre=PUNK)
@@ -77,14 +77,14 @@ class TestSwing(unittest.TestCase):
         self.assertEqual(groove_of(choices), FactoryGroove.SWING_62)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.get_swing(), FactoryGroove.SWING_62)
-        choices.set_swing(NO_GROOVE)
+        choices.set_swing(arranger.NO_GROOVE)
         self.assertEqual(choices.to_data(), chosen(subgenre=PUNK).to_data())
 
     def test_a_kind_that_swings_can_be_played_straight(self):
         choices = chosen()
-        choices.set_swing(NO_GROOVE)
-        self.assertEqual((choices.get_swing(), groove_of(choices)), (NO_GROOVE, None))
-        self.assertEqual(WizardChoices.from_data(choices.to_data()).get_swing(), NO_GROOVE)
+        choices.set_swing(arranger.NO_GROOVE)
+        self.assertEqual((choices.get_swing(), groove_of(choices)), (arranger.NO_GROOVE, None))
+        self.assertEqual(WizardChoices.from_data(choices.to_data()).get_swing(), arranger.NO_GROOVE)
         choices.set_swing(choices.swing_of_genre())
         self.assertEqual(choices.to_data(), chosen().to_data())
 
@@ -99,7 +99,7 @@ class TestSwing(unittest.TestCase):
         for genre, subgenre in ((BLUES, SHUFFLE), (ROCK, SIX_EIGHT)):
             choices = chosen(genre=genre, subgenre=subgenre)
             self.assertFalse(choices.has_swing())
-            self.assertEqual(choices.get_swing(), NO_GROOVE)
+            self.assertEqual(choices.get_swing(), arranger.NO_GROOVE)
             with self.assertRaisesRegex(ValueError, fixed_text(errors.ERR_WIZARD_SWING)):
                 choices.set_swing(FactoryGroove.SWING_54)
 
@@ -107,7 +107,7 @@ class TestSwing(unittest.TestCase):
         choices = chosen()
         with self.assertRaisesRegex(ValueError, fixed_text(errors.ERR_WIZARD_SWING)):
             choices.set_swing(NOT_A_SWING)
-        self.assertEqual(choices.swings(), list(SWINGS))
+        self.assertEqual(choices.swings(), list(wizard_choices.SWINGS))
 
 
 if __name__ == '__main__':

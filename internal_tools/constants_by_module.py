@@ -133,17 +133,17 @@ class Project:
         return Project([Module(name=module_name_of(path), path=path, source=path.read_text(encoding=FILE_ENCODING)) for path in python_files()])
 
     def origin(self, *, module, name):
-        """Return the module that defines a name another imports from a module, and whether it is a constant: (module name, kind), or None for a module outside the project."""
+        """Return the module that defines a name another imports from a module, whether it is a constant, and what that module calls it, which differs where an import on the way renamed it: (module name, kind, name), or None for a module outside the project."""
         seen = set()
         while module in self.modules and (module, name) not in seen:
             seen.add((module, name))
             found = self.modules[module]
             if name in found.defined:
-                return module, found.defined[name]
+                return module, found.defined[name], name
             if name not in found.imported:
-                return module, CONSTANT
+                return module, CONSTANT, name
             module, name = found.imported[name]
-        return (module, CONSTANT) if module in self.modules else None
+        return (module, CONSTANT, name) if module in self.modules else None
 
 
 class Move:
@@ -182,7 +182,7 @@ def moves_of(*, module, project, prefixes=None):
                 continue
             if prefixes and not any(origin[0] == prefix or origin[0].startswith(prefix + DOT) for prefix in prefixes):
                 continue
-            moves.append(Move(node=node, local=alias.asname or alias.name, module=origin[0], name=alias.name))
+            moves.append(Move(node=node, local=alias.asname or alias.name, module=origin[0], name=origin[2]))
     return moves
 
 
@@ -193,6 +193,53 @@ def find_names_imported(*, project, module):
         lines.setdefault((move.node.lineno, move.node.module), []).append(move.name)
     path = module.path.relative_to(ROOT).as_posix()
     return [FOUND.format(path=path, line=line, names=NAME_SEPARATOR.join(names), module=name) for (line, name), names in sorted(lines.items())]
+
+
+def module_aliases(tree):
+    """Return the modules a file imports whole, by the name the file calls each."""
+    aliases = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module and not node.level:
+            for alias in node.names:
+                aliases[alias.asname or alias.name] = (node.module + DOT + alias.name, node)
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.asname or DOT not in alias.name:
+                    aliases[alias.asname or alias.name] = (alias.name, node)
+    return aliases
+
+
+def passed_on(*, module, project, prefixes=None):
+    """Return each use of `module.NAME` where the module only imports the constant from another: (the use, the import that brought the module in, the module that defines the constant, its name there).
+
+    Such a use stops working once the module in between names the constant through its own module.
+    """
+    if is_in_strings(module.name):
+        return []
+    aliases = module_aliases(module.tree)
+    rebound = bound_names_but_imports(module.tree)
+    found = []
+    for node in ast.walk(module.tree):
+        if not (isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and isinstance(node.ctx, ast.Load)):
+            continue
+        if node.value.id not in aliases or node.value.id in rebound or not is_constant_name(node.attr):
+            continue
+        through, statement = aliases[node.value.id]
+        if through not in project.modules or node.attr in project.modules[through].defined:
+            continue
+        origin = project.origin(module=through, name=node.attr)
+        if origin is None or origin[1] == CALLABLE or origin[0] == through:
+            continue
+        if prefixes and not any(origin[0] == prefix or origin[0].startswith(prefix + DOT) for prefix in prefixes):
+            continue
+        found.append((node, statement, origin[0], origin[2]))
+    return found
+
+
+def bound_names_but_imports(tree):
+    """Return every name a file assigns or takes as a parameter, which an import's name may be hidden by."""
+    names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))}
+    return names | {node.arg for node in ast.walk(tree) if isinstance(node, ast.arg)}
 
 
 def bound_names(tree):
@@ -288,7 +335,8 @@ def rewritten(*, module, project, prefixes=None):
             skipped.append(SKIPPED.format(path=path, line=move.node.lineno, why=WHY_COMMENT))
         else:
             kept.append(move)
-    if not kept:
+    passed = passed_on(module=module, project=project, prefixes=prefixes)
+    if not kept and not passed:
         return module.source, 0, sorted(set(skipped))
     taken = bound_names(module.tree)
     names = {}
@@ -297,6 +345,10 @@ def rewritten(*, module, project, prefixes=None):
         if move.module not in names:
             already[move.module] = imported_as(tree=module.tree, module=move.module)
             names[move.module] = already[move.module] or name_for(module=move.module, taken=taken | set(names.values()))
+    for _, _, origin, _ in passed:
+        if origin not in names:
+            already[origin] = imported_as(tree=module.tree, module=origin)
+            names[origin] = already[origin] or name_for(module=origin, taken=taken | set(names.values()))
     top_level = {id(node) for node in module.tree.body}
     imported_at_top = {move.module for move in kept if id(move.node) in top_level}
     written = set()
@@ -323,17 +375,26 @@ def rewritten(*, module, project, prefixes=None):
     for node in ast.walk(module.tree):
         if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load) and node.id in uses:
             changes.setdefault(node.lineno - 1, []).append((node.col_offset, node.end_col_offset, uses[node.id]))
+    # A module a passed-on constant needs is imported straight after the import of the module the constant was read through.
+    added = {}
+    for node, statement, origin, name in passed:
+        changes.setdefault(node.lineno - 1, []).append((node.col_offset, node.end_col_offset, THROUGH_MODULE.format(module=names[origin], name=name)))
+        if already[origin] is None and origin not in imported_at_top and (origin, None) not in written:
+            written.add((origin, None))
+            added.setdefault(statement.end_lineno - 1, []).append(import_line(module=origin, other=names[origin], indent=' ' * statement.col_offset))
     result = []
     place = 0
     while place < len(lines):
         if place in replaced:
             end, new = replaced[place]
             result += new
+            result += added.get(end - 1, [])
             place = end
             continue
         result.append(replaced_in_line(line=lines[place], changes=changes[place]) if place in changes else lines[place])
+        result += added.get(place, [])
         place += 1
-    return '\n'.join(result), len(kept), sorted(set(skipped))
+    return '\n'.join(result), len(kept) + len(passed), sorted(set(skipped))
 
 
 def main(*, arguments=None):

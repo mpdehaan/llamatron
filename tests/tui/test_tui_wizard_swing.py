@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Tests of the Swing field on the song wizard's Subgenre panel."""
 
-from llamatron.macro_composer.arranger import NO_GROOVE
+from llamatron.macro_composer import arranger
 from llamatron.strings import labels as labels_text, legends
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -51,7 +51,7 @@ class TestWizardSwingField(SubgenrePanelTest):
     async def test_the_swing_is_the_subgenre_s_until_another_is_chosen(self):
         choices = await self.to_genre(genre=A_GENRE, subgenre=A_KIND_THAT_SWINGS)
         usual = choices.swing_of_genre()
-        self.assertNotEqual(usual, NO_GROOVE)
+        self.assertNotEqual(usual, arranger.NO_GROOVE)
         self.assertIn(labels_text.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=legends.MSG_FROM_GENRE_WHAT), self.text())
         await self.select_field(labels_text.MSG_WIZARD_SWING_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))

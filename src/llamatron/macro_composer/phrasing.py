@@ -21,7 +21,7 @@ longer line then a shorter; and now and then a note comes an eighth early. A lin
 only where the line stops and where a note falls change.
 """
 
-from llamatron.macro_composer.notation import REST, STEPS
+from llamatron.macro_composer import notation
 
 EIGHTHS_IN_BAR = 8
 # The breath after a longer line and after a shorter one, in eighths, and the eighths of a bar a note may come early to: the third beat and the next bar's first.
@@ -51,7 +51,7 @@ USUAL_WAYS = {BREATH: MEDIUM, LINE_LENGTHS: LONG_THEN_SHORT, EARLY_NOTES: USUAL_
 
 
 def lasts(note):
-    return note.get(REST, note.get(STEPS, 0))
+    return note.get(notation.REST, note.get(notation.STEPS, 0))
 
 
 def ended_early(*, line, breath):
@@ -63,13 +63,13 @@ def ended_early(*, line, breath):
         if room <= 0:
             break
         length = min(lasts(note), room)
-        kept.append({**note, (REST if REST in note else STEPS): length})
+        kept.append({**note, (notation.REST if notation.REST in note else notation.STEPS): length})
         room -= length
-    while kept and REST in kept[-1]:
+    while kept and notation.REST in kept[-1]:
         kept.pop()
     if not kept:
         return [dict(note) for note in line]
-    return kept + [{REST: total - sum(lasts(note) for note in kept)}]
+    return kept + [{notation.REST: total - sum(lasts(note) for note in kept)}]
 
 
 def pushed(*, line, grid):
@@ -78,10 +78,10 @@ def pushed(*, line, grid):
     at = 0
     for place, note in enumerate(line):
         before = line[place - 1] if place else None
-        if before is not None and REST not in note and REST not in before and before[STEPS] >= 2 * eighth and at % grid in [to * eighth % grid for to in PUSHED_TO]:
+        if before is not None and notation.REST not in note and notation.REST not in before and before[notation.STEPS] >= 2 * eighth and at % grid in [to * eighth % grid for to in PUSHED_TO]:
             moved = [dict(other) for other in line]
-            moved[place - 1][STEPS] -= eighth
-            moved[place][STEPS] += eighth
+            moved[place - 1][notation.STEPS] -= eighth
+            moved[place][notation.STEPS] += eighth
             return moved
         at += lasts(note)
     return line

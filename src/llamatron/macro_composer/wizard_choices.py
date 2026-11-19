@@ -34,41 +34,29 @@ from llamatron.composition.groove import FactoryGroove
 from llamatron.composition import limits, naming
 from llamatron.strings import labels as labels_text, macro_composer as composer_text, marks as marks_text, names as names_text
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer.interplay import LEAST_BUSY as LEAST_BUSY_BESIDE, MOST_BUSY as MOST_BUSY_BESIDE, USUAL_BUSY as USUAL_BUSY_BESIDE, WAITS, WAYS as WAYS_BESIDE
-from llamatron.macro_composer.characters import GAUGES as PLAYER_GAUGES, HIGHEST as HIGHEST_PLACE, LOWEST as LOWEST_PLACE, PRESET_PLACE, gauges_of, preset
-from llamatron.macro_composer.arranger import (
-    HABITS, ROLE_HABITS,
-    ACCIDENTAL_MARKS, BY_SECTION, PATTERN, chord_of, fits_by_halves, shares_a_bar, COMMON_TIME, DEFAULT_PHRASE_BARS, DRUMS, DRUM_TRACKS, EACH_SECTION, FILLS_COME, FILL_EVERY, KIND, PARTS, PHRASE_BARS, QUIET_NOTES, MELODY_ENGINE, METER, PICKS, ROLE_SOUNDS, ROLE_TITLE, ROLE_TITLES, SOUNDS, WITHOUT_PIECES, PLAYER, PLAYERS, ROLE, ROLES, SOUND, TRAIT, VALUE, WITHOUT, bar_length, fits,
-    BARS, CHORD_TRAIT, CHORD_TRAIT_FIELD, FORM, HELD, PLAYS, GENRE, KEY, NAME, ROOT, SCALE_TYPE, SECTIONS, SEED, STYLE, TEMPLATE, TEMPLATES, TEMPO, TITLE, TRAITS, TYPE, USUAL,
-    BREAK, BREAK_CUT, HIGHEST_NOTE, KEPT_BESIDE_A_BREAK, LOWEST_NOTE, MELODY, NO_BREAK, PIECE_SOUNDS, PLAYED_DRUM, PLAYED_NOTE, PLAYED_SOUND,
-    ANSWERS, BESIDE, BESIDE_BUSY, BESIDE_WAYS, FIGURE,
-    arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of, VARIANT, VARIANT_SAYS,
-)
+from llamatron.macro_composer import interplay as interplay_values
+from llamatron.macro_composer import characters
+from llamatron.macro_composer.characters import gauges_of, preset
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.arranger import chord_of, fits_by_halves, shares_a_bar, bar_length, fits, arranged, forms_of, picked, player_of, section_of, share_in, share_of, style_in, style_named, style_names, values_of, variant_named, variants_of
 from llamatron.macro_composer import composer as set_writer
 from llamatron.macro_composer import melody as melody_writer
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer import band, hook_writing, line_edits, loudness_steps, notation as tune_notation, phrasing, tune_fit
-from llamatron.macro_composer.arranger import (GENRE as GENRE_OF_STYLE, MORE_RIFFS, MUSICIANS, NOBODY, OWN_INTRO, OWN_INTROS, OWN_SOLOS, OWN_TUNES, RIFF_DRAWN_AS, RIFF_FOR, RIFF_OWN, TAKEN_TUNES, TUNE_BY, TUNE_BY_SONG,
-                                               TUNE_PHRASING, in_octaves_of)
-from llamatron.macro_composer.players import BASS as BASS_PLAYER
-from llamatron.macro_composer.arranger import CHORDS, DYNAMICS, EIGHTHS_IN_WHOLE, GROOVE, LOUDNESS as LOUDNESS_OF, NO_GROOVE, SCENE_SETTINGS, form_of
-from llamatron.macro_composer.loudness import LEAST_DYNAMICS, LEVELS as LOUDNESS_LEVELS, MOST_DYNAMICS, USUAL_DYNAMICS, drum_levels, note_levels, with_own
-from llamatron.macro_composer.melody import (ANSWER, BY_KIND, GAUGE_AFTER_LEAP, GAUGE_LEANING, GAUGE_MOVES, GAUGE_PHRASE, GAUGE_STEPS, GAUGE_SURPRISE, HEIGHT, HEIGHTS, HIGH, HOME as MELODY_HOME,
-                                             HOOK_NOTES, HOOKS, LADDER as MELODY_LADDER, LINE, LINE_BUSY, LINE_NOTES, MAIN_HOOK, MELODY_ASKS, MIDDLE, PLACEMENT, PLACEMENTS, REPEATS, REPEATS_SOME,
-                                             REPEATS_WAYS, SECOND_HOOK, SPAN, SUNG_BY, SUNG_IN, TAG_TAKE, placement_of, plan_with_hook_placed)
-from llamatron.macro_composer.phrasing import LINE_BREATH, LINE_EARLY
-from llamatron.macro_composer.riffs import (BAR_COUNTS, BETWEEN_WAYS, FIRST_TAKE as FIRST_RIFF_TAKE, IN_FULL, MOVES_WHOLE, MUTED_ROOTS, NOTES_WAYS, RIFF, RIFF_BAR_COUNT, RIFF_BARS,
-                                            RIFF_BETWEEN, RIFF_KINDS, RIFF_NOTES, RIFF_ROLES, RIFF_TAKE, RIFF_UNDER_TUNE, RIFF_WITH_CHORDS, SINGLE_NOTES, UNDER_TUNE_WAYS, WITH_CHORDS_WAYS,
-                                            bars_of as riff_bars_of, flattened_in, line_of as riff_line_of)
-from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL
-from llamatron.macro_composer.song_plan import (
-    BIG, BY_PLACE, FADE_LEVEL, FADE_OVER, FADED, FADES, FADES_IN, LOUDEST_FADE_LEVEL, UNFADED, faded, PHRASING_WAYS, RISES, RISING, SCALE_OF_PLACE, SCENE_TEMPO, SCENE_TEMPO_END, CONTRAST, ENERGY, FILL_SIZE, FILL_SIZES, HIGHEST_ENERGY, LOWEST_ENERGY, MEDIUM, NOT_AT_ALL, PHRASING, PLAN_OF_SONG, ROOT_OF_PLACE, SAID_OF_SECTION, SETUP, SMALL,
-    REACTS, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE, USUAL_CONTRAST, SongPlan,
-)
+from llamatron.macro_composer.arranger import in_octaves_of
+from llamatron.macro_composer import players as players_values
+from llamatron.macro_composer.arranger import form_of
+from llamatron.macro_composer import loudness
+from llamatron.macro_composer.loudness import drum_levels, note_levels, with_own
+from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed
+from llamatron.macro_composer import riffs as riffs_values
+from llamatron.macro_composer.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
+from llamatron.macro_composer import joins as joins_values
+from llamatron.macro_composer import song_plan
+from llamatron.macro_composer.song_plan import faded, SongPlan
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer.breaks import LEAST_CUT, MOST_CUT, break_names
-from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, FLAT, KIT, LINES, OCTAVE, REST, SHARP, STEPS, VELOCITY, LOWEST_VELOCITY, HIGHEST_VELOCITY
-from llamatron.macro_composer.melody import ARTICULATION, CHROMATIC, DEFAULT_EVOLVE, DEFAULT_LENGTHS, ENGINE, LENGTHS, LOUDNESS, PARTS_OF_A_LENGTH, EVOLVE, HALF_STEPS, LEAPS, MOVE, NOTES_IN_OCTAVE, DEFAULT_GAUGES, EVOLVING, FIRST_HOOK_TAKE, GRID, HIGHEST_GAUGE, HOOK, HOOK_TAKE, LOWEST_GAUGE, ROTATE, ROTATIONS, SERIAL, SMART, STEP_WALK
+from llamatron.macro_composer import breaks as breaks_values
+from llamatron.macro_composer.breaks import break_names
 from llamatron.music import note as note_values
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support import version as version_values
@@ -116,14 +104,14 @@ def genre_names():
 
 def genre_title(genre):
     """Return a genre's name as people read it."""
-    return style_of(genre)[TITLE]
+    return style_of(genre)[arranger.TITLE]
 
 
 # How often a fill comes, by position: never, at the end of each section, every four bars, every two.
 FEWEST_FILLS = 1
 EACH_SECTION_FILLS = 2
 MOST_FILLS = 4
-FILLS_EVERY = {1: 0, 4: 2, 3: 4, 2: EACH_SECTION}
+FILLS_EVERY = {1: 0, 4: 2, 3: 4, 2: arranger.EACH_SECTION}
 FILLS_KEPT = 'fills'
 QUIET_NOTES_KEPT = 'quiet_notes'
 # The drum break chosen, kept as its name or as NO_BREAK where a subgenre built on a break plays none, how far it is cut up,
@@ -135,7 +123,7 @@ MELODY_SETTINGS_KEPT = 'melody_settings'
 HOOK_KEPT = 'hook'
 HOOK_TAKE_KEPT = 'hook_take'
 # The melody styles whose lines are their own throughout, a chorus's body included.
-ENGINES_OF_THEIR_OWN = (SERIAL, EVOLVING)
+ENGINES_OF_THEIR_OWN = (melody_writer.SERIAL, melody_writer.EVOLVING)
 # What a song chose of how its hook and its chorus's body are written, over its genre's: a behavior and gauges.
 WRITING_KEPT = 'melody_writing'
 # What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
@@ -150,7 +138,7 @@ HOOK_ANSWER = 'hook notes'
 HOOK_LINE_ANSWER = 'hook line'
 HOOK_PART_ANSWER = 'hook part'
 # How far a sharp or a flat moves a note, in half steps.
-HALF_STEPS_OF_ACCIDENTAL = {SHARP: 1, FLAT: -1}
+HALF_STEPS_OF_ACCIDENTAL = {tune_notation.SHARP: 1, tune_notation.FLAT: -1}
 # What is kept of the player beside the tune: who answers, the one thing done in every section or None for the genre's plan, and how busy; and a section's own choice.
 BESIDE_KEPT = 'beside'
 BY = 'by'
@@ -215,23 +203,23 @@ def family_of(sound):
 
 
 # The melody styles, and the key a song keeps the one chosen under.
-MELODY_STYLES = (SMART, STEP_WALK, SERIAL, EVOLVING)
+MELODY_STYLES = (melody_writer.SMART, melody_writer.STEP_WALK, melody_writer.SERIAL, melody_writer.EVOLVING)
 # The melody styles the seven gauges steer.
-GAUGED_STYLES = (SMART,)
+GAUGED_STYLES = (melody_writer.SMART,)
 # A melody style's own settings, by the style, the usual style's under None: for the evolving style how far each new line moves
 # up and how many notes later it starts, each a number with its lowest and highest; for the serial style whether the row is
 # all twelve notes, whether a note may leap to any octave and whether a form of the row may start anywhere in it, each true or
 # false with what it is where the genre does not say. How far a tune ranges is not one: it is the Range gauge of the player.
-MELODY_SETTINGS_OF = {None: (), STEP_WALK: (), SMART: (), EVOLVING: (MOVE, ROTATE), SERIAL: (CHROMATIC, LEAPS, ROTATIONS)}
-MELODY_NUMBERS = {MOVE: (0, 4), ROTATE: (0, 4)}
-MELODY_SWITCHES = {CHROMATIC: False, LEAPS: False, ROTATIONS: True}
-EVOLVE_SETTINGS = (MOVE, ROTATE)
+MELODY_SETTINGS_OF = {None: (), melody_writer.STEP_WALK: (), melody_writer.SMART: (), melody_writer.EVOLVING: (melody_writer.MOVE, melody_writer.ROTATE), melody_writer.SERIAL: (melody_writer.CHROMATIC, melody_writer.LEAPS, melody_writer.ROTATIONS)}
+MELODY_NUMBERS = {melody_writer.MOVE: (0, 4), melody_writer.ROTATE: (0, 4)}
+MELODY_SWITCHES = {melody_writer.CHROMATIC: False, melody_writer.LEAPS: False, melody_writer.ROTATIONS: True}
+EVOLVE_SETTINGS = (melody_writer.MOVE, melody_writer.ROTATE)
 # The rows of numbers the serial style deals to a player's notes in turn, each with the lowest and highest number of a cell
 # and what a row is where the genre gives the player none, which plays as no row would: how many steps a note lasts, how
 # much louder or softer than the player a note is, and how many quarters of a note's length sound.
-PLAYER_ROWS = (LENGTHS, LOUDNESS, ARTICULATION)
-ROW_LIMITS = {LENGTHS: (1, 8), LOUDNESS: (-16, 16), ARTICULATION: (1, PARTS_OF_A_LENGTH)}
-ROWS_UNASKED = {LENGTHS: DEFAULT_LENGTHS, LOUDNESS: (0,) * len(DEFAULT_LENGTHS), ARTICULATION: (PARTS_OF_A_LENGTH,) * len(DEFAULT_LENGTHS)}
+PLAYER_ROWS = (melody_writer.LENGTHS, melody_writer.LOUDNESS, melody_writer.ARTICULATION)
+ROW_LIMITS = {melody_writer.LENGTHS: (1, 8), melody_writer.LOUDNESS: (-16, 16), melody_writer.ARTICULATION: (1, melody_writer.PARTS_OF_A_LENGTH)}
+ROWS_UNASKED = {melody_writer.LENGTHS: melody_writer.DEFAULT_LENGTHS, melody_writer.LOUDNESS: (0,) * len(melody_writer.DEFAULT_LENGTHS), melody_writer.ARTICULATION: (melody_writer.PARTS_OF_A_LENGTH,) * len(melody_writer.DEFAULT_LENGTHS)}
 FEWEST_ROW_CELLS = 1
 MOST_ROW_CELLS = 16
 MELODY_STYLE = 'melody_style'
@@ -274,7 +262,7 @@ MELODY_CHOSEN = 'melody_chosen'
 HOOKS_CHOSEN = 'hooks_chosen'
 # The kinds of section a second hook may be sung in, in the order offered: at the end of the section before the chorus, in the
 # section after it, and in the song's last section.
-EXTRAS_OF_ONE_GENRE = (PLAN_OF_SONG, MELODY, GROOVE, DYNAMICS, LOUDNESS_OF, TUNE_BY, TUNE_BY_SONG, MELODY_CHOSEN, HOOKS_CHOSEN)
+EXTRAS_OF_ONE_GENRE = (song_plan.PLAN_OF_SONG, arranger.MELODY, arranger.GROOVE, arranger.DYNAMICS, arranger.LOUDNESS, arranger.TUNE_BY, arranger.TUNE_BY_SONG, MELODY_CHOSEN, HOOKS_CHOSEN)
 STAGES_ANSWER = 'stages'
 JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
@@ -299,13 +287,13 @@ MELODY_NARROW = 'narrow'
 MELODY_WIDE = 'wide'
 MELODY_CHARACTER = 'character'
 # Each field of the whole song's melodies with what may be chosen and what a song has until one is: the genre's own.
-MELODY_WAYS = {MELODY_BUSY: (MELODY_SPARSE, MELODY_MEDIUM, MELODY_BUSIEST), MELODY_RANGE: (MELODY_NARROW, MELODY_MEDIUM, MELODY_WIDE), REPEATS: REPEATS_WAYS}
-USUAL_MELODY_WAYS = {MELODY_BUSY: MELODY_MEDIUM, MELODY_RANGE: MELODY_MEDIUM, REPEATS: REPEATS_SOME}
+MELODY_WAYS = {MELODY_BUSY: (MELODY_SPARSE, MELODY_MEDIUM, MELODY_BUSIEST), MELODY_RANGE: (MELODY_NARROW, MELODY_MEDIUM, MELODY_WIDE), melody_writer.REPEATS: melody_writer.REPEATS_WAYS}
+USUAL_MELODY_WAYS = {MELODY_BUSY: MELODY_MEDIUM, MELODY_RANGE: MELODY_MEDIUM, melody_writer.REPEATS: melody_writer.REPEATS_SOME}
 # Each field of one kind of section's melody with what may be chosen; nothing chosen leaves the height to the genre and the busyness to the song.
-SECTION_MELODY_WAYS = {HEIGHT: HEIGHTS, MELODY_BUSY: MELODY_WAYS[MELODY_BUSY]}
+SECTION_MELODY_WAYS = {melody_writer.HEIGHT: melody_writer.HEIGHTS, MELODY_BUSY: MELODY_WAYS[MELODY_BUSY]}
 # Where on the gauges' scale a line asked to be so busy stands.
 MIDDLE_GAUGE = 4
-BUSY_POSITIONS = {MELODY_SPARSE: LOWEST_GAUGE, MELODY_MEDIUM: MIDDLE_GAUGE, MELODY_BUSIEST: HIGHEST_GAUGE}
+BUSY_POSITIONS = {MELODY_SPARSE: melody_writer.LOWEST_GAUGE, MELODY_MEDIUM: MIDDLE_GAUGE, MELODY_BUSIEST: melody_writer.HIGHEST_GAUGE}
 # How many places of the ladder a narrow or a wide range differs from the genre's, and the least a range may be.
 SPAN_CHANGES = {MELODY_NARROW: -2, MELODY_WIDE: 2}
 LEAST_SPAN = 2
@@ -316,9 +304,9 @@ ANGULAR = 'angular'
 ATONAL = 'atonal'
 CHARACTER_EVOLVING = 'evolving'
 CHARACTERS = (SMOOTH, BLUESY, ANGULAR, ATONAL, CHARACTER_EVOLVING)
-CHARACTER_ENGINES = {SMOOTH: SMART, BLUESY: SMART, ANGULAR: SMART, ATONAL: SERIAL, CHARACTER_EVOLVING: EVOLVING}
-CHARACTER_GAUGES = {SMOOTH: {GAUGE_MOVES: 1, GAUGE_AFTER_LEAP: 1, GAUGE_PHRASE: 7, GAUGE_SURPRISE: 1}, ANGULAR: {GAUGE_MOVES: 7, GAUGE_AFTER_LEAP: 6, GAUGE_PHRASE: 2, GAUGE_SURPRISE: 6},
-                    BLUESY: {GAUGE_STEPS: 2, GAUGE_LEANING: 6}}
+CHARACTER_ENGINES = {SMOOTH: melody_writer.SMART, BLUESY: melody_writer.SMART, ANGULAR: melody_writer.SMART, ATONAL: melody_writer.SERIAL, CHARACTER_EVOLVING: melody_writer.EVOLVING}
+CHARACTER_GAUGES = {SMOOTH: {melody_writer.GAUGE_MOVES: 1, melody_writer.GAUGE_AFTER_LEAP: 1, melody_writer.GAUGE_PHRASE: 7, melody_writer.GAUGE_SURPRISE: 1}, ANGULAR: {melody_writer.GAUGE_MOVES: 7, melody_writer.GAUGE_AFTER_LEAP: 6, melody_writer.GAUGE_PHRASE: 2, melody_writer.GAUGE_SURPRISE: 6},
+                    BLUESY: {melody_writer.GAUGE_STEPS: 2, melody_writer.GAUGE_LEANING: 6}}
 # The degrees a bluesy melody is drawn from, the third and the seventh flattened over a scale that has them major, and its home.
 BLUES_DEGREES = (1, 3, 4, 5, 7)
 BLUES_HOME = 1
@@ -330,17 +318,17 @@ MELODY_PART = 'melody'
 # The name of the riff asked for to find who can play one in a kind of section.
 TRIAL_RIFF = 'trial riff'
 # A riff's settings, each with what may be chosen, the first what a riff has until another is chosen.
-RIFF_SETTINGS = {RIFF_NOTES: NOTES_WAYS, RIFF_BAR_COUNT: tuple(reversed(BAR_COUNTS)), RIFF_BETWEEN: BETWEEN_WAYS, RIFF_UNDER_TUNE: UNDER_TUNE_WAYS, RIFF_WITH_CHORDS: WITH_CHORDS_WAYS}
-assert (RIFF_SETTINGS[RIFF_NOTES][0], RIFF_SETTINGS[RIFF_BAR_COUNT][0], RIFF_SETTINGS[RIFF_BETWEEN][0]) == (SINGLE_NOTES, RIFF_BARS, MUTED_ROOTS)
-assert (RIFF_SETTINGS[RIFF_UNDER_TUNE][0], RIFF_SETTINGS[RIFF_WITH_CHORDS][0]) == (IN_FULL, MOVES_WHOLE)
+RIFF_SETTINGS = {riffs_values.RIFF_NOTES: riffs_values.NOTES_WAYS, riffs_values.RIFF_BAR_COUNT: tuple(reversed(riffs_values.BAR_COUNTS)), riffs_values.RIFF_BETWEEN: riffs_values.BETWEEN_WAYS, riffs_values.RIFF_UNDER_TUNE: riffs_values.UNDER_TUNE_WAYS, riffs_values.RIFF_WITH_CHORDS: riffs_values.WITH_CHORDS_WAYS}
+assert (RIFF_SETTINGS[riffs_values.RIFF_NOTES][0], RIFF_SETTINGS[riffs_values.RIFF_BAR_COUNT][0], RIFF_SETTINGS[riffs_values.RIFF_BETWEEN][0]) == (riffs_values.SINGLE_NOTES, riffs_values.RIFF_BARS, riffs_values.MUTED_ROOTS)
+assert (RIFF_SETTINGS[riffs_values.RIFF_UNDER_TUNE][0], RIFF_SETTINGS[riffs_values.RIFF_WITH_CHORDS][0]) == (riffs_values.IN_FULL, riffs_values.MOVES_WHOLE)
 # The settings a new riff is asked for.
-NEW_RIFF_SETTINGS = (RIFF_BAR_COUNT, RIFF_NOTES, RIFF_WITH_CHORDS, RIFF_BETWEEN)
+NEW_RIFF_SETTINGS = (riffs_values.RIFF_BAR_COUNT, riffs_values.RIFF_NOTES, riffs_values.RIFF_WITH_CHORDS, riffs_values.RIFF_BETWEEN)
 INTRO_KIND = 'intro'
 REACTS_ANSWER = 'reacts'
 DYNAMICS_ANSWER = 'dynamics'
 # The swings a song may be played with, the lightest first of those of the eighths and then of the sixteenths, and the steps of
 # a bar a genre written in triplets counts, which is swung as written and takes none.
-SWINGS = (NO_GROOVE, FactoryGroove.EIGHTH_SWING_58, FactoryGroove.EIGHTH_SWING_66, FactoryGroove.SWING_54, FactoryGroove.SWING_58, FactoryGroove.SWING_62, FactoryGroove.SWING_66)
+SWINGS = (arranger.NO_GROOVE, FactoryGroove.EIGHTH_SWING_58, FactoryGroove.EIGHTH_SWING_66, FactoryGroove.SWING_54, FactoryGroove.SWING_58, FactoryGroove.SWING_62, FactoryGroove.SWING_66)
 TRIPLET_GRID = 12
 LEVELS_ANSWER = 'levels'
 # How far a trial moves a level to hear whether the level is played at all.
@@ -374,9 +362,9 @@ LINE_OWN = 'own'
 PLAY_OF_SCENE = 'play'
 PART = 'part'
 # What a section can be given of its own in any genre, with or without a plan.
-OWN_WITHOUT_PLAN = (CHORDS, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE)
+OWN_WITHOUT_PLAN = (arranger.CHORDS, song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE)
 # What a section that opens or closes the song says of its fade, with or without a plan.
-FADE_OWN = (FADES, FADE_LEVEL, FADE_OVER)
+FADE_OWN = (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER)
 # The way a section fades: a section that opens the song fades in, one that closes the song fades out, and no other fades.
 FADE_IN = 'in'
 FADE_OUT = 'out'
@@ -418,8 +406,8 @@ LEAVES_SMALL_FILL = 'a small fill'
 LEAVES_MEDIUM_FILL = 'a medium fill'
 LEAVES_BIG_FILL = 'a big fill'
 LEAVES_AS_JOIN = {
-    LEAVES_SMALL_FILL: {FILL_SIZE: SMALL}, LEAVES_MEDIUM_FILL: {FILL_SIZE: MEDIUM}, LEAVES_BIG_FILL: {FILL_SIZE: BIG},
-    STOPS: {TAIL: STOPS}, DROP_OUT: {TAIL: DROP_OUT}, BUILD: {TAIL: BUILD}, LEAVES_NOTHING: {},
+    LEAVES_SMALL_FILL: {song_plan.FILL_SIZE: song_plan.SMALL}, LEAVES_MEDIUM_FILL: {song_plan.FILL_SIZE: song_plan.MEDIUM}, LEAVES_BIG_FILL: {song_plan.FILL_SIZE: song_plan.BIG},
+    joins_values.STOPS: {joins_values.TAIL: joins_values.STOPS}, joins_values.DROP_OUT: {joins_values.TAIL: joins_values.DROP_OUT}, joins_values.BUILD: {joins_values.TAIL: joins_values.BUILD}, LEAVES_NOTHING: {},
 }
 SETUP_USUAL = 'when it helps'
 # The questions a form is made from, the kinds of section they are about and the answers offered.
@@ -454,7 +442,7 @@ INTRO_HOOK = 'intro_hook'
 BARS_IN_A_LINE = 2
 HIGHER = 'higher'
 VARIED = 'varied'
-MARKS_TYPED = {'b': FLAT, '#': SHARP}
+MARKS_TYPED = {'b': tune_notation.FLAT, '#': tune_notation.SHARP}
 FIRST_DEGREE_OF_SCALE = 1
 LAST_DEGREE_OF_SCALE = 7
 PLAN_ANSWER = 'plan'
@@ -489,7 +477,7 @@ def chords_from_text(text):
         number = word[1:] if mark else word
         if not number.isdigit() or not FIRST_DEGREE_OF_SCALE <= int(number) <= LAST_DEGREE_OF_SCALE:
             raise ValueError(errors.ERR_WIZARD_CHORDS.format(value=text))
-        return {DEGREE: int(number), ACCIDENTAL: MARKS_TYPED[mark]} if mark else int(number)
+        return {tune_notation.DEGREE: int(number), tune_notation.ACCIDENTAL: MARKS_TYPED[mark]} if mark else int(number)
     chords = []
     for word in str(text).split():
         # Two chords joined by a dash share a bar, each half of it.
@@ -509,7 +497,7 @@ def chords_as_text(chords):
     marks = {accidental: mark for mark, accidental in MARKS_TYPED.items()}
 
     def typed(chord):
-        return marks.get(chord_of(chord).get(ACCIDENTAL), '') + str(chord_of(chord)[DEGREE])
+        return marks.get(chord_of(chord).get(tune_notation.ACCIDENTAL), '') + str(chord_of(chord)[tune_notation.DEGREE])
     return ' '.join(SHARES_A_BAR.join(typed(half) for half in chord) if shares_a_bar(chord) else typed(chord) for chord in chords)
 
 
@@ -523,7 +511,7 @@ def melody_works(*, genre, subgenre, style, variant=None):
     choices.take_variant(variant)
     choices.set_seed(FIRST_SEED)
     try:
-        Setlist.from_data(data=composed(given=arranged(style=style_of(genre), song={**choices.song_picks(subgenre), MELODY_ENGINE: style}), version=version_values.VERSION))
+        Setlist.from_data(data=composed(given=arranged(style=style_of(genre), song={**choices.song_picks(subgenre), arranger.MELODY_ENGINE: style}), version=version_values.VERSION))
     except (ValueError, IndexError, KeyError, SongFileError):
         return False
     return True
@@ -539,7 +527,7 @@ def melody_is_usual(*, genre, subgenre, style, variant=None):
     choices.take_variant(variant)
     choices.set_seed(FIRST_SEED)
     song = choices.song_picks(subgenre)
-    return arranged(style=style_of(genre), song={**song, MELODY_ENGINE: style})[PARTS] == arranged(style=style_of(genre), song=song)[PARTS]
+    return arranged(style=style_of(genre), song={**song, arranger.MELODY_ENGINE: style})[arranger.PARTS] == arranged(style=style_of(genre), song=song)[arranger.PARTS]
 
 
 @functools.cache
@@ -553,7 +541,7 @@ def hook_matters(*, genre, subgenre, form, variant=None):
     choices.set_form(form)
     choices.set_seed(FIRST_SEED)
     song = choices.song_picks(subgenre)
-    return arranged(style=style_of(genre), song={**song, HOOK: True})[PARTS] != arranged(style=style_of(genre), song={**song, HOOK: False})[PARTS]
+    return arranged(style=style_of(genre), song={**song, melody_writer.HOOK: True})[arranger.PARTS] != arranged(style=style_of(genre), song={**song, melody_writer.HOOK: False})[arranger.PARTS]
 
 
 @functools.cache
@@ -563,15 +551,15 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
     as they are written whatever is asked. Given the section's players, only their parts are asked, since a part that sits
     out cannot time the section."""
     style = style_in(style=style_of(genre), template=subgenre, variant=variant)
-    song = {NAME: kind, TITLE: kind, STYLE: genre, TEMPLATE: subgenre, VARIANT: variant, KEY: {ROOT: USUAL_ROOTS[MAJOR], TYPE: MAJOR}, SEED: FIRST_SEED,
-            FORM: [kind], SECTIONS: {kind: {KIND: kind, BARS: bars, **({} if plays is None else {PLAYS: list(plays)})}}}
+    song = {arranger.NAME: kind, arranger.TITLE: kind, arranger.STYLE: genre, arranger.TEMPLATE: subgenre, arranger.VARIANT: variant, arranger.KEY: {arranger.ROOT: USUAL_ROOTS[MAJOR], arranger.TYPE: MAJOR}, arranger.SEED: FIRST_SEED,
+            arranger.FORM: [kind], arranger.SECTIONS: {kind: {arranger.KIND: kind, arranger.BARS: bars, **({} if plays is None else {arranger.PLAYS: list(plays)})}}}
     try:
         given = arranged(style=style, song=song)
         made = Setlist.from_data(data=composed(given=given, version=version_values.VERSION)).get_song(kind)
         seconds = sum(float(scene.seconds) for scene in SongRenderer(made).estimate())
     except (ValueError, SongFileError):
         return False
-    wanted = float(bars * bar_length(str(picked(style=style, song=song).get(METER, COMMON_TIME))) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / made.get_tempo())
+    wanted = float(bars * bar_length(str(picked(style=style, song=song).get(arranger.METER, arranger.COMMON_TIME))) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / made.get_tempo())
     return abs(seconds - wanted) < PART_OF_A_BAR
 
 
@@ -620,7 +608,7 @@ class WizardChoices:
         self._melody = None
         # Whether the song has a hook, or None while the genre says.
         self._hook = None
-        self._hook_take = FIRST_HOOK_TAKE
+        self._hook_take = melody_writer.FIRST_HOOK_TAKE
         # What the song chose of how its hook and its chorus's body are written, each a behavior or gauges moved from the genre's.
         self._writing = {}
         # The sounds chosen: the band's, one of BAND_SOUNDS, which every player follows, and each player's own General MIDI sound, which overrides it.
@@ -649,7 +637,7 @@ class WizardChoices:
     def from_data(cls, data):
         """Return the choices a song kept, leaving out whatever no longer fits, as a genre renamed since: what is left out is chosen again."""
         choices = cls()
-        setters = [(GENRE, choices.set_genre), (SUBGENRE, choices.set_subgenre), (VARIANT, choices.take_variant), (ROOT, choices.set_root), (TYPE, choices.set_scale_type), (TEMPO, choices.set_tempo), (FORM, choices.set_form), (SEED, choices.set_seed)]
+        setters = [(arranger.GENRE, choices.set_genre), (SUBGENRE, choices.set_subgenre), (arranger.VARIANT, choices.take_variant), (arranger.ROOT, choices.set_root), (arranger.TYPE, choices.set_scale_type), (arranger.TEMPO, choices.set_tempo), (arranger.FORM, choices.set_form), (arranger.SEED, choices.set_seed)]
         for field, setter in setters:
             if (data or {}).get(field) is not None:
                 try:
@@ -669,11 +657,11 @@ class WizardChoices:
         # A song kept before answering could be chosen keeps to what was made then.
         self._beside = None
         # And a song kept has the riff it kept, or none: the riff its kind of music gives a new song is no part of it.
-        self._extras.pop(RIFF, None)
-        kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(PICKS) or {}).items()]),
-                (self._set_level, [dict(player=player, level=level) for player, level in (data.get(PLAYERS) or {}).items()]),
+        self._extras.pop(riffs_values.RIFF, None)
+        kept = [(self.set_way, [dict(trait=trait, value=value) for trait, value in (data.get(arranger.PICKS) or {}).items()]),
+                (self._set_level, [dict(player=player, level=level) for player, level in (data.get(arranger.PLAYERS) or {}).items()]),
                 (self._set_kept_player_gauge, [dict(player=player, gauge=gauge, place=place) for player, places in (data.get(PLAYER_GAUGES_KEPT) or {}).items() for gauge, place in places.items()]),
-                (self.set_role_in, [dict(role=role, on=False) for role in data.get(WITHOUT) or []]),
+                (self.set_role_in, [dict(role=role, on=False) for role in data.get(arranger.WITHOUT) or []]),
                 (self.set_piece_on, [dict(piece=piece, on=False) for piece in data.get(PIECES_OFF_KEPT) or []]),
                 (self._set_kept_fills, [dict(position=data[FILLS_KEPT])] if data.get(FILLS_KEPT) is not None else []),
                 (self._set_kept_quiet_notes, [dict(on=False)] if data.get(QUIET_NOTES_KEPT) is False else []),
@@ -704,8 +692,8 @@ class WizardChoices:
 
     def to_data(self):
         """Return the choices made, as plain data a song keeps."""
-        held = {GENRE: self._genre, SUBGENRE: self._subgenre, VARIANT: self._variant, ROOT: self._root, TYPE: self._scale_type, TEMPO: self._tempo, FORM: self._form, SEED: self._seed,
-                PICKS: dict(self._ways) or None, PLAYERS: dict(self._levels) or None, WITHOUT: list(self._without) or None,
+        held = {arranger.GENRE: self._genre, SUBGENRE: self._subgenre, arranger.VARIANT: self._variant, arranger.ROOT: self._root, arranger.TYPE: self._scale_type, arranger.TEMPO: self._tempo, arranger.FORM: self._form, arranger.SEED: self._seed,
+                arranger.PICKS: dict(self._ways) or None, arranger.PLAYERS: dict(self._levels) or None, arranger.WITHOUT: list(self._without) or None,
                 PLAYER_GAUGES_KEPT: {player: dict(places) for player, places in self._own_gauges.items() if places} or None,
                 PLAYER_ROWS_KEPT: {role: {name: list(row) for name, row in rows.items()} for role, rows in self._rows.items() if rows} or None,
                 BESIDE_KEPT: dict(self._beside) if self._beside is not None else None,
@@ -737,22 +725,22 @@ class WizardChoices:
             self._stages = {}
             self._melody = None
             self._hook = None
-            self._hook_take = FIRST_HOOK_TAKE
+            self._hook_take = melody_writer.FIRST_HOOK_TAKE
             self._writing = {}
             # A plan is one genre's: its energies and its joins are the genre's own.
-            self._extras.pop(PLAN_OF_SONG, None)
-            self._extras.pop(MELODY, None)
-            self._extras.pop(GROOVE, None)
+            self._extras.pop(song_plan.PLAN_OF_SONG, None)
+            self._extras.pop(arranger.MELODY, None)
+            self._extras.pop(arranger.GROOVE, None)
             # A player's loudness is one genre's player's.
-            self._extras.pop(DYNAMICS, None)
-            self._extras.pop(LOUDNESS_OF, None)
+            self._extras.pop(arranger.DYNAMICS, None)
+            self._extras.pop(arranger.LOUDNESS, None)
             self._extras.pop(TUNE_TAKES, None)
             self._extras.pop(MELODY_CHOSEN, None)
             # A riff whose notes were written by hand is the person's own, which no genre gives up: whoever knows it plays it again
             # wherever a band has the player and a form has the kind of section.
-            self._drop_riffs(lambda entry: entry.get(RIFF_OWN) is None)
-            self._extras.pop(TUNE_BY, None)
-            self._extras.pop(TUNE_BY_SONG, None)
+            self._drop_riffs(lambda entry: entry.get(arranger.RIFF_OWN) is None)
+            self._extras.pop(arranger.TUNE_BY, None)
+            self._extras.pop(arranger.TUNE_BY_SONG, None)
             self._forget_band()
 
     def lost_with_genre(self):
@@ -770,21 +758,21 @@ class WizardChoices:
         settings = sum(1 for name in own.keys() | untouched.keys() if own.get(name) != untouched.get(name))
         settings += sum(1 for name in EXTRAS_OF_ONE_GENRE if self._extras.get(name))
         lost = {LOST_BAND_SETTINGS: settings,
-                LOST_OWN_CHORDS: sum(1 for entry in self._entries() if entry.get(OWN_OF_SECTION, {}).get(CHORDS)),
+                LOST_OWN_CHORDS: sum(1 for entry in self._entries() if entry.get(OWN_OF_SECTION, {}).get(arranger.CHORDS)),
                 LOST_FORM: int(self._sections is not None or self._form != usual._form),
-                LOST_TUNE_TAKES: len(self._extras.get(TUNE_TAKES, {})) + int(self._hook_take != FIRST_HOOK_TAKE),
-                LOST_RIFFS: len([entry for entry in self._extras.get(RIFF_BOOK, []) if entry.get(RIFF_OWN) is None])}
-        kept = {KEPT_OWN_TUNES: len(self._extras.get(OWN_TUNES, {})), KEPT_OWN_RIFFS: len([entry for entry in self._extras.get(RIFF_BOOK, []) if entry.get(RIFF_OWN) is not None])}
+                LOST_TUNE_TAKES: len(self._extras.get(TUNE_TAKES, {})) + int(self._hook_take != melody_writer.FIRST_HOOK_TAKE),
+                LOST_RIFFS: len([entry for entry in self._extras.get(RIFF_BOOK, []) if entry.get(arranger.RIFF_OWN) is None])}
+        kept = {KEPT_OWN_TUNES: len(self._extras.get(arranger.OWN_TUNES, {})), KEPT_OWN_RIFFS: len([entry for entry in self._extras.get(RIFF_BOOK, []) if entry.get(arranger.RIFF_OWN) is not None])}
         return {kind: count for kind, count in lost.items() if count}, {kind: count for kind, count in kept.items() if count}
 
     def _band_as_counted(self):
         """Return every setting of the band another genre forgets, each under a name of its own, so that two bands can be compared
         setting by setting."""
         by_name = {(GENRE_SETTING, name): value for name, value in (
-            (BESIDE_KEPT, self._beside), (WITHOUT, sorted(self._without)), (BAND_SOUNDS_KEPT, self._band_sounds), (GUITARISTS_KEPT, self._guitarists),
+            (BESIDE_KEPT, self._beside), (arranger.WITHOUT, sorted(self._without)), (BAND_SOUNDS_KEPT, self._band_sounds), (GUITARISTS_KEPT, self._guitarists),
             (PIECES_OFF_KEPT, sorted(self._pieces_off)), (FILLS_KEPT, self._fills), (QUIET_NOTES_KEPT, self._quiet_notes), (BREAK_KEPT, self._break),
             (BREAK_CUT_KEPT, self._break_cut), (MELODY_STYLE, self._melody), (HOOK_KEPT, self._hook))}
-        for kept_as, held in ((PICKS, self._ways), (PLAYERS, self._levels), (PLAYER_GAUGES_KEPT, self._own_gauges), (PLAYER_ROWS_KEPT, self._rows), (SOUNDS_KEPT, self._sounds),
+        for kept_as, held in ((arranger.PICKS, self._ways), (arranger.PLAYERS, self._levels), (PLAYER_GAUGES_KEPT, self._own_gauges), (PLAYER_ROWS_KEPT, self._rows), (SOUNDS_KEPT, self._sounds),
                               (GAUGES_KEPT, self._gauges), (MELODY_SETTINGS_KEPT, self._melody_settings), (PIECE_SOUNDS_KEPT, self._piece_sounds), (STAGES_KEPT, self._stages)):
             for name, value in held.items():
                 if isinstance(value, dict):
@@ -795,7 +783,7 @@ class WizardChoices:
 
     def subgenres(self):
         """Return the chosen genre's subgenres, sorted by name, or none before a genre is chosen."""
-        return sorted(self._style()[TEMPLATES]) if self._genre else []
+        return sorted(self._style()[arranger.TEMPLATES]) if self._genre else []
 
     def get_subgenre(self):
         return self._subgenre
@@ -814,7 +802,7 @@ class WizardChoices:
         """Return the kinds of song the subgenre holds, by name, the commonest first, or none where the subgenre is one kind."""
         if self._subgenre is None:
             return []
-        return [entry[NAME] for entry in variants_of(style=style_of(self._genre), template=self._subgenre)]
+        return [entry[arranger.NAME] for entry in variants_of(style=style_of(self._genre), template=self._subgenre)]
 
     def get_variant(self):
         return self._variant
@@ -822,7 +810,7 @@ class WizardChoices:
     def variant_says(self, *, variant=None):
         """Return the line that says what a kind of song is, the chosen kind unless one is named, or None."""
         entry = variant_named(style=style_of(self._genre), template=self._subgenre, variant=variant or self._variant) if self._subgenre else None
-        return entry.get(VARIANT_SAYS) if entry else None
+        return entry.get(arranger.VARIANT_SAYS) if entry else None
 
     def set_variant(self, variant):
         """Choose the kind of song the subgenre makes, and take the kind's usual tempo, scale, form and band, as choosing a subgenre does."""
@@ -848,13 +836,13 @@ class WizardChoices:
         self._stages = {}
         self._melody = None
         self._hook = None
-        self._hook_take = FIRST_HOOK_TAKE
-        self._levels = {player: USUAL_BUSY for player in self._style().get(PLAYERS, {})}
+        self._hook_take = melody_writer.FIRST_HOOK_TAKE
+        self._levels = {player: USUAL_BUSY for player in self._style().get(arranger.PLAYERS, {})}
         self._own_gauges = {}
         self._rows = {}
         self._beside = self._usual_beside()
         # A swing chosen was chosen beside another subgenre's or kind's own.
-        self._extras.pop(GROOVE, None)
+        self._extras.pop(arranger.GROOVE, None)
         self._take_riff_of_genre()
 
     def is_ready(self):
@@ -873,19 +861,19 @@ class WizardChoices:
 
     def usual_tempo(self):
         style = self._style()
-        return self._picks().get(TEMPO, style[TRAITS][TEMPO][USUAL])
+        return self._picks().get(arranger.TEMPO, style[arranger.TRAITS][arranger.TEMPO][arranger.USUAL])
 
     def tempo_range(self):
         """Return the lowest and the highest tempo the genre usually has, which is said beside the tempo and never enforced."""
-        tempos = self._style()[TRAITS][TEMPO]
+        tempos = self._style()[arranger.TRAITS][arranger.TEMPO]
         return tempos[LOWEST], tempos[HIGHEST]
 
     def usual_scale_type(self):
         """Return the scale type the subgenre's chords are usually in, or major where its chords say nothing of one."""
         style = self._style()
-        trait = style.get(CHORD_TRAIT_FIELD, CHORD_TRAIT)
+        trait = style.get(arranger.CHORD_TRAIT_FIELD, arranger.CHORD_TRAIT)
         entry = values_of(style=style, trait=trait).get(self._picks().get(trait), {})
-        usual = entry.get(SCALE_TYPE, MAJOR)
+        usual = entry.get(arranger.SCALE_TYPE, MAJOR)
         return usual if usual in SCALE_TYPES else MAJOR
 
     # The key and the tempo.
@@ -919,38 +907,38 @@ class WizardChoices:
 
     def has_swing(self):
         """Return whether the song can be swung: a subgenre in four whose bars are not written in triplets, which swing already."""
-        if not self.is_ready() or self.meter() != COMMON_TIME:
+        if not self.is_ready() or self.meter() != arranger.COMMON_TIME:
             return False
-        habits = self._style().get(MELODY, {})
-        return (habits if GRID in habits else habits.get(COMMON_TIME, {})).get(GRID) != TRIPLET_GRID
+        habits = self._style().get(arranger.MELODY, {})
+        return (habits if melody_writer.GRID in habits else habits.get(arranger.COMMON_TIME, {})).get(melody_writer.GRID) != TRIPLET_GRID
 
     def swings(self):
         return list(SWINGS)
 
     def swing_of_genre(self):
         """Return the swing the subgenre is usually played with, or none."""
-        return self._style().get(GROOVE, NO_GROOVE) if self.has_swing() else NO_GROOVE
+        return self._style().get(arranger.GROOVE, arranger.NO_GROOVE) if self.has_swing() else arranger.NO_GROOVE
 
     def get_swing(self):
-        return self._extras.get(GROOVE, self.swing_of_genre())
+        return self._extras.get(arranger.GROOVE, self.swing_of_genre())
 
     def set_swing(self, swing):
         """Say the swing the song is played with, one of the grooves every set has or none; the subgenre's own is kept as the subgenre's."""
         if not self.has_swing() or swing not in SWINGS:
             raise ValueError(errors.ERR_WIZARD_SWING.format(choices=', '.join(SWINGS), value=swing))
-        self._extras.pop(GROOVE, None)
+        self._extras.pop(arranger.GROOVE, None)
         if swing != self.swing_of_genre():
-            self._extras[GROOVE] = swing
+            self._extras[arranger.GROOVE] = swing
         self._answers = {}
 
     # The form.
 
     def _forms(self):
-        return forms_of(style=self._style(), song={TEMPLATE: self._subgenre}) if self.is_ready() else []
+        return forms_of(style=self._style(), song={arranger.TEMPLATE: self._subgenre}) if self.is_ready() else []
 
     def forms(self):
         """Return the names of the forms the subgenre suggests, the commonest first."""
-        return [form[NAME] for form in sorted(self._forms(), key=share_of, reverse=True)]
+        return [form[arranger.NAME] for form in sorted(self._forms(), key=share_of, reverse=True)]
 
     def get_form(self):
         """Return the form chosen, or the commonest of the subgenre's until one is, or None before a subgenre is chosen."""
@@ -961,7 +949,7 @@ class WizardChoices:
 
     def form_section_count(self, form):
         """Return how many sections a suggested form has."""
-        return len(next((form_[SECTIONS] for form_ in self._forms() if form_[NAME] == form), []))
+        return len(next((form_[arranger.SECTIONS] for form_ in self._forms() if form_[arranger.NAME] == form), []))
 
     def set_form(self, form):
         """Choose one of the forms the subgenre suggests, which puts its sections in place of any a person changed. How the song was
@@ -997,7 +985,7 @@ class WizardChoices:
         if self._sections is not None:
             return self._sections
         chosen = self.get_form()
-        return [{KIND: kind} for kind in next((form[SECTIONS] for form in self._forms() if form[NAME] == chosen), [])]
+        return [{arranger.KIND: kind} for kind in next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == chosen), [])]
 
     def _own_entries(self):
         """Return the song's own sections to change, starting them from the chosen form the first time."""
@@ -1018,23 +1006,23 @@ class WizardChoices:
         names = []
         seen = {}
         for place, entry in enumerate(self._entries()):
-            own = (entry.get(BARS), tuple(entry[PLAYS]) if PLAYS in entry else None)
+            own = (entry.get(arranger.BARS), tuple(entry[arranger.PLAYS]) if arranger.PLAYS in entry else None)
             if not self.has_song_plan() and self._own_without_plan(entry):
                 # A section with chords, a tempo, a key or a scale of its own is a section of its own, where no plan makes one for each place.
                 # A fade is told apart by its way, since a kind that opens the song and closes it fades in at one and out at the other.
                 own = (*own, repr(sorted(self._with_fade_way(place=place, own=self._own_without_plan(entry)).items(), key=str)))
             # The kind as the genre describes it comes first, so that an unchanged section keeps the kind's plain name.
-            variants = seen.setdefault(entry[KIND], [(None, None)])
+            variants = seen.setdefault(entry[arranger.KIND], [(None, None)])
             if own not in variants:
                 variants.append(own)
             place = variants.index(own)
-            names.append(entry[KIND] if not place else marks_text.MSG_WIZARD_SECTION_VARIANT.format(kind=entry[KIND], letter=chr(ord(FIRST_VARIANT_LETTER) + place)))
+            names.append(entry[arranger.KIND] if not place else marks_text.MSG_WIZARD_SECTION_VARIANT.format(kind=entry[arranger.KIND], letter=chr(ord(FIRST_VARIANT_LETTER) + place)))
         return names
 
     def section_labels(self):
         """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
         a dash and the section's count among them, as the tracker numbers every name it makes."""
-        kinds = [entry[KIND] for entry in self._entries()]
+        kinds = [entry[arranger.KIND] for entry in self._entries()]
         counts = {}
         labels = []
         for kind in kinds:
@@ -1049,7 +1037,7 @@ class WizardChoices:
 
     def _plan_with_lines(self, *, kind, plan, lines):
         """A section's plan of lines with what each line was given of its own laid over it: its notes, its breath and whether a note comes early."""
-        usual = self._style()[SECTIONS][kind].get(PLAN, []) if plan is None else plan
+        usual = self._style()[arranger.SECTIONS][kind].get(PLAN, []) if plan is None else plan
         return [{**entry, **(lines.get(count) or {})} for count, entry in enumerate(copy.deepcopy(usual))]
 
     def _own_without_plan(self, entry):
@@ -1061,50 +1049,50 @@ class WizardChoices:
             return {}
         own = self._own_without_plan(entry)
         settings = {}
-        if TEMPO_OF_PLACE in own:
-            settings[SCENE_TEMPO] = own[TEMPO_OF_PLACE]
-        if TEMPO_END_OF_PLACE in own:
-            settings[SCENE_TEMPO_END] = own[TEMPO_END_OF_PLACE]
-        if ROOT_OF_PLACE in own or TYPE_OF_PLACE in own:
-            settings[SCALE_OF_PLACE] = {ROOT_OF_PLACE: own.get(ROOT_OF_PLACE, self._root), TYPE_OF_PLACE: own.get(TYPE_OF_PLACE, self._scale_type)}
-        if own.get(FADES):
-            settings.update(faded(own=self._with_fade_way(place=place, own=own), loud=UNFADED))
+        if song_plan.TEMPO_OF_PLACE in own:
+            settings[song_plan.SCENE_TEMPO] = own[song_plan.TEMPO_OF_PLACE]
+        if song_plan.TEMPO_END_OF_PLACE in own:
+            settings[song_plan.SCENE_TEMPO_END] = own[song_plan.TEMPO_END_OF_PLACE]
+        if song_plan.ROOT_OF_PLACE in own or song_plan.TYPE_OF_PLACE in own:
+            settings[song_plan.SCALE_OF_PLACE] = {song_plan.ROOT_OF_PLACE: own.get(song_plan.ROOT_OF_PLACE, self._root), song_plan.TYPE_OF_PLACE: own.get(song_plan.TYPE_OF_PLACE, self._scale_type)}
+        if own.get(song_plan.FADES):
+            settings.update(faded(own=self._with_fade_way(place=place, own=own), loud=song_plan.UNFADED))
         if own.get(LINES_OF_SECTION):
-            return {PLAN: self._plan_with_lines(kind=entry[KIND], plan=None, lines=own[LINES_OF_SECTION]), **({CHORDS: copy.deepcopy(own[CHORDS])} if CHORDS in own else {}), **({SCENE_SETTINGS: settings} if settings else {})}
-        return {**({CHORDS: copy.deepcopy(own[CHORDS])} if CHORDS in own else {}), **({SCENE_SETTINGS: settings} if settings else {})}
+            return {PLAN: self._plan_with_lines(kind=entry[arranger.KIND], plan=None, lines=own[LINES_OF_SECTION]), **({arranger.CHORDS: copy.deepcopy(own[arranger.CHORDS])} if arranger.CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}
+        return {**({arranger.CHORDS: copy.deepcopy(own[arranger.CHORDS])} if arranger.CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}
 
     def _section(self, place):
         """Return a section as it will be played: its kind as the genre describes it, with what the section changes."""
         entry = self._entry(place)
-        return section_of(name=entry[KIND], style=self._style(), song={SECTIONS: {entry[KIND]: entry}})
+        return section_of(name=entry[arranger.KIND], style=self._style(), song={arranger.SECTIONS: {entry[arranger.KIND]: entry}})
 
     def section_kinds(self):
         """Return the kinds of section the subgenre can play, in the genre's order: a kind nobody of the subgenre's band plays
         in, which would make no section at all, is left out, as is one whose parts do not fill its own length."""
         if not self.is_ready():
             return []
-        sections = self._style()[SECTIONS]
+        sections = self._style()[arranger.SECTIONS]
         return [kind for kind, section in sections.items()
-                if bars_work(genre=self._genre, subgenre=self._subgenre, variant=self._variant, kind=kind, bars=HELD_BARS if section.get(HELD) else section[BARS])]
+                if bars_work(genre=self._genre, subgenre=self._subgenre, variant=self._variant, kind=kind, bars=HELD_BARS if section.get(arranger.HELD) else section[arranger.BARS])]
 
     def section_kind(self, place):
-        return self._entry(place)[KIND]
+        return self._entry(place)[arranger.KIND]
 
     def section_is_held(self, place):
         """Return whether a section is one held chord, which lasts a bar whatever is said."""
-        return bool(self._section(place).get(HELD))
+        return bool(self._section(place).get(arranger.HELD))
 
     def section_bars(self, place):
         section = self._section(place)
-        return HELD_BARS if section.get(HELD) else section[BARS]
+        return HELD_BARS if section.get(arranger.HELD) else section[arranger.BARS]
 
     def section_plays(self, place):
         """Return who plays in a section, by the names the genre gives its players."""
-        return list(self._section(place).get(PLAYS, []))
+        return list(self._section(place).get(arranger.PLAYS, []))
 
     def section_usually_plays(self, place):
         """Return who plays in a section of its kind as the genre has the kind."""
-        return list(self._usual(place).get(PLAYS, []))
+        return list(self._usual(place).get(arranger.PLAYS, []))
 
     def add_section(self, *, place, kind):
         """Put a new section of a kind before a place in the form, as the genre describes the kind."""
@@ -1112,7 +1100,7 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
         if isinstance(place, bool) or not isinstance(place, int) or not 0 <= place <= len(self._entries()):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
-        self._own_entries().insert(place, {KIND: kind})
+        self._own_entries().insert(place, {arranger.KIND: kind})
 
     def copy_section(self, place):
         """Put a copy of a section straight after it."""
@@ -1140,10 +1128,10 @@ class WizardChoices:
         self._entry(place)
         if kind not in self.section_kinds():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
-        self._own_entries()[place] = {KIND: kind}
+        self._own_entries()[place] = {arranger.KIND: kind}
 
     def _usual(self, place):
-        return self._style()[SECTIONS][self._entry(place)[KIND]]
+        return self._style()[arranger.SECTIONS][self._entry(place)[arranger.KIND]]
 
     def bars_offered(self, place):
         """Return the lengths a section may have, in bars: half its kind's usual length, the usual and twice that, leaving out
@@ -1153,19 +1141,19 @@ class WizardChoices:
     def _bars_offered(self, place):
         if self.section_is_held(place):
             return []
-        usual = self._usual(place)[BARS]
+        usual = self._usual(place)[arranger.BARS]
         lengths = sorted({usual // HALF, usual, usual * HALF, self.section_bars(place)} - {0})
         return [bars for bars in lengths if bars == usual or self._bars_fit(place=place, bars=bars)]
 
     def _bars_fit(self, *, place, bars):
         """Return whether the players of a section can fill the section at a length: on their own, and then in this song, where
         a part may be written differently beside another section of the kind."""
-        if not bars_work(genre=self._genre, subgenre=self._subgenre, variant=self._variant, kind=self._entry(place)[KIND], bars=bars, plays=tuple(self.section_plays(place))):
+        if not bars_work(genre=self._genre, subgenre=self._subgenre, variant=self._variant, kind=self._entry(place)[arranger.KIND], bars=bars, plays=tuple(self.section_plays(place))):
             return False
         trial = self._copied_for_trial()
-        trial._own_entries()[place][BARS] = bars
+        trial._own_entries()[place][arranger.BARS] = bars
         try:
-            trial.written_setlist(name=self._entry(place)[KIND], version=version_values.VERSION)
+            trial.written_setlist(name=self._entry(place)[arranger.KIND], version=version_values.VERSION)
         except (ValueError, SongFileError):
             return False
         return True
@@ -1174,9 +1162,9 @@ class WizardChoices:
         if isinstance(bars, bool) or not isinstance(bars, int) or bars not in self.bars_offered(place):
             raise ValueError(errors.ERR_WIZARD_SECTION_BARS.format(value=bars))
         entry = self._own_entries()[place]
-        entry.pop(BARS, None)
-        if bars != self._usual(place)[BARS]:
-            entry[BARS] = bars
+        entry.pop(arranger.BARS, None)
+        if bars != self._usual(place)[arranger.BARS]:
+            entry[arranger.BARS] = bars
 
     def set_section_plays(self, *, place, role, on):
         """Have a player play in a section or sit it out. A section keeps one player, and a length its players can fill."""
@@ -1185,12 +1173,12 @@ class WizardChoices:
         if not plays:
             raise ValueError(errors.ERR_WIZARD_SECTION_NEEDS_PLAYER)
         entry = self._own_entries()[place]
-        entry.pop(PLAYS, None)
-        if sorted(plays) != sorted(self._usual(place).get(PLAYS, [])):
-            entry[PLAYS] = plays
+        entry.pop(arranger.PLAYS, None)
+        if sorted(plays) != sorted(self._usual(place).get(arranger.PLAYS, [])):
+            entry[arranger.PLAYS] = plays
         # A length the players left cannot fill gives way to the kind's usual length.
-        if BARS in entry and not self._bars_fit(place=place, bars=entry[BARS]):
-            del entry[BARS]
+        if arranger.BARS in entry and not self._bars_fit(place=place, bars=entry[arranger.BARS]):
+            del entry[arranger.BARS]
 
     def set_own_sections(self, *, sections):
         """Take a form's sections a song kept, each through the setters, or none of them where one no longer fits."""
@@ -1198,18 +1186,18 @@ class WizardChoices:
         self._sections = []
         try:
             for place, entry in enumerate(sections):
-                self.add_section(place=place, kind=entry[KIND])
-                if BARS in entry:
-                    self.set_section_bars(place=place, bars=entry[BARS])
+                self.add_section(place=place, kind=entry[arranger.KIND])
+                if arranger.BARS in entry:
+                    self.set_section_bars(place=place, bars=entry[arranger.BARS])
                 for role in self.roles():
-                    if PLAYS in entry and (role in entry[PLAYS]) != (role in self.section_plays(place)) and role in entry[PLAYS]:
+                    if arranger.PLAYS in entry and (role in entry[arranger.PLAYS]) != (role in self.section_plays(place)) and role in entry[arranger.PLAYS]:
                         self.set_section_plays(place=place, role=role, on=True)
                 for role in self.roles():
-                    if PLAYS in entry and role not in entry[PLAYS] and role in self.section_plays(place):
+                    if arranger.PLAYS in entry and role not in entry[arranger.PLAYS] and role in self.section_plays(place):
                         self.set_section_plays(place=place, role=role, on=False)
                 if BESIDE_KEPT in entry:
                     # What the answering player does in the section is kept as chosen, and is used wherever somebody answers there.
-                    if entry[BESIDE_KEPT] not in WAYS_BESIDE:
+                    if entry[BESIDE_KEPT] not in interplay_values.WAYS:
                         raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[BESIDE_KEPT]))
                     self._sections[place][BESIDE_KEPT] = entry[BESIDE_KEPT]
                 if entry.get(OWN_OF_SECTION):
@@ -1223,23 +1211,23 @@ class WizardChoices:
     # How the song starts and ends: stages before the first section with a tune and after the last, each a section of its own.
 
     def _drums_role(self):
-        return next((role for role in self.roles() if self._role(role).get(DRUMS) and self.role_is_in(role)), None)
+        return next((role for role in self.roles() if self._role(role).get(arranger.DRUMS) and self.role_is_in(role)), None)
 
     def _usual_form_kinds(self):
-        return next((form[SECTIONS] for form in self._forms() if form[NAME] == self.get_form()), [])
+        return next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == self.get_form()), [])
 
     def _intro_kind(self):
         """The kind of section a song of the subgenre opens with: the first of its form's, where that kind has no tune."""
         kinds = self._usual_form_kinds()
-        sections = self._style()[SECTIONS]
-        if not kinds or sections[kinds[0]].get(HELD):
+        sections = self._style()[arranger.SECTIONS]
+        if not kinds or sections[kinds[0]].get(arranger.HELD):
             return None
         # A kind with a tune opens the song only where the form plays the kind once, at its start: one played again later is the song's body.
         return kinds[0] if not sections[kinds[0]].get(PLAN) or kinds.count(kinds[0]) == 1 else None
 
     def _ending_kind(self):
         """The kind of section that is one held chord, where the subgenre has one."""
-        return next((kind for kind in self.section_kinds() if self._style()[SECTIONS][kind].get(HELD)), None)
+        return next((kind for kind in self.section_kinds() if self._style()[arranger.SECTIONS][kind].get(arranger.HELD)), None)
 
     def _outro_kind(self):
         """The kind of section played after the last tune: the genre's outro where it has one, else its intro again."""
@@ -1247,14 +1235,14 @@ class WizardChoices:
 
     def _stage_players(self, kind):
         """Who plays in a kind of section, the first player first and the rest in the band's order."""
-        plays = [role for role in self.roles() if role in self._style()[SECTIONS][kind].get(PLAYS, []) and self.role_is_in(role)]
+        plays = [role for role in self.roles() if role in self._style()[arranger.SECTIONS][kind].get(arranger.PLAYS, []) and self.role_is_in(role)]
         first = self.get_first_player()
         return [first, *(role for role in plays if role != first)] if first in plays else plays
 
     def first_players(self):
         """Return who can start the song alone: the players of its opening kind of section."""
         kind = self._intro_kind()
-        return [] if kind is None else [role for role in self.roles() if role in self._style()[SECTIONS][kind].get(PLAYS, []) and self.role_is_in(role)]
+        return [] if kind is None else [role for role in self.roles() if role in self._style()[arranger.SECTIONS][kind].get(arranger.PLAYS, []) and self.role_is_in(role)]
 
     def get_first_player(self):
         """Return who starts the song alone and is left alone at its end: the one chosen, or the first of the opening's players who is not the drummer."""
@@ -1268,7 +1256,7 @@ class WizardChoices:
         kind = self._intro_kind()
         if kind is None:
             return []
-        usual = self._style()[SECTIONS][kind][BARS]
+        usual = self._style()[arranger.SECTIONS][kind][arranger.BARS]
         return sorted({usual // HALF, usual, usual * HALF} - {0})
 
     def setup_bars_offered(self):
@@ -1286,16 +1274,16 @@ class WizardChoices:
     def get_setup_bars(self):
         possible = self._setup_bars_possible()
         kept = self._stages.get(SETUP_BARS_KEPT)
-        return kept if kept in possible else (self._style()[SECTIONS][self._intro_kind()][BARS] if possible else None)
+        return kept if kept in possible else (self._style()[arranger.SECTIONS][self._intro_kind()][arranger.BARS] if possible else None)
 
     def _stage(self, *, kind, plays=None, own=None):
         """One stage: a section of a kind, played by some of its players for the setup's bars, with what the stage is given of its own."""
-        usual = self._style()[SECTIONS][kind]
-        entry = {KIND: kind}
-        if plays is not None and sorted(plays) != sorted(usual.get(PLAYS, [])):
-            entry[PLAYS] = [role for role in self.roles() if role in plays]
-        if not usual.get(HELD) and self.get_setup_bars() != usual[BARS]:
-            entry[BARS] = self.get_setup_bars()
+        usual = self._style()[arranger.SECTIONS][kind]
+        entry = {arranger.KIND: kind}
+        if plays is not None and sorted(plays) != sorted(usual.get(arranger.PLAYS, [])):
+            entry[arranger.PLAYS] = [role for role in self.roles() if role in plays]
+        if not usual.get(arranger.HELD) and self.get_setup_bars() != usual[arranger.BARS]:
+            entry[arranger.BARS] = self.get_setup_bars()
         if own:
             entry[OWN_OF_SECTION] = dict(own)
         return entry
@@ -1307,7 +1295,7 @@ class WizardChoices:
         if kind is None:
             return None
         players = self._stage_players(kind)
-        whole = {KIND: kind}
+        whole = {arranger.KIND: kind}
         if way == FULL_BAND:
             return [whole]
         if way == STRAIGHT_IN:
@@ -1315,7 +1303,7 @@ class WizardChoices:
         if way == DRUMS_FIRST and drums in players and len(players) > 1:
             return [self._stage(kind=kind, plays=[drums]), whole]
         if way == DRUM_FILL_IN and drums in players and self.has_song_plan():
-            return [self._stage(kind=kind, plays=[drums], own={LEAVES: LEAVES_BIG_FILL})]
+            return [self._stage(kind=kind, plays=[drums], own={joins_values.LEAVES: LEAVES_BIG_FILL})]
         if way == ONE_PLAYER_FIRST and len(players) > 1 and players[0] != drums:
             return [self._stage(kind=kind, plays=players[:1]), whole]
         if way == LAYERS and len(players) > 2:
@@ -1326,7 +1314,7 @@ class WizardChoices:
         """The sections a way of ending puts after the song's last tune, or None where the subgenre cannot end that way."""
         held = self._ending_kind()
         outro = self._outro_kind()
-        chord = [{KIND: held}] if held is not None else []
+        chord = [{arranger.KIND: held}] if held is not None else []
         if way == HELD_CHORD and held is not None:
             return chord
         if way == HARD_STOP:
@@ -1337,13 +1325,13 @@ class WizardChoices:
         if way == OUTRO_THEN_CHORD and held is not None:
             return [self._stage(kind=outro), *chord]
         if way == SLOWS_DOWN:
-            return [self._stage(kind=outro, own={TEMPO_END_OF_PLACE: max(self._tempo * SLOWED_TO[0] // SLOWED_TO[1], limits.MIN_TEMPO)}), *chord]
+            return [self._stage(kind=outro, own={song_plan.TEMPO_END_OF_PLACE: max(self._tempo * SLOWED_TO[0] // SLOWED_TO[1], limits.MIN_TEMPO)}), *chord]
         if way == STRIPS_DOWN and len(players) > 2:
             return [*(self._stage(kind=outro, plays=players[:count]) for count in range(len(players) - 1, 0, -1)), *chord]
         if way == ONE_PLAYER_ALONE and len(players) > 1:
             return [self._stage(kind=outro, plays=players[:1]), *chord]
         if way == REPEAT_AND_FADE:
-            return [self._stage(kind=outro, own={FADES: True})]
+            return [self._stage(kind=outro, own={song_plan.FADES: True})]
         return None
 
     def starts(self):
@@ -1361,7 +1349,7 @@ class WizardChoices:
         if kept is not None and entries[:len(kept)] == kept:
             return len(kept)
         count = 0
-        while count < len(entries) - 1 and entries[count][KIND] == self._intro_kind():
+        while count < len(entries) - 1 and entries[count][arranger.KIND] == self._intro_kind():
             count += 1
         return count
 
@@ -1373,7 +1361,7 @@ class WizardChoices:
             return len(kept)
         count = 0
         closing = (self._ending_kind(), OUTRO_KIND)
-        while count < len(entries) - 1 and entries[len(entries) - 1 - count][KIND] in closing:
+        while count < len(entries) - 1 and entries[len(entries) - 1 - count][arranger.KIND] in closing:
             count += 1
         return count
 
@@ -1489,7 +1477,7 @@ class WizardChoices:
 
     def set_form_from_answers(self, answers):
         """Make the form some answers ask for the song's own, in place of its sections, or leave the form as it was where the answers are refused."""
-        self.set_own_sections(sections=[{KIND: kind} for kind in self.form_of_answers(answers)])
+        self.set_own_sections(sections=[{arranger.KIND: kind} for kind in self.form_of_answers(answers)])
         self._answers = {}
 
     # The band: who plays, how each plays and how busy each is.
@@ -1518,46 +1506,46 @@ class WizardChoices:
         return style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant)
 
     def _role(self, role):
-        found = next((entry for entry in self._style()[ROLES] if entry[ROLE] == role), None) if self.is_ready() else None
+        found = next((entry for entry in self._style()[arranger.ROLES] if entry[arranger.ROLE] == role), None) if self.is_ready() else None
         if found is None:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
         return found
 
     def roles(self):
         """Return the players the genre's band may have, by name, in the genre's order."""
-        return [entry[ROLE] for entry in self._style()[ROLES]] if self.is_ready() else []
+        return [entry[arranger.ROLE] for entry in self._style()[arranger.ROLES]] if self.is_ready() else []
 
     def role_traits(self, role):
         """Return what is chosen about how a player plays: the one way of a player of notes, or each part of the drums."""
         entry = self._role(role)
-        if not entry.get(DRUMS):
-            return [entry[TRAIT]]
+        if not entry.get(arranger.DRUMS):
+            return [entry[arranger.TRAIT]]
         # A break takes the place of every way the drums are played but the percussion's.
-        return [trait for trait in entry[DRUMS] if self.get_break() is None or trait == KEPT_BESIDE_A_BREAK]
+        return [trait for trait in entry[arranger.DRUMS] if self.get_break() is None or trait == arranger.KEPT_BESIDE_A_BREAK]
 
     def _has_sound(self, *, trait, value):
-        return SOUND in values_of(style=self._style(), trait=trait)[value]
+        return arranger.SOUND in values_of(style=self._style(), trait=trait)[value]
 
     def role_is_in(self, role):
         """Return whether a player is in the band: not left out, and, for a player of notes, playing in a way that sounds."""
         entry = self._role(role)
-        return role not in self._without and (bool(entry.get(DRUMS)) or self._has_sound(trait=entry[TRAIT], value=self.get_way(entry[TRAIT])))
+        return role not in self._without and (bool(entry.get(arranger.DRUMS)) or self._has_sound(trait=entry[arranger.TRAIT], value=self.get_way(entry[arranger.TRAIT])))
 
     def role_can_play(self, role):
         """Return whether a player can be in the band at all: the drums always, and a player of notes where a way of playing that sounds fits the subgenre."""
         entry = self._role(role)
-        return bool(entry.get(DRUMS)) or self.role_is_in(role) or bool(self.ways(role=role, trait=entry[TRAIT]))
+        return bool(entry.get(arranger.DRUMS)) or self.role_is_in(role) or bool(self.ways(role=role, trait=entry[arranger.TRAIT]))
 
     def role_title(self, role):
         """Return what a player is called on the screen: the clearer name the genre gives the player, which may follow how the
         player plays, as a lead that is a singer or a lead guitar; or the player's name where the genre gives no other."""
         entry = self._role(role)
         if self.has_one_guitarist() and role == self._one_guitarist()[CHORDS_PLAYER]:
-            return self._one_guitarist()[ROLE_TITLE]
+            return self._one_guitarist()[arranger.ROLE_TITLE]
         traits = self.role_traits(role)
-        by_way = entry.get(ROLE_TITLES, {})
+        by_way = entry.get(arranger.ROLE_TITLES, {})
         way = self.get_way(traits[0]) if len(traits) == 1 else None
-        return by_way.get(way, entry.get(ROLE_TITLE, role))
+        return by_way.get(way, entry.get(arranger.ROLE_TITLE, role))
 
     # The drum kit's pieces, each switched on or off: a stroke on a piece that is off is left out, never
     # moved to another piece.
@@ -1635,8 +1623,8 @@ class WizardChoices:
     def _pieces(self):
         if not self.is_ready():
             return []
-        song = {**self.song_picks(self._subgenre), WITHOUT_PIECES: [], PIECE_SOUNDS: {}}
-        return list(arranged(style=self._style(), song=song)[DRUM_TRACKS])
+        song = {**self.song_picks(self._subgenre), arranger.WITHOUT_PIECES: [], arranger.PIECE_SOUNDS: {}}
+        return list(arranged(style=self._style(), song=song)[arranger.DRUM_TRACKS])
 
     def piece_is_on(self, piece):
         return piece not in self._pieces_off
@@ -1659,14 +1647,14 @@ class WizardChoices:
     def _drummer(self):
         """Return what the genre says of its drummer at the level the drums are busy."""
         drums = next((role for role in self.roles() if not self.has_sound(role)), None)
-        return player_of(style=self._style(), instrument=DRUMS, character=self._character(DRUMS)) if drums else {}
+        return player_of(style=self._style(), instrument=arranger.DRUMS, character=self._character(arranger.DRUMS)) if drums else {}
 
     def get_fills(self):
         """Return how often a fill comes, from FEWEST_FILLS, never, to MOST_FILLS: the position chosen, or the one nearest to
         what the drummer does at the level the drums are busy."""
         if self._fills is not None:
             return self._fills
-        every = self._drummer().get(FILL_EVERY, self._style().get(PHRASE_BARS, DEFAULT_PHRASE_BARS))
+        every = self._drummer().get(characters.FILL_EVERY, self._style().get(arranger.PHRASE_BARS, arranger.DEFAULT_PHRASE_BARS))
         if every == 0:
             return FEWEST_FILLS
         return next((position for position, bars in FILLS_EVERY.items() if isinstance(bars, int) and 0 < every <= bars), EACH_SECTION_FILLS)
@@ -1683,16 +1671,16 @@ class WizardChoices:
 
     def kit_drums(self):
         """Return the drums of the kit a piece may sound as."""
-        return list(KIT)
+        return list(tune_notation.KIT)
 
     def piece_sound(self, piece):
         """Return what a piece of the kit sounds as: None for its own drum, the name of another drum of the kit, or a General MIDI sound's number."""
         sounds_as = self._piece_sounds.get(piece, {})
-        return sounds_as.get(PLAYED_DRUM, sounds_as.get(PLAYED_SOUND))
+        return sounds_as.get(arranger.PLAYED_DRUM, sounds_as.get(arranger.PLAYED_SOUND))
 
     def piece_note(self, piece):
         """Return the MIDI note a piece plays in its General MIDI sound, or None for a piece that sounds as a drum."""
-        return self._piece_sounds.get(piece, {}).get(PLAYED_NOTE)
+        return self._piece_sounds.get(piece, {}).get(arranger.PLAYED_NOTE)
 
     def set_piece_sound(self, *, piece, sound):
         """Have a piece of the kit sound as another drum of the kit, by name, or as a General MIDI sound, by number, on the note the
@@ -1701,10 +1689,10 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
         if sound is None or sound == piece:
             self._piece_sounds.pop(piece, None)
-        elif isinstance(sound, str) and sound in KIT:
-            self._piece_sounds[piece] = {PLAYED_DRUM: sound}
+        elif isinstance(sound, str) and sound in tune_notation.KIT:
+            self._piece_sounds[piece] = {arranger.PLAYED_DRUM: sound}
         elif not isinstance(sound, (bool, str)) and isinstance(sound, int) and limits.MIN_GM_SOUND <= sound <= limits.MAX_GM_SOUND:
-            self._piece_sounds[piece] = {PLAYED_SOUND: sound, PLAYED_NOTE: self.piece_note(piece) or USUAL_PIECE_NOTE}
+            self._piece_sounds[piece] = {arranger.PLAYED_SOUND: sound, arranger.PLAYED_NOTE: self.piece_note(piece) or USUAL_PIECE_NOTE}
         else:
             raise ValueError(errors.ERR_WIZARD_PIECE_SOUND.format(value=sound))
 
@@ -1712,21 +1700,21 @@ class WizardChoices:
         """Choose the note a piece plays in its General MIDI sound."""
         if self.piece_note(piece) is None:
             raise ValueError(errors.ERR_WIZARD_PIECE_HAS_NO_NOTE.format(value=piece))
-        if isinstance(note, bool) or not isinstance(note, int) or not LOWEST_NOTE <= note <= HIGHEST_NOTE:
-            raise ValueError(errors.ERR_WIZARD_PIECE_NOTE.format(low=LOWEST_NOTE, high=HIGHEST_NOTE, value=note))
-        self._piece_sounds[piece][PLAYED_NOTE] = note
+        if isinstance(note, bool) or not isinstance(note, int) or not arranger.LOWEST_NOTE <= note <= arranger.HIGHEST_NOTE:
+            raise ValueError(errors.ERR_WIZARD_PIECE_NOTE.format(low=arranger.LOWEST_NOTE, high=arranger.HIGHEST_NOTE, value=note))
+        self._piece_sounds[piece][arranger.PLAYED_NOTE] = note
 
     def _set_kept_piece_sound(self, *, piece, sounds_as):
-        self.set_piece_sound(piece=piece, sound=sounds_as.get(PLAYED_DRUM, sounds_as.get(PLAYED_SOUND)))
-        if PLAYED_NOTE in sounds_as:
-            self.set_piece_note(piece=piece, note=sounds_as[PLAYED_NOTE])
+        self.set_piece_sound(piece=piece, sound=sounds_as.get(arranger.PLAYED_DRUM, sounds_as.get(arranger.PLAYED_SOUND)))
+        if arranger.PLAYED_NOTE in sounds_as:
+            self.set_piece_note(piece=piece, note=sounds_as[arranger.PLAYED_NOTE])
 
     # The drum break: a bar of drums played as one thing, in place of the kick's, the snare's and the cymbal's own ways.
 
     def breaks(self):
         """Return the drum breaks the song may play: every break where the band has drums and the meter is the one a break
         is written in, and none otherwise."""
-        if not self.is_ready() or self.meter() != COMMON_TIME or not any(not self.has_sound(role) for role in self.roles()):
+        if not self.is_ready() or self.meter() != arranger.COMMON_TIME or not any(not self.has_sound(role) for role in self.roles()):
             return []
         return break_names()
 
@@ -1734,25 +1722,25 @@ class WizardChoices:
         """Return the break the drums play, the one chosen or the subgenre's own, or None where they play none."""
         if not self.breaks():
             return None
-        name = self._break if self._break is not None else self._picks().get(BREAK, NO_BREAK)
-        return None if name == NO_BREAK else name
+        name = self._break if self._break is not None else self._picks().get(arranger.BREAK, arranger.NO_BREAK)
+        return None if name == arranger.NO_BREAK else name
 
     def set_break(self, name):
         """Choose the break the drums play, or None for none."""
         if name is not None and name not in self.breaks():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_BREAK.format(value=name))
-        self._break = NO_BREAK if name is None else name
+        self._break = arranger.NO_BREAK if name is None else name
 
     def _set_kept_break(self, *, name):
-        self.set_break(None if name == NO_BREAK else name)
+        self.set_break(None if name == arranger.NO_BREAK else name)
 
     def get_break_cut(self):
         """Return how far the break is cut up, from LEAST_CUT, as written, to MOST_CUT."""
-        return self._break_cut if self._break_cut is not None else self._picks().get(BREAK_CUT, LEAST_CUT)
+        return self._break_cut if self._break_cut is not None else self._picks().get(arranger.BREAK_CUT, breaks_values.LEAST_CUT)
 
     def set_break_cut(self, position):
-        if isinstance(position, bool) or not isinstance(position, int) or not LEAST_CUT <= position <= MOST_CUT:
-            raise ValueError(errors.ERR_WIZARD_BREAK_CUT.format(low=LEAST_CUT, high=MOST_CUT, value=position))
+        if isinstance(position, bool) or not isinstance(position, int) or not breaks_values.LEAST_CUT <= position <= breaks_values.MOST_CUT:
+            raise ValueError(errors.ERR_WIZARD_BREAK_CUT.format(low=breaks_values.LEAST_CUT, high=breaks_values.MOST_CUT, value=position))
         self._break_cut = position
 
     def _set_kept_break_cut(self, *, position):
@@ -1760,31 +1748,31 @@ class WizardChoices:
 
     def _break_picks(self):
         """Return the song's picks of a break and its cut, where either was chosen."""
-        return {**({BREAK: self._break} if self._break is not None else {}), **({BREAK_CUT: self._break_cut} if self._break_cut is not None else {})}
+        return {**({arranger.BREAK: self._break} if self._break is not None else {}), **({arranger.BREAK_CUT: self._break_cut} if self._break_cut is not None else {})}
 
     # The smart melody style's gauges, shown while the song's tunes are sketched by it.
 
     def gauges(self):
         """Return the names of the smart melody style's gauges while the song's tunes are sketched by it or by the hooks style, and none otherwise."""
-        return list(DEFAULT_GAUGES) if self._melody in GAUGED_STYLES else []
+        return list(melody_writer.DEFAULT_GAUGES) if self._melody in GAUGED_STYLES else []
 
     def get_gauge(self, name):
         """Return where a gauge stands, from LOWEST_GAUGE to HIGHEST_GAUGE: where it was moved to, else where the genre sets it."""
         if name in self._gauges:
             return self._gauges[name]
-        habits = self._style()[MELODY]
-        habits = habits if GRID in habits else habits[self.meter()]
-        return habits.get(SMART, {}).get(name, DEFAULT_GAUGES[name])
+        habits = self._style()[arranger.MELODY]
+        habits = habits if melody_writer.GRID in habits else habits[self.meter()]
+        return habits.get(melody_writer.SMART, {}).get(name, melody_writer.DEFAULT_GAUGES[name])
 
     def set_gauge(self, *, name, position):
-        if name not in DEFAULT_GAUGES or isinstance(position, bool) or not isinstance(position, int) or not LOWEST_GAUGE <= position <= HIGHEST_GAUGE:
-            raise ValueError(errors.ERR_WIZARD_GAUGE.format(name=name, low=LOWEST_GAUGE, high=HIGHEST_GAUGE, value=position))
+        if name not in melody_writer.DEFAULT_GAUGES or isinstance(position, bool) or not isinstance(position, int) or not melody_writer.LOWEST_GAUGE <= position <= melody_writer.HIGHEST_GAUGE:
+            raise ValueError(errors.ERR_WIZARD_GAUGE.format(name=name, low=melody_writer.LOWEST_GAUGE, high=melody_writer.HIGHEST_GAUGE, value=position))
         self._gauges[name] = position
 
     def _melody_habits(self):
         """Return the genre's melody habits for the song's meter."""
-        habits = self._style()[MELODY]
-        return habits if GRID in habits else habits[self.meter()]
+        habits = self._style()[arranger.MELODY]
+        return habits if melody_writer.GRID in habits else habits[self.meter()]
 
     def melody_settings(self):
         """Return the names of the settings the song's melody style has of its own, the usual style's while none is chosen."""
@@ -1804,7 +1792,7 @@ class WizardChoices:
         habits = self._melody_habits()
         if name in MELODY_SWITCHES:
             return bool(habits.get(name, MELODY_SWITCHES[name]))
-        return {**DEFAULT_EVOLVE, **habits.get(EVOLVE, {})}[name]
+        return {**melody_writer.DEFAULT_EVOLVE, **habits.get(melody_writer.EVOLVE, {})}[name]
 
     def set_melody_setting(self, *, name, value):
         """Set a setting of the song's melody style, refusing one the style does not have."""
@@ -1829,7 +1817,7 @@ class WizardChoices:
     def player_rows(self, role):
         """Return the rows of numbers a player's notes are dealt, by name, while the song's tunes are written in the serial style
         and the player plays lines of the tune in some section of the form; none otherwise."""
-        if not self.is_ready() or self.melody_engine() != SERIAL or not self.has_sound(role) or not self._plays_lines(role):
+        if not self.is_ready() or self.melody_engine() != melody_writer.SERIAL or not self.has_sound(role) or not self._plays_lines(role):
             return []
         # A player who plays in no section of the song's form is dealt nothing, so has no row to change.
         if not any(role in self.section_plays(place) for place in range(len(self._entries()))):
@@ -1838,7 +1826,7 @@ class WizardChoices:
 
     def genre_row(self, *, role, name):
         """Return a player's row as the genre gives it, or the row that plays as none would."""
-        habits = {**self._melody_habits(), **self._role(role).get(HABITS, {})}
+        habits = {**self._melody_habits(), **self._role(role).get(arranger.HABITS, {})}
         return list(habits.get(name) or ROWS_UNASKED[name])
 
     def get_player_row(self, *, role, name):
@@ -1887,11 +1875,11 @@ class WizardChoices:
         said = {hook_writing.HOOK_WRITING: {hook_writing.BEHAVIOR: self.get_hook_behavior(), hook_writing.GAUGES: {name: self.get_hook_gauge(name) for name in hook_writing.HOOK_GAUGES}},
                 hook_writing.BODY_WRITING: {hook_writing.GAUGES: {name: self.get_body_gauge(name) for name in hook_writing.BODY_GAUGES}}}
         if self._melody in GAUGED_STYLES and self._gauges:
-            said[SMART] = {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **self._gauges}
+            said[melody_writer.SMART] = {**{name: self.get_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **self._gauges}
         own = {name: value for name, value in self._melody_settings.items() if name in MELODY_SETTINGS_OF[self._melody]}
         evolve = {name: value for name, value in own.items() if name in EVOLVE_SETTINGS}
         if evolve:
-            said[EVOLVE] = {**DEFAULT_EVOLVE, **self._melody_habits().get(EVOLVE, {}), **evolve}
+            said[melody_writer.EVOLVE] = {**melody_writer.DEFAULT_EVOLVE, **self._melody_habits().get(melody_writer.EVOLVE, {}), **evolve}
         said.update({name: value for name, value in own.items() if name not in EVOLVE_SETTINGS})
         return said
 
@@ -1905,10 +1893,10 @@ class WizardChoices:
     def _has_quiet_notes(self):
         if not self.is_ready():
             return False
-        song = {name: value for name, value in self.song_picks(self._subgenre).items() if name != QUIET_NOTES}
+        song = {name: value for name, value in self.song_picks(self._subgenre).items() if name != arranger.QUIET_NOTES}
         style = self._style()
         # Found by arranging the song both ways, since a drummer's unevenness has made numbers of the strokes by then.
-        return arranged(style=style, song=song)[PARTS] != arranged(style=style, song={**song, QUIET_NOTES: False})[PARTS]
+        return arranged(style=style, song=song)[arranger.PARTS] != arranged(style=style, song={**song, arranger.QUIET_NOTES: False})[arranger.PARTS]
 
     def plays_quiet_notes(self):
         return self._quiet_notes
@@ -1927,7 +1915,7 @@ class WizardChoices:
     def offers_one_guitarist(self):
         """Return whether the band can have one guitarist: the genre says which two players the one would be, and the solo can be a guitar's."""
         one = self._one_guitarist()
-        return bool(one) and self.role_can_play(one[CHORDS_PLAYER]) and one[SOLO_WAY] in self.ways(role=one[SOLO_PLAYER], trait=self._role(one[SOLO_PLAYER])[TRAIT])
+        return bool(one) and self.role_can_play(one[CHORDS_PLAYER]) and one[SOLO_WAY] in self.ways(role=one[SOLO_PLAYER], trait=self._role(one[SOLO_PLAYER])[arranger.TRAIT])
 
     def get_guitarists(self):
         return self._guitarists
@@ -1944,7 +1932,7 @@ class WizardChoices:
             one = self._one_guitarist()
             if one[SOLO_PLAYER] in self._without:
                 self._without.remove(one[SOLO_PLAYER])
-            self._ways[self._role(one[SOLO_PLAYER])[TRAIT]] = one[SOLO_WAY]
+            self._ways[self._role(one[SOLO_PLAYER])[arranger.TRAIT]] = one[SOLO_WAY]
 
     def _set_kept_guitarists(self, *, count):
         self.set_guitarists(count)
@@ -1978,33 +1966,33 @@ class WizardChoices:
             for place, name in enumerate(self.form_sections()):
                 plays = self._plays_of_one_guitarist(self.section_plays(place))
                 if plays is not None:
-                    sections[name][PLAYS] = plays
+                    sections[name][arranger.PLAYS] = plays
             return sections
         sections = {}
         for kind in set(self.form_sections()):
-            plays = self._plays_of_one_guitarist(list(self._style()[SECTIONS][kind].get(PLAYS, [])))
+            plays = self._plays_of_one_guitarist(list(self._style()[arranger.SECTIONS][kind].get(arranger.PLAYS, [])))
             if plays is not None:
-                sections[kind] = {KIND: kind, PLAYS: plays}
+                sections[kind] = {arranger.KIND: kind, arranger.PLAYS: plays}
         return sections
 
     # A player's sound: the one the player's way of playing has, moved by the band's Sounds, unless the player has a sound of its own.
 
     def has_sound(self, role):
         """Return whether a player's sound can be chosen: a player of notes, never the drums, whose kit the grooves are written for."""
-        return not self._role(role).get(DRUMS)
+        return not self._role(role).get(arranger.DRUMS)
 
     def usual_sound(self, role):
         """Return the General MIDI sound a player usually plays with: what the genre has stand in for the player in the subgenre,
         as it does for a singer, whose voice General MIDI plays poorly, or the sound of the player's way."""
         style = self._style()
         stands_in = style.get(STAND_INS, {}).get(role, {}).get(self._subgenre)
-        return style[SOUNDS][stands_in] if stands_in else self._way_sound(role)
+        return style[arranger.SOUNDS][stands_in] if stands_in else self._way_sound(role)
 
     def _way_sound(self, role):
         """Return the General MIDI sound a player's way of playing has, which the arranger gives the player unless the song says another."""
         style = self._style()
-        entry = values_of(style=style, trait=self._role(role)[TRAIT])[self.get_way(self._role(role)[TRAIT])]
-        return style[SOUNDS][entry[SOUND]]
+        entry = values_of(style=style, trait=self._role(role)[arranger.TRAIT])[self.get_way(self._role(role)[arranger.TRAIT])]
+        return style[arranger.SOUNDS][entry[arranger.SOUND]]
 
     def get_band_sounds(self):
         return self._band_sounds
@@ -2047,31 +2035,31 @@ class WizardChoices:
 
     def root_half_steps(self):
         """Return the song's root as half steps above C, within an octave."""
-        return note_values.SEMITONES_ABOVE_C[self._root] % NOTES_IN_OCTAVE
+        return note_values.SEMITONES_ABOVE_C[self._root] % melody_writer.NOTES_IN_OCTAVE
 
     def scale_half_steps(self):
         """Return the notes of the song's scale as half steps above its root, the major scale's where the melody engines know none for the scale type."""
-        return HALF_STEPS.get(self._scale_type, HALF_STEPS[MAJOR])
+        return melody_writer.HALF_STEPS.get(self._scale_type, melody_writer.HALF_STEPS[MAJOR])
 
     def role_octave(self, role):
         """Return the octave a player plays in."""
-        return self._role(role).get(OCTAVE, USUAL_OCTAVE)
+        return self._role(role).get(tune_notation.OCTAVE, USUAL_OCTAVE)
 
     def genre_sounds(self, role):
         """Return the genre's own sounds that suit a player, each a General MIDI number: the sounds of the ways the player can play."""
         style = self._style()
         found = []
-        for entry in values_of(style=style, trait=self._role(role)[TRAIT]).values():
-            if SOUND in entry and style[SOUNDS][entry[SOUND]] not in found:
-                found.append(style[SOUNDS][entry[SOUND]])
+        for entry in values_of(style=style, trait=self._role(role)[arranger.TRAIT]).values():
+            if arranger.SOUND in entry and style[arranger.SOUNDS][entry[arranger.SOUND]] not in found:
+                found.append(style[arranger.SOUNDS][entry[arranger.SOUND]])
         for stands_in in style.get(STAND_INS, {}).get(role, {}).values():
-            if style[SOUNDS][stands_in] not in found:
-                found.append(style[SOUNDS][stands_in])
+            if style[arranger.SOUNDS][stands_in] not in found:
+                found.append(style[arranger.SOUNDS][stands_in])
         return found
 
     def sound_name(self, sound):
         """Return what a General MIDI sound is called: by the genre where the genre names it, or by General MIDI."""
-        named = [name for name, number in self._style()[SOUNDS].items() if number == sound]
+        named = [name for name, number in self._style()[arranger.SOUNDS].items() if number == sound]
         return named[0] if named else labels_text.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND]
 
     def _song_sounds(self):
@@ -2092,14 +2080,14 @@ class WizardChoices:
             return
         if role in self._without:
             self._without.remove(role)
-        if not entry.get(DRUMS) and not self._has_sound(trait=entry[TRAIT], value=self.get_way(entry[TRAIT])):
-            ways = self.ways(role=role, trait=entry[TRAIT])
+        if not entry.get(arranger.DRUMS) and not self._has_sound(trait=entry[arranger.TRAIT], value=self.get_way(entry[arranger.TRAIT])):
+            ways = self.ways(role=role, trait=entry[arranger.TRAIT])
             if not ways:
                 raise ValueError(errors.ERR_WIZARD_NO_WAY.format(value=role))
-            self._ways[entry[TRAIT]] = ways[0]
+            self._ways[entry[arranger.TRAIT]] = ways[0]
 
     def _picks_with(self, ways):
-        return picked(style=self._style(), song={TEMPLATE: self._subgenre, PICKS: ways})
+        return picked(style=self._style(), song={arranger.TEMPLATE: self._subgenre, arranger.PICKS: ways})
 
     def _works(self, *, trait, value):
         """Return whether a way of playing can be chosen beside the other picks, some ways needing a meter or a feel."""
@@ -2112,10 +2100,10 @@ class WizardChoices:
     def ways(self, *, role, trait):
         """Return the ways a player may play a trait beside the other picks, the commonest first; for a player of notes, only ways that sound."""
         style = self._style()
-        drums = bool(self._role(role).get(DRUMS))
+        drums = bool(self._role(role).get(arranger.DRUMS))
         picks = self._picks()
-        entries = [entry for entry in sorted(values_of(style=style, trait=trait).values(), key=share_of, reverse=True) if (drums or SOUND in entry) and fits(entry=entry, picks=picks)]
-        return [entry[VALUE] for entry in entries if self._works(trait=trait, value=entry[VALUE])]
+        entries = [entry for entry in sorted(values_of(style=style, trait=trait).values(), key=share_of, reverse=True) if (drums or arranger.SOUND in entry) and fits(entry=entry, picks=picks)]
+        return [entry[arranger.VALUE] for entry in entries if self._works(trait=trait, value=entry[arranger.VALUE])]
 
     # What the whole song has a way of: its chords, its feel and its drum fills, each a trait of the genre no one player owns.
 
@@ -2124,12 +2112,12 @@ class WizardChoices:
         if not self.is_ready():
             return None
         of_players = {trait for role in self.roles() for trait in self.role_traits(role)}
-        return next((trait for trait in traits if trait not in of_players and isinstance(self._style()[TRAITS].get(trait), list)), None)
+        return next((trait for trait in traits if trait not in of_players and isinstance(self._style()[arranger.TRAITS].get(trait), list)), None)
 
     def song_ways(self, trait):
         """Return the ways a trait of the whole song may go beside the other picks, the commonest first."""
         entries = sorted(values_of(style=self._style(), trait=trait).values(), key=self._share, reverse=True)
-        return [entry[VALUE] for entry in entries if self._works(trait=trait, value=entry[VALUE])]
+        return [entry[arranger.VALUE] for entry in entries if self._works(trait=trait, value=entry[arranger.VALUE])]
 
     def _share(self, entry):
         """Return how common a value is in the subgenre chosen."""
@@ -2146,7 +2134,7 @@ class WizardChoices:
 
     def genre_melody(self):
         """Return the melody style the genre's own tunes are sketched by, which a song takes while none is chosen."""
-        return self._melody_habits().get(ENGINE, STEP_WALK)
+        return self._melody_habits().get(melody_writer.ENGINE, melody_writer.STEP_WALK)
 
     def melody_engine(self):
         """Return the melody style the song's melodies are written by: the one the character chosen writes by, else one chosen by
@@ -2170,7 +2158,7 @@ class WizardChoices:
     def can_have_hook(self):
         """Return whether a hook can be made at all: a section of the song's form marks a line as its hook, and, in a form of
         the subgenre's own, a player carries a tune there."""
-        if not self.is_ready() or not any(entry.get(HOOK) for place in range(len(self._entries())) for entry in self._section(place).get(PLAN, [])):
+        if not self.is_ready() or not any(entry.get(melody_writer.HOOK) for place in range(len(self._entries())) for entry in self._section(place).get(PLAN, [])):
             return False
         return self.has_own_form() or hook_matters(genre=self._genre, subgenre=self._subgenre, variant=self._variant, form=self.get_form())
 
@@ -2181,20 +2169,20 @@ class WizardChoices:
             return None
         for kind in self.section_kinds_in_form():
             for count, entry in enumerate(self._hook_plan(kind)):
-                if entry.get(HOOK):
+                if entry.get(melody_writer.HOOK):
                     return kind, count + 1
         return None
 
     def _hook_plan(self, kind):
         """A kind of section's plan of lines as the genre has it, the hook placed among them where the song chose its place."""
-        plan = self._style()[SECTIONS].get(kind, {}).get(PLAN, [])
-        placement = self._extras.get(HOOKS_CHOSEN, {}).get(PLACEMENT)
+        plan = self._style()[arranger.SECTIONS].get(kind, {}).get(PLAN, [])
+        placement = self._extras.get(HOOKS_CHOSEN, {}).get(melody_writer.PLACEMENT)
         return plan_with_hook_placed(plan=plan, placement=placement) if placement and kind == self._main_hook_kind() else plan
 
     def _main_hook_kind(self):
         """The kind of section that says the main hook: the first in the form whose plan marks a line as one, or None."""
-        sections = self._style()[SECTIONS]
-        return next((kind for kind in self.section_kinds_in_form() if any(entry.get(HOOK) for entry in sections[kind].get(PLAN, []))), None)
+        sections = self._style()[arranger.SECTIONS]
+        return next((kind for kind in self.section_kinds_in_form() if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(PLAN, []))), None)
 
     # Where the main hook sits among the lines of its section, which the genre says until a person chooses.
 
@@ -2203,22 +2191,22 @@ class WizardChoices:
         name; none elsewhere, as in a verse that ends on its refrain, where the hook has one place."""
         if not self.can_have_hook() or not self.has_hook() or self._main_hook_kind() != SectionKind.CHORUS or self.genre_hook_placement() is None:
             return []
-        return list(PLACEMENTS)
+        return list(melody_writer.PLACEMENTS)
 
     def genre_hook_placement(self):
         """Return where the genre places the hook among its section's lines, or None for a plan of no named shape."""
         kind = self._main_hook_kind()
-        return None if kind is None else placement_of(self._style()[SECTIONS][kind].get(PLAN, []))
+        return None if kind is None else placement_of(self._style()[arranger.SECTIONS][kind].get(PLAN, []))
 
     def get_hook_placement(self):
-        chosen = self._extras.get(HOOKS_CHOSEN, {}).get(PLACEMENT)
+        chosen = self._extras.get(HOOKS_CHOSEN, {}).get(melody_writer.PLACEMENT)
         return chosen if chosen in self.hook_placements_offered() else self.genre_hook_placement()
 
     def set_hook_placement(self, placement):
         """Choose where the main hook sits among its chorus's lines; the genre's own place is asked for by its name."""
         if placement not in self.hook_placements_offered():
             raise ValueError(errors.ERR_WIZARD_HOOK_PLACEMENT.format(value=placement))
-        self._keep_hook_chosen(field=PLACEMENT, value=None if placement == self.genre_hook_placement() else placement)
+        self._keep_hook_chosen(field=melody_writer.PLACEMENT, value=None if placement == self.genre_hook_placement() else placement)
 
     def _keep_hook_chosen(self, *, field, value):
         chosen = self._extras.setdefault(HOOKS_CHOSEN, {})
@@ -2240,8 +2228,8 @@ class WizardChoices:
         return [kind for kind in SECOND_HOOK_KINDS if kind in in_form and kind != self._main_hook_kind()]
 
     def _second_hook_kept(self):
-        kept = self._extras.get(HOOKS_CHOSEN, {}).get(SECOND_HOOK)
-        return kept if isinstance(kept, dict) and kept.get(SUNG_IN) in self.second_hook_kinds() else None
+        kept = self._extras.get(HOOKS_CHOSEN, {}).get(melody_writer.SECOND_HOOK)
+        return kept if isinstance(kept, dict) and kept.get(melody_writer.SUNG_IN) in self.second_hook_kinds() else None
 
     def has_second_hook(self):
         return self._second_hook_kept() is not None
@@ -2249,23 +2237,23 @@ class WizardChoices:
     def get_second_hook_kind(self):
         """Return the kind of section the second hook is sung in, or None while the song has none."""
         kept = self._second_hook_kept()
-        return None if kept is None else kept[SUNG_IN]
+        return None if kept is None else kept[melody_writer.SUNG_IN]
 
     def get_second_hook_take(self):
         kept = self._second_hook_kept()
-        return FIRST_HOOK_TAKE if kept is None else kept.get(TAG_TAKE, FIRST_HOOK_TAKE)
+        return melody_writer.FIRST_HOOK_TAKE if kept is None else kept.get(melody_writer.TAG_TAKE, melody_writer.FIRST_HOOK_TAKE)
 
     def set_second_hook(self, kind):
         """Give the song a second hook sung in a kind of section, or take the second hook away with None."""
         if kind is not None and kind not in self.second_hook_kinds():
             raise ValueError(errors.ERR_WIZARD_SECOND_HOOK.format(value=kind))
-        self._keep_hook_chosen(field=SECOND_HOOK, value=None if kind is None else {SUNG_IN: kind, TAG_TAKE: self.get_second_hook_take()})
+        self._keep_hook_chosen(field=melody_writer.SECOND_HOOK, value=None if kind is None else {melody_writer.SUNG_IN: kind, melody_writer.TAG_TAKE: self.get_second_hook_take()})
 
     def new_second_hook(self):
         """Have another second hook made, every other line of the song left as it was."""
         if not self.has_second_hook():
             raise ValueError(errors.ERR_WIZARD_SECOND_HOOK.format(value=None))
-        self._keep_hook_chosen(field=SECOND_HOOK, value={SUNG_IN: self.get_second_hook_kind(), TAG_TAKE: self.get_second_hook_take() + 1})
+        self._keep_hook_chosen(field=melody_writer.SECOND_HOOK, value={melody_writer.SUNG_IN: self.get_second_hook_kind(), melody_writer.TAG_TAKE: self.get_second_hook_take() + 1})
 
     def second_hook_scene(self):
         """Return the place in the form of the first section that sings the second hook, or None."""
@@ -2278,17 +2266,17 @@ class WizardChoices:
         if not self.is_ready() or not self._extras.get(HOOKS_CHOSEN):
             return {}
         hooks = {}
-        placement = self._extras[HOOKS_CHOSEN].get(PLACEMENT)
-        if placement in PLACEMENTS and self._main_hook_kind() is not None:
-            hooks[MAIN_HOOK] = {SUNG_IN: self._main_hook_kind(), PLACEMENT: placement}
-        second = self._extras[HOOKS_CHOSEN].get(SECOND_HOOK)
-        if isinstance(second, dict) and second.get(SUNG_IN) in SECOND_HOOK_KINDS and self.tune_player() is not None:
-            hooks[SECOND_HOOK] = {SUNG_IN: second[SUNG_IN], SUNG_BY: self.tune_player(), TAG_TAKE: second.get(TAG_TAKE, FIRST_HOOK_TAKE)}
-        return {HOOKS: hooks} if hooks else {}
+        placement = self._extras[HOOKS_CHOSEN].get(melody_writer.PLACEMENT)
+        if placement in melody_writer.PLACEMENTS and self._main_hook_kind() is not None:
+            hooks[melody_writer.MAIN_HOOK] = {melody_writer.SUNG_IN: self._main_hook_kind(), melody_writer.PLACEMENT: placement}
+        second = self._extras[HOOKS_CHOSEN].get(melody_writer.SECOND_HOOK)
+        if isinstance(second, dict) and second.get(melody_writer.SUNG_IN) in SECOND_HOOK_KINDS and self.tune_player() is not None:
+            hooks[melody_writer.SECOND_HOOK] = {melody_writer.SUNG_IN: second[melody_writer.SUNG_IN], melody_writer.SUNG_BY: self.tune_player(), melody_writer.TAG_TAKE: second.get(melody_writer.TAG_TAKE, melody_writer.FIRST_HOOK_TAKE)}
+        return {melody_writer.HOOKS: hooks} if hooks else {}
 
     def usual_hook(self):
         """Return whether the genre's songs have a hook unless a person says otherwise."""
-        return self.can_have_hook() and bool(self._style().get(HOOK, False))
+        return self.can_have_hook() and bool(self._style().get(melody_writer.HOOK, False))
 
     def has_hook(self):
         return self.usual_hook() if self._hook is None else self._hook
@@ -2308,30 +2296,30 @@ class WizardChoices:
         if not self.can_have_hook() or not self.has_hook() or player is None:
             return None, None
         kind = self._main_hook_kind()
-        line = next(place for place, entry in enumerate(self._hook_plan(kind)) if entry.get(HOOK))
-        part = arranged(style=self._style(), song=self.song_picks(kind))[PARTS].get(composer_text.MSG_PART_OF_SECTION.format(kind, player))
-        return (None, None) if part is None or LINES not in part else (part, line)
+        line = next(place for place, entry in enumerate(self._hook_plan(kind)) if entry.get(melody_writer.HOOK))
+        part = arranged(style=self._style(), song=self.song_picks(kind))[arranger.PARTS].get(composer_text.MSG_PART_OF_SECTION.format(kind, player))
+        return (None, None) if part is None or tune_notation.LINES not in part else (part, line)
 
     def _hook_notes(self):
         part, line = self._hook_part()
         if part is None:
             return None
-        at, notes = self._sounded(lines=[part[LINES][line]], octave=part[OCTAVE])
-        return at, self._melody_habits()[GRID], notes
+        at, notes = self._sounded(lines=[part[tune_notation.LINES][line]], octave=part[tune_notation.OCTAVE])
+        return at, self._melody_habits()[melody_writer.GRID], notes
 
     def _sounded(self, *, lines, octave):
         """Lines of a tune as how many steps they last and each note as where it starts, how many steps it lasts and its MIDI
         note, in the song's key, octave being the octave the lines are written against."""
         scale = self.scale_half_steps()
-        lowest = octave * NOTES_IN_OCTAVE + self.root_half_steps()
+        lowest = octave * melody_writer.NOTES_IN_OCTAVE + self.root_half_steps()
         notes = []
         at = 0
         for line in lines:
             for note in line:
-                length = note.get(STEPS, note.get(REST))
-                if REST not in note:
-                    octaves, place = divmod(note[DEGREE] - 1, len(scale))
-                    notes.append((at, length, lowest + scale[place] + (octaves + note.get(OCTAVE, 0)) * NOTES_IN_OCTAVE + HALF_STEPS_OF_ACCIDENTAL.get(note.get(ACCIDENTAL), 0)))
+                length = note.get(tune_notation.STEPS, note.get(tune_notation.REST))
+                if tune_notation.REST not in note:
+                    octaves, place = divmod(note[tune_notation.DEGREE] - 1, len(scale))
+                    notes.append((at, length, lowest + scale[place] + (octaves + note.get(tune_notation.OCTAVE, 0)) * melody_writer.NOTES_IN_OCTAVE + HALF_STEPS_OF_ACCIDENTAL.get(note.get(tune_notation.ACCIDENTAL), 0)))
                 at += length
         return at, notes
 
@@ -2357,15 +2345,15 @@ class WizardChoices:
         if kind is None or not self.has_hook() or self.tune_place(kind) is None or self.tune_player_in(kind) is None:
             return None
         pattern = self.tune_pattern(kind)
-        bar = self._melody_habits()[GRID]
-        if pattern is None or pattern[STEPS] % bar:
+        bar = self._melody_habits()[melody_writer.GRID]
+        if pattern is None or pattern[tune_notation.STEPS] % bar:
             return None
         try:
             lines, octave, _ = tune_notation.tune_lines(pattern=pattern, bar=bar)
         except tune_notation.NotWritable:
             return None
         steps, notes = self._sounded(lines=lines, octave=octave)
-        return (steps, bar, notes) if steps == pattern[STEPS] else None
+        return (steps, bar, notes) if steps == pattern[tune_notation.STEPS] else None
 
     def set_hook(self, on):
         if on and not self.can_have_hook():
@@ -2383,7 +2371,7 @@ class WizardChoices:
 
     def writes_hook(self):
         """Return whether the song's hook is written by a behavior and gauges: a song with a hook whose bar is counted in eighths."""
-        return self.is_ready() and self.can_have_hook() and self.has_hook() and not self._melody_habits()[GRID] % hook_writing.UNITS
+        return self.is_ready() and self.can_have_hook() and self.has_hook() and not self._melody_habits()[melody_writer.GRID] % hook_writing.UNITS
 
     def genre_hook_behavior(self):
         return hook_writing.hook_ways(self._melody_habits())[0]
@@ -2424,7 +2412,7 @@ class WizardChoices:
         """The lines of the hook's section that are no hook, each with whether a hook follows it and whether it closes the section."""
         kind = self._main_hook_kind()
         plan = [] if kind is None else self._hook_plan(kind)
-        return [(entry, place + 1 < len(plan) and bool(plan[place + 1].get(HOOK)), place + 1 == len(plan)) for place, entry in enumerate(plan) if not entry.get(HOOK) and not entry.get(ANSWER)]
+        return [(entry, place + 1 < len(plan) and bool(plan[place + 1].get(melody_writer.HOOK)), place + 1 == len(plan)) for place, entry in enumerate(plan) if not entry.get(melody_writer.HOOK) and not entry.get(melody_writer.ANSWER)]
 
     def body_gauges(self):
         """Return the gauges of the chorus's body that change the song as it stands: Call and answer only where a line of the body
@@ -2488,7 +2476,7 @@ class WizardChoices:
         self._hook_take += 1
 
     def _set_kept_hook_take(self, *, take):
-        if isinstance(take, bool) or not isinstance(take, int) or take < FIRST_HOOK_TAKE:
+        if isinstance(take, bool) or not isinstance(take, int) or take < melody_writer.FIRST_HOOK_TAKE:
             raise ValueError(errors.ERR_WIZARD_HOOK_TAKE.format(value=take))
         self._hook_take = take
 
@@ -2502,20 +2490,20 @@ class WizardChoices:
 
     def has_busy(self, role):
         """Return whether a player's busyness can be chosen: the genre says how the player's instrument is played at each level."""
-        return self._role(role).get(PLAYER) in self._style().get(PLAYERS, {})
+        return self._role(role).get(arranger.PLAYER) in self._style().get(arranger.PLAYERS, {})
 
     def get_busy(self, role):
         """Return how busy a player is, from LEAST_BUSY to MOST_BUSY, or None where the song names no level."""
-        return self._levels.get(self._role(role).get(PLAYER))
+        return self._levels.get(self._role(role).get(arranger.PLAYER))
 
     def set_busy(self, *, role, level):
         """Choose how busy a player is. Players of one instrument, as a lead and a solo, share the level."""
         if not self.has_busy(role):
             raise ValueError(errors.ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
-        self._set_level(player=self._role(role)[PLAYER], level=level)
+        self._set_level(player=self._role(role)[arranger.PLAYER], level=level)
 
     def _set_level(self, *, player, level):
-        if isinstance(level, bool) or not isinstance(level, int) or level not in self._style().get(PLAYERS, {}).get(player, {}):
+        if isinstance(level, bool) or not isinstance(level, int) or level not in self._style().get(arranger.PLAYERS, {}).get(player, {}):
             raise ValueError(errors.ERR_WIZARD_BUSY.format(low=LEAST_BUSY, high=MOST_BUSY, value=level))
         self._levels[player] = level
         # A preset chosen puts every gauge of the player back where the preset has it.
@@ -2527,21 +2515,21 @@ class WizardChoices:
     def _levels_of_style(self, role):
         """The four levels the genre gives a player: the whole kit's for the drummer, and a player of notes' from the player's velocity."""
         entry = self._role(role)
-        if entry.get(DRUMS):
-            return drum_levels(self._style()[LOUDNESS_OF][DRUMS])
-        return note_levels(entry[VELOCITY])
+        if entry.get(arranger.DRUMS):
+            return drum_levels(self._style()[arranger.LOUDNESS][arranger.DRUMS])
+        return note_levels(entry[tune_notation.VELOCITY])
 
     def has_loudness(self, role):
         """Return whether a player has levels to choose: a player in the band who drums or plays notes at a velocity."""
-        return self.is_ready() and role in self.roles() and self.role_is_in(role) and (bool(self._role(role).get(DRUMS)) or VELOCITY in self._role(role))
+        return self.is_ready() and role in self.roles() and self.role_is_in(role) and (bool(self._role(role).get(arranger.DRUMS)) or tune_notation.VELOCITY in self._role(role))
 
     def loudness_levels(self, role):
         """Return a player's four levels by name, the genre's with the song's own in their places; the drummer's are the whole kit's,
         which every piece of the kit follows in proportion."""
-        return with_own(levels=self._levels_of_style(role), own=self._extras.get(LOUDNESS_OF, {}).get(role))
+        return with_own(levels=self._levels_of_style(role), own=self._extras.get(arranger.LOUDNESS, {}).get(role))
 
     def loudness_level_is_own(self, *, role, level):
-        return level in self._extras.get(LOUDNESS_OF, {}).get(role, {})
+        return level in self._extras.get(arranger.LOUDNESS, {}).get(role, {})
 
     def loudness_levels_offered(self, role):
         """Return the levels of a player that the song plays, from the quietest up: a level no note of the player's is played at is
@@ -2557,12 +2545,12 @@ class WizardChoices:
     def _levels_heard(self, role):
         plain = self._parts_as_written(role)
         heard = []
-        for level in LOUDNESS_LEVELS:
+        for level in loudness.LEVELS:
             trial = self._copied_for_trial()
             now = trial.loudness_levels(role)[level]
-            trial._extras.setdefault(LOUDNESS_OF, {}).setdefault(role, {})[level] = now - LEVEL_TRIAL if now > MIDDLE_VELOCITY else now + LEVEL_TRIAL
+            trial._extras.setdefault(arranger.LOUDNESS, {}).setdefault(role, {})[level] = now - LEVEL_TRIAL if now > MIDDLE_VELOCITY else now + LEVEL_TRIAL
             # The player's dynamics as written, so that a level is heard apart from the normal one.
-            trial._extras.get(DYNAMICS, {}).pop(role, None)
+            trial._extras.get(arranger.DYNAMICS, {}).pop(role, None)
             if trial._parts_arranged() != plain:
                 heard.append(level)
         return heard
@@ -2570,22 +2558,22 @@ class WizardChoices:
     def _parts_as_written(self, role):
         """The song's parts with a player's dynamics as the genre writes them."""
         trial = self._copied_for_trial()
-        trial._extras.get(DYNAMICS, {}).pop(role, None)
+        trial._extras.get(arranger.DYNAMICS, {}).pop(role, None)
         return trial._parts_arranged()
 
     def set_loudness_level(self, *, role, level, number):
         """Give a player a level of the song's own, a velocity, or give the level back to the genre with None."""
-        is_number = number is None or (isinstance(number, int) and not isinstance(number, bool) and LOWEST_VELOCITY <= number <= HIGHEST_VELOCITY)
-        if not self.has_loudness(role) or level not in LOUDNESS_LEVELS or not is_number:
-            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=LOWEST_VELOCITY, high=HIGHEST_VELOCITY, value=(role, level, number)))
-        own = self._extras.setdefault(LOUDNESS_OF, {}).setdefault(role, {})
+        is_number = number is None or (isinstance(number, int) and not isinstance(number, bool) and tune_notation.LOWEST_VELOCITY <= number <= tune_notation.HIGHEST_VELOCITY)
+        if not self.has_loudness(role) or level not in loudness.LEVELS or not is_number:
+            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=tune_notation.LOWEST_VELOCITY, high=tune_notation.HIGHEST_VELOCITY, value=(role, level, number)))
+        own = self._extras.setdefault(arranger.LOUDNESS, {}).setdefault(role, {})
         own.pop(level, None)
         if number is not None and number != self._levels_of_style(role)[level]:
             own[level] = number
         if not own:
-            del self._extras[LOUDNESS_OF][role]
-        if not self._extras[LOUDNESS_OF]:
-            del self._extras[LOUDNESS_OF]
+            del self._extras[arranger.LOUDNESS][role]
+        if not self._extras[arranger.LOUDNESS]:
+            del self._extras[arranger.LOUDNESS]
         self._answers = {}
 
     def has_dynamics(self, role):
@@ -2597,26 +2585,26 @@ class WizardChoices:
 
     def _dynamics_are_heard(self, role):
         made = []
-        for dynamics in (LEAST_DYNAMICS, MOST_DYNAMICS):
+        for dynamics in (loudness.LEAST_DYNAMICS, loudness.MOST_DYNAMICS):
             trial = self._copied_for_trial()
-            trial._extras.setdefault(DYNAMICS, {})[role] = dynamics
+            trial._extras.setdefault(arranger.DYNAMICS, {})[role] = dynamics
             made.append(trial._patterns_played())
         return made[0] != made[1]
 
     def get_dynamics(self, role):
-        return self._extras.get(DYNAMICS, {}).get(role, USUAL_DYNAMICS)
+        return self._extras.get(arranger.DYNAMICS, {}).get(role, loudness.USUAL_DYNAMICS)
 
     def set_dynamics(self, *, role, dynamics):
         """Say how far a player's loud and soft notes lie from the player's normal ones: not at all at the least, as the genre writes them
         in the middle, and twice as far at the most."""
-        if not self.has_loudness(role) or isinstance(dynamics, bool) or not isinstance(dynamics, int) or not LEAST_DYNAMICS <= dynamics <= MOST_DYNAMICS:
-            raise ValueError(errors.ERR_WIZARD_DYNAMICS.format(low=LEAST_DYNAMICS, high=MOST_DYNAMICS, value=dynamics))
-        of_players = self._extras.setdefault(DYNAMICS, {})
+        if not self.has_loudness(role) or isinstance(dynamics, bool) or not isinstance(dynamics, int) or not loudness.LEAST_DYNAMICS <= dynamics <= loudness.MOST_DYNAMICS:
+            raise ValueError(errors.ERR_WIZARD_DYNAMICS.format(low=loudness.LEAST_DYNAMICS, high=loudness.MOST_DYNAMICS, value=dynamics))
+        of_players = self._extras.setdefault(arranger.DYNAMICS, {})
         of_players.pop(role, None)
-        if dynamics != USUAL_DYNAMICS:
+        if dynamics != loudness.USUAL_DYNAMICS:
             of_players[role] = dynamics
         if not of_players:
-            del self._extras[DYNAMICS]
+            del self._extras[arranger.DYNAMICS]
         self._answers = {}
 
     # The player beside the tune: who answers the player who has the tune, and what the answering player does in each section.
@@ -2627,16 +2615,16 @@ class WizardChoices:
 
     def _usual_answerer(self):
         """Return the player the genre has answer the tune, where the player can play in the subgenre, or None."""
-        role = next((entry[ROLE] for entry in self._style()[ROLES] if entry.get(ANSWERS)), None) if self.is_ready() else None
+        role = next((entry[arranger.ROLE] for entry in self._style()[arranger.ROLES] if entry.get(arranger.ANSWERS)), None) if self.is_ready() else None
         return role if role is not None and role in self.roles_shown() and self.role_can_play(role) else None
 
     def tune_player(self):
         """Return the player who has the tune: the first player of lines who answers nobody and is in the band, or None."""
-        return next((role for role in self.roles_in() if self.has_sound(role) and not self._role(role).get(ANSWERS) and self._plays_lines(role)), None)
+        return next((role for role in self.roles_in() if self.has_sound(role) and not self._role(role).get(arranger.ANSWERS) and self._plays_lines(role)), None)
 
     def _plays_lines(self, role):
         entry = self._role(role)
-        return FIGURE not in values_of(style=self._style(), trait=entry[TRAIT])[self.get_way(entry[TRAIT])]
+        return arranger.FIGURE not in values_of(style=self._style(), trait=entry[arranger.TRAIT])[self.get_way(entry[arranger.TRAIT])]
 
     def answerers(self):
         """Return the players who may answer the tune, by name: the genre's answering player while in the band, and none where the song keeps to
@@ -2658,7 +2646,7 @@ class WizardChoices:
 
     def ways_beside(self):
         """Return what a player beside the tune may do in a section, in order."""
-        return list(WAYS_BESIDE)
+        return list(interplay_values.WAYS)
 
     def get_role_plan(self):
         """Return the one thing the answering player does in every section, or None where the player goes by the genre's plan, section by section."""
@@ -2666,7 +2654,7 @@ class WizardChoices:
 
     def set_role_plan(self, way):
         """Have the answering player do one thing in every section, or go by the genre's plan with None. Either drops what single sections were given."""
-        if self.answered_by() is None or (way is not None and way not in WAYS_BESIDE):
+        if self.answered_by() is None or (way is not None and way not in interplay_values.WAYS):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
         self._beside[WAY] = way
         if self._sections is not None:
@@ -2683,9 +2671,9 @@ class WizardChoices:
         if self._beside[WAY] is not None:
             return self._beside[WAY]
         interplay = self._interplay()
-        kind = self._entry(place)[KIND]
+        kind = self._entry(place)[arranger.KIND]
         plan = {**interplay.get(PLAN, {}), **interplay.get(BY_SUBGENRE, {}).get(self._subgenre, {})}
-        return plan.get(kind, WAITS)
+        return plan.get(kind, interplay_values.WAITS)
 
     def section_role_is_own(self, place):
         """Return whether a section was given a role of its own, apart from the plan."""
@@ -2701,7 +2689,7 @@ class WizardChoices:
         """Choose what the answering player does in one section, or give the section back to the plan with None."""
         if not self.section_has_role(place):
             raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
-        if way is not None and way not in WAYS_BESIDE:
+        if way is not None and way not in interplay_values.WAYS:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
         if way is None and not self.section_role_is_own(place):
             return
@@ -2718,13 +2706,13 @@ class WizardChoices:
         return self._beside[BUSY_BESIDE]
 
     def set_fills_busy(self, busy):
-        if not self.has_fills_busy() or isinstance(busy, bool) or not isinstance(busy, int) or not LEAST_BUSY_BESIDE <= busy <= MOST_BUSY_BESIDE:
-            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
+        if not self.has_fills_busy() or isinstance(busy, bool) or not isinstance(busy, int) or not interplay_values.LEAST_BUSY <= busy <= interplay_values.MOST_BUSY:
+            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=interplay_values.LEAST_BUSY, high=interplay_values.MOST_BUSY, value=busy))
         self._beside[BUSY_BESIDE] = busy
 
     def _usual_beside(self):
         """Return how a new song starts: answered by the genre's answering player, going by the genre's plan, as busy as the genre says."""
-        return {BY: self._usual_answerer(), WAY: None, BUSY_BESIDE: self._interplay().get(BUSY_BESIDE, USUAL_BUSY_BESIDE)}
+        return {BY: self._usual_answerer(), WAY: None, BUSY_BESIDE: self._interplay().get(BUSY_BESIDE, interplay_values.USUAL_BUSY)}
 
     def _song_beside(self):
         """Return the song's player beside the tune, with what the player does in each section of the form in order, or nothing for a song that
@@ -2733,8 +2721,8 @@ class WizardChoices:
         if self._beside is None or usual is None or not self.role_is_in(usual):
             return {}
         answered = self.answered_by() is not None
-        ways = [self.section_role(place) if answered and self.section_has_role(place) else WAITS for place in range(len(self._entries()))]
-        return {BESIDE: {ROLE: usual, BESIDE_BUSY: self._beside[BUSY_BESIDE], BESIDE_WAYS: ways}}
+        ways = [self.section_role(place) if answered and self.section_has_role(place) else interplay_values.WAITS for place in range(len(self._entries()))]
+        return {arranger.BESIDE: {arranger.ROLE: usual, arranger.BESIDE_BUSY: self._beside[BUSY_BESIDE], arranger.BESIDE_WAYS: ways}}
 
     def _set_kept_beside(self, *, kept):
         usual = self._usual_beside()
@@ -2742,10 +2730,10 @@ class WizardChoices:
         way = kept.get(WAY)
         busy = kept.get(BUSY_BESIDE, usual[BUSY_BESIDE])
         # Who answers is kept as chosen even where the player cannot answer now, as the solo's player hidden by one guitarist, and answers again once the player can.
-        if (by is not None and by not in self.roles()) or (way is not None and way not in WAYS_BESIDE):
+        if (by is not None and by not in self.roles()) or (way is not None and way not in interplay_values.WAYS):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=by))
-        if isinstance(busy, bool) or not isinstance(busy, int) or not LEAST_BUSY_BESIDE <= busy <= MOST_BUSY_BESIDE:
-            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=LEAST_BUSY_BESIDE, high=MOST_BUSY_BESIDE, value=busy))
+        if isinstance(busy, bool) or not isinstance(busy, int) or not interplay_values.LEAST_BUSY <= busy <= interplay_values.MOST_BUSY:
+            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=interplay_values.LEAST_BUSY, high=interplay_values.MOST_BUSY, value=busy))
         self._beside = {BY: by, WAY: way, BUSY_BESIDE: busy}
 
     # A player's gauges: where each stands, the preset's place until moved.
@@ -2764,39 +2752,39 @@ class WizardChoices:
         """Return the gauges a player has: those the genre's levels of the player's instrument say anything by."""
         if not self.has_busy(role):
             return []
-        return gauges_of(self._style()[PLAYERS][self._role(role)[PLAYER]])
+        return gauges_of(self._style()[arranger.PLAYERS][self._role(role)[arranger.PLAYER]])
 
     def get_player_gauge(self, *, role, gauge):
         """Return where a gauge of a player stands, from the lowest place to the highest."""
         if gauge not in self.player_gauges(role):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
-        return self._character(self._role(role)[PLAYER])[gauge]
+        return self._character(self._role(role)[arranger.PLAYER])[gauge]
 
     def set_player_gauge(self, *, role, gauge, place):
         """Move a gauge of a player. Players of one instrument, as a lead and a solo, share their gauges."""
         if gauge not in self.player_gauges(role):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
-        self._set_kept_player_gauge(player=self._role(role)[PLAYER], gauge=gauge, place=place)
+        self._set_kept_player_gauge(player=self._role(role)[arranger.PLAYER], gauge=gauge, place=place)
 
     def _set_kept_player_gauge(self, *, player, gauge, place):
-        if isinstance(place, bool) or not isinstance(place, int) or not LOWEST_PLACE <= place <= HIGHEST_PLACE or gauge not in PLAYER_GAUGES or player not in self._levels:
-            raise ValueError(errors.ERR_WIZARD_PLAYER_GAUGE.format(low=LOWEST_PLACE, high=HIGHEST_PLACE, value=place))
+        if isinstance(place, bool) or not isinstance(place, int) or not characters.LOWEST <= place <= characters.HIGHEST or gauge not in characters.GAUGES or player not in self._levels:
+            raise ValueError(errors.ERR_WIZARD_PLAYER_GAUGE.format(low=characters.LOWEST, high=characters.HIGHEST, value=place))
         own = self._own_gauges.setdefault(player, {})
         own[gauge] = place
-        if place == PRESET_PLACE[self._levels[player]]:
+        if place == characters.PRESET_PLACE[self._levels[player]]:
             # A gauge moved back to the preset's place is the preset's again.
             del own[gauge]
 
     def player_preset(self, role):
         """Return the level of the preset a player is, or None for a player whose gauges were moved from it."""
-        player = self._role(role).get(PLAYER)
+        player = self._role(role).get(arranger.PLAYER)
         return None if self._own_gauges.get(player) else self._levels.get(player)
 
     # The meter and the length, which follow from the subgenre, the tempo and the form.
 
     def meter(self):
         """Return the meter the subgenre is played in."""
-        return str(self._picks().get(METER, COMMON_TIME))
+        return str(self._picks().get(arranger.METER, arranger.COMMON_TIME))
 
     def form_seconds(self, *, form=None):
         """Return how long the song lasts at the tempo chosen, in seconds; or how long a suggested form would, when one is named."""
@@ -2804,8 +2792,8 @@ class WizardChoices:
             bars = sum(self.section_bars(place) for place in range(len(self._entries())))
         else:
             style = self._style()
-            kinds = next((form_[SECTIONS] for form_ in self._forms() if form_[NAME] == form), [])
-            bars = sum(HELD_BARS if style[SECTIONS][kind].get(HELD) else style[SECTIONS][kind][BARS] for kind in kinds)
+            kinds = next((form_[arranger.SECTIONS] for form_ in self._forms() if form_[arranger.NAME] == form), [])
+            bars = sum(HELD_BARS if style[arranger.SECTIONS][kind].get(arranger.HELD) else style[arranger.SECTIONS][kind][arranger.BARS] for kind in kinds)
         return float(bars * bar_length(self.meter()) * QUARTERS_IN_WHOLE * SECONDS_IN_MINUTE / self._tempo)
 
     def forms_by_length(self):
@@ -2855,23 +2843,23 @@ class WizardChoices:
         degree and its sharp or flat as a set file writes one; a section played as one held chord is left out. Nothing for a
         progression written another way than as degrees."""
         entry = values_of(style=self._style(), trait=self.progression_trait())[progression]
-        if PATTERN not in entry:
+        if arranger.PATTERN not in entry:
             return []
         chords = {}
         for place, kind in enumerate(self.section_kinds_in_form()):
             if kind not in chords and not self.section_is_held(place):
-                written = entry.get(BY_SECTION, {}).get(kind) or entry[PATTERN]
-                chords[kind] = [(chord_of(chord)[DEGREE], ACCIDENTAL_MARKS.get(chord_of(chord).get(ACCIDENTAL))) for chord in written]
+                written = entry.get(arranger.BY_SECTION, {}).get(kind) or entry[arranger.PATTERN]
+                chords[kind] = [(chord_of(chord)[tune_notation.DEGREE], arranger.ACCIDENTAL_MARKS.get(chord_of(chord).get(tune_notation.ACCIDENTAL))) for chord in written]
         return list(chords.items())
 
     def progression_scale_type(self, progression):
         """Return the scale type a progression's chords were written for, major where the genre does not say."""
-        return values_of(style=self._style(), trait=self.progression_trait())[progression].get(SCALE_TYPE, MAJOR)
+        return values_of(style=self._style(), trait=self.progression_trait())[progression].get(arranger.SCALE_TYPE, MAJOR)
 
     def progression_degrees(self, progression):
         """Return the chords a progression is known by, its first written, each a degree and its sharp or flat; or nothing."""
         entry = values_of(style=self._style(), trait=self.progression_trait())[progression]
-        return [(chord_of(chord)[DEGREE], ACCIDENTAL_MARKS.get(chord_of(chord).get(ACCIDENTAL))) for chord in entry.get(PATTERN, [])]
+        return [(chord_of(chord)[tune_notation.DEGREE], arranger.ACCIDENTAL_MARKS.get(chord_of(chord).get(tune_notation.ACCIDENTAL))) for chord in entry.get(arranger.PATTERN, [])]
 
     def section_kinds_in_form(self):
         """Return the kind of each section of the song's form, in order."""
@@ -2887,7 +2875,7 @@ class WizardChoices:
         entries = values_of(style=self._style(), trait=trait)
         left = self.song_ways(trait)
         # A progression written for the other of major and minor is left to be chosen by hand: its chords were not meant for the song's scale.
-        suited = [way for way in left if entries[way].get(SCALE_TYPE, MAJOR) == self._scale_type]
+        suited = [way for way in left if entries[way].get(arranger.SCALE_TYPE, MAJOR) == self._scale_type]
         left = suited or left
         # A progression the subgenre's family never uses is left to be chosen by hand too.
         left = [way for way in left if self._share(entries[way])] or left
@@ -2904,7 +2892,7 @@ class WizardChoices:
         given, or the first the seed draws."""
         drawn = [progression] if progression else self.progressions_by_chance()[:1]
         if drawn:
-            return {**self._song_picks(name), PICKS: {**self._ways, **self._break_picks(), self.progression_trait(): drawn[0]}}
+            return {**self._song_picks(name), arranger.PICKS: {**self._ways, **self._break_picks(), self.progression_trait(): drawn[0]}}
         return self._song_picks(name)
 
     def _song_picks(self, name):
@@ -2914,50 +2902,50 @@ class WizardChoices:
         for kept in (RIFF_BOOK, RIFFS_KNOWN, RIFFS_PLAYED, MELODY_CHOSEN, HOOKS_CHOSEN):
             picks.pop(kept, None)
         picks.update(self._hook_picks())
-        picks.setdefault(RIFF, {})
-        riffs = [*picks.get(MORE_RIFFS, []), *self._riffs_arranged()]
+        picks.setdefault(riffs_values.RIFF, {})
+        riffs = [*picks.get(arranger.MORE_RIFFS, []), *self._riffs_arranged()]
         if riffs:
-            picks[MORE_RIFFS] = riffs
+            picks[arranger.MORE_RIFFS] = riffs
         picks.update(self._melody_picks(picks))
         # The takes are kept as numbers; the arranger is handed the tune each number draws.
         picks.pop(TUNE_TAKES, None)
         picks.pop(SOLO_TAKES, None)
         for number, players in self._taken_solos().items():
-            picks.setdefault(OWN_SOLOS, {}).setdefault(number, {}).update(players)
+            picks.setdefault(arranger.OWN_SOLOS, {}).setdefault(number, {}).update(players)
         taken = self._taken_tunes()
         delivery = self.tune_phrasing()
-        picks.pop(TUNE_PHRASING, None)
+        picks.pop(arranger.TUNE_PHRASING, None)
         if delivery is not None:
-            picks[TUNE_PHRASING] = delivery
-        return {**picks, TAKEN_TUNES: taken} if taken else picks
+            picks[arranger.TUNE_PHRASING] = delivery
+        return {**picks, arranger.TAKEN_TUNES: taken} if taken else picks
 
     def _extras_with_sections(self):
         """The song's extras, the plan in them holding what each section of the form was given of its own, by place."""
         if not self.has_song_plan():
             return self._extras
-        plan = self._extras[PLAN_OF_SONG] if isinstance(self._extras.get(PLAN_OF_SONG), dict) else {}
+        plan = self._extras[song_plan.PLAN_OF_SONG] if isinstance(self._extras.get(song_plan.PLAN_OF_SONG), dict) else {}
         if not (any(entry.get(OWN_OF_SECTION) for entry in self._entries()) or self._intro_hook_kept() is not None):
             # A song planned because its genre plans every song asks for the plan as one that was switched on does.
-            return {**self._extras, PLAN_OF_SONG: plan}
-        given = list(plan.get(BY_PLACE) or [])
+            return {**self._extras, song_plan.PLAN_OF_SONG: plan}
+        given = list(plan.get(song_plan.BY_PLACE) or [])
         by_place = []
         for place, entry in enumerate(self._entries()):
             own = dict(entry.get(OWN_OF_SECTION) or {})
-            if LEAVES in own:
-                own[LEAVES] = dict(LEAVES_AS_JOIN[own[LEAVES]])
+            if joins_values.LEAVES in own:
+                own[joins_values.LEAVES] = dict(LEAVES_AS_JOIN[own[joins_values.LEAVES]])
             if SHAPE_OF_SECTION in own:
                 # A shape the kind no longer has, as after the section was made another kind, is left as the kind's own.
-                shape = self._style()[SECTIONS][entry[KIND]].get(SHAPES, {}).get(own.pop(SHAPE_OF_SECTION))
+                shape = self._style()[arranger.SECTIONS][entry[arranger.KIND]].get(SHAPES, {}).get(own.pop(SHAPE_OF_SECTION))
                 if shape is not None:
                     own[PLAN] = copy.deepcopy(shape)
             own.pop(INTRO_HOOK, None)
             own.update(self._intro_hook_at(place))
             own = self._with_fade_way(place=place, own=own)
             if own.get(LINES_OF_SECTION):
-                own[PLAN] = self._plan_with_lines(kind=entry[KIND], plan=own.get(PLAN), lines=own[LINES_OF_SECTION])
+                own[PLAN] = self._plan_with_lines(kind=entry[arranger.KIND], plan=own.get(PLAN), lines=own[LINES_OF_SECTION])
             own.pop(LINES_OF_SECTION, None)
             by_place.append({**((given[place] or {}) if place < len(given) else {}), **own})
-        return {**self._extras, PLAN_OF_SONG: {**plan, BY_PLACE: by_place}}
+        return {**self._extras, song_plan.PLAN_OF_SONG: {**plan, song_plan.BY_PLACE: by_place}}
 
     # The hook said in the intro, before anybody sings it, by the player who answers the tune or the tune's own player.
 
@@ -2968,7 +2956,7 @@ class WizardChoices:
         return [role for role in (self.answered_by(), self.tune_player()) if role is not None]
 
     def _intro_places(self):
-        return [place for place, entry in enumerate(self._entries()) if entry[KIND] == INTRO and not self.section_is_held(place)]
+        return [place for place, entry in enumerate(self._entries()) if entry[arranger.KIND] == INTRO and not self.section_is_held(place)]
 
     def get_intro_hook(self):
         """Return who says the hook in the intro, or None for nobody."""
@@ -2977,7 +2965,7 @@ class WizardChoices:
 
     def _intro_hook_kept(self):
         """Who was chosen to say the hook in the intro, while that player is still one who could: asked while the song is made, so it makes no song to answer."""
-        role = self._extras.get(PLAN_OF_SONG, {}).get(INTRO_HOOK) if isinstance(self._extras.get(PLAN_OF_SONG), dict) else None
+        role = self._extras.get(song_plan.PLAN_OF_SONG, {}).get(INTRO_HOOK) if isinstance(self._extras.get(song_plan.PLAN_OF_SONG), dict) else None
         able = role is not None and self.can_have_hook() and self.has_hook() and role in (self.answered_by(), self.tune_player())
         return role if able else None
 
@@ -3010,11 +2998,11 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
         number = self._intro_number_at(place)
         self.remove_section(place)
-        own = self._extras.get(OWN_INTROS, {})
+        own = self._extras.get(arranger.OWN_INTROS, {})
         moved = {(kept if kept < number else kept - 1): players for kept, players in own.items() if kept != number}
-        self._extras.pop(OWN_INTROS, None)
+        self._extras.pop(arranger.OWN_INTROS, None)
         if moved:
-            self._extras[OWN_INTROS] = moved
+            self._extras[arranger.OWN_INTROS] = moved
         self._answers = {}
 
     def intro_melody_player(self, place):
@@ -3023,7 +3011,7 @@ class WizardChoices:
         if place not in self._intro_places():
             return None
         own = self._entry(place).get(OWN_OF_SECTION, {}).get(INTRO_HOOK)
-        if own == NOBODY:
+        if own == arranger.NOBODY:
             return None
         offered = self.intro_hook_players()
         return own if own in offered else self.get_intro_hook()
@@ -3032,7 +3020,7 @@ class WizardChoices:
         """Have a player say the hook in one part of the intro, or nobody with None. The other parts stay as they are."""
         if place not in self._intro_places() or (role is not None and role not in self.intro_hook_players()):
             raise ValueError(errors.ERR_WIZARD_INTRO_HOOK.format(value=role))
-        self._set_own(place=place, field=INTRO_HOOK, value=NOBODY if role is None else role)
+        self._set_own(place=place, field=INTRO_HOOK, value=arranger.NOBODY if role is None else role)
 
     def intro_melody_place(self):
         """Return the place in the form of the first part of the intro somebody says the hook in, or None where nobody does."""
@@ -3050,7 +3038,7 @@ class WizardChoices:
         for the player who now plays it."""
         place = self._melody_place_or(place)
         role = None if place is None else self.intro_melody_player(place)
-        return role is not None and (role in self._extras.get(OWN_INTROS, {}).get(self._intro_number_at(place), {}) or role in self._extras.get(OWN_INTRO, {}))
+        return role is not None and (role in self._extras.get(arranger.OWN_INTROS, {}).get(self._intro_number_at(place), {}) or role in self._extras.get(arranger.OWN_INTRO, {}))
 
     def intro_pattern_name(self, *, place=None):
         """Return the name of the pattern that holds the melody of a part of the intro in the set the choices make, or None where the set has none."""
@@ -3083,24 +3071,24 @@ class WizardChoices:
         if role is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=INTRO))
         number = self._intro_number_at(place)
-        before = (copy.deepcopy(self._extras.get(OWN_INTROS)), copy.deepcopy(self._extras.get(OWN_INTRO)))
-        own = self._extras.setdefault(OWN_INTROS, {})
+        before = (copy.deepcopy(self._extras.get(arranger.OWN_INTROS)), copy.deepcopy(self._extras.get(arranger.OWN_INTRO)))
+        own = self._extras.setdefault(arranger.OWN_INTROS, {})
         if pattern is None:
             own.get(number, {}).pop(role, None)
             # Notes kept for every part of the intro at once, as an older song kept them, are given back with the part's.
-            self._extras.get(OWN_INTRO, {}).pop(role, None)
+            self._extras.get(arranger.OWN_INTRO, {}).pop(role, None)
         else:
             own.setdefault(number, {})[role] = copy.deepcopy(pattern)
         for empty in [key for key, players in own.items() if not players]:
             del own[empty]
-        for kept in (OWN_INTROS, OWN_INTRO):
+        for kept in (arranger.OWN_INTROS, arranger.OWN_INTRO):
             if not self._extras.get(kept):
                 self._extras.pop(kept, None)
         self._answers = {}
         try:
             self._written_for_trial()
         except Exception as problem:
-            for kept, was in zip((OWN_INTROS, OWN_INTRO), before):
+            for kept, was in zip((arranger.OWN_INTROS, arranger.OWN_INTRO), before):
                 self._extras.pop(kept, None)
                 if was is not None:
                     self._extras[kept] = was
@@ -3120,7 +3108,7 @@ class WizardChoices:
     def _soloist(self):
         """The genre's answering player while in the band, who plays the solos whether or not the player also answers the tune,
         and whether or not the band shows the player apart: a band with one guitarist shows its two guitar players as one."""
-        role = next((entry[ROLE] for entry in self._style()[ROLES] if entry.get(ANSWERS)), None) if self.is_ready() else None
+        role = next((entry[arranger.ROLE] for entry in self._style()[arranger.ROLES] if entry.get(arranger.ANSWERS)), None) if self.is_ready() else None
         return role if role is not None and role in self.roles_in() else None
 
     def solo_player(self):
@@ -3133,7 +3121,7 @@ class WizardChoices:
 
     def solo_is_own(self, place):
         """Return whether the solo at a place of the form was written by hand for the player who now plays it."""
-        return self.solo_player() in self._extras.get(OWN_SOLOS, {}).get(self._solo_number_at(place), {})
+        return self.solo_player() in self._extras.get(arranger.OWN_SOLOS, {}).get(self._solo_number_at(place), {})
 
     def solo_pattern_name(self, place):
         """Return the name of the pattern that holds the solo at a place of the form in the set the choices make, or None where the set has none."""
@@ -3168,12 +3156,12 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=SOLO))
         number = self._solo_number_at(place)
         self._extras.setdefault(SOLO_TAKES, {})[number] = self.solo_take(place) + 1
-        own = self._extras.get(OWN_SOLOS, {})
+        own = self._extras.get(arranger.OWN_SOLOS, {})
         own.get(number, {}).pop(self.solo_player(), None)
         for empty in [key for key, players in own.items() if not players]:
             del own[empty]
         if not own:
-            self._extras.pop(OWN_SOLOS, None)
+            self._extras.pop(arranger.OWN_SOLOS, None)
         self._answers = {}
 
     def _taken_solos(self):
@@ -3181,7 +3169,7 @@ class WizardChoices:
         takes = self._extras.get(SOLO_TAKES, {})
         if not takes:
             return {}
-        own = self._extras.get(OWN_SOLOS, {})
+        own = self._extras.get(arranger.OWN_SOLOS, {})
         role = self._soloist()
         taken = {}
         for number in sorted(takes):
@@ -3196,7 +3184,7 @@ class WizardChoices:
         chords and no solo of another take or written by hand, or None where that song has none."""
         other = WizardChoices.from_data(self.to_data())
         other._extras.pop(SOLO_TAKES, None)
-        other._extras.pop(OWN_SOLOS, None)
+        other._extras.pop(arranger.OWN_SOLOS, None)
         trait = self.progression_trait()
         drawn = self.progressions_by_chance()[:1]
         if trait is not None and drawn:
@@ -3216,8 +3204,8 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=SOLO))
         role = self.solo_player()
         number = self._solo_number_at(place)
-        before = copy.deepcopy(self._extras.get(OWN_SOLOS))
-        own = self._extras.setdefault(OWN_SOLOS, {})
+        before = copy.deepcopy(self._extras.get(arranger.OWN_SOLOS))
+        own = self._extras.setdefault(arranger.OWN_SOLOS, {})
         if pattern is None:
             own.get(number, {}).pop(role, None)
         else:
@@ -3225,14 +3213,14 @@ class WizardChoices:
         for empty in [key for key, players in own.items() if not players]:
             del own[empty]
         if not own:
-            del self._extras[OWN_SOLOS]
+            del self._extras[arranger.OWN_SOLOS]
         self._answers = {}
         try:
             self._written_for_trial()
         except Exception as problem:
-            self._extras.pop(OWN_SOLOS, None)
+            self._extras.pop(arranger.OWN_SOLOS, None)
             if before is not None:
-                self._extras[OWN_SOLOS] = before
+                self._extras[arranger.OWN_SOLOS] = before
             self._answers = {}
             raise ValueError(errors.ERR_WIZARD_TUNE_PATTERN.format(problem=problem)) from problem
 
@@ -3242,12 +3230,12 @@ class WizardChoices:
             return {}
         own = self._entry(place).get(OWN_OF_SECTION, {}).get(INTRO_HOOK)
         able = [role for role in (self.answered_by(), self.tune_player()) if role is not None] if self.can_have_hook() and self.has_hook() else []
-        role = None if own == NOBODY else own if own in able else self._intro_hook_kept()
+        role = None if own == arranger.NOBODY else own if own in able else self._intro_hook_kept()
         if role is None:
             return {}
-        answers = {ANSWER: True} if role == self.answered_by() else {}
-        lines = [{LINE: HOOK, HOOK: True, HIGHER: True, **answers, **({VARIED: True} if count % 2 else {})} for count in range(max(self.section_bars(place) // BARS_IN_A_LINE, 1))]
-        return {PLAN: lines, PLAYS: list(dict.fromkeys([*self.section_plays(place), role]))}
+        answers = {melody_writer.ANSWER: True} if role == self.answered_by() else {}
+        lines = [{melody_writer.LINE: melody_writer.HOOK, melody_writer.HOOK: True, HIGHER: True, **answers, **({VARIED: True} if count % 2 else {})} for count in range(max(self.section_bars(place) // BARS_IN_A_LINE, 1))]
+        return {PLAN: lines, arranger.PLAYS: list(dict.fromkeys([*self.section_plays(place), role]))}
 
     # What a section of a planned song is given of its own, over the plan and the song: each is None until given, and None gives it back.
 
@@ -3259,10 +3247,10 @@ class WizardChoices:
         if not self.has_song_plan():
             return [*OWN_WITHOUT_PLAN, *fade]
         joins = self._remembered(key=JOINS_ANSWER, compute=lambda: self._song_plan().joins())
-        leaves = [LEAVES, SETUP] if place < len(joins) and joins[place] is not None else []
+        leaves = [joins_values.LEAVES, song_plan.SETUP] if place < len(joins) and joins[place] is not None else []
         shape = [SHAPE_OF_SECTION] if self.section_shapes(place) else []
-        rises = [RISES] if place < len(joins) and joins[place] is not None else []
-        return [ENERGY, *shape, *rises, *fade, *leaves, CHORDS, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE]
+        rises = [song_plan.RISES] if place < len(joins) and joins[place] is not None else []
+        return [song_plan.ENERGY, *shape, *rises, *fade, *leaves, arranger.CHORDS, song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE]
 
     def fade_way(self, place):
         """Return how a section can fade: in, for a section that opens the song before its first tune; out, for one that closes
@@ -3279,18 +3267,18 @@ class WizardChoices:
         way = self.fade_way(place)
         if way is None:
             return []
-        if not self._entry(place).get(OWN_OF_SECTION, {}).get(FADES):
-            return [FADES]
-        return [FADES, FADE_LEVEL, FADE_OVER]
+        if not self._entry(place).get(OWN_OF_SECTION, {}).get(song_plan.FADES):
+            return [song_plan.FADES]
+        return [song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER]
 
     def _with_fade_way(self, *, place, own):
         """What a section says of its own, with whether its fade is a fade in and the bars the fade takes, never more than the section has."""
-        if not own.get(FADES):
-            return {field: value for field, value in own.items() if field not in (FADES, FADE_LEVEL, FADE_OVER)}
+        if not own.get(song_plan.FADES):
+            return {field: value for field, value in own.items() if field not in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER)}
         if self.fade_way(place) is None:
             # A section that fades was moved to where none does.
-            return {field: value for field, value in own.items() if field not in (FADES, FADE_LEVEL, FADE_OVER)}
-        return {**own, **({FADES_IN: True} if self.fade_way(place) == FADE_IN else {}), FADE_OVER: min(own.get(FADE_OVER, self.section_bars(place)), self.section_bars(place))}
+            return {field: value for field, value in own.items() if field not in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER)}
+        return {**own, **({song_plan.FADES_IN: True} if self.fade_way(place) == FADE_IN else {}), song_plan.FADE_OVER: min(own.get(song_plan.FADE_OVER, self.section_bars(place)), self.section_bars(place))}
 
     def section_shapes(self, place):
         """Return the shapes a section's lines may take besides its kind's own, by name."""
@@ -3302,93 +3290,93 @@ class WizardChoices:
 
     def section_from_plan(self, *, place, field):
         """Return what a section takes for a field where it is given nothing: the plan's Energy and join, the progression's chords, the song's tempo and key."""
-        if field == CHORDS:
+        if field == arranger.CHORDS:
             return chords_as_text(self._chords_at(place))
-        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE):
-            return self.section_own(place=place, field=TEMPO_OF_PLACE) or self._tempo
-        if field in (ROOT_OF_PLACE, TYPE_OF_PLACE):
-            return self._root if field == ROOT_OF_PLACE else self._scale_type
-        if field == FADES:
+        if field in (song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE):
+            return self.section_own(place=place, field=song_plan.TEMPO_OF_PLACE) or self._tempo
+        if field in (song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE):
+            return self._root if field == song_plan.ROOT_OF_PLACE else self._scale_type
+        if field == song_plan.FADES:
             return False
-        if field == FADE_LEVEL:
-            return FADED
-        if field == FADE_OVER:
+        if field == song_plan.FADE_LEVEL:
+            return song_plan.FADED
+        if field == song_plan.FADE_OVER:
             return self.section_bars(place)
         self._plan()
-        if field == ENERGY:
+        if field == song_plan.ENERGY:
             return self.energies()[place]
-        if field == LEAVES:
+        if field == joins_values.LEAVES:
             join = self._remembered(key=JOINS_ANSWER, compute=lambda: self._song_plan().joins())[place] or {}
-            if join.get(TAIL):
-                return join[TAIL]
+            if join.get(joins_values.TAIL):
+                return join[joins_values.TAIL]
             # A fill is said by its size, as it is chosen.
-            fills = self._style()[PLAN_OF_SONG].get(FILL_SIZES, {})
-            return next((way for way, given in LEAVES_AS_JOIN.items() if FILL_SIZE in given and fills.get(given[FILL_SIZE]) == join.get(FILL_OF_JOIN)), LEAVES_NOTHING)
-        if field == SETUP:
+            fills = self._style()[song_plan.PLAN_OF_SONG].get(song_plan.FILL_SIZES, {})
+            return next((way for way, given in LEAVES_AS_JOIN.items() if song_plan.FILL_SIZE in given and fills.get(given[song_plan.FILL_SIZE]) == join.get(joins_values.FILL_OF_JOIN)), LEAVES_NOTHING)
+        if field == song_plan.SETUP:
             return SETUP_USUAL
         if field == SHAPE_OF_SECTION:
             # A solo after the song's first is a stage, which takes the next of its kind's shapes.
             return self._remembered(key=STAGES_ANSWER, compute=lambda: self._song_plan().shapes())[place] or SHAPE_USUAL
-        if field == RISES:
-            return self._entry(place)[KIND] in self._style()[PLAN_OF_SONG].get(RISING, [])
-        if field == CHORDS:
+        if field == song_plan.RISES:
+            return self._entry(place)[arranger.KIND] in self._style()[song_plan.PLAN_OF_SONG].get(song_plan.RISING, [])
+        if field == arranger.CHORDS:
             return chords_as_text(self._song_plan().chords_at(place))
-        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE):
-            return self.section_own(place=place, field=TEMPO_OF_PLACE) or self._tempo
-        return self._root if field == ROOT_OF_PLACE else self._scale_type
+        if field in (song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE):
+            return self.section_own(place=place, field=song_plan.TEMPO_OF_PLACE) or self._tempo
+        return self._root if field == song_plan.ROOT_OF_PLACE else self._scale_type
 
     def _chords_at(self, place):
         """The chords a section plays where it is given none: its kind's own, the progression's for the kind, or the progression's."""
         style = self._style()
         picks = picked(style=style, song=self.song_picks(PREVIEW_NAME))
         entry = values_of(style=style, trait=self.progression_trait())[picks[self.progression_trait()]]
-        kind = self._entry(place)[KIND]
-        return [chord_of(chord) for chord in style[SECTIONS][kind].get(CHORDS) or entry.get(BY_SECTION, {}).get(kind) or entry[PATTERN]]
+        kind = self._entry(place)[arranger.KIND]
+        return [chord_of(chord) for chord in style[arranger.SECTIONS][kind].get(arranger.CHORDS) or entry.get(arranger.BY_SECTION, {}).get(kind) or entry[arranger.PATTERN]]
 
     def _checked_own(self, *, field, value):
-        if field == ENERGY and not isinstance(value, bool) and isinstance(value, int) and LOWEST_ENERGY <= value <= HIGHEST_ENERGY:
+        if field == song_plan.ENERGY and not isinstance(value, bool) and isinstance(value, int) and song_plan.LOWEST_ENERGY <= value <= song_plan.HIGHEST_ENERGY:
             return value
-        if field == LEAVES and value in LEAVES_AS_JOIN:
+        if field == joins_values.LEAVES and value in LEAVES_AS_JOIN:
             return value
-        if field == SETUP and value == NOT_AT_ALL:
+        if field == song_plan.SETUP and value == song_plan.NOT_AT_ALL:
             return value
-        if field in (RISES, FADES) and isinstance(value, bool):
+        if field in (song_plan.RISES, song_plan.FADES) and isinstance(value, bool):
             return value
         if field == INTRO_HOOK and isinstance(value, str):
             return value
-        if field == FADE_LEVEL and not isinstance(value, bool) and isinstance(value, int) and FADED <= value <= LOUDEST_FADE_LEVEL:
+        if field == song_plan.FADE_LEVEL and not isinstance(value, bool) and isinstance(value, int) and song_plan.FADED <= value <= song_plan.LOUDEST_FADE_LEVEL:
             return value
-        if field == FADE_OVER and not isinstance(value, bool) and isinstance(value, int) and value >= 1:
+        if field == song_plan.FADE_OVER and not isinstance(value, bool) and isinstance(value, int) and value >= 1:
             return value
         if field == LINES_OF_SECTION and isinstance(value, dict):
             return {int(count): self._checked_line_own(given) for count, given in value.items() if given}
         if field == SHAPE_OF_SECTION and isinstance(value, str):
             return value
-        if field == CHORDS:
+        if field == arranger.CHORDS:
             return chords_from_text(chords_as_text(value) if isinstance(value, list) else value)
-        if field in (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and limits.MIN_TEMPO <= value <= limits.MAX_TEMPO:
+        if field in (song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and limits.MIN_TEMPO <= value <= limits.MAX_TEMPO:
             return value
-        if field == ROOT_OF_PLACE and value in note_values.ROOT_NAMES:
+        if field == song_plan.ROOT_OF_PLACE and value in note_values.ROOT_NAMES:
             return value
-        if field == TYPE_OF_PLACE and value in SCALE_TYPES:
+        if field == song_plan.TYPE_OF_PLACE and value in SCALE_TYPES:
             return value
         raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
 
     def _checked_line_own(self, given):
         """What one line of a section was given of its own, checked: notes written by hand, a breath in eighths and whether a note comes early."""
-        if not isinstance(given, dict) or not set(given) <= {LINE_NOTES, LINE_BREATH, LINE_EARLY}:
+        if not isinstance(given, dict) or not set(given) <= {melody_writer.LINE_NOTES, phrasing.LINE_BREATH, phrasing.LINE_EARLY}:
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=LINES_OF_SECTION, value=given))
         checked = {}
-        if LINE_NOTES in given:
-            checked[LINE_NOTES] = self._checked_line(line=given[LINE_NOTES], steps=line_edits.steps_of(given[LINE_NOTES]) if isinstance(given[LINE_NOTES], list) and all(isinstance(note, dict) for note in given[LINE_NOTES]) else 0)
-        if LINE_BREATH in given:
-            if isinstance(given[LINE_BREATH], bool) or not isinstance(given[LINE_BREATH], int) or not phrasing.NO_BREATH <= given[LINE_BREATH] <= phrasing.LONGEST_BREATH:
-                raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=LINE_BREATH, value=given[LINE_BREATH]))
-            checked[LINE_BREATH] = given[LINE_BREATH]
-        if LINE_EARLY in given:
-            if not isinstance(given[LINE_EARLY], bool):
-                raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=LINE_EARLY, value=given[LINE_EARLY]))
-            checked[LINE_EARLY] = given[LINE_EARLY]
+        if melody_writer.LINE_NOTES in given:
+            checked[melody_writer.LINE_NOTES] = self._checked_line(line=given[melody_writer.LINE_NOTES], steps=line_edits.steps_of(given[melody_writer.LINE_NOTES]) if isinstance(given[melody_writer.LINE_NOTES], list) and all(isinstance(note, dict) for note in given[melody_writer.LINE_NOTES]) else 0)
+        if phrasing.LINE_BREATH in given:
+            if isinstance(given[phrasing.LINE_BREATH], bool) or not isinstance(given[phrasing.LINE_BREATH], int) or not phrasing.NO_BREATH <= given[phrasing.LINE_BREATH] <= phrasing.LONGEST_BREATH:
+                raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=phrasing.LINE_BREATH, value=given[phrasing.LINE_BREATH]))
+            checked[phrasing.LINE_BREATH] = given[phrasing.LINE_BREATH]
+        if phrasing.LINE_EARLY in given:
+            if not isinstance(given[phrasing.LINE_EARLY], bool):
+                raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=phrasing.LINE_EARLY, value=given[phrasing.LINE_EARLY]))
+            checked[phrasing.LINE_EARLY] = given[phrasing.LINE_EARLY]
         return checked
 
     # A section's lines, one by one: who plays each, its notes as the song has them, and what the line is given of its own.
@@ -3400,15 +3388,15 @@ class WizardChoices:
     def _plan_at(self, place):
         """The plan of lines a section is played by, with what its lines were given."""
         if self.has_song_plan():
-            by_place = self._extras_with_sections().get(PLAN_OF_SONG, {}).get(BY_PLACE) or []
+            by_place = self._extras_with_sections().get(song_plan.PLAN_OF_SONG, {}).get(song_plan.BY_PLACE) or []
             given = by_place[place].get(PLAN) if place < len(by_place) and by_place[place] else None
             if given is not None:
                 return given
-        return self._plan_with_lines(kind=self._entry(place)[KIND], plan=None, lines=self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION, {}))
+        return self._plan_with_lines(kind=self._entry(place)[arranger.KIND], plan=None, lines=self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION, {}))
 
     def tune_steps_in_bar(self):
         """Return how many steps a bar of the tune has."""
-        return self._melody_habits()[GRID]
+        return self._melody_habits()[melody_writer.GRID]
 
     def section_lines(self, place):
         """Return a section's lines in order, each a mapping: who plays the line, its notes (line_edits.py) or None where nobody of the band plays the line,
@@ -3418,27 +3406,27 @@ class WizardChoices:
 
     def _section_lines(self, place):
         made = self._made_form()
-        scene = made[FORM][place]
+        scene = made[arranger.FORM][place]
         own = self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION, {})
         seen = set()
         lines = []
         for count, entry in enumerate(self._plan_at(place)):
-            player = self.answered_by() if entry.get(ANSWER) else self.tune_player()
-            part = made[PARTS].get((scene.get(PLAY_OF_SCENE, {}).get(player) or {}).get(PART))
-            notes = copy.deepcopy(part[LINES][count]) if part is not None and LINES in part and count < len(part[LINES]) else None
-            letter = (bool(entry.get(ANSWER)), entry.get(LINE, str(count)))
+            player = self.answered_by() if entry.get(melody_writer.ANSWER) else self.tune_player()
+            part = made[arranger.PARTS].get((scene.get(PLAY_OF_SCENE, {}).get(player) or {}).get(PART))
+            notes = copy.deepcopy(part[tune_notation.LINES][count]) if part is not None and tune_notation.LINES in part and count < len(part[tune_notation.LINES]) else None
+            letter = (bool(entry.get(melody_writer.ANSWER)), entry.get(melody_writer.LINE, str(count)))
             new = letter not in seen
             seen.add(letter)
-            breathes = new and notes is not None and not entry.get(HOOK) and self.counts_in_four() and LINE_NOTES not in (own.get(count) or {})
-            lines.append({LINE_PLAYER: player, LINE_NOTES: notes, LINE_BREATHES: breathes, LINE_IS_HOOK: bool(entry.get(HOOK)), LINE_OWN: copy.deepcopy(own.get(count) or {})})
+            breathes = new and notes is not None and not entry.get(melody_writer.HOOK) and self.counts_in_four() and melody_writer.LINE_NOTES not in (own.get(count) or {})
+            lines.append({LINE_PLAYER: player, melody_writer.LINE_NOTES: notes, LINE_BREATHES: breathes, LINE_IS_HOOK: bool(entry.get(melody_writer.HOOK)), LINE_OWN: copy.deepcopy(own.get(count) or {})})
         return lines
 
     def set_section_line(self, *, place, line, field, value):
         """Give one line of a section its own notes, breath or early note, or give the field back with None. What the song cannot then be made with is refused."""
         lines = self.section_lines(place)
-        if isinstance(line, bool) or not isinstance(line, int) or not 0 <= line < len(lines) or field not in (LINE_NOTES, LINE_BREATH, LINE_EARLY):
+        if isinstance(line, bool) or not isinstance(line, int) or not 0 <= line < len(lines) or field not in (melody_writer.LINE_NOTES, phrasing.LINE_BREATH, phrasing.LINE_EARLY):
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=line))
-        if field == LINE_NOTES and value is not None and (lines[line][LINE_NOTES] is None or not isinstance(value, list) or line_edits.steps_of(self._checked_line(line=value, steps=line_edits.steps_of(lines[line][LINE_NOTES]))) == 0):
+        if field == melody_writer.LINE_NOTES and value is not None and (lines[line][melody_writer.LINE_NOTES] is None or not isinstance(value, list) or line_edits.steps_of(self._checked_line(line=value, steps=line_edits.steps_of(lines[line][melody_writer.LINE_NOTES]))) == 0):
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
         own = {count: dict(given) for count, given in (self._entry(place).get(OWN_OF_SECTION, {}).get(LINES_OF_SECTION) or {}).items()}
         given = own.setdefault(line, {})
@@ -3459,7 +3447,7 @@ class WizardChoices:
         checked = None if value is None else self._checked_own(field=field, value=value)
         if field == SHAPE_OF_SECTION and checked is not None and checked not in self.section_shapes(place):
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
-        if field in (FADES, FADE_LEVEL, FADE_OVER) and checked is not None and (field not in (FADES, *self.fade_fields(place)) or self.fade_way(place) is None or (field == FADE_OVER and checked > self.section_bars(place))):
+        if field in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER) and checked is not None and (field not in (song_plan.FADES, *self.fade_fields(place)) or self.fade_way(place) is None or (field == song_plan.FADE_OVER and checked > self.section_bars(place))):
             # Only a section that opens or closes the song fades, and a fade's level and bars are a fade's that is switched on.
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
         before = copy.deepcopy(self._sections)
@@ -3468,11 +3456,11 @@ class WizardChoices:
         own.pop(field, None)
         if checked is not None:
             own[field] = checked
-        if field == FADES and not checked:
+        if field == song_plan.FADES and not checked:
             # A fade switched off keeps nothing of how it faded.
-            own.pop(FADES, None)
-            own.pop(FADE_LEVEL, None)
-            own.pop(FADE_OVER, None)
+            own.pop(song_plan.FADES, None)
+            own.pop(song_plan.FADE_LEVEL, None)
+            own.pop(song_plan.FADE_OVER, None)
         if not own:
             del entry[OWN_OF_SECTION]
         self._answers = {}
@@ -3484,19 +3472,19 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
 
     def _picks_chosen(self, name):
-        return {NAME: name, TITLE: name, STYLE: self._genre, TEMPLATE: self._subgenre, VARIANT: self._variant, KEY: {ROOT: self._root, TYPE: self._scale_type}, TEMPO: self._tempo, FORM: self.form_sections() if self.has_own_form() else self.get_form(), SEED: self._seed,
-                PICKS: {**self._ways, **self._break_picks()}, PLAYERS: self._players(), WITHOUT: self._song_without(), **self._song_beside(),
-                **({SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
-                **({MELODY_ENGINE: self._melody} if self._melody is not None else {}),
-                **({HOOK: self._hook} if self._hook is not None else {}),
-                **({HOOK_TAKE: self._hook_take} if self._hook_take else {}),
-                **({MELODY: self._song_melody()} if self._song_melody() else {}),
-                **({ROLE_HABITS: self._song_role_habits()} if self._song_role_habits() else {}),
-                **({ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
-                **({WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
-                **({PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),
-                **({FILLS_COME: FILLS_EVERY[self._fills]} if self._fills is not None else {}),
-                **({} if self._quiet_notes else {QUIET_NOTES: False})}
+        return {arranger.NAME: name, arranger.TITLE: name, arranger.STYLE: self._genre, arranger.TEMPLATE: self._subgenre, arranger.VARIANT: self._variant, arranger.KEY: {arranger.ROOT: self._root, arranger.TYPE: self._scale_type}, arranger.TEMPO: self._tempo, arranger.FORM: self.form_sections() if self.has_own_form() else self.get_form(), arranger.SEED: self._seed,
+                arranger.PICKS: {**self._ways, **self._break_picks()}, arranger.PLAYERS: self._players(), arranger.WITHOUT: self._song_without(), **self._song_beside(),
+                **({arranger.SECTIONS: self._sections_of_song()} if self._sections_of_song() else {}),
+                **({arranger.MELODY_ENGINE: self._melody} if self._melody is not None else {}),
+                **({melody_writer.HOOK: self._hook} if self._hook is not None else {}),
+                **({melody_writer.HOOK_TAKE: self._hook_take} if self._hook_take else {}),
+                **({arranger.MELODY: self._song_melody()} if self._song_melody() else {}),
+                **({arranger.ROLE_HABITS: self._song_role_habits()} if self._song_role_habits() else {}),
+                **({arranger.ROLE_SOUNDS: self._song_sounds()} if self._song_sounds() else {}),
+                **({arranger.WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
+                **({arranger.PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),
+                **({arranger.FILLS_COME: FILLS_EVERY[self._fills]} if self._fills is not None else {}),
+                **({} if self._quiet_notes else {arranger.QUIET_NOTES: False})}
 
     def set_song_extras(self, extras):
         """Lay a song file's own picks over what the choices make: the song's plan, and whatever a section is given."""
@@ -3510,42 +3498,42 @@ class WizardChoices:
     def has_song_plan(self):
         """Return whether the song is planned section by section (song_plan.py): a genre that says how its songs are planned plans every
         song until the plan is switched off."""
-        kept = self._extras.get(PLAN_OF_SONG)
+        kept = self._extras.get(song_plan.PLAN_OF_SONG)
         return self.can_have_song_plan() if kept is None else kept is not False
 
     def can_have_song_plan(self):
         """Return whether the genre says how a song of its own is planned."""
-        return self.is_ready() and PLAN_OF_SONG in self._style()
+        return self.is_ready() and song_plan.PLAN_OF_SONG in self._style()
 
     def set_song_plan(self, on):
         if not isinstance(on, bool):
             raise ValueError(errors.ERR_WIZARD_SWITCH.format(value=on))
         if on and not self.can_have_song_plan():
             raise ValueError(errors.ERR_WIZARD_GENRE_HAS_NO_PLAN)
-        if on and not isinstance(self._extras.get(PLAN_OF_SONG), dict):
-            self._extras[PLAN_OF_SONG] = {}
+        if on and not isinstance(self._extras.get(song_plan.PLAN_OF_SONG), dict):
+            self._extras[song_plan.PLAN_OF_SONG] = {}
         if not on:
-            self._extras[PLAN_OF_SONG] = False
+            self._extras[song_plan.PLAN_OF_SONG] = False
             # What the plan alone reads of the melody goes with the plan; a hook written by hand stays.
-            kept = {field: value for field, value in self._extras.pop(MELODY, {}).items() if field == HOOK_NOTES}
+            kept = {field: value for field, value in self._extras.pop(arranger.MELODY, {}).items() if field == melody_writer.HOOK_NOTES}
             if kept:
-                self._extras[MELODY] = kept
+                self._extras[arranger.MELODY] = kept
         self._answers = {}
 
     def _plan(self):
         if not self.has_song_plan():
             raise ValueError(errors.ERR_WIZARD_NO_SONG_PLAN)
-        if not isinstance(self._extras.get(PLAN_OF_SONG), dict):
-            self._extras[PLAN_OF_SONG] = {}
-        return self._extras[PLAN_OF_SONG]
+        if not isinstance(self._extras.get(song_plan.PLAN_OF_SONG), dict):
+            self._extras[song_plan.PLAN_OF_SONG] = {}
+        return self._extras[song_plan.PLAN_OF_SONG]
 
     def get_contrast(self):
-        return self._plan().get(CONTRAST, USUAL_CONTRAST)
+        return self._plan().get(song_plan.CONTRAST, song_plan.USUAL_CONTRAST)
 
     def set_contrast(self, contrast):
-        if isinstance(contrast, bool) or not isinstance(contrast, int) or not LOWEST_ENERGY <= contrast <= HIGHEST_ENERGY:
-            raise ValueError(errors.ERR_WIZARD_CONTRAST.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=contrast))
-        self._plan()[CONTRAST] = contrast
+        if isinstance(contrast, bool) or not isinstance(contrast, int) or not song_plan.LOWEST_ENERGY <= contrast <= song_plan.HIGHEST_ENERGY:
+            raise ValueError(errors.ERR_WIZARD_CONTRAST.format(low=song_plan.LOWEST_ENERGY, high=song_plan.HIGHEST_ENERGY, value=contrast))
+        self._plan()[song_plan.CONTRAST] = contrast
         self._answers = {}
 
     # A player, as a person in the band: how strongly the player answers to Energy, where the player comes in and where the player lays out.
@@ -3553,32 +3541,32 @@ class WizardChoices:
     def reacts(self, role):
         """Return whether a player answers to Energy more or less than the band: a player of a planned song whose playing the plan holds back or lets go,
         which is found by making the song with the player even and dramatic, and kept until a choice changes."""
-        if not (self.has_song_plan() and self.role_is_in(role) and PLAYER in self._role(role)):
+        if not (self.has_song_plan() and self.role_is_in(role) and arranger.PLAYER in self._role(role)):
             return False
-        return self._offered(key=(REACTS_ANSWER, self._role(role)[PLAYER]), compute=lambda: self._reacts_is_heard(role))
+        return self._offered(key=(REACTS_ANSWER, self._role(role)[arranger.PLAYER]), compute=lambda: self._reacts_is_heard(role))
 
     def _reacts_is_heard(self, role):
         made = []
-        for reacts in (LOWEST_ENERGY, HIGHEST_ENERGY):
+        for reacts in (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY):
             trial = self._copied_for_trial()
-            trial._plan()[REACTS] = {**(trial._plan().get(REACTS) or {}), self._role(role)[PLAYER]: reacts}
+            trial._plan()[song_plan.REACTS] = {**(trial._plan().get(song_plan.REACTS) or {}), self._role(role)[arranger.PLAYER]: reacts}
             made.append(trial._patterns_played())
         return made[0] != made[1]
 
     def get_reacts(self, role):
-        return (self._plan().get(REACTS) or {}).get(self._role(role)[PLAYER], USUAL_CONTRAST)
+        return (self._plan().get(song_plan.REACTS) or {}).get(self._role(role)[arranger.PLAYER], song_plan.USUAL_CONTRAST)
 
     def set_reacts(self, *, role, reacts):
         """Have a player answer to Energy evenly, at the lowest, or dramatically, at the highest. Two players who are one person, as a singer who also plays, answer alike."""
-        if not self.reacts(role) or isinstance(reacts, bool) or not isinstance(reacts, int) or not LOWEST_ENERGY <= reacts <= HIGHEST_ENERGY:
-            raise ValueError(errors.ERR_WIZARD_REACTS.format(low=LOWEST_ENERGY, high=HIGHEST_ENERGY, value=reacts))
-        kept = dict(self._plan().get(REACTS) or {})
-        kept.pop(self._role(role)[PLAYER], None)
-        if reacts != USUAL_CONTRAST:
-            kept[self._role(role)[PLAYER]] = reacts
-        self._plan().pop(REACTS, None)
+        if not self.reacts(role) or isinstance(reacts, bool) or not isinstance(reacts, int) or not song_plan.LOWEST_ENERGY <= reacts <= song_plan.HIGHEST_ENERGY:
+            raise ValueError(errors.ERR_WIZARD_REACTS.format(low=song_plan.LOWEST_ENERGY, high=song_plan.HIGHEST_ENERGY, value=reacts))
+        kept = dict(self._plan().get(song_plan.REACTS) or {})
+        kept.pop(self._role(role)[arranger.PLAYER], None)
+        if reacts != song_plan.USUAL_CONTRAST:
+            kept[self._role(role)[arranger.PLAYER]] = reacts
+        self._plan().pop(song_plan.REACTS, None)
         if kept:
-            self._plan()[REACTS] = kept
+            self._plan()[song_plan.REACTS] = kept
         self._answers = {}
 
     def _comes_in_places(self):
@@ -3609,7 +3597,7 @@ class WizardChoices:
         return next((way for way, place in self._comes_in_places().items() if place == first), None)
 
     def _usually_plays(self, *, place, role):
-        return role in self._usual(place).get(PLAYS, [])
+        return role in self._usual(place).get(arranger.PLAYS, [])
 
     def _quiet_places(self):
         """The places of the form a player who lays out when it is quiet sits out: those of a low Energy in a planned song."""
@@ -3668,30 +3656,30 @@ class WizardChoices:
     def tune_phrasing(self):
         """Return the settings of the Phrasing the tune's clips run, each given only where it is not what a Phrasing starts with, or
         None where the tune is played as written, with no Phrasing."""
-        kept = self._extras.get(TUNE_PHRASING, {})
+        kept = self._extras.get(arranger.TUNE_PHRASING, {})
         return None if kept is False else dict(kept)
 
     def set_tune_phrasing(self, settings):
         """Say how the tune is delivered: a Phrasing's settings by name, None for a Phrasing as one starts, or False for no
         Phrasing. Settings no Phrasing has, or values a setting cannot take, are refused."""
         if settings is False:
-            self._extras[TUNE_PHRASING] = False
+            self._extras[arranger.TUNE_PHRASING] = False
         else:
             try:
                 given = {name: value for name, value in dict(settings or {}).items() if value != generator_settings.PHRASING_DEFAULTS.get(name, value) or name not in generator_settings.PHRASING_DEFAULTS}
                 kept = PhrasingSettings.from_data(data=given, where=composer_text.MSG_TUNE_PHRASING_NAME).to_data()
             except (SongFileError, TypeError, ValueError) as problem:
                 raise ValueError(errors.ERR_WIZARD_TUNE_PHRASING.format(value=settings, problem=problem)) from None
-            self._extras.pop(TUNE_PHRASING, None)
+            self._extras.pop(arranger.TUNE_PHRASING, None)
             if kept:
-                self._extras[TUNE_PHRASING] = kept
+                self._extras[arranger.TUNE_PHRASING] = kept
         self._answers = {}
 
     # The musicians: each player's clips are played by a Musician generator, the one the player is given or the person's own.
 
     def has_musicians(self):
         """Return whether the genre's songs give each player a Musician."""
-        return self._genre is not None and self._style()[GENRE_OF_STYLE] not in band.GENRES_WITHOUT_MUSICIANS
+        return self._genre is not None and self._style()[arranger.GENRE] not in band.GENRES_WITHOUT_MUSICIANS
 
     def musician_name(self, role):
         """Return what the Musician of a player is called in the song made."""
@@ -3699,13 +3687,13 @@ class WizardChoices:
 
     def player_musician(self, role):
         """Return the settings of the Musician the person gave a player, or None where the player has the one players are given."""
-        own = self._extras.get(MUSICIANS, {}).get(role)
+        own = self._extras.get(arranger.MUSICIANS, {}).get(role)
         return None if own is None else dict(own)
 
     def set_player_musician(self, *, role, settings):
         """Give a player a Musician of the person's own, its settings by name, or None for the one players are given. The tracks the
         Musician reads are the song's to say and are not kept. Settings no Musician has, or values a setting cannot take, are refused."""
-        kept = dict(self._extras.get(MUSICIANS, {}))
+        kept = dict(self._extras.get(arranger.MUSICIANS, {}))
         if settings is None:
             kept.pop(role, None)
         else:
@@ -3714,42 +3702,42 @@ class WizardChoices:
                 kept[role] = MusicianSettings.from_data(data=given, where=band.musician_name(role)).to_data()
             except (SongFileError, TypeError, ValueError) as problem:
                 raise ValueError(errors.ERR_WIZARD_MUSICIAN.format(value=settings, problem=problem)) from None
-        self._extras.pop(MUSICIANS, None)
+        self._extras.pop(arranger.MUSICIANS, None)
         if kept:
-            self._extras[MUSICIANS] = kept
+            self._extras[arranger.MUSICIANS] = kept
         self._answers = {}
 
     def has_phrasing(self):
         """Return whether the tune's lines breathe."""
-        return bool(self._plan().get(PHRASING, True))
+        return bool(self._plan().get(song_plan.PHRASING, True))
 
     def set_phrasing(self, on):
         if not isinstance(on, bool):
             raise ValueError(errors.ERR_WIZARD_SWITCH.format(value=on))
-        self._plan()[PHRASING] = on
+        self._plan()[song_plan.PHRASING] = on
         self._answers = {}
 
     def phrasing_way(self, name):
         """Return how the lines breathe in one respect: how long the breaths are, which lines are the shorter, or how many lines in four have a note come early."""
-        return self._plan().get(PHRASING_WAYS, {}).get(name, phrasing.USUAL_WAYS[name])
+        return self._plan().get(song_plan.PHRASING_WAYS, {}).get(name, phrasing.USUAL_WAYS[name])
 
     def set_phrasing_way(self, *, name, value):
         offered = PHRASING_OFFERED.get(name)
         if offered is None or isinstance(value, bool) or value not in offered:
             raise ValueError(errors.ERR_WIZARD_PHRASING.format(name=name, value=value))
-        ways = self._plan().setdefault(PHRASING_WAYS, {})
+        ways = self._plan().setdefault(song_plan.PHRASING_WAYS, {})
         ways.pop(name, None)
         if value != phrasing.USUAL_WAYS[name]:
             ways[name] = value
         if not ways:
-            del self._plan()[PHRASING_WAYS]
+            del self._plan()[song_plan.PHRASING_WAYS]
         self._answers = {}
 
     def counts_in_four(self):
         """Return whether the song is in four with a tune written in eighths, where a hook is of a kind and a tune's lines breathe: both
         are written for a bar of eight eighths, which a shuffle's bar of triplets is not."""
-        in_four = str(picked(style=self._style(), song=self.song_picks(PREVIEW_NAME)).get(METER, COMMON_TIME)) == COMMON_TIME
-        return in_four and not self._melody_habits()[GRID] % phrasing.EIGHTHS_IN_BAR
+        in_four = str(picked(style=self._style(), song=self.song_picks(PREVIEW_NAME)).get(arranger.METER, arranger.COMMON_TIME)) == arranger.COMMON_TIME
+        return in_four and not self._melody_habits()[melody_writer.GRID] % phrasing.EIGHTHS_IN_BAR
 
     # The hook's notes, the wizard's until a person writes them by hand.
 
@@ -3757,37 +3745,37 @@ class WizardChoices:
         """Return the hook's line as the song has it, a list of notes and rests each so many steps long (line_edits.py), or None while the song has no hook."""
         if self.hook_notes() is None:
             return None
-        return self._remembered(key=HOOK_LINE_ANSWER, compute=lambda: copy.deepcopy(self._hook_part()[0][LINES][self._hook_part()[1]]))
+        return self._remembered(key=HOOK_LINE_ANSWER, compute=lambda: copy.deepcopy(self._hook_part()[0][tune_notation.LINES][self._hook_part()[1]]))
 
     def hook_is_own(self):
         """Return whether the hook's notes were written by hand."""
-        return bool(self._extras.get(MELODY, {}).get(HOOK_NOTES))
+        return bool(self._extras.get(arranger.MELODY, {}).get(melody_writer.HOOK_NOTES))
 
     def pitch_of_place(self, place):
         """Return the MIDI note at a place of the song's scale as the tune's player plays it (line_edits.place_of), for a picture of a line."""
         scale = self.scale_half_steps()
         octaves, degree = divmod(place, len(scale))
-        return self._hook_part()[0][OCTAVE] * NOTES_IN_OCTAVE + self.root_half_steps() + scale[degree] + octaves * NOTES_IN_OCTAVE
+        return self._hook_part()[0][tune_notation.OCTAVE] * melody_writer.NOTES_IN_OCTAVE + self.root_half_steps() + scale[degree] + octaves * melody_writer.NOTES_IN_OCTAVE
 
     def set_hook_line(self, line):
         """Write the hook's notes by hand, or give the hook back to the wizard with None. A line that is not as long as the hook's, or that the
         song cannot be made with, is refused and nothing changes."""
         if self.hook_line() is None:
             raise ValueError(errors.ERR_WIZARD_NO_HOOK)
-        before = copy.deepcopy(self._extras.get(MELODY))
+        before = copy.deepcopy(self._extras.get(arranger.MELODY))
         if line is None:
-            self._extras.get(MELODY, {}).pop(HOOK_NOTES, None)
-            if not self._extras.get(MELODY, True):
-                del self._extras[MELODY]
+            self._extras.get(arranger.MELODY, {}).pop(melody_writer.HOOK_NOTES, None)
+            if not self._extras.get(arranger.MELODY, True):
+                del self._extras[arranger.MELODY]
         else:
-            self._extras.setdefault(MELODY, {})[HOOK_NOTES] = self._checked_line(line=line, steps=line_edits.steps_of(self.hook_line()))
+            self._extras.setdefault(arranger.MELODY, {})[melody_writer.HOOK_NOTES] = self._checked_line(line=line, steps=line_edits.steps_of(self.hook_line()))
         self._answers = {}
         try:
             self._written_for_trial()
         except Exception as problem:
-            self._extras.pop(MELODY, None)
+            self._extras.pop(arranger.MELODY, None)
             if before is not None:
-                self._extras[MELODY] = before
+                self._extras[arranger.MELODY] = before
             self._answers = {}
             raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=problem)) from problem
 
@@ -3811,7 +3799,7 @@ class WizardChoices:
 
     def tune_is_own(self, kind):
         """Return whether a kind of section's tune was written by hand, so that nothing the wizard chooses writes over it."""
-        return kind in self._extras.get(OWN_TUNES, {})
+        return kind in self._extras.get(arranger.OWN_TUNES, {})
 
     def tune_pattern_name(self, kind):
         """Return the name of the pattern that holds a kind of section's tune in the set the choices make, or None where the set has none."""
@@ -3819,7 +3807,7 @@ class WizardChoices:
 
     def tune_pattern(self, kind):
         """Return a kind of section's tune as a pattern's data: the person's own, or the tune the choices write as they stand. None where no tune is made."""
-        own = self._extras.get(OWN_TUNES, {}).get(kind)
+        own = self._extras.get(arranger.OWN_TUNES, {}).get(kind)
         return copy.deepcopy(own if own is not None else self._tune_in_made(kind)[1])
 
     def _tune_in_made(self, kind):
@@ -3846,11 +3834,11 @@ class WizardChoices:
 
     def tune_players_offered(self):
         """Return the players who may be given the tune, by name: every player of notes in the band but the bass."""
-        return [role for role in self.roles_in() if self.has_sound(role) and self._role(role).get(PLAYER) != BASS_PLAYER]
+        return [role for role in self.roles_in() if self.has_sound(role) and self._role(role).get(arranger.PLAYER) != players_values.BASS]
 
     def tune_played_by(self):
         """Return the player who plays the tune in the song: the one chosen while in the band, or else the player the genre gives the tune."""
-        chosen = self._extras.get(TUNE_BY_SONG)
+        chosen = self._extras.get(arranger.TUNE_BY_SONG)
         return chosen if chosen in self.tune_players_offered() else self.tune_player()
 
     def set_tune_played_by(self, role):
@@ -3858,20 +3846,20 @@ class WizardChoices:
         if role is not None and role not in self.tune_players_offered():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_TUNE_PLAYER.format(value=role))
         if role is None or role == self.tune_player():
-            self._extras.pop(TUNE_BY_SONG, None)
+            self._extras.pop(arranger.TUNE_BY_SONG, None)
         else:
-            self._extras[TUNE_BY_SONG] = role
+            self._extras[arranger.TUNE_BY_SONG] = role
         self._answers = {}
 
     def tune_played_by_in(self, kind):
         """Return what a kind of section says of who plays its tune: a player's name, NOBODY, or None where the kind goes by the song."""
-        chosen = self._extras.get(TUNE_BY, {}).get(kind)
-        return chosen if chosen == NOBODY or chosen in self.tune_players_offered() else None
+        chosen = self._extras.get(arranger.TUNE_BY, {}).get(kind)
+        return chosen if chosen == arranger.NOBODY or chosen in self.tune_players_offered() else None
 
     def tune_player_in(self, kind):
         """Return the player who plays the tune in a kind of section, or None where nobody does."""
         chosen = self.tune_played_by_in(kind)
-        if chosen == NOBODY:
+        if chosen == arranger.NOBODY:
             return None
         return chosen or self.tune_played_by()
 
@@ -3879,15 +3867,15 @@ class WizardChoices:
         """Give a kind of section's tune to a player, to nobody with NOBODY, or back to the song's player with None."""
         if self.tune_place(kind) is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
-        if role is not None and role != NOBODY and role not in self.tune_players_offered():
+        if role is not None and role != arranger.NOBODY and role not in self.tune_players_offered():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_TUNE_PLAYER.format(value=role))
-        by = self._extras.setdefault(TUNE_BY, {})
+        by = self._extras.setdefault(arranger.TUNE_BY, {})
         if role is None:
             by.pop(kind, None)
         else:
             by[kind] = role
         if not by:
-            del self._extras[TUNE_BY]
+            del self._extras[arranger.TUNE_BY]
         self._answers = {}
 
     # A tune written by hand and the chords under it: when the chords change, the tune can be fitted to them.
@@ -3896,11 +3884,11 @@ class WizardChoices:
         """Return, for each kind of section whose tune was written by hand, the chords its first section hears, so that a change of
         chords under such a tune can be told. A kind whose chords cannot be told is left out."""
         heard = {}
-        for kind in self._extras.get(OWN_TUNES, {}):
+        for kind in self._extras.get(arranger.OWN_TUNES, {}):
             try:
                 place = self.tune_place(kind)
                 if place is not None:
-                    heard[kind] = copy.deepcopy(self.section_own(place=place, field=CHORDS) or (self._song_plan().chords_at(place) if self.has_song_plan() else self._chords_at(place)))
+                    heard[kind] = copy.deepcopy(self.section_own(place=place, field=arranger.CHORDS) or (self._song_plan().chords_at(place) if self.has_song_plan() else self._chords_at(place)))
             except (ValueError, KeyError, IndexError, SongFileError):
                 continue
         return heard
@@ -3911,7 +3899,7 @@ class WizardChoices:
         chords = self.own_tune_chords().get(kind)
         if chords is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
-        own = self._extras[OWN_TUNES][kind]
+        own = self._extras[arranger.OWN_TUNES][kind]
         self.set_tune_pattern(kind=kind, pattern=tune_fit.fitted(pattern=own, chords=chords, bar=bar_length(self.meter())))
 
     def tune_take(self, kind):
@@ -3924,16 +3912,16 @@ class WizardChoices:
         if self.tune_place(kind) is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
         self._extras.setdefault(TUNE_TAKES, {})[kind] = self.tune_take(kind) + 1
-        own = self._extras.get(OWN_TUNES, {})
+        own = self._extras.get(arranger.OWN_TUNES, {})
         own.pop(kind, None)
         if not own:
-            self._extras.pop(OWN_TUNES, None)
+            self._extras.pop(arranger.OWN_TUNES, None)
         self._answers = {}
 
     def _taken_tunes(self):
         """The pattern of each kind of section whose tune is a later take and not written by hand, by kind."""
         takes = self._extras.get(TUNE_TAKES, {})
-        own = self._extras.get(OWN_TUNES, {})
+        own = self._extras.get(arranger.OWN_TUNES, {})
         taken = {}
         for kind in sorted(takes):
             if kind not in own and takes[kind] != FIRST_TUNE_TAKE:
@@ -3947,7 +3935,7 @@ class WizardChoices:
         the take's own, with the same chords and no tune of another take or written by hand, or None where that song has none."""
         other = WizardChoices.from_data(self.to_data())
         other._extras.pop(TUNE_TAKES, None)
-        other._extras.pop(OWN_TUNES, None)
+        other._extras.pop(arranger.OWN_TUNES, None)
         trait = self.progression_trait()
         drawn = self.progressions_by_chance()[:1]
         if trait is not None and drawn:
@@ -3963,21 +3951,21 @@ class WizardChoices:
         tune again. A kind with no tune, and a pattern the song cannot be made with, are refused and nothing changes."""
         if self.tune_place(kind) is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
-        before = copy.deepcopy(self._extras.get(OWN_TUNES))
-        own = self._extras.setdefault(OWN_TUNES, {})
+        before = copy.deepcopy(self._extras.get(arranger.OWN_TUNES))
+        own = self._extras.setdefault(arranger.OWN_TUNES, {})
         if pattern is None:
             own.pop(kind, None)
         else:
             own[kind] = copy.deepcopy(pattern)
         if not own:
-            del self._extras[OWN_TUNES]
+            del self._extras[arranger.OWN_TUNES]
         self._answers = {}
         try:
             self._written_for_trial()
         except Exception as problem:
-            self._extras.pop(OWN_TUNES, None)
+            self._extras.pop(arranger.OWN_TUNES, None)
             if before is not None:
-                self._extras[OWN_TUNES] = before
+                self._extras[arranger.OWN_TUNES] = before
             self._answers = {}
             raise ValueError(errors.ERR_WIZARD_TUNE_PATTERN.format(problem=problem)) from problem
 
@@ -4007,7 +3995,7 @@ class WizardChoices:
             trial = WizardChoices.from_data(self.to_data())
             trial._keep_melody_chosen(field=field, value=value, kind=kind)
             try:
-                made[value] = arranged(style=style_of(self._genre), song=trial.song_picks(self._subgenre))[PARTS]
+                made[value] = arranged(style=style_of(self._genre), song=trial.song_picks(self._subgenre))[arranger.PARTS]
             except (ValueError, IndexError, KeyError, SongFileError):
                 made[value] = made.get(None)
         return [value for value in made if value is not None and made[value] != made[None]]
@@ -4030,14 +4018,14 @@ class WizardChoices:
     def _keep_melody_chosen(self, *, field, value, kind=None):
         """Keep one thing chosen of the melodies, for the song or for a kind of section, or forget it with None."""
         chosen = self._extras.setdefault(MELODY_CHOSEN, {})
-        held = chosen if kind is None else chosen.setdefault(BY_KIND, {}).setdefault(kind, {})
+        held = chosen if kind is None else chosen.setdefault(melody_writer.BY_KIND, {}).setdefault(kind, {})
         held.pop(field, None)
         if value is not None:
             held[field] = value
         if kind is not None:
-            chosen[BY_KIND] = {name: own for name, own in chosen[BY_KIND].items() if own}
-            if not chosen[BY_KIND]:
-                del chosen[BY_KIND]
+            chosen[melody_writer.BY_KIND] = {name: own for name, own in chosen[melody_writer.BY_KIND].items() if own}
+            if not chosen[melody_writer.BY_KIND]:
+                del chosen[melody_writer.BY_KIND]
         if not chosen:
             del self._extras[MELODY_CHOSEN]
         self._answers = {}
@@ -4068,7 +4056,7 @@ class WizardChoices:
 
     def section_melody_fields(self, kind):
         """Return the fields of one kind of section's melody that are heard in the subgenre: how high it sits and how busy it is."""
-        if not self.is_ready() or kind not in self.tune_kinds() or kind not in self._style()[SECTIONS]:
+        if not self.is_ready() or kind not in self.tune_kinds() or kind not in self._style()[arranger.SECTIONS]:
             return []
         return [field for field in SECTION_MELODY_WAYS if self.section_melody_ways_offered(kind=kind, field=field)]
 
@@ -4080,13 +4068,13 @@ class WizardChoices:
 
     def get_section_melody(self, *, kind, field):
         """Return what a kind of section says of its own melody in one field, or None where nothing was chosen."""
-        chosen = self._extras.get(MELODY_CHOSEN, {}).get(BY_KIND, {}).get(kind, {}).get(field)
+        chosen = self._extras.get(MELODY_CHOSEN, {}).get(melody_writer.BY_KIND, {}).get(kind, {}).get(field)
         return chosen if chosen in SECTION_MELODY_WAYS[field] else None
 
     def genre_height_in(self, kind):
         """Return how high the genre sets a kind of section's melody: high where its plan lifts a line, else in the middle."""
-        plan = self._style()[SECTIONS].get(kind, {}).get(PLAN, [])
-        return HIGH if any(entry.get(HIGHER) for entry in plan) else MIDDLE
+        plan = self._style()[arranger.SECTIONS].get(kind, {}).get(PLAN, [])
+        return melody_writer.HIGH if any(entry.get(HIGHER) for entry in plan) else melody_writer.MIDDLE
 
     def set_section_melody(self, *, kind, field, value):
         """Choose how high a kind of section's melody sits or how busy it is, or leave it to the genre or the song with None."""
@@ -4102,34 +4090,34 @@ class WizardChoices:
             return {}
         said = {}
         asks = {}
-        if chosen.get(REPEATS) in REPEATS_WAYS:
-            asks[REPEATS] = chosen[REPEATS]
+        if chosen.get(melody_writer.REPEATS) in melody_writer.REPEATS_WAYS:
+            asks[melody_writer.REPEATS] = chosen[melody_writer.REPEATS]
         if chosen.get(MELODY_BUSY) in BUSY_POSITIONS:
-            asks[LINE_BUSY] = BUSY_POSITIONS[chosen[MELODY_BUSY]]
+            asks[melody_writer.LINE_BUSY] = BUSY_POSITIONS[chosen[MELODY_BUSY]]
         by_kind = {}
-        for kind, own in chosen.get(BY_KIND, {}).items():
-            of_kind = {**({HEIGHT: own[HEIGHT]} if own.get(HEIGHT) in HEIGHTS else {}), **({LINE_BUSY: BUSY_POSITIONS[own[MELODY_BUSY]]} if own.get(MELODY_BUSY) in BUSY_POSITIONS else {})}
+        for kind, own in chosen.get(melody_writer.BY_KIND, {}).items():
+            of_kind = {**({melody_writer.HEIGHT: own[melody_writer.HEIGHT]} if own.get(melody_writer.HEIGHT) in melody_writer.HEIGHTS else {}), **({melody_writer.LINE_BUSY: BUSY_POSITIONS[own[MELODY_BUSY]]} if own.get(MELODY_BUSY) in BUSY_POSITIONS else {})}
             if of_kind:
                 by_kind[kind] = of_kind
         if by_kind:
-            asks[BY_KIND] = by_kind
+            asks[melody_writer.BY_KIND] = by_kind
         if asks:
-            said[MELODY_ASKS] = asks
-        habits = dict(picks.get(MELODY, {}))
+            said[melody_writer.MELODY_ASKS] = asks
+        habits = dict(picks.get(arranger.MELODY, {}))
         genre_habits = self._melody_habits()
-        if chosen.get(MELODY_RANGE) in SPAN_CHANGES and SPAN in genre_habits:
-            habits[SPAN] = max(LEAST_SPAN, genre_habits[SPAN] + SPAN_CHANGES[chosen[MELODY_RANGE]])
+        if chosen.get(MELODY_RANGE) in SPAN_CHANGES and melody_writer.SPAN in genre_habits:
+            habits[melody_writer.SPAN] = max(LEAST_SPAN, genre_habits[melody_writer.SPAN] + SPAN_CHANGES[chosen[MELODY_RANGE]])
         character = self.get_melody_character()
         if character is not None:
-            said[MELODY_ENGINE] = CHARACTER_ENGINES[character]
+            said[arranger.MELODY_ENGINE] = CHARACTER_ENGINES[character]
             if character in CHARACTER_GAUGES:
-                habits[SMART] = {**{name: self.get_gauge(name) for name in DEFAULT_GAUGES}, **CHARACTER_GAUGES[character]}
+                habits[melody_writer.SMART] = {**{name: self.get_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **CHARACTER_GAUGES[character]}
             if character == BLUESY:
                 flattened = flattened_in(self._scale_type)
-                habits[MELODY_LADDER] = [{DEGREE: degree, **({ACCIDENTAL: FLAT} if degree in flattened else {})} for degree in BLUES_DEGREES]
-                habits[MELODY_HOME] = {DEGREE: BLUES_HOME}
+                habits[melody_writer.LADDER] = [{tune_notation.DEGREE: degree, **({tune_notation.ACCIDENTAL: tune_notation.FLAT} if degree in flattened else {})} for degree in BLUES_DEGREES]
+                habits[melody_writer.HOME] = {tune_notation.DEGREE: BLUES_HOME}
         if habits:
-            said[MELODY] = habits
+            said[arranger.MELODY] = habits
         return said
 
     # The riffs: figures of a bar or two that a player repeats in place of the accompaniment. A riff is written for one player of
@@ -4141,12 +4129,12 @@ class WizardChoices:
         trial = self._trial()
         trial._answers = {}
         trial._extras.pop(RIFFS_PLAYED, None)
-        trial._extras[RIFF] = {RIFF_ROLES: self.roles_in(), RIFF_KINDS: self.section_kinds()}
+        trial._extras[riffs_values.RIFF] = {riffs_values.RIFF_ROLES: self.roles_in(), riffs_values.RIFF_KINDS: self.section_kinds()}
         try:
-            parts = arranged(style=self._style(), song=trial.song_picks(PREVIEW_NAME))[PARTS]
+            parts = arranged(style=self._style(), song=trial.song_picks(PREVIEW_NAME))[arranger.PARTS]
         except (ValueError, KeyError, SongFileError):
             return []
-        return [role for role in self.roles_in() if composer_text.MSG_PART_OF_SECTION.format(role, RIFF) in parts]
+        return [role for role in self.roles_in() if composer_text.MSG_PART_OF_SECTION.format(role, riffs_values.RIFF) in parts]
 
     def _trial(self):
         """A copy of the choices to try something on, which remembers who can play a riff and nothing else."""
@@ -4165,9 +4153,9 @@ class WizardChoices:
         able = self.riff_instruments()
         trial = self._trial()
         trial._extras.pop(RIFFS_PLAYED, None)
-        trial._extras[MORE_RIFFS] = [{NAME: TRIAL_RIFF, RIFF_ROLES: able, RIFF_KINDS: [kind]}]
+        trial._extras[arranger.MORE_RIFFS] = [{arranger.NAME: TRIAL_RIFF, riffs_values.RIFF_ROLES: able, riffs_values.RIFF_KINDS: [kind]}]
         try:
-            parts = arranged(style=self._style(), song=trial.song_picks(PREVIEW_NAME))[PARTS]
+            parts = arranged(style=self._style(), song=trial.song_picks(PREVIEW_NAME))[arranger.PARTS]
         except (ValueError, KeyError, SongFileError):
             return []
         return [role for role in able if composer_text.MSG_PART_OF_SECTION.format(role, TRIAL_RIFF) in parts]
@@ -4186,25 +4174,25 @@ class WizardChoices:
     def _riffs(self):
         """The song's riffs whose player is in the band and can play one: a riff of a player who is out waits, unseen, for the player to come back."""
         able = self.riff_instruments()
-        return [entry for entry in self._extras.get(RIFF_BOOK, []) if entry[RIFF_FOR] in able]
+        return [entry for entry in self._extras.get(RIFF_BOOK, []) if entry[arranger.RIFF_FOR] in able]
 
     def _riff_entry(self, riff):
-        found = next((entry for entry in self._riffs() if entry[NAME] == riff), None)
+        found = next((entry for entry in self._riffs() if entry[arranger.NAME] == riff), None)
         if found is None:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_RIFF.format(value=riff))
         return found
 
     def riff_names(self):
         """Return the names of the song's riffs, in the order they were made."""
-        return [entry[NAME] for entry in self._riffs()]
+        return [entry[arranger.NAME] for entry in self._riffs()]
 
     def riffs_for(self, role):
         """Return the names of the riffs written for a player, in the order they were made."""
-        return [entry[NAME] for entry in self._riffs() if entry[RIFF_FOR] == role]
+        return [entry[arranger.NAME] for entry in self._riffs() if entry[arranger.RIFF_FOR] == role]
 
     def riff_written_for(self, riff):
         """Return the player a riff was written for."""
-        return self._riff_entry(riff)[RIFF_FOR]
+        return self._riff_entry(riff)[arranger.RIFF_FOR]
 
     def riff_setting(self, *, riff, field):
         """Return how a riff is drawn in one way: how many bars, what it is made of, what fills its gaps or what it does as the chords change."""
@@ -4212,19 +4200,19 @@ class WizardChoices:
 
     def riff_is_edited(self, riff):
         """Return whether a riff's notes were written by hand, so that only regenerating writes over them."""
-        return self._riff_entry(riff).get(RIFF_OWN) is not None
+        return self._riff_entry(riff).get(arranger.RIFF_OWN) is not None
 
     def riff_bar_count(self, riff):
         """Return how many bars a riff lasts."""
         entry = self._riff_entry(riff)
         eighths = self.riff_steps_in_bar()
-        if entry.get(RIFF_OWN) is not None:
-            return max(entry[RIFF_OWN].get(PatternSetting.STEPS, eighths) // eighths, 1)
+        if entry.get(arranger.RIFF_OWN) is not None:
+            return max(entry[arranger.RIFF_OWN].get(PatternSetting.STEPS, eighths) // eighths, 1)
         return riff_bars_of(line=riff_line_of(riff=entry, seed=0, eighths=eighths, flattened=flattened_in(self._scale_type)), eighths=eighths)
 
     def riff_steps_in_bar(self):
         """Return how many steps, eighths, a bar of a riff has."""
-        return int(bar_length(self.meter()) * EIGHTHS_IN_WHOLE)
+        return int(bar_length(self.meter()) * arranger.EIGHTHS_IN_WHOLE)
 
     def riff_kinds_used(self, riff):
         """Return the kinds of section a riff is played in by anybody in the band, in the form's order."""
@@ -4240,18 +4228,18 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(role, settings)))
         riff = naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self._riff_names_taken())
         chosen = {field: value for field, value in settings.items() if value != RIFF_SETTINGS[field][0]}
-        self._keep_riff({**chosen, NAME: riff, RIFF_FOR: role, RIFF_DRAWN_AS: riff})
+        self._keep_riff({**chosen, arranger.NAME: riff, arranger.RIFF_FOR: role, arranger.RIFF_DRAWN_AS: riff})
         return riff
 
     def _riff_names_taken(self):
         """Every riff's name, those of players who are out included, which wait."""
-        return [entry[NAME] for entry in self._extras.get(RIFF_BOOK, [])]
+        return [entry[arranger.NAME] for entry in self._extras.get(RIFF_BOOK, [])]
 
     def _keep_riff(self, entry):
         """Put a riff among the song's, known by the player it was written for."""
         self._extras.setdefault(RIFF_BOOK, []).append(entry)
-        known = self._extras.setdefault(RIFFS_KNOWN, {}).setdefault(entry[RIFF_FOR], [])
-        known.append(entry[NAME])
+        known = self._extras.setdefault(RIFFS_KNOWN, {}).setdefault(entry[arranger.RIFF_FOR], [])
+        known.append(entry[arranger.NAME])
         self._answers = {}
 
     def rename_riff(self, *, riff, name):
@@ -4259,7 +4247,7 @@ class WizardChoices:
         entry = self._riff_entry(riff)
         if name != riff and name.lower() in [taken.lower() for taken in self._riff_names_taken() if taken != riff]:
             raise ValueError(errors.ERR_WIZARD_RIFF_NAME_TAKEN.format(name=name))
-        entry[NAME] = name
+        entry[arranger.NAME] = name
         for known in self._extras.get(RIFFS_KNOWN, {}).values():
             known[:] = [name if other == riff else other for other in known]
         for by in self._extras.get(RIFFS_PLAYED, {}).values():
@@ -4275,12 +4263,12 @@ class WizardChoices:
         if role not in self.riff_instruments():
             raise ValueError(errors.ERR_WIZARD_RIFF.format(value=(riff, role)))
         copied = copy.deepcopy(entry)
-        copied[NAME] = naming.copy_name(name=riff, taken=self._riff_names_taken())
-        if copied.get(RIFF_OWN) is not None:
-            copied[RIFF_OWN] = in_octaves_of(pattern=copied[RIFF_OWN], by=self._role(role)[OCTAVE] - self._role(entry[RIFF_FOR])[OCTAVE], group=role)
-        copied[RIFF_FOR] = role
+        copied[arranger.NAME] = naming.copy_name(name=riff, taken=self._riff_names_taken())
+        if copied.get(arranger.RIFF_OWN) is not None:
+            copied[arranger.RIFF_OWN] = in_octaves_of(pattern=copied[arranger.RIFF_OWN], by=self._role(role)[tune_notation.OCTAVE] - self._role(entry[arranger.RIFF_FOR])[tune_notation.OCTAVE], group=role)
+        copied[arranger.RIFF_FOR] = role
         self._keep_riff(copied)
-        return copied[NAME]
+        return copied[arranger.NAME]
 
     def delete_riff(self, riff):
         """Take a riff out of the song: nobody knows it any more, and whoever played it plays the accompaniment again."""
@@ -4307,8 +4295,8 @@ class WizardChoices:
     def regenerate_riff(self, riff):
         """Have other notes written for a riff, with nothing kept of the old ones, written by hand or not."""
         entry = self._riff_entry(riff)
-        entry[RIFF_TAKE] = entry.get(RIFF_TAKE, FIRST_RIFF_TAKE) + 1
-        entry.pop(RIFF_OWN, None)
+        entry[riffs_values.RIFF_TAKE] = entry.get(riffs_values.RIFF_TAKE, riffs_values.FIRST_TAKE) + 1
+        entry.pop(arranger.RIFF_OWN, None)
         self._answers = {}
 
     def set_riff_pattern(self, *, riff, pattern):
@@ -4316,7 +4304,7 @@ class WizardChoices:
         cannot be made with is refused and nothing changes."""
         entry = self._riff_entry(riff)
         before = copy.deepcopy(self._extras.get(RIFF_BOOK))
-        entry[RIFF_OWN] = copy.deepcopy(pattern)
+        entry[arranger.RIFF_OWN] = copy.deepcopy(pattern)
         self._answers = {}
         try:
             self.riff_heard(riff)
@@ -4335,20 +4323,20 @@ class WizardChoices:
 
     def _riff_heard(self, riff):
         entry = self._riff_entry(riff)
-        role = entry[RIFF_FOR]
+        role = entry[arranger.RIFF_FOR]
         kind = next((kind for kind in dict.fromkeys(self.section_kinds_in_form()) if role in self.riff_players_in(kind) and self.section_bars(self.riff_place(kind)) % self.riff_bar_count(riff) == 0), None)
         if kind is None:
             raise ValueError(errors.ERR_WIZARD_RIFF_FITS_NOWHERE.format(riff=riff))
         trial = self._trial()
         shown = trial._riff_entry(riff)
-        shown.pop(RIFF_WITH_CHORDS, None)
+        shown.pop(riffs_values.RIFF_WITH_CHORDS, None)
         trial._extras[RIFFS_PLAYED] = {kind: {role: riff}}
         # The melody stays with whoever has it, so the riff's player is free of it in the trial's section.
-        trial._extras.setdefault(TUNE_BY, {})
+        trial._extras.setdefault(arranger.TUNE_BY, {})
         if trial.tune_player_in(kind) == role:
-            trial._extras[TUNE_BY][kind] = NOBODY
-        if not trial._extras[TUNE_BY]:
-            del trial._extras[TUNE_BY]
+            trial._extras[arranger.TUNE_BY][kind] = arranger.NOBODY
+        if not trial._extras[arranger.TUNE_BY]:
+            del trial._extras[arranger.TUNE_BY]
         setlist, name = trial._written_for_trial()
         pattern = composer_text.MSG_PART_OF_SECTION.format(role, riff)
         if not setlist.has_pattern(pattern):
@@ -4445,7 +4433,7 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_SECTION_PART.format(value=part, kind=kind, player=role))
         before = copy.deepcopy(self._extras)
         had = self.section_part(kind=kind, role=role)
-        by = self._extras.setdefault(TUNE_BY, {})
+        by = self._extras.setdefault(arranger.TUNE_BY, {})
         if part == MELODY_PART:
             by.pop(kind, None)
             if role != self.tune_played_by():
@@ -4453,9 +4441,9 @@ class WizardChoices:
         elif had == MELODY_PART:
             by.pop(kind, None)
             if role == self.tune_played_by():
-                by[kind] = NOBODY
+                by[kind] = arranger.NOBODY
         if not by:
-            del self._extras[TUNE_BY]
+            del self._extras[arranger.TUNE_BY]
         played = self._extras.setdefault(RIFFS_PLAYED, {}).setdefault(kind, {})
         played.pop(role, None)
         if part not in (ACCOMPANIMENT, RESTS_PART, MELODY_PART):
@@ -4478,17 +4466,17 @@ class WizardChoices:
         arranged_riffs = []
         for entry in self._riffs():
             for role in self.roles_in():
-                kinds = [kind for kind, by in played.items() if by.get(role) == entry[NAME] and self.section_part(kind=kind, role=role) == entry[NAME]]
+                kinds = [kind for kind, by in played.items() if by.get(role) == entry[arranger.NAME] and self.section_part(kind=kind, role=role) == entry[arranger.NAME]]
                 if kinds:
-                    arranged_riffs.append({**copy.deepcopy(entry), RIFF_ROLES: [role], RIFF_KINDS: kinds})
+                    arranged_riffs.append({**copy.deepcopy(entry), riffs_values.RIFF_ROLES: [role], riffs_values.RIFF_KINDS: kinds})
         return arranged_riffs
 
     def _drop_riffs(self, goes):
         """Take out of the song every riff a test says goes, with who knows it and who plays it."""
-        gone = [entry[NAME] for entry in self._extras.get(RIFF_BOOK, []) if goes(entry)]
-        for kept in (RIFF, MORE_RIFFS):
+        gone = [entry[arranger.NAME] for entry in self._extras.get(RIFF_BOOK, []) if goes(entry)]
+        for kept in (riffs_values.RIFF, arranger.MORE_RIFFS):
             self._extras.pop(kept, None)
-        self._extras[RIFF_BOOK] = [entry for entry in self._extras.get(RIFF_BOOK, []) if entry[NAME] not in gone]
+        self._extras[RIFF_BOOK] = [entry for entry in self._extras.get(RIFF_BOOK, []) if entry[arranger.NAME] not in gone]
         for known in self._extras.get(RIFFS_KNOWN, {}).values():
             known[:] = [riff for riff in known if riff not in gone]
         for by in self._extras.get(RIFFS_PLAYED, {}).values():
@@ -4500,16 +4488,16 @@ class WizardChoices:
         """Give the song the riff its kind of music is built on, where the subgenre has one and its players can play it: written
         for the first of its players, known by each, and played by each in the intro, the outro and the verses, where the form
         has them. A person may then change the riff or delete it. A riff written by hand is kept from genre to genre."""
-        self._drop_riffs(lambda entry: entry.get(RIFF_OF_GENRE) and entry.get(RIFF_OWN) is None)
-        usual = self._style().get(RIFF)
+        self._drop_riffs(lambda entry: entry.get(RIFF_OF_GENRE) and entry.get(arranger.RIFF_OWN) is None)
+        usual = self._style().get(riffs_values.RIFF)
         if not usual:
             return
-        players = [role for role in usual.get(RIFF_ROLES, []) if role in self.riff_instruments()]
+        players = [role for role in usual.get(riffs_values.RIFF_ROLES, []) if role in self.riff_instruments()]
         if not players:
             return
         riff = naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self._riff_names_taken())
         settings = {field: usual[field] for field, ways in RIFF_SETTINGS.items() if usual.get(field) in ways[1:]}
-        self._keep_riff({**settings, NAME: riff, RIFF_FOR: players[0], RIFF_DRAWN_AS: riff, RIFF_OF_GENRE: True})
+        self._keep_riff({**settings, arranger.NAME: riff, arranger.RIFF_FOR: players[0], arranger.RIFF_DRAWN_AS: riff, RIFF_OF_GENRE: True})
         for role in players[1:]:
             self._extras[RIFFS_KNOWN].setdefault(role, []).append(riff)
         for kind in (self._intro_kind() or INTRO_KIND, OUTRO_KIND, VERSE_KIND):
@@ -4521,15 +4509,15 @@ class WizardChoices:
     def _riffs_of_older_song(self):
         """Bring the riffs of a song kept before riffs stood on their own over to the song's riffs: the song's first riff and each
         riff added, written for its first player, known by each of its players and played by each in its kinds of section."""
-        older = [entry for entry in [self._extras.pop(RIFF, None), *self._extras.pop(MORE_RIFFS, [])] if isinstance(entry, dict) and entry.get(RIFF_ROLES)]
+        older = [entry for entry in [self._extras.pop(riffs_values.RIFF, None), *self._extras.pop(arranger.MORE_RIFFS, [])] if isinstance(entry, dict) and entry.get(riffs_values.RIFF_ROLES)]
         for entry in older:
-            name = entry.get(NAME) or naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self._riff_names_taken())
-            kept = {field: value for field, value in entry.items() if field in RIFF_SETTINGS or field in (RIFF_TAKE, RIFF_OWN)}
+            name = entry.get(arranger.NAME) or naming.new_name(word=names_text.MSG_NEW_RIFF_WORD, taken=self._riff_names_taken())
+            kept = {field: value for field, value in entry.items() if field in RIFF_SETTINGS or field in (riffs_values.RIFF_TAKE, arranger.RIFF_OWN)}
             # The first riff's notes were drawn by the song's seed alone, which no name stands for: a kept song draws a new seed all the same.
-            self._extras.setdefault(RIFF_BOOK, []).append({**kept, NAME: name, RIFF_FOR: entry[RIFF_ROLES][0], RIFF_DRAWN_AS: name})
-            for role in entry[RIFF_ROLES]:
+            self._extras.setdefault(RIFF_BOOK, []).append({**kept, arranger.NAME: name, arranger.RIFF_FOR: entry[riffs_values.RIFF_ROLES][0], arranger.RIFF_DRAWN_AS: name})
+            for role in entry[riffs_values.RIFF_ROLES]:
                 self._extras.setdefault(RIFFS_KNOWN, {}).setdefault(role, []).append(name)
-                for kind in entry.get(RIFF_KINDS, []):
+                for kind in entry.get(riffs_values.RIFF_KINDS, []):
                     self._extras.setdefault(RIFFS_PLAYED, {}).setdefault(kind, {})[role] = name
 
     def _checked_line(self, *, line, steps):
@@ -4537,14 +4525,14 @@ class WizardChoices:
         if not isinstance(line, list) or not all(isinstance(note, dict) for note in line):
             raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=line))
         for note in line:
-            length = note.get(REST, note.get(STEPS))
-            degree = note.get(DEGREE, line_edits.FIRST_DEGREE)
-            numbers = [length, degree, note.get(OCTAVE, 0)]
+            length = note.get(tune_notation.REST, note.get(tune_notation.STEPS))
+            degree = note.get(tune_notation.DEGREE, line_edits.FIRST_DEGREE)
+            numbers = [length, degree, note.get(tune_notation.OCTAVE, 0)]
             if any(isinstance(number, bool) or not isinstance(number, int) for number in numbers) or length < 1 or not line_edits.FIRST_DEGREE <= degree <= line_edits.NOTES_IN_SCALE:
                 raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=note))
-            if REST not in note and not line_edits.LOWEST_PLACE <= line_edits.place_of(note) <= line_edits.HIGHEST_PLACE:
+            if tune_notation.REST not in note and not line_edits.LOWEST_PLACE <= line_edits.place_of(note) <= line_edits.HIGHEST_PLACE:
                 raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=note))
-        if line_edits.steps_of(line) != steps or all(REST in note for note in line):
+        if line_edits.steps_of(line) != steps or all(tune_notation.REST in note for note in line):
             raise ValueError(errors.ERR_WIZARD_HOOK_LINE.format(problem=line))
         return copy.deepcopy(line)
 
@@ -4556,8 +4544,8 @@ class WizardChoices:
         chord_entry = values_of(style=style, trait=self.progression_trait())[picks[self.progression_trait()]]
 
         def chords_of(section):
-            return [chord_of(chord) for chord in section.get(CHORDS) or chord_entry.get(BY_SECTION, {}).get(section[KIND]) or chord_entry[PATTERN]]
-        return SongPlan(style=style, song=song, form_names=song[FORM] if isinstance(song[FORM], list) else form_of(style=style, song=song, meter=str(picks.get(METER, COMMON_TIME)), tempo=self._tempo),
+            return [chord_of(chord) for chord in section.get(arranger.CHORDS) or chord_entry.get(arranger.BY_SECTION, {}).get(section[arranger.KIND]) or chord_entry[arranger.PATTERN]]
+        return SongPlan(style=style, song=song, form_names=song[arranger.FORM] if isinstance(song[arranger.FORM], list) else form_of(style=style, song=song, meter=str(picks.get(arranger.METER, arranger.COMMON_TIME)), tempo=self._tempo),
                         tempo=self._tempo, scale_type=self._scale_type, chords_of=chords_of)
 
     def energies(self):
@@ -4567,7 +4555,7 @@ class WizardChoices:
 
     def _said_of_sections(self):
         planned = self._song_plan().planned()
-        return [planned[SECTIONS][name][SAID_OF_SECTION] for name in planned[FORM]]
+        return [planned[arranger.SECTIONS][name][song_plan.SAID_OF_SECTION] for name in planned[arranger.FORM]]
 
     def said_of_sections(self):
         """Return what the plan says of each section of the form, in order: its Energy, how it leaves and, once, the hook's kind."""
@@ -4601,8 +4589,8 @@ class WizardChoices:
 
     def hook_scene(self):
         """Return the place in the form of the first section that says the hook, or None."""
-        sections = self._style()[SECTIONS]
-        return next((place for place, kind in enumerate(self.section_kinds_in_form()) if any(entry.get(HOOK) for entry in sections[kind].get(PLAN, []))), None)
+        sections = self._style()[arranger.SECTIONS]
+        return next((place for place, kind in enumerate(self.section_kinds_in_form()) if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(PLAN, []))), None)
 
     def tune_scene(self):
         """Return the place in the form of the first section the tune's player plays in, or None."""

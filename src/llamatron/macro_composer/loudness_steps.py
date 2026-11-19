@@ -36,14 +36,14 @@ from llamatron.composition.checks import time_length
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
 from llamatron.composition import velocity_ramps
-from llamatron.macro_composer.breaks import HAT, OPEN, RIDE
+from llamatron.macro_composer import breaks
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held
 from llamatron.music.note import Note
 from llamatron.playback.song_renderer import SongRenderer
 
 # The drummer's cymbals that keep time, one player between them.
-TIMEKEEPERS = (HAT, OPEN, RIDE)
+TIMEKEEPERS = (breaks.HAT, breaks.OPEN, breaks.RIDE)
 TIMEKEEPER = 'timekeeping cymbals'
 # A part of fewer notes a bar than this is an event now and then, a fill or a crash, and no part to trade.
 FEWEST_NOTES_A_BAR = 1

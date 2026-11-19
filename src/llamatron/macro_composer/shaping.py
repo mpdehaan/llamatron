@@ -24,8 +24,9 @@ beat is a push, and is accented.
 
 from fractions import Fraction
 
-from llamatron.macro_composer.loudness import USUAL_DYNAMICS, scaled
-from llamatron.macro_composer.notation import DEGREE, DRUM, CHORD, DEFAULT_STEP_SIZE, STEP_SIZE, VELOCITY
+from llamatron.macro_composer import loudness
+from llamatron.macro_composer.loudness import scaled
+from llamatron.macro_composer import notation
 
 REACH = 8
 PUSH = 5
@@ -73,24 +74,24 @@ def is_compound(time_signature):
 def role_of(*, pattern, tracks):
     """What a pattern is to the band, from the tracks that play it, or None for a drum that is left as the drummer plays it."""
     names = ' '.join(tracks).lower()
-    if pattern.get(DRUM):
+    if pattern.get(notation.DRUM):
         return None if any(word in names for word in LEFT_ALONE) else PERCUSSION
     if any(word in names for word in BASSES):
         return BASS
-    return COMPING if pattern.get(CHORD) and any(pattern[CHORD]) else TUNE
+    return COMPING if pattern.get(notation.CHORD) and any(pattern[notation.CHORD]) else TUNE
 
 
 def moves(*, pattern, role, feel, signature, compound):
     """How far each note of a pattern moves, by its step. The moves follow from where the notes start and from nothing else of
     the pattern, and the wizard makes a great many songs that share most of their rhythms, so the moves of a rhythm are worked
     out once and kept (MOVES_KEPT); whoever asks only reads them."""
-    size = Fraction(str(pattern.get(STEP_SIZE, DEFAULT_STEP_SIZE)))
-    onsets = tuple(place for place, value in enumerate(pattern[DEGREE]) if value is not None)
-    key = (onsets, len(pattern[DEGREE]), size, role, feel, signature, compound)
+    size = Fraction(str(pattern.get(notation.STEP_SIZE, notation.DEFAULT_STEP_SIZE)))
+    onsets = tuple(place for place, value in enumerate(pattern[notation.DEGREE]) if value is not None)
+    key = (onsets, len(pattern[notation.DEGREE]), size, role, feel, signature, compound)
     if key not in MOVES_KEPT:
         if len(MOVES_KEPT) >= MOST_MOVES_KEPT:
             MOVES_KEPT.clear()
-        MOVES_KEPT[key] = moves_of(onsets=onsets, steps=len(pattern[DEGREE]), size=size, role=role, feel=feel, signature=signature, compound=compound)
+        MOVES_KEPT[key] = moves_of(onsets=onsets, steps=len(pattern[notation.DEGREE]), size=size, role=role, feel=feel, signature=signature, compound=compound)
     return MOVES_KEPT[key]
 
 
@@ -121,9 +122,9 @@ def moves_of(*, onsets, steps, size, role, feel, signature, compound):
     return found
 
 
-def shaped(*, pattern, role, feel, signature, compound, dynamics=USUAL_DYNAMICS):
+def shaped(*, pattern, role, feel, signature, compound, dynamics=loudness.USUAL_DYNAMICS):
     """A pattern's velocities moved by its rhythm, as far as the player's dynamics say."""
-    new = list(pattern[VELOCITY])
+    new = list(pattern[notation.VELOCITY])
     for place, move in moves(pattern=pattern, role=role, feel=feel, signature=signature, compound=compound).items():
         if new[place] is not None:
             new[place] = max(LOWEST_SHAPED, min(HIGHEST_SHAPED, new[place] + scaled(move=move, dynamics=dynamics)))
@@ -132,7 +133,7 @@ def shaped(*, pattern, role, feel, signature, compound, dynamics=USUAL_DYNAMICS)
 
 def unshaped(*, pattern, role, feel, signature, compound):
     """The velocities a pattern had before it was shaped, where they can be told."""
-    old = list(pattern[VELOCITY])
+    old = list(pattern[notation.VELOCITY])
     for place, move in moves(pattern=pattern, role=role, feel=feel, signature=signature, compound=compound).items():
         if old[place] is not None:
             old[place] = old[place] - move

@@ -31,7 +31,7 @@ import argparse
 import sys
 
 from llamatron.macro_composer import loudness_steps
-from llamatron.macro_composer.song_plan import CHORUS
+from llamatron.macro_composer import song_plan
 from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
 from llamatron.support import version
 
@@ -45,7 +45,7 @@ ERR_NO_SUCH_GENRE = 'no genre called ({}): expected one of {}'
 def first_chorus(song):
     """The place of a song's first chorus that has a section before it, or None."""
     for place, scene in enumerate(song.get_scenes()):
-        if place and scene.get_section() == CHORUS:
+        if place and scene.get_section() == song_plan.CHORUS:
             return place
     return None
 

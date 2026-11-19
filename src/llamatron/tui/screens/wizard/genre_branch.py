@@ -15,9 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The wizard's Genre branch: the genre and the subgenre, which must be chosen, then the key, the tempo and the song's name, which arrive filled in."""
 
-from llamatron.macro_composer.wizard_choices import (
-    KEPT_OWN_RIFFS, KEPT_OWN_TUNES, LOST_BAND_SETTINGS, LOST_FORM, LOST_OWN_CHORDS, LOST_RIFFS, LOST_TUNE_TAKES, SCALE_TYPES, genre_names, genre_title,
-)
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import genre_names, genre_title
 from llamatron.music import note
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -28,13 +27,13 @@ from llamatron.tui.screens.wizard.branch import Branch
 
 # How the Change Genre question words each kind of thing lost and kept.
 LOST_SHOWN = {
-    LOST_BAND_SETTINGS: messages.MSG_CHANGE_GENRE_BAND_SETTINGS,
-    LOST_OWN_CHORDS: messages.MSG_CHANGE_GENRE_OWN_CHORDS,
-    LOST_FORM: messages.MSG_CHANGE_GENRE_FORM,
-    LOST_TUNE_TAKES: messages.MSG_CHANGE_GENRE_TUNE_TAKES,
-    LOST_RIFFS: messages.MSG_CHANGE_GENRE_RIFFS,
+    wizard_choices.LOST_BAND_SETTINGS: messages.MSG_CHANGE_GENRE_BAND_SETTINGS,
+    wizard_choices.LOST_OWN_CHORDS: messages.MSG_CHANGE_GENRE_OWN_CHORDS,
+    wizard_choices.LOST_FORM: messages.MSG_CHANGE_GENRE_FORM,
+    wizard_choices.LOST_TUNE_TAKES: messages.MSG_CHANGE_GENRE_TUNE_TAKES,
+    wizard_choices.LOST_RIFFS: messages.MSG_CHANGE_GENRE_RIFFS,
 }
-KEPT_SHOWN = {KEPT_OWN_TUNES: messages.MSG_CHANGE_GENRE_OWN_TUNES, KEPT_OWN_RIFFS: messages.MSG_CHANGE_GENRE_OWN_RIFFS}
+KEPT_SHOWN = {wizard_choices.KEPT_OWN_TUNES: messages.MSG_CHANGE_GENRE_OWN_TUNES, wizard_choices.KEPT_OWN_RIFFS: messages.MSG_CHANGE_GENRE_OWN_RIFFS}
 
 
 class GenreBranch(Branch):
@@ -69,7 +68,7 @@ class GenreBranch(Branch):
         if choices.is_ready():
             fields += [
                 ChoiceField(page=page, label=labels.MSG_WIZARD_KEY_LABEL, choices=note.ROOT_NAMES, current=choices.get_root(), set=page.choosing(choices.set_root)),
-                ChoiceField(page=page, label=labels.MSG_SCALE_LABEL, choices=SCALE_TYPES, names=[labels.MSG_WIZARD_SCALE_TYPE_NAMES[kind] for kind in SCALE_TYPES], current=choices.get_scale_type(),
+                ChoiceField(page=page, label=labels.MSG_SCALE_LABEL, choices=wizard_choices.SCALE_TYPES, names=[labels.MSG_WIZARD_SCALE_TYPE_NAMES[kind] for kind in wizard_choices.SCALE_TYPES], current=choices.get_scale_type(),
                             shown=labels.MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()], set=page.choosing(choices.set_scale_type)),
                 # The meter is the subgenre's, so it is only shown; the length follows the sections, so stepping it chooses a longer or a shorter form.
                 Field(label=labels.MSG_WIZARD_METER_LABEL, value=choices.meter),

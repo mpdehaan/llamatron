@@ -18,10 +18,11 @@
 
 from llamatron.composition import limits
 from llamatron.strings import labels, legends, marks, messages
-from llamatron.macro_composer.arranger import CHORDS
-from llamatron.macro_composer.joins import LEAVES
-from llamatron.macro_composer.song_plan import ENERGY, FADE_LEVEL, FADE_OVER, FADED, FADES, LOUDEST_FADE_LEVEL, HIGHEST_ENERGY, LOWEST_ENERGY, NOT_AT_ALL, RISES, ROOT_OF_PLACE, SETUP, TEMPO_END_OF_PLACE, TEMPO_OF_PLACE, TYPE_OF_PLACE
-from llamatron.macro_composer.wizard_choices import LEAVES_AS_JOIN, LINE_OWN, SCALE_TYPES, SHAPE_OF_SECTION, chords_as_text
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer import joins
+from llamatron.macro_composer import song_plan
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import chords_as_text
 from llamatron.music import note
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle, gauge_shown
@@ -34,14 +35,14 @@ FIRST_SECTION_NUMBER = 1
 
 
 # The numbers a section can be given of its own, each with its range, and the choices of each field chosen from a list.
-NUMBERS_OF_SECTION = {ENERGY: (LOWEST_ENERGY, HIGHEST_ENERGY), TEMPO_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO), TEMPO_END_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO)}
-CHOICES_OF_SECTION = {LEAVES: list(LEAVES_AS_JOIN), SETUP: [NOT_AT_ALL], ROOT_OF_PLACE: list(note.ROOT_NAMES), TYPE_OF_PLACE: list(SCALE_TYPES)}
+NUMBERS_OF_SECTION = {song_plan.ENERGY: (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY), song_plan.TEMPO_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO), song_plan.TEMPO_END_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO)}
+CHOICES_OF_SECTION = {joins.LEAVES: list(wizard_choices.LEAVES_AS_JOIN), song_plan.SETUP: [song_plan.NOT_AT_ALL], song_plan.ROOT_OF_PLACE: list(note.ROOT_NAMES), song_plan.TYPE_OF_PLACE: list(wizard_choices.SCALE_TYPES)}
 
 
 # The groups of what a section is given of its own, in the order they show, each with its fields in order.
-OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (CHORDS, ROOT_OF_PLACE, TYPE_OF_PLACE)),
-              (labels.MSG_WIZARD_GROUP_SHAPE, (SHAPE_OF_SECTION, RISES, FADES, FADE_LEVEL, FADE_OVER, TEMPO_OF_PLACE, TEMPO_END_OF_PLACE)),
-              (labels.MSG_WIZARD_GROUP_JOINS, (LEAVES, SETUP)))
+OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (arranger.CHORDS, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_SHAPE, (wizard_choices.SHAPE_OF_SECTION, song_plan.RISES, song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER, song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_JOINS, (joins.LEAVES, song_plan.SETUP)))
 
 
 def fade_field(*, branch, place, field):
@@ -58,12 +59,12 @@ def fade_field(*, branch, place, field):
             page.choosing(lambda wanted: choices.set_section_own(place=place, field=field, value=wanted))(value)
         except ValueError as problem:
             page.refuse(str(problem))
-    if field == FADES:
+    if field == song_plan.FADES:
         return Toggle(label=label, on=bool(own), set=set_own)
     usual = choices.section_from_plan(place=place, field=field)
-    lowest, highest = (FADED, LOUDEST_FADE_LEVEL) if field == FADE_LEVEL else (FIRST_SECTION_NUMBER, choices.section_bars(place))
+    lowest, highest = (song_plan.FADED, song_plan.LOUDEST_FADE_LEVEL) if field == song_plan.FADE_LEVEL else (FIRST_SECTION_NUMBER, choices.section_bars(place))
     now = usual if own is None else min(own, highest)
-    said = labels.MSG_WIZARD_FADE_VELOCITY.format(value=now) if field == FADE_LEVEL else labels.MSG_WIZARD_FADE_ONE_BAR if now == 1 else labels.MSG_WIZARD_FADE_BARS.format(value=now)
+    said = labels.MSG_WIZARD_FADE_VELOCITY.format(value=now) if field == song_plan.FADE_LEVEL else labels.MSG_WIZARD_FADE_ONE_BAR if now == 1 else labels.MSG_WIZARD_FADE_BARS.format(value=now)
     clear = dict(clear=lambda: set_own(None), clear_what=legends.MSG_TUNE_USUAL_WHAT) if own is not None else {}
     return NumberField(page=page, label=label, number=own, start=usual, shown=said, lowest=lowest, highest=highest, set=set_own, **clear)
 
@@ -98,7 +99,7 @@ class SectionBranch(Branch):
             # A held section, or one whose parts fill only its usual length, shows its bars and takes no key.
             fields.append(Field(label=labels.MSG_WIZARD_BARS_LABEL, value=lambda: choices.section_bars(place)))
         own = choices.section_own_fields(place)
-        fields += [self.own_field(field) for field in own if field == ENERGY]
+        fields += [self.own_field(field) for field in own if field == song_plan.ENERGY]
         plays = choices.section_plays(place)
         usual = choices.section_usually_plays(place)
         players = [Toggle(label=choices.role_title(role), on=role in plays, set=self.plays_setter(role)) for role in choices.roles_in() if role in choices.roles_shown()]
@@ -117,7 +118,7 @@ class SectionBranch(Branch):
         panel of its kind of section, so a section with no such line has no such field."""
         choices = self.choices()
         place = self._place
-        own = {count: line[LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[LINE_OWN]}
+        own = {count: line[wizard_choices.LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[wizard_choices.LINE_OWN]}
         if not own:
             return []
 
@@ -129,7 +130,7 @@ class SectionBranch(Branch):
                       clear=lambda: self.page().choosing(give_back)(None), clear_what=legends.MSG_TUNE_USUAL_WHAT)]
 
     def has_own_lines(self):
-        return any(line[LINE_OWN] for line in self.choices().section_lines(self._place))
+        return any(line[wizard_choices.LINE_OWN] for line in self.choices().section_lines(self._place))
 
     def has_own_role(self):
         choices = self.choices()
@@ -161,7 +162,7 @@ class SectionBranch(Branch):
         choices = self.choices()
         page = self.page()
         place = self._place
-        if field in (FADES, FADE_LEVEL, FADE_OVER):
+        if field in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER):
             return self.fade_field(field)
         own = choices.section_own(place=place, field=field)
         usual = choices.section_from_plan(place=place, field=field)
@@ -172,18 +173,18 @@ class SectionBranch(Branch):
         clear = dict(clear=lambda: set_own(None), clear_what=origin) if own is not None else {}
         if field in NUMBERS_OF_SECTION:
             lowest, highest = NUMBERS_OF_SECTION[field]
-            if field == ENERGY:
+            if field == song_plan.ENERGY:
                 # Energy is a gauge, as Contrast and the players' gauges are, the plan's saying so after the number.
                 shown = gauge_shown(place=usual if own is None else own, lowest=lowest, highest=highest, said=shown)
             return NumberField(page=page, label=label, number=own, start=usual, shown=shown, lowest=lowest, highest=highest, set=set_own, **clear)
-        if field == CHORDS:
+        if field == arranger.CHORDS:
             def ask():
                 page.ask(dialog=PromptDialog(title=messages.MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, max_length=limits.MAX_NAME_LENGTH), then=set_own)
             return Field(label=label, value=lambda: shown if own is None else chords_as_text(own), enter=ask, **clear)
-        if field in (RISES, FADES):
+        if field in (song_plan.RISES, song_plan.FADES):
             return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
         from_above = labels.MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
-        offered = choices.section_shapes(place) if field == SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
+        offered = choices.section_shapes(place) if field == wizard_choices.SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
         return ChoiceField(page=page, label=label, choices=[from_above, *offered], current=from_above if own is None else own, shown=shown,
                            set=lambda picked: set_own(None if picked == from_above else picked), **clear)
 

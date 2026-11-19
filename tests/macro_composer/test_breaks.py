@@ -23,8 +23,10 @@ from llamatron.composition.file_format import InstrumentSetting, Section
 from llamatron.composition import limits
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.macro_composer import arranger, breaks
-from llamatron.macro_composer.notation import ACCIDENTAL, DEGREE, KIT, LOUD, NONE, NOTE_NAMES, NOTES_IN_OCTAVE, OCTAVE, SOFT, STEPS, VELOCITY
-from llamatron.macro_composer.wizard_choices import USUAL_PIECE_NOTE, WizardChoices
+from llamatron.macro_composer import characters
+from llamatron.macro_composer import notation
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.support import version
 
 ROCK = 'rock'
@@ -85,12 +87,12 @@ class TestBreaks(unittest.TestCase):
         for name, bars in breaks.BREAKS.items():
             with self.subTest(name=name):
                 self.assertGreaterEqual(len(bars), FEWEST_DRUMS)
-                self.assertEqual(bars[breaks.KICK][0], LOUD)
-                self.assertIn(LOUD, bars[breaks.SNARE])
+                self.assertEqual(bars[breaks.KICK][0], notation.LOUD)
+                self.assertIn(notation.LOUD, bars[breaks.SNARE])
                 for piece, hits in bars.items():
-                    self.assertIn(piece, KIT)
+                    self.assertIn(piece, notation.KIT)
                     self.assertEqual(len(hits), breaks.STEPS_IN_BAR)
-                    self.assertLessEqual(set(hits), {LOUD, SOFT, NONE})
+                    self.assertLessEqual(set(hits), {notation.LOUD, notation.SOFT, notation.NONE})
         written = list(breaks.BREAKS.values())
         for place, bars in enumerate(written):
             self.assertNotIn(bars, written[:place])
@@ -132,8 +134,8 @@ class TestSongWithABreak(unittest.TestCase):
         """A drum's part over a phrase as bars of sixteen hits, from a drummer who adds nothing and plays no fill."""
         picks = arranger.picked(style=self.style, song=song)
         parts = arranger.drum_parts(style=self.style, picks=picks, roles=self.style[arranger.ROLES], meter=arranger.COMMON_TIME, phrase_bars=PHRASE,
-                                    drummer={arranger.FILL_EVERY: 0}, section_bars=PHRASE, seed=song[arranger.SEED])
-        hits = arranger.widened(hits=parts[piece][arranger.HITS], to=PHRASE * breaks.STEPS_IN_BAR)
+                                    drummer={characters.FILL_EVERY: 0}, section_bars=PHRASE, seed=song[arranger.SEED])
+        hits = arranger.widened(hits=parts[piece][notation.HITS], to=PHRASE * breaks.STEPS_IN_BAR)
         return [hits[start:start + breaks.STEPS_IN_BAR] for start in range(0, len(hits), breaks.STEPS_IN_BAR)]
 
     def test_a_song_with_no_break_plays_as_ever(self):
@@ -169,7 +171,7 @@ class TestSongWithABreak(unittest.TestCase):
         with_percussion = next(value for value, entry in arranger.values_of(style=self.style, trait=PERCUSSION).items() if entry.get(arranger.BAR))
         piece = next(iter(arranger.values_of(style=self.style, trait=PERCUSSION)[with_percussion][arranger.BAR]))
         parts = self.parts(a_song(picks={arranger.BREAK: breaks.LAZY, PERCUSSION: with_percussion}))
-        self.assertEqual(set(parts) & set(KIT), {piece, *breaks.BREAKS[breaks.LAZY]})
+        self.assertEqual(set(parts) & set(notation.KIT), {piece, *breaks.BREAKS[breaks.LAZY]})
 
     def test_a_break_is_not_played_in_another_meter(self):
         self.assertEqual(self.parts(a_song(template=BALLAD)), self.parts(a_song(template=BALLAD, picks={arranger.BREAK: breaks.TUMBLING})))
@@ -277,14 +279,14 @@ class TestKitPieceSounds(unittest.TestCase):
     def notes(self, *, made, piece):
         """The MIDI notes a piece's part plays."""
         rows = self.rows(made=made, piece=piece)
-        marks = rows.get(ACCIDENTAL) or [None] * rows[STEPS]
-        return {NOTE_NAMES.index(name) + (1 if mark else 0) + octave * NOTES_IN_OCTAVE for name, mark, octave in zip(rows[DEGREE], marks, rows[OCTAVE]) if name is not None}
+        marks = rows.get(notation.ACCIDENTAL) or [None] * rows[notation.STEPS]
+        return {notation.NOTE_NAMES.index(name) + (1 if mark else 0) + octave * notation.NOTES_IN_OCTAVE for name, mark, octave in zip(rows[notation.DEGREE], marks, rows[notation.OCTAVE]) if name is not None}
 
     def test_a_piece_sounds_as_another_drum_of_the_kit_on_the_drum_kit_still(self):
         usual = self.made({})
         made = self.made({breaks.KICK: {arranger.PLAYED_DRUM: COWBELL}})
-        self.assertEqual(self.notes(made=usual, piece=breaks.KICK), {KIT[breaks.KICK]})
-        self.assertEqual(self.notes(made=made, piece=breaks.KICK), {KIT[COWBELL]})
+        self.assertEqual(self.notes(made=usual, piece=breaks.KICK), {notation.KIT[breaks.KICK]})
+        self.assertEqual(self.notes(made=made, piece=breaks.KICK), {notation.KIT[COWBELL]})
         self.assertEqual(made[arranger.TRACKS], usual[arranger.TRACKS])
         self.assertEqual(made[arranger.DRUM_TRACKS], usual[arranger.DRUM_TRACKS])
         self.assertEqual(self.rows(made=made, piece=breaks.SNARE), self.rows(made=usual, piece=breaks.SNARE))
@@ -299,7 +301,7 @@ class TestKitPieceSounds(unittest.TestCase):
         self.assertNotIn(breaks.KICK, made[arranger.DRUM_TRACKS])
         self.assertEqual([piece for piece in usual[arranger.DRUM_TRACKS] if piece != breaks.KICK], made[arranger.DRUM_TRACKS])
         # The hits fall where they fell: only what sounds has changed.
-        self.assertEqual(self.rows(made=made, piece=breaks.KICK)[VELOCITY], self.rows(made=usual, piece=breaks.KICK)[VELOCITY])
+        self.assertEqual(self.rows(made=made, piece=breaks.KICK)[notation.VELOCITY], self.rows(made=usual, piece=breaks.KICK)[notation.VELOCITY])
 
     def test_a_sound_that_is_neither_is_refused(self):
         for sounds_as in ({arranger.PLAYED_DRUM: NO_SUCH}, {arranger.PLAYED_SOUND: A_SOUND}, {arranger.PLAYED_SOUND: 0, arranger.PLAYED_NOTE: A_NOTE},
@@ -319,7 +321,7 @@ class TestKitPieceSounds(unittest.TestCase):
         as_drum = patterns_of(choices)
         self.assertNotEqual(as_drum, usual)
         choices.set_piece_sound(piece=breaks.KICK, sound=A_SOUND)
-        self.assertEqual((choices.piece_sound(breaks.KICK), choices.piece_note(breaks.KICK)), (A_SOUND, USUAL_PIECE_NOTE))
+        self.assertEqual((choices.piece_sound(breaks.KICK), choices.piece_note(breaks.KICK)), (A_SOUND, wizard_choices.USUAL_PIECE_NOTE))
         choices.set_piece_note(piece=breaks.KICK, note=A_NOTE)
         self.assertNotIn(patterns_of(choices), (usual, as_drum))
         # A piece in a sound of its own is still a piece of the kit, listed and switched on and off.

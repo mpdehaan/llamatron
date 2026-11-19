@@ -21,8 +21,10 @@ import unittest
 
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer import wizard_file
-from llamatron.macro_composer.song_plan import BY_PLACE, ENERGY, PLAN_OF_SONG
-from llamatron.macro_composer.wizard_choices import EXTRAS_KEPT, FORM, WizardChoices
+from llamatron.macro_composer import song_plan
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version
 
@@ -63,7 +65,7 @@ class TestSongFile(unittest.TestCase):
         names = [scene.get_name() for scene in song.get_scenes()]
         self.assertIn(DRUM_SOLO, names)
         self.assertEqual(len(names), len(set(names)))
-        self.assertIn(PLAN_OF_SONG, song.get_wizard_choices()[EXTRAS_KEPT])
+        self.assertIn(song_plan.PLAN_OF_SONG, song.get_wizard_choices()[wizard_choices.EXTRAS_KEPT])
 
     def test_the_same_file_makes_the_same_song_and_a_seed_given_makes_another(self):
         one = wizard_file.made_of_file(path=EVERYTHING, version=version.VERSION).to_data()
@@ -75,19 +77,19 @@ class TestSongFile(unittest.TestCase):
         self.assertEqual(wizard_file.song_name(data={**BASIC, wizard_file.NAME: SONG_NAME}, path=A_PATH), SONG_NAME)
 
     def test_a_song_is_planned_unless_the_file_says_otherwise(self):
-        self.assertIn(PLAN_OF_SONG, choices(BASIC).get_song_extras())
-        self.assertEqual(choices({**BASIC, PLAN_OF_SONG: False}).get_song_extras(), {})
-        self.assertNotEqual(choices(BASIC).made_setlist(name=FILE_NAME, version=version.VERSION).to_data(), choices({**BASIC, PLAN_OF_SONG: False}).made_setlist(name=FILE_NAME, version=version.VERSION).to_data())
+        self.assertIn(song_plan.PLAN_OF_SONG, choices(BASIC).get_song_extras())
+        self.assertEqual(choices({**BASIC, song_plan.PLAN_OF_SONG: False}).get_song_extras(), {})
+        self.assertNotEqual(choices(BASIC).made_setlist(name=FILE_NAME, version=version.VERSION).to_data(), choices({**BASIC, song_plan.PLAN_OF_SONG: False}).made_setlist(name=FILE_NAME, version=version.VERSION).to_data())
 
     def test_a_written_form_is_the_songs_own_and_what_a_place_is_given_goes_to_the_plan(self):
-        form = [VERSE, {KIND: CHORUS, ENERGY: AN_ENERGY}, ENDING]
-        made = choices({**BASIC, FORM: form})
+        form = [VERSE, {KIND: CHORUS, song_plan.ENERGY: AN_ENERGY}, ENDING]
+        made = choices({**BASIC, arranger.FORM: form})
         self.assertTrue(made.has_own_form())
         self.assertEqual([made.section_kind(place) for place in range(len(form))], [VERSE, CHORUS, ENDING])
-        self.assertEqual(made.get_song_extras()[PLAN_OF_SONG][BY_PLACE], [{}, {ENERGY: AN_ENERGY}, {}])
+        self.assertEqual(made.get_song_extras()[song_plan.PLAN_OF_SONG][song_plan.BY_PLACE], [{}, {song_plan.ENERGY: AN_ENERGY}, {}])
 
     def test_what_the_file_lays_over_the_song_reaches_the_song(self):
-        made = choices({**BASIC, EXTRAS_KEPT: {TEMPO: A_TEMPO}})
+        made = choices({**BASIC, wizard_choices.EXTRAS_KEPT: {TEMPO: A_TEMPO}})
         self.assertEqual(made.song_picks(FILE_NAME)[TEMPO], A_TEMPO)
         kept = WizardChoices.from_data(made.to_data())
         self.assertEqual(kept.get_song_extras(), made.get_song_extras())
@@ -96,8 +98,8 @@ class TestSongFile(unittest.TestCase):
         refused = [(errors.ERR_SONG_FILE_NOT_A_MAPPING.format(path=A_PATH), [VERSE]),
                    (errors.ERR_SONG_FILE_NOT_READY.format(path=A_PATH), {GENRE: ROCK}),
                    (errors.ERR_SONG_FILE_NOT_READY.format(path=A_PATH), {GENRE: NO_SUCH, SUBGENRE: ARENA}),
-                   (errors.ERR_SONG_FILE_FORM_ENTRY.format(path=A_PATH, place=2, value={BARS: 8}), {**BASIC, FORM: [VERSE, {BARS: 8}]}),
-                   (errors.ERR_SONG_FILE_FORM.format(path=A_PATH), {**BASIC, FORM: [VERSE, NO_SUCH]})]
+                   (errors.ERR_SONG_FILE_FORM_ENTRY.format(path=A_PATH, place=2, value={BARS: 8}), {**BASIC, arranger.FORM: [VERSE, {BARS: 8}]}),
+                   (errors.ERR_SONG_FILE_FORM.format(path=A_PATH), {**BASIC, arranger.FORM: [VERSE, NO_SUCH]})]
         for message, data in refused:
             with self.subTest(message=message):
                 with self.assertRaises(ValueError) as raised:

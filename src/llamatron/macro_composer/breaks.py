@@ -20,12 +20,12 @@ and no record's strokes. A break may be cut up: its bar taken as slices, some of
 the cut goes, as a break is rearranged on a sampler.
 """
 
-from llamatron.macro_composer.notation import LOUD, NONE, SOFT
+from llamatron.macro_composer import notation
 
 # A bar's hits, sixteen to the bar: loud, soft or none.
-L = LOUD
-S = SOFT
-O = NONE
+L = notation.LOUD
+S = notation.SOFT
+O = notation.NONE
 KICK = 'kick'
 SNARE = 'snare'
 HAT = 'hat'

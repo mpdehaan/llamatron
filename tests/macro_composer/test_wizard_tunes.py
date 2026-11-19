@@ -22,8 +22,9 @@ from llamatron.composition.file_format import GeneratorKind, PatternSetting, Row
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing
-from llamatron.macro_composer.arranger import NOBODY
-from llamatron.macro_composer.wizard_choices import FIRST_TUNE_TAKE, WizardChoices
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
 from tests.support.ui_testing import fixed_text
 
@@ -158,7 +159,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         first = choices.tune_pattern(A_KIND)
         usual_name = choices.tune_pattern_name(A_KIND)
         choices.new_tune_take(A_KIND)
-        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
+        self.assertEqual(choices.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE + 1)
         taken = choices.tune_pattern(A_KIND)
         self.assertNotEqual(taken[Row.DEGREE], first[Row.DEGREE])
         self.assertEqual(len(taken[Row.DEGREE]), len(first[Row.DEGREE]))
@@ -178,7 +179,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         choices.new_tune_take(A_KIND)
         self.assertNotEqual(choices.tune_pattern(A_KIND)[Row.DEGREE], second[Row.DEGREE])
         read = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(read.tune_take(A_KIND), FIRST_TUNE_TAKE + 2)
+        self.assertEqual(read.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE + 2)
         self.assertEqual(read.tune_pattern(A_KIND), choices.tune_pattern(A_KIND))
 
     def test_a_new_take_gives_up_notes_written_by_hand_and_notes_written_by_hand_win_over_a_take(self):
@@ -190,7 +191,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         self.assertNotEqual(choices.tune_pattern(A_KIND), own)
         choices.set_tune_pattern(kind=A_KIND, pattern=own)
         self.assertEqual(choices.tune_pattern(A_KIND), own)
-        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE + 1)
+        self.assertEqual(choices.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE + 1)
 
     def test_a_kind_with_no_tune_has_no_take_and_another_genre_starts_from_the_first_take(self):
         choices = chosen()
@@ -200,7 +201,7 @@ class TestWizardTuneTakes(unittest.TestCase):
         choices.set_genre(ANOTHER_GENRE)
         choices.set_genre(A_GENRE)
         choices.set_subgenre(A_SUBGENRE)
-        self.assertEqual(choices.tune_take(A_KIND), FIRST_TUNE_TAKE)
+        self.assertEqual(choices.tune_take(A_KIND), wizard_choices.FIRST_TUNE_TAKE)
 
 
 class TestWhoPlaysTheTune(unittest.TestCase):
@@ -240,7 +241,7 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         self.assertEqual(choices.tune_player_in(another_kind), usual)
         # A last chorus may be written anew, so the kind's tune is one of the tunes its sections play.
         self.assertIn(choices.tune_pattern_name(another_kind), tunes_played(choices=choices, kind=another_kind))
-        choices.set_tune_played_by_in(kind=A_KIND, role=NOBODY)
+        choices.set_tune_played_by_in(kind=A_KIND, role=arranger.NOBODY)
         self.assertIsNone(choices.tune_player_in(A_KIND))
         self.assertIsNone(choices.tune_pattern(A_KIND))
         setlist, name = choices.made_for_listening()
@@ -263,10 +264,10 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         with self.assertRaises(ValueError):
             choices.set_tune_played_by_in(kind=A_KIND_WITH_NO_TUNE, role=other)
         choices.set_tune_played_by(other)
-        choices.set_tune_played_by_in(kind=A_KIND, role=NOBODY)
+        choices.set_tune_played_by_in(kind=A_KIND, role=arranger.NOBODY)
         read = WizardChoices.from_data(choices.to_data())
         self.assertEqual(read.tune_played_by(), other)
-        self.assertEqual(read.tune_played_by_in(A_KIND), NOBODY)
+        self.assertEqual(read.tune_played_by_in(A_KIND), arranger.NOBODY)
         choices.set_role_in(role=other, on=False)
         self.assertEqual(choices.tune_played_by(), usual)
         choices.set_genre(ANOTHER_GENRE)

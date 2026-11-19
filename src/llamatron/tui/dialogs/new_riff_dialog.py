@@ -24,8 +24,8 @@ chords, the one kind that has gaps between its accents.
 
 from rich.text import Text
 
-from llamatron.macro_composer.riffs import ACCENT_CHORDS, MOVES_WHOLE, RIFF_BAR_COUNT, RIFF_BETWEEN, RIFF_NOTES, RIFF_WITH_CHORDS, STAYS_HOME
-from llamatron.macro_composer.wizard_choices import RIFF_SETTINGS
+from llamatron.macro_composer import riffs
+from llamatron.macro_composer import wizard_choices
 from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.components.button_row import button_row
@@ -36,7 +36,7 @@ from llamatron.tui import key_table
 from llamatron.tui.key_table import cursor_moved
 
 # The rows in the order drawn; the last is asked only of a riff of notes and chords.
-ROWS = (RIFF_BAR_COUNT, RIFF_NOTES, RIFF_WITH_CHORDS, RIFF_BETWEEN)
+ROWS = (riffs.RIFF_BAR_COUNT, riffs.RIFF_NOTES, riffs.RIFF_WITH_CHORDS, riffs.RIFF_BETWEEN)
 LABEL_WIDTH = max(len(labels.MSG_NEW_RIFF_LABELS[row]) for row in ROWS) + 4
 # The buttons, in the order drawn, and the binding whose key each shows.
 WRITE_BUTTON = 0
@@ -53,13 +53,13 @@ class NewRiffDialog(Dialog):
         super().__init__()
         self.title = labels.MSG_NEW_RIFF_TITLE.format(player=player)
         # Each setting starts at what a riff has until another is chosen.
-        self.settings = {row: RIFF_SETTINGS[row][0] for row in ROWS}
+        self.settings = {row: wizard_choices.RIFF_SETTINGS[row][0] for row in ROWS}
         self.row = 0
         self.button = WRITE_BUTTON
 
     def rows(self):
         """Return the rows shown: what fills the gaps only for a riff of notes and chords."""
-        return [row for row in ROWS if row != RIFF_BETWEEN or self.settings[RIFF_NOTES] == ACCENT_CHORDS]
+        return [row for row in ROWS if row != riffs.RIFF_BETWEEN or self.settings[riffs.RIFF_NOTES] == riffs.ACCENT_CHORDS]
 
     def on_buttons(self):
         return self.row >= len(self.rows())
@@ -68,7 +68,7 @@ class NewRiffDialog(Dialog):
         bound = [self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)), self.bind(self.KEYS.SELECT, action=self.move, wants_key=True)]
         if self.on_buttons():
             bound += [self.bind(self.KEYS.CHOOSE_BUTTON, action=self.choose_button, wants_key=True), self.bind(self.KEYS.PRESS, action=self.press)]
-        elif self.rows()[self.row] == RIFF_WITH_CHORDS:
+        elif self.rows()[self.row] == riffs.RIFF_WITH_CHORDS:
             bound.append(self.bind(self.KEYS.TOGGLE, action=self.toggle))
         else:
             bound += [self.bind(self.KEYS.LESS, action=lambda: self.step(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.step(key_table.STEP_FORWARD)), self.bind(self.KEYS.WRITE, action=self.accept)]
@@ -83,11 +83,11 @@ class NewRiffDialog(Dialog):
     def step(self, direction):
         """Step the row's choice, stopping at either end."""
         row = self.rows()[self.row]
-        ways = RIFF_SETTINGS[row]
+        ways = wizard_choices.RIFF_SETTINGS[row]
         self.settings[row] = ways[max(0, min(ways.index(self.settings[row]) + direction, len(ways) - 1))]
 
     def toggle(self):
-        self.settings[RIFF_WITH_CHORDS] = STAYS_HOME if self.settings[RIFF_WITH_CHORDS] == MOVES_WHOLE else MOVES_WHOLE
+        self.settings[riffs.RIFF_WITH_CHORDS] = riffs.STAYS_HOME if self.settings[riffs.RIFF_WITH_CHORDS] == riffs.MOVES_WHOLE else riffs.MOVES_WHOLE
 
     def press(self):
         if self.button == WRITE_BUTTON:
@@ -100,8 +100,8 @@ class NewRiffDialog(Dialog):
 
     def shown(self, row):
         """Return a row's value as drawn: the toggle's dot, or the choice's name."""
-        if row == RIFF_WITH_CHORDS:
-            return marks.MSG_TOGGLE_ON if self.settings[row] == MOVES_WHOLE else drawing.NOTHING
+        if row == riffs.RIFF_WITH_CHORDS:
+            return marks.MSG_TOGGLE_ON if self.settings[row] == riffs.MOVES_WHOLE else drawing.NOTHING
         return labels.MSG_NEW_RIFF_VALUES[self.settings[row]]
 
     def lines(self, width):

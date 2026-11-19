@@ -32,8 +32,10 @@ A seed left out is drawn anew at every run, so that each run makes another song 
 
 import os
 
-from llamatron.macro_composer.song_plan import BY_PLACE, PLAN_OF_SONG
-from llamatron.macro_composer.wizard_choices import EXTRAS_KEPT, FORM, OWN_SECTIONS, SEED, WizardChoices, data_laid_over
+from llamatron.macro_composer import song_plan
+from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger
+from llamatron.macro_composer.wizard_choices import WizardChoices, data_laid_over
 from llamatron.strings import errors
 from llamatron.support.safe_yaml import load_safely
 from llamatron.support import files
@@ -60,24 +62,24 @@ def choices_of(*, data, path, seed=None):
     """The wizard's choices a song file's data describes, with a seed in place of the file's where one is given."""
     if not isinstance(data, dict):
         raise ValueError(errors.ERR_SONG_FILE_NOT_A_MAPPING.format(path=path))
-    kept = {field: value for field, value in data.items() if field not in (NAME, PLAN_OF_SONG, EXTRAS_KEPT)}
-    plan = data.get(PLAN_OF_SONG, True)
+    kept = {field: value for field, value in data.items() if field not in (NAME, song_plan.PLAN_OF_SONG, wizard_choices.EXTRAS_KEPT)}
+    plan = data.get(song_plan.PLAN_OF_SONG, True)
     plan = dict(plan) if isinstance(plan, dict) else ({} if plan else None)
-    written = isinstance(data.get(FORM), list)
+    written = isinstance(data.get(arranger.FORM), list)
     if written:
-        entries = form_entries(form=data[FORM], path=path)
-        del kept[FORM]
-        kept[OWN_SECTIONS] = [{field: value for field, value in entry.items() if field in KEPT_OF_SECTION} for entry in entries]
+        entries = form_entries(form=data[arranger.FORM], path=path)
+        del kept[arranger.FORM]
+        kept[wizard_choices.OWN_SECTIONS] = [{field: value for field, value in entry.items() if field in KEPT_OF_SECTION} for entry in entries]
         if plan is not None:
-            plan[BY_PLACE] = [{field: value for field, value in entry.items() if field not in KEPT_OF_SECTION} for entry in entries]
+            plan[song_plan.BY_PLACE] = [{field: value for field, value in entry.items() if field not in KEPT_OF_SECTION} for entry in entries]
     if seed is not None:
-        kept[SEED] = seed
+        kept[arranger.SEED] = seed
     choices = WizardChoices.from_data(kept)
     if not choices.is_ready():
         raise ValueError(errors.ERR_SONG_FILE_NOT_READY.format(path=path))
     if written and not choices.has_own_form():
         raise ValueError(errors.ERR_SONG_FILE_FORM.format(path=path))
-    extras = data_laid_over(under={PLAN_OF_SONG: plan} if plan is not None else {}, over=data.get(EXTRAS_KEPT) or {})
+    extras = data_laid_over(under={song_plan.PLAN_OF_SONG: plan} if plan is not None else {}, over=data.get(wizard_choices.EXTRAS_KEPT) or {})
     if extras:
         choices.set_song_extras(extras)
     return choices
