@@ -61,7 +61,7 @@ class RowDialog(Dialog):
     def keys(self):
         result = [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)),
             self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
         ]
@@ -71,7 +71,7 @@ class RowDialog(Dialog):
             result.append(self.bind(self.KEYS.REMOVE_CELL, action=self.remove_cell))
         return [*result, self.bind(self.KEYS.USUAL, action=self.put_back), self.bind(self.KEYS.DONE, action=lambda: self.dismiss(list(self.values)))]
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.cursor.move(name=name, count=len(self.values))
 
     def nudge(self, offset):

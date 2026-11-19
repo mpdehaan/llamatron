@@ -91,7 +91,7 @@ class GridChoiceDialog(ChoiceDialog):
     def keys(self):
         keys = [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.CHOOSE, action=lambda: self.dismiss(self.cursor.get_place())),
         ]
         if len(self.pages) > 1:
@@ -175,7 +175,7 @@ class GridChoiceDialog(ChoiceDialog):
             row, column = self.where()
             self.turn(step=step, row=row, column=column)
 
-    def move(self, name):
+    def move_cursor(self, name):
         row, column = self.where()
         width = len(self.cells()[0])
         if name in keys_values.ARROWS_UP_DOWN:

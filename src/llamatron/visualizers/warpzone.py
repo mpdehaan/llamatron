@@ -114,7 +114,7 @@ class WarpZone(Visualizer):
                 ball.place = numpy.clip(ball.place, 0, [rows - 1, columns - 1])
         seconds = self.seconds_since_last_frame(now)
         self.hear(heard=heard, now=now)
-        self.move(seconds=seconds * heard.tempo_factor(), energy_seconds=seconds)
+        self.advance(seconds=seconds * heard.tempo_factor(), energy_seconds=seconds)
         dots = numpy.zeros((rows, columns), dtype=bool)
         colours = numpy.zeros((height, width, 3), dtype=numpy.int32)
         self.draw_rings(dots=dots, colours=colours, now=now)
@@ -147,7 +147,7 @@ class WarpZone(Visualizer):
                 self._rings.append(Ring(middle=ball.place.copy(), sent=now, colour=colour, strength=note.velocity / FULL_VELOCITY))
         del self._rings[:-MOST_RINGS]
 
-    def move(self, *, seconds, energy_seconds):
+    def advance(self, *, seconds, energy_seconds):
         """Move every ball on at the one speed, bouncing off the walls and off each other, keeping that speed, and settle each track's energy."""
         distance = BALL_SPEED * self._rows * seconds
         limits = numpy.array([self._rows - 1, self._columns - 1], dtype=float)

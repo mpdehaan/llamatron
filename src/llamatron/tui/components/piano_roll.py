@@ -326,7 +326,7 @@ class PianoRoll(BindsKeys):
         """Return the keys that move the cursor, which the editor lists after Esc: the arrows, and the ends, which only the F1 dialog names."""
         self.place_cursor()
         return [
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.ENDS, action=self.editor.jump_end),
         ]
 
@@ -353,7 +353,7 @@ class PianoRoll(BindsKeys):
         else:
             self.shorten()
 
-    def move(self, name):
+    def move_cursor(self, name):
         """Move a step along or a row up or down, stopping at every edge like every cursor."""
         editor = self.editor
         if name in (Key.UP, Key.DOWN):

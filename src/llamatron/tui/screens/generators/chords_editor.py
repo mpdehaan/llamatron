@@ -109,7 +109,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
     def keys(self):
         self.keep_step()
         result = [
-            self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
         ]
         if self.edited_row in (CHORD_ROW, INVERSION_ROW):
@@ -128,7 +128,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
         result.append(self.bind(self.KEYS.PICK, action=self.pick_progression))
         return result
 
-    def move(self, name):
+    def move_cursor(self, name):
         """Move along the chords with Left and Right, and between the rows with Up and Down, stopping at every edge."""
         if name in keys_values.ARROWS_LEFT_RIGHT:
             self.move_step(name)

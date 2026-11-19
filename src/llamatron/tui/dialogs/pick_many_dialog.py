@@ -45,12 +45,12 @@ class PickManyDialog(Dialog):
     def keys(self):
         return [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.FLIP, action=self.flip),
             self.bind(self.KEYS.DONE, action=lambda: self.dismiss([option for option in self.options if option in self.picked])),
         ]
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.cursor.move(name=name, count=len(self.options))
 
     def flip(self):

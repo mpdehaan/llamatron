@@ -70,7 +70,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
     def keys(self):
         self.keep_step()
         result = [
-            self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
             self.bind(self.KEYS.ACCENT, action=self.accent),
         ]
@@ -80,7 +80,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
             result.append(self.bind(self.KEYS.REMOVE_CELL, action=self.remove_cell))
         return [*result, self.bind(self.KEYS.CELL_LENGTH, action=self.next_cell_length), self.bind(self.KEYS.READY_BARS, action=self.pick_ready_bar)]
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.move_step(name)
 
     def nudge(self, direction):

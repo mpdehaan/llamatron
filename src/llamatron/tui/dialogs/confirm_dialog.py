@@ -49,13 +49,13 @@ class ConfirmDialog(MessageDialog):
     def keys(self):
         return [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
-            self.bind(self.KEYS.SELECT, action=self.move, wants_key=True),
+            self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.ANSWER, action=self.answer),
             self.bind(self.KEYS.YES, action=lambda: self.dismiss(True)),
             self.bind(self.KEYS.NO, action=lambda: self.dismiss(None)),
         ]
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.choice = cursor_moved(place=self.choice, name=name, count=len(labels.MSG_CONFIRM_BUTTONS))
 
     def answer(self):

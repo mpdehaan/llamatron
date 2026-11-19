@@ -122,7 +122,7 @@ class ChordDialog(Dialog):
         """Return the keys that work with the cursor in one of the lists."""
         result = [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.NEXT_LIST, action=self.next_list),
         ]
         if part == SCALE_LIST:
@@ -153,7 +153,7 @@ class ChordDialog(Dialog):
     def counts(self):
         return (len(self.qualities), len(self.inversions), len(file_format.TENSIONS), len(self.categories) + 1)
 
-    def move(self, name):
+    def move_cursor(self, name):
         """Move within the cursor's list with Up and Down and from list to list with Left and Right, stopping at every edge."""
         if name in keys_values.ARROWS_LEFT_RIGHT:
             self.part = cursor_moved(place=self.part, name=Key.UP if name == Key.LEFT else Key.DOWN, count=LISTS)

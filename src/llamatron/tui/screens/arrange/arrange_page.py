@@ -257,7 +257,7 @@ class ArrangePage(Page):
                 if target is not None and target.kind == Section.CHAINS:
                     keys.append(self.bind(self.KEYS.REMOVE_CHAIN, action=self.remove_chain_from_cell))
             return keys + [self.bind(self.KEYS.CLOSE_DETAILS, action=self.close_details)]
-        result = [self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True)]
+        result = [self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True)]
         if self.on_header():
             result += self.header_keys()
         elif self.on_plus_row():
@@ -311,7 +311,7 @@ class ArrangePage(Page):
         return [
             self.bind(self.KEYS.ESCAPE_INSET, action=self.close_inset),
             self.bind(self.KEYS.CLOSE_INSET, action=self.close_inset),
-            self.bind(self.KEYS.INSET_MOVE, action=self.inset.move, wants_key=True),
+            self.bind(self.KEYS.INSET_MOVE, action=self.inset.move_cursor, wants_key=True),
             self.bind(self.KEYS.INSET_BARS, action=self.inset.jump_bar),
             self.bind(switch, action=self.inset.switch),
             self.bind(self.KEYS.INSET_ZOOM, action=self.inset.zoom_by),
@@ -579,7 +579,7 @@ class ArrangePage(Page):
         self.transport().stop_clip(self.track())
         self.say(messages.MSG_STOPPED_TRACK.format(track=self.track()))
 
-    def move(self, name):
+    def move_cursor(self, name):
         if name == Key.UP:
             self.row -= 1
         elif name == Key.DOWN:

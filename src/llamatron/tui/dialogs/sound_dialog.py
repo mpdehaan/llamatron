@@ -129,7 +129,7 @@ class SoundDialog(Dialog):
         on_group = self.cursor.get_place() >= len(self.top)
         return [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.OPEN, action=self.open_flyout) if on_group else self.bind(self.KEYS.CHOOSE, action=self.choose),
             self.bind(self.KEYS.SEARCH, action=self.start_search),
             *self.trial_keys(),
@@ -169,7 +169,7 @@ class SoundDialog(Dialog):
         """Return how many rows there are: the top rows, the groups, and the Note row where there is a note."""
         return len(self.top) + len(self.groups) + (0 if self.note is None else 1)
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.hush()
         self.note_typed = None
         self.cursor.move(name=name, count=self.rows())
@@ -182,7 +182,7 @@ class SoundDialog(Dialog):
     def note_keys(self):
         result = [
             self.bind(self.KEYS.CANCEL, action=self.cancel),
-            self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.NOTE_LESS, action=lambda: self.step_note(-1)),
             self.bind(self.KEYS.NOTE_MORE, action=lambda: self.step_note(1)),
             self.bind(self.KEYS.TYPE_NOTE, action=self.type_note, wants_key=True),

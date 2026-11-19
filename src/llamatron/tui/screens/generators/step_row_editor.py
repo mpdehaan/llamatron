@@ -49,7 +49,7 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
     def keys(self):
         self.keep_step()
         result = [
-            self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
+            self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.TOGGLE, action=self.toggle),
         ]
         if self.steps() < limits.MAX_STEP_ROW:
@@ -58,7 +58,7 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
             result.append(self.bind(self.KEYS.REMOVE_STEP, action=self.remove_step))
         return result
 
-    def move(self, name):
+    def move_cursor(self, name):
         self.move_step(name)
 
     def toggle(self):

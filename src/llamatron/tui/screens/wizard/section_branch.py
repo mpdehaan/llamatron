@@ -245,5 +245,5 @@ class SectionBranch(Branch):
     def remove(self):
         self.get_choices().remove_section(self._place)
 
-    def move(self, offset):
+    def shift(self, offset):
         return self.get_choices().move_section(place=self._place, offset=offset)
