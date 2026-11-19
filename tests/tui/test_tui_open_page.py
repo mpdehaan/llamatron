@@ -47,7 +47,7 @@ class TestOpenPage(UITest):
         await self.press(keybindings.MainPage.FILE, Key.CTRL_O)
         rows = [row[0] for row in self.app.screen.rows()]
         self.assertIn('song one.yml', rows)
-        self.app.screen.place = rows.index('song one.yml')
+        self.app.screen.cursor.set_place(rows.index('song one.yml'))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, FilePage)
         self.assertEqual(self.app.get_document().get_path(), 'song one.yml')
@@ -61,16 +61,16 @@ class TestOpenPage(UITest):
         self.assertIn(marks.MSG_PARENT_ROW, shown)
         for folder in (FOLDER_OF_SETS, INNER_FOLDER):
             rows = [row[0] for row in self.app.screen.rows()]
-            self.app.screen.place = rows.index(folder)
+            self.app.screen.cursor.set_place(rows.index(folder))
             await self.press(Key.ENTER)
         self.assertIn('deep song.yml', [row[0] for row in self.app.screen.rows()])
-        self.app.screen.place = [row[0] for row in self.app.screen.rows()].index(PARENT_FOLDER)
+        self.app.screen.cursor.set_place([row[0] for row in self.app.screen.rows()].index(PARENT_FOLDER))
         await self.press(Key.ENTER)
         self.assertIn(INNER_FOLDER, [row[0] for row in self.app.screen.rows()])
 
     async def enter(self, name):
         """Press ENTER on the Open page's row of this name."""
-        self.app.screen.place = [row[0] for row in self.app.screen.rows()].index(name)
+        self.app.screen.cursor.set_place([row[0] for row in self.app.screen.rows()].index(name))
         await self.press(Key.ENTER)
 
     async def test_it_comes_back_to_the_directory_it_last_showed(self):
@@ -111,7 +111,7 @@ class TestOpenPage(UITest):
         two_songs.save(path='two songs.yml')
         await self.press(Key.CTRL_O)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index('two songs.yml')
+        self.app.screen.cursor.set_place(rows.index('two songs.yml'))
         await self.press(Key.ENTER)
         self.assertEqual(self.app.get_document().current_song_name(), names.MSG_DEFAULT_SONG_NAME)
         self.assertEqual(self.app.get_document().song().get_track_names(), [LEAD, DRUMS])
@@ -122,7 +122,7 @@ class TestOpenPage(UITest):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER, Key.CTRL_O)
         self.assertIsInstance(self.app.screen, OpenPage)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index('song one.yml')
+        self.app.screen.cursor.set_place(rows.index('song one.yml'))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual(self.app.get_document().get_path(), 'song one.yml')
@@ -133,10 +133,10 @@ class TestOpenPage(UITest):
         await self.press(Key.CTRL_O)
         self.app.screen.folder = os.curdir
         rows = [row[0] for row in self.app.screen.rows_with_plus()]
-        self.app.screen.place = rows.index(SUBFOLDER)
+        self.app.screen.cursor.set_place(rows.index(SUBFOLDER))
         await self.press(Key.ENTER)
         self.assertEqual([row[0] for row in self.app.screen.rows_with_plus()], [PARENT_FOLDER, 'inside.yml'])
-        self.app.screen.place = 1
+        self.app.screen.cursor.set_place(1)
         await self.press(Key.ENTER)
         self.assertEqual(os.path.basename(self.app.get_document().get_path()), 'inside.yml')
 
@@ -146,7 +146,7 @@ class TestOpenPage(UITest):
         before = self.app.get_document()
         await self.press(keybindings.MainPage.FILE, Key.CTRL_O)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index('bad.yml')
+        self.app.screen.cursor.set_place(rows.index('bad.yml'))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIs(self.app.get_document(), before)

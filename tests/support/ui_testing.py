@@ -298,7 +298,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         names = page.row_names()
         self.assertIn(name, names)
         while page.current() != name:
-            await self.press(Key.UP if names.index(name) < page.place else Key.DOWN)
+            await self.press(Key.UP if names.index(name) < page.cursor.get_place() else Key.DOWN)
 
     async def settle(self):
         """Let the tracker handle what a key sent, a dialog or a page opening, without waiting for the computer to go idle as pilot.pause() does,
@@ -442,11 +442,11 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         if isinstance(dialog, GroupedChoiceDialog):
             # Its choices lie under headings closed until opened, so the option is searched for by its name, which finds it whatever is open.
             await self.type(option)
-            self.assertEqual(dialog.options[dialog.place], option)
+            self.assertEqual(dialog.options[dialog.cursor.get_place()], option)
             await self.press(Key.ENTER)
             return
         # The cursor stops at the ends of a picker, so the option is walked to from where the picker opened, up or down.
-        distance = dialog.options.index(option) - dialog.place
+        distance = dialog.options.index(option) - dialog.cursor.get_place()
         await self.press(*[Key.DOWN if distance > 0 else Key.UP] * abs(distance), Key.ENTER)
 
     async def select_field(self, label):
@@ -456,7 +456,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
             # The Registers page is a grid: the cell is reached with Down and Up, then Right and Left.
             columns = len(screen.fields()) // len(file_format.REGISTER_NAMES)
             row, column = divmod([field.label for field in screen.fields()].index(label), columns)
-            here_row, here_column = divmod(screen.place, columns)
+            here_row, here_column = divmod(screen.cursor.get_place(), columns)
             await self.press(*([Key.DOWN] * (row - here_row) if row > here_row else [Key.UP] * (here_row - row)))
             await self.press(*([Key.RIGHT] * (column - here_column) if column > here_column else [Key.LEFT] * (here_column - column)))
             return
@@ -477,16 +477,16 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         first_button = screen.first_button_place() if hasattr(screen, 'first_button_place') else len(labels)
         # The buttons are a row under the settings: Down reaches the first and Left and Right move along them,
         # and Up from any of them goes back to the last setting.
-        if screen.place >= first_button and target < first_button:
-            await self.press(*[Key.UP] * (screen.place - first_button + 1 if hasattr(screen, 'buttons_stacked') and screen.buttons_stacked() else 1))
+        if screen.cursor.get_place() >= first_button and target < first_button:
+            await self.press(*[Key.UP] * (screen.cursor.get_place() - first_button + 1 if hasattr(screen, 'buttons_stacked') and screen.buttons_stacked() else 1))
         if target >= first_button:
-            if screen.place < first_button:
-                await self.press(*[Key.DOWN] * (first_button - screen.place))
-            offset = target - screen.place
+            if screen.cursor.get_place() < first_button:
+                await self.press(*[Key.DOWN] * (first_button - screen.cursor.get_place()))
+            offset = target - screen.cursor.get_place()
             # Buttons too wide for a row stand one under another, and Down and Up go through them.
             stacked = hasattr(screen, 'buttons_stacked') and screen.buttons_stacked()
             forward, back = (Key.DOWN, Key.UP) if stacked else (Key.RIGHT, Key.LEFT)
             await self.press(*([forward] * offset if offset > 0 else [back] * -offset))
             return
-        offset = target - screen.place
+        offset = target - screen.cursor.get_place()
         await self.press(*([Key.DOWN] * offset if offset > 0 else [Key.UP] * -offset))

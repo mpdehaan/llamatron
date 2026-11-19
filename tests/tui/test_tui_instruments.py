@@ -169,7 +169,7 @@ class TestInstrumentEditor(UITest):
             await self.select_field(labels.MSG_DEVICE_LABEL)
             await self.press(Key.ENTER)
             self.assertEqual(self.app.screen.options, [marks.MSG_NO_DEVICE_SHOWN, file_format.FLUIDSYNTH_DEVICE, *sorted([*PORTS, GONE_PORT])])
-            self.assertEqual(self.app.screen.place, self.app.screen.options.index(GONE_PORT))
+            self.assertEqual(self.app.screen.cursor.get_place(), self.app.screen.options.index(GONE_PORT))
             await self.press(Key.ESCAPE)
         self.assertEqual(self.instrument().get_device(), GONE_PORT)
 

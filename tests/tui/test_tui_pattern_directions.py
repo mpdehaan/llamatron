@@ -46,7 +46,7 @@ class TestDirectionsAndGrab(UITest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options[0], 'forward    first step to last')
         self.assertEqual(self.app.screen.options[1], 'reverse a  step 1, then backward from the last')
-        self.app.screen.place = 4
+        self.app.screen.cursor.set_place(4)
         await self.press(Key.ENTER)
         self.assertEqual(self.document.song().get_pattern(TUNE).get_direction(), Direction.PENDULUM)
         self.assertIn(DIRECTION_PENDULUM, self.text())
@@ -57,7 +57,7 @@ class TestDirectionsAndGrab(UITest):
         return self.app.screen
 
     async def go_to(self, page, label):
-        page.place = [field.label for field in page.fields()].index(label)
+        page.cursor.set_place([field.label for field in page.fields()].index(label))
         page.draw()
         await self.pilot.pause()
 
@@ -79,7 +79,7 @@ class TestDirectionsAndGrab(UITest):
         await self.press(Key.ENTER)
         self.assertEqual(self.app.screen.options[0], "(pattern)  use each pattern's direction")
         self.assertEqual(self.app.screen.options[1], 'forward    first step to last')
-        self.app.screen.place = self.app.screen.options.index('brownian   on 50%, back 25%, stay 25%')
+        self.app.screen.cursor.set_place(self.app.screen.options.index('brownian   on 50%, back 25%, stay 25%'))
         await self.press(Key.ENTER)
         self.assertEqual(self.document.clip_slot(index=0, track=LEAD).get_direction(), Direction.BROWNIAN)
 

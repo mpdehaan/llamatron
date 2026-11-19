@@ -101,7 +101,7 @@ class CorrectionsTest(UITest):
         """Show the Open page from the page on screen and press Enter on a file."""
         await self.press(Key.CTRL_O)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index(name)
+        self.app.screen.cursor.set_place(rows.index(name))
         await self.press(Key.ENTER)
 
     def inner_width(self):

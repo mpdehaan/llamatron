@@ -148,7 +148,7 @@ class ClipPage(FieldPage):
         self.carried = True
         names[place], names[to] = names[to], names[place]
         self.set_value(setting=ClipSlotSetting.PATTERNS, value=names)
-        self.place += offset
+        self.cursor.shift(offset)
         self.say_moving()
 
     def drop(self):

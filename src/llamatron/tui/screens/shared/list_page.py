@@ -20,12 +20,10 @@ from rich.text import Text
 
 from llamatron.composition import limits
 from llamatron.strings import errors, marks, messages
-from llamatron.tui import drawing, keybindings, keys
-from llamatron.tui.dialogs.choice_dialog import completed, places_matching
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.cursor import Cursor, Search, shown_around
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import cursor_mark, fit, Style
-from llamatron.tui.key_table import cursor_moved
-from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.page import Page
 
 
@@ -53,9 +51,9 @@ class ListPage(Page):
 
     def __init__(self, holder):
         super().__init__(holder)
-        self.place = 0
+        self.cursor = Cursor(place=0)
+        self.search = Search()
         self.searching = False
-        self.typed = drawing.NOTHING
         self.place_before_search = 0
         # Move mode: whether M has picked up the cursor's row, and whether it has been carried yet, so that one move is one undo step.
         self.moving = False
@@ -118,41 +116,39 @@ class ListPage(Page):
         """Return the places of the rows a search keeps, or of every row and the + row when not searching."""
         if not self.searching:
             return list(range(len(self.rows_with_plus())))
-        return places_matching(options=self.row_texts(), text=self.typed)
+        return self.search.places_matching(self.row_texts())
 
     def start_search(self):
         self.searching = True
-        self.typed = drawing.NOTHING
-        self.place_before_search = self.place
+        self.search.clear()
+        self.place_before_search = self.cursor.get_place()
         self.show_search()
 
     def type_character(self, name):
-        self.typed += keys.SPACE_CHARACTER if name == Key.SPACE else name
+        self.search.type_key(name)
         self.settle()
 
     def erase(self):
-        self.typed = self.typed[:-1]
+        self.search.erase()
         self.settle()
 
     def complete(self):
-        self.typed = completed(options=self.row_texts(), matches=self.matches(), typed=self.typed)
+        self.search.complete(self.row_texts())
         self.settle()
 
     def settle(self):
-        matches = self.matches()
-        if matches and self.place not in matches:
-            self.place = matches[0]
+        self.cursor.keep_among(self.matches())
         self.show_search()
 
     def show_search(self):
-        self.say(messages.MSG_SEARCH_STATUS.format(text=self.typed))
+        self.say(messages.MSG_SEARCH_STATUS.format(text=self.search.get_typed()))
 
     def keep(self):
         self.searching = False
 
     def stop_search(self):
         self.searching = False
-        self.place = self.place_before_search
+        self.cursor.set_place(self.place_before_search)
         self.clamp()
 
     def row_names(self):
@@ -161,21 +157,15 @@ class ListPage(Page):
 
     def current(self):
         rows = self.remembered_rows()
-        return rows[self.place][0] if rows and 0 <= self.place < len(rows) else None
+        return rows[self.cursor.get_place()][0] if rows and 0 <= self.cursor.get_place() < len(rows) else None
 
     def move_cursor(self, name):
-        matches = self.matches()
-        if not matches:
-            return
-        if self.place not in matches:
-            self.place = matches[0]
-            return
-        self.place = matches[cursor_moved(place=matches.index(self.place), name=name, count=len(matches))]
+        self.cursor.move_among(name=name, places=self.matches())
         if self.searching:
             self.show_search()
 
     def clamp(self):
-        self.place = max(min(self.place, len(self.rows_with_plus()) - 1), 0)
+        self.cursor.keep_within(len(self.rows_with_plus()))
 
     def remember_place(self):
         return self.current()
@@ -184,7 +174,7 @@ class ListPage(Page):
         """Put the cursor back on the row that was under it, by what the row is, if the row is still there."""
         rows = [what for what, _ in self.remembered_rows()]
         if place in rows:
-            self.place = rows.index(place)
+            self.cursor.set_place(rows.index(place))
         self.clamp()
 
     # Move mode: M picks up the cursor's row, Up and Down carry it, and Enter, Esc or M drops it where it is.
@@ -195,7 +185,7 @@ class ListPage(Page):
         self.say_moving()
 
     def say_moving(self):
-        self.say(messages.MSG_MOVING.format(what=messages.MSG_MOVING_ROW.format(name=self.row_texts()[self.place])))
+        self.say(messages.MSG_MOVING.format(what=messages.MSG_MOVING_ROW.format(name=self.row_texts()[self.cursor.get_place()])))
 
     def carry(self, offset):
         """Carry the picked-up row one place up or down, every carry of one move making one undo step."""
@@ -245,10 +235,9 @@ class ListPage(Page):
         if not matches:
             return lines
         room = max(height - 2, 1)
-        at = matches.index(self.place) if self.place in matches else 0
-        start = max(min(at - room // 2, len(matches) - room), 0)
-        for place in matches[start:start + room]:
-            lines.append(cells(values=rows[place][1], style=self.row_style(rows[place][0]), selected=place == self.place))
+        at = matches.index(self.cursor.get_place()) if self.cursor.is_on_one_of(matches) else 0
+        for place in shown_around(places=matches, at=at, room=room):
+            lines.append(cells(values=rows[place][1], style=self.row_style(rows[place][0]), selected=place == self.cursor.get_place()))
         return lines
 
     # What many lists share.

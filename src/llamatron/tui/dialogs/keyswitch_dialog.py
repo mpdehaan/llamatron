@@ -54,7 +54,7 @@ class KeyswitchDialog(PickManyDialog):
 
     def toggle_slot(self, name):
         """Turn the slot a digit names on or off, and put the cursor on it."""
-        self.place = keys_values.DIGITS.index(name)
+        self.cursor.set_place(keys_values.DIGITS.index(name))
         self.flip()
 
     def legend_lines(self, width):
@@ -63,7 +63,7 @@ class KeyswitchDialog(PickManyDialog):
 
     def slot_line(self, *, slot, width):
         picked = slot in self.picked
-        start = cursor_mark(slot == self.place) + marks.MSG_KEYSWITCH_SLOT_ROW.format(slot=slot, toggle=marks.MSG_TOGGLE_ON if picked else marks.MSG_FIELD_TOGGLE_OFF)
+        start = cursor_mark(slot == self.cursor.get_place()) + marks.MSG_KEYSWITCH_SLOT_ROW.format(slot=slot, toggle=marks.MSG_TOGGLE_ON if picked else marks.MSG_FIELD_TOGGLE_OFF)
         line = Text(start, style=Style.BOLD if picked else Style.PLAIN, no_wrap=True)
         line.append(fit(text=self.names[slot], width=max(width - len(start) - keyswitch_text.KEYSWITCH_NOTE_WIDTH, 0)), style=Style.PLAIN if self.notes[slot] or picked else Style.DIM)
         line.append(fit(text=self.notes[slot], width=keyswitch_text.KEYSWITCH_NOTE_WIDTH), style=Style.DIM)

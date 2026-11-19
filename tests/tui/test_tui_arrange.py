@@ -578,7 +578,7 @@ class TestClipPage(UITest):
                 self.assertEqual(self.page.field().label, label)
 
     async def go_to(self, label):
-        self.page.place = self.labels().index(label)
+        self.page.cursor.set_place(self.labels().index(label))
         self.page.draw()
         await self.pilot.pause()
 
@@ -678,7 +678,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         return self.document.clip_slot(index=0, track=LEAD)
 
     async def go_to(self, label):
-        self.page.place = [field.label for field in self.page.fields()].index(label)
+        self.page.cursor.set_place([field.label for field in self.page.fields()].index(label))
         self.page.draw()
         await self.pilot.pause()
 
@@ -695,7 +695,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=DRUMS)
         await self.go_to(GRAB_TRACK)
         await self.press(Key.ENTER)
-        self.app.screen.place = 0
+        self.app.screen.cursor.set_place(0)
         await self.press(Key.ENTER)
         self.assertIsNone(self.clip_slot().get_grab_track())
 
@@ -703,7 +703,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         await self.go_to(GRAB_TRACK)
         await self.press(Key.ENTER)
         self.assertEqual(self.app.screen.options, ['(none)', DRUMS])
-        self.app.screen.place = 1
+        self.app.screen.cursor.set_place(1)
         await self.press(Key.ENTER)
         self.assertEqual(self.clip_slot().get_grab_track(), DRUMS)
 
@@ -711,7 +711,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.document.set_clip_slot_setting(index=0, track=DRUMS, setting=ClipSlotSetting.GRAB_TRACK, value=LEAD)
         await self.go_to(GRAB_TRACK)
         await self.press(Key.ENTER)
-        self.app.screen.place = 1
+        self.app.screen.cursor.set_place(1)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(CIRCULAR_GRAB, self.text())
@@ -773,7 +773,7 @@ class TestGrabEdges(UITest):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
         page = self.app.screen
         self.assertIsInstance(page, ClipPage)
-        page.place = [field.label for field in page.fields()].index(GRAB_TRACK)
+        page.cursor.set_place([field.label for field in page.fields()].index(GRAB_TRACK))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(NO_OTHER_TRACKS, self.text())
@@ -790,7 +790,7 @@ class TestScenePage(UITest):
         return self.document.song().get_scenes()[0]
 
     async def go_to(self, label):
-        self.page.place = [field.label for field in self.page.fields()].index(label)
+        self.page.cursor.set_place([field.label for field in self.page.fields()].index(label))
         self.page.draw()
         await self.pilot.pause()
 
@@ -871,7 +871,7 @@ class TestScenesAndClipsEdges(UITest):
         return self.app.screen
 
     async def go_to(self, page, label):
-        page.place = [field.label for field in page.fields()].index(label)
+        page.cursor.set_place([field.label for field in page.fields()].index(label))
         page.draw()
         await self.pilot.pause()
 
@@ -894,7 +894,7 @@ class TestScenesAndClipsEdges(UITest):
         page = await self.scene_page()
         await self.go_to(page, SCALE)
         await self.press(Key.ENTER)
-        self.app.screen.place = 0
+        self.app.screen.cursor.set_place(0)
         await self.press(Key.ENTER)
         self.assertIsNone(self.scene().get_scale_name())
 
@@ -955,11 +955,11 @@ class TestRegistersPage(UITest):
         # A row for each register and a column for each setting, the cursor stopping at every edge.
         columns = len(self.page.fields()) // len(file_format.REGISTER_NAMES)
         await self.press(Key.UP, Key.LEFT)
-        self.assertEqual(self.page.place, 0)
+        self.assertEqual(self.page.cursor.get_place(), 0)
         await self.press(Key.DOWN, Key.RIGHT)
-        self.assertEqual(self.page.place, columns + 1)
+        self.assertEqual(self.page.cursor.get_place(), columns + 1)
         await self.press(*[Key.DOWN] * len(file_format.REGISTER_NAMES), *[Key.RIGHT] * columns)
-        self.assertEqual(self.page.place, len(self.page.fields()) - 1)
+        self.assertEqual(self.page.cursor.get_place(), len(self.page.fields()) - 1)
         self.assertEqual(self.page.field().label, self.label(name=file_format.REGISTER_NAMES[-1], what=labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD))
         for heading in labels_text.MSG_REGISTER_COLUMNS:
             self.assertIn(heading, self.text())

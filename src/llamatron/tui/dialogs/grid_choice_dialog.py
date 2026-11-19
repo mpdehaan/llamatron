@@ -91,7 +91,7 @@ class GridChoiceDialog(ChoiceDialog):
         keys = [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
             self.bind(self.KEYS.MOVE, action=self.move, wants_key=True),
-            self.bind(self.KEYS.CHOOSE, action=lambda: self.dismiss(self.place)),
+            self.bind(self.KEYS.CHOOSE, action=lambda: self.dismiss(self.cursor.get_place())),
         ]
         if len(self.pages) > 1:
             keys.append(self.bind(self.KEYS.OTHER_PAGE, action=self.turn_key))
@@ -124,7 +124,7 @@ class GridChoiceDialog(ChoiceDialog):
         """Return the row and column of the selected option in a page's cells, or None."""
         for row in range(len(cells)):
             for column in range(len(cells[row])):
-                if self.option_at(row=row, column=column, cells=cells) == self.place:
+                if self.option_at(row=row, column=column, cells=cells) == self.cursor.get_place():
                     return row, column
         return None
 
@@ -146,7 +146,7 @@ class GridChoiceDialog(ChoiceDialog):
         for search in (column, *range(column + inward, width if inward > 0 else -1, inward), *range(width)):
             found = self.nearest(row=row, column=search)
             if found is not None:
-                self.place = found
+                self.cursor.set_place(found)
                 return
 
     def turn_key(self, step):
@@ -166,7 +166,7 @@ class GridChoiceDialog(ChoiceDialog):
                 for other in others:
                     found = self.option_at(row=other, column=search)
                     if found is not None:
-                        self.place = found
+                        self.cursor.set_place(found)
                         return
             return
         step = -1 if name == Key.LEFT else 1
@@ -182,7 +182,7 @@ class GridChoiceDialog(ChoiceDialog):
                 target %= width
             found = self.nearest(row=row, column=target)
             if found is not None:
-                self.place = found
+                self.cursor.set_place(found)
                 return
 
     def column_widths(self):
@@ -197,7 +197,7 @@ class GridChoiceDialog(ChoiceDialog):
 
     def option_text(self, *, place, size):
         text = Text(no_wrap=True)
-        text.append(padded(self.options[place]), style=Style.REVERSE if place == self.place else Style.PLAIN)
+        text.append(padded(self.options[place]), style=Style.REVERSE if place == self.cursor.get_place() else Style.PLAIN)
         text.append(drawing.SPACE * max(size - len(str(self.options[place])) - 2, 0))
         return text
 
@@ -224,5 +224,5 @@ class GridChoiceDialog(ChoiceDialog):
         # Shorter pages are padded to the height of the tallest.
         result += [Text(drawing.NOTHING)] * (max(len(grid) for _, grid in self.pages) - len(self.grid()))
         if self.details is not None:
-            result += [Text(drawing.NOTHING), Text(fit(text=self.details(self.place), width=width))]
+            result += [Text(drawing.NOTHING), Text(fit(text=self.details(self.cursor.get_place()), width=width))]
         return result

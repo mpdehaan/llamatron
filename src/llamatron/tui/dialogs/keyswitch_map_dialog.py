@@ -32,6 +32,7 @@ from llamatron.strings import labels, marks, messages
 from llamatron.tui import drawing, key_table, keybindings, keyswitch_text
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.components.keyboard import KeyKind, one_octave_rows
+from llamatron.tui.cursor import Cursor
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import cursor_mark, fit, legend, Style
@@ -70,14 +71,14 @@ class KeyswitchMapDialog(Dialog):
         self.keyswitches = list(keyswitches)
         # The set, whose octave labels the notes are written in.
         self.setlist = setlist
-        self.place = 0
+        self.cursor = Cursor(place=0)
         self.cell = NAME_CELL
         self.button = OK
         # The note the picker is on while it is open, and None while it is closed.
         self.picking = None
 
     def on_buttons(self):
-        return self.place == BUTTONS_PLACE
+        return self.cursor.get_place() == BUTTONS_PLACE
 
     def keys(self):
         if self.picking is not None:
@@ -107,7 +108,7 @@ class KeyswitchMapDialog(Dialog):
         self.dismiss(list(self.keyswitches))
 
     def move(self, name):
-        self.place = cursor_moved(place=self.place, name=name, count=BUTTONS_PLACE + 1)
+        self.cursor.move(name=name, count=BUTTONS_PLACE + 1)
 
     def go_to_cell(self, cell):
         """Move to a slot's name or its note; Up and Down keep the place."""
@@ -123,14 +124,14 @@ class KeyswitchMapDialog(Dialog):
             self.dismiss(None)
 
     def current(self):
-        return self.keyswitches[self.place]
+        return self.keyswitches[self.cursor.get_place()]
 
     def clear(self):
-        self.keyswitches[self.place] = instrument.NO_KEYSWITCH
+        self.keyswitches[self.cursor.get_place()] = instrument.NO_KEYSWITCH
 
     def rename(self):
         """Ask for the slot's name over the map, an empty answer leaving the slot without one."""
-        place = self.place
+        place = self.cursor.get_place()
 
         def named(text):
             if text is not None:
@@ -146,7 +147,7 @@ class KeyswitchMapDialog(Dialog):
         self.picking = None
 
     def take_note(self):
-        self.keyswitches[self.place] = Keyswitch(self.current().name, self.picking)
+        self.keyswitches[self.cursor.get_place()] = Keyswitch(self.current().name, self.picking)
         self.picking = None
 
     def pick_note(self, name):
@@ -166,8 +167,8 @@ class KeyswitchMapDialog(Dialog):
 
     def slot_line(self, *, slot, width):
         keyswitch = self.keyswitches[slot]
-        on_name = slot == self.place and self.cell == NAME_CELL
-        on_note = slot == self.place and self.cell == NOTE_CELL
+        on_name = slot == self.cursor.get_place() and self.cell == NAME_CELL
+        on_note = slot == self.cursor.get_place() and self.cell == NOTE_CELL
         # The triangle stands before the name or the note, in a place each keeps for it, so that nothing shifts as the cursor moves.
         line = Text(marks.MSG_KEYSWITCH_MAP_ROW.format(slot=slot), no_wrap=True)
         name_mark = cursor_mark(on_name)
@@ -205,7 +206,7 @@ class KeyswitchMapDialog(Dialog):
         if self.picking is None:
             return None
         keyswitch = self.current()
-        title = messages.MSG_KEYSWITCH_NOTE_TITLE.format(slot=self.place) if keyswitch.name is None else messages.MSG_KEYSWITCH_NOTE_NAMED_TITLE.format(slot=self.place, name=keyswitch.name)
+        title = messages.MSG_KEYSWITCH_NOTE_TITLE.format(slot=self.cursor.get_place()) if keyswitch.name is None else messages.MSG_KEYSWITCH_NOTE_NAMED_TITLE.format(slot=self.cursor.get_place(), name=keyswitch.name)
         lines = [Text(fit(text=title, width=width), style=Style.BOLD), Text(drawing.NOTHING)]
         for row in one_octave_rows(self.picking % midi.HALF_STEPS_PER_OCTAVE):
             line = Text(drawing.NOTHING, no_wrap=True)

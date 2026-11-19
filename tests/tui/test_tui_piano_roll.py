@@ -246,13 +246,13 @@ class TestPlacingNotes(RollTest):
         self.assertEqual(self.app.screen.title, labels.MSG_ENTRY_SIZE_LABEL)
         self.assertEqual(self.app.screen.options, [labels.MSG_SONG_ENTRY_SIZE_CHOICE, *file_format.STEP_SIZE_CHOICES])
         # The pattern has no entry size of its own yet, so the picker opens on the song's.
-        self.assertEqual(self.app.screen.options[self.app.screen.place], labels.MSG_SONG_ENTRY_SIZE_CHOICE)
+        self.assertEqual(self.app.screen.options[self.app.screen.cursor.get_place()], labels.MSG_SONG_ENTRY_SIZE_CHOICE)
         await self.pick(HALF)
         self.assertEqual(pattern.get_written_entry_size(), HALF)
         self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=HALF, whose=drawing.NOTHING), self.text())
         # The picker opens on the pattern's own size, and the song's choice takes the pattern's own away.
         await self.press(keybindings.PianoRoll.ENTRY_SIZE)
-        self.assertEqual(self.app.screen.options[self.app.screen.place], HALF)
+        self.assertEqual(self.app.screen.options[self.app.screen.cursor.get_place()], HALF)
         await self.pick(labels.MSG_SONG_ENTRY_SIZE_CHOICE)
         self.assertIsNone(pattern.get_written_entry_size())
         self.assertIn(marks.MSG_ENTRY_SIZE_SHOWN.format(size=EIGHTH, whose=marks.MSG_FROM_SONG_SHOWN), self.text())

@@ -22,9 +22,9 @@ from rich.text import Text
 
 from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings
+from llamatron.tui.cursor import Cursor
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import cursor_mark, fit
-from llamatron.tui.key_table import cursor_moved
 
 
 class PickManyDialog(Dialog):
@@ -40,7 +40,7 @@ class PickManyDialog(Dialog):
         self.options = options
         self.names = names
         self.picked = set(picked)
-        self.place = 0
+        self.cursor = Cursor(place=0)
 
     def keys(self):
         return [
@@ -51,15 +51,15 @@ class PickManyDialog(Dialog):
         ]
 
     def move(self, name):
-        self.place = cursor_moved(place=self.place, name=name, count=len(self.options))
+        self.cursor.move(name=name, count=len(self.options))
 
     def flip(self):
-        self.picked ^= {self.options[self.place]}
+        self.picked ^= {self.options[self.cursor.get_place()]}
 
     def lines(self, width):
-        start = max(min(self.place - self.SHOWN // 2, len(self.options) - self.SHOWN), 0)
+        start = max(min(self.cursor.get_place() - self.SHOWN // 2, len(self.options) - self.SHOWN), 0)
         result = []
         for place in range(start, min(start + self.SHOWN, len(self.options))):
             mark = marks.MSG_TOGGLE_ON if self.options[place] in self.picked else marks.MSG_FIELD_TOGGLE_OFF
-            result.append(Text(fit(text=cursor_mark(place == self.place) + mark + drawing.SPACE + self.names[place], width=width)))
+            result.append(Text(fit(text=cursor_mark(place == self.cursor.get_place()) + mark + drawing.SPACE + self.names[place], width=width)))
         return result

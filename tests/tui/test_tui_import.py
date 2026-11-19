@@ -77,7 +77,7 @@ class TestImportDialog(UITest):
     async def open_the_dialog(self, *, file_name=SAMPLE_FILE):
         await self.press(keybindings.MainPage.IMPORT_HERE)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index(file_name)
+        self.app.screen.cursor.set_place(rows.index(file_name))
         await self.press(Key.ENTER)
 
     def test_the_main_screen_has_an_import_cell(self):
@@ -186,7 +186,7 @@ class TestImportDialog(UITest):
         shutil.copy(SAMPLE, os.path.join(HOME, DEEPER))
         await self.press(keybindings.MainPage.IMPORT_HERE)
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index(DEEPER)
+        self.app.screen.cursor.set_place(rows.index(DEEPER))
         await self.press(Key.ENTER)
         self.assertEqual(os.path.basename(self.app.screen.folder), DEEPER)
         await self.open_the_picked(SAMPLE_FILE)
@@ -194,7 +194,7 @@ class TestImportDialog(UITest):
 
     async def open_the_picked(self, file_name):
         rows = [row[0] for row in self.app.screen.rows()]
-        self.app.screen.place = rows.index(file_name)
+        self.app.screen.cursor.set_place(rows.index(file_name))
         await self.press(Key.ENTER)
 
     async def test_a_file_that_isnt_midi_is_told_and_the_picker_stays(self):

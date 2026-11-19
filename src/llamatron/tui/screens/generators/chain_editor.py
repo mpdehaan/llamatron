@@ -120,7 +120,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
     def add(self):
         def chosen(*, kind, name):
             self.document().change(self.document().setlist().get_chain(self.item).add_step, kind=kind, name=name, setlist=self.document().setlist())
-            self.place = len(self.steps()) - 1
+            self.cursor.set_place(len(self.steps()) - 1)
         self.pick_generator(title=messages.MSG_ADD_TO_CHAIN_TITLE, then=chosen)
 
     def change(self):
@@ -128,13 +128,13 @@ class ChainEditor(ShowsNamedItem, ListPage):
         self.pick_generator(title=messages.MSG_CHANGE_STEP_TITLE, then=lambda kind, name: self.document().change(self.document().setlist().get_chain(self.item).set_step, place=place, kind=kind, name=name, setlist=self.document().setlist()))
 
     def copy(self):
-        self.document().change(self.document().setlist().get_chain(self.item).copy_step, self.place)
-        self.place += 1
+        self.document().change(self.document().setlist().get_chain(self.item).copy_step, self.cursor.get_place())
+        self.cursor.shift(1)
 
     def remove_step(self):
-        self.document().change(self.document().setlist().get_chain(self.item).remove_step, self.place)
+        self.document().change(self.document().setlist().get_chain(self.item).remove_step, self.cursor.get_place())
         self.clamp()
 
     def shift(self, offset):
-        if self.document().move_chain_step(chain=self.item, place=self.place, offset=offset):
-            self.place += offset
+        if self.document().move_chain_step(chain=self.item, place=self.cursor.get_place(), offset=offset):
+            self.cursor.shift(offset)

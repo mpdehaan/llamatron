@@ -225,7 +225,7 @@ class TestChordsEditor(UITest):
         await self.press(keybindings.ChordsEditor.PICK)
         self.assertIsInstance(self.app.screen, GridChoiceDialog)
         self.assertIn(labels.MSG_PROGRESSION_NAMES[NamedProgression.ROCK], self.app.screen.options)
-        self.app.screen.place = self.app.screen.options.index(labels.MSG_PROGRESSION_NAMES[NamedProgression.ROCK])
+        self.app.screen.cursor.set_place(self.app.screen.options.index(labels.MSG_PROGRESSION_NAMES[NamedProgression.ROCK]))
         await self.press(Key.ENTER)
         self.assertEqual(len(self.progression().get_chords()), len(named_progression(NamedProgression.ROCK)))
         self.assertEqual(self.progression().get_accidentals(), [None, Accidental.FLAT, None])

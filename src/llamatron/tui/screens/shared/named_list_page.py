@@ -50,7 +50,7 @@ class NamedListPage(ListPage):
 
     def own_place(self):
         """Return the selected thing's place in its section, which is its row unless the page lists other rows first."""
-        return self.place
+        return self.cursor.get_place()
 
     def uses(self, name):
         return self.document().uses(section=self.LISTED_SECTION, name=name)
@@ -86,7 +86,7 @@ class NamedListPage(ListPage):
 
     def put_cursor_on(self, name):
         """Put the cursor on the row of a name."""
-        self.place = self.names().index(name)
+        self.cursor.set_place(self.names().index(name))
 
     def rename(self):
         name = self.current()
@@ -108,7 +108,7 @@ class NamedListPage(ListPage):
 
     def shift(self, offset):
         if self.document().move_named(section=self.LISTED_SECTION, place=self.own_place(), offset=offset):
-            self.place += offset
+            self.cursor.shift(offset)
 
     def sort(self):
         """Sort the section by name for good, keeping the cursor on the thing it was on."""

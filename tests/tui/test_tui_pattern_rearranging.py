@@ -133,13 +133,13 @@ class TestRearrangingAPattern(UITest):
         await self.reconfigure(Reconfigure.LOAD_OVER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertNotIn(LONG_PATTERN, self.app.screen.options)
-        self.app.screen.place = self.app.screen.options.index(BEAT)
+        self.app.screen.cursor.set_place(self.app.screen.options.index(BEAT))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.NO)
         self.assertEqual(self.rows(), [1, 2, 3, 4, 5])
         await self.reconfigure(Reconfigure.LOAD_OVER)
-        self.app.screen.place = self.app.screen.options.index(BEAT)
+        self.app.screen.cursor.set_place(self.app.screen.options.index(BEAT))
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         song = self.document.song()
         self.assertEqual(song.get_pattern(LONG_PATTERN).to_data(), song.get_pattern(BEAT).to_data())
@@ -148,7 +148,7 @@ class TestRearrangingAPattern(UITest):
 
     async def test_a_loaded_copy_is_separate(self):
         await self.reconfigure(Reconfigure.LOAD_OVER)
-        self.app.screen.place = self.app.screen.options.index(BEAT)
+        self.app.screen.cursor.set_place(self.app.screen.options.index(BEAT))
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES, Key.RIGHT, NoteName.F.lower())
         self.assertEqual(self.document.step_value(name=LONG_PATTERN, row=Row.DEGREE, step=1), NoteName.F)
         self.assertIsNone(self.document.step_value(name=BEAT, row=Row.DEGREE, step=1))
@@ -156,7 +156,7 @@ class TestRearrangingAPattern(UITest):
     async def test_load_keeps_the_name_and_what_uses_it(self):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.PATTERN, value=LONG_PATTERN)
         await self.reconfigure(Reconfigure.LOAD_OVER)
-        self.app.screen.place = self.app.screen.options.index(OTHER)
+        self.app.screen.cursor.set_place(self.app.screen.options.index(OTHER))
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         self.assertEqual(self.document.song().get_scenes()[0].get_clip_slot(LEAD).get_pattern_name(), LONG_PATTERN)
         render_song(self.document.song())

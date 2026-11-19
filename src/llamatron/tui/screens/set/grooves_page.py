@@ -57,7 +57,7 @@ class GroovesPage(NamedListPage):
 
     def own_place(self):
         """Return the selected groove's place among the set's own grooves, which come after the factory ones."""
-        return self.place - len(groove.FACTORY_GROOVE_NAMES)
+        return self.cursor.get_place() - len(groove.FACTORY_GROOVE_NAMES)
 
     def open_item(self):
         self.show_page(GrooveEditor(holder=self.holder, name=self.current()))

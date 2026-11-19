@@ -263,13 +263,13 @@ class TestPatternEditor(PatternEditorTest):
         await self.reconfigure(Reconfigure.LOAD_OVER)
         dialog = self.app.screen
         await self.type(SEARCH_TEXT)
-        self.assertEqual(dialog.options[dialog.place], SEARCH_HIT)
+        self.assertEqual(dialog.options[dialog.cursor.get_place()], SEARCH_HIT)
         self.assertIn(marks.MSG_SEARCH_SHOWN.format(text=SEARCH_TEXT), self.text())
         self.assertNotIn(BEAT, self.text())
         await self.press(Key.TAB)
-        self.assertEqual(dialog.typed, SEARCH_HIT)
+        self.assertEqual(dialog.search.get_typed(), SEARCH_HIT)
         await self.press(Key.BACKSPACE, Key.BACKSPACE)
-        self.assertEqual(dialog.typed, SEARCH_HIT[:-2])
+        self.assertEqual(dialog.search.get_typed(), SEARCH_HIT[:-2])
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         self.assertEqual(self.document.song().get_pattern(TUNE).get_steps(), 1)
 

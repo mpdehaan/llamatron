@@ -22,6 +22,7 @@ from llamatron.composition import setlist
 from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
+from llamatron.tui.cursor import Cursor
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved
@@ -38,7 +39,7 @@ class FieldPage(Page):
 
     def __init__(self, holder):
         super().__init__(holder)
-        self.place = 0
+        self.cursor = Cursor(place=0)
         # The cell the cursor is on in a row of cells, counted from the left.
         self.cell = 0
 
@@ -92,7 +93,7 @@ class FieldPage(Page):
 
     def heading_over_cursor(self):
         """Return the label of the heading the cursor is on or under, or None where the cursor is above every heading."""
-        over = [field for field in self.shown_fields()[:self.place + 1] if isinstance(field, Heading)]
+        over = [field for field in self.shown_fields()[:self.cursor.get_place() + 1] if isinstance(field, Heading)]
         return over[-1].label if over else None
 
     def toggle_section(self, label):
@@ -101,9 +102,9 @@ class FieldPage(Page):
     def jump_section(self, direction):
         """Move the cursor to the next section's heading, or the one before, staying put past the last or the first."""
         places = [place for place, field in enumerate(self.shown_fields()) if isinstance(field, Heading)]
-        ahead = [place for place in places if place > self.place] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.place]
+        ahead = [place for place in places if place > self.cursor.get_place()] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.cursor.get_place()]
         if ahead:
-            self.place = ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1]
+            self.cursor.set_place(ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1])
 
     def ends_a_list(self, field):
         """Return whether a field is the last row of a list among the settings, which leaves a blank line after it. No field is, unless the page says so."""
@@ -111,8 +112,8 @@ class FieldPage(Page):
 
     def field(self):
         fields = self.shown_fields()
-        self.place = max(min(self.place, len(fields) - 1), 0)
-        return fields[self.place] if fields else None
+        self.cursor.set_place(max(min(self.cursor.get_place(), len(fields) - 1), 0))
+        return fields[self.cursor.get_place()] if fields else None
 
     def move_cursor(self, name):
         """Move between the fields with Up and Down, Down from the last field reaching the row of buttons and Up from any button
@@ -125,13 +126,13 @@ class FieldPage(Page):
         first_button = self.first_button_place()
         if self.buttons_stacked():
             # Buttons too wide for one row stand one under another, and Up and Down go through them as through the fields.
-            self.place = cursor_moved(place=self.place, name=name, count=len(fields))
+            self.cursor.move(name=name, count=len(fields))
             return
-        if self.place >= first_button:
+        if self.cursor.get_place() >= first_button:
             if name == Key.UP and first_button:
-                self.place = first_button - 1
+                self.cursor.set_place(first_button - 1)
             return
-        self.place = cursor_moved(place=self.place, name=name, count=min(first_button + 1, len(fields)))
+        self.cursor.move(name=name, count=min(first_button + 1, len(fields)))
 
     def buttons_stacked(self):
         """Return whether the page's buttons were last drawn one under another, a row of them being wider than the page."""
@@ -173,7 +174,7 @@ class FieldPage(Page):
         """Move along the row of buttons with Left and Right, stopping at both ends."""
         first_button = self.first_button_place()
         count = len(self.shown_fields()) - first_button
-        self.place = first_button + cursor_moved(place=self.place - first_button, name=name, count=count)
+        self.cursor.set_place(first_button + cursor_moved(place=self.cursor.get_place() - first_button, name=name, count=count))
 
     def remember_place(self):
         field = self.field()
@@ -183,7 +184,7 @@ class FieldPage(Page):
         """Put the cursor back on the field with the same label, since an undo can add or remove fields above it."""
         labels = [field.label for field in self.shown_fields()]
         if place in labels:
-            self.place = labels.index(place)
+            self.cursor.set_place(labels.index(place))
 
     def keys(self):
         result = [self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True)]
@@ -232,18 +233,18 @@ class FieldPage(Page):
                 seen_heading = True
                 if place:
                     lines.append(Text(drawing.NOTHING))
-            if place == self.place:
+            if place == self.cursor.get_place():
                 selected = len(lines)
             line = Text(no_wrap=True)
-            line.append(cursor_mark(place == self.place))
+            line.append(cursor_mark(place == self.cursor.get_place()))
             if isinstance(field, Heading):
                 line.append(self.label_text(field).ljust(label_width), style=Style.BOLD)
                 line.append(padded(field.value()), style=Style.DIM)
                 lines.append(line)
                 continue
-            line.append(field.label.ljust(label_width), style=Style.BOLD if place == self.place else Style.PLAIN)
+            line.append(field.label.ljust(label_width), style=Style.BOLD if place == self.cursor.get_place() else Style.PLAIN)
             if isinstance(field, Cells):
-                self.append_cells(line=line, row=field, selected=place == self.place)
+                self.append_cells(line=line, row=field, selected=place == self.cursor.get_place())
                 lines.append(line)
                 continue
             line.append(padded(field.value()))
@@ -260,9 +261,9 @@ class FieldPage(Page):
             # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
             first_button = self.first_button_place()
             lines.append(Text(drawing.NOTHING))
-            row = self.row_of_buttons(buttons=buttons, selected=self.place - first_button, width=width)
-            if self.place >= first_button:
-                selected = len(lines) + (self.place - first_button if self.buttons_stacked() else 1)
+            row = self.row_of_buttons(buttons=buttons, selected=self.cursor.get_place() - first_button, width=width)
+            if self.cursor.get_place() >= first_button:
+                selected = len(lines) + (self.cursor.get_place() - first_button if self.buttons_stacked() else 1)
             lines += row
         notes = self.notes(width)
         if notes:

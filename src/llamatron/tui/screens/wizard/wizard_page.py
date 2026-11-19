@@ -182,7 +182,7 @@ class WizardPage(FieldPage):
         """Put the cursor on the field of a label, where one shows."""
         places = [place for place, field in enumerate(self.shown_fields()) if getattr(field, LABEL_OF_FIELD, None) == label]
         if places:
-            self.place = places[0]
+            self.cursor.set_place(places[0])
 
     def stay_on(self, label):
         """Keep the cursor on the field of a label: a choice may make a field appear or leave above the one chosen, which would
@@ -190,8 +190,8 @@ class WizardPage(FieldPage):
         if label is None:
             return
         places = [place for place, field in enumerate(self.shown_fields()) if getattr(field, LABEL_OF_FIELD, None) == label]
-        if places and self.place not in places:
-            self.place = min(places, key=lambda place: abs(place - self.place))
+        if places and self.cursor.get_place() not in places:
+            self.cursor.set_place(min(places, key=lambda place: abs(place - self.cursor.get_place())))
 
     # Editing a tune's notes: the pattern editor opened over the wizard, on a draft of the set the choices make.
 
@@ -418,7 +418,7 @@ class WizardPage(FieldPage):
 
     def cursor_place(self):
         """Where the cursor is: the branch of the tree, and the field while the cursor is in the fields."""
-        return (self.tree_place, self.in_fields, self.place if self.in_fields else NO_PLACE)
+        return (self.tree_place, self.in_fields, self.cursor.get_place() if self.in_fields else NO_PLACE)
 
     def release_offers_once_left(self):
         """Let the held offers go once the cursor has left the cell whose change held them, and forget what the page kept, which
@@ -509,7 +509,7 @@ class WizardPage(FieldPage):
             return
         self.in_fields = True
         fields = self.shown_fields()
-        self.place = next((place for place, field in enumerate(fields) if field.enter or field.adjust), FIRST_PLACE)
+        self.cursor.set_place(next((place for place, field in enumerate(fields) if field.enter or field.adjust), FIRST_PLACE))
 
     def to_tree(self):
         self.in_fields = False
@@ -778,11 +778,11 @@ class WizardPage(FieldPage):
 
     def field_lines(self, *, width, height):
         """Return the right side's lines: the branch's title, then its fields as a settings page draws them, all dim while the cursor is in the tree."""
-        place = self.place
+        place = self.cursor.get_place()
         if not self.in_fields:
-            self.place = NO_PLACE
+            self.cursor.set_place(NO_PLACE)
         lines = [Text(drawing.SPACE + self.branch().title(), style=Style.BOLD), *FieldPage.body(self, width=width, height=max(height - 1, 1))]
-        self.place = place
+        self.cursor.set_place(place)
         if not self.in_fields:
             for line in lines:
                 line.stylize(Style.DIM)

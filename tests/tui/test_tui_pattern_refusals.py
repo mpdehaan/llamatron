@@ -84,7 +84,7 @@ class TestPatternEditorRefusals(UITest):
     async def test_load_over_a_pattern_with_notes_asks_first(self):
         await self.open(TUNE)
         await self.reconfigure(Reconfigure.LOAD_OVER)
-        self.app.screen.place = self.app.screen.options.index(OTHER)
+        self.app.screen.cursor.set_place(self.app.screen.options.index(OTHER))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
