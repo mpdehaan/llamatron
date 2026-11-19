@@ -44,5 +44,5 @@ class ChainStatementsPage(ShowsNamedItem, FieldPage):
         document = self.document()
         return statement_section(
             page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE, statements=lambda: document.song().get_chain(self.item).get_bypass_when(),
-            store=lambda place, statement: document.set_chain_bypass_statement(chain=self.item, place=place, statement=statement),
+            store=lambda place, statement: document.change(document.setlist().get_chain(self.item).set_bypass_statement, place=place, statement=statement),
         )

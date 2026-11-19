@@ -46,7 +46,7 @@ def with_instruments(document, *, keys_device=GONE_PORT):
     """Give the lead a FluidSynth instrument and the drums one on a MIDI port, and add an instrument nothing plays through, on a port that has gone."""
     for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, keys_device), (UNUSED, GONE_PORT)):
         document.add_instrument(name)
-        document.set_instrument_device(name=name, device=device)
+        document.change(document.setlist().get_instrument(name).set_device, device)
     document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
     document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)
     return document
@@ -70,7 +70,7 @@ class TestSilentInstrumentLines(unittest.TestCase):
 
     def test_fluidsynth_is_told_once_however_many_instruments_use_it(self):
         document = with_instruments(a_song())
-        document.set_instrument_device(name=KEYS, device=file_format.FLUIDSYNTH_DEVICE)
+        document.change(document.setlist().get_instrument(KEYS).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.assertEqual(silent_instrument_lines(setlist=document.setlist(), installed=False, connected=set()), [errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND])
 
 

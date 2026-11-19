@@ -167,8 +167,15 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         """Return the current song's estimate, taken when first asked for and kept until the set changes."""
         return self.remembered(key=MEASURED_KEY, on=(self,), compute=lambda: measured(self.song()))
 
-    def _change(self, method, *arguments, **named):
+    def change(self, method, *arguments, **named):
         """Make one change through an object's method, note the change, and return what the method returned."""
         result = method(*arguments, **named)
         self.changed(inside_a_pattern=isinstance(method.__self__, Pattern))
         return result
+
+    def set_setting(self, *, holder, name, value):
+        """Set one setting of anything in the set that holds settings, by the setting's file name, or None to leave it out and use its default.
+
+        The holder checks the value as reading a file does, against the current song where the setting names something of it.
+        """
+        self.change(holder.set_written, name=name, value=value, song=self.song())

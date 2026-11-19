@@ -353,7 +353,7 @@ code.
   `composition/pattern_notes.py`, and `PatternEdits` adds the step size and entry size the set
   may give the pattern, and remembers `covering_notes`). `document.py`
   keeps what they share: the constructor, `setlist()`, `song()`, `select_song`, `changed()`,
-  `revision()`, `outside_patterns()`, `memory()`, `remembered`, `uses`, `lengths()` and `_change`.
+  `revision()`, `outside_patterns()`, `memory()`, `remembered`, `uses`, `lengths()`, `change(method, ...)`, which makes one change through an object's own method and notes it, and `set_setting(holder=, name=, value=)`. A page changes the set by `document.change(...)` on a method of the object the document hands it; the document keeps a method of its own only where it does more than pass the call on.
 - Every `Document` method makes its change through the composition objects' own setters
   (`Pattern.set_value`, `Scene.set_cell`, `Song.rename_item` and so on), which check every value
   the way `from_data` does and raise `InvalidValue`, then calls `changed()`. `Document` never
@@ -363,7 +363,7 @@ code.
   "Performance matters"). There are three kinds of `on`. The document itself, whose revision
   moves with every change and every change of the current song, is for anything in the set: a
   `ListPage`'s `remembered_rows`, the song's estimate, the roll's answers and every drawn line.
-  `document.outside_patterns()`, a `ChangeMark` that `_change` moves unless the method called was
+  `document.outside_patterns()`, a `ChangeMark` that `change` moves unless the method called was
   a `Pattern`'s own, is for what no pattern's contents can change: `uses(section=, name=)`,
   `scales_of_pattern`, `degree_limit`, `pattern_octave_range` and `cc_numbers_for_pattern`. And
   the objects themselves: `covering_notes` is kept on the pattern and the set, and

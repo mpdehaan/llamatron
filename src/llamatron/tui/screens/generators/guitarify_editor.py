@@ -58,7 +58,7 @@ class GuitarifyEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=self.item)
 
     def store(self, *, setting, value):
-        self.document().set_generator_setting(section=Section.GUITARIFIES, name=self.item, setting=setting, value=value)
+        self.document().change(self.document().generator(section=Section.GUITARIFIES, name=self.item).set_setting, name=setting, value=value)
 
     def any_written(self, settings):
         written = self.guitar().to_data()

@@ -62,7 +62,7 @@ class TestFollowChordsEditor(UITest):
         self.assertEqual(self.followed(), NEW_ONE)
 
     async def test_a_track_the_song_lacks_is_still_offered_so_that_it_is_kept(self):
-        self.document.set_generator_setting(section=Section.FOLLOW_CHORDS, name=ui_testing.FOLLOWS, setting=FollowChordsSetting.CHORDS_FROM, value=GONE)
+        self.document.change(self.document.generator(section=Section.FOLLOW_CHORDS, name=ui_testing.FOLLOWS).set_setting, name=FollowChordsSetting.CHORDS_FROM, value=GONE)
         self.app.screen.draw()
         await self.press(Key.ENTER)
         self.assertIn(GONE, self.app.screen.options)

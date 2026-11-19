@@ -56,7 +56,7 @@ class StepRowEditor(ShowsNamedItem, StepGrid, StepEditor):
         return len(self.values())
 
     def store(self, values):
-        self.document().set_generator_setting(section=self.SECTION, name=self.item, setting=StepRowSetting.STEPS, value=values)
+        self.document().change(self.document().generator(section=self.SECTION, name=self.item).set_setting, name=StepRowSetting.STEPS, value=values)
 
     def keys(self):
         self.keep_step()

@@ -80,13 +80,13 @@ def seconds(*, whole_notes, tempo=TEMPO):
 def small_song():
     """Return the small song as a document, built the way the tracker builds one, from a set with the starter pattern taken out."""
     document = bare_document()
-    document.set_tempo(TEMPO)
+    document.change(document.song().set_tempo, TEMPO)
     document.add_pattern(name=TUNE, steps=TUNE_STEPS)
-    document.set_step_size(name=TUNE, step_size=QUARTER)
-    document.set_step_value(name=TUNE, row=Row.DEGREE, step=FIRST_STEP, value=FIRST_DEGREE)
+    document.change(document.setlist().get_pattern(TUNE).set_step_size, QUARTER)
+    document.change(document.setlist().get_pattern(TUNE).set_value, row=Row.DEGREE, step=FIRST_STEP, value=FIRST_DEGREE)
     document.add_pattern(name=DRONE, steps=DRONE_STEPS)
-    document.set_step_size(name=DRONE, step_size=HALF)
-    document.set_step_value(name=DRONE, row=Row.DEGREE, step=FIRST_STEP, value=FIRST_DEGREE)
+    document.change(document.setlist().get_pattern(DRONE).set_step_size, HALF)
+    document.change(document.setlist().get_pattern(DRONE).set_value, row=Row.DEGREE, step=FIRST_STEP, value=FIRST_DEGREE)
     document.add_track(LEAD)
     document.add_track(BASS)
     document.add_scene(index=FIRST, name=FIRST_SCENE_NAME)
@@ -123,30 +123,30 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
         self.assertEqual(self.document.lengths().clip_seconds(index=SECOND, track=BASS), seconds(whole_notes=ONE_PASS * MORE_REPEATS))
 
     def test_the_steps_and_step_size_move_the_lengths(self):
-        self.document.set_steps(name=TUNE, steps=LONGER_TUNE)
+        self.document.change(self.document.setlist().get_pattern(TUNE).set_steps, LONGER_TUNE)
         self.assertEqual(self.document.lengths().clip_seconds(index=FIRST, track=LEAD), seconds(whole_notes=ONE_PASS * 2))
-        self.document.set_step_size(name=TUNE, step_size=EIGHTH)
+        self.document.change(self.document.setlist().get_pattern(TUNE).set_step_size, EIGHTH)
         self.assertEqual(self.document.lengths().clip_seconds(index=FIRST, track=LEAD), seconds(whole_notes=ONE_PASS))
-        self.document.set_step_size(name=TUNE, step_size=None)
-        self.document.set_default_step_size(SIXTEENTH)
+        self.document.change(self.document.setlist().get_pattern(TUNE).set_step_size, None)
+        self.document.change(self.document.setlist().set_step_size, SIXTEENTH)
         self.assertEqual(self.document.lengths().pattern_seconds(TUNE), seconds(whole_notes=LONGER_TUNE * Fraction(SIXTEENTH)))
         self.assertEqual(self.document.lengths().clip_seconds(index=FIRST, track=LEAD), seconds(whole_notes=LONGER_TUNE * Fraction(SIXTEENTH)))
 
     def test_scene_repeats_and_tempos_move_the_song_length(self):
         both_scenes = ONE_PASS + ONE_PASS * LEAD_REPEATS
         self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=both_scenes))
-        self.document.set_scene_repeat(index=FIRST, repeat=LEAD_REPEATS)
+        self.document.change(self.document.song().get_scene(FIRST).set_repeat, LEAD_REPEATS)
         self.assertEqual(self.document.lengths().scene_seconds(FIRST), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))
         self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=both_scenes + ONE_PASS))
-        self.document.set_tempo(SLOW_TEMPO)
+        self.document.change(self.document.song().set_tempo, SLOW_TEMPO)
         self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=both_scenes + ONE_PASS, tempo=SLOW_TEMPO))
-        self.document.set_scene_tempo(index=SECOND, tempo=FAST_TEMPO)
+        self.document.change(self.document.song().get_scene(SECOND).set_tempo, FAST_TEMPO)
         self.assertEqual(self.document.lengths().scene_seconds(SECOND), seconds(whole_notes=ONE_PASS * LEAD_REPEATS, tempo=FAST_TEMPO))
         self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=ONE_PASS * LEAD_REPEATS, tempo=SLOW_TEMPO) + seconds(whole_notes=ONE_PASS * LEAD_REPEATS, tempo=FAST_TEMPO))
 
     def test_the_longest_scene_counts_every_repeat_and_leaves_out_a_scene_with_a_problem(self):
         self.assertEqual(self.document.lengths().longest_scene_seconds(), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))
-        self.document.set_scene_repeat(index=FIRST, repeat=MANY_REPEATS)
+        self.document.change(self.document.song().get_scene(FIRST).set_repeat, MANY_REPEATS)
         self.assertEqual(self.document.lengths().scene_seconds(FIRST), seconds(whole_notes=ONE_PASS * MANY_REPEATS))
         self.assertEqual(self.document.lengths().scene_play_seconds(FIRST), seconds(whole_notes=ONE_PASS))
         self.assertEqual(self.document.lengths().longest_scene_seconds(), seconds(whole_notes=ONE_PASS * MANY_REPEATS))
@@ -172,7 +172,7 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
             self.document.lengths().clip_seconds(index=SECOND, track=LEAD)
             self.document.lengths().song_seconds()
             self.assertEqual(measuring.call_count, 1)
-            self.document.set_tempo(SLOW_TEMPO)
+            self.document.change(self.document.song().set_tempo, SLOW_TEMPO)
             self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=ONE_PASS + ONE_PASS * LEAD_REPEATS, tempo=SLOW_TEMPO))
             self.assertEqual(measuring.call_count, 2)
 
@@ -180,7 +180,7 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
         self.document.set_clip_slot_morph_target(index=SECOND, track=LEAD, pattern=DRONE)
         self.document.add_generator(section=Section.ARPS, name=ARP)
         self.document.add_chain(CHAIN)
-        self.document.add_chain_step(chain=CHAIN, kind=GeneratorKind.ARP, name=ARP)
+        self.document.change(self.document.setlist().get_chain(CHAIN).add_step, kind=GeneratorKind.ARP, name=ARP, setlist=self.document.setlist())
         self.document.set_clip_slot_setting(index=SECOND, track=LEAD, setting=ClipSlotSetting.CHAIN, value=CHAIN)
         self.assertEqual(self.document.lengths().clip_seconds(index=SECOND, track=LEAD), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))
         self.assertEqual(self.document.lengths().scene_seconds(SECOND), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))
@@ -192,12 +192,12 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
         self.assertEqual(self.document.lengths().scene_seconds(FIRST), seconds(whole_notes=ONE_PASS))
 
     def test_degrees_with_no_scale_are_a_problem_without_playing(self):
-        self.document.set_scale_name(None)
+        self.document.change(self.document.song().set_scale_name, None)
         where = errors.ERR_WHERE_PATTERN.format(name=TUNE)
         self.assertEqual(self.document.lengths().scene_problem(FIRST), errors.ERR_NO_SCALE.format(where=where, scene=FIRST + 1))
         self.assertIsNone(self.document.lengths().scene_seconds(FIRST))
-        self.document.set_drum(name=TUNE, drum=True)
-        self.document.set_drum(name=DRONE, drum=True)
+        self.document.change(self.document.setlist().get_pattern(TUNE).set_drum, True)
+        self.document.change(self.document.setlist().get_pattern(DRONE).set_drum, True)
         self.assertIsNone(self.document.lengths().scene_problem(FIRST))
         self.assertEqual(self.document.lengths().scene_seconds(FIRST), seconds(whole_notes=ONE_PASS))
 

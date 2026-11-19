@@ -156,7 +156,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.assertIsNone(self.instrument().get_gm_sound())
 
     async def test_none_takes_the_sound_away(self):
-        self.document.set_instrument_gm_sound(name=SYNTH, sound=A_SOUND)
+        self.document.change(self.document.setlist().get_instrument(SYNTH).set_gm_sound, A_SOUND)
         await self.press(Key.ESCAPE, Key.ENTER)
         self.assertEqual(self.app.screen.place, 1 + ITS_FAMILY)
         await self.press(*[Key.UP] * (1 + ITS_FAMILY), keybindings.SoundDialog.CHOOSE)
@@ -244,8 +244,8 @@ class TestSoundDialog(PatternPreviewTest):
     async def test_without_fluidsynth_a_sound_is_tried_on_the_songs_preview_instrument_which_is_sent_no_sound(self):
         self.fluidsynth_installed = False
         self.document.add_instrument(PREVIEW)
-        self.document.set_instrument_device(name=PREVIEW, device=test_tui_playback.SYNTH_PORT)
-        self.document.set_preview_instrument_name(PREVIEW)
+        self.document.change(self.document.setlist().get_instrument(PREVIEW).set_device, test_tui_playback.SYNTH_PORT)
+        self.document.change(self.document.song().set_preview_instrument_name, PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().playing_sound(), limits.MIN_GM_SOUND)
         self.play_through()
@@ -256,13 +256,13 @@ class TestSoundDialog(PatternPreviewTest):
     async def test_a_preview_instrument_that_cannot_sound_says_why(self):
         self.fluidsynth_installed = False
         self.document.add_instrument(PREVIEW)
-        self.document.set_preview_instrument_name(PREVIEW)
+        self.document.change(self.document.song().set_preview_instrument_name, PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), drawing.SPACE.join(self.text().replace(Box.HEAVY_BAR, drawing.SPACE).split()))
-        self.document.set_instrument_device(name=PREVIEW, device=NOT_CONNECTED)
+        self.document.change(self.document.setlist().get_instrument(PREVIEW).set_device, NOT_CONNECTED)
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
-        self.document.set_instrument_device(name=PREVIEW, device=file_format.FLUIDSYNTH_DEVICE)
+        self.document.change(self.document.setlist().get_instrument(PREVIEW).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=PREVIEW))
         self.fluidsynth_installed = True
         self.assertIsNone(self.preview().sound_refusal())

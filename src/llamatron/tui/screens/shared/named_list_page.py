@@ -113,5 +113,5 @@ class NamedListPage(ListPage):
     def sort(self):
         """Sort the section by name for good, keeping the cursor on the thing it was on."""
         current = self.current()
-        self.document().sort_named(self.LISTED_SECTION)
+        self.document().change(self.document().owner_of(self.LISTED_SECTION).sort_items, self.LISTED_SECTION)
         self.put_cursor_on(current)

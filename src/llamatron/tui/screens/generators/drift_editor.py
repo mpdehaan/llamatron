@@ -54,7 +54,7 @@ class DriftEditor(ShowsNamedItem, FieldPage):
         return self.document().song().get_generator_settings(kind=GeneratorKind.DRIFT, name=self.item)
 
     def set_value(self, *, setting, value):
-        self.document().set_generator_setting(section=Section.DRIFTS, name=self.item, setting=setting, value=value)
+        self.document().change(self.document().generator(section=Section.DRIFTS, name=self.item).set_setting, name=setting, value=value)
 
     def own_fields(self):
         drift = self.drift()

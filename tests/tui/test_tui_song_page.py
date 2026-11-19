@@ -116,7 +116,7 @@ class TestSongPage(UITest):
         await self.select_field(labels_text.MSG_SUBGENRE_LABEL)
         await self.press(key_of(binding=keybindings.FieldPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertIsNone(song.get_subgenre())
-        self.document.set_genre(A_GENRE_WITH_VARIANTS)
+        self.document.change(self.document.song().set_genre, A_GENRE_WITH_VARIANTS)
         await self.press(Key.ENTER)
         await self.type(A_SUBGENRE_WITH_VARIANTS)
         await self.press(Key.ENTER)

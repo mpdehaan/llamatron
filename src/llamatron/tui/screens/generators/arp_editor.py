@@ -64,7 +64,7 @@ class ArpEditor(ShowsNamedItem, FieldPage):
 
     def set_value(self, *, setting, value):
         """Set one of the arp's settings, or None to leave it out and use its default."""
-        self.document().set_generator_setting(section=Section.ARPS, name=self.item, setting=setting, value=value)
+        self.document().change(self.document().generator(section=Section.ARPS, name=self.item).set_setting, name=setting, value=value)
 
     def set_range(self, octaves):
         self.set_value(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == arp_values.MIN_OCTAVE_RANGE else octaves)

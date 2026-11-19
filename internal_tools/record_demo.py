@@ -287,8 +287,8 @@ def assign_tracks(*, document, channels, port):
     for channel in sorted({channel for channel in channels if channel is not None}):
         name = INSTRUMENT_NAME.format(channel=channel)
         document.add_instrument(name)
-        document.set_instrument_device(name=name, device=port)
-        document.set_instrument_channel(name=name, channel=channel)
+        document.change(document.setlist().get_instrument(name).set_device, port)
+        document.change(document.setlist().get_instrument(name).set_channel, channel)
     plays = 0
     for track, channel in zip(tracks, channels):
         if channel is not None:
@@ -301,7 +301,7 @@ def assign_tracks(*, document, channels, port):
             plays += 1
         else:
             print(TRACK_SILENT.format(track=track))
-    document.set_real_time(True)
+    document.change(document.setlist().set_real_time, True)
     if not plays:
         raise ValueError(NO_TRACK_PLAYS)
 
@@ -342,7 +342,7 @@ def through_fluidsynth(*, document):
             print(TRACK_SILENT.format(track=track))
     if not through:
         raise ValueError(NO_FLUIDSYNTH_TRACK)
-    document.set_real_time(True)
+    document.change(document.setlist().set_real_time, True)
 
 
 def explain_setup(*, plays, port, device):

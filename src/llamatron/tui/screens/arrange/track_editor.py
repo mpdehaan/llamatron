@@ -63,10 +63,10 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         return self.track().get_cc_numbers()
 
     def set_cc(self, *, lane, number):
-        self.document().set_track_cc_number(name=self.item, lane=lane, number=number)
+        self.document().change(self.document().song().get_track(self.item).set_cc_number, lane=lane, number=number)
 
     def set_transpose(self, transpose):
-        self.document().set_track_transpose(name=self.item, transpose=transpose)
+        self.document().change(self.document().song().get_track(self.item).set_transpose, transpose)
 
     def transpose_text(self):
         transpose = self.track().get_transpose()
@@ -90,7 +90,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         return groove_choice_field(
             page=self, title=messages.MSG_TRACK_GROOVE_TITLE, choice=self.track().get_groove_choice(),
             inherited_option=marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN, inherited_shown=marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN,
-            choose=lambda choice: self.document().set_track_groove(name=self.item, choice=choice), clear_what=legends.MSG_USE_SCENE_GROOVE_WHAT,
+            choose=lambda choice: self.document().change(self.document().song().get_track(self.item).set_groove_choice, choice=choice, song=self.document().song()), clear_what=legends.MSG_USE_SCENE_GROOVE_WHAT,
         )
 
     def pick_instrument(self):
@@ -122,8 +122,8 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         shown = None if own is not None else marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=above) if self.document().song().instrument_of(track) is not None else above
         return NumberField(
             page=self, label=labels.MSG_DEFAULT_VELOCITY_LABEL, number=own, start=above, shown=shown, typed=above, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY,
-            set=lambda number: self.document().set_track_default_velocity(name=self.item, velocity=number),
-            clear=lambda: self.document().set_track_default_velocity(name=self.item, velocity=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+            set=lambda number: self.document().change(self.document().song().get_track(self.item).set_default_velocity, number),
+            clear=lambda: self.document().change(self.document().song().get_track(self.item).set_default_velocity, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
         )
 
     def accent_field(self):
@@ -131,8 +131,8 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         accent = self.track().get_accent()
         return NumberField(
             page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT,
-            set=lambda number: self.document().set_track_accent(name=self.item, accent=number),
-            clear=lambda: self.document().set_track_accent(name=self.item, accent=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+            set=lambda number: self.document().change(self.document().song().get_track(self.item).set_accent, number),
+            clear=lambda: self.document().change(self.document().song().get_track(self.item).set_accent, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
         )
 
     def instrument_field(self):
@@ -144,8 +144,8 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         drum = track.is_drum()
         result = [
             NameField(value=lambda: self.item, rename=self.rename),
-            Toggle(label=labels.MSG_DRUM_LABEL, on=drum, set=lambda on: self.document().set_track_drum(name=self.item, drum=on)),
-            Toggle(label=labels.MSG_MUTE_LABEL, on=track.is_muted(), set=lambda on: self.document().set_track_mute(name=self.item, muted=on)),
+            Toggle(label=labels.MSG_DRUM_LABEL, on=drum, set=lambda on: self.document().change(self.document().song().get_track(self.item).set_drum, on)),
+            Toggle(label=labels.MSG_MUTE_LABEL, on=track.is_muted(), set=lambda on: self.document().change(self.document().song().get_track(self.item).set_mute, on)),
             self.groove_field(),
         ]
         if drum:
@@ -157,38 +157,38 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             ))
         result += [
             octave_field(page=self, label=labels.MSG_LOWEST_OCTAVE_LABEL, current=track.get_lowest_octave, highest=track.get_highest_octave, lowest=lambda: limits.MIN_OCTAVE, default=limits.MIN_OCTAVE,
-                              set_octave=lambda octave: self.document().set_track_lowest_octave(name=self.item, octave=octave)),
+                              set_octave=lambda octave: self.document().change(self.document().song().get_track(self.item).set_lowest_octave, octave)),
             octave_field(page=self, label=labels.MSG_HIGHEST_OCTAVE_LABEL, current=track.get_highest_octave, highest=lambda: limits.MAX_OCTAVE, lowest=track.get_lowest_octave, default=limits.MAX_OCTAVE,
-                              set_octave=lambda octave: self.document().set_track_highest_octave(name=self.item, octave=octave)),
+                              set_octave=lambda octave: self.document().change(self.document().song().get_track(self.item).set_highest_octave, octave)),
         ]
         result += [self.default_velocity_field(), self.accent_field()]
         result += [self.cc_field(lane) for lane in range(len(file_format.CC_ROWS))]
         registers = track.get_cc_registers()
         result += [
             self.register_field(label=labels.MSG_CC_REGISTER_LABEL.format(number=lane + 1), current=registers[lane],
-                                bind=lambda register, lane=lane: self.document().set_track_cc_register(name=self.item, lane=lane, register=register))
+                                bind=lambda register, lane=lane: self.document().change(self.document().song().get_track(self.item).set_cc_register, lane=lane, register=register))
             for lane in range(len(file_format.CC_ROWS))
         ]
         result.append(self.register_field(label=labels.MSG_VELOCITY_REGISTER_LABEL, current=track.get_velocity_register(),
-                                          bind=lambda register: self.document().set_track_velocity_register(name=self.item, register=register)))
-        result.append(chains_field(page=self, names=lambda: self.track().get_chain_names(), store=lambda names: self.document().set_track_chains(name=self.item, names=names)))
+                                          bind=lambda register: self.document().change(self.document().song().get_track(self.item).set_velocity_register, register)))
+        result.append(chains_field(page=self, names=lambda: self.track().get_chain_names(), store=lambda names: self.document().change(self.document().song().get_track(self.item).set_chain_names, names=names, song=self.document().song())))
         result.append(self.instrument_field())
         result += euclid_section(page=self, value=track.get_euclid_setting, store=lambda part, value: self.store_euclid(part=part, value=value))
         result += strum_section(
             page=self, value=track.get_strum_setting, first=marks.MSG_NONE_SHOWN,
-            store=lambda part, value: self.document().set_track_strum_setting(name=self.item, part=part, value=value),
+            store=lambda part, value: self.document().change(self.document().song().get_track(self.item).set_strum_setting, part=part, value=value),
         )
         tables = ((labels.MSG_BYPASS_WHEN_LABEL, statements.FIRST_TABLE, TrackSetting.BYPASS_WHEN), (labels.MSG_SKIP_WHEN_LABEL, statements.SECOND_TABLE, TrackSetting.SKIP_WHEN))
         for label, table, name in tables:
             # The statements about the registers that bypass the generators of the track's clips, and that make its clips sit out.
             result += statement_section(
                 page=self, label=label, table=table, statements=lambda name=name: track.get_statements(name),
-                store=lambda place, statement, name=name: self.document().set_track_statement(track=self.item, name=name, place=place, statement=statement),
+                store=lambda place, statement, name=name: self.document().change(self.document().song().get_track(self.item).set_statement, name=name, place=place, statement=statement),
             )
         return result
 
     def store_euclid(self, *, part, value):
-        self.document().set_track_euclid_setting(name=self.item, part=part, value=value)
+        self.document().change(self.document().song().get_track(self.item).set_euclid_setting, part=part, value=value)
 
     def page_keys(self):
         if self.field().label == labels.MSG_EUCLID_FIELD_LABELS[EuclidPart.HITS]:

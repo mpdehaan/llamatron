@@ -1605,7 +1605,7 @@ class TestWizardStart(WizardTest):
     async def test_one_undo_puts_a_replaced_song_back_with_its_hand_edits_and_one_redo_replaces_it_again(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         await self.press(Key.ESCAPE)
-        self.document.set_tempo(self.document.song().get_tempo() + 1)
+        self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
         edited = self.document.setlist().to_data()
         await self.press(keybindings.Page.WIZARD)
         await self.start_with(starts.REPLACE_FROM_SCRATCH)
@@ -1643,7 +1643,7 @@ class TestWizardFillsAnUntouchedSong(WizardTest):
         self.assertEqual(self.document.song_names(), [names.MSG_DEFAULT_SONG_NAME])
 
     async def test_a_song_that_was_changed_is_kept_and_the_new_song_added_beside_it(self):
-        self.document.set_tempo(self.document.song().get_tempo() + 1)
+        self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
         await self.choose_genre_and_subgenre()
         name = self.wizard().song_name()
         await self.create()

@@ -46,7 +46,7 @@ class StrumEditor(ShowsNamedItem, FieldPage):
             NameField(value=lambda: self.item, rename=self.rename),
             *strum_fields(
                 page=self, value=strum.get_strum_setting, prefixed=False,
-                store=lambda part, value: self.document().set_generator_setting(section=Section.STRUMS, name=self.item, setting=part, value=value),
+                store=lambda part, value: self.document().change(self.document().generator(section=Section.STRUMS, name=self.item).set_setting, name=part, value=value),
             ),
             restart_field(self),
         ]

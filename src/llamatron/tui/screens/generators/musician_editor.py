@@ -45,7 +45,7 @@ class MusicianEditor(ShowsNamedItem, FieldPage):
 
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a musician does unasked."""
-        self.document().set_generator_setting(section=Section.MUSICIANS, name=self.item, setting=setting, value=None if value == generator_settings.MUSICIAN_DEFAULTS.get(setting) else value)
+        self.document().change(self.document().generator(section=Section.MUSICIANS, name=self.item).set_setting, name=setting, value=None if value == generator_settings.MUSICIAN_DEFAULTS.get(setting) else value)
 
     def store_section(self, *, section, name, value):
         """Keep what a kind of section has of its own, left out where it is what a section does unasked."""

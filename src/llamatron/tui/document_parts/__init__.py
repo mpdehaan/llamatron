@@ -18,7 +18,7 @@
 
 Each module holds one class of methods that Document (tui/document.py) is made of. The classes
 have no data of their own: they work on the set through what Document keeps, its setlist, its
-current song and the `_change` method that makes one change and notes it. Document was one file of
+current song and the `change` method that makes one change and notes it. Document was one file of
 nearly 1,200 lines before, and is split by subject so that everything about saving, or about a
 pattern's steps, is found in one place.
 """

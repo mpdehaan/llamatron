@@ -58,8 +58,8 @@ PICK = keybindings.KeyswitchDialog
 def add_violin(document):
     """Give a document a violin with sustain on slot 0 and staccato on slot 1, which the lead plays through."""
     document.add_instrument(VIOLIN)
-    document.set_instrument_device(name=VIOLIN, device=PORT)
-    document.set_instrument_keyswitches(name=VIOLIN, keyswitches=[Keyswitch(SUSTAIN, SUSTAIN_NOTE), Keyswitch(STACCATO, STACCATO_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 2)])
+    document.change(document.setlist().get_instrument(VIOLIN).set_device, PORT)
+    document.change(document.setlist().get_instrument(VIOLIN).set_keyswitches, [Keyswitch(SUSTAIN, SUSTAIN_NOTE), Keyswitch(STACCATO, STACCATO_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 2)])
     document.set_track_instrument(name=ui_testing.LEAD, instrument=VIOLIN)
 
 
@@ -144,7 +144,7 @@ class TestKeyswitchMap(UITest):
         self.assertIn(cursor_mark(True) + keyswitch_note_text(setlist=self.document.setlist(), note=midi.MIN_MIDI_NUMBER), self.text())
 
     async def test_nothing_on_a_row_moves_when_the_cursor_moves(self):
-        self.document.set_instrument_keyswitches(name=VIOLIN, keyswitches=[Keyswitch(SUSTAIN, SUSTAIN_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 1)])
+        self.document.change(self.document.setlist().get_instrument(VIOLIN).set_keyswitches, [Keyswitch(SUSTAIN, SUSTAIN_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 1)])
         dialog = await self.open_map()
         shown = keyswitch_note_text(setlist=self.document.setlist(), note=SUSTAIN_NOTE)
         places = set()
@@ -214,7 +214,7 @@ class TestKeyswitchMap(UITest):
         self.assertIn(keyswitch_note_text(setlist=self.document.setlist(), note=dialog.picking), self.text())
 
     async def test_the_map_shows_each_slots_note_in_the_sets_octave_labels_with_its_number(self):
-        self.document.set_instrument_keyswitches(name=VIOLIN, keyswitches=[Keyswitch(SUSTAIN, SUSTAIN_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 1)])
+        self.document.change(self.document.setlist().get_instrument(VIOLIN).set_keyswitches, [Keyswitch(SUSTAIN, SUSTAIN_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 1)])
         await self.open_map()
         shown = keyswitch_note_text(setlist=self.document.setlist(), note=SUSTAIN_NOTE)
         self.assertIn(str(SUSTAIN_NOTE), shown)
@@ -230,7 +230,7 @@ class TestKeyswitchMap(UITest):
         await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(instrument.get_keyswitch_lead(), 0)
         self.assertIsNone(instrument.get_written_keyswitch_lead())
-        self.document.set_instrument_keyswitch_lead(name=VIOLIN, milliseconds=limits.MAX_KEYSWITCH_LEAD)
+        self.document.change(self.document.setlist().get_instrument(VIOLIN).set_keyswitch_lead, limits.MAX_KEYSWITCH_LEAD)
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(instrument.get_keyswitch_lead(), limits.MAX_KEYSWITCH_LEAD)
 
@@ -284,7 +284,7 @@ class TestKeyswitchRow(PatternEditorTest):
 
     async def test_with_no_one_instrument_the_rows_are_the_slots_the_steps_use_by_number_and_the_hint_says_why(self):
         self.assertEqual(self.section_rows(), [])
-        self.document.set_step_value(name=ui_testing.TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[STACCATO_SLOT])
+        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.KEYSWITCH, step=FIRST_STEP, value=[STACCATO_SLOT])
         self.document.record_edit()
         self.assertEqual(self.section_rows(), [slot_row_name(STACCATO_SLOT)])
         self.assertEqual(self.slot_row(STACCATO_SLOT).label(), marks.MSG_KEYSWITCH_SLOT_NAMED.format(slot=STACCATO_SLOT))
@@ -402,7 +402,7 @@ class TestKeyswitchesOnTheRoll(UITest):
 
     async def test_a_step_with_keyswitches_has_a_magenta_light_on_the_top_row_and_no_other_has(self):
         self.assertNotIn(marks.MSG_KEYSWITCH_LIGHT, self.top_row().plain)
-        self.document.set_step_value(name=ui_testing.TUNE, row=Row.KEYSWITCH, step=SECOND_STEP, value=[SUSTAIN_SLOT])
+        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.KEYSWITCH, step=SECOND_STEP, value=[SUSTAIN_SLOT])
         line = self.top_row()
         self.assertEqual(line.plain.count(marks.MSG_KEYSWITCH_LIGHT), 1)
         column = line.plain.index(marks.MSG_KEYSWITCH_LIGHT)
@@ -412,7 +412,7 @@ class TestKeyswitchesOnTheRoll(UITest):
 
     async def test_the_light_is_drawn_over_a_note_on_the_top_row_and_the_line_keeps_its_width(self):
         before = self.top_row()
-        self.document.set_step_value(name=ui_testing.TUNE, row=Row.KEYSWITCH, step=FIRST_STEP, value=[SUSTAIN_SLOT])
+        self.document.change(self.document.setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.KEYSWITCH, step=FIRST_STEP, value=[SUSTAIN_SLOT])
         after = self.top_row()
         self.assertEqual(after.cell_len, before.cell_len)
         self.assertEqual(len(after.plain), len(before.plain))

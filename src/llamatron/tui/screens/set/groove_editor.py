@@ -73,20 +73,20 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
         return [self.bind(self.KEYS.CELL_LENGTH, action=self.next_cell_length), self.bind(self.KEYS.RENAME, action=self.rename)]
 
     def set_value(self, value):
-        self.document().set_groove_cell(name=self.item, step=self.step, amount=value)
+        self.document().change(self.document().setlist().get_groove(self.item).set_cell, step=self.step, amount=value)
 
     def add_step(self):
-        self.document().insert_groove_cell(name=self.item, step=self.step)
+        self.document().change(self.document().setlist().get_groove(self.item).insert_cell, self.step)
 
     def drop_step(self):
-        self.document().remove_groove_cell(name=self.item, step=self.step)
+        self.document().change(self.document().setlist().get_groove(self.item).remove_cell, self.step)
 
     def next_cell_length(self):
         """Step the cell length through the choices, going round at the end."""
         choices = groove_values.GROOVE_CELL_LENGTH_CHOICES
         current = self.groove().get_cell_length_text()
         following = stepped(values=choices, current=current, offset=1) if current in choices[:-1] else choices[0]
-        self.document().set_groove_cell_length(name=self.item, length=following)
+        self.document().change(self.document().setlist().get_groove(self.item).set_cell_length, following)
 
     def body(self, *, width, height):
         self.keep_step()

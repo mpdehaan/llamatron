@@ -207,19 +207,19 @@ class TestSections(UITest):
         # tune is played by lead alone, whose lanes send nothing yet, so the lane is off; the value stays a one-line number.
         self.assertEqual(row.labels(), [labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=marks.MSG_CC_LANE_OFF)])
         self.assertEqual(row.cell_lines(step=0), [ui_testing.QUIET_VALUE])
-        self.document.set_step_value(name=TUNE, row=Row.CC1, step=0, value=midi.MAX_CC_VALUE)
+        self.document.change(self.document.setlist().get_pattern(TUNE).set_value, row=Row.CC1, step=0, value=midi.MAX_CC_VALUE)
         self.assertEqual(row.cell_lines(step=0), [str(midi.MAX_CC_VALUE)])
         # Giving lead a number puts it in the label, and a second track playing tune with another number makes the label say they differ.
-        self.document.set_track_cc_number(name=LEAD, lane=0, number=BRIGHTNESS)
+        self.document.change(self.document.song().get_track(LEAD).set_cc_number, lane=0, number=BRIGHTNESS)
         self.assertEqual(row.label(), labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=str(BRIGHTNESS)))
         while self.editor.row_name() != Row.CC1:
             await self.press(Key.DOWN)
         self.assertIn(ui_testing.ROW_SHOWN.format(label=row.label()), self.text())
         self.document.add_track(SECOND_TRACK)
         self.document.add_clip_slot(index=0, track=SECOND_TRACK, pattern=TUNE)
-        self.document.set_track_cc_number(name=SECOND_TRACK, lane=0, number=MOD_WHEEL)
+        self.document.change(self.document.song().get_track(SECOND_TRACK).set_cc_number, lane=0, number=MOD_WHEEL)
         self.assertEqual(row.label(), labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=marks.MSG_CC_LANE_VARIES))
-        self.document.set_track_cc_number(name=SECOND_TRACK, lane=0, number=BRIGHTNESS)
+        self.document.change(self.document.song().get_track(SECOND_TRACK).set_cc_number, lane=0, number=BRIGHTNESS)
         self.assertEqual(row.label(), labels_text.MSG_CC_ROW_LABEL.format(label=cc_1, number=str(BRIGHTNESS)))
         # A pattern no track plays keeps the plain label.
         await self.press(Key.ESCAPE, Key.ESCAPE)

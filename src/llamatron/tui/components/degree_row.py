@@ -175,7 +175,7 @@ class DegreeRow(PatternRow):
         self.editor.fill_in()
 
     def clear(self):
-        self.editor.document().clear_sound(name=self.editor.item, step=self.editor.step)
+        self.editor.document().change(self.editor.document().setlist().get_pattern(self.editor.item).clear_sound, self.editor.step)
 
     # Drawing.
 

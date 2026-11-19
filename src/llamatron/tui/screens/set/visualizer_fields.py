@@ -45,7 +45,7 @@ def hidden_visualizers_field(*, page):
     def pick():
         def chosen(names):
             for name in file_format.VISUALIZER_NAMES:
-                page.document().set_visualizer_hidden(name=name, hidden=name in names)
+                page.document().change(page.document().setlist().set_visualizer_hidden, name=name, hidden=name in names)
         dialog = PickManyDialog(title=labels.MSG_HIDE_VISUALIZERS_LABEL, options=list(file_format.VISUALIZER_NAMES), names=[mode_called(name).NAME for name in file_format.VISUALIZER_NAMES],
                                 picked=setlist.get_hidden_visualizers())
         page.ask(dialog=dialog, then=chosen)
