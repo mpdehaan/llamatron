@@ -29,11 +29,10 @@ import pkgutil
 import re
 import unittest
 
-import llamatron.tui
 from llamatron.strings import legends
-from llamatron.tui import keybindings
+import llamatron.tui
+from llamatron.tui import keybindings, keys as keys_values
 from llamatron.tui.key_table import BindsKeys, every_key, place_of
-from llamatron.tui import keys as keys_values
 from llamatron.tui.keys import Key, Steps
 
 SOURCE = pathlib.Path(llamatron.tui.__file__).parent

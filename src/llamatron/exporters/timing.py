@@ -19,15 +19,14 @@
 from typing import NamedTuple
 
 from llamatron.composition import defaults
-from llamatron.strings import errors
 from llamatron.composition.file_format import StrumDirection
+from llamatron.music import midi, sound
+from llamatron.music.sound import Sound
+from llamatron.strings import errors
 from llamatron.support import length as length_values
 from llamatron.support.length import Length
 from llamatron.support.random_source import random_source
 from llamatron.support.rational import Rational
-from llamatron.music import midi
-from llamatron.music import sound
-from llamatron.music.sound import Sound
 
 # A beat is a quarter note, which matches how MIDI and Live measure both time and tempo.
 BEATS_PER_WHOLE_NOTE = 4

@@ -20,10 +20,10 @@ from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
 from llamatron.tui.screens.generators import generator_pages
+from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
-from tests.support.ui_testing import UITest, back_key, forward_key
+from tests.support.ui_testing import back_key, forward_key, UITest
 
 HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
 HARMONY_PLACE = HEADINGS.index(labels.GeneratorGroup.HARMONY)

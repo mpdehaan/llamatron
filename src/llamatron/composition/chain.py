@@ -18,14 +18,12 @@
 
 from typing import NamedTuple
 
+from llamatron.composition import file_format, generator_settings, sections
+from llamatron.composition.checks import listed, reading
 from llamatron.composition.conditions import statements_setting, with_statement
 from llamatron.composition.file_format import ChainSetting
-from llamatron.composition import generator_settings
-from llamatron.composition.llama_data import LlamaData, own_copy
-from llamatron.composition import sections
-from llamatron.composition import file_format
-from llamatron.composition.checks import listed, reading
 from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.llama_data import LlamaData, own_copy
 from llamatron.strings import errors
 from llamatron.support.revised import notes_change
 

@@ -23,13 +23,13 @@ import os
 import tempfile
 import unittest
 
-from llamatron.music.note import Note
 from llamatron.exporters import exports
-from llamatron.exporters.exports import ExportKind, earlier_export, export_name, make_exporter, shown_export_path, remove_earlier_export
+from llamatron.exporters.exports import earlier_export, export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.grid.clip import Clip
+from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.clip_column import ClipColumn
+from llamatron.music.note import Note
 
 QUARTER = 0.25
 C4 = Note(name='C', octave_number=4, length=QUARTER)

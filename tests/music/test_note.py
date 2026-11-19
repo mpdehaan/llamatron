@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.music import note as note_values
 from llamatron.music.note import Note, NoteName, Rest

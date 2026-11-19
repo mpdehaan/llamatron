@@ -20,14 +20,14 @@ internal_tools/key_map.sh rewrites. It's for Claude, so that a question about a 
 
 import os
 
+from llamatron.tui import keybindings
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.pattern import patterns_page
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.shared.field import Button, Heading
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.pattern import patterns_page
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui import keybindings
 
 
 KEY_MAP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), '.claude', 'KEYMAP.md')

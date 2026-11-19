@@ -14,18 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import unittest
 from fractions import Fraction
+import unittest
 
-from llamatron.music.chord import Chord, ChordType
 from llamatron.composition.file_format import SongSetting
+from llamatron.grid.clip import Clip
+from llamatron.grid.clip_column import ClipColumn
+from llamatron.grid.clip_grid import ClipGrid
+from llamatron.grid.clip_row import ClipRow
+from llamatron.music.chord import Chord, ChordType
 from llamatron.music.note import Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.music.time_signature import TimeSignature
-from llamatron.grid.clip import Clip
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.clip_column import ClipColumn
 
 C_MAJOR = Scale(root=Note(name='C', octave_number=0, length=0.25), typ=ScaleType.MAJOR)
 A_MINOR = Scale(root=Note(name='A', octave_number=0, length=0.25), typ=ScaleType.MINOR)

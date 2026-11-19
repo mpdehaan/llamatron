@@ -29,8 +29,8 @@ from rich.text import Text
 from llamatron.composition.checks import listed
 from llamatron.macro_composer import wizard_choices
 from llamatron.strings import errors, labels, legends, marks, messages
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui import drawing
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Heading, Toggle
 from llamatron.tui.screens.wizard.branch import Branch

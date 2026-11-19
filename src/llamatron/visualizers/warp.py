@@ -22,7 +22,6 @@ turned picture's corners inside the field, so no empty edge shows.
 """
 
 import math
-
 import numpy
 
 

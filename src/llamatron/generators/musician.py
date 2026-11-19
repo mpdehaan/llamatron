@@ -30,8 +30,7 @@ import random
 from llamatron.generators.base import ClipGenerator
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.parts import parts_of
-from llamatron.music import midi
-from llamatron.music import sound as sound_values
+from llamatron.music import midi, sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.support.rational import Rational
 

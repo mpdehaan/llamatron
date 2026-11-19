@@ -15,11 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields of a strum, which the track editor's and the clip page's + Strum sections and the Strum editor share: direction, spread, fade, loose timing and upstroke strings."""
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits, strum
 from llamatron.composition.file_format import StrumPart
-from llamatron.composition import limits
 from llamatron.strings import labels, marks
-from llamatron.composition import strum
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 
 NO_PERCENT = 0

@@ -27,7 +27,7 @@ what it hears, and the app says when the song starts and ends.
 """
 
 from llamatron.tui.components import stage_drawing
-from llamatron.tui.components.stage_drawing import black_line, blacked, border_cells, faded, frame_box, grown, inside_of, overlaid, pulse_cells, ready_box, ready_cells, visualizer_area, visualizer_laid_in, clips_laid_in
+from llamatron.tui.components.stage_drawing import black_line, blacked, border_cells, clips_laid_in, faded, frame_box, grown, inside_of, overlaid, pulse_cells, ready_box, ready_cells, visualizer_area, visualizer_laid_in
 from llamatron.tui.components.title_card import eased
 
 # How long Arrange takes to fade in, how long READY shows before the song starts, and how long the box takes to grow into the frame.

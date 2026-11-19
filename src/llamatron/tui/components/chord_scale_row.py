@@ -18,10 +18,8 @@
 
 from llamatron.composition.naming import words
 from llamatron.strings import marks
+from llamatron.tui import drawing, keybindings, scale_categories
 from llamatron.tui.components.chord_row import ChordRow
-from llamatron.tui import scale_categories
-from llamatron.tui import drawing
-from llamatron.tui import keybindings
 
 # How much of a scale type's name a cell shows; the status line and the Chord dialog say it whole.
 CELL_ROOM = 5

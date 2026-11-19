@@ -17,17 +17,11 @@
 """A player of the wizard's band: how the player plays, and how busy the player is."""
 
 from llamatron.composition import limits
+from llamatron.macro_composer import breaks as breaks_values, characters, interplay, loudness, notation, song_plan, wizard_choices
 from llamatron.strings import labels, legends, marks, messages
-from llamatron.macro_composer import breaks as breaks_values
-from llamatron.macro_composer import loudness
-from llamatron.macro_composer import notation
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import interplay
-from llamatron.macro_composer import wizard_choices
-from llamatron.macro_composer import characters
 from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
-from llamatron.tui.screens.shared.field import Button, Cells, ChoiceField, Field, NumberField, Toggle, gauge_shown
+from llamatron.tui.screens.shared.field import Button, Cells, ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 
 # A field is worth showing once there is more than one way to choose.

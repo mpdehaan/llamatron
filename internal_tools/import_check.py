@@ -33,15 +33,14 @@ warn about, since that would be the import's own mistake.
 
 import argparse
 import glob
+import mido
 import os
 import sys
 
-import mido
-
 from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers.comparison import round_trip
 from llamatron.importers import midi_import
+from llamatron.importers.comparison import round_trip
 from llamatron.importers.midi_import import ImportChoices
 from llamatron.playback.song_renderer import SongRenderer
 

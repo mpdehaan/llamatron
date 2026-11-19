@@ -15,9 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Length does on pairs of whole numbers exactly what Fraction does, for everything a render asks of a length."""
 
+from fractions import Fraction
 import itertools
 import unittest
-from fractions import Fraction
 
 from llamatron.support import length
 from llamatron.support.length import Length

@@ -33,7 +33,6 @@ folder. Nothing in the test suite runs this; development only.
 
 import io
 import json
-import zipfile
 import pathlib
 import re
 import ssl
@@ -42,6 +41,7 @@ import tarfile
 import time
 import urllib.error
 import urllib.request
+import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent / '.corpus'
 SCORE_SUFFIX = '.krn'

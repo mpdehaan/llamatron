@@ -27,17 +27,14 @@ the column its pitch sets, and an empty grid is seeded afresh. The amounts are n
 """
 
 import math
+import numpy
 import random
 
-import numpy
-
-from llamatron.visualizers import cells
-from llamatron.visualizers.cells import CellPainter, packed
-from llamatron.visualizers import colour
-from llamatron.visualizers.colour import note_colour
-from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
+from llamatron.visualizers import cells, colour, heard as heard_values
+from llamatron.visualizers.cells import CellPainter, packed
+from llamatron.visualizers.colour import note_colour
+from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2

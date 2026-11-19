@@ -18,13 +18,11 @@
 
 from rich.text import Text
 
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import fit, padded, Style
-from llamatron.tui import keys as keys_values
-from llamatron.tui.keys import Key
 from llamatron.strings import marks
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings, keys as keys_values
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.drawing import fit, padded, Style
+from llamatron.tui.keys import Key
 
 
 class Heading(str):

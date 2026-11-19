@@ -21,9 +21,8 @@ traits: a song's profile, a style, a stretch of a song. A new thing the library 
 the hearing of it; everything that lists, compares, calibrates or reports measures finds it here."""
 
 from dataclasses import dataclass
-
-from measuring.measures.comparing import UNIT_BOUNDS, Compare
-from measuring.measures.traits import TRAIT_KINDS, TRAITS, Spacing
+from measuring.measures.comparing import Compare, UNIT_BOUNDS
+from measuring.measures.traits import Spacing, TRAIT_KINDS, TRAITS
 from measuring.strings import ERR_NO_SUCH_MEASURE, MSG_MEASURE_LABELS
 
 # What a measure's name joins its holder and field with.

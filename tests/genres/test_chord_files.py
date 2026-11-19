@@ -17,11 +17,10 @@
 """The corpus's chord-file readers, on small examples written here, needing neither the network nor the fetched data: a chart
 annotation's chords as degrees and its sections, and a rock corpus harmony file expanded."""
 
+from corpus import chord_files
+from pathlib import Path
 import tempfile
 import unittest
-from pathlib import Path
-
-from corpus import chord_files
 
 C = 0
 G = 7

@@ -25,8 +25,8 @@ channel's CC messages, which the import may bring in (voices.py).
 from dataclasses import dataclass
 from typing import NamedTuple
 
-from llamatron.support.rational import Rational
 from llamatron.strings import importing
+from llamatron.support.rational import Rational
 
 # mido's names for the messages the import reads.
 NOTE_ON = 'note_on'

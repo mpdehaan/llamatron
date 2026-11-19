@@ -17,13 +17,12 @@
 
 from rich.text import Text
 
+from llamatron.strings import marks
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.key_table import pressed_key, quits_at_once
 from llamatron.tui.keys import Key
-from llamatron.strings import marks
-from llamatron.tui import keybindings
 
 # How far the cursor moves for one arrow press.
 ONE_CHARACTER = 1

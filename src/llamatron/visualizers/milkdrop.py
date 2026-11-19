@@ -26,15 +26,14 @@ never flashes. The amounts are named constants here, to tune by eye.
 """
 
 import math
-
 import numpy
 
-from llamatron.visualizers.colour import Limiter, note_colour
-from llamatron.visualizers.fields import Discs, blurred
+from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
+from llamatron.visualizers.colour import Limiter, note_colour
+from llamatron.visualizers.fields import blurred, Discs
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings import visualizers
 
 # The derez: how much finer the picture is than the big pixels, each way, and the colour steps the big pixels are rounded to.
 SUPERSAMPLE = 2

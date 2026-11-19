@@ -25,24 +25,19 @@ note, or on the lowest C for an empty map. Nothing changes in the set until OK.
 
 from rich.text import Text
 
-from llamatron.composition import file_format
-from llamatron.composition import instrument
+from llamatron.composition import file_format, instrument, limits
 from llamatron.composition.instrument import Keyswitch
-from llamatron.composition import limits
-from llamatron.strings import labels, marks, messages
 from llamatron.music import midi
+from llamatron.strings import labels, marks, messages
+from llamatron.tui import drawing, key_table, keybindings, keyswitch_text
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.components.keyboard import KeyKind, one_octave_rows
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style, cursor_mark, fit, legend
-from llamatron.tui import key_table
+from llamatron.tui.drawing import cursor_mark, fit, legend, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
-from llamatron.tui import keyswitch_text
 from llamatron.tui.keyswitch_text import keyswitch_note_text, shown_name
-from llamatron.tui import keybindings
 
 # The place of the row of buttons, under the last slot, and the buttons' places in the order of MSG_OK_CANCEL_BUTTONS.
 BUTTONS_PLACE = file_format.KEYSWITCH_SLOT_COUNT

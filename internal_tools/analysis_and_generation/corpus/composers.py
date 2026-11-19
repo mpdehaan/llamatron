@@ -18,9 +18,8 @@
 and the library person each is, where the library has a style for them. A composer with no period genre (the Renaissance has no
 style yet) or no person style is a gap the coverage report names, not an error."""
 
-import re
-
 from measuring.strings import StyleName
+import re
 
 N = StyleName
 SURNAME_OF_CODE = re.compile(r'([A-Z][a-z]+)')

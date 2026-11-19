@@ -18,9 +18,9 @@
 import unittest
 
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, TrackSetting
+from llamatron.exporters.timing import timed_events
 from tests.playback.test_registers import song
 from tests.support.rendering import render_data
-from llamatron.exporters.timing import timed_events
 
 CHORDS = 'chords'
 BASS = 'bass'

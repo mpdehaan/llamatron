@@ -24,6 +24,7 @@ what it writes against the source data kept beside it, so nothing here uses the 
 
 import collections
 import contextlib
+from fractions import Fraction
 import glob
 import importlib.util
 import io
@@ -31,19 +32,17 @@ import os
 import pathlib
 import tempfile
 import unittest
-from fractions import Fraction
-
 import yaml
 
 from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
-from llamatron.tui import drawing
+from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.timing import timed_events
-from tests.support.rendering import is_demo, render_file
-from llamatron.composition.setlist_writer import dump_setlist
-from llamatron.tui.document import Document
 from llamatron.support.example_sets import example_sets
+from llamatron.tui import drawing
+from llamatron.tui.document import Document
+from tests.support.rendering import is_demo, render_file
 
 PATHS = sorted(path for path in example_sets() if is_demo(path))
 # Demos written by hand, rather than first written by tests/data/demo_sources/make_demos.py.

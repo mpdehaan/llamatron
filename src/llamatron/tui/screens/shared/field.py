@@ -31,8 +31,8 @@ from dataclasses import dataclass
 from typing import Callable
 
 from llamatron.strings import labels, legends, marks
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui import drawing
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.shared import stepped
 
 # Where a picker opens when the value isn't one of the choices.

@@ -15,14 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import unittest
-
 import yaml
 
+from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_writer import _text, dump_setlist
-from tests.support.rendering import as_setlist, render_data
-from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.support.example_sets import example_sets
+from tests.support.rendering import as_setlist, render_data
 
 # One song, laid out the way files were before sets existed, which as_setlist turns into a set of one song.
 SONG = {

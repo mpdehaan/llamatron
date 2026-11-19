@@ -15,20 +15,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The General MIDI export: one MIDI file with drums on channel 10, every other track on a channel of its own, and each track's instrument's General MIDI sound sent first as a program change."""
 
+import mido
 import unittest
 
-import mido
-
+from llamatron.composition import limits
 from llamatron.composition.file_format import ClipSlotSetting, InstrumentSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.composition.instrument import Instrument
-from llamatron.composition import limits
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.exporters import midi_arrangement
+from llamatron.exporters import midi_arrangement, midi_messages
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
-from llamatron.exporters import midi_messages
 from llamatron.playback.song_renderer import SongRenderer
-from tests.support.rendering import song_from_data, setlist_from_data
 from tests.playback.test_registers import pattern, song
+from tests.support.rendering import setlist_from_data, song_from_data
 
 TUNE = 'tune'
 BEAT = 'beat'

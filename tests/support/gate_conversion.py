@@ -25,12 +25,11 @@ as before. Tests use this to keep writing patterns as notes and durations, and t
 uses it to write the demos.
 """
 
-import math
 from fractions import Fraction as F
+import math
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, row_descriptions
 from llamatron.composition.file_format import GateModifier, PatternSetting, Row
-from llamatron.composition import row_descriptions
 
 OLD_DURATION = 'duration'
 OLD_DEFAULT_LENGTH = 'default_length'

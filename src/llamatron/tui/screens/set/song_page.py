@@ -15,22 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Song page: one song's name, tempo, scale and seed, reached from the Songs page, which makes it current first."""
 
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
-from llamatron.composition import genres
-from llamatron.composition.genres import subgenres_of, variants_of
-from llamatron.composition import file_format
+from llamatron.composition import defaults, file_format, genres, limits
 from llamatron.composition.file_format import Section
+from llamatron.composition.genres import subgenres_of, variants_of
+from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
+from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.text import sorted_names, tempo_text
+from llamatron.tui.screens.set.visualizer_fields import visualizer_field
+from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.everywhere import export
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
-from llamatron.tui.screens.set.visualizer_fields import visualizer_field
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.shared import ask_time_signature, stepped
-from llamatron.tui import themes
-from llamatron.tui import keybindings
+from llamatron.tui.text import sorted_names, tempo_text
 
 
 class SongPage(FieldPage):

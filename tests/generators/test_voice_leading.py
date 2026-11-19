@@ -24,9 +24,9 @@ import unittest
 from llamatron.composition.file_format import GeneratorKind, Row, Section
 from llamatron.composition.generator_settings import VoiceLeadingSetting
 from llamatron.composition.song_file_error import SongFileError
-from tests.support.rendering import setlist_from_data
 from tests.generators.test_progression import through
 from tests.playback.test_shapes import notes
+from tests.support.rendering import setlist_from_data
 
 VOICING = 'smooth'
 TRIAD = '3'

@@ -22,11 +22,11 @@ The positions are sounds, the tuples of music/sound.py, and every length here is
 whole numbers (support/length.py), since this is done for every note of a render.
 """
 
+from llamatron.music import sound as sound_values
+from llamatron.music.sound import Sound
 from llamatron.support import length as length_values
 from llamatron.support.length import Length
 from llamatron.support.rational import Rational
-from llamatron.music import sound as sound_values
-from llamatron.music.sound import Sound
 
 
 

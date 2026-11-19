@@ -18,12 +18,11 @@
 import contextlib
 import importlib.util
 import io
+import mido
 import os
 import pathlib
 import tempfile
 import unittest
-
-import mido
 
 from llamatron.composition.setlist import Setlist
 

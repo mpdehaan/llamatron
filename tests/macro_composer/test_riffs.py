@@ -18,9 +18,7 @@
 
 import unittest
 
-from llamatron.macro_composer import line_edits
-from llamatron.macro_composer import riffs
-from llamatron.macro_composer import notation
+from llamatron.macro_composer import line_edits, notation, riffs
 from llamatron.macro_composer.riffs import heavy_line, riff_line
 
 A_SEED = 11

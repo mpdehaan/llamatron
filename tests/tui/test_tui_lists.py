@@ -16,41 +16,38 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_name, key_of
-from llamatron.strings import labels, legends, marks, messages, names as names_text
-from llamatron.tui import drawing
-from llamatron.composition import file_format
+from llamatron.composition import file_format, setlist
 from llamatron.composition.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
+from llamatron.composition.naming import new_name, suggested_word
 from llamatron.generators import arp
 from llamatron.generators.arp import ChordOrder, OctaveJump
 from llamatron.music import note
 from llamatron.music.note import NoteName
+from llamatron.music.scale import ScaleType
+from llamatron.strings import labels, legends, marks, messages, names as names_text
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import keyboard
 from llamatron.tui.components.keyboard import Keyboard
-from llamatron.music.scale import ScaleType
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.composition import setlist
-from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
-from llamatron.tui.screens.generators.drift_editor import DriftEditor
 from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.generators.chain_editor import ChainEditor, step_shown
 from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.generators.drift_editor import DriftEditor
+from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.scales_page import ScalesPage
-from llamatron.tui import keybindings
-from llamatron.tui.screens.generators.chain_editor import step_shown
-from llamatron.composition.naming import new_name, suggested_word
+from tests.support import ui_testing
 from tests.support.rendering import render_song
+from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_name, key_of, UITest
 
 # Names the tests give to their own things, and other values they use.
 LEAD = 'lead'

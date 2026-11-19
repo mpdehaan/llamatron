@@ -17,8 +17,8 @@
 
 from llamatron.composition import file_format
 from llamatron.strings import errors
-from llamatron.tui.components.control_row import ControlRow
 from llamatron.tui import keybindings
+from llamatron.tui.components.control_row import ControlRow
 
 # Which register each += row adds to, by the row's name.
 REGISTER_OF_ROW = {row: name for name, row in file_format.REGISTER_ADD_ROWS.items()}

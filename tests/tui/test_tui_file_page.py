@@ -16,27 +16,25 @@
 
 """The File/Global page: the set's settings, saving, protection, and a new set."""
 
-import os
 from fractions import Fraction
+import os
 from unittest import mock
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, key_of, key_name
-from llamatron.composition import file_format
+from llamatron.composition import defaults, file_format, setlist as setlist_values
 from llamatron.composition.file_format import Section
-from llamatron.composition import setlist as setlist_values
-from llamatron.composition import defaults
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
+from llamatron.support import version
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.support import version
-from llamatron.tui import keybindings
+from llamatron.tui.screens.set.open_page import OpenPage
+from tests.support import ui_testing
+from tests.support.ui_testing import key_name, key_of, UITest
 
 SET_FILE = 'my_set.yml'
 # A file name the prompt test changes into another by moving the cursor.

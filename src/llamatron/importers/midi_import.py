@@ -23,12 +23,11 @@ then adds it. Every note the file plays is played by the song, for as long as th
 """
 
 from dataclasses import dataclass, field
+import mido
 from typing import NamedTuple
 
-import mido
-
 from llamatron.importers import cutting
-from llamatron.importers.cutting import Cutter, bar_lines, grid_for, snapped, step_size_for
+from llamatron.importers.cutting import bar_lines, Cutter, grid_for, snapped, step_size_for
 from llamatron.importers.keys import key_of_notes, key_of_signature
 from llamatron.importers.midi_reading import Change, read_midi
 from llamatron.importers.voices import voices_of

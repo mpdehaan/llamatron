@@ -25,9 +25,9 @@ and time of the last version bump, written here by hand with it, and the About d
 
 from llamatron.strings import errors
 
-VERSION = '1.0.543'
+VERSION = '1.0.544'
 BUILD_DATE = '2026-11-19'
-BUILD_TIME = '00:23'
+BUILD_TIME = '05:29'
 
 DATE_SEPARATOR = '-'
 

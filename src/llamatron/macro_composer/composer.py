@@ -33,8 +33,7 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
 
 from fractions import Fraction
 
-from llamatron.macro_composer import loudness
-from llamatron.macro_composer import notation
+from llamatron.macro_composer import loudness, notation
 from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped
 from llamatron.strings import errors

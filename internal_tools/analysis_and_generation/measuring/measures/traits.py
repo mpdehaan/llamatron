@@ -25,7 +25,6 @@ keeps one key, one time signature or one feel: Meter, Modulation and Groove say 
 """
 
 from dataclasses import dataclass
-
 from measuring.measures.comparing import Compare, Field, Unit
 
 

@@ -17,29 +17,24 @@
 
 import unittest
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, a_song
-from llamatron.composition.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart, EuclidPart
+from llamatron.composition.file_format import ClipSlotSetting, Direction, EuclidPart, FollowAction, GeneratorKind, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
 from llamatron.strings import labels, legends, marks, names
-from llamatron.tui import keybindings
-from llamatron.tui import themes
-from llamatron.tui.drawing import Box
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.arrange import arrange_details
-from llamatron.tui.screens.arrange.arrange_details import clip_details, detailed_clip_text, details_layout, scene_details, track_details
-from llamatron.tui.screens.arrange import arrange_drawing
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.drawing import Box, Style
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.arrange import arrange_details, arrange_drawing, arrange_page
+from llamatron.tui.screens.arrange.arrange_details import clip_details, detailed_clip_text, details_layout, scene_details, track_details
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.arrange.clip_page import ClipPage
-from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.generators.chain_editor import ChainEditor
+from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
-from llamatron.tui.screens.arrange import arrange_page
-from llamatron.composition.file_format import GeneratorKind
-from llamatron.tui.drawing import Style
+from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.visualizers import modes
+from tests.support import ui_testing
+from tests.support.ui_testing import a_song, UITest
 
 FIRST_SCENE = 0
 SECOND_SCENE = 1

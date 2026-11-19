@@ -19,8 +19,7 @@
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import song_plan, wizard_choices
 from llamatron.strings import labels, messages
 from llamatron.support import version
 from llamatron.tui import keybindings

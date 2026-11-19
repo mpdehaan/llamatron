@@ -27,22 +27,13 @@ import collections
 import json
 import unittest
 
-from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition.file_format import Row
 from llamatron.composition import generator_settings
+from llamatron.composition.file_format import GeneratorKind, Row, Section
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
-from llamatron.generators import musician
-from llamatron.generators import phrasing as phrasing_values
-from llamatron.macro_composer import interplay
-from llamatron.macro_composer import breaks
+from llamatron.generators import musician, phrasing as phrasing_values
+from llamatron.macro_composer import breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_choices
+from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
 from llamatron.support import version
-from llamatron.macro_composer import hook_writing, line_edits, phrasing
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import loudness
-from llamatron.macro_composer import riffs
-from llamatron.macro_composer import wizard_choices
-from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names
 
 A_NAME = 'a_song'
 NOTES_KEPT = 'notes'

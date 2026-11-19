@@ -16,10 +16,9 @@
 """A row of numbers in a range, like Velocity, Prob and Ratchet: typed, nudged or asked for."""
 
 from llamatron.strings import errors, labels, marks, messages
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import drawing
-from llamatron.tui import keybindings
 
 # Where a nudge or Enter starts from on a row whose blank step plays as no number at all, which is a CC row: 0, since the
 # CC most often used is the mod wheel, which should start from nothing.

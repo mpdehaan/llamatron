@@ -34,22 +34,22 @@ import inspect
 import re
 import unittest
 
-from llamatron.tui.screens.arrange import arrange_page
-from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.set.notes_page import NotesPage
-from llamatron.tui.screens.set.file_page import FilePage
-from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tui.components import pattern_rows
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.set.song_page import SongPage
-from llamatron.tui.screens.set.songs_page import SongsPage
+from llamatron.composition.file_format import Section
 from llamatron.strings import help as help_text, labels, legends
 from llamatron.tui import keybindings
+from llamatron.tui.components import pattern_rows
 from llamatron.tui.key_table import first_key
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.arrange import arrange_page
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.set.notes_page import NotesPage
+from llamatron.tui.screens.set.song_page import SongPage
+from llamatron.tui.screens.set.songs_page import SongsPage
+from llamatron.tui.screens.shared.list_page import ListPage
+from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
 from tests.support.ui_testing import key_of, leaf_pages, UITest
-from llamatron.composition.file_format import Section
 
 # The words help uses for the keys whose names on screen are arrows or that the legend has no name of their own for.
 # The place on the Generators page of the first kind after the arpeggiators and the AutoRatchets.

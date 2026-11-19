@@ -18,22 +18,20 @@
 
 import contextlib
 import io
+import mido
 import os
 import tempfile
 import unittest
 
-import mido
-
-from llamatron.music.note import Note
-from llamatron.music.time_signature import TimeSignature
-from llamatron.exporters import midi_messages
-from llamatron.exporters import midi_arrangement
+from llamatron.exporters import midi_arrangement, midi_messages
 from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
 from llamatron.grid.clip import Clip
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.control import Control
-from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.clip_column import ClipColumn
+from llamatron.grid.clip_grid import ClipGrid
+from llamatron.grid.clip_row import ClipRow
+from llamatron.grid.control import Control
+from llamatron.music.note import Note
+from llamatron.music.time_signature import TimeSignature
 from llamatron.strings import errors
 
 QUARTER = 0.25

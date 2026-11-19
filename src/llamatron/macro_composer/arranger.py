@@ -25,42 +25,31 @@ MacroComposer composes, so every choice can be read and changed there.
 """
 
 import copy
+from fractions import Fraction
 import math
 import os
 import random
 import zlib
-from fractions import Fraction
 
-from llamatron.macro_composer import breaks
-from llamatron.macro_composer.breaks import cut_up
-from llamatron.macro_composer.characters import character_of, held_to, label_of, level_of
-from llamatron.macro_composer import band, characters
-from llamatron.macro_composer import drum_solo
-from llamatron.macro_composer import interplay
-from llamatron.macro_composer.interplay import UnderLead
-from llamatron.macro_composer import joins
-from llamatron.macro_composer.joins import drum_tail, pieces_of_tail, with_tail
-from llamatron.macro_composer import melody
-from llamatron.macro_composer.melody import has_hook, plan_as_asked, plan_with_hook_placed, plan_with_tag, sketched
-from llamatron.macro_composer import loudness
-from llamatron.macro_composer.loudness import drum_levels, in_proportion, note_levels, scaled, spread, with_own
-from llamatron.macro_composer import notation
-from llamatron.macro_composer.notation import clamped, drum_rows
-from llamatron.macro_composer.players import player_name
-from llamatron.macro_composer import riffs as riffs_values
-from llamatron.macro_composer.riffs import accent_bars, bars_of as riff_bars_of, bars_played, flattened_in, held_bar, line_of as riff_line_of, single, split_bars
-from llamatron.macro_composer import shaping
-from llamatron.macro_composer.shaping import is_compound
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer.song_plan import SongPlan
-from llamatron.support.safe_yaml import load_safely
+from llamatron.composition import file_format, limits
 from llamatron.composition.checks import in_whole_notes
-from llamatron.composition import file_format
 from llamatron.composition.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.composition.generator_settings import FollowChordsSetting
 from llamatron.composition.named_scale import scale_type_called
-from llamatron.composition import limits
+from llamatron.macro_composer import band, breaks, characters, drum_solo, interplay, joins, loudness, melody, notation, riffs as riffs_values, shaping, song_plan
+from llamatron.macro_composer.breaks import cut_up
+from llamatron.macro_composer.characters import character_of, held_to, label_of, level_of
+from llamatron.macro_composer.interplay import UnderLead
+from llamatron.macro_composer.joins import drum_tail, pieces_of_tail, with_tail
+from llamatron.macro_composer.loudness import drum_levels, in_proportion, note_levels, scaled, spread, with_own
+from llamatron.macro_composer.melody import has_hook, plan_as_asked, plan_with_hook_placed, plan_with_tag, sketched
+from llamatron.macro_composer.notation import clamped, drum_rows
+from llamatron.macro_composer.players import player_name
+from llamatron.macro_composer.riffs import accent_bars, bars_of as riff_bars_of, bars_played, flattened_in, held_bar, line_of as riff_line_of, single, split_bars
+from llamatron.macro_composer.shaping import is_compound
+from llamatron.macro_composer.song_plan import SongPlan
 from llamatron.strings import errors, labels, macro_composer as composer_text
+from llamatron.support.safe_yaml import load_safely
 
 # The fields of a style template.
 NAME = 'name'

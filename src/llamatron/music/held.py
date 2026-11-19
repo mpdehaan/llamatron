@@ -23,7 +23,7 @@ the steps after it.
 """
 
 from llamatron.music.chord import Chord
-from llamatron.music.note import Degree, Note, Rest, _check_length
+from llamatron.music.note import _check_length, Degree, Note, Rest
 from llamatron.strings import errors, reprs
 
 # What a held phrase can hold: anything a clip can, played one after another from the Held's start.

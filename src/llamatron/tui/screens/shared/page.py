@@ -23,26 +23,24 @@ while a page's footer shows only its own keys, so that it stays short.
 """
 
 from rich.color import Color
-from llamatron.composition import limits
-from llamatron.strings import errors, help as help_text, labels, marks as marks_text
-from llamatron.composition.naming import is_taken
-from llamatron.tui import caption_strip
-from llamatron.tui.themes import luminance
 from rich.style import Style as RichStyle
 from rich.text import Text
 from textual.screen import Screen
 from textual.widgets import Static
 
+from llamatron.composition import limits
+from llamatron.composition.naming import is_taken
+from llamatron.strings import errors, help as help_text, labels, marks as marks_text
+from llamatron.tui import caption_strip, drawing, keybindings
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.text import clock
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, fit, legend, Style
-from llamatron.tui.key_table import pressed_key, BindsKeys, quits_at_once
+from llamatron.tui.key_table import BindsKeys, pressed_key, quits_at_once
 from llamatron.tui.screens.shared.everywhere import everywhere_keys
-from llamatron.tui import keybindings
+from llamatron.tui.text import clock
+from llamatron.tui.themes import luminance
 
 
 PROGRAM_NAME = 'llamatron'

@@ -19,9 +19,8 @@ lead as the line that moves most like a melody above the rest, pads as long chor
 and counter lines as the other single lines. A track's name is never read, since nothing about the set is assumed."""
 
 from dataclasses import dataclass
-from statistics import median
-
 from measuring.measures.traits import Role
+from statistics import median
 
 LOW_REGISTER = 55
 CHORDAL = 1.6

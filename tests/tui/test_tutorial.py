@@ -32,41 +32,37 @@ import os
 import unittest
 from unittest import mock
 
-from llamatron.composition.file_format import PatternSetting, Row, SetlistSetting, Section
+from llamatron.composition.file_format import PatternSetting, Row, Section, SetlistSetting
 from llamatron.composition.naming import new_name
-from llamatron.strings import labels, legends, names, narration
 from llamatron.composition.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
+from llamatron.realtime import timeline
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime import timeline
 from llamatron.realtime.timeline import Route, song_timeline
+from llamatron.strings import labels, legends, names, narration
+from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui import drawing
-from llamatron.tui.document import Document
-from llamatron.tui.launch import Launch
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from llamatron.tui.caption_strip import parts
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
-from llamatron.tui import keys
-from llamatron.tui.keys import Key
-from llamatron.tui import keybindings
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.tui.document import Document
 from llamatron.tui.key_table import first_key, key_event
+from llamatron.tui.keys import Key
+from llamatron.tui.launch import Launch
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tutorial.steps import Press
+from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.transport import Transport
-from llamatron.tutorial import plan as plan_values
-from llamatron.tutorial.plan import without_instrument, TutorialPlan, TutorialStuck
-from llamatron.tutorial import runner as runner_values
-from llamatron.tutorial.runner import Narrator, TutorialRunner, tutorial
-from llamatron.tui.caption_strip import parts
-from llamatron.tutorial.steps import Say
+from llamatron.tutorial import plan as plan_values, runner as runner_values
+from llamatron.tutorial.plan import TutorialPlan, TutorialStuck, without_instrument
+from llamatron.tutorial.runner import Narrator, tutorial, TutorialRunner
+from llamatron.tutorial.steps import Press, Say
 from tests.support.ui_testing import UITest
 
 HELLO_WORLD = os.path.join('examples', 'learning', '01_hello_world.yml')

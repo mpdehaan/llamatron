@@ -19,9 +19,8 @@ at once crowd the same register, how often close intervals sound together low do
 accompaniment sounds above the lead and masks it, the arranger's checks."""
 
 from bisect import bisect_left
-from statistics import median
-
 from measuring.measures.traits import Role, Spacing
+from statistics import median
 
 LOW_REGISTER = 48
 MUDDY_INTERVAL = 4

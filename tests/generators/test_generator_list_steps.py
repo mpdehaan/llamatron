@@ -19,8 +19,8 @@
 import unittest
 
 from llamatron.generators.auto_ratchet import AutoRatchet
-from llamatron.music.note import Note, Rest
 from llamatron.grid.clip import Clip
+from llamatron.music.note import Note, Rest
 
 SIXTEENTH = 0.0625
 PITCHES = ['C', 'G', 'C', 'G', 'C', 'G', 'C']

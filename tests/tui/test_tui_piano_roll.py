@@ -20,32 +20,27 @@ gate 1/4), an empty step with a gate, and an empty step, in octave 5, played by 
 alone under C Major, so the roll knows its scale and its track.
 """
 
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, labels, legends, marks
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Accidental, Direction, Row
-from llamatron.composition import row_descriptions
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, Style
-from llamatron.composition.file_format import ChordSymbol
+import re
+
+from llamatron.composition import defaults, file_format, limits, row_descriptions, setlist
+from llamatron.composition.file_format import Accidental, ChordSymbol, Direction, Row
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.tui.components.chord_row import chord_value
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs import chord_dialog
-from llamatron.tui.dialogs.chord_dialog import ChordDialog
-from llamatron.composition import setlist
+from llamatron.composition.naming import words
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.tui import keys
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern import grid_drawing
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.strings import errors, labels, legends, marks
 from llamatron.support.rational import Rational
-from llamatron.tui.screens.pattern import roll_drawing
+from llamatron.tui import drawing, keys
+from llamatron.tui.components.chord_row import chord_value
+from llamatron.tui.dialogs import chord_dialog
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.chord_dialog import ChordDialog
+from llamatron.tui.drawing import Box, Style
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.pattern import grid_drawing, roll_drawing
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern.roll_drawing import filled_columns
-from llamatron.composition.naming import words
-import re
 
 # The header's two lines come after the page's own header: its two lines and the rule.
 HEADER_LINES = 3

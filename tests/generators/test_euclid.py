@@ -22,13 +22,13 @@ import unittest
 
 from llamatron.composition import euclid
 from llamatron.composition.euclid import rhythm
-from llamatron.composition.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section, euclid_setting
+from llamatron.composition.file_format import ClipSlotSetting, euclid_setting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.support.rational import Rational
-from tests.support.rendering import setlist_from_data
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
+from tests.support.rendering import setlist_from_data
 
 STEPS = 16
 MASKED = 'masked'

@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Phrasing pages: a new one, the editor's fields, and the By Section table of what each kind of section does of its own."""
 
-from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition import generator_settings
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing as phrasing_values
 from llamatron.strings import labels

@@ -17,9 +17,8 @@
 """How a page, dialog or component binds the keys its class in tui/keybindings.py lists, and how a key press is read as one name."""
 
 from dataclasses import dataclass
-from typing import Callable
-
 from textual import events
+from typing import Callable
 
 from llamatron.tui import keys as keys_values
 from llamatron.tui.keys import Key, Steps

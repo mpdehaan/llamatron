@@ -20,10 +20,7 @@ import os
 import unittest
 
 from llamatron.composition.file_format import Section
-from llamatron.macro_composer import wizard_file
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
-from llamatron.macro_composer import arranger
+from llamatron.macro_composer import arranger, song_plan, wizard_choices, wizard_file
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors
 from llamatron.support import version

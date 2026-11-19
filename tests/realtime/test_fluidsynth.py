@@ -26,7 +26,7 @@ import unittest
 from unittest import mock
 
 from llamatron.realtime import fluidsynth
-from llamatron.realtime.fluidsynth import FluidSynth, FluidSynthNotStarted, command
+from llamatron.realtime.fluidsynth import command, FluidSynth, FluidSynthNotStarted
 from llamatron.strings import errors
 
 OTHER_PORT = 'IAC Driver Bus 1'

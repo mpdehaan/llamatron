@@ -28,9 +28,9 @@ the same value at every moment, and a sweep can be within a little of the file. 
 the import leaves out, and says so, aren't compared.
 """
 
-import os
 from collections import Counter
 from dataclasses import dataclass, field
+import os
 from typing import NamedTuple
 
 from llamatron.composition.setlist import Setlist

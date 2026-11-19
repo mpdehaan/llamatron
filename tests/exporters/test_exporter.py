@@ -32,13 +32,12 @@ import tempfile
 import unittest
 
 import llamatron.exporters
-from llamatron.exporters import ableton_project
+from llamatron.exporters import ableton_project, exports
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles, WritesOneFile
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
-from llamatron.exporters import exports
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.strings import errors
 from llamatron.support import files

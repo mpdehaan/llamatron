@@ -18,19 +18,17 @@
 
 from rich.text import Text
 
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.composition import setlist
 from llamatron.strings import errors, labels as labels_text, legends, marks
+from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
-from llamatron.tui.keys import Key
-from llamatron.tui import drawing
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared import field as field_values
 from llamatron.tui.screens.shared.field import Button, Cells, Field, Heading, NameField
-from llamatron.composition import setlist
-from llamatron.tui import key_table
 from llamatron.tui.screens.shared.page import Page
-from llamatron.tui import keybindings
 
 
 class FieldPage(Page):

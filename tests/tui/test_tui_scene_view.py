@@ -15,23 +15,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Tests Scene View: a scene's notes as written and as played, the chord on each beat, what the scene plays with in the end, and the Inset Window on Arrange that only P closes."""
 
+from rich.text import Text
 import unittest
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, back_key, forward_key
 from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
 from llamatron.composition.setlist import Setlist
 from llamatron.strings import marks
 from llamatron.support.example_sets import example_sets
 from llamatron.tui import keybindings
-from llamatron.tui.components import inset_window
+from llamatron.tui.components import inset_window, scene_view
 from llamatron.tui.components.inset_window import drawn_over, inside_size
-from llamatron.tui.drawing import Box
-from llamatron.tui.components import scene_view
 from llamatron.tui.components.scene_view import coloured, SceneView, track_label
+from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, chord_of, chord_texts, effective_values, marked_tracks, scene_notes, written_song
-from rich.text import Text
+from tests.support import ui_testing
+from tests.support.ui_testing import back_key, forward_key, UITest
 
 DENSITY = 'edm_density.yml'
 HALF_TIME = 4

@@ -22,9 +22,8 @@ accompaniment spreads wide under the pedal). Each was
 kept because it moved the same way, period by period, in typeset scores and in recorded performances alike; what did not
 (an Alberti bass counted note by note, trills, a steady stream of equal notes) was left out. None reads a melody."""
 
-from statistics import median
-
 from measuring.hearing.lines import TOGETHER
+from statistics import median
 
 PITCH_CLASSES = 12
 FEWEST_IN_A_CHORD = 3

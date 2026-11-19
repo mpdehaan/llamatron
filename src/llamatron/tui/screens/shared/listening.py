@@ -25,10 +25,10 @@ which plays beside the song with one key and asks nothing.
 
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.realtime.sender_process import SenderNotStarted
+from llamatron.strings import errors, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.shared import play_through
 from llamatron.tui.text import sorted_names
-from llamatron.strings import errors, messages
 
 
 def listen(*, page, index, track, song=None, name):

@@ -15,25 +15,23 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import contextlib
+from fractions import Fraction
 import io
+import mido
 import os
+from pathlib import Path
 import tempfile
 import unittest
-from fractions import Fraction
-from pathlib import Path
 
-import mido
-
+from llamatron.exporters import midi_messages, timing
+from llamatron.exporters.clip_tree import clip_file_name, ClipTree
+from llamatron.grid.clip import Clip
+from llamatron.grid.clip_column import ClipColumn
+from llamatron.grid.clip_grid import ClipGrid
+from llamatron.grid.clip_row import ClipRow
 from llamatron.music.chord import Chord, ChordType
 from llamatron.music.note import Note, NoteName, Rest
 from llamatron.music.time_signature import TimeSignature
-from llamatron.exporters import midi_messages
-from llamatron.exporters.clip_tree import ClipTree, clip_file_name
-from llamatron.exporters import timing
-from llamatron.grid.clip import Clip
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.clip_column import ClipColumn
 
 C4 = Note(name='C', octave_number=4, length=0.25)
 D4 = Note(name='D', octave_number=4, length=0.25)

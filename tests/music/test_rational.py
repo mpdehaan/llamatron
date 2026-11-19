@@ -16,13 +16,13 @@
 
 """Rational gives exactly the answers Fraction gives, for everything the program asks of a number."""
 
+from fractions import Fraction
 import math
 import operator
 import unittest
-from fractions import Fraction
 
-from llamatron.support.rational import Rational
 from llamatron.strings import errors
+from llamatron.support.rational import Rational
 
 # A sweep of values: the lengths a song uses, halves of them, thirds, negatives and zero.
 NUMERATORS = range(-5, 6)

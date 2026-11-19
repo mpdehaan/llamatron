@@ -20,10 +20,8 @@ where that comes from: on the clip page the scene's value, and at an end of a ra
 field's, which the ramps start from and return to.
 """
 
-from llamatron.composition import limits
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits, velocity_ramps
 from llamatron.composition.file_format import RampPart, VelocitySetting
-from llamatron.composition import velocity_ramps
 from llamatron.strings import labels, legends, marks
 from llamatron.tui.screens.shared.field import NumberField
 

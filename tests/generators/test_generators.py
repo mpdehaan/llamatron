@@ -14,16 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import unittest
 from fractions import Fraction
+import unittest
 
-from llamatron.music.chord import Chord, ChordType
-from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.generators.arp import Arp, ChordOrder
+from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.generators.base import ClipGenerator
+from llamatron.grid.clip import Clip
+from llamatron.music.chord import Chord, ChordType
 from llamatron.music.note import Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.grid.clip import Clip
 
 QUARTER = 0.25
 C4 = Note(name='C', octave_number=4, length=QUARTER)

@@ -17,35 +17,30 @@
 """The Clip page: one clip: what it plays, how many times, and whether it morphs into another pattern."""
 
 from dataclasses import dataclass
-
 from rich.text import Text
 
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
-from llamatron.composition import clip_slot as clip_slot_values
-from llamatron.composition import file_format
-from llamatron.composition.file_format import shape_setting, strum_setting, ClipSlotSetting, Section
+from llamatron.composition import clip_slot as clip_slot_values, defaults, file_format, limits
+from llamatron.composition.file_format import ClipSlotSetting, Section, shape_setting, strum_setting
+from llamatron.composition.naming import new_name, words
 from llamatron.playback import song_renderer
+from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
+from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.composition.naming import new_name, words
-from llamatron.tui.text import clock, sorted_names
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
+from llamatron.tui.screens.arrange.chains_field import chains_field
+from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
+from llamatron.tui.screens.generators.shape_fields import shape_section
+from llamatron.tui.screens.generators.strum_fields import strum_section
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.listening import listen, stop_listening
 from llamatron.tui.screens.shared.shared import columns, scene_name
-from llamatron.tui.uses import loop_error_lines
-from llamatron.tui.screens.arrange.chains_field import chains_field
-from llamatron.tui.screens.generators.shape_fields import shape_section
-from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.statements import register_fields, statement_section
-from llamatron.tui.screens.generators.strum_fields import strum_section
-from llamatron.tui import themes
-from llamatron.tui import keybindings
+from llamatron.tui.text import clock, sorted_names
+from llamatron.tui.uses import loop_error_lines
 
 EXISTING_PATTERN = 0
 ONE_PATTERN = 1

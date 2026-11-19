@@ -40,9 +40,6 @@ from llamatron.composition.setlist import Setlist
 from llamatron.strings import names
 from llamatron.support.memory import Memory
 from llamatron.support.revised import ChangeMark, Revised
-from llamatron.tui.history import History
-from llamatron.tui.lengths import Lengths, measured
-from llamatron.tui.uses import uses_of
 from llamatron.tui.document_parts import files
 from llamatron.tui.document_parts.files import DocumentFiles, file_data
 from llamatron.tui.document_parts.named_edits import NamedEdits
@@ -50,6 +47,9 @@ from llamatron.tui.document_parts.pattern_edits import PatternEdits
 from llamatron.tui.document_parts.set_edits import SetEdits
 from llamatron.tui.document_parts.song_edits import SongEdits
 from llamatron.tui.document_parts.undo import DocumentUndo
+from llamatron.tui.history import History
+from llamatron.tui.lengths import Lengths, measured
+from llamatron.tui.uses import uses_of
 
 
 # The key the current song's estimate is remembered by.

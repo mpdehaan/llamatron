@@ -16,9 +16,8 @@
 
 """The Guitarify editor: Shape, the fretting hand, and Strokes, the other hand, each a section with a switch of its own."""
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, generator_settings
 from llamatron.composition.file_format import Approach, ChordColor, GeneratorKind, GuitarifySetting, Section, SingleNotes, Tuning
-from llamatron.composition import generator_settings
 from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings

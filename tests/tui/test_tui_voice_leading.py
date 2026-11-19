@@ -15,14 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The tracker's Voice leading: its list page and its editor, with the range shown in the set's octave labels."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
-from llamatron.composition.file_format import Section, GeneratorKind
 from llamatron.composition import generator_settings
+from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.strings import labels
+from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
-from llamatron.tui import keybindings
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 NEW_ONE = 'close'
 

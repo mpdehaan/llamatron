@@ -28,11 +28,10 @@ from llamatron.composition.file_format import InstrumentSetting, Row, Section, T
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.music import midi
-from tests.playback import test_registers
-from tests.playback import test_shapes
+from tests.playback import test_registers, test_shapes
 from tests.playback.test_shapes import one_scene
-from tests.support.rendering import as_setlist, render_data, setlist_from_data
 from tests.support import song_testing
+from tests.support.rendering import as_setlist, render_data, setlist_from_data
 
 SYNTH = 'synth'
 QUIET = 80

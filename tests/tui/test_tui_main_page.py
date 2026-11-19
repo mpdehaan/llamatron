@@ -18,31 +18,29 @@
 
 from unittest import mock
 
-from tests.support.ui_testing import UITest, key_name
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box
-from llamatron.tui.screens.set import main_page
-from llamatron.tui.screens.set.main_page import arrows_between, cell_positions, moved
 from llamatron.composition import file_format
+from llamatron.strings import labels, legends, marks, messages, names
+from llamatron.support import version
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators.chains_page import ChainsPage
-from llamatron.tui.screens.set.file_page import FilePage
-from llamatron.tui.screens.generators.generators_page import GeneratorsPage
-from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
-from llamatron.tui.screens.set.scales_page import ScalesPage
-from llamatron.tui.screens.set.open_page import OpenPage
-from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.support import version
-from llamatron.strings import labels, legends, marks, messages, names
-from llamatron.tui import keybindings
+from llamatron.tui.drawing import Box
 from llamatron.tui.key_table import first_key
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.tui.screens.generators.chains_page import ChainsPage
+from llamatron.tui.screens.generators.generators_page import GeneratorsPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set import main_page
+from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.set.main_page import arrows_between, cell_positions, MainPage, moved
+from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.text import clock
 from tests.support.page_testing import boxed_line
+from tests.support.ui_testing import key_name, UITest
 
 # Typed into a prompt that ESC then cancels.
 ESCAPED_TITLE = 'never'

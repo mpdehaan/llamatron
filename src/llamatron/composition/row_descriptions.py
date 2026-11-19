@@ -26,16 +26,14 @@ The descriptions check and describe. They hold no steps: a pattern's values stay
 which playback reads directly, since it reads every step of every pass.
 """
 
+from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.checks import is_true_or_false, is_whole_number, is_whole_number_from, listed
-from llamatron.composition import corrections
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors
-from llamatron.composition import file_format
 from llamatron.composition.file_format import RegisterUse, Row, StatementPart
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.setting import Length
 from llamatron.music import midi
+from llamatron.strings import errors
 
 # A drum pattern's degree row holds one note letter per step.
 NOTE_LETTER_LENGTH = 1

@@ -53,8 +53,7 @@ import heapq
 from typing import NamedTuple
 
 from llamatron.composition.file_format import FollowAction, LiveResponsiveness
-from llamatron.realtime import engine
-from llamatron.realtime import timeline
+from llamatron.realtime import engine, timeline
 from llamatron.realtime.timeline import Playing, Tag
 from llamatron.support.rational import Rational
 

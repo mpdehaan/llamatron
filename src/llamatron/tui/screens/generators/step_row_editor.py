@@ -23,11 +23,10 @@ video, as in the offsets editor, and the line above the grid says what a step th
 
 from rich.text import Text
 
-from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.composition import limits
+from llamatron.composition.generator_settings import StepRowSetting
 from llamatron.strings import help as help_text, labels, marks, messages
-from llamatron.tui import keybindings
-from llamatron.tui import drawing
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem

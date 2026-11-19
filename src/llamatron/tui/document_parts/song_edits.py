@@ -19,15 +19,14 @@
 
 from types import MethodType
 
-from llamatron.composition import clip_slot as clip_slot_values
+from llamatron.composition import clip_slot as clip_slot_values, limits
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.file_format import ClipSlotSetting, RegisterSetting, Section
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition import limits
-from llamatron.strings import names as names_text
+from llamatron.composition.naming import copy_name
 from llamatron.composition.scene import Scene
 from llamatron.composition.track import Track
-from llamatron.composition.naming import copy_name
+from llamatron.strings import names as names_text
 
 
 # What a setter that takes a name of the song, or several, calls what it is given.

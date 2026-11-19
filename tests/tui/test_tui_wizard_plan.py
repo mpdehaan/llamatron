@@ -17,13 +17,9 @@
 """The song wizard's page on a planned song: the plan's fields on the Form panel and the hook's kind on the Hooks panel."""
 
 from llamatron.composition import limits
-from llamatron.strings import errors, labels, marks
-from llamatron.macro_composer import hook_writing
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer import joins
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger, hook_writing, joins, song_plan, wizard_choices
 from llamatron.macro_composer.wizard_choices import chords_as_text
+from llamatron.strings import errors, labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from tests.support.ui_testing import key_of

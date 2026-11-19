@@ -29,13 +29,12 @@ cells are about twice as tall as they are wide.
 
 import functools
 import math
-
 from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
 
-from llamatron.tui import drawing
 from llamatron.strings import about
+from llamatron.tui import drawing
 
 
 class Entrance:

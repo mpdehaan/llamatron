@@ -31,6 +31,7 @@ tests whose module, class or method name contains one of them, as unittest's -k 
     .venv/bin/python tests/support/parallel.py test_tui_main_page test_examples
 """
 
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import re
@@ -38,7 +39,6 @@ import subprocess
 import sys
 import time
 import unittest
-from concurrent.futures import ThreadPoolExecutor
 
 TEST_FOLDER = 'tests'
 # What unittest prints when it finishes, which says how many tests a class ran.

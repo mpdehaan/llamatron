@@ -33,15 +33,12 @@ the sound the dialog opened on with the note shown. The dialog then answers (val
 from rich.text import Text
 
 from llamatron.strings import errors, marks
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings, keys as keys_values, note_names
 from llamatron.tui.dialogs.choice_dialog import completed, places_matching
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style, cursor_mark, fit, legend
+from llamatron.tui.drawing import cursor_mark, fit, legend, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui import keys as keys_values
 from llamatron.tui.keys import Key
-from llamatron.tui import note_names
 from llamatron.tui.note_names import note_shown, note_typed
 
 # How many rows show at once, the list scrolling to keep the cursor's in view, so that the dialog fits an 80 by 24 console.

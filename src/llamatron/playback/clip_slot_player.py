@@ -18,28 +18,26 @@
 
 from math import ceil
 
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.composition import file_format, generator_settings, limits
+from llamatron.composition.checks import in_whole_notes
+from llamatron.composition.conditions import any_true
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.blend import Blend
+from llamatron.generators.euclid import EuclidMask
+from llamatron.grid.clip import Clip
+from llamatron.grid.keyswitch import SwitchNote
 from llamatron.music import sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_order import ordered_patterns
 from llamatron.playback.pattern_player import Pass, PatternPlayer
-from llamatron.playback.step_order import StepOrder
-from llamatron.support.random_source import random_source
-from llamatron.composition import limits
-from llamatron.composition.conditions import any_true
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
-from llamatron.composition import generator_settings
 from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, reshaped
-from llamatron.generators.euclid import EuclidMask
-from llamatron.composition.checks import in_whole_notes
-from llamatron.grid.clip import Clip
-from llamatron.grid.keyswitch import SwitchNote
+from llamatron.playback.step_order import StepOrder
 from llamatron.strings import errors
+from llamatron.support.length import Length
+from llamatron.support.random_source import random_source
+from llamatron.support.rational import Rational
 
 # The seeds for a clip slot's random choices: which steps play, by probability, and the order of steps
 # in directions that choose as they go. They come from the render's seed, the scene and the track,

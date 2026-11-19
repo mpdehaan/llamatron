@@ -28,12 +28,11 @@ operations: a still of a whole terminal on a Retina screen is millions of pixels
 took about a minute, while the cells stayed filled with the colour and the take seemed frozen.
 """
 
+import numpy
 import os
 import struct
 import subprocess
 import tempfile
-
-import numpy
 
 # The colour the cells are filled with for the still: dark, and unlike any terminal's own background, title bar or margin.
 CALIBRATION_COLOUR = (40, 0, 56)

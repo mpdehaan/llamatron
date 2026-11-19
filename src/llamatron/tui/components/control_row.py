@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A number row that a rest can hold too: the CC rows, which send a value at the start of a step, and the register adds."""
 
-from llamatron.tui.components.number_row import NumberRow
 from llamatron.tui import keybindings
+from llamatron.tui.components.number_row import NumberRow
 
 
 class ControlRow(NumberRow):

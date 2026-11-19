@@ -30,8 +30,8 @@ import random
 import time
 
 from llamatron.tui.screens.arrange import arrange_page
-from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.visualizers import modes
+from llamatron.visualizers.heard import Heard, HeardNote
 
 FRAMES = 200
 SEED = 1

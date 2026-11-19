@@ -19,24 +19,20 @@ InvalidValue when it's wrong, and leaves the object as it was."""
 
 import unittest
 
-from llamatron.composition import clip_slot
-from llamatron.composition.clip_slot import ClipSlot
+from llamatron.composition import clip_slot, defaults, file_format, generator_settings, limits, setlist as setlist_values
 from llamatron.composition.chain import Chain
-from llamatron.composition import defaults, limits
-from llamatron.composition import file_format
+from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.file_format import ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampPart, RampWay, RegisterName, RegisterSetting, Row, SceneSetting, Section, TrackSetting
-from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.music import midi
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene, TempoRamp
-from llamatron.composition import setlist as setlist_values
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.track import Track
+from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 

@@ -21,9 +21,9 @@ so this test reads every document and checks that each such path is a real file,
 has to carry its documentation with it.
 """
 
+from pathlib import Path
 import re
 import unittest
-from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCUMENTS = [

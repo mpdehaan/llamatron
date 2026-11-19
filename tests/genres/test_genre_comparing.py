@@ -16,11 +16,10 @@
 """How two drum grooves are compared, which is how the analyzer names the groove a kit plays: a groove matches itself, a
 shuffle is far from a rock beat, and a rock beat with one more kick is nearer a rock beat than a house beat is."""
 
-import unittest
-
-from measuring.measures.comparing import SAME, groove_gap
+from measuring.measures.comparing import groove_gap, SAME
 from measuring.measures.drum_patterns import GROOVES
 from measuring.strings import GrooveName
+import unittest
 
 GROOVES_BY_NAME = {groove.name: groove for groove in GROOVES}
 FAR = 0.1

@@ -39,33 +39,29 @@ on the rows.
 """
 
 
-from llamatron.composition.checks import is_written_length, listed
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
+from llamatron.composition.checks import fraction_text, is_written_length, listed
 from llamatron.composition.file_format import Row, Section
-from llamatron.composition import limits
 from llamatron.composition.invalid_value import InvalidValue
+from llamatron.composition.naming import words
 from llamatron.composition.pattern import Pattern
 from llamatron.music import midi
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
+from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
 from llamatron.tui.components.piano_roll import PianoRoll
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui import drawing
-from llamatron.tui import key_table
 from llamatron.tui.screens.pattern.pattern_drawing import PatternDrawing
 from llamatron.tui.screens.pattern.roll_drawing import RollDrawing
+from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.screens.shared.shared import ask_time_signature, columns
+from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.step_editor import StepEditor
-from llamatron.composition.checks import fraction_text
-from llamatron.composition.naming import words
 from llamatron.tui.text import fraction, sorted_names
-from llamatron.tui import keybindings
 
 
 def direction_choices(directions):

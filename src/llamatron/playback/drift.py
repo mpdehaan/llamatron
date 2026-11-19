@@ -32,10 +32,9 @@ import math
 import random
 from typing import NamedTuple
 
-from llamatron.composition.checks import in_whole_notes
-from llamatron.composition.file_format import DriftDirection, GeneratorKind
-from llamatron.composition.file_format import DriftValue, DriftVersion
 from llamatron.composition import generator_settings
+from llamatron.composition.checks import in_whole_notes
+from llamatron.composition.file_format import DriftDirection, DriftValue, DriftVersion, GeneratorKind
 from llamatron.support.random_source import random_source
 
 # How a drift's own random numbers are seeded from the render's seed and its name, so that each drift draws its own.

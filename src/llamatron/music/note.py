@@ -18,8 +18,8 @@ from fractions import Fraction
 from math import isfinite
 
 from llamatron.music import midi
-from llamatron.support.rational import Rational
 from llamatron.strings import errors, reprs
+from llamatron.support.rational import Rational
 
 class NoteName:
     """Every way a note can be spelled: a letter, then # for sharp or b for flat.

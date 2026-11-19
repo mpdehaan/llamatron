@@ -20,7 +20,6 @@ returns cover is its strength, how well it fits a hum is its hummability, and th
 loudest bars is its placement."""
 
 from collections import Counter
-
 from measuring.measures.traits import Hook, Role
 
 FIGURE_BARS = (1, 2)

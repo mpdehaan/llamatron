@@ -22,10 +22,9 @@ running the code. The suite fails on any of them, so an import that nothing uses
 
 import io
 import os
-import unittest
 from pathlib import Path
-
 from pyflakes import api, reporter
+import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 # The folders that hold Python: the program, its tests and the tools for working on it.

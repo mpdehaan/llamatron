@@ -23,8 +23,7 @@ that say which steps are on screen. They are here once.
 """
 
 from llamatron.strings import marks
-from llamatron.tui import keybindings
-from llamatron.tui import drawing
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.key_table import pressed_key
 from llamatron.tui.screens.shared.page import Page
 

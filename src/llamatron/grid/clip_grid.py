@@ -18,15 +18,14 @@
 
 from itertools import count
 
-from llamatron.support.rational import Rational
-from llamatron.composition.checks import check_scale, check_tempo, check_time_signature
-from llamatron.composition.checks import time_signature as time_signature_object
 from llamatron.composition import defaults
-from llamatron.strings import errors
+from llamatron.composition.checks import check_scale, check_tempo, check_time_signature, time_signature as time_signature_object
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.row_clock import RowClock
+from llamatron.strings import errors
+from llamatron.support.rational import Rational
 
 # How long a row with no clips lasts.
 NO_LENGTH = 0

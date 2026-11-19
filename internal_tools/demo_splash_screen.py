@@ -32,9 +32,9 @@ import argparse
 import sys
 
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
 from llamatron.tui.components.scroll_text import scroll_text_for
 from llamatron.tui.components.title_card import scan_end
+from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch
 
 DEFAULT_HOLD_SECONDS = 5.0

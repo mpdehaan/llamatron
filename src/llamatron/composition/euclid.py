@@ -23,11 +23,11 @@ steps later, and its step is the clip's pattern's step size unless set.
 
 from typing import NamedTuple
 
-from llamatron.composition.checks import time_length
-from llamatron.composition.file_format import EuclidPart, NamedRhythm, euclid_setting
 from llamatron.composition import limits
-from llamatron.strings import errors
+from llamatron.composition.checks import time_length
+from llamatron.composition.file_format import euclid_setting, EuclidPart, NamedRhythm
 from llamatron.composition.setting import Checked, WholeNumber
+from llamatron.strings import errors
 
 # The named rhythms, each its hits and steps, in the order the picker offers them.
 NAMED_RHYTHMS = {

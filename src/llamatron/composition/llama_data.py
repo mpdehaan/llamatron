@@ -17,7 +17,7 @@
 """The base class for everything a set file stores."""
 
 from llamatron.strings import errors
-from llamatron.support.revised import Revised, notes_change
+from llamatron.support.revised import notes_change, Revised
 
 
 def settings_by_name(*, names, given):

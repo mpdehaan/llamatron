@@ -18,15 +18,13 @@
 import time
 import unittest
 
-from tests.support.ui_testing import UITest
-from llamatron.tui.keys import Key
-from llamatron.tui.drawing import Style
-from llamatron.tui.screens.arrange import arrange_drawing
-from llamatron.tui.screens.arrange import arrange_page
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.visualizers import modes
-from llamatron.visualizers import pixels
 from llamatron.tui import keybindings
+from llamatron.tui.drawing import Style
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.arrange import arrange_drawing, arrange_page
+from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.visualizers import modes, pixels
+from tests.support.ui_testing import UITest
 
 SYNTH = 'synth'
 WIDTH = 80

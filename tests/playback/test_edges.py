@@ -16,35 +16,32 @@
 
 """Malformed song files, checks on the classes underneath, grab edges, and the ways in."""
 
+from fractions import Fraction
 import os
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
-from fractions import Fraction
-from pathlib import Path
 from unittest import mock
-
 import yaml
 
-from llamatron.music.chord import Chord
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting
-from llamatron.music.note import Note, NoteName
+from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.exports import ExportKind
 from llamatron.exporters.timing import timed_events
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
 from llamatron.grid.positions import cut_position
+from llamatron.music.chord import Chord
+from llamatron.music.note import Note, NoteName
 from llamatron.music.sound import Sound
-from llamatron.support.length import Length
-from llamatron.composition.file_format import (
-    ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting,
-)
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.strings import names
-from tests.support.rendering import render_data, setlist_from_data
+from llamatron.support.length import Length
 from llamatron.tui import app as tui_app
 from llamatron.tui.document import Document
+from tests.support.rendering import render_data, setlist_from_data
 
 ROOT = Path(__file__).resolve().parents[2]
 

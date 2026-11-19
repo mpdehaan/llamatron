@@ -15,10 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Rush editor: a Rush's name, step, amount, row of steps and Restart."""
 
+from llamatron.composition import generator_settings, limits
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import StepRowSetting
-from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor

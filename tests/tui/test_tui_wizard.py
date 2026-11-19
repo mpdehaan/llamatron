@@ -15,40 +15,33 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The song wizard: its tree and its fields, the keys between them, what Create adds to the set, closing, and undo."""
 
-from llamatron.composition.file_format import Section
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer import breaks
-from llamatron.macro_composer.breaks import break_names
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import wizard_choices
-from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names, genre_title
 from llamatron.composition import limits
-from llamatron.strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
+from llamatron.composition.file_format import Section
 from llamatron.composition.naming import new_name
+from llamatron.macro_composer import arranger, breaks, melody, wizard_choices
+from llamatron.macro_composer.breaks import break_names
+from llamatron.macro_composer.wizard_choices import genre_names, genre_title, WizardChoices
+from llamatron.strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
 from llamatron.support import version
-from llamatron.tui import keybindings, themes
+from llamatron.support.memory import StaleAnswer
+from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
+from llamatron.tui.dialogs import dialog as dialog_values, row_dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs import dialog as dialog_values
-from llamatron.tui import drawing
-from llamatron.tui.dialogs import row_dialog
 from llamatron.tui.dialogs.row_dialog import RowDialog
-from llamatron.tui.note_names import note_shown, note_typed
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
+from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
-from llamatron.tui.text import clock
+from llamatron.tui.note_names import note_shown, note_typed
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.songs_page import SongsPage
+from llamatron.tui.screens.wizard import solo_melody_branch, starts, wizard_page
 from llamatron.tui.screens.wizard.hook_picture import picture_of
-from llamatron.tui.screens.wizard import starts
-from llamatron.support.memory import StaleAnswer
-from llamatron.tui.screens.wizard import solo_melody_branch
-from llamatron.tui.screens.wizard import wizard_page
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
-from tests.support.ui_testing import UITest, back_key, first_key, fixed_text, forward_key, key_of
+from llamatron.tui.text import clock
+from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_of, UITest
 
 # The tree's first branch, by its place from the top.
 GENRE_PLACE = 0

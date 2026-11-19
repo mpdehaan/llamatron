@@ -37,12 +37,12 @@ import unittest
 import llamatron.composition
 from llamatron.composition.file_format import Row
 from llamatron.composition.groove import Groove
+from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
-from llamatron.composition.invalid_value import InvalidValue
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.support.revised import ChangeMark, Revised, latest_revision, notes_change
+from llamatron.support.revised import ChangeMark, latest_revision, notes_change, Revised
 
 CONSTRUCTOR = '__init__'
 DECORATOR = notes_change.__name__

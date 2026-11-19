@@ -16,21 +16,21 @@
 
 """One cell of the grid a song renders into: a list of positions played in order."""
 
-import re
 from itertools import count
+import re
 
-from llamatron.support import length as length_values
-from llamatron.support.length import Length
-from llamatron.composition.groove import Groove
 from llamatron.composition.checks import check_clip_length, check_loop, check_name, check_scale, check_time_signature_override
+from llamatron.composition.groove import Groove
 from llamatron.grid.control import Control
 from llamatron.grid.positions import exact_length, fit_to_length, piece_of
+from llamatron.music import sound as sound_values
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held
 from llamatron.music.note import Degree, Note, Rest
-from llamatron.music import sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.strings import errors, reprs
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
 
 # The shorthand a clip's list accepts: each dash is a quarter note of rest, and a note is its name and octave.
 REST_DASH = '-'

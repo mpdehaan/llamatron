@@ -18,12 +18,11 @@
 
 import unittest
 
-from llamatron.composition.file_format import GeneratorKind, PatternSetting, Row
 from llamatron.composition import generator_settings
+from llamatron.composition.file_format import GeneratorKind, PatternSetting, Row
 from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger, wizard_choices
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.strings import errors, macro_composer as composer_text
 from tests.support.ui_testing import fixed_text

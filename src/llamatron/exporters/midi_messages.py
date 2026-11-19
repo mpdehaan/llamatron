@@ -21,10 +21,9 @@ track. They all turn a clip's notes and CC values into MidiEvents with this modu
 and write them as a track with the gaps between them as delta times.
 """
 
+import mido
 import re
 from typing import NamedTuple
-
-import mido
 
 from llamatron.exporters import timing
 from llamatron.exporters.timing import control_events, keyswitch_events

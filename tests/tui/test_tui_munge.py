@@ -26,14 +26,14 @@ from llamatron.composition.file_format import ChordSymbol, Row
 from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.pattern import pattern_editor
-from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, munge_groups, munges_in_order
-from tests.support.pattern_editor_testing import munge
+from llamatron.tui.screens.pattern.pattern_editor import Munge, munge_groups, munges_in_order, PatternEditor
 from tests.support import ui_testing
+from tests.support.pattern_editor_testing import munge
 from tests.support.ui_testing import UITest
 
 LONG = 'long'

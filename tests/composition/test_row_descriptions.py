@@ -23,21 +23,17 @@ description.
 
 import unittest
 
-from llamatron.composition import corrections
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors, labels
-from llamatron.composition import file_format
+from llamatron.composition import corrections, defaults, file_format, limits, pattern as pattern_values, row_descriptions
 from llamatron.composition.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition import pattern as pattern_values
-from llamatron.composition import row_descriptions
-from llamatron.composition.row_descriptions import RowOfChoices, RowOfChords, RowOfDegrees, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfTensions, RowOfKeyswitches, RowOfStatementValues, RowOfToggles, is_note_letter, row_described, rows_where
+from llamatron.composition.row_descriptions import is_note_letter, row_described, RowOfChoices, RowOfChords, RowOfDegrees, RowOfKeyswitches, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfStatementValues, RowOfTensions, RowOfToggles, rows_where
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music import midi
 from llamatron.music.note import NoteName
-from llamatron.tui.components.number_row import NumberRow
+from llamatron.strings import errors, labels
 from llamatron.tui.components import pattern_rows
+from llamatron.tui.components.number_row import NumberRow
 
 TUNE = 'tune'
 STEPS = 2

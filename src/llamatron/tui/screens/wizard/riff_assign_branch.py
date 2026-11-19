@@ -23,9 +23,9 @@ Players offers the player in each kind of section.
 
 from llamatron.composition.checks import listed
 from llamatron.strings import errors, labels, legends, marks, messages
+from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui import drawing
 from llamatron.tui.screens.shared.field import Field
 from llamatron.tui.screens.wizard.riffs_branch import RiffsBranch
 

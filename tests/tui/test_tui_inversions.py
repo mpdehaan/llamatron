@@ -15,14 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The pattern editor's Inversion row, in Basics under Chord: blocked on a step with no chord, cycling blank, 1, 2 and 3 on one with a chord."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Row
 from llamatron.strings import marks
-from llamatron.tui.screens.pattern import grid_drawing
-from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui import keybindings
+from llamatron.tui.keys import Key, RowSection
+from llamatron.tui.screens.pattern import grid_drawing
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from tests.support import ui_testing
+from tests.support.ui_testing import UITest
 
 TRIAD = '3'
 FIRST_STEP = 0

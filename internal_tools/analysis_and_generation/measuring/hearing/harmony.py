@@ -21,7 +21,6 @@ lasts, the qualities and borrowed chords it uses (modal interchange), its loops,
 
 from collections import Counter
 from dataclasses import dataclass
-
 from measuring.measures.traits import Harmony, Modulation
 
 PITCH_CLASSES = 12

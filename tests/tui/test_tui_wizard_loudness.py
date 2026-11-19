@@ -15,8 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Tests of how loud a player is on the song wizard's player panels: the Dynamics gauge and the levels under the Loudness heading."""
 
-from llamatron.macro_composer import loudness
-from llamatron.macro_composer import notation
+from llamatron.macro_composer import loudness, notation
 from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key

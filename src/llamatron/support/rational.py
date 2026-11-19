@@ -29,9 +29,10 @@ Rationals are immutable. numerator and denominator are read directly, like Fract
 the denominator always positive and the two always in lowest terms.
 """
 
+from fractions import Fraction
 import math
 import sys
-from fractions import Fraction
+
 from llamatron.strings import errors, reprs
 
 # The denominator of a whole number.

@@ -22,18 +22,16 @@ track plays two bars.
 
 import unittest
 
-from llamatron.composition import limits
+from llamatron.composition import limits, velocity_ramps
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.composition.generator_settings import ShapeSetting
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition import velocity_ramps
-from llamatron.composition.velocity_ramps import Velocity, VelocityRamp, velocity_of
+from llamatron.composition.velocity_ramps import Velocity, velocity_of, VelocityRamp
 from llamatron.exporters.timing import timed_events
 from llamatron.music import midi
 from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, velocity_percent_at
 from llamatron.support.rational import Rational
-from tests.playback import test_registers
-from tests.playback import test_shapes
+from tests.playback import test_registers, test_shapes
 from tests.playback.test_shapes import bar_of_sixteenths, one_scene
 from tests.support.rendering import render_data, setlist_from_data
 

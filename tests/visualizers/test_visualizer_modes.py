@@ -20,30 +20,23 @@ these hold what each mode alone promises.
 """
 
 import math
+import numpy
+import random
 import unittest
 
-import numpy
-
-from llamatron.visualizers import cells
+from llamatron.strings import visualizers
+from llamatron.visualizers import cells, fireworks as fireworks_values, life as life_values, mystify as mystify_values, piano_roll, pipes as pipes_values, warpzone
 from llamatron.visualizers.digital_rain import DigitalRain
-from llamatron.visualizers import fireworks as fireworks_values
-from llamatron.visualizers.fireworks import Fireworks, brightest_of_blocks
+from llamatron.visualizers.fireworks import brightest_of_blocks, Fireworks
 from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.visualizers.laser_llama import LaserLlama, mirrored_drawing
-from llamatron.visualizers import life as life_values
 from llamatron.visualizers.life import Life, stepped
 from llamatron.visualizers.mandelbrot import escape_times
-from llamatron.visualizers.maze import Maze, carved, inside
-from llamatron.visualizers import mystify as mystify_values
+from llamatron.visualizers.maze import carved, inside, Maze
 from llamatron.visualizers.mystify import Mystify
-from llamatron.visualizers import pipes as pipes_values
+from llamatron.visualizers.piano_roll import drum_lane, nth_colour, PianoRoll
 from llamatron.visualizers.pipes import Pipes
-from llamatron.visualizers import piano_roll
-from llamatron.visualizers.piano_roll import PianoRoll, drum_lane, nth_colour
-from llamatron.strings import visualizers
-from llamatron.visualizers import warpzone
 from llamatron.visualizers.warpzone import WarpZone
-import random
 
 WIDTH = 40
 HEIGHT = 12

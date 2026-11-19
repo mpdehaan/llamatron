@@ -25,12 +25,11 @@ width, so nothing moves as a line changes. Left and Right move between the cells
 changes the one under the cursor, and Bksp sets the line back to ignored.
 """
 
-from llamatron.composition import conditions, limits
-from llamatron.composition import file_format
+from llamatron.composition import conditions, file_format, limits
 from llamatron.composition.file_format import StatementPart
 from llamatron.strings import errors, labels, legends, marks
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui import drawing
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField
 
 # A page's first table and its second, which keep their lines' labels apart.

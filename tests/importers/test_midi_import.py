@@ -23,10 +23,9 @@ their own in memory, so nothing is written.
 """
 
 import glob
+import mido
 import os
 import unittest
-
-import mido
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
@@ -34,20 +33,19 @@ from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.naming import default_scale_name
 from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiSong
+from llamatron.importers import cutting, voices as voices_values
 from llamatron.importers.comparison import round_trip
-from llamatron.importers.keys import Key, degree_of, drum_note_of, key_of_notes, key_of_signature
+from llamatron.importers.keys import degree_of, drum_note_of, Key, key_of_notes, key_of_signature
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
 from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
-from llamatron.importers import cutting
-from llamatron.importers import voices as voices_values
 from llamatron.importers.voices import voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.music.scale import ScaleType
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors, importing
-from llamatron.support.rational import Rational
 from llamatron.support import example_sets as example_sets_values
 from llamatron.support.example_sets import example_sets, folder_of_example
+from llamatron.support.rational import Rational
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SAMPLE_MIDI_FILES = os.path.join(ROOT, 'examples', 'midi', '*.mid')

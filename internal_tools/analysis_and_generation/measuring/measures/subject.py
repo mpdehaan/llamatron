@@ -22,8 +22,7 @@ measured from the corpus (from how many pieces, of which sources, at what weight
 the library knows what it knows."""
 
 from dataclasses import dataclass
-
-from measuring.measures.registry import MEASURES, measure
+from measuring.measures.registry import measure, MEASURES
 
 # The weight of a value that rests on everything it could.
 FULL_WEIGHT = 1.0

@@ -33,7 +33,7 @@ from typing import NamedTuple
 from llamatron.composition.file_format import FollowAction
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline
-from llamatron.realtime.timeline import Tag, clip_timeline, sort_key
+from llamatron.realtime.timeline import clip_timeline, sort_key, Tag
 from llamatron.support.rational import Rational
 
 NO_PLAY = 0

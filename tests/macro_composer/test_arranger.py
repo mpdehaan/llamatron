@@ -21,15 +21,14 @@ import os
 import unittest
 import unittest.mock
 
+from llamatron.composition import limits
 from llamatron.composition.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, Section
 from llamatron.composition.generator_settings import FollowChordsSetting
-from llamatron.composition import limits
-from llamatron.strings import macro_composer as composer_text
 from llamatron.composition.setlist import Setlist
-from llamatron.macro_composer import arranger, band, composer, loudness, melody, notation, players
-from llamatron.macro_composer import characters
-from llamatron.support.safe_yaml import load_safely
+from llamatron.macro_composer import arranger, band, characters, composer, loudness, melody, notation, players
+from llamatron.strings import macro_composer as composer_text
 from llamatron.support import version
+from llamatron.support.safe_yaml import load_safely
 
 FILE_ENCODING = 'utf-8'
 STYLE_TEMPLATES = arranger.STYLE_TEMPLATES

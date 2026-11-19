@@ -34,8 +34,7 @@ from fractions import Fraction
 
 from llamatron.composition.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.generators.base import ClipGenerator
-from llamatron.music import midi as midi_numbers
-from llamatron.music import sound as sound_values
+from llamatron.music import midi as midi_numbers, sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.support.length import Length
 from llamatron.support.random_source import random_source

@@ -19,8 +19,8 @@ The two ways are two paths through every method of a clip, so each is run both w
 clips written by hand with every kind of position, and on every clip of every example.
 """
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.exporters.timing import timed_events
 from llamatron.grid.clip import Clip

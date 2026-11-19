@@ -34,11 +34,10 @@ demos while listening.
 
 import argparse
 import glob
+import importlib.util
 import os
 import sys
 import tempfile
-
-import importlib.util
 
 from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi

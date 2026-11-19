@@ -15,10 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """A row that's on or off for each step, like Glide, Grab and the registers' uses."""
 
-from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui import drawing
 from llamatron.strings import marks
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.components.pattern_row import PatternRow
 
 
 class ToggleRow(PatternRow):

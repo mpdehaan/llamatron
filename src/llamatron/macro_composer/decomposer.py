@@ -24,11 +24,9 @@ the rhythm, the part is written plain and listed under shaped with the song's fe
 from collections import Counter
 from fractions import Fraction
 
-from llamatron.macro_composer import composer
+from llamatron.macro_composer import composer, notation, shaping
 from llamatron.macro_composer.composer import bars_of, pattern_of, players_of, scene_of, signature_of
-from llamatron.macro_composer import notation
-from llamatron.macro_composer.notation import NotWritable, drum_hits, kept_rows, tune_lines
-from llamatron.macro_composer import shaping
+from llamatron.macro_composer.notation import drum_hits, kept_rows, NotWritable, tune_lines
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped, unshaped
 from llamatron.strings import errors
 

@@ -26,7 +26,6 @@ written after, a much smaller region than its whole style."""
 
 from dataclasses import dataclass
 from math import sqrt
-
 from measuring.measures.drum_patterns import COMMON_STEPS_PER_BEAT, Voice
 
 # The gap of two values that can't be told apart, and of two that share nothing.

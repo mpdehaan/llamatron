@@ -16,21 +16,19 @@
 
 """A track: a column of the song, with settings that apply to every clip on it."""
 
+from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.chain import check_chain_names
+from llamatron.composition.checks import check_keys, is_whole_number_from, reading
 from llamatron.composition.conditions import statements_setting, with_statement
-from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.euclid import euclid_settings, euclid_values
-from llamatron.composition.checks import reading, check_keys, is_whole_number_from
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors
-from llamatron.composition import corrections
-from llamatron.composition import file_format
-from llamatron.composition.file_format import euclid_setting, strum_setting, Section, TrackSetting
+from llamatron.composition.file_format import euclid_setting, Section, strum_setting, TrackSetting
 from llamatron.composition.groove import check_groove_choice
-from llamatron.music import midi
-from llamatron.composition.llama_data import LlamaData, or_default, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
+from llamatron.composition.llama_data import LlamaData, or_default, own_copy, written_settings
+from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
+from llamatron.composition.strum import strum_settings, strum_values
+from llamatron.music import midi
+from llamatron.strings import errors
 from llamatron.support.revised import notes_change
 
 # A track's settings, in the order they're written to a file.

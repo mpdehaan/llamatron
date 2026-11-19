@@ -24,8 +24,7 @@ scene's, one field at a time. Everything left blank, the notes play as written.
 
 from typing import NamedTuple
 
-from llamatron.composition import limits
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RampPart, RampWay, VelocitySetting
 from llamatron.composition.setting import WholeNumber
 from llamatron.strings import errors

@@ -30,9 +30,8 @@ A scene's and a clip's sets and adds of the registers are checked here too, sinc
 the statements are usually written against.
 """
 
-from llamatron.composition import limits
+from llamatron.composition import file_format, limits
 from llamatron.composition.checks import is_whole_number, listed
-from llamatron.composition import file_format
 from llamatron.composition.file_format import Operator, StatementPart
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked

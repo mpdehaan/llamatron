@@ -24,21 +24,19 @@ something the song holds.
 
 from typing import NamedTuple
 
+from llamatron.composition import corrections, defaults, file_format, limits
+from llamatron.composition.chain import check_chain_names
+from llamatron.composition.checks import check_keys, listed, number, reading
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_register_value, with_statement
-from llamatron.composition.chain import check_chain_names
-from llamatron.composition.shapes import shape_settings, shape_values
-from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
-from llamatron.composition.checks import check_keys, listed, number, reading
-from llamatron.composition import corrections
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors
-from llamatron.composition import file_format
 from llamatron.composition.file_format import RampPart, SceneSetting, Section
 from llamatron.composition.groove import check_groove_choice
-from llamatron.composition.llama_data import LlamaData, data_as_kept, data_built_anew, own_copy, written_settings
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.setting import Checked, Choice, Flag, WholeNumber, check_settings, described
+from llamatron.composition.llama_data import data_as_kept, data_built_anew, LlamaData, own_copy, written_settings
+from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
+from llamatron.composition.shapes import shape_settings, shape_values
+from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
+from llamatron.strings import errors
 from llamatron.support.revised import notes_change
 
 # The settings of a scene's tempo ramps that are tempos, which a file writes as it writes a scene's tempo.

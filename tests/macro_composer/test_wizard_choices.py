@@ -15,21 +15,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The song wizard's choices: what a subgenre fills in, what each setter refuses, the choices kept and read back, and the song made."""
 
+from fractions import Fraction
 import random
 import unittest
-from fractions import Fraction
 
-from llamatron.composition.file_format import Section
 from llamatron.composition import limits
-from llamatron.strings import errors, macro_composer as composer_text
-from llamatron.macro_composer import wizard_choices
-from llamatron.macro_composer.wizard_choices import style_of, WizardChoices, genre_names, genre_title
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import notation
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer.arranger import values_of, share_in, arranged, style_named, style_names
+from llamatron.composition.file_format import Section
+from llamatron.macro_composer import arranger, melody, notation, wizard_choices
+from llamatron.macro_composer.arranger import arranged, share_in, style_named, style_names, values_of
+from llamatron.macro_composer.wizard_choices import genre_names, genre_title, style_of, WizardChoices
 from llamatron.music.note import NoteName
 from llamatron.playback.song_renderer import SongRenderer
+from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
 
 A_NAME = 'made'

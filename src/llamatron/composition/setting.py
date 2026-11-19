@@ -29,9 +29,8 @@ A check that spans two settings, like a track's lowest octave not being above it
 written out in the class, after its settings have each been checked.
 """
 
-from llamatron.composition import checks
+from llamatron.composition import checks, corrections
 from llamatron.composition.checks import is_true_or_false, is_whole_number, is_written_length, listed, positive_length, written_length
-from llamatron.composition import corrections
 from llamatron.composition.corrections import Correction
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.strings import errors

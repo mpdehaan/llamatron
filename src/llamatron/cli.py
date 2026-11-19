@@ -40,14 +40,14 @@ import argparse
 import os
 import sys
 
-from llamatron.composition.setlist import Setlist, file_stem
+from llamatron.composition.setlist import file_stem, Setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.exporters import exports
-from llamatron.exporters.exports import ExportKind, export_name, make_exporter, shown_export_path, remove_earlier_export
+from llamatron.exporters.exports import export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import cli, errors
-from llamatron.visualizers.modes import mode_options
 from llamatron.tui.launch import Launch, start_screen_wanted
+from llamatron.visualizers.modes import mode_options
 
 PROGRAM = 'llamatron'
 # What --to writes when it doesn't say.

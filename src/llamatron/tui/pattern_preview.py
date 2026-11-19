@@ -34,10 +34,9 @@ General MIDI in FluidSynth, in a sound chosen or on the drum kit, which a picker
 
 from math import lcm
 
+from llamatron.composition import limits
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
-from llamatron.composition import limits
-from llamatron.strings import errors, names as names_text
 from llamatron.composition.naming import unique_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.scene import Scene
@@ -48,6 +47,7 @@ from llamatron.music import note
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.timeline import Route
+from llamatron.strings import errors, names as names_text
 from llamatron.tui import transport
 from llamatron.tui.transport import Transport
 

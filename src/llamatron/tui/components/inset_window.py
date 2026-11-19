@@ -26,7 +26,7 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
 
-from llamatron.tui.drawing import Box, Style, fit, laid_over
+from llamatron.tui.drawing import Box, fit, laid_over, Style
 
 # How far in from every edge of the screen the band is, with the white outline one cell further out; how thick the band is,
 # the space inside it on every side, and the title's line above the view.

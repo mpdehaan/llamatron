@@ -38,12 +38,12 @@ import os
 import sys
 
 from llamatron.composition.setlist import file_stem
+from llamatron.support.example_sets import example_sets
 from llamatron.support.safe_yaml import load_safely
 from llamatron.tui.document import Document
-from llamatron.visualizers.cycle import Cycle
 from llamatron.visualizers import modes
+from llamatron.visualizers.cycle import Cycle
 from llamatron.visualizers.modes import mode_options
-from llamatron.support.example_sets import example_sets
 
 PAIRINGS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'visualizer_pairings.yml')
 RECORDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'record_demo.py')

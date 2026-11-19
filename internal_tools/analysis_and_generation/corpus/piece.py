@@ -19,7 +19,6 @@ meter, key and tempo as the source says) and what it holds (notes by part, chord
 its notes are drums). A piece with notes becomes the analyzer's performance, so every source is measured as the demos are."""
 
 from dataclasses import dataclass, field
-
 from measuring.hearing.performance import Performance, PlayedNote, PlayedTrack
 
 DEFAULT_TEMPO = 100

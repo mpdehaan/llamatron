@@ -16,17 +16,16 @@
 
 """The Notes page."""
 
+from llamatron.strings import labels, marks
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.help_dialog import HelpDialog
+from llamatron.tui.key_table import first_key
+from llamatron.tui.keys import Key
+from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.set.notes_page import NotesPage
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
-from llamatron.tui import drawing
-from llamatron.tui.dialogs.help_dialog import HelpDialog
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.set.notes_page import NotesPage
-from llamatron.tui.screens.set.file_page import FilePage
-from llamatron.strings import labels, marks
-from llamatron.tui import keybindings
-from llamatron.tui.key_table import first_key
 
 NO_NOTES_YET = 'No notes yet'
 HI_THERE = 'Hi there\n'

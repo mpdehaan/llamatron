@@ -17,12 +17,12 @@
 
 import unittest
 
-from llamatron.tui.components.frame import Frame
-from llamatron.tui.components import length_bar
-from llamatron.tui.components.length_bar import LengthBar
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, Canvas, Style
 from llamatron.support.rational import Rational
+from llamatron.tui import drawing
+from llamatron.tui.components import length_bar
+from llamatron.tui.components.frame import Frame
+from llamatron.tui.components.length_bar import LengthBar
+from llamatron.tui.drawing import Box, Canvas, Style
 
 
 WIDTH = 8

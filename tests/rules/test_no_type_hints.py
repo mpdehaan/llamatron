@@ -22,8 +22,8 @@ declares them in its body, which is not a hint on a function and is allowed.
 """
 
 import ast
-import unittest
 from pathlib import Path
+import unittest
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 CHECKED_FOLDERS = ('src', 'tests', 'internal_tools')

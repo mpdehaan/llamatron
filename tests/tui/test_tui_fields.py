@@ -22,48 +22,46 @@ to Space and Enter alike.
 
 import unittest
 
+from llamatron.composition import limits, setlist
 from llamatron.macro_composer.wizard_choices import genre_names
-from llamatron.tui.screens.wizard.wizard_page import WizardPage
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, leaf_pages
-from llamatron.composition import limits
 from llamatron.strings import errors, labels, legends, marks
-from llamatron.composition import setlist
-from llamatron.tui import keybindings
+from llamatron.tui import key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui import key_table
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators.arp_editor import ArpEditor
-from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
-from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.tui.screens.generators.drift_editor import DriftEditor
 from llamatron.tui.screens.arrange.clip_page import ClipPage
+from llamatron.tui.screens.arrange.scene_page import ScenePage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
+from llamatron.tui.screens.generators.arp_editor import ArpEditor
+from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
+from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
+from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.generators.density_editor import DensityEditor
-from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
-from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
-from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
+from llamatron.tui.screens.generators.drag_editor import DragEditor
+from llamatron.tui.screens.generators.drift_editor import DriftEditor
+from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
+from llamatron.tui.screens.generators.glide_editor import GlideEditor
+from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
+from llamatron.tui.screens.generators.hocket_editor import HocketEditor
 from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
-from llamatron.tui.screens.generators.hocket_editor import HocketEditor
-from llamatron.tui.screens.generators.strum_editor import StrumEditor
-from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
-from llamatron.tui.screens.generators.glide_editor import GlideEditor
-from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
+from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
 from llamatron.tui.screens.generators.rush_editor import RushEditor
-from llamatron.tui.screens.generators.drag_editor import DragEditor
+from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
+from llamatron.tui.screens.generators.strum_editor import StrumEditor
 from llamatron.tui.screens.generators.swell_editor import SwellEditor
-from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
-from llamatron.tui.screens.shared.field import ChoiceField, Field, Heading, NameField, NumberField, Toggle, within
-from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scale_page import ScalePage
-from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.screens.set.song_page import SongPage
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
+from llamatron.tui.screens.shared.field import ChoiceField, Field, Heading, NameField, NumberField, Toggle, within
+from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.wizard.wizard_page import WizardPage
+from tests.support import ui_testing
+from tests.support.ui_testing import leaf_pages, UITest
 
 A_LABEL = 'Amount'
 A_TITLE = 'Amount, from 1 to 9'

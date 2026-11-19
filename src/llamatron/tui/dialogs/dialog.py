@@ -22,10 +22,9 @@ from textual.screen import ModalScreen
 from textual.widgets import Static
 
 from llamatron.strings import messages
-from llamatron.tui import drawing
+from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, legend, Style
-from llamatron.tui.key_table import pressed_key, quits_at_once, BindsKeys
-from llamatron.tui import keybindings
+from llamatron.tui.key_table import BindsKeys, pressed_key, quits_at_once
 
 
 DIALOG_ID = 'dialog'

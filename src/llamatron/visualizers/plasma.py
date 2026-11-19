@@ -27,15 +27,13 @@ the colours of the tracks heard last. The amounts are named constants here, to t
 
 import colorsys
 import math
-
 import numpy
 
-from llamatron.visualizers import colour as colour_values
+from llamatron.strings import visualizers
+from llamatron.visualizers import colour as colour_values, heard as heard_values
 from llamatron.visualizers.colour import Limiter, note_colour
-from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings import visualizers
 
 SUPERSAMPLE = 2
 COLOUR_STEP_SHIFT = 3

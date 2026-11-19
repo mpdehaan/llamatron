@@ -22,19 +22,18 @@ import io
 import os
 import tempfile
 import unittest
-
 import yaml
 
 from llamatron.cli import main
-from llamatron.tui.document import Document
-from llamatron.exporters.exports import ExportKind
-from tests.support import rendering
-from tests.support.rendering import is_demo, render_file
+from llamatron.composition import generator_settings
 from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import Setlist
-from llamatron.composition import generator_settings
+from llamatron.exporters.exports import ExportKind
 from llamatron.support import example_sets as example_sets_values
 from llamatron.support.example_sets import example_sets, folder_of_example, genre_folder
+from llamatron.tui.document import Document
+from tests.support import rendering
+from tests.support.rendering import is_demo, render_file
 from tests.support.song_testing import pitches
 
 SONG = 'song'

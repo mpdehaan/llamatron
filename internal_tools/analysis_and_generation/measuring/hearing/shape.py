@@ -19,7 +19,6 @@ much two lines take turns, how much of its material returns, and where it jumps 
 prepare the jump (the sawtooth the user hears when scenes change without the music that would join them)."""
 
 from dataclasses import dataclass
-
 from measuring.measures.comparing import stretched
 from measuring.measures.traits import Energy, Role, Texture
 

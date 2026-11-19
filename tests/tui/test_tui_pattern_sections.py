@@ -16,22 +16,19 @@
 
 """The sections of the pattern editor's rows view, which open and close."""
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, back_key, forward_key, key_name, key_of
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RegisterName, RegisterUse, Row
-from llamatron.composition import limits
-from llamatron.strings import labels as labels_text, legends, marks
-from llamatron.music.note import NoteName
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, fit
-from llamatron.tui import keys
-from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.components import pattern_rows
 from llamatron.music import midi
-from llamatron.tui import keybindings
-from tests.support.rendering import render_song
+from llamatron.music.note import NoteName
+from llamatron.strings import labels as labels_text, legends, marks
+from llamatron.tui import drawing, keybindings, keys
+from llamatron.tui.components import pattern_rows
+from llamatron.tui.drawing import Box, fit
+from llamatron.tui.keys import Key, RowSection
+from tests.support import ui_testing
 from tests.support.pattern_editor_testing import open_section
+from tests.support.rendering import render_song
+from tests.support.ui_testing import back_key, forward_key, key_name, key_of, UITest
 
 BEAT = 'beat'
 TUNE = 'tune'

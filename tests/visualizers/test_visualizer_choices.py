@@ -17,19 +17,18 @@
 
 import unittest
 
-from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
-
-from tests.support.ui_testing import UITest, back_key, forward_key
 from llamatron.composition import file_format
-from llamatron.composition.file_format import SetlistSetting, SongSetting, sensible_hidden_visualizers, sensible_visualizer
-from llamatron.composition.setlist import Setlist, new_setlist
+from llamatron.composition.file_format import sensible_hidden_visualizers, sensible_visualizer, SetlistSetting, SongSetting
+from llamatron.composition.setlist import new_setlist, Setlist
 from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
+from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.file_page import FilePage
-from llamatron.visualizers.cycle import Cycle
 from llamatron.visualizers import modes
+from llamatron.visualizers.cycle import Cycle
 from llamatron.visualizers.modes import mode_called, mode_options
+from tests.support.ui_testing import back_key, forward_key, UITest
 
 GONE = 'tunnel'
 NOT_A_LIST = 'plasma'

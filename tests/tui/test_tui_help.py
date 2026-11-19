@@ -18,21 +18,19 @@
 
 from unittest import mock
 
-from tests.support.ui_testing import UITest, fixed_text
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box
-from llamatron.tui.dialogs import about_dialog
-from llamatron.tui.dialogs import dialog as dialog_values
-from llamatron.tui.dialogs.about_dialog import AboutDialog
-from llamatron.tui.dialogs.help_dialog import HelpDialog
-from llamatron.tui.screens.shared import page as page_values
-from llamatron.tui.keys import Key, RowSection
-from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.strings import about, labels, legends, marks
 from llamatron.support import version
 from llamatron.support.version import build_year
-from llamatron.strings import about, labels, legends, marks
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.dialogs import about_dialog, dialog as dialog_values
+from llamatron.tui.dialogs.about_dialog import AboutDialog
+from llamatron.tui.dialogs.help_dialog import HelpDialog
+from llamatron.tui.drawing import Box
+from llamatron.tui.keys import Key, RowSection
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.shared import page as page_values
+from tests.support.ui_testing import fixed_text, UITest
 
 # The file the export tests save their set as, and where its untitled song's exports then go: beside it, as <set>_<song>.
 # The shape of the build date and time, as version.py writes them.

@@ -16,18 +16,16 @@
 
 """Tests the title on black (tui/components/title_card.py) on its own, on moments the test chooses, and the start screen in the tracker."""
 
+from rich.color import Color
 import string
 import unittest
 
-from rich.color import Color
-
 from llamatron.strings import about
-from llamatron.tui import keybindings
+from llamatron.tui import keybindings, launch
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components import scroll_text, title_card
-from llamatron.tui.components.scroll_text import banner, demo_name, words_of, scroll_lines, scroll_seconds, scroll_text_for
+from llamatron.tui.components.scroll_text import banner, demo_name, scroll_lines, scroll_seconds, scroll_text_for, words_of
 from llamatron.tui.components.title_card import Entrance, prompt_level, scan_end, scan_start, scanner_level, title_lines, whole_title_seconds, words_width
-from llamatron.tui import launch
 from llamatron.tui.launch import Launch, start_screen_wanted
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.start_screen import StartScreen

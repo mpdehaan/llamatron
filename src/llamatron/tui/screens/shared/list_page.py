@@ -20,15 +20,13 @@ from rich.text import Text
 
 from llamatron.composition import limits
 from llamatron.strings import errors, marks, messages
+from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.dialogs.choice_dialog import completed, places_matching
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui import drawing
 from llamatron.tui.drawing import cursor_mark, fit, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui import keys
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.page import Page
-from llamatron.tui import keybindings
 
 
 # A list page that can add has a method of this name.

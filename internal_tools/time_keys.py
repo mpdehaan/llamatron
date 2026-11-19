@@ -30,13 +30,12 @@ since the best run is the one least disturbed by whatever else the computer was 
 
 import asyncio
 import cProfile
+from dataclasses import dataclass
 import pathlib
 import pstats
 import sys
-import timeit
-from dataclasses import dataclass
-
 from textual import events
+import timeit
 
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp

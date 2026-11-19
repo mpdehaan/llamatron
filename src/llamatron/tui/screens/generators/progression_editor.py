@@ -21,12 +21,12 @@ from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.progressions import roman_numeral
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
-from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
+from llamatron.tui.screens.generators.restart_field import restart_field
+from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.tui.screens.generators.time_field import time_field
 
 
 def numerals_text(*, progression, scale):

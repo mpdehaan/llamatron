@@ -17,15 +17,12 @@
 """A section of the wizard's form: its kind, how long it lasts and who plays in it; it can be copied, removed and moved."""
 
 from llamatron.composition import limits
-from llamatron.strings import labels, legends, marks, messages
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer import joins
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger, joins, song_plan, wizard_choices
 from llamatron.macro_composer.wizard_choices import chords_as_text
 from llamatron.music import note
+from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField, Toggle, gauge_shown
+from llamatron.tui.screens.shared.field import ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 
 # What two sections of one name are told apart by: the section's number in the form and its name.

@@ -21,11 +21,11 @@ that the step has a velocity, a gate and the rest like any note and the note row
 step that grabs can hold a chord, which is built on the grabbed note.
 """
 
-from llamatron.composition.file_format import Row
 from llamatron.composition import limits
+from llamatron.composition.file_format import Row
 from llamatron.music.note import NoteName
-from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui import keybindings
+from llamatron.tui.components.toggle_row import ToggleRow
 
 # What an empty step gets as its own note when it's marked to grab: the root, or C on a drum pattern.
 DRUM_GRAB_NOTE = NoteName.C

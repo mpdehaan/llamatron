@@ -31,21 +31,17 @@ Textual.
 
 import functools
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import Accidental, Row
-from llamatron.composition import limits
+from llamatron.music import midi, note as note_values
 from llamatron.strings import errors, labels, marks
+from llamatron.tui import drawing as drawing_values, key_table, keybindings
+from llamatron.tui.components import degree_row
 from llamatron.tui.components.chord_row import pick_chord
 from llamatron.tui.components.keyswitch_row import pick_keyswitches
-from llamatron.tui.components import degree_row
-from llamatron.music import midi
-from llamatron.music import note as note_values
-from llamatron.tui import drawing as drawing_values
-from llamatron.tui import key_table
-from llamatron.tui.key_table import cursor_moved, BindsKeys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.key_table import BindsKeys, cursor_moved
 from llamatron.tui.keys import Key
-from llamatron.tui import keybindings
 
 # A natural note has no symbol in its bar.
 NO_ACCIDENTAL = None

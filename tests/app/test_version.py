@@ -19,14 +19,13 @@
 import os
 import tempfile
 import unittest
-
 import yaml
 
 from llamatron.composition.file_format import Section, SetlistSetting
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.tui.document import Document
 from llamatron.support import version
 from llamatron.support.version import is_version, version_numbers
+from llamatron.tui.document import Document
 from tests.support.rendering import dump_song_data, song_from_data, song_from_file
 
 # A version older than any llamatron that writes files with a version, standing in for a song

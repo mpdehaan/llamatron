@@ -15,12 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields of a shape, Density, Swell or Articulate, which the Scene page, the clip page and the shape generators' editors share: a section heading and its start, end, over and then."""
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, shapes
 from llamatron.composition.file_format import ShapePart
-from llamatron.composition import shapes
 from llamatron.strings import labels, marks
-from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.tui.screens.generators.time_field import time_field
+from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 
 # Where a nudge starts on a percentage left blank: 100%, which is what blank plays as.
 UNCHANGED = 100

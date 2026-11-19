@@ -24,11 +24,10 @@ key's signature has flats, so every note keeps its pitch whatever the key.
 
 from typing import NamedTuple
 
-from llamatron.composition.file_format import Accidental
 from llamatron.composition import limits
+from llamatron.composition.file_format import Accidental
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.music import midi
-from llamatron.music import note as note_values
+from llamatron.music import midi, note as note_values
 from llamatron.music.scale import ScaleType
 
 # A key signature as mido writes it ends in m for a minor key.

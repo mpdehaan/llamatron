@@ -16,12 +16,11 @@
 
 """A tune written by hand fitted to chords that changed under it: long notes that clash move to the nearest chord note, short notes stay."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.composition.file_format import PatternSetting, Row
-from llamatron.macro_composer import arranger
-from llamatron.macro_composer import tune_fit
+from llamatron.macro_composer import arranger, tune_fit
 from llamatron.macro_composer.tune_fit import chord_at, fitted, move_to_chord, steps_held
 from llamatron.macro_composer.wizard_choices import WizardChoices
 

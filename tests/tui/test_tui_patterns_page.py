@@ -18,22 +18,21 @@
 
 import os
 
-from llamatron.composition import file_format
-from llamatron.composition import limits
-from llamatron.strings import errors, labels, marks, messages
+from llamatron.composition import file_format, limits
 from llamatron.composition.setlist import Setlist
+from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern import patterns_page
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern.patterns_page import Listed
 from llamatron.tui.screens.set.main_page import MainPage
 from tests.support import ui_testing
-from tests.support.ui_testing import UITest, back_key, every_key, first_key, forward_key, key_name
+from tests.support.ui_testing import back_key, every_key, first_key, forward_key, key_name, UITest
 
 # Names the tests give to their own things, and other values they use.
 # Patterns added out of order, with a capital, to see a picker sort them.

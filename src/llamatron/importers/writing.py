@@ -29,21 +29,19 @@ Names follow these rules:
 """
 
 from dataclasses import dataclass
-
 import mido
 
-from llamatron.support.rational import Rational
+from llamatron.composition import defaults, file_format
 from llamatron.composition.checks import fraction_text
-from llamatron.composition import defaults
-from llamatron.strings import importing
-from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song import Song
-from llamatron.music.time_signature import TimeSignature
 from llamatron.importers import steps as steps_values
+from llamatron.music.time_signature import TimeSignature
+from llamatron.strings import importing
+from llamatron.support.rational import Rational
 
 FIRST_BAR_NUMBER = 1
 NO_REPEAT = 1

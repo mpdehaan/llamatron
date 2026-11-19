@@ -23,6 +23,7 @@ lag test, a few seconds of a real song through the real process with recording o
 because the suite loads the machine; the ultra-tight check is `internal_tools/realtime_report.sh` on an idle machine.
 """
 
+import mido
 import os
 import subprocess
 import sys
@@ -30,30 +31,25 @@ import tempfile
 import time
 import unittest
 
-import mido
-
+from llamatron.composition import setlist as setlist_values
 from llamatron.composition.file_format import ClipSlotSetting, FollowAction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition import setlist as setlist_values
-from llamatron.music import note as note_values
-from llamatron.music.scale import ScaleType
 from llamatron.composition.setlist import Setlist
-from llamatron.music import midi
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.midi_messages import ticks
+from llamatron.music import midi, note as note_values
+from llamatron.music.scale import ScaleType
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime import engine as engine_values
+from llamatron.realtime import engine as engine_values, timeline as timeline_values
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
+from llamatron.realtime.timeline import Playing, Route, song_timeline, Tag
 from llamatron.strings import errors
-from tests.support import sender_under_capture
-from llamatron.realtime import timeline as timeline_values
-from llamatron.realtime.timeline import Playing, Route, Tag, song_timeline
 from llamatron.support.example_sets import example_sets
-
+from tests.support import sender_under_capture
 from tests.support.rendering import song_from_data, song_from_file
 
 EXAMPLES = example_sets()

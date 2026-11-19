@@ -19,8 +19,8 @@ import unittest
 
 from llamatron.composition.file_format import Row, Section
 from llamatron.composition.song_file_error import SongFileError
-from tests.support.rendering import setlist_from_data
 from tests.playback.test_registers import one_clip, pitches
+from tests.support.rendering import setlist_from_data
 
 TRIAD = '3'
 SEVENTH = '7'

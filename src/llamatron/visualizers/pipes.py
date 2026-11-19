@@ -24,16 +24,14 @@ area is pipe, everything fades over FADE_SECONDS and the area starts again empty
 It draws at the characters' own resolution. The amounts are named constants here, to tune by eye.
 """
 
+import numpy
 import random
 
-import numpy
-
-from llamatron.visualizers import cells
+from llamatron.strings import visualizers
+from llamatron.visualizers import cells, heard as heard_values
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import track_colour, vivid
-from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
-from llamatron.strings import visualizers
 
 SEED = 1
 LONGEST_FRAME_SECONDS = 0.2

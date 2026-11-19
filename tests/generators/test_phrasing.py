@@ -17,8 +17,8 @@
 
 import unittest
 
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
 from llamatron.composition import generator_settings
+from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
 from llamatron.composition.generator_settings import PhrasingSetting, PhrasingSettings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.song_file_error import SongFileError

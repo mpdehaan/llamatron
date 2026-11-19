@@ -21,23 +21,20 @@ bebop). A table records a fingerprint of the analyzer that measured it (the sour
 measured by an older analyzer is rebuilt rather than trusted (114 C: everything is re-analysed as the analyzers improve), while a
 change elsewhere in llamatron leaves it alone."""
 
+from corpus.composers import period_of
+from corpus.readers import COMPOSER_COLLECTIONS, READERS, ROOT
 import hashlib
 import json
-import multiprocessing
-import pathlib
-import zlib
-
-import pandas
-
+import measuring.hearing
 from measuring.hearing.midi_file import performance_of_midi
 from measuring.hearing.profile import profile_of_performance
 from measuring.measures.registry import MEASURES
-from measuring.strings import StyleName
-import measuring.hearing
 import measuring.measures.traits
-
-from corpus.composers import period_of
-from corpus.readers import COMPOSER_COLLECTIONS, READERS, ROOT
+from measuring.strings import StyleName
+import multiprocessing
+import pandas
+import pathlib
+import zlib
 
 N = StyleName
 TABLES = ROOT / 'tables'

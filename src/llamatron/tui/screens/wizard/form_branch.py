@@ -17,12 +17,11 @@
 
 from rich.text import Text
 
-from llamatron.macro_composer import song_plan
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import song_plan, wizard_choices
 from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
-from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, NumberField, Toggle, gauge_shown
+from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
 

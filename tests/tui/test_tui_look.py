@@ -16,65 +16,62 @@
 
 """The tracker's look: the selected row's mark and the boxes, the header and the theme's stripe, captions, and the rules of the design."""
 
-import pathlib
-import unittest
 from fractions import Fraction
-from unittest import mock
-
+import pathlib
 from textual.app import App
 from textual.screen import Screen
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, key_name
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, Style
-from llamatron.tui.screens.set import main_page
+import unittest
+from unittest import mock
+
 from llamatron.composition.file_format import ChordSymbol, PatternSetting, Row, Section
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.setlist import new_setlist
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.tui import app as tui_app
+from llamatron.strings import about, labels, marks
+from llamatron.tui import app as tui_app, drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui import themes
-from llamatron.tui.screens.shared import page as page_values
+from llamatron.tui.dialogs import chord_dialog
+from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.chord_dialog import ChordDialog
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.dialog import Dialog
+from llamatron.tui.dialogs.message_dialog import MessageDialog
+from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.tui.document import Document
+from llamatron.tui.drawing import Box, Style
+from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.scene_page import ScenePage
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.dialogs import chord_dialog
-from llamatron.tui.dialogs.chord_dialog import ChordDialog
-from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.shared.page import Page
-from llamatron.tui.document import Document
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chains_page import ChainsPage
-from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
-from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
-from llamatron.tui.screens.set.scale_page import ScalePage
-from llamatron.tui.screens.set.grooves_page import GroovesPage
+from llamatron.tui.screens.set import main_page
+from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
+from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
-from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.strings import about, labels, marks
-from llamatron.tui import keybindings
-from tests.support.rendering import render_song
+from llamatron.tui.screens.shared import page as page_values
+from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.tui.screens.shared.page import Page
+from tests.support import ui_testing
 from tests.support.page_testing import boxed_line
+from tests.support.rendering import render_song
+from tests.support.ui_testing import key_name, UITest
 
 # A word repeated into a set's crumb too long to share the header's line with the program's name.
 LONG_SONG_WORD = 'x'

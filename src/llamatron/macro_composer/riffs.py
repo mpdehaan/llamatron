@@ -32,8 +32,7 @@ more are the root. Its first player plays the chords, and whoever plays it besid
 
 import random
 
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import notation
+from llamatron.macro_composer import melody, notation
 
 # What a song says of its riff.
 RIFF = 'riff'

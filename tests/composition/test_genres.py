@@ -19,12 +19,12 @@ file's text is read as, and what a set calls a mashup."""
 
 import unittest
 
-from llamatron.composition.file_format import Section, SongSetting
 from llamatron.composition import genres
+from llamatron.composition.file_format import Section, SongSetting
 from llamatron.composition.genres import sensible_style, style_name, subgenres_of, variants_of
 from llamatron.macro_composer import arranger
 from llamatron.macro_composer.arranger import variants_of as variants_of_template
-from llamatron.macro_composer.wizard_choices import WizardChoices, genre_names, style_of
+from llamatron.macro_composer.wizard_choices import genre_names, style_of, WizardChoices
 from llamatron.support import version
 from tests.support.rendering import as_setlist, setlist_from_data, song_from_data
 from tests.support.song_testing import lead_data

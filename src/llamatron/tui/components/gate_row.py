@@ -16,12 +16,11 @@
 """The Gate row: how long a note sounds, one step when blank, as a whole number or fraction of whole notes."""
 
 from llamatron.composition import file_format
-from llamatron.tui.components.pattern_row import PatternRow
-from llamatron.tui import drawing
 from llamatron.composition.checks import fraction_text
-from llamatron.tui.text import fraction
 from llamatron.strings import messages
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, keybindings
+from llamatron.tui.components.pattern_row import PatternRow
+from llamatron.tui.text import fraction
 
 class GateRow(PatternRow):
     """[ and ] step through the plain lengths, Enter types any length and Bksp makes it one step."""

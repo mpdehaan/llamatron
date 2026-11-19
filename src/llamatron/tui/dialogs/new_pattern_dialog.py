@@ -21,18 +21,15 @@ it, and a drum pattern has no scale length, so that row then shows the blocked c
 the buttons Left and Right choose and Enter presses. Esc cancels.
 """
 
-from typing import NamedTuple
-
 from rich.text import Text
+from typing import NamedTuple
 
 from llamatron.composition import limits
 from llamatron.strings import labels, marks, messages
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style, cursor_mark
-from llamatron.tui import key_table
+from llamatron.tui.drawing import cursor_mark, Style
 from llamatron.tui.key_table import cursor_moved
 
 # The rows the cursor moves over, in the order drawn.

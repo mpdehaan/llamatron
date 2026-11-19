@@ -19,26 +19,23 @@
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from llamatron.support import length as length_values
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.checks import written_length
 from llamatron.composition.conditions import is_true
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors
-from llamatron.composition import file_format
 from llamatron.composition.file_format import Row, StepStatement
 from llamatron.composition.named_scale import NamedScale
-from llamatron.playback import drift
-from llamatron.music import midi
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
-from llamatron.music import note as note_values
-from llamatron.music import sound as sound_values
-from llamatron.music.sound import Sound
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
 from llamatron.grid.keyswitch import SwitchedSlots
+from llamatron.music import midi, note as note_values, sound as sound_values
+from llamatron.music.sound import Sound
+from llamatron.playback import drift
+from llamatron.strings import errors
+from llamatron.support import length as length_values
+from llamatron.support.length import Length
+from llamatron.support.rational import Rational
 
 # How many octaves away a moved note can go to find one that fits the MIDI range. A move of
 # whole octaves is taken out first, so this only has to cover the MIDI range itself.

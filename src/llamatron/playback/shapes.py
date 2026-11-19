@@ -29,8 +29,7 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.composition.file_format import ShapeThen
-from llamatron.music import midi
-from llamatron.music import sound as sound_values
+from llamatron.music import midi, sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.support import length as length_values
 from llamatron.support.length import Length

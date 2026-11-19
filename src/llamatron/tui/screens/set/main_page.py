@@ -32,32 +32,29 @@ screen is the one place that reminds of them.
 """
 
 from collections import deque
-
+from rich.color import Color
+from rich.style import Style as RichStyle
 from rich.text import Text
 
 from llamatron.composition import sections
 from llamatron.composition.sections import Section
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Box, Canvas, padded, Style
 from llamatron.strings import errors, help as help_text, labels as labels_text, marks, messages
+from llamatron.tui import drawing, keybindings, themes
+from llamatron.tui.drawing import Box, Canvas, padded, Style
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.screens.shared.everywhere import everywhere_actions, everywhere_key, quit_key
-from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
+from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.importing import import_midi
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
-from llamatron.tui.screens.shared.page import Page
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.tui import keybindings
-from llamatron.tui import themes
-from rich.color import Color
-from rich.style import Style as RichStyle
+from llamatron.tui.screens.shared.everywhere import everywhere_actions, everywhere_key, quit_key
+from llamatron.tui.screens.shared.page import Page
 
 
 # The grid: three columns, a space between them, this wide in all on every console, never widened to the window.

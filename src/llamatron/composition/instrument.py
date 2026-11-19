@@ -35,15 +35,14 @@ lead is how many milliseconds before its note a keyswitch is sent, nothing unles
 
 from typing import NamedTuple
 
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.checks import check_keys, reading
-from llamatron.composition import defaults, limits
-from llamatron.strings import errors
-from llamatron.composition import file_format
 from llamatron.composition.file_format import InstrumentSetting, KeyswitchSetting
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import LlamaData, own_copy, or_default, settings_by_name, written_settings
-from llamatron.composition.setting import Checked, Text, WholeNumber, check_settings, described
+from llamatron.composition.llama_data import LlamaData, or_default, own_copy, settings_by_name, written_settings
+from llamatron.composition.setting import check_settings, Checked, described, Text, WholeNumber
 from llamatron.music import midi
+from llamatron.strings import errors
 from llamatron.support.revised import notes_change
 
 class Keyswitch(NamedTuple):

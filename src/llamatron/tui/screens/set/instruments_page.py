@@ -17,12 +17,12 @@
 """The Instruments page: every MIDI device and channel that a track can play through in real time."""
 
 from llamatron.composition.file_format import Section
-from llamatron.tui.drawing import Align
+from llamatron.composition.naming import new_name
 from llamatron.strings import help as help_text, labels, legends, marks, messages, names
+from llamatron.tui import keybindings
+from llamatron.tui.drawing import Align
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
-from llamatron.composition.naming import new_name
-from llamatron.tui import keybindings
 
 
 class InstrumentsPage(NamedListPage):

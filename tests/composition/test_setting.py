@@ -20,31 +20,27 @@ reading a file and calling a setter refuse a value in the same words."""
 import inspect
 import unittest
 
-from llamatron.composition import chain, clip_slot, file_format, generator_settings, groove, instrument, named_scale, pattern, register, scene, setlist, song, track
-from llamatron.composition.clip_slot import ClipSlot
+from llamatron.composition import chain, clip_slot, corrections, file_format, generator_settings, groove, instrument, limits, named_scale, pattern, register, scene, setlist, song, track
 from llamatron.composition.checks import listed
-from llamatron.composition.file_format import ChainSetting, ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
-from llamatron.composition.file_format import DriftValue
-from llamatron.composition.file_format import GuitarifySetting
-from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings, FollowChordsSetting, FollowChordsSettings, PhrasingSetting, PhrasingSettings, GuitarifySettings, HocketSetting, HocketSettings, DriftSetting, DriftSettings, ProgressionSetting, ProgressionSettings, ShapeSetting, VoiceLeadingSetting, VoiceLeadingSettings, StepRowSetting, GlideSettings, ShortenSettings, RushSettings, SwellSettings, versioned, ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
+from llamatron.composition.clip_slot import ClipSlot
+from llamatron.composition.file_format import ChainSetting, ClipSlotSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
+from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, DriftSetting, DriftSettings, FollowChordsSetting, FollowChordsSettings, GlideSettings, GuitarifySettings, HocketSetting, HocketSettings, MusicianSetting, MusicianSettings, PhrasingSetting, PhrasingSettings, ProgressionSetting, ProgressionSettings, RushSettings, ShapeSetting, ShortenSettings, StepRowSetting, SwellSettings, versioned, VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.composition.groove import Groove, new_groove
 from llamatron.composition.instrument import Instrument
-from llamatron.music import midi
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition import limits
-from llamatron.strings import names as names_text
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
 from llamatron.composition.setlist import Setlist
-from llamatron.composition import corrections
-from llamatron.composition.setting import Checked, Choice, Flag, Setting, Text, WholeNumber, check_settings, described
+from llamatron.composition.setting import check_settings, Checked, Choice, described, Flag, Setting, Text, WholeNumber
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
 from llamatron.generators import arp
+from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
+from llamatron.strings import names as names_text
 
 # The settings the tests of each kind describe, and the messages they refuse with.
 SPEED = 'speed'

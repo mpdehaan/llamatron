@@ -19,8 +19,8 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.grid.positions import fit_to_length
 from llamatron.music import sound
 from llamatron.music.sound import Sound
-from llamatron.support.length import Length
 from llamatron.strings import errors
+from llamatron.support.length import Length
 
 # A count of one leaves a note as it is, and a count can't be less than that.
 UNCHANGED = 1

@@ -15,11 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """TimeSignature: beats over a note value, which beat is which, and what it refuses."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.music import time_signature
-from llamatron.music.time_signature import TimeSignature, is_time_signature
+from llamatron.music.time_signature import is_time_signature, TimeSignature
 
 # Time signatures the tests use, written as a file writes them.
 COMMON_TIME = '4/4'

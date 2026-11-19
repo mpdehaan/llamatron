@@ -26,13 +26,10 @@ hook and who else plays them is on the Hook panel (hooks_branch.py).
 
 from rich.text import Text
 
-
-from llamatron.macro_composer import hook_writing
-from llamatron.macro_composer import melody
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import hook_writing, melody, wizard_choices
 from llamatron.strings import labels, legends, messages
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui import drawing
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch

@@ -22,46 +22,41 @@ nothing sleeps and nothing opens a port.
 """
 
 import asyncio
+from rich.text import Text
 import unittest
 from unittest import mock
 
-from rich.text import Text
-
 from llamatron.composition import file_format
+from llamatron.composition.checks import listed
 from llamatron.composition.file_format import ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.screens.arrange import arrange_page
 from llamatron.exporters import midi_arrangement
-from llamatron.realtime import fluidsynth
+from llamatron.realtime import fluidsynth, timeline
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime import timeline
 from llamatron.realtime.timeline import Route
-from llamatron.composition.checks import listed
-from llamatron.tui.uses import looping_scenes
 from llamatron.strings import about, errors, labels, legends, marks, messages
-from llamatron.tui import keybindings
+from llamatron.tui import batch_stage, keybindings, pattern_preview
 from llamatron.tui.app import LlamatronApp
-from llamatron.tui.drawing import Style
-from llamatron.tui import pattern_preview
-from llamatron.tui.pattern_preview import passes_to_come_round
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui import batch_stage
-from llamatron.tui.launch import Launch, recording_problem
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage, announced
 from llamatron.tui.components.stage_drawing import Rect
-from llamatron.tui.screens.shared.shared import scene_name
-from llamatron.tui.screens.set.demo_scroll import DemoScroll
-from llamatron.tui.screens.set.splash import Splash
-from llamatron.tui.drawing import Box
-from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tui.text import clock
+from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.tui.dialogs.message_dialog import MessageDialog
+from llamatron.tui.drawing import Box, Style
 from llamatron.tui.keys import Key
+from llamatron.tui.launch import Launch, recording_problem
+from llamatron.tui.pattern_preview import passes_to_come_round
+from llamatron.tui.screens.arrange import arrange_page
+from llamatron.tui.screens.arrange.arrange_page import announced, ArrangePage
+from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.tui.screens.set.demo_scroll import DemoScroll
+from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.set.splash import Splash
+from llamatron.tui.screens.shared.shared import scene_name
+from llamatron.tui.text import clock
 from llamatron.tui.transport import Transport
-from tests.support import ui_testing
-from tests.support.ui_testing import a_song, UITest, fixed_text, key_name
+from llamatron.tui.uses import looping_scenes
 from llamatron.visualizers import modes
+from tests.support import ui_testing
+from tests.support.ui_testing import a_song, fixed_text, key_name, UITest
 
 SYNTH = 'synth'
 SYNTH_PORT = 'IAC Driver Bus 1'

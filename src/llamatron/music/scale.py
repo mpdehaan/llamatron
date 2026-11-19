@@ -16,12 +16,11 @@
 
 from enum import Enum
 
-from llamatron.music import midi as midi_numbers
-from llamatron.music import note
+from llamatron.music import midi as midi_numbers, note
 from llamatron.music.note import Note
 from llamatron.music.sound import Sound
-from llamatron.support.length import Length
 from llamatron.strings import errors, reprs
+from llamatron.support.length import Length
 
 
 class ScaleType(Enum):

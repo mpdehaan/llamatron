@@ -15,9 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The Velocity field and the velocity ramp sections on the Scene page and the clip page, and their line in Arrange's details view."""
 
-from llamatron.composition import limits
+from llamatron.composition import limits, velocity_ramps
 from llamatron.composition.file_format import RampPart, RampWay, VelocitySetting
-from llamatron.composition import velocity_ramps
 from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 from llamatron.tui.screens.arrange.arrange_details import clip_details, scene_details

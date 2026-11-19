@@ -26,17 +26,17 @@ import os
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import exports
 from llamatron.exporters.exports import ExportKind
-from llamatron.tui.silent_instruments import fluidsynth_installed, warn_of_silent_instruments
-from llamatron.tui.document import Document
+from llamatron.strings import errors, labels, marks, messages as messages_text
+from llamatron.tui.dialogs import quit_dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.corrections_dialog import CorrectionsDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
-from llamatron.tui.screens.shared import shared
-from llamatron.tui.uses import loop_error_lines
-from llamatron.strings import errors, labels, marks, messages as messages_text
-from llamatron.tui.dialogs import quit_dialog
 from llamatron.tui.dialogs.quit_dialog import QuitDialog
+from llamatron.tui.document import Document
+from llamatron.tui.screens.shared import shared
+from llamatron.tui.silent_instruments import fluidsynth_installed, warn_of_silent_instruments
+from llamatron.tui.uses import loop_error_lines
 
 # Where Save as starts when the set has no file yet.
 DEFAULT_SAVE_FOLDER = 'songs'

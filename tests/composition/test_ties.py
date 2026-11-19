@@ -16,18 +16,16 @@
 
 """The Tie row: a tied step holds the note before it through the step, within a pass and from one pass into the next."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
-from llamatron.composition.file_format import (
-    ClipSlotSetting, Direction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting,
-)
+from llamatron.composition.file_format import ClipSlotSetting, Direction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.music.note import NoteName
 from llamatron.exporters.timing import timed_events
-from tests.support.rendering import render_data, setlist_from_data, song_from_data
+from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
+from tests.support.rendering import render_data, setlist_from_data, song_from_data
 
 # Every pattern plays in C major from middle C, MIDI note 60, with a quarter note a step.
 C3 = 60

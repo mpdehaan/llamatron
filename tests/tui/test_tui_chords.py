@@ -21,24 +21,20 @@ status line naming the chord under the cursor, and the whole choice as one step 
 import unittest
 from unittest import mock
 
-from tests.support import ui_testing
-from tests.support.ui_testing import UITest, key_name
-from llamatron.composition import setlist
+from llamatron.composition import limits, setlist
 from llamatron.composition.file_format import ChordSymbol, Row, ScaleKind, Tension
-from llamatron.composition.naming import words
-from llamatron.composition import limits
-from llamatron.strings import labels, marks, messages
 from llamatron.composition.named_scale import scale_type_name, scale_type_names
+from llamatron.composition.naming import words
 from llamatron.music.scale import ScaleType
-from llamatron.tui import keybindings
-from llamatron.tui.dialogs import chord_dialog
+from llamatron.strings import labels, marks, messages
+from llamatron.tui import drawing, keybindings, scale_categories
+from llamatron.tui.dialogs import chord_dialog, dialog as dialog_values
 from llamatron.tui.dialogs.chord_dialog import ChordDialog
-from llamatron.tui.dialogs import dialog as dialog_values
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Box
-from llamatron.tui import scale_categories
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from tests.support import ui_testing
+from tests.support.ui_testing import key_name, UITest
 
 MINOR = scale_type_name(ScaleType.MINOR)
 FIRST_STEP = 0

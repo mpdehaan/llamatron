@@ -18,11 +18,10 @@
 
 from fractions import Fraction
 
-from tests.support.ui_testing import UITest
-from llamatron.composition import setlist
-from llamatron.composition import defaults
-from llamatron.strings import labels, marks
+from llamatron.composition import defaults, setlist
 from llamatron.composition.file_format import FollowAction, OctaveLabels, Section, SetlistSetting
+from llamatron.strings import labels, marks
+from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
@@ -30,7 +29,7 @@ from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
-from llamatron.tui import keybindings
+from tests.support.ui_testing import UITest
 
 TEMPO = 'Tempo'
 STEP_SIZE = 'Step size'

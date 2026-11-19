@@ -16,22 +16,21 @@
 
 """Grab steps, which take notes from another track."""
 
-import unittest
 from fractions import Fraction
+import unittest
 
 from llamatron.composition.clip_slot import morph_style_name
-from llamatron.generators.blend import BlendMode
-from llamatron.exporters.timing import timed_events
-from tests.support.rendering import render_data, song_from_data
 from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters.timing import timed_events
+from llamatron.generators.blend import BlendMode
+from llamatron.music import midi, note as note_values
 from llamatron.music.chord import Chord
-from llamatron.music import midi
-from llamatron.music import note as note_values
 from llamatron.music.note import NoteName
 from llamatron.strings import errors
 from tests.support import song_testing
+from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, pitches, with_parts
 
 QUARTER = '1/4'

@@ -18,9 +18,8 @@
 
 import unittest
 
-from llamatron.macro_composer import wizard_choices
+from llamatron.macro_composer import arranger, wizard_choices
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.macro_composer import arranger
 
 A_GENRE = 'rock'
 A_SUBGENRE = 'folk rock'

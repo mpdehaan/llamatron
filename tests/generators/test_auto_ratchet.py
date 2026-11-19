@@ -15,25 +15,24 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import contextlib
+from fractions import Fraction
 import io
+import mido
 import os
 import tempfile
 import unittest
-from fractions import Fraction
 
-import mido
-
-from llamatron.music.chord import Chord, ChordType
-from llamatron.generators.base import ClipGenerator
-from llamatron.generators.auto_ratchet import AutoRatchet
-from llamatron.music.note import Degree, Note, NoteName, Rest
-from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters import midi_messages
-from llamatron.music.scale import Scale, ScaleType
+from llamatron.exporters.clip_tree import ClipTree
+from llamatron.generators.auto_ratchet import AutoRatchet
+from llamatron.generators.base import ClipGenerator
 from llamatron.grid.clip import Clip
+from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.clip_column import ClipColumn
+from llamatron.music.chord import Chord, ChordType
+from llamatron.music.note import Degree, Note, NoteName, Rest
+from llamatron.music.scale import Scale, ScaleType
 
 QUARTER = 0.25
 # What the clip files are named under, and the one clip's file.

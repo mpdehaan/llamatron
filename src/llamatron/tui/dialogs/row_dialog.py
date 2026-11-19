@@ -25,13 +25,11 @@ drawn around a zero line."""
 from rich.text import Text
 
 from llamatron.strings import labels, marks
+from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui import drawing
-from llamatron.tui.drawing import Style, legend
-from llamatron.tui import key_table
+from llamatron.tui.drawing import legend, Style
 from llamatron.tui.key_table import cursor_moved
-from llamatron.tui import keybindings
 
 # The OK button is the one Enter presses, so it is the one drawn selected.
 OK = 0

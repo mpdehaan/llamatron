@@ -20,13 +20,13 @@ import contextlib
 import io
 import os
 
-from llamatron.exporters.exports import earlier_export, export_name, make_exporter, shown_export_path, remove_earlier_export
 from llamatron.composition.file_format import SetlistSetting
-from llamatron.composition.setlist import Setlist, file_stem
-from llamatron.support.ordered_data import same_in_order
+from llamatron.composition.setlist import file_stem, Setlist
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.exporters.exports import earlier_export, export_name, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors
+from llamatron.support.ordered_data import same_in_order
 
 # What the set is called in the title until it's saved.
 UNTITLED = 'untitled'

@@ -25,17 +25,13 @@ which replaces the strokes, the accents and the cell's length together.
 
 from rich.text import Text
 
-from llamatron.composition import file_format
+from llamatron.composition import file_format, generator_settings, guitar_bars
 from llamatron.composition.file_format import GeneratorKind, GuitarifySetting, Section, Stroke
-from llamatron.composition import generator_settings
-from llamatron.composition import guitar_bars
 from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.strings import help as help_text, labels, marks, messages
-from llamatron.tui import keybindings
+from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, Style
-from llamatron.tui import key_table
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
