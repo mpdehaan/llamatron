@@ -262,7 +262,7 @@ class Page(BindsKeys, Screen):
                 self.refuse(errors.ERR_NAME_IN_USE.format(name=text))
             elif text != value:
                 then(text)
-        self.ask(dialog=PromptDialog(title=title, value=value, max_length=limits.MAX_NAME_LENGTH), then=named)
+        self.ask_text(title=title, value=value, then=named, is_name=True)
 
     def pick(self, *, title, values, then, current=None, shown=None):
         """Ask for one of some values in a picker, and pass the value chosen to a function unless the picker was cancelled.
@@ -274,6 +274,13 @@ class Page(BindsKeys, Screen):
         values = list(values)
         place = values.index(current) if current in values else 0
         self.ask(dialog=ChoiceDialog(title=title, options=list(values if shown is None else shown), current=place), then=lambda chosen: then(values[chosen]))
+
+    def ask_text(self, *, title, then, value=drawing.NOTHING, is_name=False, label=drawing.NOTHING):
+        """Ask for a line of text, starting from a value, and pass what was typed to a function unless the prompt was cancelled.
+
+        is_name is for the name of a thing, which is held to the most characters a name can have; label is a word before the text, where the title alone does not say what is typed.
+        """
+        self.ask(dialog=PromptDialog(title=title, value=value, max_length=limits.MAX_NAME_LENGTH if is_name else None, label=label), then=then)
 
     def confirm(self, *, title, lines, then, starts_on_no=False, deletes=False):
         """Ask a question that yes or no answers, and run a function on yes alone.

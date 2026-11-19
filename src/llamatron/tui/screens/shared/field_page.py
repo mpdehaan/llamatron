@@ -23,7 +23,6 @@ from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.cursor import Cursor, key_between, NoSuchPlace
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
@@ -61,7 +60,7 @@ class FieldPage(Page):
 
     def text_field(self, *, label, current, set_text):
         """A field for text like the title: current() reads it, and set_text(text) stores it, blank text clearing it."""
-        return Field(label=label, value=current, adjust=None, enter=lambda: self.ask(dialog=PromptDialog(title=label, value=current()), then=set_text), enter_what=legends.What.EDIT,
+        return Field(label=label, value=current, adjust=None, enter=lambda: self.ask_text(title=label, value=current(), then=set_text), enter_what=legends.What.EDIT,
                      clear=lambda: set_text(setlist.NO_TEXT), clear_what=legends.What.CLEAR)
 
     def setting_number_field(self, *, label, holder, name, shown=None, in_effect=None, start=None, typed=None, clear_what=None):
@@ -368,4 +367,4 @@ class FieldPage(Page):
                 self.refuse(errors.ERR_OUT_OF_RANGE.format(number=number, low=low, high=high))
                 return
             then(number)
-        self.ask(dialog=PromptDialog(title=title, value=value), then=answered)
+        self.ask_text(title=title, value=value, then=answered)

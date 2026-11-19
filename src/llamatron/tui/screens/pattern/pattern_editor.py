@@ -54,7 +54,6 @@ from llamatron.tui.components.piano_roll import PianoRoll
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.screens.pattern.pattern_drawing import PatternDrawing
 from llamatron.tui.screens.pattern.roll_drawing import RollDrawing
 from llamatron.tui.screens.shared.listening import pattern_listen_keys
@@ -406,7 +405,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.refuse(errors.ERR_LENGTH_OUT_OF_RANGE.format(most=most) if is_written_length(text) else errors.ERR_NOT_A_LENGTH.format(text=text))
                 return
             then(fraction_text(fraction(text)))
-        self.ask(dialog=PromptDialog(title=title, value=current), then=answered)
+        self.ask_text(title=title, value=current, then=answered)
 
     # The pattern's own settings.
 
@@ -591,7 +590,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             more = len(made) - SPLIT_NAMES_SHOWN
             said = messages.MSG_SPLIT_CREATED_MANY.format(count=len(made), names=shown, more=more) if more > 0 else messages.MSG_SPLIT_CREATED.format(count=len(made), names=shown)
             self.tell(messages.MSG_SPLIT_TITLE, said)
-        self.ask(dialog=PromptDialog(title=messages.MSG_SPLIT_PROMPT, value=str(min(SPLIT_STEPS, most))), then=answered)
+        self.ask_text(title=messages.MSG_SPLIT_PROMPT, value=str(min(SPLIT_STEPS, most)), then=answered)
 
     def invert_melody(self):
         """Mirror the pattern's notes around the note on the cursor's step, by the degrees of the scale the pattern plays under, or of the scale length it was written for."""
@@ -631,7 +630,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.document().munge_pattern(name=self.item, way=way, **{named: number})
             except InvalidValue as problem:
                 self.refuse(str(problem))
-        self.ask(dialog=PromptDialog(title=title, value=drawing.NOTHING), then=answered)
+        self.ask_text(title=title, value=drawing.NOTHING, then=answered)
 
     def ask_roll(self, *, left):
         """Ask how many steps to turn the pattern, and turn it: a step pushed off one end comes in at the other. The cursor stays on its step."""
@@ -645,7 +644,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.refuse(errors.ERR_ROLL_OUT_OF_RANGE.format(low=FIRST_ROLL, high=self.steps()))
                 return
             self.document().munge_pattern(name=self.item, way=Pattern.roll, steps=steps if left else -steps)
-        self.ask(dialog=PromptDialog(title=messages.MSG_ROLL_LEFT_PROMPT if left else messages.MSG_ROLL_RIGHT_PROMPT, value=drawing.NOTHING), then=answered)
+        self.ask_text(title=messages.MSG_ROLL_LEFT_PROMPT if left else messages.MSG_ROLL_RIGHT_PROMPT, value=drawing.NOTHING, then=answered)
 
     def load_over(self):
         others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)
@@ -685,7 +684,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.confirm(title=messages.MSG_SHORTEN_TITLE, lines=[question], then=lambda: self.document().change(self.document().setlist().get_pattern(self.item).set_steps, steps))
             else:
                 self.document().change(self.document().setlist().get_pattern(self.item).set_steps, steps)
-        self.ask(dialog=PromptDialog(title=messages.MSG_STEPS_PROMPT, value=self.steps()), then=answered)
+        self.ask_text(title=messages.MSG_STEPS_PROMPT, value=self.steps(), then=answered)
 
     def toggle_drum(self):
         """Switch between drum and note patterns, always asking first, since the rows change and any notes go."""

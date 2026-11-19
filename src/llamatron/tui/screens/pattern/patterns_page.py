@@ -27,7 +27,6 @@ from llamatron.tui.cursor import Cursor, key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import Align, Style
 from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
@@ -243,7 +242,7 @@ class PatternsPage(NamedListPage):
             self.new_groups = [made for made in self.new_groups if made != group]
             self.put_cursor_on(text)
             self.open_editor(section=Section.PATTERNS, name=text)
-        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=self.new_name(names_text.MSG_NEW_PATTERN_WORD), max_length=limits.MAX_NAME_LENGTH), then=named)
+        self.ask_text(title=messages.MSG_NEW_PATTERN_PROMPT, value=self.new_name(names_text.MSG_NEW_PATTERN_WORD), then=named, is_name=True)
 
     def rename(self):
         name = self.listed().name
@@ -293,7 +292,7 @@ class PatternsPage(NamedListPage):
                 self.refuse(errors.ERR_NAME_EMPTY_OR_IN_USE)
                 return
             then(text)
-        self.ask(dialog=PromptDialog(title=messages.MSG_NEW_GROUP_PROMPT, value=new_name(word=names_text.MSG_NEW_GROUP_WORD, taken=groups), max_length=limits.MAX_NAME_LENGTH), then=named)
+        self.ask_text(title=messages.MSG_NEW_GROUP_PROMPT, value=new_name(word=names_text.MSG_NEW_GROUP_WORD, taken=groups), then=named, is_name=True)
 
     def new_group(self):
         """Make a group, which shows open with only its button until a pattern is made in it."""
@@ -347,7 +346,7 @@ class PatternsPage(NamedListPage):
             self.document().show_pattern_group(group=text, closed=False)
             self.say(messages.MSG_GROUP_COPIED.format(name=text))
             self.put_cursor_on_row(Listed(HEADING, text))
-        self.ask(dialog=PromptDialog(title=messages.MSG_COPY_GROUP_TITLE, label=labels.MSG_NEW_GROUP_NAME_LABEL, value=copy_name(name=group, taken=groups), max_length=limits.MAX_NAME_LENGTH), then=named)
+        self.ask_text(title=messages.MSG_COPY_GROUP_TITLE, value=copy_name(name=group, taken=groups), then=named, is_name=True, label=labels.MSG_NEW_GROUP_NAME_LABEL)
 
     # Searching, which looks at the patterns alone, inside every group, closed or open.
 
