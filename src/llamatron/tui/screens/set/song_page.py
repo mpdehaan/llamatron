@@ -20,7 +20,6 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.genres import subgenres_of, variants_of
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings, themes
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.set.visualizer_fields import visualizer_field
 from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.everywhere import export
@@ -121,10 +120,8 @@ class SongPage(FieldPage):
 
     def pick_entry_size(self):
         choices = [None, *file_format.STEP_SIZE_CHOICES]
-        current = self.entry_size_text()
         options = [marks.MSG_ONE_STEP_SHOWN, *file_format.STEP_SIZE_CHOICES]
-        place = choices.index(current) if current in choices else 0
-        self.ask(dialog=ChoiceDialog(title=labels.MSG_ENTRY_SIZE_LABEL, options=options, current=place), then=lambda chosen: self.document().change(self.document().song().set_entry_size, choices[chosen]))
+        self.pick(title=labels.MSG_ENTRY_SIZE_LABEL, values=choices, shown=options, current=self.entry_size_text(), then=lambda size: self.document().change(self.document().song().set_entry_size, size))
 
     def step_scale(self, offset):
         """Move to the next or previous of the set's scales, with no scale before the first."""
@@ -145,9 +142,9 @@ class SongPage(FieldPage):
     def pick_preview_instrument(self):
         names = self.preview_instruments()
         options = [labels.MSG_PREVIEW_INSTRUMENT_UNSET, *names[1:]]
-        self.ask(
-            dialog=ChoiceDialog(title=messages.MSG_PREVIEW_INSTRUMENT_TITLE, options=options, current=names.index(self.song().get_preview_instrument_name())),
-            then=lambda chosen: self.document().change(self.document().song().set_preview_instrument_name, names[chosen]),
+        self.pick(
+            title=messages.MSG_PREVIEW_INSTRUMENT_TITLE, values=names, shown=options, current=self.song().get_preview_instrument_name(),
+            then=lambda name: self.document().change(self.document().song().set_preview_instrument_name, name),
         )
 
     def style_field(self, *, label, choices, current, set_choice):
@@ -165,13 +162,11 @@ class SongPage(FieldPage):
 
     def pick_groove(self):
         names = sorted_names(self.song().get_groove_names())
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_SONG_GROOVE_TITLE, options=names, current=names.index(self.song().get_groove_name())), then=lambda chosen: self.document().change(self.document().song().set_groove_name, names[chosen]))
+        self.pick(title=messages.MSG_SONG_GROOVE_TITLE, values=names, current=self.song().get_groove_name(), then=lambda name: self.document().change(self.document().song().set_groove_name, name))
 
     def pick_scale(self):
         scales = sorted_names(self.song().get_scale_names())
         if not scales:
             self.refuse(errors.ERR_ADD_A_SCALE_FIRST)
             return
-        current = self.song().get_scale_name()
-        place = scales.index(current) if current in scales else 0
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_SONG_SCALE_TITLE, options=scales, current=place), then=lambda chosen: self.document().change(self.document().song().set_scale_name, scales[chosen]))
+        self.pick(title=messages.MSG_SONG_SCALE_TITLE, values=scales, current=self.song().get_scale_name(), then=lambda name: self.document().change(self.document().song().set_scale_name, name))

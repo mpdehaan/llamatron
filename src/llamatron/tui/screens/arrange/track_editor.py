@@ -23,7 +23,6 @@ from llamatron.composition.file_format import EuclidPart, Section, TrackSetting
 from llamatron.music import midi
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.chains_field import chains_field
 from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
@@ -37,8 +36,6 @@ from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.statements import statement_section
 from llamatron.tui.text import sorted_names
 
-# The place of (none) in the instrument picker, before the names.
-NO_INSTRUMENT_PLACE = 0
 
 
 class TrackEditor(ShowsNamedItem, FieldPage):
@@ -96,12 +93,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
     def pick_instrument(self):
         """Choose the instrument the track plays through in real time, from the set's, or none."""
         instruments = sorted_names(self.document().setlist().get_instrument_names())
-        options = [marks.MSG_NONE_SHOWN, *instruments]
-        current = self.track().get_instrument_name()
-
-        def chosen(place):
-            self.set_instrument(None if place == NO_INSTRUMENT_PLACE else instruments[place - 1])
-        self.ask(dialog=ChoiceDialog(title=labels.MSG_INSTRUMENT_LABEL, options=options, current=options.index(current) if current in options else NO_INSTRUMENT_PLACE), then=chosen)
+        self.pick(title=labels.MSG_INSTRUMENT_LABEL, values=[None, *instruments], shown=[marks.MSG_NONE_SHOWN, *instruments], current=self.track().get_instrument_name(), then=self.set_instrument)
 
     def set_instrument(self, instrument):
         self.document().set_track_instrument(name=self.item, instrument=instrument)

@@ -247,20 +247,17 @@ class ClipPage(FieldPage):
         if not tracks:
             self.tell(errors.ERR_NO_OTHER_TRACKS_TITLE, errors.ERR_ADD_ANOTHER_TRACK)
             return
-        options = [marks.MSG_NONE_SHOWN, *tracks]
-        current = self.clip_slot().get_grab_track()
 
-        def chosen(item):
-            if item == 0:
+        def chosen(other):
+            if other is None:
                 self.clear(ClipSlotSetting.GRAB_TRACK)
                 return
-            other = tracks[item - 1]
             circle = self.document().grab_circle(index=self.index, track=self.track, other=other)
             if circle:
                 self.tell(errors.ERR_CIRCULAR_GRAB_TITLE, errors.ERR_GRAB_CIRCLE.format(track=other, circle=song_renderer.GRAB_ARROW.join(circle)), errors.ERR_REMOVE_OTHER_GRAB)
                 return
             self.set_value(setting=ClipSlotSetting.GRAB_TRACK, value=other)
-        self.ask(dialog=ChoiceDialog(title=labels_text.MSG_GRAB_TRACK_LABEL, options=options, current=options.index(current) if current in options else 0), then=chosen)
+        self.pick(title=labels_text.MSG_GRAB_TRACK_LABEL, values=[None, *tracks], shown=[marks.MSG_NONE_SHOWN, *tracks], current=self.clip_slot().get_grab_track(), then=chosen)
 
     def scale_text(self):
         """Return the clip's own scale, or the scene's it takes, which is the song's when the scene has none."""
@@ -273,12 +270,10 @@ class ClipPage(FieldPage):
     def pick_scale(self):
         """Ask for one of the song's scales for the clip alone, or the scene's."""
         scales = sorted_names(self.document().song().get_scale_names())
-        options = [labels_text.MSG_SCENE_OPTION, *scales]
-        current = self.clip_slot().get_scale_name()
-
-        def chosen(item):
-            self.set_value(setting=ClipSlotSetting.SCALE, value=None if item == 0 else scales[item - 1])
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_CLIP_SCALE_TITLE, options=options, current=options.index(current) if current in options else 0), then=chosen)
+        self.pick(
+            title=messages.MSG_CLIP_SCALE_TITLE, values=[None, *scales], shown=[labels_text.MSG_SCENE_OPTION, *scales], current=self.clip_slot().get_scale_name(),
+            then=lambda name: self.set_value(setting=ClipSlotSetting.SCALE, value=name),
+        )
 
 
     def set_repeat(self, value):
@@ -298,8 +293,7 @@ class ClipPage(FieldPage):
             (labels_text.MSG_PATTERN_DIRECTION_OPTION, legends.MSG_PATTERN_DIRECTION_WHAT),
             *[(words(name), labels_text.MSG_DIRECTION_NAMES[name]) for name in file_format.DIRECTIONS],
         ])
-        place = options.index(self.clip_slot().get_direction())
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_PLAY_DIRECTION_TITLE, options=labels, current=place), then=lambda chosen: self.set_direction(options[chosen]))
+        self.pick(title=messages.MSG_PLAY_DIRECTION_TITLE, values=options, shown=labels, current=self.clip_slot().get_direction(), then=self.set_direction)
 
     def direction_text(self):
         direction = self.clip_slot().get_direction()

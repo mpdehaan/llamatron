@@ -21,7 +21,6 @@ from llamatron.composition.file_format import InstrumentSetting, Section
 from llamatron.music import midi
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.screens.shared.field import Button, Field, NameField, NumberField
@@ -30,8 +29,7 @@ from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.sound_trial import run_in_sound, SoundTrial
 from llamatron.tui.text import sorted_names
 
-# The place of (none) in the device picker, before FluidSynth and the ports, and in the sound picker, before the sounds.
-NO_DEVICE_PLACE = 0
+# The place of (none) in the sound picker, before the sounds.
 NO_SOUND_PLACE = 0
 
 
@@ -77,12 +75,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
 
     def pick_device(self):
         devices = self.devices()
-        options = [marks.MSG_NO_DEVICE_SHOWN, *devices]
-        current = self.instrument().get_device()
-
-        def chosen(place):
-            self.set_device(None if place == NO_DEVICE_PLACE else devices[place - 1])
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_DEVICE_TITLE, options=options, current=options.index(current) if current in options else NO_DEVICE_PLACE), then=chosen)
+        self.pick(title=messages.MSG_DEVICE_TITLE, values=[None, *devices], shown=[marks.MSG_NO_DEVICE_SHOWN, *devices], current=self.instrument().get_device(), then=self.set_device)
 
     def pick_gm_sound(self):
         """Choose the instrument's General MIDI sound from its families, each a row that opens its sounds, with (none) above them; a sound can be tried."""

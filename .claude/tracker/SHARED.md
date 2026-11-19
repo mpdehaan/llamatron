@@ -10,6 +10,8 @@ can be found and read on its own. `.claude/UX.md` holds the rules for how the tr
 `tests/rules/test_doc_paths.py` checks that every source path named here exists, so paths move with the
 code.
 
+A page asks for one of some values with `Page.pick(title=, values=, then=, current=, shown=)`, which opens a picker on the current value and hands `then` the value chosen, never its place in the list.
+
 ## Where things are
 
 `llamatron [set]` or `./llamatron.sh [set]` opens the tracker. It uses Textual with
