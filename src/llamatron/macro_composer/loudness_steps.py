@@ -238,7 +238,7 @@ def with_trades(*, song, kept=()):
             for name in file_format.VELOCITY_SETTINGS:
                 percent = velocity_ramps.AS_WRITTEN if name == VelocitySetting.LEVEL and of_scene[name] is None else of_scene[name]
                 if name not in velocity_ramps.BAR_COUNTS and percent is not None:
-                    slot.set_velocity_setting(name=name, value=round(percent * share))
+                    slot.set_written(name=name, value=round(percent * share))
 
 
 def whole_band(players):

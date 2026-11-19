@@ -192,7 +192,7 @@ class ScenePage(FieldPage):
     def velocity_values(self):
         """Return what the velocity fields read the scene's own velocity settings with, what gives a blank one from above, which nothing does for a scene, and what keeps one."""
         scene = self.scene()
-        return scene.get_setting, lambda name: None, lambda name, value: self.document().change(self.document().song().get_scene(self.index).set_velocity_setting, name=name, value=value)
+        return scene.get_written, lambda name: None, lambda name, value: self.document().change(self.document().song().get_scene(self.index).set_written, name=name, value=value)
 
     def register_sections(self):
         """Return the scene's sections about the registers: what it sets them to as it first starts, what it adds every time it plays, and the statements that bypass the generators of its clips."""
@@ -217,8 +217,8 @@ class ScenePage(FieldPage):
         """Return a shape's section: how busy, loud or long every clip of the scene plays over it."""
         scene = self.scene()
         return shape_section(
-            page=self, shape=shape, value=lambda part: scene.get_setting(shape_setting(shape=shape, part=part)),
-            store=lambda part, value: self.document().change(self.document().song().get_scene(self.index).set_shape_setting, name=shape_setting(shape=shape, part=part), value=value),
+            page=self, shape=shape, value=lambda part: scene.get_written(shape_setting(shape=shape, part=part)),
+            store=lambda part, value: self.document().change(self.document().song().get_scene(self.index).set_written, name=shape_setting(shape=shape, part=part), value=value),
         )
 
     def reset_field(self, register):

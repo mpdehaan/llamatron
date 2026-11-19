@@ -121,8 +121,8 @@ class TestDetails(unittest.TestCase):
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=ui_testing.DRUMS)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.FOLLOW_ACTION, value=FollowAction.NEXT)
         self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.DOWN)
-        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_shape_setting, name=ClipSlotSetting.DENSITY_START, value=DENSITY_START)
-        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_shape_setting, name=ClipSlotSetting.DENSITY_END, value=DENSITY_END)
+        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_START, value=DENSITY_START)
+        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_END, value=DENSITY_END)
         self.assertEqual(self.clip_lines(), [
             marks.MSG_DETAILS_GRAB.format(track=ui_testing.DRUMS), marks.MSG_DETAILS_ADVANCE.format(action=labels.MSG_FOLLOW_ACTION_NAMES[FollowAction.NEXT]),
             marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.DOWN),

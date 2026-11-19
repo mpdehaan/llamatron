@@ -204,5 +204,5 @@ class TestShapeSectionsOnTheClipPage(UITest):
         self.app.screen.value = str(HALF)
         await self.press(Key.ENTER)
         clip_slot = self.document.song().get_scenes()[0].get_clip_slot(ui_testing.LEAD)
-        self.assertEqual(clip_slot.get_setting(shape_setting(shape=Shape.DENSITY, part=ShapePart.END)), HALF)
+        self.assertEqual(clip_slot.get_written(shape_setting(shape=Shape.DENSITY, part=ShapePart.END)), HALF)
         self.assertIsNone(self.document.song().get_scenes()[0].get_shape(Shape.DENSITY))

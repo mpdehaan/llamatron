@@ -28,7 +28,7 @@ from llamatron.tui.drawing import cursor_mark, padded, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared import field as field_values
-from llamatron.tui.screens.shared.field import Button, Cells, Field, Heading, NameField
+from llamatron.tui.screens.shared.field import Button, Cells, Field, Heading, NameField, NumberField
 from llamatron.tui.screens.shared.page import Page
 
 
@@ -63,6 +63,22 @@ class FieldPage(Page):
         """A field for text like the title: current() reads it, and set_text(text) stores it, blank text clearing it."""
         return Field(label=label, value=current, adjust=None, enter=lambda: self.ask(dialog=PromptDialog(title=label, value=current()), then=set_text), enter_what=legends.What.EDIT,
                      clear=lambda: set_text(setlist.NO_TEXT), clear_what=legends.What.CLEAR)
+
+    def setting_number_field(self, *, label, holder, name, shown=None, in_effect=None, start=None, typed=None, clear_what=None):
+        """A field for a whole number that is a setting of something in the set, by the setting's file name.
+
+        The range is the setting's own, said once where the setting is described, and the number is stored through
+        the document, which the holder checks; Bksp leaves the setting out. in_effect is the number shown and stepped
+        from where that is not the number written, as a track's accent is its default until one is set.
+        """
+        described = holder.SETTINGS[name]
+
+        def store(number):
+            self.document().set_setting(holder=holder, name=name, value=number)
+        return NumberField(
+            page=self, label=label, number=holder.get_written(name) if in_effect is None else in_effect, start=start, shown=shown, typed=typed,
+            lowest=described.get_lowest(), highest=described.get_highest(), set=store, clear=lambda: store(None), clear_what=clear_what,
+        )
 
     def page_keys(self):
         return []

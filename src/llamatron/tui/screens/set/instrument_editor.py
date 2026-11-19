@@ -17,7 +17,7 @@
 """The instrument editor: one instrument's name, MIDI device or FluidSynth, channel and General MIDI sound."""
 
 from llamatron.composition import defaults, file_format, limits
-from llamatron.composition.file_format import Section
+from llamatron.composition.file_format import InstrumentSetting, Section
 from llamatron.music import midi
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.outputs import output_port_names
@@ -114,20 +114,12 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
     def default_velocity_field(self):
         """Return the Default velocity field: what a step with no velocity typed plays at on the instrument's tracks, the loudest until set."""
         velocity = self.instrument().get_default_velocity()
-        return NumberField(
-            page=self, label=labels.MSG_DEFAULT_VELOCITY_LABEL, number=velocity, start=defaults.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY,
-            set=lambda number: self.document().change(self.document().setlist().get_instrument(self.item).set_default_velocity, number),
-            clear=lambda: self.document().change(self.document().setlist().get_instrument(self.item).set_default_velocity, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
-        )
+        return self.setting_number_field(label=labels.MSG_DEFAULT_VELOCITY_LABEL, holder=self.instrument(), name=InstrumentSetting.DEFAULT_VELOCITY, in_effect=velocity, start=defaults.DEFAULT_VELOCITY, clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
 
     def accent_field(self):
         """Return the Accent field: what a step with its Accent on adds to its velocity on the instrument's tracks, before each track's own accent."""
         accent = self.instrument().get_accent()
-        return NumberField(
-            page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT,
-            set=lambda number: self.document().change(self.document().setlist().get_instrument(self.item).set_accent, number),
-            clear=lambda: self.document().change(self.document().setlist().get_instrument(self.item).set_accent, None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
-        )
+        return self.setting_number_field(label=labels.MSG_ACCENT_LABEL, holder=self.instrument(), name=InstrumentSetting.ACCENT, in_effect=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
 
     def lead_field(self):
         """Return the Keyswitch lead field: how many milliseconds before its note a keyswitch is sent, for a plugin that needs it early, nothing unless set."""
