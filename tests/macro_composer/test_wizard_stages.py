@@ -24,7 +24,6 @@ from llamatron.macro_composer.song_plan import FADE_LEVEL, FADE_OVER, FADED, FAD
 from llamatron.macro_composer.wizard_choices import (
     DRUM_FILL_IN, DRUMS_FIRST, ENDS, FADE_IN, FADE_OUT, FULL_BAND, HARD_STOP, HELD_CHORD, LAYERS, ONE_PLAYER_ALONE, ONE_PLAYER_FIRST, OUTRO_KIND, REPEAT_AND_FADE, SLOWS_DOWN, STARTS, STRAIGHT_IN, STRIPS_DOWN, WizardChoices,
 )
-from llamatron.music import midi
 from llamatron.support.version import VERSION
 
 A_NAME = 'made'
@@ -41,7 +40,8 @@ NOT_A_WAY = 'sideways'
 NOT_BARS = 3
 FIRST = 0
 A_VERSE = 1
-HALF_VELOCITY = 63
+# A fade's level, a percentage of each note's written velocity.
+HALF_VELOCITY = 50
 TWO_BARS = 2
 
 
@@ -239,19 +239,19 @@ class TestWizardEnds(unittest.TestCase):
             choices.set_section_own(place=FIRST, field=FADE_LEVEL, value=HALF_VELOCITY)
             choices.set_section_own(place=FIRST, field=FADE_OVER, value=TWO_BARS)
             scene = made(choices).get_song(A_NAME).get_scenes()[FIRST].to_data()
-            self.assertEqual(scene[VelocitySetting.IN_START], round(HALF_VELOCITY * UNFADED / midi.MAX_VELOCITY))
+            self.assertEqual(scene[VelocitySetting.IN_START], HALF_VELOCITY)
             self.assertEqual(scene[VelocitySetting.IN_OVER], TWO_BARS)
             with self.assertRaises(ValueError):
                 choices.set_section_own(place=FIRST, field=FADE_OVER, value=choices.section_bars(FIRST) + 1)
             with self.assertRaises(ValueError):
-                choices.set_section_own(place=FIRST, field=FADE_LEVEL, value=midi.MAX_VELOCITY + 1)
+                choices.set_section_own(place=FIRST, field=FADE_LEVEL, value=UNFADED + 1)
             again = WizardChoices.from_data(choices.to_data())
             self.assertEqual(again.section_own(place=FIRST, field=FADE_OVER), TWO_BARS)
             # A fade out falls to its velocity over the whole section until it is given its bars, the last of the section.
             self.assertEqual(choices.fade_fields(last), [FADES, FADE_LEVEL, FADE_OVER])
             choices.set_section_own(place=last, field=FADE_LEVEL, value=HALF_VELOCITY)
             scene = made(choices).get_song(A_NAME).get_scenes()[last].to_data()
-            self.assertEqual(scene[VelocitySetting.OUT_END], round(HALF_VELOCITY * UNFADED / midi.MAX_VELOCITY))
+            self.assertEqual(scene[VelocitySetting.OUT_END], HALF_VELOCITY)
             self.assertEqual(scene[VelocitySetting.OUT_OVER], choices.section_bars(last))
             choices.set_section_own(place=last, field=FADE_OVER, value=1)
             self.assertEqual(made(choices).get_song(A_NAME).get_scenes()[last].to_data()[VelocitySetting.OUT_OVER], 1)

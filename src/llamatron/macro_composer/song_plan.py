@@ -34,7 +34,6 @@ from llamatron.composition.file_format import VelocitySetting
 from llamatron.macro_composer import hook_writing
 from llamatron.macro_composer.joins import BUILD, DROP_OUT, FILL_OF_JOIN, LEAVES, STOPS, TAIL, TAIL_EIGHTHS
 from llamatron.macro_composer.melody import BREATHES, HOOK
-from llamatron.music import midi
 from llamatron.strings import macro_composer as composer_text
 
 # The fields of a song's plan, and of the plan a style gives.
@@ -123,13 +122,13 @@ FADES = 'fades'
 # How soft a fade goes where the section says no level: to silence, a velocity and a share of what is written alike.
 FADED = 0
 UNFADED = 100
-# A fade's own level, the velocity a fade in starts from and a fade out ends at, from silence to MIDI's loudest; the bars a fade takes, the whole section where
+# A fade's own level, the percentage of each note's written velocity a fade in starts from and a fade out ends at, from silence to the notes as written; the bars a fade takes, the whole section where
 # none is said; and whether the fade is a fade in, which a section that opens the song has, where any other fades out.
 FADE_LEVEL = 'fade_level'
 FADE_OVER = 'fade_over'
 FADES_IN = 'fades_in'
 FADE_FIELDS = (FADES, FADE_LEVEL, FADE_OVER, FADES_IN)
-LOUDEST_FADE_LEVEL = midi.MAX_VELOCITY
+LOUDEST_FADE_LEVEL = UNFADED
 
 
 def faded(*, own, loud):
@@ -137,8 +136,8 @@ def faded(*, own, loud):
     played: a fade in is a ramp in that rises from the fade's level to the section's loudness over the fade's bars and stays
     there, and a fade out is a ramp out that falls from the section's loudness to the fade's level over the fade's bars, the
     last of the section. A fade that says no bars takes the whole section, which whoever writes the scene knows the bars of."""
-    # A scene's velocity is a share of each note's written velocity, so the level is said as its share of the loudest velocity.
-    level = round(own.get(FADE_LEVEL, FADED) * UNFADED / LOUDEST_FADE_LEVEL)
+    # A fade's level is a percentage of each note's written velocity, as a scene's velocity is.
+    level = own.get(FADE_LEVEL, FADED)
     if not own.get(FADES_IN):
         return {SCENE_VELOCITY: loud, SCENE_VELOCITY_OUT_END: level, **({SCENE_VELOCITY_OUT_OVER: own[FADE_OVER]} if own.get(FADE_OVER) else {})}
     return {SCENE_VELOCITY: loud, SCENE_VELOCITY_IN_START: level, **({SCENE_VELOCITY_IN_OVER: own[FADE_OVER]} if own.get(FADE_OVER) else {})}
