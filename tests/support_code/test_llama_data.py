@@ -26,7 +26,10 @@ from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import TrackSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, LlamaData
+from llamatron.composition.setlist import Setlist
+from llamatron.composition.song import Song
 from llamatron.composition.track import Track
+from llamatron.strings import errors
 
 
 def every_subclass():
@@ -43,6 +46,8 @@ def every_subclass():
 
 # The classes that exist to be subclassed, which no file holds and which read nothing themselves.
 SUPERCLASSES = (HoldsSettings,)
+# What holds everything else and is never copied whole by copy(): the set, and a song, which the set copies through its data.
+NEVER_COPIED = (Setlist, Song)
 
 
 class TestLlamaData(unittest.TestCase):
@@ -73,6 +78,18 @@ class TestLlamaData(unittest.TestCase):
                 self.assertIsNot(subclass.to_data, LlamaData.to_data)
                 self.assertIsNot(subclass.from_data.__func__, LlamaData.from_data.__func__)
 
+
+    def test_everything_that_is_copied_says_how(self):
+        for subclass in every_subclass():
+            if subclass.__module__ == __name__ or subclass in SUPERCLASSES or subclass in NEVER_COPIED:
+                continue
+            with self.subTest(subclass=subclass.__name__):
+                self.assertIsNot(subclass.copy, LlamaData.copy)
+
+    def test_the_base_class_says_a_copy_is_missing(self):
+        with self.assertRaises(NotImplementedError) as refused:
+            LlamaData().copy()
+        self.assertEqual(str(refused.exception), errors.ERR_NEEDS_COPY.format(kind=LlamaData.__name__))
 
     def test_a_holder_of_settings_checks_a_value_by_its_description_and_leaves_none_and_the_default_out(self):
         track = Track()
