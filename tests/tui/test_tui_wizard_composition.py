@@ -397,48 +397,48 @@ class TestWizardSoloMelody(CompositionTest):
 
     async def test_the_panel_says_who_plays_the_solo_and_in_which_section_and_has_its_buttons_edit_first(self):
         choices = self.choices()
-        place = choices.solo_places()[0]
+        place = choices.get_solos().solo_places()[0]
         self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, labels.MSG_WIZARD_SOLO_SECTION_LABEL, labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON,
                                                labels.MSG_WIZARD_LISTEN_BUTTON,
                                                labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
         shown = self.text()
-        self.assertIn(choices.role_title(choices.solo_player()), shown)
+        self.assertIn(choices.role_title(choices.get_solos().solo_player()), shown)
         self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
         what, heard_at, track = self.wizard().branch().listens()
-        self.assertEqual((heard_at, track), (place, choices.solo_player()))
+        self.assertEqual((heard_at, track), (place, choices.get_solos().solo_player()))
         self.assertEqual(self.wizard().branch().heard_with_band()[1:], (place, None))
 
     async def test_the_solos_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
         choices = self.choices()
-        place = choices.solo_places()[0]
+        place = choices.get_solos().solo_places()[0]
         await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.change_first_step()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertTrue(choices.solo_is_own(place))
+        self.assertTrue(choices.get_solos().solo_is_own(place))
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertFalse(choices.solo_is_own(place))
+        self.assertFalse(choices.get_solos().solo_is_own(place))
 
 
     async def test_regenerate_asks_and_writes_another_solo_and_gives_up_notes_edited_by_hand(self):
         choices = self.choices()
-        place = choices.solo_places()[0]
-        written = choices.solo_pattern(place)
+        place = choices.get_solos().solo_places()[0]
+        written = choices.get_solos().solo_pattern(place)
         self.assertTrue(self.wizard().branch().listens_alone())
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertEqual(choices.solo_pattern(place), written)
+        self.assertEqual(choices.get_solos().solo_pattern(place), written)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.solo_pattern(place), written)
-        self.assertFalse(choices.solo_is_own(place))
-        self.assertEqual(choices.solo_take(place), wizard_limits.FIRST_TUNE_TAKE + 1)
+        self.assertNotEqual(choices.get_solos().solo_pattern(place), written)
+        self.assertFalse(choices.get_solos().solo_is_own(place))
+        self.assertEqual(choices.get_solos().solo_take(place), wizard_limits.FIRST_TUNE_TAKE + 1)
 
 
 class TestWizardHooks(CompositionTest):

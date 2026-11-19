@@ -398,9 +398,9 @@ def every_choice(choices):
     for kind in choices.tune_kinds():
         if choices.tune_pattern(kind) is not None:
             yield OWN_TUNE, kind, lambda made, kind=kind: made.set_tune_pattern(kind=kind, pattern=first_degree_changed(made.tune_pattern(kind))), [nothing_first]
-        for place in choices.solo_places():
-            yield SOLO_TAKE, place, lambda made, place=place: made.new_solo_take(place), [nothing_first]
-            yield OWN_SOLO_NOTES, place, lambda made, place=place: made.set_solo_pattern(place=place, pattern=first_degree_changed(made.solo_pattern(place))), [nothing_first]
+        for place in choices.get_solos().solo_places():
+            yield SOLO_TAKE, place, lambda made, place=place: made.get_solos().new_solo_take(place), [nothing_first]
+            yield OWN_SOLO_NOTES, place, lambda made, place=place: made.get_solos().set_solo_pattern(place=place, pattern=first_degree_changed(made.get_solos().solo_pattern(place))), [nothing_first]
     # Who plays the tune: each other player for the song, and for each kind of section each other player and nobody.
     # A song with no tune, as some electronic kinds, offers neither.
     for role in choices.tune_players_offered() if choices.tune_kinds() else []:

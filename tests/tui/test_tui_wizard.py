@@ -1464,7 +1464,7 @@ class TestWizardComposition(WizardTest):
         # The intro's panel is last in the group, since the intro's melody is made from the hook.
         # Each solo has a panel after the sections' melodies, the first named for the kind alone.
         solos = [wizard_limits.SOLO.capitalize() if number == solo_melody_branch.FIRST_SOLO else labels_text.MSG_WIZARD_SOLO_NUMBERED.format(kind=wizard_limits.SOLO.capitalize(), number=number)
-                 for number, _ in enumerate(self.choices().solo_places(), start=solo_melody_branch.FIRST_SOLO)]
+                 for number, _ in enumerate(self.choices().get_solos().solo_places(), start=solo_melody_branch.FIRST_SOLO)]
         self.assertTrue(solos)
         self.assertEqual(names[start:start + len(kinds) + len(solos) + 6],
                          [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), *solos, wizard_limits.INTRO.capitalize(), labels_text.MSG_WIZARD_RIFFS_BRANCH,
