@@ -20,6 +20,7 @@ The song has two scenes and two tracks. The lead plays the tune in both scenes a
 play the tune in the second, so the tune is shared by three clips, and the beat by one.
 """
 
+from llamatron.composition.file_format import ClipSlotSetting
 from llamatron.strings import messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -73,9 +74,9 @@ class TestFracture(UITest):
         self.assertNotEqual(setlist.get_pattern(TUNE).get_steps(), CHANGED_STEPS)
 
     async def test_a_pattern_a_clip_names_twice_in_its_own_list_stays_one_pattern(self):
-        song = self.document.song()
-        song.get_scenes()[SECOND].get_clip_slot(LEAD).set_pattern_names(names=[TUNE, OTHER, TUNE], song=song)
-        song.get_scenes()[SECOND].get_clip_slot(DRUMS).set_pattern_names(names=[OTHER, TUNE], song=song)
+        self.document.set_clip_slot_setting(index=SECOND, track=LEAD, setting=ClipSlotSetting.PATTERNS, value=[TUNE, OTHER, TUNE])
+        self.document.set_clip_slot_setting(index=SECOND, track=DRUMS, setting=ClipSlotSetting.PATTERNS, value=[OTHER, TUNE])
+        self.document.record_edit()
         await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
         scene = self.document.song().get_scenes()[SECOND]
         # The first scene's clip keeps the pattern; a later clip plays a copy, the same copy each time its own list names the pattern.
