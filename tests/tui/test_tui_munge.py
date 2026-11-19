@@ -182,6 +182,12 @@ class TestMunge(UITest):
         await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
         self.assertEqual(self.row(), [OTHER_DEGREE, *ROWS[Row.DEGREE], OTHER_DEGREE])
         self.assertEqual(self.editor.step, 1)
+        await self.press(Key.RIGHT)
+        await munge(test=self, choice=Munge.SPLICE_AT_CURSOR)
+        self.assertIn(messages.MSG_SPLICE_AT_CURSOR_CHOICE_TITLE, self.text())
+        await self.press(*[Key.DOWN] * self.app.screen.options.index(OTHER), Key.ENTER)
+        self.assertEqual(self.row(), [OTHER_DEGREE, 1, OTHER_DEGREE, 2, 3, 4, 5, OTHER_DEGREE])
+        self.assertEqual(self.editor.step, 3)
 
     async def test_split_asks_for_the_steps_makes_new_patterns_and_names_them(self):
         await munge(test=self, choice=Munge.SPLIT)

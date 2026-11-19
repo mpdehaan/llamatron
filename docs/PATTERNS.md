@@ -143,18 +143,18 @@ These keys work throughout the rows view:
 | copy all at/before cursor to end | A B C D E F G H A B C |
 | interleave (pattern) | Asks for another pattern and puts one of its steps after each step of this one, which is then twice as long: A w B x C y and so on. The other pattern is read round and round, and is not changed |
 | mirror | Add the steps again, backwards: A B C D becomes A B C D D C B A |
-| pivot around step | Swap what's before the cursor with what's after it |
+| pivot around step (cursor) | Swap what's before the cursor with what's after it |
 | randomize | Shuffle the steps into a random order. The shuffle is an ordinary edit, not seeded, so every randomize is different. |
 | randomize at/after cursor | Shuffle the cursor's step and the steps after it among themselves |
 | randomize at/before cursor | Shuffle the cursor's step and the steps before it among themselves |
 | reverse | Reverse the whole pattern |
-| reverse after step | Reverse every step after the cursor |
-| reverse before step | Reverse every step before the cursor |
+| reverse after step (cursor) | Reverse every step after the cursor |
+| reverse before step (cursor) | Reverse every step before the cursor |
 | roll left (N), roll right (N) | Asks how many steps and turns the pattern that far: a step pushed off one end comes in at the other. Rolling A B C D E F G H left 3 gives D E F G H A B C |
 | smooth AX=, smooth BX=, smooth CX=, smooth DX= | On the row that sets the register, fill the blank steps between two values from a straight line between them |
 | smooth CCs | The same on each of CC 1 to CC 4: 20, blank, blank, blank, 100 becomes 20, 40, 60, 80, 100. The Slide row makes a finer sweep as the pattern plays; smooth CCs writes the values where they can be seen and changed |
 | smooth velocity | The same on Velocity, on the steps that hold a note |
-| splice (pattern), splice before (pattern) | Asks for another pattern and adds a copy of its steps after this one's last step, or before its first |
+| splice (pattern), splice before (pattern), splice (pattern, cursor) | Asks for another pattern and adds a copy of its steps after this one's last step, before its first, or before the cursor's step |
 | split into new patterns (steps) | Asks how many steps each new pattern has, 16 to start, and makes new patterns of this one's steps, that many each: a pattern of 64 steps called `p1` gives `p1-split-1` to `p1-split-4`. The pattern itself is left as it is, and a dialog names the patterns made |
 
 A choice that would make the pattern longer than a pattern may be is refused, and a drum pattern is never combined with a pattern of notes. After a reverse, a pivot or a roll the cursor stays on its step; after steps are added in front, the cursor stays on its note.

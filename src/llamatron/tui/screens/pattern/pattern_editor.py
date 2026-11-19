@@ -101,13 +101,14 @@ class Munge:
     SPLICE = 25
     SPLICE_BEFORE = 26
     SPLIT = 27
+    SPLICE_AT_CURSOR = 28
 
 
 # The heading each munge is listed under.
 MUNGE_GROUPS = {
     labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.CLEAR_CHORDS],
     labels.MungeGroup.COPY: [Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START, Munge.MIRROR],
-    labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLIT],
+    labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLICE_AT_CURSOR, Munge.SPLIT],
     labels.MungeGroup.REARRANGE: [
         Munge.REVERSE_AFTER, Munge.REVERSE_BEFORE, Munge.REVERSE, Munge.PIVOT, Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE, Munge.ROLL_LEFT, Munge.ROLL_RIGHT,
     ],
@@ -153,6 +154,7 @@ OTHER_PATTERN_TITLES = {
     Munge.INTERLEAVE: messages.MSG_INTERLEAVE_CHOICE_TITLE,
     Munge.SPLICE: messages.MSG_SPLICE_CHOICE_TITLE,
     Munge.SPLICE_BEFORE: messages.MSG_SPLICE_BEFORE_CHOICE_TITLE,
+    Munge.SPLICE_AT_CURSOR: messages.MSG_SPLICE_AT_CURSOR_CHOICE_TITLE,
 }
 # The munges that smooth the row setting one register.
 SMOOTHED_REGISTERS = dict(zip((Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX), REGISTER_NAMES))
@@ -491,7 +493,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         return steps > limits.MAX_STEPS
 
     def pick_other_pattern(self, choice):
-        """Choose another pattern and take its steps into this one, leaving the other as it is: spliced after the last step, spliced before the first, or interleaved, one after each step, which makes this one twice as long. The cursor stays on its note."""
+        """Choose another pattern and take its steps into this one, leaving the other as it is: spliced after the last step, before the first or before the cursor's step, or interleaved, one after each step, which makes this one twice as long. The cursor stays on its note."""
         others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)
         if not others:
             self.refuse(errors.ERR_NO_OTHER_PATTERNS)
@@ -509,8 +511,10 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 self.document().munge_pattern(name=self.item, way=Pattern.interleave, other=other)
                 self.step *= 2
                 return
-            self.document().munge_pattern(name=self.item, way=Pattern.splice, other=other, before=choice == Munge.SPLICE_BEFORE)
-            if choice == Munge.SPLICE_BEFORE:
+            # Steps put before the cursor's step move it along, and the cursor stays on its note.
+            places = {Munge.SPLICE: None, Munge.SPLICE_BEFORE: 0, Munge.SPLICE_AT_CURSOR: self.step}
+            self.document().munge_pattern(name=self.item, way=Pattern.splice, other=other, at=places[choice])
+            if places[choice] is not None:
                 self.step += added
         self.ask(dialog=ChoiceDialog(title=OTHER_PATTERN_TITLES[choice], options=others), then=chosen)
 
