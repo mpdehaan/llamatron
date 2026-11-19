@@ -45,15 +45,15 @@ class HooksBranch(Branch):
 
     def summary(self):
         """Return the kind of section that sings the main hook, or None for a song that can have no hook."""
-        choices = self.choices()
+        choices = self.get_choices()
         place = choices.hook_line_place() if choices.is_ready() else None
         if place is None:
             return None
         return place[0] if choices.has_hook() else labels.MSG_WIZARD_NOBODY
 
     def fields(self):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         if not choices.is_ready() or not choices.can_have_hook():
             return []
         fields = [page.heading(label=labels.MSG_WIZARD_MAIN_HOOK_HEADING, is_set=self.main_is_set, starts_open=True), *self.main_fields()]
@@ -67,8 +67,8 @@ class HooksBranch(Branch):
     def main_fields(self):
         """Return the main hook's fields: where it is sung and which bars of that section are the hook;
         a genre whose songs have no hook unless asked has the switch that asks first."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         switch = [] if choices.usual_hook() and choices.has_hook() else [Toggle(label=labels.MSG_WIZARD_MAIN_HOOK_LABEL, on=choices.has_hook(), set=page.choosing(choices.set_hook))]
         if not choices.has_hook():
             return switch
@@ -82,13 +82,13 @@ class HooksBranch(Branch):
 
     def bars_fields(self):
         """Return the field that says which bars of its section are the hook."""
-        bars = self.choices().hook_bars()
+        bars = self.get_choices().hook_bars()
         return [] if bars is None else [Field(label=labels.MSG_WIZARD_HOOK_BARS_LABEL, value=lambda: labels.MSG_WIZARD_HOOK_BARS.format(first=bars[0], last=bars[1]))]
 
     def second_fields(self):
         """Return the second hook's fields: its switch, and while the song has one, the kind of section that sings it."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         kinds = choices.second_hook_kinds()
         switch = Toggle(label=labels.MSG_WIZARD_SECOND_HOOK_LABEL, on=choices.has_second_hook(), set=page.choosing(lambda on: choices.set_second_hook(kinds[0] if on else None)))
         if not choices.has_second_hook():
@@ -97,8 +97,8 @@ class HooksBranch(Branch):
 
     def buttons(self):
         """Return the buttons that hear the hook under the cursor's heading and that have each hook made again."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         if not choices.has_hook():
             return []
         kind = choices.hook_kind()
@@ -117,8 +117,8 @@ class HooksBranch(Branch):
 
     def regenerate(self):
         """Have another hook written, with the behavior and the gauges as they stand, after asking."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         name = messages.MSG_WIZARD_HOOK_NAME
 
         def written(_):
@@ -128,12 +128,12 @@ class HooksBranch(Branch):
 
     def on_second_hook(self):
         """Return whether the cursor is on or under the second hook's heading."""
-        return self.page().in_fields and self.page().heading_over_cursor() == labels.MSG_WIZARD_SECOND_HOOK_HEADING
+        return self.get_page().in_fields and self.get_page().heading_over_cursor() == labels.MSG_WIZARD_SECOND_HOOK_HEADING
 
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the first section that sings the hook under the cursor's heading."""
         heard = self.listens()
-        return None if heard is None else (messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=self.choices().section_kind(heard[1])), heard[1], None)
+        return None if heard is None else (messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=self.get_choices().section_kind(heard[1])), heard[1], None)
 
     def listens_alone(self):
         return True
@@ -142,7 +142,7 @@ class HooksBranch(Branch):
         """Listen plays the melody's player in the first section that sings the hook under the cursor's heading: the main hook's,
         unless the cursor is on the second hook. The player is whoever plays the melody in that kind of section, which the song
         may give to another player than the genre's; a section nobody plays the melody in has nothing to listen to."""
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready() or not choices.can_have_hook() or not choices.has_hook():
             return None
         second = self.on_second_hook() and choices.has_second_hook()
@@ -156,7 +156,7 @@ class HooksBranch(Branch):
         """Return the picture of the main hook, while the song has one: the notes of the whole section that says the hook, as they
         stand, with the hook's bars in a frame, under which bars those are and whose the notes are. Where the section's notes cannot
         be drawn so, the hook's own two bars are drawn alone."""
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready() or not choices.can_have_hook():
             return []
         hook = choices.hook_notes()

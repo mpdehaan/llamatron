@@ -42,17 +42,17 @@ class ChordsBranch(SongWaysBranch):
 
     def offers_progressions(self):
         """Return whether the subgenre has more than one progression, since one is nothing to choose."""
-        choices = self.choices()
+        choices = self.get_choices()
         trait = choices.progression_trait() if choices.is_ready() else None
         return trait is not None and len(choices.song_ways(trait)) >= song_ways_branch.A_CHOICE
 
     def progression(self):
         """Return the progression chosen, or the word for one left to chance."""
-        choices = self.choices()
+        choices = self.get_choices()
         return labels.MSG_WIZARD_ANY_PROGRESSION if choices.has_any_progression() else choices.get_way(choices.progression_trait())
 
     def set_progression(self, progression):
-        choices = self.choices()
+        choices = self.get_choices()
         if progression == labels.MSG_WIZARD_ANY_PROGRESSION:
             choices.set_any_progression()
         else:
@@ -60,7 +60,7 @@ class ChordsBranch(SongWaysBranch):
 
     def scale(self):
         """Return the song's scale, which numerals and chord names are spelled in."""
-        return NamedScale(root=self.choices().get_root(), kind=self.choices().get_scale_type())
+        return NamedScale(root=self.get_choices().get_root(), kind=self.get_choices().get_scale_type())
 
     def numerals(self, chords):
         """Return chords, each a degree and its sharp or flat, as Roman numerals in the song's scale."""
@@ -77,7 +77,7 @@ class ChordsBranch(SongWaysBranch):
         """Return a progression as the field and its list show it: its name, its numerals where it is written as degrees, and the scale type it was written for where that is not the song's."""
         if progression == labels.MSG_WIZARD_ANY_PROGRESSION:
             return progression
-        choices = self.choices()
+        choices = self.get_choices()
         degrees = choices.progression_degrees(progression)
         shown = marks.MSG_WIZARD_PROGRESSION_SHOWN.format(name=progression, numerals=self.numerals(degrees)) if degrees else progression
         # A progression written for the other of major and minor says so: its borrowed chords were not meant for the song's scale.
@@ -90,18 +90,18 @@ class ChordsBranch(SongWaysBranch):
     def fields(self):
         if not self.offers_progressions():
             return []
-        choices = self.choices()
+        choices = self.get_choices()
         # The first choice, the one a song starts with, leaves the progression to chance: each run takes one of the subgenre's.
         offered = [labels.MSG_WIZARD_ANY_PROGRESSION, *choices.song_ways(choices.progression_trait())]
-        return [ChoiceField(page=self.page(), label=labels.MSG_WIZARD_PROGRESSION_LABEL, choices=offered, names=[self.shown(progression) for progression in offered],
-                            current=self.progression(), shown=self.shown(self.progression()), set=self.page().choosing(self.set_progression))]
+        return [ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_PROGRESSION_LABEL, choices=offered, names=[self.shown(progression) for progression in offered],
+                            current=self.progression(), shown=self.shown(self.progression()), set=self.get_page().choosing(self.set_progression))]
 
     def notes(self, width):
         """Return the chords each kind of section plays in the song's key, under the key's name; that they are drawn later while
         the progression is left to chance; or that there is nothing to choose."""
         if not self.offers_progressions():
             return super().notes(width)
-        choices = self.choices()
+        choices = self.get_choices()
         if choices.has_any_progression():
             return [Text(), Text(drawing.INDENT + messages.MSG_WIZARD_CHORDS_DRAWN_LATER, style=Style.DIM)]
         sections = choices.progression_chords(self.progression())

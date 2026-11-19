@@ -42,13 +42,13 @@ class RiffsBranch(Branch):
 
     def summary(self):
         """Return how many riffs the song has, or None where no player of the band can play one."""
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready() or not choices.riff_instruments():
             return None
         return str(len(choices.riff_names()))
 
     def fields(self):
-        choices = self.choices()
+        choices = self.get_choices()
         if not choices.is_ready():
             return []
         fields = []
@@ -61,34 +61,34 @@ class RiffsBranch(Branch):
 
     def player_heading(self, *, role, count, columns):
         """Return a player's heading: how many it holds while closed, and the columns' names while open."""
-        page = self.page()
-        title = self.choices().role_title(role)
+        page = self.get_page()
+        title = self.get_choices().role_title(role)
         return page.heading(label=title, is_set=lambda: bool(count), said=lambda: columns if title in page.app.open_field_sections and count else marks.MSG_WIZARD_COUNT_SHOWN.format(count=count))
 
     def riff_field(self, riff):
         """Return a riff's row: its bars and the kinds of section it is used in, marked when its notes were edited; ENTER opens its
         notes in the pattern editor, and Bksp deletes it after asking."""
-        choices = self.choices()
+        choices = self.get_choices()
 
         def shown():
             row = marks.MSG_WIZARD_RIFF_ROW.format(bars=choices.riff_bar_count(riff), used=listed(choices.riff_kinds_used(riff)))
             return marks.MSG_WIZARD_TUNE_EDITED.format(name=row.rstrip()) if choices.riff_is_edited(riff) else row
-        return Field(label=riff, value=shown, enter=lambda: self.page().edit_riff(riff), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=lambda: self.delete(riff), clear_what=legends.What.DELETE)
+        return Field(label=riff, value=shown, enter=lambda: self.get_page().edit_riff(riff), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=lambda: self.delete(riff), clear_what=legends.What.DELETE)
 
     def role_under_cursor(self):
         """Return the player whose heading the cursor is on or under, or None."""
-        choices = self.choices()
-        heading = self.page().heading_over_cursor()
+        choices = self.get_choices()
+        heading = self.get_page().heading_over_cursor()
         return next((role for role in choices.riff_instruments() if choices.role_title(role) == heading), None)
 
     def riff_under_cursor(self):
         """Return the riff whose row the cursor is on, or None."""
-        label = self.page().label_under_cursor()
-        return label if label in self.choices().riff_names() else None
+        label = self.get_page().label_under_cursor()
+        return label if label in self.get_choices().riff_names() else None
 
     def field_keys(self):
         """Return the list's keys where the cursor is: A adds a riff for the player of the heading, and on a riff N renames, C copies and R regenerates."""
-        page = self.page()
+        page = self.get_page()
         keys = [page.bind(page.KEYS.ADD, action=lambda: self.add_riff(self.role_under_cursor()))] if self.role_under_cursor() is not None else []
         riff = self.riff_under_cursor()
         if riff is not None:
@@ -98,8 +98,8 @@ class RiffsBranch(Branch):
 
     def add_riff(self, role):
         """Ask how a new riff for a player is drawn, write it, and put the cursor on it."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         title = choices.role_title(role)
 
         def written(settings):
@@ -116,13 +116,13 @@ class RiffsBranch(Branch):
 
     def show(self, *, role, riff):
         """Open a player's heading and put the cursor on a riff under it."""
-        page = self.page()
-        page.app.open_field_sections.add(self.choices().role_title(role))
+        page = self.get_page()
+        page.app.open_field_sections.add(self.get_choices().role_title(role))
         page.go_to_field(riff)
 
     def rename(self, riff):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
 
         def renamed(name):
             page.choosing(lambda new: choices.rename_riff(riff=riff, name=new))(name)
@@ -131,8 +131,8 @@ class RiffsBranch(Branch):
 
     def copy_riff(self, riff):
         """Ask which player the copy is for, the riff's own first, and copy the riff: a copy for another player keeps the notes in that player's octave."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         players = choices.riff_instruments()
 
         def copied(place):
@@ -144,8 +144,8 @@ class RiffsBranch(Branch):
 
     def regenerate(self, riff):
         """Have other notes written for a riff, with nothing kept of the old ones, after asking."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
 
         def written(_):
             page.choosing(choices.regenerate_riff)(riff)
@@ -154,8 +154,8 @@ class RiffsBranch(Branch):
 
     def delete(self, riff):
         """Ask before deleting a riff, saying where it is used; whoever played it then plays the accompaniment again."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         used = choices.riff_kinds_used(riff)
 
         def deleted(_):
@@ -170,7 +170,7 @@ class RiffsBranch(Branch):
         if riff is None:
             return None
         try:
-            setlist, name, index, track, _ = self.choices().riff_heard(riff)
+            setlist, name, index, track, _ = self.get_choices().riff_heard(riff)
         except ValueError:
             return None
         return riff, index, track, (setlist, name)

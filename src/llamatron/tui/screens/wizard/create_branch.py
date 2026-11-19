@@ -32,15 +32,15 @@ class CreateBranch(Branch):
         return labels.MSG_WIZARD_CREATE_BRANCH
 
     def note(self):
-        return drawing.NOTHING if self.choices().is_ready() else marks.MSG_WIZARD_NEEDS_GENRE
+        return drawing.NOTHING if self.get_choices().is_ready() else marks.MSG_WIZARD_NEEDS_GENRE
 
     def refusal(self):
-        return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+        return None if self.get_choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def fields(self):
-        choices = self.choices()
-        page = self.page()
-        fields = [Field(label=labels.MSG_WIZARD_SONG_LABEL, value=page.song_name)]
+        choices = self.get_choices()
+        page = self.get_page()
+        fields = [Field(label=labels.MSG_WIZARD_SONG_LABEL, value=page.get_song_name)]
         if choices.is_ready():
             fields += [
                 Field(label=labels.MSG_GENRE_LABEL, value=lambda: marks.MSG_WIZARD_GENRE_SHOWN.format(genre=genre_title(choices.get_genre()), subgenre=choices.get_subgenre())),

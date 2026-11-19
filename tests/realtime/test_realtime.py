@@ -394,26 +394,26 @@ class TestScore(unittest.TestCase):
     def test_a_scene_lasts_its_rows_and_each_clips_events_count_from_the_scenes_start(self):
         score = Score(song=player_song(), routes=two_routes(), seed=SEED)
         self.assertEqual(score.scene_count(), 3)
-        self.assertEqual([score.scene_seconds(place) for place in range(3)], [SCENE_SECONDS] * 3)
-        self.assertEqual([score.scene_start(place) for place in range(3)], [0.0, SCENE_SECONDS, 2 * SCENE_SECONDS])
+        self.assertEqual([score.get_scene_seconds(place) for place in range(3)], [SCENE_SECONDS] * 3)
+        self.assertEqual([score.get_scene_start(place) for place in range(3)], [0.0, SCENE_SECONDS, 2 * SCENE_SECONDS])
         self.assertEqual(score.song_seconds(), 3 * SCENE_SECONDS)
-        starts = [event.seconds for event in score.events(scene=SECOND, track=LEAD) if event.kind == timeline_values.NOTE_ON]
+        starts = [event.seconds for event in score.get_events(scene=SECOND, track=LEAD) if event.kind == timeline_values.NOTE_ON]
         self.assertEqual(starts, [0.0, 0.5, 1.0, 1.5])
-        self.assertEqual(score.events(scene=SECOND, track=BASS)[0].port, OTHER_PORT)
+        self.assertEqual(score.get_events(scene=SECOND, track=BASS)[0].port, OTHER_PORT)
 
     def test_a_track_with_no_route_has_no_events_and_an_empty_slot_counts_as_with_scene(self):
         song = player_song()
         song.get_scene(THIRD).remove_clip_slot(BASS)
         score = Score(song=song, routes={LEAD: Route(PORT, EXPORT_CHANNEL)}, seed=SEED)
-        self.assertEqual(score.events(scene=FIRST, track=BASS), [])
-        self.assertEqual(score.follow_action(scene=THIRD, track=BASS), FollowAction.WITH_SCENE)
+        self.assertEqual(score.get_events(scene=FIRST, track=BASS), [])
+        self.assertEqual(score.get_follow_action(scene=THIRD, track=BASS), FollowAction.WITH_SCENE)
         self.assertFalse(score.loops(scene=THIRD, track=BASS))
 
     def test_the_sounding_notes_and_the_repeats_left_are_read_from_the_events(self):
         score = Score(song=player_song(), routes=two_routes(), seed=SEED)
         self.assertTrue(score.is_sounding(scene=FIRST, track=LEAD, elapsed=0.1))
         self.assertFalse(score.is_sounding(scene=FIRST, track=BASS, elapsed=0.6))
-        self.assertEqual(score.sounding_across(scene=FIRST, track=LEAD, elapsed=0.1), [(PORT, EXPORT_CHANNEL, score.events(scene=FIRST, track=LEAD)[0].number)])
+        self.assertEqual(score.sounding_across(scene=FIRST, track=LEAD, elapsed=0.1), [(PORT, EXPORT_CHANNEL, score.get_events(scene=FIRST, track=LEAD)[0].number)])
         self.assertEqual(score.repeats_left(scene=FIRST, track=LEAD, elapsed=0.1), 1)
 
     def test_how_far_into_a_clip_a_moment_is_stops_at_the_clips_end_and_starts_over_for_a_looping_clip(self):

@@ -623,12 +623,12 @@ class TestLiveEditing(PlaybackTest):
     async def test_the_plays_random_parts_are_kept_through_an_edit(self):
         self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.PROBABILITY, step=0, value=HALF_CHANCE)
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        before = self.transport().get_player().get_score().events(scene=FIRST_INDEX, track=ui_testing.LEAD)
+        before = self.transport().get_player().get_score().get_events(scene=FIRST_INDEX, track=ui_testing.LEAD)
         self.started = self.clock.now()
         self.counted = []
         self.document.change(self.document.get_setlist().get_pattern(ui_testing.OTHER).set_value, row=Row.DEGREE, step=0, value=EDITED_DEGREE)
         await self.play_for(LIVE_STEP * 3)
-        after = self.transport().get_player().get_score().events(scene=FIRST_INDEX, track=ui_testing.LEAD)
+        after = self.transport().get_player().get_score().get_events(scene=FIRST_INDEX, track=ui_testing.LEAD)
         self.assertEqual([(event.seconds, event.number) for event in before], [(event.seconds, event.number) for event in after])
 
 

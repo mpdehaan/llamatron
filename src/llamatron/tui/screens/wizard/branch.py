@@ -42,13 +42,13 @@ class Branch:
     def __init__(self, *, page):
         self._page = page
 
-    def page(self):
+    def get_page(self):
         """Return the wizard's page, which shows this branch's dialogs and keeps the song's name."""
         return self._page
 
-    def choices(self):
+    def get_choices(self):
         """Return the choices of this run of the wizard, which every branch reads and changes."""
-        return self._page.choices()
+        return self._page.get_choices()
 
     def key(self):
         """Return what the page remembers the branch by, open or closed: its name, unless two branches share one."""
@@ -85,7 +85,7 @@ class Branch:
     def choice_from_nothing(self, *, label, values, names, current, set_value):
         """Return a field that picks one of a list and starts with nothing chosen, as the genre and the subgenre do:
         it shows (choose) until then, and stepping it or opening its list starts from the first."""
-        page = self.page()
+        page = self.get_page()
         chosen = page.choosing(set_value)
         if current is not None:
             return ChoiceField(page=page, label=label, choices=values, names=names, current=current, shown=names[values.index(current)], set=chosen)
@@ -97,7 +97,7 @@ class Branch:
     def writing_gauge_field(self, *, label, position, moved, set_position):
         """Return the field of a gauge of how a melody is written: a number from 0 to 9, stepped or typed, drawn as a horizontal gauge
         with its number, said to be the genre's until the song moves it; Bksp gives a moved gauge back to the genre."""
-        page = self.page()
+        page = self.get_page()
         drawn = marks.MSG_WIZARD_GAUGE_FULL * (position - hook_writing.LOWEST) + marks.MSG_WIZARD_GAUGE_EMPTY * (hook_writing.HIGHEST - position)
         said = position if moved else labels.MSG_WIZARD_VALUE_FROM.format(value=position, origin=labels.MSG_WIZARD_USUAL_MELODY)
         return NumberField(page=page, label=label, number=position, shown=marks.MSG_WIZARD_WRITING_GAUGE_SHOWN.format(gauge=drawn, place=said), lowest=hook_writing.LOWEST, highest=hook_writing.HIGHEST,
@@ -157,4 +157,4 @@ class Branch:
     def can_be_edited(self):
         """Return whether any field of the branch does something, so that a branch only to be read takes no cursor."""
         # The legend asks at every key, and making a panel's fields may mean making the song, so the answer is kept with the choices.
-        return self.choices().offered(key=(EDITABLE_ANSWER, type(self).__name__, self.name()), compute=lambda: any(field.enter or field.adjust for field in self.fields()))
+        return self.get_choices().offered(key=(EDITABLE_ANSWER, type(self).__name__, self.name()), compute=lambda: any(field.enter or field.adjust for field in self.fields()))

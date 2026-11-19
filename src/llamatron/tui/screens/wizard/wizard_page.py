@@ -133,10 +133,10 @@ class WizardPage(FieldPage):
 
     # What the branches read and change.
 
-    def choices(self):
+    def get_choices(self):
         return self._choices
 
-    def song_name(self):
+    def get_song_name(self):
         return self._song_name
 
     def choosing(self, setter):
@@ -388,14 +388,14 @@ class WizardPage(FieldPage):
         self.say(messages.MSG_STOPPED)
 
     def ask_song_name(self):
-        self.ask_name(title=messages.MSG_WIZARD_SONG_NAME_PROMPT, value=self._song_name, taken=self.document().song_names(), then=self.choosing(self.name_song))
+        self.ask_name(title=messages.MSG_WIZARD_SONG_NAME_PROMPT, value=self._song_name, taken=self.document().song_names(), then=self.choosing(self.set_song_name))
 
-    def name_song(self, name):
+    def set_song_name(self, name):
         self._song_name = name
 
     # How the run starts, which a dialog asks before the wizard opens on a song the wizard made (LlamatronApp.show_wizard).
 
-    def start(self):
+    def get_start(self):
         """Return the way of starting chosen, or None on a song the wizard did not make, where a new song is started from scratch."""
         return self._start
 

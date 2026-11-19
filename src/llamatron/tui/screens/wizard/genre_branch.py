@@ -47,7 +47,7 @@ class GenreBranch(Branch):
     def set_genre(self, genre):
         """Choose a genre, asking first where another genre would give up what was chosen by hand: the question counts what is lost
         and what is kept, by kind and never by name."""
-        choices = self.choices()
+        choices = self.get_choices()
         lost, kept = choices.lost_with_genre() if genre != choices.get_genre() else ({}, {})
         if not lost:
             choices.set_genre(genre)
@@ -56,11 +56,11 @@ class GenreBranch(Branch):
         if kept:
             said += [drawing.NOTHING, messages.MSG_CHANGE_GENRE_KEPT, *(KEPT_SHOWN[kind].format(count=count) for kind, count in kept.items())]
         dialog = ConfirmDialog(title=messages.MSG_CHANGE_GENRE_TITLE, messages=[*said, drawing.NOTHING, messages.MSG_CHANGE_GENRE_QUESTION], starts_on_no=True)
-        self.page().ask(dialog=dialog, then=lambda _: self.page().choosing(choices.set_genre)(genre))
+        self.get_page().ask(dialog=dialog, then=lambda _: self.get_page().choosing(choices.set_genre)(genre))
 
     def fields(self):
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
         genres = genre_names()
         fields = [
             self.choice_from_nothing(label=labels.MSG_GENRE_LABEL, values=genres, names=[genre_title(genre) for genre in genres], current=choices.get_genre(), set_value=self.set_genre),
@@ -76,14 +76,14 @@ class GenreBranch(Branch):
             ]
         if page.replaces():
             # A replaced song keeps its name, so the name is only shown.
-            return [*fields, Field(label=labels.MSG_NAME_LABEL, value=page.song_name)]
-        return [*fields, Field(label=labels.MSG_NAME_LABEL, value=page.song_name, enter=page.ask_song_name, enter_what=legends.What.RENAME)]
+            return [*fields, Field(label=labels.MSG_NAME_LABEL, value=page.get_song_name)]
+        return [*fields, Field(label=labels.MSG_NAME_LABEL, value=page.get_song_name, enter=page.ask_song_name, enter_what=legends.What.RENAME)]
 
     def length_field(self):
         """Return the Length field, whose steps choose a shorter or a longer suggested form; once the form is the song's own,
         the length is only shown, since a step would put a suggested form in place of the sections changed."""
-        choices = self.choices()
+        choices = self.get_choices()
         if choices.has_own_form():
             return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=marks.MSG_WIZARD_OWN_FORM))
         return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=choices.get_form()),
-                     adjust=self.page().choosing(choices.step_length))
+                     adjust=self.get_page().choosing(choices.step_length))

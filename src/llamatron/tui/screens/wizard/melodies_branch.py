@@ -37,11 +37,11 @@ class MelodiesBranch(Branch):
 
     def summary(self):
         """Return how many melodies the song has, the hook among them, for the overview of Composition."""
-        return str(len(self.children())) if self.choices().is_ready() else None
+        return str(len(self.children())) if self.get_choices().is_ready() else None
 
     def children(self):
-        page = self.page()
-        choices = self.choices()
+        page = self.get_page()
+        choices = self.get_choices()
         if not choices.is_ready():
             return []
         hook = [HooksBranch(page=page)] if choices.can_have_hook() else []

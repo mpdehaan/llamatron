@@ -273,7 +273,7 @@ class TestFieldsOnThePages(UITest):
     def a_wizard(self, holder):
         """Return the song wizard with a genre and a subgenre chosen, so that its Genre branch shows every field, the tempo among them."""
         wizard = WizardPage(holder)
-        choices = wizard.choices()
+        choices = wizard.get_choices()
         choices.set_genre(genre_names()[0])
         choices.set_subgenre(choices.subgenres()[0])
         wizard.in_fields = True

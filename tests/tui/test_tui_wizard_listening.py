@@ -45,7 +45,7 @@ class TestWizardListening(PlaybackTest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.press(keybindings.Page.WIZARD)
-        choices = self.app.screen.choices()
+        choices = self.app.screen.get_choices()
         choices.set_genre(GENRE)
         choices.set_subgenre(SUBGENRE)
         await self.press(Key.DOWN, Key.UP)
@@ -59,7 +59,7 @@ class TestWizardListening(PlaybackTest):
         await self.press(Key.DOWN, Key.UP)
 
     def hook_kind(self):
-        kind, _ = self.app.screen.choices().hook_line_place()
+        kind, _ = self.app.screen.get_choices().hook_line_place()
         return kind
 
     def hook_heard(self):
@@ -100,7 +100,7 @@ class TestWizardListening(PlaybackTest):
         self.assertIsNone(self.preview().playing())
 
     async def test_a_part_that_is_no_melody_is_heard_over_the_drums_and_a_player_with_no_clip_is_refused(self):
-        choices = self.app.screen.choices()
+        choices = self.app.screen.get_choices()
         setlist, name = choices.made_for_listening()
         scene = choices.hook_scene()
         self.preview().play_line(setlist=setlist, name=name, index=scene, track=choices.tune_player(), what=A_PART)
@@ -132,7 +132,7 @@ class TestWizardListening(PlaybackTest):
     async def test_a_choice_stops_what_was_heard(self):
         await self.go_to_hook()
         await self.press(keybindings.WizardPage.LISTEN)
-        self.app.screen.choosing(self.app.screen.choices().set_song_plan)(True)
+        self.app.screen.choosing(self.app.screen.get_choices().set_song_plan)(True)
         self.assertIsNone(self.preview().playing())
 
     async def test_closing_the_wizard_stops_what_was_heard(self):
@@ -142,7 +142,7 @@ class TestWizardListening(PlaybackTest):
 
     async def test_a_riff_nobody_plays_yet_is_heard_from_the_riffs_panel(self):
         wizard = self.app.screen
-        choices = wizard.choices()
+        choices = wizard.get_choices()
         role = choices.riff_instruments()[0]
         riff = choices.add_riff(role=role)
         await self.go_to(labels.MSG_WIZARD_RIFFS_BRANCH)

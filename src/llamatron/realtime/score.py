@@ -134,17 +134,17 @@ class Score:
             self._scene_seconds.append(scene_start)
             song_start += scene_start
 
-    def tracks(self):
+    def get_tracks(self):
         return list(self._tracks)
 
     def scene_count(self):
         return len(self._scene_seconds)
 
-    def scene_seconds(self, scene):
+    def get_scene_seconds(self, scene):
         """Return how long a scene lasts, all of its repeats together, in seconds."""
         return self._scene_seconds[scene]
 
-    def scene_start(self, scene):
+    def get_scene_start(self, scene):
         """Return when a scene starts when the song plays from the top, in seconds, for the clock."""
         return self._scene_starts[scene]
 
@@ -154,7 +154,7 @@ class Score:
     def launches_together(self, scene):
         return self._launches_together[scene]
 
-    def follow_action(self, *, scene, track):
+    def get_follow_action(self, *, scene, track):
         return self._follow_actions[(scene, track)]
 
     def loops(self, *, scene, track):
@@ -166,7 +166,7 @@ class Score:
             return None
         return self._clip_seconds.get((scene, FIRST_ROW, track))
 
-    def events(self, *, scene, track):
+    def get_events(self, *, scene, track):
         """Return a clip's events in time order, counted from its scene's start, tagged with play 0."""
         return list(self._events[(scene, track)])
 

@@ -38,15 +38,15 @@ class CompositionBranch(Branch):
         return labels.MSG_WIZARD_COMPOSITION_BRANCH
 
     def refusal(self):
-        return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+        return None if self.get_choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def children(self):
-        page = self.page()
+        page = self.get_page()
         return [ChordsBranch(page=page), MelodyBranch(page=page), MelodiesBranch(page=page), RiffsBranch(page=page), RiffAssignBranch(page=page), SectionPlayersBranch(page=page)]
 
     def notes(self, width):
         """Return each branch under this one with what it is set to, leaving out a branch the subgenre has nothing to choose in; or what to choose first."""
-        if not self.choices().is_ready():
+        if not self.get_choices().is_ready():
             return [Text(drawing.INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
         shown = [(child.name(), child.summary()) for child in self.children() if child.summary() is not None]
         longest = max((len(name) for name, _ in shown), default=0)

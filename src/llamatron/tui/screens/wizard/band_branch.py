@@ -32,35 +32,35 @@ class BandBranch(Branch):
         return labels.MSG_WIZARD_BAND_BRANCH
 
     def refusal(self):
-        return None if self.choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
+        return None if self.get_choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def children(self):
-        return [PlayerBranch(page=self.page(), role=role) for role in self.choices().roles_in() if role in self.choices().roles_shown()]
+        return [PlayerBranch(page=self.get_page(), role=role) for role in self.get_choices().roles_in() if role in self.get_choices().roles_shown()]
 
     def fields(self):
-        choices = self.choices()
+        choices = self.get_choices()
         # A player with no way of playing written for the subgenre is not offered.
         # Sounds is the band's, which every player follows unless the player has a Sound of its own.
-        sounds = ChoiceField(page=self.page(), label=labels.MSG_WIZARD_SOUNDS_LABEL, choices=list(wizard_choices.BAND_SOUNDS), current=choices.get_band_sounds(), set=self.page().choosing(choices.set_band_sounds))
+        sounds = ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_SOUNDS_LABEL, choices=list(wizard_choices.BAND_SOUNDS), current=choices.get_band_sounds(), set=self.get_page().choosing(choices.set_band_sounds))
         fields = [sounds]
         if choices.offers_one_guitarist() or choices.has_one_guitarist():
             # One guitarist plays the chords and takes the solo, and is then one player on the screen.
-            fields.append(ChoiceField(page=self.page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_choices.GUITARIST_COUNTS), names=[str(count) for count in wizard_choices.GUITARIST_COUNTS], current=choices.get_guitarists(), set=self.page().choosing(choices.set_guitarists)))
+            fields.append(ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_choices.GUITARIST_COUNTS), names=[str(count) for count in wizard_choices.GUITARIST_COUNTS], current=choices.get_guitarists(), set=self.get_page().choosing(choices.set_guitarists)))
         if choices.answerers():
             # Who has the tune, which is only shown, and who answers that player: one of the players who can, or nobody.
             answerers = choices.answerers()
             names = [choices.role_title(role) for role in answerers]
             by = choices.answered_by()
             fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.role_title(choices.tune_played_by()) if choices.tune_played_by() else labels.MSG_WIZARD_NOBODY),
-                       ChoiceField(page=self.page(), label=labels.MSG_WIZARD_ANSWERED_BY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *answerers], names=[labels.MSG_WIZARD_NOBODY, *names],
+                       ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_ANSWERED_BY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *answerers], names=[labels.MSG_WIZARD_NOBODY, *names],
                                    current=by or labels.MSG_WIZARD_NOBODY, shown=choices.role_title(by) if by else labels.MSG_WIZARD_NOBODY,
-                                   set=self.page().choosing(lambda role: choices.set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]
+                                   set=self.get_page().choosing(lambda role: choices.set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]
         return [*fields, *(Toggle(label=choices.role_title(role), on=choices.role_is_in(role), set=self.setter_of(role)) for role in choices.roles_shown() if choices.role_can_play(role))]
 
     def setter_of(self, role):
         """Return what puts a player in the band or leaves the player out, refusing to leave out the last."""
-        choices = self.choices()
-        page = self.page()
+        choices = self.get_choices()
+        page = self.get_page()
 
         def set_in(on):
             if not on and choices.roles_in() == [role]:

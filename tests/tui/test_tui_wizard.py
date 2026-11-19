@@ -91,7 +91,7 @@ class WizardTest(UITest):
         return self.app.screen
 
     def choices(self):
-        return self.wizard().choices()
+        return self.wizard().get_choices()
 
     async def go_to_branch(self, place):
         """Move the tree's cursor to a branch by its place from the top."""
@@ -185,8 +185,8 @@ class TestWizardPage(WizardTest):
         self.assertNotIn(labels_text.MSG_NAME_LABEL, self.text())
 
     async def test_the_new_song_is_named_as_the_tracker_names_a_new_thing(self):
-        self.assertEqual(self.wizard().song_name(), new_name(word=names.MSG_NEW_SONG_WORD, taken=[names.MSG_DEFAULT_SONG_NAME]))
-        self.assertIn(self.wizard().song_name(), self.text())
+        self.assertEqual(self.wizard().get_song_name(), new_name(word=names.MSG_NEW_SONG_WORD, taken=[names.MSG_DEFAULT_SONG_NAME]))
+        self.assertIn(self.wizard().get_song_name(), self.text())
 
     async def test_the_rows_and_the_fields_are_kept_until_a_choice_or_the_page_changes(self):
         await self.choose_genre_and_subgenre()
@@ -362,14 +362,14 @@ class TestWizardPage(WizardTest):
     async def test_the_song_is_named_on_the_genre_branch_and_a_name_in_use_is_refused(self):
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_NAME_LABEL)
-        await self.press(Key.ENTER, *[Key.BACKSPACE] * len(self.wizard().song_name()))
+        await self.press(Key.ENTER, *[Key.BACKSPACE] * len(self.wizard().get_song_name()))
         await self.type(A_SONG_NAME)
         await self.press(Key.ENTER)
-        self.assertEqual(self.wizard().song_name(), A_SONG_NAME)
+        self.assertEqual(self.wizard().get_song_name(), A_SONG_NAME)
         await self.press(Key.ENTER, *[Key.BACKSPACE] * len(A_SONG_NAME))
         await self.type(names.MSG_DEFAULT_SONG_NAME)
         await self.press(Key.ENTER)
-        self.assertEqual(self.wizard().song_name(), A_SONG_NAME)
+        self.assertEqual(self.wizard().get_song_name(), A_SONG_NAME)
 
     async def test_the_form_branch_picks_a_form_lists_its_sections_and_opens_to_a_branch_for_each(self):
         await self.choose_genre_and_subgenre()
@@ -430,7 +430,7 @@ class TestWizardPage(WizardTest):
     async def test_create_adds_the_song_with_all_it_uses_makes_it_current_and_shows_arrange(self):
         patterns = self.document.get_setlist().get_pattern_names()
         await self.choose_genre_and_subgenre()
-        name = self.wizard().song_name()
+        name = self.wizard().get_song_name()
         kept = self.choices().to_data()
         await self.create()
         self.assertIsInstance(self.app.screen, ArrangePage)
@@ -461,7 +461,7 @@ class TestWizardPage(WizardTest):
         await self.press(keybindings.Page.WIZARD)
         await self.start_with(starts.NEW_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
-        second = self.wizard().song_name()
+        second = self.wizard().get_song_name()
         self.assertNotEqual(first, second)
         await self.create()
         self.assertEqual(self.document.song_names(), [names.MSG_DEFAULT_SONG_NAME, first, second])
@@ -1515,7 +1515,7 @@ class TestWizardStart(WizardTest):
 
     async def test_no_way_of_starting_is_asked_for_on_a_song_the_wizard_did_not_make(self):
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertIsNone(self.wizard().start())
+        self.assertIsNone(self.wizard().get_start())
 
     async def test_a_song_the_wizard_made_asks_how_to_start_in_a_dialog_and_esc_opens_no_wizard(self):
         await self.make_a_song_and_open_the_wizard_on_it()
@@ -1546,12 +1546,12 @@ class TestWizardStart(WizardTest):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         kept = self.document.song().get_wizard_choices()
         await self.start_with(starts.NEW_FROM_LAST)
-        self.assertEqual(self.wizard().start(), starts.NEW_FROM_LAST)
+        self.assertEqual(self.wizard().get_start(), starts.NEW_FROM_LAST)
         # The run keeps the song's choices and draws a seed of its own at once, so that what a panel shows is what Apply makes.
         self.assertEqual({**self.choices().to_data(), arranger.SEED: None}, {**kept, arranger.SEED: None})
         drawn = self.choices().get_seed()
         self.assertNotEqual(drawn, kept[arranger.SEED])
-        self.assertNotEqual(self.wizard().song_name(), first)
+        self.assertNotEqual(self.wizard().get_song_name(), first)
         self.assertFalse(self.wizard().replaces())
         await self.create()
         self.assertEqual(len(self.document.song_names()), 3)
@@ -1642,7 +1642,7 @@ class TestWizardFillsAnUntouchedSong(WizardTest):
         before = self.document.get_setlist().to_data()
         starter = self.document.get_setlist().get_pattern_names()
         await self.choose_genre_and_subgenre()
-        name = self.wizard().song_name()
+        name = self.wizard().get_song_name()
         await self.create()
         self.assertEqual(self.document.song_names(), [name])
         self.assertEqual(self.document.get_current_song_name(), name)
@@ -1656,7 +1656,7 @@ class TestWizardFillsAnUntouchedSong(WizardTest):
     async def test_a_song_that_was_changed_is_kept_and_the_new_song_added_beside_it(self):
         self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
         await self.choose_genre_and_subgenre()
-        name = self.wizard().song_name()
+        name = self.wizard().get_song_name()
         await self.create()
         self.assertEqual(self.document.song_names(), [names.MSG_DEFAULT_SONG_NAME, name])
 
@@ -1676,7 +1676,7 @@ class TestWizardPageUndo(WizardTest):
     async def test_create_is_one_step_which_undo_takes_away_whole_and_redo_brings_back(self):
         before = self.document.get_setlist().to_data()
         await self.choose_genre_and_subgenre()
-        name = self.wizard().song_name()
+        name = self.wizard().get_song_name()
         await self.create()
         after = self.document.get_setlist().to_data()
         self.assertNotEqual(before, after)
