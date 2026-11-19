@@ -106,7 +106,7 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_scales_by_octave', '_scale_size', '_played_patterns', '_drifts')
+    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_drifts')
 
     def __init__(self, *, song, scene, scale, track, scale_name=None, drifts=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
@@ -121,6 +121,9 @@ class PatternPlayer:
         self._scale_name = scale_name or scene.get_scale_name()
         self._transpose = track.get_transpose()
         self._velocity_register = track.get_velocity_register()
+        # What a step with no velocity typed plays at on this track, and what an accented step adds.
+        self._default_velocity = song.default_velocity_of(track)
+        self._accent = song.accent_of(track)
         # The scene's scale at each octave a note asked for, and its size, built once rather than for every note of every pass, since the scene's scale can't change while a clip plays.
         self._scales_by_octave = {}
         self._scale_size = None
@@ -241,13 +244,13 @@ class PatternPlayer:
                 continue
             tied_to = len(sounding)
             note_moved = NOTHING_ADDED
-            velocity_added = NOTHING_ADDED
+            velocity_added = self._accent if values[Row.ACCENT] else NOTHING_ADDED
             velocity = values[Row.VELOCITY]
             heard = not muted
             if uses_registers:
                 # Drum patterns have no scale to move a note along, so registers only change their velocity.
                 note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=REGISTER_NOTE_ROWS)
-                velocity_added = _used_values(values=values, current=current, rows=REGISTER_VELOCITY_ROWS)
+                velocity_added += _used_values(values=values, current=current, rows=REGISTER_VELOCITY_ROWS)
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
             effects = NO_EFFECTS
@@ -283,7 +286,7 @@ class PatternPlayer:
         as the bottom note of the step's chord when the step has one.
 
         Registers move its note note_moved scale notes and add velocity_added to its velocity, which
-        is velocity, the step's own or the bound register's, or the default when that's None. A
+        is velocity, the step's own or the bound register's, or the track's default velocity when that's None; an accent is part of what is added. A
         step whose conditions don't hold isn't heard, and every slice is a rest, so a ratchet
         sounds all its slices or none.
         effects, what the clip's drifts do to the step, add to its probability, held from 0 to
@@ -294,7 +297,7 @@ class PatternPlayer:
         """
         default = self._song.get_default_drum_octave() if drum else self._song.get_default_octave()
         octave = _value_or(value=values[Row.OCTAVE], default=default)
-        velocity = _clamped_velocity(_value_or(value=velocity, default=defaults.DEFAULT_VELOCITY) + velocity_added)
+        velocity = _clamped_velocity(_value_or(value=velocity, default=self._default_velocity) + velocity_added)
         ratchet = values[Row.RATCHET] or defaults.DEFAULT_RATCHET
         offset = values[Row.RATCHET_OFFSET] or NO_HALF_STEPS
         slices = []

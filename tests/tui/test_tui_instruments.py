@@ -120,6 +120,20 @@ class TestInstrumentEditor(UITest):
     def field_text(self, label):
         return next(field.value() for field in self.app.screen.fields() if field.label == label)
 
+    async def test_the_default_velocity_and_the_accent_are_stepped_and_cleared(self):
+        self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), defaults.DEFAULT_VELOCITY)
+        await self.select_field(labels.MSG_DEFAULT_VELOCITY_LABEL)
+        await self.press(keybindings.InstrumentEditor.LESS)
+        self.assertEqual(self.instrument().get_default_velocity(), defaults.DEFAULT_VELOCITY - 1)
+        await self.press(Key.BACKSPACE)
+        self.assertIsNone(self.instrument().get_default_velocity())
+        self.assertEqual(self.field_text(labels.MSG_ACCENT_LABEL), marks.MSG_ACCENT_SHOWN.format(accent=defaults.DEFAULT_INSTRUMENT_ACCENT))
+        await self.select_field(labels.MSG_ACCENT_LABEL)
+        await self.press(keybindings.InstrumentEditor.MORE)
+        self.assertEqual(self.instrument().get_accent(), defaults.DEFAULT_INSTRUMENT_ACCENT + 1)
+        await self.press(Key.BACKSPACE)
+        self.assertIsNone(self.instrument().get_written_accent())
+
     async def test_the_gm_sound_is_chosen_from_its_families_and_stepped(self):
         self.assertEqual(self.field_text(labels.MSG_GM_SOUND_LABEL), marks.MSG_NONE_SHOWN)
         await self.select_field(labels.MSG_GM_SOUND_LABEL)

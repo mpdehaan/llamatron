@@ -18,8 +18,8 @@ renamed and deleted since the Tracks page went, and the track editor it opens.""
 
 from tests.support.ui_testing import UITest, back_key, forward_key, key_of
 from llamatron.composition.file_format import REGISTER_NAMES, ClipSlotSetting, PatternSetting, TrackSetting
-from llamatron.composition import limits
-from llamatron.strings import labels, names as names_text
+from llamatron.composition import defaults, limits
+from llamatron.strings import labels, marks, names as names_text
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
@@ -32,6 +32,8 @@ from tests.support.rendering import render_song
 
 
 LEAD = 'lead'
+SYNTH = 'synth'
+QUIET = 80
 DRUMS = 'drums'
 TRACK_1 = names_text.MSG_NEW_TRACK_NAME.format(number=1)
 TRACK_2 = names_text.MSG_NEW_TRACK_NAME.format(number=2)
@@ -187,6 +189,30 @@ class TestTrackEditor(UITest):
         await super().asyncSetUp()
         await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
         self.assertIsInstance(self.app.screen, TrackEditor)
+
+    def field_text(self, label):
+        return next(field.value() for field in self.app.screen.fields() if field.label == label)
+
+    async def test_the_default_velocity_shows_the_instrument_s_until_the_track_has_its_own(self):
+        self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), defaults.DEFAULT_VELOCITY)
+        self.document.add_instrument(SYNTH)
+        self.document.setlist().get_instrument(SYNTH).set_default_velocity(QUIET)
+        self.track(LEAD).set_instrument_name(name=SYNTH, song=self.document.song())
+        self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=QUIET))
+        await self.select_field(labels.MSG_DEFAULT_VELOCITY_LABEL)
+        await self.press(keybindings.TrackEditor.LESS)
+        self.assertEqual(self.track(LEAD).get_default_velocity(), QUIET - 1)
+        self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), QUIET - 1)
+        await self.press(Key.BACKSPACE)
+        self.assertIsNone(self.track(LEAD).get_default_velocity())
+
+    async def test_the_accent_starts_at_the_track_s_default_and_is_stepped_and_cleared(self):
+        self.assertEqual(self.field_text(labels.MSG_ACCENT_LABEL), marks.MSG_ACCENT_SHOWN.format(accent=defaults.DEFAULT_TRACK_ACCENT))
+        await self.select_field(labels.MSG_ACCENT_LABEL)
+        await self.press(keybindings.TrackEditor.MORE)
+        self.assertEqual(self.track(LEAD).get_accent(), defaults.DEFAULT_TRACK_ACCENT + 1)
+        await self.press(Key.BACKSPACE)
+        self.assertIsNone(self.track(LEAD).get_written_accent())
 
     async def test_a_tracks_settings(self):
         await self.select_field(MUTE)

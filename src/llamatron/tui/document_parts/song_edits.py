@@ -99,6 +99,14 @@ class SongEdits:
     def set_track_mute(self, *, name, muted):
         self._change(self._track(name).set_mute, muted)
 
+    def set_track_default_velocity(self, *, name, velocity):
+        """Set the velocity a step with none typed plays at on a track, or None to take its instrument's."""
+        self._change(self._track(name).set_default_velocity, velocity)
+
+    def set_track_accent(self, *, name, accent):
+        """Set what an accented step adds on a track, or None for the default."""
+        self._change(self._track(name).set_accent, accent)
+
     def set_track_transpose(self, *, name, transpose):
         """Set how far a track moves its notes along the scale, left out of the file when it's 0."""
         self._change(self._track(name).set_transpose, transpose)

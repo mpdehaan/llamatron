@@ -662,6 +662,25 @@ class Song(LlamaData):
     def get_instrument(self, name):
         return self._setlist.get_instrument(name)
 
+    def default_velocity_of(self, track):
+        """Return the velocity a step with none typed plays at on a track: the track's own, else its instrument's, else the loudest."""
+        own = track.get_default_velocity()
+        if own is not None:
+            return own
+        instrument = self.instrument_of(track)
+        of_instrument = None if instrument is None else instrument.get_default_velocity()
+        return defaults.DEFAULT_VELOCITY if of_instrument is None else of_instrument
+
+    def accent_of(self, track):
+        """Return what an accented step adds to its velocity on a track: the track's accent on top of its instrument's."""
+        instrument = self.instrument_of(track)
+        return track.get_accent() + (defaults.DEFAULT_INSTRUMENT_ACCENT if instrument is None else instrument.get_accent())
+
+    def instrument_of(self, track):
+        """Return a track's instrument, or None when it names none or the set has none of that name."""
+        name = track.get_instrument_name()
+        return self.get_instrument(name) if name is not None and self.has_instrument(name) else None
+
     def get_chain(self, name):
         return self._setlist.get_chain(name)
 

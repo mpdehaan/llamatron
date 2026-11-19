@@ -181,6 +181,9 @@ class TrackSetting:
     CC3_REGISTER = 'cc3_register'
     CC4_REGISTER = 'cc4_register'
     VELOCITY_REGISTER = 'velocity_register'
+    # The velocity a step with none typed plays at, over the track's instrument's, and what an accented step adds, on top of the instrument's.
+    DEFAULT_VELOCITY = 'default_velocity'
+    ACCENT = 'accent'
     # The chains every clip of the track runs, after the clip's and the scene's.
     CHAINS = 'chains'
     # How the track's chords are strummed, unless a clip strums its own way.
@@ -230,6 +233,8 @@ class Row:
     # The scale type a step's degree and chord are drawn from, on the clip's root, or blank for the clip's own: a borrowed chord.
     CHORD_SCALE = 'chord_scale'
     VELOCITY = 'velocity'
+    # A switch on a step: the step plays louder by the accent of the track that plays it.
+    ACCENT = 'accent'
     PROBABILITY = 'probability'
     GLIDE = 'glide'
     # A tied step plays nothing of its own and keeps the note before it sounding through the step.
@@ -609,6 +614,9 @@ class InstrumentSetting:
     KEYSWITCHES = 'keyswitches'
     # How many milliseconds before its note a keyswitch is sent, for a plugin that needs it early.
     KEYSWITCH_LEAD = 'keyswitch_lead'
+    # The velocity a step with none typed plays at on the instrument's tracks, and what an accented step adds there.
+    DEFAULT_VELOCITY = 'default_velocity'
+    ACCENT = 'accent'
 
 
 class KeyswitchSetting:
@@ -738,7 +746,7 @@ STATEMENT_OF_ROW = {row: (kind, part) for kind, rows in STATEMENT_ROWS.items() f
 STATEMENTS_CUTTING_A_PASS = (StepStatement.STOP, StepStatement.RESTART)
 
 PATTERN_ROWS = [
-    Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.PROBABILITY, Row.GLIDE,
+    Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.ACCENT, Row.PROBABILITY, Row.GLIDE,
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),

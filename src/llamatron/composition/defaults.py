@@ -51,6 +51,9 @@ DEFAULT_PROTECTED = False
 # No seed means every render is a new take; a seed makes a song render the same every time.
 DEFAULT_SEED = None
 DEFAULT_VELOCITY = 127
+# What an accented step adds to its velocity: a track's own part, and its instrument's, which a track's is added to.
+DEFAULT_TRACK_ACCENT = 15
+DEFAULT_INSTRUMENT_ACCENT = 0
 DEFAULT_PROBABILITY = 100
 DEFAULT_RATCHET = 1
 DEFAULT_REPEAT = 1
