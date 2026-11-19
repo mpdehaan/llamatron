@@ -114,6 +114,8 @@ SETTINGS = described(
     WholeNumber(name=InstrumentSetting.GM_SOUND, lowest=limits.MIN_GM_SOUND, highest=limits.MAX_GM_SOUND, error=errors.ERR_BAD_GM_SOUND),
     Checked(name=InstrumentSetting.KEYSWITCHES, check=check_keyswitches),
     WholeNumber(name=InstrumentSetting.KEYSWITCH_LEAD, lowest=limits.MIN_KEYSWITCH_LEAD, highest=limits.MAX_KEYSWITCH_LEAD, error=errors.ERR_BAD_KEYSWITCH_LEAD),
+    WholeNumber(name=InstrumentSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
+    WholeNumber(name=InstrumentSetting.ACCENT, lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT, error=errors.ERR_BAD_ACCENT),
 )
 
 
@@ -122,11 +124,12 @@ class Instrument(LlamaData):
 
     __slots__ = ('_settings',)
 
-    def __init__(self, *, device=None, channel=None, gm_sound=None, keyswitches=None, keyswitch_lead=None):
+    def __init__(self, *, device=None, channel=None, gm_sound=None, keyswitches=None, keyswitch_lead=None, default_velocity=None, accent=None):
         self.note_change()
         self._settings = settings_by_name(names=SETTINGS, given={
             InstrumentSetting.DEVICE: device, InstrumentSetting.CHANNEL: channel, InstrumentSetting.GM_SOUND: gm_sound,
             InstrumentSetting.KEYSWITCHES: own_copy(keyswitches), InstrumentSetting.KEYSWITCH_LEAD: keyswitch_lead,
+            InstrumentSetting.DEFAULT_VELOCITY: default_velocity, InstrumentSetting.ACCENT: accent,
         })
         check_settings(settings=SETTINGS, data=written_settings(self._settings))
 
@@ -139,6 +142,7 @@ class Instrument(LlamaData):
             return cls(
                 device=data.get(InstrumentSetting.DEVICE), channel=data.get(InstrumentSetting.CHANNEL), gm_sound=data.get(InstrumentSetting.GM_SOUND),
                 keyswitches=data.get(InstrumentSetting.KEYSWITCHES), keyswitch_lead=data.get(InstrumentSetting.KEYSWITCH_LEAD),
+                default_velocity=data.get(InstrumentSetting.DEFAULT_VELOCITY), accent=data.get(InstrumentSetting.ACCENT),
             )
 
     def to_data(self):
@@ -148,6 +152,7 @@ class Instrument(LlamaData):
         return Instrument(
             device=self.get_device(), channel=self.get_written_channel(), gm_sound=self.get_gm_sound(),
             keyswitches=self._settings[InstrumentSetting.KEYSWITCHES], keyswitch_lead=self.get_written_keyswitch_lead(),
+            default_velocity=self.get_default_velocity(), accent=self.get_written_accent(),
         )
 
     def get_device(self):
@@ -234,6 +239,32 @@ class Instrument(LlamaData):
         if any(slot is not None for slot in written):
             check_keyswitches(written)
         self._settings[InstrumentSetting.KEYSWITCHES] = written if any(slot is not None for slot in written) else None
+
+    def get_default_velocity(self):
+        """Return the velocity a step with none typed plays at on its tracks, or None for the loudest, as a track with no instrument plays."""
+        return self._settings[InstrumentSetting.DEFAULT_VELOCITY]
+
+    def get_accent(self):
+        """Return what an accented step adds to its velocity on its tracks, before each track's own accent."""
+        return or_default(value=self._settings[InstrumentSetting.ACCENT], default=defaults.DEFAULT_INSTRUMENT_ACCENT)
+
+    def get_written_accent(self):
+        """Return its accent as the file holds it, or None for the default."""
+        return self._settings[InstrumentSetting.ACCENT]
+
+    @notes_change
+    def set_default_velocity(self, velocity):
+        """Set the velocity a step with none typed plays at on its tracks, or None for the loudest."""
+        if velocity is not None:
+            SETTINGS[InstrumentSetting.DEFAULT_VELOCITY].check(velocity)
+        self._settings[InstrumentSetting.DEFAULT_VELOCITY] = velocity
+
+    @notes_change
+    def set_accent(self, accent):
+        """Set what an accented step adds on its tracks, or None for the default."""
+        if accent is not None:
+            SETTINGS[InstrumentSetting.ACCENT].check(accent)
+        self._settings[InstrumentSetting.ACCENT] = accent
 
     def get_keyswitch_lead(self):
         """Return how many milliseconds before its note a keyswitch is sent, 0 for at the same moment."""

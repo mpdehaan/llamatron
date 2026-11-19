@@ -152,11 +152,12 @@ TIME is one play at the current song's tempo. USED counts the clips, in every so
 # TrackEditor
 HELP_TRACK_EDITOR = """
 Name: ENTER renames the track, which updates every scene.
-Drum: a drum track is never transposed. Drum patterns never are either, on any track.
-Mute: the track starts switched off in Live. Its clips are still written, and other tracks can still grab from it.
+Drum: a drum track is never transposed, nor a drum pattern.
+Mute: starts switched off in Live. Its clips can still be grabbed.
 Groove: for its clips, instead of the scene's or the song's. off plays them straight whatever the scene or song chooses.
 Transpose: moves every note on the track along the scale when exporting, without changing its patterns.
 Lowest and Highest octave: the octaves its instrument plays, the whole MIDI range to start, which the piano roll marks.
+Default velocity: a step with none typed. Accent: an accent adds.
 CC 1 to CC 4: the CC number that each of a pattern's CC rows sends on this track. A row with no number sends nothing here.
 Instrument: where the track plays in real time, one of the Instruments page's, or none to leave it out.
 
@@ -462,11 +463,12 @@ that no track uses.
 HELP_INSTRUMENT_EDITOR = """
 Name: ENTER renames the instrument, and every track that chose it follows.
 Device: the MIDI output port, chosen from the ports this computer has now, or *FluidSynth, the software
-synthesizer the tracker starts itself. (none) until one is chosen, and a track on an instrument with no device
-cannot play. A port that has gone is still shown, so that the set opens without it.
+synthesizer the tracker starts itself. A track on an instrument with no device cannot play. A port that
+has gone is still shown.
 Channel: 1 to 16, as the device numbers them, or (auto) with FluidSynth, which gives each track its own.
 GM sound: one of General MIDI's 128 sounds, which the MIDI (General MIDI) export gives this instrument's tracks and
 FluidSynth plays. ENTER chooses it from the families, each opening its sounds, where a sound can be heard.
+Default velocity: a step with none typed. Accent: an accent adds.
 
 Up and down select a setting. Left and right change it, and ENTER types or chooses. Bksp clears the device or sound.
 """

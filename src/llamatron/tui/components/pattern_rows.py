@@ -36,6 +36,7 @@ from llamatron.tui.components.degree_row import DegreeRow, GAUGE_ROWS_WITHOUT_SC
 from llamatron.tui.components.dot_row import DotRow
 from llamatron.tui.components.inversion_row import InversionRow
 from llamatron.tui.components.gate_row import GateRow
+from llamatron.tui.components.accent_row import AccentRow
 from llamatron.tui.components.glide_row import GlideRow
 from llamatron.tui.components.grab_row import GrabRow
 from llamatron.tui.components.number_row import NumberRow
@@ -56,7 +57,7 @@ from llamatron.tui import keybindings
 PINNED_ROWS = [Row.DEGREE, Row.OCTAVE]
 # The sections of rows under the pinned ones, in order, each headed by a row the cursor can rest on.
 SECTIONS = {
-    RowSection.BASICS: [Row.ACCIDENTAL, Row.VELOCITY, Row.KEYSWITCH],
+    RowSection.BASICS: [Row.ACCIDENTAL, Row.VELOCITY, Row.ACCENT, Row.KEYSWITCH],
     # Everything about a step's chord together, in the order that is the same wherever a chord is chosen: the chord, its tensions, the scale it borrows and its inversion.
     RowSection.CHORD: [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION],
     RowSection.TIMING: [Row.TIE, Row.GATE, Row.DOT, Row.GLIDE],
@@ -73,7 +74,7 @@ SECTIONS = {
 # The component that draws and edits each row.
 ROW_CLASSES = {
     Row.DEGREE: DegreeRow, Row.GATE: GateRow, Row.DOT: DotRow, Row.ACCIDENTAL: AccidentalRow, Row.OCTAVE: OctaveRow,
-    Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.VELOCITY: NumberRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
+    Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.VELOCITY: NumberRow, Row.ACCENT: AccentRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
     Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.KEYSWITCH: KeyswitchRow, Row.SLIDE: SlideRow,
     **dict.fromkeys(CC_ROWS, CcRow),
     **dict.fromkeys(REGISTER_NOTE_ROWS.values(), RegisterRow),

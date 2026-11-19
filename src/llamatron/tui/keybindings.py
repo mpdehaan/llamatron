@@ -858,6 +858,10 @@ class ToggleRow(PatternRow):
     IN_LEGEND = IN_HELP
 
 
+class AccentRow(ToggleRow):
+    """The Accent row."""
+
+
 class GlideRow(ToggleRow):
     """The Glide row."""
 

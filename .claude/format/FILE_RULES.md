@@ -460,6 +460,12 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   an instrument on `*FluidSynth`, the melodic ones with a sound and the drum tracks sharing one
   called `drum kit`, and every track that plays only drum patterns is a drum track, which
   `tests/app/test_examples.py` holds them to. A new set has no instruments.
+- Accents and default velocities, the user's design: a pattern's `accent` row (`Row.ACCENT`, a `RowOfToggles`, `AccentRow` in
+  the Basics section under Velocity); a track's and an instrument's `default_velocity` (1 to 127) and `accent` (`MIN_ACCENT` 0
+  to `MAX_ACCENT` 127; a track's `DEFAULT_TRACK_ACCENT` 15, an instrument's `DEFAULT_INSTRUMENT_ACCENT` 0). A step with no
+  velocity plays at `Song.default_velocity_of(track)`: the track's, else its instrument's, else `DEFAULT_VELOCITY`; an accented
+  step adds `Song.accent_of(track)`, the track's accent plus its instrument's, before the registers' additions, held to MIDI's
+  range. `PatternPlayer` reads both once a clip. Tests: `tests/playback/test_accents.py`.
 - Keyswitches, the user's design: an instrument's `keyswitches` (`InstrumentSetting.KEYSWITCHES`) is its Keyswitch Map, a list
   of `KEYSWITCH_SLOT_COUNT` (10) slots numbered 0 to 9, each nothing or a `name` and a `note` (`KeyswitchSetting`, a MIDI
   number, either alone allowed; `Keyswitch`, `NO_KEYSWITCH`, `KEYSWITCH_SETTINGS`), written only when a slot holds something,

@@ -358,6 +358,8 @@ MSG_KEYSWITCH_SLOT_ROW = '{slot:>2}   {toggle}   '
 MSG_KEYSWITCH_MAP_ROW = ' {slot:>2}  '
 # tui/screens/set/instrument_editor.py: how many of an instrument's keyswitch slots hold anything, and its keyswitch lead.
 MSG_KEYSWITCH_LEAD_SHOWN = '{milliseconds} ms'
+# An accent, what an accented step adds to its velocity.
+MSG_ACCENT_SHOWN = '+{accent}'
 
 # tui/components/tension_row.py: a step's tensions in a cell, and how many when they don't fit.
 MSG_TENSIONS_IN_CELL_SEPARATOR = ' '

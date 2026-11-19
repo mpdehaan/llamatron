@@ -20,7 +20,7 @@ from llamatron.composition.file_format import FLUIDSYNTH_DEVICE, Section
 from llamatron.music import midi
 from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT_PREFIX
 from llamatron.realtime.outputs import output_port_names
-from llamatron.composition import limits
+from llamatron.composition import defaults, limits
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.screens.shared.sound_trial import SoundTrial, run_in_sound
@@ -111,6 +111,24 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         dialog = KeyswitchMapDialog(title=messages.MSG_KEYSWITCH_MAP_TITLE.format(instrument=self.item), keyswitches=self.instrument().get_keyswitches(), setlist=self.document().setlist())
         self.ask(dialog=dialog, then=lambda keyswitches: self.document().set_instrument_keyswitches(name=self.item, keyswitches=keyswitches))
 
+    def default_velocity_field(self):
+        """Return the Default velocity field: what a step with no velocity typed plays at on the instrument's tracks, the loudest until set."""
+        velocity = self.instrument().get_default_velocity()
+        return NumberField(
+            page=self, label=labels.MSG_DEFAULT_VELOCITY_LABEL, number=velocity, start=defaults.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY,
+            set=lambda number: self.document().set_instrument_default_velocity(name=self.item, velocity=number),
+            clear=lambda: self.document().set_instrument_default_velocity(name=self.item, velocity=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+        )
+
+    def accent_field(self):
+        """Return the Accent field: what a step with its Accent on adds to its velocity on the instrument's tracks, before each track's own accent."""
+        accent = self.instrument().get_accent()
+        return NumberField(
+            page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT,
+            set=lambda number: self.document().set_instrument_accent(name=self.item, accent=number),
+            clear=lambda: self.document().set_instrument_accent(name=self.item, accent=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+        )
+
     def lead_field(self):
         """Return the Keyswitch lead field: how many milliseconds before its note a keyswitch is sent, for a plugin that needs it early, nothing unless set."""
         instrument = self.instrument()
@@ -141,6 +159,8 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
             self.channel_field(),
             Field(label=labels.MSG_GM_SOUND_LABEL, value=lambda: sound_text(instrument.get_gm_sound()), adjust=self.step_gm_sound, enter=self.pick_gm_sound, enter_what=legends.What.CHOOSE,
                   clear=lambda: self.set_gm_sound(None), clear_what=legends.MSG_NO_GM_SOUND_WHAT),
+            self.default_velocity_field(),
+            self.accent_field(),
             self.lead_field(),
             Button(label=labels.MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP[1], enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
         ]

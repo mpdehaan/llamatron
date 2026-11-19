@@ -498,6 +498,7 @@ ROW_DESCRIPTIONS = described_rows(
     RowOfTensions(name=Row.TENSION, choices=TENSIONS),
     RowOfChordScales(name=Row.CHORD_SCALE, choices=scale_type_names()),
     RowOfNumbers(name=Row.VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, default=defaults.DEFAULT_VELOCITY),
+    RowOfToggles(name=Row.ACCENT),
     RowOfNumbers(name=Row.PROBABILITY, lowest=limits.MIN_PROBABILITY, highest=limits.MAX_PROBABILITY, default=defaults.DEFAULT_PROBABILITY),
     RowOfToggles(name=Row.GLIDE),
     RowOfToggles(name=Row.TIE),

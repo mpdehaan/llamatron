@@ -517,7 +517,7 @@ MSG_STATEMENT_ROW_LABEL = 'c{place}'
 MSG_ROW_LABELS = {
     Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion',
     Row.TENSION: 'Tension', Row.CHORD_SCALE: 'Scale',
-    Row.VELOCITY: 'Velocity', Row.PROBABILITY: 'Probability', Row.GLIDE: 'Glide', Row.TIE: 'Tie', Row.RATCHET: 'Ratchet',
+    Row.VELOCITY: 'Velocity', Row.ACCENT: 'Accent', Row.PROBABILITY: 'Probability', Row.GLIDE: 'Glide', Row.TIE: 'Tie', Row.RATCHET: 'Ratchet',
     Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab', Row.KEYSWITCH: 'Keyswitch',
     Row.CC1: 'CC 1', Row.CC2: 'CC 2', Row.CC3: 'CC 3', Row.CC4: 'CC 4', Row.SLIDE: 'Slide',
     **register_labels(rows=REGISTER_NOTE_ROWS, label=MSG_REGISTER_NOTE_LABEL),
@@ -776,6 +776,8 @@ MSG_GM_FAMILIES = [
 MSG_GM_SOUND_LABEL = 'GM sound'
 MSG_KEYSWITCH_MAP_LABEL = 'Keyswitch Map'
 MSG_KEYSWITCH_LEAD_LABEL = 'Keyswitch lead'
+# What a step with no velocity typed plays at, on an instrument and on a track.
+MSG_DEFAULT_VELOCITY_LABEL = 'Default velocity'
 MSG_GM_SOUND_SHOWN = '{number} {name}'
 
 # tui/screens/wizard/wizard_page.py and the branches beside it

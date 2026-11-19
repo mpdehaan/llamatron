@@ -113,6 +113,27 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             set=lambda choice: bind(None if choice == marks.MSG_NONE_SHOWN else choice), clear=lambda: bind(None), clear_what=legends.MSG_UNBIND_WHAT,
         )
 
+    def default_velocity_field(self):
+        """Return the Default velocity field: what a step with no velocity typed plays at on the track, shown as its instrument's until the track has its own."""
+        track = self.track()
+        own = track.get_default_velocity()
+        above = self.document().song().default_velocity_of(track)
+        shown = None if own is not None else marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=above) if self.document().song().instrument_of(track) is not None else above
+        return NumberField(
+            page=self, label=labels.MSG_DEFAULT_VELOCITY_LABEL, number=own, start=above, shown=shown, typed=above, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY,
+            set=lambda number: self.document().set_track_default_velocity(name=self.item, velocity=number),
+            clear=lambda: self.document().set_track_default_velocity(name=self.item, velocity=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+        )
+
+    def accent_field(self):
+        """Return the Accent field: what a step with its Accent on adds to its velocity on the track, on top of its instrument's accent."""
+        accent = self.track().get_accent()
+        return NumberField(
+            page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT,
+            set=lambda number: self.document().set_track_accent(name=self.item, accent=number),
+            clear=lambda: self.document().set_track_accent(name=self.item, accent=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
+        )
+
     def instrument_field(self):
         return Field(label=labels.MSG_INSTRUMENT_LABEL, value=lambda: self.track().get_instrument_name() or marks.MSG_NONE_SHOWN, adjust=None, enter=self.pick_instrument, enter_what=legends.What.CHOOSE,
                      clear=lambda: self.set_instrument(None), clear_what=legends.MSG_NO_INSTRUMENT_WHAT)
@@ -139,6 +160,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             octave_field(page=self, label=labels.MSG_HIGHEST_OCTAVE_LABEL, current=track.get_highest_octave, highest=lambda: limits.MAX_OCTAVE, lowest=track.get_lowest_octave, default=limits.MAX_OCTAVE,
                               set_octave=lambda octave: self.document().set_track_highest_octave(name=self.item, octave=octave)),
         ]
+        result += [self.default_velocity_field(), self.accent_field()]
         result += [self.cc_field(lane) for lane in range(len(CC_ROWS))]
         registers = track.get_cc_registers()
         result += [

@@ -586,6 +586,19 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         await self.press(Key.ENTER)
         self.assertIs(self.value(row=Row.GLIDE), False)
 
+    async def test_accent_toggles_with_space_and_shows_the_dot(self):
+        await self.go_to_row(Row.ACCENT)
+        accent = self.editor.row_for(Row.ACCENT)
+        self.assertEqual(accent.cell_text(step=0), marks.MSG_TOGGLE_OFF)
+        await self.press(Key.SPACE)
+        self.assertIs(self.value(row=Row.ACCENT), True)
+        self.assertEqual(accent.cell_text(step=0), marks.MSG_TOGGLE_ON)
+        await self.press(Key.ENTER)
+        self.assertIs(self.value(row=Row.ACCENT), False)
+        # Accent sits straight under Velocity.
+        shown = [row.name for row in self.editor.rows_view.reachable()]
+        self.assertEqual(shown.index(Row.ACCENT), shown.index(Row.VELOCITY) + 1)
+
     async def test_the_accidental_shows_only_a_sharp_or_a_flat(self):
         await self.go_to_row(Row.ACCIDENTAL)
         self.assertEqual(self.editor.cell_text(name=Row.ACCIDENTAL, step=0), NOTHING)

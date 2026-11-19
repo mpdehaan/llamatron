@@ -146,7 +146,7 @@ Degree and Octave stay at the top, and under them the rows come in sections that
 
 Basics and Timing start open, and the editor remembers which sections are open, for every pattern, for as long as it runs. When the open rows don't fit the screen, they scroll to keep the cursor's row in view. The sections, in the order a step works them out, are:
 
-- **Basics:** #/b, Velocity, Keyswitch;
+- **Basics:** #/b, Velocity, Accent, Keyswitch;
 - **Chord:** Chord, Tension, Scale, Inversion;
 - **Timing:** Tie, Gate, Dot, Glide;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
@@ -168,7 +168,8 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 | #/b | Sharp or flat: moves the note a half step up or down | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Chord | Builds a chord on the note | `ENTER` to choose from the list, `Space` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Inversion | Which of the chord's notes is at the bottom: blank for root position, `1` moves the chord's lowest note up an octave, `2` the lowest two and `3` the lowest three, which only a chord of four notes or more has, so a triad plays `3` as `2`. A step with no chord shows `/`, and the piano roll draws the chord's other notes where the inversion plays them. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
-| Velocity | 1 to 127, default 127 | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
+| Velocity | 1 to 127. A blank step plays at the Default velocity of the track that plays the pattern, 127 unless the track or its instrument says otherwise. | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
+| Accent | `●` makes the step louder by the Accent of the track that plays the pattern, added to the step's velocity, typed or default, and stopping at 127. A blank is off. See [Tracks](TRACKS.md). | `Space` or `ENTER` toggles, `Bksp` turns it off |
 | Glide | `●` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` or `ENTER` toggles, `Bksp` turns it off |
 | Keyswitch | Which of the instrument's keyswitch slots the step's note is played with. A cell is blank for none and otherwise shows how many are on. See Keyswitches below. | `ENTER` to choose, `Bksp` clears |
 

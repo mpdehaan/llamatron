@@ -298,6 +298,14 @@ class SetEdits:
         """Give an instrument its ten keyswitch slots, each a name and a note, as the Keyswitch Map dialog answers them."""
         self._change(self._setlist.get_instrument(name).set_keyswitches, keyswitches)
 
+    def set_instrument_default_velocity(self, *, name, velocity):
+        """Set the velocity a step with none typed plays at on an instrument's tracks, or None for the loudest."""
+        self._change(self._setlist.get_instrument(name).set_default_velocity, velocity)
+
+    def set_instrument_accent(self, *, name, accent):
+        """Set what an accented step adds on an instrument's tracks, or None for the default."""
+        self._change(self._setlist.get_instrument(name).set_accent, accent)
+
     def set_instrument_keyswitch_lead(self, *, name, milliseconds):
         """Set how many milliseconds before its note an instrument's keyswitches are sent, or None for at the same moment."""
         self._change(self._setlist.get_instrument(name).set_keyswitch_lead, milliseconds)

@@ -69,6 +69,8 @@ SETTINGS = described(
     Checked(name=TrackSetting.INSTRUMENT, check=_check_instrument_name, needs_song=True),
     *[Choice(name=name, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER) for name in CC_REGISTER_SETTINGS],
     Choice(name=TrackSetting.VELOCITY_REGISTER, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER),
+    WholeNumber(name=TrackSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
+    WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT, error=errors.ERR_BAD_ACCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
     *strum_settings(),
     *euclid_settings(),
@@ -91,7 +93,7 @@ class Track(LlamaData):
 
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
-        cc1_register=None, cc2_register=None, cc3_register=None, cc4_register=None, velocity_register=None, chains=None,
+        cc1_register=None, cc2_register=None, cc3_register=None, cc4_register=None, velocity_register=None, default_velocity=None, accent=None, chains=None,
         strum_direction=None, strum_spread=None, strum_fade=None, strum_loose_timing=None, strum_upstroke_strings=None,
         euclid_hits=None, euclid_steps=None, euclid_rotate=None, euclid_step=None, bypass_when=None, skip_when=None,
     ):
@@ -100,7 +102,7 @@ class Track(LlamaData):
             TrackSetting.DRUM: drum, TrackSetting.MUTE: mute, TrackSetting.TRANSPOSE: transpose,
             TrackSetting.LOWEST_OCTAVE: lowest_octave, TrackSetting.HIGHEST_OCTAVE: highest_octave, TrackSetting.CC: own_copy(cc), TrackSetting.GROOVE: groove,
             TrackSetting.INSTRUMENT: instrument, TrackSetting.CC1_REGISTER: cc1_register, TrackSetting.CC2_REGISTER: cc2_register,
-            TrackSetting.CC3_REGISTER: cc3_register, TrackSetting.CC4_REGISTER: cc4_register, TrackSetting.VELOCITY_REGISTER: velocity_register,
+            TrackSetting.CC3_REGISTER: cc3_register, TrackSetting.CC4_REGISTER: cc4_register, TrackSetting.VELOCITY_REGISTER: velocity_register, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
             TrackSetting.CHAINS: own_copy(chains), TrackSetting.STRUM_DIRECTION: strum_direction, TrackSetting.STRUM_SPREAD: strum_spread,
             TrackSetting.STRUM_FADE: strum_fade, TrackSetting.STRUM_LOOSE_TIMING: strum_loose_timing, TrackSetting.STRUM_UPSTROKE_STRINGS: strum_upstroke_strings,
             TrackSetting.EUCLID_HITS: euclid_hits, TrackSetting.EUCLID_STEPS: euclid_steps, TrackSetting.EUCLID_ROTATE: euclid_rotate, TrackSetting.EUCLID_STEP: euclid_step,
@@ -133,6 +135,32 @@ class Track(LlamaData):
             return defaults.DEFAULT_TRANSPOSE
         transpose = self._settings[TrackSetting.TRANSPOSE]
         return defaults.DEFAULT_TRANSPOSE if transpose is None else transpose
+
+    def get_default_velocity(self):
+        """Return the velocity a step with none typed plays at on the track, or None where the track leaves that to its instrument."""
+        return self._settings[TrackSetting.DEFAULT_VELOCITY]
+
+    def get_accent(self):
+        """Return what an accented step adds to its velocity on the track, on top of its instrument's accent."""
+        return or_default(value=self._settings[TrackSetting.ACCENT], default=defaults.DEFAULT_TRACK_ACCENT)
+
+    def get_written_accent(self):
+        """Return its accent as the file holds it, or None for the default."""
+        return self._settings[TrackSetting.ACCENT]
+
+    @notes_change
+    def set_default_velocity(self, velocity):
+        """Set the velocity a step with none typed plays at, or None to take the instrument's."""
+        if velocity is not None:
+            SETTINGS[TrackSetting.DEFAULT_VELOCITY].check(velocity)
+        self._settings[TrackSetting.DEFAULT_VELOCITY] = velocity
+
+    @notes_change
+    def set_accent(self, accent):
+        """Set what an accented step adds to its velocity, or None for the default."""
+        if accent is not None:
+            SETTINGS[TrackSetting.ACCENT].check(accent)
+        self._settings[TrackSetting.ACCENT] = accent
 
     def get_lowest_octave(self):
         """Return the lowest octave the track's instrument plays, the bottom of the MIDI range unless set."""
