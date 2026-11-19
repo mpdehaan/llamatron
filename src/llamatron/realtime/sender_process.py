@@ -122,6 +122,30 @@ def real_standard_error():
         sys.stderr = captured
 
 
+def _add(*, engine, message):
+    engine.add(message[1])
+
+
+def _drop(*, engine, message):
+    engine.drop(tag=message[1], after=message[2])
+
+
+def _stop_tag(*, engine, message):
+    engine.stop_tag(message[1])
+
+
+def _stop_all(*, engine, message):
+    engine.stop_all()
+
+
+def _silence(*, engine, message):
+    engine.silence(channels=message[1])
+
+
+# The messages that only hand the engine something: each kind, and what passes it on.
+FORWARDED = {ADD: _add, DROP: _drop, STOP_TAG: _stop_tag, STOP_ALL: _stop_all, SILENCE: _silence}
+
+
 def run_sender(*, connection, ports, recording):
     """The process: an engine on the real clock, fed by the pipe, sending each event when its time comes."""
     try:
@@ -149,16 +173,8 @@ def run_sender(*, connection, ports, recording):
             if kind == START:
                 engine.start(at=message[1])
                 started = time.perf_counter() if message[1] is None else message[1]
-            elif kind == ADD:
-                engine.add(message[1])
-            elif kind == DROP:
-                engine.drop(tag=message[1], after=message[2])
-            elif kind == STOP_TAG:
-                engine.stop_tag(message[1])
-            elif kind == STOP_ALL:
-                engine.stop_all()
-            elif kind == SILENCE:
-                engine.silence(channels=message[1])
+            elif kind in FORWARDED:
+                FORWARDED[kind](engine=engine, message=message)
             elif kind == CLOSE:
                 engine.close()
                 sent = {name: output.sent for name, output in outputs.items()} if recording else None
