@@ -51,7 +51,6 @@ ONE_HALF_STEP = 1
 # Where the cursor is along a slot's row: on the name, where Enter renames, or on the note, where Enter opens the note picker; the slot's number is only text at the left.
 NAME_CELL = 0
 NOTE_CELL = 1
-CELL_COUNT = 2
 SPACE = ' '
 
 
@@ -99,7 +98,7 @@ class KeyswitchMapDialog(Dialog):
         enter = self.bind(self.KEYS.RENAME_HERE, action=self.rename) if self.cell == NAME_CELL else self.bind(self.KEYS.NOTE, action=self.open_picker)
         return [
             *shared,
-            self.bind(self.KEYS.ACROSS, action=self.across, wants_key=True),
+            self.bind(self.KEYS.TO_NOTE, action=lambda: self.go_to_cell(NOTE_CELL)) if self.cell == NAME_CELL else self.bind(self.KEYS.TO_NAME, action=lambda: self.go_to_cell(NAME_CELL)),
             self.bind(self.KEYS.RENAME, action=self.rename),
             enter,
             self.bind(self.KEYS.CLEAR, action=self.clear),
@@ -111,9 +110,9 @@ class KeyswitchMapDialog(Dialog):
     def move(self, name):
         self.place = cursor_moved(place=self.place, name=name, count=BUTTONS_PLACE + 1)
 
-    def across(self, name):
-        """Move between a slot's name and its note, stopping at both ends; Up and Down keep the place."""
-        self.cell = cursor_moved(place=self.cell, name=name, count=CELL_COUNT)
+    def go_to_cell(self, cell):
+        """Move to a slot's name or its note; Up and Down keep the place."""
+        self.cell = cell
 
     def along_buttons(self, name):
         self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_OK_CANCEL_BUTTONS))
@@ -164,7 +163,7 @@ class KeyswitchMapDialog(Dialog):
             self.picking = moved
 
     def note_text(self, note):
-        return NOTHING if note is None else keyswitch_note_text(setlist=self.setlist, note=note)
+        return marks.MSG_NONE_SHOWN if note is None else keyswitch_note_text(setlist=self.setlist, note=note)
 
     def slot_line(self, *, slot, width):
         keyswitch = self.keyswitches[slot]
@@ -178,12 +177,22 @@ class KeyswitchMapDialog(Dialog):
         line.append(name_mark)
         line.append(fit(text=shown_name(keyswitch), width=room), style=Style.DIM if keyswitch.name is None else Style.PLAIN)
         line.append(note_mark)
-        line.append(fit(text=self.note_text(keyswitch.note), width=KEYSWITCH_NOTE_WIDTH))
+        line.append(fit(text=marks.MSG_KEYSWITCH_NOTE_CELL.format(note=self.note_text(keyswitch.note)), width=KEYSWITCH_NOTE_WIDTH - len(marks.MSG_PICKER_MARK)), style=Style.DIM if keyswitch.note is None else Style.PLAIN)
+        line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
+        return line
+
+    def heading_line(self, width):
+        """Return the headings over the slots' two cells, each over the place its cell starts."""
+        gap = len(marks.MSG_KEYSWITCH_MAP_ROW.format(slot=0)) + len(cursor_mark(False))
+        room = max(width - gap - len(cursor_mark(False)) - KEYSWITCH_NOTE_WIDTH, 0)
+        line = Text(SPACE * gap, no_wrap=True)
+        line.append(fit(text=labels.Column.NAME, width=room) + SPACE * len(cursor_mark(False)) + labels.Column.NOTE, style=Style.DIM)
         return line
 
     def lines(self, width):
         buttons = [(binding[1], label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
         return [
+            self.heading_line(width),
             *[self.slot_line(slot=slot, width=width) for slot in range(KEYSWITCH_SLOT_COUNT)],
             Text(NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else None),
         ]

@@ -16,7 +16,7 @@
 """The pattern editor's Inversion row, in Basics under Chord: blocked on a step with no chord, cycling blank, 1, 2 and 3 on one with a chord."""
 """Keyswitches in the tracker: an instrument's Keyswitch Map and its note picker, the pattern editor's Keyswitch row, the dialog that picks a step's keyswitches from both views, and the piano roll's lights."""
 
-from tests.support.ui_testing import DRUMS, LEAD, TUNE, UITest, first_key
+from tests.support.ui_testing import DRUMS, LEAD, TUNE, UITest, first_key, key_name
 from llamatron.composition.file_format import KEYSWITCH_SLOT_COUNT, Row
 from llamatron.composition.instrument import NO_KEYSWITCH, Keyswitch
 from llamatron.composition import limits
@@ -103,6 +103,21 @@ class TestKeyswitchMap(UITest):
         self.assertEqual(self.slots(), [NO_KEYSWITCH] * KEYSWITCH_SLOT_COUNT)
         await self.press(keybindings.Page.REDO)
         self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, midi.MIN_MIDI_NUMBER + 1))
+
+    async def test_the_note_cells_show_themselves_with_headings_a_mark_and_the_arrow_that_reaches_them(self):
+        dialog = await self.open_map()
+        shown = self.text()
+        self.assertIn(labels.Column.NAME, shown)
+        self.assertIn(labels.Column.NOTE, shown)
+        # An empty slot's note is drawn, with the picker's mark, so that the cell is seen.
+        self.assertIn(marks.MSG_KEYSWITCH_NOTE_CELL.format(note=marks.MSG_NONE_SHOWN), shown)
+        marked = [line.plain for line in dialog.lines(self.app.size.width) if marks.MSG_KEYSWITCH_NOTE_CELL.format(note=marks.MSG_NONE_SHOWN) in line.plain and marks.MSG_PICKER_MARK in line.plain]
+        self.assertEqual(len(marked), KEYSWITCH_SLOT_COUNT)
+        self.assertIn(key_name(MAP.TO_NOTE), shown)
+        self.assertNotIn(key_name(MAP.TO_NAME), shown)
+        await self.press(MAP.TO_NOTE)
+        self.assertEqual(dialog.cell, NOTE_CELL)
+        self.assertIn(key_name(MAP.TO_NAME), self.text())
 
     async def test_the_cursor_is_on_the_name_where_enter_renames_or_on_the_note_where_enter_picks(self):
         dialog = await self.open_map()

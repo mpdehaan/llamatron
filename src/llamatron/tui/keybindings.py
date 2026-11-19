@@ -1096,8 +1096,9 @@ class KeyswitchMapDialog(Dialog):
     MOVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     RENAME = ((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
     NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.MSG_KEYSWITCH_NOTE_WHAT)
-    # The cursor is on a slot's name or its note: Enter renames on the name and opens the note picker on the note.
-    ACROSS = (ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    # The cursor is on a slot's name or its note: Enter renames on the name and opens the note picker on the note, and the legend says which arrow reaches the other.
+    TO_NOTE = (Key.RIGHT, legends.KeyName.TO_THE_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
+    TO_NAME = (Key.LEFT, legends.KeyName.TO_THE_LEFT, legends.MSG_KEYSWITCH_NAME_WHAT)
     RENAME_HERE = (Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
     CLEAR = (Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     OK = (Key.O, legends.KeyName.O, legends.MSG_OK_WHAT)
@@ -1107,7 +1108,7 @@ class KeyswitchMapDialog(Dialog):
     PICK_OCTAVE = (ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.MSG_KEYSWITCH_OCTAVE_WHAT)
     TAKE_NOTE = (Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     CLOSE_PICKER = (CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
-    IN_HELP = [Dialog.CANCEL, MOVE, ACROSS, RENAME, RENAME_HERE, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
+    IN_HELP = [Dialog.CANCEL, MOVE, TO_NOTE, TO_NAME, RENAME, RENAME_HERE, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[Dialog.CANCEL, OK])
 
 
