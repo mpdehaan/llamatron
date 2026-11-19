@@ -24,7 +24,6 @@ drawn.
 """
 
 from llamatron.tui import key_table, keybindings
-from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
 
@@ -105,7 +104,7 @@ class OneRowEditor(StepGrid, StepEditor):
         return result
 
     def move(self, name):
-        self.step = cursor_moved(place=self.step, name=name, count=self.steps())
+        self.move_step(name)
 
     def type_digit(self, digit):
         """Build up a number in the cursor's cell, keeping its sign, and start again when the number would go out of range."""

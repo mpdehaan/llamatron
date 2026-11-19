@@ -27,7 +27,6 @@ from llamatron.composition import limits
 from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
-from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
@@ -60,7 +59,7 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
         return result
 
     def move(self, name):
-        self.step = cursor_moved(place=self.step, name=name, count=self.steps())
+        self.move_step(name)
 
     def toggle(self):
         """Turn the cursor's step on or off."""

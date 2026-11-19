@@ -32,7 +32,6 @@ from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style
-from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.step_editor import StepEditor
@@ -82,7 +81,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
         return [*result, self.bind(self.KEYS.CELL_LENGTH, action=self.next_cell_length), self.bind(self.KEYS.READY_BARS, action=self.pick_ready_bar)]
 
     def move(self, name):
-        self.step = cursor_moved(place=self.step, name=name, count=self.steps())
+        self.move_step(name)
 
     def nudge(self, direction):
         """Step the cursor's stroke to the one before or after, stopping at both ends."""

@@ -24,7 +24,7 @@ that say which steps are on screen. They are here once.
 
 from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings
-from llamatron.tui.key_table import pressed_key
+from llamatron.tui.key_table import cursor_moved, pressed_key
 from llamatron.tui.screens.shared.page import Page
 
 
@@ -53,6 +53,10 @@ class StepEditor(Page):
         if not (name and name.isdigit()):
             self.typed = drawing.NOTHING
         super().on_key(event)
+
+    def move_step(self, name):
+        """Move the cursor's step with an arrow, stopping at the first and the last step."""
+        self.step = cursor_moved(place=self.step, name=name, count=self.steps())
 
     def keep_step(self):
         """Keep the cursor on a step there is, since a removed step or an undo can leave the cursor past the last."""
