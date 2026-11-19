@@ -1,0 +1,195 @@
+version: 1.0.536
+title: Pattern Lists
+description: four bars of a hard rock riff, played in different orders by clips that list several patterns
+notes: |
+  Pattern lists: a hard rock riff at 120 beats a minute in E minor. A clip can play a list of
+  patterns, one after another, as one long pattern. Here four patterns of one bar each, riff-a,
+  riff-b, riff-tail and riff-stop, make every section of the song, listed in different orders.
+  Run it with: llamatron examples/learning/29_pattern_lists.yml --to ableton --replace
+
+  Scene 1, the bars: the four bars once, in order, so that each can be heard.
+  Scene 2, verse: riff-a three times and riff-b as the answer. The bass lists its own bars the
+  same way, and the kick and the snare play three bars of the beat and a fill.
+  Scene 3, chorus: the same bars in another order, ending on riff-stop.
+  Scene 4, there and back: Pattern order is alternate, so the list of three plays forward, then
+  backward, each pass.
+  Scene 5, pendulum: Pattern order is pendulum, so the way back starts on the bar before the
+  last and ends on the last.
+  Scene 6, shuffled: Pattern order is first, then random: riff-a starts every pass and the
+  other three follow in an order drawn anew each pass.
+  Scene 7, backward steps: Pattern order is forward and Step direction is reverse b, so the
+  patterns come in list order while the steps inside each pattern play last to first.
+  Scene 8, chorus again.
+
+  Try it: open the riff's clip in the verse, press A to add riff-tail, and M to carry a pattern
+  to another place in the list. Change a note of riff-a and every scene follows.
+
+  When changing this demo:
+  - Every pattern is one bar, so that a list of four is a phrase of four bars.
+  - The riff's clip times each scene; the other clips loop.
+  - The notes of the riff are the demo's own.
+real_time: true
+protected: true
+
+scales:
+  E Minor: { root: E, type: minor }
+
+patterns:
+  riff-a:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, 1, ~, 3, ~, 1, ~, ~, 1, 4, ~, 3, ~, 1, ~]
+    gate: [1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, ~, 1/16, 1/16, ~, 1/16, ~, 1/16, ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, 3, ~, 3, ~]
+  riff-b:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, 1, ~, 3, ~, 1, ~, ~, 1, 4, ~, 5, ~, 7, ~]
+    gate: [1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, ~, 1/16, 1/16, ~, 1/16, ~, 1/16, ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, ~, 3, 3, ~, 3, ~, 3, ~]
+  riff-tail:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, 1, ~, 3, ~, 4, ~, 5, ~, 7, ~, 1, 3, 4, 5]
+    gate: [1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, 1/16, 1/16, 1/16, 1/16]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 4, 4, 4, 4]
+  riff-stop:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    gate: [1/8, ~, ~, ~, 1/8, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  bass-a:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 3, ~, 1, ~]
+    gate: [1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~]
+    octave: [2, ~, 2, ~, 2, ~, 2, ~, 2, ~, 2, ~, 2, ~, 2, ~]
+  bass-b:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, 1, ~, 1, ~, 1, ~, 4, ~, 4, ~, 5, ~, 7, ~]
+    gate: [1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~]
+    octave: [2, ~, 2, ~, 2, ~, 2, ~, 2, ~, 2, ~, 2, ~, 2, ~]
+  bass-stop:
+    steps: 16
+    step_size: 1/16
+    degree: [1, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    gate: [1/8, ~, ~, ~, 1/8, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [2, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  kick:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, C, ~]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~]
+  kick fill:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, C, ~, ~, ~, C, C]
+    octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, 3, ~, ~, ~, 3, 3]
+  snare:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
+  snare fill:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, D, D, D]
+    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, 3, 3, 3]
+  hats:
+    steps: 16
+    drum: true
+    step_size: 1/16
+    degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
+    accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
+    octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
+
+guitarifies:
+  power chords:
+    single_notes: power_chord
+
+chains:
+  power chords:
+    - guitarify: power chords
+
+instruments:
+  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
+  picked bass: { device: "*FluidSynth", gm_sound: 35 }
+  drum kit: { device: "*FluidSynth" }
+
+songs:
+  pattern lists:
+    tempo: 120
+    scale: E Minor
+    genre: Exercise
+    seed: 29
+
+    tracks:
+      riff: { instrument: distortion guitar, default_velocity: 100, chains: [power chords] }
+      bass: { instrument: picked bass, default_velocity: 96 }
+      kick: { drum: true, instrument: drum kit, default_velocity: 112 }
+      snare: { drum: true, instrument: drum kit, default_velocity: 104 }
+      hats: { drum: true, instrument: drum kit, default_velocity: 64 }
+
+    scenes:
+      - name: "the bars"
+        tracks:
+          riff: { patterns: [riff-a, riff-b, riff-tail, riff-stop] }
+          bass: { pattern: bass-stop, loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "verse"
+        tracks:
+          riff: { patterns: [riff-a, riff-a, riff-a, riff-b], repeat: 2 }
+          bass: { patterns: [bass-a, bass-a, bass-a, bass-b], loop: true }
+          kick: { patterns: [kick, kick, kick, kick fill], loop: true }
+          snare: { patterns: [snare, snare, snare, snare fill], loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "chorus"
+        tracks:
+          riff: { patterns: [riff-a, riff-b, riff-a, riff-stop], repeat: 2 }
+          bass: { patterns: [bass-a, bass-b, bass-a, bass-stop], loop: true }
+          kick: { patterns: [kick, kick, kick, kick fill], loop: true }
+          snare: { patterns: [snare, snare, snare, snare fill], loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "there and back"
+        tracks:
+          riff: { patterns: [riff-a, riff-b, riff-tail], pattern_order: alternate, repeat: 4 }
+          bass: { pattern: bass-a, loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "pendulum"
+        tracks:
+          riff: { patterns: [riff-a, riff-b, riff-tail], pattern_order: pendulum, repeat: 4 }
+          bass: { pattern: bass-a, loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "shuffled"
+        tracks:
+          riff: { patterns: [riff-a, riff-b, riff-tail, riff-stop], pattern_order: first_then_random, repeat: 4 }
+          bass: { pattern: bass-a, loop: true }
+          kick: { patterns: [kick, kick, kick, kick fill], loop: true }
+          snare: { patterns: [snare, snare, snare, snare fill], loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "backward steps"
+        tracks:
+          riff: { patterns: [riff-a, riff-b], direction: reverse_b, repeat: 2 }
+          bass: { pattern: bass-a, loop: true }
+          kick: { pattern: kick, loop: true }
+          snare: { pattern: snare, loop: true }
+          hats: { pattern: hats, loop: true }
+      - name: "chorus again"
+        tracks:
+          riff: { patterns: [riff-a, riff-b, riff-a, riff-stop], repeat: 2 }
+          bass: { patterns: [bass-a, bass-b, bass-a, bass-stop], loop: true }
+          kick: { patterns: [kick, kick, kick, kick fill], loop: true }
+          snare: { patterns: [snare, snare, snare, snare fill], loop: true }
+          hats: { pattern: hats, loop: true }
