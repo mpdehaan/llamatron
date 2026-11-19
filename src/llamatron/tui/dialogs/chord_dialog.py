@@ -128,7 +128,7 @@ class ChordDialog(Dialog):
         if part == SCALE_LIST:
             return [*result, self.bind(self.KEYS.OPEN, action=self.open_row)]
         if part == TENSION_LIST:
-            result.append(self.bind(self.KEYS.FLIP, action=self.flip))
+            result.append(self.bind(self.KEYS.FLIP, action=self.toggle))
         return [*result, self.bind(self.KEYS.CHOOSE, action=lambda: self.dismiss(self.choice()))]
 
     def cancel(self):
@@ -163,7 +163,7 @@ class ChordDialog(Dialog):
     def next_list(self):
         self.part = (self.part + 1) % LISTS
 
-    def flip(self):
+    def toggle(self):
         self.picked ^= {list(file_format.TENSIONS)[self.places[TENSION_LIST]]}
 
     # The scale: a row that borrows none, then the categories, each with a flyout of its scale types.

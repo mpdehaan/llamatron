@@ -46,14 +46,14 @@ class PickManyDialog(Dialog):
         return [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
             self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
-            self.bind(self.KEYS.FLIP, action=self.flip),
+            self.bind(self.KEYS.FLIP, action=self.toggle),
             self.bind(self.KEYS.DONE, action=lambda: self.dismiss([option for option in self.options if option in self.picked])),
         ]
 
     def move_cursor(self, name):
         self.cursor.move(name=name, count=len(self.options))
 
-    def flip(self):
+    def toggle(self):
         self.picked ^= {self.options[self.cursor.get_place()]}
 
     def lines(self, width):

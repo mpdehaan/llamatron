@@ -55,7 +55,7 @@ class KeyswitchDialog(PickManyDialog):
     def toggle_slot(self, name):
         """Turn the slot a digit names on or off, and put the cursor on it."""
         self.cursor.set_place(keys_values.DIGITS.index(name))
-        self.flip()
+        self.toggle()
 
     def legend_lines(self, width):
         """Return the keys listed under the slots, leaving out OK and CANCEL, which the buttons name."""

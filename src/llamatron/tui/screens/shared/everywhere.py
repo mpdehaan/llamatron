@@ -106,7 +106,7 @@ def step_history(page, *, step, done, nothing):
     and the status line says so.
     """
     if not page.steps_history():
-        page.say(page.why_no_history())
+        page.say(page.history_refusal())
         return
     app = page.holder
     pages = app.pages()

@@ -724,7 +724,7 @@ class WizardPage(FieldPage):
     def steps_history(self):
         return False
 
-    def why_no_history(self):
+    def history_refusal(self):
         return messages.MSG_WIZARD_NOTHING_TO_UNDO
 
     # Create.
