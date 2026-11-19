@@ -42,7 +42,9 @@ on the rows.
 from llamatron.composition.checks import is_written_length, listed
 from llamatron.composition.file_format import DIRECTIONS, REGISTER_NAMES, Row, Section
 from llamatron.composition import limits
+from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.pattern import Pattern
+from llamatron.music import midi
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
@@ -104,11 +106,23 @@ class Munge:
     SPLICE_AT_CURSOR = 28
     ROLL_LEFT_AT_CURSOR = 29
     ROLL_RIGHT_AT_CURSOR = 30
+    JOIN_NOTES = 31
+    DIVIDE_NOTES = 32
+    RANDOMIZE_RHYTHM = 33
+    RANDOMIZE_PITCHES = 34
+    REVERSE_PITCHES = 35
+    CLEAR_EVERY = 36
+    CROP = 37
+    TRANSPOSE = 38
+    HUMANIZE_VELOCITY = 39
 
 
 # The heading each munge is listed under.
 MUNGE_GROUPS = {
-    labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.CLEAR_CHORDS],
+    labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.CLEAR_CHORDS, Munge.CLEAR_EVERY, Munge.CROP],
+    labels.MungeGroup.NOTES: [
+        Munge.JOIN_NOTES, Munge.DIVIDE_NOTES, Munge.RANDOMIZE_RHYTHM, Munge.RANDOMIZE_PITCHES, Munge.REVERSE_PITCHES, Munge.TRANSPOSE, Munge.HUMANIZE_VELOCITY,
+    ],
     labels.MungeGroup.COPY: [Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START, Munge.MIRROR],
     labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLICE_AT_CURSOR, Munge.SPLIT],
     labels.MungeGroup.REARRANGE: [
@@ -141,6 +155,10 @@ SCALE_LENGTHS = tuple(range(limits.MIN_SCALE_LENGTH, limits.MAX_SCALE_LENGTH + 1
 # The steps a part has when a pattern is split into new patterns, until another number is typed, and the most names the dialog lists.
 SPLIT_STEPS = 16
 SPLIT_NAMES_SHOWN = 8
+# What the munges that take a number call it.
+EVERY = 'every'
+DEGREES = 'degrees'
+MOST = 'most'
 # The fewest steps a pattern is rolled.
 FIRST_ROLL = 1
 # The munges that blank or fill rows of every step and need nothing else, each with the method of Pattern that does it.
@@ -151,6 +169,10 @@ CLEARING = {
     Munge.CLEAR_CHORDS: Pattern.clear_chords,
     Munge.SMOOTH_CCS: Pattern.smooth_ccs,
     Munge.SMOOTH_VELOCITY: Pattern.smooth_velocity,
+    Munge.JOIN_NOTES: Pattern.join_repeated_notes,
+    Munge.RANDOMIZE_RHYTHM: Pattern.randomize_rhythm,
+    Munge.RANDOMIZE_PITCHES: Pattern.randomize_pitches,
+    Munge.REVERSE_PITCHES: Pattern.reverse_pitches,
 }
 # The munges that take steps from another pattern, each with the title of the picker that asks which.
 OTHER_PATTERN_TITLES = {
@@ -458,6 +480,19 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 document.munge_pattern(name=name, way=Pattern.shuffle_from if choice == Munge.RANDOMIZE_AFTER else Pattern.shuffle_through, step=self.step)
         elif choice in (Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START):
             self.copy_steps(choice)
+        elif choice == Munge.DIVIDE_NOTES:
+            document.divide_long_notes(name)
+        elif choice == Munge.CROP:
+            if self.step >= last:
+                self.refuse(errors.ERR_NOTHING_TO_CROP)
+                return
+            document.set_steps(name=name, steps=self.step + 1)
+        elif choice == Munge.CLEAR_EVERY:
+            self.ask_number(title=messages.MSG_CLEAR_EVERY_PROMPT, low=limits.MIN_STEPS, high=self.steps(), way=Pattern.clear_every, named=EVERY)
+        elif choice == Munge.TRANSPOSE:
+            self.ask_number(title=messages.MSG_TRANSPOSE_PROMPT, low=-limits.MAX_MUNGE_TRANSPOSE, high=limits.MAX_MUNGE_TRANSPOSE, way=Pattern.transpose, named=DEGREES)
+        elif choice == Munge.HUMANIZE_VELOCITY:
+            self.ask_number(title=messages.MSG_HUMANIZE_PROMPT, low=midi.MIN_VELOCITY, high=midi.MAX_VELOCITY, way=Pattern.humanize_velocity, named=MOST)
         elif choice == Munge.ROLL_LEFT_AT_CURSOR:
             if self.step == 0:
                 self.refuse(errors.ERR_NOTHING_BEFORE)
@@ -557,6 +592,23 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             said = messages.MSG_SPLIT_CREATED_MANY.format(count=len(made), names=shown, more=more) if more > 0 else messages.MSG_SPLIT_CREATED.format(count=len(made), names=shown)
             self.tell(messages.MSG_SPLIT_TITLE, said)
         self.ask(dialog=PromptDialog(title=messages.MSG_SPLIT_PROMPT, value=str(min(SPLIT_STEPS, most))), then=answered)
+
+    def ask_number(self, *, title, low, high, way, named):
+        """Ask for a whole number within limits and munge the pattern with it, handed to the munge under a name, saying on the status line why a number or the munge was refused."""
+        def answered(text):
+            try:
+                number = int(text.strip())
+            except ValueError:
+                self.refuse(errors.ERR_TYPED_NOT_AN_INTEGER.format(text=text))
+                return
+            if not low <= number <= high:
+                self.refuse(errors.ERR_MUNGE_NUMBER_OUT_OF_RANGE.format(low=low, high=high))
+                return
+            try:
+                self.document().munge_pattern(name=self.item, way=way, **{named: number})
+            except InvalidValue as problem:
+                self.refuse(str(problem))
+        self.ask(dialog=PromptDialog(title=title, value=NOTHING), then=answered)
 
     def ask_roll(self, *, left):
         """Ask how many steps to turn the pattern, and turn it: a step pushed off one end comes in at the other. The cursor stays on its step."""

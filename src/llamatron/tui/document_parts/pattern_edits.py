@@ -278,6 +278,10 @@ class PatternEdits:
         """Put the steps in a random order, drawn from the program's own random stream rather than any seed."""
         self._change(self._pattern(name).shuffle)
 
+    def divide_long_notes(self, name):
+        """Make a note of every step a pattern's long notes cover, by the step size the pattern plays at."""
+        self._change(self._pattern(name).divide_long_notes, step_size=self._step_size(name))
+
     def munge_pattern(self, *, name, way, **named):
         """Change a pattern as one of the Munge dialog's choices does: way is the method of Pattern that makes the edit, called with what is named, and what it returns is returned."""
         return self._change(MethodType(way, self._pattern(name)), **named)

@@ -34,6 +34,7 @@ from llamatron.composition import limits
 from llamatron.strings import errors
 from llamatron.music import midi
 from llamatron.composition.llama_data import LlamaData, written_settings
+from llamatron.composition.pattern_munges import PatternMunges
 from llamatron.composition.pattern_notes import PatternNotes
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.corrections import LEFT_OUT, NO_NEAREST_VALUE, Correction
@@ -75,13 +76,13 @@ REFERENCE_OCTAVE = 5
 NOTE_NAME = '{name}{octave}'
 
 
-class Pattern(PatternNotes, LlamaData):
+class Pattern(PatternNotes, PatternMunges, LlamaData):
     """A number of steps, and for each row, like degree or velocity, a value for every step.
 
     A row the file leaves out is kept as None, which means every step is blank on that row. A
     blank degree is a rest, and other blanks mean that row's default. A drum pattern holds note
     letters in its degree row instead of scale degrees. What it knows about its notes as the bars
-    a piano roll draws, each a note with its gate and ties, is in PatternNotes.
+    a piano roll draws, each a note with its gate and ties, is in PatternNotes, and the munges of its notes are in PatternMunges.
     """
 
     __slots__ = ('_steps', '_rows', '_settings')

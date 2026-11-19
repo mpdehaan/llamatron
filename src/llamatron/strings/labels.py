@@ -560,6 +560,7 @@ MSG_DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet
 class MungeGroup:
     CLEAR = 'Clear'
     COPY = 'Copy'
+    NOTES = 'Notes'
     OTHER_PATTERNS = 'Other Patterns'
     REARRANGE = 'Rearrange'
     SMOOTH = 'Smooth'
@@ -567,13 +568,15 @@ class MungeGroup:
 
 MSG_MUNGE_CHOICES = [
     'reverse after step (cursor)', 'reverse before step (cursor)', 'reverse', 'pivot around step (cursor)', 'randomize',
-    'copy all at/before cursor to end', 'copy all at/after cursor to end', 'copy all at/before cursor before start', 'copy all at/after cursor before start',
-    'randomize at/after cursor', 'randomize at/before cursor',
+    'copy before to end (cursor)', 'copy after to end (cursor)', 'copy before to start (cursor)', 'copy after to start (cursor)',
+    'randomize after (cursor)', 'randomize before (cursor)',
     'clear all data except pitch', 'clear all register modifications', 'clear all register conditions',
     'roll left (N)', 'roll right (N)', 'clear chords',
     'mirror', 'interleave (pattern)', 'smooth CCs', 'smooth velocity', 'smooth AX=', 'smooth BX=', 'smooth CX=', 'smooth DX=',
     'splice (pattern)', 'splice before (pattern)', 'split into new patterns (steps)', 'splice (pattern, cursor)',
     'roll left (cursor)', 'roll right (cursor)',
+    'convert adjacent notes to legato', 'convert legato notes to step divisions', 'randomize rhythm', 'randomize pitches', 'reverse pitches',
+    'clear every Nth step (N)', 'crop (cursor)', 'transpose (N)', 'humanize velocity (N)',
 ]
 # The clip page's extra choice, for a clip that follows its pattern's direction.
 MSG_PATTERN_DIRECTION_OPTION = '(pattern)'
