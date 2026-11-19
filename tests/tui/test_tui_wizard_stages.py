@@ -17,11 +17,12 @@
 """Tests of the song wizard's Form panel fields for how a song starts and ends, and a section's Fades."""
 
 from llamatron.macro_composer.song_plan import FADE_LEVEL, FADE_OVER, FADED, FADES
-from llamatron.macro_composer.wizard_choices import DRUMS_FIRST, FADE_IN, FADE_OUT, FULL_BAND, HELD_CHORD, LAYERS, SLOWS_DOWN
+from llamatron.macro_composer.wizard_choices import DRUMS_FIRST, FADE_IN, FADE_OUT, FULL_BAND, HELD_CHORD, LAYERS, REPEAT_AND_FADE, SLOWS_DOWN
 from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from tests.support.ui_testing import key_of
+from llamatron.tui.screens.wizard.section_branch import SectionBranch
 from tests.tui.test_tui_wizard import WizardTest
 
 A_GENRE = 'rock'
@@ -48,6 +49,18 @@ class TestWizardStages(WizardTest):
         await self.go_to_named_branch(labels.MSG_WIZARD_FORM_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         return choices
+
+    async def test_a_closing_section_s_fade_out_has_a_velocity_and_bars_of_its_own(self):
+        choices = await self.to_form()
+        choices.set_end(REPEAT_AND_FADE)
+        await self.press(Key.DOWN, Key.UP)
+        last = len(choices.section_kinds_in_form()) - 1
+        self.assertEqual(choices.fade_way(last), FADE_OUT)
+        branch = SectionBranch(page=self.wizard(), place=last)
+        fade = labels.MSG_WIZARD_FADE_LABELS[FADE_OUT]
+        self.assertEqual([branch.fade_field(field).label for field in choices.fade_fields(last)], [fade[FADES], fade[FADE_LEVEL], fade[FADE_OVER]])
+        # Until given, the fade takes every bar of the section.
+        self.assertEqual(branch.fade_field(FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=choices.section_bars(last)))
 
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
