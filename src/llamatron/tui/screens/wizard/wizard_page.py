@@ -241,14 +241,14 @@ class WizardPage(FieldPage):
         when the editor closes, if they were changed."""
         try:
             setlist, _ = self._choices.made_for_listening()
-            name = self._choices.solo_pattern_name(place)
+            name = self._choices.get_solos().solo_pattern_name(place)
         except (ValueError, SongFileError) as problem:
             self.refuse(str(problem))
             return
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_solo_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_limits.SOLO),
+        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.get_solos().set_solo_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_limits.SOLO),
                           unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=wizard_limits.SOLO))
 
     def edit_riff(self, riff):

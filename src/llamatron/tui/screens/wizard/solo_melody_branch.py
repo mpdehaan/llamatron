@@ -54,7 +54,7 @@ class SoloMelodyBranch(Branch):
 
     def place(self):
         """Return the solo's place in the form, or None once the song has fewer solos."""
-        places = self.get_choices().solo_places()
+        places = self.get_choices().get_solos().solo_places()
         return places[self._number - FIRST_SOLO] if self._number - FIRST_SOLO < len(places) else None
 
     def summary(self):
@@ -62,14 +62,14 @@ class SoloMelodyBranch(Branch):
         choices = self.get_choices()
         if self.place() is None:
             return None
-        return labels.MSG_WIZARD_NOTES_EDITED if choices.solo_is_own(self.place()) else choices.role_title(choices.solo_player())
+        return labels.MSG_WIZARD_NOTES_EDITED if choices.get_solos().solo_is_own(self.place()) else choices.role_title(choices.get_solos().solo_player())
 
     def fields(self):
         choices = self.get_choices()
         place = self.place()
         if place is None:
             return []
-        played_by = Field(label=labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, value=lambda: choices.role_title(choices.solo_player()))
+        played_by = Field(label=labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, value=lambda: choices.role_title(choices.get_solos().solo_player()))
         section = Field(label=labels.MSG_WIZARD_SOLO_SECTION_LABEL, value=lambda: choices.section_labels()[place])
         return [played_by, section, *self.buttons()]
 
@@ -82,9 +82,9 @@ class SoloMelodyBranch(Branch):
         def give_back():
             question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_limits.SOLO)
             page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True),
-                     then=page.choosing(lambda _: choices.set_solo_pattern(place=place, pattern=None)))
+                     then=page.choosing(lambda _: choices.get_solos().set_solo_pattern(place=place, pattern=None)))
         # On notes edited by hand, the delete key on the button gives the notes back to the wizard, after a question.
-        return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=lambda: page.edit_solo(place), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=give_back if choices.solo_is_own(place) else None,
+        return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=lambda: page.edit_solo(place), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=give_back if choices.get_solos().solo_is_own(place) else None,
                        clear_what=legends.MSG_TUNE_USUAL_WHAT),
                 Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=lambda: page.listen_to(self.listens()), enter_what=legends.MSG_LISTEN_WHAT),
@@ -98,7 +98,7 @@ class SoloMelodyBranch(Branch):
         name = messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_limits.SOLO)
 
         def written(_):
-            page.choosing(choices.new_solo_take)(place)
+            page.choosing(choices.get_solos().new_solo_take)(place)
             page.say(messages.MSG_WIZARD_REGENERATED.format(name=name))
         page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True), then=written)
 
@@ -109,7 +109,7 @@ class SoloMelodyBranch(Branch):
         """Listen plays the solo's player alone in the solo."""
         if self.place() is None:
             return None
-        return messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_limits.SOLO), self.place(), self.get_choices().solo_player()
+        return messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_limits.SOLO), self.place(), self.get_choices().get_solos().solo_player()
 
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the solo."""
@@ -120,4 +120,4 @@ class SoloMelodyBranch(Branch):
         choices = self.get_choices()
         if not choices.is_ready() or self.place() is None:
             return []
-        return [Text(drawing.INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.solo_is_own(self.place()) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
+        return [Text(drawing.INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.get_solos().solo_is_own(self.place()) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
