@@ -179,7 +179,7 @@ class OneRowChecks:
         await self.fill_the_row()
         await self.press(*[Key.RIGHT] * self.PAGE.MOST_STEPS)
         for _ in range(self.PAGE.MOST_STEPS - self.PAGE.FEWEST_STEPS):
-            self.page.drop_step()
+            self.page.remove_step_here()
             self.page.step -= 1
         self.page.step = self.PAGE.MOST_STEPS
         await self.press(Key.RIGHT)

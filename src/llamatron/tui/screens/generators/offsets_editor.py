@@ -118,7 +118,7 @@ class OffsetsEditor(GeneratorEditor, OneRowEditor):
     def add_step(self):
         self.document().insert_arp_offset(name=self.item, step=self.step)
 
-    def drop_step(self):
+    def remove_step_here(self):
         self.document().remove_arp_offset(name=self.item, step=self.step)
 
     # Drawing.

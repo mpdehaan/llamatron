@@ -123,14 +123,14 @@ class PlaybackEngine:
             sent += 1
         return sent
 
-    def drop(self, *, tag, after):
+    def forget(self, *, tag, after):
         """Forget the queued events of a tag from a time on, leaving what is sounding alone."""
         self._pending = [item for item in self._pending if not (item[3].tag == tag and item[0] >= after)]
         heapq.heapify(self._pending)
 
     def stop_tag(self, tag):
         """Forget a tag's queued events and silence its sounding notes."""
-        self.drop(tag=tag, after=BEFORE_EVERYTHING)
+        self.forget(tag=tag, after=BEFORE_EVERYTHING)
         for key, sounding_tag in list(self._sounding.items()):
             if sounding_tag == tag:
                 self._note_off(key)

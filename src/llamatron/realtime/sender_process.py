@@ -18,7 +18,7 @@
 
 A thread in the tracker's process drifts by up to five milliseconds, the interpreter's switch interval, while the
 screen draws; a separate process measured within a tenth of a millisecond (internal_tools/midi_timing_spike.py). The tracker
-keeps a RealtimeMIDISenderProcess and talks to it in a few messages over a pipe: start, add events, drop a clip's
+keeps a RealtimeMIDISenderProcess and talks to it in a few messages over a pipe: start, add events, forget a clip's
 events from a time, stop a clip, stop everything, close. The process sleeps in short slices until just before the
 next event is due and then spins on the clock, since sleep alone is loose on macOS, and polls the pipe between.
 """
@@ -40,7 +40,7 @@ SLEEP_SLICE_SECONDS = 0.0005
 READY = 'ready'
 START = 'start'
 ADD = 'add'
-DROP = 'drop'
+FORGET = 'forget'
 STOP_TAG = 'stop_tag'
 STOP_ALL = 'stop_all'
 SILENCE = 'silence'
@@ -83,8 +83,8 @@ class RealtimeMIDISenderProcess:
     def add(self, events):
         self._connection.send((ADD, list(events)))
 
-    def drop(self, *, tag, after):
-        self._connection.send((DROP, tag, after))
+    def forget(self, *, tag, after):
+        self._connection.send((FORGET, tag, after))
 
     def stop_tag(self, tag):
         self._connection.send((STOP_TAG, tag))
@@ -126,8 +126,8 @@ def _add(*, engine, message):
     engine.add(message[1])
 
 
-def _drop(*, engine, message):
-    engine.drop(tag=message[1], after=message[2])
+def _forget(*, engine, message):
+    engine.forget(tag=message[1], after=message[2])
 
 
 def _stop_tag(*, engine, message):
@@ -143,7 +143,7 @@ def _silence(*, engine, message):
 
 
 # The messages that only hand the engine something: each kind, and what passes it on.
-FORWARDED = {ADD: _add, DROP: _drop, STOP_TAG: _stop_tag, STOP_ALL: _stop_all, SILENCE: _silence}
+FORWARDED = {ADD: _add, FORGET: _forget, STOP_TAG: _stop_tag, STOP_ALL: _stop_all, SILENCE: _silence}
 
 
 def run_sender(*, connection, ports, recording):

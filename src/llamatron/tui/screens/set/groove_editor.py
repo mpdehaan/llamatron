@@ -74,7 +74,7 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
     def add_step(self):
         self.document().change(self.document().get_setlist().get_groove(self.item).insert_cell, self.step)
 
-    def drop_step(self):
+    def remove_step_here(self):
         self.document().change(self.document().get_setlist().get_groove(self.item).remove_cell, self.step)
 
     def next_cell_length(self):
