@@ -582,26 +582,26 @@ class WizardPage(FieldPage):
         """Choose a player's sound from a list: the band's first, which takes the sound from the band again, then the genre's
         own sounds that suit the player, then a row that opens every General MIDI sound that plays notes."""
         choices = self._choices
-        own = choices.genre_sounds(role)
-        options = [marks.MSG_WIZARD_FROM_BAND.format(sound=choices.sound_name(choices.band_sound(role))), *(choices.sound_name(sound) for sound in own), labels.MSG_WIZARD_MORE_SOUNDS]
-        current = own.index(choices.get_sound(role)) + 1 if choices.has_own_sound(role) and choices.get_sound(role) in own else (len(options) - 1 if choices.has_own_sound(role) else FIRST_PLACE)
+        own = choices.get_sounds().genre_sounds(role)
+        options = [marks.MSG_WIZARD_FROM_BAND.format(sound=choices.get_sounds().sound_name(choices.get_sounds().band_sound(role))), *(choices.get_sounds().sound_name(sound) for sound in own), labels.MSG_WIZARD_MORE_SOUNDS]
+        current = own.index(choices.get_sounds().get_sound(role)) + 1 if choices.get_sounds().has_own_sound(role) and choices.get_sounds().get_sound(role) in own else (len(options) - 1 if choices.get_sounds().has_own_sound(role) else FIRST_PLACE)
 
         def chosen(place):
             if place == len(options) - 1:
                 self.pick_any_sound(role)
             else:
-                self.choosing(lambda sound: choices.set_sound(role=role, sound=sound))(None if place == FIRST_PLACE else own[place - 1])
+                self.choosing(lambda sound: choices.get_sounds().set_sound(role=role, sound=sound))(None if place == FIRST_PLACE else own[place - 1])
         self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SOUND_TITLE.format(player=choices.role_title(role)), options=options, current=current), then=chosen)
 
     def pick_any_sound(self, role):
         """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the player's octave."""
         choices = self._choices
         run = run_of(root=choices.root_half_steps(), steps=choices.scale_half_steps(), octave=choices.role_octave(role))
-        dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, sound_trial.RUN_STEP, sound)))
+        dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sounds().get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, sound_trial.RUN_STEP, sound)))
 
         def chosen(sound):
             if sound is not None:
-                self.choosing(lambda picked: choices.set_sound(role=role, sound=picked))(sound)
+                self.choosing(lambda picked: choices.get_sounds().set_sound(role=role, sound=picked))(sound)
         self.ask(dialog=dialog, then=chosen)
 
     def pick_piece_sound(self, piece):

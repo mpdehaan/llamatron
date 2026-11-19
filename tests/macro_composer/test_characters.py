@@ -126,7 +126,7 @@ class TestWizardPlayerGauges(unittest.TestCase):
     """The wizard's choice of each gauge of a player."""
 
     def drums(self, choices):
-        return next(role for role in choices.roles() if not choices.has_sound(role))
+        return next(role for role in choices.roles() if not choices.get_sounds().has_sound(role))
 
     def test_each_gauge_stands_at_the_presets_place_until_moved_and_a_moved_gauge_changes_the_song(self):
         choices = wizard()

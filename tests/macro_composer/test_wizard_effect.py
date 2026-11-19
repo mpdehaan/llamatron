@@ -229,8 +229,8 @@ def every_choice(choices):
             for way in choices.ways(role=role, trait=trait):
                 if way != choices.get_way(trait):
                     yield WAY, (trait, way), lambda made, trait=trait, way=way: made.set_way(trait=trait, value=way), [first]
-        if choices.has_sound(role):
-            yield SOUND, role, lambda made, role=role: made.set_sound(role=role, sound=A_SOUND_OF_NO_STYLE), [first]
+        if choices.get_sounds().has_sound(role):
+            yield SOUND, role, lambda made, role=role: made.get_sounds().set_sound(role=role, sound=A_SOUND_OF_NO_STYLE), [first]
         else:
             drummer = role
             for position in range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1):
@@ -263,8 +263,8 @@ def every_choice(choices):
                 yield PLAYS_IN_SECTION, (role, on), lambda made, role=role, on=on: made.set_section_plays(place=FIRST_PLACE, role=role, on=on), [nothing_first]
     for sounds in wizard_limits.BAND_SOUNDS:
         # A band already of a family is not changed by choosing the family, which is no dead choice.
-        if sounds != wizard_limits.USUAL_SOUNDS and any(choices.has_sound(role) and band_sound_differs(choices=choices, role=role, sounds=sounds) for role in choices.roles_in()):
-            yield BAND_SOUND, sounds, lambda made, sounds=sounds: made.set_band_sounds(sounds), [nothing_first]
+        if sounds != wizard_limits.USUAL_SOUNDS and any(choices.get_sounds().has_sound(role) and band_sound_differs(choices=choices, role=role, sounds=sounds) for role in choices.roles_in()):
+            yield BAND_SOUND, sounds, lambda made, sounds=sounds: made.get_sounds().set_band_sounds(sounds), [nothing_first]
     for kind, trait in ((PROGRESSION, choices.progression_trait()), (FILLS, choices.song_trait(wizard_limits.FILLS_TRAITS))):
         firsts = [nothing_first]
         if kind == FILLS and drummer is not None:
@@ -643,8 +643,8 @@ def positions_alike(*, genre, subgenre, role, first):
 
 def band_sound_differs(*, choices, role, sounds):
     other = WizardChoices.from_data(choices.to_data())
-    other.set_band_sounds(sounds)
-    return other.get_sound(role) != choices.get_sound(role)
+    other.get_sounds().set_band_sounds(sounds)
+    return other.get_sounds().get_sound(role) != choices.get_sounds().get_sound(role)
 
 
 class EveryChoiceOfAGenre:

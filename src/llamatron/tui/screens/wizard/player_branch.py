@@ -49,7 +49,7 @@ class PlayerBranch(Branch):
         traits = choices.role_traits(self._role)
         # A player of notes plays one way, called Plays; the drums have a way for each of their parts, each called by the part's name.
         fields = [self.way_field(trait=trait, label=labels.MSG_WIZARD_PLAYS_LABEL if len(traits) == 1 else trait.capitalize()) for trait in traits]
-        if choices.has_sound(self._role):
+        if choices.get_sounds().has_sound(self._role):
             fields.append(self.sound_field())
         fields += self.person_fields()
         fields += self.dynamics_fields()
@@ -61,7 +61,7 @@ class PlayerBranch(Branch):
         fields += [self.row_field(name) for name in choices.player_rows(self._role)]
         if choices.answered_by() == self._role:
             fields += self.beside_fields()
-        if not choices.has_sound(self._role):
+        if not choices.get_sounds().has_sound(self._role):
             # The drums' break comes first, since it takes the place of the kick's, the snare's and the cymbal's own ways.
             fields = [*self.break_fields(), *fields]
             fields += [*self.fill_pattern_fields(), self.fills_field()]
@@ -174,8 +174,8 @@ class PlayerBranch(Branch):
         role = self._role
 
         def shown():
-            name = choices.sound_name(choices.get_sound(role))
-            return name if choices.has_own_sound(role) else marks.MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=name)
+            name = choices.get_sounds().sound_name(choices.get_sounds().get_sound(role))
+            return name if choices.get_sounds().has_own_sound(role) else marks.MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=name)
         return Field(label=labels.MSG_WIZARD_SOUND_LABEL, value=shown, enter=lambda: self.get_page().pick_sound(role), enter_what=legends.What.CHOOSE)
 
     def beside_fields(self):
