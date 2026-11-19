@@ -32,12 +32,13 @@ import tempfile
 import unittest
 
 import llamatron.exporters
-from llamatron.exporters.ableton_project import DEFAULT_TEMPLATE, AbletonProject
+from llamatron.exporters import ableton_project
+from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles, WritesOneFile
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
-from llamatron.exporters.exports import EXPORT_KINDS, EXPORTERS, EXPORT_KINDS_IN_HELP, EXPORT_LABELS
+from llamatron.exporters import exports
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.strings import errors
 from llamatron.support import files
@@ -115,27 +116,27 @@ def printed_by(action):
 class TestEveryExporterIsListed(unittest.TestCase):
 
     def test_every_exporter_class_is_listed_under_its_kind_and_nothing_else_is(self):
-        self.assertEqual(set(exporter_classes()), set(EXPORTERS.values()))
-        self.assertEqual({AbletonProject, MidiSong, MidiStems, ClipTree, MidiGeneralMidi, WaveFluidSynth}, set(EXPORTERS.values()))
-        for kind, exporter in EXPORTERS.items():
+        self.assertEqual(set(exporter_classes()), set(exports.EXPORTERS.values()))
+        self.assertEqual({AbletonProject, MidiSong, MidiStems, ClipTree, MidiGeneralMidi, WaveFluidSynth}, set(exports.EXPORTERS.values()))
+        for kind, exporter in exports.EXPORTERS.items():
             with self.subTest(kind=kind):
                 self.assertEqual(exporter.KIND, kind)
 
     def test_every_kind_is_offered_by_the_command_line_and_the_tracker_and_has_a_label(self):
         named = {value for name, value in vars(ExportKind).items() if not name.startswith('_')}
-        self.assertEqual(set(EXPORT_KINDS_IN_HELP), named)
-        self.assertEqual(sorted(EXPORT_KINDS), sorted(EXPORT_KINDS_IN_HELP))
-        for kind in EXPORT_KINDS_IN_HELP:
+        self.assertEqual(set(exports.EXPORT_KINDS_IN_HELP), named)
+        self.assertEqual(sorted(exports.EXPORT_KINDS), sorted(exports.EXPORT_KINDS_IN_HELP))
+        for kind in exports.EXPORT_KINDS_IN_HELP:
             with self.subTest(kind=kind):
-                self.assertTrue(EXPORT_LABELS[kind])
-                self.assertEqual(EXPORT_LABELS[kind], EXPORTERS[kind].LABEL)
+                self.assertTrue(exports.EXPORT_LABELS[kind])
+                self.assertEqual(exports.EXPORT_LABELS[kind], exports.EXPORTERS[kind].LABEL)
 
     def test_the_live_set_comes_first_since_it_is_the_default(self):
-        self.assertEqual(EXPORT_KINDS_IN_HELP[0], ExportKind.ABLETON)
-        self.assertEqual(EXPORT_KINDS[0], ExportKind.ABLETON)
+        self.assertEqual(exports.EXPORT_KINDS_IN_HELP[0], ExportKind.ABLETON)
+        self.assertEqual(exports.EXPORT_KINDS[0], ExportKind.ABLETON)
 
     def test_every_exporter_says_where_its_files_are(self):
-        for exporter in EXPORTERS.values():
+        for exporter in exports.EXPORTERS.values():
             with self.subTest(exporter=exporter.__name__):
                 self.assertTrue(issubclass(exporter, (WritesOneFile, WritesManyFiles)))
                 self.assertIn(EXPORT, exporter.shown_path(directory=SUBFOLDER, name=EXPORT))
@@ -187,7 +188,7 @@ class TestExporter(unittest.TestCase):
     def test_only_the_live_set_is_built_from_a_template(self):
         live = AbletonProject.for_song(directory=self.directory, grid=self.grid, name=EXPORT, template=OTHER_TEMPLATE)
         self.assertEqual(live.get_template(), OTHER_TEMPLATE)
-        self.assertEqual(AbletonProject.for_song(directory=self.directory, grid=self.grid, name=EXPORT).get_template(), DEFAULT_TEMPLATE)
+        self.assertEqual(AbletonProject.for_song(directory=self.directory, grid=self.grid, name=EXPORT).get_template(), ableton_project.DEFAULT_TEMPLATE)
         for exporter in (MidiSong, MidiStems, ClipTree):
             with self.subTest(exporter=exporter.__name__):
                 made = exporter.for_song(directory=self.directory, grid=self.grid, name=EXPORT, template=OTHER_TEMPLATE)

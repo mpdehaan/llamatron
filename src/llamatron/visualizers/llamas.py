@@ -32,7 +32,7 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -113,7 +113,7 @@ class Llamas(Visualizer):
         """Return a track's llama, or None before the track has played."""
         return self._llamas.get(track)
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if not width or not height:
             return []
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)

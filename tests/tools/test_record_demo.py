@@ -28,13 +28,13 @@ from unittest import mock
 from llamatron.composition.checks import listed
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting
-from llamatron.realtime.fluidsynth import AUDIO_DEVICE_VARIABLE
+from llamatron.realtime import fluidsynth
 from llamatron.music import midi
 from llamatron.strings import about, errors
 from llamatron.tui.launch import LEAD_IN_SECONDS, LEAD_OUT_SECONDS, SPLASH_SECONDS
 from llamatron.tui.uses import looping_scenes
 from tests.support.ui_testing import a_song, DRUMS, LEAD
-from llamatron.visualizers.modes import MODES
+from llamatron.visualizers import modes
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'record_demo.py'
 MODULE_NAME = 'record_demo'
@@ -210,7 +210,7 @@ class TestRecordDemo(unittest.TestCase):
         with mock.patch('builtins.input', return_value='1'), contextlib.redirect_stdout(io.StringIO()):
             self.assertIsNone(self.tool.ask_for_view())
         with mock.patch('builtins.input', return_value='2'), contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(self.tool.ask_for_view(), MODES[0].OPTION)
+            self.assertEqual(self.tool.ask_for_view(), modes.MODES[0].OPTION)
         with mock.patch('builtins.input', return_value=NO_SUCH), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             self.assertIs(self.tool.ask_for_view(), False)
 
@@ -226,7 +226,7 @@ class TestRecordDemo(unittest.TestCase):
                 mock.patch.object(self.tool, 'terminal_window_id', return_value=WINDOW), mock.patch.object(self.tool.Document, 'load', return_value=self.document), \
                 mock.patch.object(self.tool, 'cells_region', return_value=region), mock.patch.object(self.tool.subprocess, 'run') as trim, \
                 mock.patch.object(self.tool, 'LlamatronApp') as app, \
-                mock.patch('builtins.input', return_value=str(len(MODES) + 1)), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                mock.patch('builtins.input', return_value=str(len(modes.MODES) + 1)), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             trim.side_effect = lambda command, **named: pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(TRIMMED_BYTES)
             self.tool.record(path=path, driver=PORT, audio_device=self.tool.DEFAULT_AUDIO_DEVICE, assignment=None, max_seconds=SMALL_LIMIT, window_id=None,
                              go=True, ask_view=True, staged=staged, recording=StandInRecording, scroll=scroll, scroll_text=scroll_text, announce=announce)
@@ -267,7 +267,7 @@ class TestRecordDemo(unittest.TestCase):
             self.assertFalse(record.call_args.kwargs[DETAIL])
             # The details show on the clips, so a visualizer mode cannot be asked for with them.
             with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
-                self.tool.main(argv=[SET_PATH, DETAIL_OPTION, VISUALIZER_OPTION, MODES[0].OPTION])
+                self.tool.main(argv=[SET_PATH, DETAIL_OPTION, VISUALIZER_OPTION, modes.MODES[0].OPTION])
 
     def test_the_command_line_passes_the_words_or_none_and_refuses_both(self):
         with mock.patch.object(self.tool, 'record', return_value=SUCCESS) as record:
@@ -286,13 +286,13 @@ class TestRecordDemo(unittest.TestCase):
         launch = self.visualizer_take(staged=True)
         self.assertTrue(launch.for_recording)
         self.assertTrue(launch.batch_video)
-        self.assertEqual(launch.visualizer, MODES[-1].OPTION)
+        self.assertEqual(launch.visualizer, modes.MODES[-1].OPTION)
 
     def test_a_plain_take_of_a_visualizer_mode_shows_it_over_the_clip_area(self):
         launch = self.visualizer_take(staged=False)
         self.assertTrue(launch.for_recording)
         self.assertFalse(launch.batch_video)
-        self.assertEqual(launch.visualizer, MODES[-1].OPTION)
+        self.assertEqual(launch.visualizer, modes.MODES[-1].OPTION)
 
     def test_the_take_records_until_the_tracker_quits_and_the_video_loses_its_last_seconds(self):
         devices = [(DEVICE_ID, self.tool.DEFAULT_AUDIO_DEVICE)]
@@ -405,7 +405,7 @@ class TestRecordDemo(unittest.TestCase):
             trim.side_effect = lambda command, **named: pathlib.Path(command[command.index(self.tool.OUTPUT_FLAG) + 1]).write_bytes(TRIMMED_BYTES)
             code = self.tool.record(path=SET_PATH, driver=PORT, audio_device=self.tool.DEFAULT_AUDIO_DEVICE, assignment=None, max_seconds=SMALL_LIMIT,
                                     window_id=None, go=True, fluidsynth=True, fluidsynth_output=output, recording=StandInRecording)
-            sent_to = os.environ.get(AUDIO_DEVICE_VARIABLE)
+            sent_to = os.environ.get(fluidsynth.AUDIO_DEVICE_VARIABLE)
         ports.assert_not_called()
         return code, app, printed.getvalue(), sent_to
 

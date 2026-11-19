@@ -68,7 +68,8 @@ import time
 
 from llamatron.music import midi
 from llamatron.composition.setlist import file_stem
-from llamatron.realtime.fluidsynth import AUDIO_DEVICE_VARIABLE, fluidsynth_path, is_installed, soundfont_path
+from llamatron.realtime import fluidsynth as fluidsynth_values
+from llamatron.realtime.fluidsynth import fluidsynth_path, is_installed, soundfont_path
 from llamatron.realtime.outputs import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
@@ -76,7 +77,8 @@ from llamatron.tui.batch_stage import GROW_SECONDS, READY_SECONDS
 from llamatron.tui.components.scroll_text import scroll_text_for
 from llamatron.tui.components.title_card import whole_title_seconds
 from llamatron.tui.launch import Launch, LEAD_IN_SECONDS, LEAD_OUT_SECONDS, recording_problem, SPLASH_SECONDS
-from llamatron.visualizers.modes import MODES, mode_options
+from llamatron.visualizers import modes
+from llamatron.visualizers.modes import mode_options
 
 RECORDINGS = 'recordings'
 VIDEO_SUFFIX = '.mov'
@@ -201,7 +203,7 @@ MEGABYTE = 1024 * 1024
 
 def ask_for_view():
     """Print what a take can show, the clips or each visualizer mode, numbered, and return the mode's name on the command line, or None for the clips, or False for an answer that is none of them."""
-    names = [CLIPS_VIEW, *[mode.NAME for mode in MODES]]
+    names = [CLIPS_VIEW, *[mode.NAME for mode in modes.MODES]]
     for number, name in enumerate(names, start=1):
         print(VIEW_LINE.format(number=number, name=name))
     print(ASK_VIEW)
@@ -209,7 +211,7 @@ def ask_for_view():
     if not typed.isdigit() or not 1 <= int(typed) <= len(names):
         print(NOT_A_CHOICE, file=sys.stderr)
         return False
-    return None if int(typed) == 1 else MODES[int(typed) - 2].OPTION
+    return None if int(typed) == 1 else modes.MODES[int(typed) - 2].OPTION
 
 
 def first_matching(*, names, text):
@@ -522,7 +524,7 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
         through_fluidsynth(document=document)
         # The tracker starts FluidSynth in this process, and it plays to the device the environment names.
         output = output_for_fluidsynth(given=fluidsynth_output, recorded=device[1], outputs=[] if fluidsynth_output else fluidsynth_outputs())
-        os.environ[AUDIO_DEVICE_VARIABLE] = output
+        os.environ[fluidsynth_values.AUDIO_DEVICE_VARIABLE] = output
     else:
         channels = auto_assignment(tracks) if assignment is None else parse_assignment(text=assignment, tracks=tracks)
         assign_tracks(document=document, channels=channels, port=port)

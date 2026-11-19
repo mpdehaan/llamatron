@@ -21,7 +21,8 @@ import os
 import mido
 
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles
-from llamatron.exporters.midi_messages import SINGLE_TRACK_FILE, TICKS_PER_BEAT, clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event
+from llamatron.exporters import midi_messages
+from llamatron.exporters.midi_messages import clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event
 from llamatron.exporters.timing import timed_events
 from llamatron.strings import names
 
@@ -111,4 +112,4 @@ class ClipTree(WritesManyFiles, Exporter):
         events.extend(tempo_event(tick=ticks(time), tempo=tempo) for time, tempo in self._grid.tempos_in(scene) if time == AT_THE_START or time < clip_length)
         events.extend(clip_events(clip=clip, notes=notes, clip_length=clip_length))
         midi = midi_track(name=name, events=events, end=ticks(clip_length))
-        return mido.MidiFile(type=SINGLE_TRACK_FILE, ticks_per_beat=TICKS_PER_BEAT, tracks=[midi])
+        return mido.MidiFile(type=midi_messages.SINGLE_TRACK_FILE, ticks_per_beat=midi_messages.TICKS_PER_BEAT, tracks=[midi])

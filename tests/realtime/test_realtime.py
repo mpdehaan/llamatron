@@ -42,14 +42,16 @@ from llamatron.music import midi
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.midi_messages import ticks
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime.engine import ALL_NOTES_OFF, ALL_SOUND_OFF, PlaybackEngine, SteppedClock
+from llamatron.realtime import engine as engine_values
+from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.strings import errors
 from tests.support.sender_under_capture import STARTED
-from llamatron.realtime.timeline import CONTROL_CHANGE, KIND_MASK, NOTE_OFF, NOTE_ON, NO_VELOCITY, Playing, Route, Tag, song_timeline
+from llamatron.realtime import timeline as timeline_values
+from llamatron.realtime.timeline import Playing, Route, Tag, song_timeline
 from llamatron.support.example_sets import example_sets
 
 from tests.support.rendering import song_from_data, song_from_file
@@ -63,7 +65,7 @@ EXPORT_CHANNEL = 0
 NOTE_ON_MESSAGE = 'note_on'
 NOTE_OFF_MESSAGE = 'note_off'
 CONTROL_CHANGE_MESSAGE = 'control_change'
-KIND_OF_MESSAGE = {NOTE_ON_MESSAGE: NOTE_ON, NOTE_OFF_MESSAGE: NOTE_OFF, CONTROL_CHANGE_MESSAGE: CONTROL_CHANGE}
+KIND_OF_MESSAGE = {NOTE_ON_MESSAGE: timeline_values.NOTE_ON, NOTE_OFF_MESSAGE: timeline_values.NOTE_OFF, CONTROL_CHANGE_MESSAGE: timeline_values.CONTROL_CHANGE}
 # The conductor track comes first in the export, then one track per unmuted track.
 CONDUCTOR_TRACKS = 1
 # The short lag test: how much of a song, how long to wait for it, and how far off an event may be in the loaded suite.
@@ -118,7 +120,7 @@ def message_number(message):
 
 def message_value(message):
     if message.type == NOTE_OFF_MESSAGE:
-        return NO_VELOCITY
+        return timeline_values.NO_VELOCITY
     return message.value if message.type == CONTROL_CHANGE_MESSAGE else message.velocity
 
 
@@ -149,8 +151,8 @@ class TestTimeline(unittest.TestCase):
                 for earlier, later in zip(timeline, timeline[1:]):
                     self.assertLessEqual(earlier.whole, later.whole)
                     self.assertLessEqual(earlier.seconds, later.seconds)
-                    if earlier.whole == later.whole and earlier.kind == NOTE_ON:
-                        self.assertNotEqual(later.kind, NOTE_OFF)
+                    if earlier.whole == later.whole and earlier.kind == timeline_values.NOTE_ON:
+                        self.assertNotEqual(later.kind, timeline_values.NOTE_OFF)
 
     def test_a_track_with_no_route_and_a_muted_track_are_left_out(self):
         song = song_from_file(LAG_SONG)
@@ -164,8 +166,8 @@ class TestTimeline(unittest.TestCase):
         self.assertTrue(set(routes) >= {event.tag.track for event in timeline})
 
 
-def note(*, seconds, number, tag, kind=NOTE_ON, port=PORT, channel=0):
-    return Playing(seconds, seconds, port, channel, kind, number, VELOCITY if kind == NOTE_ON else NO_VELOCITY, tag)
+def note(*, seconds, number, tag, kind=timeline_values.NOTE_ON, port=PORT, channel=0):
+    return Playing(seconds, seconds, port, channel, kind, number, VELOCITY if kind == timeline_values.NOTE_ON else timeline_values.NO_VELOCITY, tag)
 
 
 class TestPlaybackEngine(unittest.TestCase):
@@ -191,25 +193,25 @@ class TestPlaybackEngine(unittest.TestCase):
         self.assertEqual(self.sent(), [])
         self.clock.advance(0.001)
         self.assertEqual(self.engine.send_due(), 1)
-        self.assertEqual(self.sent(), [[NOTE_ON, MIDDLE_C, VELOCITY]])
+        self.assertEqual(self.sent(), [[timeline_values.NOTE_ON, MIDDLE_C, VELOCITY]])
         self.assertEqual(self.engine.next_due(), None)
 
     def test_events_added_out_of_order_are_sent_in_order_with_note_offs_first_at_one_instant(self):
         self.engine.add([
             note(seconds=2.0, number=MIDDLE_C, tag=SCENE_ONE),
             note(seconds=1.0, number=MIDDLE_C, tag=SCENE_ONE),
-            note(seconds=2.0, number=MIDDLE_C, tag=SCENE_ONE, kind=NOTE_OFF),
+            note(seconds=2.0, number=MIDDLE_C, tag=SCENE_ONE, kind=timeline_values.NOTE_OFF),
         ])
         self.clock.advance(2.0)
         self.engine.send_due()
-        self.assertEqual(self.sent(), [[NOTE_ON, MIDDLE_C, VELOCITY], [NOTE_OFF, MIDDLE_C, NO_VELOCITY], [NOTE_ON, MIDDLE_C, VELOCITY]])
+        self.assertEqual(self.sent(), [[timeline_values.NOTE_ON, MIDDLE_C, VELOCITY], [timeline_values.NOTE_OFF, MIDDLE_C, timeline_values.NO_VELOCITY], [timeline_values.NOTE_ON, MIDDLE_C, VELOCITY]])
 
     def test_stop_all_sends_note_offs_for_the_sounding_notes_then_silences_every_channel_used(self):
         self.engine.add([
             note(seconds=0.0, number=MIDDLE_C, tag=SCENE_ONE),
             note(seconds=0.0, number=A_FIFTH_UP, tag=BASS_TAG, channel=1),
-            note(seconds=0.5, number=A_FIFTH_UP, tag=BASS_TAG, channel=1, kind=NOTE_OFF),
-            note(seconds=5.0, number=MIDDLE_C, tag=SCENE_ONE, kind=NOTE_OFF),
+            note(seconds=0.5, number=A_FIFTH_UP, tag=BASS_TAG, channel=1, kind=timeline_values.NOTE_OFF),
+            note(seconds=5.0, number=MIDDLE_C, tag=SCENE_ONE, kind=timeline_values.NOTE_OFF),
         ])
         self.clock.advance(1.0)
         self.engine.send_due()
@@ -217,9 +219,9 @@ class TestPlaybackEngine(unittest.TestCase):
         self.output.sent.clear()
         self.engine.stop_all()
         self.assertEqual(self.sent(), [
-            [NOTE_OFF, MIDDLE_C, NO_VELOCITY],
-            [CONTROL_CHANGE, ALL_NOTES_OFF, 0], [CONTROL_CHANGE, ALL_SOUND_OFF, 0],
-            [CONTROL_CHANGE | 1, ALL_NOTES_OFF, 0], [CONTROL_CHANGE | 1, ALL_SOUND_OFF, 0],
+            [timeline_values.NOTE_OFF, MIDDLE_C, timeline_values.NO_VELOCITY],
+            [timeline_values.CONTROL_CHANGE, engine_values.ALL_NOTES_OFF, 0], [timeline_values.CONTROL_CHANGE, engine_values.ALL_SOUND_OFF, 0],
+            [timeline_values.CONTROL_CHANGE | 1, engine_values.ALL_NOTES_OFF, 0], [timeline_values.CONTROL_CHANGE | 1, engine_values.ALL_SOUND_OFF, 0],
         ])
         self.assertEqual(self.engine.sounding(), [])
         self.assertEqual(self.engine.pending(), [])
@@ -228,20 +230,20 @@ class TestPlaybackEngine(unittest.TestCase):
         self.engine.add([
             note(seconds=0.0, number=MIDDLE_C, tag=SCENE_ONE),
             note(seconds=0.0, number=A_FIFTH_UP, tag=BASS_TAG),
-            note(seconds=3.0, number=MIDDLE_C, tag=SCENE_ONE, kind=NOTE_OFF),
-            note(seconds=3.0, number=A_FIFTH_UP, tag=BASS_TAG, kind=NOTE_OFF),
+            note(seconds=3.0, number=MIDDLE_C, tag=SCENE_ONE, kind=timeline_values.NOTE_OFF),
+            note(seconds=3.0, number=A_FIFTH_UP, tag=BASS_TAG, kind=timeline_values.NOTE_OFF),
         ])
         self.engine.send_due()
         self.output.sent.clear()
         self.engine.stop_tag(SCENE_ONE)
-        self.assertEqual(self.sent(), [[NOTE_OFF, MIDDLE_C, NO_VELOCITY]])
+        self.assertEqual(self.sent(), [[timeline_values.NOTE_OFF, MIDDLE_C, timeline_values.NO_VELOCITY]])
         self.assertEqual(self.engine.sounding(), [(PORT, 0, A_FIFTH_UP)])
         self.assertEqual([event.tag for event in self.engine.pending()], [BASS_TAG])
 
     def test_dropping_a_tag_from_a_time_keeps_its_earlier_events_and_what_is_sounding(self):
         self.engine.add([
             note(seconds=0.0, number=MIDDLE_C, tag=SCENE_ONE),
-            note(seconds=1.0, number=MIDDLE_C, tag=SCENE_ONE, kind=NOTE_OFF),
+            note(seconds=1.0, number=MIDDLE_C, tag=SCENE_ONE, kind=timeline_values.NOTE_OFF),
             note(seconds=2.0, number=A_FIFTH_UP, tag=SCENE_ONE),
             note(seconds=2.0, number=A_FIFTH_UP, tag=SCENE_TWO),
         ])
@@ -254,9 +256,9 @@ class TestPlaybackEngine(unittest.TestCase):
         self.engine.add([note(seconds=0.0, number=MIDDLE_C, tag=SCENE_ONE, port=OTHER_PORT, channel=3)])
         self.engine.send_due()
         self.assertEqual(self.sent(), [])
-        self.assertEqual(self.sent_elsewhere(), [[NOTE_ON | 3, MIDDLE_C, VELOCITY]])
+        self.assertEqual(self.sent_elsewhere(), [[timeline_values.NOTE_ON | 3, MIDDLE_C, VELOCITY]])
         self.engine.close()
-        self.assertEqual(self.sent_elsewhere()[1:], [[NOTE_OFF | 3, MIDDLE_C, NO_VELOCITY], [CONTROL_CHANGE | 3, ALL_NOTES_OFF, 0], [CONTROL_CHANGE | 3, ALL_SOUND_OFF, 0]])
+        self.assertEqual(self.sent_elsewhere()[1:], [[timeline_values.NOTE_OFF | 3, MIDDLE_C, timeline_values.NO_VELOCITY], [timeline_values.CONTROL_CHANGE | 3, engine_values.ALL_NOTES_OFF, 0], [timeline_values.CONTROL_CHANGE | 3, engine_values.ALL_SOUND_OFF, 0]])
 
 
 class TestRealtimeSenderProcess(unittest.TestCase):
@@ -296,9 +298,9 @@ class TestRealtimeSenderProcess(unittest.TestCase):
         # Closing cut the song short, so the notes still sounding get their note offs first, then every channel is silenced.
         silencing = [data for _, data in sent[PORT][len(events):]]
         channels = sorted({event.channel for event in events})
-        controls = [[CONTROL_CHANGE | channel, number, 0] for channel in channels for number in (ALL_NOTES_OFF, ALL_SOUND_OFF)]
+        controls = [[timeline_values.CONTROL_CHANGE | channel, number, 0] for channel in channels for number in (engine_values.ALL_NOTES_OFF, engine_values.ALL_SOUND_OFF)]
         self.assertEqual(silencing[-len(controls):], controls)
-        self.assertTrue(all(data[0] & KIND_MASK == NOTE_OFF for data in silencing[:-len(controls)]))
+        self.assertTrue(all(data[0] & timeline_values.KIND_MASK == timeline_values.NOTE_OFF for data in silencing[:-len(controls)]))
 
 
 if __name__ == '__main__':
@@ -384,11 +386,11 @@ class PlayerTest(unittest.TestCase):
 
     def note_ons(self, port):
         """Return the seconds of every note on sent to a port, to the step the clock was on when it went out."""
-        return [round(seconds, 6) for seconds, data in self.sent[port] if data[0] & KIND_MASK == NOTE_ON]
+        return [round(seconds, 6) for seconds, data in self.sent[port] if data[0] & timeline_values.KIND_MASK == timeline_values.NOTE_ON]
 
     def pending_ons(self, track):
         """Return the seconds of every note on still queued for a track."""
-        return [round(event.seconds, 6) for event in self.engine.pending() if event.kind == NOTE_ON and event.tag.track == track]
+        return [round(event.seconds, 6) for event in self.engine.pending() if event.kind == timeline_values.NOTE_ON and event.tag.track == track]
 
 
 class TestScore(unittest.TestCase):
@@ -399,7 +401,7 @@ class TestScore(unittest.TestCase):
         self.assertEqual([score.scene_seconds(place) for place in range(3)], [SCENE_SECONDS] * 3)
         self.assertEqual([score.scene_start(place) for place in range(3)], [0.0, SCENE_SECONDS, 2 * SCENE_SECONDS])
         self.assertEqual(score.song_seconds(), 3 * SCENE_SECONDS)
-        starts = [event.seconds for event in score.events(scene=SECOND, track=LEAD) if event.kind == NOTE_ON]
+        starts = [event.seconds for event in score.events(scene=SECOND, track=LEAD) if event.kind == timeline_values.NOTE_ON]
         self.assertEqual(starts, [0.0, 0.5, 1.0, 1.5])
         self.assertEqual(score.events(scene=SECOND, track=BASS)[0].port, OTHER_PORT)
 
@@ -619,6 +621,6 @@ class TestEngineSilence(unittest.TestCase):
         output = RecordingOutput()
         engine = PlaybackEngine(clock=SteppedClock(), outputs={PORT: output})
         engine.silence(channels=[(PORT, EXPORT_CHANNEL)])
-        kinds = [data[0] & KIND_MASK for _, data in output.sent]
-        self.assertEqual(kinds.count(NOTE_OFF), midi.MAX_MIDI_NUMBER - midi.MIN_MIDI_NUMBER + 1)
-        self.assertEqual([data for _, data in output.sent][-2:], [[CONTROL_CHANGE | EXPORT_CHANNEL, ALL_NOTES_OFF, NO_VELOCITY], [CONTROL_CHANGE | EXPORT_CHANNEL, ALL_SOUND_OFF, NO_VELOCITY]])
+        kinds = [data[0] & timeline_values.KIND_MASK for _, data in output.sent]
+        self.assertEqual(kinds.count(timeline_values.NOTE_OFF), midi.MAX_MIDI_NUMBER - midi.MIN_MIDI_NUMBER + 1)
+        self.assertEqual([data for _, data in output.sent][-2:], [[timeline_values.CONTROL_CHANGE | EXPORT_CHANNEL, engine_values.ALL_NOTES_OFF, timeline_values.NO_VELOCITY], [timeline_values.CONTROL_CHANGE | EXPORT_CHANNEL, engine_values.ALL_SOUND_OFF, timeline_values.NO_VELOCITY]])

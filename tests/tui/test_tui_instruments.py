@@ -30,7 +30,7 @@ from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field import Heading
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_text
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
-from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
+from llamatron.realtime import fluidsynth
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import MainPage
 from tests.support.rendering import render_song
@@ -174,11 +174,11 @@ class TestInstrumentEditor(UITest):
         self.assertEqual(self.instrument().get_device(), GONE_PORT)
 
     async def test_choosing_fluidsynth_makes_the_channel_auto_with_nothing_to_change(self):
-        with mock.patch(PORT_NAMES, return_value=[*PORTS, FLUIDSYNTH_PORT]):
+        with mock.patch(PORT_NAMES, return_value=[*PORTS, fluidsynth.FLUIDSYNTH_PORT]):
             await self.select_field(labels.MSG_DEVICE_LABEL)
             await self.press(Key.ENTER)
             # The tracker's own FluidSynth port is FluidSynth, chosen as itself, never offered as a port.
-            self.assertNotIn(FLUIDSYNTH_PORT, self.app.screen.options)
+            self.assertNotIn(fluidsynth.FLUIDSYNTH_PORT, self.app.screen.options)
             await self.press(Key.DOWN, Key.ENTER)
         self.assertEqual(self.instrument().get_device(), file_format.FLUIDSYNTH_DEVICE)
         self.assertTrue(self.instrument().uses_fluidsynth())

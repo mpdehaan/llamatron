@@ -22,7 +22,7 @@ import pathlib
 import unittest
 from unittest import mock
 
-from llamatron.visualizers.modes import MODES
+from llamatron.visualizers import modes
 from tests.support.ui_testing import a_song
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'preview_visualizer.py'
@@ -48,17 +48,17 @@ class TestPreviewVisualizer(unittest.TestCase):
         self.shared = self.tool.recorder()
 
     def test_it_shows_the_mode_typed_from_the_list_or_the_only_one_without_asking(self):
-        with mock.patch('builtins.input', return_value=str(len(MODES))) as asked, contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(self.tool.ask_for_mode(shared=self.shared), MODES[-1].OPTION)
-        self.assertEqual(asked.call_count, 0 if len(MODES) == 1 else 1)
-        with mock.patch.object(self.tool, 'MODES', MODES[:1]), mock.patch('builtins.input') as asked:
-            self.assertEqual(self.tool.ask_for_mode(shared=self.shared), MODES[0].OPTION)
+        with mock.patch('builtins.input', return_value=str(len(modes.MODES))) as asked, contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(self.tool.ask_for_mode(shared=self.shared), modes.MODES[-1].OPTION)
+        self.assertEqual(asked.call_count, 0 if len(modes.MODES) == 1 else 1)
+        with mock.patch.object(modes, 'MODES', modes.MODES[:1]), mock.patch('builtins.input') as asked:
+            self.assertEqual(self.tool.ask_for_mode(shared=self.shared), modes.MODES[0].OPTION)
         asked.assert_not_called()
 
     def test_a_driver_nobody_has_stops_it_before_the_tracker_opens(self):
         with mock.patch.object(self.tool, 'output_port_names', return_value=[]), mock.patch.object(self.tool, 'LlamatronApp') as app, \
                 contextlib.redirect_stderr(io.StringIO()) as stderr:
-            code = self.tool.preview(path=SET_FILE, driver=NO_SUCH, assignment=None, visualizer=MODES[0].OPTION, shared=self.shared)
+            code = self.tool.preview(path=SET_FILE, driver=NO_SUCH, assignment=None, visualizer=modes.MODES[0].OPTION, shared=self.shared)
         self.assertEqual(code, FAILURE)
         app.assert_not_called()
         self.assertIn(NO_SUCH, stderr.getvalue())
@@ -68,9 +68,9 @@ class TestPreviewVisualizer(unittest.TestCase):
         port = self.shared.DEFAULT_DRIVER
         with mock.patch.object(self.tool, 'output_port_names', return_value=[port]), mock.patch.object(self.tool.Document, 'load', return_value=document), \
                 mock.patch.object(self.tool, 'LlamatronApp') as app, contextlib.redirect_stdout(io.StringIO()):
-            self.tool.preview(path=SET_FILE, driver=port, assignment=None, visualizer=MODES[0].OPTION, shared=self.shared)
+            self.tool.preview(path=SET_FILE, driver=port, assignment=None, visualizer=modes.MODES[0].OPTION, shared=self.shared)
         launch = app.call_args.kwargs['launch']
-        self.assertEqual(launch.visualizer, MODES[0].OPTION)
+        self.assertEqual(launch.visualizer, modes.MODES[0].OPTION)
         self.assertTrue(launch.quit_when_finished)
         self.assertFalse(launch.for_recording)
         self.assertTrue(document.setlist().is_real_time())

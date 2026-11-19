@@ -31,9 +31,10 @@ import random
 
 import numpy
 
-from llamatron.visualizers.cells import BRAILLE_COLUMNS, BRAILLE_ROWS, CellPainter
+from llamatron.visualizers import cells
+from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -109,11 +110,11 @@ class Mystify(Visualizer):
         """Return how many corners a track's polygon shows, for the tests."""
         return self.polygon_of(track).count
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if not width or not height:
             return []
-        self._rows = height * BRAILLE_ROWS
-        self._columns = width * BRAILLE_COLUMNS
+        self._rows = height * cells.BRAILLE_ROWS
+        self._columns = width * cells.BRAILLE_COLUMNS
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
         self._last = now
         tempo = heard.tempo_factor()
@@ -209,4 +210,4 @@ class Mystify(Visualizer):
     def put(*, dots, colours, rows, columns, colour):
         """Set dots, and make each cell the colour of its brightest dot."""
         dots[rows, columns] = True
-        numpy.maximum.at(colours, (rows // BRAILLE_ROWS, columns // BRAILLE_COLUMNS), colour.astype(numpy.int32))
+        numpy.maximum.at(colours, (rows // cells.BRAILLE_ROWS, columns // cells.BRAILLE_COLUMNS), colour.astype(numpy.int32))

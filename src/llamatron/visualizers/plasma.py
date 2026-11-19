@@ -30,8 +30,9 @@ import math
 
 import numpy
 
-from llamatron.visualizers.colour import TRACK_COLOURS, Limiter, note_colour
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import colour as colour_values
+from llamatron.visualizers.colour import Limiter, note_colour
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
@@ -67,7 +68,7 @@ SATURATION = 1.0
 WHOLE = 255
 # The edges are brighter than the middle, by this share at the corners, so that it doesn't look like the lava lamp.
 EDGE_BOOST = 0.6
-QUIET_COLOURS = (TRACK_COLOURS[1], TRACK_COLOURS[4], TRACK_COLOURS[5])
+QUIET_COLOURS = (colour_values.TRACK_COLOURS[1], colour_values.TRACK_COLOURS[4], colour_values.TRACK_COLOURS[5])
 # The limiter: bright, and still never flashing.
 MEAN_LEVEL = 130.0
 CEILING = 235
@@ -123,7 +124,7 @@ class Plasma(Visualizer):
         reach = numpy.hypot(self._grid[0] - 0.5, self._grid[1] - 0.5) / math.hypot(0.5, 0.5)
         self._edges = (1.0 + EDGE_BOOST * reach)[:, :, None]
 
-    def pixels(self, *, now, heard=SILENCE):
+    def pixels(self, *, now, heard=heard_values.SILENCE):
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
         self._last = now
         self.hear(heard)

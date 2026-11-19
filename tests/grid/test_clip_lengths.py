@@ -27,7 +27,8 @@ from fractions import Fraction
 from unittest import mock
 
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Row, Section
-from llamatron.playback.song_renderer import GRAB_ARROW, QUARTER_NOTES_PER_WHOLE_NOTE, SECONDS_PER_MINUTE, SongRenderer
+from llamatron.playback import song_renderer
+from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors
 from llamatron.tui.lengths import measured
 from llamatron.support.example_sets import example_sets
@@ -73,7 +74,7 @@ NO_LENGTH = Fraction(0)
 
 def seconds(*, whole_notes, tempo=TEMPO):
     """Return how long a length in whole notes lasts at a tempo, as the program works it out."""
-    return Fraction(whole_notes) * SECONDS_PER_MINUTE * QUARTER_NOTES_PER_WHOLE_NOTE / tempo
+    return Fraction(whole_notes) * song_renderer.SECONDS_PER_MINUTE * song_renderer.QUARTER_NOTES_PER_WHOLE_NOTE / tempo
 
 
 def small_song():
@@ -203,7 +204,7 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
     def test_grabs_in_a_circle_are_a_problem_without_playing(self):
         self.document.set_clip_slot_setting(index=FIRST, track=LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=BASS)
         self.document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.GRAB_TRACK, value=LEAD)
-        self.assertIn(GRAB_ARROW.join([LEAD, BASS, LEAD]), self.document.lengths().scene_problem(FIRST))
+        self.assertIn(song_renderer.GRAB_ARROW.join([LEAD, BASS, LEAD]), self.document.lengths().scene_problem(FIRST))
         self.assertIsNone(self.document.lengths().scene_problem(SECOND))
 
 

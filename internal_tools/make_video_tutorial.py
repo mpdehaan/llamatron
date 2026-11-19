@@ -67,7 +67,8 @@ from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch, recording_problem
 from llamatron.tutorial.subtitles import subtitles
-from llamatron.tutorial.runner import HUMAN_PACE, tutorial
+from llamatron.tutorial import runner
+from llamatron.tutorial.runner import tutorial
 
 RECORDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'record_demo.py')
 RECORDER_MODULE = 'record_demo'
@@ -241,7 +242,7 @@ def main(*, argv=None):
     parser.add_argument('path', help='the set to build, such as examples/learning/01_hello_world.yml')
     parser.add_argument('--use-driver', default=DEFAULT_DRIVER, help='text in the name of the MIDI output port to play through at the end (default IAC)')
     parser.add_argument('--audio-device', default=DEFAULT_AUDIO_DEVICE, help='the loopback audio device to name in the setup instructions (default BlackHole)')
-    parser.add_argument('--pace', type=float, default=HUMAN_PACE, help='seconds between two keys (default %(default)s)')
+    parser.add_argument('--pace', type=float, default=runner.HUMAN_PACE, help='seconds between two keys (default %(default)s)')
     parser.add_argument('--no-play', dest='play', action='store_false', help='build the set and quit, with no instruments and no MIDI port needed')
     parser.add_argument('--save-set-yaml', default=None, metavar='FILE', help='write the set the tutorial built to this file, for debugging')
     parser.add_argument('--go', action='store_true', help='start at once, without waiting for ENTER after the setup is explained')

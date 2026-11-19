@@ -27,11 +27,9 @@ import mido
 from llamatron.music.chord import Chord, ChordType
 from llamatron.music.note import Note, NoteName, Rest
 from llamatron.music.time_signature import TimeSignature
-from llamatron.exporters.clip_tree import TICKS_PER_BEAT, ClipTree, clip_file_name
-from llamatron.exporters.midi_messages import (
-    END_OF_TRACK_META, NOTE_OFF_MESSAGE, NOTE_ON_MESSAGE, TEMPO_META, TIME_SIGNATURE_META, TRACK_NAME_META,
-)
-from llamatron.exporters.timing import VELOCITY
+from llamatron.exporters import midi_messages
+from llamatron.exporters.clip_tree import ClipTree, clip_file_name
+from llamatron.exporters import timing
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
@@ -81,23 +79,23 @@ def events(path):
     tick = 0
     for message in mido.MidiFile(path).tracks[0]:
         tick += message.time
-        if message.type in (NOTE_ON_MESSAGE, NOTE_OFF_MESSAGE):
+        if message.type in (midi_messages.NOTE_ON_MESSAGE, midi_messages.NOTE_OFF_MESSAGE):
             result.append((message.type, message.note, tick))
-        elif message.type == END_OF_TRACK_META:
+        elif message.type == midi_messages.END_OF_TRACK_META:
             result.append((END, None, tick))
     return result
 
 
 def on(*, note, beat):
-    return (NOTE_ON_MESSAGE, note, round(beat * TICKS_PER_BEAT))
+    return (midi_messages.NOTE_ON_MESSAGE, note, round(beat * midi_messages.TICKS_PER_BEAT))
 
 
 def off(*, note, beat):
-    return (NOTE_OFF_MESSAGE, note, round(beat * TICKS_PER_BEAT))
+    return (midi_messages.NOTE_OFF_MESSAGE, note, round(beat * midi_messages.TICKS_PER_BEAT))
 
 
 def end(beat):
-    return (END, None, round(beat * TICKS_PER_BEAT))
+    return (END, None, round(beat * midi_messages.TICKS_PER_BEAT))
 
 
 class TestClipTreeFields(unittest.TestCase):
@@ -260,10 +258,10 @@ class TestFileContents(ExportTestCase):
         return self.path(CLIP + 's_001-t_001.mid')
 
     def tempo(self, path):
-        return next(m.tempo for m in mido.MidiFile(path).tracks[0] if m.type == TEMPO_META)
+        return next(m.tempo for m in mido.MidiFile(path).tracks[0] if m.type == midi_messages.TEMPO_META)
 
     def time_signature(self, path):
-        return next((m.numerator, m.denominator) for m in mido.MidiFile(path).tracks[0] if m.type == TIME_SIGNATURE_META)
+        return next((m.numerator, m.denominator) for m in mido.MidiFile(path).tracks[0] if m.type == midi_messages.TIME_SIGNATURE_META)
 
     def test_each_file_carries_the_song_time_signature(self):
         self.song.set_time_signature(TimeSignature.from_text(WALTZ))
@@ -299,7 +297,7 @@ class TestFileContents(ExportTestCase):
 
     def test_chord_from_note_to_chord(self):
         path = self.export_clip(Clip(notes=[C4.to_chord(ChordType.MAJOR)]))
-        self.assertEqual([e[1] for e in events(path) if e[0] == NOTE_ON_MESSAGE], [48, 52, 55])
+        self.assertEqual([e[1] for e in events(path) if e[0] == midi_messages.NOTE_ON_MESSAGE], [48, 52, 55])
 
     def test_chord_with_a_repeated_pitch_plays_it_once(self):
         path = self.export_clip(Clip(notes=[Chord([C4, Note(name=NoteName.B_SHARP, octave_number=3, length=0.25)])]))
@@ -307,8 +305,8 @@ class TestFileContents(ExportTestCase):
 
     def test_notes_use_a_fixed_velocity(self):
         path = self.export_clip(Clip(notes=[C4]))
-        message = next(m for m in mido.MidiFile(path).tracks[0] if m.type == NOTE_ON_MESSAGE)
-        self.assertEqual(message.velocity, VELOCITY)
+        message = next(m for m in mido.MidiFile(path).tracks[0] if m.type == midi_messages.NOTE_ON_MESSAGE)
+        self.assertEqual(message.velocity, timing.VELOCITY)
 
     def test_each_note_uses_its_own_length(self):
         path = self.export_clip(Clip(notes=[Note(name=NoteName.C, octave_number=4, length=0.5), Note(name=NoteName.D, octave_number=4, length=0.125)]))
@@ -332,9 +330,9 @@ class TestFileContents(ExportTestCase):
         triplet = Fraction(1, 12)
         notes = [Note(name=NoteName.C, octave_number=4, length=triplet), Note(name=NoteName.D, octave_number=4, length=triplet), Note(name=NoteName.E, octave_number=4, length=triplet)]
         self.assertEqual(events(self.export_clip(Clip(notes=notes))), [
-            (NOTE_ON_MESSAGE, 48, 0), (NOTE_OFF_MESSAGE, 48, 160),
-            (NOTE_ON_MESSAGE, 50, 160), (NOTE_OFF_MESSAGE, 50, 320),
-            (NOTE_ON_MESSAGE, 52, 320), (NOTE_OFF_MESSAGE, 52, 480),
+            (midi_messages.NOTE_ON_MESSAGE, 48, 0), (midi_messages.NOTE_OFF_MESSAGE, 48, 160),
+            (midi_messages.NOTE_ON_MESSAGE, 50, 160), (midi_messages.NOTE_OFF_MESSAGE, 50, 320),
+            (midi_messages.NOTE_ON_MESSAGE, 52, 320), (midi_messages.NOTE_OFF_MESSAGE, 52, 480),
             (END, None, 480),
         ])
 
@@ -408,7 +406,7 @@ class TestFileContents(ExportTestCase):
 
     def track_name(self, filename):
         messages = mido.MidiFile(self.path(filename)).tracks[0]
-        names = [message.name for message in messages if message.type == TRACK_NAME_META]
+        names = [message.name for message in messages if message.type == midi_messages.TRACK_NAME_META]
         self.assertEqual(len(names), 1)
         return names[0]
 
@@ -425,7 +423,7 @@ class TestFileContents(ExportTestCase):
 
     def test_file_has_the_expected_resolution_and_format(self):
         midi_file = mido.MidiFile(self.export_clip(Clip()))
-        self.assertEqual(midi_file.ticks_per_beat, TICKS_PER_BEAT)
+        self.assertEqual(midi_file.ticks_per_beat, midi_messages.TICKS_PER_BEAT)
         self.assertEqual(midi_file.type, 0)
         self.assertEqual(len(midi_file.tracks), 1)
 

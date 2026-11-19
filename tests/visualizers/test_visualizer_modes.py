@@ -24,19 +24,25 @@ import unittest
 
 import numpy
 
-from llamatron.visualizers.cells import BRAILLE_COLUMNS, BRAILLE_ROWS
+from llamatron.visualizers import cells
 from llamatron.visualizers.digital_rain import DigitalRain
-from llamatron.visualizers.fireworks import MOST_SPARKS, ROCKET_COLOURS, SUPERSAMPLE, Fireworks, brightest_of_blocks
+from llamatron.visualizers import fireworks as fireworks_values
+from llamatron.visualizers.fireworks import Fireworks, brightest_of_blocks
 from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.visualizers.laser_llama import LaserLlama, mirrored_drawing
-from llamatron.visualizers.life import CELL_COLUMNS, CELL_ROWS, Life, stepped
+from llamatron.visualizers import life as life_values
+from llamatron.visualizers.life import Life, stepped
 from llamatron.visualizers.mandelbrot import escape_times
 from llamatron.visualizers.maze import Maze, carved, inside
-from llamatron.visualizers.mystify import FEWEST_CORNERS, Mystify
-from llamatron.visualizers.pipes import FADE_SECONDS, JOINS, Pipes
-from llamatron.visualizers.piano_roll import COLUMNS_PER_BEAT, DRUM_ROWS, LABEL_COLUMNS, LEGEND_ROWS, LINE_CHARACTER, NOTE_CHARACTER, TRACK_COLOURS, PianoRoll, drum_lane, nth_colour
+from llamatron.visualizers import mystify as mystify_values
+from llamatron.visualizers.mystify import Mystify
+from llamatron.visualizers import pipes as pipes_values
+from llamatron.visualizers.pipes import Pipes
+from llamatron.visualizers import piano_roll
+from llamatron.visualizers.piano_roll import PianoRoll, drum_lane, nth_colour
 from llamatron.strings import visualizers
-from llamatron.visualizers.warpzone import BALL_RADIUS, BALL_SPEED, WarpZone
+from llamatron.visualizers import warpzone
+from llamatron.visualizers.warpzone import WarpZone
 import random
 
 WIDTH = 40
@@ -76,26 +82,26 @@ class TestFireworks(unittest.TestCase):
         fireworks.resized(columns=WIDTH // 2, rows=HEIGHT)
         for number in range(60):
             fireworks.pixels(now=number * FRAME_SECONDS, heard=heard(every_track_starting(tracks=MOST_TRACKS, number=number, every=1)))
-            self.assertLessEqual(fireworks.spark_count(), MOST_SPARKS)
+            self.assertLessEqual(fireworks.spark_count(), fireworks_values.MOST_SPARKS)
         self.assertGreater(fireworks.spark_count(), 0)
 
     def test_the_rockets_colours_are_far_apart_from_one_another(self):
-        for place, colour in enumerate(ROCKET_COLOURS):
-            for other in ROCKET_COLOURS[place + 1:]:
+        for place, colour in enumerate(fireworks_values.ROCKET_COLOURS):
+            for other in fireworks_values.ROCKET_COLOURS[place + 1:]:
                 self.assertGreater(math.dist(colour, other), FAR_APART)
 
     def test_the_rockets_take_their_colours_in_equal_shares(self):
         fireworks = Fireworks()
         rounds = 3
-        taken = [fireworks.next_colour() for _ in range(rounds * len(ROCKET_COLOURS))]
-        for colour in ROCKET_COLOURS:
+        taken = [fireworks.next_colour() for _ in range(rounds * len(fireworks_values.ROCKET_COLOURS))]
+        for colour in fireworks_values.ROCKET_COLOURS:
             self.assertEqual(taken.count(colour), rounds)
 
     def test_a_spark_stays_one_crisp_big_pixel_when_the_picture_is_taken_down(self):
-        fine = numpy.zeros((SUPERSAMPLE * 2, SUPERSAMPLE * 2, 3), dtype=numpy.int32)
-        fine[0, 0] = ROCKET_COLOURS[0]
-        small = brightest_of_blocks(fine=fine, factor=SUPERSAMPLE)
-        self.assertEqual(tuple(small[0, 0]), ROCKET_COLOURS[0])
+        fine = numpy.zeros((fireworks_values.SUPERSAMPLE * 2, fireworks_values.SUPERSAMPLE * 2, 3), dtype=numpy.int32)
+        fine[0, 0] = fireworks_values.ROCKET_COLOURS[0]
+        small = brightest_of_blocks(fine=fine, factor=fireworks_values.SUPERSAMPLE)
+        self.assertEqual(tuple(small[0, 0]), fireworks_values.ROCKET_COLOURS[0])
         self.assertEqual(int(small[1:, :].sum() + small[:, 1:].sum()), 0)
 
 
@@ -108,10 +114,10 @@ class TestWarpZone(unittest.TestCase):
             before = {track: ball.place.copy() for track, ball in zone.balls().items()}
             zone.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=heard(every_track_starting(tracks=TRACKS, number=number)))
             for track, ball in zone.balls().items():
-                self.assertTrue(0 <= ball.place[0] <= HEIGHT * BRAILLE_ROWS - 1 and 0 <= ball.place[1] <= WIDTH * BRAILLE_COLUMNS - 1)
+                self.assertTrue(0 <= ball.place[0] <= HEIGHT * cells.BRAILLE_ROWS - 1 and 0 <= ball.place[1] <= WIDTH * cells.BRAILLE_COLUMNS - 1)
                 self.assertAlmostEqual(math.hypot(*ball.heading), 1.0, delta=TOLERANCE)
                 moved = math.hypot(*(ball.place - before[track]))
-                self.assertLessEqual(moved, BALL_SPEED * HEIGHT * BRAILLE_ROWS * FRAME_SECONDS + 2 * BALL_RADIUS + TOLERANCE)
+                self.assertLessEqual(moved, warpzone.BALL_SPEED * HEIGHT * cells.BRAILLE_ROWS * FRAME_SECONDS + 2 * warpzone.BALL_RADIUS + TOLERANCE)
 
 
 class TestPipes(unittest.TestCase):
@@ -123,7 +129,7 @@ class TestPipes(unittest.TestCase):
             lines = pipes.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=heard(every_track_starting(tracks=TRACKS, number=number)))
         drawn = {character for line in lines for character in line.plain if character != SPACE}
         self.assertTrue(drawn)
-        self.assertTrue(drawn & set(JOINS.values()))
+        self.assertTrue(drawn & set(pipes_values.JOINS.values()))
 
     def test_a_full_area_fades_and_starts_again_empty(self):
         pipes = Pipes()
@@ -132,7 +138,7 @@ class TestPipes(unittest.TestCase):
             pipes.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=heard(every_track_starting(tracks=TRACKS, number=number, every=1)))
             number += 1
         self.assertTrue(pipes.is_fading())
-        for step in range(int(FADE_SECONDS / FRAME_SECONDS) + 2):
+        for step in range(int(pipes_values.FADE_SECONDS / FRAME_SECONDS) + 2):
             lines = pipes.frame(width=WIDTH, height=HEIGHT, now=(number + step) * FRAME_SECONDS, heard=heard([]))
         self.assertFalse(pipes.is_fading())
         self.assertTrue(all(not line.plain.strip() for line in lines))
@@ -169,9 +175,9 @@ class TestMystify(unittest.TestCase):
         mystify = Mystify()
         chord = [HeardNote(0, MIDDLE_C + step, FULL_VELOCITY, True, False) for step in (0, 4, 7)]
         mystify.frame(width=WIDTH, height=HEIGHT, now=0.0, heard=heard(chord))
-        self.assertEqual(mystify.corners_of(0), FEWEST_CORNERS + len(chord) - 1)
+        self.assertEqual(mystify.corners_of(0), mystify_values.FEWEST_CORNERS + len(chord) - 1)
         mystify.frame(width=WIDTH, height=HEIGHT, now=FRAME_SECONDS, heard=heard(chord[:1]))
-        self.assertEqual(mystify.corners_of(0), FEWEST_CORNERS)
+        self.assertEqual(mystify.corners_of(0), mystify_values.FEWEST_CORNERS)
 
 
 # A drawing of two lines that lean, and the same drawing facing the other way.
@@ -216,7 +222,7 @@ class TestLife(unittest.TestCase):
     def test_a_note_brings_cells_to_life_and_an_empty_grid_is_seeded_afresh(self):
         life = Life()
         life.frame(width=WIDTH, height=HEIGHT, now=0.0, heard=heard([]))
-        self.assertEqual(life.alive().shape, (HEIGHT // CELL_ROWS, WIDTH // CELL_COLUMNS))
+        self.assertEqual(life.alive().shape, (HEIGHT // life_values.CELL_ROWS, WIDTH // life_values.CELL_COLUMNS))
         before = int(life.alive().sum())
         life.frame(width=WIDTH, height=HEIGHT, now=FRAME_SECONDS, heard=heard(every_track_starting(tracks=TRACKS, number=0)))
         self.assertGreaterEqual(int(life.alive().sum()), before)
@@ -262,7 +268,7 @@ class TestPianoRoll(unittest.TestCase):
         return lines, now
 
     def row_with_note(self, lines):
-        return [place for place, line in enumerate(lines) if NOTE_CHARACTER in line.plain[LABEL_COLUMNS:]]
+        return [place for place, line in enumerate(lines) if piano_roll.NOTE_CHARACTER in line.plain[piano_roll.LABEL_COLUMNS:]]
 
     def test_a_frame_fills_its_area(self):
         lines, _ = self.played(roll=PianoRoll(), frames=1, notes=[])
@@ -273,15 +279,15 @@ class TestPianoRoll(unittest.TestCase):
         roll = PianoRoll()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)])
         row = self.row_with_note(lines)[0]
-        self.assertEqual(lines[row].plain[-1], NOTE_CHARACTER)
+        self.assertEqual(lines[row].plain[-1], piano_roll.NOTE_CHARACTER)
         held = HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, False, False)
         lines, now = self.played(roll=roll, frames=20, notes=[held], start=now)
-        sounding = lines[row].plain.count(NOTE_CHARACTER)
+        sounding = lines[row].plain.count(piano_roll.NOTE_CHARACTER)
         self.assertGreater(sounding, 3)
-        self.assertEqual(lines[row].plain[-1], NOTE_CHARACTER)
+        self.assertEqual(lines[row].plain[-1], piano_roll.NOTE_CHARACTER)
         lines, now = self.played(roll=roll, frames=20, notes=[], start=now)
-        self.assertNotEqual(lines[row].plain[-1], NOTE_CHARACTER)
-        self.assertEqual(lines[row].plain.count(NOTE_CHARACTER), sounding)
+        self.assertNotEqual(lines[row].plain[-1], piano_roll.NOTE_CHARACTER)
+        self.assertEqual(lines[row].plain.count(piano_roll.NOTE_CHARACTER), sounding)
 
     def test_it_rolls_columns_per_beat(self):
         roll = PianoRoll()
@@ -289,7 +295,7 @@ class TestPianoRoll(unittest.TestCase):
         row = self.row_with_note(lines)[0]
         beats = 2
         lines, _ = self.played(roll=roll, frames=int(beats * BEAT_SECONDS / FRAME_SECONDS), notes=[], start=now)
-        self.assertAlmostEqual(lines[row].plain.index(NOTE_CHARACTER), ROLL_WIDTH - 1 - beats * COLUMNS_PER_BEAT, delta=1)
+        self.assertAlmostEqual(lines[row].plain.index(piano_roll.NOTE_CHARACTER), ROLL_WIDTH - 1 - beats * piano_roll.COLUMNS_PER_BEAT, delta=1)
 
     def test_drums_take_lanes_at_the_bottom_only_once_a_drum_plays(self):
         roll = PianoRoll()
@@ -298,13 +304,13 @@ class TestPianoRoll(unittest.TestCase):
         lines, _ = self.played(roll=roll, frames=1, notes=[HeardNote(DRUM_TRACK, KICK, FULL_VELOCITY, True, True)], start=now)
         kick_row = ROLL_HEIGHT - 1 - drum_lane(KICK)
         self.assertTrue(lines[kick_row].plain.startswith(visualizers.MSG_PIANO_ROLL_DRUM_LANES[drum_lane(KICK)]))
-        self.assertEqual(lines[kick_row].plain[-1], NOTE_CHARACTER)
-        self.assertEqual(len(visualizers.MSG_PIANO_ROLL_DRUM_LANES), DRUM_ROWS)
+        self.assertEqual(lines[kick_row].plain[-1], piano_roll.NOTE_CHARACTER)
+        self.assertEqual(len(visualizers.MSG_PIANO_ROLL_DRUM_LANES), piano_roll.DRUM_ROWS)
 
     def test_every_key_has_a_row_and_each_c_a_line(self):
         roll = PianoRoll()
         lines, _ = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)])
-        c_rows = [place for place, line in enumerate(lines) if LINE_CHARACTER in line.plain]
+        c_rows = [place for place, line in enumerate(lines) if piano_roll.LINE_CHARACTER in line.plain]
         self.assertGreaterEqual(len(c_rows), 2)
         self.assertEqual(c_rows[1] - c_rows[0], OCTAVE)
 
@@ -360,8 +366,8 @@ class TestPianoRoll(unittest.TestCase):
         self.assertNotIn(TRACK_NAMES[DRUM_TRACK], lines[0].plain)
         self.assertEqual(roll.track_colour(DRUM_TRACK), nth_colour(0))
         self.assertEqual(roll.track_colour(LEAD_TRACK), nth_colour(1))
-        self.assertEqual(nth_colour(len(TRACK_COLOURS)), nth_colour(0))
-        self.assertEqual(LEGEND_ROWS, 1)
+        self.assertEqual(nth_colour(len(piano_roll.TRACK_COLOURS)), nth_colour(0))
+        self.assertEqual(piano_roll.LEGEND_ROWS, 1)
 
 class TestDigitalRain(unittest.TestCase):
 

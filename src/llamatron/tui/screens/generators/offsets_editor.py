@@ -27,7 +27,7 @@ from rich.text import Text
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.generators.arp import MAX_OFFSET, MAX_OFFSETS
+from llamatron.generators import arp as arp_values
 from llamatron.tui.components.signed_gauge import SignedGauge
 from llamatron.tui.drawing import Box, NOTHING, Style
 from llamatron.strings import help as help_text, labels, messages
@@ -61,8 +61,8 @@ class OffsetsEditor(ShowsNamedItem, OneRowEditor):
     CRUMBS_AFTER = (labels.Crumb.OFFSETS,)
     # A cell is wide enough for the cursor's marks around the largest value, like <+24▲> or <<16>>.
     CELL_WIDTH = 6
-    MOST = MAX_OFFSET
-    MOST_STEPS = MAX_OFFSETS
+    MOST = arp_values.MAX_OFFSET
+    MOST_STEPS = arp_values.MAX_OFFSETS
     INSERT = KEYS.INSERT_STEP
     REMOVE = KEYS.REMOVE_STEP
 

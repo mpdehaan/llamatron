@@ -39,7 +39,8 @@ from llamatron.composition.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime.timeline import NOTE_ON, Route, song_timeline
+from llamatron.realtime import timeline
+from llamatron.realtime.timeline import Route, song_timeline
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.drawing import NOTHING
 from llamatron.tui.document import Document
@@ -59,8 +60,10 @@ from llamatron.tui.key_table import first_key, key_event
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tutorial.steps import Press
 from llamatron.tui.transport import Transport
-from llamatron.tutorial.plan import without_instrument, WORDS, TutorialPlan, TutorialStuck
-from llamatron.tutorial.runner import DIALOG_TYPING_SHARE, HUMAN_PACE, LINE_SECONDS, NO_PACE, READING_CHARACTERS_PER_SECOND, SAY_PAUSES, Narrator, TutorialRunner, tutorial
+from llamatron.tutorial import plan as plan_values
+from llamatron.tutorial.plan import without_instrument, TutorialPlan, TutorialStuck
+from llamatron.tutorial import runner as runner_values
+from llamatron.tutorial.runner import Narrator, TutorialRunner, tutorial
 from llamatron.tui.caption_strip import parts
 from llamatron.tutorial.steps import Say
 from tests.support.ui_testing import UITest
@@ -133,7 +136,7 @@ class TutorialTest(UITest):
 
     def make_app(self):
         self.target = Setlist.read_file(os.path.join(HERE, self.TARGET_PATH))
-        launch = Launch(driven_by=tutorial(target=self.target, port=PORT if self.PLAYS else None, pace=NO_PACE), quit_when_finished=self.PLAYS, lead_out_seconds=A_MOMENT)
+        launch = Launch(driven_by=tutorial(target=self.target, port=PORT if self.PLAYS else None, pace=runner_values.NO_PACE), quit_when_finished=self.PLAYS, lead_out_seconds=A_MOMENT)
         app = LlamatronApp(document=Document(setlist=Setlist.new(), path=None), launch=launch)
         self.clock = SteppedClock()
         self.outputs = {}
@@ -289,7 +292,7 @@ class TestTutorialPlays(TutorialTest):
         self.app.transport.tick()
         self.app.transport.player().sender().send_due()
         self.assertFalse(self.app.transport.is_playing())
-        note_ons = [data for _, data in self.outputs[PORT].sent if data[0] & KIND_MASK == NOTE_ON]
+        note_ons = [data for _, data in self.outputs[PORT].sent if data[0] & KIND_MASK == timeline.NOTE_ON]
         self.assertGreater(len(note_ons), 0)
         await self.built()
         self.assertEqual(self.said()[-1], narration.MSG_NARRATE_QUITTING)
@@ -336,9 +339,9 @@ class TestTutorialPace(unittest.TestCase):
         erase = first_key(keybindings.PromptDialog.ERASE)
         done = first_key(keybindings.PromptDialog.DONE)
         self.assertEqual(steps, [Press(erase, True)] * len(OLD_NAME) + [Press(letter, True) for letter in TYPED_NAME] + [Say(narration.MSG_EXPLAIN_ENTER), Press(done)])
-        runner = TutorialRunner(app=None, plan=plan, pace=HUMAN_PACE)
-        self.assertEqual(runner.key_seconds(steps[-1]), HUMAN_PACE)
-        self.assertEqual(runner.key_seconds(steps[len(OLD_NAME)]), HUMAN_PACE * DIALOG_TYPING_SHARE)
+        runner = TutorialRunner(app=None, plan=plan, pace=runner_values.HUMAN_PACE)
+        self.assertEqual(runner.key_seconds(steps[-1]), runner_values.HUMAN_PACE)
+        self.assertEqual(runner.key_seconds(steps[len(OLD_NAME)]), runner_values.HUMAN_PACE * runner_values.DIALOG_TYPING_SHARE)
 
     def test_text_typed_outside_a_dialog_goes_at_the_pace_and_is_never_called_or_explained(self):
         plan = TutorialPlan(app=ScreenShown(page_of(PatternsPage)), target=Setlist.new())
@@ -370,13 +373,13 @@ class TestTutorialCallsKeys(unittest.TestCase):
 
     def test_a_letter_elsewhere_is_called_with_its_legends_words_once_on_each_kind_of_page(self):
         self.app.screen = page_of(PatternsPage)
-        self.assertEqual(self.pressed(keybindings.ListPage.ADD), [Press(Key.A, False, narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[WORDS]))])
+        self.assertEqual(self.pressed(keybindings.ListPage.ADD), [Press(Key.A, False, narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[plan_values.WORDS]))])
         self.assertEqual(self.pressed(keybindings.ListPage.ADD), [Press(Key.A)])
-        self.assertEqual(self.said(keybindings.ListPage.RENAME), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.N, what=keybindings.ListPage.RENAME[WORDS])])
+        self.assertEqual(self.said(keybindings.ListPage.RENAME), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.N, what=keybindings.ListPage.RENAME[plan_values.WORDS])])
         self.app.screen = page_of(SongsPage)
-        self.assertEqual(self.said(keybindings.ListPage.ADD), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[WORDS])])
+        self.assertEqual(self.said(keybindings.ListPage.ADD), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[plan_values.WORDS])])
         self.app.screen = mock.Mock(spec=ConfirmDialog)
-        self.assertEqual(self.said(keybindings.ConfirmDialog.YES), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.Y, what=keybindings.ConfirmDialog.YES[WORDS])])
+        self.assertEqual(self.said(keybindings.ConfirmDialog.YES), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.Y, what=keybindings.ConfirmDialog.YES[plan_values.WORDS])])
 
     def test_other_keys_with_words_are_never_called(self):
         self.app.screen = page_of(PatternsPage)
@@ -445,9 +448,9 @@ class TestTutorialRunnerPauses(unittest.IsolatedAsyncioTestCase):
         narrator = mock.Mock(spec=Narrator)
         narrator.say.side_effect = lambda *, text, seconds: happened.append(text)
         narrator.parts.side_effect = lambda text: [text]
-        called = narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[WORDS])
+        called = narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[plan_values.WORDS])
         plan = StepsOnly([Say(narration.MSG_NARRATE_START), Press(Key.S), Press(Key.A, False, called), Press(Key.B)])
-        runner = TutorialRunner(app=app, plan=plan, pace=HUMAN_PACE, narrator=narrator)
+        runner = TutorialRunner(app=app, plan=plan, pace=runner_values.HUMAN_PACE, narrator=narrator)
 
         async def paused(runner, *, pilot, seconds):
             happened.append(seconds)
@@ -455,13 +458,13 @@ class TestTutorialRunnerPauses(unittest.IsolatedAsyncioTestCase):
             await runner.start()
         self.assertIsNone(runner.problem)
         # Every caption shows long enough to read, and a second more.
-        say_pause = max(HUMAN_PACE * SAY_PAUSES, len(narration.MSG_NARRATE_START) / READING_CHARACTERS_PER_SECOND) + LINE_SECONDS
-        called_pause = len(called) / READING_CHARACTERS_PER_SECOND + LINE_SECONDS
-        self.assertEqual(happened, [narration.MSG_NARRATE_START, say_pause, Key.S, HUMAN_PACE, called, called_pause, Key.A, HUMAN_PACE, Key.B, HUMAN_PACE])
+        say_pause = max(runner_values.HUMAN_PACE * runner_values.SAY_PAUSES, len(narration.MSG_NARRATE_START) / runner_values.READING_CHARACTERS_PER_SECOND) + runner_values.LINE_SECONDS
+        called_pause = len(called) / runner_values.READING_CHARACTERS_PER_SECOND + runner_values.LINE_SECONDS
+        self.assertEqual(happened, [narration.MSG_NARRATE_START, say_pause, Key.S, runner_values.HUMAN_PACE, called, called_pause, Key.A, runner_values.HUMAN_PACE, Key.B, runner_values.HUMAN_PACE])
         self.assertEqual(runner.pressed, 3)
 
     def test_at_no_pace_a_caption_waits_nothing_and_a_long_one_waits_longer(self):
         short = narration.MSG_NARRATE_START[:SHORT_CAPTION]
-        self.assertEqual(TutorialRunner(app=None, plan=StepsOnly([]), pace=NO_PACE).caption_seconds(part=short, least=NO_PACE), NO_PACE)
-        paced = TutorialRunner(app=None, plan=StepsOnly([]), pace=HUMAN_PACE)
-        self.assertLess(paced.caption_seconds(part=short, least=NO_PACE), paced.caption_seconds(part=short * LONGER, least=NO_PACE))
+        self.assertEqual(TutorialRunner(app=None, plan=StepsOnly([]), pace=runner_values.NO_PACE).caption_seconds(part=short, least=runner_values.NO_PACE), runner_values.NO_PACE)
+        paced = TutorialRunner(app=None, plan=StepsOnly([]), pace=runner_values.HUMAN_PACE)
+        self.assertLess(paced.caption_seconds(part=short, least=runner_values.NO_PACE), paced.caption_seconds(part=short * LONGER, least=runner_values.NO_PACE))

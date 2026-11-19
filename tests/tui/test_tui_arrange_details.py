@@ -37,7 +37,7 @@ from llamatron.tui.screens.generators.generator_pages import generator_page_of_k
 from llamatron.tui.screens.arrange.arrange_page import HEADER_ROW
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.tui.drawing import Style
-from llamatron.visualizers.modes import MODES
+from llamatron.visualizers import modes
 
 FIRST_SCENE = 0
 SECOND_SCENE = 1
@@ -271,7 +271,7 @@ class TestArrangeDetailsView(UITest):
 
     async def test_the_visualizer_hides_the_details_and_they_come_back_after_it(self):
         await self.press(keybindings.ArrangePage.SHOW_DETAILS)
-        self.page.show_visualizer(MODES[0])
+        self.page.show_visualizer(modes.MODES[0])
         self.assertFalse(self.page.shows_details())
         self.page.hide_visualizer()
         self.assertTrue(self.page.shows_details())

@@ -59,7 +59,8 @@ from llamatron.tui.screens.shared.shared import play_through, scene_name
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.uses import grabbers
 from llamatron.tui import keybindings
-from llamatron.visualizers.modes import MODES, mode_called
+from llamatron.visualizers import modes
+from llamatron.visualizers.modes import mode_called
 from rich.text import Text
 
 from llamatron.tui.drawing import NOTHING, Style, laid_over, padded
@@ -403,7 +404,7 @@ class ArrangePage(Page):
     def shown_modes(self):
         """Return the visualizer modes the key steps through, every mode but those the set hides, in order."""
         hidden = self.document().setlist().get_hidden_visualizers()
-        return [mode for mode in MODES if mode.OPTION not in hidden]
+        return [mode for mode in modes.MODES if mode.OPTION not in hidden]
 
     def first_mode(self):
         """Return the mode the visualizer key shows first: the song's choice, else the set's, when it isn't hidden, and otherwise the first shown."""

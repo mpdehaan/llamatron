@@ -19,7 +19,7 @@ import unittest
 
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.exporters.timing import GLIDE_OVERLAP
+from llamatron.exporters import timing
 from llamatron.support.rational import Rational
 from tests.support.rendering import setlist_from_data
 from tests.playback.test_registers import LEAD, X, pattern, song
@@ -72,7 +72,7 @@ def starts(*rows):
 class TestGlide(unittest.TestCase):
 
     def test_a_step_that_is_on_runs_its_note_into_the_next(self):
-        self.assertEqual(lengths(glide([ON, OFF]))[:2], [QUARTER + GLIDE_OVERLAP, QUARTER])
+        self.assertEqual(lengths(glide([ON, OFF]))[:2], [QUARTER + timing.GLIDE_OVERLAP, QUARTER])
 
     def test_the_glide_amount_sets_how_far(self):
         self.assertEqual(lengths(glide([ON], glide_amount='1/16'))[0], QUARTER + SIXTEENTH)

@@ -25,7 +25,8 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
-from llamatron.generators.arp import ChordOrder, MAX_OFFSETS, OctaveJump
+from llamatron.generators import arp
+from llamatron.generators.arp import ChordOrder, OctaveJump
 from llamatron.music import note
 from llamatron.music.note import NoteName
 from llamatron.tui.components.keyboard import Keyboard, KEY_WIDTH as KEYBOARD_KEY_WIDTH
@@ -728,7 +729,7 @@ class TestOffsetsEditorOnAUsualConsole(UITest):
         # Left on the first step stays there, since no cursor goes round, and Right to the last step scrolls the row.
         await self.press(Key.LEFT)
         self.assertIn(marks.MSG_CURSOR_STEP_MARKS.format(text=1), self.text())
-        await self.press(*[Key.RIGHT] * (MAX_OFFSETS - 1))
+        await self.press(*[Key.RIGHT] * (arp.MAX_OFFSETS - 1))
         self.assertIn(marks.MSG_MORE_BEFORE + fixed_text(marks.MSG_STEPS_SHOWN) + '8-16', self.text())
         self.assertIn(marks.MSG_CURSOR_STEP_MARKS.format(text=16), self.text())
 

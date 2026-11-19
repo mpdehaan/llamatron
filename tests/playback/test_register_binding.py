@@ -36,7 +36,7 @@ from llamatron.support.rational import Rational
 from llamatron.composition.setlist import Setlist
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import ArpSetting, ArpSettings
-from llamatron.generators.arp import REGISTERS as ARP_REGISTERS
+from llamatron.generators import arp as arp_values
 from tests.support.rendering import as_setlist, render_data
 from tests.playback.test_registers import AX, BX, CX, LEAD, X, every_step, one_clip, pattern, pitches, scale_notes, song, velocities
 
@@ -269,7 +269,7 @@ class TestArpAdds(unittest.TestCase):
         self.assertFalse(Setlist.from_data(data=as_setlist(self.driven_by_an_arp(arp={}))).changes_registers())
 
     def test_the_arp_names_the_registers_as_the_format_does(self):
-        self.assertEqual(list(ARP_REGISTERS), file_format.REGISTER_NAMES)
+        self.assertEqual(list(arp_values.REGISTERS), file_format.REGISTER_NAMES)
 
     def test_inserting_and_removing_an_offset_keeps_the_step_adds_lined_up(self):
         settings = ArpSettings({ArpSetting.STEP: SIXTEENTH, ArpSetting.OFFSETS: [0, 0], generator_settings.ARP_STEP_ADDS[AX]: [ADDED, None]})

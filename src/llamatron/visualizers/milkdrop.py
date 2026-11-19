@@ -31,7 +31,7 @@ import numpy
 
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.fields import Discs, blurred
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
@@ -118,7 +118,7 @@ class Milkdrop(Visualizer):
             self._warp_columns = numpy.clip(numpy.rint(down * sine + across * cosine + middle_column), 0, self._columns - 1).astype(numpy.intp)
         return self._warp_rows, self._warp_columns
 
-    def pixels(self, *, now, heard=SILENCE):
+    def pixels(self, *, now, heard=heard_values.SILENCE):
         seconds = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)
         self._last = now
         self._motion += seconds * heard.tempo_factor()

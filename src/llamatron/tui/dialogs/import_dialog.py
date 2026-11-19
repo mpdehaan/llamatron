@@ -29,7 +29,8 @@ from llamatron.composition import limits
 from llamatron.strings import importing, marks
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import copy_name, default_scale_name
-from llamatron.importers.midi_import import LONGEST_PATTERN_CHOICES, ImportChoices
+from llamatron.importers import midi_import as midi_import_values
+from llamatron.importers.midi_import import ImportChoices
 from llamatron.support.rational import Rational
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -112,8 +113,8 @@ class ImportDialog(Dialog):
     def step(self, direction):
         """Step the Longest pattern or the Step size field through its choices, stopping at either end."""
         if self.row == LONGEST:
-            place = LONGEST_PATTERN_CHOICES.index(self.choices.longest_pattern)
-            self.choices.longest_pattern = LONGEST_PATTERN_CHOICES[max(0, min(place + direction, len(LONGEST_PATTERN_CHOICES) - 1))]
+            place = midi_import_values.LONGEST_PATTERN_CHOICES.index(self.choices.longest_pattern)
+            self.choices.longest_pattern = midi_import_values.LONGEST_PATTERN_CHOICES[max(0, min(place + direction, len(midi_import_values.LONGEST_PATTERN_CHOICES) - 1))]
         else:
             place = STEP_SIZES.index(self.choices.step_size)
             self.choices.step_size = STEP_SIZES[max(0, min(place + direction, len(STEP_SIZES) - 1))]

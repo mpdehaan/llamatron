@@ -27,7 +27,8 @@ import wave
 
 import numpy
 
-from llamatron.exporters.wave_level import HIGHEST_SAMPLE, PARTIAL_SUFFIX, peak_sample
+from llamatron.exporters import wave_level
+from llamatron.exporters.wave_level import peak_sample
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'normalize_wave.py'
 MODULE_NAME = 'normalize_wave'
@@ -100,7 +101,7 @@ class TestNormalizeWave(unittest.TestCase):
         _, _, samples = self.normalized(samples_with(peak=QUIET_PEAK, quiet=QUIET_PART))
         target = peak_sample()
         self.assertAlmostEqual(int(numpy.max(numpy.abs(samples.astype(numpy.int32)))), target, delta=ROUNDING)
-        self.assertLess(target, HIGHEST_SAMPLE)
+        self.assertLess(target, wave_level.HIGHEST_SAMPLE)
 
     def test_the_quiet_and_loud_parts_keep_their_difference(self):
         _, _, samples = self.normalized(samples_with(peak=QUIET_PEAK, quiet=QUIET_PART))
@@ -115,7 +116,7 @@ class TestNormalizeWave(unittest.TestCase):
     def test_the_file_keeps_its_channels_rate_and_length(self):
         before, after, _ = self.normalized(samples_with(peak=QUIET_PEAK, quiet=QUIET_PART))
         self.assertEqual((after.nchannels, after.sampwidth, after.framerate, after.nframes), (before.nchannels, before.sampwidth, before.framerate, before.nframes))
-        self.assertFalse(os.path.exists(self.path + PARTIAL_SUFFIX))
+        self.assertFalse(os.path.exists(self.path + wave_level.PARTIAL_SUFFIX))
 
     def test_a_silent_file_is_left_as_it_is(self):
         silent = numpy.zeros(FRAME_RATE * STEREO, dtype=numpy.int16)

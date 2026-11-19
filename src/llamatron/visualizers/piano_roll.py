@@ -29,7 +29,7 @@ The amounts are named constants here, to tune by eye.
 from llamatron.composition import file_format
 from llamatron.strings import visualizers
 from llamatron.visualizers.cells import CellPainter
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 
 # How fast the notes roll, in columns a beat, so a sixteenth is one column.
@@ -119,7 +119,7 @@ class PianoRoll(Visualizer):
         self._notes = []
         self._centre = float(START_CENTRE)
         self._last = None
-        self._seconds_per_beat = SILENCE.seconds_per_beat
+        self._seconds_per_beat = heard_values.SILENCE.seconds_per_beat
         self._names = ()
         # The tracks heard so far, by their places in the song, in the order they were first heard, which gives each its colour.
         self._heard_tracks = []
@@ -140,7 +140,7 @@ class PianoRoll(Visualizer):
         """Return the notes on the roll."""
         return list(self._notes)
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if width <= LABEL_COLUMNS or height <= LEGEND_ROWS:
             return []
         elapsed = 0.0 if self._last is None else min(max(now - self._last, 0.0), LONGEST_FRAME_SECONDS)

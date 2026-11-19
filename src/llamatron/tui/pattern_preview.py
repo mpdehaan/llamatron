@@ -43,10 +43,10 @@ from llamatron.composition.pattern import Pattern
 from llamatron.composition.scene import Scene
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.track import Track
-from llamatron.exporters.midi_arrangement import DRUM_CHANNEL_BYTE, MELODIC_CHANNEL_BYTES
+from llamatron.exporters import midi_arrangement
 from llamatron.music import note
 from llamatron.playback.step_order import walk_order
-from llamatron.realtime.fluidsynth import FLUIDSYNTH_PORT
+from llamatron.realtime import fluidsynth
 from llamatron.realtime.timeline import Route
 from llamatron.tui.transport import CHANNEL_OFFSET, Transport
 
@@ -54,7 +54,7 @@ from llamatron.tui.transport import CHANNEL_OFFSET, Transport
 PREVIEW_SCENE = 0
 # The FluidSynth channel a preview's notes go to: the last of the melodic channels, which a song takes only with fifteen tracks through FluidSynth, so
 # that the preview's program change never changes the sound of a track of the song.
-PREVIEW_CHANNEL_BYTE = MELODIC_CHANNEL_BYTES[-1]
+PREVIEW_CHANNEL_BYTE = midi_arrangement.MELODIC_CHANNEL_BYTES[-1]
 # General MIDI's first sound, the piano, as the program byte sent.
 PIANO_PROGRAM = 0
 # How many passes a preview plays of a direction that chooses its steps as it goes: one, as many choices as the pattern has steps.
@@ -242,7 +242,7 @@ class PatternPreview(Transport):
         name = self.instrument_of(pattern)
         if name is not None and not self.real().setlist().get_instrument(name).uses_fluidsynth():
             return False
-        return any((route.port, route.channel) == (FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE) for route in routes.values())
+        return any((route.port, route.channel) == (fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE) for route in routes.values())
 
     def routes(self, *, instead=None):
         """Return the one route of the track made for the pattern."""
@@ -269,18 +269,18 @@ class PatternPreview(Transport):
                 # Without FluidSynth a sound is tried on the song's Preview instrument, which plays the notes in whatever sound the device has.
                 instrument = real.setlist().get_instrument(real.song().get_preview_instrument_name())
                 return Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
-            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False) if program is None else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, program, keyswitches=False)
+            return Route(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False) if program is None else Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, program, keyswitches=False)
         if self._clip is not None:
-            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False) if self._clip_is_drums() else Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
+            return Route(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False) if self._clip_is_drums() else Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
         if real.song().get_pattern(self._pattern).is_drum():
-            return Route(FLUIDSYNTH_PORT, DRUM_CHANNEL_BYTE, None, keyswitches=False)
+            return Route(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False)
         name = self.instrument_of(self._pattern)
         if name is None:
-            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
+            return Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
         instrument = real.setlist().get_instrument(name)
         if instrument.uses_fluidsynth():
             sound = instrument.get_gm_sound()
-            return Route(FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
+            return Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
         return Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
 
     # Playing.

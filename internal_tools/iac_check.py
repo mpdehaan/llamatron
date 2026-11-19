@@ -52,10 +52,11 @@ from llamatron.composition.setlist import Setlist
 from llamatron.music import midi
 from llamatron.music import note
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime.engine import ALL_NOTES_OFF, ALL_SOUND_OFF
+from llamatron.realtime import engine
 from llamatron.realtime.outputs import midi_library, output_port_names
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
-from llamatron.realtime.timeline import CONTROL_CHANGE, NOTE_OFF, NOTE_ON, Route, song_timeline
+from llamatron.realtime import timeline
+from llamatron.realtime.timeline import Route, song_timeline
 
 DEFAULT_SECONDS = 10.0
 # The scale run: the degrees of one octave up and back down, a note a beat, in the new set's C major.
@@ -92,7 +93,7 @@ CLOCK_WHAT = 'MIDI clock tick, which a DAW sends 24 times a beat while it plays'
 ACTIVE_SENSING_WHAT = 'active sensing, a keep-alive some keyboards send'
 START_STOP_WHAT = 'transport start, continue or stop'
 UNKNOWN_WHAT = 'unknown'
-CONTROL_NAMES = {1: 'mod wheel', 7: 'volume', 10: 'pan', 11: 'expression', 64: 'sustain pedal', ALL_SOUND_OFF: 'all sound off', ALL_NOTES_OFF: 'all notes off', 121: 'reset all controllers'}
+CONTROL_NAMES = {1: 'mod wheel', 7: 'volume', 10: 'pan', 11: 'expression', 64: 'sustain pedal', engine.ALL_SOUND_OFF: 'all sound off', engine.ALL_NOTES_OFF: 'all notes off', 121: 'reset all controllers'}
 NAMED_CONTROL_WHAT = 'control change {number} ({name}) = {value}'
 PROGRAM_CHANGE = 0xC0
 CHANNEL_PRESSURE = 0xD0
@@ -205,13 +206,13 @@ def decoded(data, *, with_channel=True):
     kind = status & STATUS_MASK
     number = data[1] if len(data) > 1 else 0
     value = data[2] if len(data) > 2 else 0
-    if kind == NOTE_ON and value > 0:
+    if kind == timeline.NOTE_ON and value > 0:
         what = NOTE_ON_WHAT.format(note=note_name(number), number=number, velocity=value)
-    elif kind in (NOTE_ON, NOTE_OFF):
+    elif kind in (timeline.NOTE_ON, timeline.NOTE_OFF):
         what = NOTE_OFF_WHAT.format(note=note_name(number), number=number)
-    elif kind == CONTROL_CHANGE and number in CONTROL_NAMES:
+    elif kind == timeline.CONTROL_CHANGE and number in CONTROL_NAMES:
         what = NAMED_CONTROL_WHAT.format(number=number, name=CONTROL_NAMES[number], value=value)
-    elif kind == CONTROL_CHANGE:
+    elif kind == timeline.CONTROL_CHANGE:
         what = CONTROL_WHAT.format(number=number, value=value)
     elif kind == PROGRAM_CHANGE:
         what = PROGRAM_WHAT.format(number=number)
@@ -261,18 +262,18 @@ def check(*, path, seconds):
 
 def silencing_on(channel):
     """Return the two messages the process sends on close to silence a channel, which are expected and not another sender's."""
-    return [[CONTROL_CHANGE | channel, ALL_NOTES_OFF, 0], [CONTROL_CHANGE | channel, ALL_SOUND_OFF, 0]]
+    return [[timeline.CONTROL_CHANGE | channel, engine.ALL_NOTES_OFF, 0], [timeline.CONTROL_CHANGE | channel, engine.ALL_SOUND_OFF, 0]]
 
 
 def cut_off_on_close(sent):
     """Return the note offs the process sends on close for the notes still sounding, when the seconds cut the run between a note on and its note off."""
     sounding = []
     for data in sent:
-        if data[0] & STATUS_MASK == NOTE_ON:
+        if data[0] & STATUS_MASK == timeline.NOTE_ON:
             sounding.append(data[1])
-        elif data[0] & STATUS_MASK == NOTE_OFF and data[1] in sounding:
+        elif data[0] & STATUS_MASK == timeline.NOTE_OFF and data[1] in sounding:
             sounding.remove(data[1])
-    return [[NOTE_OFF | CHANNEL, number, 0] for number in sounding]
+    return [[timeline.NOTE_OFF | CHANNEL, number, 0] for number in sounding]
 
 
 def sort_out(*, sent, received):

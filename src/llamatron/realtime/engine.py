@@ -26,7 +26,8 @@ import heapq
 import time
 
 from llamatron.music import midi
-from llamatron.realtime.timeline import CONTROL_CHANGE, NOTE_OFF, NOTE_ON, NO_VELOCITY, sort_key
+from llamatron.realtime import timeline
+from llamatron.realtime.timeline import sort_key
 
 # The two controls that silence a channel, sent in this order when anything stops: all notes off, then all sound off, since some hardware gets stuck.
 ALL_NOTES_OFF = 123
@@ -141,7 +142,7 @@ class PlaybackEngine:
             self._note_off(key)
         for port, channel in sorted(self._channels_used):
             for number in SILENCING_CONTROLS:
-                self._outputs[port].send([CONTROL_CHANGE | channel, number, CONTROL_OFF_VALUE])
+                self._outputs[port].send([timeline.CONTROL_CHANGE | channel, number, CONTROL_OFF_VALUE])
         self._channels_used = set()
 
     def silence(self, *, channels):
@@ -150,9 +151,9 @@ class PlaybackEngine:
             output = self._outputs[port]
             for number in range(midi.MIN_MIDI_NUMBER, midi.MAX_MIDI_NUMBER + 1):
                 self._sounding.pop((port, channel, number), None)
-                output.send([NOTE_OFF | channel, number, NO_VELOCITY])
+                output.send([timeline.NOTE_OFF | channel, number, timeline.NO_VELOCITY])
             for number in SILENCING_CONTROLS:
-                output.send([CONTROL_CHANGE | channel, number, CONTROL_OFF_VALUE])
+                output.send([timeline.CONTROL_CHANGE | channel, number, CONTROL_OFF_VALUE])
 
     def sounding(self):
         """Return the (port, channel, number) of every note that has started and not ended."""
@@ -166,9 +167,9 @@ class PlaybackEngine:
 
     def _send(self, event):
         key = (event.port, event.channel, event.number)
-        if event.kind == NOTE_ON:
+        if event.kind == timeline.NOTE_ON:
             self._sounding[key] = event.tag
-        elif event.kind == NOTE_OFF:
+        elif event.kind == timeline.NOTE_OFF:
             self._sounding.pop(key, None)
         self._channels_used.add((event.port, event.channel))
         self._outputs[event.port].send(event.data())
@@ -176,4 +177,4 @@ class PlaybackEngine:
     def _note_off(self, key):
         port, channel, number = key
         self._sounding.pop(key, None)
-        self._outputs[port].send([NOTE_OFF | channel, number, NO_VELOCITY])
+        self._outputs[port].send([timeline.NOTE_OFF | channel, number, timeline.NO_VELOCITY])

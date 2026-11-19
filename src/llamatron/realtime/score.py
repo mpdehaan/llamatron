@@ -32,7 +32,8 @@ from typing import NamedTuple
 
 from llamatron.composition.file_format import FollowAction
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime.timeline import NOTE_OFF, NOTE_ON, Tag, clip_timeline, sort_key
+from llamatron.realtime import timeline
+from llamatron.realtime.timeline import Tag, clip_timeline, sort_key
 from llamatron.support.rational import Rational
 
 NO_PLAY = 0
@@ -207,9 +208,9 @@ class Score:
             if event.switch:
                 continue
             key = (event.port, event.channel, event.number)
-            if event.kind == NOTE_ON:
+            if event.kind == timeline.NOTE_ON:
                 open_notes[key] = (event.seconds, event.value)
-            elif event.kind == NOTE_OFF and key in open_notes:
+            elif event.kind == timeline.NOTE_OFF and key in open_notes:
                 on, velocity = open_notes.pop(key)
                 notes.append(Heard(on, event.seconds, event.number, velocity))
         notes.sort()
@@ -232,12 +233,12 @@ class Score:
             seconds = start + event.seconds
             key = (event.port, event.channel, event.number)
             if seconds < after:
-                if event.kind == NOTE_ON:
+                if event.kind == timeline.NOTE_ON:
                     started_before.add(key)
-                elif event.kind == NOTE_OFF:
+                elif event.kind == timeline.NOTE_OFF:
                     started_before.discard(key)
                 continue
-            if event.kind == NOTE_OFF and key in started_before:
+            if event.kind == timeline.NOTE_OFF and key in started_before:
                 started_before.discard(key)
                 continue
             events.append(event._replace(seconds=seconds, tag=tag))
@@ -281,9 +282,9 @@ class Score:
             if event.seconds >= elapsed:
                 break
             key = (event.port, event.channel, event.number)
-            if event.kind == NOTE_ON:
+            if event.kind == timeline.NOTE_ON:
                 notes.add(key)
-            elif event.kind == NOTE_OFF:
+            elif event.kind == timeline.NOTE_OFF:
                 notes.discard(key)
         return sorted(notes)
 
@@ -340,9 +341,9 @@ class Score:
             if event.switch:
                 continue
             key = (event.port, event.channel, event.number)
-            if event.kind == NOTE_ON:
+            if event.kind == timeline.NOTE_ON:
                 open_notes[key] = event.seconds
-            elif event.kind == NOTE_OFF and key in open_notes:
+            elif event.kind == timeline.NOTE_OFF and key in open_notes:
                 spans.append(Sounding(open_notes.pop(key), event.seconds))
         spans.sort()
         return spans

@@ -27,7 +27,7 @@ from llamatron.generators.arp import Arp
 from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters.midi_messages import NOTE_OFF_MESSAGE, NOTE_ON_MESSAGE
+from llamatron.exporters import midi_messages
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_grid import ClipGrid
@@ -76,9 +76,9 @@ def render_clip(*, clip, song_scale=None, scene_scale=None):
     result = []
     for message in midi_file.tracks[0]:
         tick += message.time
-        if message.type == NOTE_ON_MESSAGE:
+        if message.type == midi_messages.NOTE_ON_MESSAGE:
             started[message.note] = tick
-        elif message.type == NOTE_OFF_MESSAGE:
+        elif message.type == midi_messages.NOTE_OFF_MESSAGE:
             result.append((message.note, started[message.note] / 480, tick / 480))
     return result
 
@@ -293,7 +293,7 @@ class TestRendering(unittest.TestCase):
             ClipTree(directory=directory, grid=song, name=EXPORT).export()
             played = [
                 [m.note for m in mido.MidiFile(os.path.join(directory, name)).tracks[0]
-                 if m.type == NOTE_ON_MESSAGE]
+                 if m.type == midi_messages.NOTE_ON_MESSAGE]
                 for name in [FIRST_SCENE_CLIP, SECOND_SCENE_CLIP]
             ]
         self.assertEqual(played, [[48, 52], [48, 51]])

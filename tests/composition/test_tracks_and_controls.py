@@ -42,8 +42,9 @@ from llamatron.music.note import Note, NoteName, Rest
 from llamatron.music.sound import Sound
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters.midi_messages import CONTROL_CHANGE_MESSAGE, NOTE_ON_MESSAGE
-from llamatron.exporters.timing import SLIDE_STEP, control_events, timed_events
+from llamatron.exporters import midi_messages
+from llamatron.exporters import timing
+from llamatron.exporters.timing import control_events, timed_events
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
@@ -314,7 +315,7 @@ class TestControls(unittest.TestCase):
         events = control_events(clip=clip, length=Fraction(1))
         self.assertEqual(events[0], (0, 1, 0))
         self.assertEqual(events[-1], (Fraction(1, 4), 1, 64))
-        self.assertEqual(len(events), 1 + int(Fraction(1, 4) / SLIDE_STEP))
+        self.assertEqual(len(events), 1 + int(Fraction(1, 4) / timing.SLIDE_STEP))
         self.assertEqual([value for _, _, value in events], sorted(value for _, _, value in events))
 
 
@@ -331,10 +332,10 @@ class TestRenderingControls(unittest.TestCase):
             ClipTree(directory=self.folder, grid=self.song, name=EXPORT).export()
         path = sorted(glob.glob(os.path.join(self.folder, FIRST_CLIP_FILES)))[0]
         messages = [message for message in mido.MidiFile(path).tracks[0] if not message.is_meta]
-        self.assertEqual(messages[0].type, CONTROL_CHANGE_MESSAGE)
+        self.assertEqual(messages[0].type, midi_messages.CONTROL_CHANGE_MESSAGE)
         self.assertEqual((messages[0].control, messages[0].value), (1, 0))
-        self.assertEqual(messages[2].type, NOTE_ON_MESSAGE)
-        values = [message.value for message in messages if message.type == CONTROL_CHANGE_MESSAGE and message.control == 1]
+        self.assertEqual(messages[2].type, midi_messages.NOTE_ON_MESSAGE)
+        values = [message.value for message in messages if message.type == midi_messages.CONTROL_CHANGE_MESSAGE and message.control == 1]
         self.assertEqual(values[:2], [0, 100])
         self.assertEqual(values[-1], 127)
         self.assertGreater(len(values), 4)

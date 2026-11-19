@@ -31,9 +31,11 @@ import random
 
 import numpy
 
-from llamatron.visualizers.cells import BRAILLE_BITS, BRAILLE_BLANK, SPACE, CellPainter, packed
-from llamatron.visualizers.colour import TRACK_COLOURS, note_colour
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import cells
+from llamatron.visualizers.cells import CellPainter, packed
+from llamatron.visualizers import colour
+from llamatron.visualizers.colour import note_colour
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -56,7 +58,7 @@ DRIFT_PER_SECOND = 0.05
 TURN_PER_SECOND = 0.02
 RESTING_LEVEL = 0.45
 PLAYING_LEVEL = 0.62
-QUIET_COLOURS = (TRACK_COLOURS[1], TRACK_COLOURS[4])
+QUIET_COLOURS = (colour.TRACK_COLOURS[1], colour.TRACK_COLOURS[4])
 WHOLE = 255
 # The outline: its brightness beside the fill, and how much brighter on the beat, as sharp as this.
 OUTLINE_LIFT = 1.25
@@ -101,8 +103,8 @@ class Life(Visualizer):
         self._last = None
         self._last_beat = None
         self._shape = None
-        self._left_bits = int((LEFT_RING * BRAILLE_BITS).sum())
-        self._right_bits = int((RIGHT_RING * BRAILLE_BITS).sum())
+        self._left_bits = int((LEFT_RING * cells.BRAILLE_BITS).sum())
+        self._right_bits = int((RIGHT_RING * cells.BRAILLE_BITS).sum())
 
     def alive(self):
         """Return the grid of live cells, for the tests."""
@@ -112,7 +114,7 @@ class Life(Visualizer):
         """Return a fresh grid with FRESH_SHARE of its cells alive, at random."""
         return numpy.array([[self._chooser.random() < FRESH_SHARE for _ in range(columns)] for _ in range(rows)], dtype=bool)
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         rows = height // CELL_ROWS
         columns = width // CELL_COLUMNS
         if not rows or not columns:
@@ -191,10 +193,10 @@ class Life(Visualizer):
                 fill = fill_rows[row][column]
                 if live[row, column]:
                     bits = self._left_bits if column % CELL_COLUMNS == 0 else self._right_bits
-                    characters.append(chr(BRAILLE_BLANK + bits))
+                    characters.append(chr(cells.BRAILLE_BLANK + bits))
                     styles.append(self._cells.packed_style(number=outline_rows[row][column], background=fill))
                 else:
-                    characters.append(SPACE)
+                    characters.append(cells.SPACE)
                     styles.append(self._cells.packed_style(number=fill, background=fill))
             lines.append(self._cells.line(characters=characters, styles=styles))
         return lines

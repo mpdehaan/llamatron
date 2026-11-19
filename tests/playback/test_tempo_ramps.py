@@ -28,7 +28,8 @@ from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.grid.row_clock import RowClock, seconds_per_whole
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.playback.tempo_ramps import ramped_tempos
-from llamatron.realtime.timeline import NOTE_ON, Route, song_timeline
+from llamatron.realtime import timeline
+from llamatron.realtime.timeline import Route, song_timeline
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import LEAD, with_parts
 
@@ -216,7 +217,7 @@ class TestLengthsAgree(unittest.TestCase):
             seconds += message.time
             if message.type == NOTE_ON_MESSAGE and message.velocity:
                 ons.append(seconds)
-        timeline_ons = sorted(event.seconds for event in events if event.kind == NOTE_ON)
+        timeline_ons = sorted(event.seconds for event in events if event.kind == timeline.NOTE_ON)
         self.assertEqual(len(ons), len(timeline_ons))
         for written, played in zip(sorted(ons), timeline_ons):
             self.assertAlmostEqual(written, played, places=CLOSE)

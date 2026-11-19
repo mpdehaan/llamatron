@@ -31,12 +31,13 @@ from llamatron.composition.pattern import Pattern
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
-from llamatron.exporters.midi_messages import NOTE_ON_MESSAGE
+from llamatron.exporters import midi_messages
 from llamatron.exporters.timing import keyswitch_events, timed_events
 from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime.score import Score
-from llamatron.realtime.timeline import NOTE_ON, Route, song_timeline
+from llamatron.realtime import timeline as timeline_values
+from llamatron.realtime.timeline import Route, song_timeline
 from llamatron.support.rational import Rational
 from tests.support.rendering import song_from_data
 from tests.playback.test_registers import LEAD, pattern, song
@@ -119,7 +120,7 @@ def notes_on(track):
     found = []
     for message in track:
         now += message.time
-        if message.type == NOTE_ON_MESSAGE:
+        if message.type == midi_messages.NOTE_ON_MESSAGE:
             found.append((now, message.note))
     return found
 
@@ -338,7 +339,7 @@ class TestKeyswitchesInRealTime(unittest.TestCase):
         return song_timeline(grid=grid, routes={LEAD: route})
 
     def test_a_midi_port_is_sent_the_keyswitch_before_its_note(self):
-        ons = [event for event in self.timeline(Route(PORT, 0)) if event.kind == NOTE_ON]
+        ons = [event for event in self.timeline(Route(PORT, 0)) if event.kind == timeline_values.NOTE_ON]
         self.assertEqual((ons[0].number, ons[0].switch, ons[0].value), (STACCATO_NOTE, True, defaults.KEYSWITCH_VELOCITY))
         self.assertFalse(ons[1].switch)
         self.assertEqual(ons[0].whole, ons[1].whole)
@@ -348,7 +349,7 @@ class TestKeyswitchesInRealTime(unittest.TestCase):
 
     def test_the_lights_and_the_visualizers_pass_a_keyswitch_by(self):
         events = self.timeline(Route(PORT, 0))
-        self.assertEqual(len(Score._heard_notes(events)), len([event for event in events if event.kind == NOTE_ON and not event.switch]))
+        self.assertEqual(len(Score._heard_notes(events)), len([event for event in events if event.kind == timeline_values.NOTE_ON and not event.switch]))
         self.assertEqual(len(Score._note_spans(events)), len(Score._heard_notes(events)))
 
 

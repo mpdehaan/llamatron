@@ -39,7 +39,8 @@ from llamatron.realtime.outputs import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch
-from llamatron.visualizers.modes import MODES, mode_options
+from llamatron.visualizers import modes
+from llamatron.visualizers.modes import mode_options
 
 RECORDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'record_demo.py')
 RECORDER_MODULE = 'record_demo'
@@ -59,16 +60,16 @@ def recorder():
 
 def ask_for_mode(*, shared):
     """Return the visualizer mode to show: the only one, or the one typed from the numbered list, or None for an answer that is none of them."""
-    if len(MODES) == 1:
-        return MODES[0].OPTION
-    for number, mode in enumerate(MODES, start=1):
+    if len(modes.MODES) == 1:
+        return modes.MODES[0].OPTION
+    for number, mode in enumerate(modes.MODES, start=1):
         print(shared.VIEW_LINE.format(number=number, name=mode.NAME))
     print(ASK_MODE)
     typed = input().strip()
-    if not typed.isdigit() or not 1 <= int(typed) <= len(MODES):
+    if not typed.isdigit() or not 1 <= int(typed) <= len(modes.MODES):
         print(shared.NOT_A_CHOICE, file=sys.stderr)
         return None
-    return MODES[int(typed) - 1].OPTION
+    return modes.MODES[int(typed) - 1].OPTION
 
 
 def preview(*, path, driver, assignment, visualizer, shared):

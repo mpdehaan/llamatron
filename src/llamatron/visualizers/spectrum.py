@@ -29,7 +29,7 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -105,7 +105,7 @@ class Spectrum(Visualizer):
         share = (min(max(pitch, LOWEST_PITCH), HIGHEST_PITCH) - LOWEST_PITCH) / (HIGHEST_PITCH - LOWEST_PITCH)
         return min(int(share * len(self._levels)), len(self._levels) - 1)
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if bands_across(width) != len(self._levels):
             self.reset(bands=bands_across(width))
         if not width or not height:

@@ -27,7 +27,8 @@ from typing import NamedTuple
 
 import mido
 
-from llamatron.importers.cutting import AUTO_STEP_SIZES, Cutter, bar_lines, grid_for, snapped, step_size_for
+from llamatron.importers import cutting
+from llamatron.importers.cutting import Cutter, bar_lines, grid_for, snapped, step_size_for
 from llamatron.importers.keys import key_of_notes, key_of_signature
 from llamatron.importers.midi_reading import Change, read_midi
 from llamatron.importers.voices import voices_of
@@ -133,7 +134,7 @@ class MidiImport:
         warnings = []
         found_size, fits = step_size_for(contents.parts)
         step_size = choices.step_size or found_size
-        clip_step_sizes = [step_size] if choices.step_size else AUTO_STEP_SIZES
+        clip_step_sizes = [step_size] if choices.step_size else cutting.AUTO_STEP_SIZES
         parts, moved = snapped(parts=contents.parts, step_size=step_size)
         voices = []
         firsts = []

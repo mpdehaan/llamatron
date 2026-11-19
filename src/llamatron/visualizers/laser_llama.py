@@ -30,9 +30,10 @@ import random
 
 import numpy
 
-from llamatron.visualizers.cells import HALF_ROWS, SPACE, UPPER_HALF, CellPainter
+from llamatron.visualizers import cells
+from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import Limiter, note_colour
-from llamatron.visualizers.heard import SILENCE
+from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.strings import visualizers
 
@@ -125,7 +126,7 @@ class LaserLlama(Visualizer):
         self._columns = 0
 
     def sized(self, *, width, height):
-        rows = height * HALF_ROWS
+        rows = height * cells.HALF_ROWS
         if (rows, width) != (self._rows, self._columns):
             self._rows = rows
             self._columns = width
@@ -136,7 +137,7 @@ class LaserLlama(Visualizer):
         """Return how many beams are alive, for the tests."""
         return len(self._beams)
 
-    def frame(self, *, width, height, now, heard=SILENCE):
+    def frame(self, *, width, height, now, heard=heard_values.SILENCE):
         if not width or not height:
             return []
         self.sized(width=width, height=height)
@@ -152,7 +153,7 @@ class LaserLlama(Visualizer):
             self._llama = min(max(self._llama, 0.0), max((width - drawing_width) / max(width, 1), 0.0))
         left = int(self._llama * width)
         top = max(height - len(drawing), 0)
-        self.fire(heard=heard, now=now, mouth=((top + CANNON_MOUTH[0]) * HALF_ROWS, left + (CANNON_MOUTH[1] if self._facing > 0 else drawing_width - 1 - CANNON_MOUTH[1])))
+        self.fire(heard=heard, now=now, mouth=((top + CANNON_MOUTH[0]) * cells.HALF_ROWS, left + (CANNON_MOUTH[1] if self._facing > 0 else drawing_width - 1 - CANNON_MOUTH[1])))
         picture = self.scene(now=now)
         self.draw_beams(picture=picture, now=now)
         held = self._limiter.limited(picture=picture, seconds=seconds)
@@ -220,15 +221,15 @@ class LaserLlama(Visualizer):
         listed = picture.tolist()
         lines = []
         for row in range(height):
-            upper = listed[HALF_ROWS * row]
-            lower = listed[HALF_ROWS * row + 1]
-            characters = [UPPER_HALF] * width
+            upper = listed[cells.HALF_ROWS * row]
+            lower = listed[cells.HALF_ROWS * row + 1]
+            characters = [cells.UPPER_HALF] * width
             styles = [self._cells.style_of(colour=tuple(high), background=tuple(low)) for high, low in zip(upper, lower)]
             down = row - top
             if 0 <= down < len(drawing):
                 for across, character in enumerate(drawing[down]):
                     column = left + across
-                    if character != SPACE and 0 <= column < width:
+                    if character != cells.SPACE and 0 <= column < width:
                         characters[column] = character
                         styles[column] = self._cells.style_of(colour=LLAMA_COLOUR, background=tuple(lower[column]))
             lines.append(self._cells.line(characters=characters, styles=styles))

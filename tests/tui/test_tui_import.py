@@ -28,7 +28,7 @@ from unittest import mock
 
 from tests.support.ui_testing import UITest
 from llamatron.composition.file_format import Section
-from llamatron.importers.midi_import import DEFAULT_LONGEST_PATTERN, LONGEST_PATTERN_CHOICES
+from llamatron.importers import midi_import
 from llamatron.strings import importing, labels
 from llamatron.tui.dialogs.import_dialog import BUTTONS, CANCEL_BUTTON, CHORDS, LONGEST, ImportDialog
 from llamatron.tui.dialogs.imported_dialog import ImportedDialog
@@ -136,7 +136,7 @@ class TestImportDialog(UITest):
         await self.open_the_dialog()
         dialog = self.app.screen
         await self.press(*[Key.DOWN] * LONGEST, keybindings.ImportDialog.MORE)
-        self.assertEqual(dialog.choices.longest_pattern, LONGEST_PATTERN_CHOICES[LONGEST_PATTERN_CHOICES.index(DEFAULT_LONGEST_PATTERN) + 1])
+        self.assertEqual(dialog.choices.longest_pattern, midi_import.LONGEST_PATTERN_CHOICES[midi_import.LONGEST_PATTERN_CHOICES.index(midi_import.DEFAULT_LONGEST_PATTERN) + 1])
         await self.press(*[Key.DOWN] * (CHORDS - LONGEST), keybindings.ImportDialog.TOGGLE)
         self.assertFalse(dialog.choices.chords)
         self.assertIn(importing.MSG_IMPORT_AS_TRACKS, self.text())

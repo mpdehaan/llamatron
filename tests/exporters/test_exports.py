@@ -24,9 +24,8 @@ import tempfile
 import unittest
 
 from llamatron.music.note import Note
-from llamatron.exporters.exports import (
-    EXPORT_KINDS, EXPORT_KINDS_IN_HELP, EXPORT_LABELS, ExportKind, earlier_export, export_name, make_exporter, shown_export_path, remove_earlier_export,
-)
+from llamatron.exporters import exports
+from llamatron.exporters.exports import ExportKind, earlier_export, export_name, make_exporter, shown_export_path, remove_earlier_export
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
@@ -43,7 +42,7 @@ AN_EXISTING_FILE = 'notes.txt'
 # Names the tests give to their own things, and other values they use.
 WRITE_TEXT = 'w'
 # The kinds exported here: all but the WAV, which plays the song through FluidSynth, a program this computer may not have, and which test_wave_fluidsynth.py tests with a stand-in.
-EXPORTED_HERE = [kind for kind in EXPORT_KINDS_IN_HELP if kind != ExportKind.WAV]
+EXPORTED_HERE = [kind for kind in exports.EXPORT_KINDS_IN_HELP if kind != ExportKind.WAV]
 
 
 class TestExports(unittest.TestCase):
@@ -65,22 +64,22 @@ class TestExports(unittest.TestCase):
             file.write(AN_EXISTING_FILE)
 
     def test_every_kind_has_a_name_and_the_tracker_offers_them_all_with_live_first(self):
-        self.assertEqual(sorted(EXPORT_LABELS), sorted(EXPORT_KINDS_IN_HELP))
-        self.assertEqual(sorted(EXPORT_KINDS), sorted(EXPORT_KINDS_IN_HELP))
-        self.assertEqual(EXPORT_KINDS[0], ExportKind.ABLETON)
+        self.assertEqual(sorted(exports.EXPORT_LABELS), sorted(exports.EXPORT_KINDS_IN_HELP))
+        self.assertEqual(sorted(exports.EXPORT_KINDS), sorted(exports.EXPORT_KINDS_IN_HELP))
+        self.assertEqual(exports.EXPORT_KINDS[0], ExportKind.ABLETON)
 
     def test_nothing_is_found_before_a_export(self):
-        for kind in EXPORT_KINDS_IN_HELP:
+        for kind in exports.EXPORT_KINDS_IN_HELP:
             with self.subTest(kind=kind):
                 self.assertEqual(earlier_export(kind=kind, directory=self.directory, name=EXPORT), [])
 
     def test_each_kind_finds_only_its_own_files(self):
         self.export_every_kind()
-        found = {kind: earlier_export(kind=kind, directory=self.directory, name=EXPORT) for kind in EXPORT_KINDS_IN_HELP}
-        for kind in EXPORT_KINDS_IN_HELP:
+        found = {kind: earlier_export(kind=kind, directory=self.directory, name=EXPORT) for kind in exports.EXPORT_KINDS_IN_HELP}
+        for kind in exports.EXPORT_KINDS_IN_HELP:
             with self.subTest(kind=kind):
                 self.assertTrue(found[kind])
-                for other in EXPORT_KINDS_IN_HELP:
+                for other in exports.EXPORT_KINDS_IN_HELP:
                     if other != kind:
                         self.assertFalse(set(found[kind]) & set(found[other]))
         everything = sorted(path for paths in found.values() for path in paths)
@@ -93,7 +92,7 @@ class TestExports(unittest.TestCase):
             file.write(AN_EXISTING_FILE)
         for kind in EXPORTED_HERE:
             with self.subTest(kind=kind):
-                others = [path for other in EXPORT_KINDS_IN_HELP if other != kind for path in earlier_export(kind=other, directory=self.directory, name=EXPORT)]
+                others = [path for other in exports.EXPORT_KINDS_IN_HELP if other != kind for path in earlier_export(kind=other, directory=self.directory, name=EXPORT)]
                 remove_earlier_export(kind=kind, directory=self.directory, name=EXPORT)
                 self.assertEqual(earlier_export(kind=kind, directory=self.directory, name=EXPORT), [])
                 for path in others + [keep]:

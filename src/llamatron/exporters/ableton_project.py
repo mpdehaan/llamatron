@@ -25,7 +25,8 @@ from pathlib import Path
 from llamatron.support import files
 from llamatron.support.rational import Rational
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
-from llamatron.exporters.timing import BEATS_PER_WHOLE_NOTE, control_points, keyswitch_events, timed_events
+from llamatron.exporters import timing
+from llamatron.exporters.timing import control_points, keyswitch_events, timed_events
 from llamatron.strings import errors, names
 
 # Installed along with the code, so that a set can be written from anywhere.
@@ -181,7 +182,7 @@ def _set_value(*, parent, path, value):
 
 def _beats(whole_notes):
     """Return a fraction of a whole note as beats, in the way Live writes numbers."""
-    return BEATS_FORMAT.format(beats=float(whole_notes * BEATS_PER_WHOLE_NOTE))
+    return BEATS_FORMAT.format(beats=float(whole_notes * timing.BEATS_PER_WHOLE_NOTE))
 
 
 def _live_time_signature(signature):
@@ -197,7 +198,7 @@ def _live_boolean(value):
 
 def _empty_clip_length():
     """Return how long a clip with nothing in it lasts in Arrangement View, in whole notes."""
-    return Rational(EMPTY_CLIP_BEATS, BEATS_PER_WHOLE_NOTE)
+    return Rational(EMPTY_CLIP_BEATS, timing.BEATS_PER_WHOLE_NOTE)
 
 
 def _remove_children(element):

@@ -41,7 +41,8 @@ import mido
 from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.importers.comparison import round_trip
-from llamatron.importers.midi_import import DEFAULT_LONGEST_PATTERN, LONGEST_PATTERN_CHOICES, ImportChoices
+from llamatron.importers import midi_import
+from llamatron.importers.midi_import import ImportChoices
 from llamatron.playback.song_renderer import SongRenderer
 
 MIDI_FILES = os.path.join('examples', 'midi', '*.mid')
@@ -105,7 +106,7 @@ def exported(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('files', nargs='*', help='MIDI files to import, or every one in examples/midi/ and every example set')
-    parser.add_argument('--longest', type=int, choices=LONGEST_PATTERN_CHOICES, default=DEFAULT_LONGEST_PATTERN, help='the longest pattern, in steps')
+    parser.add_argument('--longest', type=int, choices=midi_import.LONGEST_PATTERN_CHOICES, default=midi_import.DEFAULT_LONGEST_PATTERN, help='the longest pattern, in steps')
     arguments = parser.parse_args()
     results = []
     print(SECTION_MIDI.format(longest=arguments.longest))

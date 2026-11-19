@@ -31,7 +31,7 @@ import time
 
 from llamatron.tui.screens.arrange.arrange_page import FRAME_SECONDS
 from llamatron.visualizers.heard import Heard, HeardNote
-from llamatron.visualizers.modes import MODES
+from llamatron.visualizers import modes
 
 FRAMES = 200
 SEED = 1
@@ -79,7 +79,7 @@ def timed(*, mode, tracks, columns, rows):
 
 def main():
     print(HEADING.format(**COLUMNS))
-    for mode in MODES:
+    for mode in modes.MODES:
         for tracks in TRACK_COUNTS:
             for columns, rows in SIZES:
                 mean, worst = timed(mode=mode, tracks=tracks, columns=columns, rows=rows)

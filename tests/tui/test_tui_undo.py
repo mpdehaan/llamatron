@@ -36,8 +36,8 @@ from llamatron.strings import labels, messages, names as names_text
 from llamatron.composition.file_format import EuclidPart, ReadyBar, ShapePart, StrumPart
 from llamatron.composition import generator_settings
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
-from llamatron.generators.musician import BUSY
-from llamatron.generators.phrasing import DEEP_BREATH
+from llamatron.generators import musician
+from llamatron.generators import phrasing
 from tests.support.ui_testing import STRUMMER, BREATHES, FOLLOWS, PICKED, TRADE, CLIPS, LAZY, PUSH, SLIDES, CLAVE, CLIPPED, FOLK, POP, SMOOTH, FADE, THIN
 from llamatron.composition.file_format import DriftValue, DriftVersion, GeneratorKind, RegisterName, RegisterSetting, Row, Section, SongSetting
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -638,7 +638,7 @@ class TestPhrasingEditorUndo(UndoTest):
         before = self.data()
         await self.select_field(labels.MSG_PHRASING_BREATH_LABEL)
         await self.press(keybindings.PhrasingEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=BREATHES).get_own(PhrasingSetting.BREATH), DEEP_BREATH)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=BREATHES).get_own(PhrasingSetting.BREATH), phrasing.DEEP_BREATH)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
@@ -649,7 +649,7 @@ class TestMusicianEditorUndo(UndoTest):
         before = self.data()
         await self.select_field(labels.MSG_MUSICIAN_ACTIVITY_LABEL)
         await self.press(keybindings.MusicianEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=STRUMMER).get_own(MusicianSetting.ACTIVITY), BUSY)
+        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=STRUMMER).get_own(MusicianSetting.ACTIVITY), musician.BUSY)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
