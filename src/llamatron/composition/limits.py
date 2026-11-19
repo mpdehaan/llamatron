@@ -77,8 +77,8 @@ MAX_GM_SOUND = 128
 GM_FAMILY_SIZE = 8
 # How early a keyswitch may be sent before its note, in milliseconds.
 # What an accented step adds to its velocity, on a track and on an instrument.
-MIN_ACCENT = 0
-MAX_ACCENT = 127
+MIN_STEP_ACCENT = 0
+MAX_STEP_ACCENT = 127
 MIN_KEYSWITCH_LEAD = 0
 MAX_KEYSWITCH_LEAD = 500
 # The percentages each shape runs between: the share of notes that play, how loud they play, and how long, as a share of what's written.

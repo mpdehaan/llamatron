@@ -80,6 +80,7 @@ FEATURE_COLUMNS = [
     ('key changes', ['scene scale', 'clip scale']),
     ('tempo changes', ['scene tempo', 'tempo ramps']),
     ('velocity', ['scene velocity', 'clip velocity']),
+    ('accents', ['accents']),
     ('CCs', ['CC rows', 'slides', 'track CC numbers']),
     ('registers', ['register note rows', 'register velocity rows', 'register adds', 'register sets', 'register resets', 'scene register sets', 'scene register adds', 'registers section']),
     ('conditional execution', ['skip playback when', 'bypass generators when', 'stop when', 'restart when', 'mute when']),
@@ -98,6 +99,7 @@ TIES_DOC = PATTERNS_DOC + '#ties'
 PROBABILITY_DOC = PATTERNS_DOC + '#glide-and-probability'
 ADVANCED_ROWS_DOC = PATTERNS_DOC + '#advanced'
 CCS_DOC = PATTERNS_DOC + '#ccs'
+TRACKS_DOC = '../TRACKS.md'
 DIRECTIONS_DOC = PATTERNS_DOC + '#play-directions'
 CLIP_SETTINGS_DOC = '../CLIPS.md#clip-settings'
 MORPHING_DOC = '../CLIPS.md#morphing'
@@ -130,6 +132,7 @@ FEATURE_LINKS = {
     'pattern direction': DIRECTIONS_DOC,
     'clip direction': DIRECTIONS_DOC,
     'ties': TIES_DOC,
+    'accents': TRACKS_DOC,
     'probability': PROBABILITY_DOC,
     'song groove': GROOVES_DOC,
     'scene groove': GROOVES_DOC,

@@ -70,7 +70,7 @@ SETTINGS = described(
     *[Choice(name=name, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER) for name in CC_REGISTER_SETTINGS],
     Choice(name=TrackSetting.VELOCITY_REGISTER, choices=REGISTER_NAMES, default=LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER),
     WholeNumber(name=TrackSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
-    WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT, error=errors.ERR_BAD_ACCENT),
+    WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
     *strum_settings(),
     *euclid_settings(),

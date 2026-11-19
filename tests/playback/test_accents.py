@@ -72,22 +72,22 @@ class TestDefaultVelocity(unittest.TestCase):
     """What a step with no velocity typed plays at."""
 
     def test_a_track_with_no_instrument_and_no_default_plays_at_the_loudest(self):
-        self.assertEqual(played(with_accents(track={TrackSetting.ACCENT: limits.MIN_ACCENT})), [defaults.DEFAULT_VELOCITY] * STEPS)
+        self.assertEqual(played(with_accents(track={TrackSetting.ACCENT: limits.MIN_STEP_ACCENT})), [defaults.DEFAULT_VELOCITY] * STEPS)
 
     def test_a_track_s_default_velocity_is_what_a_blank_step_plays_at(self):
-        data = with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: limits.MIN_ACCENT})
+        data = with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: limits.MIN_STEP_ACCENT})
         self.assertEqual(played(data), [QUIET] * STEPS)
 
     def test_an_instrument_s_default_velocity_reaches_its_tracks(self):
-        data = with_accents(track={TrackSetting.ACCENT: limits.MIN_ACCENT}, instrument={InstrumentSetting.DEFAULT_VELOCITY: QUIETER})
+        data = with_accents(track={TrackSetting.ACCENT: limits.MIN_STEP_ACCENT}, instrument={InstrumentSetting.DEFAULT_VELOCITY: QUIETER})
         self.assertEqual(played(data), [QUIETER] * STEPS)
 
     def test_a_track_s_default_velocity_wins_over_its_instrument_s(self):
-        data = with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: limits.MIN_ACCENT}, instrument={InstrumentSetting.DEFAULT_VELOCITY: QUIETER})
+        data = with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: limits.MIN_STEP_ACCENT}, instrument={InstrumentSetting.DEFAULT_VELOCITY: QUIETER})
         self.assertEqual(played(data), [QUIET] * STEPS)
 
     def test_a_typed_velocity_is_left_alone(self):
-        data = with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: limits.MIN_ACCENT}, rows={Row.VELOCITY: [TYPED] * STEPS})
+        data = with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: limits.MIN_STEP_ACCENT}, rows={Row.VELOCITY: [TYPED] * STEPS})
         self.assertEqual(played(data), [TYPED] * STEPS)
 
     def test_the_song_answers_a_track_s_default_velocity(self):
@@ -146,10 +146,10 @@ class TestAccentsInAFile(unittest.TestCase):
     """What a file refuses and what is written back."""
 
     def test_a_default_velocity_and_an_accent_out_of_range_are_refused(self):
-        for settings in ({TrackSetting.DEFAULT_VELOCITY: midi.MAX_VELOCITY + 1}, {TrackSetting.ACCENT: limits.MAX_ACCENT + 1}, {TrackSetting.ACCENT: NOT_A_NUMBER}):
+        for settings in ({TrackSetting.DEFAULT_VELOCITY: midi.MAX_VELOCITY + 1}, {TrackSetting.ACCENT: limits.MAX_STEP_ACCENT + 1}, {TrackSetting.ACCENT: NOT_A_NUMBER}):
             with self.subTest(settings=settings), self.assertRaises(SongFileError):
                 setlist_from_data(with_accents(track=settings))
-        for settings in ({InstrumentSetting.DEFAULT_VELOCITY: midi.MIN_VELOCITY - 1}, {InstrumentSetting.ACCENT: limits.MIN_ACCENT - 1}):
+        for settings in ({InstrumentSetting.DEFAULT_VELOCITY: midi.MIN_VELOCITY - 1}, {InstrumentSetting.ACCENT: limits.MIN_STEP_ACCENT - 1}):
             with self.subTest(settings=settings), self.assertRaises(SongFileError):
                 setlist_from_data(with_accents(instrument=settings))
 

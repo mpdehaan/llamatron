@@ -164,6 +164,7 @@ FEATURES = [
     ('octaves', any_pattern_row(Row.OCTAVE)),
     ('chords', any_pattern_row(Row.CHORD)),
     ('velocity', any_pattern_row(Row.VELOCITY)),
+    ('accents', any_pattern_row(Row.ACCENT)),
     ('probability', any_pattern_row(Row.PROBABILITY)),
     ('glide', any_pattern_row(Row.GLIDE)),
     ('ties', any_pattern_row(Row.TIE)),

@@ -124,7 +124,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         """Return the Accent field: what a step with its Accent on adds to its velocity on the instrument's tracks, before each track's own accent."""
         accent = self.instrument().get_accent()
         return NumberField(
-            page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_ACCENT, highest=limits.MAX_ACCENT,
+            page=self, label=labels.MSG_ACCENT_LABEL, number=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT,
             set=lambda number: self.document().set_instrument_accent(name=self.item, accent=number),
             clear=lambda: self.document().set_instrument_accent(name=self.item, accent=None), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT,
         )
