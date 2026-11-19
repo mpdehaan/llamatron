@@ -52,13 +52,7 @@ from llamatron.tui.screens.arrange.arrange_details import clip_cell, scene_cell,
 from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing
 from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.scene_page import ScenePage
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.set.groove_editor import GrooveEditor
-from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.shared.page import Page
 from llamatron.tui.screens.shared.shared import play_through, scene_name
 from llamatron.tui.text import sorted_names
@@ -85,10 +79,10 @@ MOVING_TRACK = 'track'
 MOVING_CLIP = 'clip'
 # How far each arrow carries a clip: scenes down, then tracks right.
 CLIP_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
-# The pages a line of details opens, by the section it names, with the word for the thing in the crumbs; a generator's is found by its kind.
-DETAIL_PAGES = {
-    Section.CHAINS: (ChainEditor, names_text.MSG_CHAIN_WORD), Section.SCALES: (ScalePage, names_text.MSG_SCALE_WORD),
-    Section.INSTRUMENTS: (InstrumentEditor, names_text.MSG_INSTRUMENT_WORD), Section.GROOVES: (GrooveEditor, names_text.MSG_GROOVE_WORD),
+# The word in the crumbs for what a line of details opens, by the section the line names; a generator's is found by its kind.
+DETAIL_WORDS = {
+    Section.CHAINS: names_text.MSG_CHAIN_WORD, Section.SCALES: names_text.MSG_SCALE_WORD,
+    Section.INSTRUMENTS: names_text.MSG_INSTRUMENT_WORD, Section.GROOVES: names_text.MSG_GROOVE_WORD,
 }
 
 
@@ -423,12 +417,11 @@ class ArrangePage(Page):
     def open_picked(self):
         """Open the page of what the picked line names, a chain's, a generator's, a scale's, an instrument's or a groove's, its crumbs after Arrange's."""
         target = self.drawing.details_at_cursor()[self.picked_line()].target
-        if target.kind in DETAIL_PAGES:
-            page, word = DETAIL_PAGES[target.kind]
+        if target.kind in DETAIL_WORDS:
+            self.open_editor(section=target.kind, name=target.name, word=DETAIL_WORDS[target.kind])
         else:
             listing = generator_page_of_kind(target.kind)
-            page, word = listing.EDITOR, listing.label
-        self.show_page(page(holder=self.holder, name=target.name).opened_from(page=self, word=word))
+            self.open_editor(section=listing.section, name=target.name, word=listing.label)
 
     # The visualizer over the clip area, with Real Time on (visualizers/).
 
@@ -491,7 +484,7 @@ class ArrangePage(Page):
             return [self.bind(self.KEYS.ADD_TRACK, action=self.add_track), self.bind(self.KEYS.ADD_TRACK_HERE, action=self.add_track)]
         return [
             self.bind(self.KEYS.ADD_TRACK, action=self.add_track),
-            self.bind(self.KEYS.TRACK_SETTINGS, action=lambda: self.show_page(TrackEditor(holder=self.holder, name=self.track()))),
+            self.bind(self.KEYS.TRACK_SETTINGS, action=lambda: self.open_editor(section=Section.TRACKS, name=self.track())),
             self.bind(self.KEYS.COPY_TRACK, action=self.copy_track),
             self.bind(self.KEYS.INSERT_TRACK, action=self.insert_track),
             self.bind(self.KEYS.MOVE_TRACK, action=lambda: self.start_moving(MOVING_TRACK)),
@@ -852,7 +845,7 @@ class ArrangePage(Page):
 
     def open_pattern(self, clip_slot):
         """Open the pattern editor on the clip's pattern, with this page's crumbs before the pattern's, so that Esc comes back here."""
-        self.show_page(PatternEditor(holder=self.holder, name=clip_slot.get_pattern_name(), opened_from=self, track=self.track()))
+        self.open_editor(section=Section.PATTERNS, name=clip_slot.get_pattern_name(), opened_from=self, track=self.track())
 
     def copy_clip(self):
         self.copied = self.document().clip_slot(index=self.row, track=self.track()).copy()

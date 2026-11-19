@@ -34,6 +34,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch, recording_problem
 from llamatron.tui.made_preview import MadePreview
 from llamatron.tui.pattern_preview import PatternPreview
+from llamatron.tui.screens import editors
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.set.demo_scroll import DemoScroll
 from llamatron.tui.screens.set.main_page import MainPage
@@ -199,6 +200,10 @@ class LlamatronApp(App, inherit_bindings=False):
     def pages(self):
         """Return the pages open, from the main screen up to the one on top, leaving out any dialog over it."""
         return [screen for screen in self.screen_stack if isinstance(screen, Page)]
+
+    def editor_of(self, section):
+        """Return the class of the page that edits one named thing of a section, which a page asks for so that it imports no other page."""
+        return editors.editor_of(section)
 
     def is_open(self, page):
         return page in self.screen_stack

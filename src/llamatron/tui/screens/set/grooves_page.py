@@ -21,7 +21,6 @@ from llamatron.composition.groove import is_factory_groove
 from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
-from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.screens.shared.shared import numbers_text
 
@@ -59,11 +58,11 @@ class GroovesPage(NamedListPage):
         return self.cursor.get_place() - len(groove.FACTORY_GROOVE_NAMES)
 
     def open_item(self):
-        self.show_page(GrooveEditor(holder=self.holder, name=self.current()))
+        self.open_editor(section=Section.GROOVES, name=self.current())
 
     def add(self):
         """Add a straight groove, numbered like new tracks and scenes, and open it."""
         name = self.new_name(names.MSG_NEW_GROOVE_WORD)
         self.document().add_groove(name)
         self.put_cursor_on(name)
-        self.show_page(GrooveEditor(holder=self.holder, name=name))
+        self.open_editor(section=Section.GROOVES, name=name)

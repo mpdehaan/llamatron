@@ -167,7 +167,7 @@ class GeneratorsPage(ListPage):
 
     def open_item(self):
         kind, name = self.current()
-        self.show_page(generator_page_of_kind(kind).EDITOR(holder=self.holder, name=name))
+        self.open_editor(section=generator_page_of_kind(kind).section, name=name)
 
     def add(self):
         """Ask which type of generator to make, make one named after the type, numbered, put the cursor on it and open it."""
@@ -178,7 +178,7 @@ class GeneratorsPage(ListPage):
             name = self.document().new_name(section=listing.section, word=suggested_word(listing.label))
             self.document().add_generator(section=listing.section, name=name)
             self.put_cursor_on(kind=listing.kind, name=name)
-            self.show_page(listing.EDITOR(holder=self.holder, name=name))
+            self.open_editor(section=listing.section, name=name)
         self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups), then=chosen)
 
     def rename(self):

@@ -226,6 +226,15 @@ class Page(BindsKeys, Screen):
         self.stop_playing()
         self.app.push_screen(page)
 
+    def open_editor(self, *, section, name, word=None, **named):
+        """Open the page that edits one named thing of a section.
+
+        word is the word for the thing where this page's crumbs come first in the editor's, as when a line of
+        details opens it; whatever else is named is passed to the editor.
+        """
+        page = self.app.editor_of(section)(holder=self.holder, name=name, **named)
+        self.show_page(page if word is None else page.opened_from(page=self, word=word))
+
     def stop_playing(self):
         """Stop a listening page's preview, if one plays, as its page is left or another opened over it; a song played from Arrange plays on."""
         if self.app.transport.is_previewing():

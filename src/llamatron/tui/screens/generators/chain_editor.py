@@ -114,7 +114,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
             name = self.document().new_name(section=sections[place], word=suggested_word(listing.label))
             self.document().add_generator(section=sections[place], name=name)
             then(kind=listing.kind, name=name)
-            self.show_page(listing.EDITOR(holder=self.holder, name=name).opened_from(page=self, word=listing.label))
+            self.open_editor(section=listing.section, name=name, word=listing.label)
         self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups), then=chosen)
 
     def add(self):

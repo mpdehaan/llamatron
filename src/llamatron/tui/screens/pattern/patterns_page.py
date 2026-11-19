@@ -29,7 +29,6 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import Align, Style
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.text import clock
@@ -225,7 +224,7 @@ class PatternsPage(NamedListPage):
     # A pattern.
 
     def open_item(self):
-        self.show_page(PatternEditor(holder=self.holder, name=self.listed().name))
+        self.open_editor(section=Section.PATTERNS, name=self.listed().name)
 
     def add(self):
         """Ask what kind of pattern to make, a drum pattern or one written for a scale of so many notes, then its name, make it in the cursor's group and open it."""
@@ -243,7 +242,7 @@ class PatternsPage(NamedListPage):
             self.document().add_pattern(name=text, group=group, drum=kind.drum, scale_length=kind.scale_length)
             self.new_groups = [made for made in self.new_groups if made != group]
             self.put_cursor_on(text)
-            self.show_page(PatternEditor(holder=self.holder, name=text))
+            self.open_editor(section=Section.PATTERNS, name=text)
         self.ask(dialog=PromptDialog(title=messages.MSG_NEW_PATTERN_PROMPT, value=self.new_name(names_text.MSG_NEW_PATTERN_WORD), max_length=limits.MAX_NAME_LENGTH), then=named)
 
     def rename(self):
