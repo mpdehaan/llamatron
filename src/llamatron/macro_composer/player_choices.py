@@ -285,7 +285,7 @@ class PlayerChoices:
         else:
             try:
                 given = {name: value for name, value in dict(settings).items() if name not in (MusicianSetting.TUNE_FROM, MusicianSetting.CHORDS_FROM)}
-                kept[self._role] = MusicianSettings.from_data(data=given, where=band.musician_name(self._role)).to_data()
+                kept[self._role] = MusicianSettings.handed_over(data=given, where=band.musician_name(self._role)).to_data()
             except (SongFileError, TypeError, ValueError) as problem:
                 raise ValueError(errors.ERR_WIZARD_MUSICIAN.format(value=settings, problem=problem)) from None
         self._choices.set_extra(name=arranger.MUSICIANS, value=kept or None)

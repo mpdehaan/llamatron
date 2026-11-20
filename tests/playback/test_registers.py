@@ -58,7 +58,6 @@ COUNTER = 'counter'
 Y = 'y'
 EX = 'EX'
 YES = 'yes'
-LOUD = 'loud'
 
 
 def scale_notes(values):
@@ -425,7 +424,7 @@ class TestTheFile(unittest.TestCase):
             {EX: {}}, {AX: {RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE + 1}},
             {AX: {RegisterSetting.MINIMUM: defaults.DEFAULT_REGISTER_VALUE + 1}},
             {AX: {RegisterSetting.DEFAULT: defaults.DEFAULT_REGISTER_MAXIMUM + 1}},
-            {AX: {RegisterSetting.RESET_BEHAVIOR: YES}}, {AX: {RegisterSetting.RESET_EACH_SCENE: YES}}, {AX: {LOUD: 1}}, {AX: {RegisterSetting.MAXIMUM: 1.5}}, [AX],
+            {AX: {RegisterSetting.RESET_BEHAVIOR: YES}}, {AX: {RegisterSetting.RESET_EACH_SCENE: YES}}, {AX: {RegisterSetting.MAXIMUM: 1.5}}, [AX],
         ]:
             with self.subTest(registers=registers), self.assertRaises(SongFileError):
                 song_from_data(one_clip(rows={}, registers=registers))

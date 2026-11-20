@@ -22,7 +22,7 @@ are checked again when a chain makes the generator, since settings can be built 
 """
 
 from llamatron.composition import corrections, euclid, file_format, guitar_bars, limits, shapes as shapes_values
-from llamatron.composition.checks import Bars, check_keys, in_whole_notes, is_true_or_false, is_whole_number, is_whole_number_from, listed, number, reading, time_length
+from llamatron.composition.checks import Bars, in_whole_notes, is_true_or_false, is_whole_number, is_whole_number_from, listed, number, pass_over_unknown, reading, refuse_unknown, time_length
 from llamatron.composition.conditions import statements_setting
 from llamatron.composition.euclid import euclid_part_settings, euclid_values
 from llamatron.composition.file_format import Accidental, Approach, ChordColor, DriftValue, EuclidPart, GeneratorKind, GuitarifySetting, NamedRhythm, RegisterName, Restart, Section, Shape, shape_setting, ShapePart, SingleNotes, Stroke, StrumDirection, StrumPart, Tuning
@@ -225,15 +225,28 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     @classmethod
     def from_data(cls, *, data, where, song=None):
         with reading(where):
-            cls.check_data({} if data is None else data)
+            data = {} if data is None else data
+            if not isinstance(data, dict):
+                raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=data))
+            pass_over_unknown(data=data, allowed=cls.SETTINGS)
+            cls.check_data(data)
+        return cls(data)
+
+    @classmethod
+    def handed_over(cls, *, data, where):
+        """Return the settings the program itself hands over, such as the song wizard's, refusing a name this generator doesn't
+        have, which from_data passes over as a file from another version may hold one."""
+        with reading(where):
+            cls.check_data(data)
         return cls(data)
 
     @classmethod
     def check_data(cls, data):
-        """Raise InvalidValue unless data holds only settings this generator has, each one right, and every one it needs."""
+        """Raise InvalidValue unless data holds only settings this generator has, each one right, and every one it needs. Reading a
+        file passes over the names it doesn't know first (from_data), so a name refused here is one the program itself handed over."""
         if not isinstance(data, dict):
             raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=data))
-        check_keys(data=data, allowed=set(cls.SETTINGS))
+        refuse_unknown(data=data, allowed=cls.SETTINGS)
         check_settings(settings=cls.SETTINGS, data=data)
         for name in cls.REQUIRED:
             if name not in data:
@@ -1303,7 +1316,7 @@ def check_musician_by_section(value):
     if not isinstance(value, dict) or any(section not in file_format.SECTION_KINDS or not isinstance(own, dict) for section, own in value.items()):
         raise InvalidValue(errors.ERR_BAD_BY_SECTION.format(choices=listed(file_format.SECTION_KINDS), value=value))
     for own in value.values():
-        check_keys(data=own, allowed=set(MUSICIAN_BY_SECTION))
+        refuse_unknown(data=own, allowed=MUSICIAN_BY_SECTION)
         check_settings(settings=MUSICIAN_BY_SECTION, data=own)
 
 

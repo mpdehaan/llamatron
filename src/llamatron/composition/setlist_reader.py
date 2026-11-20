@@ -25,7 +25,7 @@ import os
 import yaml
 
 from llamatron.composition import file_format, sections
-from llamatron.composition.checks import check_keys, reading
+from llamatron.composition.checks import pass_over_unknown, reading
 from llamatron.composition.file_layout import as_object_layout
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.migrations import migrated
@@ -91,7 +91,7 @@ def as_a_set_is_written(*, data, where, allowed):
     if not isinstance(data, dict):
         raise SongFileError(errors.ERR_NOT_A_SETLIST)
     with reading(where):
-        check_keys(data=data, allowed={*allowed, *sections.SETLIST_SECTIONS, file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES})
+        pass_over_unknown(data=data, allowed={*allowed, *sections.SETLIST_SECTIONS, file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES})
         _check_generator_names(data)
     return data
 

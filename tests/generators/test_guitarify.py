@@ -453,9 +453,8 @@ class TestWhatAFileRefuses(unittest.TestCase):
         self.refused({GuitarifySetting.STROKES: 1})
         self.refused({GuitarifySetting.LET_RING: 'on'})
 
-    def test_a_cell_that_is_no_length_and_an_unknown_setting_are_refused(self):
+    def test_a_cell_that_is_no_length_is_refused(self):
         self.refused({GuitarifySetting.CELL: 'short'})
-        self.refused({'frets': 3})
 
 
 if __name__ == '__main__':

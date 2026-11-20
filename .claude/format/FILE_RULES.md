@@ -26,9 +26,8 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   (`migrations/running.py`), a file with no version moved where its data has the old shape. Every piece of code that only runs
   on an older layout lives in that package and nowhere else, nothing outside imports more than `migrated` and `Conversion`, and
   a migration knows nothing of the objects or the reader (`tests/composition/test_migrations.py`). Only a breaking change of
-  layout gets one; adding a setting needs none, and a feature taken away leaves nothing to move: a removed setting never gets a migration, its name going into
-  `RETIRED_SETTINGS` in `composition/file_format.py`, which reading passes over and nothing writes again (the user's rule; the song's
-  seed is the first). A migration is never changed
+  layout gets one; adding a setting needs none, and a feature taken away leaves nothing to move: a removed setting never gets a migration, since reading passes over
+  every name it does not know and nothing writes one again (the user's rule; "Keys a File Holds That llamatron Does Not Know"). A migration is never changed
   once released. They are: Live's octaves before 1.0.30, one song at the top before 1.0.39 (named after the file), the
   description as notes before 1.0.155, and lists before 1.0.591 (which also turns a clip's single `chain` into a list, and settles
   a name two kinds shared by the naming rules, the later going on as `x-2`). An old file opens converted and unsaved, the status
@@ -237,7 +236,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 
 - Probability is rolled at render once per repeat and ratchet slice. A song holds no seed: every play and export draws its
   random parts afresh, from Python's own random stream, seeded by the system, so each is a new take (the user's rule, since a
-  kept seed could not promise the same take once Python's random numbers change). A file's old `seed` is a retired setting.
+  kept seed could not promise the same take once Python's random numbers change). A file's old `seed` is passed over as an unknown name.
 - `random_source(seed)` (`src/llamatron/support/random_source.py`) is the one place that decides
   between a seeded generator and the shared random stream.
 - `SongRenderer(song, seed=n)` renders from a seed, the internal way that tests and tools repeat a take, which no person and no
@@ -627,7 +626,11 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 - A chain is a list of steps like `arp: name` or `auto_ratchet: name`, with no settings of its
   own.
 
-## Keys a File Holds That llamatron Does Not Know (the user's guideline, agreed and not yet built)
+## Keys a File Holds That llamatron Does Not Know (the user's guideline; the ignoring built, the dialog and a chain's unknown kind not yet)
+
+- Built: every object's reader keeps only the names it knows (`pass_over_unknown` in `composition/checks.py`), the set's sections
+  and a pattern's rows included, without a word, so nothing unknown is kept or written again. A musician's own settings for a
+  kind of section, held inside one setting's value, are still refused when unknown.
 
 - The loader ignores whatever it does not understand, so that a file from before a feature was removed still opens; no code
   migrates a removed setting to what replaced it. Everything unknown is ignored the same way: an unknown setting of any

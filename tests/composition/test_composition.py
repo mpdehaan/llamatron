@@ -75,7 +75,6 @@ EXPECTED_SETTINGS = 'expected track settings'
 YES = 'yes'
 DIRECTION_MUST_BE_ONE_OF = 'direction must be one of'
 MUST_BE_A_NOTE_LETTER = 'must be a note letter'
-NOTES = 'notes'
 SIDEWAYS = 'sideways'
 CHAIN_X = 'chain x'
 SIXTEENTH = '1/16'
@@ -83,7 +82,9 @@ COUNT = 'count'
 NEEDS_COUNTS = errors.ERR_NEEDS_SETTING.format(name=AutoRatchetSetting.COUNTS)
 EIGHTH_FRACTION = Fraction(1, 8)
 CHAIN_X_AUTO_RATCHET = 'chain (x), auto_ratchet'
-UNKNOWN_COUNT_HERE = 'here: unknown setting (count)'
+# What a misspelled setting leaves an AutoRatchet read from a file lacking, the name being passed over as unknown, and what
+# settings built by the program with the same name are refused with, after the place of the generator.
+NO_COUNTS_HERE = 'here: needs counts'
 UNKNOWN_COUNT_IN_CHAIN = 'chain (x), auto_ratchet: unknown setting (count)'
 # Settings of an arp that reading a file refuses, each wrong in one setting.
 WRONG_ARP_SETTINGS = [
@@ -105,7 +106,6 @@ OTHER = 'other'
 DRUMS = 'drums'
 TITLE_MUST_BE_TEXT = 'title must be text'
 A_TITLE = 'T'
-THEMES = 'themes'
 
 
 def a_song():
@@ -252,7 +252,6 @@ class TestRegister(RoundTrip):
         above = defaults.DEFAULT_REGISTER_MAXIMUM + 1
         expected = f'needs minimum ({defaults.DEFAULT_REGISTER_MINIMUM}) <= default ({above}) <= maximum ({defaults.DEFAULT_REGISTER_MAXIMUM})'
         self.assert_refused(expected, Register, {RegisterSetting.DEFAULT: above})
-        self.assert_refused('unknown setting (step)', Register, {ArpSetting.STEP: 1})
 
 
 class TestTrack(RoundTrip):
@@ -291,7 +290,6 @@ class TestTrack(RoundTrip):
 
     def test_refusals(self):
         self.assert_refused(EXPECTED_SETTINGS, Track, [1])
-        self.assert_refused('unknown setting (octave)', Track, {Row.OCTAVE: 2})
         self.assert_refused('mute must be true or false', Track, {TrackSetting.MUTE: YES})
         self.assert_refused('transpose must be an integer from -24 to 24', Track, {TrackSetting.TRANSPOSE: 25})
         self.assert_refused('cc must be a list of 4 CC numbers', Track, {TrackSetting.CC: [1, 2]})
@@ -426,7 +424,6 @@ class TestPattern(RoundTrip):
 
     def test_refusals(self):
         self.assert_refused('expected pattern settings', Pattern, [])
-        self.assert_refused('unknown setting (notes)', Pattern, {PatternSetting.STEPS: 1, NOTES: []})
         self.assert_refused('steps must be an integer of 1 or more', Pattern, {PatternSetting.STEPS: 0})
         self.assert_refused('degree must be a list of 2 values', Pattern, {PatternSetting.STEPS: 2, Row.DEGREE: [1]})
         self.assert_refused('glide must be true or false, got null', Pattern, {PatternSetting.STEPS: 1, Row.GLIDE: [None]})
@@ -463,7 +460,7 @@ class TestGeneratorSettings(RoundTrip):
         self.assertEqual(arp.get_seed(), 3)
 
     def test_wrong_settings_are_refused_when_read_and_name_the_place(self):
-        with self.assertRaisesRegex(SongFileError, re.escape(UNKNOWN_COUNT_HERE)):
+        with self.assertRaisesRegex(SongFileError, re.escape(NO_COUNTS_HERE)):
             AutoRatchetSettings.from_data(data={COUNT: [2]}, where=HERE)
         for data in WRONG_ARP_SETTINGS:
             with self.subTest(data=data), self.assertRaises(SongFileError):
@@ -659,7 +656,6 @@ class TestSetlistAndSong(RoundTrip):
 
     def test_setlist_refusals(self):
         self.assert_refused(errors.ERR_NOT_A_SETLIST, Setlist, [1])
-        self.assert_refused('unknown setting (themes)', Setlist, {THEMES: {}})
         self.assert_refused(TITLE_MUST_BE_TEXT, Setlist, {SetlistSetting.TITLE: 3})
         self.assert_refused('step_size: expected an integer or a fraction', Setlist, {PatternSetting.STEP_SIZE: '0.25'})
         self.assert_refused('step_size: a length can be at most 4', Setlist, {PatternSetting.STEP_SIZE: 8})

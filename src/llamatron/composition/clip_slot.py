@@ -26,7 +26,7 @@ setting names something the song holds.
 
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
-from llamatron.composition.checks import check_keys, check_name, reading
+from llamatron.composition.checks import check_name, pass_over_unknown, reading
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_statement
 from llamatron.composition.file_format import ClipSlotSetting, PatternOrder, Section, strum_setting
 from llamatron.composition.invalid_value import InvalidValue
@@ -140,7 +140,7 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_CLIP_SLOT_EXPECTED_SETTINGS.format(data=data))
-            check_keys(data=data, allowed={*SETTINGS, ClipSlotSetting.PATTERN})
+            pass_over_unknown(data=data, allowed={*SETTINGS, ClipSlotSetting.PATTERN})
             # One pattern, as a file names it, is read as a list of one in the file's own data, where a correction is made, and
             # the data is then put back as the file had it, in the file's order, since it may be data the undo history keeps.
             keys = list(data)

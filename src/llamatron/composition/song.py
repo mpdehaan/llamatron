@@ -24,7 +24,7 @@ remove_item, rename_item and so on, and renaming or removing a track tells the s
 """
 
 from llamatron.composition import corrections, defaults, file_format, limits, sections
-from llamatron.composition.checks import check_keys, listed, number, reading, time_signature, written_length
+from llamatron.composition.checks import listed, number, pass_over_unknown, reading, time_signature, written_length
 from llamatron.composition.file_format import GeneratorKind, SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
 from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
@@ -158,7 +158,7 @@ class Song(HoldsSections, HoldsSettings):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_NOT_A_SONG.format(value=data))
-            check_keys(data=data, allowed={*SETTINGS, *sections.SONG_SECTIONS, Section.SCENES})
+            pass_over_unknown(data=data, allowed={*SETTINGS, *sections.SONG_SECTIONS, Section.SCENES})
         song = cls(setlist=setlist)
         song._read_settings(data=data, where=where)
         song._read_registers(data=data, where=where)

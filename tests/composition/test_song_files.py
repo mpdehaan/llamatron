@@ -16,12 +16,12 @@
 
 """Loading song files: what a file can hold, what it refuses, and the text at its top."""
 
+import copy
 import unittest
 import yaml
 
-from llamatron.composition import file_format, sections
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
-from llamatron.composition.generator_settings import ArpSetting, written_name
+from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import ChordOrder
@@ -49,13 +49,24 @@ DESCRIPTION_MUST_BE_TEXT = 'description must be text'
 NOTES_MUST_BE_TEXT = 'notes must be text'
 R = 'r'
 COUNT = 'count'
-# What a file's problem with that setting reads, after the place of the generator that has it.
-UNKNOWN_COUNT = '{where}: unknown setting (count)'
+# A name no object of the program knows, put at every level of a set by the test of names passed over.
+NOT_KNOWN = 'not_known'
 NOT_A_ROOT = 'H'
 A_LIST = 'a list'
 FROM = 'from'
 SOMEONE = 'Someone'
 RAIN = 'Rain'
+
+
+def parts_of(data):
+    """Return every part of a set's data that holds settings: the set, each song and its tracks, scenes and clips, each pattern
+    and each generator."""
+    parts = [data, *data[Section.PATTERNS].values(), *data[Section.AUTO_RATCHETS].values()]
+    for song in data[Section.SONGS].values():
+        parts += [song, *song[Section.TRACKS].values()]
+        for scene in song[Section.SCENES]:
+            parts += [scene, *scene[SceneSetting.TRACKS].values()]
+    return parts
 
 
 class TestErrors(unittest.TestCase):
@@ -77,17 +88,19 @@ class TestErrors(unittest.TestCase):
         song[SongSetting.PREVIEW_INSTRUMENT] = None
         self.assertIsNone(song_from_data(data).get_preview_instrument_name())
 
-    def test_unknown_top_level_setting(self):
-        self.assert_error('unknown setting (themes)', themes={})
-
-    def test_a_setting_taken_away_is_passed_over_and_never_written_again(self):
-        for retired in file_format.RETIRED_SETTINGS:
-            with self.subTest(setting=retired):
-                data = as_setlist(with_parts(patterns={A: pat([1, QUARTER])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}]))
-                for song in data[Section.SONGS].values():
-                    song[retired] = 1
-                written = setlist_from_data(data).to_data()
-                self.assertTrue(all(retired not in song for song in written[Section.SONGS].values()))
+    def test_a_name_the_program_does_not_know_is_passed_over_at_every_level_and_never_written_again(self):
+        # The set, a song, a track, a scene, a clip, a pattern and a generator each hold a name no object knows, as a file from
+        # another version might, a setting taken away included; the set reads as it would without them and writes none of them.
+        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}]
+        plain = as_setlist(with_parts(
+            patterns={A: pat([1, QUARTER])}, auto_ratchets={R: {AutoRatchetSetting.COUNTS: [2]}}, chains={song_testing.X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes,
+        ))
+        with_unknown = copy.deepcopy(plain)
+        for holder in parts_of(with_unknown):
+            holder[NOT_KNOWN] = 1
+        written = setlist_from_data(with_unknown).to_data()
+        self.assertEqual(written, setlist_from_data(plain).to_data())
+        self.assertNotIn(NOT_KNOWN, yaml.safe_dump(written))
 
     def test_unknown_chain_in_a_clip_slot(self):
         self.assert_error(errors.ERR_NO_GENERATOR_CALLED.format(name='nope'), scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NOPE]}}}])
@@ -104,15 +117,9 @@ class TestErrors(unittest.TestCase):
     def test_unknown_generator(self):
         self.assert_error('unknown generator (wobble)', chains={song_testing.X: [{WOBBLE: {}}]})
 
-    def test_unknown_generator_setting_names_the_generator(self):
-        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}]
-        self.assert_error(
-            UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[Section.AUTO_RATCHETS], name=R)),
-            auto_ratchets={R: {COUNT: [2]}}, chains={song_testing.X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes,
-        )
-
     def test_a_generator_no_chain_uses_is_checked_too(self):
-        self.assert_error(UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[Section.AUTO_RATCHETS], name=R)), auto_ratchets={R: {COUNT: [2]}})
+        # A misspelled setting is passed over as unknown, so the generator lacks the setting it needs.
+        self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {COUNT: [2]}})
         self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}})
 
     def test_missing_generator_setting(self):
@@ -134,7 +141,8 @@ class TestErrors(unittest.TestCase):
         self.assert_error(NEEDS_A_PATTERN, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.LOOP: True}}}])
 
     def test_a_clip_cannot_come_from_another_track(self):
-        self.assert_error('unknown setting (from)', scenes=[{Section.TRACKS: {song_testing.LEAD: {FROM: KICK}}}])
+        # From is no setting of a clip, so it is passed over and the clip has no pattern.
+        self.assert_error(NEEDS_A_PATTERN, scenes=[{Section.TRACKS: {song_testing.LEAD: {FROM: KICK}}}])
 
     def test_every_setting_has_a_default_so_an_empty_file_is_an_empty_song(self):
         for data in [None, {}]:

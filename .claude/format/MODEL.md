@@ -265,7 +265,7 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - A pattern's `+=` row adding more than the narrowest `allowed_inc_max` of the songs that play it is
   corrected to that limit, the row being one correction (`Setlist._check_adds_within_limits`,
   `held_add`), since the limit is a song's and the row a set's, so the check comes after the songs.
-- What is still refused: a name that doesn't exist, an unknown setting, the wrong type or
+- What is still refused: a name that doesn't exist, the wrong type or
   structure, a track's CC numbers, an AutoRatchet's counts, a scale's root or type, and two
   settings that don't fit each other.
 - `Setlist.read_file_corrected(path)` and `from_data_corrected(data=)` return the set and the

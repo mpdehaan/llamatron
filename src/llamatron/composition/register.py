@@ -19,7 +19,7 @@
 from typing import NamedTuple
 
 from llamatron.composition import corrections, defaults, file_format, limits
-from llamatron.composition.checks import check_keys, listed, reading
+from llamatron.composition.checks import listed, pass_over_unknown, reading
 from llamatron.composition.file_format import RegisterSetting, ResetBehavior
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings
@@ -75,7 +75,7 @@ class Register(HoldsSettings):
             data = {} if data is None else data
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_REGISTER_EXPECTED_SETTINGS.format(data=data))
-            check_keys(data=data, allowed=set(SETTINGS))
+            pass_over_unknown(data=data, allowed=SETTINGS)
             return _checked(data)
 
     def is_default(self):

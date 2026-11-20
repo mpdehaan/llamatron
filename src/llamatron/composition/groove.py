@@ -31,7 +31,7 @@ can't take a factory name.
 """
 
 from llamatron.composition import corrections, defaults, limits
-from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, listed, reading, written_length
+from llamatron.composition.checks import is_whole_number, is_whole_number_from, listed, pass_over_unknown, reading, written_length
 from llamatron.composition.file_format import GrooveSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import LlamaData, or_default
@@ -89,7 +89,7 @@ class Groove(HasCells, LlamaData):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_GROOVE_EXPECTED_SETTINGS.format(data=data))
-            check_keys(data=data, allowed=set(SETTINGS))
+            pass_over_unknown(data=data, allowed=SETTINGS)
             # A groove needs its cells, so a file that leaves them out is refused as one that holds none.
             if GrooveSetting.CELLS not in data:
                 SETTINGS[GrooveSetting.CELLS].check(None)
