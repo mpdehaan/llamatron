@@ -51,28 +51,23 @@ def disc_kernel(radius):
     return kernel
 
 
-class Discs:
-    """Soft discs added into a field, each a square kernel of weights by its radius."""
-
-    __slots__ = ()
-
-    def add(self, *, field, row, column, radius, amount):
-        """Add a soft disc into a field at a place, its middle adding amount, which may be an array of one value per channel, clipped at the field's edges."""
-        kernel = disc_kernel(radius)
-        rows, columns = field.shape[:2]
-        top = row - radius
-        left = column - radius
-        first_row = max(top, 0)
-        first_column = max(left, 0)
-        last_row = min(top + kernel.shape[0], rows)
-        last_column = min(left + kernel.shape[1], columns)
-        if first_row >= last_row or first_column >= last_column:
-            return
-        piece = kernel[first_row - top:last_row - top, first_column - left:last_column - left]
-        if field.ndim == 3:
-            field[first_row:last_row, first_column:last_column] += (piece[:, :, None] * numpy.asarray(amount)[None, None, :]) >> WEIGHT_SHIFT
-        else:
-            field[first_row:last_row, first_column:last_column] += (piece * amount) >> WEIGHT_SHIFT
+def add_disc(*, field, row, column, radius, amount):
+    """Add a soft disc into a field at a place, its middle adding amount, which may be an array of one value per channel, clipped at the field's edges."""
+    kernel = disc_kernel(radius)
+    rows, columns = field.shape[:2]
+    top = row - radius
+    left = column - radius
+    first_row = max(top, 0)
+    first_column = max(left, 0)
+    last_row = min(top + kernel.shape[0], rows)
+    last_column = min(left + kernel.shape[1], columns)
+    if first_row >= last_row or first_column >= last_column:
+        return
+    piece = kernel[first_row - top:last_row - top, first_column - left:last_column - left]
+    if field.ndim == 3:
+        field[first_row:last_row, first_column:last_column] += (piece[:, :, None] * numpy.asarray(amount)[None, None, :]) >> WEIGHT_SHIFT
+    else:
+        field[first_row:last_row, first_column:last_column] += (piece * amount) >> WEIGHT_SHIFT
 
 
 def blurred(field):

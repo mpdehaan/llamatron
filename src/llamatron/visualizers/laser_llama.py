@@ -31,7 +31,7 @@ import random
 
 from llamatron.strings import visualizers
 from llamatron.visualizers import cells
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import styled_line
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.colour_styles import colour_style
 from llamatron.visualizers.visualizer import Visualizer
@@ -102,7 +102,7 @@ class Beam:
 class LaserLlama(Visualizer):
     """A neon sunset over a rushing grid, and a llama firing lasers to the notes."""
 
-    __slots__ = ('_rows', '_columns', '_grid', '_backdrop', '_stars', '_scroll', '_llama', '_facing', '_beams', '_limiter', '_cells', '_chooser')
+    __slots__ = ('_rows', '_columns', '_grid', '_backdrop', '_stars', '_scroll', '_llama', '_facing', '_beams', '_limiter', '_chooser')
 
     NAME = visualizers.MSG_LASER_LLAMA
     OPTION = 'laser_llama'
@@ -111,7 +111,6 @@ class LaserLlama(Visualizer):
     def __init__(self):
         super().__init__()
         self._chooser = random.Random(SEED)
-        self._cells = CellPainter()
         self._limiter = Limiter(
             mean_level=MEAN_LEVEL, ceiling=CEILING, rise_per_second=MEAN_RISE_PER_SECOND, fall_per_second=MEAN_FALL_PER_SECOND, most_gain=MOST_GAIN,
         )
@@ -226,5 +225,5 @@ class LaserLlama(Visualizer):
                     if character != cells.SPACE and 0 <= column < width:
                         characters[column] = character
                         styles[column] = colour_style(colour=LLAMA_COLOUR, background=tuple(lower[column]))
-            lines.append(self._cells.line(characters=characters, styles=styles))
+            lines.append(styled_line(characters=characters, styles=styles))
         return lines

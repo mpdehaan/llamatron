@@ -29,7 +29,7 @@ import numpy
 import random
 
 from llamatron.strings import visualizers
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import coloured_cells
 from llamatron.visualizers.energy import Energy
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -69,7 +69,7 @@ BEATS_PER_SECOND_AT_120 = 2.0
 class DigitalRain(Visualizer):
     """Green ones and zeros falling, a stream for each note."""
 
-    __slots__ = ('_cells', '_chooser', '_rows', '_columns', '_glyphs', '_streams', '_energy', '_owed')
+    __slots__ = ('_chooser', '_rows', '_columns', '_glyphs', '_streams', '_energy', '_owed')
 
     NAME = visualizers.MSG_DIGITAL_RAIN
     OPTION = 'digital_rain'
@@ -77,7 +77,6 @@ class DigitalRain(Visualizer):
 
     def __init__(self):
         super().__init__()
-        self._cells = CellPainter()
         self._chooser = random.Random(SEED)
         self._rows = 0
         self._columns = 0
@@ -110,7 +109,7 @@ class DigitalRain(Visualizer):
             self._streams[:, 1] += self._streams[:, 2] * beats
             self._streams = self._streams[self._streams[:, 1] - self._streams[:, 3] < self._rows]
         self.change_glyphs(seconds)
-        return self._cells.coloured_cells(characters=self._glyphs, colours=self.colours())
+        return coloured_cells(characters=self._glyphs, colours=self.colours())
 
     def hear(self, heard):
         """Send a stream down for each note that starts, in the column of its pitch, and let it brighten the green."""

@@ -29,7 +29,7 @@ from llamatron.visualizers.heard import Heard, HeardNote
 from llamatron.visualizers.lava_lamp import derezzed, LavaLamp
 from llamatron.visualizers.llamas import Llamas, mirrored
 from llamatron.visualizers.modes import mode_called, mode_options
-from llamatron.visualizers.pixels import pixel_size, PixelPainter
+from llamatron.visualizers.pixels import pixel_lines, pixel_size
 from llamatron.visualizers.spectrum import Spectrum
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -244,7 +244,7 @@ class TestPixels(unittest.TestCase):
 
     def test_a_big_pixel_is_two_columns_of_one_row_and_a_run_of_one_colour_is_one_piece(self):
         pixels = numpy.array([[RED, RED, BLUE]])
-        line = PixelPainter().lines(pixels=pixels, width=len(pixels[0]) * pixels_values.PIXEL_COLUMNS, height=1)[0]
+        line = pixel_lines(pixels=pixels, width=len(pixels[0]) * pixels_values.PIXEL_COLUMNS, height=1)[0]
         self.assertEqual(line.plain, pixels_values.FULL_BLOCK * (len(pixels[0]) * pixels_values.PIXEL_COLUMNS))
         self.assertEqual(len(line.spans), 2)
 

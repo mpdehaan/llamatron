@@ -32,34 +32,29 @@ FULL_BLOCK = '█'
 NOTHING = ''
 
 
-class PixelPainter:
-    """Draws arrays of big pixels as text, keeping the style of each colour it has drawn."""
-
-    __slots__ = ()
-
-    def lines(self, *, pixels, width, height):
-        """Return the text lines that draw an array of pixels, rows by columns by three channels of 0 to 255, in an area width columns by height rows, any columns left over blank."""
-        rows = pixels.tolist()
-        lines = []
-        for row in rows[:height // PIXEL_ROWS]:
-            line = Text(no_wrap=True)
-            run_colour = None
-            run_length = 0
-            for colour in row:
-                colour = tuple(colour)
-                if colour == run_colour:
-                    run_length += 1
-                    continue
-                if run_length:
-                    line.append(FULL_BLOCK * (run_length * PIXEL_COLUMNS), style=rgb_style(run_colour))
-                run_colour = colour
-                run_length = 1
+def pixel_lines(*, pixels, width, height):
+    """Return the text lines that draw an array of pixels, rows by columns by three channels of 0 to 255, in an area width columns by height rows, any columns left over blank."""
+    rows = pixels.tolist()
+    lines = []
+    for row in rows[:height // PIXEL_ROWS]:
+        line = Text(no_wrap=True)
+        run_colour = None
+        run_length = 0
+        for colour in row:
+            colour = tuple(colour)
+            if colour == run_colour:
+                run_length += 1
+                continue
             if run_length:
                 line.append(FULL_BLOCK * (run_length * PIXEL_COLUMNS), style=rgb_style(run_colour))
-            line.pad_right(max(width - line.cell_len, 0))
-            for _ in range(PIXEL_ROWS):
-                lines.append(line)
-        return lines
+            run_colour = colour
+            run_length = 1
+        if run_length:
+            line.append(FULL_BLOCK * (run_length * PIXEL_COLUMNS), style=rgb_style(run_colour))
+        line.pad_right(max(width - line.cell_len, 0))
+        for _ in range(PIXEL_ROWS):
+            lines.append(line)
+    return lines
 
 
 def pixel_size(*, width, height):

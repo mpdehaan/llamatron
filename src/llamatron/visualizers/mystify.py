@@ -32,7 +32,7 @@ import random
 
 from llamatron.strings import visualizers
 from llamatron.visualizers import cells
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import braille_lines
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -87,7 +87,7 @@ class Polygon:
 class Mystify(Visualizer):
     """Polygons bouncing with trails over a starfield, in Braille."""
 
-    __slots__ = ('_rows', '_columns', '_polygons', '_stars', '_star_colours', '_chooser', '_cells')
+    __slots__ = ('_rows', '_columns', '_polygons', '_stars', '_star_colours', '_chooser')
 
     NAME = visualizers.MSG_MYSTIFY
     OPTION = 'mystify'
@@ -96,7 +96,6 @@ class Mystify(Visualizer):
         super().__init__()
         self._polygons = {}
         self._chooser = random.Random(SEED)
-        self._cells = CellPainter()
         self._stars = numpy.array([[self._chooser.uniform(-1, 1), self._chooser.uniform(-1, 1), self._chooser.uniform(NEAREST, 1)] for _ in range(STARS)])
         self._star_colours = numpy.tile(numpy.array(STAR_COLOUR, dtype=float), (STARS, 1))
         self._rows = 0
@@ -119,7 +118,7 @@ class Mystify(Visualizer):
         self.draw_stars(dots=dots, colours=colours)
         self.draw_polygons(dots=dots, colours=colours)
         colours = numpy.clip(colours, 0, CEILING) // COLOUR_STEP * COLOUR_STEP
-        return self._cells.braille(dots=dots, colours=colours, width=width)
+        return braille_lines(dots=dots, colours=colours, width=width)
 
     def polygon_of(self, track):
         """Return the polygon a track draws, made the first time; past MOST_POLYGONS, tracks share."""

@@ -47,7 +47,7 @@ import numpy
 from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.colour import Limiter, note_colour
-from llamatron.visualizers.fields import blurred, Discs, ripple_step
+from llamatron.visualizers.fields import add_disc, blurred, ripple_step
 from llamatron.visualizers.visualizer import Visualizer
 from llamatron.visualizers.warp import Rotozoom
 
@@ -123,14 +123,13 @@ class Blob:
 class LavaLamp(Visualizer):
     """Drifting blobs of colour, one for each track that plays, rippling the water they float in."""
 
-    __slots__ = ('_rows', '_columns', '_water', '_water_before', '_colour', '_blobs', '_motion', '_discs', '_rotozoom', '_limiter', '_places')
+    __slots__ = ('_rows', '_columns', '_water', '_water_before', '_colour', '_blobs', '_motion', '_rotozoom', '_limiter', '_places')
 
     NAME = visualizers.MSG_LAVA_LAMP
     OPTION = 'lava_lamp'
 
     def __init__(self):
         super().__init__()
-        self._discs = Discs()
         self._rotozoom = Rotozoom()
         self._limiter = Limiter(
             mean_level=MEAN_LEVEL, ceiling=CEILING, rise_per_second=MEAN_RISE_PER_SECOND, fall_per_second=MEAN_FALL_PER_SECOND, most_gain=MOST_GAIN,
@@ -188,9 +187,9 @@ class LavaLamp(Visualizer):
             if note.started:
                 blob.target = min(blob.target + ENERGY_PER_NOTE * note.velocity / FULL_VELOCITY, 1.0)
                 share, depth = (DRUM_RADIUS_SHARE, DRUM_SPLASH_PER_VELOCITY) if note.drum else (SPLASH_RADIUS_SHARE, SPLASH_PER_VELOCITY)
-                self._discs.add(field=self._water, row=row, column=column, radius=self.radius(share), amount=depth * note.velocity)
+                add_disc(field=self._water, row=row, column=column, radius=self.radius(share), amount=depth * note.velocity)
             else:
-                self._discs.add(field=self._water, row=row, column=column, radius=self.radius(HELD_RADIUS_SHARE), amount=HELD_PUSH_PER_VELOCITY * note.velocity)
+                add_disc(field=self._water, row=row, column=column, radius=self.radius(HELD_RADIUS_SHARE), amount=HELD_PUSH_PER_VELOCITY * note.velocity)
 
     def settle(self, seconds):
         """Move each blob's energy toward its target no faster than it may rise, and let the target fall away."""
@@ -208,7 +207,7 @@ class LavaLamp(Visualizer):
         for track, blob in self._blobs.items():
             row, column = self.blob_place(track)
             strength = (GLOW_RESTING + GLOW_PLAYING * blob.energy) * share
-            self._discs.add(field=self._colour, row=row, column=column, radius=radius, amount=(blob.colour * COLOUR_SCALE * strength).astype(numpy.int32))
+            add_disc(field=self._colour, row=row, column=column, radius=radius, amount=(blob.colour * COLOUR_SCALE * strength).astype(numpy.int32))
 
     def seen_through_water(self):
         """Return the colour field as seen through the water: each cell's colour taken a little way along the water's slope, with a soft highlight on the slope, over the dark ground."""

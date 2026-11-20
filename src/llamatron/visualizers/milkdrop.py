@@ -31,7 +31,7 @@ import numpy
 from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.colour import Limiter, note_colour
-from llamatron.visualizers.fields import blurred, Discs
+from llamatron.visualizers.fields import add_disc, blurred
 from llamatron.visualizers.lava_lamp import derezzed
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -76,14 +76,13 @@ HALF = 0.5
 class Milkdrop(Visualizer):
     """A picture fed back into itself, zoomed, turned and swirled, faded and blurred, with each note drawn new on top."""
 
-    __slots__ = ('_rows', '_columns', '_picture', '_discs', '_limiter', '_motion', '_warp_key', '_warp_rows', '_warp_columns', '_tracks_seen')
+    __slots__ = ('_rows', '_columns', '_picture', '_limiter', '_motion', '_warp_key', '_warp_rows', '_warp_columns', '_tracks_seen')
 
     NAME = visualizers.MSG_MILKDROP
     OPTION = 'milkdrop'
 
     def __init__(self):
         super().__init__()
-        self._discs = Discs()
         self._limiter = Limiter(
             mean_level=MEAN_LEVEL, ceiling=CEILING, rise_per_second=MEAN_RISE_PER_SECOND, fall_per_second=MEAN_FALL_PER_SECOND, most_gain=MOST_GAIN,
         )
@@ -142,8 +141,8 @@ class Milkdrop(Visualizer):
             colour = note_colour(track=note.track, pitch=note.pitch, drum=note.drum) * COLOUR_SCALE
             loudness = note.velocity / FULL_VELOCITY
             if note.started:
-                self._discs.add(field=self._picture, row=row, column=column, radius=max(int(self._rows * RING_RADIUS_SHARE), 1),
+                add_disc(field=self._picture, row=row, column=column, radius=max(int(self._rows * RING_RADIUS_SHARE), 1),
                                 amount=(colour * RING_BRIGHTNESS * loudness).astype(numpy.int32))
             else:
-                self._discs.add(field=self._picture, row=row, column=column, radius=max(int(self._rows * DOT_RADIUS_SHARE), 1),
+                add_disc(field=self._picture, row=row, column=column, radius=max(int(self._rows * DOT_RADIUS_SHARE), 1),
                                 amount=(colour * DOT_BRIGHTNESS * loudness).astype(numpy.int32))

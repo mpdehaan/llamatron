@@ -32,7 +32,7 @@ import random
 
 from llamatron.strings import visualizers
 from llamatron.visualizers import cells, colour
-from llamatron.visualizers.cells import CellPainter, packed
+from llamatron.visualizers.cells import packed, styled_line
 from llamatron.visualizers.colour import note_colour
 from llamatron.visualizers.colour_styles import packed_style_on
 from llamatron.visualizers.energy import Energy
@@ -83,7 +83,7 @@ def stepped(alive):
 class Life(Visualizer):
     """Conway's Game of Life, its live cells the inverse of a drifting gradient, outlined with the beat."""
 
-    __slots__ = ('_alive', '_colours', '_energy', '_drift', '_since_step', '_last_beat', '_chooser', '_cells', '_shape', '_left_bits', '_right_bits')
+    __slots__ = ('_alive', '_colours', '_energy', '_drift', '_since_step', '_last_beat', '_chooser', '_shape', '_left_bits', '_right_bits')
 
     NAME = visualizers.MSG_LIFE
     OPTION = 'life'
@@ -92,7 +92,6 @@ class Life(Visualizer):
     def __init__(self):
         super().__init__()
         self._chooser = random.Random(SEED)
-        self._cells = CellPainter()
         self._colours = {}
         self._energy = Energy(per_note=ENERGY_PER_NOTE, rise_per_second=ENERGY_RISE_PER_SECOND, kept_per_second=ENERGY_KEPT_PER_SECOND)
         self._drift = 0.0
@@ -191,5 +190,5 @@ class Life(Visualizer):
                 else:
                     characters.append(cells.SPACE)
                     styles.append(packed_style_on(number=fill, background=fill))
-            lines.append(self._cells.line(characters=characters, styles=styles))
+            lines.append(styled_line(characters=characters, styles=styles))
         return lines

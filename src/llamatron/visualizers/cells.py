@@ -44,43 +44,39 @@ def packed(colours):
     return (colours[..., 0] << 16) | (colours[..., 1] << 8) | colours[..., 2]
 
 
-class CellPainter:
-    """Draws cells of characters, half blocks and Braille as text, each colour in its kept style (colour_styles.py)."""
+def styled_line(*, characters, styles):
+    """Return one line of characters as text, each run of one style one span, made in one go, since appending piece by piece was most of a frame's cost."""
+    spans = []
+    start = 0
+    count = len(characters)
+    for place in range(1, count + 1):
+        if place == count or styles[place] is not styles[start]:
+            if styles[start] is not None:
+                spans.append(Span(start, place, styles[start]))
+            start = place
+    return Text(''.join(characters), spans=spans, no_wrap=True)
 
-    __slots__ = ()
 
-    @staticmethod
-    def line(*, characters, styles):
-        """Return one line of characters as text, each run of one style one span, made in one go, since appending piece by piece was most of a frame's cost."""
-        spans = []
-        start = 0
-        count = len(characters)
-        for place in range(1, count + 1):
-            if place == count or styles[place] is not styles[start]:
-                if styles[start] is not None:
-                    spans.append(Span(start, place, styles[start]))
-                start = place
-        return Text(''.join(characters), spans=spans, no_wrap=True)
+def coloured_cells(*, characters, colours):
+    """Return lines from rows of characters and their colours, an array of rows by columns by three; a black colour draws a blank."""
+    lines = []
+    for row, colour_row in zip(characters, packed(colours).tolist()):
+        styles = [packed_style(number) if number else None for number in colour_row]
+        lines.append(styled_line(characters=[character if style else SPACE for character, style in zip(row, styles)], styles=styles))
+    return lines
 
-    def coloured_cells(self, *, characters, colours):
-        """Return lines from rows of characters and their colours, an array of rows by columns by three; a black colour draws a blank."""
-        lines = []
-        for row, colour_row in zip(characters, packed(colours).tolist()):
-            styles = [packed_style(number) if number else None for number in colour_row]
-            lines.append(self.line(characters=[character if style else SPACE for character, style in zip(row, styles)], styles=styles))
-        return lines
 
-    def braille(self, *, dots, colours, width):
-        """Return lines drawing a grid of dots, four rows and two columns of them a cell, each cell in its colour, rows by columns by three."""
-        rows = dots.shape[0] // BRAILLE_ROWS
-        columns = dots.shape[1] // BRAILLE_COLUMNS
-        cells = dots[:rows * BRAILLE_ROWS, :columns * BRAILLE_COLUMNS].reshape(rows, BRAILLE_ROWS, columns, BRAILLE_COLUMNS)
-        bits = (cells * BRAILLE_BITS[None, :, None, :]).sum(axis=(1, 3))
-        lines = []
-        for bit_row, colour_row in zip(bits.tolist(), packed(colours[:rows, :columns]).tolist()):
-            characters = [chr(BRAILLE_BLANK + bit) if bit else SPACE for bit in bit_row]
-            styles = [packed_style(number) if bit else None for bit, number in zip(bit_row, colour_row)]
-            text = self.line(characters=characters, styles=styles)
-            text.pad_right(max(width - text.cell_len, 0))
-            lines.append(text)
-        return lines
+def braille_lines(*, dots, colours, width):
+    """Return lines drawing a grid of dots, four rows and two columns of them a cell, each cell in its colour, rows by columns by three."""
+    rows = dots.shape[0] // BRAILLE_ROWS
+    columns = dots.shape[1] // BRAILLE_COLUMNS
+    cells = dots[:rows * BRAILLE_ROWS, :columns * BRAILLE_COLUMNS].reshape(rows, BRAILLE_ROWS, columns, BRAILLE_COLUMNS)
+    bits = (cells * BRAILLE_BITS[None, :, None, :]).sum(axis=(1, 3))
+    lines = []
+    for bit_row, colour_row in zip(bits.tolist(), packed(colours[:rows, :columns]).tolist()):
+        characters = [chr(BRAILLE_BLANK + bit) if bit else SPACE for bit in bit_row]
+        styles = [packed_style(number) if bit else None for bit, number in zip(bit_row, colour_row)]
+        text = styled_line(characters=characters, styles=styles)
+        text.pad_right(max(width - text.cell_len, 0))
+        lines.append(text)
+    return lines

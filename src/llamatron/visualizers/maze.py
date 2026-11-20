@@ -28,7 +28,7 @@ import random
 
 from llamatron.strings import visualizers
 from llamatron.visualizers import cells
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import coloured_cells
 from llamatron.visualizers.colour import track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -115,7 +115,7 @@ class Walker:
 class Maze(Visualizer):
     """A maze in box characters, threaded by a walker for each track."""
 
-    __slots__ = ('_rows', '_columns', '_walls', '_corridors', '_wall_characters', '_trodden', '_ages', '_owners', '_walkers', '_chooser', '_fading', '_cells')
+    __slots__ = ('_rows', '_columns', '_walls', '_corridors', '_wall_characters', '_trodden', '_ages', '_owners', '_walkers', '_chooser', '_fading')
 
     NAME = visualizers.MSG_MAZE
     OPTION = 'maze'
@@ -123,7 +123,6 @@ class Maze(Visualizer):
     def __init__(self):
         super().__init__()
         self._chooser = random.Random(SEED)
-        self._cells = CellPainter()
         self._rows = 0
         self._columns = 0
 
@@ -234,4 +233,4 @@ class Maze(Visualizer):
         if self._fading is not None:
             colours = colours * (1.0 - self._fading / FADE_SECONDS)
         colours = (colours.astype(numpy.int32) // COLOUR_STEP) * COLOUR_STEP
-        return self._cells.coloured_cells(characters=characters, colours=colours)
+        return coloured_cells(characters=characters, colours=colours)

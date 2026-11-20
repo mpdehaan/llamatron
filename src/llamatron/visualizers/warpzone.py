@@ -30,7 +30,7 @@ import numpy
 
 from llamatron.strings import visualizers
 from llamatron.visualizers import cells
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import braille_lines
 from llamatron.visualizers.colour import note_colour, track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -88,7 +88,7 @@ class Ring:
 class WarpZone(Visualizer):
     """Balls bouncing at the tempo's speed, sending out fine rings as their tracks play, in Braille."""
 
-    __slots__ = ('_rows', '_columns', '_balls', '_rings', '_cells', '_disc')
+    __slots__ = ('_rows', '_columns', '_balls', '_rings', '_disc')
 
     NAME = visualizers.MSG_WARPZONE
     OPTION = 'warpzone'
@@ -97,7 +97,6 @@ class WarpZone(Visualizer):
         super().__init__()
         self._balls = {}
         self._rings = []
-        self._cells = CellPainter()
         self._rows = 0
         self._columns = 0
         span = numpy.arange(-BALL_RADIUS, BALL_RADIUS + 1)
@@ -120,7 +119,7 @@ class WarpZone(Visualizer):
         self.draw_rings(dots=dots, colours=colours, now=now)
         self.draw_balls(dots=dots, colours=colours)
         colours = numpy.clip(colours, 0, CEILING) // COLOUR_STEP * COLOUR_STEP
-        return self._cells.braille(dots=dots, colours=colours, width=width)
+        return braille_lines(dots=dots, colours=colours, width=width)
 
     def ball_of(self, track):
         """Return a track's ball, made where its place in the order puts it, heading off at an angle of its own."""

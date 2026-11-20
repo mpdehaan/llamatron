@@ -44,7 +44,7 @@ from llamatron.tui.scene_notes import beat_chords, effective_values, scene_notes
 from llamatron.tui.screens.arrange import arrange_details
 from llamatron.tui.screens.arrange.arrange_details import clip_details, or_stock, track_details
 from llamatron.visualizers import piano_roll
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import styled_line
 from llamatron.visualizers.colour_styles import colour_style
 from llamatron.visualizers.piano_roll import drum_lane
 
@@ -125,7 +125,7 @@ def track_label(*, name, place):
 class SceneView:
     """One scene's notes in a read-only roll inside an Inset Window, as written or as played, with a cursor the arrows move, a zoom and a sidebar of each track's details."""
 
-    __slots__ = ('_document', '_index', '_written', '_kept', '_problem', '_column', '_row', '_left', '_top', '_cells', '_zoom', '_side_top')
+    __slots__ = ('_document', '_index', '_written', '_kept', '_problem', '_column', '_row', '_left', '_top', '_zoom', '_side_top')
 
     def __init__(self, *, document, index):
         self._document = document
@@ -139,7 +139,6 @@ class SceneView:
         self._top = 0
         self._zoom = START_CELLS
         self._side_top = 0
-        self._cells = CellPainter()
         self.place_cursor()
 
     def get_index(self):
@@ -384,7 +383,7 @@ class SceneView:
                         continue
                     characters.append(shown_character)
                     styles.append(style)
-            lines.append(self._cells.line(characters=characters, styles=styles))
+            lines.append(styled_line(characters=characters, styles=styles))
         return lines
 
     def row_label(self, *, key, played):

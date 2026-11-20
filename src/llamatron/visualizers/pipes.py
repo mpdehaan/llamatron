@@ -29,7 +29,7 @@ import random
 
 from llamatron.strings import visualizers
 from llamatron.visualizers import cells
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import coloured_cells
 from llamatron.visualizers.colour import track_colour, vivid
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -85,7 +85,7 @@ class Pipe:
 class Pipes(Visualizer):
     """A pipe for each track, laid in box characters as its notes play."""
 
-    __slots__ = ('_rows', '_columns', '_pipes', '_characters', '_owners', '_ages', '_chooser', '_fading', '_cells')
+    __slots__ = ('_rows', '_columns', '_pipes', '_characters', '_owners', '_ages', '_chooser', '_fading')
 
     NAME = visualizers.MSG_PIPES
     OPTION = 'pipes'
@@ -95,7 +95,6 @@ class Pipes(Visualizer):
         self._pipes = {}
         self._chooser = random.Random(SEED)
         self._fading = None
-        self._cells = CellPainter()
         self._rows = 0
         self._columns = 0
 
@@ -204,4 +203,4 @@ class Pipes(Visualizer):
         palette = numpy.array([vivid(track_colour(track)) for track in range(max(int(self._owners.max()) + 1, 1))])
         colours = numpy.where((self._owners >= 0)[:, :, None], palette[numpy.maximum(self._owners, 0)] * brightness[:, :, None], 0)
         colours = (colours.astype(numpy.int32) // COLOUR_STEP) * COLOUR_STEP
-        return self._cells.coloured_cells(characters=self._characters, colours=colours)
+        return coloured_cells(characters=self._characters, colours=colours)

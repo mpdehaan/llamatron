@@ -16,7 +16,7 @@
 """What every visualizer mode is: a name, and the frame it draws for an area at a moment."""
 
 from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.pixels import pixel_size, PixelPainter
+from llamatron.visualizers.pixels import pixel_lines, pixel_size
 
 # The longest a frame is taken to have lasted, in seconds, however late it comes.
 LONGEST_FRAME_SECONDS = 0.2
@@ -29,7 +29,7 @@ class Visualizer:
     the terminal is resized, so it starts again for an area of another size (resized).
     """
 
-    __slots__ = ('_painter', '_size', '_last')
+    __slots__ = ('_size', '_last')
 
     # What the mode is called on screen and on the command line, and whether it goes dark when nothing plays, as most do.
     NAME = None
@@ -37,7 +37,6 @@ class Visualizer:
     DARK_IN_SILENCE = True
 
     def __init__(self):
-        self._painter = PixelPainter()
         self._size = None
         self._last = None
 
@@ -55,7 +54,7 @@ class Visualizer:
             self.resized(columns=size[0], rows=size[1])
         if not size[0] or not size[1]:
             return []
-        return self._painter.lines(pixels=self.pixels(now=now, heard=heard), width=width, height=height)
+        return pixel_lines(pixels=self.pixels(now=now, heard=heard), width=width, height=height)
 
     @classmethod
     def made_for(cls, *, hidden=()):

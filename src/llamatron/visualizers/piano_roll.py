@@ -29,7 +29,7 @@ The amounts are named constants here, to tune by eye.
 from llamatron.composition import file_format
 from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.cells import styled_line
 from llamatron.visualizers.colour_styles import colour_style
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -107,14 +107,13 @@ class RolledNote:
 class PianoRoll(Visualizer):
     """The notes as bars rolling in from the right, every key a row, each track in its colour, the drums in lanes at the bottom."""
 
-    __slots__ = ('_cells', '_notes', '_centre', '_seconds_per_beat', '_names', '_heard_tracks', '_lowest', '_highest', '_placed')
+    __slots__ = ('_notes', '_centre', '_seconds_per_beat', '_names', '_heard_tracks', '_lowest', '_highest', '_placed')
 
     NAME = visualizers.MSG_PIANO_ROLL
     OPTION = 'piano_roll'
 
     def __init__(self):
         super().__init__()
-        self._cells = CellPainter()
         self._notes = []
         self._centre = float(START_CENTRE)
         self._seconds_per_beat = heard_values.SILENCE.seconds_per_beat
@@ -251,4 +250,4 @@ class PianoRoll(Visualizer):
     def line(self, *, characters, colours):
         """Return a row of cells as text, each in its colour on black, a blank cell black."""
         styles = [colour_style(colour=colour or BLACK, background=BLACK) for colour in colours]
-        return self._cells.line(characters=characters, styles=styles)
+        return styled_line(characters=characters, styles=styles)
