@@ -69,12 +69,8 @@ PIECE_SOUNDS_KEPT = 'piece_sounds'
 PLAYER_GAUGES_KEPT = 'player_gauges'
 PLAYER_ROWS_KEPT = 'player_rows'
 # The answers remembered until a choice changes.
-PIECES_ANSWER = 'pieces'
 QUIET_NOTES_ANSWER = 'quiet notes'
 BARS_ANSWER = 'bars offered'
-HOOK_ANSWER = 'hook notes'
-HOOK_LINE_ANSWER = 'hook line'
-HOOK_PART_ANSWER = 'hook part'
 # How far a sharp or a flat moves a note, in half steps.
 HALF_STEPS_OF_ACCIDENTAL = {tune_notation.SHARP: 1, tune_notation.FLAT: -1}
 # What is kept of the player beside the tune: who answers, the one thing done in every section or None for the genre's plan, and how busy; and a section's own choice.
@@ -162,9 +158,6 @@ FILLS_TRAITS = ('fills',)
 OWN_SECTIONS = 'own_sections'
 PREVIEW_NAME = 'preview'
 # The key of the answer kept of a kind of section's tune in the set the choices make.
-INTRO_MADE_ANSWER = 'the intro melody made'
-SOLO_MADE_ANSWER = 'a solo made'
-TUNE_MADE_ANSWER = 'tune made'
 MELODY_HEARD_ANSWER = 'melody values heard'
 # Which take of its tune each kind of section has, kept with the song's extras, the first take being the tune the choices write;
 # the seed another take is drawn from; and the key of the answer kept of a take's pattern.
@@ -174,8 +167,6 @@ TUNE_TAKE_SEED = '{seed} {kind} tune take {take}'
 # Which take each solo is, by the solo's number among the song's solos, where a solo is not the first the choices write.
 SOLO_TAKES = 'solo_takes'
 SOLO_TAKE_SEED = '{seed} solo {number} take {take}'
-SOLO_TAKEN_ANSWER = 'a solo of another take'
-TUNE_TAKEN_ANSWER = 'tune taken'
 # The name the band's settings that are one value each are counted under.
 GENRE_SETTING = 'setting'
 # What another genre gives up of what was chosen by hand, and what it keeps, each counted: the band's settings, the sections whose
@@ -195,11 +186,7 @@ HOOKS_CHOSEN = 'hooks_chosen'
 # The kinds of section a second hook may be sung in, in the order offered: at the end of the section before the chorus, in the
 # section after it, and in the song's last section.
 EXTRAS_OF_ONE_GENRE = (song_plan.PLAN_OF_SONG, arranger.MELODY, arranger.GROOVE, arranger.DYNAMICS, arranger.LOUDNESS, arranger.TUNE_BY, arranger.TUNE_BY_SONG, MELODY_CHOSEN, HOOKS_CHOSEN)
-STAGES_ANSWER = 'stages'
-JOINS_ANSWER = 'joins'
 SETUP_BARS_ANSWER = 'setup bars'
-RIFF_ABLE_ANSWER = 'riff able'
-RIFF_HEARD_ANSWER = 'riff heard'
 # What a song keeps of its riffs: the riffs, each with its name, the player it was written for and how it is drawn; the riffs each
 # player knows, by player; and the riff each player plays in a kind of section, by kind and player.
 RIFF_BOOK = 'riffs'
@@ -283,8 +270,6 @@ VERSE_KIND = 'verse'
 # The kinds of section that are a breakdown, by the names the genres give them, and the Energy at or under which a section is quiet.
 BREAKDOWN_KINDS = ('bridge', 'breakdown', 'strip', 'thin', 'drift')
 QUIET_ENERGY = 4
-ARRANGED_ANSWER = 'arranged'
-LINES_ANSWER = 'lines'
 # What a section's lines are given of their own, by the line's count, and what is said of a line.
 LINES_OF_SECTION = 'lines'
 # A pattern's octave row counts one octave higher than a picture of a line does.
@@ -379,8 +364,6 @@ VARIED = 'varied'
 MARKS_TYPED = {'b': tune_notation.FLAT, '#': tune_notation.SHARP}
 FIRST_DEGREE_OF_SCALE = 1
 LAST_DEGREE_OF_SCALE = 7
-PLAN_ANSWER = 'plan'
-ENERGY_ANSWER = 'energies'
 # The parts of a hook's kind and what each may be.
 # What a song file lays over the song's picks, as a song keeps it.
 EXTRAS_KEPT = 'song'

@@ -23,7 +23,7 @@ from llamatron.composition.file_format import PatternSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, notation as tune_notation, riffs as riffs_values, wizard_limits
 from llamatron.macro_composer.arranger import arranged, bar_length, in_octaves_of
-from llamatron.macro_composer.choices_part import ChoicesPart
+from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change
 from llamatron.macro_composer.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
 from llamatron.strings import errors, macro_composer as composer_text, names as names_text
 
@@ -77,6 +77,7 @@ class RiffChoices(ChoicesPart):
     # the band, in that player's octave, and exists whether or not anybody plays it yet; each player knows some of the song's
     # riffs; and in each kind of section a player plays the accompaniment, the melody or one of the riffs the player knows.
 
+    @kept_until_choices_change
     def _riff_able(self):
         """The players who can play a riff: those whose part in the song is a figure, found by asking for a riff from everybody everywhere."""
         trial = self._choices.trial_for_riffs()
@@ -91,8 +92,9 @@ class RiffChoices(ChoicesPart):
 
     def riff_instruments(self):
         """Return the players of the band a riff can be written for, by name: those whose part in the song is a figure, never the drummer."""
-        return list(self._choices.remembered(key=wizard_limits.RIFF_ABLE_ANSWER, compute=self._riff_able)) if self._choices.is_ready() else []
+        return list(self._riff_able()) if self._choices.is_ready() else []
 
+    @kept_until_choices_change
     def _riff_able_in(self, kind):
         """The players a riff would be heard from in a kind of section, found by asking for one there from every player of a figure
         with no other riff in the song: a player who sits the kind out, or whose sections there a riff's bars do not fill, has none."""
@@ -110,7 +112,7 @@ class RiffChoices(ChoicesPart):
         """Return the players a riff can be heard from in a kind of section, by name."""
         if not self._choices.is_ready() or kind not in self._choices.get_song_form().section_kinds_in_form() or self.riff_place(kind) is None:
             return []
-        return list(self._choices.remembered(key=(wizard_limits.RIFF_ABLE_ANSWER, kind), compute=lambda: self._riff_able_in(kind)))
+        return list(self._riff_able_in(kind))
 
     def riff_place(self, kind):
         """Return the place in the form of the first section of a kind that is played and not one held chord, where a riff of the kind is heard, or None."""
@@ -261,13 +263,11 @@ class RiffChoices(ChoicesPart):
             self._choices.clear_answers()
             raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=riff, problem=problem)) from None
 
+    @kept_until_choices_change
     def riff_heard(self, riff):
         """Return where a riff is heard alone, played or not, as the set a song is made in, the song's name, the place of a
         section in its form, the player's track and the name of the pattern that holds the riff's notes: the song the choices
         make with the riff's own player playing it, moving with each chord, in the first kind of section that can hold it."""
-        return self._choices.remembered(key=(wizard_limits.RIFF_HEARD_ANSWER, riff), compute=lambda: self._riff_heard(riff))
-
-    def _riff_heard(self, riff):
         entry = self._riff_entry(riff)
         role = entry[arranger.RIFF_FOR]
         kind = next((kind for kind in dict.fromkeys(self._choices.get_song_form().section_kinds_in_form()) if role in self.riff_players_in(kind) and self._choices.section(self.riff_place(kind)).bars() % self.riff_bar_count(riff) == 0), None)
@@ -397,3 +397,12 @@ class RiffChoices(ChoicesPart):
                 self._held.setdefault(wizard_limits.RIFFS_KNOWN, {}).setdefault(role, []).append(name)
                 for kind in entry.get(riffs_values.RIFF_KINDS, []):
                     self._held.setdefault(wizard_limits.RIFFS_PLAYED, {}).setdefault(kind, {})[role] = name
+
+
+# The answers that say who can play a riff, which a trial for riffs carries over: kept under the names of the methods that find them.
+RIFF_ABLE_METHODS = frozenset({RiffChoices._riff_able.__qualname__, RiffChoices._riff_able_in.__qualname__})
+
+
+def is_riff_able_answer(key):
+    """Return whether a kept answer's key is one of who can play a riff."""
+    return key[0] in RIFF_ABLE_METHODS

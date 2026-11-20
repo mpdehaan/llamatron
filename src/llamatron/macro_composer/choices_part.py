@@ -16,6 +16,23 @@
 
 """What every part of the song wizard's choices is: the choices of one thing of the song, such as its drum kit."""
 
+import functools
+
+
+def kept_until_choices_change(method):
+    """Decorate a method of the song wizard's choices, or of a part of them, whose answer is found by making the song, so that the
+    answer is worked out once while the choices stand as they are and worked out again once anything a song keeps of them
+    changes: a page asks the same thing at every key, and making a song each time made the keys slow. The answer is kept by the
+    method's name, by which part asked (a section by its place) and by the arguments, so it is shared and no caller changes it."""
+    name = method.__qualname__
+
+    @functools.wraps(method)
+    def kept(self, *arguments, **named):
+        choices, asker = self.answers_kept_by()
+        key = (name, asker, arguments, tuple(sorted(named.items())))
+        return choices.remembered(key=key, compute=lambda: method(self, *arguments, **named))
+    return kept
+
 
 def set_each_kept(kept):
     """Give kept values back through their setters, each a setter and the arguments of every call to it, leaving out what a
@@ -41,3 +58,7 @@ class ChoicesPart:
 
     def __init__(self, *, choices):
         self._choices = choices
+
+    def answers_kept_by(self):
+        """Return the choices that keep this part's answers, and which part asked: one of its kind is the only one."""
+        return self._choices, None

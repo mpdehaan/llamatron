@@ -23,6 +23,7 @@ from llamatron.composition import limits
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, joins as joins_values, line_edits, melody as melody_writer, notation as tune_notation, phrasing, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import chord_of, fits_by_halves, picked, section_of, shares_a_bar, values_of
+from llamatron.macro_composer.choices_part import kept_until_choices_change
 from llamatron.strings import errors
 from llamatron.support import version as version_values
 
@@ -76,6 +77,10 @@ class SectionChoices:
 
     def get_place(self):
         return self._place
+
+    def answers_kept_by(self):
+        """Return the choices that keep a section's answers, and which section asked, by its place."""
+        return self._choices, self._place
 
     def entry(self):
         entries = self._choices.get_song_form().section_entries()
@@ -192,7 +197,7 @@ class SectionChoices:
         fade = self.fade_fields()
         if not self._choices.has_song_plan():
             return [*wizard_limits.OWN_WITHOUT_PLAN, *fade]
-        joins = self._choices.remembered(key=wizard_limits.JOINS_ANSWER, compute=lambda: self._choices.made_song_plan().joins())
+        joins = self._choices.plan_joins()
         leaves = [joins_values.LEAVES, song_plan.SETUP] if self._place < len(joins) and joins[self._place] is not None else []
         shape = [wizard_limits.SHAPE_OF_SECTION] if self.shapes() else []
         rises = [song_plan.RISES] if self._place < len(joins) and joins[self._place] is not None else []
@@ -252,7 +257,7 @@ class SectionChoices:
         if field == song_plan.ENERGY:
             return self._choices.energies()[self._place]
         if field == joins_values.LEAVES:
-            join = self._choices.remembered(key=wizard_limits.JOINS_ANSWER, compute=lambda: self._choices.made_song_plan().joins())[self._place] or {}
+            join = self._choices.plan_joins()[self._place] or {}
             if join.get(joins_values.TAIL):
                 return join[joins_values.TAIL]
             # A fill is said by its size, as it is chosen.
@@ -262,7 +267,7 @@ class SectionChoices:
             return wizard_limits.SETUP_USUAL
         if field == wizard_limits.SHAPE_OF_SECTION:
             # A solo after the song's first is a stage, which takes the next of its kind's shapes.
-            return self._choices.remembered(key=wizard_limits.STAGES_ANSWER, compute=lambda: self._choices.made_song_plan().shapes())[self._place] or wizard_limits.SHAPE_USUAL
+            return self._choices.plan_shapes()[self._place] or wizard_limits.SHAPE_USUAL
         if field == song_plan.RISES:
             return self.entry()[arranger.KIND] in self._choices.style()[song_plan.PLAN_OF_SONG].get(song_plan.RISING, [])
         if field == arranger.CHORDS:
@@ -292,8 +297,9 @@ class SectionChoices:
         """Return a section's lines in order, each a mapping: who plays the line, its notes (line_edits.py) or None where nobody of the band plays the line,
         whether its breath and early note can be set (a new idea of the tune in a song in four, not the hook), and what the line was given of its own."""
         self.entry()
-        return self._choices.remembered(key=(wizard_limits.LINES_ANSWER, self._place), compute=lambda: self._lines())
+        return self._lines()
 
+    @kept_until_choices_change
     def _lines(self):
         made = self._choices.made_form()
         scene = made[arranger.FORM][self._place]

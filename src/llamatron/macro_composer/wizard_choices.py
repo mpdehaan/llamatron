@@ -34,13 +34,13 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, composer as set_writer, hook_writing, joins as joins_values, line_edits, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import arranged, bar_length, chord_of, form_of, picked, share_in, style_in, style_named, style_names, values_of, variant_named, variants_of
 from llamatron.macro_composer.band_choices import BandChoices
-from llamatron.macro_composer.choices_part import set_each_kept
+from llamatron.macro_composer.choices_part import kept_until_choices_change, set_each_kept
 from llamatron.macro_composer.composer import composed
 from llamatron.macro_composer.form_choices import FormChoices
 from llamatron.macro_composer.hook_choices import HookChoices
 from llamatron.macro_composer.kit_choices import KitChoices
 from llamatron.macro_composer.player_choices import PlayerChoices
-from llamatron.macro_composer.riff_choices import RiffChoices
+from llamatron.macro_composer.riff_choices import is_riff_able_answer, RiffChoices
 from llamatron.macro_composer.riffs import flattened_in
 from llamatron.macro_composer.section_choices import chords_as_text, chords_from_text, own_copy_of, SectionChoices
 from llamatron.macro_composer.solo_choices import SoloChoices
@@ -279,6 +279,10 @@ class WizardChoices:
     def get_riffs(self):
         """Return the choices of the riffs, a part of these choices."""
         return self._riffs_part
+
+    def answers_kept_by(self):
+        """Return the choices that keep the answers found by making the song, which are these, and that the choices asked."""
+        return self, None
 
     def get_song_form(self):
         """Return the choices of the song's form and how it starts and ends, a part of these choices."""
@@ -1002,10 +1006,8 @@ class WizardChoices:
         """Return the melody of a part of the intro as a pattern's data, the person's own or the hook as the choices write it, or None where nobody plays one."""
         return copy.deepcopy(self._intro_in_made(self._melody_place_or(place))[1])
 
+    @kept_until_choices_change
     def _intro_in_made(self, place):
-        return self.remembered(key=(wizard_limits.INTRO_MADE_ANSWER, place), compute=lambda: self._found_intro_in_made(place))
-
-    def _found_intro_in_made(self, place):
         role = None if place is None else self.intro_melody_player(place)
         if role is None:
             return None, None
@@ -1113,9 +1115,10 @@ class WizardChoices:
 
     # A section's lines, one by one: who plays each, its notes as the song has them, and what the line is given of its own.
 
+    @kept_until_choices_change
     def made_form(self):
         """The song arranged as the choices stand: its parts and its form, kept until a choice changes."""
-        return self.remembered(key=wizard_limits.ARRANGED_ANSWER, compute=lambda: arranged(style=self.style(), song=self.song_picks(wizard_limits.PREVIEW_NAME)))
+        return arranged(style=self.style(), song=self.song_picks(wizard_limits.PREVIEW_NAME))
 
     def tune_steps_in_bar(self):
         """Return how many steps a bar of the tune has."""
@@ -1514,7 +1517,7 @@ class WizardChoices:
         """A copy of the choices to try something on, which remembers who can play a riff and nothing else."""
         answers = self._answers
         trial = self.copied_for_trial()
-        trial._answers = {key: value for key, value in answers.items() if wizard_limits.RIFF_ABLE_ANSWER in (key, key[0] if isinstance(key, tuple) else None)}
+        trial._answers = {key: value for key, value in answers.items() if is_riff_able_answer(key)}
         return trial
 
 
@@ -1612,8 +1615,23 @@ class WizardChoices:
     def energies(self):
         """Return the Energy of each section of the form, in order, as the plan works them out."""
         self.plan_extras()
-        return self.remembered(key=wizard_limits.ENERGY_ANSWER, compute=lambda: self.made_song_plan().energies())
+        return self._plan_energies()
 
+    @kept_until_choices_change
+    def _plan_energies(self):
+        return self.made_song_plan().energies()
+
+    @kept_until_choices_change
+    def plan_joins(self):
+        """Return how each section of the form leaves for the next, as the plan works them out, None for a section that does not."""
+        return self.made_song_plan().joins()
+
+    @kept_until_choices_change
+    def plan_shapes(self):
+        """Return the shape of each section of the form as the plan gives it, None for a section with none."""
+        return self.made_song_plan().shapes()
+
+    @kept_until_choices_change
     def _said_of_sections(self):
         planned = self.made_song_plan().planned()
         return [planned[arranger.SECTIONS][name][song_plan.SAID_OF_SECTION] for name in planned[arranger.FORM]]
@@ -1621,7 +1639,7 @@ class WizardChoices:
     def said_of_sections(self):
         """Return what the plan says of each section of the form, in order: its Energy, how it leaves and, once, the hook's kind."""
         self.plan_extras()
-        return self.remembered(key=wizard_limits.PLAN_ANSWER, compute=self._said_of_sections)
+        return self._said_of_sections()
 
     # What a panel listens to: the song made as the choices stand, and where in it the hook, the tune and a section are.
 

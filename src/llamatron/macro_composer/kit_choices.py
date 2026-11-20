@@ -20,7 +20,7 @@ from llamatron.composition import limits
 from llamatron.macro_composer import arranger, breaks as breaks_values, characters, notation as tune_notation, wizard_limits
 from llamatron.macro_composer.arranger import arranged, player_of
 from llamatron.macro_composer.breaks import break_names
-from llamatron.macro_composer.choices_part import ChoicesPart, set_each_kept
+from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
 from llamatron.strings import errors
 
 
@@ -88,8 +88,9 @@ class KitChoices(ChoicesPart):
 
     def pieces(self):
         """Return the pieces of the kit the drums play in the song as chosen, in the order the song has them, on or off."""
-        return list(self._choices.remembered(key=wizard_limits.PIECES_ANSWER, compute=self._pieces))
+        return list(self._pieces())
 
+    @kept_until_choices_change
     def _pieces(self):
         choices = self._choices
         if not choices.is_ready():
