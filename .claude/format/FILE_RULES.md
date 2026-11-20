@@ -373,10 +373,11 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   order, and a draw stands where the last scene left it (`RegisterTimeline.get_end_draws`); a step sees a draw's value beside the
   registers' values, as having drawn nothing (0) before its first use.
 - A statement of Conditional Execution reads a draw as it reads a register (`file_format.VALUE_NAMES`): in its first part, its
-  value or what it is compared with, in a step's Stop, Restart and Mute When and in every table. It looks at the value the draw
-  last gave, unless the draw's `conditions_redraw` is on: then a step whose statements read it draws from it just before they are
-  read (`RegisterRecorder.before_statements`, `CONDITION_DRAWS`), the step's one draw from it, and the step's Use Draws rows hear
-  that value. A table only looks, as a pass starts; drawing for a table that reads a draw that redraws is not built yet.
+  value or what it is compared with, in a step's Stop, Restart and Mute When and in every table. Every draw a step takes, for
+  its Use Draws rows or for a statement of a draw whose `conditions_redraw` is on, is taken once, just before the step's statements
+  are read (`StepDraws`, `RegisterRecorder.before_statements`, `CONDITION_DRAWS`), its resets first, so that the statements and the
+  rows of one step see one value. A statement on a step that takes no draw from it looks at the value the draw last gave. A
+  reset of a draw the step's statements redraw comes after their draw. A table only looks, as a pass starts; drawing for a table that reads a draw that redraws is not built yet.
 - Registers are shared by every track. `SongRenderer` plays each clip once with a
   `RegisterRecorder` to collect changes (the same play that finds lengths, since registers only
   change pitches, velocities and whether a note sounds), a `RegisterTimeline` applies them in

@@ -47,7 +47,7 @@ AS_A_PASS_STARTS = -1
 NO_CHANGES = {}
 # How far before a track's own change at a moment its step reads the registers to decide whether the clip goes on.
 BEFORE_OWN_CHANGE = 0.5
-# How far before a track's own change a step's statements draw from a draw that redraws in conditions: just before they read it.
+# How far before a track's own change a step resets and takes its draws: just before its statements read them.
 CONDITION_DRAWS = 0.75
 # When a scene's own changes happen: as it starts.
 SCENE_START = 0
@@ -203,10 +203,10 @@ class RegisterRecorder:
         self._place = place
         self._changes = []
 
-    def at_step(self, *, time, sets, adds, draws=(), draw_resets=()):
-        """Note what a step sets the registers to and adds to them at a time in the scene, and the draws it resets and uses, and return the values it sees."""
-        if sets or adds or draws or draw_resets:
-            self._changes.append(RegisterChange(time, self._place, sets, adds, draws, draw_resets))
+    def at_step(self, *, time, sets, adds, draw_resets=()):
+        """Note what a step sets the registers to and adds to them at a time in the scene, and the draws it resets once its statements have drawn, and return the values it sees."""
+        if sets or adds or draw_resets:
+            self._changes.append(RegisterChange(time, self._place, sets, adds, draw_resets=draw_resets))
         return no_values()
 
     def at_pass(self, *, time, sets, adds):
@@ -219,9 +219,9 @@ class RegisterRecorder:
         """Return None: nothing is known of the values while a clip is only played to count changes that depend on none of them."""
         return None
 
-    def before_statements(self, *, time, draws):
-        """Note the draws a step's statements draw from at a time in the scene, just before they read the values."""
-        self._changes.append(RegisterChange(time, self._place - CONDITION_DRAWS, NO_CHANGES, NO_CHANGES, draws))
+    def before_statements(self, *, time, draws, draw_resets):
+        """Note the draws a step resets and then takes at a time in the scene, just before its statements read the values."""
+        self._changes.append(RegisterChange(time, self._place - CONDITION_DRAWS, NO_CHANGES, NO_CHANGES, draws, draw_resets))
 
     def is_counting(self):
         """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take."""
@@ -249,7 +249,7 @@ class RegisterReader:
         """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
         return self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
 
-    def at_step(self, *, time, sets, adds, draws=(), draw_resets=()):
+    def at_step(self, *, time, sets, adds, draw_resets=()):
         """Return the values a step sees at a time in the scene, the draws' among them. What it sets, adds and draws is already in the timeline."""
         return self._timeline.values_at(time=time, place=self._place)
 
@@ -257,8 +257,8 @@ class RegisterReader:
         """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, after every earlier track's then."""
         return self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE)
 
-    def before_statements(self, *, time, draws):
-        """Do nothing: what a step's statements draw is already in the timeline, and before_step sees it."""
+    def before_statements(self, *, time, draws, draw_resets):
+        """Do nothing: what a step draws is already in the timeline, and before_step sees it."""
 
 
 class RegisterTrial(RegisterRecorder):
@@ -299,9 +299,9 @@ class RegisterSolo(RegisterRecorder):
         self._chooser = chooser
         self._turned = Turned(registers=registers, turned=turned)
 
-    def at_step(self, *, time, sets, adds, draws=(), draw_resets=()):
+    def at_step(self, *, time, sets, adds, draw_resets=()):
         self._change(sets=sets, adds=adds)
-        return super().at_step(time=time, sets=sets, adds=adds, draws=draws, draw_resets=draw_resets)
+        return super().at_step(time=time, sets=sets, adds=adds, draw_resets=draw_resets)
 
     def at_pass(self, *, time, sets, adds):
         self._change(sets=sets, adds=adds)
