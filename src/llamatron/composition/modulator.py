@@ -18,6 +18,7 @@
 steps read and may set, but never add to."""
 
 from fractions import Fraction
+import functools
 import math
 import random
 
@@ -33,7 +34,9 @@ from llamatron.support.revised import notes_change
 # What a sample and hold draws each cycle's value from: the render's seed, the modulator, when its wave started and the cycle.
 SAMPLE_SEED = '{seed}/modulator/{name}/{origin}/{cycle}'
 # Half a cycle, where a wave turns, and the share of a cycle a square holds each level.
-HALF = Fraction(1, 2)
+HALF = 0.5
+# How far below a half a value worked out in floating point may land and still round up, as the exact half would.
+ROUNDING_LEEWAY = 1e-9
 
 
 def check_hertz(value):
@@ -69,30 +72,33 @@ def rising_level(*, shape, phase):
     if shape == WaveShape.SINE:
         return (1 - math.cos(2 * math.pi * phase)) / 2
     if shape == WaveShape.TRIANGLE:
-        return float(2 * phase if phase < HALF else 2 - 2 * phase)
+        return 2 * phase if phase < HALF else 2 - 2 * phase
     if shape == WaveShape.SQUARE:
         return 1.0 if phase < HALF else 0.0
     if shape == WaveShape.SAW:
-        return float(phase)
-    return float(1 - phase)
+        return phase
+    return 1 - phase
 
 
+@functools.lru_cache(maxsize=None)
 def phase_from(*, shape, level):
-    """Return the share of a cycle at which a wave of a shape, rising, first stands at a level from 0 to 1, so that it can start there."""
+    """Return the share of a cycle at which a wave of a shape, rising, first stands at a level from 0 to 1, so that it can start there.
+    Worked out once for each shape and level, since a wave starts from the same few values again and again."""
     if shape == WaveShape.SINE:
-        return Fraction(math.acos(1 - 2 * level) / (2 * math.pi)).limit_denominator(10 ** 6)
+        return math.acos(1 - 2 * level) / (2 * math.pi)
     if shape == WaveShape.TRIANGLE:
-        return Fraction(level).limit_denominator(10 ** 6) / 2
+        return level / 2
     if shape == WaveShape.SAW:
-        return Fraction(level).limit_denominator(10 ** 6)
+        return level
     if shape == WaveShape.REVERSE_SAW:
-        return 1 - Fraction(level).limit_denominator(10 ** 6)
-    return Fraction(0)
+        return 1 - level
+    return 0.0
 
 
 def nearest_whole(value):
-    """Return a value rounded to the nearest whole number, a half rounding up."""
-    return math.floor(value + HALF)
+    """Return a value rounded to the nearest whole number, a half rounding up, with a hair of leeway for a value worked out in
+    floating point that should have landed on a half."""
+    return math.floor(value + HALF + ROUNDING_LEEWAY)
 
 
 class Modulator(HoldsSettings):
@@ -183,7 +189,8 @@ class Modulator(HoldsSettings):
         if swing == 0:
             return lowest
         shape = self.get_shape()
-        whole, phase = divmod(Fraction(cycles), 1)
+        whole = math.floor(cycles)
+        phase = float(cycles - whole)
         if shape == WaveShape.SAMPLE_AND_HOLD:
             if whole == 0:
                 return start
@@ -192,7 +199,7 @@ class Modulator(HoldsSettings):
         if cycles == 0 and shape != WaveShape.SQUARE:
             # A wave starts where it is set, even a saw whose start is the top it jumps from.
             return held
-        level = Fraction(held - lowest, swing)
+        level = (held - lowest) / swing
         if self.is_inverted():
             # Turned upside down, the wave falls from Start: the upright wave rises from Start's mirror, and is read upside down.
             begun = phase_from(shape=shape, level=1 - level)
