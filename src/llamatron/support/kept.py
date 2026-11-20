@@ -27,24 +27,31 @@ import functools
 
 # The attribute an object keeps its answers in, by the method's name.
 KEPT = '_kept'
+# What an answer not yet worked out is, apart from every answer, None included.
+MISSING = object()
 
 
 def kept_while(key_of):
-    """Decorate a method that takes nothing but its object, so that its answer is kept while key_of(self) gives an equal key."""
+    """Decorate a method so that its answer for each set of arguments is kept while key_of(self) gives an equal key: the
+    arguments, by keyword, are part of what an answer is kept by, and must be hashable."""
     def decorate(method):
         name = method.__name__
 
         @functools.wraps(method)
-        def kept(self):
+        def kept(self, **named):
             key = key_of(self)
             if key is None:
-                return method(self)
+                return method(self, **named)
             answers = getattr(self, KEPT)
             held = answers.get(name)
-            if held is not None and held[0] == key:
-                return held[1]
-            answer = method(self)
-            answers[name] = (key, answer)
-            return answer
+            if held is None or held[0] != key:
+                held = (key, {})
+                answers[name] = held
+            asked = tuple(sorted(named.items())) if named else ()
+            found = held[1].get(asked, MISSING)
+            if found is MISSING:
+                found = method(self, **named)
+                held[1][asked] = found
+            return found
         return kept
     return decorate

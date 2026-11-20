@@ -130,7 +130,7 @@ class BandChoices(ChoicesPart):
         self._ways.pop(trait, None)
 
     def role_named(self, role):
-        found = next((entry for entry in self._choices.style()[arranger.ROLES] if entry[arranger.ROLE] == role), None) if self._choices.is_ready() else None
+        found = self._choices.roles_by_name().get(role)
         if found is None:
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER.format(value=role))
         return found

@@ -40,6 +40,12 @@ class Counting:
         self.worked_out += 1
         return (self.key, self.worked_out)
 
+    @kept_while(lambda counting: counting.key)
+    def doubled(self, *, number):
+        """Return a number doubled, counting how many times it was worked out."""
+        self.worked_out += 1
+        return number * 2
+
 
 class TestKeptWhile(unittest.TestCase):
 
@@ -58,6 +64,14 @@ class TestKeptWhile(unittest.TestCase):
         counting.answer()
         counting.answer()
         self.assertEqual(counting.worked_out, 4)
+
+    def test_each_set_of_arguments_keeps_an_answer_of_its_own_until_the_key_changes(self):
+        counting = Counting()
+        self.assertEqual([counting.doubled(number=2), counting.doubled(number=3), counting.doubled(number=2)], [4, 6, 4])
+        self.assertEqual(counting.worked_out, 2)
+        counting.key = ANOTHER_KEY
+        counting.doubled(number=2)
+        self.assertEqual(counting.worked_out, 3)
 
     def test_answers_are_kept_on_their_own_object_by_the_methods_name(self):
         one = Counting()
