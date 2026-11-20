@@ -351,7 +351,7 @@ class TestGeneratorsPage(UITest):
 
     def heading(self, *, kind, closed=False):
         mark = marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK
-        return labels.MSG_GROUP_HEADING.format(mark=mark, name=generator_page_of_kind(kind).label, count=len(self.document.song().get_generator_names(kind)))
+        return labels.MSG_GROUP_HEADING.format(mark=mark, name=generator_page_of_kind(kind).label, count=len(self.document.names_of(file_format.LISTED_GENERATORS[kind])))
 
     async def open_page_on_the_arp(self):
         """Open the Generators page and put the cursor on the set's arpeggiator, which opens its type."""
@@ -363,8 +363,8 @@ class TestGeneratorsPage(UITest):
     async def test_every_type_the_set_has_gets_a_heading_and_each_starts_closed(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
-        held = [kind for kind in file_format.NAMED_GENERATORS if self.document.song().get_generator_names(kind)]
-        self.assertEqual(len(page.generators()), sum(len(self.document.song().get_generator_names(kind)) for kind in held))
+        held = [kind for kind, section in file_format.LISTED_GENERATORS.items() if self.document.names_of(section)]
+        self.assertEqual(len(page.generators()), sum(len(self.document.names_of(file_format.LISTED_GENERATORS[kind])) for kind in held))
         self.assertEqual([cells[0] for _, cells in page.rows()][:-1], [self.heading(kind=kind, closed=True) for kind in page.kinds()])
         self.assertEqual(set(page.kinds()), set(held))
         self.assertIsNone(page.current())

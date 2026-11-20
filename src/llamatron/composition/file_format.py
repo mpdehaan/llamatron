@@ -900,6 +900,11 @@ NAMED_GENERATORS = {
     GeneratorKind.HOCKET: Section.HOCKETS, GeneratorKind.GUITARIFY: Section.GUITARIFIES, GeneratorKind.FOLLOW_CHORDS: Section.FOLLOW_CHORDS,
     GeneratorKind.PHRASING: Section.PHRASINGS, GeneratorKind.MUSICIAN: Section.MUSICIANS,
 }
+# A chain's kind beside the generators' kinds: a clip, a scene and a track list chains and generators alike, and the Generators
+# page lists the chains as one more kind.
+CHAIN_KIND = 'chain'
+# Every kind a clip, a scene or a track may list, the chain among them, and the section that holds each.
+LISTED_GENERATORS = {**NAMED_GENERATORS, CHAIN_KIND: Section.CHAINS}
 
 
 class DriftDirection:
@@ -1324,4 +1329,4 @@ def is_generator_entry(entry):
     if not isinstance(entry, dict) or len(entry) != 1:
         return False
     kind, name = next(iter(entry.items()))
-    return kind in NAMED_GENERATORS and isinstance(name, str)
+    return kind in LISTED_GENERATORS and isinstance(name, str)
