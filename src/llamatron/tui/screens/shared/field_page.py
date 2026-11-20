@@ -302,6 +302,7 @@ class FieldPage(Page):
         fields = self.shown_fields()
         self.field()
         label_width = max((len(self.label_text(field)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
+        cursor = self.cursor.get_place()
         lines = [Text(drawing.NOTHING)]
         selected = 0
         seen_heading = False
@@ -313,49 +314,56 @@ class FieldPage(Page):
                 seen_heading = True
                 if place:
                     lines.append(Text(drawing.NOTHING))
-            if place == self.cursor.get_place():
-                selected = len(lines)
-            line = Text(no_wrap=True)
-            line.append(cursor_mark(place == self.cursor.get_place()))
-            if isinstance(field, Heading):
-                line.append(self.label_text(field).ljust(label_width), style=Style.BOLD)
-                line.append(padded(field.value()), style=Style.DIM)
-                lines.append(line)
-                continue
+            here = place == cursor
             if isinstance(field, Strip):
                 lines.append(Text(drawing.NOTHING))
-                drawn = self.strip_lines(strip=field, selected=place == self.cursor.get_place(), width=width)
-                if place == self.cursor.get_place():
+                if here:
                     selected = len(lines) + STRIP_VALUE_LINE
-                lines += drawn
+                lines += self.strip_lines(strip=field, selected=here, width=width)
                 continue
-            line.append(field.label.ljust(label_width), style=Style.BOLD if place == self.cursor.get_place() else Style.PLAIN)
-            if isinstance(field, Cells):
-                self.append_cells(line=line, row=field, selected=place == self.cursor.get_place())
-                lines.append(line)
-                continue
-            line.append(padded(field.value()))
-            # A field whose Enter opens a list of choices shows a dim mark after its value, so that it isn't taken for one that's typed.
-            if field.enter_what == legends.What.CHOOSE:
-                line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
-            lines.append(line)
-            # A page that starts with its thing's Name leaves a blank line before its other settings.
-            if place == 0 and field.label == labels_text.MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
-                lines.append(Text(drawing.NOTHING))
-            elif self.ends_a_list(field):
+            if here:
+                selected = len(lines)
+            lines.append(self.field_line(field=field, here=here, label_width=label_width))
+            if self.has_gap_after(place=place, field=field, fields=fields):
                 lines.append(Text(drawing.NOTHING))
         if buttons:
             # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
             first_button = self.first_button_place()
             lines.append(Text(drawing.NOTHING))
-            row = self.row_of_buttons(buttons=buttons, selected=self.cursor.get_place() - first_button, width=width)
-            if self.cursor.get_place() >= first_button:
-                selected = len(lines) + (self.cursor.get_place() - first_button if self.buttons_stacked() else 1)
+            row = self.row_of_buttons(buttons=buttons, selected=cursor - first_button, width=width)
+            if cursor >= first_button:
+                selected = len(lines) + (cursor - first_button if self.buttons_stacked() else 1)
             lines += row
         remarks = self.remarks(width)
         if remarks:
             lines += [Text(drawing.NOTHING), *remarks]
         return self.window_of_lines(lines=lines, selected=selected, height=height)
+
+    def field_line(self, *, field, here, label_width):
+        """Return one field's line: the cursor's mark, then a heading's name and what it says, or a setting's label and its cells or its value."""
+        line = Text(no_wrap=True)
+        line.append(cursor_mark(here))
+        if isinstance(field, Heading):
+            line.append(self.label_text(field).ljust(label_width), style=Style.BOLD)
+            line.append(padded(field.value()), style=Style.DIM)
+            return line
+        line.append(field.label.ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
+        if isinstance(field, Cells):
+            self.append_cells(line=line, row=field, selected=here)
+            return line
+        line.append(padded(field.value()))
+        # A field whose Enter opens a list of choices shows a dim mark after its value, so that it isn't taken for one that's typed.
+        if field.enter_what == legends.What.CHOOSE:
+            line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
+        return line
+
+    def has_gap_after(self, *, place, field, fields):
+        """Return whether a blank line follows a setting: a Name that starts the page before its other settings, and the last of a list."""
+        if isinstance(field, (Heading, Cells)):
+            return False
+        if place == 0 and field.label == labels_text.MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
+            return True
+        return self.ends_a_list(field)
 
     def strip_lines(self, *, strip, selected, width):
         """Return a strip's grid, five lines: its top edge, the slots' numbers, the rule between, the slots' values with the cursor's
