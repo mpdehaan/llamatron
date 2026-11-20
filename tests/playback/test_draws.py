@@ -155,6 +155,13 @@ class TestResets(unittest.TestCase):
         played = [pitch - MIDDLE_C for scene in pitches_of(song=song, scenes=2) for pitch in scene]
         self.assertEqual(played, [0, 1, 0, 1, 2, 3, 0, 1])
 
+    def test_a_reset_comes_before_the_draw_a_redrawing_condition_takes(self):
+        draw = {**a_draw(slots=[1, 2, 3]), DrawSetting.CONDITIONS_REDRAW: True}
+        rows = {Row.AD_NOTE: every_step(), Row.AD_RESET: [False, False, True, False], **muted_when_equal(draw=DrawName.AD, value=1)}
+        song = render_data(song_data(draws={DrawName.AD: draw}, rows=rows))
+        # Step 1 draws 1 and is muted, step 2 draws 2; step 3 resets AD before its condition draws, so it draws 1 and is muted; step 4 draws 2.
+        self.assertEqual([pitch - MIDDLE_C for pitch in pitches_of(song=song, scenes=1)[0]], [2, 2])
+
     def test_a_serial_reset_starts_a_new_round(self):
         rows = {Row.AD_NOTE: every_step(), Row.AD_RESET: [True, False, False, False]}
         song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN, direction=DrawDirection.SERIAL)}, rows=rows, repeat=3))

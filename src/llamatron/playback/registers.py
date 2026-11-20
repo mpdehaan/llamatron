@@ -203,10 +203,10 @@ class RegisterRecorder:
         self._place = place
         self._changes = []
 
-    def at_step(self, *, time, sets, adds, draw_resets=()):
-        """Note what a step sets the registers to and adds to them at a time in the scene, and the draws it resets once its statements have drawn, and return the values it sees."""
-        if sets or adds or draw_resets:
-            self._changes.append(RegisterChange(time, self._place, sets, adds, draw_resets=draw_resets))
+    def at_step(self, *, time, sets, adds):
+        """Note what a step sets the registers to and adds to them at a time in the scene, and return the values it sees."""
+        if sets or adds:
+            self._changes.append(RegisterChange(time, self._place, sets, adds))
         return no_values()
 
     def at_pass(self, *, time, sets, adds):
@@ -249,7 +249,7 @@ class RegisterReader:
         """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
         return self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
 
-    def at_step(self, *, time, sets, adds, draw_resets=()):
+    def at_step(self, *, time, sets, adds):
         """Return the values a step sees at a time in the scene, the draws' among them. What it sets, adds and draws is already in the timeline."""
         return self._timeline.values_at(time=time, place=self._place)
 
@@ -299,9 +299,9 @@ class RegisterSolo(RegisterRecorder):
         self._chooser = chooser
         self._turned = Turned(registers=registers, turned=turned)
 
-    def at_step(self, *, time, sets, adds, draw_resets=()):
+    def at_step(self, *, time, sets, adds):
         self._change(sets=sets, adds=adds)
-        return super().at_step(time=time, sets=sets, adds=adds, draw_resets=draw_resets)
+        return super().at_step(time=time, sets=sets, adds=adds)
 
     def at_pass(self, *, time, sets, adds):
         self._change(sets=sets, adds=adds)
