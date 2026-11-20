@@ -175,7 +175,7 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_stages', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_sections', '_melody', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_kit', '_riffs_part', '_gauges', '_melody_settings', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_picks_kept', '_variant')
+    __slots__ = ('_extras', '_stages', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_sections', '_melody', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_kit', '_riffs_part', '_gauges', '_melody_settings', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_picks_kept', '_variant', '_style_kept', '_form_entries_kept', '_labels_kept')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -190,6 +190,11 @@ class WizardChoices:
         self._offers_mixed = False
         # Every trait's pick, kept with what it was worked out from, since every field of every panel asks for it.
         self._picks_kept = None
+        # The style as the genre, subgenre and kind chosen have it, with what it was worked out for: a page asks for it many times a key.
+        self._style_kept = None
+        # The sections of the form chosen, while a suggested form is followed, and each section's label, each with what it was worked out from.
+        self._form_entries_kept = None
+        self._labels_kept = None
         self._genre = None
         self._subgenre = None
         # The kind of song the subgenre makes, where the subgenre holds several.
@@ -574,7 +579,11 @@ class WizardChoices:
         if self._sections is not None:
             return self._sections
         chosen = self.get_form()
-        return [{arranger.KIND: kind} for kind in next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == chosen), [])]
+        of = (self._genre, self._subgenre, self._variant, chosen)
+        if self._form_entries_kept is None or self._form_entries_kept[0] != of:
+            # Worked out once for a form: a page asks for the sections many times a key. A caller that changes a section changes its own copy (own_section_entries).
+            self._form_entries_kept = (of, [{arranger.KIND: kind} for kind in next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == chosen), [])])
+        return self._form_entries_kept[1]
 
     def own_section_entries(self):
         """Return the song's own sections to change, starting them from the chosen form the first time."""
@@ -611,13 +620,16 @@ class WizardChoices:
     def section_labels(self):
         """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
         a dash and the section's count among them, as the tracker numbers every name it makes."""
-        kinds = [entry[arranger.KIND] for entry in self.section_entries()]
+        kinds = tuple(entry[arranger.KIND] for entry in self.section_entries())
+        if self._labels_kept is not None and self._labels_kept[0] == kinds:
+            return list(self._labels_kept[1])
         counts = {}
         labels = []
         for kind in kinds:
             counts[kind] = counts.get(kind, 0) + 1
             labels.append(kind if kinds.count(kind) == 1 else marks_text.MSG_WIZARD_SECTION_NUMBERED.format(kind=kind, number=counts[kind]))
-        return labels
+        self._labels_kept = (kinds, labels)
+        return list(labels)
 
     def _song_sections(self):
         """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes, with the chords and the scene's
@@ -1079,8 +1091,12 @@ class WizardChoices:
         self._melody_settings = {}
 
     def style(self):
-        """Return the genre's style template as the subgenre chosen has it."""
-        return style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant)
+        """Return the genre's style template as the subgenre chosen has it, worked out once for a genre, a subgenre and a kind, and
+        never changed by a caller."""
+        of = (self._genre, self._subgenre, self._variant)
+        if self._style_kept is None or self._style_kept[0] != of:
+            self._style_kept = (of, style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant))
+        return self._style_kept[1]
 
 
     def trait_has_sound(self, *, trait, value):
