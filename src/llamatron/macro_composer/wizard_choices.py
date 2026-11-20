@@ -49,6 +49,7 @@ from llamatron.music import note as note_values
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors, macro_composer as composer_text, marks as marks_text
 from llamatron.support import version as version_values
+from llamatron.support.kept import kept_while
 
 
 def data_laid_over(*, under, over):
@@ -172,10 +173,18 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
     return abs(seconds - wanted) < wizard_limits.PART_OF_A_BAR
 
 
+
+def section_labels_key(choices):
+    """What the sections' labels are worked out from: the form chosen, while a suggested form is followed, and the song's own
+    sections' kinds once it has its own."""
+    if choices._sections is None:
+        return (choices._genre, choices._subgenre, choices._variant, choices._form)
+    return tuple(entry[arranger.KIND] for entry in choices._sections)
+
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_stages', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_sections', '_melody', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_kit', '_riffs_part', '_gauges', '_melody_settings', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_picks_kept', '_variant', '_style_kept', '_form_entries_kept', '_labels_kept')
+    __slots__ = ('_extras', '_stages', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form', '_seed', '_sections', '_melody', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_kit', '_riffs_part', '_gauges', '_melody_settings', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_kept', '_variant')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -188,13 +197,8 @@ class WizardChoices:
         self._offers_of = None
         self._offers_held = False
         self._offers_mixed = False
-        # Every trait's pick, kept with what it was worked out from, since every field of every panel asks for it.
-        self._picks_kept = None
-        # The style as the genre, subgenre and kind chosen have it, with what it was worked out for: a page asks for it many times a key.
-        self._style_kept = None
-        # The sections of the form chosen, while a suggested form is followed, and each section's label, each with what it was worked out from.
-        self._form_entries_kept = None
-        self._labels_kept = None
+        # The answers of the methods written under kept_while, each with the key it was worked out for.
+        self._kept = {}
         self._genre = None
         self._subgenre = None
         # The kind of song the subgenre makes, where the subgenre holds several.
@@ -445,13 +449,11 @@ class WizardChoices:
 
     # What the subgenre usually has.
 
+    @kept_while(lambda choices: (choices._genre, choices._subgenre, choices._variant, repr(choices._band.get_ways())))
     def picks(self):
         """Return every trait's pick: the ways of playing chosen, and the subgenre's for the rest. The picks are worked out once
         for a genre, a subgenre and the ways chosen, and a caller never changes what is returned."""
-        of = (self._genre, self._subgenre, self._variant, repr(self._band.get_ways()))
-        if self._picks_kept is None or self._picks_kept[0] != of:
-            self._picks_kept = (of, self.picks_with(self._band.get_ways()))
-        return self._picks_kept[1]
+        return self.picks_with(self._band.get_ways())
 
     def usual_tempo(self):
         style = self.style()
@@ -578,12 +580,14 @@ class WizardChoices:
         """Return the sections in order, each its kind and what it changes of the kind: the song's own, or the chosen form's."""
         if self._sections is not None:
             return self._sections
+        return self.form_section_entries()
+
+    @kept_while(lambda choices: (choices._genre, choices._subgenre, choices._variant, choices._form))
+    def form_section_entries(self):
+        """Return the sections of the form chosen, each its kind, worked out once for a form, since a page asks for the sections
+        many times a key. A caller that changes a section changes its own copy (own_section_entries)."""
         chosen = self.get_form()
-        of = (self._genre, self._subgenre, self._variant, chosen)
-        if self._form_entries_kept is None or self._form_entries_kept[0] != of:
-            # Worked out once for a form: a page asks for the sections many times a key. A caller that changes a section changes its own copy (own_section_entries).
-            self._form_entries_kept = (of, [{arranger.KIND: kind} for kind in next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == chosen), [])])
-        return self._form_entries_kept[1]
+        return [{arranger.KIND: kind} for kind in next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == chosen), [])]
 
     def own_section_entries(self):
         """Return the song's own sections to change, starting them from the chosen form the first time."""
@@ -617,19 +621,17 @@ class WizardChoices:
             names.append(entry[arranger.KIND] if not place else marks_text.MSG_WIZARD_SECTION_VARIANT.format(kind=entry[arranger.KIND], letter=chr(ord(wizard_limits.FIRST_VARIANT_LETTER) + place)))
         return names
 
+    @kept_while(section_labels_key)
     def section_labels(self):
         """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
         a dash and the section's count among them, as the tracker numbers every name it makes."""
-        kinds = tuple(entry[arranger.KIND] for entry in self.section_entries())
-        if self._labels_kept is not None and self._labels_kept[0] == kinds:
-            return list(self._labels_kept[1])
+        kinds = [entry[arranger.KIND] for entry in self.section_entries()]
         counts = {}
         labels = []
         for kind in kinds:
             counts[kind] = counts.get(kind, 0) + 1
             labels.append(kind if kinds.count(kind) == 1 else marks_text.MSG_WIZARD_SECTION_NUMBERED.format(kind=kind, number=counts[kind]))
-        self._labels_kept = (kinds, labels)
-        return list(labels)
+        return tuple(labels)
 
     def _song_sections(self):
         """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes, with the chords and the scene's
@@ -1090,13 +1092,11 @@ class WizardChoices:
         self._gauges = {}
         self._melody_settings = {}
 
+    @kept_while(lambda choices: (choices._genre, choices._subgenre, choices._variant))
     def style(self):
         """Return the genre's style template as the subgenre chosen has it, worked out once for a genre, a subgenre and a kind, and
         never changed by a caller."""
-        of = (self._genre, self._subgenre, self._variant)
-        if self._style_kept is None or self._style_kept[0] != of:
-            self._style_kept = (of, style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant))
-        return self._style_kept[1]
+        return style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant)
 
 
     def trait_has_sound(self, *, trait, value):
@@ -1106,12 +1106,12 @@ class WizardChoices:
     def copied_for_trial(self):
         """A copy of the choices to try something on, which remembers nothing and holds nothing: the answers kept are large,
         and copying them only to throw them away took as long as writing a song."""
-        answers, offers = self._answers, self._offers
-        self._answers, self._offers = {}, {}
+        answers, offers, kept = self._answers, self._offers, self._kept
+        self._answers, self._offers, self._kept = {}, {}, {}
         try:
             trial = copy.deepcopy(self)
         finally:
-            self._answers, self._offers = answers, offers
+            self._answers, self._offers, self._kept = answers, offers, kept
         trial._offers_held = False
         trial._offers_mixed = False
         return trial

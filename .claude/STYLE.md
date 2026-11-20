@@ -258,7 +258,7 @@ So typing into a pattern leaves what is known about everything else alone. An an
 out something it came from would go on being returned after that thing changed, so every memory
 checks itself while the tests run (`Memory.check_every_answer`, in `tests/support/ui_testing.py` and
 `tests/support/rendering.py`): a kept answer is worked out again after any change and a difference fails
-the test. A key holds whatever the answer depends on that isn't in the set, like the cursor's
+the test. An object that is not in the set, such as the song wizard's choices, keeps an answer with `@kept_while(key_of)` (`support/kept.py`), whose key holds everything the answer comes from, and returns what no caller changes. A key holds whatever the answer depends on that isn't in the set, like the cursor's
 step or how tall a gauge is, since the check can't see those. A question asked for every cell is
 asked once for the line and passed down, as the beat steps and the roll's notes are, because even
 a remembered answer costs a lookup. The parsers in
