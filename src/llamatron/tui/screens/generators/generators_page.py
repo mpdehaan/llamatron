@@ -198,7 +198,7 @@ class GeneratorsPage(ListPage):
         self.put_cursor_on(kind=kind, name=new)
 
     def delete(self):
-        """Delete the selected generator after asking, or say what still uses it."""
+        """Delete the selected generator after asking, saying which chains and lists it is taken out of."""
         kind, name = self.current()
         what = legends.MSG_GENERATOR_WHAT.format(label=generator_page_of_kind(kind).label, name=name)
-        self.delete_after_checks(what=what, uses=self.uses(kind=kind, name=name), delete=lambda: self.document().delete_named(section=file_format.LISTED_GENERATORS[kind], name=name))
+        self.delete_taking_out(what=what, uses=self.uses(kind=kind, name=name), delete=lambda: self.document().delete_generator(section=file_format.LISTED_GENERATORS[kind], name=name))

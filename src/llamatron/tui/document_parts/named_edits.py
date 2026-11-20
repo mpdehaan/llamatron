@@ -102,6 +102,10 @@ class NamedEdits:
         self.change(self.song().copy_track, name=name, new=new)
         return new
 
+    def delete_generator(self, *, section, name):
+        """Delete a generator, a chain among them, taking it out of every chain, clip, scene and track that lists it, in one edit."""
+        self.change(self._setlist.delete_generator, section=section, name=name)
+
     def delete_named(self, *, section, name):
         """Delete an item of a section. Whoever asks has checked that nothing uses it.
 

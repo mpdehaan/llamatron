@@ -82,6 +82,13 @@ class TestChainPlaces(unittest.TestCase):
         scene = renderer.get_scenes()[0]
         self.assertEqual(renderer.chains_of(scene=scene, track=test_registers.LEAD), [OTHER_CHAIN, TWICE, OTHER_CHAIN, TWICE])
 
+    def test_deleting_a_generator_takes_it_out_of_every_chain_and_every_list(self):
+        built = song_from_data(chained(clip_chains=[CHOP, TWICE], scene_chains=[CHOP], track_chains=[CHOP]))
+        built.get_setlist().delete_generator(section=Section.AUTO_RATCHETS, name=CHOP)
+        scene = built.get_scenes()[0]
+        self.assertEqual(built.get_setlist().get_chain(TWICE).get_steps(), [])
+        self.assertEqual((scene.get_clip_slot(test_registers.LEAD).get_chain_names(), scene.get_chain_names(), built.get_track(test_registers.LEAD).get_chain_names()), ([TWICE], [], []))
+
     def test_renaming_a_chain_renames_it_in_every_list(self):
         renamed = 'renamed'
         data = chained(clip_chains=[TWICE], scene_chains=[TWICE], track_chains=[OTHER_CHAIN, TWICE])

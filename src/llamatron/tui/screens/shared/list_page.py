@@ -250,6 +250,20 @@ class ListPage(Page):
 
     # What many lists share.
 
+    def delete_taking_out(self, *, what, uses, delete):
+        """Confirm and delete an item that lists may name, as a generator is named by chains and clips, listing up to a few of
+        the uses it is taken out of."""
+        message = [messages.MSG_DELETE_QUESTION.format(what=what)]
+        if uses:
+            message += [messages.MSG_TAKEN_OUT_OF, *uses[:MOST_USES_SHOWN]]
+            if len(uses) > MOST_USES_SHOWN:
+                message.append(errors.ERR_AND_MORE.format(count=len(uses) - MOST_USES_SHOWN))
+
+        def confirmed(_):
+            delete()
+            self.clamp()
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=confirmed)
+
     def delete_after_checks(self, *, what, uses, delete, extra=None):
         """Refuse if anything still uses an item, and otherwise confirm and delete it."""
         if uses:

@@ -422,14 +422,28 @@ class TestGeneratorsPage(UITest):
         self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, name))
         self.assertTrue(self.document.get_setlist().is_generator_type_open(GeneratorKind.ARP))
 
-    async def test_a_generator_in_a_chain_cannot_be_deleted_and_an_unused_one_can(self):
+    async def test_a_generator_in_a_chain_is_deleted_after_asking_and_taken_out_of_the_chain(self):
         await self.open_page_on_the_arp()
         await self.press(Key.BACKSPACE)
-        self.assertIsInstance(self.app.screen, MessageDialog)
+        self.assertIsInstance(self.app.screen, ConfirmDialog)
+        self.assertIn(messages.MSG_TAKEN_OUT_OF, self.text())
         self.assertIn(CHAIN_NAMED, self.text())
-        await self.press(Key.ENTER, Key.ESCAPE)
+        await self.press(keybindings.ConfirmDialog.NO)
+        self.assertIn(UP, self.document.song().get_generator_names(GeneratorKind.ARP))
+        steps = self.chain_steps(NAMED)
+        await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        self.assertNotIn(UP, self.document.song().get_generator_names(GeneratorKind.ARP))
+        self.assertNotIn((GeneratorKind.ARP, UP), self.chain_steps(NAMED))
+        await self.press(keybindings.Page.UNDO)
+        self.assertIn(UP, self.document.song().get_generator_names(GeneratorKind.ARP))
+        self.assertEqual(self.chain_steps(NAMED), steps)
+
+    async def test_an_unused_generator_is_deleted_after_asking_with_nothing_to_take_it_out_of(self):
+        await self.open_page_on_the_arp()
         name = await self.add_generator(Section.ARPS)
-        await self.press(Key.ESCAPE, Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ESCAPE, Key.BACKSPACE)
+        self.assertNotIn(messages.MSG_TAKEN_OUT_OF, self.text())
+        await self.press(keybindings.ConfirmDialog.YES)
         self.assertNotIn(name, self.document.song().get_generator_names(GeneratorKind.ARP))
 
     async def test_renaming_updates_its_chains_and_keeps_the_cursor_on_it(self):
