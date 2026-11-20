@@ -38,7 +38,7 @@ class SoloChoices(ChoicesPart):
         player = self._soloist()
         if player is None:
             return []
-        return [place for place in range(len(self._choices.section_labels())) if self._choices.section(place).kind() == wizard_limits.SOLO and player in self._choices.section(place).plays() and not self._choices.section(place).is_held()]
+        return [place for place in range(len(self._choices.get_song_form().section_labels())) if self._choices.section(place).kind() == wizard_limits.SOLO and player in self._choices.section(place).plays() and not self._choices.section(place).is_held()]
 
     def _soloist(self):
         """The genre's answering player while in the band, who plays the solos whether or not the player also answers the tune,

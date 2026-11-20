@@ -46,7 +46,7 @@ class CreateBranch(Branch):
                 Field(label=labels.MSG_GENRE_LABEL, value=lambda: marks.MSG_WIZARD_GENRE_SHOWN.format(genre=genre_title(choices.get_genre()), subgenre=choices.get_subgenre())),
                 Field(label=labels.MSG_WIZARD_KEY_LABEL, value=lambda: marks.MSG_WIZARD_KEY_SHOWN.format(root=choices.get_root(), scale=labels.MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()])),
                 Field(label=labels.MSG_TEMPO_LABEL, value=choices.get_tempo),
-                Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_FORM_SHOWN.format(form=marks.MSG_WIZARD_OWN_FORM if choices.has_own_form() else choices.get_form(), count=len(choices.form_sections()))),
-                Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: clock(choices.form_seconds())),
+                Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_FORM_SHOWN.format(form=marks.MSG_WIZARD_OWN_FORM if choices.get_song_form().has_own_form() else choices.get_song_form().get_form(), count=len(choices.get_song_form().form_sections()))),
+                Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: clock(choices.get_song_form().form_seconds())),
             ]
         return [*fields, Button(label=labels.MSG_WIZARD_CREATE_BUTTON, key_name=legends.KeyName.ENTER, enter=page.create, enter_what=legends.MSG_WIZARD_CREATE_WHAT)]

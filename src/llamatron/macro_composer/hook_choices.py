@@ -71,7 +71,7 @@ class HookChoices(ChoicesPart):
     def can_have_hook(self):
         """Return whether a hook can be made at all: a section of the song's form marks a line as its hook, and, in a form of
         the subgenre's own, a player carries a tune there."""
-        if not self._choices.is_ready() or not any(entry.get(melody_writer.HOOK) for place in range(len(self._choices.section_entries())) for entry in self._choices.section(place).as_played().get(wizard_limits.PLAN, [])):
+        if not self._choices.is_ready() or not any(entry.get(melody_writer.HOOK) for place in range(len(self._choices.get_song_form().section_entries())) for entry in self._choices.section(place).as_played().get(wizard_limits.PLAN, [])):
             return False
         return self._choices.hook_changes_song()
 
@@ -80,7 +80,7 @@ class HookChoices(ChoicesPart):
         that kind's lines it is, counted from 1. None where the song can have no hook."""
         if not self.can_have_hook():
             return None
-        for kind in self._choices.section_kinds_in_form():
+        for kind in self._choices.get_song_form().section_kinds_in_form():
             for count, entry in enumerate(self._hook_plan(kind)):
                 if entry.get(melody_writer.HOOK):
                     return kind, count + 1
@@ -95,7 +95,7 @@ class HookChoices(ChoicesPart):
     def _main_hook_kind(self):
         """The kind of section that says the main hook: the first in the form whose plan marks a line as one, or None."""
         sections = self._choices.style()[arranger.SECTIONS]
-        return next((kind for kind in self._choices.section_kinds_in_form() if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(wizard_limits.PLAN, []))), None)
+        return next((kind for kind in self._choices.get_song_form().section_kinds_in_form() if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(wizard_limits.PLAN, []))), None)
 
     # Where the main hook sits among the lines of its section, which the genre says until a person chooses.
 
@@ -136,7 +136,7 @@ class HookChoices(ChoicesPart):
         has a main hook, a player for its melody, and a bar a tag can be written in."""
         if not self.can_have_hook() or not self.has_hook() or self._choices.get_band().tune_player() is None or not self._choices.counts_in_four():
             return []
-        in_form = self._choices.section_kinds_in_form()
+        in_form = self._choices.get_song_form().section_kinds_in_form()
         return [kind for kind in wizard_limits.SECOND_HOOK_KINDS if kind in in_form and kind != self._main_hook_kind()]
 
     def _second_hook_kept(self):
@@ -170,7 +170,7 @@ class HookChoices(ChoicesPart):
     def second_hook_scene(self):
         """Return the place in the form of the first section that sings the second hook, or None."""
         kind = self.get_second_hook_kind()
-        return None if kind is None else next((place for place, of_place in enumerate(self._choices.section_kinds_in_form()) if of_place == kind), None)
+        return None if kind is None else next((place for place, of_place in enumerate(self._choices.get_song_form().section_kinds_in_form()) if of_place == kind), None)
 
     def hooks_of_song(self):
         """What the arranger is handed of the song's hooks: the main hook's kind of section and its place among the lines, and the
@@ -436,4 +436,4 @@ class HookChoices(ChoicesPart):
     def hook_scene(self):
         """Return the place in the form of the first section that says the hook, or None."""
         sections = self._choices.style()[arranger.SECTIONS]
-        return next((place for place, kind in enumerate(self._choices.section_kinds_in_form()) if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(wizard_limits.PLAN, []))), None)
+        return next((place for place, kind in enumerate(self._choices.get_song_form().section_kinds_in_form()) if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(wizard_limits.PLAN, []))), None)

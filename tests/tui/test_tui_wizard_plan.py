@@ -249,37 +249,37 @@ class TestWizardFormQuestions(WizardTest):
     async def test_the_usual_answers_make_the_usual_form_of_the_questions(self):
         choices = self.choices()
         await self.press(Key.ENTER)
-        for name, _, _ in choices.form_questions():
+        for name, _, _ in choices.get_song_form().form_questions():
             self.assertIn(labels.MSG_WIZARD_FORM_QUESTION_TITLES[name], self.text())
             await self.press(Key.ENTER)
-        self.assertTrue(choices.has_own_form())
-        self.assertEqual(choices.section_kinds_in_form(), choices.form_of_answers({}))
+        self.assertTrue(choices.get_song_form().has_own_form())
+        self.assertEqual(choices.get_song_form().section_kinds_in_form(), choices.get_song_form().form_of_answers({}))
         self.assertTrue(self.wizard().has_choices_to_lose())
 
     async def test_another_answer_is_in_the_form_made(self):
         choices = self.choices()
         await self.press(Key.ENTER)
-        for name, _, _ in choices.form_questions():
+        for name, _, _ in choices.get_song_form().form_questions():
             await self.press(*([Key.DOWN] if name == wizard_limits.DRUM_SOLO_KIND else []), Key.ENTER)
-        self.assertIn(wizard_limits.DRUM_SOLO_KIND, choices.section_kinds_in_form())
+        self.assertIn(wizard_limits.DRUM_SOLO_KIND, choices.get_song_form().section_kinds_in_form())
 
     async def test_esc_at_a_question_leaves_the_form_alone(self):
         choices = self.choices()
-        before = choices.section_kinds_in_form()
+        before = choices.get_song_form().section_kinds_in_form()
         await self.press(Key.ENTER, Key.ENTER, Key.ESCAPE)
-        self.assertFalse(choices.has_own_form())
-        self.assertEqual(choices.section_kinds_in_form(), before)
+        self.assertFalse(choices.get_song_form().has_own_form())
+        self.assertEqual(choices.get_song_form().section_kinds_in_form(), before)
 
     async def test_a_form_a_person_changed_is_replaced_only_on_a_yes(self):
         choices = self.choices()
         choices.section(A_PLACE).copy()
-        before = choices.section_kinds_in_form()
+        before = choices.get_song_form().section_kinds_in_form()
         await self.press(Key.ENTER)
-        for _ in choices.form_questions():
+        for _ in choices.get_song_form().form_questions():
             await self.press(Key.ENTER)
         self.assertIn(labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertEqual(choices.section_kinds_in_form(), before)
+        self.assertEqual(choices.get_song_form().section_kinds_in_form(), before)
 
     async def test_a_genre_with_no_verse_and_chorus_has_no_questions(self):
         choices = self.choices()

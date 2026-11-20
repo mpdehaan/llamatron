@@ -75,7 +75,7 @@ def choices_of(*, data, path, seed=None):
     choices = WizardChoices.from_data(kept)
     if not choices.is_ready():
         raise ValueError(errors.ERR_SONG_FILE_NOT_READY.format(path=path))
-    if written and not choices.has_own_form():
+    if written and not choices.get_song_form().has_own_form():
         raise ValueError(errors.ERR_SONG_FILE_FORM.format(path=path))
     extras = data_laid_over(under={song_plan.PLAN_OF_SONG: plan} if plan is not None else {}, over=data.get(wizard_limits.EXTRAS_KEPT) or {})
     if extras:

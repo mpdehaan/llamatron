@@ -182,7 +182,7 @@ def nothing_first(made):
 
 
 def plays_nowhere(*, choices, role):
-    return not any(role in choices.section(place).plays() for place in range(len(choices.form_sections())))
+    return not any(role in choices.section(place).plays() for place in range(len(choices.get_song_form().form_sections())))
 
 
 def put_in(role):
@@ -281,7 +281,7 @@ def every_choice(choices):
             another = interplay.FILLS if way == interplay.WAITS else interplay.WAITS
             yield ROLE_PLAN, way, lambda made, way=way: made.get_band().set_role_plan(way), [lambda made, another=another: made.get_band().set_role_plan(another)]
         kinds_seen = set()
-        for place, label in enumerate(choices.section_labels()):
+        for place, label in enumerate(choices.get_song_form().section_labels()):
             kind = choices.section(place).kind()
             if not choices.get_band().section_has_role(place) or kind in kinds_seen:
                 continue
@@ -372,7 +372,7 @@ def every_choice(choices):
             yield OWN_INTRO_NOTES, role, lambda made: made.set_intro_pattern(pattern=first_degree_changed(made.intro_pattern())), [said_first]
             for place in under_plan.intro_parts():
                 yield INTRO_PART_MELODY, (place, role), lambda made, place=place, role=role: made.set_intro_melody(place=place, role=role), [planned_first]
-        for place in range(len(under_plan.section_labels())):
+        for place in range(len(under_plan.get_song_form().section_labels())):
             for shape in under_plan.section(place).shapes():
                 yield SECTION_SHAPE, (place, shape), lambda made, place=place, shape=shape: made.section(place).set_own(field='shape', value=shape), [planned_first]
         for field, value in SECTION_OWN_TRIED:
@@ -380,7 +380,7 @@ def every_choice(choices):
                 yield SECTION_OWN, (field, value), lambda made, field=field, value=value: made.section(A_SECOND_PLACE).set_own(field=field, value=value), [planned_first]
     # A fade, with or without a plan: a section that opens the song fades in and one that closes it fades out, each from or to a
     # velocity, and a fade in over its bars.
-    for place in range(len(choices.section_labels())):
+    for place in range(len(choices.get_song_form().section_labels())):
         if choices.section(place).fade_way() is None:
             continue
 
@@ -456,7 +456,7 @@ def every_choice(choices):
     for kind in choices.get_tunes().tune_kinds():
         yield TUNE_TAKE, kind, lambda made, kind=kind: made.get_tunes().new_tune_take(kind), [nothing_first]
     # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
-    for place in range(len(choices.section_labels())):
+    for place in range(len(choices.get_song_form().section_labels())):
         lines = choices.section(place).lines()
         line = next((count for count, said in enumerate(lines) if said[wizard_limits.LINE_BREATHES]), None)
         if line is None:
@@ -480,27 +480,27 @@ def every_choice(choices):
         for level in choices.player(role).loudness_levels_offered():
             yield A_LEVEL, (role, level), lambda made, role=role, level=level: made.player(role).set_loudness_level(level=level, number=another_velocity(made.player(role).loudness_levels()[level])), [nothing_first]
     # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
-    for way in choices.starts():
-        if way != choices.get_start():
-            yield START, way, lambda made, way=way: made.set_start(way), [nothing_first]
-    for way in choices.ends():
-        if way != choices.get_end():
-            yield END, way, lambda made, way=way: made.set_end(way), [nothing_first]
-    if wizard_limits.ONE_PLAYER_FIRST in choices.starts():
+    for way in choices.get_song_form().starts():
+        if way != choices.get_song_form().get_start():
+            yield START, way, lambda made, way=way: made.get_song_form().set_start(way), [nothing_first]
+    for way in choices.get_song_form().ends():
+        if way != choices.get_song_form().get_end():
+            yield END, way, lambda made, way=way: made.get_song_form().set_end(way), [nothing_first]
+    if wizard_limits.ONE_PLAYER_FIRST in choices.get_song_form().starts():
         # What the stages offer is asked of choices that start with one player, since a length is offered only where that player fills it.
         staged = WizardChoices.from_data(choices.to_data())
         one_player_first(staged)
-        for role in staged.first_players():
-            if role != staged.get_first_player() and role != DRUMS_ROLE:
-                yield FIRST_PLAYER, role, lambda made, role=role: made.set_first_player(role), [one_player_first]
-        for bars in staged.setup_bars_offered():
-            if bars != staged.get_setup_bars():
-                yield SETUP_BARS, bars, lambda made, bars=bars: made.set_setup_bars(bars), [one_player_first]
-    for name, offered, usual in choices.form_questions():
+        for role in staged.get_song_form().first_players():
+            if role != staged.get_song_form().get_first_player() and role != DRUMS_ROLE:
+                yield FIRST_PLAYER, role, lambda made, role=role: made.get_song_form().set_first_player(role), [one_player_first]
+        for bars in staged.get_song_form().setup_bars_offered():
+            if bars != staged.get_song_form().get_setup_bars():
+                yield SETUP_BARS, bars, lambda made, bars=bars: made.get_song_form().set_setup_bars(bars), [one_player_first]
+    for name, offered, usual in choices.get_song_form().form_questions():
         # Each answer of each question a form is made from, held against the form the usual answers make.
         for answer in offered:
             if answer != usual:
-                yield FORM_ANSWER, (name, answer), lambda made, name=name, answer=answer: made.set_form_from_answers({name: answer}), [lambda made: made.set_form_from_answers({})]
+                yield FORM_ANSWER, (name, answer), lambda made, name=name, answer=answer: made.get_song_form().set_form_from_answers({name: answer}), [lambda made: made.get_song_form().set_form_from_answers({})]
     if choices.get_band().offers_one_guitarist():
         yield GUITARISTS, wizard_limits.ONE_GUITARIST_COUNT, lambda made: made.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
@@ -515,12 +515,12 @@ def every_choice(choices):
     for bars in choices.section(FIRST_PLACE).bars_offered():
         if bars != choices.section(FIRST_PLACE).bars():
             yield SECTION_BARS, bars, lambda made, bars=bars: made.section(FIRST_PLACE).set_bars(bars=bars), [nothing_first]
-    for kind in choices.section_kinds():
+    for kind in choices.get_song_form().section_kinds():
         if kind != choices.section(FIRST_PLACE).kind():
             yield SECTION_KIND, kind, lambda made, kind=kind: made.section(FIRST_PLACE).set_kind(kind=kind), [nothing_first]
-    for form in choices.forms():
-        if form != choices.get_form():
-            yield FORM, form, lambda made, form=form: made.set_form(form), [nothing_first]
+    for form in choices.get_song_form().forms():
+        if form != choices.get_song_form().get_form():
+            yield FORM, form, lambda made, form=form: made.get_song_form().set_form(form), [nothing_first]
 
 
 def first_note_moved(notes):
@@ -554,7 +554,7 @@ def set_reacts_where_heard(*, made, role):
 
 
 def one_player_first(made):
-    made.set_start(wizard_limits.ONE_PLAYER_FIRST)
+    made.get_song_form().set_start(wizard_limits.ONE_PLAYER_FIRST)
 
 
 def switch_plan_off(made):

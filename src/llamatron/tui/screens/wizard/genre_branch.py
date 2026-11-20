@@ -83,7 +83,7 @@ class GenreBranch(Branch):
         """Return the Length field, whose steps choose a shorter or a longer suggested form; once the form is the song's own,
         the length is only shown, since a step would put a suggested form in place of the sections changed."""
         choices = self.get_choices()
-        if choices.has_own_form():
-            return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=marks.MSG_WIZARD_OWN_FORM))
-        return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.form_seconds()), form=choices.get_form()),
+        if choices.get_song_form().has_own_form():
+            return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.get_song_form().form_seconds()), form=marks.MSG_WIZARD_OWN_FORM))
+        return Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: marks.MSG_WIZARD_LENGTH_SHOWN.format(length=clock(choices.get_song_form().form_seconds()), form=choices.get_song_form().get_form()),
                      adjust=self.get_page().choosing(choices.step_length))

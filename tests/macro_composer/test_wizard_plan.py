@@ -97,13 +97,13 @@ class TestWizardSongPlan(unittest.TestCase):
 
     def test_a_plan_gives_every_section_an_energy_and_says_how_each_leaves(self):
         choices = chosen()
-        places = len(choices.section_labels())
+        places = len(choices.get_song_form().section_labels())
         self.assertEqual(len(choices.energies()), places)
         self.assertEqual(len(choices.said_of_sections()), places)
         for energy in choices.energies():
             self.assertTrue(song_plan.LOWEST_ENERGY <= energy <= song_plan.HIGHEST_ENERGY)
         # The last chorus is the song's most.
-        kinds = choices.section_kinds_in_form()
+        kinds = choices.get_song_form().section_kinds_in_form()
         self.assertEqual(max(choices.energies()), choices.energies()[len(kinds) - 1 - kinds[::-1].index('chorus')])
 
     def test_contrast_stretches_the_energies_and_is_held_to_its_range(self):
@@ -274,7 +274,7 @@ class TestWizardSectionOwn(unittest.TestCase):
         self.assertEqual(chosen(plan=False).section(A_VERSE).own_fields(), list(wizard_limits.OWN_WITHOUT_PLAN))
         self.assertEqual(chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False).section(A_VERSE).own_fields(), list(wizard_limits.OWN_WITHOUT_PLAN))
         choices = chosen()
-        last = len(choices.section_labels()) - 1
+        last = len(choices.get_song_form().section_labels()) - 1
         self.assertIn(joins.LEAVES, choices.section(A_VERSE).own_fields())
         # The ending, one held chord, takes nothing of its own.
         self.assertEqual(choices.section(last).own_fields(), [])
@@ -294,7 +294,7 @@ class TestWizardSectionOwn(unittest.TestCase):
         usual = choices.energies()
         choices.section(A_VERSE).set_own(field=song_plan.ENERGY, value=song_plan.HIGHEST_ENERGY)
         self.assertEqual(choices.energies()[A_VERSE], song_plan.HIGHEST_ENERGY)
-        self.assertTrue(choices.has_own_form())
+        self.assertTrue(choices.get_song_form().has_own_form())
         choices.section(A_VERSE).set_own(field=song_plan.ENERGY, value=None)
         self.assertEqual(choices.energies(), usual)
 
@@ -424,7 +424,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
 
     def test_a_kind_with_shapes_offers_them_and_each_makes_another_song(self):
         choices = chosen()
-        solo = choices.section_kinds_in_form().index(A_KIND_WITH_SHAPES)
+        solo = choices.get_song_form().section_kinds_in_form().index(A_KIND_WITH_SHAPES)
         self.assertTrue(choices.section(solo).shapes())
         self.assertEqual(choices.section(A_VERSE).shapes(), [])
         self.assertNotIn(wizard_limits.SHAPE_OF_SECTION, choices.section(A_VERSE).own_fields())
@@ -567,20 +567,20 @@ class TestWizardFormQuestions(unittest.TestCase):
     __slots__ = ()
 
     def test_only_the_kinds_the_subgenre_plays_are_asked_about_and_a_genre_with_no_chorus_is_asked_nothing(self):
-        asked = [name for name, _, _ in chosen(plan=False).form_questions()]
+        asked = [name for name, _, _ in chosen(plan=False).get_song_form().form_questions()]
         self.assertEqual(asked, [wizard_limits.VERSES_FIRST, wizard_limits.PRE_CHORUSES, wizard_limits.BRIDGE, wizard_limits.SOLOS, wizard_limits.DRUM_SOLO_KIND, wizard_limits.LAST_CHORUSES])
         other = chosen(genre=AN_UNPLANNED_GENRE, subgenre=None, plan=False)
-        self.assertEqual(other.form_questions(), [])
+        self.assertEqual(other.get_song_form().form_questions(), [])
         with self.assertRaises(ValueError):
-            other.form_of_answers({})
+            other.get_song_form().form_of_answers({})
 
     def test_every_run_of_answers_makes_a_form_the_song_can_be_made_with(self):
         choices = chosen(plan=False)
-        questions = choices.form_questions()
+        questions = choices.get_song_form().form_questions()
         forms = set()
         for answers in itertools.product(*(offered for _, offered, _ in questions)):
             given = {name: answer for (name, _, _), answer in zip(questions, answers)}
-            form = choices.form_of_answers(given)
+            form = choices.get_song_form().form_of_answers(given)
             forms.add(tuple(form))
             self.assertEqual(form.count(wizard_limits.SOLO), wizard_limits.SOLO_COUNTS.index(given[wizard_limits.SOLOS]))
             self.assertEqual(wizard_limits.BRIDGE in form, given[wizard_limits.BRIDGE] == wizard_limits.YES)
@@ -589,19 +589,19 @@ class TestWizardFormQuestions(unittest.TestCase):
         self.assertEqual(len(forms), len(list(itertools.product(*(offered for _, offered, _ in questions)))))
         for form in sorted(forms)[::A_FEW_FORMS_APART]:
             made = chosen()
-            made.set_own_sections(sections=[{KIND_OF_SECTION: kind} for kind in form])
+            made.get_song_form().set_own_sections(sections=[{KIND_OF_SECTION: kind} for kind in form])
             made.made_setlist(name=A_NAME, version=version.VERSION)
 
     def test_the_answers_become_the_song_s_own_form_and_a_wrong_answer_changes_nothing(self):
         choices = chosen(plan=False)
-        choices.set_form_from_answers({wizard_limits.SOLOS: wizard_limits.SOLO_COUNTS[2], wizard_limits.DRUM_SOLO_KIND: wizard_limits.YES})
-        self.assertTrue(choices.has_own_form())
-        kinds = choices.section_kinds_in_form()
+        choices.get_song_form().set_form_from_answers({wizard_limits.SOLOS: wizard_limits.SOLO_COUNTS[2], wizard_limits.DRUM_SOLO_KIND: wizard_limits.YES})
+        self.assertTrue(choices.get_song_form().has_own_form())
+        kinds = choices.get_song_form().section_kinds_in_form()
         self.assertEqual((kinds.count(wizard_limits.SOLO), kinds.count(wizard_limits.DRUM_SOLO_KIND)), (2, 1))
         for wrong in ({wizard_limits.SOLOS: NOT_A_PART}, {NOT_A_PART: wizard_limits.YES}):
             with self.assertRaises(ValueError):
-                choices.set_form_from_answers(wrong)
-        self.assertEqual(choices.section_kinds_in_form(), kinds)
+                choices.get_song_form().set_form_from_answers(wrong)
+        self.assertEqual(choices.get_song_form().section_kinds_in_form(), kinds)
 
 
 class TestWizardListeningPlaces(unittest.TestCase):
@@ -611,7 +611,7 @@ class TestWizardListeningPlaces(unittest.TestCase):
 
     def test_the_hook_s_section_says_the_hook_and_the_tune_s_has_the_tune_s_player(self):
         choices = chosen(plan=False)
-        kinds = choices.section_kinds_in_form()
+        kinds = choices.get_song_form().section_kinds_in_form()
         self.assertEqual(kinds[choices.get_hook().hook_scene()], 'chorus')
         self.assertIn(choices.get_band().tune_player(), choices.section(choices.tune_scene()).plays())
         setlist, name = choices.made_for_listening()

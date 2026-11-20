@@ -632,17 +632,17 @@ class WizardPage(FieldPage):
         """Offer the forms the subgenre suggests in a dialog, each with its sections and its length at the tempo chosen, and
         take the one picked; where a person changed the sections, ask first, since the form picked replaces them."""
         choices = self._choices
-        forms = choices.forms()
-        options = [marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.form_section_count(form), length=clock(choices.form_seconds(form=form))) for form in forms]
+        forms = choices.get_song_form().forms()
+        options = [marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.get_song_form().form_section_count(form), length=clock(choices.get_song_form().form_seconds(form=form))) for form in forms]
 
         def pick():
-            self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SUGGESTED_FORM_TITLE, options=options, current=forms.index(choices.get_form())),
-                     then=lambda place: self.choosing(choices.set_form)(forms[place]))
+            self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SUGGESTED_FORM_TITLE, options=options, current=forms.index(choices.get_song_form().get_form())),
+                     then=lambda place: self.choosing(choices.get_song_form().set_form)(forms[place]))
 
         def answered(yes):
             if yes:
                 pick()
-        if choices.has_own_form():
+        if choices.get_song_form().has_own_form():
             self.ask(dialog=ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=answered)
         else:
             pick()
@@ -651,19 +651,19 @@ class WizardPage(FieldPage):
         """Ask the questions a form is made from, one dialog a question, each opening on its usual answer, and make the form the answers ask for
         the song's own; ESC at any question leaves the form as it was, and where a person changed the sections, the last step asks first."""
         choices = self._choices
-        questions = choices.form_questions()
+        questions = choices.get_song_form().form_questions()
         answers = {}
 
         def make():
             try:
-                self.choosing(choices.set_form_from_answers)(answers)
+                self.choosing(choices.get_song_form().set_form_from_answers)(answers)
             except ValueError as problem:
                 self.refuse(str(problem))
                 return
             self._open.add(labels.MSG_WIZARD_FORM_BRANCH)
 
         def finish():
-            if choices.has_own_form():
+            if choices.get_song_form().has_own_form():
                 self.ask(dialog=ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=lambda yes: make() if yes else None)
             else:
                 make()

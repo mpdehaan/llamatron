@@ -70,7 +70,7 @@ class SoloMelodyBranch(Branch):
         if place is None:
             return []
         played_by = Field(label=labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, value=lambda: choices.player(choices.get_solos().solo_player()).title())
-        section = Field(label=labels.MSG_WIZARD_SOLO_SECTION_LABEL, value=lambda: choices.section_labels()[place])
+        section = Field(label=labels.MSG_WIZARD_SOLO_SECTION_LABEL, value=lambda: choices.get_song_form().section_labels()[place])
         return [played_by, section, *self.buttons()]
 
     def buttons(self):

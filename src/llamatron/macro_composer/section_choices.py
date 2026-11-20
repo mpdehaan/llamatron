@@ -78,7 +78,7 @@ class SectionChoices:
         return self._place
 
     def entry(self):
-        entries = self._choices.section_entries()
+        entries = self._choices.get_song_form().section_entries()
         if isinstance(self._place, bool) or not isinstance(self._place, int) or not 0 <= self._place < len(entries):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION.format(value=self._place))
         return entries[self._place]
@@ -110,30 +110,30 @@ class SectionChoices:
     def copy(self):
         """Put a copy of a section straight after it."""
         entry = own_copy_of(self.entry())
-        self._choices.own_section_entries().insert(self._place + 1, entry)
+        self._choices.get_song_form().own_section_entries().insert(self._place + 1, entry)
 
     def remove(self):
         self.entry()
-        if len(self._choices.section_entries()) == 1:
+        if len(self._choices.get_song_form().section_entries()) == 1:
             raise ValueError(errors.ERR_WIZARD_LAST_SECTION)
-        del self._choices.own_section_entries()[self._place]
+        del self._choices.get_song_form().own_section_entries()[self._place]
 
     def move(self, *, offset):
         """Move a section earlier or later in the form, and return whether it moved, which it cannot past either end."""
         self.entry()
         moved = self._place + offset
-        if not 0 <= moved < len(self._choices.section_entries()):
+        if not 0 <= moved < len(self._choices.get_song_form().section_entries()):
             return False
-        entries = self._choices.own_section_entries()
+        entries = self._choices.get_song_form().own_section_entries()
         entries.insert(moved, entries.pop(self._place))
         return True
 
     def set_kind(self, *, kind):
         """Make a section another kind, as the genre describes that kind: what the section changed of its old kind is dropped."""
         self.entry()
-        if kind not in self._choices.section_kinds():
+        if kind not in self._choices.get_song_form().section_kinds():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION_KIND.format(value=kind))
-        self._choices.own_section_entries()[self._place] = {arranger.KIND: kind}
+        self._choices.get_song_form().own_section_entries()[self._place] = {arranger.KIND: kind}
 
     def usual(self):
         return self._choices.style()[arranger.SECTIONS][self.entry()[arranger.KIND]]
@@ -156,7 +156,7 @@ class SectionChoices:
         if not self._choices.fills(kind=self.entry()[arranger.KIND], bars=bars, plays=tuple(self.plays())):
             return False
         trial = self._choices.copied_for_trial()
-        trial.own_section_entries()[self._place][arranger.BARS] = bars
+        trial.get_song_form().own_section_entries()[self._place][arranger.BARS] = bars
         try:
             trial.written_setlist(name=self.entry()[arranger.KIND], version=version_values.VERSION)
         except (ValueError, SongFileError):
@@ -166,7 +166,7 @@ class SectionChoices:
     def set_bars(self, *, bars):
         if isinstance(bars, bool) or not isinstance(bars, int) or bars not in self.bars_offered():
             raise ValueError(errors.ERR_WIZARD_SECTION_BARS.format(value=bars))
-        entry = self._choices.own_section_entries()[self._place]
+        entry = self._choices.get_song_form().own_section_entries()[self._place]
         entry.pop(arranger.BARS, None)
         if bars != self.usual()[arranger.BARS]:
             entry[arranger.BARS] = bars
@@ -177,7 +177,7 @@ class SectionChoices:
         plays = [name for name in self._choices.get_band().roles() if (name in self.plays() or (on and name == role)) and (on or name != role)]
         if not plays:
             raise ValueError(errors.ERR_WIZARD_SECTION_NEEDS_PLAYER)
-        entry = self._choices.own_section_entries()[self._place]
+        entry = self._choices.get_song_form().own_section_entries()[self._place]
         entry.pop(arranger.PLAYS, None)
         if sorted(plays) != sorted(self.usual().get(arranger.PLAYS, [])):
             entry[arranger.PLAYS] = plays
@@ -203,9 +203,9 @@ class SectionChoices:
         the song after its last; and None for any other and for a held chord."""
         if self.is_held():
             return None
-        if self._place < self._choices.head_count():
+        if self._place < self._choices.get_song_form().head_count():
             return wizard_limits.FADE_IN
-        return wizard_limits.FADE_OUT if self._place >= len(self._choices.section_entries()) - self._choices.tail_count() else None
+        return wizard_limits.FADE_OUT if self._place >= len(self._choices.get_song_form().section_entries()) - self._choices.get_song_form().tail_count() else None
 
     def fade_fields(self):
         """Return the fields of a section's fade, in the order shown: the switch where the section can fade, and while it is on,
@@ -340,8 +340,8 @@ class SectionChoices:
         if field in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER) and checked is not None and (field not in (song_plan.FADES, *self.fade_fields()) or self.fade_way() is None or (field == song_plan.FADE_OVER and checked > self.bars())):
             # Only a section that opens or closes the song fades, and a fade's level and bars are a fade's that is switched on.
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
-        before = copy.deepcopy(self._choices.get_own_sections())
-        entry = self._choices.own_section_entries()[self._place]
+        before = copy.deepcopy(self._choices.get_song_form().get_own_sections())
+        entry = self._choices.get_song_form().own_section_entries()[self._place]
         own = entry.setdefault(wizard_limits.OWN_OF_SECTION, {})
         own.pop(field, None)
         if checked is not None:
@@ -357,6 +357,6 @@ class SectionChoices:
         try:
             self._choices.written_setlist(name=wizard_limits.PREVIEW_NAME, version=version_values.VERSION)
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
-            self._choices.restore_own_sections(before)
+            self._choices.get_song_form().restore_own_sections(before)
             self._choices.clear_answers()
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None

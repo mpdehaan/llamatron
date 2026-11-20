@@ -26,6 +26,7 @@ import re
 import unittest
 
 from llamatron.macro_composer.band_choices import BandChoices
+from llamatron.macro_composer.form_choices import FormChoices
 from llamatron.macro_composer.hook_choices import HookChoices
 from llamatron.macro_composer.kit_choices import KitChoices
 from llamatron.macro_composer.player_choices import PlayerChoices
@@ -39,7 +40,7 @@ from llamatron.tui.screens import wizard
 
 SETTER_START = 'set_'
 # The choices and every part of them.
-CHOICES_CLASSES = (WizardChoices, BandChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
+CHOICES_CLASSES = (WizardChoices, BandChoices, FormChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
 # What changes a choice without being named a setter.
 OTHER_CHANGES = ('add_section', 'new_hook', 'new_second_hook')
 # What changes one section of the form without being named a setter: its names are common words, so a call is looked for on a section.
