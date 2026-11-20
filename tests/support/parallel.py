@@ -63,6 +63,8 @@ NOT_TIMED = float('inf')
 SUCCESS = 0
 FAILURE = 1
 
+# The environment variable that sets how many test classes run at once, every core's worth unless it is set, for a benchmark.
+WORKERS_SETTING = 'LLAMATRON_TEST_WORKERS'
 
 def test_ids(suite):
     """Return the id of every test in a suite, like test_blend.TestBlend.test_rests, in order."""
@@ -144,7 +146,7 @@ def main(filters):
     if not names:
         print(MSG_NOTHING_MATCHES.format(names=NAME_SEPARATOR.join(filters)))
         return FAILURE
-    workers = os.cpu_count() or 1
+    workers = int(os.environ.get(WORKERS_SETTING) or os.cpu_count() or 1)
     times_path = os.path.join(root, TIMES_FILE)
     times = remembered_times(times_path)
     started = time.monotonic()
