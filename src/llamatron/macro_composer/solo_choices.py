@@ -21,7 +21,7 @@ import zlib
 
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, wizard_limits
-from llamatron.macro_composer.choices_part import ChoicesPart
+from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change
 from llamatron.strings import errors
 
 
@@ -66,10 +66,8 @@ class SoloChoices(ChoicesPart):
         """Return the solo at a place of the form as a pattern's data, the person's own or the solo the choices write, or None where nobody plays one."""
         return copy.deepcopy(self._solo_in_made(place)[1])
 
+    @kept_until_choices_change
     def _solo_in_made(self, place):
-        return self._choices.remembered(key=(wizard_limits.SOLO_MADE_ANSWER, place), compute=lambda: self._found_solo_in_made(place))
-
-    def _found_solo_in_made(self, place):
         if place not in self.solo_places():
             return None, None
         setlist, name = self._choices.written_for_trial()
@@ -114,11 +112,12 @@ class SoloChoices(ChoicesPart):
         taken = {}
         for number in sorted(takes):
             if role is not None and role not in own.get(number, {}) and takes[number] != wizard_limits.FIRST_TUNE_TAKE:
-                pattern = self._choices.remembered(key=(wizard_limits.SOLO_TAKEN_ANSWER, number), compute=lambda number=number: self._solo_taken(number=number, take=takes[number]))
+                pattern = self._solo_taken(number=number, take=takes[number])
                 if pattern is not None:
                     taken[number] = {role: copy.deepcopy(pattern)}
         return taken
 
+    @kept_until_choices_change
     def _solo_taken(self, *, number, take):
         """The solo another take draws: that solo in the song these choices would make from a seed of the take's own, with the same
         chords and no solo of another take or written by hand, or None where that song has none."""
@@ -132,7 +131,7 @@ class SoloChoices(ChoicesPart):
         other.set_seed(zlib.crc32(wizard_limits.SOLO_TAKE_SEED.format(seed=self._choices.get_seed(), number=number, take=take).encode()) % (wizard_limits.LAST_SEED + 1))
         try:
             place = next(place for place in other.get_solos().solo_places() if other.get_solos()._solo_number_at(place) == number)
-            return other.get_solos()._found_solo_in_made(place)[1]
+            return other.get_solos()._solo_in_made(place)[1]
         except (StopIteration, ValueError, IndexError, KeyError, SongFileError):
             return None
 

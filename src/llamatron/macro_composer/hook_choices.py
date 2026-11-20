@@ -21,7 +21,7 @@ import copy
 from llamatron.composition.file_format import SectionKind
 from llamatron.macro_composer import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, wizard_limits
 from llamatron.macro_composer.arranger import arranged
-from llamatron.macro_composer.choices_part import ChoicesPart, set_each_kept
+from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
 from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed
 from llamatron.strings import errors, macro_composer as composer_text
 
@@ -198,13 +198,11 @@ class HookChoices(ChoicesPart):
         """Return the hook as the song's tune player first plays it: how many steps the hook line lasts, how many steps a bar
         has, and each note as where it starts, how many steps it lasts and its MIDI note. None while the song has no hook.
         Found by arranging the song, and kept until a choice changes."""
-        return self._choices.remembered(key=wizard_limits.HOOK_ANSWER, compute=self._hook_notes)
+        return self._found_hook_notes()
 
+    @kept_until_choices_change
     def _hook_part(self):
         """The part of the tune's player in the first kind of section that says the hook, and which of its lines is the hook; nothing where nobody says one."""
-        return self._choices.remembered(key=wizard_limits.HOOK_PART_ANSWER, compute=self._found_hook_part)
-
-    def _found_hook_part(self):
         player = self._choices.get_band().tune_player()
         if not self.can_have_hook() or not self.has_hook() or player is None:
             return None, None
@@ -213,7 +211,8 @@ class HookChoices(ChoicesPart):
         part = arranged(style=self._choices.style(), song=self._choices.song_picks(kind))[arranger.PARTS].get(composer_text.MSG_PART_OF_SECTION.format(kind, player))
         return (None, None) if part is None or tune_notation.LINES not in part else (part, line)
 
-    def _hook_notes(self):
+    @kept_until_choices_change
+    def _found_hook_notes(self):
         part, line = self._hook_part()
         if part is None:
             return None
@@ -399,7 +398,12 @@ class HookChoices(ChoicesPart):
         """Return the hook's line as the song has it, a list of notes and rests each so many steps long (line_edits.py), or None while the song has no hook."""
         if self.hook_notes() is None:
             return None
-        return self._choices.remembered(key=wizard_limits.HOOK_LINE_ANSWER, compute=lambda: copy.deepcopy(self._hook_part()[0][tune_notation.LINES][self._hook_part()[1]]))
+        return self._found_hook_line()
+
+    @kept_until_choices_change
+    def _found_hook_line(self):
+        part, line = self._hook_part()
+        return copy.deepcopy(part[tune_notation.LINES][line])
 
     def hook_is_own(self):
         """Return whether the hook's notes were written by hand."""

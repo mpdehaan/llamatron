@@ -22,7 +22,7 @@ import zlib
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, players as players_values, tune_fit, wizard_limits
 from llamatron.macro_composer.arranger import bar_length
-from llamatron.macro_composer.choices_part import ChoicesPart
+from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change
 from llamatron.strings import errors
 
 
@@ -62,12 +62,10 @@ class TuneChoices(ChoicesPart):
         own = (self._choices.get_extra(arranger.OWN_TUNES) or {}).get(kind)
         return copy.deepcopy(own if own is not None else self._tune_in_made(kind)[1])
 
+    @kept_until_choices_change
     def _tune_in_made(self, kind):
         """The name and the data of the pattern the tune's player plays in the first section of a kind, in the set the choices make,
         found once for the choices as they stand, since a page asks at every key and the answer means making the song."""
-        return self._choices.remembered(key=(wizard_limits.TUNE_MADE_ANSWER, kind), compute=lambda: self._found_tune_in_made(kind))
-
-    def _found_tune_in_made(self, kind):
         place = self.tune_place(kind)
         if place is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
@@ -179,11 +177,12 @@ class TuneChoices(ChoicesPart):
         taken = {}
         for kind in sorted(takes):
             if kind not in own and takes[kind] != wizard_limits.FIRST_TUNE_TAKE:
-                pattern = self._choices.remembered(key=(wizard_limits.TUNE_TAKEN_ANSWER, kind), compute=lambda kind=kind: self._tune_taken(kind=kind, take=takes[kind]))
+                pattern = self._tune_taken(kind=kind, take=takes[kind])
                 if pattern is not None:
                     taken[kind] = pattern
         return taken
 
+    @kept_until_choices_change
     def _tune_taken(self, *, kind, take):
         """The tune another take draws for a kind of section: the kind's tune in the song these choices would make from a seed of
         the take's own, with the same chords and no tune of another take or written by hand, or None where that song has none."""
@@ -196,7 +195,7 @@ class TuneChoices(ChoicesPart):
             other.get_band().set_way(trait=trait, value=drawn[0])
         other.set_seed(zlib.crc32(wizard_limits.TUNE_TAKE_SEED.format(seed=self._choices.get_seed(), kind=kind, take=take).encode()) % (wizard_limits.LAST_SEED + 1))
         try:
-            return other.get_tunes()._found_tune_in_made(kind)[1]
+            return other.get_tunes()._tune_in_made(kind)[1]
         except (ValueError, IndexError, KeyError, SongFileError):
             return None
 
