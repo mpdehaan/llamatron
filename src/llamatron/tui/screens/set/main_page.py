@@ -48,7 +48,6 @@ from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.importing import import_midi
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
-from llamatron.tui.screens.set.modulators_page import ModulatorsPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -77,7 +76,7 @@ LINES_ABOVE_BAR = 1
 ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
-    labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.MODULATORS: themes.MODULATORS, labels_text.PageName.GENERATORS: themes.GENERATORS,
+    labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.GENERATORS: themes.GENERATORS,
     labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.REGISTERS: themes.REGISTERS,
     labels_text.PageName.FILE: themes.SET_FILE,
 }
@@ -96,6 +95,19 @@ ACTION_NAMES = {
 def cell_name(item):
     """Return what a cell is called: the page its key opens, or the name of the action."""
     return ACTION_NAMES.get(item.binding, item.what)
+
+
+class EmptyCell:
+    """A place in the grid with no button: drawn as nothing, never selected, and passed over by the arrows."""
+
+    __slots__ = ()
+
+    # No key opens it.
+    binding = None
+
+
+# The one empty cell of the grid, where a page may go later.
+EMPTY_CELL = EmptyCell()
 
 
 def cell_opened_by(key):
@@ -126,7 +138,8 @@ def moved(*, rows, position, key):
         if not (0 <= row < len(rows) and 0 <= column < len(rows[row])):
             return None
         there = rows[row][column]
-        if there.binding is not here.binding:
+        # An empty cell is passed over, as if the cells either side of it touched.
+        if there.binding is not here.binding and there is not EMPTY_CELL:
             break
     places = cell_positions(rows=rows, binding=there.binding)
     tall = len({place[0] for place in places}) > 1
@@ -176,7 +189,6 @@ class MainPage(Page):
             self.bind(self.KEYS.FILE, action=lambda: self.show_page(FilePage(self.holder))),
             self.bind(self.KEYS.SONGS, action=lambda: self.show_page(SongsPage(self.holder))),
             self.bind(self.KEYS.PATTERNS, action=lambda: self.show_page(PatternsPage(self.holder))),
-            self.bind(self.KEYS.MODULATORS, action=lambda: self.show_page(ModulatorsPage(self.holder))),
             self.bind(self.KEYS.GENERATORS, action=lambda: self.show_page(GeneratorsPage(self.holder))),
             self.bind(self.KEYS.SCALES, action=lambda: self.show_page(ScalesPage(self.holder))),
             self.bind(self.KEYS.GROOVES, action=lambda: self.show_page(GroovesPage(self.holder))),
@@ -229,7 +241,7 @@ class MainPage(Page):
 
     def rows(self):
         """Return the cells by the geometry drawn, six rows of three: Arrange across the first row; Songs,
-        Patterns and Scales; Generators, Chains and Grooves; Instruments, Registers and the Real Time switch; then the bar's two
+        Patterns and Scales; Generators, an empty cell and Grooves; Instruments, Registers and the Real Time switch; then the bar's two
         rows, Open, Import and File/Global over Save, Export and Quit."""
         pages = {item.binding: item for item in self.keys()}
         keys = self.KEYS
@@ -238,7 +250,7 @@ class MainPage(Page):
         return [
             [arrange, arrange, arrange],
             [pages[keys.SONGS], pages[keys.PATTERNS], pages[keys.SCALES]],
-            [pages[keys.GENERATORS], pages[keys.MODULATORS], pages[keys.GROOVES]],
+            [pages[keys.GENERATORS], EMPTY_CELL, pages[keys.GROOVES]],
             [pages[keys.INSTRUMENTS], pages[keys.REGISTERS], pages[keys.REAL_TIME]],
             [open_set, import_midi_here, pages[keys.FILE]],
             [save, export, quit_here],
@@ -249,7 +261,7 @@ class MainPage(Page):
         items = []
         for row in self.rows():
             for item in row:
-                if all(item.binding is not other.binding for other in items):
+                if item is not EMPTY_CELL and all(item.binding is not other.binding for other in items):
                     items.append(item)
         return items
 
@@ -310,7 +322,7 @@ class MainPage(Page):
         return drawing.NOTHING
 
     def count(self, item):
-        """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Modulators, Arrange and the actions."""
+        """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Arrange and the actions."""
         setlist = self.document().get_setlist()
         name = cell_name(item)
         if name == labels_text.PageName.REAL_TIME:
@@ -412,7 +424,8 @@ class MainPage(Page):
         for number, row in enumerate(rows[1:1 + BUTTON_ROWS], start=1):
             lines = grid[number * CELL_LINES:(number + 1) * CELL_LINES]
             for column, item in enumerate(row):
-                self.draw_cell(canvases=lines, left=lefts[column], item=item, selected=item.binding is selected.binding, width=widths[column])
+                if item is not EMPTY_CELL:
+                    self.draw_cell(canvases=lines, left=lefts[column], item=item, selected=item.binding is selected.binding, width=widths[column])
         bar = [Canvas(total) for _ in range(BAR_ROWS + BORDERS)]
         self.draw_bar(canvases=bar, rows=rows[1 + BUTTON_ROWS:], lefts=lefts, left=0, width=total)
         blank = [Text(drawing.NOTHING)]

@@ -73,7 +73,6 @@ MSG_INSTRUMENT_WORD = 'instrument'
 MSG_SCALE_WORD = 'scale'
 MSG_TRACK_WORD = 'track'
 MSG_REGISTER_WORD = 'register'
-MSG_MODULATOR_WORD = 'modulator'
 MSG_SONG_WORD = 'song'
 
 # playback/written_scene.py

@@ -58,7 +58,6 @@ from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tui.screens.set.modulators_page import ModulatorsPage
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.scales_page import ScalesPage
@@ -372,7 +371,7 @@ class TestDesign(unittest.TestCase):
         # Naming a method remove or render here stops screens from closing or drawing.
         ours = {COMPOSE, ON_MOUNT, ON_KEY, ON_RESIZE, ON_SCREEN_RESUME}
         pages = [
-            Page, ListPage, FieldPage, MainPage, FilePage, OpenPage, SongsPage, SongPage, PatternsPage, TrackEditor, ModulatorsPage,
+            Page, ListPage, FieldPage, MainPage, FilePage, OpenPage, SongsPage, SongPage, PatternsPage, TrackEditor,
             ChainEditor, GeneratorsPage, ArpEditor, AutoRatchetEditor,
             ScalesPage, ScalePage, GroovesPage, GrooveEditor, InstrumentsPage, InstrumentEditor, ArrangePage, ScenePage,
             ClipPage, PatternEditor, Dialog, MessageDialog, ConfirmDialog, PromptDialog, ChoiceDialog,

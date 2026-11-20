@@ -20,10 +20,10 @@ reading a file and calling a setter refuse a value in the same words."""
 import inspect
 import unittest
 
-from llamatron.composition import chain, clip_slot, corrections, file_format, generator_settings, groove, instrument, limits, modulator, named_scale, pattern, register, scene, setlist, song, track
+from llamatron.composition import chain, clip_slot, corrections, file_format, generator_settings, groove, instrument, limits, named_scale, pattern, register, scene, setlist, song, track
 from llamatron.composition.checks import listed
 from llamatron.composition.clip_slot import ClipSlot
-from llamatron.composition.file_format import ChainSetting, ClipSlotSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, ModulatorSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
+from llamatron.composition.file_format import ChainSetting, ClipSlotSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
 from llamatron.composition.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, DriftSetting, DriftSettings, FollowChordsSetting, FollowChordsSettings, GlideSettings, GuitarifySettings, HocketSetting, HocketSettings, MusicianSetting, MusicianSettings, PhrasingSetting, PhrasingSettings, ProgressionSetting, ProgressionSettings, RushSettings, ShapeSetting, ShortenSettings, StepRowSetting, SwellSettings, versioned, VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.composition.groove import Groove, new_groove
 from llamatron.composition.instrument import Instrument
@@ -115,7 +115,6 @@ DESCRIBED = [
     # A chain's steps are its generators, read one by one.
     (ChainSetting, {ChainSetting.BYPASS_WHEN: chain.BYPASS_WHEN}, (ChainSetting.STEPS,)),
     (RegisterSetting, register.SETTINGS, ()),
-    (ModulatorSetting, modulator.SETTINGS, ()),
     (ArpSetting, ArpSettings.SETTINGS, ()),
     (AutoRatchetSetting, AutoRatchetSettings.SETTINGS, ()),
     # A drift's own settings; each version's values are named from DriftValue, which the test below holds them to.

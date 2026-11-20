@@ -246,8 +246,8 @@ class PatternPlayer:
             heard = not muted
             if uses_registers:
                 # Drum patterns have no scale to move a note along, so registers only change their velocity.
-                note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS) + _used_values(values=values, current=current, rows=file_format.MODULATOR_NOTE_ROWS)
-                velocity_added += _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS) + _used_values(values=values, current=current, rows=file_format.MODULATOR_VELOCITY_ROWS)
+                note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
+                velocity_added += _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
             effects = drift.NO_EFFECTS
@@ -553,13 +553,13 @@ def _register_adds(values):
 
 
 def _register_sets(values):
-    """Return what a step sets each register and each modulator to, by name, for each it sets."""
-    return {name: values[row] for rows in (file_format.REGISTER_SET_ROWS, file_format.MODULATOR_SET_ROWS) for name, row in rows.items() if values[row] is not None}
+    """Return what a step sets each register to, by register name, for each register it sets."""
+    return {name: values[row] for name, row in file_format.REGISTER_SET_ROWS.items() if values[row] is not None}
 
 
 def _used_values(*, values, current, rows):
     """Return the total of the registers a step uses on some rows, like its +Note rows: each register's current value added (1) or subtracted (-1)."""
-    return sum((current.get(name, NOTHING_ADDED) * values[row] for name, row in rows.items() if values[row]), NOTHING_ADDED)
+    return sum((current[name] * values[row] for name, row in rows.items() if values[row]), NOTHING_ADDED)
 
 
 def _controls_sent(*, values, time):

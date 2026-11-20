@@ -128,9 +128,6 @@ class RegisterTimeline:
         turned = Turned(registers=registers, turned=turned)
         for change in sorted(changes, key=_moment_of):
             for name, value in change.sets.items():
-                # A modulator's set starts its wave again, which the song's ModulatorClock follows; the registers pass over it.
-                if name not in registers:
-                    continue
                 values[name] = registers[name].held(value)
                 turned.forward(name)
             for name, amount in change.adds.items():
@@ -209,19 +206,11 @@ class RegisterRecorder:
 class RegisterReader:
     """The registers as one track's steps see them, from its scene's RegisterTimeline."""
 
-    __slots__ = ('_timeline', '_place', '_modulators')
+    __slots__ = ('_timeline', '_place')
 
-    def __init__(self, *, timeline, place, modulators=None):
+    def __init__(self, *, timeline, place):
         self._timeline = timeline
         self._place = place
-        # What gives the modulators' values at a time and a place, or None for a song whose modulators do not move.
-        self._modulators = modulators
-
-    def _with_modulators(self, *, values, time, place):
-        """Return the registers' values with the modulators' beside them, where the song's modulators move."""
-        if self._modulators is None:
-            return values
-        return {**values, **self._modulators(time=time, place=place)}
 
     def is_counting(self):
         """Return false: a finished clip's notes are silenced by probability and conditions as they play."""
@@ -229,15 +218,15 @@ class RegisterReader:
 
     def at_pass(self, *, time, sets, adds):
         """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
-        return self._with_modulators(values=self._timeline.values_at(time=time, place=AS_A_PASS_STARTS), time=time, place=AS_A_PASS_STARTS)
+        return self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
 
     def at_step(self, *, time, sets, adds):
         """Return the values a step sees at a time in the scene. What it sets and adds is already in the timeline."""
-        return self._with_modulators(values=self._timeline.values_at(time=time, place=self._place), time=time, place=self._place)
+        return self._timeline.values_at(time=time, place=self._place)
 
     def before_step(self, time):
         """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, after every earlier track's then."""
-        return self._with_modulators(values=self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE), time=time, place=self._place - BEFORE_OWN_CHANGE)
+        return self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE)
 
 
 class RegisterTrial(RegisterRecorder):
@@ -292,8 +281,6 @@ class RegisterSolo(RegisterRecorder):
 
     def _change(self, *, sets, adds):
         for name, value in sets.items():
-            if name not in self._registers:
-                continue
             self._values[name] = self._registers[name].held(value)
             self._turned.forward(name)
         for name, amount in adds.items():

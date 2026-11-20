@@ -87,7 +87,6 @@ class MainPage(Page):
     FILE = Binding(Key.F, legends.KeyName.F, labels.PageName.FILE)
     SONGS = Binding(Key.S, legends.KeyName.S, labels.PageName.SONGS)
     PATTERNS = Binding(Key.P, legends.KeyName.P, labels.PageName.PATTERNS)
-    MODULATORS = Binding(Key.M, legends.KeyName.M, labels.PageName.MODULATORS)
     GENERATORS = Binding(Key.G, legends.KeyName.G, labels.PageName.GENERATORS)
     SCALES = Binding(Key.Z, legends.KeyName.Z, labels.PageName.SCALES)
     GROOVES = Binding(Key.V, legends.KeyName.V, labels.PageName.GROOVES)
@@ -109,7 +108,7 @@ class MainPage(Page):
     FOOTER_HELP = Binding(Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
     FOOTER_ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.MSG_ABOUT_FOOTER_WHAT)
     # The pages in the order of their cells, four to a row.
-    PAGES = [FILE, SONGS, PATTERNS, MODULATORS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, ARRANGE, REAL_TIME]
+    PAGES = [FILE, SONGS, PATTERNS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, ARRANGE, REAL_TIME]
     IN_HELP = [*PAGES, OPEN_SET_HERE, EXPORT_HERE, IMPORT_HERE, QUIT, SELECT, OPEN]
     IN_LEGEND = [SELECT, OPEN, FOOTER_HELP, FOOTER_ABOUT]
 
@@ -320,16 +319,6 @@ class RegistersPage(FieldPage):
     MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
     MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    IN_HELP = [Page.BACK, MOVE, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR]
-    IN_LEGEND = IN_HELP
-
-
-class ModulatorsPage(FieldPage):
-    """The Modulators page, a grid of the four modulators by their settings, moved over as the Registers page is."""
-
-    MOVE = RegistersPage.MOVE
-    LESS = RegistersPage.LESS
-    MORE = RegistersPage.MORE
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR]
     IN_LEGEND = IN_HELP
 

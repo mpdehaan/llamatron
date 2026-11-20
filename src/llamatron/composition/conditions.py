@@ -102,7 +102,7 @@ def _is_number(value):
 
 def _check_number(*, name, part, value):
     """Refuse what a statement works with unless it is a register's name or an integer within the limits."""
-    if value not in file_format.STATEMENT_NAMES and not _is_number(value):
+    if value not in file_format.REGISTER_NAMES and not _is_number(value):
         raise InvalidValue(errors.ERR_STATEMENT_BAD_NUMBER.format(
             name=name, part=part, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, value=value))
 
@@ -111,8 +111,8 @@ def check_statement(*, name, statement):
     """Refuse one statement unless it is one of the three shapes, whole."""
     if not isinstance(statement, dict) or not set(statement) <= set(EVERY_PART):
         raise InvalidValue(errors.ERR_BAD_STATEMENT.format(name=name, value=statement))
-    if statement.get(StatementPart.REGISTER) not in file_format.STATEMENT_NAMES:
-        raise InvalidValue(errors.ERR_STATEMENT_BAD_REGISTER.format(name=name, names=listed(file_format.STATEMENT_NAMES), value=statement.get(StatementPart.REGISTER)))
+    if statement.get(StatementPart.REGISTER) not in file_format.REGISTER_NAMES:
+        raise InvalidValue(errors.ERR_STATEMENT_BAD_REGISTER.format(name=name, names=listed(file_format.REGISTER_NAMES), value=statement.get(StatementPart.REGISTER)))
     operator = statement.get(StatementPart.OPERATOR)
     if operator not in file_format.OPERATORS:
         raise InvalidValue(errors.ERR_STATEMENT_BAD_OPERATOR.format(name=name, choices=listed(file_format.OPERATORS), value=operator))
@@ -194,12 +194,12 @@ def with_statement(*, statements, place, statement):
 
 def _number(*, written, values):
     """Return what a statement works with as an integer: a register's value, or the number written."""
-    return values.get(written, 0) if written in file_format.STATEMENT_NAMES else written
+    return values[written] if written in file_format.REGISTER_NAMES else written
 
 
 def is_true(*, statement, values):
     """Return whether one statement holds for the registers' values."""
-    held = values.get(statement[StatementPart.REGISTER], 0)
+    held = values[statement[StatementPart.REGISTER]]
     operator = statement[StatementPart.OPERATOR]
     if operator in file_format.PARITY_OPERATORS:
         return (held % PARITY != NO_REMAINDER) == (operator == Operator.ODD)

@@ -188,8 +188,6 @@ MSG_CHAIN_STEP_AGAIN = '{name} {number} ({kind})'
 MSG_PATTERN_STEP_SHOWN = '(pattern)'
 # A list of chains, as a field shows it.
 MSG_CHAIN_JOIN = ', '
-# A rate in hertz, to the hundredth.
-MSG_HERTZ = '{:.2f}'
 MSG_SONG_SEED_SHOWN = '(song)'
 # The gauge of offsets (tui/components/signed_gauge.py): a value with its sign and a mark when the gauge is too short to
 # reach it, above or below, and the brackets around the cursor's step number and value.
