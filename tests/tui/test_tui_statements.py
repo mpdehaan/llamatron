@@ -81,7 +81,7 @@ class TestChainStatementsPage(StatementsTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.press(keybindings.MainPage.CHAINS, Key.ENTER)
+        await self.open_chain(ui_testing.NAMED)
         self.assertIsInstance(self.app.screen, ChainEditor)
         self.chain = self.app.screen.item
         await self.press(keybindings.ChainEditor.WHEN)

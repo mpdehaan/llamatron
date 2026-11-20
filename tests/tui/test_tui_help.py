@@ -71,7 +71,7 @@ class TestHelp(UITest):
         for keys in [
             [keybindings.MainPage.FILE], [DESCRIPTION_KEY], [Key.ESCAPE, Key.CTRL_O], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SONGS], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.PATTERNS], [Key.ENTER],
             [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER],
-            [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.CHAINS], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GENERATORS], [Key.ENTER],
+            [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.MODULATORS], [Key.ESCAPE, keybindings.MainPage.GENERATORS], [Key.ENTER],
             [Key.ESCAPE, Key.DOWN, Key.ENTER],
             [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SCALES], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GROOVES], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD], [Key.ESCAPE], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.ARRANGE], [Key.RIGHT, Key.ENTER],
             [Key.ESCAPE, Key.LEFT, Key.ENTER],

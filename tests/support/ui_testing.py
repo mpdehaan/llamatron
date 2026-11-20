@@ -497,6 +497,13 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         """Check that the screen's cursor is on what is named, as go_to() names it."""
         self.assertEqual(self.app.screen.under_cursor(), target)
 
+    async def open_chain(self, name):
+        """Open a chain's editor from the Generators page, where a chain is one more kind."""
+        await self.press(keybindings.MainPage.GENERATORS)
+        self.app.screen.put_cursor_on(kind=file_format.CHAIN_KIND, name=name)
+        await self.settle()
+        await self.press(Key.ENTER)
+
     async def select_field(self, label):
         """Move a settings page's cursor to the field with this label, wherever the page puts it, opening its section first where that is closed."""
         await UITest.go_to(self, label)

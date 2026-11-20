@@ -18,7 +18,6 @@
 
 from unittest import mock
 
-from llamatron.composition import file_format
 from llamatron.strings import labels, legends, marks, messages, names
 from llamatron.support import version
 from llamatron.tui import drawing, keybindings
@@ -29,12 +28,12 @@ from llamatron.tui.drawing import Box
 from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set import main_page
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.main_page import arrows_between, cell_positions, MainPage, moved
+from llamatron.tui.screens.set.modulators_page import ModulatorsPage
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -131,7 +130,7 @@ class TestMainPage(UITest):
             self.assertNotIn('« F1 »', self.text(), page)
 
     async def test_each_key_opens_its_page(self):
-        for name, page in [(keybindings.MainPage.FILE, FilePage), (keybindings.MainPage.SONGS, SongsPage), (keybindings.MainPage.PATTERNS, PatternsPage), (keybindings.MainPage.CHAINS, ChainsPage), (keybindings.MainPage.GENERATORS, GeneratorsPage), (keybindings.MainPage.SCALES, ScalesPage), (keybindings.MainPage.ARRANGE, ArrangePage)]:
+        for name, page in [(keybindings.MainPage.FILE, FilePage), (keybindings.MainPage.SONGS, SongsPage), (keybindings.MainPage.PATTERNS, PatternsPage), (keybindings.MainPage.MODULATORS, ModulatorsPage), (keybindings.MainPage.GENERATORS, GeneratorsPage), (keybindings.MainPage.SCALES, ScalesPage), (keybindings.MainPage.ARRANGE, ArrangePage)]:
             await self.press(name)
             self.assertIsInstance(self.app.screen, page)
             await self.press(Key.ESCAPE)
@@ -259,12 +258,12 @@ class TestMainPageOnAUsualConsole(UITest):
             self.assertEqual(next(line for line in lines if row in line).count('«'), main_page.COLUMNS)
         self.assertIn('« P »', next(line for line in lines if '« S »' in line))
         self.assertIn('« Z »', next(line for line in lines if '« S »' in line))
-        self.assertIn('« C »', next(line for line in lines if '« G »' in line))
+        self.assertIn('« M »', next(line for line in lines if '« G »' in line))
         self.assertIn('« V »', next(line for line in lines if '« G »' in line))
         self.assertIn('« R »', next(line for line in lines if '« I »' in line))
         self.assertIn('« T »', next(line for line in lines if '« I »' in line))
         opens = next(number for number, line in enumerate(lines) if '« O »' in line)
-        self.assertIn('« M »', lines[opens])
+        self.assertIn('« L »', lines[opens])
         self.assertIn('« F »', lines[opens])
         self.assertIn('« Ctrl+S »', lines[opens + 1])
         self.assertIn('« Q »', lines[opens + 1])
@@ -282,12 +281,11 @@ class TestMainPageOnAUsualConsole(UITest):
         counts = {item.keys[0]: page.count(item) for item in page.menu_items()}
         self.assertEqual(counts[first_key(keybindings.MainPage.SONGS)], len(self.document.song_names()))
         self.assertEqual(counts[first_key(keybindings.MainPage.PATTERNS)], len(setlist.get_pattern_names()))
-        self.assertEqual(counts[first_key(keybindings.MainPage.CHAINS)], len(setlist.get_chain_names()))
         self.assertEqual(counts[first_key(keybindings.MainPage.SCALES)], len(setlist.get_scale_names()))
         # The set's own grooves, never the factory ones, which every set has.
         self.assertEqual(counts[first_key(keybindings.MainPage.GROOVES)], 0)
-        self.assertEqual(counts[first_key(keybindings.MainPage.GENERATORS)], sum(len(setlist.get_generator_names(kind)) for kind in file_format.NAMED_GENERATORS))
-        for binding in (keybindings.MainPage.FILE, keybindings.MainPage.REGISTERS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
+        self.assertEqual(counts[first_key(keybindings.MainPage.GENERATORS)], len(setlist.every_generator_name()))
+        for binding in (keybindings.MainPage.FILE, keybindings.MainPage.REGISTERS, keybindings.MainPage.MODULATORS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
             self.assertIsNone(counts[first_key(binding)], binding)
         # The count sits one space in from the box's edge, on the selected cell as on the others.
         await self.press(Key.DOWN)
@@ -303,11 +301,11 @@ class TestMainPageOnAUsualConsole(UITest):
         await self.press(Key.RIGHT)
         self.assertIn(labels.PageName.PATTERNS, boxed_line(self.text()))
         await self.press(Key.DOWN)
-        self.assertIn(labels.PageName.CHAINS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.MODULATORS, boxed_line(self.text()))
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChainsPage)
+        self.assertIsInstance(self.app.screen, ModulatorsPage)
         await self.press(Key.ESCAPE)
-        self.assertIn(labels.PageName.CHAINS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.MODULATORS, boxed_line(self.text()))
 
     async def test_every_arrow_moves_by_the_geometry_drawn_and_stops_at_every_edge(self):
         # From each cell, where Up, Down, Left and Right go, the cell itself where the arrow stops at an edge.
@@ -315,13 +313,13 @@ class TestMainPageOnAUsualConsole(UITest):
         moves = {
             keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.ARRANGE),
             keys.SONGS: (keys.ARRANGE, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
-            keys.PATTERNS: (keys.ARRANGE, keys.CHAINS, keys.SONGS, keys.SCALES),
+            keys.PATTERNS: (keys.ARRANGE, keys.MODULATORS, keys.SONGS, keys.SCALES),
             keys.SCALES: (keys.ARRANGE, keys.GROOVES, keys.PATTERNS, keys.SCALES),
-            keys.GENERATORS: (keys.SONGS, keys.INSTRUMENTS, keys.GENERATORS, keys.CHAINS),
-            keys.CHAINS: (keys.PATTERNS, keys.REGISTERS, keys.GENERATORS, keys.GROOVES),
-            keys.GROOVES: (keys.SCALES, keys.REAL_TIME, keys.CHAINS, keys.GROOVES),
+            keys.GENERATORS: (keys.SONGS, keys.INSTRUMENTS, keys.GENERATORS, keys.MODULATORS),
+            keys.MODULATORS: (keys.PATTERNS, keys.REGISTERS, keys.GENERATORS, keys.GROOVES),
+            keys.GROOVES: (keys.SCALES, keys.REAL_TIME, keys.MODULATORS, keys.GROOVES),
             keys.INSTRUMENTS: (keys.GENERATORS, keys.OPEN_SET_HERE, keys.INSTRUMENTS, keys.REGISTERS),
-            keys.REGISTERS: (keys.CHAINS, keys.IMPORT_HERE, keys.INSTRUMENTS, keys.REAL_TIME),
+            keys.REGISTERS: (keys.MODULATORS, keys.IMPORT_HERE, keys.INSTRUMENTS, keys.REAL_TIME),
             keys.REAL_TIME: (keys.GROOVES, keys.FILE, keys.REGISTERS, keys.REAL_TIME),
             keys.OPEN_SET_HERE: (keys.INSTRUMENTS, keys.SAVE, keys.OPEN_SET_HERE, keys.IMPORT_HERE),
             keys.IMPORT_HERE: (keys.REGISTERS, keys.EXPORT_HERE, keys.OPEN_SET_HERE, keys.FILE),

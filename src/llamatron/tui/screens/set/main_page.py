@@ -36,20 +36,19 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
 
-from llamatron.composition import sections
 from llamatron.composition.sections import Section
 from llamatron.strings import errors, help as help_text, labels as labels_text, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.drawing import Box, Canvas, padded, Style
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.importing import import_midi
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
+from llamatron.tui.screens.set.modulators_page import ModulatorsPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
@@ -78,13 +77,13 @@ LINES_ABOVE_BAR = 1
 ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
-    labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.CHAINS: themes.CHAINS, labels_text.PageName.GENERATORS: themes.GENERATORS,
+    labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.MODULATORS: themes.MODULATORS, labels_text.PageName.GENERATORS: themes.GENERATORS,
     labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.REGISTERS: themes.REGISTERS,
     labels_text.PageName.FILE: themes.SET_FILE,
 }
 # The pages whose cell counts the set's things, by the section counted. Generators and Grooves are counted on their own.
 COUNTED_SECTIONS = {
-    labels_text.PageName.SONGS: Section.SONGS, labels_text.PageName.PATTERNS: Section.PATTERNS, labels_text.PageName.CHAINS: Section.CHAINS, labels_text.PageName.SCALES: Section.SCALES,
+    labels_text.PageName.SONGS: Section.SONGS, labels_text.PageName.PATTERNS: Section.PATTERNS, labels_text.PageName.SCALES: Section.SCALES,
     labels_text.PageName.INSTRUMENTS: Section.INSTRUMENTS,
 }
 # What each action cell in the row under the pages is called: Save by its everywhere key, Open and Export by the main screen's own letters.
@@ -177,7 +176,7 @@ class MainPage(Page):
             self.bind(self.KEYS.FILE, action=lambda: self.show_page(FilePage(self.holder))),
             self.bind(self.KEYS.SONGS, action=lambda: self.show_page(SongsPage(self.holder))),
             self.bind(self.KEYS.PATTERNS, action=lambda: self.show_page(PatternsPage(self.holder))),
-            self.bind(self.KEYS.CHAINS, action=lambda: self.show_page(ChainsPage(self.holder))),
+            self.bind(self.KEYS.MODULATORS, action=lambda: self.show_page(ModulatorsPage(self.holder))),
             self.bind(self.KEYS.GENERATORS, action=lambda: self.show_page(GeneratorsPage(self.holder))),
             self.bind(self.KEYS.SCALES, action=lambda: self.show_page(ScalesPage(self.holder))),
             self.bind(self.KEYS.GROOVES, action=lambda: self.show_page(GroovesPage(self.holder))),
@@ -239,7 +238,7 @@ class MainPage(Page):
         return [
             [arrange, arrange, arrange],
             [pages[keys.SONGS], pages[keys.PATTERNS], pages[keys.SCALES]],
-            [pages[keys.GENERATORS], pages[keys.CHAINS], pages[keys.GROOVES]],
+            [pages[keys.GENERATORS], pages[keys.MODULATORS], pages[keys.GROOVES]],
             [pages[keys.INSTRUMENTS], pages[keys.REGISTERS], pages[keys.REAL_TIME]],
             [open_set, import_midi_here, pages[keys.FILE]],
             [save, export, quit_here],
@@ -311,13 +310,13 @@ class MainPage(Page):
         return drawing.NOTHING
 
     def count(self, item):
-        """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Arrange and the actions."""
+        """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Modulators, Arrange and the actions."""
         setlist = self.document().get_setlist()
         name = cell_name(item)
         if name == labels_text.PageName.REAL_TIME:
             return marks.MSG_REAL_TIME_ON_MARK if setlist.is_real_time() else marks.MSG_REAL_TIME_OFF_MARK
         if name == labels_text.PageName.GENERATORS:
-            return sum(len(setlist.get_item_names(section)) for section in sections.GENERATOR_KINDS)
+            return len(setlist.every_generator_name())
         if name == labels_text.PageName.GROOVES:
             # The set's own grooves: the factory ones are always there, so counting them would say nothing.
             return len(setlist.get_own_groove_names())

@@ -49,7 +49,7 @@ visits the same five pitches in a shuffled order.
 
 | chords | chains | guitarify | key changes | tempo changes | registers | conditional execution |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md#conditional-execution) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md#conditional-execution) |
 <!-- end of the generated summary of 27_advanced_conditionals -->
 
 [![The Advanced Conditionals demo, 27_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)
@@ -69,7 +69,7 @@ playing, so the demo shows what its Shape and Strokes sections do to the same ki
 
 | chords | chains | guitarify | key changes | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) |
 <!-- end of the generated summary of 23_guitarify -->
 
 <a id="hello_world"></a>
@@ -105,7 +105,7 @@ keep their order.
 
 | chains | guitarify | directions |
 | :---: | :---: | :---: |
-| [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
+| [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
 <!-- end of the generated summary of 29_pattern_lists -->
 
 <a id="scale"></a>

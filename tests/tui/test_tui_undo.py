@@ -28,7 +28,7 @@ import os
 import unittest
 
 from llamatron.composition import defaults, generator_settings
-from llamatron.composition.file_format import DriftValue, DriftVersion, EuclidPart, GeneratorKind, ReadyBar, RegisterName, RegisterSetting, Row, Section, ShapePart, SongSetting, StrumPart
+from llamatron.composition.file_format import DriftValue, DriftVersion, EuclidPart, GeneratorKind, ModulatorName, ReadyBar, RegisterName, RegisterSetting, Row, Section, ShapePart, SongSetting, StrumPart
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name, new_name
@@ -47,7 +47,6 @@ from llamatron.tui.screens.generators import chords_editor, generator_pages
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
-from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
@@ -69,6 +68,8 @@ from tests.support.ui_testing import a_song, fixed_text, key_of, leaf_pages, UIT
 SECOND_SONG = 'second'
 RENAMED = 'renamed'
 NEW_CHAIN = 'lift'
+# Where Maximum stands among a modulator's columns.
+MAXIMUM_COLUMN = 5
 # A shape's end left blank plays as 100, and one press of [ (dec) takes it down to 99.
 SHAPE_NUDGED_DOWN = 99
 NEW_ARP = 'fast'
@@ -394,21 +395,22 @@ class TestPatternEditorUndo(UndoTest):
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
-class TestChainsPageUndo(UndoTest):
+class TestModulatorsPageUndo(UndoTest):
 
-    async def test_adding_a_chain_is_one_step(self):
+    async def test_a_setting_is_one_step_and_the_cursor_stays(self):
+        await self.press(keybindings.MainPage.MODULATORS)
         before = self.data()
-        await self.press(keybindings.MainPage.CHAINS, keybindings.ChainsPage.ADD)
-        await self.type(NEW_CHAIN)
-        await self.press(Key.ENTER)
-        self.assertIn(NEW_CHAIN, self.document.song().get_chain_names())
+        await self.select_field(labels.MSG_MODULATOR_FIELD_LABEL.format(name=ModulatorName.WMOD, what=labels.MSG_MODULATOR_FIELD_WHATS[MAXIMUM_COLUMN]))
+        await self.press(key_of(binding=keybindings.ModulatorsPage.MORE, key=Key.RIGHT_BRACKET))
+        self.assertEqual(self.document.song().get_modulator(ModulatorName.WMOD).get_maximum(), 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
 class TestChainStatementsPageUndo(UndoTest):
 
     async def test_a_statement_is_one_step(self):
-        await self.press(keybindings.MainPage.CHAINS, Key.ENTER, keybindings.ChainEditor.WHEN)
+        await self.open_chain(ui_testing.NAMED)
+        await self.press(keybindings.ChainEditor.WHEN)
         self.assertIsInstance(self.app.screen, ChainStatementsPage)
         before = self.data()
         await self.press(Key.DOWN, Key.ENTER)
@@ -420,14 +422,14 @@ class TestChainStatementsPageUndo(UndoTest):
 class TestChainEditorUndo(UndoTest):
 
     async def test_copying_a_step_is_one_step(self):
-        await self.press(keybindings.MainPage.CHAINS, Key.ENTER)
+        await self.open_chain(ui_testing.NAMED)
         self.assertIsInstance(self.app.screen, ChainEditor)
         before = self.data()
         await self.press(keybindings.ChainEditor.COPY)
         await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_undoing_a_rename_keeps_the_editor_on_the_chain_under_its_old_name(self):
-        await self.press(keybindings.MainPage.CHAINS, Key.ENTER)
+        await self.open_chain(ui_testing.NAMED)
         name = self.app.screen.item
         await self.press(keybindings.ChainEditor.RENAME)
         self.app.screen.value = RENAMED
@@ -435,11 +437,10 @@ class TestChainEditorUndo(UndoTest):
         await self.check_rename_follows(old=name, new=RENAMED)
 
     async def test_undoing_the_add_while_the_editor_is_open_goes_back_to_the_list(self):
-        await self.press(keybindings.MainPage.CHAINS, keybindings.ChainsPage.ADD)
-        await self.type(NEW_CHAIN)
-        await self.press(Key.ENTER, Key.ENTER)
+        await self.press(keybindings.MainPage.GENERATORS, keybindings.GeneratorsPage.ADD)
+        await self.pick(labels.MSG_CHAIN_LABEL)
         self.assertIsInstance(self.app.screen, ChainEditor)
-        await self.check_undo_goes_back_to(ChainsPage)
+        await self.check_undo_goes_back_to(GeneratorsPage)
 
 
 class TestGeneratorsPageUndo(UndoTest):

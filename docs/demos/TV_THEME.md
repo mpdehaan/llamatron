@@ -31,7 +31,7 @@ bridge through four dominant chords; choruses for a muted trumpet and a flute.
 
 | chords | chains | ties | grooves | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of aunt_clara -->
 
 <a id="come_on_down"></a>
@@ -47,7 +47,7 @@ drum break.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of come_on_down -->
 
 <a id="eats_cats"></a>
@@ -62,7 +62,7 @@ brass tune over I, vi and the flat seventh; a second strain and a sax chorus.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of eats_cats -->
 
 <a id="forgot_your_name"></a>
@@ -77,7 +77,7 @@ on I bVII IV V; a bridge, and the piano alone to end.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of forgot_your_name -->
 
 <a id="meeting_the_eye"></a>
@@ -93,7 +93,7 @@ answers; one low verse; a drum break with the robot alone; the chorus and the sl
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of meeting_the_eye -->
 
 <a id="mysterious_spooky"></a>
@@ -109,7 +109,7 @@ middle.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of mysterious_spooky -->
 
 <a id="not_painless"></a>
@@ -124,7 +124,7 @@ VII i; the tune's lines each answered; about a minute, as a theme runs.
 
 | chords | chains | guitarify | ties | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of not_painless -->
 
 <a id="phoenix_foundation"></a>
@@ -139,7 +139,7 @@ answering, a climbing middle part and the tune's first half to close, in about a
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of phoenix_foundation -->
 
 <a id="sax_reindeer"></a>
@@ -155,7 +155,7 @@ IV, I and a dominant II; the last time a step higher.
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of sax_reindeer -->
 
 <a id="spy_hunting"></a>
@@ -171,7 +171,7 @@ once, the riff moves to iv and back.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of spy_hunting -->
 
 <a id="three_hour_tour"></a>
@@ -188,7 +188,7 @@ about a minute.
 
 | chords | chains | guitarify | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of three_hour_tour -->
 
 <a id="tropical_51"></a>
@@ -204,7 +204,7 @@ thing rises a step, twice.
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of tropical_51 -->
 
 <a id="uk_butler"></a>
@@ -220,5 +220,5 @@ filling each gap; the piano takes a chorus in octaves; a scatted tag on a muted 
 
 | chords | chains | ties | grooves | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of uk_butler -->

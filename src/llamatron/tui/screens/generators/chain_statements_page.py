@@ -31,7 +31,7 @@ class ChainStatementsPage(ShowsNamedItem, FieldPage):
     KEYS = keybindings.ChainStatementsPage
     HELP = help_text.HELP_CHAIN_STATEMENTS_PAGE
     SECTION = Section.CHAINS
-    CRUMBS_BEFORE = (labels.Crumb.CHAINS,)
+    CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     CRUMBS_AFTER = (labels.Crumb.STATEMENTS,)
 
     def __init__(self, *, holder, name):

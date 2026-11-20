@@ -18,7 +18,7 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
-from llamatron.composition.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.composition.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, RateIn, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings, WaveShape
 from llamatron.tui.keys import RowSection
 
 
@@ -167,7 +167,7 @@ class PageName:
     FILE = 'File/Global'
     SONGS = 'Songs'
     PATTERNS = 'Patterns'
-    CHAINS = 'Chains'
+    MODULATORS = 'Modulators'
     GENERATORS = 'Generators'
     SCALES = 'Scales'
     GROOVES = 'Grooves'
@@ -181,7 +181,7 @@ class PageName:
     SAVE = 'Save'
     OPEN = 'Open'
     EXPORT = 'Export'
-    IMPORT = 'Import'
+    IMPORT = 'Load MIDI'
     UNDO = 'Undo'
     REDO = 'Redo'
     QUIT = 'Quit'
@@ -200,7 +200,7 @@ class Crumb:
     OPEN = 'OPEN'
     IMPORT_MIDI = 'IMPORT MIDI'
     PATTERNS = 'PATTERNS'
-    CHAINS = 'CHAINS'
+    MODULATORS = 'MODULATORS'
     GENERATORS = 'GENERATORS'
     CHORDS = 'CHORDS'
     VOICE_LEADING = 'VOICE LEADING'
@@ -630,6 +630,15 @@ MSG_CHORD_NAMES = {
 # Each register's settings on the page, labelled like "AX minimum", in the order they're shown.
 # The Registers page's columns, in the grid's order.
 MSG_REGISTER_COLUMNS = ('Inc max', 'Reset behavior', 'Minimum', 'Default', 'Maximum', 'Scene reset')
+# tui/screens/set/modulators_page.py
+MSG_MODULATOR_COLUMNS = ('Shape', 'Rate', 'Rate in', 'Minimum', 'Start', 'Maximum', 'Invert')
+MSG_MODULATOR_FIELD_LABEL = '{name} {what}'
+MSG_MODULATOR_FIELD_WHATS = ('shape', 'rate', 'rate in', 'minimum', 'start', 'maximum', 'invert')
+MSG_WAVE_SHAPE_NAMES = {
+    WaveShape.SINE: 'sine', WaveShape.TRIANGLE: 'triangle', WaveShape.SQUARE: 'square', WaveShape.SAW: 'saw', WaveShape.REVERSE_SAW: 'reverse saw',
+    WaveShape.SAMPLE_AND_HOLD: 'sample and hold',
+}
+MSG_RATE_IN_NAMES = {RateIn.BARS: 'bars', RateIn.HERTZ: 'Hz'}
 MSG_REGISTER_FIELD_LABEL = '{name} {what}'
 MSG_REGISTER_NUMBER_FIELDS = [(RegisterSetting.DEFAULT, 'default'), (RegisterSetting.MINIMUM, 'minimum'), (RegisterSetting.MAXIMUM, 'maximum')]
 MSG_REGISTER_RESET_BEHAVIOR_FIELD = 'reset behavior'

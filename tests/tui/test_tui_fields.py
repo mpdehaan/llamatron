@@ -54,6 +54,7 @@ from llamatron.tui.screens.generators.swell_editor import SwellEditor
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
+from llamatron.tui.screens.set.modulators_page import ModulatorsPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.song_page import SongPage
@@ -254,8 +255,8 @@ class TestChoiceField(unittest.TestCase):
 AN_INSTRUMENT = 'synth'
 
 
-class TestFieldsOnThePages(UITest):
-    """The number fields and toggles of the real settings pages."""
+class FieldPagesTest(UITest):
+    """What the tests of the real settings pages share: the pages, every settings page of the tracker, and showing one."""
 
     def pages(self):
         holder = self.app.screen.holder
@@ -263,7 +264,7 @@ class TestFieldsOnThePages(UITest):
             self.document.add_instrument(AN_INSTRUMENT)
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=ui_testing.LEAD), ArpEditor(holder=holder, name=ui_testing.UP_ARP),
-            TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
+            TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), ModulatorsPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
             ProgressionEditor(holder=holder, name=ui_testing.POP), VoiceLeadingEditor(holder=holder, name=ui_testing.SMOOTH), HocketEditor(holder=holder, name=ui_testing.TRADE), FollowChordsEditor(holder=holder, name=ui_testing.FOLLOWS), PhrasingEditor(holder=holder, name=ui_testing.BREATHES), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), GuitarifyEditor(holder=holder, name=ui_testing.PICKED), StrumEditor(holder=holder, name=ui_testing.FOLK), EuclidEditor(holder=holder, name=ui_testing.CLAVE), GlideEditor(holder=holder, name=ui_testing.SLIDES), ShortenEditor(holder=holder, name=ui_testing.CLIPS),
             RushEditor(holder=holder, name=ui_testing.PUSH), DragEditor(holder=holder, name=ui_testing.LAZY),
             DensityEditor(holder=holder, name=ui_testing.THIN), SwellEditor(holder=holder, name=ui_testing.FADE), ArticulateEditor(holder=holder, name=ui_testing.CLIPPED),
@@ -283,30 +284,12 @@ class TestFieldsOnThePages(UITest):
         self.app.screen.show_page(page)
         await self.pilot.pause()
 
+class TestFieldsOnThePages(FieldPagesTest):
+    """The number fields and toggles of the real settings pages."""
+
     async def test_every_page_of_fields_is_toured(self):
         every = sorted(page.__name__ for page in leaf_pages() if issubclass(page, FieldPage))
         self.assertEqual(sorted(type(page).__name__ for page in self.pages()), every)
-
-    async def test_every_number_with_ends_stops_at_them_however_long_an_arrow_is_held(self):
-        for page in self.pages():
-            await self.show(page)
-            for place, field in enumerate(page.fields()):
-                if not isinstance(field, NumberField) or field.lowest is None or field.highest is None:
-                    continue
-                page.cursor.set_place(place)
-                for direction in (key_table.STEP_FORWARD, key_table.STEP_BACK):
-                    for _ in range(MORE_THAN_ANY_RANGE):
-                        before = page.fields()[place].number
-                        page.fields()[place].adjust(direction)
-                        if page.fields()[place].number == before:
-                            break
-                    for _ in range(STEPS_PAST_THE_END):
-                        page.fields()[place].adjust(direction)
-                    now = page.fields()[place]
-                    self.assertGreaterEqual(now.counted_from(), now.lowest, (type(page).__name__, now.label))
-                    self.assertLessEqual(now.counted_from(), now.highest, (type(page).__name__, now.label))
-            self.app.pop_screen()
-            await self.pilot.pause()
 
     async def test_every_toggle_answers_to_space_and_to_enter(self):
         found = 0
@@ -371,6 +354,56 @@ class TestFieldsOnThePages(UITest):
         self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=limits.MIN_REPEAT)
         await self.press(Key.LEFT)
         self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).get_repeat(), limits.MIN_REPEAT)
+
+
+
+class NumbersStopAtTheirEnds:
+    """Every number with ends stops at them, a quarter of the settings pages to a class, since holding an arrow down on every number
+    of every page takes long. A test class takes it with FieldPagesTest and says its quarter."""
+
+    __slots__ = ()
+
+    # Which quarter of the pages the class goes through, of how many.
+    PART = 0
+    PARTS = 4
+
+    async def test_every_number_with_ends_stops_at_them_however_long_an_arrow_is_held(self):
+        pages = self.pages()
+        for page in pages[self.PART * len(pages) // self.PARTS:(self.PART + 1) * len(pages) // self.PARTS]:
+            await self.show(page)
+            for place, field in enumerate(page.fields()):
+                if not isinstance(field, NumberField) or field.lowest is None or field.highest is None:
+                    continue
+                page.cursor.set_place(place)
+                for direction in (key_table.STEP_FORWARD, key_table.STEP_BACK):
+                    for _ in range(MORE_THAN_ANY_RANGE):
+                        before = page.fields()[place].number
+                        page.fields()[place].adjust(direction)
+                        if page.fields()[place].number == before:
+                            break
+                    for _ in range(STEPS_PAST_THE_END):
+                        page.fields()[place].adjust(direction)
+                    now = page.fields()[place]
+                    self.assertGreaterEqual(now.counted_from(), now.lowest, (type(page).__name__, now.label))
+                    self.assertLessEqual(now.counted_from(), now.highest, (type(page).__name__, now.label))
+            self.app.pop_screen()
+            await self.pilot.pause()
+
+
+class TestNumbersStopAtTheirEndsOnTheFirstQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
+    PART = 0
+
+
+class TestNumbersStopAtTheirEndsOnTheSecondQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
+    PART = 1
+
+
+class TestNumbersStopAtTheirEndsOnTheThirdQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
+    PART = 2
+
+
+class TestNumbersStopAtTheirEndsOnTheFourthQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
+    PART = 3
 
 
 if __name__ == '__main__':

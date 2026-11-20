@@ -26,7 +26,7 @@ riff on IV iii vi opens and returns; a marimba figure, congas and a flute solo.
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of bless_the_rains -->
 
 <a id="chord_progression_generator"></a>
@@ -42,7 +42,7 @@ chords inverted so that they move less, and Pop with the pad through a Voice lea
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 06_chord_progression_generator -->
 
 <a id="follow_chords"></a>
@@ -60,7 +60,7 @@ chord twice a bar, and follow chords that a Progression makes on that track.
 
 | chords | chains | follow chords | ties | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/FOLLOW_CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/FOLLOW_CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 24_follow_chords -->
 
 <a id="goodnight_world"></a>
@@ -75,7 +75,7 @@ half a bar each; a pre-chorus on VI V i iv and a bridge on a suspended i and a m
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of goodnight_world -->
 
 <a id="peanut_buttercup"></a>
@@ -91,7 +91,7 @@ verse goes I V bVII IV; three hits and an answer on IV, iii and ii, and held not
 
 | chords | chains | ties | grooves | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of peanut_buttercup -->
 
 <a id="phrasing"></a>
@@ -107,7 +107,7 @@ with the settings together.
 
 | chords | chains | phrasing | ties |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../generators/PHRASING.md) | [✓](../PATTERNS.md#ties) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/PHRASING.md) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of 25_phrasing -->
 
 <a id="rick_rolling"></a>
@@ -122,5 +122,5 @@ drum fill opens, the band stops before each chorus, and the voice sits low.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of rick_rolling -->

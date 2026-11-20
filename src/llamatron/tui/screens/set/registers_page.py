@@ -20,7 +20,7 @@ from rich.text import Text
 
 from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RegisterSetting
-from llamatron.strings import help as help_text, labels, legends, messages
+from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.drawing import cursor_mark, padded, Style
@@ -115,13 +115,20 @@ class RegistersPage(FieldPage):
             column = cursor_moved(place=column, name=name, count=GRID_COLUMNS)
         self.cursor.set_place(row * GRID_COLUMNS + column)
 
+    def widest_values(self):
+        """Return the text each column is as wide as: its heading or the widest value it can ever hold, so that changing a value
+        never moves the columns beside it."""
+        numbers = [str(limits.MIN_REGISTER_VALUE), str(limits.MAX_REGISTER_VALUE)]
+        held = [numbers, labels.MSG_RESET_BEHAVIOR_NAMES.values(), numbers, numbers, numbers, [marks.MSG_TOGGLE_ON, marks.MSG_FIELD_TOGGLE_OFF]]
+        return [max([heading, *values], key=len) for heading, values in zip(labels.MSG_REGISTER_COLUMNS, held)]
+
     def body(self, *, width, height):
         """Return the grid: the settings' names over their columns, then a row for each register, the cursor's cell in reverse
         video as in the other grids, and under it the cursor's setting in full."""
         fields = self.fields()
         self.field()
         cells = [[fields[row * GRID_COLUMNS + column].value() for column in range(GRID_COLUMNS)] for row in range(len(file_format.REGISTER_NAMES))]
-        widths = [max(len(labels.MSG_REGISTER_COLUMNS[column]), *(len(str(cells[row][column])) for row in range(len(file_format.REGISTER_NAMES)))) + CELL_PADDING for column in range(GRID_COLUMNS)]
+        widths = [len(widest) + CELL_PADDING for widest in self.widest_values()]
         heading = Text(drawing.SPACE * NAME_WIDTH, style=Style.BOLD, no_wrap=True)
         for column, name in enumerate(labels.MSG_REGISTER_COLUMNS):
             heading.append(padded(name.ljust(widths[column] - CELL_PADDING)), style=Style.BOLD)

@@ -202,7 +202,7 @@ class What:
     UNDO = 'UNDO'
     REDO = 'REDO'
     EXPORT = 'EXPORT'
-    IMPORT_MIDI = 'IMPORT MIDI'
+    IMPORT_MIDI = 'LOAD MIDI'
     QUIT = 'QUIT'
     ABOUT = 'ABOUT'
     # Ctrl+T, the emergency stop: note offs, all notes off and all sound off on every channel the instruments use.
@@ -257,7 +257,6 @@ MSG_TO_TEXT_WHAT = 'back to the text'
 # How an item is named when deleting it, like "pattern tune".
 MSG_PATTERN_WHAT = 'pattern {name}'
 MSG_SCALE_WHAT = 'scale {name}'
-MSG_CHAIN_WHAT = 'chain {name}'
 MSG_GENERATOR_WHAT = '{label} {name}'
 MSG_NO_DEFAULT_VELOCITY_WHAT = 'default'
 MSG_NO_TRANSPOSE_WHAT = 'no transpose'

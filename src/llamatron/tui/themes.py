@@ -24,7 +24,7 @@ from llamatron.composition.file_format import Section
 
 SONGS = (0, 90, 255)
 PATTERNS = (0, 200, 0)
-CHAINS = (150, 0, 255)
+MODULATORS = (150, 0, 255)
 GENERATORS = (220, 0, 220)
 SCALES = (0, 170, 170)
 GROOVES = (255, 128, 0)
@@ -38,7 +38,7 @@ FROM_ARRANGE = (0, 200, 230)
 WIZARD = (0, 255, 255)
 # The colour of each section's pages, every generator section's the generators' one.
 SECTION_THEMES = {
-    Section.SONGS: SONGS, Section.PATTERNS: PATTERNS, Section.CHAINS: CHAINS, Section.SCALES: SCALES, Section.GROOVES: GROOVES,
+    Section.SONGS: SONGS, Section.PATTERNS: PATTERNS, Section.CHAINS: GENERATORS, Section.SCALES: SCALES, Section.GROOVES: GROOVES,
     Section.INSTRUMENTS: INSTRUMENTS, Section.TRACKS: FROM_ARRANGE, **{section: GENERATORS for section in file_format.NAMED_GENERATORS.values()},
 }
 

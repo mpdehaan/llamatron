@@ -100,7 +100,7 @@ class TestDetails(unittest.TestCase):
         self.assertEqual(texts(clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot()))[1], marks.MSG_DETAILS_ADD_CHAIN)
         # A chain is drawn in the chains' theme colour and a generator in the generators', since a kind has one colour everywhere.
         lines = clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot())
-        self.assertEqual(lines[0].style, themes.text_style(themes.CHAINS))
+        self.assertEqual(lines[0].style, themes.text_style(themes.GENERATORS))
         self.assertEqual(lines[1].target.kind, arrange_details.ADD_CHAIN)
         self.document.change(self.document.song().get_scene(FIRST_SCENE).set_chain_names, names=[ui_testing.NAMED, ui_testing.NAMED], song=self.document.song())
         self.assertEqual(self.scene_lines().count(marks.MSG_DETAILS_CHAIN.format(name=ui_testing.NAMED)), 2)

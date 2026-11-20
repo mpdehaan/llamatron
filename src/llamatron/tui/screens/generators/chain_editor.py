@@ -64,7 +64,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
     columns = ((labels_text.Column.SELECT_CHAIN_LINKS, None, Align.LEFT),)
 
     SECTION = Section.CHAINS
-    CRUMBS_BEFORE = (labels_text.Crumb.CHAINS,)
+    CRUMBS_BEFORE = (labels_text.Crumb.GENERATORS,)
     RENAME_PROMPT = messages.MSG_RENAME_CHAIN_PROMPT
 
     def steps(self):

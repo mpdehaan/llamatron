@@ -25,7 +25,6 @@ from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
@@ -40,7 +39,7 @@ class TestPlusRow(UITest):
 
     async def test_every_list_has_one(self):
         for keys, page in [
-            ([keybindings.MainPage.CHAINS], ChainsPage), ([keybindings.MainPage.SCALES], ScalesPage), ([keybindings.MainPage.GROOVES], GroovesPage),
+            ([keybindings.MainPage.SCALES], ScalesPage), ([keybindings.MainPage.GROOVES], GroovesPage),
             ([keybindings.MainPage.INSTRUMENTS], InstrumentsPage),
         ]:
             await self.press(*keys)
@@ -49,8 +48,8 @@ class TestPlusRow(UITest):
             await self.press(Key.ESCAPE)
 
     async def test_down_past_the_last_row_goes_to_it_and_up_from_the_top_stays_there(self):
-        names = self.document.get_setlist().get_chain_names()
-        await self.press(keybindings.MainPage.CHAINS, Key.UP)
+        names = self.document.get_setlist().get_scale_names()
+        await self.press(keybindings.MainPage.SCALES, Key.UP)
         self.assertEqual(self.app.screen.current(), names[0])
         await self.press(*[Key.DOWN] * len(names))
         self.assertIsNone(self.app.screen.current())
@@ -66,10 +65,10 @@ class TestPlusRow(UITest):
         self.assertIsInstance(self.app.screen, PromptDialog)
 
     async def test_backspace_and_copy_do_nothing_on_it(self):
-        names = self.document.get_setlist().get_chain_names()
-        await self.press(keybindings.MainPage.CHAINS, *[Key.DOWN] * len(names), Key.BACKSPACE, keybindings.ChainsPage.COPY, keybindings.ChainsPage.MOVE)
-        self.assertEqual(self.document.get_setlist().get_chain_names(), names)
-        self.assertIsInstance(self.app.screen, ChainsPage)
+        names = self.document.get_setlist().get_scale_names()
+        await self.press(keybindings.MainPage.SCALES, *[Key.DOWN] * len(names), Key.BACKSPACE, keybindings.ScalesPage.COPY, keybindings.ScalesPage.MOVE)
+        self.assertEqual(self.document.get_setlist().get_scale_names(), names)
+        self.assertIsInstance(self.app.screen, ScalesPage)
 
     async def test_lists_that_cannot_add_have_none(self):
         await self.press(keybindings.MainPage.OPEN_SET_HERE)
