@@ -27,11 +27,10 @@ other way, later tracks' llamas over earlier ones. The amounts are named constan
 
 import colorsys
 import math
-from rich.color import Color
-from rich.style import Style
 from rich.text import Text
 
 from llamatron.strings import visualizers
+from llamatron.visualizers.colour_styles import rgb_style
 from llamatron.visualizers.visualizer import Visualizer
 
 # The drawings, smallest first, each facing left, its head at the left, and mirrored to face right.
@@ -89,7 +88,7 @@ class Llama:
 class Llamas(Visualizer):
     """A parade of ASCII llamas, one for each track that plays."""
 
-    __slots__ = ('_llamas', '_motion', '_styles', '_drawings')
+    __slots__ = ('_llamas', '_motion', '_drawings')
 
     NAME = visualizers.MSG_LLAMAS
     OPTION = 'llamas'
@@ -98,7 +97,6 @@ class Llamas(Visualizer):
         super().__init__()
         self._llamas = {}
         self._motion = 0.0
-        self._styles = {}
         self._drawings = {(size, facing): (mirrored(drawing) if facing > 0 else drawing) for size, drawing in enumerate(SIZES) for facing in (1, -1)}
 
     def llama_count(self):
@@ -155,10 +153,7 @@ class Llamas(Visualizer):
         hue = (track * TRACK_HUE_STEP + now * HUE_DRIFT_PER_SECOND) % 1.0
         brightness = RESTING_BRIGHTNESS + (PLAYING_BRIGHTNESS - RESTING_BRIGHTNESS) * min(llama.energy, 1.0)
         red, green, blue = (int(channel * WHOLE) // COLOUR_STEP * COLOUR_STEP for channel in colorsys.hsv_to_rgb(hue, SATURATION, brightness))
-        key = (red, green, blue)
-        if key not in self._styles:
-            self._styles[key] = Style(color=Color.from_rgb(red, green, blue))
-        return self._styles[key]
+        return rgb_style((red, green, blue))
 
     def drawn(self, *, width, height, now, beats):
         """Return the area as lines of text, each llama's drawing laid over the ones before it, at its place, bob and hop."""

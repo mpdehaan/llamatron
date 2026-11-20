@@ -22,6 +22,7 @@ for each radius, added into a field at a place, clipped at the field's edges. A 
 field into its neighbours, as colour bleeds in water.
 """
 
+import functools
 import numpy
 
 # A soft disc's weights run from nothing at its rim to this at its middle, so that a sum stays whole numbers.
@@ -38,26 +39,26 @@ def ripple_step(*, current, previous, damping_shift):
     return following
 
 
+@functools.cache
+def disc_kernel(radius):
+    """Return the weights of a soft disc of a radius in cells, falling from FULL_WEIGHT at its middle to nothing at its rim, made
+    once for each radius. Every caller only reads it."""
+    span = numpy.arange(-radius, radius + 1)
+    distance = numpy.hypot(span[:, None], span[None, :])
+    falling = numpy.clip(1.0 - distance / (radius + 1), 0.0, 1.0)
+    kernel = (falling * falling * FULL_WEIGHT).astype(numpy.int32)
+    kernel.flags.writeable = False
+    return kernel
+
+
 class Discs:
-    """Soft discs by radius, each a square kernel of weights, made the first time a radius is asked for."""
+    """Soft discs added into a field, each a square kernel of weights by its radius."""
 
-    __slots__ = ('_kernels',)
-
-    def __init__(self):
-        self._kernels = {}
-
-    def kernel(self, radius):
-        """Return the weights of a soft disc of a radius in cells, falling from FULL_WEIGHT at its middle to nothing at its rim."""
-        if radius not in self._kernels:
-            span = numpy.arange(-radius, radius + 1)
-            distance = numpy.hypot(span[:, None], span[None, :])
-            falling = numpy.clip(1.0 - distance / (radius + 1), 0.0, 1.0)
-            self._kernels[radius] = (falling * falling * FULL_WEIGHT).astype(numpy.int32)
-        return self._kernels[radius]
+    __slots__ = ()
 
     def add(self, *, field, row, column, radius, amount):
         """Add a soft disc into a field at a place, its middle adding amount, which may be an array of one value per channel, clipped at the field's edges."""
-        kernel = self.kernel(radius)
+        kernel = disc_kernel(radius)
         rows, columns = field.shape[:2]
         top = row - radius
         left = column - radius

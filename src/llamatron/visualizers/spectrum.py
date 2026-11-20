@@ -30,6 +30,7 @@ from rich.style import Style
 from rich.text import Text
 
 from llamatron.strings import visualizers
+from llamatron.visualizers.colour_styles import rgb_style
 from llamatron.visualizers.visualizer import Visualizer
 
 # The bars: each this many columns wide with a gap of this many after it, and the pitches they span, low to high.
@@ -72,17 +73,21 @@ def gradient_colour(height):
     return tuple(int(low + (high - low) * share) for low, high in zip(GRADIENT[lower], GRADIENT[lower + 1]))
 
 
+def row_style(*, row, rows):
+    """Return the style of a bar's cells on a row counted from the bottom, of a bar so many rows high."""
+    return rgb_style(gradient_colour(row / max(rows - 1, 1)))
+
+
 class Spectrum(Visualizer):
     """Bars of bands of pitches, rising with the notes heard and falling after, with caps that hang and drop."""
 
-    __slots__ = ('_levels', '_targets', '_caps', '_cap_ages', '_row_styles', '_cap_style')
+    __slots__ = ('_levels', '_targets', '_caps', '_cap_ages', '_cap_style')
 
     NAME = visualizers.MSG_SPECTRUM
     OPTION = 'spectrum'
 
     def __init__(self):
         super().__init__()
-        self._row_styles = {}
         self._cap_style = Style(color=Color.from_rgb(*CAP_COLOUR))
         self.resized(columns=0, rows=0)
 
@@ -129,13 +134,6 @@ class Spectrum(Visualizer):
         dropping = self._cap_ages > CAP_HANG_SECONDS
         self._caps = numpy.where(dropping, numpy.maximum(self._caps - CAP_FALL_PER_SECOND * seconds, self._levels), self._caps)
 
-    def row_style(self, *, row, rows):
-        """Return the style of a bar's cells on a row counted from the bottom, made once for each row of each height."""
-        key = (row, rows)
-        if key not in self._row_styles:
-            self._row_styles[key] = Style(color=Color.from_rgb(*gradient_colour(row / max(rows - 1, 1))))
-        return self._row_styles[key]
-
     def drawn(self, *, width, height):
         """Return the bars as lines, top line first, each bar's top an eighth block and its cap above it."""
         eighths = (numpy.minimum(self._levels, 1.0) * height * FULL_ROW).astype(int)
@@ -144,7 +142,7 @@ class Spectrum(Visualizer):
         for line in range(height):
             row = height - 1 - line
             text = Text(no_wrap=True)
-            style = self.row_style(row=row, rows=height)
+            style = row_style(row=row, rows=height)
             for band, filled in enumerate(eighths):
                 beneath = filled - row * FULL_ROW
                 if beneath > 0:

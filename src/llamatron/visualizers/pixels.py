@@ -21,9 +21,9 @@ the terminal shows, full colour where it can and the nearest of 256 or 16 where 
 visualizer needn't know.
 """
 
-from rich.color import Color
-from rich.style import Style
 from rich.text import Text
+
+from llamatron.visualizers.colour_styles import rgb_style
 
 # How many terminal columns and rows one big pixel takes: a terminal's cell is about twice as tall as it is wide.
 PIXEL_COLUMNS = 2
@@ -35,17 +35,7 @@ NOTHING = ''
 class PixelPainter:
     """Draws arrays of big pixels as text, keeping the style of each colour it has drawn."""
 
-    __slots__ = ('_styles',)
-
-    def __init__(self):
-        self._styles = {}
-
-    def style_of(self, colour):
-        """Return the style that draws a colour, an (r, g, b) of whole numbers from 0 to 255, made the first time it's asked for."""
-        if colour not in self._styles:
-            red, green, blue = colour
-            self._styles[colour] = Style(color=Color.from_rgb(red, green, blue))
-        return self._styles[colour]
+    __slots__ = ()
 
     def lines(self, *, pixels, width, height):
         """Return the text lines that draw an array of pixels, rows by columns by three channels of 0 to 255, in an area width columns by height rows, any columns left over blank."""
@@ -61,11 +51,11 @@ class PixelPainter:
                     run_length += 1
                     continue
                 if run_length:
-                    line.append(FULL_BLOCK * (run_length * PIXEL_COLUMNS), style=self.style_of(run_colour))
+                    line.append(FULL_BLOCK * (run_length * PIXEL_COLUMNS), style=rgb_style(run_colour))
                 run_colour = colour
                 run_length = 1
             if run_length:
-                line.append(FULL_BLOCK * (run_length * PIXEL_COLUMNS), style=self.style_of(run_colour))
+                line.append(FULL_BLOCK * (run_length * PIXEL_COLUMNS), style=rgb_style(run_colour))
             line.pad_right(max(width - line.cell_len, 0))
             for _ in range(PIXEL_ROWS):
                 lines.append(line)

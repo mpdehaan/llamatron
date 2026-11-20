@@ -33,6 +33,7 @@ from llamatron.strings import visualizers
 from llamatron.visualizers import cells
 from llamatron.visualizers.cells import CellPainter
 from llamatron.visualizers.colour import Limiter, note_colour
+from llamatron.visualizers.colour_styles import colour_style
 from llamatron.visualizers.visualizer import Visualizer
 
 SEED = 1
@@ -217,13 +218,13 @@ class LaserLlama(Visualizer):
             upper = listed[cells.HALF_ROWS * row]
             lower = listed[cells.HALF_ROWS * row + 1]
             characters = [cells.UPPER_HALF] * width
-            styles = [self._cells.style_of(colour=tuple(high), background=tuple(low)) for high, low in zip(upper, lower)]
+            styles = [colour_style(colour=tuple(high), background=tuple(low)) for high, low in zip(upper, lower)]
             down = row - top
             if 0 <= down < len(drawing):
                 for across, character in enumerate(drawing[down]):
                     column = left + across
                     if character != cells.SPACE and 0 <= column < width:
                         characters[column] = character
-                        styles[column] = self._cells.style_of(colour=LLAMA_COLOUR, background=tuple(lower[column]))
+                        styles[column] = colour_style(colour=LLAMA_COLOUR, background=tuple(lower[column]))
             lines.append(self._cells.line(characters=characters, styles=styles))
         return lines

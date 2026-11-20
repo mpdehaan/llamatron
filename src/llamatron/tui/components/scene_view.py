@@ -44,6 +44,7 @@ from llamatron.tui.screens.arrange import arrange_details
 from llamatron.tui.screens.arrange.arrange_details import clip_details, or_stock, track_details
 from llamatron.visualizers import piano_roll
 from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.colour_styles import colour_style
 from llamatron.visualizers.piano_roll import drum_lane
 
 # Each column of the roll is a sixteenth note, in whole notes, drawn as many cells wide as the zoom, from FEWEST_CELLS to MOST_CELLS.
@@ -302,7 +303,7 @@ class SceneView:
             entry = marks.MSG_SCENE_VIEW_LEGEND_MARK + track_label(name=name, place=track)
             if name in effective.clip_scales:
                 entry += marks.MSG_SCENE_VIEW_CLIP_SCALE.format(scale=effective.clip_scales[name])
-            text.append(entry, style=self._cells.style_of(colour=self.track_colour(track)))
+            text.append(entry, style=colour_style(colour=self.track_colour(track)))
             text.append(marks.MSG_SCENE_VIEW_LEGEND_GAP)
         if notes.marked_tracks:
             text.append(marks.MSG_SCENE_VIEW_REGISTERS, style=DIM_STYLE)
@@ -385,18 +386,18 @@ class SceneView:
         """Return a row's label as its characters and styles: its octave's name along a C and the key's own name when a note plays it, or its lane's name in the drum lanes."""
         if isinstance(key, tuple):
             text = visualizers.MSG_PIANO_ROLL_DRUM_LANES[key[1]][:LABEL_COLUMNS - 1].ljust(LABEL_COLUMNS)
-            return list(text), [self._cells.style_of(colour=LABEL_COLOUR)] * LABEL_COLUMNS
+            return list(text), [colour_style(colour=LABEL_COLOUR)] * LABEL_COLUMNS
         characters = [SPACE] * LABEL_COLUMNS
         styles = [None] * LABEL_COLUMNS
         if key % HALF_STEPS_PER_OCTAVE == 0:
             octave = self._document.get_setlist().shown_octave(key // HALF_STEPS_PER_OCTAVE)
             for place, character in enumerate(visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=octave)[:NOTE_LABEL_COLUMN]):
                 characters[place] = character
-                styles[place] = self._cells.style_of(colour=LABEL_COLOUR)
+                styles[place] = colour_style(colour=LABEL_COLOUR)
         if key in played:
             for place, character in enumerate(self.note_name(key)[:LABEL_COLUMNS - NOTE_LABEL_COLUMN]):
                 characters[NOTE_LABEL_COLUMN + place] = character
-                styles[NOTE_LABEL_COLUMN + place] = self._cells.style_of(colour=NOTE_LABEL_COLOUR)
+                styles[NOTE_LABEL_COLUMN + place] = colour_style(colour=NOTE_LABEL_COLOUR)
         return characters, styles
 
     def cell(self, *, key, column, found, bar_columns):
@@ -408,19 +409,19 @@ class SceneView:
                 return self.overlap(tracks)
             colour = self.track_colour(note.track)
             character = READING_CHARACTER if note.marked else NOTE_CHARACTER
-            return character, self._cells.style_of(colour=colour)
+            return character, colour_style(colour=colour)
         if not isinstance(key, tuple) and key % HALF_STEPS_PER_OCTAVE == 0:
-            return LINE_CHARACTER, self._cells.style_of(colour=LINE_COLOUR)
+            return LINE_CHARACTER, colour_style(colour=LINE_COLOUR)
         if column % bar_columns == 0:
-            return BAR_CHARACTER, self._cells.style_of(colour=LINE_COLOUR)
+            return BAR_CHARACTER, colour_style(colour=LINE_COLOUR)
         return SPACE, None
 
     def overlap(self, tracks):
         """Return the character and style of a cell where several tracks sound at once: the first track's colour behind, the second's bold X on it, or the count in black for three or more."""
         background = self.track_colour(tracks[0])
         if len(tracks) == 2:
-            return OVERLAP_CHARACTER, self._cells.style_of(colour=self.track_colour(tracks[1]), background=background) + BOLD
-        return str(len(tracks)), self._cells.style_of(colour=COUNT_COLOUR, background=background) + BOLD
+            return OVERLAP_CHARACTER, colour_style(colour=self.track_colour(tracks[1]), background=background) + BOLD
+        return str(len(tracks)), colour_style(colour=COUNT_COLOUR, background=background) + BOLD
 
     def sidebar_lines(self):
         """Return the sidebar's lines in full: each track that plays in the scene, by its name and number in its colour, then its clip's details in the scene and its own, as Arrange's details view shows them, stock in red for none."""
@@ -432,7 +433,7 @@ class SceneView:
             clip_slot = scene.get_clip_slot(name)
             if clip_slot is None:
                 continue
-            lines.append(Text(track_label(name=name, place=place), style=self._cells.style_of(colour=self.track_colour(place)) + BOLD))
+            lines.append(Text(track_label(name=name, place=place), style=colour_style(colour=self.track_colour(place)) + BOLD))
             details = clip_details(setlist=setlist, song=song, clip_slot=clip_slot) + track_details(song=song, track=song.get_track(name))
             # Scene View only shows, so the + that adds a chain on Arrange is left out, and stock stands for a track with nothing.
             details = [detail for detail in details if detail.target is None or detail.target.kind != arrange_details.ADD_CHAIN]

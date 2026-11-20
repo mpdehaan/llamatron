@@ -34,6 +34,7 @@ from llamatron.strings import visualizers
 from llamatron.visualizers import cells, colour
 from llamatron.visualizers.cells import CellPainter, packed
 from llamatron.visualizers.colour import note_colour
+from llamatron.visualizers.colour_styles import packed_style_on
 from llamatron.visualizers.energy import Energy
 from llamatron.visualizers.visualizer import Visualizer
 
@@ -186,9 +187,9 @@ class Life(Visualizer):
                 if live[row, column]:
                     bits = self._left_bits if column % CELL_COLUMNS == 0 else self._right_bits
                     characters.append(chr(cells.BRAILLE_BLANK + bits))
-                    styles.append(self._cells.packed_style(number=outline_rows[row][column], background=fill))
+                    styles.append(packed_style_on(number=outline_rows[row][column], background=fill))
                 else:
                     characters.append(cells.SPACE)
-                    styles.append(self._cells.packed_style(number=fill, background=fill))
+                    styles.append(packed_style_on(number=fill, background=fill))
             lines.append(self._cells.line(characters=characters, styles=styles))
         return lines

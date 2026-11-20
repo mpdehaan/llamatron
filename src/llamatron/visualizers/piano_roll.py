@@ -30,6 +30,7 @@ from llamatron.composition import file_format
 from llamatron.strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.cells import CellPainter
+from llamatron.visualizers.colour_styles import colour_style
 from llamatron.visualizers.visualizer import Visualizer
 
 # How fast the notes roll, in columns a beat, so a sixteenth is one column.
@@ -249,5 +250,5 @@ class PianoRoll(Visualizer):
 
     def line(self, *, characters, colours):
         """Return a row of cells as text, each in its colour on black, a blank cell black."""
-        styles = [self._cells.style_of(colour=colour or BLACK, background=BLACK) for colour in colours]
+        styles = [colour_style(colour=colour or BLACK, background=BLACK) for colour in colours]
         return self._cells.line(characters=characters, styles=styles)

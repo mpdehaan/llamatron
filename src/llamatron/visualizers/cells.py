@@ -24,9 +24,9 @@ and each run of one style along a line is one piece of text.
 """
 
 import numpy
-from rich.color import Color
-from rich.style import Style
 from rich.text import Span, Text
+
+from llamatron.visualizers.colour_styles import packed_style
 
 UPPER_HALF = '▀'
 SPACE = ' '
@@ -44,32 +44,10 @@ def packed(colours):
     return (colours[..., 0] << 16) | (colours[..., 1] << 8) | colours[..., 2]
 
 
-def unpacked(number):
-    """Return a colour packed as one number as red, green and blue."""
-    return (number >> 16) & 0xFF, (number >> 8) & 0xFF, number & 0xFF
-
-
 class CellPainter:
-    """Draws cells of characters, half blocks and Braille as text, keeping each style it has made."""
+    """Draws cells of characters, half blocks and Braille as text, each colour in its kept style (colour_styles.py)."""
 
-    __slots__ = ('_styles',)
-
-    def __init__(self):
-        self._styles = {}
-
-    def packed_style(self, *, number, background=None):
-        """Return the style that draws a packed colour, on a packed background or the terminal's own, made the first time it's asked for."""
-        key = (number, background)
-        if key not in self._styles:
-            self._styles[key] = Style(color=Color.from_rgb(*unpacked(number)), bgcolor=Color.from_rgb(*unpacked(background)) if background is not None else None)
-        return self._styles[key]
-
-    def style_of(self, *, colour, background=None):
-        """Return the style that draws a colour, on a background colour or the terminal's own, made the first time it's asked for."""
-        key = (colour, background)
-        if key not in self._styles:
-            self._styles[key] = Style(color=Color.from_rgb(*colour) if colour else None, bgcolor=Color.from_rgb(*background) if background else None)
-        return self._styles[key]
+    __slots__ = ()
 
     @staticmethod
     def line(*, characters, styles):
@@ -88,7 +66,7 @@ class CellPainter:
         """Return lines from rows of characters and their colours, an array of rows by columns by three; a black colour draws a blank."""
         lines = []
         for row, colour_row in zip(characters, packed(colours).tolist()):
-            styles = [self.packed_style(number=number) if number else None for number in colour_row]
+            styles = [packed_style(number) if number else None for number in colour_row]
             lines.append(self.line(characters=[character if style else SPACE for character, style in zip(row, styles)], styles=styles))
         return lines
 
@@ -101,7 +79,7 @@ class CellPainter:
         lines = []
         for bit_row, colour_row in zip(bits.tolist(), packed(colours[:rows, :columns]).tolist()):
             characters = [chr(BRAILLE_BLANK + bit) if bit else SPACE for bit in bit_row]
-            styles = [self.packed_style(number=number) if bit else None for bit, number in zip(bit_row, colour_row)]
+            styles = [packed_style(number) if bit else None for bit, number in zip(bit_row, colour_row)]
             text = self.line(characters=characters, styles=styles)
             text.pad_right(max(width - text.cell_len, 0))
             lines.append(text)
