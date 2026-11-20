@@ -90,6 +90,11 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
 
 ## Generators and chains
 
+- A chain is one more kind on the Generators page, Chain, under the heading Chains of the picker of kinds (`CHAIN_LISTING` and
+  `LISTED_PAGES` in `tui/screens/generators/generator_pages.py`, `file_format.CHAIN_KIND` and `LISTED_GENERATORS`), opened in the
+  chain editor; a chain's own steps offer only the plain kinds (`GENERATOR_PAGES`). The Chains button stays on the main screen until
+  the Modulators button takes its place.
+
 - The Generators page (`G`, `screens/generators/generators_page.py`, the user's design) lists every generator of the set under a
   heading for its type, `- Density (2)` (`MSG_GROUP_HEADING`), the types sorted by what the tracker calls each and the generators
   sorted by name under each, always, as the Patterns page lists patterns by group, so the page has no move and no sort. Only a

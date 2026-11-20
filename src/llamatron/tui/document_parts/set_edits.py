@@ -157,7 +157,10 @@ class SetEdits:
         return self._setlist.get_generator_settings(kind=sections.GENERATOR_KINDS[section], name=name)
 
     def add_generator(self, *, section, name):
-        """Add an arp or an AutoRatchet with the settings a new one starts with."""
+        """Add a generator of a section with the settings a new one starts with, a chain with no steps."""
+        if section == Section.CHAINS:
+            self.add_chain(name)
+            return
         kind = sections.GENERATOR_KINDS[section]
         settings = generator_settings.GENERATOR_SETTINGS[kind].new()
         self.change(self._setlist.add_item, section=section, name=name, item=settings)

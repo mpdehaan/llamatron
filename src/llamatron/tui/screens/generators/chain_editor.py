@@ -71,6 +71,10 @@ class ChainEditor(ShowsNamedItem, ListPage):
         """Return the chain's steps, each (kind of generator, its name)."""
         return self.document().song().get_chain(self.item).get_steps()
 
+    def rows_depend_on(self):
+        """Return the chain the rows are of, since one editor's kept rows are another chain's otherwise."""
+        return (self.item,)
+
     def rows(self):
         return [(place, [text]) for place, text in enumerate(steps_shown(self.steps()))]
 

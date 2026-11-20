@@ -77,7 +77,7 @@ class GeneratorsPage(ListPage):
         return sorted(held, key=lambda kind: name_order(generator_page_of_kind(kind).label))
 
     def names_of_kind(self, kind):
-        return sorted(self.document().names_of(file_format.NAMED_GENERATORS[kind]), key=name_order)
+        return sorted(self.document().names_of(file_format.LISTED_GENERATORS[kind]), key=name_order)
 
     def is_closed(self, kind):
         """Return whether a type is closed, as every type is until opened; the set keeps which are open, so that the page comes back as it was left."""
@@ -130,7 +130,7 @@ class GeneratorsPage(ListPage):
         return self.listed()
 
     def uses(self, *, kind, name):
-        return self.document().uses(section=file_format.NAMED_GENERATORS[kind], name=name)
+        return self.document().uses(section=file_format.LISTED_GENERATORS[kind], name=name)
 
     def put_cursor_on(self, *, kind, name):
         """Put the cursor on a generator's row, opening its type if the type is closed."""
@@ -171,7 +171,7 @@ class GeneratorsPage(ListPage):
 
     def add(self):
         """Ask which type of generator to make, make one named after the type, numbered, put the cursor on it and open it."""
-        listings = list(generator_pages.GENERATOR_PAGES.values())
+        listings = list(generator_pages.LISTED_PAGES.values())
 
         def chosen(place):
             listing = listings[place]
@@ -179,11 +179,11 @@ class GeneratorsPage(ListPage):
             self.document().add_generator(section=listing.section, name=name)
             self.put_cursor_on(kind=listing.kind, name=name)
             self.open_editor(section=listing.section, name=name)
-        self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups), then=chosen)
+        self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups, listings=generator_pages.LISTED_PAGES), then=chosen)
 
     def rename(self):
         kind, name = self.current()
-        section = file_format.NAMED_GENERATORS[kind]
+        section = file_format.LISTED_GENERATORS[kind]
 
         def renamed(new):
             self.document().rename_named(section=section, old=name, new=new)
@@ -193,7 +193,7 @@ class GeneratorsPage(ListPage):
     def copy(self):
         """Copy the selected generator, say what the copy is called and put the cursor on it."""
         kind, name = self.current()
-        new = self.document().copy_named(section=file_format.NAMED_GENERATORS[kind], name=name)
+        new = self.document().copy_named(section=file_format.LISTED_GENERATORS[kind], name=name)
         self.say(messages.MSG_COPIED_TO.format(name=new))
         self.put_cursor_on(kind=kind, name=new)
 
@@ -201,4 +201,4 @@ class GeneratorsPage(ListPage):
         """Delete the selected generator after asking, or say what still uses it."""
         kind, name = self.current()
         what = legends.MSG_GENERATOR_WHAT.format(label=generator_page_of_kind(kind).label, name=name)
-        self.delete_after_checks(what=what, uses=self.uses(kind=kind, name=name), delete=lambda: self.document().delete_named(section=file_format.NAMED_GENERATORS[kind], name=name))
+        self.delete_after_checks(what=what, uses=self.uses(kind=kind, name=name), delete=lambda: self.document().delete_named(section=file_format.LISTED_GENERATORS[kind], name=name))

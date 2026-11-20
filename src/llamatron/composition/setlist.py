@@ -573,7 +573,7 @@ class Setlist(HoldsSections, HoldsSettings):
     def ordered_generators(self):
         """Return every generator as (kind, name) in the Generators page's order: the order kept, leaving out any generator
         gone, then any it doesn't name, kind by kind in each kind's own order."""
-        existing = [(kind, name) for kind, section in file_format.NAMED_GENERATORS.items() for name in self._section(section).names()]
+        existing = [(kind, name) for kind, section in file_format.LISTED_GENERATORS.items() for name in self._section(section).names()]
         kept = []
         for entry in self._settings[SetlistSetting.GENERATOR_ORDER] or []:
             pair = next(iter(entry.items()))

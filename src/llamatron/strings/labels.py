@@ -331,6 +331,7 @@ MSG_NOTES_KIND = 'notes'
 # tui/screens/generators/generator_pages.py: the headings the kinds of generator are offered under, by what each kind is for.
 class GeneratorGroup:
     ARRANGEMENT = 'Arrangement'
+    CHAINS = 'Chains'
     ARTICULATION = 'Articulation'
     BAND = 'Band Generators'
     HARMONY = 'Harmony'
@@ -341,6 +342,7 @@ class GeneratorGroup:
 
 
 MSG_ARP_LABEL = 'Arpeggiator'
+MSG_CHAIN_LABEL = 'Chain'
 MSG_AUTO_RATCHET_LABEL = 'AutoRatchet'
 MSG_DRIFT_LABEL = 'Drift'
 # tui/screens/generators/drift_editor.py: its own fields, then each version's values, shown as A and B side by side.

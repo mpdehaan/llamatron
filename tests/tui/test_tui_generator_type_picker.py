@@ -25,7 +25,7 @@ from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEd
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from tests.support.ui_testing import back_key, forward_key, UITest
 
-HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
+HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.CHAINS, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
 HARMONY_PLACE = HEADINGS.index(labels.GeneratorGroup.HARMONY)
 # What is typed to search for Strum: its name in small letters, since a search ignores case.
 SEARCHED = labels.MSG_STRUM_LABEL.lower()
@@ -51,7 +51,8 @@ class TestGeneratorTypePicker(UITest):
         self.assertNotIn(labels.MSG_FOLLOW_CHORDS_LABEL, shown)
 
     async def test_every_type_is_under_a_heading_once_by_name(self):
-        self.assertEqual(sorted(self.dialog.options), sorted(listing.label for listing in generator_pages.GENERATOR_PAGES.values()))
+        self.assertEqual(sorted(self.dialog.options), sorted(listing.label for listing in generator_pages.LISTED_PAGES.values()))
+        self.assertIn(labels.MSG_CHAIN_LABEL, self.dialog.options)
         self.assertEqual(self.dialog.headings, HEADINGS)
         in_harmony = [listing.label for listing in generator_pages.GENERATOR_PAGES.values() if listing.group == labels.GeneratorGroup.HARMONY]
         self.assertEqual(in_harmony, [labels.MSG_FOLLOW_CHORDS_LABEL, labels.MSG_PROGRESSION_LABEL])

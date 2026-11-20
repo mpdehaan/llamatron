@@ -17,6 +17,7 @@
 
 from typing import NamedTuple
 
+from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, Section, Shape
 from llamatron.strings import labels, messages
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
@@ -82,14 +83,22 @@ GENERATOR_PAGES = {
 }
 
 
-def generator_type_dialog(*, opened):
-    """Return the dialog that asks which type of generator to make, the types under their headings; it answers a place among GENERATOR_PAGES' listings."""
+# A chain, which a clip, a scene and a track list beside the generators and the Generators page lists as one more kind; its
+# editor is the chain editor (tui/screens/editors.py), and a chain's own steps are never chains.
+CHAIN_LISTING = GeneratorListing(kind=file_format.CHAIN_KIND, section=Section.CHAINS, label=labels.MSG_CHAIN_LABEL, group=labels.GeneratorGroup.CHAINS, EDITOR=None)
+# Every kind the Generators page lists and offers to make, the chain among them, in the order it offers them.
+LISTED_PAGES = {listing.section: listing for listing in _in_shown_order((CHAIN_LISTING, *GENERATOR_PAGES.values()))}
+
+
+def generator_type_dialog(*, opened, listings=GENERATOR_PAGES):
+    """Return the dialog that asks which type of generator to make, the types under their headings; it answers a place among the
+    listings, a chain's steps offering the generators and the Generators page every kind, the chain among them (LISTED_PAGES)."""
     groups = {}
-    for listing in GENERATOR_PAGES.values():
+    for listing in listings.values():
         groups.setdefault(listing.group, []).append(listing.label)
     return GroupedChoiceDialog(title=messages.MSG_NEW_GENERATOR_KIND_TITLE, groups=list(groups.items()), opened=opened)
 
 
 def generator_page_of_kind(kind):
     """Return a kind of generator's listing, such as the arpeggiator's for arp: its EDITOR edits one and its label names the kind."""
-    return next(listing for listing in GENERATOR_PAGES.values() if listing.kind == kind)
+    return next(listing for listing in LISTED_PAGES.values() if listing.kind == kind)
