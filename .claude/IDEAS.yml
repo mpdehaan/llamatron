@@ -1832,6 +1832,26 @@
       than MIDI holds, such as the key, beams and ties at bar lines, so a tool that quantizes and spells notes well matters.
     - Where it would go: an image under each demo's summary on its genre page, made by the docs build, never by hand.
 
+- title: "A MIDI import wizard: Quick, Selective, and Import for Mashup into the song wizard"
+  priority: 99
+  text: |
+    The user wants anyone to be able to make a mashup of any MIDI file with Claude's help, as the Toccata and Fugue mashup was made.
+    The importer first looks at the file (its tracks, how busy each is, its bars where they can be counted, which tracks are
+    drums), then a dialog offers modes. Quick is today's import, verbatim, split by section as best it can, making extra tracks
+    where a track holds more notes at once than a step's chords can, as the Entertainer was made. Selective picks the tracks to
+    bring in and asks how to break them into sections: every N bars where the bars can be counted, and other ways Claude is to
+    suggest (by repeats of the music found, by rests, by the file's own markers, by key or tempo changes). Import for Mashup into
+    the wizard is the large one: Claude suggests which tracks carry the melody, leaves out the drums, keeps the chosen tracks mostly
+    verbatim and also turns them into chorus and melody patterns; the tracks marked melody are treated as one merged melody, and the
+    ones marked accompaniment as one merged accompaniment, for working out the other parts. A mashup wizard then asks how to
+    interleave the chosen style's elements while staying faithful to it, any genre and subgenre (a classical work as funk, or as
+    blues), allowing breaks, transitions and other mixing, or none of it, so that it can be just drums added on top. Where the
+    source is classical, a first question gates the rest: add genre drums, make a mashup, or import it straight; even a straight
+    import can ask how to break the sections. Code reuse is vital: the mashup wizard shares most of the song wizard's panels and
+    above all its engine, so the genre work still going into the wizard carries forward into the accompaniment and the mashups.
+    The user wants a mostly complete first draft proposed and built, refined afterwards with comments, rather than days of
+    questions; the corpus of songs is there to try it on. Discussed when it comes up in the queue.
+
 - title: "Keyswitches: what the first build left out"
   priority: 100
   text: |
