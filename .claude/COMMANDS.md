@@ -11,7 +11,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -e .
 ```
 
-`.claude/TESTING.md` says how the tests are run and written. In short: `internal_tools/test.sh` runs the whole suite in parallel in about 35 seconds, and no commit of code goes in without it passing: there is no git hook, by the user's rule, so Claude runs `internal_tools/check_before_commit.sh` (the version check, then the suite) before committing code, and commits documents alone without a run.
+`.claude/TESTING.md` says how the tests are run and written. In short: `internal_tools/test.sh` runs the whole suite in parallel, in about two and a half minutes, and `internal_tools/test_changed.sh` only the classes that cover what changed, by the map `internal_tools/test_map.sh` makes with `coverage`. There is no git hook, by the user's rule, so Claude runs `internal_tools/check_before_commit.sh` (the version check, then the tests that cover the change) before committing code, commits documents alone without a run, and `internal_tools/push_all.sh` runs the whole suite before every push.
 
 `internal_tools/` keeps the tools worth running again, for developing llamatron. Run them from the top folder:
 

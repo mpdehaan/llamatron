@@ -34,7 +34,14 @@ slower. To run one test class on its own, run `.venv/bin/python -m unittest test
 the top folder, a test module being named by its folder under `tests/`. `internal_tools/test.sh`, `internal_tools/test_ui.sh` (the tracker's tests), `make
 test-files` (the examples and demos) and `internal_tools/test_one.sh NAME` wrap these.
 
-**No commit of code goes in without the full suite passing, and no git hook enforces it** (the user's
+**Before a commit, the tests that cover the change; before a push, the full suite** (the user's rule, 41 A): `internal_tools/check_before_commit.sh`
+runs `internal_tools/test_changed.sh`, the classes that run the changed files by the map `internal_tools/test_map.sh` makes with
+`coverage` (`.test_map.json`, ignored by git; `coverage` is installed in `.venv` for development only and kept out of
+`requirements.txt`), with the rule tests always and the whole suite for a change the map can't place, such as a new source file or
+a change to `tests/support/`; `internal_tools/push_all.sh` runs the whole suite first and stops if it fails. The map is rebuilt
+with `internal_tools/test_map.sh` after moving code between files or adding many tests.
+
+**No commit of code goes in without its tests passing, and no git hook enforces it** (the user's
 rule): the repository installs no pre-commit hook or any other git hook, and none is ever added, so that a
 person who only edits documents commits at once. Claude tests when appropriate instead: before committing
 anything that changes code, tests, examples or tools, it stages the files and runs

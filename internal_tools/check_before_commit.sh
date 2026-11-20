@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# What it does: the checks Claude runs before committing code: the version bump, then every test
+# What it does: the checks Claude runs before committing code: the version bump, then the tests that cover what changed
 
 # There is no git hook, so that a person editing documents commits at once; Claude
 # stages its files and runs this before committing anything that changes code, tests, examples or
@@ -27,5 +27,7 @@ cd "$(git rev-parse --show-toplevel)"
 # A commit that changes the program's Python carries a version bump, which `internal_tools/bump.sh` writes. The check comes
 # before the tests because it takes no time: two commits once went in without their bump.
 .venv/bin/python internal_tools/bump_version.py --check
-echo 'check before commit: running every test'
-internal_tools/test.sh
+echo 'check before commit: running the tests that cover what changed'
+# The classes that cover the changed files, by the map internal_tools/test_map.sh made, and the rule tests; the whole suite when
+# a change is one the map can't place. The whole suite runs before every push (internal_tools/push_all.sh).
+internal_tools/test_changed.sh

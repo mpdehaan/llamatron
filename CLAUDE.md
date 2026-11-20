@@ -70,7 +70,8 @@ The project is licensed under GPLv3, with the full text in `LICENSE`. Every Pyth
 python3 -m venv .venv && .venv/bin/python -m pip install -e .   # once: the environment and the llamatron command, which uses the code here
 ./llamatron.sh examples/learning/08_tie.yml                     # the tracker, on a set
 internal_tools/test.sh                                          # the whole suite in parallel, about 35 seconds (internal_tools/test_one.sh NAME for one)
-internal_tools/check_before_commit.sh                           # what Claude runs before committing code: the version check, then the suite
+internal_tools/check_before_commit.sh                           # what Claude runs before committing code: the version check, then the tests that cover the change
+internal_tools/test_map.sh                                      # the map of which tests cover which files, under coverage, after moving code or adding many tests
 internal_tools/bump.sh                                          # the version's last number raised, in every commit that changes Python under src/
 internal_tools/capture.sh, internal_tools/compare.sh            # before and after a change that should leave the music alone: every export byte for byte
 internal_tools/key_map.sh                                       # .claude/KEYMAP.md rewritten, after changing a key
@@ -79,7 +80,7 @@ internal_tools/push_all.sh                                      # the one comman
 internal_tools/macro_compose.sh                                 # the MacroComposer (.claude/features/MACRO_COMPOSER.md)
 ```
 
-`.claude/TESTING.md` says how the tests are run and written: no commit of code goes in without the suite passing, there is no git hook, by the user's rule, and documents alone are committed without a run.
+`.claude/TESTING.md` says how the tests are run and written: no commit of code goes in without the tests that cover it passing, and no push without the whole suite, there is no git hook, by the user's rule, and documents alone are committed without a run.
 
 ## Version
 
