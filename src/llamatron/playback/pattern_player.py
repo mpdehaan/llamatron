@@ -97,18 +97,14 @@ class PlayedPattern(NamedTuple):
 
 class StepDraws(NamedTuple):
     """What one step does to the song's draws, all before its statements read the values, so that every use in the step sees one
-    value of a draw: the draws it resets, then the draws it takes, each once however many of its rows and statements use it, and
-    the draws reset once its statements have drawn from them, those that redraw in conditions."""
+    value of a draw: the draws it resets, and then the draws it takes, each once however many of its rows and statements use it."""
 
-    resets_first: tuple
+    resets: tuple
     drawn: tuple
-    resets_after: tuple
 
 
 # What a step sets the registers to and adds to them when its pattern changes none, or when a morph's target plays.
 NO_ADDS = {}
-# A step that uses no draw and resets none.
-NO_DRAWS = ()
 # A step whose statements redraw nothing.
 NO_REDRAWS = frozenset()
 NO_SETS = {}
@@ -168,11 +164,7 @@ class PatternPlayer:
             by_statements = redrawn[step] if redrawn is not None else NO_REDRAWS
             used = _draws_used(step_values)
             resets = _draws_reset(step_values)
-            steps.append(StepDraws(
-                tuple(name for name in resets if name not in by_statements),
-                tuple(name for name in file_format.DRAW_NAMES if name in by_statements or name in used),
-                tuple(name for name in resets if name in by_statements),
-            ))
+            steps.append(StepDraws(resets, tuple(name for name in file_format.DRAW_NAMES if name in by_statements or name in used)))
         return steps
 
     def _redrawn(self, pattern):
@@ -261,8 +253,8 @@ class PatternPlayer:
         for slot, step in enumerate(steps):
             # Every draw the step takes is taken before its statements read the values, the step's one draw from it.
             drawing = step_draws[step] if step_draws is not None else None
-            if drawing is not None and (drawing.drawn or drawing.resets_first):
-                registers.before_statements(time=start + slot * step_size, draws=drawing.drawn, draw_resets=drawing.resets_first)
+            if drawing is not None and (drawing.drawn or drawing.resets):
+                registers.before_statements(time=start + slot * step_size, draws=drawing.drawn, draw_resets=drawing.resets)
             # A step's statements are read first of all, before the step changes anything, in the order stop, restart, mute.
             if stops is not None and stops[step] is not None and _holds(statement=stops[step], values=registers.before_step(start + slot * step_size)):
                 cut_at = slot
@@ -281,7 +273,6 @@ class PatternPlayer:
             if changes or reads_registers:
                 current = registers.at_step(
                     time=start + slot * step_size, sets=_register_sets(values) if changes else NO_SETS, adds=_register_adds(values) if changes else NO_ADDS,
-                    draw_resets=drawing.resets_after if drawing is not None else NO_DRAWS,
                 )
             if values[Row.TIE]:
                 if tied_to is not None:
