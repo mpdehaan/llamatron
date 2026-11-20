@@ -312,7 +312,7 @@ class Cutter:
     def clip_step_sizes(self, *, voice, start, end):
         """Return the step sizes a voice's clip from grid step start to grid step end can take, longest first: the scene's ends and every note's start fall on their steps."""
         begin = self.time_of(start)
-        starts = [played.start - begin for played in self._voices[voice].played if start <= played.start / self._step_size < end]
+        starts = [played.start - begin for played in self._voices[voice].played_between(begin=start * self._step_size, end=end * self._step_size)]
         sizes = [
             size for size in self._clip_step_sizes
             if (begin / size).is_whole() and (self.time_of(end - start) / size).is_whole() and all((time / size).is_whole() for time in starts)
