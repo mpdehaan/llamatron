@@ -17,6 +17,7 @@
 """The melody engines: the row operations, the serial engine's row, forms, lengths and voices, and which engine a song's tune
 is made by."""
 
+import functools
 import unittest
 
 from llamatron.macro_composer import arranger, composer, hook_writing, melody, notation, operations
@@ -320,6 +321,13 @@ def hooks_song(seed, *, writer=melody.SMART):
     return made[0], made[1], habits
 
 
+@functools.cache
+def kept_hooks_song(seed, *, writer=melody.SMART):
+    """A song with a hook as hooks_song makes it, made once for a seed and a writer, since several tests read the same songs and
+    none changes them: a song is the slowest part of the tests of hooks."""
+    return hooks_song(seed, writer=writer)
+
+
 def first_bar(*, line, grid):
     """The notes of a line that fill its first bar."""
     notes = []
@@ -335,7 +343,7 @@ class TestHooks(unittest.TestCase):
 
     def test_a_hook_is_a_bar_of_few_short_notes_and_one_long_note_and_returns_the_same(self):
         for seed in SEEDS:
-            _, chorus, habits = hooks_song(seed)
+            _, chorus, habits = kept_hooks_song(seed)
             grid = habits[melody.GRID]
             figure = first_bar(line=chorus[0], grid=grid)
             self.assertLessEqual(len(figure), melody.MOST_SHORT_NOTES + 1)
@@ -345,7 +353,7 @@ class TestHooks(unittest.TestCase):
 
     def test_the_hooks_long_note_is_the_top_of_the_song_and_on_the_chord(self):
         for seed in SEEDS:
-            verse, chorus, habits = hooks_song(seed)
+            verse, chorus, habits = kept_hooks_song(seed)
             grid = habits[melody.GRID]
             figure = places_of(line=first_bar(line=chorus[0], grid=grid), habits=habits)
             peak = figure[-1]
@@ -356,7 +364,7 @@ class TestHooks(unittest.TestCase):
 
     def test_a_varied_hook_changes_only_its_last_note_which_ends_no_lower_than_the_peak(self):
         for seed in SEEDS:
-            _, chorus, habits = hooks_song(seed)
+            _, chorus, habits = kept_hooks_song(seed)
             self.assertEqual(rhythm_of(chorus[1]), rhythm_of(chorus[0]))
             first = places_of(line=chorus[0], habits=habits)
             varied = places_of(line=chorus[1], habits=habits)
@@ -365,14 +373,14 @@ class TestHooks(unittest.TestCase):
 
     def test_a_hooks_figure_has_few_pitches(self):
         for seed in SEEDS:
-            _, chorus, habits = hooks_song(seed)
+            _, chorus, habits = kept_hooks_song(seed)
             figure = first_bar(line=chorus[0], grid=habits[melody.GRID])
             self.assertLessEqual(len(set(places_of(line=figure, habits=habits))), MOST_PITCHES_IN_A_FIGURE)
 
     def test_the_hook_is_the_same_whoever_writes_the_other_lines_but_for_what_the_gauges_seed(self):
         for writer in melody.ENGINES:
             for seed in SEEDS:
-                _, chorus, habits = hooks_song(seed, writer=writer)
+                _, chorus, habits = kept_hooks_song(seed, writer=writer)
                 grid = habits[melody.GRID]
                 figure = first_bar(line=chorus[0], grid=grid)
                 self.assertLessEqual(len(figure), melody.MOST_SHORT_NOTES + 1, writer)
