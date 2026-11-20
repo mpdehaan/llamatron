@@ -433,7 +433,7 @@ Direction says which slot comes next: a pattern's directions, serial (every slot
 keep every slot within them. Conditions redraw makes a condition that reads the draw take a number from it too.
 
 Up and down select, and Space or ENTER opens a draw. On the strip, Left and Right move between slots, [ and ] change one,
-ENTER types one and Bksp makes it blank. While the song plays, each draw's last slot is lit.
+a digit puts that number in one, ENTER types any number and Bksp makes it blank. While the song plays, each draw's last slot is lit.
 """
 
 # GroovesPage

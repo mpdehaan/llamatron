@@ -131,7 +131,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Direction field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section
 - **the Slots field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next section
 - **the Value Min field, the Value Max field**: `ESC` back · `↑↓` select · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next section
-- **the Strip field**: `ESC` back · `↑↓` select · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next section
+- **the Strip field**: `ESC` back · `↑↓` select · `←→` move · `[` dec · `]` inc · `0-9` type · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next section
 
 ## DriftEditor
 
@@ -467,6 +467,7 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `0-9`
 
 - ChordsEditor: type (anywhere)
+- DrawsPage: type (the Strip field)
 - GrooveEditor: type (anywhere)
 - OffsetsEditor: type (anywhere)
 - PatternEditor: type (the velocity row, the probability row, the ratchet row, the ratchet_offset row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row)

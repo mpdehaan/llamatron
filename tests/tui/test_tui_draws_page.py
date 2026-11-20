@@ -21,7 +21,7 @@ from unittest import mock
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import DrawDirection, DrawName, DrawSetting
 from llamatron.strings import labels as labels_text, marks
-from llamatron.tui import drawing, keybindings
+from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.draws_page import DrawsPage
@@ -88,6 +88,25 @@ class TestDrawsPage(UITest):
         self.assertEqual(self.draw().get_slots()[2], int(TYPED))
         await self.press(Key.BACKSPACE)
         self.assertIsNone(self.draw().get_slots()[2])
+
+    async def test_a_digit_on_the_strip_puts_its_number_in_the_slot_kept_within_the_range(self):
+        await self.open_draws()
+        await self.select_field(labels_text.MSG_DRAW_VALUE_MAX_LABEL)
+        await self.type_over(LOWER_MAX)
+        await self.select_field(labels_text.MSG_DRAW_STRIP_LABEL)
+        await self.press(keys.DIGITS[int(LOWER_MAX) - 1])
+        self.assertEqual(self.draw().get_slots()[0], int(LOWER_MAX) - 1)
+        await self.press(keys.DIGITS[int(LOWER_MAX) - 1])
+        # A second digit puts its own number in, rather than making a number of two digits.
+        self.assertEqual(self.draw().get_slots()[0], int(LOWER_MAX) - 1)
+        await self.press(Key.RIGHT, keys.DIGITS[int(TYPED)])
+        self.assertEqual(self.draw().get_slots()[1], int(LOWER_MAX))
+
+    async def test_a_digit_off_the_strip_changes_no_slot(self):
+        await self.open_draws()
+        await self.select_field(labels_text.MSG_DRAW_DIRECTION_LABEL)
+        await self.press(keys.DIGITS[int(TYPED)])
+        self.assertEqual(self.draw().get_slots(), [None] * defaults.DEFAULT_DRAW_SLOT_COUNT)
 
     async def test_more_slots_lengthen_the_strip_and_a_lower_value_max_brings_every_slot_down_to_it(self):
         await self.open_draws()

@@ -319,8 +319,10 @@ class DrawsPage(FieldPage):
     # On a draw's strip, [ and ] change the slot under the cursor, Left and Right moving between slots.
     SLOT_LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
     SLOT_MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    IN_HELP = [Page.BACK, FieldPage.SELECT, FieldPage.ALONG_CELLS, FieldPage.LESS, FieldPage.MORE, SLOT_LESS, SLOT_MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION]
-    IN_LEGEND = [Page.BACK, FieldPage.SELECT, FieldPage.ALONG_CELLS, FieldPage.LESS, FieldPage.MORE, SLOT_LESS, SLOT_MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION]
+    # On a draw's strip, a digit puts that number in the slot under the cursor at once; ENTER still asks for any number.
+    TYPE_SLOT = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
+    IN_HELP = [Page.BACK, FieldPage.SELECT, FieldPage.ALONG_CELLS, FieldPage.LESS, FieldPage.MORE, SLOT_LESS, SLOT_MORE, TYPE_SLOT, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION]
+    IN_LEGEND = IN_HELP
 
 
 class RegistersPage(FieldPage):

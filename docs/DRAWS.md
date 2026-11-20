@@ -39,7 +39,8 @@ settings and, after them, its strip:
 | Conditions redraw | off | Whether a condition that reads the draw draws from it, as described under Draws in Conditions. |
 
 The strip is a row of boxes, the slots numbered above their values. On the strip, `Left` and `Right` move between the slots, `[`
-and `]` make the slot under the cursor less and more, `ENTER` types a value and `Bksp` makes the slot blank. While the song plays,
+and `]` make the slot under the cursor less and more, a digit puts that number in the slot at once, `ENTER` types any value and
+`Bksp` makes the slot blank. While the song plays,
 the slot each draw last took its value from is lit in violet, and a closed draw's heading says which slot it is.
 
 ## Use Draws
