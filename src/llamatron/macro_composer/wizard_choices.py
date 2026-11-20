@@ -174,6 +174,11 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
 
 
 
+def style_key(choices):
+    """What the style is worked out from: the genre, the subgenre and the kind of song chosen."""
+    return (choices._genre, choices._subgenre, choices._variant)
+
+
 def section_labels_key(choices):
     """What the sections' labels are worked out from: the form chosen, while a suggested form is followed, and the song's own
     sections' kinds once it has its own."""
@@ -1092,15 +1097,22 @@ class WizardChoices:
         self._gauges = {}
         self._melody_settings = {}
 
-    @kept_while(lambda choices: (choices._genre, choices._subgenre, choices._variant))
+    @kept_while(style_key)
     def style(self):
         """Return the genre's style template as the subgenre chosen has it, worked out once for a genre, a subgenre and a kind, and
         never changed by a caller."""
         return style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant)
 
 
+    @kept_while(style_key)
     def trait_has_sound(self, *, trait, value):
         return arranger.SOUND in values_of(style=self.style(), trait=trait)[value]
+
+    @kept_while(style_key)
+    def roles_by_name(self):
+        """Return each player the genre's band may have, by name, as the style says of the player, or nothing before a subgenre is
+        chosen; worked out once for a style, since a page asks after the players many times a key."""
+        return {entry[arranger.ROLE]: entry for entry in self.style()[arranger.ROLES]} if self.is_ready() else {}
 
 
     def copied_for_trial(self):
