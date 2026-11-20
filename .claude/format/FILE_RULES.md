@@ -632,6 +632,6 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 - Every object's reader passes over the names it does not know (`pass_over_unknown` in `composition/checks.py`), the set's
   sections and a pattern's rows included, without a word, so that a file from before a feature was removed still opens, and
   nothing unknown is kept or written again: a save writes only what llamatron understands. No code migrates a removed setting.
-  A wrong value for a setting that exists is still refused or corrected as before. A musician's own settings for a kind of
-  section, held inside one setting's value, are still refused when unknown. No dialog lists what was passed over, and a chain's
+  A wrong value for a setting that exists is still refused or corrected as before. A musician's `by_section` is read the same way
+  (`MusicianSettings.pass_over_unknown_names`): a kind of section or a setting of one that it does not know is passed over. No dialog lists what was passed over, and a chain's
   step of an unknown kind of generator is still refused (the user dropped both from the plan).

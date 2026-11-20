@@ -38,6 +38,8 @@ PLAYER = 'player'
 CHAIN = 'played'
 RENAMED = 'singer'
 NOT_AN_INSTRUMENT = 'kazoo'
+# A name no Musician has, inside a kind of section's own settings.
+NOT_A_SETTING = 'not_a_setting'
 NOT_A_SECTION = 'coda'
 NOT_A_FORM = 'backwards'
 EIGHTH = Rational(1, 8)
@@ -263,14 +265,21 @@ class TestMusicianRoundTheBand(unittest.TestCase):
 
 class TestMusicianSettings(unittest.TestCase):
 
-    def test_a_file_refuses_an_instrument_a_section_or_a_form_nobody_knows(self):
+    def test_a_file_refuses_an_instrument_or_a_form_nobody_knows(self):
         for settings in (
-            {MusicianSetting.INSTRUMENT: NOT_AN_INSTRUMENT}, plain(**{MusicianSetting.BY_SECTION: {NOT_A_SECTION: {}}}),
+            {MusicianSetting.INSTRUMENT: NOT_AN_INSTRUMENT},
             plain(**{MusicianSetting.BY_SECTION: {SectionKind.VERSE: {musician.PLAYED: NOT_A_FORM}}}), plain(**{MusicianSetting.BY_SECTION: {SectionKind.VERSE: {musician.PLAYS: NOT_A_FORM}}}),
             plain(**{MusicianSetting.LOUDNESS: musician.LOUDEST + 1}), plain(**{MusicianSetting.LOOSENESS: musician.TIGHT - 1}),
         ):
             with self.subTest(settings=settings), self.assertRaises(SongFileError):
                 setlist_from_data(band_data(settings=settings))
+
+    def test_a_kind_of_section_or_a_setting_of_one_nobody_knows_is_passed_over_and_never_written_again(self):
+        # As a file saved before one was taken away, or by a later version, may hold them: the set opens and what is known stays.
+        by_section = {SectionKind.VERSE: {musician.PLAYED: musician.SOFTER, NOT_A_SETTING: 1}, NOT_A_SECTION: {musician.PLAYED: musician.MUTED}}
+        setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.BY_SECTION: by_section})))
+        settings = setlist.get_songs()[0].get_generator_settings(kind=GeneratorKind.MUSICIAN, name=PLAYER)
+        self.assertEqual(settings.to_data()[MusicianSetting.BY_SECTION], {SectionKind.VERSE: {musician.PLAYED: musician.SOFTER}})
 
     def test_a_section_setting_back_to_what_a_section_does_unasked_is_left_out(self):
         settings = MusicianSettings.new()
