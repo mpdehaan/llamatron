@@ -72,6 +72,14 @@ class TestWizardSongs(unittest.TestCase):
         self.assertIn(str(choices[0][0]), lines[0])
         self.assertEqual(lines, module.lines_of_subgenre(genre=A_GENRE, subgenre=A_SUBGENRE, choices=a_few_choices()))
 
+    def test_every_subgenres_usual_songs_come_first_then_every_choice_on_each_genres_first_subgenre(self):
+        module = tool()
+        tasks = module.tasks_of([A_GENRE])
+        subgenres = module.WizardChoices.from_data({module.arranger.GENRE: A_GENRE}).subgenres()
+        self.assertEqual(tasks, [*[(module.USUAL, A_GENRE, subgenre) for subgenre in subgenres], (module.CHOICES, A_GENRE, subgenres[0])])
+        usual = module.usual_lines(genre=A_GENRE, subgenre=A_SUBGENRE)
+        self.assertEqual(len(usual), 1 + len(fresh(genre=A_GENRE, subgenre=A_SUBGENRE).variants()))
+
     def test_a_genre_that_is_not_one_is_refused(self):
         refused = io.StringIO()
         with contextlib.redirect_stderr(refused):

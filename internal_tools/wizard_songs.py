@@ -14,17 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Print a line for the song every choice of the song wizard makes, each song as a short hash.
+"""Print a line for the usual song of every subgenre, in each of its kinds of song, and for the song every choice of the song
+wizard makes, each choice once, on the first subgenre of each genre, each song as a short hash.
 
-    internal_tools/wizard_songs.sh > before.txt        # every choice of every subgenre of every genre: about two minutes
-    internal_tools/wizard_songs.sh rock > before.txt   # every choice of one genre
+    internal_tools/wizard_songs.sh > before.txt        # every genre: about two thousand songs, on every core
+    internal_tools/wizard_songs.sh rock > before.txt   # one genre
 
 It is run before and after a change that should leave the wizard's songs alone, such as a refactoring of the arranger or
 of the wizard's choices, and the two outputs are compared: a line that differs names the genre, the subgenre and the
 choice whose song changed. The choices are the ones the suite goes through (every_choice in
 tests/macro_composer/test_wizard_effect.py), each made on a subgenre's usual song with one seed, so that a new choice of
-the wizard is covered once the suite covers it. A song is made under one version, whatever the program's is, so that a
-version bump changes no line. The genres are made side by side, a process each. It writes nothing but what it prints.
+the wizard is covered once the suite covers it. A choice runs the same code whatever the subgenre, so each is made once, on
+the first subgenre of its genre, and every subgenre's own style is covered by its usual song. A song is made under one
+version, whatever the program's is, so that a version bump changes no line. The subgenres are made side by side on every core,
+and the lines come out in one order. It writes nothing but what it prints.
 """
 
 import argparse
@@ -48,6 +51,9 @@ MSG_LINE = '{genre} | {subgenre} | {kind} | {what} | {place} | {made}'
 MSG_FAILED = 'FAILED {error}: {text}'
 ERR_NO_SUCH_GENRE = 'no genre called ({}): expected one of {}'
 TEXT_KEPT = 60
+# The two kinds of task: a subgenre's usual songs, and every choice on one subgenre.
+USUAL = 'usual'
+CHOICES = 'choices'
 
 
 def digest_of(choices):
@@ -81,12 +87,30 @@ def lines_of_subgenre(*, genre, subgenre, choices=None):
     return lines
 
 
-def lines_of_genre(genre):
-    """A line for every choice of every subgenre of a genre."""
+def usual_lines(*, genre, subgenre):
+    """A line for a subgenre's usual song in each of its kinds of song, the subgenre's own first."""
     lines = []
-    for subgenre in WizardChoices.from_data({arranger.GENRE: genre}).subgenres():
-        lines += lines_of_subgenre(genre=genre, subgenre=subgenre)
+    for variant in [None, *fresh(genre=genre, subgenre=subgenre).variants()]:
+        choices = fresh(genre=genre, subgenre=subgenre)
+        if variant is not None:
+            choices.set_variant(variant)
+        lines.append(MSG_LINE.format(genre=genre, subgenre=subgenre, kind=USUAL, what=variant, place=0, made=digest_of(choices)))
     return lines
+
+
+def lines_of_task(task):
+    """The lines of one task: (USUAL, genre, subgenre) for a subgenre's usual songs, or (CHOICES, genre, subgenre) for every choice."""
+    kind, genre, subgenre = task
+    if kind == USUAL:
+        return usual_lines(genre=genre, subgenre=subgenre)
+    return lines_of_subgenre(genre=genre, subgenre=subgenre)
+
+
+def tasks_of(genres):
+    """Every task, in the order the lines come out: each subgenre's usual songs, then every choice on each genre's first subgenre."""
+    usual = [(USUAL, genre, subgenre) for genre in genres for subgenre in WizardChoices.from_data({arranger.GENRE: genre}).subgenres()]
+    choices = [(CHOICES, genre, WizardChoices.from_data({arranger.GENRE: genre}).subgenres()[0]) for genre in genres]
+    return usual + choices
 
 
 def main(*, arguments):
@@ -98,7 +122,7 @@ def main(*, arguments):
         return 1
     genres = genre_names() if options.genre is None else [options.genre]
     with multiprocessing.Pool() as pool:
-        for lines in pool.map(lines_of_genre, genres):
+        for lines in pool.map(lines_of_task, tasks_of(genres), chunksize=1):
             print(NEW_LINE.join(lines))
     return 0
 
