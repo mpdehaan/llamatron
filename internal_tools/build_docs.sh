@@ -22,7 +22,7 @@
 # Node.js is missing or too old it offers to install it with Homebrew, installing nothing without a yes.
 # Then, in .docs_site/ (ignored by git, and outside internal_tools/ so that the tests' walks of its Python
 # never reach node_modules), it installs VitePress and its plugins at the versions
-# internal_tools/docs_site/package.json and package-lock.json pin, stages the pages
+# internal_tools/docs_site/package.json and package-lock.json pin, only when one is missing or at another version, stages the pages
 # (internal_tools/stage_docs_site.py), and builds the site into web_docs/, replacing what was there.
 #
 #     internal_tools/build_docs.sh
@@ -78,9 +78,12 @@ cp "$SOURCES/package.json" "$SITE/package.json"
 if [ -f "$SOURCES/package-lock.json" ]; then
     cp "$SOURCES/package-lock.json" "$SITE/package-lock.json"
 fi
-echo "Installing VitePress into $SITE/node_modules"
-(cd "$SITE" && npm install --no-audit --no-fund --no-update-notifier --loglevel=error)
-cp "$SITE/package-lock.json" "$SOURCES/package-lock.json"
+# npm is run only when a module package.json pins is missing from node_modules or at another version, never on every build.
+if "$PYTHON" internal_tools/docs_modules_missing.py "$SITE"; then
+    echo "Installing VitePress into $SITE/node_modules"
+    (cd "$SITE" && npm install --no-audit --no-fund --no-update-notifier --loglevel=error)
+    cp "$SITE/package-lock.json" "$SOURCES/package-lock.json"
+fi
 
 "$PYTHON" internal_tools/stage_docs_site.py --out "$STAGING"
 mkdir -p "$STAGING/.vitepress"
