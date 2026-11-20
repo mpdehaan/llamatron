@@ -51,8 +51,8 @@ generators:
   - { name: down, kind: arp, step: 1/16, order: down }
   - { name: up_down, kind: arp, step: 1/16, order: up_down }
   - { name: down_up, kind: arp, step: 1/16, order: down_up }
-  - { name: random_seed_1, kind: arp, step: 1/16, order: random }
-  - { name: random_seed_2, kind: arp, step: 1/16, order: random }
+  - { name: random_1, kind: arp, step: 1/16, order: random }
+  - { name: random_2, kind: arp, step: 1/16, order: random }
   - { name: two_octaves_after_chord, kind: arp, step: 1/16, order: up, octave_range: 2, octave_jump: after_chord }
   - { name: two_octaves_after_each_note, kind: arp, step: 1/16, order: up, octave_range: 2, octave_jump: after_each_note }
   - { name: three_octaves_up_down, kind: arp, step: 1/16, order: up_down, octave_range: 3 }
@@ -74,8 +74,8 @@ generators:
   - { name: down arp, kind: chain, generators: [{ name: down }] }
   - { name: up_down arp, kind: chain, generators: [{ name: up_down }] }
   - { name: down_up arp, kind: chain, generators: [{ name: down_up }] }
-  - { name: random_seed_1 arp, kind: chain, generators: [{ name: random_seed_1 }] }
-  - { name: random_seed_2 arp, kind: chain, generators: [{ name: random_seed_2 }] }
+  - { name: random_1 arp, kind: chain, generators: [{ name: random_1 }] }
+  - { name: random_2 arp, kind: chain, generators: [{ name: random_2 }] }
   - { name: two_octaves_after_chord arp, kind: chain, generators: [{ name: two_octaves_after_chord }] }
   - { name: two_octaves_after_each_note arp, kind: chain, generators: [{ name: two_octaves_after_each_note }] }
   - { name: three_octaves_up_down arp, kind: chain, generators: [{ name: three_octaves_up_down }] }
@@ -138,13 +138,13 @@ songs:
         clips:
           - { track: chords, pattern: chords, generators: [{ name: down_up arp }] }
           - { track: tune, pattern: tune }
-      - name: "Order: random, seed 1"
+      - name: "Order: random"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: random_seed_1 arp }] }
+          - { track: chords, pattern: chords, generators: [{ name: random_1 arp }] }
           - { track: tune, pattern: tune }
-      - name: "Order: random, seed 2"
+      - name: "Order: random, again"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: random_seed_2 arp }] }
+          - { track: chords, pattern: chords, generators: [{ name: random_2 arp }] }
           - { track: tune, pattern: tune }
       - name: "Octave range 2, jump after_chord"
         clips:
