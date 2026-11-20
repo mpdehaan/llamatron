@@ -455,9 +455,9 @@ class RowOfStatementValues(RowDescription):
         super().__init__(name=name, kept_by_a_rest=True)
 
     def problem_with(self, value, *, drum):
-        if value in file_format.REGISTER_NAMES or is_whole_number_from(value=value, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER):
+        if value in file_format.VALUE_NAMES or is_whole_number_from(value=value, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER):
             return None
-        return errors.ERR_NOT_STATEMENT_VALUE.format(lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, choices=listed(file_format.REGISTER_NAMES))
+        return errors.ERR_NOT_STATEMENT_VALUE.format(lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, choices=listed(file_format.VALUE_NAMES))
 
 
 class RowOfStatementChoices(RowOfChoices):
@@ -471,7 +471,7 @@ class RowOfStatementChoices(RowOfChoices):
 
 
 # What each part of a statement may be, by the part.
-STATEMENT_PART_CHOICES = {StatementPart.REGISTER: file_format.REGISTER_NAMES, StatementPart.OPERATOR: file_format.OPERATORS, StatementPart.COMPARISON: file_format.RESULT_COMPARISONS}
+STATEMENT_PART_CHOICES = {StatementPart.REGISTER: file_format.VALUE_NAMES, StatementPart.OPERATOR: file_format.OPERATORS, StatementPart.COMPARISON: file_format.RESULT_COMPARISONS}
 
 
 def statement_row(name):

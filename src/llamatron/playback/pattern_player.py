@@ -21,7 +21,7 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.checks import written_length
-from llamatron.composition.conditions import is_true
+from llamatron.composition.conditions import draws_read, is_true
 from llamatron.composition.file_format import Row, StepStatement
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.song_file_error import SongFileError
@@ -91,6 +91,8 @@ class PlayedPattern(NamedTuple):
     stops: object
     restarts: object
     mutes: object
+    # Each step's draws its statements draw from, those that redraw in conditions, or None where no step's statement does.
+    redraws: object
 
 
 # What a step sets the registers to and adds to them when its pattern changes none, or when a morph's target plays.
@@ -134,12 +136,27 @@ class PatternPlayer:
     def _played(self, *, pattern_name, pattern):
         """Return a pattern's PlayedPattern, gathered the first time the pattern plays."""
         if pattern_name not in self._played_patterns:
+            redraws = self._redraws(pattern)
             self._played_patterns[pattern_name] = PlayedPattern(
                 pattern.get_every_step_values(rows=PLAYED_ROWS), pattern.sends_controls(), pattern.sends_keyswitches(),
-                pattern.changes_registers(), pattern.uses_registers(), pattern.uses_draws(),
+                pattern.changes_registers(), pattern.uses_registers(), pattern.uses_draws() or redraws is not None,
                 pattern.get_statements(StepStatement.STOP), pattern.get_statements(StepStatement.RESTART), pattern.get_statements(StepStatement.MUTE),
+                redraws,
             )
         return self._played_patterns[pattern_name]
+
+    def _redraws(self, pattern):
+        """Return each step's draws its statements draw from, the draws that redraw in conditions, or None where no step's statement draws."""
+        if not pattern.reads_draws():
+            return None
+        redrawing = {name for name in file_format.DRAW_NAMES if self._song.get_draw(name).redraws_in_conditions()}
+        found = [set() for _ in range(pattern.get_steps())]
+        for kind in file_format.STATEMENT_ROWS:
+            for step, statement in enumerate(pattern.get_statements(kind) or []):
+                if statement is not None:
+                    found[step].update(name for name in draws_read(statement) if name in redrawing)
+        steps = [tuple(name for name in file_format.DRAW_NAMES if name in names) for names in found]
+        return steps if any(steps) else None
 
     def _scene_scale_at(self, octave, *, effects=None, kind=None):
         """Return the clip's scale rooted at an octave, or the scale and root a drift overrides it with, built the first time each is asked for.
@@ -211,7 +228,11 @@ class PatternPlayer:
         # Where a step's statement cut the pass short, if one did, and whether it ended the clip or only started the pattern over.
         cut_at = None
         done = False
+        redraws = played.redraws if changes_registers else None
         for slot, step in enumerate(steps):
+            # A draw that redraws in conditions is drawn by the step's statements just before they read it, the step's one draw from it.
+            if redraws is not None and redraws[step]:
+                registers.before_statements(time=start + slot * step_size, draws=redraws[step])
             # A step's statements are read first of all, before the step changes anything, in the order stop, restart, mute.
             if stops is not None and stops[step] is not None and _holds(statement=stops[step], values=registers.before_step(start + slot * step_size)):
                 cut_at = slot
@@ -230,7 +251,8 @@ class PatternPlayer:
             if changes or reads_registers:
                 current = registers.at_step(
                     time=start + slot * step_size, sets=_register_sets(values) if changes else NO_SETS, adds=_register_adds(values) if changes else NO_ADDS,
-                    draws=_draws_used(values) if draws else NO_DRAWS, draw_resets=_draws_reset(values) if draws else NO_DRAWS,
+                    draws=_draws_used(values=values, drawn=redraws[step] if redraws is not None else NO_DRAWS) if draws else NO_DRAWS,
+                    draw_resets=_draws_reset(values) if draws else NO_DRAWS,
                 )
             if values[Row.TIE]:
                 if tied_to is not None:
@@ -561,9 +583,10 @@ def _register_adds(values):
     return {name: values[row] for name, row in file_format.REGISTER_ADD_ROWS.items() if values[row]}
 
 
-def _draws_used(values):
-    """Return the draws a step uses, each once however many of its rows use it, in the order the draws come."""
-    return tuple(name for name in file_format.DRAW_NAMES if values[file_format.DRAW_NOTE_ROWS[name]] or values[file_format.DRAW_VELOCITY_ROWS[name]])
+def _draws_used(*, values, drawn):
+    """Return the draws a step uses, each once however many of its rows use it, in the order the draws come, leaving out the draws
+    its statements drew already, which its rows read again."""
+    return tuple(name for name in file_format.DRAW_NAMES if name not in drawn and (values[file_format.DRAW_NOTE_ROWS[name]] or values[file_format.DRAW_VELOCITY_ROWS[name]]))
 
 
 def _draws_reset(values):

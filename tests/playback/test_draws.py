@@ -19,7 +19,7 @@ a step's and a scene's resets, and every track drawing from one draw in track or
 
 import unittest
 
-from llamatron.composition.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, PatternSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting
+from llamatron.composition.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, Operator, PatternSetting, RegisterName, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
@@ -162,6 +162,40 @@ class TestResets(unittest.TestCase):
         scenes = [{SceneSetting.TRACKS: played}, {SceneSetting.TRACKS: played}, {SceneSetting.RESET_DRAWS: [DrawName.AD], SceneSetting.TRACKS: played}]
         song = render_data(song_data(draws={DrawName.AD: a_draw(slots=list(range(8)))}, rows={Row.AD_NOTE: every_step(steps=2)}, steps=2, scenes=scenes))
         self.assertEqual(pitches_of(song=song, scenes=3), [[MIDDLE_C, MIDDLE_C + 1], [MIDDLE_C + 2, MIDDLE_C + 3], [MIDDLE_C, MIDDLE_C + 1]])
+
+
+def muted_when_equal(*, draw, value, steps=STEPS):
+    """Return a pattern's Mute When rows for every step: muted when a draw equals a value."""
+    return {Row.MUTE_C1: [draw] * steps, Row.MUTE_C2: [Operator.SAME] * steps, Row.MUTE_C3: [value] * steps}
+
+
+class TestConditions(unittest.TestCase):
+    """A statement reads a draw as it reads a register: only looking at it, or, where the draw redraws in conditions, drawing from it."""
+
+    def test_a_condition_looks_at_the_value_the_last_use_drew_without_drawing(self):
+        rows = {Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0], **muted_when_equal(draw=DrawName.AD, value=2)}
+        song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows=rows, repeat=4))
+        # The first step draws 0, 1, 2, 3 pass by pass, and each step reads the value drawn before it: the third pass's last three steps and the fourth pass's first are muted.
+        self.assertEqual([len(scene) for scene in pitches_of(song=song, scenes=4)], [4, 4, 1, 3])
+
+    def test_a_draw_that_redraws_in_conditions_is_drawn_by_each_statement_that_reads_it_once_a_step(self):
+        draw = {**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}
+        rows = {Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0], **muted_when_equal(draw=DrawName.AD, value=2)}
+        song = render_data(song_data(draws={DrawName.AD: draw}, rows=rows, repeat=2))
+        # Each step draws 0, 1, 2, 3 in turn, so the third step of every pass is muted; the first step's Note+=AD hears the 0 its statement drew.
+        self.assertEqual(pitches_of(song=song, scenes=2), [[MIDDLE_C, MIDDLE_C, MIDDLE_C]] * 2)
+
+    def test_a_statement_compares_a_register_with_a_draw(self):
+        rows = {Row.AD_NOTE: every_step(), Row.MUTE_C1: [RegisterName.AX] * STEPS, Row.MUTE_C2: [Operator.LESS] * STEPS, Row.MUTE_C3: [DrawName.AD] * STEPS}
+        song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows=rows))
+        # AX stays 0, and each step reads AD as the step before left it: 0, 0, 1, 2, so only the first two steps sound.
+        self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C, MIDDLE_C + 1]])
+
+    def test_a_table_reads_a_draw_as_a_pass_starts(self):
+        played = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: 4, ClipSlotSetting.SKIP_WHEN: [{StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.SAME, StatementPart.VALUE: 1}]}}
+        song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}, scenes=[{SceneSetting.TRACKS: played}]))
+        # Each pass's first step draws the next value; the second pass starts with AD at 0, the third with AD at 1, which sits the third pass out.
+        self.assertEqual(len(pitches_of(song=song, scenes=1)[0]), 3 * STEPS)
 
 
 class TestShared(unittest.TestCase):
