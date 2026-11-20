@@ -1,36 +1,34 @@
 version: 1.0.598
 title: LFO Modulators
-description: "sparse techno in F minor whose bass, stabs, hats and lead are moved by four modulators, on two sides of different waves"
+description: "weird techno in F minor whose bass and lead are moved by three modulators, on two sides of different waves"
 notes: |
   Modulators: weird techno in F minor, in two songs, side A and side B, which share every
-  pattern and differ only in their four modulators, XMod, WMod, YMod and ZMod. A modulator is a
+  pattern and differ only in three modulators, XMod, WMod and YMod. A modulator is a
   value that moves by itself like a synthesizer's LFO.
   Run it with: llamatron examples/learning/30_lfo_modulators.yml --to ableton --replace
 
   Who reads what, on both sides:
-  - WMod adds a little to the velocity of every note of the hats, the clap, the bass, the stabs
-    and the lead, and takes a little from the kick, a gentle breathing under the beat.
-  - XMod moves one bass note and one lead note far along the scale, up to seven degrees.
-  - YMod moves the stabs' second chord up, and the lead's last note down, up to five degrees.
-  - ZMod holds a random value, and scattered steps of the lead, the last track, mute themselves
-    whenever it is high, so its notes drop out unpredictably.
-  - In the last scene, the lead's pattern sets XMod back to 0 at the top of every bar.
+  - XMod, at 1 Hz from 0 to 5, moves the first bass note of every bar and a few more, and three
+    of the lead's notes, along the scale.
+  - WMod adds a little to the velocity of the bass and the lead.
+  - YMod moves the lead's last note down.
+  - The lead's pattern sets XMod back to 0 at the top of every bar.
+  - The kick plays at full velocity, as written.
 
-  Side A: XMod a sine over 2 bars, from 0 to 7; WMod a triangle at 0.3 Hz, from 0 to 12;
-  YMod a square over 1 bar, from 0 to 5; ZMod a sample and hold at 3 Hz, from 0 to 10.
-  Side B: XMod a saw over 1 bar, from 0 to 7; WMod a reverse saw at 0.4 Hz, from 0 to 12;
-  YMod an inverted sine over 4 bars, from 0 to 5; ZMod a sample and hold every quarter bar.
+  Side A: XMod a sine; WMod a triangle at 0.3 Hz, from 0 to 12; YMod a square over 1 bar, from
+  0 to 5.
+  Side B: XMod a saw; WMod a reverse saw at 0.4 Hz, from 0 to 12; YMod an inverted sine over
+  4 bars, from 0 to 5.
 
-  Each side's first scene ramps the tempo up from 90 to 120 over its 16 bars. The modulators
-  counted in bars speed up with it; the ones in Hz keep their pace.
+  The tempo holds at 120 throughout, where a bar lasts two seconds.
 
   Try it: on the main screen press M for the Modulators page, and change a shape or a rate.
 
   When changing this demo:
-  - Keep it audible: the velocity breathes gently, one note of each pattern swings its pitch
-    widely, and only the last track mutes.
+  - Keep it audible: the velocity breathes gently, and XMod swings a few notes widely.
   - Keep the two sides on the same patterns, so that only the modulators differ.
-  - Keep one modulator in Hz and one in bars on each side, to hear the difference as the tempo ramps.
+  - Keep one modulator in Hz and one in bars on each side, and the tempo constant at 120, where
+    a bar lasts two seconds.
 real_time: true
 protected: true
 
@@ -44,26 +42,7 @@ patterns:
     step_size: 1/16
     degree: [C, ~, ~, C, C, ~, ~, ~, C, ~, C, ~, C, ~, ~, ~]
     octave: [3, ~, ~, 3, 3, ~, ~, ~, 3, ~, 3, ~, 3, ~, ~, ~]
-    velocity: [115, ~, ~, 115, 115, ~, ~, ~, 115, ~, 115, ~, 115, ~, ~, ~]
-    wmod_velocity: [-1, 0, 0, -1, -1, 0, 0, 0, -1, 0, -1, 0, -1, 0, 0, 0]
-  - name: hat
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
-    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-    velocity: [80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80]
-    wmod_velocity: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-  - name: clap
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [~, ~, ~, ~, D, ~, ~, D, ~, ~, ~, ~, D, ~, D, ~]
-    accidental: [~, ~, ~, ~, "#", ~, ~, "#", ~, ~, ~, ~, "#", ~, "#", ~]
-    octave: [~, ~, ~, ~, 3, ~, ~, 3, ~, ~, ~, ~, 3, ~, 3, ~]
-    velocity: [~, ~, ~, ~, 85, ~, ~, 85, ~, ~, ~, ~, 85, ~, 85, ~]
-    wmod_velocity: [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0]
+    velocity: [127, ~, ~, 127, 127, ~, ~, ~, 127, ~, 127, ~, 127, ~, ~, ~]
   - name: bass
     steps: 16
     step_size: 1/16
@@ -71,31 +50,8 @@ patterns:
     gate: [1/16, 1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~, 1/16, ~, 1/16, ~]
     octave: [3, 3, ~, 3, 3, ~, 3, 3, ~, 3, 3, ~, 3, ~, 3, ~]
     velocity: [90, 90, ~, 90, 90, ~, 90, 90, ~, 90, 90, ~, 90, ~, 90, ~]
-    xmod_note: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    xmod_note: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     wmod_velocity: [1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0]
-  - name: stab
-    steps: 16
-    step_size: 1/16
-    degree: [~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~]
-    gate: [~, ~, 1/16, ~, ~, ~, 1/16, ~, ~, ~, 1/16, ~, ~, ~, 1/16, ~]
-    octave: [~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~]
-    chord: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
-    velocity: [~, ~, 80, ~, ~, ~, 80, ~, ~, ~, 80, ~, ~, ~, 80, ~]
-    ymod_note: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
-    wmod_velocity: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0]
-  - name: lead
-    steps: 16
-    step_size: 1/16
-    degree: [5, ~, 3, ~, 4, ~, 1, ~, 5, ~, 6, ~, 3, ~, 1, ~]
-    gate: [1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~, 1/16, ~]
-    octave: [5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~]
-    velocity: [85, ~, 85, ~, 85, ~, 85, ~, 85, ~, 85, ~, 85, ~, 85, ~]
-    xmod_note: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-    ymod_note: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0]
-    wmod_velocity: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
-    mute_c1: [~, ~, ZMod, ~, ~, ~, ~, ~, ZMod, ~, ~, ~, ZMod, ~, ~, ~]
-    mute_c2: [~, ~, ">", ~, ~, ~, ~, ~, ">", ~, ~, ~, ">", ~, ~, ~]
-    mute_c3: [~, ~, 7, ~, ~, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~]
   - name: lead from the top
     steps: 16
     step_size: 1/16
@@ -104,17 +60,13 @@ patterns:
     octave: [5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~]
     velocity: [85, ~, 85, ~, 85, ~, 85, ~, 85, ~, 85, ~, 85, ~, 85, ~]
     xmod_set: [0, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    xmod_note: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+    xmod_note: [0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]
     ymod_note: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0]
     wmod_velocity: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
-    mute_c1: [~, ~, ZMod, ~, ~, ~, ~, ~, ZMod, ~, ~, ~, ZMod, ~, ~, ~]
-    mute_c2: [~, ~, ">", ~, ~, ~, ~, ~, ">", ~, ~, ~, ">", ~, ~, ~]
-    mute_c3: [~, ~, 7, ~, ~, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~]
 
 instruments:
   - { name: drum kit, device: "*FluidSynth" }
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
-  - { name: synth strings, device: "*FluidSynth", gm_sound: 51 }
   - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
 
 songs:
@@ -124,51 +76,20 @@ songs:
     genre: Electronic
 
     modulators:
-      XMod: { shape: sine, bars: "2", maximum: 7 }
+      XMod: { shape: sine, rate_in: hertz, hertz: 1, maximum: 5 }
       WMod: { shape: triangle, rate_in: hertz, hertz: 0.3, maximum: 12 }
       YMod: { shape: square, bars: "1", maximum: 5 }
-      ZMod: { shape: sample_and_hold, rate_in: hertz, hertz: 3, maximum: 10 }
 
     tracks:
       - { name: kick, drum: true, instrument: drum kit }
-      - { name: hat, drum: true, instrument: drum kit }
-      - { name: clap, drum: true, instrument: drum kit }
       - { name: bass, instrument: synth bass }
-      - { name: stab, instrument: synth strings }
       - { name: lead, instrument: square lead }
 
     scenes:
-      - name: low end
-        tempo: 90
-        tempo_in_end: 120
-        tempo_in_over: 16
-        clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-      - name: stabs
-        clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-          - { track: stab, pattern: stab, loop: true }
-      - name: lead
-        clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-          - { track: stab, pattern: stab, loop: true }
-          - { track: lead, pattern: lead, loop: true }
       - name: weird
         clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
+          - { track: kick, pattern: kick, repeat: 64 }
           - { track: bass, pattern: bass, loop: true }
-          - { track: stab, pattern: stab, loop: true }
           - { track: lead, pattern: lead from the top, loop: true }
 
   - name: side B
@@ -177,49 +98,18 @@ songs:
     genre: Electronic
 
     modulators:
-      XMod: { shape: saw, bars: "1", maximum: 7 }
+      XMod: { shape: saw, rate_in: hertz, hertz: 1, maximum: 5 }
       WMod: { shape: reverse_saw, rate_in: hertz, hertz: 0.4, start: 12, maximum: 12 }
       YMod: { shape: sine, invert: true, bars: "4", start: 5, maximum: 5 }
-      ZMod: { shape: sample_and_hold, bars: 1/4, maximum: 10 }
 
     tracks:
       - { name: kick, drum: true, instrument: drum kit }
-      - { name: hat, drum: true, instrument: drum kit }
-      - { name: clap, drum: true, instrument: drum kit }
       - { name: bass, instrument: synth bass }
-      - { name: stab, instrument: synth strings }
       - { name: lead, instrument: square lead }
 
     scenes:
-      - name: low end
-        tempo: 90
-        tempo_in_end: 120
-        tempo_in_over: 16
-        clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-      - name: stabs
-        clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-          - { track: stab, pattern: stab, loop: true }
-      - name: lead
-        clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-          - { track: stab, pattern: stab, loop: true }
-          - { track: lead, pattern: lead, loop: true }
       - name: weird
         clips:
-          - { track: kick, pattern: kick, repeat: 16 }
-          - { track: hat, pattern: hat, loop: true }
-          - { track: clap, pattern: clap, loop: true }
+          - { track: kick, pattern: kick, repeat: 64 }
           - { track: bass, pattern: bass, loop: true }
-          - { track: stab, pattern: stab, loop: true }
           - { track: lead, pattern: lead from the top, loop: true }
