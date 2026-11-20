@@ -257,7 +257,6 @@ ERR_SONG_NAME_NOT_TEXT = 'a name must be text, got {name!r}'
 ERR_NAME_TAKEN = 'a {label} called ({name}) already exists'
 ERR_NO_SUCH_ITEM = 'no {label} called ({name})'
 ERR_NO_SUCH_SCENE = 'no scene at place {index} in {count} scenes'
-ERR_SONG_BAD_SEED = 'seed must be an integer or none, got {value!r}'
 ERR_SONG_BAD_WIZARD = 'wizard must be a mapping of settings, got {value!r}'
 
 # composition/track.py

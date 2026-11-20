@@ -84,8 +84,8 @@ def check_keys(*, data, allowed):
 
 
 def unknown_settings(*, data, allowed):
-    """Return the names in data that aren't allowed, in alphabetical order."""
-    return sorted(set(data) - set(allowed))
+    """Return the names in data that aren't allowed, in alphabetical order, passing over every setting that was taken away."""
+    return sorted(set(data) - set(allowed) - file_format.RETIRED_SETTINGS)
 
 
 def is_whole_number(value):

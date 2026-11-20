@@ -48,8 +48,6 @@ KEYSWITCH_VELOCITY = 100
 DEFAULT_REAL_TIME = False
 # A set the user makes is theirs to save over; the sets shipped in examples/ turn this on.
 DEFAULT_PROTECTED = False
-# No seed means every render is a new take; a seed makes a song render the same every time.
-DEFAULT_SEED = None
 DEFAULT_VELOCITY = 127
 # What an accented step adds to its velocity: a track's own part, and its instrument's, which a track's is added to.
 DEFAULT_TRACK_ACCENT = 15

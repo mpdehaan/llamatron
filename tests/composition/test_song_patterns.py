@@ -323,18 +323,12 @@ class TestStepRows(unittest.TestCase):
         self.assertTrue(70 < len(sounding) < 130)
 
     def test_without_a_seed_every_render_is_a_new_take(self):
-        self.assertIsNone(song_from_data(with_parts()).get_seed())
         self.assertNotEqual(self.many().get_notes(), self.many().get_notes())
 
-    def test_a_seed_given_to_the_renderer_replaces_the_songs(self):
-        data = lead_data(*[[1, SIXTEENTH]] * 200, rows={Row.PROBABILITY: [50] * 200}, seed=6)
+    def test_a_seed_given_to_the_renderer_repeats_a_take(self):
+        data = lead_data(*[[1, SIXTEENTH]] * 200, rows={Row.PROBABILITY: [50] * 200})
         rendered = SongRenderer(song_from_data(data), seed=5).render()
         self.assertEqual(clip(song=rendered, scene=1, track=song_testing.LEAD).get_notes(), self.many(seed=5).get_notes())
-
-    def test_a_seed_in_the_file_must_be_an_integer_or_null(self):
-        self.assertIsNone(song_from_data(with_parts(seed=None)).get_seed())
-        with self.assertRaises(SongFileError):
-            song_from_data(with_parts(seed=song_testing.X))
 
     def test_each_repeat_rolls_again(self):
         found = lead(*[[1, SIXTEENTH]] * 100, clip_slot={ClipSlotSetting.REPEAT: 2}, rows={Row.PROBABILITY: [50] * 100})

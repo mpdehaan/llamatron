@@ -597,7 +597,7 @@ class TestSetlistAndSong(RoundTrip):
     def test_an_empty_song_has_the_defaults(self):
         song = song_from_data({})
         self.assertEqual(song.to_data(), {})
-        self.assertEqual((song.get_tempo(), song.get_seed(), song.get_step_size()), (120, None, Fraction(1, 16)))
+        self.assertEqual((song.get_tempo(), song.get_step_size()), (120, Fraction(1, 16)))
         self.assertEqual(song.get_time_signature().to_text(), defaults.DEFAULT_TIME_SIGNATURE)
         self.assertEqual((song.get_default_octave(), song.get_default_drum_octave(), song.get_scale_name()), (5, 3, None))
         self.assertEqual((song.get_track_names(), song.get_scenes()), ([], []))

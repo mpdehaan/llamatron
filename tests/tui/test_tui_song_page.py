@@ -62,7 +62,7 @@ class TestSongPage(UITest):
     async def test_it_holds_the_song_settings_and_names_the_song(self):
         self.assertIsInstance(self.app.screen, SongPage)
         labels = [field.label for field in self.app.screen.fields()]
-        self.assertEqual(labels, [labels_text.MSG_NAME_LABEL, TEMPO, labels_text.MSG_TIME_SIGNATURE_LABEL, labels_text.MSG_ENTRY_SIZE_LABEL, labels_text.MSG_SCALE_LABEL, labels_text.MSG_SEED_LABEL, labels_text.MSG_GROOVE_LABEL, labels_text.MSG_GENRE_LABEL, labels_text.MSG_SUBGENRE_LABEL, labels_text.MSG_VARIANT_LABEL, labels_text.MSG_LIVE_RESPONSIVENESS_LABEL, labels_text.MSG_PREVIEW_INSTRUMENT_LABEL, labels_text.MSG_VISUALIZER_LABEL, labels_text.PageName.EXPORT])
+        self.assertEqual(labels, [labels_text.MSG_NAME_LABEL, TEMPO, labels_text.MSG_TIME_SIGNATURE_LABEL, labels_text.MSG_ENTRY_SIZE_LABEL, labels_text.MSG_SCALE_LABEL, labels_text.MSG_GROOVE_LABEL, labels_text.MSG_GENRE_LABEL, labels_text.MSG_SUBGENRE_LABEL, labels_text.MSG_VARIANT_LABEL, labels_text.MSG_LIVE_RESPONSIVENESS_LABEL, labels_text.MSG_PREVIEW_INSTRUMENT_LABEL, labels_text.MSG_VISUALIZER_LABEL, labels_text.PageName.EXPORT])
         self.assertIn(names_text.MSG_DEFAULT_SONG_NAME, self.text())
         self.assert_buttons_come_last_after_a_blank_line()
 
@@ -246,13 +246,8 @@ class TestSongPage(UITest):
         self.assertEqual(self.document.song().get_tempo(), 120)
         self.assertIn(NOT_AN_INTEGER, self.text())
 
-    async def test_seed_starts_as_none_and_counts_from_zero_when_set(self):
-        self.assertIsNone(self.document.song().get_seed())
-        await self.select_field(labels_text.MSG_SEED_LABEL)
-        await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.document.song().get_seed(), 1)
-        await self.press(Key.BACKSPACE)
-        self.assertIsNone(self.document.song().get_seed())
+    async def test_a_song_has_no_seed_since_every_play_and_export_is_a_new_take(self):
+        self.assertNotIn(labels_text.MSG_SEED_LABEL, self.text())
 
     async def test_scale_can_be_none(self):
         await self.select_field(labels_text.MSG_SCALE_LABEL)

@@ -25,7 +25,7 @@ from tests.support.rendering import as_setlist, render_data
 
 # One song, laid out the way files were before sets existed, which as_setlist turns into a set of one song.
 SONG = {
-    'tempo': 120, 'scale': 'main', 'scales': {'main': {'root': 'C', 'type': 'minor'}, 'A Minor': {'root': 'A', 'type': 'minor'}}, 'seed': 3,
+    'tempo': 120, 'scale': 'main', 'scales': {'main': {'root': 'C', 'type': 'minor'}, 'A Minor': {'root': 'A', 'type': 'minor'}},
     'step_size': '1/8', 'default_octave': 4, 'default_drum_octave': 0,
     'patterns': {
         'a': {

@@ -21,14 +21,14 @@
     llamatron examples/by_genre/electronic/minimal_techno.yml --to
     llamatron examples/by_genre/electronic/minimal_techno.yml --to midi
     llamatron examples/by_genre/electronic/minimal_techno.yml --to stems --out exports
-    llamatron examples/by_genre/electronic/minimal_techno.yml --to --song intro --seed 1
+    llamatron examples/by_genre/electronic/minimal_techno.yml --to --song intro
 
 Without --to it opens the tracker, on the set if one is named. --to writes every song of the
 set instead, or the one --song names, as files beside the set's file named <set>_<song>, like
 examples/minimal_techno_minimal_techno.als, or in the directory --out names, as a Live set unless
 --to says which kind of export: midi (one file), stems (a file per track), cliptree (a file per
-clip) or gm (one General MIDI file, drums on channel 10 and each track's instrument's sound). --seed exports with that seed in place of each song's, so that an
-export can be repeated exactly, which the tests and internal_tools/compare_exports.py rely on.
+clip) or gm (one General MIDI file, drums on channel 10 and each track's instrument's sound). Every
+export draws the song's random parts afresh, so each is a new take.
 
 A set file that holds values that can't be used, each with an allowed value near it, like a
 velocity of 200, isn't exported: every such value is listed with the value that would take its
@@ -107,8 +107,9 @@ def _arguments(argv):
         if arguments.set is not None or arguments.to is not None:
             parser.error(errors.ERR_WIZARD_ONLY_ALONE)
         return arguments
-    if arguments.batch:
-        parser.error(errors.ERR_ONLY_WITH_WIZARD.format(options=OPTION_BATCH))
+    wizard_only = [option for option, given in ((OPTION_BATCH, arguments.batch), (OPTION_SEED, arguments.seed is not None)) if given]
+    if wizard_only:
+        parser.error(errors.ERR_ONLY_WITH_WIZARD.format(options=OPTION_SEPARATOR.join(wizard_only)))
     if arguments.to is None:
         given = _render_options_given(arguments)
         if given:
@@ -146,7 +147,7 @@ def _render_options_given(arguments):
     """Return the options given that only mean something when exporting with --to."""
     options = [
         (OPTION_OUT, arguments.out is not None), (OPTION_TEMPLATE, arguments.template is not None), (OPTION_REPLACE, arguments.replace),
-        (OPTION_SEED, arguments.seed is not None), (OPTION_SONG, arguments.song is not None), (OPTION_FORCE, arguments.force),
+        (OPTION_SONG, arguments.song is not None), (OPTION_FORCE, arguments.force),
     ]
     return [option for option, given in options if given]
 
@@ -192,7 +193,7 @@ def read_set(*, path, force):
 def export_song(*, setlist, name, directory, arguments):
     """Write one song of a set into a directory as files named <set>_<song>, as the kind of export --to asks for."""
     files = export_name(setlist=file_stem(arguments.set), song=name)
-    grid = SongRenderer(setlist.get_song(name), seed=arguments.seed).render()
+    grid = SongRenderer(setlist.get_song(name)).render()
     if arguments.replace:
         remove_earlier_export(kind=arguments.to, directory=directory, name=files)
     make_exporter(kind=arguments.to, directory=directory, name=files, grid=grid, template=arguments.template).export()

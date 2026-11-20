@@ -14,7 +14,7 @@ An arpeggiator plays each chord one note at a time, and keeps going for as long 
 | Octave range | Plays the chord again in up to 4 octaves, from 1, which is the chord alone. |
 | Octave jump | `after chord` plays the whole chord before moving up an octave, so C E G becomes C E G C E G; `after each note` plays each note in every octave first, so it becomes C C E E G G. |
 | Offsets | The arpeggiator's own steps, as on a groovebox. `ENTER` edits them, and `Bksp` removes them. |
-| Seed | The seed for `random`. `Bksp` goes back to the song's seed. |
+| Seed | The seed for `random`. `Bksp` goes back to a new draw each play. |
 | AX+= per note to DX+= per note | How much every note the arpeggiator plays adds to that register, or takes from it, within the register's Allowed Inc Max. `Bksp` sets none. See [Registers](../REGISTERS.md). |
 | Restart | When it starts over, as [Generators](../GENERATORS.md#restart) describes. |
 

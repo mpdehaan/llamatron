@@ -11,7 +11,7 @@ llamatron examples/learning/08_tie.yml         # open a set file
 
 Start llamatron from the project folder for now. The Open page starts in `examples/` when the current folder has one, and new sets are saved into `songs/` there. Exports are written beside the set's file, wherever that is.
 
-A file holds a set of songs, like the songs of one concert. The patterns, scales, generators, chains, grooves and instruments belong to the set, and every song shares them; each song has its own tempo, scale, seed, groove, tracks, registers and scenes.
+A file holds a set of songs, like the songs of one concert. The patterns, scales, generators, chains, grooves and instruments belong to the set, and every song shares them; each song has its own tempo, scale, groove, tracks, registers and scenes.
 
 [A video of moving around the tracker](https://www.youtube.com/watch?v=JAswLZ8CGzk) is on YouTube. The video was made with an early build, so some pages look different now, and the program will go on changing.
 

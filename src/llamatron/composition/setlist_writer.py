@@ -44,7 +44,7 @@ _SETTINGS = [
 ]
 _BEFORE_NOTES = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION)
 # A song's settings, in the order they're written at the top of its entry.
-_SONG_SETTINGS = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, SongSetting.GENRE, SongSetting.SUBGENRE, SongSetting.VARIANT, SongSetting.LIVE_RESPONSIVENESS, SongSetting.VISUALIZER, SongSetting.PREVIEW_INSTRUMENT, SongSetting.WIZARD]
+_SONG_SETTINGS = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.GROOVE, SongSetting.GENRE, SongSetting.SUBGENRE, SongSetting.VARIANT, SongSetting.LIVE_RESPONSIVENESS, SongSetting.VISUALIZER, SongSetting.PREVIEW_INSTRUMENT, SongSetting.WIZARD]
 _PATTERN_SETTINGS = [PatternSetting.GROUP, PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE, PatternSetting.DIRECTION]
 
 # The pieces of YAML this writes.

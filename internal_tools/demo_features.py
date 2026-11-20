@@ -199,7 +199,6 @@ FEATURES = [
     ('track CC numbers', any_track_setting(TrackSetting.CC)),
     ('track groove', any_track_setting(TrackSetting.GROOVE)),
     ('song groove', any_song_setting(SongSetting.GROOVE)),
-    ('song seed', any_song_setting(SongSetting.SEED)),
     ('time signature not 4/4', uses_another_time_signature),
     ('registers section', any_song_section(Section.REGISTERS)),
     ('several songs', lambda data: len(songs(data)) > 1),

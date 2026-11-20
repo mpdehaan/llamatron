@@ -60,7 +60,7 @@ class DriftEditor(GeneratorEditor, FieldPage):
             ChoiceField(page=self, label=labels.MSG_DRIFT_DIRECTION_LABEL, choices=file_format.DRIFT_DIRECTIONS, current=drift.get_direction(),
                         set=lambda value: self.store(setting=DriftSetting.DIRECTION, value=None if value == file_format.DRIFT_DIRECTIONS[0] else value)),
             NumberField(
-                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_SONG_SEED_SHOWN if seed is None else None,
+                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_RANDOM_SEED_SHOWN if seed is None else None,
                 set=lambda number: self.store(setting=DriftSetting.SEED, value=number),
                 clear=lambda: self.store(setting=DriftSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
             ),

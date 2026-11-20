@@ -183,7 +183,7 @@ class TestSceneViewOnArrange(UITest):
         self.assertIn(track_label(name=ui_testing.LEAD, place=self.document.track_names().index(ui_testing.LEAD)), self.text())
         await self.press(keybindings.ArrangePage.TO_PLAYED)
         self.assertEqual(self.page.inset.border_colour(), scene_view.PLAYED_COLOUR)
-        self.assertIn(marks.MSG_SCENE_VIEW_PLAYED.format(take=marks.MSG_SCENE_VIEW_ONE_TAKE)[:40], self.text())
+        self.assertIn(marks.MSG_SCENE_VIEW_PLAYED[:40], self.text())
         await self.press(keybindings.ArrangePage.TO_WRITTEN)
         self.assertIn(marks.MSG_SCENE_VIEW_WRITTEN, self.text())
 

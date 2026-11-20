@@ -104,8 +104,6 @@ class TestSettingArrows(UITest):
         self.assertIsNone(self.document.song().get_scale_name())
         await self.press(Key.RIGHT)
         self.assertEqual(self.document.song().get_scale_name(), setlist.DEFAULT_SCALE)
-        await self.press(Key.DOWN, Key.RIGHT)
-        self.assertEqual(self.document.song().get_seed(), 1)
 
     async def test_on_every_set_setting_with_a_value_to_step(self):
         await self.press(keybindings.MainPage.FILE)

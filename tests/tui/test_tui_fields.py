@@ -332,15 +332,6 @@ class TestFieldsOnThePages(FieldPagesTest):
         self.assertEqual(self.document.song().get_tempo(), limits.MIN_TEMPO)
         self.assertIn(errors.ERR_OUT_OF_RANGE.format(number=limits.MAX_TEMPO + 1, low=limits.MIN_TEMPO, high=limits.MAX_TEMPO), self.text())
 
-    async def test_the_seed_has_no_ends_and_starts_from_nothing(self):
-        await self.press(keybindings.MainPage.SONGS, Key.ENTER)
-        await self.select_field(labels.MSG_SEED_LABEL)
-        self.assertIsNone(self.document.song().get_seed())
-        await self.press(Key.RIGHT, Key.RIGHT)
-        self.assertEqual(self.document.song().get_seed(), 2)
-        await self.press(Key.BACKSPACE)
-        self.assertIsNone(self.document.song().get_seed())
-
     async def test_a_scenes_and_a_clips_repeat_stop_where_typing_stops(self):
         await self.show(ScenePage(holder=self.app.screen.holder, index=FIRST_SCENE))
         await self.select_field(labels.MSG_REPEAT_LABEL)

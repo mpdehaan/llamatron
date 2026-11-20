@@ -21,7 +21,6 @@ from llamatron.composition.genres import subgenres_of, variants_of
 from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings, themes
 from llamatron.tui.screens.set.visualizer_fields import visualizer_field
-from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.everywhere import export
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -65,10 +64,6 @@ class SongPage(FieldPage):
                   clear=lambda: document.change(document.song().set_entry_size, None), clear_what=legends.MSG_ONE_STEP_WHAT),
             Field(label=labels.MSG_SCALE_LABEL, value=lambda: song.get_scale_name() or marks.MSG_NONE_SHOWN, adjust=self.step_scale, enter=self.pick_scale, enter_what=legends.What.CHOOSE,
                   clear=lambda: document.change(document.song().set_scale_name, None), clear_what=messages.MSG_NO_SCALE),
-            NumberField(
-                page=self, label=labels.MSG_SEED_LABEL, number=song.get_seed(), start=shared.NO_SEED, shown=marks.MSG_NONE_SHOWN if song.get_seed() is None else None,
-                set=lambda seed: document.change(document.song().set_seed, seed), clear=lambda: document.change(document.song().set_seed, None), clear_what=messages.MSG_NO_SEED,
-            ),
             Field(label=labels.MSG_GROOVE_LABEL, value=song.get_groove_name, adjust=self.step_groove, enter=self.pick_groove, enter_what=legends.What.CHOOSE),
             self.style_field(label=labels.MSG_GENRE_LABEL, choices=genres.GENRES, current=song.get_genre(), set_choice=lambda genre: document.change(document.song().set_genre, genre)),
             self.style_field(label=labels.MSG_SUBGENRE_LABEL, choices=subgenres_of(song.get_genre()), current=song.get_subgenre(), set_choice=lambda subgenre: document.change(document.song().set_subgenre, subgenre)),

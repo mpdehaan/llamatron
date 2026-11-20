@@ -183,7 +183,7 @@ SETTINGS_OF_THE_SET = [
     SetlistSetting.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE, SetlistSetting.OCTAVE_LABELS, SetlistSetting.PROTECTED,
 ]
 # A song's own settings, likewise.
-SETTINGS_OF_A_SONG = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE]
+SETTINGS_OF_A_SONG = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.SCALE, SongSetting.GROOVE]
 
 
 def _describe_song_change(*, leaving, arriving):
