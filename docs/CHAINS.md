@@ -14,7 +14,7 @@ A clip names the chains it runs, and so can a scene and a track:
 - a **scene's** chains shape every clip of the scene;
 - a **track's** chains shape every clip the track plays, in every scene.
 
-A clip runs its own chains first, then its scene's, then its track's, and a chain named twice runs twice. The clip page, the Scene page and the track editor each have a Chains field that opens the list.
+A clip runs its own chains first, then its scene's, then its track's, and a chain named twice runs twice. The clip page, the Scene page and the track editor each have a Generators field that opens the list, where a chain sits beside any other generator. A chain is also listed on the Generators page, as one more kind.
 
 ## Chains Page
 
