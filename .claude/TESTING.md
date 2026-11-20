@@ -269,7 +269,7 @@ shared helpers are modules beside them:
 - **Drum breaks.** `tests/macro_composer/test_breaks.py`: each break as written, a break cut up slice by slice, a song that plays one, and the wizard's choice of a break and its cut.
 - **The wizard shows every choice.** `tests/rules/test_wizard_shows_choices.py`: every method of `WizardChoices` that changes a choice is called from the wizard's screens, but for the few listed there with the reason, so that a choice built underneath cannot be left off the page (the user's rule, after a player's own gauges were).
 - **The song wizard's choices.** `tests/macro_composer/test_wizard_choices.py` (each choice kept, refused and made into a song) and
-  `tests/macro_composer/test_wizard_effect.py`, the rule that every choice the wizard offers changes the song made: a new field of
+  `tests/macro_composer/test_wizard_effect.py`, the rule that every choice the wizard offers changes the song made (each run checks every choice on one subgenre of each genre, the day's own in turn by date, `subgenre_of_the_day`, the user's choice for speed): a new field of
   the wizard is added to `every_choice` there in the same change (the user's rule, after a progression that never varied).
 - **The exporters and generators**, named after them, with `tests/app/test_matrix.py` as an end-to-end
   example of the classes underneath the tracker and `tests/generators/test_generator_list_steps.py` checking
