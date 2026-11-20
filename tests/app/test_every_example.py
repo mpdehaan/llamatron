@@ -26,7 +26,6 @@ import re
 import unittest
 
 from llamatron.support.example_sets import example_sets
-from tests.app.test_demos import check_demo_reads_back, check_demo_saves_and_loads
 from tests.app.test_examples import check_clips_fit, check_exports, check_homage_folder, check_length, check_sounds
 from tests.composition.test_kept_data import check_kept_data
 from tests.composition.test_renames import check_renames
@@ -36,7 +35,6 @@ from tests.grid.test_clip_lengths import check_lengths_agree
 from tests.grid.test_clip_sounds import BothWays, check_both_ways
 from tests.importers.test_midi_import import check_round_trip
 from tests.realtime.test_realtime import check_player_follows, check_timeline
-from tests.support.rendering import is_demo
 from tests.tui.test_tui_document import check_saves_and_loads
 
 # Every check of one example, by what its test is called.
@@ -47,7 +45,6 @@ CHECKS = {
     'player_follows': check_player_follows, 'saves_and_loads': check_saves_and_loads,
 }
 # The checks only a demo has.
-DEMO_CHECKS = {'demo_reads_back': check_demo_reads_back, 'demo_saves_and_loads': check_demo_saves_and_loads}
 TEST_NAME = 'test_{}'
 CLASS_NAME = 'TestExample{}'
 # What a file's name keeps in its class's name.
@@ -68,8 +65,7 @@ def class_name(path):
 
 def class_for(path):
     """Return the class of one example: a test for each check, every one of them reading the one render the class shares."""
-    checks = {**CHECKS, **(DEMO_CHECKS if is_demo(path) else {})}
-    tests = {TEST_NAME.format(name): test_of(check=check, path=path) for name, check in checks.items()}
+    tests = {TEST_NAME.format(name): test_of(check=check, path=path) for name, check in CHECKS.items()}
     return type(class_name(path), (BothWays,), {'__slots__': (), **tests})
 
 

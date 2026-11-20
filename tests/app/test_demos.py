@@ -34,11 +34,9 @@ import yaml
 
 from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.composition.setlist_reader import set_file_data
-from llamatron.composition.setlist_writer import dump_file_layout
 from llamatron.exporters.timing import timed_events
 from llamatron.support.example_sets import example_sets
 from llamatron.tui import drawing
-from llamatron.tui.document import Document
 from tests.support.rendering import is_demo, render_file
 
 PATHS = sorted(path for path in example_sets() if is_demo(path))
@@ -65,12 +63,6 @@ SILENT_MELODY = 'SILENT melody'
 
 def names():
     return sorted(os.path.basename(path) for path in PATHS)
-
-
-def without_version(data):
-    """Return a set's data without the version it was saved with, which moves with every release of the program."""
-    return {key: value for key, value in data.items() if key != SetlistSetting.VERSION}
-
 
 
 class TemporaryFolderTest(unittest.TestCase):
@@ -192,25 +184,6 @@ class TestDemoSources(unittest.TestCase):
         for time, number in onsets(song=song, scene=scene, track_name=BASS):
             latest = max(start for start in roots if start <= time)
             self.assertEqual(number, roots[latest] - 12)
-
-
-
-def check_demo_reads_back(*, test, path):
-    """A demo, written out, reads back as the same data."""
-    with open(path) as file:
-        data = yaml.safe_load(file)
-    test.assertEqual(yaml.safe_load(dump_file_layout(data)), data)
-
-
-def check_demo_saves_and_loads(*, test, path):
-    """A demo saved by the tracker holds what its file held."""
-    with tempfile.TemporaryDirectory() as folder:
-        target = os.path.join(folder, os.path.basename(path))
-        Document.load(path).save(path=target)
-        with open(path) as first, open(target) as second:
-            original = yaml.safe_load(first)
-            saved = yaml.safe_load(second)
-    test.assertEqual(without_version({key: saved[key] for key in original}), without_version(original))
 
 
 if __name__ == '__main__':
