@@ -1,6 +1,6 @@
 version: 1.0.615
 title: Draws
-description: "a count-in from a draw, twelve-tone rows dealt by a serial draw, melodies from draws added and pulled against each other, drums made punchy by a draw, and notes gated by draws"
+description: "a count-in from a draw, twelve-tone rows dealt by a serial draw, melodies from draws added and pulled against each other, and notes gated by draws"
 notes: |
   Draws: four lists of values, AD to DD, that a pattern's steps add to their notes and velocities, a
   value each time a step uses one. Every note in this demo is written as the same C, in a chromatic
@@ -11,7 +11,6 @@ notes: |
   - AD is serial, 0 to 11: it deals every slot once a round in a random order, so twelve uses play
     every pitch of the octave once, a twelve-tone row, and the next twelve play a new row.
   - BD is pendulum, 1, 2, 3, 4, -1, 2: forward to the end and back.
-  - CD is any, 0, 15, 30, 45: a slot at random every time, the same slot as often as not.
   - DD is forward, 0, 1, 2, 3.
 
   Scene 1, count in: one note a bar, written as C four times, with Note+=DD on each. DD gives 0, 1, 2
@@ -32,12 +31,7 @@ notes: |
   - Pulling apart: DD on every note, and BD subtracted (-) on two steps, against DD.
   - All three: AD on the downbeats, BD and DD between.
 
-  Scene 10, punchy drums: no pitch moves. The hats and the snare have Vel+=CD, so each hit lands
-  0, 15, 30 or 45 louder, at random.
-
-  Scenes 11 to 13, gates: Mute When reads a draw as it reads a register.
-  - Gated hats: each hat draws CD for its velocity, and has Mute When: CD = 0, which looks at the
-    value the last hat drew, so about a hat in four drops out, at random.
+  Scenes 10 and 11, gates: Mute When reads a draw as it reads a register.
   - Counted gate: the kick adds 1 to AX each bar, and the marimba's notes, Note+=AD, have Mute When:
     AD > AX: in the first bar only a 0 gets through, and as AX counts up more of the row is heard.
   - Redrawn gate: BD has Conditions redraw on, so the bell's Mute When: BD < 2 draws from BD itself,
@@ -153,35 +147,6 @@ patterns:
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, ~, ~]
     velocity: [100, ~, ~, ~, ~, ~, 90, ~, 100, ~, ~, 90, ~, ~, ~, ~]
     ax_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
-  - name: snare
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
-    octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 70, ~, ~, ~, ~, ~, ~, ~, 70, ~, ~, ~]
-    cd_velocity: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
-  - name: hats
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
-    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-    velocity: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
-    cd_velocity: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-  - name: gated hats
-    steps: 16
-    drum: true
-    step_size: 1/16
-    degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
-    accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-    velocity: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
-    cd_velocity: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    mute_c1: [CD, CD, CD, CD, CD, CD, CD, CD, CD, CD, CD, CD, CD, CD, CD, CD]
-    mute_c2: ["=", "=", "=", "=", "=", "=", "=", "=", "=", "=", "=", "=", "=", "=", "=", "="]
-    mute_c3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   - name: counted gate
     steps: 8
     step_size: 1/8
@@ -221,7 +186,6 @@ songs:
     draws:
       AD: { direction: serial, slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], value_min: 0, value_max: 11 }
       BD: { direction: pendulum, slots: [1, 2, 3, 4, -1, 2], conditions_redraw: true }
-      CD: { direction: any, slots: [0, 15, 30, 45] }
       DD: { slots: [0, 1, 2, 3] }
 
     tracks:
@@ -231,8 +195,6 @@ songs:
       - { name: drone, instrument: cello }
       - { name: bass, instrument: finger bass }
       - { name: kick, drum: true, instrument: drum kit }
-      - { name: snare, drum: true, instrument: drum kit }
-      - { name: hats, drum: true, instrument: drum kit }
 
     scenes:
       - name: count in
@@ -269,16 +231,6 @@ songs:
         clips:
           - { track: vibraphone, pattern: all three, repeat: 4 }
           - { track: bass, pattern: bass pulse, repeat: 8 }
-      - name: punchy drums
-        clips:
-          - { track: kick, pattern: kick, repeat: 8 }
-          - { track: snare, pattern: snare, repeat: 8 }
-          - { track: hats, pattern: hats, repeat: 8 }
-      - name: gated hats
-        clips:
-          - { track: kick, pattern: kick, repeat: 8 }
-          - { track: snare, pattern: snare, repeat: 8 }
-          - { track: hats, pattern: gated hats, repeat: 8 }
       - name: counted gate
         set_registers: { AX: 0 }
         clips:

@@ -79,5 +79,5 @@ BD redraws, plays the rhythm its own draws make.
 On the Scene page, a Reset toggle for each draw, after the registers' Reset toggles, makes the scene reset the draw as it first starts, not on its repeats, sending it back to its first slot or a serial draw to a new
 round, so that a verse's melody starts the same way every time the verse comes round.
 
-The demo [`examples/learning/30_draws.yml`](../examples/learning/30_draws.yml) plays every kind of draw, from a count-in to
-twelve-tone rows, melodies, drums and gates.
+The demo [`examples/learning/30_draws.yml`](../examples/learning/30_draws.yml) plays draws from a count-in to twelve-tone rows,
+melodies and gates.

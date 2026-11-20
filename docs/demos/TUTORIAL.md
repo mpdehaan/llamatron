@@ -587,15 +587,14 @@ keep their order.
 <a id="draws"></a>
 ## Draws: `30_draws.yml`
 
-Draws in thirteen scenes, every note written as the same C in a chromatic scale, so that everything that moves is a draw. A
+Draws in eleven scenes, every note written as the same C in a chromatic scale, so that everything that moves is a draw. A
 count-in plays C, C#, D and D# from a draw that moves forward. Four scenes deal twelve-tone rows from a serial draw, which plays
 every pitch of the octave once before any comes again: plainly, passed between two instruments, with rests and leaps, and in
 pairs. Four scenes over a bass add two draws on alternate steps, add them together, pull one against the other, and add all
-three. A drum scene makes the hats and the snare land louder at random by a draw on velocity, and the last three scenes gate
-notes by draws: hats that drop out at random, a melody that grows as a register counts the bars, and a bell whose rhythm comes
-from a draw that its own condition redraws.
+three. The last two scenes gate notes by draws: a melody that grows as a register counts the bars, and a bell whose rhythm
+comes from a draw that its own condition redraws.
 
-[`examples/learning/30_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/30_draws.yml) · C chromatic · 108 BPM · 3:33 · 13 scenes · 8 tracks
+[`examples/learning/30_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/30_draws.yml) · C chromatic · 108 BPM · 2:58 · 11 scenes · 6 tracks
 
 | registers | draws | conditional execution |
 | :---: | :---: | :---: |
