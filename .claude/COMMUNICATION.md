@@ -280,6 +280,11 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   would see and press, in the words the tracker shows on screen, naming the existing feature they
   build on. Code names come after, if at all, and software components go by their formal names:
   `__init__` and the like are special methods, never dunders.
+- **No new words.** Claude never makes up a word of its own for a thing or a group of things, such as "a table" for Skip
+  Playback When and Bypass Generators When: a thing is named by what the tracker shows on screen or by the user's own word for
+  it, in full each time, like "Skip Playback When and Bypass Generators When", even when that is longer. A word from the code or
+  from a note of Claude's is no exception. Where a group of things has no name on screen and the user has given none, each is
+  named, and when a name for the group would really help, Claude asks the user for one (the user's rule).
 - **The page first.** Anything said about the text UI, a question, an example or an explanation,
   opens by naming the page, "When you are on the clip page, ..." or "In an example scenario, on
   the Arrange page, ...", before any key or cell, and names the page again whenever the page
