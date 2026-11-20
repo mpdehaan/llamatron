@@ -230,9 +230,14 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
             data = {} if data is None else data
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=data))
-            pass_over_unknown(data=data, allowed=cls.SETTINGS)
+            cls.pass_over_unknown_names(data)
             cls.check_data(data)
         return cls(data)
+
+    @classmethod
+    def pass_over_unknown_names(cls, data):
+        """Take out of a file's data every name this generator doesn't have, so that a file from another version opens."""
+        pass_over_unknown(data=data, allowed=cls.SETTINGS)
 
     @classmethod
     def handed_over(cls, *, data, where):
@@ -1338,6 +1343,18 @@ class MusicianSettings(GeneratorSettings):
         Checked(name=MusicianSetting.BY_SECTION, check=check_musician_by_section),
     )
     REFERENCES = {Section.TRACKS: (MusicianSetting.CHORDS_FROM, MusicianSetting.TUNE_FROM)}
+
+    @classmethod
+    def pass_over_unknown_names(cls, data):
+        """Take out every name the musician doesn't have, a kind of section and its own settings for one included, so that a file
+        saved before one was taken away, or by a later version, still opens."""
+        super().pass_over_unknown_names(data)
+        by_section = data.get(MusicianSetting.BY_SECTION)
+        if isinstance(by_section, dict):
+            pass_over_unknown(data=by_section, allowed=file_format.SECTION_KINDS)
+            for own in by_section.values():
+                if isinstance(own, dict):
+                    pass_over_unknown(data=own, allowed=MUSICIAN_BY_SECTION)
 
     @classmethod
     def new(cls):
