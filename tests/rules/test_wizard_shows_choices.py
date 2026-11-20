@@ -54,8 +54,9 @@ SECTION_CHANGES = ('copy', 'move', 'remove')
 # The last four are the writing methods and their gauges, which the Melody panel's Character chooses among, and a kind of section's own
 # player of the melody, which Section Players chooses through what each player plays there.
 # Who says the hook in every part of an intro at once is kept from songs made before an intro had parts; the Intro panel sets each part's.
-# One thing laid over the song's picks under a name is set by a part of the choices, whose own setters the pages call.
-NOT_ON_THE_PAGE = ('set_extra', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_melody_gauge', 'set_melody_setting', 'set_tune_played_by_in')
+# One thing laid over the song's picks under a name is set by a part of the choices, whose own setters the pages call, and so
+# are the sections a player plays in, which the player's Comes in and Lays out set.
+NOT_ON_THE_PAGE = ('set_extra', 'set_plays_of', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_melody_gauge', 'set_melody_setting', 'set_tune_played_by_in')
 A_CALL = r'\.{name}\b'
 A_CALL_ON_A_SECTION = r'\.section\([^)]*\)\.{name}\b'
 SOURCE_FILES = '*.py'

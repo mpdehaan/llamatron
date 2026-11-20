@@ -135,19 +135,19 @@ class PlayerBranch(Branch):
                     page.refuse(str(problem))
             return set_way
         fields = []
-        comes, lays = choices.comes_in_offered(role), choices.lays_out_offered(role)
+        comes, lays = choices.player(role).comes_in_offered(), choices.player(role).lays_out_offered()
         if comes:
-            now = choices.get_comes_in(role)
+            now = choices.player(role).get_comes_in()
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_COMES_IN_LABEL, choices=comes, current=now or comes[0], shown=None if now is not None else labels.MSG_WIZARD_OWN_START,
-                                      set=refusing(lambda way: choices.set_comes_in(role=role, way=way))))
+                                      set=refusing(lambda way: choices.player(role).set_comes_in(way))))
         if lays:
-            now = choices.get_lays_out(role)
+            now = choices.player(role).get_lays_out()
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_LAYS_OUT_LABEL, choices=lays, current=now or lays[0], shown=None if now is not None else labels.MSG_WIZARD_OWN_START,
-                                      set=refusing(lambda way: choices.set_lays_out(role=role, way=way))))
-        if choices.reacts(role):
-            reacts = choices.get_reacts(role)
+                                      set=refusing(lambda way: choices.player(role).set_lays_out(way))))
+        if choices.player(role).reacts():
+            reacts = choices.player(role).get_reacts()
             fields.append(NumberField(page=page, label=labels.MSG_WIZARD_REACTS_LABEL, number=reacts, shown=gauge_shown(place=reacts, lowest=song_plan.LOWEST_ENERGY, highest=song_plan.HIGHEST_ENERGY, said=labels.MSG_WIZARD_REACTS_SAID[reacts]),
-                                      lowest=song_plan.LOWEST_ENERGY, highest=song_plan.HIGHEST_ENERGY, set=page.choosing(lambda number: choices.set_reacts(role=role, reacts=number))))
+                                      lowest=song_plan.LOWEST_ENERGY, highest=song_plan.HIGHEST_ENERGY, set=page.choosing(lambda number: choices.player(role).set_reacts(number))))
         return fields
 
     def piece_setter(self, piece):

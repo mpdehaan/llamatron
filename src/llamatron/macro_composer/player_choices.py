@@ -18,7 +18,7 @@
 
 from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer import arranger, band, loudness, melody as melody_writer, notation as tune_notation, wizard_limits
+from llamatron.macro_composer import arranger, band, loudness, melody as melody_writer, notation as tune_notation, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import fits, share_of, values_of
 from llamatron.macro_composer.characters import gauges_of
 from llamatron.macro_composer.loudness import drum_levels, note_levels, with_own
@@ -290,3 +290,95 @@ class PlayerChoices:
                 raise ValueError(errors.ERR_WIZARD_MUSICIAN.format(value=settings, problem=problem)) from None
         self._choices.set_extra(name=arranger.MUSICIANS, value=kept or None)
         self._choices.clear_answers()
+
+    def get_octave(self):
+        """Return the octave the player plays in."""
+        return self._band().role_named(self._role).get(tune_notation.OCTAVE, wizard_limits.USUAL_OCTAVE)
+
+    # The player as a person in the band: how strongly the player answers to Energy, where the player comes in and where the player lays out.
+
+    def _person(self):
+        """The player's name in the genre's band, which two roles played by one person, as a singer who also plays, share."""
+        return self._band().role_named(self._role)[arranger.PLAYER]
+
+    def reacts(self):
+        """Return whether the player answers to Energy more or less than the band: a player of a planned song whose playing the plan holds back or lets go,
+        which is found by making the song with the player even and dramatic, and kept until a choice changes."""
+        if not (self._choices.has_song_plan() and self.is_in() and arranger.PLAYER in self._band().role_named(self._role)):
+            return False
+        return self._choices.offered(key=(wizard_limits.REACTS_ANSWER, self._person()), compute=self._reacts_is_heard)
+
+    def _reacts_is_heard(self):
+        made = []
+        for reacts in (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY):
+            trial = self._choices.copied_for_trial()
+            trial.plan_extras()[song_plan.REACTS] = {**(trial.plan_extras().get(song_plan.REACTS) or {}), self._person(): reacts}
+            made.append(trial.patterns_of_song())
+        return made[0] != made[1]
+
+    def get_reacts(self):
+        return (self._choices.plan_extras().get(song_plan.REACTS) or {}).get(self._person(), song_plan.USUAL_CONTRAST)
+
+    def set_reacts(self, reacts):
+        """Have the player answer to Energy evenly, at the lowest, or dramatically, at the highest. Two players who are one person answer alike."""
+        if not self.reacts() or isinstance(reacts, bool) or not isinstance(reacts, int) or not song_plan.LOWEST_ENERGY <= reacts <= song_plan.HIGHEST_ENERGY:
+            raise ValueError(errors.ERR_WIZARD_REACTS.format(low=song_plan.LOWEST_ENERGY, high=song_plan.HIGHEST_ENERGY, value=reacts))
+        extras = self._choices.plan_extras()
+        kept = dict(extras.get(song_plan.REACTS) or {})
+        kept.pop(self._person(), None)
+        if reacts != song_plan.USUAL_CONTRAST:
+            kept[self._person()] = reacts
+        extras.pop(song_plan.REACTS, None)
+        if kept:
+            extras[song_plan.REACTS] = kept
+        self._choices.clear_answers()
+
+    def comes_in_offered(self):
+        """Return the ways the player may come in, where the song has sections and the player is in the band."""
+        return list(self._choices.comes_in_places()) if self._choices.is_ready() and self.is_in() else []
+
+    def _plays_at(self):
+        """The places of the form's sections the player plays in."""
+        return [place for place in range(self._choices.section_count()) if self._role in self._choices.section(place).plays()]
+
+    def _first_place(self):
+        return next(iter(self._plays_at()), None)
+
+    def get_comes_in(self):
+        """Return the way the player comes in, or None where the player's first section is none of the ways' or the player plays nowhere."""
+        first = self._first_place()
+        return next((way for way, place in self._choices.comes_in_places().items() if place == first), None)
+
+    def _laid_out(self, *, way, first):
+        """Which sections the player plays under a way of laying out, from the player's first section on: never is every section the genre gives the player any part in."""
+        out = {wizard_limits.NEVER_LAYS_OUT: [], wizard_limits.IN_BREAKDOWNS: self._choices.breakdown_places(), wizard_limits.WHEN_QUIET: self._choices.quiet_places()}[way]
+        return [place for place in range(first, self._choices.section_count()) if place == first or (place not in out and (not self._choices.section(place).is_held() or self._usually_plays(place)))]
+
+    def _usually_plays(self, place):
+        return self._role in self._choices.section(place).usual().get(arranger.PLAYS, [])
+
+    def lays_out_offered(self):
+        """Return the ways the player may lay out: never, only in the breakdowns where the form has one, and whenever it is quiet in a planned song with a quiet section."""
+        if not self.comes_in_offered() or self._first_place() is None:
+            return []
+        return [wizard_limits.NEVER_LAYS_OUT, *([wizard_limits.IN_BREAKDOWNS] if self._choices.breakdown_places() else []), *([wizard_limits.WHEN_QUIET] if self._choices.quiet_places() else [])]
+
+    def get_lays_out(self):
+        """Return the way the player lays out, or None where the sections the player plays are none of the ways'."""
+        first = self._first_place()
+        plays = self._plays_at()
+        return next((way for way in self.lays_out_offered() if self._laid_out(way=way, first=first) == plays), None)
+
+    def set_comes_in(self, way):
+        """Have the player come in at a place of the form and sit out every section before it; the sections after are left as they are."""
+        if way not in self.comes_in_offered():
+            raise ValueError(errors.ERR_WIZARD_COMES_IN.format(value=way))
+        first = self._choices.comes_in_places()[way]
+        plays = [place for place in range(first, self._choices.section_count()) if place == first or self._role in self._choices.section(place).plays()]
+        self._choices.set_plays_of(role=self._role, plays=plays)
+
+    def set_lays_out(self, way):
+        """Have the player lay out never, only in the breakdowns, or whenever it is quiet, from the player's first section on."""
+        if way not in self.lays_out_offered():
+            raise ValueError(errors.ERR_WIZARD_LAYS_OUT.format(value=way))
+        self._choices.set_plays_of(role=self._role, plays=self._laid_out(way=way, first=self._first_place()))

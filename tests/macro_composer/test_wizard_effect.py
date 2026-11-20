@@ -467,10 +467,10 @@ def every_choice(choices):
         break
     # A player as a person: each other way of coming in and of laying out, and Reacts at either end.
     for role in choices.get_band().roles_in():
-        for way in choices.comes_in_offered(role):
-            if way != choices.get_comes_in(role) and comes_in_works(choices=choices, role=role, way=way):
-                yield COMES_IN, (role, way), lambda made, role=role, way=way: made.set_comes_in(role=role, way=way), [nothing_first]
-        if choices.reacts(role):
+        for way in choices.player(role).comes_in_offered():
+            if way != choices.player(role).get_comes_in() and comes_in_works(choices=choices, role=role, way=way):
+                yield COMES_IN, (role, way), lambda made, role=role, way=way: made.player(role).set_comes_in(way), [nothing_first]
+        if choices.player(role).reacts():
             # A player who reacts is heard to at one end of the gauge at least: an even player may play as the band does where the band is never held back.
             yield REACTS_TO_ENERGY, role, lambda made, role=role: set_reacts_where_heard(made=made, role=role), [nothing_first]
         # How loud a player is: the player's dynamics at either end, and each level the song plays, moved.
@@ -533,7 +533,7 @@ def comes_in_works(*, choices, role, way):
     """Whether a player can come in a way: a way that would leave a section with nobody is refused, and is no choice to try."""
     trial = WizardChoices.from_data(choices.to_data())
     try:
-        trial.set_comes_in(role=role, way=way)
+        trial.player(role).set_comes_in(way)
     except ValueError:
         return False
     return True
@@ -548,7 +548,7 @@ def set_reacts_where_heard(*, made, role):
     """Have a player react at the end of the gauge where the song is not the song the band's own reacting makes."""
     usual = made.made_for_listening()[0].to_data()[Section.PATTERNS]
     for reacts in (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY):
-        made.set_reacts(role=role, reacts=reacts)
+        made.player(role).set_reacts(reacts)
         if made.made_for_listening()[0].to_data()[Section.PATTERNS] != usual:
             return
 

@@ -712,11 +712,6 @@ class WizardChoices:
         """Return the notes of the song's scale as half steps above its root, the major scale's where the melody engines know none for the scale type."""
         return melody_writer.HALF_STEPS.get(self._scale_type, melody_writer.HALF_STEPS[wizard_limits.MAJOR])
 
-    def role_octave(self, role):
-        """Return the octave a player plays in."""
-        return self._band.role_named(role).get(tune_notation.OCTAVE, wizard_limits.USUAL_OCTAVE)
-
-
     def picks_with(self, ways):
         return picked(style=self.style(), song={arranger.TEMPLATE: self._subgenre, arranger.PICKS: ways})
 
@@ -1188,41 +1183,10 @@ class WizardChoices:
         self.plan_extras()[song_plan.CONTRAST] = contrast
         self.clear_answers()
 
-    # A player, as a person in the band: how strongly the player answers to Energy, where the player comes in and where the player lays out.
+    # Where in the form a player can come in and lay out, which each player's part asks (player_choices.py).
 
-    def reacts(self, role):
-        """Return whether a player answers to Energy more or less than the band: a player of a planned song whose playing the plan holds back or lets go,
-        which is found by making the song with the player even and dramatic, and kept until a choice changes."""
-        if not (self.has_song_plan() and self.player(role).is_in() and arranger.PLAYER in self._band.role_named(role)):
-            return False
-        return self.offered(key=(wizard_limits.REACTS_ANSWER, self._band.role_named(role)[arranger.PLAYER]), compute=lambda: self._reacts_is_heard(role))
-
-    def _reacts_is_heard(self, role):
-        made = []
-        for reacts in (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY):
-            trial = self.copied_for_trial()
-            trial.plan_extras()[song_plan.REACTS] = {**(trial.plan_extras().get(song_plan.REACTS) or {}), self._band.role_named(role)[arranger.PLAYER]: reacts}
-            made.append(trial.patterns_of_song())
-        return made[0] != made[1]
-
-    def get_reacts(self, role):
-        return (self.plan_extras().get(song_plan.REACTS) or {}).get(self._band.role_named(role)[arranger.PLAYER], song_plan.USUAL_CONTRAST)
-
-    def set_reacts(self, *, role, reacts):
-        """Have a player answer to Energy evenly, at the lowest, or dramatically, at the highest. Two players who are one person, as a singer who also plays, answer alike."""
-        if not self.reacts(role) or isinstance(reacts, bool) or not isinstance(reacts, int) or not song_plan.LOWEST_ENERGY <= reacts <= song_plan.HIGHEST_ENERGY:
-            raise ValueError(errors.ERR_WIZARD_REACTS.format(low=song_plan.LOWEST_ENERGY, high=song_plan.HIGHEST_ENERGY, value=reacts))
-        kept = dict(self.plan_extras().get(song_plan.REACTS) or {})
-        kept.pop(self._band.role_named(role)[arranger.PLAYER], None)
-        if reacts != song_plan.USUAL_CONTRAST:
-            kept[self._band.role_named(role)[arranger.PLAYER]] = reacts
-        self.plan_extras().pop(song_plan.REACTS, None)
-        if kept:
-            self.plan_extras()[song_plan.REACTS] = kept
-        self.clear_answers()
-
-    def _comes_in_places(self):
-        """Where each way of coming in puts a player's first section, for the ways the form has a place for, in the order they are offered."""
+    def comes_in_places(self):
+        """Return where each way of coming in puts a player's first section, for the ways the form has a place for, in the order they are offered."""
         kinds = self._form_part.section_kinds_in_form()
         intro = self._form_part.intro_kind()
         after_intro = next((place for place, kind in enumerate(kinds) if kind != intro), None)
@@ -1236,64 +1200,23 @@ class WizardChoices:
                 places[way] = found[way]
         return places
 
-    def comes_in_offered(self, role):
-        """Return the ways a player may come in, where the song has sections and the player is in the band."""
-        return list(self._comes_in_places()) if self.is_ready() and self.player(role).is_in() else []
-
-    def _first_place(self, role):
-        return next((place for place in range(len(self._form_part.section_entries())) if role in self.section(place).plays()), None)
-
-    def get_comes_in(self, role):
-        """Return the way a player comes in, or None where the player's first section is none of the ways' or the player plays nowhere."""
-        first = self._first_place(role)
-        return next((way for way, place in self._comes_in_places().items() if place == first), None)
-
-    def _usually_plays(self, *, place, role):
-        return role in self.section(place).usual().get(arranger.PLAYS, [])
-
-    def _quiet_places(self):
-        """The places of the form a player who lays out when it is quiet sits out: those of a low Energy in a planned song."""
+    def quiet_places(self):
+        """Return the places of the form a player who lays out when it is quiet sits out: those of a low Energy in a planned song."""
         return [place for place, energy in enumerate(self.energies()) if energy <= wizard_limits.QUIET_ENERGY] if self.has_song_plan() else []
 
-    def _breakdown_places(self):
+    def breakdown_places(self):
+        """Return the places of the form's breakdowns."""
         return [place for place, kind in enumerate(self._form_part.section_kinds_in_form()) if kind in wizard_limits.BREAKDOWN_KINDS]
 
-    def _laid_out(self, *, role, way, first):
-        """Which sections a player plays under a way of laying out, from the player's first section on: never is every section the genre gives the player any part in."""
-        out = {wizard_limits.NEVER_LAYS_OUT: [], wizard_limits.IN_BREAKDOWNS: self._breakdown_places(), wizard_limits.WHEN_QUIET: self._quiet_places()}[way]
-        return [place for place in range(first, len(self._form_part.section_entries())) if place == first or (place not in out and (not self.section(place).is_held() or self._usually_plays(place=place, role=role)))]
+    def section_count(self):
+        """Return how many sections the form holds."""
+        return len(self._form_part.section_entries())
 
-    def lays_out_offered(self, role):
-        """Return the ways a player may lay out: never, only in the breakdowns where the form has one, and whenever it is quiet in a planned song with a quiet section."""
-        if not self.comes_in_offered(role) or self._first_place(role) is None:
-            return []
-        return [wizard_limits.NEVER_LAYS_OUT, *([wizard_limits.IN_BREAKDOWNS] if self._breakdown_places() else []), *([wizard_limits.WHEN_QUIET] if self._quiet_places() else [])]
-
-    def get_lays_out(self, role):
-        """Return the way a player lays out, or None where the sections the player plays are none of the ways'."""
-        first = self._first_place(role)
-        plays = [place for place in range(len(self._form_part.section_entries())) if role in self.section(place).plays()]
-        return next((way for way in self.lays_out_offered(role) if self._laid_out(role=role, way=way, first=first) == plays), None)
-
-    def set_comes_in(self, *, role, way):
-        """Have a player come in at a place of the form and sit out every section before it; the sections after are left as they are."""
-        if way not in self.comes_in_offered(role):
-            raise ValueError(errors.ERR_WIZARD_COMES_IN.format(value=way))
-        first = self._comes_in_places()[way]
-        plays = [place for place in range(first, len(self._form_part.section_entries())) if place == first or role in self.section(place).plays()]
-        self._set_plays_of(role=role, plays=plays)
-
-    def set_lays_out(self, *, role, way):
-        """Have a player lay out never, only in the breakdowns, or whenever it is quiet, from the player's first section on."""
-        if way not in self.lays_out_offered(role):
-            raise ValueError(errors.ERR_WIZARD_LAYS_OUT.format(value=way))
-        self._set_plays_of(role=role, plays=self._laid_out(role=role, way=way, first=self._first_place(role)))
-
-    def _set_plays_of(self, *, role, plays):
+    def set_plays_of(self, *, role, plays):
         """Have a player play in the sections at these places and no others; a section that would be left with nobody, or a song that cannot then be made, is refused."""
         kept = self._form_part.kept()
         try:
-            for place in range(len(self._form_part.section_entries())):
+            for place in range(self.section_count()):
                 if (place in plays) != (role in self.section(place).plays()):
                     self.section(place).set_plays(role=role, on=place in plays)
             self.clear_answers()

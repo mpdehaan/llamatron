@@ -585,7 +585,7 @@ class WizardPage(FieldPage):
     def pick_any_sound(self, role):
         """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the player's octave."""
         choices = self._choices
-        run = run_of(root=choices.root_half_steps(), steps=choices.scale_half_steps(), octave=choices.role_octave(role))
+        run = run_of(root=choices.root_half_steps(), steps=choices.scale_half_steps(), octave=choices.player(role).get_octave())
         dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sounds().get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, sound_trial.RUN_STEP, sound)))
 
         def chosen(sound):
