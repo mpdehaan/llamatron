@@ -547,7 +547,7 @@ class TestClipSlot(RoundTrip):
         song = a_song()
         self.assert_refused('here, track (lead): needs a pattern', ClipSlot, {}, song, track=LEAD)
         self.assert_refused('no pattern called (zz)', ClipSlot, {ClipSlotSetting.PATTERN: ZZ}, song, track=LEAD)
-        self.assert_refused('no chain called (y)', ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [Y]}, song, track=LEAD)
+        self.assert_refused(errors.ERR_NO_GENERATOR_CALLED.format(name='y'), ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [Y]}, song, track=LEAD)
         self.assert_refused('cannot grab from its own track', ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.GRAB_TRACK: LEAD}, song, track=LEAD)
         self.assert_refused(A_MORPH_NEEDS_BOTH, ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.REPEAT: 2}, song, track=LEAD)
         self.assert_refused('a morph needs a repeat of 2', ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}, song, track=LEAD)

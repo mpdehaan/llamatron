@@ -199,7 +199,7 @@ def drifts_named(*, song, chain_names):
     """Return the names of the drifts the chains name, in order, from their steps."""
     names = []
     for chain in chain_names:
-        for step in song.get_chain(chain).get_steps():
+        for step in song.chain_run(chain).get_steps():
             if step.kind == GeneratorKind.DRIFT:
                 names.append(step.name)
     return names

@@ -77,7 +77,6 @@ ERR_NOT_PATTERN_NAMES = 'patterns must be a list of at least 1 pattern name, got
 ERR_PATTERN_AND_PATTERNS = 'a clip has pattern or patterns, not both'
 ERR_PATTERNS_DRUMS_AND_NOTES = 'a drum pattern and a pattern of notes cannot share a clip'
 ERR_CLIP_SLOT_NO_SUCH_PATTERN = 'no pattern called ({name})'
-ERR_NO_SUCH_CHAIN = 'no chain called ({name})'
 ERR_MAKE_A_CHAIN_FIRST = 'There are no chains yet. Make one on the Chains page first.'
 ERR_NOT_CHAIN_NAMES = 'expected a list of chains by name, got {value!r}'
 ERR_MORPH_NEEDS_BOTH = 'a morph needs both morph_to and morph_style'

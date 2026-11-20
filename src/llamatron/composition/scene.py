@@ -24,7 +24,7 @@ something the song holds.
 
 from typing import NamedTuple
 
-from llamatron.composition import corrections, defaults, file_format, limits
+from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import check_keys, listed, number, reading
 from llamatron.composition.clip_slot import ClipSlot
@@ -118,7 +118,7 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
     ADD_REGISTERS_SETTING = SceneSetting.ADD_REGISTERS
 
     # A scene names the scale and the groove it chooses. Its clips name things too, and are its referring parts.
-    REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,), Section.CHAINS: (SceneSetting.CHAINS,)}
+    REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,), **{section: (SceneSetting.CHAINS,) for section in sections.GENERATOR_SECTIONS}}
 
     def __init__(self, *, clip_slots=None, **settings):
         self.note_change()

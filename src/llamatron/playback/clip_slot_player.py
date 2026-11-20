@@ -168,7 +168,7 @@ class ClipSlotPlayer:
         untouched = clip
         for chain in chains:
             entering = clip
-            written = self._song.get_chain(chain)
+            written = self._song.chain_run(chain)
             for step in written.get_steps():
                 # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
@@ -199,7 +199,7 @@ class ClipSlotPlayer:
 
     def _shape_is_bypassed(self, *, chain, name, kind, passes):
         """Return whether a shape a chain names is left out of the clip. A shape works on the whole clip at once, so the registers as the clip's first pass starts speak for all of it."""
-        tables = [*self._bypass_tables(), self._song.get_chain(chain).get_bypass_when(), self._song.get_generator_settings(kind=kind, name=name).get_bypass_when()]
+        tables = [*self._bypass_tables(), self._song.chain_run(chain).get_bypass_when(), self._song.get_generator_settings(kind=kind, name=name).get_bypass_when()]
         return any(_tripped(passes=passes[:FIRST_PASS + 1], tables=tables))
 
     def _masked(self, clip):
@@ -220,7 +220,7 @@ class ClipSlotPlayer:
         """Return the clip with its Density, Swell and Articulate applied: the last generator of each kind its chains name, else the clip's own Density or Articulate, else its scene's, and with the velocity of the clip and its scene. A generator its statements bypass is not named."""
         named = {}
         for chain in self._renderer.chains_of(scene=self._scene, track=self._track_name):
-            for step in self._song.get_chain(chain).get_steps():
+            for step in self._song.chain_run(chain).get_steps():
                 if step.kind in SHAPE_KINDS and not self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
                     named[SHAPE_KINDS[step.kind]] = step.name
         clip_length = clip.total_length()

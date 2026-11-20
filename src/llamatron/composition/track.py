@@ -16,7 +16,7 @@
 
 """A track: a column of the song, with settings that apply to every clip on it."""
 
-from llamatron.composition import corrections, defaults, file_format, limits
+from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import check_keys, is_whole_number_from, reading
 from llamatron.composition.conditions import statements_setting, with_statement
@@ -92,7 +92,7 @@ class Track(RunsChains, HoldsSettings):
     CHAINS_SETTING = TrackSetting.CHAINS
 
     # A track names the groove it chooses.
-    REFERENCES = {Section.GROOVES: (TrackSetting.GROOVE,), Section.INSTRUMENTS: (TrackSetting.INSTRUMENT,), Section.CHAINS: (TrackSetting.CHAINS,)}
+    REFERENCES = {Section.GROOVES: (TrackSetting.GROOVE,), Section.INSTRUMENTS: (TrackSetting.INSTRUMENT,), **{section: (TrackSetting.CHAINS,) for section in sections.GENERATOR_SECTIONS}}
 
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
