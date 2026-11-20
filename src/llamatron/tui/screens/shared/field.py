@@ -146,7 +146,11 @@ class NumberField(Field):
         return self.counted_from() if self.shown is None else self.shown
 
     def step(self, offset):
-        self.set(within(number=self.counted_from() + offset, lowest=self.lowest, highest=self.highest))
+        self.set_within(self.counted_from() + offset)
+
+    def set_within(self, number):
+        """Set a number, kept within the field's lowest and highest."""
+        self.set(within(number=number, lowest=self.lowest, highest=self.highest))
 
     def ask(self):
         value = self.counted_from() if self.typed is None else self.typed

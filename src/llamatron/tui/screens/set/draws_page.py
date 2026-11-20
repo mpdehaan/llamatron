@@ -87,6 +87,16 @@ class DrawsPage(FieldPage):
             clear=lambda: self.refuse_if(self.document().set_draw_slot(name=name, place=place, value=None)),
         )
 
+    def page_keys(self):
+        """Return the digits that type a slot, while the cursor is on a draw's strip."""
+        if isinstance(self.field(), Strip) and self.cell_field() is not None:
+            return [self.bind(self.KEYS.TYPE_SLOT, action=self.type_slot, wants_key=True)]
+        return []
+
+    def type_slot(self, digit):
+        """Put the number of a digit typed in the slot under the cursor, kept within the draw's range."""
+        self.cell_field().set_within(int(digit))
+
     def change(self, *, name, setting, value):
         """Change a setting of a draw, showing why if the draw refuses it, like a Value Min above the Value Max."""
         self.refuse_if(self.document().set_draw_setting(name=name, setting=setting, value=value))
