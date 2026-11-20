@@ -1,0 +1,1 @@
+import{_ as t,o as a,c as s,a2 as o}from"./chunks/framework.hw3Av5Vn.js";const p=JSON.parse('{"title":"Draws","description":"","frontmatter":{},"headers":[],"relativePath":"DRAWS.md","filePath":"DRAWS.md"}'),r={name:"DRAWS.md"};function d(n,e,i,h,l,w){return a(),s("div",null,[...e[0]||(e[0]=[o("",23)])])}const m=t(r,[["render",d]]);export{p as __pageData,m as default};
