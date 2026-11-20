@@ -52,6 +52,7 @@ llamatron --wizard SONG_FILE [--out SET] [--seed N] [--batch]                 # 
 sh user_scripts/install_fluidsynth.sh                                         # FluidSynth and its SoundFont on a Mac, from the right Homebrew, offering to install Homebrew; plain sh, for people with no make
 internal_tools/rebuild_docs.sh                                       # the screenshots retaken and the website rebuilt, each committed where it changed, with no push; internal_tools/push_all.sh runs it before every push
 internal_tools/build_docs.sh                                         # the documentation website into web_docs/, staged by internal_tools/stage_docs_site.py: the guide as its front page, the sidebar from the guide's tables
+internal_tools/docs_modules_missing.py .docs_site                    # exit 0 when a module the website's package.json pins is missing or at another version, which is when build_docs.sh runs npm
 sh user_scripts/launch_docs.sh                                            # the built website served at http://localhost:4173/llamatron/ by internal_tools/serve_docs.py, as GitHub Pages serves it, and opened in the browser
 internal_tools/make_docs.sh                                               # the diagrams in docs/ARCHITECTURE.md and docs/GETTING_STARTED.md, and the screenshots
 ```
