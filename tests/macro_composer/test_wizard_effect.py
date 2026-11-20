@@ -19,11 +19,16 @@ arranged without it. Three kinds of choice are held in a way of their own. A gau
 position, each to make a song no other position makes. A choice about a player who plays in no section, as ambient's
 drummer, is made with the player put into the first section, where the choice is heard. And a choice that says what the
 drummer would do unasked, a fill or how often fills come, is live when it changes the song under any drummer, since it
-holds that fill whoever drums. The choices known to change nothing are counted, by genre and kind, in
+holds that fill whoever drums. The choices known to change nothing are counted, by subgenre and kind, in
 KNOWN_TO_CHANGE_NOTHING with the reason; a count that moves either way fails, so that a new dead choice is caught and a
-fixed one is taken off the list."""
+fixed one is taken off the list.
+
+Most choices are the same code whatever the subgenre, so each run checks every choice on one subgenre of each genre, the day's
+own, taken in turn by the date, and every subgenre is checked within as many days as its genre has subgenres. A failure says
+the day and the subgenre, and subgenre_of_the_day gives the same subgenre for that day again."""
 
 import collections
+import datetime
 import json
 import unittest
 
@@ -31,7 +36,7 @@ from llamatron.composition import generator_settings
 from llamatron.composition.file_format import GeneratorKind, Row, Section
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.generators import musician, phrasing as phrasing_values
-from llamatron.macro_composer import breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_limits
+from llamatron.macro_composer import arranger, breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
 from llamatron.support import version
 
@@ -43,8 +48,6 @@ ANOTHER_SEED = 8
 A_SOUND_OF_NO_STYLE = 105
 A_LITTLE_FASTER = 7
 FIRST_PLACE = 0
-# A genre's subgenres are dealt to so many classes, which run side by side, so that none runs past the runner's limit for a class.
-PARTS = 9
 # The kinds of choice.
 WAY = 'a way of playing'
 BUSY = 'busy'
@@ -121,16 +124,15 @@ SECTION_OWN = "a section's own"
 FORM_ANSWER = 'an answer of the form questions'
 INTRO_HOOK = 'intro hook'
 SECTION_SHAPE = "a section's shape"
-# Arena rock's pre-chorus already sings at the top of the tune's range, so the shape that holds the second line back is the usual shape, at both pre-choruses.
-FIRST_PART = 0
-# Baroque pop's one line that would come early repeats an idea, which takes no early note of its own. Bubblegum's singer,
-# whose Energy never falls, plays two neighbouring positions of the gauge alike. A fill a person chooses always changes the
-# song, since the plan's markers at the ends of phrases go with the plan's own fills.
-THIRD_PART = 2
-KNOWN_TO_CHANGE_NOTHING = {('rock', FIRST_PART): {SECTION_SHAPE: 2}, ('sixties_pop', FIRST_PART): {PHRASING_WAY: 2}, ('sixties_pop', THIRD_PART): {BUSY: 1},
-                           # Disco's one line that would come early repeats an idea, as baroque pop's does.
-                           ('soul_funk', FIRST_PART): {PHRASING_WAY: 2},
-                           }
+KNOWN_TO_CHANGE_NOTHING = {
+    # Arena rock's pre-chorus already sings at the top of the tune's range, so the shape that holds the second line back is the usual shape, at both pre-choruses.
+    ('rock', 'arena rock'): {SECTION_SHAPE: 2},
+    # Baroque pop's one line that would come early repeats an idea, which takes no early note of its own, and disco's does too.
+    ('sixties_pop', 'baroque'): {PHRASING_WAY: 2},
+    ('soul_funk', 'disco'): {PHRASING_WAY: 2},
+    # Bubblegum's singer, whose Energy never falls, plays two neighbouring positions of the gauge alike.
+    ('sixties_pop', 'bubblegum'): {BUSY: 1},
+}
 A_SECOND_PLACE = 1
 NO_PLAN = 'with no plan'
 SECTION_OWN_ANYWHERE = (('chords', '6 4 2 5'), ('chords', '1 4'), ('tempo', 61), ('tempo_end', 62), ('root', 'F#'), ('root', 'C'), ('type', 'minor'), ('type', 'major'))
@@ -647,39 +649,60 @@ def band_sound_differs(*, choices, role, sounds):
     return other.get_sounds().get_sound(role) != choices.get_sounds().get_sound(role)
 
 
+def subgenres_of(genre):
+    return fresh(genre=genre, subgenre=WizardChoices.from_data({arranger.GENRE: genre}).subgenres()[0]).subgenres()
+
+
+def subgenre_of_the_day(*, genre, day):
+    """Return the subgenre of a genre whose every choice is checked on a day: each in turn, by the day's number."""
+    subgenres = subgenres_of(genre)
+    return subgenres[day.toordinal() % len(subgenres)]
+
+
 class EveryChoiceOfAGenre:
-    """Every choice of half the subgenres of one genre: a class for each half of each genre, since the whole takes long and the
-    classes run side by side."""
+    """Every choice of the day's subgenre of one genre: a class for each genre, which run side by side."""
 
     GENRE = None
-    PART = None
 
     def test_every_choice_changes_the_song_but_those_known_not_to(self):
-        subgenres = fresh(genre=self.GENRE, subgenre=WizardChoices.from_data({'genre': self.GENRE}).subgenres()[0]).subgenres()
+        subgenre = subgenre_of_the_day(genre=self.GENRE, day=datetime.date.today())
         nothing = collections.defaultdict(list)
         tried = 0
-        for subgenre in subgenres[self.PART::PARTS]:
-            for kind, what, change, firsts in every_choice(fresh(genre=self.GENRE, subgenre=subgenre)):
-                tried += 1
-                if not changes(genre=self.GENRE, subgenre=subgenre, change=change, firsts=firsts):
-                    nothing[kind].append(LABEL.format(subgenre=subgenre, what=what))
-            for role, first in busy_gauges(fresh(genre=self.GENRE, subgenre=subgenre)):
-                tried += 1
-                alike = positions_alike(genre=self.GENRE, subgenre=subgenre, role=role, first=first)
-                nothing[BUSY].extend([LABEL.format(subgenre=subgenre, what=role)] * alike)
+        for kind, what, change, firsts in every_choice(fresh(genre=self.GENRE, subgenre=subgenre)):
+            tried += 1
+            if not changes(genre=self.GENRE, subgenre=subgenre, change=change, firsts=firsts):
+                nothing[kind].append(LABEL.format(subgenre=subgenre, what=what))
+        for role, first in busy_gauges(fresh(genre=self.GENRE, subgenre=subgenre)):
+            tried += 1
+            alike = positions_alike(genre=self.GENRE, subgenre=subgenre, role=role, first=first)
+            nothing[BUSY].extend([LABEL.format(subgenre=subgenre, what=role)] * alike)
         self.assertGreater(tried, 0)
         found = {kind: len(labels) for kind, labels in nothing.items() if labels}
-        self.assertEqual(found, KNOWN_TO_CHANGE_NOTHING.get((self.GENRE, self.PART), {}), dict(nothing))
+        self.assertEqual(found, KNOWN_TO_CHANGE_NOTHING.get((self.GENRE, subgenre), {}), dict(nothing))
 
 
-def class_for(*, genre, half):
-    name = 'TestEveryChoiceOf{}Part{}'.format(''.join(word.capitalize() for word in genre.split('_')), half + 1)
-    return name, type(name, (EveryChoiceOfAGenre, unittest.TestCase), {'GENRE': genre, 'PART': half, '__slots__': ()})
+class TestTheSubgenreOfTheDay(unittest.TestCase):
+
+    def test_every_subgenre_comes_in_turn_and_a_day_gives_one_subgenre_every_time(self):
+        start = datetime.date(2026, 1, 1)
+        for genre in genre_names():
+            subgenres = subgenres_of(genre)
+            with self.subTest(genre=genre):
+                days = [start + datetime.timedelta(days=offset) for offset in range(len(subgenres))]
+                self.assertEqual(sorted(subgenre_of_the_day(genre=genre, day=day) for day in days), sorted(subgenres))
+                self.assertEqual(subgenre_of_the_day(genre=genre, day=start), subgenre_of_the_day(genre=genre, day=start))
+
+    def test_every_dead_choice_known_is_of_a_subgenre_that_exists(self):
+        for genre, subgenre in KNOWN_TO_CHANGE_NOTHING:
+            self.assertIn(subgenre, subgenres_of(genre))
+
+
+def class_for(genre):
+    name = 'TestEveryChoiceOf{}'.format(''.join(word.capitalize() for word in genre.split('_')))
+    return name, type(name, (EveryChoiceOfAGenre, unittest.TestCase), {'GENRE': genre, '__slots__': ()})
 
 
 for a_genre in genre_names():
-    # A genre with fewer kinds than parts has a class for each kind and no empty one.
-    for a_half in range(min(PARTS, len(WizardChoices.from_data({'genre': a_genre}).subgenres()))):
-        a_name, a_class = class_for(genre=a_genre, half=a_half)
-        globals()[a_name] = a_class
+    a_name, a_class = class_for(a_genre)
+    globals()[a_name] = a_class
 del a_class
