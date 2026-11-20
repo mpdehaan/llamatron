@@ -53,6 +53,13 @@ The user wants the code easy for people to maintain without AI: plain code, comm
 why, tests that read clearly. Object orientation is a design goal throughout. These rules apply to
 the program, the tests and `internal_tools/` alike.
 
+**Organized, fast and readable at every scale** (the user's rule). The code is designed as extremely well organized objects
+that are also fast, and it reads well at three levels: a file holds one clear subject in a sensible order, a class is a thing a
+reader would name with a contract that shows, and each line says plainly what it does, with the flow of a run of lines easy to
+follow. Where a few lines repeat nearly the same shape, three or four times, a helper with a name that says what the shape means
+takes their place. The work is never only to make code correct: Claude keeps making it more elegant, simpler and better to read,
+code a maintainer would admire.
+
 **Packages say what each part is for.** `music/` values, `support/` plumbing, `composition/` the
 objects a set file stores, `playback/` what plays them into a grid, `grid/` the finished clips,
 `exporters/`, `importers/`, `generators/`, `tui/`, `visualizers/`, `tutorial/` the video tutorial that drives it, `macro_composer/` the MacroComposer, a set made from data that says what to play (`.claude/features/MACRO_COMPOSER.md`). New modules go in the package that says what they're for, and
