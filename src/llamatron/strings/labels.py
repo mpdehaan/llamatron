@@ -536,6 +536,8 @@ MSG_REGISTER_VELOCITY_LABEL = '{name}+Vel'
 MSG_DRAW_NOTE_LABEL = 'Note+={name}'
 MSG_DRAW_VELOCITY_LABEL = 'Vel+={name}'
 MSG_DRAW_RESET_LABEL = 'Reset {name}'
+# tui/screens/arrange/arrange_page.py: what a copied scene's or track's clips play, as the copy's picker offers it.
+MSG_COPY_PATTERNS_CHOICES = ['the same patterns', 'copies of the patterns']
 # tui/screens/set/draws_page.py
 MSG_DRAW_DIRECTION_LABEL = 'Direction'
 MSG_DRAW_SLOTS_LABEL = 'Slots'

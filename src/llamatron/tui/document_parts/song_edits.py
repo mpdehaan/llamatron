@@ -103,6 +103,16 @@ class SongEdits:
         new = copy_name(name=names_text.MSG_SCENE_WITHOUT_A_NAME if name is None else name, taken=taken)
         self.change(self.song().copy_scene, index=index, name=new)
 
+    def give_own_patterns(self, clip_slots):
+        """Give clip slots copies of the patterns they play, each pattern copied once under a new name however many of them play
+        it, so that a copied scene or track can be changed without changing the one it was copied from."""
+        copies = {}
+        for clip_slot in clip_slots:
+            for name in clip_slot.get_pattern_names():
+                if name not in copies:
+                    copies[name] = self.copy_named(section=Section.PATTERNS, name=name)
+            self.change(clip_slot.set_pattern_names, names=[copies[name] for name in clip_slot.get_pattern_names()], song=self.song())
+
     def move_scene(self, *, index, offset):
         if not self.song().move_scene(index=index, offset=offset):
             return False

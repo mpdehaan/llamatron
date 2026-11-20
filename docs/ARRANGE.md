@@ -20,13 +20,13 @@ The keys depend on what is under the cursor:
 | --- | --- | --- |
 | A track's name | `ENTER` | Open the track editor, as [Tracks](TRACKS.md) describes |
 | A track's name | `I` | Insert a blank track before it |
-| A track's name | `C` | Copy the track and its clips to its right |
+| A track's name | `C` | Copy the track and its clips to its right, asking whether the copy plays the same patterns or copies of them |
 | A track's name | `M` | Pick the track up: `←→` carry it, and `ENTER` drops it |
 | A track's name | `Bksp` | Delete the track and its clips, after asking; the last track can't be deleted |
 | The `+` after the last track, or any track's name | `ENTER` or `A` | Add a track at the end |
 | A scene's name | `ENTER` | Open the Scene page, as [Scenes](SCENES.md) describes |
 | A scene's row | `I` | Insert a blank scene above it |
-| A scene's row | `C` | Copy the scene and all its clips below it |
+| A scene's row | `C` | Copy the scene and all its clips below it, asking whether the copy plays the same patterns or copies of them |
 | A scene's name | `M` | Pick the scene up: `↑↓` carry it, and `ENTER` drops it |
 | A clip | `M` | Pick the clip up: the arrows carry it to the nearest empty cell, and `ENTER` drops it |
 | A scene's name | `Bksp` | Delete the scene and its clips, after asking; the last scene can't be deleted |

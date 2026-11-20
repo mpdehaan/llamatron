@@ -249,7 +249,7 @@ class ArrangePage(Page):
         if self.picking():
             keys = [self.bind(self.KEYS.ESCAPE_CELL, action=self.stop_picking), self.bind(self.KEYS.OUT_OF_DETAILS, action=self.stop_picking)]
             if self.pickable():
-                keys.append(self.bind(self.KEYS.PICK_DETAIL, action=self.pick, wants_key=True))
+                keys.append(self.bind(self.KEYS.PICK_DETAIL, action=self.move_picked, wants_key=True))
                 target = self.picked_target()
                 if target is not None and target.kind == arrange_details.ADD_CHAIN:
                     keys.append(self.bind(self.KEYS.ADD_CHAIN, action=self.add_chain_to_cell))
@@ -369,7 +369,8 @@ class ArrangePage(Page):
         if self.app.shows_arrange_details:
             self.toggle_details()
 
-    def pick(self, name):
+    def move_picked(self, name):
+        """Move the cursor among the details of the cell locked into, stopping at each end."""
         self.picked = cursor_moved(place=self.picked, name=name, count=len(self.pickable()))
 
     def picked_target(self):
@@ -685,9 +686,22 @@ class ArrangePage(Page):
         self.document().add_scene(index=self.row, name=self.new_scene_name())
 
     def copy_scene(self):
-        """Add a copy of the scene with its clips right below it, and move onto it."""
-        self.document().copy_scene(self.row)
-        self.row += 1
+        """Ask whether a copy of the scene shares its patterns or gets copies of them, then add the copy with its clips right below it, and move onto it."""
+        row = self.row
+        self.ask_how_patterns_copy(title=messages.MSG_COPY_SCENE_TITLE.format(name=scene_name(scene=self.scenes()[row], index=row)),
+                                   then=lambda own: self.copied_scene(row=row, own=own))
+
+    def copied_scene(self, *, row, own):
+        document = self.document()
+        document.copy_scene(row)
+        if own:
+            copy = document.song().get_scene(row + 1)
+            document.give_own_patterns([copy.get_clip_slot(track) for track in copy.get_track_names()])
+        self.row = row + 1
+
+    def ask_how_patterns_copy(self, *, title, then):
+        """Ask whether a copy shares the patterns its clips play or gets copies of them, and pass then whether it gets copies."""
+        self.pick(title=title, values=[False, True], shown=labels.MSG_COPY_PATTERNS_CHOICES, then=then)
 
     def delete_scene(self):
         if len(self.scenes()) <= 1:
@@ -790,9 +804,17 @@ class ArrangePage(Page):
         self.document().insert_track(name=self.new_track_name(), place=self.track_place())
 
     def copy_track(self):
-        """Add a copy of the track with its clips to its right, and move onto it."""
-        self.document().copy_named(section=Section.TRACKS, name=self.track())
-        self.column += 1
+        """Ask whether a copy of the track shares its patterns or gets copies of them, then add the copy with its clips to its right, and move onto it."""
+        name = self.track()
+        column = self.column
+        self.ask_how_patterns_copy(title=messages.MSG_COPY_TRACK_TITLE.format(name=name), then=lambda own: self.copied_track(name=name, column=column, own=own))
+
+    def copied_track(self, *, name, column, own):
+        document = self.document()
+        copy = document.copy_named(section=Section.TRACKS, name=name)
+        if own:
+            document.give_own_patterns([scene.get_clip_slot(copy) for scene in document.song().get_scenes() if scene.has_clip_slot(copy)])
+        self.column = column + 1
 
     def delete_track(self):
         if len(self.tracks()) <= 1:

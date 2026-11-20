@@ -333,8 +333,15 @@ class TestArrangePage(UITest):
         self.assertEqual(self.page.row, 1)
         self.assertEqual(self.document.song().get_scenes()[1].get_track_names(), [])
 
+    async def test_a_scene_copied_with_copies_of_its_patterns_plays_patterns_of_its_own(self):
+        original = self.document.clip_slot(index=0, track=LEAD).get_pattern_names()
+        await self.press(keybindings.ArrangePage.COPY_SCENE, Key.DOWN, Key.ENTER)
+        copied = self.document.clip_slot(index=1, track=LEAD).get_pattern_names()
+        self.assertNotEqual(copied, original)
+        self.assertTrue(all(self.document.song().has_pattern(name) for name in copied))
+
     async def test_copy_and_delete_on_the_scene_name_act_on_the_scene(self):
-        await self.press(keybindings.ArrangePage.COPY_SCENE)
+        await self.press(keybindings.ArrangePage.COPY_SCENE, Key.ENTER)
         self.assertEqual(self.scenes(), [ONE, ONE_COPY, TWO])
         self.assertEqual(self.page.row, 1)
         self.assertIsNotNone(self.document.clip_slot(index=1, track=LEAD))

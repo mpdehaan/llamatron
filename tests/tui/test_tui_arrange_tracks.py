@@ -97,10 +97,22 @@ class TestArrangeTracks(UITest):
         self.assertIn(labels.MSG_TRACK_CRUMB.format(name=LEAD), self.crumbs_line())
 
     async def test_copy_adds_a_copy_to_the_right_with_its_clips(self):
-        await self.press(keybindings.ArrangePage.COPY_TRACK)
+        # The copy asks what its clips play, and ENTER takes the first answer, the same patterns.
+        await self.press(keybindings.ArrangePage.COPY_TRACK, Key.ENTER)
         self.assertEqual(self.tracks(), [LEAD, LEAD_COPY, DRUMS])
         self.assertEqual(self.page.track(), LEAD_COPY)
         self.assertIsNotNone(self.document.clip_slot(index=0, track=LEAD_COPY))
+
+    async def test_a_copy_with_copies_of_the_patterns_plays_patterns_of_its_own_as_written(self):
+        original = self.document.clip_slot(index=0, track=LEAD).get_pattern_names()
+        await self.press(keybindings.ArrangePage.COPY_TRACK)
+        self.assertIn(labels.MSG_COPY_PATTERNS_CHOICES[1], self.text())
+        await self.press(Key.DOWN, Key.ENTER)
+        copied = self.document.clip_slot(index=0, track=LEAD_COPY).get_pattern_names()
+        self.assertNotEqual(copied, original)
+        song = self.document.song()
+        self.assertEqual([song.get_pattern(name).to_data() for name in copied], [song.get_pattern(name).to_data() for name in original])
+        self.assertEqual(self.document.clip_slot(index=0, track=LEAD).get_pattern_names(), original)
 
     async def test_insert_puts_a_blank_track_before_this_one(self):
         await self.press(Key.RIGHT, keybindings.ArrangePage.INSERT_TRACK)
