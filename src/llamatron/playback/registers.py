@@ -122,7 +122,7 @@ class RegisterTimeline:
     Changes are RegisterChanges, applied in time order, and at the same time in track order.
     """
 
-    __slots__ = ('_start', '_moments', '_values', '_turned', '_draws', '_draw_moments')
+    __slots__ = ('_start', '_moments', '_values', '_turned', '_draws', '_draw_moments', '_taken')
 
     def __init__(self, *, registers, start, changes, chooser=None, turned=NOT_TURNED, draws=None):
         """chooser draws the random values of a register whose Reset behavior picks one, and of a draw that chooses at random,
@@ -136,6 +136,8 @@ class RegisterTimeline:
         self._draws = None if draws is None else draws.copy()
         # Each moment a draw drew, and where every draw then stood, for the Draws page's lights.
         self._draw_moments = []
+        # What each change that drew took, by its moment, which a clip's pass reads as it starts.
+        self._taken = {}
         for change in sorted(changes, key=_moment_of):
             for name, value in change.sets.items():
                 values[name] = registers[name].held(value)
@@ -149,6 +151,7 @@ class RegisterTimeline:
                     values[name] = self._draws.draw(name=name, chooser=chooser)
                 if change.draws:
                     self._draw_moments.append((change.time, self._draws.places()))
+                    self._taken[(change.time, change.place)] = {name: values[name] for name in change.draws}
             self._moments.append((change.time, change.place))
             self._values.append(dict(values))
         self._turned = turned.names()
@@ -164,6 +167,10 @@ class RegisterTimeline:
     def get_end_turned(self):
         """Return the names of the registers that reverse and are counting the other way once the scene is over, which the next scene starts with."""
         return self._turned
+
+    def draws_taken(self, *, time, place):
+        """Return the values a track at a place drew at a time, by draw name, empty where it drew nothing then."""
+        return self._taken.get((time, place), NO_CHANGES)
 
     def values_at(self, *, time, place):
         """Return every register's value as a track at a place sees it at a time, after any change it makes then."""
@@ -247,7 +254,10 @@ class RegisterReader:
 
     def at_pass(self, *, time, sets, adds):
         """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
-        return self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
+        values = self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
+        # The pass's first step draws before anything reads the values, and the clip's statements read what it drew.
+        taken = self._timeline.draws_taken(time=time, place=self._place - CONDITION_DRAWS)
+        return {**values, **taken} if taken else values
 
     def at_step(self, *, time, sets, adds):
         """Return the values a step sees at a time in the scene, the draws' among them. What it sets, adds and draws is already in the timeline."""

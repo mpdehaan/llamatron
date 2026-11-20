@@ -376,7 +376,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   value or what it is compared with, in a step's Stop, Restart and Mute When and in every table. Every draw a step takes, for
   its Use Draws rows or for a statement of a draw whose `conditions_redraw` is on, is taken once, just before the step's statements
   are read (`StepDraws`, `RegisterRecorder.before_statements`, `CONDITION_DRAWS`), its resets first, so that the statements and the
-  rows of one step see one value. A statement on a step that takes no draw from it looks at the value the draw last gave. A table only looks, as a pass starts, and never draws.
+  rows of one step see one value. A statement on a step that takes no draw from it looks at the value the draw last gave. A clip's Skip Playback When and Bypass Generators When, and those of its scene, track, chains and generators, are tested as a pass starts with the pass's first step's draws: a draw they read that redraws is taken by that step (`pass_draws`, `ClipSlotPlayer._pass_draws`), and `RegisterReader.at_pass` adds what the step drew to the values; a song with such a draw counts as changing the registers (`Song.scenes_change_registers`).
 - Registers are shared by every track. `SongRenderer` plays each clip once with a
   `RegisterRecorder` to collect changes (the same play that finds lengths, since registers only
   change pitches, velocities and whether a note sounds), a `RegisterTimeline` applies them in

@@ -20,7 +20,7 @@ from math import ceil
 
 from llamatron.composition import file_format, generator_settings, limits
 from llamatron.composition.checks import in_whole_notes
-from llamatron.composition.conditions import any_true
+from llamatron.composition.conditions import any_true, draws_read
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.blend import Blend
@@ -29,6 +29,7 @@ from llamatron.grid.clip import Clip
 from llamatron.grid.keyswitch import SwitchNote
 from llamatron.music import sound as sound_values
 from llamatron.music.sound import Sound
+from llamatron.playback import pattern_player as pattern_values
 from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_order import ordered_patterns
 from llamatron.playback.pattern_player import Pass, PatternPlayer
@@ -193,6 +194,17 @@ class ClipSlotPlayer:
             self._track.get_statements(TrackSetting.BYPASS_WHEN),
         ]
 
+    def _pass_draws(self):
+        """Return the draws the clip's statements read as a pass starts, those that make it sit out and those that bypass its
+        generators, that redraw in conditions: the pass's first step takes them, so that the pass starts from one value of each."""
+        statements = [*self._skip_tables(), *self._bypass_tables()]
+        for chain in self._renderer.chains_of(scene=self._scene, track=self._track_name):
+            written = self._song.chain_run(chain)
+            statements.append(written.get_bypass_when())
+            statements += [self._song.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when() for step in written.get_steps()]
+        read = {name for table in statements if table for statement in table for name in draws_read(statement)}
+        return frozenset(name for name in read if self._song.get_draw(name).redraws_in_conditions())
+
     def _skip_tables(self):
         """Return the tables of statements that make the clip sit a pass out: its own and its track's."""
         return [self._clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), self._track.get_statements(TrackSetting.SKIP_WHEN)]
@@ -318,6 +330,7 @@ class ClipSlotPlayer:
         sets = self._clip_slot.get_register_sets()
         adds = self._clip_slot.get_register_adds()
         skips = [table for table in self._skip_tables() if table]
+        pass_draws = self._pass_draws()
         passes = []
         rolls = random_source(self._seed_for(PROBABILITY_SEED))
         order = StepOrder(random_source(self._seed_for(DIRECTION_SEED)))
@@ -334,7 +347,7 @@ class ClipSlotPlayer:
         place = 0
         while (place < most) if fill is None else (total < fill):
             values = registers.at_pass(time=total, sets=sets if place == FIRST_PASS else NO_SETS, adds=adds)
-            played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total, turn=place, pattern_rolls=pattern_rolls)
+            played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total, turn=place, pattern_rolls=pattern_rolls, pass_draws=pass_draws)
             length = played.length
             if length == NO_LENGTH:
                 break
@@ -366,7 +379,7 @@ class ClipSlotPlayer:
             return None
         return template.format(seed=seed, scene=self._scene.get_number(), track=self._track_name)
 
-    def _play_pass(self, *, player, grab, scale, place, repeat, where, rolls, order, target_order, registers, start, turn, pattern_rolls):
+    def _play_pass(self, *, player, grab, scale, place, repeat, where, rolls, order, target_order, registers, start, turn, pattern_rolls, pass_draws):
         """Return one pass through the clip slot's pattern as a Pass, part way through any morph.
 
         The clip slot's direction applies to everything the clip slot plays, its own pattern and a morph's
@@ -379,7 +392,7 @@ class ClipSlotPlayer:
         """
         clip_slot = self._clip_slot
         names = clip_slot.get_pattern_names()
-        played = self._play_patterns(player=player, names=ordered_patterns(names=names, order=clip_slot.get_pattern_order(), place=turn, rolls=pattern_rolls), grab=grab, scale=scale, where=where, rolls=rolls, order=order, registers=registers, start=start)
+        played = self._play_patterns(player=player, names=ordered_patterns(names=names, order=clip_slot.get_pattern_order(), place=turn, rolls=pattern_rolls), grab=grab, scale=scale, where=where, rolls=rolls, order=order, registers=registers, start=start, pass_draws=pass_draws)
         clip = played.clip
         morph_to = clip_slot.get_morph_target()
         # A pass a step's statement cut short is left as it played, with no morph over the part it never reached.
@@ -394,7 +407,7 @@ class ClipSlotPlayer:
         played.clip = Clip(sounds=blend.generate(clip).played_sounds(), scale=scale, controls=controls)
         return played
 
-    def _play_patterns(self, *, player, names, grab, scale, where, rolls, order, registers, start):
+    def _play_patterns(self, *, player, names, grab, scale, where, rolls, order, registers, start, pass_draws):
         """Return one pass through the clip's patterns in the order given, each played whole after the one before, as one Pass: the patterns laid end to end as one long pattern.
 
         Each pattern plays at its own step size, in the clip's direction or its own. Ties at the
@@ -404,7 +417,7 @@ class ClipSlotPlayer:
         """
         direction = self._clip_slot.get_direction()
         if len(names) == 1:
-            return player.play_pass(pattern_name=names[0], grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start)
+            return player.play_pass(pattern_name=names[0], grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start, pass_draws=pass_draws)
         sounds = []
         controls = []
         switched = []
@@ -412,7 +425,7 @@ class ClipSlotPlayer:
         tied_from_before = NO_LENGTH
         done = False
         for place, name in enumerate(names):
-            played = player.play_pass(pattern_name=name, grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start + total)
+            played = player.play_pass(pattern_name=name, grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start + total, pass_draws=pass_draws if not place else pattern_values.NO_PASS_DRAWS)
             if place == 0:
                 tied_from_before = played.tied_from_before
             elif played.tied_from_before > NO_LENGTH:

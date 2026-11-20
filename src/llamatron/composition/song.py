@@ -713,8 +713,11 @@ class Song(HoldsSections, HoldsSettings):
         return self._setlist.changes_registers()
 
     def scenes_change_registers(self):
-        """Return whether any of its scenes, or any clip of one, sets a register or adds to one."""
-        return any(scene.changes_registers() for scene in self.get_scenes())
+        """Return whether any of its scenes, or any clip of one, sets a register or adds to one, or whether a draw that holds a
+        value redraws in conditions, which a statement of a scene, a clip, a track, a chain or a generator can draw from."""
+        return any(scene.changes_registers() for scene in self.get_scenes()) or any(
+            self.get_draw(name).redraws_in_conditions() and self.get_draw(name).filled_places() for name in file_format.DRAW_NAMES
+        )
 
     def get_default_octave(self):
         return self._setlist.get_default_octave()

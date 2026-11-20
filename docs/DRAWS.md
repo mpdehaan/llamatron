@@ -59,12 +59,16 @@ condition silences still moves the draw on.
 
 ## Draws in Conditions
 
-Stop When, Restart When and Mute When on a step, and the Skip Playback When and Bypass Generators When tables, can read a draw
-wherever they can read a register: as what is tested, as the number it is compared with, or as what a sum is compared with. A
-step that uses a draw on its note or its velocity draws before its conditions are read, so the conditions and the Note+= and
-Vel+= rows of one step all see the one value it drew. A condition on a step that uses no draw looks at the value the draw last
-gave, without drawing, unless the draw's Conditions redraw is on: then the condition draws from it first, and that is the step's
-one draw from it.
+Stop When, Restart When and Mute When on a step, and the Skip Playback When and Bypass Generators When tables, can name a draw
+wherever they can name a register: as what is tested, as the number it is compared with, or as what a sum is compared with. A
+draw is drawn at most once for each pattern step, before anything on that step is tested, so the conditions and the Note+= and
+Vel+= rows of one step all see the one value drawn. A step draws when its Note+= or Vel+= rows use the draw, or when one of its
+conditions names a draw whose Conditions redraw is on; a condition on a step that draws nothing looks at the value the draw last
+gave.
+
+Skip Playback When and Bypass Generators When are tested as a clip's pattern starts a pass, and they belong to the pass's first
+step: a draw they name whose Conditions redraw is on is drawn there, once, with that step's own draws, and the whole pass starts
+from that value. A pass the clip sits out still draws when something tests or uses the draw, and draws nothing when nothing does.
 
 So a hi-hat with Vel+=CD and Mute When CD = 0 drops out whenever its own hit draws a 0, and a bell with Mute When BD < 2, where
 BD redraws, plays the rhythm its own draws make.

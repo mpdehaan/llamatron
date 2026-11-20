@@ -107,6 +107,8 @@ class StepDraws(NamedTuple):
 NO_ADDS = {}
 # A step whose statements redraw nothing.
 NO_REDRAWS = frozenset()
+# A pass whose clip reads no draw that redraws as the pass starts.
+NO_PASS_DRAWS = frozenset()
 NO_SETS = {}
 
 
@@ -194,7 +196,7 @@ class PatternPlayer:
             self._scales_by_octave[key] = named.scale_at(octave)
         return self._scales_by_octave[key]
 
-    def play_pass(self, *, pattern_name, grab, direction, where, rolls, order, registers, start, changes_registers=True):
+    def play_pass(self, *, pattern_name, grab, direction, where, rolls, order, registers, start, changes_registers=True, pass_draws=NO_PASS_DRAWS):
         """Return one pass through a pattern as a Pass, with notes, chords and rests, starting at a time in the clip.
 
         Every step takes the same time, its step size, whatever order the steps play in, which is
@@ -206,6 +208,7 @@ class PatternPlayer:
         ties at the start of the pass are left for the caller to join to the pass before. The
         pattern's grab steps play what grab, a GrabSource, gives for the time they start, if it's
         given, and a grab step with no degree of its own plays only that, or nothing. rolls is the random generator probability uses, and order the StepOrder.
+        pass_draws names the draws the pass's first step takes besides its own, those the clip's statements redraw as the pass starts.
 
         registers is a RegisterRecorder or RegisterReader. Every step sets and adds to the
         registers, even one with no note, unless changes_registers is false, as for a morph's
@@ -253,6 +256,8 @@ class PatternPlayer:
         for slot, step in enumerate(steps):
             # Every draw the step takes is taken before its statements read the values, the step's one draw from it.
             drawing = step_draws[step] if step_draws is not None else None
+            if not slot and pass_draws and changes_registers:
+                drawing = _with_pass_draws(drawing=drawing, names=pass_draws)
             if drawing is not None and (drawing.drawn or drawing.resets):
                 registers.before_statements(time=start + slot * step_size, draws=drawing.drawn, draw_resets=drawing.resets)
             # A step's statements are read first of all, before the step changes anything, in the order stop, restart, mute.
@@ -601,6 +606,13 @@ def _rests(*, start, end, step_length):
 def _register_adds(values):
     """Return what a step adds to each register it adds to, by register name."""
     return {name: values[row] for name, row in file_format.REGISTER_ADD_ROWS.items() if values[row]}
+
+
+def _with_pass_draws(*, drawing, names):
+    """Return a pass's first step's StepDraws with the draws its clip's statements redraw as the pass starts taken too, each once."""
+    resets = drawing.resets if drawing is not None else ()
+    drawn = drawing.drawn if drawing is not None else ()
+    return StepDraws(resets, tuple(name for name in file_format.DRAW_NAMES if name in drawn or name in names))
 
 
 def _draws_used(values):

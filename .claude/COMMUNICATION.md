@@ -280,11 +280,14 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   would see and press, in the words the tracker shows on screen, naming the existing feature they
   build on. Code names come after, if at all, and software components go by their formal names:
   `__init__` and the like are special methods, never dunders.
-- **No new words.** Claude never makes up a word of its own for a thing or a group of things, such as "a table" for Skip
-  Playback When and Bypass Generators When: a thing is named by what the tracker shows on screen or by the user's own word for
-  it, in full each time, like "Skip Playback When and Bypass Generators When", even when that is longer. A word from the code or
+- **No new words.** Claude never makes up a word of its own for a thing or a group of things: a thing is named by what the
+  tracker shows on screen or by the user's own word for it, in full each time, even when that is longer. A word from the code or
   from a note of Claude's is no exception. Where a group of things has no name on screen and the user has given none, each is
   named, and when a name for the group would really help, Claude asks the user for one (the user's rule).
+- **Only the program acts.** A thing on the screen or in the set, a table of statements, a field, a pattern, is never written
+  as doing something, as if it were alive: a table does not draw or decide. What acts is the renderer, the part of llamatron
+  that plays the song, which draws, tests the statements and decides as it evaluates the patterns and the other objects
+  (the user's rule): "the renderer draws AD as the pass starts", never "the table draws AD".
 - **The page first.** Anything said about the text UI, a question, an example or an explanation,
   opens by naming the page, "When you are on the clip page, ..." or "In an example scenario, on
   the Arrange page, ...", before any key or cell, and names the page again whenever the page
@@ -387,6 +390,7 @@ row says which, and a reply says which too.
 | an instrument, a device | an instrument on the Instruments page, with its Device and Channel; the Real Time switch on the main screen | `Instrument`, `Section.INSTRUMENTS`, `TrackSetting.INSTRUMENT`, `Setlist.is_real_time` |
 | the Realtime Sender Process | nothing on screen: the separate process that plays MIDI in real time, fed each clip's events by the player | `RealtimeMIDISenderProcess` |
 | the player | nothing on screen: what launches scenes and clips and follows the follow actions | `Player`, on a `Score` |
+| the renderer | nothing on screen: the part of llamatron that plays a song into clips, draws the draws and tests the statements as it evaluates the patterns and the other objects | `SongRenderer`, with a `ClipSlotPlayer` and a `PatternPlayer` for each clip |
 | the transport | nothing on screen: the tracker's side of real-time playback, which every page asks what plays | `Transport`, `app.transport` |
 | play, stop, the corner | Space on Arrange, the `▶ song` and `■ song` cell over the scene names, the `▶` and `■` beside each clip | `ArrangePage.play_song`, `play_scene`, `play_clip`, `stop_playing_all`, `stop_clip`, `on_corner` |
 | listen, preview | `L` (Listen) on the clip page and in the pattern editor, and the clip page's Play and Stop buttons | `listen`, `listen_to_pattern` in `tui/screens/shared/listening.py` |
