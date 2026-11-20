@@ -184,7 +184,7 @@ async def open_wizard_panel(*, app, pilot, panel):
     """Open the song wizard, choose the genre, subgenre and seed every wizard shot shares, and put the tree's cursor on a panel."""
     await pilot.press(first_key(keybindings.Page.WIZARD))
     await pilot.pause()
-    choices = app.screen.choices()
+    choices = app.screen.get_choices()
     choices.set_genre(WIZARD_GENRE)
     choices.set_subgenre(WIZARD_SUBGENRE)
     choices.set_seed(WIZARD_SEED)
