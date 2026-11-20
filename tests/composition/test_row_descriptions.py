@@ -52,7 +52,7 @@ A_BARE_NUMBER_CHORD = 7
 # What each number row's blank step plays as, where the tests can name it from the program's own defaults.
 DEFAULTS = {Row.VELOCITY: defaults.DEFAULT_VELOCITY, Row.PROBABILITY: defaults.DEFAULT_PROBABILITY, Row.RATCHET: defaults.DEFAULT_RATCHET}
 # The rows a blank step changes nothing on, which the editor shows as a dot until they're set.
-QUIET = (Row.RATCHET, Row.RATCHET_OFFSET, *file_format.CC_ROWS, *file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values(), *file_format.MODULATOR_SET_ROWS.values())
+QUIET = (Row.RATCHET, Row.RATCHET_OFFSET, *file_format.CC_ROWS, *file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values())
 
 
 def rows_of(kind):
@@ -183,9 +183,9 @@ class TestRowsOfRegisterUses(unittest.TestCase):
     """The +Note and +Vel rows: 1 adds the register, -1 subtracts it and 0 does neither, where the rows were toggles."""
 
     def test_the_rows_that_use_a_register(self):
-        uses = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.MODULATOR_NOTE_ROWS.values(), *file_format.MODULATOR_VELOCITY_ROWS.values()}
+        uses = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()}
         self.assertEqual(set(rows_of(RowOfRegisterUses)) | set(rows_of(RowOfNoteMoves)), uses)
-        self.assertEqual(set(rows_of(RowOfNoteMoves)), {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.MODULATOR_NOTE_ROWS.values()})
+        self.assertEqual(set(rows_of(RowOfNoteMoves)), set(file_format.REGISTER_NOTE_ROWS.values()))
 
     def test_add_subtract_and_off_are_allowed_and_so_are_true_and_false_from_an_older_file(self):
         for name in (*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()):
@@ -348,11 +348,10 @@ class TestEveryRowIsDescribedOnce(unittest.TestCase):
 
     def test_what_a_rest_keeps_and_what_changes_with_drums_come_from_the_descriptions(self):
         # A rest can hold every register row that changes or uses a register, so erasing a note keeps +Note and +Vel with = and +=, and a step's statements, which a step with no note can hold.
-        register_rows = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values(),
-                         *file_format.MODULATOR_SET_ROWS.values(), *file_format.MODULATOR_NOTE_ROWS.values(), *file_format.MODULATOR_VELOCITY_ROWS.values()}
+        register_rows = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values()}
         self.assertEqual(set(pattern_values.REST_ROWS), {*file_format.CC_ROWS, Row.SLIDE, *register_rows, *file_format.STATEMENT_OF_ROW})
-        self.assertEqual(set(pattern_values.NOTE_ROWS), {Row.DEGREE, Row.ACCIDENTAL, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *file_format.REGISTER_NOTE_ROWS.values(), *file_format.MODULATOR_NOTE_ROWS.values()})
-        self.assertEqual(set(rows_where(lambda row: not row.is_in_drum_patterns())), {Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *file_format.REGISTER_NOTE_ROWS.values(), *file_format.MODULATOR_NOTE_ROWS.values()})
+        self.assertEqual(set(pattern_values.NOTE_ROWS), {Row.DEGREE, Row.ACCIDENTAL, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *file_format.REGISTER_NOTE_ROWS.values()})
+        self.assertEqual(set(rows_where(lambda row: not row.is_in_drum_patterns())), {Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *file_format.REGISTER_NOTE_ROWS.values()})
 
 
 class TestAPatternAsksTheDescriptions(unittest.TestCase):

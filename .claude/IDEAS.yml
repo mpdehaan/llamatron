@@ -346,25 +346,6 @@
   text: |
     A key on the Arrange page, the hide key, opens a dialog that lists the song's tracks and lets a person hide and show each one, so that tracks a person does not need to see, such as a muted chords track or other guide tracks, take no room on the Arrange page. A hidden track still plays and is still followed, as before; hiding changes only what Arrange draws. How many tracks are hidden has to be shown somewhere on the Arrange page, so that nobody forgets tracks are there. To discuss before building: where the count shows, whether the choice is kept in the set file or only for the session, what the cursor does at a hidden track, and whether Scene View, the details view and the exports show hidden tracks. For the code: a setting of the track or of the song, the Arrange page's drawing and cursor skipping hidden columns, a new dialog, and the key's binding in tui/keybindings.py.
 
-- title: "Modulators out of phase: a phase field"
-  priority: 5
-  text: |
-    A way to set modulators out of phase with each other. Today each has Start, a value between its Minimum and Maximum where its
-    wave begins (rising, or falling when inverted). The idea is a field giving where in its cycle the wave starts, as a share of
-    the cycle or in degrees, so that two modulators of one shape and rate can run a quarter or half a cycle apart, and so that a
-    rising and a falling crossing of one value can be told apart. Still to decide: whether it takes Start's place or stands beside
-    it, how a value set on a step meets it, and its column on the Modulators page.
-
-- title: "Modulators that grow: a ramp of amplitude"
-  priority: 5
-  text: |
-    A modulator (XMod, WMod, YMod, ZMod, agreed in .claude/DESIGNS.md under "Modulators") could be given a ramp, so that its wave
-    starts small and widens to the full swing between its Minimum and Maximum over a length of time, as an LFO's depth is faded in.
-    A Set Modulators value on a step can name a value outside the swing the ramp allows at that moment; the user's thinking is that
-    the ramp then moves on far enough to allow that value, the full swing where needed, rather than clipping the value. Still to
-    decide: how the ramp's length is given (bars, like the Rate, or seconds), whether a scene's reset starts the ramp over, and where
-    the setting goes on the Modulators page. Built after the modulators themselves.
-
 - title: "Code a person can work on without Claude"
   priority: 6
   text: |
@@ -392,6 +373,17 @@
        the chapter and heading of every feature it uses (from internal_tools/demo_features.py and a map of features to
        chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
        examples/by_genre (the user's choice), where the new demos go by purpose.
+
+- title: "A Munge generator, which takes Serialism's place in the wizard"
+  priority: 10
+  text: |
+    A generator that works on a pattern before it plays, a preprocessor of the pattern rather than running with the timing as the
+    other generators do. The first idea, RandomizePitch (broader than serialism, maybe with no settings at first), rearranges the
+    pitches of a pattern's steps that hold notes, at random by default, every note keeping its place in time, as the pattern
+    editor's randomize pitches munge does. The later idea: look at which of the pattern editor's Munges work as a generator, and
+    make one generator, Munge, that runs one of them on a range of steps. It would take Serialism's place in the song wizard's
+    Experimental genre, whose serial subgenres are to be removed. Wanted: opinions on settings that carry Serialist ideas further.
+    A talk of its own before anything is built.
 
 - title: "Playing lights on the list pages"
   priority: 20

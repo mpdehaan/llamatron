@@ -20,7 +20,7 @@ Every setting has a default, so that a file written by an older version of llama
 loads, and an empty file is an empty song.
 """
 
-from llamatron.composition.file_format import FollowAction, OctaveLabels, RateIn, ResetBehavior, WaveShape
+from llamatron.composition.file_format import FollowAction, OctaveLabels, ResetBehavior
 
 DEFAULT_TEMPO = 120
 FIRST_NUMBER = 1
@@ -68,12 +68,6 @@ DEFAULT_RESET_EACH_SCENE = False
 # The most a step may add to a register or take from it, unless the register says otherwise: enough for every example written before the limit came.
 DEFAULT_ALLOWED_INC_MAX = 20
 DEFAULT_GROOVE_CELL_LENGTH = '1/16'
-# A new modulator: a sine once a bar, at 1 hertz once switched to hertz, swinging nowhere until its values are set.
-DEFAULT_WAVE_SHAPE = WaveShape.SINE
-DEFAULT_RATE_IN = RateIn.BARS
-DEFAULT_BAR_RATE = '1'
-DEFAULT_HERTZ = 1
-DEFAULT_MODULATOR_VALUE = 0
 # The factory groove that moves nothing, FactoryGroove.NONE, which groove.py checks matches.
 DEFAULT_GROOVE = 'none'
 # When an edit made while a song plays is heard, unless the song says: at the next bar, as a launch by hand waits for it.

@@ -233,7 +233,6 @@ ALLOWED = {
         'tui/screens/set/main_page.py imports tui.screens.set.grooves_page',
         'tui/screens/set/main_page.py imports tui.screens.set.importing',
         'tui/screens/set/main_page.py imports tui.screens.set.instruments_page',
-        'tui/screens/set/main_page.py imports tui.screens.set.modulators_page',
         'tui/screens/set/main_page.py imports tui.screens.set.registers_page',
         'tui/screens/set/main_page.py imports tui.screens.set.scales_page',
         'tui/screens/set/main_page.py imports tui.screens.set.songs_page',

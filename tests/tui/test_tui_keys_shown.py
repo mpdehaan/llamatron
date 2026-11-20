@@ -145,12 +145,9 @@ class TestEveryKeyIsShownOnTheSetPages(EveryKeyIsShownTests, UITest):
 
 
 class TestEveryKeyIsShownOnTheSongPages(EveryKeyIsShownTests, UITest):
-    """Modulators, Generators, a chain's editor, Scales, Grooves, Arrange and the pages under them."""
+    """Generators, a chain's editor, Scales, Grooves, Arrange and the pages under them."""
 
     async def visit(self):
-        await self.press(keybindings.MainPage.MODULATORS)
-        yield Section.MODULATORS
-        await self.press(Key.ESCAPE)
         await self.open_chain(ui_testing.NAMED)
         yield CHAIN_EDITOR
         await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GENERATORS)

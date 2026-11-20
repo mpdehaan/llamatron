@@ -54,7 +54,6 @@ from llamatron.tui.screens.generators.swell_editor import SwellEditor
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.set.modulators_page import ModulatorsPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.song_page import SongPage
@@ -264,7 +263,7 @@ class FieldPagesTest(UITest):
             self.document.add_instrument(AN_INSTRUMENT)
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=ui_testing.LEAD), ArpEditor(holder=holder, name=ui_testing.UP_ARP),
-            TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), ModulatorsPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
+            TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
             ProgressionEditor(holder=holder, name=ui_testing.POP), VoiceLeadingEditor(holder=holder, name=ui_testing.SMOOTH), HocketEditor(holder=holder, name=ui_testing.TRADE), FollowChordsEditor(holder=holder, name=ui_testing.FOLLOWS), PhrasingEditor(holder=holder, name=ui_testing.BREATHES), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), GuitarifyEditor(holder=holder, name=ui_testing.PICKED), StrumEditor(holder=holder, name=ui_testing.FOLK), EuclidEditor(holder=holder, name=ui_testing.CLAVE), GlideEditor(holder=holder, name=ui_testing.SLIDES), ShortenEditor(holder=holder, name=ui_testing.CLIPS),
             RushEditor(holder=holder, name=ui_testing.PUSH), DragEditor(holder=holder, name=ui_testing.LAZY),
             DensityEditor(holder=holder, name=ui_testing.THIN), SwellEditor(holder=holder, name=ui_testing.FADE), ArticulateEditor(holder=holder, name=ui_testing.CLIPPED),

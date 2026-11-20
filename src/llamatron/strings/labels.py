@@ -18,7 +18,7 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
-from llamatron.composition.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, MODULATOR_NOTE_ROWS, MODULATOR_SET_ROWS, MODULATOR_VELOCITY_ROWS, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, RateIn, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings, WaveShape
+from llamatron.composition.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
 from llamatron.tui.keys import RowSection
 
 
@@ -167,7 +167,6 @@ class PageName:
     FILE = 'File/Global'
     SONGS = 'Songs'
     PATTERNS = 'Patterns'
-    MODULATORS = 'Modulators'
     GENERATORS = 'Generators'
     SCALES = 'Scales'
     GROOVES = 'Grooves'
@@ -200,7 +199,6 @@ class Crumb:
     OPEN = 'OPEN'
     IMPORT_MIDI = 'IMPORT MIDI'
     PATTERNS = 'PATTERNS'
-    MODULATORS = 'MODULATORS'
     GENERATORS = 'GENERATORS'
     CHORDS = 'CHORDS'
     VOICE_LEADING = 'VOICE LEADING'
@@ -548,15 +546,12 @@ MSG_ROW_LABELS = {
     **register_labels(rows=REGISTER_VELOCITY_ROWS, label=MSG_REGISTER_VELOCITY_LABEL),
     **register_labels(rows=REGISTER_ADD_ROWS, label=MSG_REGISTER_ADD_LABEL),
     **register_labels(rows=REGISTER_SET_ROWS, label=MSG_REGISTER_SET_LABEL),
-    **register_labels(rows=MODULATOR_SET_ROWS, label=MSG_REGISTER_SET_LABEL),
-    **register_labels(rows=MODULATOR_NOTE_ROWS, label=MSG_REGISTER_NOTE_LABEL),
-    **register_labels(rows=MODULATOR_VELOCITY_ROWS, label=MSG_REGISTER_VELOCITY_LABEL),
     **{row: MSG_STATEMENT_ROW_LABEL.format(place=place) for rows in STATEMENT_ROWS.values() for place, row in enumerate(rows, start=1)},
 }
 # The sections of rows under Octave, each a row of the grid: its name after a mark saying whether it's closed (+) or open (-), chosen over triangles, which were hard to tell apart at a distance.
 MSG_SECTION_NAMES = {
     RowSection.BASICS: 'Basics', RowSection.CHORD: 'Chord', RowSection.TIMING: 'Timing', RowSection.KEYSWITCH: 'Keyswitch', RowSection.ADVANCED: 'Advanced', RowSection.CC: 'CCs',
-    RowSection.REGISTER_MOD: 'Set Registers', RowSection.REGISTER_APPLY: 'Use Registers', RowSection.MODULATOR_SET: 'Set Modulators', RowSection.MODULATOR_USE: 'Use Modulators', RowSection.STOP_WHEN: 'Stop When',
+    RowSection.REGISTER_MOD: 'Set Registers', RowSection.REGISTER_APPLY: 'Use Registers', RowSection.STOP_WHEN: 'Stop When',
     RowSection.RESTART_WHEN: 'Restart When', RowSection.MUTE_WHEN: 'Mute When',
 }
 MSG_SECTION_LABEL = '{mark} {name}'
@@ -566,8 +561,6 @@ MSG_SECTION_HINTS = {
     RowSection.CC: "CCs: the track sets each row's CC number",
     RowSection.REGISTER_MOD: 'Set Registers: = sets, then += adds, even on an empty step',
     RowSection.REGISTER_APPLY: 'Use Registers: +Note and +Vel add (+) or subtract (-) a register',
-    RowSection.MODULATOR_SET: 'Set Modulators: = starts the wave again from a value',
-    RowSection.MODULATOR_USE: 'Use Modulators: +Note and +Vel add (+) or subtract (-) a modulator',
     RowSection.STOP_WHEN: 'Stop When: the clip is done at a step whose statement is true',
     RowSection.RESTART_WHEN: 'Restart When: the pattern starts over at a step whose statement is true',
     RowSection.MUTE_WHEN: 'Mute When: a step whose statement is true does not sound',
@@ -635,15 +628,6 @@ MSG_CHORD_NAMES = {
 # Each register's settings on the page, labelled like "AX minimum", in the order they're shown.
 # The Registers page's columns, in the grid's order.
 MSG_REGISTER_COLUMNS = ('Inc max', 'Reset behavior', 'Minimum', 'Default', 'Maximum', 'Scene reset')
-# tui/screens/set/modulators_page.py
-MSG_MODULATOR_COLUMNS = ('Shape', 'Rate', 'Rate in', 'Minimum', 'Start', 'Maximum', 'Invert')
-MSG_MODULATOR_FIELD_LABEL = '{name} {what}'
-MSG_MODULATOR_FIELD_WHATS = ('shape', 'rate', 'rate in', 'minimum', 'start', 'maximum', 'invert')
-MSG_WAVE_SHAPE_NAMES = {
-    WaveShape.SINE: 'sine', WaveShape.TRIANGLE: 'triangle', WaveShape.SQUARE: 'square', WaveShape.SAW: 'saw', WaveShape.REVERSE_SAW: 'reverse saw',
-    WaveShape.SAMPLE_AND_HOLD: 'sample and hold',
-}
-MSG_RATE_IN_NAMES = {RateIn.BARS: 'bars', RateIn.HERTZ: 'Hz'}
 MSG_REGISTER_FIELD_LABEL = '{name} {what}'
 MSG_REGISTER_NUMBER_FIELDS = [(RegisterSetting.DEFAULT, 'default'), (RegisterSetting.MINIMUM, 'minimum'), (RegisterSetting.MAXIMUM, 'maximum')]
 MSG_REGISTER_RESET_BEHAVIOR_FIELD = 'reset behavior'

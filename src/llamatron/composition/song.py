@@ -30,7 +30,6 @@ from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import data_as_kept, data_built_anew, HoldsSettings, or_default, own_copy, written_settings
-from llamatron.composition.modulator import Modulator
 from llamatron.composition.named_items import moved_in_list, NamedItems
 from llamatron.composition.register import Register
 from llamatron.composition.scene import Scene
@@ -171,7 +170,6 @@ class Song(HoldsSections, HoldsSettings):
         song = cls(setlist=setlist)
         song._read_settings(data=data, where=where)
         song._read_registers(data=data, where=where)
-        song._read_modulators(data=data, where=where)
         song._read_tracks(data=data, where=where)
         song._read_scenes(data=data, where=where)
         return song
@@ -203,17 +201,6 @@ class Song(HoldsSections, HoldsSettings):
         if Section.REGISTERS in data:
             self._set_section(section=Section.REGISTERS, items={
                 name: Register.from_data(data=settings, where=self._where(where=where, label=names.MSG_REGISTER_WORD, name=name)) for name, settings in registers.items()
-            })
-
-    def _read_modulators(self, *, data, where):
-        """Read the modulators' settings. There are always four, so the file only names those it changes."""
-        modulators = data.get(Section.MODULATORS) or {}
-        with reading(where):
-            if not isinstance(modulators, dict) or not set(modulators) <= set(file_format.MODULATOR_NAMES):
-                raise InvalidValue(errors.ERR_MODULATORS_NOT_NAMED.format(names=listed(file_format.MODULATOR_NAMES)))
-        if Section.MODULATORS in data:
-            self._set_section(section=Section.MODULATORS, items={
-                name: Modulator.from_data(data=settings, where=self._where(where=where, label=names.MSG_MODULATOR_WORD, name=name)) for name, settings in modulators.items()
             })
 
     def _read_tracks(self, *, data, where):
@@ -501,22 +488,6 @@ class Song(HoldsSections, HoldsSettings):
         registers = {**dict(self._section(Section.REGISTERS).items()), name: register}
         changed = {name: registers[name] for name in file_format.REGISTER_NAMES if name in registers and not registers[name].is_default()}
         self._set_section(section=Section.REGISTERS, items=changed or None)
-
-    # The modulators. There are always four, and the file names only those with settings changed.
-
-    def get_modulator(self, name):
-        """Return a modulator by its name, XMod to ZMod, with its default settings if the file leaves it out."""
-        return self._section(Section.MODULATORS).find(name) or Modulator()
-
-    def set_modulator_setting(self, *, name, setting, value):
-        """Change one setting of a modulator, XMod to ZMod, by its file name, or None for its default."""
-        if name not in file_format.MODULATOR_NAMES:
-            raise InvalidValue(errors.ERR_NO_SUCH_MODULATOR.format(name=name, names=listed(file_format.MODULATOR_NAMES)))
-        modulator = self.get_modulator(name).copy()
-        modulator.set_setting(name=setting, value=value)
-        modulators = {**dict(self._section(Section.MODULATORS).items()), name: modulator}
-        changed = {name: modulators[name] for name in file_format.MODULATOR_NAMES if name in modulators and not modulators[name].is_default()}
-        self._set_section(section=Section.MODULATORS, items=changed or None)
 
     # The scenes, in the order they play.
 

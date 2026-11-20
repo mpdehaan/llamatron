@@ -70,8 +70,6 @@ SECTIONS = {
     # The register sections read in the order a step works them out: sets, then adds, then the uses.
     RowSection.REGISTER_MOD: [*file_format.REGISTER_SET_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values()],
     RowSection.REGISTER_APPLY: [*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()],
-    RowSection.MODULATOR_SET: [*file_format.MODULATOR_SET_ROWS.values()],
-    RowSection.MODULATOR_USE: [*file_format.MODULATOR_NOTE_ROWS.values(), *file_format.MODULATOR_VELOCITY_ROWS.values()],
     # A step's statements, in the order a step reads them.
     RowSection.STOP_WHEN: [*file_format.STATEMENT_ROWS[StepStatement.STOP]],
     RowSection.RESTART_WHEN: [*file_format.STATEMENT_ROWS[StepStatement.RESTART]],
@@ -87,9 +85,6 @@ ROW_CLASSES = {
     **dict.fromkeys(file_format.REGISTER_VELOCITY_ROWS.values(), RegisterRow),
     **dict.fromkeys(file_format.REGISTER_ADD_ROWS.values(), AddRow),
     **dict.fromkeys(file_format.REGISTER_SET_ROWS.values(), SetRow),
-    **dict.fromkeys(file_format.MODULATOR_SET_ROWS.values(), SetRow),
-    **dict.fromkeys(file_format.MODULATOR_NOTE_ROWS.values(), RegisterRow),
-    **dict.fromkeys(file_format.MODULATOR_VELOCITY_ROWS.values(), RegisterRow),
     **dict.fromkeys(file_format.STATEMENT_OF_ROW, StatementRow),
 }
 # The slot each row of the Keyswitch section is for, by the row's name in the rows view.

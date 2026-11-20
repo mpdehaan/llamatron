@@ -46,11 +46,6 @@ MAX_STATEMENTS = 4
 MAX_STATEMENT_NUMBER = 9999
 # The least a register's allowed increment may be: a register no step may add to just has no adds.
 MIN_ALLOWED_INC_MAX = 1
-# How fast a modulator's wave set in hertz may go, and the step it is set in: a hundredth of a hertz. A wave faster than the steps
-# that read it is heard as a jumbled figure, which is allowed on purpose.
-MIN_HERTZ = 0.01
-MAX_HERTZ = 20
-HERTZ_STEPS = 100
 # How far a drift moves notes along the scale either way, a fixed amount or at random: an octave of a seven-note scale.
 MAX_DRIFT_DEGREE = 7
 # A progression holds from one to this many chords, each a degree of the scale from 1 to MAX_PROGRESSION_DEGREE, inverted at most MAX_PROGRESSION_INVERSION times.

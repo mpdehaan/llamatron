@@ -423,15 +423,6 @@ Each starts at its default when the song starts, and again whenever a scene rese
 Up and down select. Left and right change a number, ENTER types one, and Bksp goes back to its default. ENTER switches wraps on and off.
 """
 
-# ModulatorsPage
-HELP_MODULATORS_PAGE = """
-The four modulators, XMod, WMod, YMod and ZMod, are values that trace a wave by themselves as the current song plays. Pattern steps use them with XMod+Note and XMod+Vel, set them with XMod=, and the conditions read them as they read the registers.
-
-Each swings between its minimum and maximum in its shape, starting at its start: rising first, or falling first when inverted. Its rate is how long one whole wave takes, in bars, which follow the tempo, or in Hz, which do not.
-
-The arrows move. [ and ] change the value under the cursor, ENTER types or chooses one, Space switches Invert, and Bksp goes back to its default.
-"""
-
 # GroovesPage
 HELP_GROOVES_PAGE = """
 A groove moves notes off the grid, like swing on a drum machine. It's a row of cells, one bar of 16ths to start with, each

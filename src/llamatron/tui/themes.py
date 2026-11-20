@@ -24,7 +24,6 @@ from llamatron.composition.file_format import Section
 
 SONGS = (0, 90, 255)
 PATTERNS = (0, 200, 0)
-MODULATORS = (150, 0, 255)
 GENERATORS = (220, 0, 220)
 SCALES = (0, 170, 170)
 GROOVES = (255, 128, 0)

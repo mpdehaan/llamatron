@@ -32,7 +32,6 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Advanced Conditionals](#advanced_conditionals): `27_advanced_conditionals.yml`
 - [Accents](#accents): `28_accents.yml`
 - [Pattern Lists](#pattern_lists): `29_pattern_lists.yml`
-- [LFO Modulators](#lfo_modulators): `30_lfo_modulators.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -583,18 +582,3 @@ keep their order.
 | :---: | :---: | :---: |
 | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
 <!-- end of the generated summary of 29_pattern_lists -->
-
-<a id="lfo_modulators"></a>
-## LFO Modulators: `30_lfo_modulators.yml`
-
-Weird techno in F minor, a kick, a bass and a lead, moved by modulators, values that move by themselves like a synthesizer's
-LFO. XMod, a saw at 1.6 Hz from 0 to 12, moves some of the bass's and the lead's notes up the scale and others down, and
-mutes steps of both whenever it passes a value set on each step, above on some and below on others. WMod lets the velocity of
-the bass and the lead breathe a little, while the kick stays at full velocity. The tempo holds at 120 throughout.
-
-[`examples/learning/30_lfo_modulators.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/30_lfo_modulators.yml) · F minor · 120 BPM · 2:08 · 1 scenes · 2 tracks
-
-| conditional execution |
-| :---: |
-| [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |
-<!-- end of the generated summary of 30_lfo_modulators -->

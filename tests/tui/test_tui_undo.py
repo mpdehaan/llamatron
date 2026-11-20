@@ -28,7 +28,7 @@ import os
 import unittest
 
 from llamatron.composition import defaults, generator_settings
-from llamatron.composition.file_format import DriftValue, DriftVersion, EuclidPart, GeneratorKind, ModulatorName, ReadyBar, RegisterName, RegisterSetting, Row, Section, ShapePart, SongSetting, StrumPart
+from llamatron.composition.file_format import DriftValue, DriftVersion, EuclidPart, GeneratorKind, ReadyBar, RegisterName, RegisterSetting, Row, Section, ShapePart, SongSetting, StrumPart
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name, new_name
@@ -68,8 +68,6 @@ from tests.support.ui_testing import a_song, fixed_text, key_of, leaf_pages, UIT
 SECOND_SONG = 'second'
 RENAMED = 'renamed'
 NEW_CHAIN = 'lift'
-# Where Maximum stands among a modulator's columns.
-MAXIMUM_COLUMN = 5
 # A shape's end left blank plays as 100, and one press of [ (dec) takes it down to 99.
 SHAPE_NUDGED_DOWN = 99
 NEW_ARP = 'fast'
@@ -392,17 +390,6 @@ class TestPatternEditorUndo(UndoTest):
         before = self.data()
         await self.press(keybindings.PianoRoll.ERASE)
         self.assertEqual(self.document.song().get_pattern(ui_testing.TUNE).get_row(Row.DEGREE), [1, None, None, None])
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestModulatorsPageUndo(UndoTest):
-
-    async def test_a_setting_is_one_step_and_the_cursor_stays(self):
-        await self.press(keybindings.MainPage.MODULATORS)
-        before = self.data()
-        await self.select_field(labels.MSG_MODULATOR_FIELD_LABEL.format(name=ModulatorName.WMOD, what=labels.MSG_MODULATOR_FIELD_WHATS[MAXIMUM_COLUMN]))
-        await self.press(key_of(binding=keybindings.ModulatorsPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.document.song().get_modulator(ModulatorName.WMOD).get_maximum(), 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

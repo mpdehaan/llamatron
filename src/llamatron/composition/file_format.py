@@ -59,7 +59,6 @@ class Section:
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
     REGISTERS = 'registers'
-    MODULATORS = 'modulators'
     SONGS = 'songs'
     SCENES = 'scenes'
 
@@ -271,20 +270,6 @@ class Row:
     BX_SET = 'bx_set'
     CX_SET = 'cx_set'
     DX_SET = 'dx_set'
-    # What the step sets each modulator to, starting its wave again from there, or blank to leave it.
-    XMOD_SET = 'xmod_set'
-    WMOD_SET = 'wmod_set'
-    YMOD_SET = 'ymod_set'
-    ZMOD_SET = 'zmod_set'
-    # Whether each modulator's value moves the step's note along the scale, and whether it is added to the step's velocity.
-    XMOD_NOTE = 'xmod_note'
-    WMOD_NOTE = 'wmod_note'
-    YMOD_NOTE = 'ymod_note'
-    ZMOD_NOTE = 'zmod_note'
-    XMOD_VELOCITY = 'xmod_velocity'
-    WMOD_VELOCITY = 'wmod_velocity'
-    YMOD_VELOCITY = 'ymod_velocity'
-    ZMOD_VELOCITY = 'zmod_velocity'
     # A step's statements about the registers, one of each kind, each written across five rows: the register, the operator,
     # a number or a register, and after a sum the comparison of the result and what it is compared with.
     STOP_C1 = 'stop_c1'
@@ -522,47 +507,6 @@ class RegisterSetting:
     ALLOWED_INC_MAX = 'allowed_inc_max'
 
 
-class ModulatorName:
-    """The song's four modulators, whose names are fixed, in the order the Modulators page shows them."""
-
-    XMOD = 'XMod'
-    WMOD = 'WMod'
-    YMOD = 'YMod'
-    ZMOD = 'ZMod'
-
-
-class ModulatorSetting:
-    """A modulator's settings: the wave's shape, whether it is turned upside down, its rate in bars or in hertz, and the values it
-    swings between and starts on."""
-
-    SHAPE = 'shape'
-    INVERT = 'invert'
-    RATE_IN = 'rate_in'
-    BARS = 'bars'
-    HERTZ = 'hertz'
-    MINIMUM = 'minimum'
-    START = 'start'
-    MAXIMUM = 'maximum'
-
-
-class WaveShape:
-    """The shapes a modulator's wave can have."""
-
-    SINE = 'sine'
-    TRIANGLE = 'triangle'
-    SQUARE = 'square'
-    SAW = 'saw'
-    REVERSE_SAW = 'reverse_saw'
-    SAMPLE_AND_HOLD = 'sample_and_hold'
-
-
-class RateIn:
-    """What a modulator's rate counts: bars of the song, which follow the tempo, or hertz, which do not."""
-
-    BARS = 'bars'
-    HERTZ = 'hertz'
-
-
 class ResetBehavior:
     """What a register does when an add or a subtraction would take it past its minimum or maximum. A set is never governed by it."""
 
@@ -787,12 +731,6 @@ class FileLayout:
 
 # The registers, in the order the Registers page and the pattern editor show them.
 REGISTER_NAMES = [RegisterName.AX, RegisterName.BX, RegisterName.CX, RegisterName.DX]
-# The modulators, in the order the Modulators page and the pattern editor show them.
-MODULATOR_NAMES = [ModulatorName.XMOD, ModulatorName.WMOD, ModulatorName.YMOD, ModulatorName.ZMOD]
-# The shapes, in the order a picker offers them, and what a modulator's rate in bars may be, from a sixteenth of a bar to 64 bars.
-WAVE_SHAPES = [WaveShape.SINE, WaveShape.TRIANGLE, WaveShape.SQUARE, WaveShape.SAW, WaveShape.REVERSE_SAW, WaveShape.SAMPLE_AND_HOLD]
-RATES_IN = [RateIn.BARS, RateIn.HERTZ]
-BAR_RATES = ['1/16', '1/8', '1/4', '1/2', '1', '2', '4', '8', '16', '32', '64']
 # Each register's rows in a pattern: whether it moves the note, whether it changes the velocity,
 # and how much a step adds to it.
 REGISTER_NOTE_ROWS = {
@@ -809,18 +747,6 @@ REGISTER_ADD_ROWS = {
 REGISTER_SET_ROWS = {
     RegisterName.AX: Row.AX_SET, RegisterName.BX: Row.BX_SET, RegisterName.CX: Row.CX_SET, RegisterName.DX: Row.DX_SET,
 }
-# Each modulator's rows in a pattern: what a step sets it to, whether its value moves the note, and whether it changes the velocity.
-MODULATOR_SET_ROWS = {
-    ModulatorName.XMOD: Row.XMOD_SET, ModulatorName.WMOD: Row.WMOD_SET, ModulatorName.YMOD: Row.YMOD_SET, ModulatorName.ZMOD: Row.ZMOD_SET,
-}
-MODULATOR_NOTE_ROWS = {
-    ModulatorName.XMOD: Row.XMOD_NOTE, ModulatorName.WMOD: Row.WMOD_NOTE, ModulatorName.YMOD: Row.YMOD_NOTE, ModulatorName.ZMOD: Row.ZMOD_NOTE,
-}
-MODULATOR_VELOCITY_ROWS = {
-    ModulatorName.XMOD: Row.XMOD_VELOCITY, ModulatorName.WMOD: Row.WMOD_VELOCITY, ModulatorName.YMOD: Row.YMOD_VELOCITY, ModulatorName.ZMOD: Row.ZMOD_VELOCITY,
-}
-# What a statement about the values may name: a register, or a modulator.
-STATEMENT_NAMES = [*REGISTER_NAMES, *MODULATOR_NAMES]
 
 
 class StepStatement:
@@ -855,7 +781,7 @@ PATTERN_ROWS = [
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
-    *REGISTER_SET_ROWS.values(), *MODULATOR_SET_ROWS.values(), *MODULATOR_NOTE_ROWS.values(), *MODULATOR_VELOCITY_ROWS.values(), *STATEMENT_OF_ROW,
+    *REGISTER_SET_ROWS.values(), *STATEMENT_OF_ROW,
 ]
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)

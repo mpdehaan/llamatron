@@ -96,7 +96,6 @@ flowchart TD
     GeneratorsPage["Generators"]
     GroovesPage["Grooves"]
     InstrumentsPage["Instruments"]
-    ModulatorsPage["Modulators"]
     OpenPage["Open"]
     PatternsPage["Patterns"]
     RegistersPage["Registers"]
@@ -124,7 +123,6 @@ flowchart TD
     MainPage -- "G" --> GeneratorsPage
     MainPage -- "V" --> GroovesPage
     MainPage -- "I" --> InstrumentsPage
-    MainPage -- "M" --> ModulatorsPage
     MainPage -- "Ctrl+O" --> OpenPage
     MainPage -- "P" --> PatternsPage
     MainPage -- "R" --> RegistersPage
