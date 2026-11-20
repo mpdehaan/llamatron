@@ -22,105 +22,111 @@ scenes play at, ramps included. What a step sees is worked out where the step is
 """
 
 from bisect import bisect_right
-from fractions import Fraction
 
 from llamatron.composition import file_format
 
 # A whole note in seconds at a tempo of one beat a minute, a beat being a quarter note.
 SECONDS_OF_A_WHOLE_AT_ONE_BPM = 240
+# After every place at one moment, so that a step sees a set made at its own moment.
+AFTER_EVERY_PLACE = float('inf')
 
 
-def exact(time):
-    """Return a render's time, a Rational or a number, as a Fraction."""
-    return Fraction(time.numerator, time.denominator) if hasattr(time, 'denominator') else Fraction(time)
+class SceneClock:
+    """One written scene's place in the song's time: where it starts in whole notes, and the seconds played at each of its tempo
+    changes, so that any moment in it is turned into seconds with one search."""
+
+    __slots__ = ('_start', '_times', '_seconds', '_tempos')
+
+    def __init__(self, *, start, seconds_at_start, tempos):
+        self._start = start
+        self._times = [float(time) for time, _ in tempos]
+        self._tempos = [float(tempo) for _, tempo in tempos]
+        self._seconds = [seconds_at_start]
+        for number in range(1, len(self._times)):
+            self._seconds.append(self._seconds[-1] + (self._times[number] - self._times[number - 1]) * SECONDS_OF_A_WHOLE_AT_ONE_BPM / self._tempos[number - 1])
+
+    def get_start(self):
+        return self._start
+
+    def seconds_at(self, time):
+        """Return the seconds the song has played by a time in the scene, in whole notes from its start."""
+        found = max(bisect_right(self._times, time) - 1, 0)
+        return self._seconds[found] + (time - self._times[found]) * SECONDS_OF_A_WHOLE_AT_ONE_BPM / self._tempos[found]
 
 
 class ModulatorClock:
     """Every modulator's value at a moment of the song, for one render.
 
     renderer answers where each written scene starts and how long it lasts, the tempos each plays at, and what its clips set the
-    modulators to. Only the modulators the song changed from their defaults are worked out, since a default one stays at 0.
+    modulators to. Only the modulators the song changed from their defaults are worked out, a modulator of one value being a
+    constant, and every scene's clock is made once, as far as the song is asked about, so that a step's values cost a few searches.
     """
 
-    __slots__ = ('_renderer', '_song', '_seed', '_moving', '_constant', '_bar', '_sets', '_gathered', '_seconds_at_starts')
+    __slots__ = ('_renderer', '_seed', '_moving', '_constant', '_bar', '_sets', '_clocks', '_starts')
 
     def __init__(self, *, renderer, song, seed):
         self._renderer = renderer
-        self._song = song
         self._seed = seed
         changed = {name: song.get_modulator(name) for name in file_format.MODULATOR_NAMES if not song.get_modulator(name).is_default()}
         # A modulator whose minimum and maximum are one value never moves, whatever sets it, so it is a constant and no wave is worked out.
         self._constant = {name: modulator.get_minimum() for name, modulator in changed.items() if modulator.get_minimum() == modulator.get_maximum()}
         self._moving = {name: modulator for name, modulator in changed.items() if name not in self._constant}
-        self._bar = exact(song.get_time_signature().bar_length())
+        self._bar = float(song.get_time_signature().bar_length())
         # Each modulator's sets, as (time from the song's top, place, value), sorted, gathered scene by scene as far as asked.
         self._sets = {name: [] for name in self._moving}
-        self._gathered = set()
-        # How many seconds the song has played as each written scene starts, by its number, worked out once each.
-        self._seconds_at_starts = {}
+        # Each written scene's clock by its number, and the starts of the scenes clocked so far, in order, to find a moment's scene.
+        self._clocks = {}
+        self._starts = []
 
     def is_moving(self):
         """Return whether any modulator of the song holds anything but 0, so that steps need its values at all."""
         return bool(self._moving or self._constant)
 
     def values_at(self, *, scene, time, place):
-        """Return each moving modulator's value as a track at a place sees it at a time in a written scene, after its own set then."""
+        """Return each modulator's value as a track at a place sees it at a time in a written scene, after its own set then."""
         if not self._moving:
             return self._constant
-        when = exact(self._renderer.scene_start(scene)) + exact(time)
-        self._gather_through(scene)
+        clock = self._clock_of(scene)
+        when = clock.get_start() + float(time)
         values = dict(self._constant)
         for name, modulator in self._moving.items():
             sets = self._sets[name]
-            found = bisect_right(sets, (when, place, float('inf')))
-            origin, start = (sets[found - 1][0], sets[found - 1][2]) if found else (Fraction(0), None)
-            values[name] = modulator.value_at(cycles=self._cycles(modulator=modulator, origin=origin, when=when), start=start, seed=self._seed, name=name, origin=origin)
+            found = bisect_right(sets, (when, place, AFTER_EVERY_PLACE))
+            origin, start = (sets[found - 1][0], sets[found - 1][2]) if found else (0.0, None)
+            if modulator.counts_bars():
+                cycles = (when - origin) / (self._bar * float(modulator.cycle_length()))
+            else:
+                cycles = (clock.seconds_at(when - clock.get_start()) - self._seconds_at(origin)) / float(modulator.cycle_length())
+            values[name] = modulator.value_at(cycles=cycles, start=start, seed=self._seed, name=name, origin=origin)
         return values
 
-    def _cycles(self, *, modulator, origin, when):
-        if modulator.counts_bars():
-            return (when - origin) / (self._bar * modulator.cycle_length())
-        return (self._seconds_at(when) - self._seconds_at(origin)) / modulator.cycle_length()
+    def _clock_of(self, scene):
+        """Return a written scene's clock, making it and every earlier scene's first, which takes in what their clips set."""
+        number = scene.get_number()
+        if number not in self._clocks:
+            scenes = self._renderer.get_scenes()
+            for written in scenes[:scenes.index(scene) + 1]:
+                if written.get_number() not in self._clocks:
+                    self._add_clock(written)
+        return self._clocks[number]
 
-    def _gather_through(self, scene):
-        """Take in what the clips of every written scene up to this one set the modulators to, once each."""
-        for written in self._renderer.get_scenes()[:self._renderer.get_scenes().index(scene) + 1]:
-            if written.get_number() in self._gathered:
-                continue
-            start = exact(self._renderer.scene_start(written))
-            for time, place, sets in self._renderer.modulator_sets_of(written):
-                for name, value in sets.items():
-                    if name in self._sets:
-                        self._sets[name].append((start + exact(time), place, value))
-            for name in self._sets:
-                self._sets[name].sort()
-            self._gathered.add(written.get_number())
+    def _add_clock(self, scene):
+        start = float(self._renderer.scene_start(scene))
+        seconds = 0.0
+        if self._starts:
+            before = self._clocks[self._starts[-1][1]]
+            seconds = before.seconds_at(start - before.get_start())
+        self._clocks[scene.get_number()] = SceneClock(start=start, seconds_at_start=seconds, tempos=self._renderer.tempos_in(scene))
+        self._starts.append((start, scene.get_number()))
+        for time, place, sets in self._renderer.modulator_sets_of(scene):
+            for name, value in sets.items():
+                if name in self._sets:
+                    self._sets[name].append((start + float(time), place, value))
+        for name in self._sets:
+            self._sets[name].sort()
 
     def _seconds_at(self, when):
-        """Return how many seconds the song has played by a moment, through every scene's tempos, ramps included."""
-        scenes = self._renderer.get_scenes()
-        for written in reversed(scenes):
-            start = exact(self._renderer.scene_start(written))
-            if start <= when:
-                return self._seconds_at_start(written) + self._seconds_within(scene=written, upto=when - start)
-        return Fraction(0)
-
-    def _seconds_at_start(self, scene):
-        number = scene.get_number()
-        if number not in self._seconds_at_starts:
-            scenes = self._renderer.get_scenes()
-            place = scenes.index(scene)
-            before = scenes[place - 1] if place else None
-            self._seconds_at_starts[number] = Fraction(0) if before is None else self._seconds_at_start(before) + self._seconds_within(scene=before, upto=exact(self._renderer.get_scene_length(before)))
-        return self._seconds_at_starts[number]
-
-    def _seconds_within(self, *, scene, upto):
-        """Return the seconds a written scene plays from its start to a time in it, at its tempos."""
-        changes = [(exact(time), tempo) for time, tempo in self._renderer.tempos_in(scene)]
-        seconds = Fraction(0)
-        for number, (time, tempo) in enumerate(changes):
-            end = changes[number + 1][0] if number + 1 < len(changes) else upto
-            span = min(end, upto) - time
-            if span > 0:
-                seconds += span * SECONDS_OF_A_WHOLE_AT_ONE_BPM / Fraction(tempo)
-        return seconds
+        """Return the seconds the song has played by a moment of a scene already clocked."""
+        found = max(bisect_right(self._starts, (when, AFTER_EVERY_PLACE)) - 1, 0)
+        clock = self._clocks[self._starts[found][1]]
+        return clock.seconds_at(when - clock.get_start())
