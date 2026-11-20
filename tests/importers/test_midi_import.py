@@ -38,7 +38,7 @@ from llamatron.importers.comparison import round_trip
 from llamatron.importers.keys import degree_of, drum_note_of, Key, key_of_notes, key_of_signature
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
 from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
-from llamatron.importers.voices import voices_of
+from llamatron.importers.voices import Played, Voice, voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.music.scale import ScaleType
 from llamatron.strings import errors, importing
@@ -66,6 +66,8 @@ DRUM_CHANNEL = 9
 KICK = 36
 SNARE = 38
 UNNAMED_DRUM_NOTE = 20
+# A voice a test makes, by name.
+A_VOICE = 'voice'
 MIDDLE_C = 60
 C_MAJOR_TRIAD = (60, 64, 67)
 C_MAJOR_SCALE = (60, 62, 64, 65, 67, 69, 71)
@@ -163,6 +165,16 @@ class TestRoundTripWithALongerLongestPattern(unittest.TestCase):
         long = round_trip(midi_file=midi, choices=ImportChoices(song_name='long'))
         self.assertTrue(short.comparison.is_same() and long.comparison.is_same())
         self.assertGreater(short.imported.scenes, long.imported.scenes)
+
+
+class TestPlayedBetween(unittest.TestCase):
+
+    def test_a_voice_gives_what_starts_from_one_time_up_to_another_and_not_at_it(self):
+        starts = [0, 1, 2, 3, 5]
+        voice = Voice(name=A_VOICE, drum=False, played=[Played(start, start + 1, (MIDDLE_C,), VELOCITY, None) for start in starts])
+        self.assertEqual([played.start for played in voice.played_between(begin=1, end=3)], [1, 2])
+        self.assertEqual([played.start for played in voice.played_between(begin=4, end=5)], [])
+        self.assertEqual([played.start for played in voice.played_between(begin=0, end=6)], starts)
 
 
 class TestMidiReading(unittest.TestCase):

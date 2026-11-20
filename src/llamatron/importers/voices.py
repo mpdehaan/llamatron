@@ -29,6 +29,7 @@ out:
   melody keeps to its voice as long as it can.
 """
 
+import bisect
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import NamedTuple
@@ -84,6 +85,17 @@ class Voice:
     played: list
     lanes: list = field(default_factory=list)
     controls: list = field(default_factory=list)
+
+    def played_between(self, *, begin, end):
+        """Return what the voice plays starting at or after one time and before another, found by halving, since what it plays is
+        in time order and a scene by scene import asks this of every scene: going through every note each time grew with the
+        square of the song's length."""
+        return self.played[bisect.bisect_left(self.played, begin, key=start_of):bisect.bisect_left(self.played, end, key=start_of)]
+
+
+def start_of(played):
+    """When something played starts."""
+    return played.start
 
 
 def voices_of(*, part, chords, controls):

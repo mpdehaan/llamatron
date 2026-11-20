@@ -83,10 +83,8 @@ def scene_steps(*, voice, start, end, key, step_size):
     gated = []
     lengths_changed = 0
     too_low = 0
-    for played in voice.played:
+    for played in voice.played_between(begin=start * step_size, end=end * step_size):
         first = played.start / step_size
-        if not start <= first < end:
-            continue
         place = int(first) - start
         written = drum_note_of(played.pitches[0]) if voice.drum else degree_of(pitch=played.pitches[0], key=key)
         if written is None:
