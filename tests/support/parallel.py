@@ -65,6 +65,26 @@ FAILURE = 1
 
 # The environment variable that sets how many test classes run at once, every core's worth unless it is set, for a benchmark.
 WORKERS_SETTING = 'LLAMATRON_TEST_WORKERS'
+# The environment variable naming a folder where each class is run under coverage, its data in a file of the class's name, which
+# internal_tools/test_map.py turns into the map of which classes run which source files.
+COVERAGE_SETTING = 'LLAMATRON_TEST_COVERAGE'
+# What coverage measures: llamatron's own source, never the tests or the libraries.
+COVERED_SOURCE = 'src/llamatron/*'
+# How many times longer a class may take under coverage.
+COVERAGE_SLOWDOWN = 4
+
+
+def class_timeout():
+    """Return how long a class may run before it is stopped: longer under coverage, which slows every line it measures."""
+    return CLASS_TIMEOUT_SECONDS * (COVERAGE_SLOWDOWN if os.environ.get(COVERAGE_SETTING) else 1)
+
+
+def class_command(*, name, filters, coverage_folder):
+    """Return the command that runs one test class: under coverage, its data kept in the folder, when a folder is given."""
+    unittest_command = ['-m', 'unittest', name, *filter_options(filters)]
+    if coverage_folder is None:
+        return [sys.executable, *unittest_command]
+    return [sys.executable, '-m', 'coverage', 'run', '--data-file', os.path.join(coverage_folder, name), '--include', COVERED_SOURCE, *unittest_command]
 
 def test_ids(suite):
     """Return the id of every test in a suite, like test_blend.TestBlend.test_rests, in order."""
@@ -100,10 +120,10 @@ def run_class(*, name, root, filters):
     environment = dict(os.environ, PYTHONPATH=root)
     try:
         finished = subprocess.run(
-            [sys.executable, '-m', 'unittest', name, *filter_options(filters)], cwd=root, env=environment, capture_output=True, text=True, timeout=CLASS_TIMEOUT_SECONDS,
+            class_command(name=name, filters=filters, coverage_folder=os.environ.get(COVERAGE_SETTING)), cwd=root, env=environment, capture_output=True, text=True, timeout=class_timeout(),
         )
     except subprocess.TimeoutExpired as stopped:
-        output = MSG_TIMED_OUT.format(name=name, seconds=CLASS_TIMEOUT_SECONDS, output=(stopped.stderr or b'').decode(errors='replace'))
+        output = MSG_TIMED_OUT.format(name=name, seconds=class_timeout(), output=(stopped.stderr or b'').decode(errors='replace'))
         return name, False, output, None, time.monotonic() - started
     found = RAN_COUNT.search(finished.stderr)
     count = int(found.group(1)) if found else None

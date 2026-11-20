@@ -18,6 +18,9 @@ previews/
 recordings/
 # How long each test class took, which tests/support/parallel.py starts the slowest first by.
 .test_times.json
+# Which test classes run which source files, made by internal_tools/test_map.sh, and the coverage data it is made from.
+.test_map.json
+.test_coverage/
 # Where internal_tools/build_docs.sh installs VitePress and stages the pages; the site itself is web_docs/.
 .docs_site/
 examples/**/*.wav
