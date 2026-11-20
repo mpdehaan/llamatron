@@ -627,19 +627,11 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 - A chain is a list of steps like `arp: name` or `auto_ratchet: name`, with no settings of its
   own.
 
-## Keys a File Holds That llamatron Does Not Know (the user's guideline; the ignoring built, the dialog and a chain's unknown kind not yet)
+## Keys a File Holds That llamatron Does Not Know (the user's rule)
 
-- Built: every object's reader keeps only the names it knows (`pass_over_unknown` in `composition/checks.py`), the set's sections
-  and a pattern's rows included, without a word, so nothing unknown is kept or written again. A musician's own settings for a
-  kind of section, held inside one setting's value, are still refused when unknown.
-
-- The loader ignores whatever it does not understand, so that a file from before a feature was removed still opens; no code
-  migrates a removed setting to what replaced it. Everything unknown is ignored the same way: an unknown setting of any
-  object, an unknown row of a pattern, an unknown section of the file, and a chain's step of an unknown kind of generator,
-  which is left out of the chain. A wrong value for a setting that exists is still refused or corrected as before.
-- The set opens and a dialog lists what was ignored, as the Corrections dialog lists values out of range, a few at a time
-  and each cut to fit, with a count where there are many, since a file can hold a great many; the command line prints the
-  same and goes on. So a typo in a hand-written file is still seen.
-- An ignored key is dropped: nothing keeps it in memory, and a save writes only what llamatron understands. The file on
-  disk is untouched until the person saves.
-- A feature removed from now on needs no reader for its old keys.
+- Every object's reader passes over the names it does not know (`pass_over_unknown` in `composition/checks.py`), the set's
+  sections and a pattern's rows included, without a word, so that a file from before a feature was removed still opens, and
+  nothing unknown is kept or written again: a save writes only what llamatron understands. No code migrates a removed setting.
+  A wrong value for a setting that exists is still refused or corrected as before. A musician's own settings for a kind of
+  section, held inside one setting's value, are still refused when unknown. No dialog lists what was passed over, and a chain's
+  step of an unknown kind of generator is still refused (the user dropped both from the plan).
