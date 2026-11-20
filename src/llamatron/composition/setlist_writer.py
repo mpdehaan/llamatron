@@ -203,6 +203,8 @@ def _song_groups(song):
         groups.append(settings)
     if song.get(Section.REGISTERS):
         groups.append(_keyed(section=Section.REGISTERS, items=song[Section.REGISTERS]))
+    if song.get(Section.MODULATORS):
+        groups.append(_keyed(section=Section.MODULATORS, items=song[Section.MODULATORS]))
     groups.append(_items(section=Section.TRACKS, items=song.get(Section.TRACKS)))
     groups.append(_scenes(song.get(Section.SCENES) or []))
     return groups

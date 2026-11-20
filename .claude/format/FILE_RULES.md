@@ -33,7 +33,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   line saying `converted from an older format` with every rename (`DocumentFiles.conversion_note`), and the file on disk is
   untouched until saved. `tests/data/migrations/` keeps files in older layouts for the tests.
 - Each song is a `Song` (`composition/song.py`) with its own `tempo`, `time_signature`, `scale`,
-  `seed`, `groove`, `genre`, `live_responsiveness`, `preview_instrument`, `registers`, `tracks` and `scenes`
+  `seed`, `groove`, `genre`, `live_responsiveness`, `preview_instrument`, `registers`, `modulators`, `tracks` and `scenes`
   (`SONG_SECTIONS`), written in that order under `songs:` by `setlist_writer.py`. A song's
   `live_responsiveness` (`LiveResponsiveness`: next_bar, clip_restart or asap, next_bar by default and
   written only when set, `Song.get_live_responsiveness`), the user's design, is when an edit made while
@@ -79,6 +79,18 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   and `scenes`, so an empty file is an empty song and a file from an older version still loads.
 - This is a lasting rule: new fields get a reasonable default rather than migration code, unless
   the format changes structurally.
+
+### Modulators
+
+- A song keeps four modulators, `XMod`, `WMod`, `YMod` and `ZMod` (`file_format.MODULATOR_NAMES`, the user's order), as keys of its
+  `modulators`, written only where changed, like the registers (`Modulator` in `composition/modulator.py`, `Song.get_modulator`,
+  `Song.set_modulator_setting`). Settings: `shape` (`WaveShape`: sine, triangle, square, saw, reverse_saw, sample_and_hold),
+  `invert`, `rate_in` (`bars` or `hertz`), `bars` (`BAR_RATES`, 1/16 to 64), `hertz` (0.01 to 20 in hundredths, kept apart from
+  `bars` so that switching keeps both, Claude's decision), `minimum`, `start` and `maximum` (the registers' range, Start between).
+  `Modulator.value_at(cycles=, start=)` is the whole value a number of cycles after the wave started from Start or a value a step
+  set: rising first, falling first when inverted, a square holding Maximum for the first half (Minimum inverted) whatever Start
+  says, a sample and hold drawing a value each cycle from the render's seed, the name and the wave's origin, its first cycle
+  holding Start; every value rounded to the nearest whole number, a half up. The design is `.claude/DESIGNS.md`, "Modulators".
 
 ### Everything inline
 
