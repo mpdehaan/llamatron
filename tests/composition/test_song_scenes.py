@@ -44,9 +44,6 @@ D_MAJOR = 'D major'
 X_1 = 'x 1'
 X_2 = 'x 2'
 X_3 = 'x 3'
-GRANULARITY = 'granularity'
-THIRD = '1/3'
-DEFAULT_LENGTH = 'default_length'
 BAD = 'bad'
 WOBBLY = 'wobbly'
 
@@ -186,6 +183,6 @@ class TestScenes(unittest.TestCase):
             song_from_data(with_parts(tracks=[A, A]))
 
     def test_song_settings_are_checked(self):
-        for parts in [{GRANULARITY: THIRD}, {DEFAULT_LENGTH: 0}, {SetlistSetting.DEFAULT_OCTAVE: 20}, {SetlistSetting.DEFAULT_DRUM_OCTAVE: song_testing.X}]:
+        for parts in [{SetlistSetting.DEFAULT_OCTAVE: 20}, {SetlistSetting.DEFAULT_DRUM_OCTAVE: song_testing.X}]:
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
                 song_from_data(with_parts(**parts))

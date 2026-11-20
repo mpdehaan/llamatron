@@ -215,12 +215,10 @@ REFUSED = [
     with_clip({ClipSlotSetting.LOOP: 1}),
     with_song({SongSetting.SCALE: NOT_A_NAME}),
     with_song({SongSetting.TEMPO: NOT_A_NUMBER}),
-    with_song({NOT_A_NAME: A_DEGREE}),
     with_song({Section.SCENES: NOT_A_NAME}),
     with_track({TrackSetting.TRANSPOSE: NOT_A_NUMBER}),
     with_track({TrackSetting.TRANSPOSE: HALF}),
     with_track({TrackSetting.DRUM: 1}),
-    with_track({NOT_A_NAME: A_DEGREE}),
     with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [NOT_A_NUMBER, None, None, None]}),
     with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.VELOCITY: [midi.MAX_VELOCITY + 1]}),
     with_pattern({Row.DEGREE: [A_DEGREE] * STEPS, Row.TIE: [True, False, False, False]}),
@@ -229,7 +227,6 @@ REFUSED = [
     with_pattern({PatternSetting.STEP_SIZE: NOT_A_NUMBER}),
     with_groove({GrooveSetting.CELLS: []}),
     with_arp({ArpSetting.SEED: NOT_A_NUMBER}),
-    {NOT_A_NAME: A_DEGREE},
     {SetlistSetting.TITLE: A_DEGREE},
     [NOT_A_NAME],
 ]
@@ -357,7 +354,7 @@ class TestTheNearestStepValue(unittest.TestCase):
 
 
 class TestWhatIsStillRefused(unittest.TestCase):
-    """A name that doesn't exist, an unknown setting, the wrong structure and a value of the wrong type have no correction."""
+    """A name that doesn't exist, the wrong structure and a value of the wrong type have no correction."""
 
     def test_reading_strictly_refuses_with_no_correction(self):
         for data in REFUSED:

@@ -18,7 +18,7 @@
 
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
-from llamatron.composition.checks import check_keys, is_whole_number_from, reading
+from llamatron.composition.checks import is_whole_number_from, pass_over_unknown, reading
 from llamatron.composition.conditions import statements_setting, with_statement
 from llamatron.composition.euclid import euclid_settings, euclid_values
 from llamatron.composition.file_format import euclid_setting, Section, strum_setting, TrackSetting
@@ -118,7 +118,7 @@ class Track(RunsChains, HoldsSettings):
             data = {} if data is None else data
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_TRACK_EXPECTED_SETTINGS.format(data=data))
-            check_keys(data=data, allowed=set(SETTINGS))
+            pass_over_unknown(data=data, allowed=SETTINGS)
             check_settings(settings=SETTINGS, data=data, song=song)
             _check_octave_order(lowest=data.get(TrackSetting.LOWEST_OCTAVE, limits.MIN_OCTAVE), highest=data.get(TrackSetting.HIGHEST_OCTAVE, limits.MAX_OCTAVE))
             return cls(**{name: data.get(name) for name in SETTINGS})

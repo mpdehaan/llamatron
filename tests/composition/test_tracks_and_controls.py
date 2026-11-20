@@ -90,8 +90,6 @@ LEAD = 'lead'
 HIT = 'hit'
 UP = 'up'
 YES = 'yes'
-COLOUR = 'colour'
-RED = 'red'
 KICK = 'kick'
 RIFF = 'riff'
 X = 'x'
@@ -165,7 +163,7 @@ class TestTracks(unittest.TestCase):
         self.assertEqual(pitches(lead_clip(data)), [60, 64, 67])
 
     def test_bad_track_settings_are_refused(self):
-        for settings in [{TrackSetting.TRANSPOSE: 25}, {TrackSetting.TRANSPOSE: UP}, {PatternSetting.DRUM: YES}, {TrackSetting.CC: [1, 2, 3]}, {TrackSetting.CC: [128, None, None, None]}, {COLOUR: RED}]:
+        for settings in [{TrackSetting.TRANSPOSE: 25}, {TrackSetting.TRANSPOSE: UP}, {PatternSetting.DRUM: YES}, {TrackSetting.CC: [1, 2, 3]}, {TrackSetting.CC: [128, None, None, None]}]:
             data = song_data()
             data[Section.TRACKS][LEAD] = settings
             with self.subTest(settings=settings), self.assertRaises(SongFileError):

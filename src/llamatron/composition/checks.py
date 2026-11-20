@@ -76,16 +76,26 @@ def listed(items):
 
 
 
-def check_keys(*, data, allowed):
-    """Refuse any setting that isn't one of the allowed names, naming the first one found."""
-    unknown = unknown_settings(data=data, allowed=allowed)
+def pass_over_unknown(*, data, allowed):
+    """Take every name that isn't allowed out of data, without a word, so that a file from another version opens and a name
+    the program doesn't know, such as a setting taken away from it, is never kept or written again. The data is changed in
+    place, as a correction changes it, since a correction keeps the part of the data it puts right; only data read from a file
+    can hold such a name, since nothing the program writes does."""
+    for name in unknown_names(data=data, allowed=allowed):
+        del data[name]
+
+
+def refuse_unknown(*, data, allowed):
+    """Refuse any name that isn't allowed, naming the first one found: for settings handed over by the program itself, by a
+    setter or the song wizard, where a name no object knows is a mistake in the code, never a file from another version."""
+    unknown = unknown_names(data=data, allowed=allowed)
     if unknown:
         raise InvalidValue(errors.ERR_UNKNOWN_SETTING.format(name=unknown[0], allowed=listed(sorted(allowed))))
 
 
-def unknown_settings(*, data, allowed):
-    """Return the names in data that aren't allowed, in alphabetical order, passing over every setting that was taken away."""
-    return sorted(set(data) - set(allowed) - file_format.RETIRED_SETTINGS)
+def unknown_names(*, data, allowed):
+    """Return the names in data that aren't allowed."""
+    return [name for name in data if name not in allowed]
 
 
 def is_whole_number(value):

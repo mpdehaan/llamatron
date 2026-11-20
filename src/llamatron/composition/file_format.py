@@ -786,15 +786,6 @@ PATTERN_ROWS = [
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
 # The track's setting that binds each CC lane to a register, in the order of the lanes.
 CC_REGISTER_SETTINGS = (TrackSetting.CC1_REGISTER, TrackSetting.CC2_REGISTER, TrackSetting.CC3_REGISTER, TrackSetting.CC4_REGISTER)
-class Retired:
-    """Settings a file could once hold that have been taken away. Reading passes over them without a word and nothing writes
-    them again, so a file saved before one was removed still opens, and a removed setting needs no migration."""
-
-    # A song's seed, which made every play and export of the song the same take.
-    SONG_SEED = 'seed'
-
-
-RETIRED_SETTINGS = frozenset({Retired.SONG_SEED})
 FORWARD = Direction.FORWARD
 DIRECTIONS = [
     Direction.FORWARD, Direction.REVERSE_A, Direction.REVERSE_B, Direction.ALTERNATE, Direction.PENDULUM,

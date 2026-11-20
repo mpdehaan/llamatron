@@ -99,7 +99,7 @@ class TestGrooveFiles(unittest.TestCase):
         for data in [
             [0, 1], {}, {GrooveSetting.CELLS: []}, {GrooveSetting.CELLS: [limits.MAX_GROOVE_AMOUNT + 1]}, {GrooveSetting.CELLS: [limits.MIN_GROOVE_AMOUNT - 1]},
             {GrooveSetting.CELLS: [NOT_A_WHOLE_NUMBER]}, {GrooveSetting.CELLS: [0] * (limits.MAX_GROOVE_CELLS + 1)},
-            {GrooveSetting.CELLS: [0], GrooveSetting.CELL_LENGTH: TOO_LONG}, {GrooveSetting.CELLS: [0], LATE: 1},
+            {GrooveSetting.CELLS: [0], GrooveSetting.CELL_LENGTH: TOO_LONG},
         ]:
             with self.subTest(data=data), self.assertRaises(SongFileError):
                 Groove.from_data(data=data, where=LATE)

@@ -23,7 +23,7 @@ values, editing single values, resizing and rearranging it, and working out what
 from math import floor
 
 from llamatron.composition import corrections, file_format, limits, row_descriptions
-from llamatron.composition.checks import check_keys, is_whole_number_from, reading, time_signature, written_length
+from llamatron.composition.checks import is_whole_number_from, pass_over_unknown, reading, time_signature, written_length
 from llamatron.composition.conditions import check_statement, statement_of
 from llamatron.composition.corrections import Correction
 from llamatron.composition.file_format import Direction, PatternSetting, Row, StepStatement
@@ -100,7 +100,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_PATTERN_EXPECTED_SETTINGS)
-            check_keys(data=data, allowed={PatternSetting.STEPS, *SETTINGS, *file_format.PATTERN_ROWS})
+            pass_over_unknown(data=data, allowed={PatternSetting.STEPS, *SETTINGS, *file_format.PATTERN_ROWS})
             steps = data.get(PatternSetting.STEPS)
             if not is_whole_number_from(value=steps, lowest=limits.MIN_STEPS):
                 raise InvalidValue(errors.ERR_BAD_STEPS.format(lowest=limits.MIN_STEPS, value=steps))

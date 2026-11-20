@@ -26,7 +26,7 @@ from typing import NamedTuple
 
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
-from llamatron.composition.checks import check_keys, listed, number, reading
+from llamatron.composition.checks import listed, number, pass_over_unknown, reading
 from llamatron.composition.clip_slot import ClipSlot
 from llamatron.composition.conditions import register_values_setting, statements_setting
 from llamatron.composition.file_format import RampPart, SceneSetting, Section
@@ -131,7 +131,7 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_SCENE_EXPECTED_SETTINGS)
-            check_keys(data=data, allowed={*SETTINGS, SceneSetting.TRACKS})
+            pass_over_unknown(data=data, allowed={*SETTINGS, SceneSetting.TRACKS})
             check_settings(settings=SETTINGS, data=data, song=song, leaving_out=READ_ANOTHER_WAY)
             _check_tempo(data)
             clip_slots = {}

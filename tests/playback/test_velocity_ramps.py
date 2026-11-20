@@ -197,8 +197,9 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
             setlist_from_data(lead_of(clip={VelocitySetting.OUT_OVER: limits.MAX_RAMP_BARS + 1}))
 
     def test_a_scenes_or_a_clips_swell_is_no_longer_a_setting(self):
-        with self.assertRaises(SongFileError):
-            setlist_from_data(lead_of(scene={OLD_SWELL_START: HALF}))
+        # A file from before still opens, the old setting passed over and never written again.
+        written = setlist_from_data(lead_of(scene={OLD_SWELL_START: HALF})).to_data()
+        self.assertNotIn(OLD_SWELL_START, next(iter(written[Section.SONGS].values()))[Section.SCENES][0])
 
     def test_they_are_written_back_as_read(self):
         scene = {VelocitySetting.LEVEL: HALF, VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}

@@ -161,6 +161,6 @@ class TestArps(unittest.TestCase):
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
                 self.lead(**parts)
 
-    def test_a_bad_setting_names_the_problem(self):
-        with self.assertRaises(SongFileError):
-            self.lead(arps={A: {WOBBLE: 1}}, chains={song_testing.X: [{GeneratorKind.ARP: A}]})
+    def test_a_setting_no_arp_has_is_passed_over(self):
+        # A file from another version may hold one; the arp plays as it would without it.
+        self.assertEqual(pitches(self.lead(arps={A: {WOBBLE: 1}}, chains={song_testing.X: [{GeneratorKind.ARP: A}]})), pitches(self.lead(arps={A: {}}, chains={song_testing.X: [{GeneratorKind.ARP: A}]})))

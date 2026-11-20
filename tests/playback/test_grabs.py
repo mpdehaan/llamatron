@@ -234,8 +234,8 @@ class TestGrab(unittest.TestCase):
                 self.song(lead_clip_slot={ClipSlotSetting.GRAB_TRACK: other})
 
     def test_notes_from_is_gone(self):
-        with self.assertRaises(SongFileError):
-            self.song(lead_clip_slot={NOTES_FROM: BASS})
+        # A file from before still opens, the old setting passed over.
+        self.song(lead_clip_slot={NOTES_FROM: BASS})
 
     def test_grab_must_be_true_or_false(self):
         with self.assertRaises(SongFileError):

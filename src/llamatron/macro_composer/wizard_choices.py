@@ -1782,7 +1782,7 @@ class WizardChoices:
         else:
             try:
                 given = {name: value for name, value in dict(settings or {}).items() if value != generator_settings.PHRASING_DEFAULTS.get(name, value) or name not in generator_settings.PHRASING_DEFAULTS}
-                kept = PhrasingSettings.from_data(data=given, where=composer_text.MSG_TUNE_PHRASING_NAME).to_data()
+                kept = PhrasingSettings.handed_over(data=given, where=composer_text.MSG_TUNE_PHRASING_NAME).to_data()
             except (SongFileError, TypeError, ValueError) as problem:
                 raise ValueError(errors.ERR_WIZARD_TUNE_PHRASING.format(value=settings, problem=problem)) from None
             self._extras.pop(arranger.TUNE_PHRASING, None)

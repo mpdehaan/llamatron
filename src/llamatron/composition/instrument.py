@@ -36,7 +36,7 @@ lead is how many milliseconds before its note a keyswitch is sent, nothing unles
 from typing import NamedTuple
 
 from llamatron.composition import defaults, file_format, limits
-from llamatron.composition.checks import check_keys, reading
+from llamatron.composition.checks import pass_over_unknown, reading
 from llamatron.composition.file_format import InstrumentSetting, KeyswitchSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
@@ -140,7 +140,7 @@ class Instrument(HoldsSettings):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_INSTRUMENT_EXPECTED_SETTINGS.format(data=data))
-            check_keys(data=data, allowed=set(SETTINGS))
+            pass_over_unknown(data=data, allowed=SETTINGS)
             return cls(
                 device=data.get(InstrumentSetting.DEVICE), channel=data.get(InstrumentSetting.CHANNEL), gm_sound=data.get(InstrumentSetting.GM_SOUND),
                 keyswitches=data.get(InstrumentSetting.KEYSWITCHES), keyswitch_lead=data.get(InstrumentSetting.KEYSWITCH_LEAD),
