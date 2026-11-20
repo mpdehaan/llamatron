@@ -94,6 +94,15 @@ ERR_UNKNOWN_GENERATOR = 'unknown generator ({kind}), expected one of: {kinds}'
 ERR_NO_SUCH_GENERATOR = 'no {kind} called ({name})'
 ERR_CHAIN_NO_SUCH_STEP = 'no step {place} in a chain of {steps} steps'
 
+# composition/modulator.py
+ERR_MODULATOR_EXPECTED_SETTINGS = 'expected modulator settings, got {data!r}'
+ERR_MODULATOR_NO_SUCH_SETTING = 'unknown modulator setting ({name}), expected one of: {names}'
+ERR_MODULATORS_NOT_NAMED = 'modulators: expected modulators from: {names}, each with its settings'
+ERR_BAD_HERTZ = 'hertz must be a number from {lowest} to {highest} in hundredths, got {value!r}'
+ERR_INVERT_NOT_TRUE_OR_FALSE = 'invert must be true or false, got {value!r}'
+ERR_NO_SUCH_MODULATOR = 'unknown modulator ({name}), expected one of: {names}'
+ERR_MODULATOR_OUT_OF_ORDER = 'start must lie between minimum and maximum, got minimum {minimum}, start {start} and maximum {maximum}'
+
 # composition/file_layout.py
 ERR_EXPECTED_ITEMS = 'expected a list, each item with a name, got {value!r}'
 ERR_ITEM_NEEDS_NAME = 'each item needs a name, got {value!r}'

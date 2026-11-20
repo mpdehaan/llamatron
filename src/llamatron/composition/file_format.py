@@ -59,6 +59,7 @@ class Section:
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
     REGISTERS = 'registers'
+    MODULATORS = 'modulators'
     SONGS = 'songs'
     SCENES = 'scenes'
 
@@ -507,6 +508,47 @@ class RegisterSetting:
     ALLOWED_INC_MAX = 'allowed_inc_max'
 
 
+class ModulatorName:
+    """The song's four modulators, whose names are fixed, in the order the Modulators page shows them."""
+
+    XMOD = 'XMod'
+    WMOD = 'WMod'
+    YMOD = 'YMod'
+    ZMOD = 'ZMod'
+
+
+class ModulatorSetting:
+    """A modulator's settings: the wave's shape, whether it is turned upside down, its rate in bars or in hertz, and the values it
+    swings between and starts on."""
+
+    SHAPE = 'shape'
+    INVERT = 'invert'
+    RATE_IN = 'rate_in'
+    BARS = 'bars'
+    HERTZ = 'hertz'
+    MINIMUM = 'minimum'
+    START = 'start'
+    MAXIMUM = 'maximum'
+
+
+class WaveShape:
+    """The shapes a modulator's wave can have."""
+
+    SINE = 'sine'
+    TRIANGLE = 'triangle'
+    SQUARE = 'square'
+    SAW = 'saw'
+    REVERSE_SAW = 'reverse_saw'
+    SAMPLE_AND_HOLD = 'sample_and_hold'
+
+
+class RateIn:
+    """What a modulator's rate counts: bars of the song, which follow the tempo, or hertz, which do not."""
+
+    BARS = 'bars'
+    HERTZ = 'hertz'
+
+
 class ResetBehavior:
     """What a register does when an add or a subtraction would take it past its minimum or maximum. A set is never governed by it."""
 
@@ -731,6 +773,12 @@ class FileLayout:
 
 # The registers, in the order the Registers page and the pattern editor show them.
 REGISTER_NAMES = [RegisterName.AX, RegisterName.BX, RegisterName.CX, RegisterName.DX]
+# The modulators, in the order the Modulators page and the pattern editor show them.
+MODULATOR_NAMES = [ModulatorName.XMOD, ModulatorName.WMOD, ModulatorName.YMOD, ModulatorName.ZMOD]
+# The shapes, in the order a picker offers them, and what a modulator's rate in bars may be, from a sixteenth of a bar to 64 bars.
+WAVE_SHAPES = [WaveShape.SINE, WaveShape.TRIANGLE, WaveShape.SQUARE, WaveShape.SAW, WaveShape.REVERSE_SAW, WaveShape.SAMPLE_AND_HOLD]
+RATES_IN = [RateIn.BARS, RateIn.HERTZ]
+BAR_RATES = ['1/16', '1/8', '1/4', '1/2', '1', '2', '4', '8', '16', '32', '64']
 # Each register's rows in a pattern: whether it moves the note, whether it changes the velocity,
 # and how much a step adds to it.
 REGISTER_NOTE_ROWS = {

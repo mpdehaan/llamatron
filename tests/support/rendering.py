@@ -38,7 +38,7 @@ Memory.check_every_answer()
 PIECES = ('mainstreet_hoedown.yml', 'minimal_techno.yml')
 SET_ENDING = '.yml'
 # The keys of one song's data that belong to the song when it is wrapped as a set, the rest being the set's.
-SONG_KEYS = (SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, Section.REGISTERS, Section.TRACKS, Section.SCENES)
+SONG_KEYS = (SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, Section.REGISTERS, Section.MODULATORS, Section.TRACKS, Section.SCENES)
 
 
 def as_setlist(data, *, song_name=names.MSG_DEFAULT_SONG_NAME):

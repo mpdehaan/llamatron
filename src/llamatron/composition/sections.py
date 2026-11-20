@@ -27,13 +27,13 @@ from llamatron.strings import names
 # How error messages name one object in each section of named objects.
 SECTION_LABELS = {
     Section.PATTERNS: names.MSG_PATTERN_WORD, Section.CHAINS: names.MSG_CHAIN_WORD, Section.GROOVES: names.MSG_GROOVE_WORD, Section.INSTRUMENTS: names.MSG_INSTRUMENT_WORD, Section.SCALES: names.MSG_SCALE_WORD, Section.TRACKS: names.MSG_TRACK_WORD,
-    Section.REGISTERS: names.MSG_REGISTER_WORD, Section.SONGS: names.MSG_SONG_WORD,
+    Section.REGISTERS: names.MSG_REGISTER_WORD, Section.MODULATORS: names.MSG_MODULATOR_WORD, Section.SONGS: names.MSG_SONG_WORD,
     **{section: kind for kind, section in file_format.NAMED_GENERATORS.items()},
 }
 # The set's sections, in the order they're written to a file, with the songs last.
 SETLIST_SECTIONS = [Section.SCALES, Section.PATTERNS, *file_format.NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 # A song's sections, in the order they're written, before its scenes.
-SONG_SECTIONS = [Section.REGISTERS, Section.TRACKS]
+SONG_SECTIONS = [Section.REGISTERS, Section.MODULATORS, Section.TRACKS]
 # The generator kind each generator section holds, like arp for arps.
 GENERATOR_KINDS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
 # The sections whose items share one list of generators in a set file, the chains among them, and so may share no name.
