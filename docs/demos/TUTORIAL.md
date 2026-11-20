@@ -32,6 +32,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Advanced Conditionals](#advanced_conditionals): `27_advanced_conditionals.yml`
 - [Accents](#accents): `28_accents.yml`
 - [Pattern Lists](#pattern_lists): `29_pattern_lists.yml`
+- [Draws](#draws): `30_draws.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -582,3 +583,27 @@ keep their order.
 | :---: | :---: | :---: |
 | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
 <!-- end of the generated summary of 29_pattern_lists -->
+
+<a id="draws"></a>
+## Draws: `30_draws.yml`
+
+Draws in thirteen scenes, every note written as the same C in a chromatic scale, so that everything that moves is a draw. A
+count-in plays C, C#, D and D# from a draw that moves forward. Four scenes deal twelve-tone rows from a serial draw, which plays
+every pitch of the octave once before any comes again: plainly, passed between two instruments, with rests and leaps, and in
+pairs. Four scenes over a bass add two draws on alternate steps, add them together, pull one against the other, and add all
+three. A drum scene makes the hats and the snare land louder at random by a draw on velocity, and the last three scenes gate
+notes by draws: hats that drop out at random, a melody that grows as a register counts the bars, and a bell whose rhythm comes
+from a draw that its own condition redraws.
+
+[`examples/learning/30_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/30_draws.yml) · C chromatic · 108 BPM · 3:33 · 13 scenes · 8 tracks
+
+| registers | draws | conditional execution |
+| :---: | :---: | :---: |
+| [✓](../REGISTERS.md) | [✓](../DRAWS.md) | [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |
+<!-- end of the generated summary of 30_draws -->
+
+**New Features Introduced**
+
+| draws |
+| :---: |
+| [✓](../DRAWS.md) |
