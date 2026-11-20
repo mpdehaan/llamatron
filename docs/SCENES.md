@@ -21,7 +21,7 @@ On Arrange, `ENTER` on a scene's name opens the Scene page.
 | Tempo | A tempo in place of the song's. `Bksp` goes back to the song's. |
 | Velocity | How loud every clip of the scene plays, as a percentage of each note's written velocity, from 0 to 200. Blank is 100%, the notes as written. See [Velocity and Velocity Ramps](#velocity-and-velocity-ramps). |
 | Repeat | Plays the whole scene this many times, from 1 to 999. |
-| Chains | The chains every clip of the scene runs, after each clip's own, edited as a clip's are. See [Chains](CHAINS.md). |
+| Generators | The generators every clip of the scene runs, after each clip's own, edited as a clip's are. See [Generators](GENERATORS.md). |
 | Launch together | For real-time playback only, and on by default: when a clip above sends a start to any clip of this scene, every clip of the scene starts together. When off, each clip starts only when the clip directly above it sends a start, and Arrange marks the scene with `┆` after its name. `Space` or `ENTER` toggles it. See [Playing Live](PLAYING_LIVE.md). |
 | Reset AX to Reset DX | Sets that register back to its default as the scene starts. `Space` or `ENTER` toggles it. A scene that repeats resets only as it first starts, so a register can keep changing across the repeats. |
 | + Set Registers, + Increment Registers | Sections, closed until opened, that set each register to a value as the scene first starts and add an amount every time the scene plays. See [Set Registers and Increment Registers](REGISTERS.md#set-registers-and-increment-registers). |

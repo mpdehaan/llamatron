@@ -15,12 +15,13 @@ Generators are heard everywhere a song is: in real time as it plays, and in ever
 
 ## Chains
 
-Generators are kept in chains, lists of generators that run one after another, and a clip, a scene or a
-track names the chains it runs; [Chains](CHAINS.md) says how.
+A clip, a scene and a track each list the generators they run, one after another. A chain is a generator
+too, one that runs a list of other generators in its place, so that several clips can share the same list;
+[Chains](CHAINS.md) says how.
 
 ## Generators as Paint
 
-The way to think of a generator is as paint. A chain applies it to exactly the clips that should have it,
+The way to think of a generator is as paint. A clip's list applies it to exactly the clips that should have it,
 and editing the generator afterwards changes everything painted with it at once, across every song of the
 set. Write one strum, paint it on every guitar part, and change how every guitar strums by editing one
 generator.
@@ -119,16 +120,16 @@ How a chord's notes are laid out and played.
 
 ![The Generators page](screenshots/generators.svg)
 
-Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Density (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to a chain, then choose the chain on a clip, a scene or a track.
+Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Density (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Chain, Arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to the Generators field of a clip, a scene or a track, on its own or in a chain.
 
 | Key | What it does |
 | --- | --- |
 | `A` | Add one: choose its kind, and it is named after the kind and opened |
 | `ENTER` | Edit its settings |
-| `N` or `F2` | Rename it, which updates every chain |
+| `N` or `F2` | Rename it, which updates every chain and list that runs it |
 | `C` | Copy it, the copy coming straight after it |
 | `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it; the list keeps its order when the set is saved |
-| `Bksp` | Delete it, once no chain uses it |
+| `Bksp` | Delete it after asking; it is taken out of every chain and list that runs it, and the question names up to five |
 
 ## Time Settings
 
