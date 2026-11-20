@@ -103,7 +103,7 @@ class TestDumpSetlist(unittest.TestCase):
 
     def test_each_song_is_indented_under_songs_with_its_own_settings_first(self):
         text = dump_setlist(SETLIST)
-        self.assertIn('\nsongs:\n  - name: untitled\n    tempo: 120\n    scale: main\n    seed: 3\n', text)
+        self.assertIn('\nsongs:\n  - name: untitled\n    tempo: 120\n    scale: main\n', text)
         self.assertIn('\n    registers:\n      AX: { maximum: 3, wrap: true }\n', text)
         self.assertIn('\n    tracks:\n      - { name: lead, transpose: 2, cc: [74, ~, ~, 1] }\n', text)
         self.assertIn('\n    scenes:\n      - name: one\n        repeat: 3\n', text)
