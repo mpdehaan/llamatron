@@ -254,10 +254,10 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertEqual(lines[arrange].count('«'), 1)
         self.assertLess(arrange, next(number for number, line in enumerate(lines) if '« S »' in line))
         self.assertEqual(sum(1 for line in lines if '« F »' in line), 1)
-        for row in ('« S »', '« I »'):
+        for row in ('« S »', '« G »', '« I »'):
             self.assertEqual(next(line for line in lines if row in line).count('«'), main_page.COLUMNS)
-        # Generators' row has an empty cell between Generators and Grooves.
-        self.assertEqual(next(line for line in lines if '« G »' in line).count('«'), main_page.COLUMNS - 1)
+        # Generators' row has Draws between Generators and Grooves.
+        self.assertIn('« D »', next(line for line in lines if '« G »' in line))
         self.assertIn('« P »', next(line for line in lines if '« S »' in line))
         self.assertIn('« Z »', next(line for line in lines if '« S »' in line))
         self.assertIn('« V »', next(line for line in lines if '« G »' in line))
@@ -286,7 +286,7 @@ class TestMainPageOnAUsualConsole(UITest):
         # The set's own grooves, never the factory ones, which every set has.
         self.assertEqual(counts[first_key(keybindings.MainPage.GROOVES)], 0)
         self.assertEqual(counts[first_key(keybindings.MainPage.GENERATORS)], len(setlist.every_generator_name()))
-        for binding in (keybindings.MainPage.FILE, keybindings.MainPage.REGISTERS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
+        for binding in (keybindings.MainPage.FILE, keybindings.MainPage.REGISTERS, keybindings.MainPage.DRAWS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
             self.assertIsNone(counts[first_key(binding)], binding)
         # The count sits one space in from the box's edge, on the selected cell as on the others.
         await self.press(Key.DOWN)
@@ -301,7 +301,9 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertIn(labels.PageName.SONGS, boxed_line(self.text()))
         await self.press(Key.RIGHT)
         self.assertIn(labels.PageName.PATTERNS, boxed_line(self.text()))
-        # Down from Patterns passes over the empty cell under it, to Registers.
+        # Down from Patterns is Draws, and Down again Registers.
+        await self.press(Key.DOWN)
+        self.assertIn(labels.PageName.DRAWS, boxed_line(self.text()))
         await self.press(Key.DOWN)
         self.assertIn(labels.PageName.REGISTERS, boxed_line(self.text()))
         await self.press(Key.ENTER)
@@ -315,12 +317,13 @@ class TestMainPageOnAUsualConsole(UITest):
         moves = {
             keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.ARRANGE),
             keys.SONGS: (keys.ARRANGE, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
-            keys.PATTERNS: (keys.ARRANGE, keys.REGISTERS, keys.SONGS, keys.SCALES),
+            keys.PATTERNS: (keys.ARRANGE, keys.DRAWS, keys.SONGS, keys.SCALES),
             keys.SCALES: (keys.ARRANGE, keys.GROOVES, keys.PATTERNS, keys.SCALES),
-            keys.GENERATORS: (keys.SONGS, keys.INSTRUMENTS, keys.GENERATORS, keys.GROOVES),
-            keys.GROOVES: (keys.SCALES, keys.REAL_TIME, keys.GENERATORS, keys.GROOVES),
+            keys.GENERATORS: (keys.SONGS, keys.INSTRUMENTS, keys.GENERATORS, keys.DRAWS),
+            keys.DRAWS: (keys.PATTERNS, keys.REGISTERS, keys.GENERATORS, keys.GROOVES),
+            keys.GROOVES: (keys.SCALES, keys.REAL_TIME, keys.DRAWS, keys.GROOVES),
             keys.INSTRUMENTS: (keys.GENERATORS, keys.OPEN_SET_HERE, keys.INSTRUMENTS, keys.REGISTERS),
-            keys.REGISTERS: (keys.PATTERNS, keys.IMPORT_HERE, keys.INSTRUMENTS, keys.REAL_TIME),
+            keys.REGISTERS: (keys.DRAWS, keys.IMPORT_HERE, keys.INSTRUMENTS, keys.REAL_TIME),
             keys.REAL_TIME: (keys.GROOVES, keys.FILE, keys.REGISTERS, keys.REAL_TIME),
             keys.OPEN_SET_HERE: (keys.INSTRUMENTS, keys.SAVE, keys.OPEN_SET_HERE, keys.IMPORT_HERE),
             keys.IMPORT_HERE: (keys.REGISTERS, keys.EXPORT_HERE, keys.OPEN_SET_HERE, keys.FILE),

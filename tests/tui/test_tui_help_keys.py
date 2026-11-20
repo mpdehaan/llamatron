@@ -318,6 +318,9 @@ class KeyTour(UITest):
         await self.walk()
         await self.press(Key.ESCAPE, keybindings.MainPage.REGISTERS)
         await self.walk()
+        # The Draws page opens with its first draw's section opened, so that the strip's keys show.
+        await self.press(Key.ESCAPE, keybindings.MainPage.DRAWS, keybindings.DrawsPage.TOGGLE)
+        await self.walk()
         # Arrange opens on the first scene's name, with the corner above it, since the instrument added above turned Real Time on, and the first track's name to the corner's right.
         await self.press(Key.ESCAPE, keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER)
         await self.walk()

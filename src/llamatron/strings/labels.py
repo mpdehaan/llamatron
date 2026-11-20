@@ -172,6 +172,7 @@ class PageName:
     GROOVES = 'Grooves'
     INSTRUMENTS = 'Instruments'
     REGISTERS = 'Registers'
+    DRAWS = 'Draws'
     ARRANGE = 'Arrange'
     # What the main screen's Arrange cell is called while the set's Real Time switch is on, since Arrange then plays the song too.
     ARRANGE_PLAY = 'Arrange/Play'
@@ -210,6 +211,7 @@ class Crumb:
     GROOVES = 'GROOVES'
     INSTRUMENTS = 'INSTRUMENTS'
     REGISTERS = 'REGISTERS'
+    DRAWS = 'DRAWS'
     ARRANGE = 'ARRANGE'
 
 
@@ -534,6 +536,20 @@ MSG_REGISTER_VELOCITY_LABEL = '{name}+Vel'
 MSG_DRAW_NOTE_LABEL = 'Note+={name}'
 MSG_DRAW_VELOCITY_LABEL = 'Vel+={name}'
 MSG_DRAW_RESET_LABEL = 'Reset {name}'
+# tui/screens/set/draws_page.py
+MSG_DRAW_DIRECTION_LABEL = 'Direction'
+MSG_DRAW_SLOTS_LABEL = 'Slots'
+MSG_DRAW_VALUE_MIN_LABEL = 'Value Min'
+MSG_DRAW_VALUE_MAX_LABEL = 'Value Max'
+MSG_DRAW_CONDITIONS_REDRAW_LABEL = 'Conditions redraw'
+MSG_DRAW_STRIP_LABEL = 'Strip'
+# tui/dialogs/grouped_choices.py: the headings of a statement's pickers.
+MSG_PICKER_CONSTANT_HEADING = '--Constant--'
+MSG_PICKER_DRAWS_HEADING = '--Draws--'
+MSG_PICKER_REGISTERS_HEADING = '--Registers--'
+# The strip's two rows, as a grid's label column shows them.
+MSG_DRAW_STRIP_SLOT_ROW = 'slot'
+MSG_DRAW_STRIP_VALUE_ROW = 'value'
 MSG_REGISTER_ADD_LABEL = '{name}+='
 MSG_REGISTER_SET_LABEL = '{name}='
 # A row of a step's statement is labelled by its place among the statement's five parts, c for condition.

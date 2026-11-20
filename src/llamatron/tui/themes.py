@@ -31,6 +31,8 @@ SCALES = (0, 170, 170)
 GROOVES = (255, 128, 0)
 INSTRUMENTS = (230, 200, 0)
 REGISTERS = (220, 0, 0)
+# The draws' page and each draw's lit slot while a song plays, bright violet.
+DRAWS = (190, 90, 255)
 SET_FILE = (128, 128, 128)
 # The main screen's, white and no other page's.
 MAIN_SCREEN = (255, 255, 255)

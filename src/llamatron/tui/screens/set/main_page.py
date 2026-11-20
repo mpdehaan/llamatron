@@ -77,7 +77,7 @@ ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: 
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
     labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.GENERATORS: themes.GENERATORS,
-    labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.REGISTERS: themes.REGISTERS,
+    labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.REGISTERS: themes.REGISTERS, labels_text.PageName.DRAWS: themes.DRAWS,
     labels_text.PageName.FILE: themes.SET_FILE,
 }
 # The pages whose cell counts the set's things, by the section counted. Generators and Grooves are counted on their own.
@@ -194,6 +194,7 @@ class MainPage(Page):
             self.bind(self.KEYS.GROOVES, action=lambda: self.show_page(GroovesPage(self.holder))),
             self.bind(self.KEYS.INSTRUMENTS, action=lambda: self.show_page(InstrumentsPage(self.holder))),
             self.bind(self.KEYS.REGISTERS, action=lambda: self.show_page(RegistersPage(self.holder))),
+            self.bind(self.KEYS.DRAWS, action=lambda: self.show_page(self.app.section_page_of(Section.DRAWS)(self.holder))),
             self.bind(self.KEYS.ARRANGE, action=lambda: self.show_page(ArrangePage(self.holder))),
             # The Real Time switch sits among the pages as a cell of its own, with its mark where a page's cell has its count.
             self.bind(self.KEYS.REAL_TIME, action=self.toggle_real_time),
@@ -241,7 +242,7 @@ class MainPage(Page):
 
     def rows(self):
         """Return the cells by the geometry drawn, six rows of three: Arrange across the first row; Songs,
-        Patterns and Scales; Generators, an empty cell and Grooves; Instruments, Registers and the Real Time switch; then the bar's two
+        Patterns and Scales; Generators, Draws and Grooves; Instruments, Registers and the Real Time switch; then the bar's two
         rows, Open, Import and File/Global over Save, Export and Quit."""
         pages = {item.binding: item for item in self.keys()}
         keys = self.KEYS
@@ -250,7 +251,7 @@ class MainPage(Page):
         return [
             [arrange, arrange, arrange],
             [pages[keys.SONGS], pages[keys.PATTERNS], pages[keys.SCALES]],
-            [pages[keys.GENERATORS], EMPTY_CELL, pages[keys.GROOVES]],
+            [pages[keys.GENERATORS], pages[keys.DRAWS], pages[keys.GROOVES]],
             [pages[keys.INSTRUMENTS], pages[keys.REGISTERS], pages[keys.REAL_TIME]],
             [open_set, import_midi_here, pages[keys.FILE]],
             [save, export, quit_here],

@@ -346,6 +346,8 @@ such name, and `tests/rules/test_naming.py` holds that nothing else numbers one)
   design, so that the selection is seen at a glance; a locked part is dim.
 - Every page but Arrange has a theme colour by its kind, the main screen's white, the user's design, a solid stripe in place of the
   header's rule (`.claude/tracker/SHARED.md`, "The header and the crumbs"); the stripes are the fifth allowance of colour.
+  The Draws page's theme and each draw's slot lit while a song plays are bright violet (`themes.DRAWS`, `Style.DRAW_LIGHT`), the
+  user's choice and the twelfth allowance of colour.
 - The header is two lines over the rule or the theme's stripe, the user's design of keeping what matters in the corners: the
   first line has the crumbs, the page's own path, which change with every page, in its left corner, llamatron centred, and the
   open set and the save mark at the right; the second has the current song and the length at the right. The set and the song

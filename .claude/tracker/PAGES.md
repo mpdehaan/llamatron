@@ -229,6 +229,21 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
   adjusting, the cursor's cell in reverse video and its field's label under the grid; each field still carries the
   register's name in its label.
   Lowering Allowed inc max calls `Setlist.hold_adds_within_limits` in the same edit (`set_register_setting`).
+- The Draws page (`D`, in the main screen's middle cell where Modulators were; `tui/screens/set/draws_page.py`, the user's design):
+  a section for each draw, AD to DD, closed at first, each with Direction (a `ChoiceField` of `DRAW_DIRECTIONS`), Slots (1 to 64),
+  Value Min and Value Max (-99 to 99, a new end moving every slot past it), Conditions redraw (a `Toggle`, off for a new draw), then
+  after one blank line its strip, a `Strip` (`tui/screens/shared/field.py`): a grid boxed in dim lines, a `slot` row numbering the
+  slots over a `value` row, every cell one width with a space either side of -99 and its value right-justified, the cursor's slot
+  in reverse video (`FieldPage.strip_lines`); Left and Right move between slots (`ALONG_CELLS`), `[` and `]` step one
+  (`SLOT_LESS`, `SLOT_MORE`), ENTER types one and Bksp makes it blank; it scrolls with the cursor past the page's width. While a
+  song plays, each draw's last slot is drawn in the draws' bright violet (`Style.DRAW_LIGHT`, from `Transport.draw_places`, which
+  asks the score, `Score.draw_places_at`, where every draw stood that many seconds into the playing scene, from each timeline's
+  `get_draw_moments`), and a draw's heading says the slot, `▸ 3` (`MSG_DRAW_HEADING_LIT`). The Scene page has a Reset toggle for
+  each draw after the registers', which resets it as the scene first starts.
+- A statement's pickers, on the settings pages' tables and the pattern editor's statement rows, offer the draws and the registers
+  in groups, `--Draws--` then `--Registers--`, and a value's picker a number to type first under `--Constant--`
+  (`tui/dialogs/grouped_choices.py`, `GroupedChoices`): a `ChoiceDialog` may hold headings and blank lines between groups, drawn
+  dim, which the cursor passes over and a search leaves out. `[` and `]` step a statement's first cell through the same order.
 - A `FieldPage` taller than the screen scrolls to keep the cursor's field in view (`window_of_lines`).
 - The scene page has a Reset field for each.
 

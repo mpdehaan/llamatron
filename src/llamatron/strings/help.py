@@ -423,6 +423,19 @@ Each starts at its default when the song starts, and again whenever a scene rese
 Up and down select. Left and right change a number, ENTER types one, and Bksp goes back to its default. ENTER switches wraps on and off.
 """
 
+# DrawsPage
+HELP_DRAWS_PAGE = """
+The four draws, AD to DD, are short lists of numbers the whole current song shares. A pattern's step uses one with Note+=
+or Vel+= in the Use Draws section, and takes the next number of its strip each time, added to its note or velocity.
+
+Direction says which slot comes next: a pattern's directions, serial (every slot once a round, in a random order) or any
+(a slot at random every time). A blank slot is passed over. Slots is how many the strip holds, and Value Min and Value Max
+keep every slot within them. Conditions redraw makes a condition that reads the draw take a number from it too.
+
+Up and down select, and Space or ENTER opens a draw. On the strip, Left and Right move between slots, [ and ] change one,
+ENTER types one and Bksp makes it blank. While the song plays, each draw's last slot is lit.
+"""
+
 # GroovesPage
 HELP_GROOVES_PAGE = """
 A groove moves notes off the grid, like swing on a drum machine. It's a row of cells, one bar of 16ths to start with, each

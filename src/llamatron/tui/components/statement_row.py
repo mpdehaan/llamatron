@@ -26,18 +26,18 @@ from llamatron.composition.file_format import StatementPart, StepStatement
 from llamatron.strings import errors, labels, marks
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
+from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 
 # The first step, which cannot start the pattern over.
 FIRST_STEP = 0
 # What a number starts from when the part holds a register, and the number a statement may not divide by.
 ZERO = 0
-# The first choice of a value's picker is a number to type; the registers follow.
-NUMBER_PLACE = 0
 # The parts chosen from a list, with the list and the picker's title, and the parts that hold a number or a register.
 CHOSEN_PARTS = {
-    StatementPart.REGISTER: (file_format.REGISTER_NAMES, labels.MSG_STATEMENT_REGISTER_TITLE),
+    StatementPart.REGISTER: (grouped_choices.VALUE_NAMES_IN_ORDER, labels.MSG_STATEMENT_REGISTER_TITLE),
     StatementPart.OPERATOR: (file_format.OPERATORS, labels.MSG_STATEMENT_OPERATOR_TITLE),
     StatementPart.COMPARISON: (file_format.RESULT_COMPARISONS, labels.MSG_STATEMENT_COMPARISON_TITLE),
 }
@@ -125,30 +125,34 @@ class StatementRow(PatternRow):
                 self.with_part(choices[place])
             return
         current = statement[self.part]
-        number = ZERO if current in file_format.REGISTER_NAMES else current + offset
+        number = ZERO if current in file_format.VALUE_NAMES else current + offset
         if -limits.MAX_STATEMENT_NUMBER <= number <= limits.MAX_STATEMENT_NUMBER:
             self.with_part(number)
 
     def choose(self):
         """Open the picker of the row's choices, or of a number to type and each register."""
         statement = self.statement()
+        if self.part == StatementPart.REGISTER:
+            grouped = value_groups(first=(None, [(labels.MSG_STATEMENT_IGNORED, None)]))
+            current = None if statement is None else statement[self.part]
+            self.editor.ask(dialog=grouped.dialog(title=labels.MSG_STATEMENT_REGISTER_TITLE, current=current), then=lambda place: self.with_part(grouped.value_at(place)))
+            return
         if self.part in CHOSEN_PARTS:
             choices, title = CHOSEN_PARTS[self.part]
-            shown = [labels.MSG_STATEMENT_IGNORED, *choices] if self.part == StatementPart.REGISTER else list(choices)
-            values = self.choices()
-            current = values.index(None if statement is None else statement[self.part])
-            self.editor.ask(dialog=ChoiceDialog(title=title, options=shown, current=current), then=lambda place: self.with_part(values[place]))
+            current = choices.index(statement[self.part])
+            self.editor.ask(dialog=ChoiceDialog(title=title, options=list(choices), current=current), then=lambda place: self.with_part(choices[place]))
             return
         current = statement[self.part]
-        choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *file_format.REGISTER_NAMES]
+        grouped = number_or_names()
 
         def picked(place):
-            if place == NUMBER_PLACE:
-                self.ask_number(ZERO if current in file_format.REGISTER_NAMES else current)
+            chosen = grouped.value_at(place)
+            if chosen == grouped_choices.NUMBER_CHOSEN:
+                self.ask_number(ZERO if current in file_format.VALUE_NAMES else current)
             else:
-                self.with_part(choices[place])
-        opens_on = choices.index(current) if current in file_format.REGISTER_NAMES else NUMBER_PLACE
-        self.editor.ask(dialog=ChoiceDialog(title=labels.MSG_STATEMENT_VALUE_TITLE, options=choices, current=opens_on), then=picked)
+                self.with_part(chosen)
+        opens_on = current if current in file_format.VALUE_NAMES else grouped_choices.NUMBER_CHOSEN
+        self.editor.ask(dialog=grouped.dialog(title=labels.MSG_STATEMENT_VALUE_TITLE, current=opens_on), then=picked)
 
     def ask_number(self, current):
         lowest = -limits.MAX_STATEMENT_NUMBER

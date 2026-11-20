@@ -25,6 +25,23 @@ adds nothing. Every value runs from -99 to 99, and a draw's Value Min and Value 
 A draw belongs to the song, not to a pattern or a track. Every track that uses AD takes from the same AD, so two tracks using it at
 one moment take two values, in the order of the tracks, and a draw carries on from one scene to the next where the last left it.
 
+## The Draws Page
+
+Press `D` on the main screen to open the Draws page. Each draw is a section, closed until `Space` or `ENTER` opens it, with these
+settings and, after them, its strip:
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| Direction | forward | Which slot comes next, as the table above says. |
+| Slots | 8 | How many slots the strip holds. New slots are blank, and slots past a smaller count are taken away. |
+| Value Min | -99 | The lowest value a slot can hold. Raising it moves every slot below it up to it. |
+| Value Max | 99 | The highest value a slot can hold. Lowering it moves every slot above it down to it. |
+| Conditions redraw | off | Whether a condition that reads the draw draws from it, as described under Draws in Conditions. |
+
+The strip is a row of boxes, the slots numbered above their values. On the strip, `Left` and `Right` move between the slots, `[`
+and `]` make the slot under the cursor less and more, `ENTER` types a value and `Bksp` makes the slot blank. While the song plays,
+the slot each draw last took its value from is lit in violet, and a closed draw's heading says which slot it is.
+
 ## Use Draws
 
 In the pattern editor, the section Use Draws, after Use Registers, has three rows for each draw:
@@ -52,7 +69,7 @@ where BD redraws, plays the rhythm its own draws make.
 
 ## A Scene's Reset Draws
 
-A scene can reset draws as it first starts, not on its repeats, sending each back to its first slot or a serial draw to a new
+On the Scene page, a Reset toggle for each draw, after the registers' Reset toggles, makes the scene reset the draw as it first starts, not on its repeats, sending it back to its first slot or a serial draw to a new
 round, so that a verse's melody starts the same way every time the verse comes round.
 
 The demo [`examples/learning/30_draws.yml`](../examples/learning/30_draws.yml) plays every kind of draw, from a count-in to
