@@ -136,7 +136,7 @@ def clip_count(*, song, slot, bar_length):
     bars = float(pattern.get_steps() * (pattern.get_step_size() or song.get_step_size()) / bar_length)
     notes = sum(chord_notes(symbol) for symbol in symbols) / bars
     for name in slot.get_chain_names():
-        for step in song.get_chain(name).get_steps():
+        for step in song.chain_run(name).get_steps():
             if step.kind == GeneratorKind.GUITARIFY:
                 notes = strummed(symbols=symbols, lasts=lasting(steps=steps, count=pattern.get_steps()), settings=song.get_generator_settings(kind=step.kind, name=step.name), bar_length=bar_length)
             elif step.kind == GeneratorKind.ARP:

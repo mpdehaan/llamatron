@@ -651,6 +651,13 @@ class Song(HoldsSections, HoldsSettings):
     def get_chain(self, name):
         return self._setlist.get_chain(name)
 
+    def chain_run(self, name):
+        """Return the chain a name in a list of generators runs (Setlist.chain_run)."""
+        return self._setlist.chain_run(name)
+
+    def has_generator_named(self, name):
+        return self._setlist.has_generator_named(name)
+
     def get_chain_names(self):
         return self._setlist.get_chain_names()
 

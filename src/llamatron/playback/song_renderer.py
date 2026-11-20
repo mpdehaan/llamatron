@@ -246,7 +246,7 @@ class SongRenderer:
         strum = None
         restart = Restart.EVERY_CLIP
         for chain in self.chains_of(scene=scene, track=track):
-            for step in self._song.get_chain(chain).get_steps():
+            for step in self._song.chain_run(chain).get_steps():
                 if step.kind == GeneratorKind.STRUM:
                     settings = self._song.get_generator_settings(kind=GeneratorKind.STRUM, name=step.name)
                     strum = settings.get_strum()
@@ -270,7 +270,7 @@ class SongRenderer:
         bar = self._song.get_time_signature().bar_length()
         rows = []
         for chain in self.chains_of(scene=scene, track=track):
-            for step in self._song.get_chain(chain).get_steps():
+            for step in self._song.chain_run(chain).get_steps():
                 if step.kind in MOVING_KINDS:
                     settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
                     rows.append(MovingRow(
@@ -293,7 +293,7 @@ class SongRenderer:
 
     def hockets_of(self, *, scene, track):
         """Return the names of the Hockets a track's clip names in its chains in a written-out scene, each once, in order."""
-        names = [step.name for chain in self.chains_of(scene=scene, track=track) for step in self._song.get_chain(chain).get_steps() if step.kind == GeneratorKind.HOCKET]
+        names = [step.name for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps() if step.kind == GeneratorKind.HOCKET]
         return list(dict.fromkeys(names))
 
     def hocket_pool(self, *, scene, name):

@@ -1052,6 +1052,18 @@ class Setlist(HoldsSections, HoldsSettings):
     def get_chain(self, name):
         return self._section(Section.CHAINS).get(name)
 
+    def has_generator_named(self, name):
+        """Return whether a generator of any kind, a chain among them, has a name."""
+        return name in self.every_generator_name()
+
+    def chain_run(self, name):
+        """Return the chain a name in a clip's, a scene's or a track's list of generators runs: the chain of that name, or, for a
+        generator of another kind, a chain of that generator alone, made for the asking."""
+        if self.has_chain(name):
+            return self.get_chain(name)
+        kind = next(kind for kind, section in file_format.NAMED_GENERATORS.items() if self._section(section).has(name))
+        return Chain([(kind, name)])
+
     def get_chain_names(self):
         """Return the names of the chains, in the set's order."""
         return self._section(Section.CHAINS).names()

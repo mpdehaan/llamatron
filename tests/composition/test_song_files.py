@@ -81,7 +81,7 @@ class TestErrors(unittest.TestCase):
         self.assert_error('unknown setting (themes)', themes={})
 
     def test_unknown_chain_in_a_clip_slot(self):
-        self.assert_error('no chain called (nope)', scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NOPE]}}}])
+        self.assert_error(errors.ERR_NO_GENERATOR_CALLED.format(name='nope'), scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NOPE]}}}])
 
     def test_unknown_pattern(self):
         self.assert_error('no pattern called (nope)', scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: NOPE}}}])

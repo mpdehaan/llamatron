@@ -29,6 +29,8 @@ OTHER_CHAIN = 'other'
 CHOP = 'chop'
 # A clip of one quarter note, which an AutoRatchet of 2 chops into two, and two of them into four.
 ONE_NOTE = 1
+# A new name for the AutoRatchet that chops.
+RENAMED_CHOP = 'chop renamed'
 CHOPPED_ONCE = 2
 CHOPPED_TWICE = 4
 
@@ -50,6 +52,20 @@ def chained(*, clip_chains=None, scene_chains=None, track_chains=None):
 
 
 class TestChainPlaces(unittest.TestCase):
+
+    def test_a_generator_listed_on_its_own_runs_as_a_chain_of_it_alone(self):
+        self.assertEqual(len(pitches(chained(clip_chains=[CHOP]))), CHOPPED_ONCE)
+        self.assertEqual(len(pitches(chained(scene_chains=[CHOP], track_chains=[TWICE]))), CHOPPED_TWICE)
+        self.assertEqual(pitches(chained(clip_chains=[CHOP])), pitches(chained(clip_chains=[TWICE])))
+
+    def test_a_generator_listed_on_its_own_follows_its_rename_and_counts_as_used(self):
+        built = song_from_data(chained(clip_chains=[CHOP], scene_chains=[CHOP]))
+        setlist = built.get_setlist()
+        self.assertIn(Section.AUTO_RATCHETS, [section for section, name in setlist.everything_named() if name == CHOP])
+        setlist.rename_item(section=Section.AUTO_RATCHETS, old=CHOP, new=RENAMED_CHOP)
+        scene = built.get_scenes()[0]
+        self.assertEqual((scene.get_clip_slot(test_registers.LEAD).get_chain_names(), scene.get_chain_names()), ([RENAMED_CHOP], [RENAMED_CHOP]))
+        self.assertEqual([(step.kind, step.name) for step in setlist.get_chain(TWICE).get_steps()], [(GeneratorKind.AUTO_RATCHET, RENAMED_CHOP)])
 
     def test_a_scenes_chain_and_a_tracks_chain_each_run_on_a_clip_with_none_of_its_own(self):
         self.assertEqual(len(pitches(chained())), ONE_NOTE)

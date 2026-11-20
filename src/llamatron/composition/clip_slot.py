@@ -24,7 +24,7 @@ reading a file does and raise InvalidValue if it's wrong, with the song passed i
 setting names something the song holds.
 """
 
-from llamatron.composition import corrections, defaults, file_format, limits
+from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import check_keys, check_name, reading
 from llamatron.composition.conditions import register_values_setting, statements_setting, with_statement
@@ -123,7 +123,7 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     # A clip names the pattern it plays and the one it morphs to, the chain it runs and the track it grabs from.
     REFERENCES = {
         Section.PATTERNS: (ClipSlotSetting.PATTERNS, ClipSlotSetting.MORPH_TO),
-        Section.CHAINS: (ClipSlotSetting.CHAINS,),
+        **{section: (ClipSlotSetting.CHAINS,) for section in sections.GENERATOR_SECTIONS},
         Section.TRACKS: (ClipSlotSetting.GRAB_TRACK,),
         Section.SCALES: (ClipSlotSetting.SCALE,),
     }
