@@ -176,11 +176,11 @@ def muted_when_equal(*, draw, value, steps=STEPS):
 class TestConditions(unittest.TestCase):
     """A statement reads a draw as it reads a register: only looking at it, or, where the draw redraws in conditions, drawing from it."""
 
-    def test_a_condition_looks_at_the_value_the_last_use_drew_without_drawing(self):
+    def test_a_step_that_draws_reads_its_own_draw_and_a_step_that_does_not_only_looks(self):
         rows = {Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0], **muted_when_equal(draw=DrawName.AD, value=2)}
         song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows=rows, repeat=4))
-        # The first step draws 0, 1, 2, 3 pass by pass, and each step reads the value drawn before it: the third pass's last three steps and the fourth pass's first are muted.
-        self.assertEqual([len(scene) for scene in pitches_of(song=song, scenes=4)], [4, 4, 1, 3])
+        # The first step draws 0, 1, 2, 3 pass by pass before its condition reads AD, and the other steps look at what it drew: the whole third pass is muted.
+        self.assertEqual([len(scene) for scene in pitches_of(song=song, scenes=4)], [4, 4, 0, 4])
 
     def test_a_draw_that_redraws_in_conditions_is_drawn_by_each_statement_that_reads_it_once_a_step(self):
         draw = {**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}
@@ -192,8 +192,8 @@ class TestConditions(unittest.TestCase):
     def test_a_statement_compares_a_register_with_a_draw(self):
         rows = {Row.AD_NOTE: every_step(), Row.MUTE_C1: [RegisterName.AX] * STEPS, Row.MUTE_C2: [Operator.LESS] * STEPS, Row.MUTE_C3: [DrawName.AD] * STEPS}
         song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows=rows))
-        # AX stays 0, and each step reads AD as the step before left it: 0, 0, 1, 2, so only the first two steps sound.
-        self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C, MIDDLE_C + 1]])
+        # AX stays 0, and each step draws AD before its condition compares: 0, 1, 2, 3, so only the first step sounds.
+        self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C]])
 
     def test_a_table_reads_a_draw_as_a_pass_starts(self):
         played = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: 4, ClipSlotSetting.SKIP_WHEN: [{StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.SAME, StatementPart.VALUE: 1}]}}
