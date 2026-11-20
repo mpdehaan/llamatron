@@ -41,6 +41,7 @@ from llamatron.playback.chord_source import ChordSource
 from llamatron.playback.clip_slot_player import ClipSlotPlayer
 from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.grab_source import GrabSource
+from llamatron.playback.modulators import ModulatorClock
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
 from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
@@ -117,7 +118,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_modulators')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False):
         """Render a song, with a seed in place of the song's own if one is given, so that any render can be repeated.
@@ -163,6 +164,7 @@ class SongRenderer:
         # What is asked once for the render: of each pattern, whether a step can cut a pass short, and of each written scene, whether any of its clips plays such a pattern.
         self._cutting = {}
         self._settled_by_playing = {}
+        self._modulators = ModulatorClock(renderer=self, song=song, seed=self._seed)
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it has none."""
@@ -404,7 +406,8 @@ class SongRenderer:
             return None
         key = (scene.get_number(), track)
         if key not in self._clips:
-            registers = RegisterReader(timeline=self.get_timeline(scene), place=self._track_place(track))
+            moving = None if not self._modulators.is_moving() else (lambda time, place: self._modulators.values_at(scene=scene, time=time, place=place))
+            registers = RegisterReader(timeline=self.get_timeline(scene), place=self._track_place(track), modulators=moving)
             clip = ClipSlotPlayer(renderer=self, song=self._song, scene=scene, track_name=track).play(grabbing=clip_slot.get_grab_track() is not None, registers=registers)
             settings = self._song.get_track(track)
             bound = [(number, name) for number, name in zip(settings.get_cc_numbers(), settings.get_cc_registers()) if number is not None and name is not None]
@@ -598,6 +601,27 @@ class SongRenderer:
                 if adds:
                     changes.append(RegisterChange(time - start, DRIFT_PLACE, {}, adds))
         return changes
+
+    def tempos_in(self, scene):
+        """Return a written scene's tempos as (time from its start, tempo), the first at its start: its ramp's, or its one tempo."""
+        ramped = self.tempos_of(scene)
+        if ramped:
+            return ramped
+        tempo = scene.get_scene().get_tempo()
+        return [(START, self._song.get_tempo() if tempo is None else tempo)]
+
+    def modulator_sets_of(self, scene):
+        """Return what a written scene's clips set the modulators to before it ends, as (time in the scene, track's place, sets by name)."""
+        if not self._song.changes_registers():
+            return []
+        length = self.get_scene_length(scene)
+        found = []
+        for track in scene.get_track_names():
+            for change in _before(changes=self._counted_clip(scene=scene, track=track)[1], end=length):
+                sets = {name: value for name, value in change.sets.items() if name in file_format.MODULATOR_NAMES}
+                if sets:
+                    found.append((change.time, change.place, sets))
+        return found
 
     def chains_of(self, *, scene, track):
         """Return the chains a track's clip in a written-out scene runs, in order: the clip's own, the scene's, then the track's; none when it plays nothing."""

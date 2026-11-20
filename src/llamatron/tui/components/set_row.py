@@ -19,8 +19,9 @@ from llamatron.composition import file_format
 from llamatron.tui import keybindings
 from llamatron.tui.components.control_row import ControlRow
 
-# Which register each = row sets, by the row's name.
+# Which register each = row sets, by the row's name, and which modulator.
 REGISTER_OF_ROW = {row: name for name, row in file_format.REGISTER_SET_ROWS.items()}
+MODULATOR_OF_ROW = {row: name for name, row in file_format.MODULATOR_SET_ROWS.items()}
 
 
 class SetRow(ControlRow):
@@ -38,7 +39,9 @@ class SetRow(ControlRow):
     __slots__ = ()
 
     def register(self):
-        """Return the current song's Register this row sets."""
+        """Return the current song's Register this row sets, or its Modulator, which holds a minimum and a maximum the same way."""
+        if self.name in MODULATOR_OF_ROW:
+            return self.editor.document().modulator(MODULATOR_OF_ROW[self.name])
         return self.editor.document().song().get_register(REGISTER_OF_ROW[self.name])
 
     def nudge(self, offset):

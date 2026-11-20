@@ -455,9 +455,9 @@ class RowOfStatementValues(RowDescription):
         super().__init__(name=name, kept_by_a_rest=True)
 
     def problem_with(self, value, *, drum):
-        if value in file_format.REGISTER_NAMES or is_whole_number_from(value=value, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER):
+        if value in file_format.STATEMENT_NAMES or is_whole_number_from(value=value, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER):
             return None
-        return errors.ERR_NOT_STATEMENT_VALUE.format(lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, choices=listed(file_format.REGISTER_NAMES))
+        return errors.ERR_NOT_STATEMENT_VALUE.format(lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, choices=listed(file_format.STATEMENT_NAMES))
 
 
 class RowOfStatementChoices(RowOfChoices):
@@ -471,7 +471,7 @@ class RowOfStatementChoices(RowOfChoices):
 
 
 # What each part of a statement may be, by the part.
-STATEMENT_PART_CHOICES = {StatementPart.REGISTER: file_format.REGISTER_NAMES, StatementPart.OPERATOR: file_format.OPERATORS, StatementPart.COMPARISON: file_format.RESULT_COMPARISONS}
+STATEMENT_PART_CHOICES = {StatementPart.REGISTER: file_format.STATEMENT_NAMES, StatementPart.OPERATOR: file_format.OPERATORS, StatementPart.COMPARISON: file_format.RESULT_COMPARISONS}
 
 
 def statement_row(name):
@@ -508,6 +508,9 @@ ROW_DESCRIPTIONS = described_rows(
     *[RowOfRegisterUses(name=name) for name in file_format.REGISTER_VELOCITY_ROWS.values()],
     *[register_change_row(name) for name in file_format.REGISTER_ADD_ROWS.values()],
     *[register_set_row(name) for name in file_format.REGISTER_SET_ROWS.values()],
+    *[register_set_row(name) for name in file_format.MODULATOR_SET_ROWS.values()],
+    *[RowOfNoteMoves(name=name) for name in file_format.MODULATOR_NOTE_ROWS.values()],
+    *[RowOfRegisterUses(name=name) for name in file_format.MODULATOR_VELOCITY_ROWS.values()],
     *[statement_row(name) for name in file_format.STATEMENT_OF_ROW],
 )
 

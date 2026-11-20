@@ -91,6 +91,13 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   set: rising first, falling first when inverted, a square holding Maximum for the first half (Minimum inverted) whatever Start
   says, a sample and hold drawing a value each cycle from the render's seed, the name and the wave's origin, its first cycle
   holding Start; every value rounded to the nearest whole number, a half up. The design is `.claude/DESIGNS.md`, "Modulators".
+- A pattern's `xmod_set` to `zmod_set` rows (the = rows of Set Modulators, held by the song's modulator's range like a register's
+  = row) start a wave again from the value at the step's moment, for every track; `xmod_note` to `zmod_note` and `xmod_velocity` to
+  `zmod_velocity` (Use Modulators) add or subtract the value as the register rows do; every statement may name a modulator wherever
+  it names a register (`file_format.STATEMENT_NAMES`). `ModulatorClock` (`playback/modulators.py`) gives a step the values: from
+  the song's top or the last set, bars counted in whole notes, hertz in seconds through each written scene's tempos
+  (`SongRenderer.tempos_in`), a modulator of one value a constant with nothing worked out. A step's statement read while a scene
+  is only counted for its length, or while its clips are decided by playing, sees modulators as 0 (Claude's decision, to report).
 
 ### Everything inline
 
