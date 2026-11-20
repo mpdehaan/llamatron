@@ -94,8 +94,12 @@ class WizardTest(UITest):
         return self.wizard().get_choices()
 
     async def go_to_branch(self, place):
-        """Move the tree's cursor to a branch by its place from the top."""
-        await self.press(*[Key.UP] * len(self.wizard().rows()), *[Key.DOWN] * place)
+        """Put the tree's cursor on a branch by its place from the top and draw the page once, as the arrows would leave it, since
+        pressing an arrow for every row drew the page at each one; the arrows themselves are tested on their own."""
+        wizard = self.wizard()
+        wizard.tree_place = place
+        wizard.draw()
+        await self.settle()
 
     async def go_to_named_branch(self, name):
         """Move the tree's cursor to a top branch by its name, wherever the Start branch has put it."""
