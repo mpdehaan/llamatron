@@ -120,7 +120,7 @@ class SongRenderer:
     __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False):
-        """Render a song, with a seed in place of the song's own if one is given, so that any render can be repeated.
+        """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
 
         A scene whose every clip loops can't be exported, since nothing says how long it lasts. With
         looping_scenes_go_round, as real-time playback renders, such a scene lasts as long as its longest
@@ -128,7 +128,7 @@ class SongRenderer:
         """
         self._looping_scenes_go_round = looping_scenes_go_round
         self._song = song
-        self._seed = song.get_seed() if seed is None else seed
+        self._seed = seed
         self._scenes = WrittenScene.write_out(song)
         self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
         self._clips = {}

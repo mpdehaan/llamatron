@@ -82,7 +82,7 @@ class ArpEditor(GeneratorEditor, FieldPage):
             Field(label=labels.MSG_OFFSETS_LABEL, value=lambda: offsets_text(arp.get_offsets()), adjust=None, enter=self.edit_offsets, enter_what=legends.What.EDIT,
                   clear=lambda: self.store(setting=ArpSetting.OFFSETS, value=None), clear_what=legends.What.REMOVE),
             NumberField(
-                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_SONG_SEED_SHOWN if seed is None else None,
+                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_RANDOM_SEED_SHOWN if seed is None else None,
                 set=lambda number: self.store(setting=ArpSetting.SEED, value=number),
                 clear=lambda: self.store(setting=ArpSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
             ),

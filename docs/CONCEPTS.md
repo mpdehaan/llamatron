@@ -34,14 +34,13 @@ A section of a song often changes over its length: a build grows denser, a cresc
 
 ## Introducing Randomness
 
-A part that plays exactly the same every time can sound mechanical. llamatron can vary a song by chance, while keeping that chance under control: every random choice draws from the song's seed, so a song with no seed plays a new take each time, and a song with a seed plays the same take every time.
+A part that plays exactly the same every time can sound mechanical. llamatron can vary a song by chance, while keeping that chance under control: every play and every export draws the random choices afresh, so each is a new take.
 
 1. On a pattern's rows, set Probability on a few steps, so that their notes come and go. See [Patterns](PATTERNS.md).
 2. Through the pattern editor's `R` (Reconfigure), choose a play direction, such as pendulum or brownian.
 3. In a drum track's track editor, open `+ Euclid` to keep only the hits of a Euclidean rhythm; `H` on Hits picks a named one. See [Euclid](generators/EUCLID.md).
 4. On the Song page, choose a groove for swing. See [Grooves](GROOVES.md).
 5. For a part that wanders slowly over the whole song, add a Drift generator to the clips' chains. See [Drift](generators/DRIFT.md).
-6. To keep a take you like, set a seed on the Song page. See [Object Model](OBJECT_MODEL.md).
 
 ## Hocketing
 

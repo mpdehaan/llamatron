@@ -82,8 +82,7 @@ MSG_SCENE_VIEW_TITLE = ' SCENE VIEW FOR SCENE: {scene} '
 MSG_SCENE_VIEW_CLOSING = ' {key} {what} '
 MSG_SCENE_VIEW_TRACK = '{name} ({number})'
 MSG_SCENE_VIEW_WRITTEN = 'WRITTEN: the patterns as written, before any generator, groove or register'
-MSG_SCENE_VIEW_PLAYED = 'PLAYED: after every generator, groove and register{take}'
-MSG_SCENE_VIEW_ONE_TAKE = ', one take of its random parts'
+MSG_SCENE_VIEW_PLAYED = 'PLAYED: after every generator, groove and register, one take of its random parts'
 MSG_SCENE_VIEW_EFFECTIVE = 'tempo {tempo} ({tempo_source})  ·  {signature}  ·  scale {scale} ({scale_source})  ·  groove {groove} ({groove_source})'
 MSG_SCENE_VIEW_TEMPO_RAMPS = '{tempo}*'
 MSG_SCENE_VIEW_SLASH_CHORD = '{chord}/{bass}'
@@ -188,7 +187,7 @@ MSG_CHAIN_STEP_AGAIN = '{name} {number} ({kind})'
 MSG_PATTERN_STEP_SHOWN = '(pattern)'
 # A list of chains, as a field shows it.
 MSG_CHAIN_JOIN = ', '
-MSG_SONG_SEED_SHOWN = '(song)'
+MSG_RANDOM_SEED_SHOWN = '(random)'
 # The gauge of offsets (tui/components/signed_gauge.py): a value with its sign and a mark when the gauge is too short to
 # reach it, above or below, and the brackets around the cursor's step number and value.
 MSG_POSITIVE_VALUE = '+{value}{mark}'

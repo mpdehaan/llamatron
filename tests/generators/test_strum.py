@@ -27,11 +27,13 @@ from llamatron.exporters.timing import timed_events
 from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
-from tests.support.rendering import render_data, setlist_from_data
+from tests.support.rendering import render_song, setlist_from_data, song_from_data
 
 TRIAD = '3'
 TEMPO = 120
 STEPS = 4
+# The seed a test of loose timing draws from, so that it can draw the same again.
+A_SEED = 3
 NORMAL_GAP = Rational(1, 250)
 HARP_GAP = Rational(7, 200)
 C = 60
@@ -57,15 +59,15 @@ def chords(*, track=None, clip=None, rows=None, chain=None, generator=None, step
     return data
 
 
-def events(data):
-    grid = render_data(data)
+def events(data, *, seed=None):
+    grid = render_song(song_from_data(data), seed=seed)
     clip = grid.get_clip(row=grid.get_rows()[0], column=grid.get_columns()[0])
     return sorted(timed_events(clip=clip, scale=clip.get_scale())[0])
 
 
-def first_chord(data):
-    """Return (start, pitch, velocity) of the first chord's notes, in the order they sound."""
-    return [(start, pitch, velocity) for start, _, pitch, velocity in events(data) if start < Rational(1, 8)]
+def first_chord(data, *, seed=None):
+    """Return (start, pitch, velocity) of the first chord's notes, in the order they sound, drawn from a seed where one is given."""
+    return [(start, pitch, velocity) for start, _, pitch, velocity in events(data, seed=seed) if start < Rational(1, 8)]
 
 
 def strum(**parts):
@@ -118,10 +120,9 @@ class TestStrum(unittest.TestCase):
 
     def test_loose_timing_varies_the_gaps_the_same_way_every_time_with_a_seed(self):
         data = chords(track=strum(**{StrumPart.DIRECTION: StrumDirection.DOWN, StrumPart.LOOSE_TIMING: 50}))
-        data[SongSetting.SEED] = 3
-        gaps = [start for start, _, _ in first_chord(data)]
+        gaps = [start for start, _, _ in first_chord(data, seed=A_SEED)]
         self.assertNotEqual(gaps[1], NORMAL_GAP)
-        self.assertEqual(gaps, [start for start, _, _ in first_chord(data)])
+        self.assertEqual(gaps, [start for start, _, _ in first_chord(data, seed=A_SEED)])
 
 
 class TestWhichStrumWins(unittest.TestCase):

@@ -24,7 +24,7 @@ remove_item, rename_item and so on, and renaming or removing a track tells the s
 """
 
 from llamatron.composition import corrections, defaults, file_format, limits, sections
-from llamatron.composition.checks import check_keys, is_whole_number, listed, number, reading, time_signature, written_length
+from llamatron.composition.checks import check_keys, listed, number, reading, time_signature, written_length
 from llamatron.composition.file_format import GeneratorKind, SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
 from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
@@ -62,13 +62,6 @@ def _check_preview_instrument(*, value, song):
         raise InvalidValue(errors.ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=value))
 
 
-def seed_number(value):
-    """Return a seed, checking that it's an integer or None, which means a new take each export."""
-    if value is not None and not is_whole_number(value):
-        raise InvalidValue(errors.ERR_SONG_BAD_SEED.format(value=value))
-    return value
-
-
 def _check_wizard_choices(value):
     """Refuse what isn't a mapping: the song wizard's choices are kept as the wizard wrote them, and the wizard reads them with care."""
     if value is not None and not isinstance(value, dict):
@@ -85,7 +78,6 @@ SETTINGS = described(
     Checked(name=SongSetting.TIME_SIGNATURE, check=time_signature),
     Length(name=SongSetting.ENTRY_SIZE, most=limits.MAX_GATE, blank_allowed=True),
     Checked(name=SongSetting.SCALE, check=_check_scale_name, needs_song=True),
-    Checked(name=SongSetting.SEED, check=seed_number),
     Checked(name=SongSetting.GROOVE, check=_check_groove_name, needs_song=True),
     Checked(name=SongSetting.GENRE, check=_never_refused),
     Checked(name=SongSetting.SUBGENRE, check=_never_refused),
@@ -303,10 +295,6 @@ class Song(HoldsSections, HoldsSettings):
         """Return how long a note placed on a pattern's piano roll lasts: the pattern's own entry size, else the song's, else one of its steps."""
         return pattern.get_entry_size() or self.get_entry_size() or self.get_pattern_step_size(pattern)
 
-    def get_seed(self):
-        """Return the seed every random choice is made from, or None, which makes every export a new take."""
-        return self._setting(name=SongSetting.SEED, default=defaults.DEFAULT_SEED)
-
     def get_scale_name(self):
         """Return the name of the song's scale, or None if it has none."""
         return self._settings[SongSetting.SCALE]
@@ -380,12 +368,6 @@ class Song(HoldsSections, HoldsSettings):
         """Give the song a scale by name, or None for no scale."""
         SETTINGS[SongSetting.SCALE].check(name, song=self)
         self._settings[SongSetting.SCALE] = name
-
-    @notes_change
-    def set_seed(self, seed):
-        """Set the seed, or None for a new take each export."""
-        SETTINGS[SongSetting.SEED].check(seed)
-        self._settings[SongSetting.SEED] = seed
 
     def get_genre(self):
         """Return the genre the song says it is, or None when it says none."""

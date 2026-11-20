@@ -122,7 +122,6 @@ songs:
   - name: pattern lists
     tempo: 120
     scale: E Minor
-    seed: 29
     genre: Exercise
 
     tracks:

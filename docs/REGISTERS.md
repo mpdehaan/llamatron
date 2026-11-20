@@ -33,7 +33,7 @@ In each example, the register runs from 0 to 4 and a step adds to it every time 
 | reset to default | Goes to Default. | Goes to Default. | 0 1 2 3 4 0 1, with Default at 0 | 0 3 0 3 0, with Default at 0 |
 | reverse | Turns round. | Turns round. | 0 1 2 3 4 3 2 1 0 1 | 0 3 2 1 4 1 2 |
 | overflow | Rolls round to Minimum, keeping what is left over. | Rolls round to Maximum, keeping what is left over. | 0 1 2 3 4 0 1 | 0 3 1 4 2 0 3 |
-| pick random | Lands anywhere from Minimum to Maximum, drawn from the song's seed. | The same. | 0 1 2 3 4, then anywhere | 0 3, then anywhere |
+| pick random | Lands anywhere from Minimum to Maximum, drawn at random. | The same. | 0 1 2 3 4, then anywhere | 0 3, then anywhere |
 
 The two names with a slash say what happens past Maximum first and below Minimum second. "reset/clip" suits a count that goes up, and "clip/reset" a count that goes down: with a step that takes 1 away, "clip/reset" reads 4 3 2 1 0 4 3.
 

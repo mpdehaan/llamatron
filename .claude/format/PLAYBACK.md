@@ -17,7 +17,7 @@ Reference notes for Claude, one part of `.claude/format/`: playing a song into c
   `cliptree` or `gm`), so `--to` goes after the set's name. It exports every song of a set, or the one
   `--song` names, as `<set>_<song>` files beside the set's file, or in the directory `--out`
   names (`export_directory`, `export_song`).
-- `--out`, `--template`, `--replace`, `--seed` and `--force` are refused without `--to`.
+- `--out`, `--template`, `--replace` and `--force` are refused without `--to`, and `--seed` and `--batch` without `--wizard`.
 - A set file with values that have corrections ("Corrections") isn't exported: `read_set` prints
   each correction on stderr as `would change ...` and fails with `ERR_NEEDS_FORCE`. With
   `--force` it prints each as `changed ...` and exports the corrected set. The file is never

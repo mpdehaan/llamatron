@@ -33,8 +33,7 @@ that should share one shape and change together.
 ## Chance
 
 Every generator that chooses anything at random, a random arpeggio order or a drift's random degree,
-draws from the song's seed. A song with no seed plays a new take each time; a song with a seed plays the
-same take every time. While a song plays in real time, one take is kept for the whole play, so an edit
+draws afresh each time the song plays or exports, so each is a new take. While a song plays in real time, one take is kept for the whole play, so an edit
 changes only what you edited.
 
 ## Generator Kinds

@@ -574,13 +574,13 @@ class TestArpEditorFields(UITest):
         await self.press(Key.ENTER)
         self.assertIsNone(self.up().get_octave_jump())
 
-    async def test_a_seed_of_its_own_and_back_to_the_songs(self):
+    async def test_a_seed_of_its_own_and_back_to_random(self):
         await self.select_field(labels.MSG_SEED_LABEL)
         await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.up().get_seed(), 1)
         await self.press(Key.BACKSPACE)
         self.assertIsNone(self.up().get_seed())
-        self.assertIn('(song)', self.text())
+        self.assertIn(marks.MSG_RANDOM_SEED_SHOWN, self.text())
 
     async def test_typing_an_offset_too_big_starts_a_new_number(self):
         self.document.change(self.document.generator(section=Section.ARPS, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0, -3])

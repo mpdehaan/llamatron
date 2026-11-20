@@ -37,8 +37,11 @@ Memory.check_every_answer()
 # The sets in examples/ that are meant to sound good rather than to teach one feature: every other set there is a demo.
 PIECES = ('mainstreet_hoedown.yml', 'minimal_techno.yml')
 SET_ENDING = '.yml'
+# What a test's song data may hold for the seed its render draws from: the tests' own way of repeating a take, which no file
+# holds and nothing but these helpers reads, since every play and export of a song draws its random parts afresh.
+TEST_SEED = 'seed'
 # The keys of one song's data that belong to the song when it is wrapped as a set, the rest being the set's.
-SONG_KEYS = (SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, Section.REGISTERS, Section.TRACKS, Section.SCENES)
+SONG_KEYS = (SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.GROOVE, Section.REGISTERS, Section.TRACKS, Section.SCENES)
 
 
 def as_setlist(data, *, song_name=names.MSG_DEFAULT_SONG_NAME):
@@ -75,13 +78,23 @@ def dump_song_data(data):
     return dump_setlist(as_setlist(data))
 
 
+def seed_of(data):
+    """Return the seed a test's song data gives its render, or None for a new take."""
+    return data.get(TEST_SEED) if isinstance(data, dict) else None
+
+
+def without_seed(data):
+    """Return a test's song data without the seed it gives its render, which no file holds."""
+    return {key: value for key, value in data.items() if key != TEST_SEED} if isinstance(data, dict) else data
+
+
 def render_data(data):
-    """Return the ClipGrid of finished clips that a song's data renders into."""
-    return SongRenderer(song_from_data(data)).render()
+    """Return the ClipGrid of finished clips that a song's data renders into, drawn from the seed the data gives, if any."""
+    return SongRenderer(song_from_data(without_seed(data)), seed=seed_of(data)).render()
 
 
 def render_song(song, *, seed=None):
-    """Return the ClipGrid of finished clips that a Song renders into, with a seed in place of the song's if one is given."""
+    """Return the ClipGrid of finished clips that a Song renders into, its random parts drawn from a seed where one is given."""
     return SongRenderer(song, seed=seed).render()
 
 
@@ -92,7 +105,7 @@ def render_file(path):
 
 def estimate_data(data):
     """Return how long each scene of a song's data lasts, as SongRenderer.estimate() gives it."""
-    return SongRenderer(song_from_data(data)).estimate()
+    return SongRenderer(song_from_data(without_seed(data)), seed=seed_of(data)).estimate()
 
 
 def is_demo(path):

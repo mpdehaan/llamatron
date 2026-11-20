@@ -26,14 +26,16 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   (`migrations/running.py`), a file with no version moved where its data has the old shape. Every piece of code that only runs
   on an older layout lives in that package and nowhere else, nothing outside imports more than `migrated` and `Conversion`, and
   a migration knows nothing of the objects or the reader (`tests/composition/test_migrations.py`). Only a breaking change of
-  layout gets one; adding a setting needs none, and a feature taken away leaves nothing to move. A migration is never changed
+  layout gets one; adding a setting needs none, and a feature taken away leaves nothing to move: a removed setting never gets a migration, its name going into
+  `RETIRED_SETTINGS` in `composition/file_format.py`, which reading passes over and nothing writes again (the user's rule; the song's
+  seed is the first). A migration is never changed
   once released. They are: Live's octaves before 1.0.30, one song at the top before 1.0.39 (named after the file), the
   description as notes before 1.0.155, and lists before 1.0.591 (which also turns a clip's single `chain` into a list, and settles
   a name two kinds shared by the naming rules, the later going on as `x-2`). An old file opens converted and unsaved, the status
   line saying `converted from an older format` with every rename (`DocumentFiles.conversion_note`), and the file on disk is
   untouched until saved. `tests/data/migrations/` keeps files in older layouts for the tests.
 - Each song is a `Song` (`composition/song.py`) with its own `tempo`, `time_signature`, `scale`,
-  `seed`, `groove`, `genre`, `live_responsiveness`, `preview_instrument`, `registers`, `tracks` and `scenes`
+  `groove`, `genre`, `live_responsiveness`, `preview_instrument`, `registers`, `tracks` and `scenes`
   (`SONG_SECTIONS`), written in that order under `songs:` by `setlist_writer.py`. A song's
   `live_responsiveness` (`LiveResponsiveness`: next_bar, clip_restart or asap, next_bar by default and
   written only when set, `Song.get_live_responsiveness`), the user's design, is when an edit made while
@@ -233,16 +235,15 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 
 ### Probability and seeds
 
-- Probability is rolled at render once per repeat and ratchet slice, from the song's `seed` when
-  it has one, so that a seeded render plays the same every time.
-- The default is no seed (`DEFAULT_SEED` is `None`): an unseeded song draws from Python's own
-  random stream, seeded by the system once when the program starts, so every export is a new
-  take, and the Song page shows `(none)`.
+- Probability is rolled at render once per repeat and ratchet slice. A song holds no seed: every play and export draws its
+  random parts afresh, from Python's own random stream, seeded by the system, so each is a new take (the user's rule, since a
+  kept seed could not promise the same take once Python's random numbers change). A file's old `seed` is a retired setting.
 - `random_source(seed)` (`src/llamatron/support/random_source.py`) is the one place that decides
-  this, for probability, directions and arps.
-- `SongRenderer(song, seed=n)` renders with a seed in place of the song's, which is what the
-  CLI's `--seed` passes and what `internal_tools/compare_exports.py` uses (`COMPARISON_SEED`, 1). Tests
-  that check a specific random outcome set a seed.
+  between a seeded generator and the shared random stream.
+- `SongRenderer(song, seed=n)` renders from a seed, the internal way that tests and tools repeat a take, which no person and no
+  command-line option reaches: `internal_tools/compare_exports.py` uses it (`COMPARISON_SEED`, 1), and a test's song data may give
+  `render_data` a seed under `TEST_SEED` (`tests/support/rendering.py`). Real-time playback draws one seed when a play starts and
+  keeps it while the song plays, so an edit doesn't redraw what plays. The command line's `--seed` is the song wizard's alone, with `--wizard`.
 - A note that probability drops is silence in its place, however long its gate: a gate that
   reached over the next note holds nothing, the steps up to the next note are rests, and the
   next note plays as normal. Until 1.0.136 such a take stopped the export, since a rest can't

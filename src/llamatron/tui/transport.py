@@ -431,7 +431,7 @@ class Transport:
         self._song_is_copy = song is not None and song is not document.song()
         song = document.song() if song is None else song
         if not self.is_playing() or self._seed is None:
-            self._seed = random.randrange(SEED_RANGE) if song.get_seed() is None else None
+            self._seed = random.randrange(SEED_RANGE)
         routes = self.routes(instead=instead)
         key = (id(song), tuple(sorted(routes.items())))
         self._remember_song(song=song, instead=instead)

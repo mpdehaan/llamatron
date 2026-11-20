@@ -413,7 +413,7 @@ The register change rows take digits, `[` (dec) and `]` (inc), or `ENTER` to typ
 
 Whatever the direction, one pass through a pattern lasts as long as playing it forward does, with the last step cut to fit. A direction can't change how long a clip or scene is.
 
-Positions carry on across repeats. The random directions draw their own random numbers, separate from the ones probability uses, so changing a direction never changes which notes probability drops, and a song with a seed chooses the same way every export. A clip can override the direction.
+Positions carry on across repeats. The random directions draw their own random numbers, separate from the ones probability uses, so changing a direction never changes which notes probability drops. A clip can override the direction.
 
 ## Chord Selector
 

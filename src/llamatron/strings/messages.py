@@ -23,7 +23,6 @@ from llamatron.strings.labels import PageName
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NO_SCALE = 'no scale'
-MSG_NO_SEED = 'no seed'
 
 # tui/app.py
 MSG_QUIT_UNSAVED_NOTE = 'unsaved changes'
@@ -151,7 +150,7 @@ MSG_CHANGED_WORDS = {
     SetlistSetting.STEP_SIZE: 'step size', SetlistSetting.DEFAULT_OCTAVE: 'default octave', SetlistSetting.DEFAULT_DRUM_OCTAVE: 'default drum octave',
     SetlistSetting.OCTAVE_LABELS: 'octave labels', SetlistSetting.PROTECTED: 'protected',
     SetlistSetting.DEFAULT_FOLLOW_ACTION: 'default follow action', SetlistSetting.REAL_TIME: 'real time',
-    SongSetting.TEMPO: 'tempo', SongSetting.TIME_SIGNATURE: 'time signature', SongSetting.SCALE: 'scale', SongSetting.SEED: 'seed', SongSetting.GROOVE: 'groove',
+    SongSetting.TEMPO: 'tempo', SongSetting.TIME_SIGNATURE: 'time signature', SongSetting.SCALE: 'scale', SongSetting.GROOVE: 'groove',
 }
 
 # The Songs page.

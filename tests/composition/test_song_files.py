@@ -19,7 +19,7 @@
 import unittest
 import yaml
 
-from llamatron.composition import sections
+from llamatron.composition import file_format, sections
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
@@ -79,6 +79,15 @@ class TestErrors(unittest.TestCase):
 
     def test_unknown_top_level_setting(self):
         self.assert_error('unknown setting (themes)', themes={})
+
+    def test_a_setting_taken_away_is_passed_over_and_never_written_again(self):
+        for retired in file_format.RETIRED_SETTINGS:
+            with self.subTest(setting=retired):
+                data = as_setlist(with_parts(patterns={A: pat([1, QUARTER])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}]))
+                for song in data[Section.SONGS].values():
+                    song[retired] = 1
+                written = setlist_from_data(data).to_data()
+                self.assertTrue(all(retired not in song for song in written[Section.SONGS].values()))
 
     def test_unknown_chain_in_a_clip_slot(self):
         self.assert_error(errors.ERR_NO_GENERATOR_CALLED.format(name='nope'), scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NOPE]}}}])

@@ -139,7 +139,7 @@ def marked_tracks(*, song, index):
 def scene_notes(*, song, index, written):
     """Return a scene's notes as played, the song's render, or as written, its patterns alone, with its rows laid end to end from the scene's start."""
     rendered = written_song(song) if written else song
-    renderer = SongRenderer(rendered, seed=song.get_seed(), looping_scenes_go_round=True)
+    renderer = SongRenderer(rendered, looping_scenes_go_round=True)
     grid = renderer.render()
     rows = grid.get_rows()
     starts = grid.row_starts()

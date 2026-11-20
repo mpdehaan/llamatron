@@ -29,7 +29,7 @@ Strokes plays a bar of strokes, one stroke a cell, on whatever chord or note sou
 | Let ring | A struck string sounds until a later stroke strikes the same string or the chord ends, as picked chords do. Off stops every string at the next stroke. |
 | Spread | The time between one string of a strum and the next, in milliseconds whatever the tempo. |
 | Fade | How much quieter the last string of a strum is than the first, up to 50%. |
-| Loose timing | How much each gap between strings varies, up to 50%, drawn from the song's seed. |
+| Loose timing | How much each gap between strings varies, up to 50%, drawn at random. |
 | Upstroke strings | How many of the top strings an upstroke catches, or "all". |
 | Approach | How a new chord is reached: "off" plays the chord where the pattern wrote the chord; "from below" and "from above" first play the chord one fret lower or higher for a sixteenth. The first chord of a clip is never approached. |
 | Restart | When the bar starts over, as [Generators](../GENERATORS.md#restart) describes. |

@@ -30,7 +30,7 @@ Reference notes for Claude, one part of `.claude/tracker/`: File and Notes, Song
   makes the selected song current, and `ENTER` makes it current and opens `SongPage`.
 - It adds, copies, renames, moves, sorts and deletes songs, refusing to delete the last one.
 - `SongPage` has the song's name, which `ENTER` on the Name field renames, then tempo, time
-  signature, entry size, scale, seed, groove, genre (a `text_field`, which `FieldPage` holds for
+  signature, entry size, scale, groove, genre (a `text_field`, which `FieldPage` holds for
   every settings page, as the File/Global page's title uses), Live response (a `ChoiceField` of
   `LIVE_RESPONSIVENESSES`, named by `MSG_LIVE_RESPONSIVENESS_NAMES`) and an Export button.
 - Registers and Arrange edit the current song.

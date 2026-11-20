@@ -100,7 +100,6 @@ BOLD = RichStyle(bold=True)
 CURSOR_STYLE = RichStyle(reverse=True, bold=True)
 # A drum lane's row stands for no pitch, and a seeded song's played view is no one take.
 LANE = None
-NO_TAKE = ''
 NOTHING = ''
 
 
@@ -254,7 +253,7 @@ class SceneView:
         """Return the line that says which view shows."""
         if self._written:
             return marks.MSG_SCENE_VIEW_WRITTEN
-        return marks.MSG_SCENE_VIEW_PLAYED.format(take=marks.MSG_SCENE_VIEW_ONE_TAKE if self._document.song().get_seed() is None else NO_TAKE)
+        return marks.MSG_SCENE_VIEW_PLAYED
 
     def lines(self, *, width, height):
         """Return the window's lines, width columns by height rows: the caption, the effective values and the legend across, then the chords and the roll beside the sidebar, then the line under the cursor."""

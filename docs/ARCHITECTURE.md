@@ -246,8 +246,8 @@ These are the things a reader will notice everywhere, and they're deliberate:
   older version, still loads, so there's no migration code.
 - **Names can change.** Everything that refers to something else by name is updated when it's
   renamed, and a test checks every kind of rename.
-- **Randomness is a choice.** With no seed, every export is a new take. With a seed, the same
-  take comes out every time, which is what the tests rely on.
+- **Randomness is random.** Every play and every export is a new take. The tests and tools repeat a
+  take by giving the renderer a seed of their own, which no person or command-line option reaches.
 - **Nothing is worked out twice.** Everything a set file stores carries a revision, a number
   that moves whenever the object changes. What the tracker works out from some objects is kept
   in one memory with their revisions (`src/llamatron/support/memory.py`) and used again until one

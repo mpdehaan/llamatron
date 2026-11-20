@@ -281,7 +281,9 @@ with a migration in `composition/migrations/`, a module of its own made of the p
 before the change into the one after it and is never changed once released; every piece of code that only runs on an older layout
 lives in that package and nowhere else, without exception, so that the reader, the objects and the writer only ever know the layout
 written now. Adding a setting needs no migration, since every setting has a default, and a feature taken away leaves nothing to
-move. Every file the repository ships is moved over in the same change and tested, its exports byte for byte the same, and
+move: a removed setting never gets a migration, of any kind, for any thing removed; its name goes into `RETIRED_SETTINGS` in
+`composition/file_format.py`, which the reader passes over without a word and nothing writes again, so an older file holding it
+still opens and loses it on its next save (the user's rule, `tests/composition/test_song_files.py`). Every file the repository ships is moved over in the same change and tested, its exports byte for byte the same, and
 `tests/data/migrations/` keeps a file in the older layout for the migration's tests (the user's rules; `.claude/format/FILE_RULES.md`).
 
 **Binding is as late as possible**, and new features keep it that way: a degree stays a degree

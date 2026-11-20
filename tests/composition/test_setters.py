@@ -427,7 +427,6 @@ class TestSong(SetterTestCase):
         setlist = self.song.get_setlist()
         self.assertRefused(self.song, self.song.set_scale_name, NOT_A_NAME)
         self.assertRefused(self.song, self.song.set_tempo, NOT_A_NAME)
-        self.assertRefused(self.song, self.song.set_seed, NOT_A_NAME)
         self.assertRefused(self.song, self.song.set_time_signature, NOT_A_NAME)
         self.assertRefused(setlist.get_pattern(TUNE), setlist.get_pattern(TUNE).set_time_signature, NOT_A_NAME)
         self.assertRefused(setlist, setlist.set_step_size, NOT_A_NAME)

@@ -411,7 +411,6 @@ class TestReadingAndSettingAgree(unittest.TestCase):
             (SongSetting.TIME_SIGNATURE, NOT_A_LENGTH, lambda: self.song.set_time_signature(NOT_A_LENGTH)),
             (SongSetting.ENTRY_SIZE, NOT_A_LENGTH, lambda: self.song.set_entry_size(NOT_A_LENGTH)),
             (SongSetting.SCALE, NOT_A_NAME, lambda: self.song.set_scale_name(NOT_A_NAME)),
-            (SongSetting.SEED, NOT_A_NUMBER, lambda: self.song.set_seed(NOT_A_NUMBER)),
             (SongSetting.GROOVE, NOT_A_NAME, lambda: self.song.set_groove_name(NOT_A_NAME)),
             (SongSetting.WIZARD, NOT_A_NAME, lambda: self.song.set_wizard_choices(NOT_A_NAME)),
         ]:

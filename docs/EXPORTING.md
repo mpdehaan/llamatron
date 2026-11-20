@@ -25,8 +25,8 @@ Every export is named `<set>_<song>`, so `songs/foo.yml` with a song called `bar
 ## Export Contents
 
 An export plays the song as written, every scene once through from the top, as Live's Arrangement View
-lays it out, with every generator, groove, register and random choice played into the notes. A song with
-no seed exports a new take each time; set a seed on the Song page to export the same take every time.
+lays it out, with every generator, groove, register and random choice played into the notes. Every export
+is a new take of the song's random choices.
 
 Some things belong to real-time playback alone and no export reads them: instruments' devices, a clip's
 follow action and a scene's Launch together, the Live response, and anything you did by hand while the
@@ -73,7 +73,6 @@ llamatron examples/learning/04_scale.yml --to --song "Scale demo"
 | `--out` | Writes into that folder, with the same file names, in place of the set's own folder. |
 | `--replace` | Removes each song's earlier export first, so you can export again and listen. |
 | `--template` | Builds the Live set from another Live set. |
-| `--seed` | Exports with that seed in place of the song's, so an export can be repeated exactly. |
 | `--force` | Exports a set file that holds values llamatron can't use, each changed the way the tracker's dialog would change it, listing what it changed. Without it such a file isn't exported. The file itself is never changed. |
 
 These only work with `--to`.

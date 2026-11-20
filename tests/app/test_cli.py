@@ -190,23 +190,23 @@ class TestCli(unittest.TestCase):
         self.assertTrue(self.written_files())
 
     def test_export_options_need_to(self):
-        for arguments in [['--out', self.out], ['--replace'], ['--template', self.song], ['--seed', '0'], ['--force']]:
+        for arguments in [['--out', self.out], ['--replace'], ['--template', self.song], ['--force']]:
             with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
                 code, _, stderr = self.run_exactly(self.song, *arguments)
                 self.assertEqual(code, 2)
                 self.assertIn('only works with --to', stderr)
                 tracker.assert_not_called()
 
-    def test_seed_renders_the_same_take_every_time_and_another_seed_another(self):
+    def test_every_export_is_a_new_take_of_the_songs_random_parts(self):
+        # A hundred steps each played by chance make two takes the same about once in 2 to the 100th.
         with open(self.song, WRITE_TEXT) as file:
             file.write(dump_song_data(lead_data(*[[1, SIXTEENTH]] * 100, rows={Row.PROBABILITY: [50] * 100})))
-        takes = {}
-        for seed in [SEED_A, SEED_A, SEED_B]:
-            out = os.path.join(self.parent, OUT + seed)
-            self.assertEqual(self.run_exactly(self.song, '--to', ExportKind.CLIP_TREE, '--out', out, '--seed', seed)[0], 0)
-            takes.setdefault(seed, []).append([open(path, READ_BYTES).read() for path in sorted(glob.glob(os.path.join(out, '*.mid')))])
-        self.assertEqual(takes[SEED_A][0], takes[SEED_A][1])
-        self.assertNotEqual(takes[SEED_A][0], takes[SEED_B][0])
+        takes = []
+        for take in (SEED_A, SEED_B):
+            out = os.path.join(self.parent, OUT + take)
+            self.assertEqual(self.run_exactly(self.song, '--to', ExportKind.CLIP_TREE, '--out', out)[0], 0)
+            takes.append([open(path, READ_BYTES).read() for path in sorted(glob.glob(os.path.join(out, '*.mid')))])
+        self.assertNotEqual(takes[0], takes[1])
 
     def test_the_launch_options_reach_the_tracker_and_need_a_set(self):
         with mock.patch('llamatron.tui.app.LlamatronApp') as app:
@@ -441,3 +441,6 @@ class TestCliWizard(unittest.TestCase):
         code, _, problem = self.run_exactly(cli_values.OPTION_BATCH)
         self.assertNotEqual(code, 0)
         self.assertIn(errors.ERR_ONLY_WITH_WIZARD.format(options=cli_values.OPTION_BATCH), problem)
+        code, _, problem = self.run_exactly(self.song_file, cli_values.OPTION_TO, cli_values.OPTION_SEED, SEED_A)
+        self.assertNotEqual(code, 0)
+        self.assertIn(errors.ERR_ONLY_WITH_WIZARD.format(options=cli_values.OPTION_SEED), problem)
