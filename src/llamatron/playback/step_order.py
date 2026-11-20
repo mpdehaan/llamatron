@@ -64,17 +64,20 @@ class StepOrder:
         if key not in self._places:
             self._places[key] = FIRST_STEP
             return FIRST_STEP
-        self._places[key] = (self._places[key] + self._chosen_move(direction)) % count
+        self._places[key] = (self._places[key] + chosen_move(direction=direction, choices=self._choices)) % count
         return self._places[key]
 
-    def _chosen_move(self, direction):
-        """Return which way a direction that chooses as it goes moves this time."""
-        chance = self._choices.random()
-        if chance < CHANCE_OF_MOVING_ON:
-            return MOVE_ON
-        if direction == Direction.BROWNIAN:
-            return MOVE_BACK if chance < CHANCE_OF_MOVING_ON_OR_BACK else STAY
-        return MOVE_BACK
+
+
+def chosen_move(*, direction, choices):
+    """Return which way a direction that chooses as it goes moves this time, drawn from choices: brownian on half the time, back
+    a quarter and staying put the rest; eitherway on or back, half the time each."""
+    chance = choices.random()
+    if chance < CHANCE_OF_MOVING_ON:
+        return MOVE_ON
+    if direction == Direction.BROWNIAN:
+        return MOVE_BACK if chance < CHANCE_OF_MOVING_ON_OR_BACK else STAY
+    return MOVE_BACK
 
 
 def walk_order(*, count, direction):

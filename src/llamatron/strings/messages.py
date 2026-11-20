@@ -145,7 +145,7 @@ MSG_CHANGED_THE_SET = 'the set'
 MSG_CHANGED_WORDS = {
     Section.SCALES: 'scale', Section.PATTERNS: 'pattern', Section.ARPS: 'arp', Section.AUTO_RATCHETS: 'AutoRatchet', Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'Strum', Section.GUITARIFIES: 'Guitarify', Section.EUCLIDS: 'Euclid', Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag', Section.HOCKETS: 'Hocket', Section.FOLLOW_CHORDS: 'Follow Chords', Section.PHRASINGS: 'Phrasing', Section.MUSICIANS: 'Musician', Section.DENSITIES: 'Density', Section.SWELLS: 'Swell',
     Section.ARTICULATES: 'Articulate',
-    Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.REGISTERS: 'register',
+    Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.REGISTERS: 'register', Section.DRAWS: 'draw',
     SetlistSetting.TITLE: 'title', SetlistSetting.AUTHOR: 'author', SetlistSetting.DESCRIPTION: 'description', SetlistSetting.NOTES: 'notes',
     SetlistSetting.STEP_SIZE: 'step size', SetlistSetting.DEFAULT_OCTAVE: 'default octave', SetlistSetting.DEFAULT_DRUM_OCTAVE: 'default drum octave',
     SetlistSetting.OCTAVE_LABELS: 'octave labels', SetlistSetting.PROTECTED: 'protected',

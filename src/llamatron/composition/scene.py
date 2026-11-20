@@ -74,6 +74,16 @@ def _check_reset(value):
         raise InvalidValue(errors.ERR_BAD_RESET.format(names=listed(file_format.REGISTER_NAMES), value=value))
 
 
+def is_draw_list(value):
+    """Return whether a value is a list of the song's draws' names."""
+    return isinstance(value, list) and all(name in file_format.DRAW_NAMES for name in value)
+
+
+def _check_reset_draws(value):
+    if not is_draw_list(value):
+        raise InvalidValue(errors.ERR_BAD_RESET_DRAWS.format(names=listed(file_format.DRAW_NAMES), value=value))
+
+
 # A scene's settings, each described once, in the order they're written to a file, before its tracks.
 SETTINGS = described(
     Checked(name=SceneSetting.NAME, check=_check_scene_name),
@@ -88,6 +98,7 @@ SETTINGS = described(
     Checked(name=SceneSetting.TEMPO_OUT_END, check=number),
     WholeNumber(name=SceneSetting.TEMPO_OUT_OVER, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS),
     Checked(name=SceneSetting.RESET, check=_check_reset),
+    Checked(name=SceneSetting.RESET_DRAWS, check=_check_reset_draws),
     Checked(name=SceneSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Flag(name=SceneSetting.LAUNCH_TOGETHER, error=errors.ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
     Checked(name=SceneSetting.CHAINS, check=check_chain_names, needs_song=True),
@@ -215,6 +226,11 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         reset = self._settings[SceneSetting.RESET] or []
         return [name for name in file_format.REGISTER_NAMES if name in reset]
 
+    def get_reset_draw_names(self):
+        """Return the draws it sends back to their start, or a serial draw to a new round, as it first starts, in the order the draws come."""
+        reset = self._settings[SceneSetting.RESET_DRAWS] or []
+        return [name for name in file_format.DRAW_NAMES if name in reset]
+
     def changes_registers(self):
         """Return whether it, or any of its clips, sets a register or adds to one."""
         own = self._settings[SceneSetting.SET_REGISTERS] or self._settings[SceneSetting.ADD_REGISTERS]
@@ -306,6 +322,16 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         chosen = chosen | {register} if on else chosen - {register}
         reset = [name for name in file_format.REGISTER_NAMES if name in chosen]
         self._settings[SceneSetting.RESET] = reset or None
+
+    @notes_change
+    def set_reset_draw(self, *, draw, on):
+        """Make it reset a draw as it first starts, or stop it, keeping the draws in order."""
+        if draw not in file_format.DRAW_NAMES:
+            raise InvalidValue(errors.ERR_NO_SUCH_DRAW.format(name=draw, names=listed(file_format.DRAW_NAMES)))
+        chosen = set(self.get_reset_draw_names())
+        chosen = chosen | {draw} if on else chosen - {draw}
+        reset = [name for name in file_format.DRAW_NAMES if name in chosen]
+        self._settings[SceneSetting.RESET_DRAWS] = reset or None
 
     @notes_change
     def set_clip_slot(self, *, track, clip_slot, song):

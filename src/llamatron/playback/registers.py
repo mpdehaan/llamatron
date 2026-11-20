@@ -58,14 +58,17 @@ class RegisterChange(NamedTuple):
     place: int
     sets: dict
     adds: dict
+    # The draws the step uses, each drawing once, and the draws it resets before it draws (draws.py).
+    draws: tuple = ()
+    draw_resets: tuple = ()
 
 
 def starting_values(registers):
     """Return every register's default, as the registers start when rendering starts.
 
-    registers is the song's Register for each name.
+    registers is the song's Register for each name. Every draw is there too, as having drawn nothing yet.
     """
-    return {name: registers[name].get_default() for name in file_format.REGISTER_NAMES}
+    return {**{name: registers[name].get_default() for name in file_format.REGISTER_NAMES}, **dict.fromkeys(file_format.DRAW_NAMES, NO_VALUE)}
 
 
 def with_resets(*, values, registers, names):
@@ -117,24 +120,36 @@ class RegisterTimeline:
     Changes are RegisterChanges, applied in time order, and at the same time in track order.
     """
 
-    __slots__ = ('_start', '_moments', '_values', '_turned')
+    __slots__ = ('_start', '_moments', '_values', '_turned', '_draws')
 
-    def __init__(self, *, registers, start, changes, chooser=None, turned=NOT_TURNED):
-        """chooser draws the random values of a register whose Reset behavior picks one, and turned names the registers that reverse and are counting the other way as the scene starts."""
+    def __init__(self, *, registers, start, changes, chooser=None, turned=NOT_TURNED, draws=None):
+        """chooser draws the random values of a register whose Reset behavior picks one, and of a draw that chooses at random,
+        turned names the registers that reverse and are counting the other way as the scene starts, and draws is where the song's
+        draws stand as it starts (a DrawPlay), which the timeline carries on from without changing, or None in a song with no draws."""
         self._start = dict(start)
         self._moments = []
         self._values = []
         values = dict(start)
         turned = Turned(registers=registers, turned=turned)
+        self._draws = None if draws is None else draws.copy()
         for change in sorted(changes, key=_moment_of):
             for name, value in change.sets.items():
                 values[name] = registers[name].held(value)
                 turned.forward(name)
             for name, amount in change.adds.items():
                 values[name] = turned.added(name=name, value=values[name], amount=amount, chooser=chooser)
+            if self._draws is not None:
+                for name in change.draw_resets:
+                    self._draws.reset(name)
+                for name in change.draws:
+                    values[name] = self._draws.draw(name=name, chooser=chooser)
             self._moments.append((change.time, change.place))
             self._values.append(dict(values))
         self._turned = turned.names()
+
+    def get_end_draws(self):
+        """Return where the song's draws stand once the scene is over, which the next scene starts from, or None in a song with no draws."""
+        return self._draws
 
     def get_end_turned(self):
         """Return the names of the registers that reverse and are counting the other way once the scene is over, which the next scene starts with."""
@@ -178,10 +193,10 @@ class RegisterRecorder:
         self._place = place
         self._changes = []
 
-    def at_step(self, *, time, sets, adds):
-        """Note what a step sets the registers to and adds to them at a time in the scene, and return the values it sees."""
-        if sets or adds:
-            self._changes.append(RegisterChange(time, self._place, sets, adds))
+    def at_step(self, *, time, sets, adds, draws=(), draw_resets=()):
+        """Note what a step sets the registers to and adds to them at a time in the scene, and the draws it resets and uses, and return the values it sees."""
+        if sets or adds or draws or draw_resets:
+            self._changes.append(RegisterChange(time, self._place, sets, adds, draws, draw_resets))
         return no_values()
 
     def at_pass(self, *, time, sets, adds):
@@ -220,8 +235,8 @@ class RegisterReader:
         """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
         return self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
 
-    def at_step(self, *, time, sets, adds):
-        """Return the values a step sees at a time in the scene. What it sets and adds is already in the timeline."""
+    def at_step(self, *, time, sets, adds, draws=(), draw_resets=()):
+        """Return the values a step sees at a time in the scene, the draws' among them. What it sets, adds and draws is already in the timeline."""
         return self._timeline.values_at(time=time, place=self._place)
 
     def before_step(self, time):
@@ -267,9 +282,9 @@ class RegisterSolo(RegisterRecorder):
         self._chooser = chooser
         self._turned = Turned(registers=registers, turned=turned)
 
-    def at_step(self, *, time, sets, adds):
+    def at_step(self, *, time, sets, adds, draws=(), draw_resets=()):
         self._change(sets=sets, adds=adds)
-        return super().at_step(time=time, sets=sets, adds=adds)
+        return super().at_step(time=time, sets=sets, adds=adds, draws=draws, draw_resets=draw_resets)
 
     def at_pass(self, *, time, sets, adds):
         self._change(sets=sets, adds=adds)
@@ -293,8 +308,8 @@ def scene_change(*, sets, adds):
 
 
 def no_values():
-    """Return a value of nothing for every register."""
-    return dict.fromkeys(file_format.REGISTER_NAMES, NO_VALUE)
+    """Return a value of nothing for every register and every draw."""
+    return dict.fromkeys((*file_format.REGISTER_NAMES, *file_format.DRAW_NAMES), NO_VALUE)
 
 
 def _moment_of(change):

@@ -59,6 +59,7 @@ class Section:
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
     REGISTERS = 'registers'
+    DRAWS = 'draws'
     SONGS = 'songs'
     SCENES = 'scenes'
 
@@ -269,6 +270,20 @@ class Row:
     BX_SET = 'bx_set'
     CX_SET = 'cx_set'
     DX_SET = 'dx_set'
+    # Whether each draw's value moves the step's note along the scale, added (1) or subtracted (-1), and the same for its velocity.
+    AD_NOTE = 'ad_note'
+    BD_NOTE = 'bd_note'
+    CD_NOTE = 'cd_note'
+    DD_NOTE = 'dd_note'
+    AD_VELOCITY = 'ad_velocity'
+    BD_VELOCITY = 'bd_velocity'
+    CD_VELOCITY = 'cd_velocity'
+    DD_VELOCITY = 'dd_velocity'
+    # Whether the step sends each draw back to its start, or a serial draw to a new round, before the step draws.
+    AD_RESET = 'ad_reset'
+    BD_RESET = 'bd_reset'
+    CD_RESET = 'cd_reset'
+    DD_RESET = 'dd_reset'
     # A step's statements about the registers, one of each kind, each written across five rows: the register, the operator,
     # a number or a register, and after a sum the comparison of the result and what it is compared with.
     STOP_C1 = 'stop_c1'
@@ -347,6 +362,8 @@ class SceneSetting:
     TEMPO_OUT_END = 'tempo_out_end'
     TEMPO_OUT_OVER = 'tempo_out_over'
     RESET = 'reset'
+    # The draws the scene sends back to their start, or a serial draw to a new round, as it first starts.
+    RESET_DRAWS = 'reset_draws'
     GROOVE = 'groove'
     LAUNCH_TOGETHER = 'launch_together'
     # The kind of section the scene is, which says nothing of how the scene plays: it is what a part that knows sections reads.
@@ -430,6 +447,35 @@ class RegisterName:
     BX = 'BX'
     CX = 'CX'
     DX = 'DX'
+
+
+class DrawName:
+    """The song's four draws, whose names are fixed."""
+
+    AD = 'AD'
+    BD = 'BD'
+    CD = 'CD'
+    DD = 'DD'
+
+
+class DrawSetting:
+    """A draw's settings."""
+
+    DIRECTION = 'direction'
+    # The draw's slots in order, each a whole number or blank, which a draw passes over without using up a draw.
+    SLOTS = 'slots'
+    VALUE_MIN = 'value_min'
+    VALUE_MAX = 'value_max'
+    # Whether a condition that reads the draw draws from it too, as a step's Use Draws row does.
+    CONDITIONS_REDRAW = 'conditions_redraw'
+
+
+class DrawDirection:
+    """The ways a draw moves that a pattern's steps have not: serial deals every slot once a round in a random order, and any
+    picks a slot at random every time."""
+
+    SERIAL = 'serial'
+    ANY = 'any'
 
 
 class RegisterUse:
@@ -746,6 +792,12 @@ REGISTER_ADD_ROWS = {
 REGISTER_SET_ROWS = {
     RegisterName.AX: Row.AX_SET, RegisterName.BX: Row.BX_SET, RegisterName.CX: Row.CX_SET, RegisterName.DX: Row.DX_SET,
 }
+DRAW_NAMES = [DrawName.AD, DrawName.BD, DrawName.CD, DrawName.DD]
+# Each draw's rows in a pattern, the Use Draws section: whether its value moves the note, whether it changes the velocity, and
+# whether the step resets the draw.
+DRAW_NOTE_ROWS = {DrawName.AD: Row.AD_NOTE, DrawName.BD: Row.BD_NOTE, DrawName.CD: Row.CD_NOTE, DrawName.DD: Row.DD_NOTE}
+DRAW_VELOCITY_ROWS = {DrawName.AD: Row.AD_VELOCITY, DrawName.BD: Row.BD_VELOCITY, DrawName.CD: Row.CD_VELOCITY, DrawName.DD: Row.DD_VELOCITY}
+DRAW_RESET_ROWS = {DrawName.AD: Row.AD_RESET, DrawName.BD: Row.BD_RESET, DrawName.CD: Row.CD_RESET, DrawName.DD: Row.DD_RESET}
 
 
 class StepStatement:
@@ -780,7 +832,7 @@ PATTERN_ROWS = [
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
-    *REGISTER_SET_ROWS.values(), *STATEMENT_OF_ROW,
+    *REGISTER_SET_ROWS.values(), *DRAW_NOTE_ROWS.values(), *DRAW_VELOCITY_ROWS.values(), *DRAW_RESET_ROWS.values(), *STATEMENT_OF_ROW,
 ]
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
@@ -791,6 +843,8 @@ DIRECTIONS = [
     Direction.FORWARD, Direction.REVERSE_A, Direction.REVERSE_B, Direction.ALTERNATE, Direction.PENDULUM,
     Direction.RANDOM, Direction.BROWNIAN, Direction.EITHERWAY,
 ]
+# A draw moves in any direction a pattern's steps do, and two of its own.
+DRAW_DIRECTIONS = [*DIRECTIONS, DrawDirection.SERIAL, DrawDirection.ANY]
 NOTE_LETTERS = 'ABCDEFG'
 # How many half steps each accidental moves a note.
 ACCIDENTALS = {Accidental.SHARP: 1, Accidental.FLAT: -1}
