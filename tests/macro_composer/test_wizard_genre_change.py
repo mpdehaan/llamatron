@@ -74,7 +74,7 @@ class TestLostWithGenre(unittest.TestCase):
         choices.get_tunes().new_tune_take(A_KIND)
         choices.get_tunes().new_tune_take(ANOTHER_KIND)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_TUNE_TAKES: 2}, {}))
-        choices.set_section_own(place=A_PLACE, field=arranger.CHORDS, value=OWN_CHORDS)
+        choices.section(A_PLACE).set_own(field=arranger.CHORDS, value=OWN_CHORDS)
         lost, kept = choices.lost_with_genre()
         self.assertEqual(lost[wizard_limits.LOST_OWN_CHORDS], 1)
         self.assertEqual(lost[wizard_limits.LOST_FORM], 1)

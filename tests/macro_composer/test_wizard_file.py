@@ -82,7 +82,7 @@ class TestSongFile(unittest.TestCase):
         form = [VERSE, {KIND: CHORUS, song_plan.ENERGY: AN_ENERGY}, ENDING]
         made = choices({**BASIC, arranger.FORM: form})
         self.assertTrue(made.has_own_form())
-        self.assertEqual([made.section_kind(place) for place in range(len(form))], [VERSE, CHORUS, ENDING])
+        self.assertEqual([made.section(place).kind() for place in range(len(form))], [VERSE, CHORUS, ENDING])
         self.assertEqual(made.get_song_extras()[song_plan.PLAN_OF_SONG][song_plan.BY_PLACE], [{}, {song_plan.ENERGY: AN_ENERGY}, {}])
 
     def test_what_the_file_lays_over_the_song_reaches_the_song(self):

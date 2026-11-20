@@ -58,7 +58,7 @@ def tunes_played(*, choices, kind):
     setlist, name = choices.made_for_listening()
     player = choices.get_band().tune_player()
     scenes = setlist.get_song(name).get_scenes()
-    return [scene.get_clip_slot(player).get_pattern_name() for place, scene in enumerate(scenes) if choices.section_kind(place) == kind and scene.has_clip_slot(player)]
+    return [scene.get_clip_slot(player).get_pattern_name() for place, scene in enumerate(scenes) if choices.section(place).kind() == kind and scene.has_clip_slot(player)]
 
 
 class TestWizardTunes(unittest.TestCase):
@@ -223,7 +223,7 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         choices.get_tunes().set_tune_played_by(other)
         setlist, name = choices.made_for_listening()
         for place, scene in enumerate(setlist.get_song(name).get_scenes()):
-            if choices.section_kind(place) == A_KIND:
+            if choices.section(place).kind() == A_KIND:
                 self.assertFalse(scene.has_clip_slot(usual))
                 self.assertEqual(setlist.get_pattern(scene.get_clip_slot(other).get_pattern_name()).to_data()[Row.DEGREE], tune[Row.DEGREE])
         self.assertEqual(choices.get_tunes().tune_pattern(A_KIND)[Row.DEGREE], tune[Row.DEGREE])
@@ -245,7 +245,7 @@ class TestWhoPlaysTheTune(unittest.TestCase):
         self.assertIsNone(choices.get_tunes().tune_pattern(A_KIND))
         setlist, name = choices.made_for_listening()
         for place, scene in enumerate(setlist.get_song(name).get_scenes()):
-            if choices.section_kind(place) == A_KIND:
+            if choices.section(place).kind() == A_KIND:
                 self.assertFalse(scene.has_clip_slot(usual))
         self.assertIn(A_KIND, choices.get_tunes().tune_kinds())
         choices.get_tunes().set_tune_played_by_in(kind=A_KIND, role=None)

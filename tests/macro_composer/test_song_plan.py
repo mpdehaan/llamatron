@@ -337,12 +337,12 @@ class TestStagedSolos(unittest.TestCase):
         choices.set_seed(SEED)
         solos = [place for place, label in enumerate(choices.section_labels()) if label.startswith(SOLO)]
         self.assertGreater(len(solos), 1)
-        names = choices.section_shapes(solos[0])
-        said = [choices.section_from_plan(place=place, field=wizard_limits.SHAPE_OF_SECTION) for place in solos]
+        names = choices.section(solos[0]).shapes()
+        said = [choices.section(place).from_plan(field=wizard_limits.SHAPE_OF_SECTION) for place in solos]
         self.assertEqual(said, [wizard_limits.SHAPE_USUAL, *names[:len(solos) - 1]])
         before = choices.made_for_listening()[0].to_data()
-        choices.set_section_own(place=solos[1], field=wizard_limits.SHAPE_OF_SECTION, value=names[-1])
-        self.assertEqual(choices.section_own(place=solos[1], field=wizard_limits.SHAPE_OF_SECTION), names[-1])
+        choices.section(solos[1]).set_own(field=wizard_limits.SHAPE_OF_SECTION, value=names[-1])
+        self.assertEqual(choices.section(solos[1]).own(field=wizard_limits.SHAPE_OF_SECTION), names[-1])
         self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
 
 

@@ -287,7 +287,7 @@ class BandChoices(ChoicesPart):
 
     def section_has_role(self, place):
         """Return whether the answering player has something to choose in a section: somebody answers, and the tune's player plays in the section."""
-        return self.answered_by() is not None and not self._choices.section_is_held(place) and self.tune_player() in self._choices.section_plays(place)
+        return self.answered_by() is not None and not self._choices.section(place).is_held() and self.tune_player() in self._choices.section(place).plays()
 
     def planned_role(self, place):
         """Return what the plan has the answering player do in a section: the one thing chosen for every section, or what the genre's plan
@@ -295,19 +295,19 @@ class BandChoices(ChoicesPart):
         if self._beside[wizard_limits.WAY] is not None:
             return self._beside[wizard_limits.WAY]
         interplay = self._interplay()
-        kind = self._choices.section_entry(place)[arranger.KIND]
+        kind = self._choices.section(place).entry()[arranger.KIND]
         plan = {**interplay.get(wizard_limits.PLAN, {}), **interplay.get(wizard_limits.BY_SUBGENRE, {}).get(self._choices.get_subgenre(), {})}
         return plan.get(kind, interplay_values.WAITS)
 
     def section_role_is_own(self, place):
         """Return whether a section was given a role of its own, apart from the plan."""
-        return wizard_limits.BESIDE_KEPT in self._choices.section_entry(place)
+        return wizard_limits.BESIDE_KEPT in self._choices.section(place).entry()
 
     def section_role(self, place):
         """Return what the answering player does in a section: the section's own choice, or the plan's."""
         if not self.section_has_role(place):
             raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
-        return self._choices.section_entry(place).get(wizard_limits.BESIDE_KEPT, self.planned_role(place))
+        return self._choices.section(place).entry().get(wizard_limits.BESIDE_KEPT, self.planned_role(place))
 
     def set_section_role(self, *, place, way):
         """Choose what the answering player does in one section, or give the section back to the plan with None."""

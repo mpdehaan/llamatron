@@ -54,12 +54,12 @@ class TestWizardStages(WizardTest):
         choices.set_end(wizard_limits.REPEAT_AND_FADE)
         await self.press(Key.DOWN, Key.UP)
         last = len(choices.section_kinds_in_form()) - 1
-        self.assertEqual(choices.fade_way(last), wizard_limits.FADE_OUT)
+        self.assertEqual(choices.section(last).fade_way(), wizard_limits.FADE_OUT)
         branch = SectionBranch(page=self.wizard(), place=last)
         fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_OUT]
-        self.assertEqual([branch.fade_field(field).label for field in choices.fade_fields(last)], [fade[song_plan.FADES], fade[song_plan.FADE_LEVEL], fade[song_plan.FADE_OVER]])
+        self.assertEqual([branch.fade_field(field).label for field in choices.section(last).fade_fields()], [fade[song_plan.FADES], fade[song_plan.FADE_LEVEL], fade[song_plan.FADE_OVER]])
         # Until given, the fade takes every bar of the section.
-        self.assertEqual(branch.fade_field(song_plan.FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=choices.section_bars(last)))
+        self.assertEqual(branch.fade_field(song_plan.FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=choices.section(last).bars()))
 
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
@@ -99,17 +99,17 @@ class TestWizardStages(WizardTest):
         first = choices.get_first_player()
         await self.press(self.more())
         self.assertNotEqual(choices.get_first_player(), first)
-        self.assertEqual(choices.section_plays(FIRST), [choices.get_first_player()])
+        self.assertEqual(choices.section(FIRST).plays(), [choices.get_first_player()])
         await self.select_field(labels.MSG_WIZARD_SETUP_BARS_LABEL)
         bars = choices.get_setup_bars()
         await self.press(self.more())
         self.assertGreater(choices.get_setup_bars(), bars)
-        self.assertEqual(choices.section_bars(FIRST), choices.get_setup_bars())
+        self.assertEqual(choices.section(FIRST).bars(), choices.get_setup_bars())
 
     async def test_opening_sections_a_person_changed_read_as_the_person_s_own(self):
         choices = await self.to_form()
         choices.set_start(wizard_limits.DRUMS_FIRST)
-        choices.set_section_plays(place=FIRST, role=THE_BASS, on=True)
+        choices.section(FIRST).set_plays(role=THE_BASS, on=True)
         await self.press(Key.DOWN, Key.UP)
         self.assertIsNone(choices.get_start())
         self.assertIn(labels.MSG_WIZARD_OWN_START, self.text())
@@ -123,14 +123,14 @@ class TestWizardStages(WizardTest):
         await self.select_field(fade[song_plan.FADES])
         self.assertNotIn(fade[song_plan.FADE_LEVEL], [field.label for field in self.app.screen.shown_fields()])
         await self.press(Key.SPACE)
-        self.assertTrue(choices.section_own(place=THE_INTRO_PLACE, field=song_plan.FADES))
+        self.assertTrue(choices.section(THE_INTRO_PLACE).own(field=song_plan.FADES))
         self.assertIn(labels.MSG_WIZARD_FADE_VELOCITY.format(value=song_plan.FADED), self.text())
         await self.select_field(fade[song_plan.FADE_LEVEL])
         await self.press(keybindings.WizardPage.MORE)
-        self.assertEqual(choices.section_own(place=THE_INTRO_PLACE, field=song_plan.FADE_LEVEL), song_plan.FADED + 1)
+        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=song_plan.FADE_LEVEL), song_plan.FADED + 1)
         await self.select_field(fade[song_plan.FADE_OVER])
         await self.press(keybindings.WizardPage.LESS)
-        self.assertEqual(choices.section_own(place=THE_INTRO_PLACE, field=song_plan.FADE_OVER), choices.section_bars(THE_INTRO_PLACE) - 1)
+        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=song_plan.FADE_OVER), choices.section(THE_INTRO_PLACE).bars() - 1)
         # A verse has no fade.
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(A_VERSE)
