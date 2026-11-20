@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Get the traps Egon
 description: "a mid-eighties spooky funk-pop film theme in the manner of Ghostbusters (Ray Parker Jr.), with a riff of its own"
 notes: |
@@ -54,24 +54,24 @@ real_time: true
 protected: true
 
 scales:
-  G Mixolydian: { root: G, type: mixolydian }
+  - { name: G Mixolydian, root: G, type: mixolydian }
 
 patterns:
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, C, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, 3, ~, ~, ~, ~, ~]
     velocity: [112, ~, ~, ~, ~, ~, 112, ~, 112, ~, 112, ~, ~, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -79,7 +79,7 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
     velocity: [80, ~, 74, ~, 80, ~, 74, ~, 80, ~, 74, ~, 80, ~, 74, ~]
-  clap:
+  - name: clap
     steps: 16
     drum: true
     step_size: 1/16
@@ -87,13 +87,13 @@ patterns:
     accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~]
-  bass:
+  - name: bass
     steps: 16
     step_size: 1/16
     degree: [1, ~, ~, 1, ~, 1, 3, 5, 7, ~, ~, 7, 4, ~, ~, 5]
     octave: [3, ~, ~, 3, ~, 3, 3, 3, 2, ~, ~, 2, 2, ~, ~, 2]
     velocity: [118, ~, ~, 111, ~, 101, 104, 101, 109, ~, ~, 101, 107, ~, ~, 101]
-  hit:
+  - name: hit
     steps: 4
     step_size: 1/16
     degree: [1, ~, ~, ~]
@@ -101,14 +101,14 @@ patterns:
     chord: ["3", ~, ~, ~]
     velocity: [104, ~, ~, ~]
     tie: [false, true, true, false]
-  chick:
+  - name: chick
     steps: 4
     step_size: 1/16
     degree: [~, ~, 1, 1]
     octave: [~, ~, 5, 5]
     chord: [~, ~, "3", "3"]
     velocity: [~, ~, 67, 64]
-  bar hit:
+  - name: bar hit
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, 1, ~, ~, 1, ~]
@@ -116,21 +116,21 @@ patterns:
     chord: ["3", ~, ~, "3", ~, ~, "3", ~]
     velocity: [104, ~, ~, 101, ~, ~, 101, ~]
     tie: [false, true, true, false, true, true, false, true]
-  middle bass:
+  - name: middle bass
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, 1, 5, ~, 1, ~]
     octave: [3, ~, ~, 3, 3, ~, 3, ~]
     velocity: [116, ~, ~, 102, 107, ~, 105, ~]
     tie: [false, true, false, false, false, true, false, true]
-  hook:
+  - name: hook
     steps: 32
     step_size: 1/8
     degree: [5, ~, 5, 6, 5, ~, 3, ~, 4, ~, 2, ~, ~, ~, ~, ~, 5, ~, 5, 6, 1, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, 5, 6, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [112, ~, 104, 104, 104, ~, 100, ~, 104, ~, 100, ~, ~, ~, ~, ~, 112, ~, 104, 104, 116, ~, 100, ~, 100, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, false, false, false, false, false, false]
-  shout:
+  - name: shout
     steps: 32
     step_size: 1/8
     degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 1, ~, ~, ~]
@@ -138,14 +138,14 @@ patterns:
     chord: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "3", ~, "3", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "3", ~, "3", ~, ~, ~]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, ~, 115, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 115, ~, 112, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false]
-  middle tune:
+  - name: middle tune
     steps: 64
     step_size: 1/8
     degree: [6, ~, 6, ~, 4, ~, ~, ~, 6, ~, 1, ~, 6, ~, ~, ~, 5, ~, 5, ~, 3, ~, ~, ~, 5, ~, 3, ~, 1, ~, ~, ~, 6, ~, 6, ~, 4, ~, ~, ~, 1, ~, 6, ~, 4, ~, ~, ~, 7, ~, 5, ~, 2, ~, ~, ~, 2, ~, 5, ~, 7, ~, ~, ~]
     octave: [5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 6, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 6, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~]
     velocity: [112, ~, 104, ~, 100, ~, ~, ~, 104, ~, 116, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 104, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 116, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 104, ~, 104, ~, 100, ~, ~, ~]
     tie: [false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, false]
-  whistle:
+  - name: whistle
     steps: 32
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -153,135 +153,131 @@ patterns:
     velocity: [91, ~, ~, ~, ~, ~, ~, ~, 91, ~, ~, ~, ~, ~, ~, ~, 91, ~, ~, ~, 82, ~, ~, ~, 91, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
-progressions:
-  riff: { chords: [1, 1, 7, 4], every: 1/4 }
-  middle: { chords: [4, 4, 1, 1, 4, 4, 5, 5] }
-
-chains:
-  riff:
-    - progression: riff
-  middle:
-    - progression: middle
+generators:
+  - { name: riff, kind: progression, chords: [1, 1, 7, 4], every: 1/4 }
+  - { name: middle, kind: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] }
+  - { name: riff chords, kind: chain, generators: [{ name: riff }] }
+  - { name: middle chords, kind: chain, generators: [{ name: middle }] }
 
 instruments:
-  synth bass: { device: "*FluidSynth", gm_sound: 39 }
-  synth brass: { device: "*FluidSynth", gm_sound: 63 }
-  muted guitar: { device: "*FluidSynth", gm_sound: 29 }
-  voice lead: { device: "*FluidSynth", gm_sound: 86 }
-  voices: { device: "*FluidSynth", gm_sound: 53 }
-  whistle: { device: "*FluidSynth", gm_sound: 79 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
+  - { name: synth brass, device: "*FluidSynth", gm_sound: 63 }
+  - { name: muted guitar, device: "*FluidSynth", gm_sound: 29 }
+  - { name: voice lead, device: "*FluidSynth", gm_sound: 86 }
+  - { name: voices, device: "*FluidSynth", gm_sound: 53 }
+  - { name: whistle, device: "*FluidSynth", gm_sound: 79 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  get_the_traps_egon:
+  - name: get_the_traps_egon
     tempo: 116
     scale: G Mixolydian
     genre: Soundtrack
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      clap: { drum: true, instrument: drum kit }
-      bass: { instrument: synth bass }
-      brass: { instrument: synth brass }
-      guitar: { instrument: muted guitar }
-      lead: { instrument: voice lead }
-      shout: { instrument: voices }
-      ghost: { instrument: whistle }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: clap, drum: true, instrument: drum kit }
+      - { name: bass, instrument: synth bass }
+      - { name: brass, instrument: synth brass }
+      - { name: guitar, instrument: muted guitar }
+      - { name: lead, instrument: voice lead }
+      - { name: shout, instrument: voices }
+      - { name: ghost, instrument: whistle }
 
     scenes:
       - name: intro
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
       - name: riff
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          brass: { pattern: hit, chains: [riff], loop: true }
-          guitar: { pattern: chick, chains: [riff], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
+          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
       - name: hook
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          brass: { pattern: hit, chains: [riff], loop: true }
-          guitar: { pattern: chick, chains: [riff], loop: true }
-          lead: { pattern: hook, loop: true }
-          shout: { pattern: shout, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
+          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: lead, pattern: hook, loop: true }
+          - { track: shout, pattern: shout, loop: true }
       - name: riff 2
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          brass: { pattern: hit, chains: [riff], loop: true }
-          guitar: { pattern: chick, chains: [riff], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
+          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
       - name: hook 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          brass: { pattern: hit, chains: [riff], loop: true }
-          guitar: { pattern: chick, chains: [riff], loop: true }
-          lead: { pattern: hook, loop: true }
-          shout: { pattern: shout, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
+          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: lead, pattern: hook, loop: true }
+          - { track: shout, pattern: shout, loop: true }
       - name: middle
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: middle bass, chains: [middle], loop: true }
-          brass: { pattern: bar hit, chains: [middle], loop: true }
-          lead: { pattern: middle tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: middle bass, generators: [{ name: middle chords }], loop: true }
+          - { track: brass, pattern: bar hit, generators: [{ name: middle chords }], loop: true }
+          - { track: lead, pattern: middle tune, loop: true }
       - name: riff 3
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          brass: { pattern: hit, chains: [riff], loop: true }
-          guitar: { pattern: chick, chains: [riff], loop: true }
-          clap: { pattern: clap, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
+          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: clap, pattern: clap, loop: true }
       - name: ghosts
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          ghost: { pattern: whistle, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: ghost, pattern: whistle, loop: true }
       - name: middle 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: middle bass, chains: [middle], loop: true }
-          brass: { pattern: bar hit, chains: [middle], loop: true }
-          lead: { pattern: middle tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: middle bass, generators: [{ name: middle chords }], loop: true }
+          - { track: brass, pattern: bar hit, generators: [{ name: middle chords }], loop: true }
+          - { track: lead, pattern: middle tune, loop: true }
       - name: last hook
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          brass: { pattern: hit, chains: [riff], loop: true }
-          guitar: { pattern: chick, chains: [riff], loop: true }
-          lead: { pattern: hook, loop: true }
-          shout: { pattern: shout, loop: true }
-          clap: { pattern: clap, loop: true }
-          ghost: { pattern: whistle, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
+          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: lead, pattern: hook, loop: true }
+          - { track: shout, pattern: shout, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: ghost, pattern: whistle, loop: true }
       - name: riff out
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, loop: true }
-          brass: { pattern: hit, chains: [riff], loop: true }
-          guitar: { pattern: chick, chains: [riff], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
+          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }

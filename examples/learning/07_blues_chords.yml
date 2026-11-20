@@ -1,4 +1,4 @@
-version: 1.0.206
+version: 1.0.591
 title: Blues chords
 description: a twelve-bar shuffle blues in G from one-bar patterns
 notes: |
@@ -28,41 +28,41 @@ real_time: true
 protected: true
 
 scales:
-  G Major: { root: G, type: major }
+  - { name: G Major, root: G, type: major }
 
 patterns:
-  walk:
+  - name: walk
     steps: 4
     step_size: 1/4
     degree: [1, 3, 5, 6]
     octave: [2, 2, 2, 2]
-  comp:
+  - name: comp
     steps: 8
     step_size: 1/8
     degree: [~, ~, 1, ~, ~, ~, 1, ~]
     octave: [~, ~, 4, ~, ~, ~, 4, ~]
     chord: [~, ~, dom7, ~, ~, ~, dom7, ~]
     velocity: [~, ~, 90, ~, ~, ~, 80, ~]
-  riff:
+  - name: riff
     steps: 8
     step_size: 1/8
     degree: [1, 3, 3, 5, 6, 5, 3, ~]
     accidental: [~, b, ~, ~, ~, ~, b, ~]
     octave: [5, 5, 5, 5, 5, 5, 5, ~]
     velocity: [100, 80, 90, 80, 95, 80, 85, ~]
-  kick:
+  - name: kick
     steps: 4
     drum: true
     step_size: 1/4
     degree: [C, ~, C, ~]
     octave: [3, ~, 3, ~]
-  snare:
+  - name: snare
     steps: 4
     drum: true
     step_size: 1/4
     degree: [~, D, ~, D]
     octave: [~, 3, ~, 3]
-  hats:
+  - name: hats
     steps: 8
     drum: true
     step_size: 1/8
@@ -71,88 +71,83 @@ patterns:
     octave: [3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [90, 60, 80, 60, 90, 60, 80, 60]
 
-progressions:
-  twelve bar: { chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
-  quick change: { chords: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
-  ending: { chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1] }
-
-chains:
-  twelve bar:
-    - progression: twelve bar
-  quick change:
-    - progression: quick change
-  ending:
-    - progression: ending
+generators:
+  - { name: twelve bar, kind: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
+  - { name: quick change, kind: progression, chords: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
+  - { name: ending, kind: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1] }
+  - { name: twelve bar chords, kind: chain, generators: [{ name: twelve bar }] }
+  - { name: quick change chords, kind: chain, generators: [{ name: quick change }] }
+  - { name: ending chords, kind: chain, generators: [{ name: ending }] }
 
 instruments:
-  finger bass: { device: "*FluidSynth", gm_sound: 34 }
-  electric piano: { device: "*FluidSynth", gm_sound: 5 }
-  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
-  harmonica: { device: "*FluidSynth", gm_sound: 23 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: finger bass, device: "*FluidSynth", gm_sound: 34 }
+  - { name: electric piano, device: "*FluidSynth", gm_sound: 5 }
+  - { name: clean guitar, device: "*FluidSynth", gm_sound: 28 }
+  - { name: harmonica, device: "*FluidSynth", gm_sound: 23 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  blues_chords:
+  - name: blues_chords
     tempo: 96
     scale: G Major
     groove: 8th swing 66
     genre: Blues
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hats: { drum: true, instrument: drum kit }
-      bass: { instrument: finger bass }
-      comp: { instrument: electric piano }
-      riff: { instrument: clean guitar }
-      riff high: { transpose: 7, instrument: harmonica }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hats, drum: true, instrument: drum kit }
+      - { name: bass, instrument: finger bass }
+      - { name: comp, instrument: electric piano }
+      - { name: riff, instrument: clean guitar }
+      - { name: riff high, transpose: 7, instrument: harmonica }
 
     scenes:
       - name: twelve bar
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
-          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
-          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
+        clips:
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: bass, pattern: walk, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: comp, pattern: comp, generators: [{ name: twelve bar chords }], repeat: 12 }
       - name: the riff
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
-          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
-          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
-          riff: { pattern: riff, chains: [twelve bar], repeat: 12 }
+        clips:
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: bass, pattern: walk, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: comp, pattern: comp, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: riff, pattern: riff, generators: [{ name: twelve bar chords }], repeat: 12 }
       - name: quick change
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
-          bass: { pattern: walk, chains: [quick change], repeat: 12 }
-          comp: { pattern: comp, chains: [quick change], repeat: 12 }
-          riff: { pattern: riff, chains: [quick change], repeat: 12 }
+        clips:
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: bass, pattern: walk, generators: [{ name: quick change chords }], repeat: 12 }
+          - { track: comp, pattern: comp, generators: [{ name: quick change chords }], repeat: 12 }
+          - { track: riff, pattern: riff, generators: [{ name: quick change chords }], repeat: 12 }
       - name: riff up an octave
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
-          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
-          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
-          riff high: { pattern: riff, chains: [twelve bar], repeat: 12 }
+        clips:
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: bass, pattern: walk, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: comp, pattern: comp, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: riff high, pattern: riff, generators: [{ name: twelve bar chords }], repeat: 12 }
       - name: everything
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
-          bass: { pattern: walk, chains: [twelve bar], repeat: 12 }
-          comp: { pattern: comp, chains: [twelve bar], repeat: 12 }
-          riff: { pattern: riff, chains: [twelve bar], repeat: 12 }
-          riff high: { pattern: riff, chains: [twelve bar], repeat: 12 }
+        clips:
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: bass, pattern: walk, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: comp, pattern: comp, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: riff, pattern: riff, generators: [{ name: twelve bar chords }], repeat: 12 }
+          - { track: riff high, pattern: riff, generators: [{ name: twelve bar chords }], repeat: 12 }
       - name: last chorus
-        tracks:
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
-          bass: { pattern: walk, chains: [ending], repeat: 12 }
-          comp: { pattern: comp, chains: [ending], repeat: 12 }
-          riff: { pattern: riff, chains: [ending], repeat: 12 }
+        clips:
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: bass, pattern: walk, generators: [{ name: ending chords }], repeat: 12 }
+          - { track: comp, pattern: comp, generators: [{ name: ending chords }], repeat: 12 }
+          - { track: riff, pattern: riff, generators: [{ name: ending chords }], repeat: 12 }

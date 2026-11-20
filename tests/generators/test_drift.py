@@ -55,7 +55,7 @@ def drifting(*, drift, rows=None, repeat=BARS, seed=None, tracks=(test_registers
     """Return a song whose tracks each play a bar of four quarter-note Cs, repeated, every clip's chain naming one drift."""
     data = song(
         patterns={test_registers.X: pattern(STEPS, **(rows or {}))},
-        scenes=[{SceneSetting.TRACKS: {track: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAIN: CHAIN} for track in tracks}}],
+        scenes=[{SceneSetting.TRACKS: {track: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]} for track in tracks}}],
         tracks=tracks,
     )
     data[Section.DRIFTS] = {DRIFT: drift}
@@ -135,7 +135,7 @@ class TestWhatADriftDoes(unittest.TestCase):
 
     def test_a_clip_that_names_no_drift_hears_nothing(self):
         data = drifting(drift={a(DriftValue.VELOCITY): SOFTER, b(DriftValue.VELOCITY): SOFTER})
-        del data[Section.SCENES][0][SceneSetting.TRACKS][test_registers.LEAD][ClipSlotSetting.CHAIN]
+        del data[Section.SCENES][0][SceneSetting.TRACKS][test_registers.LEAD][ClipSlotSetting.CHAINS]
         self.assertEqual(set(velocities(data)), {defaults.DEFAULT_VELOCITY})
 
 

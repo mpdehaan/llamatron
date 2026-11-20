@@ -36,3 +36,5 @@ SETLIST_SECTIONS = [Section.SCALES, Section.PATTERNS, *file_format.NAMED_GENERAT
 SONG_SECTIONS = [Section.REGISTERS, Section.TRACKS]
 # The generator kind each generator section holds, like arp for arps.
 GENERATOR_KINDS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
+# The sections whose items share one list of generators in a set file, the chains among them, and so may share no name.
+GENERATOR_SECTIONS = (*file_format.NAMED_GENERATORS.values(), Section.CHAINS)

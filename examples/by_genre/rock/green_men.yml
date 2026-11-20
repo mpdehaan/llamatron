@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Green men
 description: "a fast pop-punk song in the manner of American Idiot (Green Day): a stop-start riff of power chords, and wide open choruses"
 notes: |
@@ -51,17 +51,17 @@ real_time: true
 protected: true
 
 scales:
-  E Major: { root: E, type: major }
+  - { name: E Major, root: E, type: major }
 
 patterns:
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -69,7 +69,7 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
     velocity: [100, ~, 66, ~, 100, ~, 66, ~, 100, ~, 66, ~, 100, ~, 66, ~]
-  crash:
+  - name: crash
     steps: 16
     drum: true
     step_size: 1/16
@@ -77,48 +77,48 @@ patterns:
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  kick fast:
+  - name: kick fast
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, C, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~]
     velocity: [112, ~, ~, ~, ~, ~, 92, ~, 108, ~, ~, ~, ~, ~, 92, ~]
-  root:
+  - name: root
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~]
     velocity: [112, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  root twice:
+  - name: root twice
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, 1, ~, ~, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~]
     velocity: [117, ~, ~, ~, 114, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true]
-  bass:
+  - name: bass
     steps: 8
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 1, 1]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
     velocity: [112, 88, 96, 88, 108, 88, 96, 92]
-  verse tune:
+  - name: verse tune
     steps: 64
     step_size: 1/8
     degree: [5, 5, 5, 3, 4, 4, 6, ~, 4, 4, 2, ~, ~, ~, ~, ~, 3, 3, 5, 5, 4, ~, 2, ~, 4, 6, 5, ~, ~, ~, ~, ~, 5, 5, 1, ~, 6, 6, 4, ~, 2, 4, 4, ~, ~, ~, ~, ~, 5, 3, 1, ~, 2, ~, 4, ~, 4, 4, 6, 5, ~, ~, ~, ~]
     octave: [4, 4, 4, 4, 4, 4, 4, ~, 4, 4, 4, ~, ~, ~, ~, ~, 4, 4, 4, 4, 4, ~, 4, ~, 4, 4, 4, ~, ~, ~, ~, ~, 4, 4, 5, ~, 4, 4, 4, ~, 4, 4, 4, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, 4, ~, ~, ~, ~]
     velocity: [114, 106, 106, 106, 106, 106, 106, ~, 106, 106, 102, ~, ~, ~, ~, ~, 114, 106, 106, 106, 106, ~, 106, ~, 106, 106, 102, ~, ~, ~, ~, ~, 114, 106, 118, ~, 106, 106, 106, ~, 106, 106, 102, ~, ~, ~, ~, ~, 114, 106, 106, ~, 106, ~, 106, ~, 106, 106, 106, 102, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, false, false, false, false, true, false, true, false, true, false, false, false, false, false, false, false, false]
-  chorus tune:
+  - name: chorus tune
     steps: 64
     step_size: 1/8
     degree: [6, ~, ~, 6, 1, ~, 1, ~, 5, ~, 3, ~, ~, ~, ~, ~, 5, ~, ~, 7, 2, ~, 7, ~, 1, ~, 5, ~, ~, ~, ~, ~, 6, ~, ~, 1, 1, ~, 6, ~, 5, ~, 3, 5, ~, ~, ~, ~, 7, ~, ~, 2, 7, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, 4, 5, ~, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, 4, 5, ~, 4, ~, 5, ~, 4, ~, ~, ~, ~, ~, 4, ~, ~, 5, 5, ~, 4, ~, 4, ~, 4, 4, ~, ~, ~, ~, 4, ~, ~, 5, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     velocity: [118, ~, ~, 106, 106, ~, 106, ~, 106, ~, 102, ~, ~, ~, ~, ~, 114, ~, ~, 106, 106, ~, 106, ~, 106, ~, 102, ~, ~, ~, ~, ~, 118, ~, ~, 106, 106, ~, 106, ~, 106, ~, 106, 102, ~, ~, ~, ~, 114, ~, ~, 106, 106, ~, 106, ~, 102, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, false, false, true, false, true, false, true, false, true, true, false, false, false, false, true, true, false, false, true, false, true, false, true, false, true, true, false, false, false, false, true, true, false, false, true, false, true, false, true, false, false, true, false, false, false, false, true, true, false, false, true, false, true, false, true, true, true, true, false, false, false]
-  solo:
+  - name: solo
     steps: 64
     step_size: 1/8
     degree: [1, 6, 4, 6, 1, 4, 1, 6, 5, 1, 3, 1, 5, 3, 5, 1, 7, 5, 2, 7, 5, 2, 7, 5, 3, ~, 1, ~, 5, ~, 3, ~, 4, 1, 6, 1, 4, 6, 4, 1, 3, 5, 3, 1, 5, 1, 3, 5, 2, 7, 5, 7, 2, 5, 2, 7, 1, ~, ~, ~, ~, ~, ~, ~]
@@ -126,127 +126,113 @@ patterns:
     velocity: [125, 107, 110, 107, 112, 107, 110, 107, 125, 107, 110, 107, 112, 107, 110, 107, 125, 107, 110, 107, 112, 107, 110, 107, 125, ~, 110, ~, 112, ~, 110, ~, 125, 107, 110, 107, 112, 107, 110, 107, 125, 107, 110, 107, 112, 107, 110, 107, 125, 107, 110, 107, 112, 107, 110, 107, 125, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true]
 
-progressions:
-  riff: { chords: [1, 4, 7, 4, 1, 7, 4, 1], accidentals: [~, ~, b, ~, ~, b, ~, ~], every: 1/2 }
-  chorus: { chords: [4, 1, 5, 1] }
-
-guitarifies:
-  riff: { bar: [down, down, nothing, down, down, down, nothing, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
-  stops: { bar: [mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, down, down, nothing, down, down, down, nothing, mute, down, down, nothing, down, down, down, nothing, mute], accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
-  open: { bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
-  held: { bar: [down, nothing, nothing, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 }
-
-chains:
-  riff:
-    - progression: riff
-  chorus:
-    - progression: chorus
-  riff riff:
-    - progression: riff
-    - guitarify: riff
-  riff stops:
-    - progression: riff
-    - guitarify: stops
-  chorus open:
-    - progression: chorus
-    - guitarify: open
-  chorus held:
-    - progression: chorus
-    - guitarify: held
+generators:
+  - { name: riff, kind: progression, chords: [1, 4, 7, 4, 1, 7, 4, 1], accidentals: [~, ~, b, ~, ~, b, ~, ~], every: 1/2 }
+  - { name: chorus, kind: progression, chords: [4, 1, 5, 1] }
+  - { name: riff guitar, kind: guitarify, bar: [down, down, nothing, down, down, down, nothing, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
+  - { name: stops, kind: guitarify, bar: [mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, down, down, nothing, down, down, down, nothing, mute, down, down, nothing, down, down, down, nothing, mute], accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
+  - { name: open, kind: guitarify, bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
+  - { name: held, kind: guitarify, bar: [down, nothing, nothing, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 }
+  - { name: riff chords, kind: chain, generators: [{ name: riff }] }
+  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
+  - { name: riff riff, kind: chain, generators: [{ name: riff }, { name: riff guitar }] }
+  - { name: riff stops, kind: chain, generators: [{ name: riff }, { name: stops }] }
+  - { name: chorus open, kind: chain, generators: [{ name: chorus }, { name: open }] }
+  - { name: chorus held, kind: chain, generators: [{ name: chorus }, { name: held }] }
 
 instruments:
-  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
-  pick bass: { device: "*FluidSynth", gm_sound: 35 }
-  overdriven guitar: { device: "*FluidSynth", gm_sound: 30 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
+  - { name: pick bass, device: "*FluidSynth", gm_sound: 35 }
+  - { name: overdriven guitar, device: "*FluidSynth", gm_sound: 30 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  green_men:
+  - name: green_men
     tempo: 180
     scale: E Major
     genre: Rock
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      crash: { drum: true, instrument: drum kit }
-      guitar: { instrument: distortion guitar }
-      bass: { instrument: pick bass }
-      lead: { instrument: overdriven guitar }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: crash, drum: true, instrument: drum kit }
+      - { name: guitar, instrument: distortion guitar }
+      - { name: bass, instrument: pick bass }
+      - { name: lead, instrument: overdriven guitar }
 
     scenes:
       - name: intro
-        tracks:
-          guitar: { pattern: root twice, chains: [riff riff], repeat: 4 }
+        clips:
+          - { track: guitar, pattern: root twice, generators: [{ name: riff riff }], repeat: 4 }
       - name: intro 2
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          guitar: { pattern: root twice, chains: [riff riff], repeat: 4 }
-          bass: { pattern: bass, chains: [riff], loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: guitar, pattern: root twice, generators: [{ name: riff riff }], repeat: 4 }
+          - { track: bass, pattern: bass, generators: [{ name: riff chords }], loop: true }
       - name: verse
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          guitar: { pattern: root twice, chains: [riff stops], repeat: 16 }
-          bass: { pattern: bass, chains: [riff], loop: true }
-          lead: { pattern: verse tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: guitar, pattern: root twice, generators: [{ name: riff stops }], repeat: 16 }
+          - { track: bass, pattern: bass, generators: [{ name: riff chords }], loop: true }
+          - { track: lead, pattern: verse tune, loop: true }
       - name: chorus
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          guitar: { pattern: root, chains: [chorus open], repeat: 16 }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          lead: { pattern: chorus tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: guitar, pattern: root, generators: [{ name: chorus open }], repeat: 16 }
+          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: lead, pattern: chorus tune, loop: true }
       - name: verse 2
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          guitar: { pattern: root twice, chains: [riff stops], repeat: 16 }
-          bass: { pattern: bass, chains: [riff], loop: true }
-          lead: { pattern: verse tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: guitar, pattern: root twice, generators: [{ name: riff stops }], repeat: 16 }
+          - { track: bass, pattern: bass, generators: [{ name: riff chords }], loop: true }
+          - { track: lead, pattern: verse tune, loop: true }
       - name: chorus 2
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          guitar: { pattern: root, chains: [chorus open], repeat: 16 }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          lead: { pattern: chorus tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: guitar, pattern: root, generators: [{ name: chorus open }], repeat: 16 }
+          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: lead, pattern: chorus tune, loop: true }
       - name: solo
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          guitar: { pattern: root, chains: [chorus open], repeat: 16 }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          lead: { pattern: solo, loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: guitar, pattern: root, generators: [{ name: chorus open }], repeat: 16 }
+          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: lead, pattern: solo, loop: true }
       - name: last chorus
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          guitar: { pattern: root, chains: [chorus open], repeat: 32 }
-          bass: { pattern: bass, chains: [chorus], loop: true }
-          lead: { pattern: chorus tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: guitar, pattern: root, generators: [{ name: chorus open }], repeat: 32 }
+          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: lead, pattern: chorus tune, loop: true }
       - name: outro
-        tracks:
-          kick: { pattern: kick fast, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          guitar: { pattern: root twice, chains: [riff riff], repeat: 12 }
-          bass: { pattern: bass, chains: [riff], loop: true }
+        clips:
+          - { track: kick, pattern: kick fast, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: guitar, pattern: root twice, generators: [{ name: riff riff }], repeat: 12 }
+          - { track: bass, pattern: bass, generators: [{ name: riff chords }], loop: true }
       - name: ending
-        tracks:
-          guitar: { pattern: root, chains: [chorus held], repeat: 2 }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: guitar, pattern: root, generators: [{ name: chorus held }], repeat: 2 }
+          - { track: crash, pattern: crash, loop: true }

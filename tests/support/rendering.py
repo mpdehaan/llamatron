@@ -23,9 +23,8 @@ song, so that the same data builds a Setlist, a Song or a Document.
 import os
 
 from llamatron.composition import defaults
-from llamatron.composition.file_format import Section
+from llamatron.composition.file_format import Section, SongSetting
 from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_reader import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import names
@@ -38,13 +37,18 @@ Memory.check_every_answer()
 # The sets in examples/ that are meant to sound good rather than to teach one feature: every other set there is a demo.
 PIECES = ('mainstreet_hoedown.yml', 'minimal_techno.yml')
 SET_ENDING = '.yml'
+# The keys of one song's data that belong to the song when it is wrapped as a set, the rest being the set's.
+SONG_KEYS = (SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, Section.REGISTERS, Section.TRACKS, Section.SCENES)
 
 
-def as_setlist(data):
-    """Return data as a set's: one song's data becomes a set holding it as the untitled song, and a set's stays as it is."""
+def as_setlist(data, *, song_name=names.MSG_DEFAULT_SONG_NAME):
+    """Return data as a set's, as the objects write it: one song's data, its settings, tracks and scenes at the top, becomes a set
+    holding that song, the untitled song unless named, and a set's stays as it is."""
     if not isinstance(data, dict) or Section.SONGS in data:
         return data
-    return as_setlist_data(data=data, song_name=names.MSG_DEFAULT_SONG_NAME)
+    held = {key: value for key, value in data.items() if key not in SONG_KEYS}
+    held[Section.SONGS] = {song_name: {key: data[key] for key in SONG_KEYS if key in data}}
+    return held
 
 
 def setlist_from_data(data):

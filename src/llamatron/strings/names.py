@@ -18,6 +18,12 @@
 Each constant starts with MSG_.
 """
 
+
+# macro_composer/composer.py
+# A generator named for its kind where a generator of another kind has its name, as kick rush beside kick drag, a set file
+# listing every generator in one list where no two share a name; each kind's word is in labels.py.
+MSG_NAMED_FOR_KIND = '{name} {word}'
+
 # composition/naming.py
 # How a copy or a new thing is numbered, like bass-2, what joins the number, and a new scale's name, like F_harmonic_minor,
 # with the name older files gave one, like F Harmonic Minor.

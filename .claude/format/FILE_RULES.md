@@ -10,6 +10,28 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   concert.
 - The set owns the shared sections, `scales`, `patterns`, each generator kind, `chains` and
   `grooves` (`SETLIST_SECTIONS` in `composition/sections.py`), and `songs`.
+- The file mirrors the objects, the user's design: everything a person names is an item of a list with its `name:` first, never a
+  mapping keyed by name: `scales`, `patterns`, `generators`, `grooves`, `instruments` and `songs`, a song's `tracks`, and a scene's
+  `clips`, each clip `{ track: x, ... }`. `generators` holds every kind, each item with `kind:`, a chain among them as
+  `kind: chain` with `generators: [{ name: x }]`; a clip, a scene and a track write the generators they run as
+  `generators: [{ name: x }]`. Fixed fields stay keys, and a song's `registers` keep AX to DX as keys. The objects keep their named
+  things by name, each generator kind apart and the chains apart, and `composition/file_layout.py` turns one into the other
+  (`as_file_layout` for the writer, `as_object_layout` for the reader). A generator's name is unique across every kind and the
+  chains: adding or renaming refuses another kind's name (`Setlist._check_generator_name`), a set's data with two is refused
+  (`setlist_reader._check_generator_names`), a new or copied generator's name steps past every generator's
+  (`DocumentNamedEdits.names_taken`), and the MacroComposer tells its own apart (`composer.names_apart`: two kinds' generators
+  take their kind's word, as kick rush, and a chain that shares a generator's name takes the word chain).
+- Migrations, the user's design and rule: an older file is moved to the layout written now by `composition/migrations/`, one
+  module a migration, run in the order of their versions for every migration newer than the file's `version`
+  (`migrations/running.py`), a file with no version moved where its data has the old shape. Every piece of code that only runs
+  on an older layout lives in that package and nowhere else, nothing outside imports more than `migrated` and `Conversion`, and
+  a migration knows nothing of the objects or the reader (`tests/composition/test_migrations.py`). Only a breaking change of
+  layout gets one; adding a setting needs none, and a feature taken away leaves nothing to move. A migration is never changed
+  once released. They are: Live's octaves before 1.0.30, one song at the top before 1.0.39 (named after the file), the
+  description as notes before 1.0.155, and lists before 1.0.591 (which also turns a clip's single `chain` into a list, and settles
+  a name two kinds shared by the naming rules, the later going on as `x-2`). An old file opens converted and unsaved, the status
+  line saying `converted from an older format` with every rename (`DocumentFiles.conversion_note`), and the file on disk is
+  untouched until saved. `tests/data/migrations/` keeps files in older layouts for the tests.
 - Each song is a `Song` (`composition/song.py`) with its own `tempo`, `time_signature`, `scale`,
   `seed`, `groove`, `genre`, `live_responsiveness`, `preview_instrument`, `registers`, `tracks` and `scenes`
   (`SONG_SECTIONS`), written in that order under `songs:` by `setlist_writer.py`. A song's
@@ -23,9 +45,6 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 - A song keeps a back-reference to its set and forwards lookups of shared things to it, so
   playback asks the song for a pattern or scale and doesn't know about the set.
 - Songs are a `NamedItems` section like any other (`Section.SONGS`).
-- A file whose `version` is older than `SETLISTS_SINCE` (1.0.39) held one song.
-  `holds_one_song(data)` and `as_setlist_data(data=, song_name=)` turn it into a set of one song
-  named after the file's stem, and `tests/data/demo_sources/make_demos.py` writes sets the same way.
 - Error places name the song first, like `song (verse), scene entry 2, track (bass): ...`, and a
   song setting reads `song (verse): scale: ...`.
 - Each demo is its own file with one song, a new set has one song called `untitled`, and the
@@ -40,9 +59,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   user's design.
 - `notes` is optional text of any length, written as a YAML `|` block straight after the three
   so that it reads as plain text, and kept when the tracker saves, which comments aren't. A
-  file saved before `NOTES_SINCE` (1.0.155) held the long text under `description`, and
-  `_as_a_set_is_written` reads such a file's `description` as its `notes`; a file with no
-  version is read as it is.
+  file saved before 1.0.155 held the long text under `description`, which its migration moves to `notes`.
 
 ### Protected sets
 
@@ -67,10 +84,10 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 
 - Every object is stored with its settings inline, never in a separate section, a permanent rule
   for every object type.
-- So `tracks` is named tracks with their settings, like `bass: { transpose: 2, cc: [74, ~, ~, 1]
-  }` or `kick: { drum: true }`, in order, and a track with none is `lead: {}`.
-- Every generator setting is named, YAML stays flat with `{}` only one level deep, and clip slots
-  always use the hash form inside a scene's `tracks`.
+- So `tracks` is a list of tracks with their settings, like `- { name: bass, transpose: 2, cc: [74, ~, ~, 1] }` or
+  `- { name: kick, drum: true }`, in order, and a track with none is `- { name: lead }`.
+- Every generator setting is named, an item of a list is written on one line in braces, and clip slots are items of a scene's
+  `clips`, each `{ track: x, ... }`.
 
 ### Patterns
 
@@ -605,8 +622,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   in `composition/chain.py`), the user's design. A clip runs its own, then its
   scene's, then its track's, each list in order (`SongRenderer.chains_of`), a chain listed twice
   running twice; each generator is counted along them all for its seed, so a clip with one chain
-  draws as before. A clip's `chain`, one name, from a file saved before, reads as a list of one
-  (`_read_chain`). `LlamaData.names_item` and `rename_references` handle a list of names.
+  draws as before. `LlamaData.names_item` and `rename_references` handle a list of names.
 - A chain is a list of steps like `arp: name` or `auto_ratchet: name`, with no settings of its
   own.
 

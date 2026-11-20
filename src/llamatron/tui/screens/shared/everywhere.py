@@ -237,7 +237,7 @@ def open_set(page):
 
     def opened(document):
         page.holder.set_document(document)
-        page.say(messages_text.MSG_OPENED.format(path=document.get_path()))
+        page.say(document.conversion_note() or messages_text.MSG_OPENED.format(path=document.get_path()))
         warn_of_silent_instruments(page=page, document=document)
     unless_unsaved(page, then=lambda: page.show_page(OpenPage(holder=page.holder, then=opened)))
 

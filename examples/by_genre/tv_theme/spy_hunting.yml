@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Spy hunting
 description: "a late fifties spy-jazz theme in the manner of Peter Gunn (Henry Mancini), with a riff and a tune of its own"
 notes: |
@@ -47,24 +47,24 @@ real_time: true
 protected: true
 
 scales:
-  G Minor: { root: G, type: minor }
+  - { name: G Minor, root: G, type: minor }
 
 patterns:
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~]
-  ride:
+  - name: ride
     steps: 16
     drum: true
     step_size: 1/16
@@ -72,19 +72,19 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~]
     velocity: [76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~]
-  riff:
+  - name: riff
     steps: 8
     step_size: 1/8
     degree: [1, 1, 5, 7, 1, 3, 4, 3]
     octave: [3, 3, 2, 2, 3, 3, 3, 3]
     velocity: [117, 103, 106, 103, 108, 103, 106, 103]
-  riff low:
+  - name: riff low
     steps: 8
     step_size: 1/8
     degree: [1, 1, 5, 7, 1, 3, 4, 3]
     octave: [2, 2, 1, 1, 2, 2, 2, 2]
     velocity: [112, 98, 101, 98, 103, 98, 101, 98]
-  swell:
+  - name: swell
     steps: 16
     step_size: 1/8
     degree: [~, ~, ~, ~, ~, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
@@ -92,7 +92,7 @@ patterns:
     chord: [~, ~, ~, ~, ~, ~, "7", ~, "7", ~, ~, ~, ~, ~, ~, ~]
     velocity: [~, ~, ~, ~, ~, ~, 109, ~, 112, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, true, false, true, true, true, true, true, false, false]
-  head:
+  - name: head
     steps: 64
     step_size: 1/8
     degree: [5, ~, ~, ~, ~, ~, 5, ~, 4, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 7, ~, 1, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, ~, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -101,58 +101,55 @@ patterns:
     velocity: [119, ~, ~, ~, ~, ~, 108, ~, 119, ~, ~, ~, 110, ~, ~, ~, 119, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 119, ~, ~, ~, ~, ~, 108, ~, 119, ~, ~, ~, 110, ~, ~, ~, 119, ~, ~, ~, ~, ~, 108, ~, 119, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true]
 
-progressions:
-  move: { chords: [4, 4, 1, 1] }
-
-chains:
-  move:
-    - progression: move
+generators:
+  - { name: move, kind: progression, chords: [4, 4, 1, 1] }
+  - { name: move chords, kind: chain, generators: [{ name: move }] }
 
 instruments:
-  electric guitar: { device: "*FluidSynth", gm_sound: 28 }
-  piano: { device: "*FluidSynth", gm_sound: 1 }
-  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
-  brass section: { device: "*FluidSynth", gm_sound: 62 }
-  trumpet: { device: "*FluidSynth", gm_sound: 57 }
-  tenor sax: { device: "*FluidSynth", gm_sound: 67 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: electric guitar, device: "*FluidSynth", gm_sound: 28 }
+  - { name: piano, device: "*FluidSynth", gm_sound: 1 }
+  - { name: acoustic bass, device: "*FluidSynth", gm_sound: 33 }
+  - { name: brass section, device: "*FluidSynth", gm_sound: 62 }
+  - { name: trumpet, device: "*FluidSynth", gm_sound: 57 }
+  - { name: tenor sax, device: "*FluidSynth", gm_sound: 67 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  spy_hunting:
+  - name: spy_hunting
     tempo: 120
     scale: G Minor
     genre: TV Theme
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      ride: { drum: true, instrument: drum kit }
-      riff: { instrument: electric guitar }
-      piano: { instrument: piano }
-      bass: { instrument: acoustic bass }
-      brass: { instrument: brass section }
-      lead: { instrument: trumpet }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: ride, drum: true, instrument: drum kit }
+      - { name: riff, instrument: electric guitar }
+      - { name: piano, instrument: piano }
+      - { name: bass, instrument: acoustic bass }
+      - { name: brass, instrument: brass section }
+      - { name: lead, instrument: trumpet }
 
     scenes:
       - name: riff
-        tracks:
-          riff: { pattern: riff, repeat: 4 }
-          bass: { pattern: riff low, loop: true }
+        clips:
+          - { track: riff, pattern: riff, repeat: 4 }
+          - { track: bass, pattern: riff low, loop: true }
       - name: head
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, loop: true }
-          piano: { pattern: riff low, loop: true }
-          bass: { pattern: riff low, loop: true }
-          brass: { pattern: swell, loop: true }
-          lead: { pattern: head, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ride, pattern: ride, loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: piano, pattern: riff low, loop: true }
+          - { track: bass, pattern: riff low, loop: true }
+          - { track: brass, pattern: swell, loop: true }
+          - { track: lead, pattern: head, loop: true }
       - name: riff out
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ride: { pattern: ride, loop: true }
-          riff: { pattern: riff, loop: true }
-          piano: { pattern: riff low, loop: true }
-          bass: { pattern: riff low, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ride, pattern: ride, loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: piano, pattern: riff low, loop: true }
+          - { track: bass, pattern: riff low, loop: true }

@@ -1,4 +1,4 @@
-version: 1.0.206
+version: 1.0.591
 title: Strum
 description: "an acoustic folk song whose guitar is strummed, then strummed tighter, looser and rolled"
 notes: |
@@ -31,86 +31,79 @@ real_time: true
 protected: true
 
 scales:
-  G Major: { root: G, type: major }
+  - { name: G Major, root: G, type: major }
 
 patterns:
-  strumming:
+  - name: strumming
     steps: 8
     step_size: 1/8
     degree: [1, ~, 1, 1, ~, 1, 1, 1]
     octave: [4, ~, 4, 4, ~, 4, 4, 4]
     chord: [3, ~, 3, 3, ~, 3, 3, 3]
     velocity: [96, ~, 88, 70, ~, 72, 90, 70]
-  bass:
+  - name: bass
     steps: 4
     step_size: 1/4
     degree: [1, ~, 5, ~]
     octave: [2, ~, 2, ~]
     tie: [false, true, false, true]
 
-progressions:
-  verse: { chords: [1, 5, 6, 4] }
-  chorus: { chords: [4, 1, 5] }
-
-strums:
-  harp roll: { direction: by_the_beat, spread: harp }
-
-chains:
-  verse:
-    - progression: verse
-  harp roll:
-    - strum: harp roll
-  chorus:
-    - progression: chorus
+generators:
+  - { name: verse, kind: progression, chords: [1, 5, 6, 4] }
+  - { name: chorus, kind: progression, chords: [4, 1, 5] }
+  - { name: harp roll, kind: strum, direction: by_the_beat, spread: harp }
+  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
+  - { name: harp roll strum, kind: chain, generators: [{ name: harp roll }] }
+  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
 
 instruments:
-  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
-  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
+  - { name: steel guitar, device: "*FluidSynth", gm_sound: 26 }
+  - { name: acoustic bass, device: "*FluidSynth", gm_sound: 33 }
 
 songs:
-  classic_strum:
+  - name: classic_strum
     tempo: 92
     scale: G Major
     genre: Folk
 
     tracks:
-      guitar: { instrument: steel guitar, strum_direction: by_the_beat, strum_spread: normal }
-      bass: { instrument: acoustic bass }
+      - { name: guitar, instrument: steel guitar, strum_direction: by_the_beat, strum_spread: normal }
+      - { name: bass, instrument: acoustic bass }
 
     scenes:
       - name: "verse, strum off"
-        tracks:
-          guitar: { pattern: strumming, chains: [verse], repeat: 8, strum_direction: "off" }
-          bass: { pattern: bass, chains: [verse], repeat: 8 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: verse chords }], repeat: 8, strum_direction: "off" }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], repeat: 8 }
       - name: "verse, tight"
-        tracks:
-          guitar: { pattern: strumming, chains: [verse], repeat: 8, strum_direction: by_the_beat, strum_spread: tight }
-          bass: { pattern: bass, chains: [verse], repeat: 8 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: verse chords }], repeat: 8, strum_direction: by_the_beat, strum_spread: tight }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], repeat: 8 }
       - name: "chorus, tight"
-        tracks:
-          guitar: { pattern: strumming, chains: [chorus], repeat: 6, strum_direction: by_the_beat, strum_spread: tight }
-          bass: { pattern: bass, chains: [chorus], repeat: 6 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: chorus chords }], repeat: 6, strum_direction: by_the_beat, strum_spread: tight }
+          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], repeat: 6 }
       - name: "verse, normal"
-        tracks:
-          guitar: { pattern: strumming, chains: [verse], repeat: 8 }
-          bass: { pattern: bass, chains: [verse], repeat: 8 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: verse chords }], repeat: 8 }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], repeat: 8 }
       - name: "chorus, normal"
-        tracks:
-          guitar: { pattern: strumming, chains: [chorus], repeat: 6 }
-          bass: { pattern: bass, chains: [chorus], repeat: 6 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: chorus chords }], repeat: 6 }
+          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], repeat: 6 }
       - name: "verse, full acoustic"
-        tracks:
-          guitar: { pattern: strumming, chains: [verse], repeat: 8, strum_direction: by_the_beat, strum_fade: 10, strum_loose_timing: 20, strum_upstroke_strings: top_4 }
-          bass: { pattern: bass, chains: [verse], repeat: 8 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: verse chords }], repeat: 8, strum_direction: by_the_beat, strum_fade: 10, strum_loose_timing: 20, strum_upstroke_strings: top_4 }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], repeat: 8 }
       - name: "chorus, full acoustic"
-        tracks:
-          guitar: { pattern: strumming, chains: [chorus], repeat: 6, strum_direction: by_the_beat, strum_fade: 10, strum_loose_timing: 20, strum_upstroke_strings: top_4 }
-          bass: { pattern: bass, chains: [chorus], repeat: 6 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: chorus chords }], repeat: 6, strum_direction: by_the_beat, strum_fade: 10, strum_loose_timing: 20, strum_upstroke_strings: top_4 }
+          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], repeat: 6 }
       - name: "verse, harp"
-        tracks:
-          guitar: { pattern: strumming, chains: [verse, harp roll], repeat: 8 }
-          bass: { pattern: bass, chains: [verse], repeat: 8 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: verse chords }, { name: harp roll strum }], repeat: 8 }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], repeat: 8 }
       - name: last verse
-        tracks:
-          guitar: { pattern: strumming, chains: [verse], repeat: 8 }
-          bass: { pattern: bass, chains: [verse], repeat: 8 }
+        clips:
+          - { track: guitar, pattern: strumming, generators: [{ name: verse chords }], repeat: 8 }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], repeat: 8 }

@@ -61,6 +61,7 @@ BELOW_THE_FLOOR = -20
 BELOW_ZERO = -5
 # An arp of sixteenths over a quarter-note major chord plays four notes.
 ARP = 'up'
+ARP_CHAIN = 'up chain'
 SIXTEENTH = '1/16'
 SIXTEENTH_TIME = Rational(1, 16)
 CHORD = 'M'
@@ -242,8 +243,8 @@ class TestArpAdds(unittest.TestCase):
         driver = pattern(1, **{Row.CHORD: [CHORD], **(driver_rows or {})})
         data = two_tracks(lead=pattern(1), driver=driver, lead_track=dict(TestBoundControls.BOUND), registers_=registers(AX=0))
         data[Section.ARPS] = {ARP: {ArpSetting.STEP: SIXTEENTH, **arp}}
-        data[Section.CHAINS] = {ARP: [{GeneratorKind.ARP: ARP}]}
-        data[Section.SCENES][0][SceneSetting.TRACKS][DRIVER][ClipSlotSetting.CHAIN] = ARP
+        data[Section.CHAINS] = {ARP_CHAIN: [{GeneratorKind.ARP: ARP}]}
+        data[Section.SCENES][0][SceneSetting.TRACKS][DRIVER][ClipSlotSetting.CHAINS] = [ARP_CHAIN]
         return data
 
     def sent(self, data):

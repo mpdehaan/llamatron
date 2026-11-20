@@ -79,7 +79,7 @@ class TestGrab(unittest.TestCase):
 
     def test_it_grabs_what_the_track_sounds_like_after_its_chain(self):
         bass = pat([1, 1], chord=['M'], octave=[5])
-        found = self.lead(bass=bass, kick_clip_slot={ClipSlotSetting.CHAIN: song_testing.X}, arps={UP: {ArpSetting.STEP: QUARTER}}, chains={song_testing.X: [{GeneratorKind.ARP: UP}]})
+        found = self.lead(bass=bass, kick_clip_slot={ClipSlotSetting.CHAINS: [song_testing.X]}, arps={UP: {ArpSetting.STEP: QUARTER}}, chains={song_testing.X: [{GeneratorKind.ARP: UP}]})
         self.assertEqual(pitches(found), [60, 48, 67, 48])
 
     def test_a_chord_gives_its_lowest_note(self):

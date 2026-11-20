@@ -59,7 +59,7 @@ class TestChains(unittest.TestCase):
         return render_data(with_parts(
             arps={SLOW: {ArpSetting.STEP: HALF}}, auto_ratchets={TWICE: {AutoRatchetSetting.COUNTS: [2]}, SOME: {AutoRatchetSetting.COUNTS: [1, 3]}},
             chains=chains,
-            scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: song_testing.X}}}],
+            scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}],
         ))
 
     def test_a_clip_slot_can_use_a_chain(self):
@@ -123,7 +123,7 @@ class TestRatchetOffset(unittest.TestCase):
 class TestArps(unittest.TestCase):
 
     def lead(self, chain=song_testing.X, **parts):
-        scene = {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: PATTERN_C, ClipSlotSetting.CHAIN: chain}}}
+        scene = {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: PATTERN_C, ClipSlotSetting.CHAINS: [chain]}}}
         data = with_parts(patterns={PATTERN_C: pat([1, 1], chord=[3]), PATTERN_D: pat([1, HALF], [3, HALF])}, scenes=[scene], **parts)
         return clip(song=render_data(data), scene=1, track=song_testing.LEAD)
 
@@ -134,13 +134,13 @@ class TestArps(unittest.TestCase):
     def test_an_arp_keeps_the_velocity(self):
         data = with_parts(
             patterns={PATTERN_C: pat([1, 1], chord=[3], velocity=[40])}, arps={BELLS: {ArpSetting.STEP: QUARTER}},
-            chains={song_testing.X: [{GeneratorKind.ARP: BELLS}]}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: PATTERN_C, ClipSlotSetting.CHAIN: song_testing.X}}}],
+            chains={song_testing.X: [{GeneratorKind.ARP: BELLS}]}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: PATTERN_C, ClipSlotSetting.CHAINS: [song_testing.X]}}}],
         )
         events, _ = timed_events(clip=clip(song=render_data(data), scene=1, track=song_testing.LEAD), scale=None)
         self.assertEqual({event[3] for event in events}, {40})
 
     def test_a_chain_can_use_a_named_auto_ratchet(self):
-        scene = {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: PATTERN_D, ClipSlotSetting.CHAIN: song_testing.X}}}
+        scene = {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: PATTERN_D, ClipSlotSetting.CHAINS: [song_testing.X]}}}
         data = with_parts(patterns={PATTERN_D: pat([1, HALF], [3, HALF])}, scenes=[scene], auto_ratchets={ROLLS: {AutoRatchetSetting.COUNTS: [2]}}, chains={song_testing.X: [{GeneratorKind.AUTO_RATCHET: ROLLS}]})
         self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [48, 48, 52, 52])
 
@@ -156,7 +156,7 @@ class TestArps(unittest.TestCase):
             {Section.CHAINS: {song_testing.X: [{GeneratorKind.ARP: NOPE}]}},
             {Section.CHAINS: {song_testing.X: [{GeneratorKind.AUTO_RATCHET: NOPE}]}},
             {Section.CHAINS: {song_testing.X: [{HOLD: {LENGTH: '1/128'}}]}},
-            {PAINT: [{ClipSlotSetting.CHAIN: song_testing.X, Section.TRACKS: [song_testing.LEAD], Section.SCENES: [1]}]},
+            {PAINT: [{ClipSlotSetting.CHAINS: [song_testing.X], Section.TRACKS: [song_testing.LEAD], Section.SCENES: [1]}]},
         ]:
             with self.subTest(parts=parts), self.assertRaises(SongFileError):
                 self.lead(**parts)

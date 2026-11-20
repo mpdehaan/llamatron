@@ -120,7 +120,7 @@ def written_song(song):
             for name in [SceneSetting.CHAINS, SceneSetting.GROOVE, *shaped]:
                 scene.pop(name, None)
             for clip in (scene.get(SceneSetting.TRACKS) or {}).values():
-                for name in [ClipSlotSetting.CHAINS, ClipSlotSetting.CHAIN, *shaped, *strummed]:
+                for name in [ClipSlotSetting.CHAINS, *shaped, *strummed]:
                     clip.pop(name, None)
     return Setlist.from_data(data=data).get_song(song_name)
 

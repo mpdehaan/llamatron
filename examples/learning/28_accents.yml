@@ -1,6 +1,6 @@
-version: 1.0.521
+version: 1.0.591
 title: Accents
-description: one funk groove played flat, then with accents switched on a part at a time
+description: "one funk groove played flat, then with accents switched on a part at a time"
 notes: |
   Accents: a funk groove at 100 beats a minute in E minor, written with no velocity typed on any
   step. Every part plays at the Default velocity of its track, and a step whose Accent switch is
@@ -31,17 +31,17 @@ real_time: true
 protected: true
 
 scales:
-  E Minor: { root: E, type: minor }
+  - { name: E Minor, root: E, type: minor }
 
 patterns:
-  hats plain:
+  - name: hats plain
     steps: 16
     drum: true
     step_size: 1/16
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-  hats on the beat:
+  - name: hats on the beat
     steps: 16
     drum: true
     step_size: 1/16
@@ -49,7 +49,7 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     accent: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
-  hats off the beat:
+  - name: hats off the beat
     steps: 16
     drum: true
     step_size: 1/16
@@ -57,7 +57,7 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     accent: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false]
-  hats in threes:
+  - name: hats in threes
     steps: 16
     drum: true
     step_size: 1/16
@@ -65,46 +65,46 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     accent: [true, false, false, true, false, false, true, false, false, true, false, false, true, false, true, false]
-  snare plain:
+  - name: snare plain
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, D, ~, D, ~, ~, D, ~, D, ~, ~, D, ~, ~, D]
     octave: [~, ~, 3, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3]
-  snare backbeat:
+  - name: snare backbeat
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, D, ~, D, ~, ~, D, ~, D, ~, ~, D, ~, ~, D]
     octave: [~, ~, 3, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3]
     accent: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false]
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
-  bass plain:
+  - name: bass plain
     steps: 16
     step_size: 1/16
     degree: [1, ~, 1, 1, ~, 1, 7, ~, 1, ~, 1, 1, ~, 5, 7, ~]
     gate: [1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~, 1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~]
     octave: [2, ~, 2, 2, ~, 2, 2, ~, 2, ~, 2, 2, ~, 2, 2, ~]
-  bass accented:
+  - name: bass accented
     steps: 16
     step_size: 1/16
     degree: [1, ~, 1, 1, ~, 1, 7, ~, 1, ~, 1, 1, ~, 5, 7, ~]
     gate: [1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~, 1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~]
     octave: [2, ~, 2, 2, ~, 2, 2, ~, 2, ~, 2, 2, ~, 2, 2, ~]
     accent: [true, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false]
-  keys plain:
+  - name: keys plain
     steps: 16
     step_size: 1/16
     degree: [~, ~, 1, ~, ~, 1, ~, ~, ~, ~, 1, ~, ~, 1, ~, 1]
     gate: [~, ~, 1/16, ~, ~, 1/16, ~, ~, ~, ~, 1/16, ~, ~, 1/16, ~, 1/16]
     octave: [~, ~, 4, ~, ~, 4, ~, ~, ~, ~, 4, ~, ~, 4, ~, 4]
     chord: [~, ~, 7, ~, ~, 7, ~, ~, ~, ~, 7, ~, ~, 7, ~, 7]
-  keys accented:
+  - name: keys accented
     steps: 16
     step_size: 1/16
     degree: [~, ~, 1, ~, ~, 1, ~, ~, ~, ~, 1, ~, ~, 1, ~, 1]
@@ -114,70 +114,70 @@ patterns:
     accent: [false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false]
 
 instruments:
-  finger bass: { device: "*FluidSynth", gm_sound: 34, default_velocity: 84, accent: 10 }
-  clavinet: { device: "*FluidSynth", gm_sound: 8 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: finger bass, device: "*FluidSynth", gm_sound: 34, default_velocity: 84, accent: 10 }
+  - { name: clavinet, device: "*FluidSynth", gm_sound: 8 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  accents:
+  - name: accents
     tempo: 100
     scale: E Minor
     genre: Exercise
 
     tracks:
-      kick: { drum: true, instrument: drum kit, default_velocity: 110 }
-      snare: { drum: true, instrument: drum kit, default_velocity: 38, accent: 75 }
-      hats: { drum: true, instrument: drum kit, default_velocity: 58, accent: 40 }
-      bass: { instrument: finger bass, accent: 25 }
-      keys: { instrument: clavinet, default_velocity: 66, accent: 40 }
+      - { name: kick, drum: true, instrument: drum kit, default_velocity: 110 }
+      - { name: snare, drum: true, instrument: drum kit, default_velocity: 38, accent: 75 }
+      - { name: hats, drum: true, instrument: drum kit, default_velocity: 58, accent: 40 }
+      - { name: bass, instrument: finger bass, accent: 25 }
+      - { name: keys, instrument: clavinet, default_velocity: 66, accent: 40 }
 
     scenes:
-      - name: "no accents"
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare plain, repeat: 4 }
-          hats: { pattern: hats plain, repeat: 4 }
-          bass: { pattern: bass plain, repeat: 4 }
-          keys: { pattern: keys plain, repeat: 4 }
-      - name: "hats on the beat"
-        tracks:
-          kick: { pattern: kick, repeat: 10 }
-          snare: { pattern: snare plain, repeat: 10 }
-          hats: { pattern: hats on the beat, repeat: 10 }
-          bass: { pattern: bass plain, repeat: 10 }
-          keys: { pattern: keys plain, repeat: 10 }
-      - name: "hats off the beat"
-        tracks:
-          kick: { pattern: kick, repeat: 10 }
-          snare: { pattern: snare plain, repeat: 10 }
-          hats: { pattern: hats off the beat, repeat: 10 }
-          bass: { pattern: bass plain, repeat: 10 }
-          keys: { pattern: keys plain, repeat: 10 }
-      - name: "backbeat and ghost notes"
-        tracks:
-          kick: { pattern: kick, repeat: 10 }
-          snare: { pattern: snare backbeat, repeat: 10 }
-          hats: { pattern: hats on the beat, repeat: 10 }
-          bass: { pattern: bass plain, repeat: 10 }
-          keys: { pattern: keys plain, repeat: 10 }
-      - name: "the bass and the keys"
-        tracks:
-          kick: { pattern: kick, repeat: 10 }
-          snare: { pattern: snare backbeat, repeat: 10 }
-          hats: { pattern: hats on the beat, repeat: 10 }
-          bass: { pattern: bass accented, repeat: 10 }
-          keys: { pattern: keys accented, repeat: 10 }
-      - name: "hats in threes"
-        tracks:
-          kick: { pattern: kick, repeat: 10 }
-          snare: { pattern: snare backbeat, repeat: 10 }
-          hats: { pattern: hats in threes, repeat: 10 }
-          bass: { pattern: bass accented, repeat: 10 }
-          keys: { pattern: keys accented, repeat: 10 }
-      - name: "no accents again"
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare plain, repeat: 4 }
-          hats: { pattern: hats plain, repeat: 4 }
-          bass: { pattern: bass plain, repeat: 4 }
-          keys: { pattern: keys plain, repeat: 4 }
+      - name: no accents
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: snare, pattern: snare plain, repeat: 4 }
+          - { track: hats, pattern: hats plain, repeat: 4 }
+          - { track: bass, pattern: bass plain, repeat: 4 }
+          - { track: keys, pattern: keys plain, repeat: 4 }
+      - name: hats on the beat
+        clips:
+          - { track: kick, pattern: kick, repeat: 10 }
+          - { track: snare, pattern: snare plain, repeat: 10 }
+          - { track: hats, pattern: hats on the beat, repeat: 10 }
+          - { track: bass, pattern: bass plain, repeat: 10 }
+          - { track: keys, pattern: keys plain, repeat: 10 }
+      - name: hats off the beat
+        clips:
+          - { track: kick, pattern: kick, repeat: 10 }
+          - { track: snare, pattern: snare plain, repeat: 10 }
+          - { track: hats, pattern: hats off the beat, repeat: 10 }
+          - { track: bass, pattern: bass plain, repeat: 10 }
+          - { track: keys, pattern: keys plain, repeat: 10 }
+      - name: backbeat and ghost notes
+        clips:
+          - { track: kick, pattern: kick, repeat: 10 }
+          - { track: snare, pattern: snare backbeat, repeat: 10 }
+          - { track: hats, pattern: hats on the beat, repeat: 10 }
+          - { track: bass, pattern: bass plain, repeat: 10 }
+          - { track: keys, pattern: keys plain, repeat: 10 }
+      - name: the bass and the keys
+        clips:
+          - { track: kick, pattern: kick, repeat: 10 }
+          - { track: snare, pattern: snare backbeat, repeat: 10 }
+          - { track: hats, pattern: hats on the beat, repeat: 10 }
+          - { track: bass, pattern: bass accented, repeat: 10 }
+          - { track: keys, pattern: keys accented, repeat: 10 }
+      - name: hats in threes
+        clips:
+          - { track: kick, pattern: kick, repeat: 10 }
+          - { track: snare, pattern: snare backbeat, repeat: 10 }
+          - { track: hats, pattern: hats in threes, repeat: 10 }
+          - { track: bass, pattern: bass accented, repeat: 10 }
+          - { track: keys, pattern: keys accented, repeat: 10 }
+      - name: no accents again
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: snare, pattern: snare plain, repeat: 4 }
+          - { track: hats, pattern: hats plain, repeat: 4 }
+          - { track: bass, pattern: bass plain, repeat: 4 }
+          - { track: keys, pattern: keys plain, repeat: 4 }

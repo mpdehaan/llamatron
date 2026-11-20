@@ -18,8 +18,9 @@ import unittest
 import yaml
 
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.composition.file_layout import as_object_layout
 from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_writer import _text, dump_setlist
+from llamatron.composition.setlist_writer import _text, dump_file_layout, dump_setlist
 from llamatron.support.example_sets import example_sets
 from tests.support.rendering import as_setlist, render_data
 
@@ -65,6 +66,11 @@ TEXT_OF_A_NUMBER = '1'
 TEXT_OF_TRUE = 'true'
 
 
+
+def read_back(text):
+    """Return what a set file's text holds as the objects read it."""
+    return as_object_layout(yaml.safe_load(text))
+
 class TestDumpSetlist(unittest.TestCase):
 
     def test_values_python_calls_equal_are_each_written_as_their_own_kind(self):
@@ -78,36 +84,36 @@ class TestDumpSetlist(unittest.TestCase):
             self.assertEqual(yaml.safe_load(_text(TEXT_OF_TRUE)), TEXT_OF_TRUE)
 
     def test_reads_back_the_same(self):
-        self.assertEqual(yaml.safe_load(dump_setlist(SETLIST)), SETLIST)
+        self.assertEqual(read_back(dump_setlist(SETLIST)), SETLIST)
 
     def test_every_example_reads_back_the_same(self):
         for path in example_sets():
             with open(path) as file:
                 song = yaml.safe_load(file)
             with self.subTest(path=path):
-                self.assertEqual(yaml.safe_load(dump_setlist(song)), song)
+                self.assertEqual(yaml.safe_load(dump_file_layout(song)), song)
 
     def test_the_notes_are_a_readable_block_after_the_title_author_and_description(self):
         setlist = {SetlistSetting.TITLE: T, SetlistSetting.AUTHOR: A, SetlistSetting.DESCRIPTION: D, SetlistSetting.NOTES: 'First line\n\n  indented: # not a comment\n', PatternSetting.STEP_SIZE: '1/8', Section.SONGS: {}}
         text = dump_setlist(setlist)
         self.assertIn('author: A\ndescription: D\nnotes: |\n  First line\n\n    indented: # not a comment\nstep_size: 1/8\n', text)
-        self.assertEqual(yaml.safe_load(text), setlist)
+        self.assertEqual(read_back(text), setlist)
 
     def test_any_notes_read_back_the_same(self):
         for description in [ONE_LINE, 'ends without\nbreak', ' starts indented\n', '\n\nblank first\n', 'many\n\n\n', '\n', '   ', 'a: b\n- c\n']:
             setlist = {SetlistSetting.NOTES: description, Section.SONGS: {}}
             with self.subTest(description=description):
-                self.assertEqual(yaml.safe_load(dump_setlist(setlist)), setlist)
+                self.assertEqual(read_back(dump_setlist(setlist)), setlist)
 
     def test_a_set_with_nothing_in_it_writes(self):
-        self.assertEqual(dump_setlist({}), 'songs: {}\n')
-        self.assertEqual(yaml.safe_load(dump_setlist({})), {Section.SONGS: {}})
+        self.assertEqual(dump_setlist({}), 'songs: []\n')
+        self.assertEqual(read_back(dump_setlist({})), {Section.SONGS: {}})
 
     def test_each_song_is_indented_under_songs_with_its_own_settings_first(self):
         text = dump_setlist(SETLIST)
-        self.assertIn('\nsongs:\n  untitled:\n    tempo: 120\n    scale: main\n    seed: 3\n', text)
+        self.assertIn('\nsongs:\n  - name: untitled\n    tempo: 120\n    scale: main\n    seed: 3\n', text)
         self.assertIn('\n    registers:\n      AX: { maximum: 3, wrap: true }\n', text)
-        self.assertIn('\n    tracks:\n      lead: { transpose: 2, cc: [74, ~, ~, 1] }\n', text)
+        self.assertIn('\n    tracks:\n      - { name: lead, transpose: 2, cc: [74, ~, ~, 1] }\n', text)
         self.assertIn('\n    scenes:\n      - name: one\n        repeat: 3\n', text)
 
     def test_a_time_signature_follows_the_tempo_on_a_song_and_the_step_size_on_a_pattern(self):
@@ -115,7 +121,7 @@ class TestDumpSetlist(unittest.TestCase):
             SongSetting.TEMPO: 120, SongSetting.TIME_SIGNATURE: WALTZ, Section.TRACKS: {}, Section.SCENES: [],
             Section.PATTERNS: {A_2: {PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: QUARTER, PatternSetting.TIME_SIGNATURE: WALTZ}},
         })
-        loaded = yaml.safe_load(dump_setlist(setlist))
+        loaded = read_back(dump_setlist(setlist))
         self.assertEqual(loaded, setlist)
         self.assertEqual(list(loaded[Section.SONGS][UNTITLED]), [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, Section.TRACKS, Section.SCENES])
         self.assertEqual(list(loaded[Section.PATTERNS][A_2]), [PatternSetting.STEPS, PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE])
@@ -133,15 +139,15 @@ class TestDumpSetlist(unittest.TestCase):
 
     def test_follows_the_format_rules(self):
         text = dump_setlist(SETLIST)
-        self.assertIn('    tracks:\n      lead: { transpose: 2, cc: [74, ~, ~, 1] }\n      kick: { drum: true }\n      plain: {}\n', text)
-        self.assertIn('          lead: { pattern: a, chain: x, loop: true, repeat: 2, morph_to: hit, morph_style: left, grab_track: kick }', text)
-        self.assertIn('arps:\n  bells: { step: 1/8, order: up }', text)
+        self.assertIn('    tracks:\n      - { name: lead, transpose: 2, cc: [74, ~, ~, 1] }\n      - { name: kick, drum: true }\n      - { name: plain }\n', text)
+        self.assertIn('          - { track: lead, pattern: a, chain: x, loop: true, repeat: 2, morph_to: hit, morph_style: left, grab_track: kick }', text)
+        self.assertIn('generators:\n  - { name: bells, kind: arp, step: 1/8, order: up }', text)
         self.assertIn('    registers:\n      AX: { maximum: 3, wrap: true }\n      DX: { minimum: -100, default: -5 }\n\n    tracks:', text)
         self.assertIn("      - name: one\n        repeat: 3\n        reset: [AX, DX]\n", text)
-        self.assertIn('auto_ratchets:\n  rolls: { counts: [1, 4] }', text)
-        self.assertIn('    - arp: bells', text)
-        self.assertIn('    - auto_ratchet: rolls', text)
-        self.assertIn('scales:\n  main: { root: C, type: minor }\n  A Minor: { root: A, type: minor }', text)
+        self.assertIn('  - { name: rolls, kind: auto_ratchet, counts: [1, 4] }', text)
+        self.assertIn('  - { name: x, kind: chain, generators: [{ name: rolls }, { name: bells }] }', text)
+        self.assertIn('  - { name: nothing, kind: chain, generators: [] }', text)
+        self.assertIn('scales:\n  - { name: main, root: C, type: minor }\n  - { name: A Minor, root: A, type: minor }', text)
 
     def test_awkward_names_survive(self):
         names = ['a, b', 'a: b', '#hash', YES, '123', NULL, '{x}', "it's", 'say "hi"', 'tab\there', ' spaced ']
@@ -149,31 +155,31 @@ class TestDumpSetlist(unittest.TestCase):
             song = {**SONG, Section.TRACKS: {name: {}}, Section.SCENES: [{SceneSetting.NAME: name, SceneSetting.TRACKS: {name: {ClipSlotSetting.PATTERN: A_2}}}]}
             setlist = {**as_setlist(song), Section.SONGS: {name: as_setlist(song)[Section.SONGS][UNTITLED]}}
             with self.subTest(name=name):
-                self.assertEqual(yaml.safe_load(dump_setlist(setlist)), setlist)
+                self.assertEqual(read_back(dump_setlist(setlist)), setlist)
 
     def test_empty_sections_are_left_out(self):
         song = {SceneSetting.TEMPO: 120, SceneSetting.SCALE: None, Section.SCALES: {}, Section.PATTERNS: {}, Section.TRACKS: {A_2: {}}, Section.CHAINS: {}, Section.SCENES: [{Section.TRACKS: {}}]}
         text = dump_setlist(as_setlist(song))
         for section in [Section.PATTERNS, Section.SCALES, Section.CHAINS]:
             self.assertNotIn(section, text)
-        render_data(yaml.safe_load(text))
+        render_data(read_back(text))
 
     def test_a_new_song_with_nothing_in_it_reads_back(self):
         setlist = as_setlist({SceneSetting.TEMPO: 120, SceneSetting.TRACKS: {}, Section.SCENES: []})
-        self.assertEqual(yaml.safe_load(dump_setlist(setlist)), setlist)
-        render_data(yaml.safe_load(dump_setlist(setlist)))
+        self.assertEqual(read_back(dump_setlist(setlist)), setlist)
+        render_data(read_back(dump_setlist(setlist)))
 
     def test_a_fraction_stays_text_and_a_number_stays_a_number(self):
-        setlist = yaml.safe_load(dump_setlist(SETLIST))
+        setlist = read_back(dump_setlist(SETLIST))
         self.assertEqual(setlist[Section.PATTERNS][A_2][Row.GATE][0], QUARTER)
         self.assertEqual(setlist[Section.SONGS][UNTITLED][SongSetting.TEMPO], 120)
 
     def test_a_set_that_was_written_still_builds(self):
         for path in example_sets():
             with open(path) as file:
-                setlist = yaml.safe_load(file)
+                setlist = as_object_layout(yaml.safe_load(file))
             with self.subTest(path=path):
-                Setlist.from_data(data=yaml.safe_load(dump_setlist(setlist)))
+                Setlist.from_data(data=read_back(dump_setlist(setlist)))
 
 
 if __name__ == '__main__':

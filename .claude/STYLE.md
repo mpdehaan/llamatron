@@ -42,6 +42,7 @@ kept by reading.
 | No remembered answer outlives a change to what it was worked out from. | every memory checks itself in the tracker's tests, `tests/support_code/test_memory.py` |
 | Every name the tracker makes up is made by `composition/naming.py`: nothing else numbers a name (`.claude/UX.md`, "Names the tracker makes"). | `tests/rules/test_naming.py`, with the rule itself tested by `tests/composition/test_naming.py` |
 | YAML is read only through `safe_yaml.load_safely`, and no other module names a loader. | `tests/rules/test_yaml_safety.py` |
+| Code that only ever runs on an older layout of the set file lives in `composition/migrations/` and nowhere else: nothing outside imports more of it than `migrated` and `Conversion`, and a migration imports nothing of the objects or the reader. | `tests/composition/test_migrations.py` (`TestMigrationsStayApart`) |
 | Only `composition/setlist_reader.py`, `composition/setlist_writer.py` and `support/safe_yaml.py` import `yaml`: in memory the set is objects, and YAML is touched only at the file. | `tests/rules/test_yaml_safety.py` |
 | No module that renders (`playback/`, `generators/`, `grid/positions.py`, `exporters/timing.py`) imports `Note`, `Rest`, `Chord`, `Degree` or `Held`: a render makes sounds, the tuples of `music/sound.py`. | `tests/music/test_sound.py` |
 | Speedups and refactorings leave every exported file byte for byte the same. | `internal_tools/compare_exports.py`, run before and after |
@@ -274,6 +275,14 @@ with the snapshots before it. Sharing is safe only while nothing changes data on
 caller that wants data to change asks `to_data()`, what `to_data()` returns shares no list or
 dictionary with the object, and an object shares none with the data it was read from
 (`tests/composition/test_kept_data.py`).
+
+**Old layouts are moved by migrations, and only there.** A change that renames a key of the set file or changes a structure comes
+with a migration in `composition/migrations/`, a module of its own made of the package's small helpers, which turns the layout
+before the change into the one after it and is never changed once released; every piece of code that only runs on an older layout
+lives in that package and nowhere else, without exception, so that the reader, the objects and the writer only ever know the layout
+written now. Adding a setting needs no migration, since every setting has a default, and a feature taken away leaves nothing to
+move. Every file the repository ships is moved over in the same change and tested, its exports byte for byte the same, and
+`tests/data/migrations/` keeps a file in the older layout for the migration's tests (the user's rules; `.claude/format/FILE_RULES.md`).
 
 **Binding is as late as possible**, and new features keep it that way: a degree stays a degree
 until the clip that plays it knows its scale, a pattern's step size and time signature are blank

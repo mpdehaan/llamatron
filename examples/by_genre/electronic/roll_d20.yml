@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Roll d20
 description: "dungeon synth, an original: one theme carried through a tavern, a road, a crypt and a dragon, on the sounds of an old keyboard pretending to be a medieval band"
 notes: |
@@ -50,17 +50,17 @@ real_time: true
 protected: true
 
 scales:
-  D Minor: { root: D, type: minor }
+  - { name: D Minor, root: D, type: minor }
 
 patterns:
-  timpani dance:
+  - name: timpani dance
     steps: 16
     drum: true
     step_size: 1/16
     degree: [A, ~, ~, ~, ~, ~, A, ~, A, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
     velocity: [84, ~, ~, ~, ~, ~, 84, ~, 84, ~, ~, ~, ~, ~, ~, ~]
-  tamb:
+  - name: tamb
     steps: 16
     drum: true
     step_size: 1/16
@@ -68,35 +68,35 @@ patterns:
     accidental: [~, ~, "#", ~, "#", ~, ~, ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [~, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 4, ~]
     velocity: [~, ~, 58, ~, 62, ~, ~, ~, 65, ~, 58, ~, 62, ~, 58, ~]
-  march low:
+  - name: march low
     steps: 16
     drum: true
     step_size: 1/16
     degree: [A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, A, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, 3, ~]
     velocity: [96, ~, ~, ~, 96, ~, ~, ~, 96, ~, ~, ~, 96, ~, 96, ~]
-  march snare:
+  - name: march snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, D, ~, ~, ~, ~, D, ~, D, D]
     octave: [~, ~, ~, ~, 3, ~, ~, 3, ~, ~, ~, ~, 3, ~, 3, 3]
     velocity: [~, ~, ~, ~, 66, ~, ~, 66, ~, ~, ~, ~, 66, ~, 66, 66]
-  battle:
+  - name: battle
     steps: 16
     drum: true
     step_size: 1/16
     degree: [A, ~, A, A, A, ~, A, ~, A, ~, A, A, A, ~, A, A]
     octave: [3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, ~, 3, 3]
     velocity: [108, ~, 108, 108, 108, ~, 108, ~, 108, ~, 108, 108, 108, ~, 108, 108]
-  battle high:
+  - name: battle high
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~]
     velocity: [~, ~, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~, 100, ~, ~, ~]
-  battle crash:
+  - name: battle crash
     steps: 64
     drum: true
     step_size: 1/16
@@ -104,56 +104,56 @@ patterns:
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [96, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  theme:
+  - name: theme
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [104, ~, ~, ~, 95, ~, ~, ~, 104, ~, 92, ~, 95, ~, ~, ~, 104, ~, ~, ~, 95, ~, 92, ~, 104, ~, ~, ~, ~, ~, ~, ~, 104, ~, ~, ~, 95, ~, ~, ~, 104, ~, 92, ~, 95, ~, ~, ~, 104, ~, 92, ~, 95, ~, 92, ~, 104, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
-  theme low:
+  - name: theme low
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 3, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~, 108, ~, ~, ~, 99, ~, 96, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, 96, ~, 108, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
-  theme bells:
+  - name: theme bells
     steps: 32
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [92, ~, ~, ~, 83, ~, ~, ~, 92, ~, 80, ~, 83, ~, ~, ~, 92, ~, ~, ~, 83, ~, 80, ~, 92, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  theme high:
+  - name: theme high
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
     velocity: [88, ~, ~, ~, 79, ~, ~, ~, 88, ~, 76, ~, 79, ~, ~, ~, 88, ~, ~, ~, 79, ~, 76, ~, 88, ~, ~, ~, ~, ~, ~, ~, 88, ~, ~, ~, 79, ~, ~, ~, 88, ~, 76, ~, 79, ~, ~, ~, 88, ~, 76, ~, 79, ~, 76, ~, 88, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
-  last bells:
+  - name: last bells
     steps: 32
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [84, ~, ~, ~, 75, ~, ~, ~, 84, ~, 72, ~, 75, ~, ~, ~, 84, ~, 72, ~, 75, ~, 72, ~, 84, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
-  dance:
+  - name: dance
     steps: 64
     step_size: 1/8
     degree: [1, 2, 3, ~, 5, ~, 3, ~, 4, 3, 2, ~, 7, ~, 2, ~, 1, 2, 3, ~, 5, ~, 1, ~, 7, ~, 5, ~, 4, ~, ~, ~, 1, 7, 5, ~, 3, ~, 5, ~, 4, 3, 2, ~, 4, ~, 2, ~, 3, 2, 1, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 4, ~, 5, ~, 5, 5, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, 6, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [104, 88, 92, ~, 95, ~, 92, ~, 104, 88, 92, ~, 95, ~, 92, ~, 104, 88, 92, ~, 95, ~, 92, ~, 104, ~, 92, ~, 95, ~, ~, ~, 104, 88, 92, ~, 95, ~, 92, ~, 104, 88, 92, ~, 95, ~, 92, ~, 104, 88, 92, ~, 95, ~, 92, ~, 104, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  dance low:
+  - name: dance low
     steps: 64
     step_size: 1/8
     degree: [1, 2, 3, ~, 5, ~, 3, ~, 4, 3, 2, ~, 7, ~, 2, ~, 1, 2, 3, ~, 5, ~, 1, ~, 7, ~, 5, ~, 4, ~, ~, ~, 1, 7, 5, ~, 3, ~, 5, ~, 4, 3, 2, ~, 4, ~, 2, ~, 3, 2, 1, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 3, ~, 4, ~, 4, 4, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, 4, ~, ~, ~, 5, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 3, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     velocity: [92, 76, 80, ~, 83, ~, 80, ~, 92, 76, 80, ~, 83, ~, 80, ~, 92, 76, 80, ~, 83, ~, 80, ~, 92, ~, 80, ~, 83, ~, ~, ~, 92, 76, 80, ~, 83, ~, 80, ~, 92, 76, 80, ~, 83, ~, 80, ~, 92, 76, 80, ~, 83, ~, 80, ~, 92, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  crypt:
+  - name: crypt
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
@@ -161,7 +161,7 @@ patterns:
     octave: [4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     velocity: [90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
-  crypt choir:
+  - name: crypt choir
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
@@ -169,7 +169,7 @@ patterns:
     octave: [5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~, 76, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
-  dragon:
+  - name: dragon
     steps: 64
     step_size: 1/8
     degree: [1, ~, 1, 1, 3, ~, 1, ~, 2, ~, 2, 2, 4, ~, 2, ~, 1, ~, 1, 1, 5, ~, 3, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, 1, 1, 7, ~, 5, ~, 6, ~, 6, 6, 5, ~, 3, ~, 4, ~, 3, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
@@ -177,7 +177,7 @@ patterns:
     octave: [4, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 5, ~, 5, 5, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, ~, 4, ~, 3, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     velocity: [122, ~, 110, 106, 113, ~, 110, ~, 122, ~, 110, 106, 113, ~, 110, ~, 122, ~, 110, 106, 113, ~, 110, ~, 122, ~, ~, ~, 113, ~, ~, ~, 122, ~, 110, 106, 113, ~, 110, ~, 122, ~, 110, 106, 113, ~, 110, ~, 122, ~, 110, ~, 113, ~, 110, ~, 122, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
-  dragon high:
+  - name: dragon high
     steps: 64
     step_size: 1/8
     degree: [1, ~, 1, 1, 3, ~, 1, ~, 2, ~, 2, 2, 4, ~, 2, ~, 1, ~, 1, 1, 5, ~, 3, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, 1, 1, 7, ~, 5, ~, 6, ~, 6, 6, 5, ~, 3, ~, 4, ~, 3, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
@@ -185,27 +185,27 @@ patterns:
     octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 6, ~, 6, 6, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, 96, 92, 99, ~, 96, ~, 108, ~, 96, 92, 99, ~, 96, ~, 108, ~, 96, 92, 99, ~, 96, ~, 108, ~, ~, ~, 99, ~, ~, ~, 108, ~, 96, 92, 99, ~, 96, ~, 108, ~, 96, 92, 99, ~, 96, ~, 108, ~, 96, ~, 99, ~, 96, ~, 108, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
-  counter:
+  - name: counter
     steps: 64
     step_size: 1/8
     degree: [3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 7, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     velocity: [90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, 81, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~, 90, ~, ~, ~, 81, ~, ~, ~, 90, ~, ~, ~, 81, ~, ~, ~, 90, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, false, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
-  harp:
+  - name: harp
     steps: 8
     step_size: 1/8
     degree: [1, 5, 1, 3, 5, 3, 1, 5]
     octave: [4, 4, 5, 5, 5, 5, 5, 4]
     velocity: [82, 66, 70, 66, 73, 66, 70, 66]
-  pedal:
+  - name: pedal
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [2, ~, ~, ~, ~, ~, ~, ~]
     velocity: [86, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  chord:
+  - name: chord
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -213,7 +213,7 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [72, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  fifths:
+  - name: fifths
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -221,21 +221,21 @@ patterns:
     chord: [pow, ~, ~, ~, ~, ~, ~, ~]
     velocity: [80, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  pluck chords:
+  - name: pluck chords
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, 1, ~, 1, ~]
     octave: [4, ~, ~, ~, 4, ~, 4, ~]
     chord: ["3", ~, ~, ~, "3", ~, "3", ~]
     velocity: [84, ~, ~, ~, 75, ~, 72, ~]
-  toll:
+  - name: toll
     steps: 32
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [94, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
-  stabs:
+  - name: stabs
     steps: 8
     step_size: 1/8
     degree: [1, ~, 1, 1, ~, ~, ~, ~]
@@ -243,123 +243,111 @@ patterns:
     chord: [pow, ~, pow, pow, ~, ~, ~, ~]
     velocity: [112, ~, 100, 105, ~, ~, ~, ~]
 
-progressions:
-  theme: { chords: [1, 7, 6, 7, 1, 7, 5, 1] }
-  dance: { chords: [1, 7, 1, 7, 1, 7, 5, 1] }
-  crypt: { chords: [1] }
-  dragon: { chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] }
-
-swells:
-  fade: { start: 100, end: 40 }
-  grow: { start: 50, end: 110 }
-
-chains:
-  theme:
-    - progression: theme
-  dance:
-    - progression: dance
-  crypt:
-    - progression: crypt
-  dragon:
-    - progression: dragon
-  fade:
-    - progression: theme
-    - swell: fade
-  grow:
-    - progression: crypt
-    - swell: grow
+generators:
+  - { name: theme, kind: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] }
+  - { name: dance, kind: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] }
+  - { name: crypt, kind: progression, chords: [1] }
+  - { name: dragon, kind: progression, chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] }
+  - { name: fade, kind: swell, start: 100, end: 40 }
+  - { name: grow, kind: swell, start: 50, end: 110 }
+  - { name: theme chords, kind: chain, generators: [{ name: theme }] }
+  - { name: dance chords, kind: chain, generators: [{ name: dance }] }
+  - { name: crypt chords, kind: chain, generators: [{ name: crypt }] }
+  - { name: dragon chords, kind: chain, generators: [{ name: dragon }] }
+  - { name: fade swell, kind: chain, generators: [{ name: theme }, { name: fade }] }
+  - { name: grow swell, kind: chain, generators: [{ name: crypt }, { name: grow }] }
 
 instruments:
-  church organ: { device: "*FluidSynth", gm_sound: 20 }
-  choir: { device: "*FluidSynth", gm_sound: 53 }
-  strings: { device: "*FluidSynth", gm_sound: 49 }
-  harpsichord: { device: "*FluidSynth", gm_sound: 7 }
-  recorder: { device: "*FluidSynth", gm_sound: 75 }
-  harp: { device: "*FluidSynth", gm_sound: 47 }
-  french horn: { device: "*FluidSynth", gm_sound: 61 }
-  tubular bells: { device: "*FluidSynth", gm_sound: 15 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: church organ, device: "*FluidSynth", gm_sound: 20 }
+  - { name: choir, device: "*FluidSynth", gm_sound: 53 }
+  - { name: strings, device: "*FluidSynth", gm_sound: 49 }
+  - { name: harpsichord, device: "*FluidSynth", gm_sound: 7 }
+  - { name: recorder, device: "*FluidSynth", gm_sound: 75 }
+  - { name: harp, device: "*FluidSynth", gm_sound: 47 }
+  - { name: french horn, device: "*FluidSynth", gm_sound: 61 }
+  - { name: tubular bells, device: "*FluidSynth", gm_sound: 15 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  roll_d20:
+  - name: roll_d20
     tempo: 72
     scale: D Minor
     genre: Electronic
 
     tracks:
-      timpani: { drum: true, instrument: drum kit }
-      tamb: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      toms: { drum: true, instrument: drum kit }
-      crash: { drum: true, instrument: drum kit }
-      organ: { instrument: church organ }
-      choir: { instrument: choir }
-      strings: { instrument: strings }
-      harpsichord: { instrument: harpsichord }
-      recorder: { instrument: recorder }
-      harp: { instrument: harp }
-      horn: { instrument: french horn }
-      bells: { instrument: tubular bells }
+      - { name: timpani, drum: true, instrument: drum kit }
+      - { name: tamb, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: toms, drum: true, instrument: drum kit }
+      - { name: crash, drum: true, instrument: drum kit }
+      - { name: organ, instrument: church organ }
+      - { name: choir, instrument: choir }
+      - { name: strings, instrument: strings }
+      - { name: harpsichord, instrument: harpsichord }
+      - { name: recorder, instrument: recorder }
+      - { name: harp, instrument: harp }
+      - { name: horn, instrument: french horn }
+      - { name: bells, instrument: tubular bells }
 
     scenes:
       - name: prologue
-        tracks:
-          organ: { pattern: fifths, chains: [grow], repeat: 8 }
-          bells: { pattern: theme bells, loop: true }
+        clips:
+          - { track: organ, pattern: fifths, generators: [{ name: grow swell }], repeat: 8 }
+          - { track: bells, pattern: theme bells, loop: true }
       - name: the theme
-        tracks:
-          recorder: { pattern: theme, repeat: 1 }
-          harp: { pattern: harp, chains: [theme], loop: true }
-          strings: { pattern: pedal, chains: [theme], loop: true }
+        clips:
+          - { track: recorder, pattern: theme, repeat: 1 }
+          - { track: harp, pattern: harp, generators: [{ name: theme chords }], loop: true }
+          - { track: strings, pattern: pedal, generators: [{ name: theme chords }], loop: true }
       - name: the tavern
         tempo: 100
-        tracks:
-          harpsichord: { pattern: dance low, repeat: 2 }
-          recorder: { pattern: dance, loop: true }
-          harp: { pattern: pluck chords, chains: [dance], loop: true }
-          timpani: { pattern: timpani dance, loop: true }
-          tamb: { pattern: tamb, loop: true }
-          strings: { pattern: pedal, chains: [dance], loop: true }
+        clips:
+          - { track: harpsichord, pattern: dance low, repeat: 2 }
+          - { track: recorder, pattern: dance, loop: true }
+          - { track: harp, pattern: pluck chords, generators: [{ name: dance chords }], loop: true }
+          - { track: timpani, pattern: timpani dance, loop: true }
+          - { track: tamb, pattern: tamb, loop: true }
+          - { track: strings, pattern: pedal, generators: [{ name: dance chords }], loop: true }
       - name: the road
         tempo: 84
-        tracks:
-          horn: { pattern: theme low, repeat: 2 }
-          strings: { pattern: chord, chains: [theme], loop: true }
-          organ: { pattern: pedal, chains: [theme], loop: true }
-          harpsichord: { pattern: counter, loop: true }
-          timpani: { pattern: march low, loop: true }
-          snare: { pattern: march snare, loop: true }
+        clips:
+          - { track: horn, pattern: theme low, repeat: 2 }
+          - { track: strings, pattern: chord, generators: [{ name: theme chords }], loop: true }
+          - { track: organ, pattern: pedal, generators: [{ name: theme chords }], loop: true }
+          - { track: harpsichord, pattern: counter, loop: true }
+          - { track: timpani, pattern: march low, loop: true }
+          - { track: snare, pattern: march snare, loop: true }
       - name: the crypt
         tempo: 60
-        tracks:
-          organ: { pattern: crypt, repeat: 2 }
-          choir: { pattern: crypt choir, loop: true }
-          strings: { pattern: pedal, chains: [crypt], loop: true }
-          bells: { pattern: toll, loop: true }
+        clips:
+          - { track: organ, pattern: crypt, repeat: 2 }
+          - { track: choir, pattern: crypt choir, loop: true }
+          - { track: strings, pattern: pedal, generators: [{ name: crypt chords }], loop: true }
+          - { track: bells, pattern: toll, loop: true }
       - name: the dragon
         tempo: 104
-        tracks:
-          horn: { pattern: dragon, repeat: 2 }
-          strings: { pattern: dragon high, loop: true }
-          organ: { pattern: stabs, chains: [dragon], loop: true }
-          choir: { pattern: fifths, chains: [dragon], loop: true }
-          timpani: { pattern: battle, loop: true }
-          toms: { pattern: battle high, loop: true }
-          crash: { pattern: battle crash, loop: true }
+        clips:
+          - { track: horn, pattern: dragon, repeat: 2 }
+          - { track: strings, pattern: dragon high, loop: true }
+          - { track: organ, pattern: stabs, generators: [{ name: dragon chords }], loop: true }
+          - { track: choir, pattern: fifths, generators: [{ name: dragon chords }], loop: true }
+          - { track: timpani, pattern: battle, loop: true }
+          - { track: toms, pattern: battle high, loop: true }
+          - { track: crash, pattern: battle crash, loop: true }
       - name: the return
         tempo: 76
-        tracks:
-          horn: { pattern: theme low, repeat: 2 }
-          recorder: { pattern: theme high, loop: true }
-          choir: { pattern: theme, loop: true }
-          harpsichord: { pattern: dance low, loop: true }
-          harp: { pattern: harp, chains: [theme], loop: true }
-          strings: { pattern: chord, chains: [theme], loop: true }
-          organ: { pattern: pedal, chains: [theme], loop: true }
-          timpani: { pattern: march low, loop: true }
-          bells: { pattern: toll, loop: true }
+        clips:
+          - { track: horn, pattern: theme low, repeat: 2 }
+          - { track: recorder, pattern: theme high, loop: true }
+          - { track: choir, pattern: theme, loop: true }
+          - { track: harpsichord, pattern: dance low, loop: true }
+          - { track: harp, pattern: harp, generators: [{ name: theme chords }], loop: true }
+          - { track: strings, pattern: chord, generators: [{ name: theme chords }], loop: true }
+          - { track: organ, pattern: pedal, generators: [{ name: theme chords }], loop: true }
+          - { track: timpani, pattern: march low, loop: true }
+          - { track: bells, pattern: toll, loop: true }
       - name: epilogue
         tempo: 60
-        tracks:
-          organ: { pattern: fifths, chains: [fade], repeat: 4 }
-          bells: { pattern: last bells, loop: true }
+        clips:
+          - { track: organ, pattern: fifths, generators: [{ name: fade swell }], repeat: 4 }
+          - { track: bells, pattern: last bells, loop: true }

@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Percussion fish
 description: "drum and bass, an original: a breakbeat that keeps being re-cut, a reese bass, a darting tune, and a school of hand percussion that gets a stretch to itself"
 notes: |
@@ -55,31 +55,31 @@ real_time: true
 protected: true
 
 scales:
-  A Minor: { root: A, type: minor }
+  - { name: A Minor, root: A, type: minor }
 
 patterns:
-  kick:
+  - name: kick
     steps: 32
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, C, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, ~, ~, ~, ~]
     velocity: [116, ~, ~, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, ~, ~, 116, 116, ~, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 128
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, D, ~, D, D, D, D]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, 3, 3, 3]
     velocity: [~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, 114, ~, 114, 114, 114, 114]
-  ghost:
+  - name: ghost
     steps: 32
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, ~, ~, ~, D, ~, D, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~, ~, ~, D, ~, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, 3, ~, ~]
     velocity: [~, ~, ~, ~, ~, ~, ~, 52, ~, 52, ~, ~, ~, ~, ~, 52, ~, ~, ~, ~, ~, ~, ~, 52, ~, 52, ~, ~, ~, 52, ~, ~]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -87,7 +87,7 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
     velocity: [76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~]
-  ride:
+  - name: ride
     steps: 16
     drum: true
     step_size: 1/16
@@ -95,42 +95,42 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", "#", "#", ~, "#", ~, "#", ~, "#", "#"]
     octave: [4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, 4]
     velocity: [74, ~, 68, ~, 74, ~, 68, 63, 74, ~, 68, ~, 74, ~, 68, 63]
-  kick chop:
+  - name: kick chop
     steps: 32
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, C, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, C, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, 3, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, 3, ~, ~, ~, ~, ~, ~]
     velocity: [116, ~, ~, 116, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, 116, ~, ~, 116, ~, ~, ~, ~, ~, ~]
-  snare chop:
+  - name: snare chop
     steps: 32
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, D, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, 3, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
     velocity: [~, ~, ~, ~, 112, ~, ~, 112, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, 112, ~]
-  kick half:
+  - name: kick half
     steps: 32
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [114, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  snare half:
+  - name: snare half
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~]
-  roll:
+  - name: roll
     steps: 256
     drum: true
     step_size: 1/32
     degree: [D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, ~, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, ~, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, ~, ~, ~, ~, ~, ~, ~, ~]
-  crash:
+  - name: crash
     steps: 256
     drum: true
     step_size: 1/16
@@ -138,7 +138,7 @@ patterns:
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [100, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  conga:
+  - name: conga
     steps: 32
     drum: true
     step_size: 1/16
@@ -146,28 +146,28 @@ patterns:
     accidental: [~, ~, "#", ~, ~, "#", ~, ~, ~, ~, "#", ~, ~, "#", ~, "#", ~, ~, "#", ~, ~, "#", ~, "#", ~, ~, "#", ~, ~, ~, ~, ~]
     octave: [~, ~, 5, ~, ~, 5, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, ~, ~, 5, ~, ~, 5, ~, 5, ~, ~, 5, ~, ~, ~, ~, ~]
     velocity: [~, ~, 76, ~, ~, 71, ~, ~, ~, ~, 76, ~, ~, 71, ~, 71, ~, ~, 76, ~, ~, 71, ~, 71, ~, ~, 76, ~, ~, ~, ~, ~]
-  conga low:
+  - name: conga low
     steps: 32
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, ~, ~, ~, ~, E, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, E, ~, ~, ~, E, ~, E, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, 80, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 80, ~, ~, ~, 80, ~, 74, ~]
-  timbale:
+  - name: timbale
     steps: 64
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, F, ~, ~, F, ~, F, F, ~, F, F]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, 5, 5]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 82, ~, ~, 77, ~, 77, 88, ~, 82, 77]
-  woodblock:
+  - name: woodblock
     steps: 16
     drum: true
     step_size: 1/16
     degree: [E, ~, ~, E, ~, ~, E, ~, ~, ~, E, ~, E, ~, ~, ~]
     octave: [6, ~, ~, 6, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, ~, ~]
     velocity: [68, ~, ~, 57, ~, ~, 62, ~, ~, ~, 62, ~, 68, ~, ~, ~]
-  shaker:
+  - name: shaker
     steps: 16
     drum: true
     step_size: 1/16
@@ -175,7 +175,7 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
     velocity: [58, 31, 52, 31, 58, 31, 52, 31, 58, 31, 52, 31, 58, 31, 52, 31]
-  cowbell:
+  - name: cowbell
     steps: 16
     drum: true
     step_size: 1/16
@@ -183,7 +183,7 @@ patterns:
     accidental: ["#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~]
     octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~]
     velocity: [58, ~, ~, ~, 58, ~, ~, ~, 58, ~, ~, ~, 58, ~, ~, ~]
-  reese:
+  - name: reese
     steps: 64
     step_size: 1/16
     degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 7, ~, 1, ~, ~, ~, ~, ~, 2, ~, ~, ~, 1, ~, 5, ~, ~, ~]
@@ -191,7 +191,7 @@ patterns:
     octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, 2, ~, ~, ~]
     velocity: [119, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 105, ~, 119, ~, ~, ~, ~, ~, ~, ~, ~, ~, 113, ~, ~, ~, ~, ~, 119, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 105, ~, 119, ~, ~, ~, ~, ~, 113, ~, ~, ~, 105, ~, 108, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true, false, true, false, true, true, true]
-  reese b:
+  - name: reese b
     steps: 64
     step_size: 1/16
     degree: [1, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 7, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 2, ~, 7, ~]
@@ -199,14 +199,14 @@ patterns:
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, 2, ~]
     velocity: [121, ~, ~, ~, 110, ~, ~, ~, 112, ~, ~, ~, 110, ~, ~, ~, 121, ~, ~, ~, 110, ~, ~, ~, 112, ~, ~, ~, 110, ~, ~, ~, 121, ~, ~, ~, 110, ~, ~, ~, 112, ~, ~, ~, 110, ~, ~, ~, 121, ~, ~, ~, 110, ~, ~, ~, 112, ~, ~, ~, 110, ~, 107, ~]
     tie: [false, true, true, false, false, true, false, false, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, false, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, false, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, false, false, true, true, false, false, true, false, true]
-  sub:
+  - name: sub
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [2, ~, ~, ~, ~, ~, ~, ~]
     velocity: [116, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  pad:
+  - name: pad
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -214,14 +214,14 @@ patterns:
     chord: ["7", ~, ~, ~, ~, ~, ~, ~]
     velocity: [64, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  keys:
+  - name: keys
     steps: 16
     step_size: 1/16
     degree: [1, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     chord: ["9", ~, ~, ~, ~, ~, "9", ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [86, ~, ~, ~, ~, ~, 83, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  keys held:
+  - name: keys held
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -229,25 +229,25 @@ patterns:
     chord: ["9", ~, ~, ~, ~, ~, ~, ~]
     velocity: [76, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  fish:
+  - name: fish
     steps: 64
     step_size: 1/16
     degree: [~, ~, ~, ~, 5, 6, 1, 3, ~, ~, ~, ~, 2, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 6, 1, 4, ~, ~, ~, ~, 3, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 3, 1, 6, 5, ~]
     octave: [~, ~, ~, ~, 4, 4, 5, 5, ~, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 5, 5, ~, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 5, 4, 4, ~]
     velocity: [~, ~, ~, ~, 96, 91, 93, 101, ~, ~, ~, ~, 96, 101, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 96, 91, 93, 101, ~, ~, ~, ~, 96, 101, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 93, 91, 96, 91, 93, ~]
-  fish b:
+  - name: fish b
     steps: 64
     step_size: 1/16
     degree: [1, ~, 1, 3, ~, ~, 5, ~, ~, ~, 3, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, 1, 3, 6, ~, ~, ~, ~, 2, ~, 2, 4, ~, ~, 7, ~, ~, ~, 4, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 7, 2, 5, 3, ~, 1, ~]
     octave: [5, ~, 5, 5, ~, ~, 5, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 5, 5, 5, ~, ~, ~, ~, 5, ~, 5, 5, ~, ~, 5, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 5, 5, 5, ~, 5, ~]
     velocity: [107, ~, 93, 101, ~, ~, 101, ~, ~, ~, 93, 101, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 91, 93, 101, ~, ~, ~, ~, 107, ~, 93, 101, ~, ~, 101, ~, ~, ~, 93, 101, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 91, 93, 91, 96, ~, 93, ~]
-  fish flute:
+  - name: fish flute
     steps: 64
     step_size: 1/16
     degree: [~, ~, ~, ~, 5, 6, 1, 3, ~, ~, ~, ~, 2, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 6, 1, 4, ~, ~, ~, ~, 3, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 3, 1, 6, 5, ~]
     octave: [~, ~, ~, ~, 5, 5, 6, 6, ~, ~, ~, ~, 6, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 6, 6, ~, ~, ~, ~, 6, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, 6, 6, 5, 5, ~]
     velocity: [~, ~, ~, ~, 78, 73, 75, 83, ~, ~, ~, ~, 78, 83, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 78, 73, 75, 83, ~, ~, ~, ~, 78, 83, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 75, 73, 78, 73, 75, ~]
-  piano:
+  - name: piano
     steps: 64
     step_size: 1/8
     degree: [5, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 1, ~, 2, ~, ~, ~, ~, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~]
@@ -255,201 +255,187 @@ patterns:
     velocity: [95, ~, ~, ~, ~, ~, ~, ~, 95, ~, ~, ~, ~, ~, 84, ~, 95, ~, ~, ~, ~, ~, ~, ~, 95, ~, ~, ~, 86, ~, ~, ~, 95, ~, ~, ~, ~, ~, ~, ~, 95, ~, ~, ~, ~, ~, 84, ~, 95, ~, ~, ~, ~, ~, 84, ~, 95, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true]
 
-progressions:
-  a: { chords: [1, 1, 6, 6, 1, 1, 4, 5] }
-  b: { chords: [4, 4, 1, 1, 6, 6, 5, 5] }
-
-densities:
-  arrive: { start: 15, end: 100 }
-  leave: { start: 100, end: 15 }
-
-swells:
-  fade: { start: 100, end: 35 }
-  rise: { start: 45, end: 110 }
-
-chains:
-  a:
-    - progression: a
-  b:
-    - progression: b
-  arrive:
-    - density: arrive
-  leave:
-    - density: leave
-  fade:
-    - progression: a
-    - swell: fade
-  rise:
-    - progression: a
-    - swell: rise
+generators:
+  - { name: a, kind: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] }
+  - { name: b, kind: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] }
+  - { name: arrive, kind: density, start: 15, end: 100 }
+  - { name: leave, kind: density, start: 100, end: 15 }
+  - { name: fade, kind: swell, start: 100, end: 35 }
+  - { name: rise, kind: swell, start: 45, end: 110 }
+  - { name: a chords, kind: chain, generators: [{ name: a }] }
+  - { name: b chords, kind: chain, generators: [{ name: b }] }
+  - { name: arrive density, kind: chain, generators: [{ name: arrive }] }
+  - { name: leave density, kind: chain, generators: [{ name: leave }] }
+  - { name: fade swell, kind: chain, generators: [{ name: a }, { name: fade }] }
+  - { name: rise swell, kind: chain, generators: [{ name: a }, { name: rise }] }
 
 instruments:
-  saw lead: { device: "*FluidSynth", gm_sound: 82 }
-  sub bass: { device: "*FluidSynth", gm_sound: 39 }
-  warm pad: { device: "*FluidSynth", gm_sound: 90 }
-  electric piano: { device: "*FluidSynth", gm_sound: 5 }
-  vibraphone: { device: "*FluidSynth", gm_sound: 12 }
-  flute: { device: "*FluidSynth", gm_sound: 74 }
-  piano: { device: "*FluidSynth", gm_sound: 1 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: saw lead, device: "*FluidSynth", gm_sound: 82 }
+  - { name: sub bass, device: "*FluidSynth", gm_sound: 39 }
+  - { name: warm pad, device: "*FluidSynth", gm_sound: 90 }
+  - { name: electric piano, device: "*FluidSynth", gm_sound: 5 }
+  - { name: vibraphone, device: "*FluidSynth", gm_sound: 12 }
+  - { name: flute, device: "*FluidSynth", gm_sound: 74 }
+  - { name: piano, device: "*FluidSynth", gm_sound: 1 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  percussion_fish:
+  - name: percussion_fish
     tempo: 174
     scale: A Minor
     genre: Electronic
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      ghost: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      crash: { drum: true, instrument: drum kit }
-      conga: { drum: true, instrument: drum kit }
-      conga low: { drum: true, instrument: drum kit }
-      timbale: { drum: true, instrument: drum kit }
-      woodblock: { drum: true, instrument: drum kit }
-      shaker: { drum: true, instrument: drum kit }
-      cowbell: { drum: true, instrument: drum kit }
-      reese: { instrument: saw lead }
-      sub: { instrument: sub bass }
-      pad: { instrument: warm pad }
-      keys: { instrument: electric piano }
-      vibes: { instrument: vibraphone }
-      flute: { instrument: flute }
-      piano: { instrument: piano }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: ghost, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: crash, drum: true, instrument: drum kit }
+      - { name: conga, drum: true, instrument: drum kit }
+      - { name: conga low, drum: true, instrument: drum kit }
+      - { name: timbale, drum: true, instrument: drum kit }
+      - { name: woodblock, drum: true, instrument: drum kit }
+      - { name: shaker, drum: true, instrument: drum kit }
+      - { name: cowbell, drum: true, instrument: drum kit }
+      - { name: reese, instrument: saw lead }
+      - { name: sub, instrument: sub bass }
+      - { name: pad, instrument: warm pad }
+      - { name: keys, instrument: electric piano }
+      - { name: vibes, instrument: vibraphone }
+      - { name: flute, instrument: flute }
+      - { name: piano, instrument: piano }
 
     scenes:
       - name: pad and piano
-        tracks:
-          pad: { pattern: pad, chains: [a], repeat: 16 }
-          piano: { pattern: piano, loop: true }
-          shaker: { pattern: shaker, chains: [arrive], loop: true }
-          conga: { pattern: conga, chains: [arrive], loop: true }
+        clips:
+          - { track: pad, pattern: pad, generators: [{ name: a chords }], repeat: 16 }
+          - { track: piano, pattern: piano, loop: true }
+          - { track: shaker, pattern: shaker, generators: [{ name: arrive density }], loop: true }
+          - { track: conga, pattern: conga, generators: [{ name: arrive density }], loop: true }
       - name: the break
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          conga: { pattern: conga, loop: true }
-          conga low: { pattern: conga low, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          pad: { pattern: pad, chains: [a], loop: true }
-          keys: { pattern: keys, chains: [a], loop: true }
-          vibes: { pattern: fish, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: conga low, pattern: conga low, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: vibes, pattern: fish, loop: true }
       - name: drop
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          reese: { pattern: reese, chains: [a], loop: true }
-          sub: { pattern: sub, chains: [a], loop: true }
-          pad: { pattern: pad, chains: [a], loop: true }
-          vibes: { pattern: fish, loop: true }
-          keys: { pattern: keys, chains: [a], loop: true }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
+          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: vibes, pattern: fish, loop: true }
+          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: crash, pattern: crash, loop: true }
       - name: "drop, with the school"
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          reese: { pattern: reese, chains: [a], loop: true }
-          sub: { pattern: sub, chains: [a], loop: true }
-          pad: { pattern: pad, chains: [a], loop: true }
-          conga: { pattern: conga, loop: true }
-          conga low: { pattern: conga low, loop: true }
-          timbale: { pattern: timbale, loop: true }
-          woodblock: { pattern: woodblock, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          cowbell: { pattern: cowbell, loop: true }
-          vibes: { pattern: fish, loop: true }
-          flute: { pattern: fish flute, loop: true }
-          keys: { pattern: keys, chains: [a], loop: true }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
+          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: conga low, pattern: conga low, loop: true }
+          - { track: timbale, pattern: timbale, loop: true }
+          - { track: woodblock, pattern: woodblock, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+          - { track: vibes, pattern: fish, loop: true }
+          - { track: flute, pattern: fish flute, loop: true }
+          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: crash, pattern: crash, loop: true }
       - name: breakdown
-        tracks:
-          pad: { pattern: pad, chains: [b], repeat: 16 }
-          keys: { pattern: keys held, chains: [b], loop: true }
-          piano: { pattern: piano, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          woodblock: { pattern: woodblock, loop: true }
+        clips:
+          - { track: pad, pattern: pad, generators: [{ name: b chords }], repeat: 16 }
+          - { track: keys, pattern: keys held, generators: [{ name: b chords }], loop: true }
+          - { track: piano, pattern: piano, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: woodblock, pattern: woodblock, loop: true }
       - name: build
-        tracks:
-          snare: { pattern: roll, repeat: 1 }
-          pad: { pattern: pad, chains: [rise], loop: true }
-          vibes: { pattern: fish, loop: true }
-          sub: { pattern: sub, chains: [rise], loop: true }
-          conga: { pattern: conga, loop: true }
-          conga low: { pattern: conga low, loop: true }
-          shaker: { pattern: shaker, loop: true }
+        clips:
+          - { track: snare, pattern: roll, repeat: 1 }
+          - { track: pad, pattern: pad, generators: [{ name: rise swell }], loop: true }
+          - { track: vibes, pattern: fish, loop: true }
+          - { track: sub, pattern: sub, generators: [{ name: rise swell }], loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: conga low, pattern: conga low, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
       - name: second drop
-        tracks:
-          kick: { pattern: kick chop, repeat: 16 }
-          snare: { pattern: snare chop, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: ride, loop: true }
-          reese: { pattern: reese b, chains: [b], loop: true }
-          sub: { pattern: sub, chains: [b], loop: true }
-          pad: { pattern: pad, chains: [b], loop: true }
-          vibes: { pattern: fish b, loop: true }
-          keys: { pattern: keys, chains: [b], loop: true }
-          timbale: { pattern: timbale, loop: true }
-          cowbell: { pattern: cowbell, loop: true }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: kick, pattern: kick chop, repeat: 16 }
+          - { track: snare, pattern: snare chop, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: ride, loop: true }
+          - { track: reese, pattern: reese b, generators: [{ name: b chords }], loop: true }
+          - { track: sub, pattern: sub, generators: [{ name: b chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: b chords }], loop: true }
+          - { track: vibes, pattern: fish b, loop: true }
+          - { track: keys, pattern: keys, generators: [{ name: b chords }], loop: true }
+          - { track: timbale, pattern: timbale, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+          - { track: crash, pattern: crash, loop: true }
       - name: the school alone
-        tracks:
-          conga: { pattern: conga, repeat: 8 }
-          conga low: { pattern: conga low, loop: true }
-          timbale: { pattern: timbale, loop: true }
-          woodblock: { pattern: woodblock, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          cowbell: { pattern: cowbell, loop: true }
-          sub: { pattern: sub, chains: [a], loop: true }
-          ghost: { pattern: ghost, loop: true }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: conga, pattern: conga, repeat: 8 }
+          - { track: conga low, pattern: conga low, loop: true }
+          - { track: timbale, pattern: timbale, loop: true }
+          - { track: woodblock, pattern: woodblock, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: crash, pattern: crash, loop: true }
       - name: half time
-        tracks:
-          kick: { pattern: kick half, repeat: 8 }
-          snare: { pattern: snare half, loop: true }
-          hat: { pattern: ride, loop: true }
-          conga: { pattern: conga, loop: true }
-          conga low: { pattern: conga low, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          reese: { pattern: reese, chains: [a], loop: true }
-          sub: { pattern: sub, chains: [a], loop: true }
-          pad: { pattern: pad, chains: [a], loop: true }
-          piano: { pattern: piano, loop: true }
-          vibes: { pattern: fish b, loop: true }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: kick, pattern: kick half, repeat: 8 }
+          - { track: snare, pattern: snare half, loop: true }
+          - { track: hat, pattern: ride, loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: conga low, pattern: conga low, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
+          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: piano, pattern: piano, loop: true }
+          - { track: vibes, pattern: fish b, loop: true }
+          - { track: crash, pattern: crash, loop: true }
       - name: drop again
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          reese: { pattern: reese, chains: [a], loop: true }
-          sub: { pattern: sub, chains: [a], loop: true }
-          pad: { pattern: pad, chains: [a], loop: true }
-          conga: { pattern: conga, loop: true }
-          conga low: { pattern: conga low, loop: true }
-          timbale: { pattern: timbale, loop: true }
-          woodblock: { pattern: woodblock, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          cowbell: { pattern: cowbell, loop: true }
-          vibes: { pattern: fish, loop: true }
-          flute: { pattern: fish flute, loop: true }
-          keys: { pattern: keys, chains: [a], loop: true }
-          piano: { pattern: piano, loop: true }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
+          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: conga low, pattern: conga low, loop: true }
+          - { track: timbale, pattern: timbale, loop: true }
+          - { track: woodblock, pattern: woodblock, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+          - { track: vibes, pattern: fish, loop: true }
+          - { track: flute, pattern: fish flute, loop: true }
+          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: piano, pattern: piano, loop: true }
+          - { track: crash, pattern: crash, loop: true }
       - name: percussion and pad
-        tracks:
-          conga: { pattern: conga, repeat: 8 }
-          conga low: { pattern: conga low, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          woodblock: { pattern: woodblock, chains: [leave], loop: true }
-          pad: { pattern: pad, chains: [fade], loop: true }
-          piano: { pattern: piano, loop: true }
-          vibes: { pattern: fish, chains: [leave], loop: true }
+        clips:
+          - { track: conga, pattern: conga, repeat: 8 }
+          - { track: conga low, pattern: conga low, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: woodblock, pattern: woodblock, generators: [{ name: leave density }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: fade swell }], loop: true }
+          - { track: piano, pattern: piano, loop: true }
+          - { track: vibes, pattern: fish, generators: [{ name: leave density }], loop: true }

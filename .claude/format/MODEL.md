@@ -59,9 +59,8 @@ The package is `llamatron`, in `src/llamatron`, split by what each part is for.
 - The tracker shows octaves through the set's `octave_labels` setting (`OctaveLabels`, `live` by
   default or `llamatron`), which `Song.shown_octave` and `Song.stored_octave` convert with, so
   Live's labels run from -2 to 8 on screen.
-- A file whose `version` is older than `LLAMATRON_OCTAVES_SINCE` (1.0.30) stored Live's
-  numbering, and `Song.from_data` moves its octaves up by `LIVE_OCTAVE_OFFSET` before checking it.
-  A file with no version is read as it is.
+- A file saved before 1.0.30 stored Live's numbering, and its migration (`composition/migrations/live_octaves.py`) moves its
+  octaves up by two before the set reads it. A file with no version is read as it is.
 
 ## Chords, scales and time signatures
 
@@ -324,7 +323,7 @@ its capitals, and a genre written the older way, `Rock Mashup`, as Mashup and Ro
 variant only under its subgenre. `Song.get_style_name()` and `Setlist.get_genres()` name a mashup with its subgenre, `Rock Mashup`,
 which the demos' pages and folders are named by. `tests/composition/test_genres.py` holds the lists to the style templates.
 
-A set file's reading is `composition/setlist_reader.py`, beside the writer: the file and its YAML (`file_data`), an older file's layout brought to the one written now (`as_a_set_is_written`, `holds_one_song`, `as_setlist_data`), the view's state a file holds, `file_stem`, and `read_corrected`, the loop that applies corrections until the data reads. `Setlist` builds itself from data in the layout written now and knows nothing of files but `read_file` and `write_file`, which hand over to the reader and the writer.
+A set file's reading is `composition/setlist_reader.py`, beside the writer: the file and its YAML (`file_data`), the file's data moved by the migrations and turned into the objects' data (`set_file_data`, through `composition/migrations/` and `composition/file_layout.py`), the checks every set's data passes (`as_a_set_is_written`, which also refuses two generators of one name), the view's state a file holds, `file_stem`, and `read_corrected`, the loop that applies corrections until the data reads. `Setlist` builds itself from data in the layout written now and knows nothing of files but `read_file` and `write_file`, which hand over to the reader and the writer.
 
 `HasCells` (`composition/traits.py`) is what holds a row of cells edited one at a time: `set_cell(step=, value=)`, `insert_cell(step)` and `remove_cell(step)` on `Groove`, `ArpSettings` (its offsets), `StepRowSettings` (its steps) and `GuitarifySettings` (its bar of strokes, written with its accents and its cell's length by `set_bar`).
 

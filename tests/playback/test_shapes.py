@@ -43,6 +43,7 @@ BEAT = Rational(1, 4)
 CHORD = 'M'
 VELOCITY = 100
 SHAPED = 'shaped'
+SHAPED_CHAIN = 'shaped chain'
 OTHER_TRACK = 'bass'
 HALF = 50
 QUARTER = 25
@@ -67,10 +68,10 @@ def one_scene(*, scene=None, clip=None, rows=None, repeat=1, chain=None, generat
     """Return a song whose lead plays a bar of sixteenths, the scene and the clip given settings of their own, and the clip's chains naming generators."""
     clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, **(clip or {})}
     if chain:
-        clip_slot[ClipSlotSetting.CHAINS] = [SHAPED]
+        clip_slot[ClipSlotSetting.CHAINS] = [SHAPED_CHAIN]
     data = song(patterns={test_registers.X: bar_of_sixteenths(**(rows or {}))}, scenes=[{**(scene or {}), SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
     if chain:
-        data[Section.CHAINS] = {SHAPED: chain}
+        data[Section.CHAINS] = {SHAPED_CHAIN: chain}
     data.update(generators or {})
     return data
 

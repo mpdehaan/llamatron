@@ -30,13 +30,16 @@ import yaml
 from llamatron.composition import clip_slot, corrections as corrections_values, file_format, limits
 from llamatron.composition.corrections import changed_count, Correction, place_without
 from llamatron.composition.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, RegisterName, RegisterSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
+from llamatron.composition.file_layout import as_object_layout
 from llamatron.composition.generator_settings import ArpSetting
+from llamatron.composition.migrations import migrated
 from llamatron.composition.pattern import nearest_step_value
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators import arp
 from llamatron.music import midi
 from llamatron.strings import errors, messages, names
+from tests.support.rendering import as_setlist
 
 # The two sets made for these tests.
 SAMPLE_SETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'sample_sets')
@@ -207,7 +210,7 @@ CORRECTED = [
 ]
 # Data with something wrong that no allowed value is near, which is refused as it always was.
 REFUSED = [
-    with_clip({ClipSlotSetting.CHAIN: NOT_A_NAME}),
+    with_clip({ClipSlotSetting.CHAINS: [NOT_A_NAME]}),
     with_clip({ClipSlotSetting.MORPH_TO: NOT_A_NAME, ClipSlotSetting.MORPH_STYLE: clip_slot.FIRST_MORPH_STYLE, ClipSlotSetting.REPEAT: limits.MIN_REPEAT + 1}),
     with_clip({ClipSlotSetting.LOOP: 1}),
     with_song({SongSetting.SCALE: NOT_A_NAME}),
@@ -280,20 +283,20 @@ class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
     def test_reading_strictly_refuses_and_carries_the_correction(self):
         for data, path, expected in CORRECTED:
             with self.subTest(path=path), self.assertRaises(SongFileError) as refused:
-                Setlist.from_data(data=copy.deepcopy(data), one_song_name=VERSE)
+                Setlist.from_data(data=as_setlist(copy.deepcopy(data), song_name=VERSE))
             self.assertIsNotNone(refused.exception.get_correction(), path)
 
     def test_reading_corrected_puts_the_nearest_allowed_value_there(self):
         for data, path, expected in CORRECTED:
             with self.subTest(path=path):
-                setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+                setlist, corrections = Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
                 self.assertEqual(len(corrections), 1)
                 self.assertEqual(value_at(data=setlist.to_data(), path=path), ABSENT if expected is corrections_values.LEFT_OUT else expected)
 
     def test_the_correction_says_what_was_found_and_what_is_used(self):
         for data, path, expected in CORRECTED:
             with self.subTest(path=path):
-                setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+                setlist, corrections = Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
                 self.assertEqual(corrections[0].get_found(), value_at(data=data, path=path))
                 self.assertEqual(corrections[0].get_used(), expected)
                 self.assertEqual(corrections[0].get_name(), path[-1])
@@ -302,13 +305,13 @@ class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
         for data, path, expected in CORRECTED:
             with self.subTest(path=path):
                 before = copy.deepcopy(data)
-                Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+                Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
                 self.assertEqual(data, before)
 
     def test_the_corrected_set_reads_strictly_once_written(self):
         for data, path, expected in CORRECTED:
             with self.subTest(path=path):
-                setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+                setlist, corrections = Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
                 Setlist.from_data(data=setlist.to_data())
 
     def test_data_with_nothing_wrong_needs_no_corrections(self):
@@ -329,7 +332,7 @@ class TestEveryValueWithOneNearItIsCorrected(unittest.TestCase):
             **with_pattern({PatternSetting.DIRECTION: NOT_A_CHOICE, FIRST_CC: [midi.MAX_CC_VALUE + 1, None, None, None]}),
             **with_track({TrackSetting.TRANSPOSE: limits.MAX_TRANSPOSE + 1}),
         }
-        setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+        setlist, corrections = Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
         self.assertEqual(
             [correction.get_name() for correction in corrections],
             [SetlistSetting.DEFAULT_OCTAVE, PatternSetting.DIRECTION, FIRST_CC, TrackSetting.TRANSPOSE],
@@ -359,27 +362,27 @@ class TestWhatIsStillRefused(unittest.TestCase):
     def test_reading_strictly_refuses_with_no_correction(self):
         for data in REFUSED:
             with self.subTest(data=data), self.assertRaises(SongFileError) as refused:
-                Setlist.from_data(data=copy.deepcopy(data), one_song_name=VERSE)
+                Setlist.from_data(data=as_setlist(copy.deepcopy(data), song_name=VERSE))
             self.assertIsNone(refused.exception.get_correction(), data)
 
     def test_reading_corrected_refuses_in_the_same_words(self):
         for data in REFUSED:
             with self.subTest(data=data):
                 with self.assertRaises(SongFileError) as strictly:
-                    Setlist.from_data(data=copy.deepcopy(data), one_song_name=VERSE)
+                    Setlist.from_data(data=as_setlist(copy.deepcopy(data), song_name=VERSE))
                 with self.assertRaises(SongFileError) as corrected:
-                    Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+                    Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
                 self.assertEqual(str(corrected.exception), str(strictly.exception))
 
     def test_one_problem_with_no_correction_refuses_a_file_whose_other_values_could_be_corrected(self):
-        data = {SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1, **with_clip({ClipSlotSetting.CHAIN: NOT_A_NAME})}
+        data = {SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE + 1, **with_clip({ClipSlotSetting.CHAINS: [NOT_A_NAME]})}
         with self.assertRaisesRegex(SongFileError, NOT_A_NAME):
-            Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+            Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
 
     def test_two_values_that_no_longer_fit_each_other_once_corrected_are_refused(self):
         data = with_track({TrackSetting.LOWEST_OCTAVE: limits.MAX_OCTAVE + 1, TrackSetting.HIGHEST_OCTAVE: limits.MIN_OCTAVE})
         with self.assertRaises(SongFileError) as refused:
-            Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+            Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
         self.assertIn(errors.ERR_OCTAVE_RANGE_BACKWARDS.format(lowest=limits.MAX_OCTAVE, highest=limits.MIN_OCTAVE), str(refused.exception))
 
     def test_going_back_to_earlier_data_stays_strict(self):
@@ -392,13 +395,13 @@ class TestOlderFilesAreCorrectedToo(unittest.TestCase):
 
     def test_a_file_of_one_song_is_read_as_a_set_and_then_corrected(self):
         data = {Section.TRACKS: {LEAD: {TrackSetting.TRANSPOSE: limits.MAX_TRANSPOSE + 1}}, Section.SCENES: []}
-        setlist, corrections = Setlist.from_data_corrected(data=data, one_song_name=VERSE)
+        setlist, corrections = Setlist.from_data_corrected(data=as_setlist(data, song_name=VERSE))
         self.assertEqual(setlist.get_song(VERSE).get_track(LEAD).get_transpose(), limits.MAX_TRANSPOSE)
         self.assertEqual(corrections[0].get_place(), 'song (verse), track (lead)')
 
     def test_an_octave_in_lives_numbers_is_moved_before_it_is_corrected(self):
         data = {SetlistSetting.VERSION: A_VERSION_WITH_LIVE_OCTAVES, SetlistSetting.DEFAULT_OCTAVE: limits.MAX_OCTAVE}
-        setlist, corrections = Setlist.from_data_corrected(data=data)
+        setlist, corrections = Setlist.from_data_corrected(data=as_object_layout(migrated(data)[0]))
         self.assertEqual(corrections[0].get_found(), limits.MAX_OCTAVE + file_format.LIVE_OCTAVE_OFFSET)
         self.assertEqual(setlist.get_default_octave(), limits.MAX_OCTAVE)
 
@@ -412,7 +415,7 @@ class TestTheSampleSets(unittest.TestCase):
 
     def written(self, path):
         with open(path) as file:
-            return yaml.safe_load(file)
+            return as_object_layout(yaml.safe_load(file))
 
     def test_the_set_with_every_value_near_an_allowed_one_is_refused_strictly_and_opens_corrected(self):
         with self.assertRaises(SongFileError) as refused:

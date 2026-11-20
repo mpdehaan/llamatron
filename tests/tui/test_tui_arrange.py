@@ -911,7 +911,7 @@ class TestScenesAndClipsEdges(UITest):
         return self.app.screen
 
     async def test_removing_the_last_chain_on_its_list_page_leaves_none(self):
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAIN, value=NAMED)
+        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
         page = await self.clip_page()
         await self.go_to(page, CHAIN)
         await self.press(Key.ENTER)

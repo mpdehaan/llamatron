@@ -299,8 +299,6 @@ class ClipSlotSetting:
     PATTERNS = 'patterns'
     # The order the clip plays its patterns in on each pass through them.
     PATTERN_ORDER = 'pattern_order'
-    # Only read, from a file saved before a clip held a list of chains: one chain's name, read as a list of one.
-    CHAIN = 'chain'
     # The chains a clip runs, in order, before its scene's and its track's.
     CHAINS = 'chains'
     # How the clip's chords are strummed, over its track's.
@@ -715,14 +713,21 @@ OCTAVE_LABEL_CHOICES = [OctaveLabels.LIVE, OctaveLabels.LLAMATRON]
 LIVE_OCTAVE_OFFSET = 2
 # How far below the file's numbering each choice of labels is.
 OCTAVE_LABEL_OFFSETS = {OctaveLabels.LIVE: LIVE_OCTAVE_OFFSET, OctaveLabels.LLAMATRON: 0}
-# Files saved before this version numbered octaves as Live labels them, and are moved up when read.
-LLAMATRON_OCTAVES_SINCE = '1.0.30'
-# Files saved before this version held one song at the top level, with no songs section, and are
-# read as a set holding that one song.
-SETLISTS_SINCE = '1.0.39'
-# Files saved before this version held the long text under description, which is now notes, and a
-# description is one line saying what the set is.
-NOTES_SINCE = '1.0.155'
+
+
+class FileLayout:
+    """The names the set file gives the parts of its lists: everything a person names is an item of a list, its name first."""
+
+    NAME = 'name'
+    KIND = 'kind'
+    # The list of every generator of the set, of every kind, and what a Chain, a clip, a scene and a track write of the
+    # generators they run, each by its name.
+    GENERATORS = 'generators'
+    # A Chain's kind in the list of generators.
+    CHAIN = 'chain'
+    # A scene's clips, each an item naming the track it is on.
+    CLIPS = 'clips'
+    TRACK = 'track'
 
 # The registers, in the order the Registers page and the pattern editor show them.
 REGISTER_NAMES = [RegisterName.AX, RegisterName.BX, RegisterName.CX, RegisterName.DX]

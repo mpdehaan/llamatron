@@ -38,11 +38,12 @@ from llamatron.composition.groove import check_groove_name, factory_groove, Groo
 from llamatron.composition.instrument import Instrument
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import data_as_kept, data_built_anew, HoldsSettings, or_default, own_copy, written_settings
+from llamatron.composition.migrations import Conversion
 from llamatron.composition.named_items import NamedItems
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
 from llamatron.composition.pattern import held_add, Pattern
-from llamatron.composition.setlist_reader import as_a_set_is_written, closed_groups_held, file_data, file_stem, open_types_held, read_corrected
+from llamatron.composition.setlist_reader import as_a_set_is_written, closed_groups_held, open_types_held, read_corrected, set_file_data
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.composition.song import Song, started_song
@@ -149,7 +150,7 @@ class Setlist(HoldsSections, HoldsSettings):
     name, and the set looks the names up; each song does the same for what it shares.
     """
 
-    __slots__ = ('_sections', '_closed_groups', '_open_types')
+    __slots__ = ('_sections', '_closed_groups', '_open_types', '_conversion')
 
     SETTINGS = SETTINGS
 
@@ -159,6 +160,8 @@ class Setlist(HoldsSections, HoldsSettings):
         self._closed_groups = []
         # The types of generator shown open on the Generators page, kept the same way (file_format.OPEN_GENERATOR_TYPES).
         self._open_types = []
+        # What reading the set's file moved from an older layout, which the tracker says once the file is open.
+        self._conversion = Conversion()
         self._settings = {name: None for name in SETTINGS}
         self._sections = {name: NamedItems(label=sections.SECTION_LABELS[name]) for name in sections.SETLIST_SECTIONS}
 
@@ -170,7 +173,10 @@ class Setlist(HoldsSections, HoldsSettings):
         can never run code. A file saved before sets existed holds one song, which is named after
         the file.
         """
-        return cls.from_data(data=file_data(path), one_song_name=file_stem(path))
+        data, conversion = set_file_data(path)
+        setlist = cls.from_data(data=data)
+        setlist._conversion = conversion
+        return setlist
 
     @classmethod
     def read_file_corrected(cls, path):
@@ -180,7 +186,13 @@ class Setlist(HoldsSections, HoldsSettings):
         (SongFileError.get_correction). A problem with no correction still raises
         SongFileError. The file itself isn't changed.
         """
-        return cls.from_data_corrected(data=file_data(path), one_song_name=file_stem(path))
+        data, conversion = set_file_data(path)
+        setlist, corrections = cls.from_data_corrected(data=data)
+        setlist._conversion = conversion
+        return setlist, corrections
+
+    def get_conversion(self):
+        return self._conversion
 
     def write_file(self, path):
         """Write the set to a file, making any directories it needs. Every saved file records the version that wrote it."""
@@ -219,21 +231,17 @@ class Setlist(HoldsSections, HoldsSettings):
             song.fill_in_defaults()
 
     @classmethod
-    def from_data(cls, *, data, where=names_text.MSG_THE_FILE, song=None, one_song_name=names_text.MSG_DEFAULT_SONG_NAME):
-        """Read a whole set file's data, checking every part of it, in the order the file is read.
-
-        A file saved before sets existed, with one song's tracks and scenes at the top, is read as a
-        set holding that song under one_song_name.
-        """
+    def from_data(cls, *, data, where=names_text.MSG_THE_FILE, song=None):
+        """Read a whole set's data, as the objects write it, checking every part of it, in the order the file is read."""
         setlist = cls()
-        written = as_a_set_is_written(data=data, where=where, one_song_name=one_song_name, allowed=SETTINGS)
+        written = as_a_set_is_written(data=data, where=where, allowed=SETTINGS)
         setlist._read(written)
         setlist._closed_groups = closed_groups_held(written)
         setlist._open_types = open_types_held(written)
         return setlist
 
     @classmethod
-    def from_data_corrected(cls, *, data, where=names_text.MSG_THE_FILE, one_song_name=names_text.MSG_DEFAULT_SONG_NAME):
+    def from_data_corrected(cls, *, data, where=names_text.MSG_THE_FILE):
         """Return the set a file's data describes with every value that can't be used changed to the allowed value nearest it, and the corrections made, in the order they were found.
 
         The data is read as from_data reads it, which stops at the first wrong value. A value
@@ -242,7 +250,7 @@ class Setlist(HoldsSections, HoldsSettings):
         problem with no correction raises SongFileError, as it does for from_data. The data
         given isn't changed.
         """
-        data = as_a_set_is_written(data=copy.deepcopy(data), where=where, one_song_name=one_song_name, allowed=SETTINGS)
+        data = as_a_set_is_written(data=copy.deepcopy(data), where=where, allowed=SETTINGS)
 
         def read(written):
             setlist = cls()
@@ -534,16 +542,31 @@ class Setlist(HoldsSections, HoldsSettings):
         """Add a named item to a section, at the end, or right after another item. A groove can't take a factory groove's name."""
         if section == Section.GROOVES:
             check_groove_name(name)
+        self._check_generator_name(section=section, name=name, old=None)
         HoldsSections.add_item(self, section=section, name=name, item=item, after=after)
 
     def rename_item(self, *, section, old, new):
         """Rename an item, keeping its place, and update everything that names it. A groove can't take a factory groove's name."""
         if section == Section.GROOVES:
             check_groove_name(new)
+        self._check_generator_name(section=section, name=new, old=old)
         self._section(section).rename(old=old, new=new)
         self.rename_references(section=section, old=old, new=new)
         if section in GENERATOR_KINDS_OF_SECTIONS:
             self._rename_in_generator_order(kind=GENERATOR_KINDS_OF_SECTIONS[section], old=old, new=new)
+
+    def every_generator_name(self):
+        """Return the name of every generator of every kind and of every chain, which share one list in a set file and so may share no name."""
+        return [name for section in sections.GENERATOR_SECTIONS for name in self._section(section).names()]
+
+    def _check_generator_name(self, *, section, name, old):
+        """Refuse a name for a generator or a chain that a generator or chain of another kind has, old being the name it is renamed from."""
+        if section not in sections.GENERATOR_SECTIONS:
+            return
+        others = [held for held in sections.GENERATOR_SECTIONS if held != section]
+        taken = next((held for held in others if is_taken(name=name, taken=[each for each in self._section(held).names() if each != old])), None)
+        if taken is not None:
+            raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.SECTION_LABELS[taken], name=name))
 
     # The order of the Generators page: every generator on one list, kept in an order of its own.
 

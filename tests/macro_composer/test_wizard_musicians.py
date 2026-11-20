@@ -125,7 +125,8 @@ class TestWizardMusicians(unittest.TestCase):
                     continue
                 chains = scene.get_clip_slot(track).to_data().get(ClipSlotSetting.CHAINS, [])
                 wanted = choices.player(THE_DRUMS if track in drum_tracks else track).musician_name()
-                self.assertEqual(chains[0], wanted, (scene.get_name(), track))
+                first = song.get_setlist().get_chain(chains[0]).get_steps()[0]
+                self.assertEqual((first.kind, first.name), (GeneratorKind.MUSICIAN, wanted), (scene.get_name(), track))
                 seen.add(wanted)
         for name in seen:
             self.assertTrue(song.has_generator(kind=GeneratorKind.MUSICIAN, name=name))

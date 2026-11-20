@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Four wheels G
 description: "a mid-eighties synth film theme in the manner of Axel F (Harold Faltermeyer), with a hook of its own"
 notes: |
@@ -49,24 +49,24 @@ real_time: true
 protected: true
 
 scales:
-  D Minor: { root: D, type: minor }
+  - { name: D Minor, root: D, type: minor }
 
 patterns:
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
     velocity: [112, ~, ~, ~, ~, ~, 112, ~, 112, ~, ~, ~, ~, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -74,7 +74,7 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [74, 43, 68, 43, 74, 43, 68, 43, 74, 43, 68, 43, 74, 43, 68, 43]
-  clap:
+  - name: clap
     steps: 16
     drum: true
     step_size: 1/16
@@ -82,27 +82,27 @@ patterns:
     accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, "#"]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, 3]
     velocity: [~, ~, ~, ~, 84, ~, ~, ~, ~, ~, ~, ~, 84, ~, ~, 84]
-  bass:
+  - name: bass
     steps: 16
     step_size: 1/16
     degree: [1, ~, 1, 1, ~, 1, ~, 1, 1, ~, 7, 1, ~, 1, 1, ~]
     octave: [2, ~, 2, 2, ~, 3, ~, 2, 2, ~, 1, 2, ~, 2, 3, ~]
     velocity: [118, ~, 104, 111, ~, 101, ~, 101, 109, ~, 104, 111, ~, 101, 104, ~]
-  stab:
+  - name: stab
     steps: 8
     step_size: 1/8
     degree: [~, ~, 1, ~, ~, ~, 1, ~]
     octave: [~, ~, 4, ~, ~, ~, 4, ~]
     chord: [~, ~, "3", ~, ~, ~, "3", ~]
     velocity: [~, ~, 92, ~, ~, ~, 92, ~]
-  hook:
+  - name: hook
     steps: 64
     step_size: 1/16
     degree: [5, ~, ~, 5, ~, 4, 3, ~, ~, 1, ~, 3, ~, ~, ~, ~, 5, ~, ~, 5, ~, 7, 1, ~, ~, 7, ~, 5, ~, ~, ~, ~, 6, ~, ~, 6, ~, 5, 3, ~, ~, 1, ~, 3, ~, ~, ~, ~, 7, ~, ~, 7, ~, 5, 4, ~, 2, ~, 4, ~, 5, ~, ~, ~]
     octave: [5, ~, ~, 5, ~, 5, 5, ~, ~, 5, ~, 5, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 6, ~, ~, 5, ~, 5, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, ~, 5, ~, 5, ~, ~, ~, ~, 5, ~, ~, 5, ~, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~]
     velocity: [117, ~, ~, 111, ~, 101, 111, ~, ~, 101, ~, 111, ~, ~, ~, ~, 117, ~, ~, 111, ~, 101, 111, ~, ~, 101, ~, 111, ~, ~, ~, ~, 117, ~, ~, 111, ~, 101, 111, ~, ~, 101, ~, 111, ~, ~, ~, ~, 117, ~, ~, 111, ~, 101, 103, ~, 108, ~, 103, ~, 106, ~, ~, ~]
     tie: [false, true, false, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false]
-  second:
+  - name: second
     steps: 32
     step_size: 1/8
     degree: [4, 6, 1, ~, 6, 4, 6, ~, 5, 3, 1, ~, 3, 5, 3, ~, 4, 6, 1, ~, 2, 1, 6, ~, 5, 7, 2, ~, 7, ~, 5, ~]
@@ -110,7 +110,7 @@ patterns:
     octave: [5, 5, 6, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 6, ~, 6, 6, 5, ~, 5, 5, 6, ~, 5, ~, 5, ~]
     velocity: [109, 95, 98, ~, 100, 95, 98, ~, 109, 95, 98, ~, 100, 95, 98, ~, 109, 95, 98, ~, 100, 95, 98, ~, 109, 95, 98, ~, 100, ~, 98, ~]
     tie: [false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, true, false, true]
-  bells:
+  - name: bells
     steps: 64
     step_size: 1/8
     degree: [5, ~, ~, ~, ~, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
@@ -118,121 +118,117 @@ patterns:
     velocity: [103, ~, ~, ~, ~, ~, 92, ~, 103, ~, ~, ~, ~, ~, ~, ~, 103, ~, ~, ~, 94, ~, ~, ~, 103, ~, ~, ~, ~, ~, 92, ~, 103, ~, ~, ~, ~, ~, 92, ~, 103, ~, ~, ~, ~, ~, ~, ~, 103, ~, ~, ~, 94, ~, ~, ~, 103, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
-progressions:
-  hook: { chords: [1, 1, 6, 7] }
-  second: { chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] }
-
-chains:
-  hook:
-    - progression: hook
-  second:
-    - progression: second
+generators:
+  - { name: hook, kind: progression, chords: [1, 1, 6, 7] }
+  - { name: second, kind: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] }
+  - { name: hook chords, kind: chain, generators: [{ name: hook }] }
+  - { name: second chords, kind: chain, generators: [{ name: second }] }
 
 instruments:
-  synth bass: { device: "*FluidSynth", gm_sound: 39 }
-  synth brass: { device: "*FluidSynth", gm_sound: 63 }
-  saw lead: { device: "*FluidSynth", gm_sound: 82 }
-  marimba: { device: "*FluidSynth", gm_sound: 13 }
-  bells: { device: "*FluidSynth", gm_sound: 99 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
+  - { name: synth brass, device: "*FluidSynth", gm_sound: 63 }
+  - { name: saw lead, device: "*FluidSynth", gm_sound: 82 }
+  - { name: marimba, device: "*FluidSynth", gm_sound: 13 }
+  - { name: bells, device: "*FluidSynth", gm_sound: 99 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  four_wheels_g:
+  - name: four_wheels_g
     tempo: 117
     scale: D Minor
     genre: Soundtrack
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      clap: { drum: true, instrument: drum kit }
-      bass: { instrument: synth bass }
-      brass: { instrument: synth brass }
-      lead: { instrument: saw lead }
-      marimba: { instrument: marimba }
-      bells: { instrument: bells }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: clap, drum: true, instrument: drum kit }
+      - { name: bass, instrument: synth bass }
+      - { name: brass, instrument: synth brass }
+      - { name: lead, instrument: saw lead }
+      - { name: marimba, instrument: marimba }
+      - { name: bells, instrument: bells }
 
     scenes:
       - name: hook alone
-        tracks:
-          lead: { pattern: hook, repeat: 1 }
+        clips:
+          - { track: lead, pattern: hook, repeat: 1 }
       - name: drums
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          lead: { pattern: hook, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: lead, pattern: hook, loop: true }
       - name: bass
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [hook], loop: true }
-          lead: { pattern: hook, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
+          - { track: lead, pattern: hook, loop: true }
       - name: second part
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [second], loop: true }
-          brass: { pattern: stab, chains: [second], loop: true }
-          marimba: { pattern: second, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: second chords }], loop: true }
+          - { track: brass, pattern: stab, generators: [{ name: second chords }], loop: true }
+          - { track: marimba, pattern: second, loop: true }
       - name: hook
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [hook], loop: true }
-          brass: { pattern: stab, chains: [hook], loop: true }
-          lead: { pattern: hook, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
+          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: lead, pattern: hook, loop: true }
       - name: bells
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [hook], loop: true }
-          brass: { pattern: stab, chains: [hook], loop: true }
-          bells: { pattern: bells, loop: true }
-          marimba: { pattern: second, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
+          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: bells, pattern: bells, loop: true }
+          - { track: marimba, pattern: second, loop: true }
       - name: hook 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [hook], loop: true }
-          brass: { pattern: stab, chains: [hook], loop: true }
-          lead: { pattern: hook, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
+          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: lead, pattern: hook, loop: true }
       - name: break
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [hook], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
       - name: second part 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [second], loop: true }
-          brass: { pattern: stab, chains: [second], loop: true }
-          marimba: { pattern: second, loop: true }
-          bells: { pattern: second, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: second chords }], loop: true }
+          - { track: brass, pattern: stab, generators: [{ name: second chords }], loop: true }
+          - { track: marimba, pattern: second, loop: true }
+          - { track: bells, pattern: second, loop: true }
       - name: last hook
-        tracks:
-          kick: { pattern: kick, repeat: 12 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          clap: { pattern: clap, loop: true }
-          bass: { pattern: bass, chains: [hook], loop: true }
-          brass: { pattern: stab, chains: [hook], loop: true }
-          lead: { pattern: hook, loop: true }
-          bells: { pattern: bells, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 12 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
+          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: lead, pattern: hook, loop: true }
+          - { track: bells, pattern: bells, loop: true }

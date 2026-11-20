@@ -156,14 +156,14 @@ class TestMalformedFiles(unittest.TestCase):
         }
         for name, data in cases.items():
             if name in (ARP_SEED_IS_WORDS, COUNTS_IS_NOT_A_LIST):
-                data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.CHAIN] = X
+                data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.CHAINS] = [X]
             with self.subTest(name=name), self.assertRaises(SongFileError):
                 render_data(data)
 
     def test_a_chord_pushed_past_the_top_of_midi_says_which_clip(self):
         data = changed(patterns__a={PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: 1, Row.DEGREE: [1], Row.OCTAVE: [10], Row.CHORD: ['M']})
         data[Section.ARPS][UP][ArpSetting.OCTAVE_RANGE] = 4
-        data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.CHAIN] = X
+        data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.CHAINS] = [X]
         with self.assertRaises(SongFileError) as raised:
             render_data(data)
         self.assertIn('scene 1, track (lead)', str(raised.exception))

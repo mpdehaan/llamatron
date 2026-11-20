@@ -1,4 +1,4 @@
-version: 1.0.357
+version: 1.0.591
 title: Guitarify
 description: "twenty short scenes, each a way a guitar is played, from a porch to an arena, on guitars alone"
 notes: |
@@ -30,155 +30,159 @@ real_time: true
 protected: true
 
 scales:
-  G Major: { root: G, type: major }
-  C Major: { root: C, type: major }
-  A Major: { root: A, type: major }
-  A Minor: { root: A, type: minor }
-  D Major: { root: D, type: major }
-  E Major: { root: E, type: major }
-  E Minor: { root: E, type: minor }
-  D Minor: { root: D, type: minor }
+  - { name: G Major, root: G, type: major }
+  - { name: C Major, root: C, type: major }
+  - { name: A Major, root: A, type: major }
+  - { name: A Minor, root: A, type: minor }
+  - { name: D Major, root: D, type: major }
+  - { name: E Major, root: E, type: major }
+  - { name: E Minor, root: E, type: minor }
+  - { name: D Minor, root: D, type: minor }
 
 patterns:
-  porch:
+  - name: porch
     steps: 4
     step_size: 1
     degree: [1, 4, 5, 1]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
-  thumb and fingers:
+  - name: thumb and fingers
     steps: 4
     step_size: 1
     degree: [1, 4, 1, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 7]
-  crosspick:
+  - name: crosspick
     steps: 8
     step_size: 1/2
     degree: [1, 1, 4, 4, 1, 5, 1, 1]
     octave: [3, 3, 3, 3, 3, 3, 3, 3]
     chord: [3, 3, 3, 3, 3, 3, 3, 3]
-  four to the bar:
+  - name: four to the bar
     steps: 4
     step_size: 1
     degree: [2, 5, 1, 6]
     octave: [3, 3, 3, 3]
     chord: [7, 7, 7, dom7]
-  open g:
+  - name: open g
     steps: 4
     step_size: 1
     degree: [1, 4, 1, 5]
     octave: [3, 3, 3, 3]
     chord: [dom7, dom7, dom7, dom7]
-  boogie:
+  - name: boogie
     steps: 4
     step_size: 1
     degree: [1, 4, 1, 5]
     octave: [2, 2, 2, 2]
-  tremolo:
+  - name: tremolo
     steps: 4
     step_size: 1
     degree: [1, 7, 6, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, M]
-  campfire:
+  - name: campfire
     steps: 4
     step_size: 1
     degree: [1, 6, 4, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
-  chime:
+  - name: chime
     steps: 4
     step_size: 1
     degree: [1, 7, 4, 1]
+    accidental: [~, b, ~, ~]
     octave: [3, 3, 3, 3]
     chord: [3, M, 3, 3]
-    accidental: [~, b, ~, ~]
-  backbeat:
+  - name: backbeat
     steps: 4
     step_size: 1
     degree: [1, 4, 2, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
-  scratch:
+  - name: scratch
     steps: 4
     step_size: 1
     degree: [1, 1, 1, 1]
     octave: [3, 3, 3, 3]
     chord: [dom9, dom9, dom9, dom9]
-  harp:
+  - name: harp
     steps: 4
     step_size: 1
     degree: [1, 5, 6, 4]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
     inversion: [~, 1, ~, ~]
-  arena:
+  - name: arena
     steps: 4
     step_size: 1
     degree: [1, 3, 4, 1]
-    octave: [2, 2, 2, 2]
     accidental: [~, b, ~, ~]
-  three chords loud:
+    octave: [2, 2, 2, 2]
+  - name: three chords loud
     steps: 4
     step_size: 1
     degree: [1, 4, 5, 4]
     octave: [2, 2, 2, 2]
-  gallop:
+  - name: gallop
     steps: 4
     step_size: 1
     degree: [1, 1, 6, 7]
     octave: [2, 2, 2, 2]
-  thrash:
+  - name: thrash
     steps: 8
     step_size: 1/2
     degree: [1, 1, 2, 2, 1, 1, 3, 2]
-    octave: [2, 2, 2, 2, 2, 2, 2, 2]
     accidental: [~, ~, b, b, ~, ~, ~, b]
-  low and slow:
+    octave: [2, 2, 2, 2, 2, 2, 2, 2]
+  - name: low and slow
     steps: 4
     step_size: 1
     degree: [1, 1, 3, 5]
-    octave: [2, 2, 2, 2]
     accidental: [~, ~, ~, b]
-  quiet loud:
+    octave: [2, 2, 2, 2]
+  - name: quiet loud
     steps: 4
     step_size: 1
     degree: [1, 3, 7, 4]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, M]
-  shuffle:
+  - name: shuffle
     steps: 12
     step_size: 1
     degree: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     chord: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7]
-  last chord:
+  - name: last chord
     steps: 4
     step_size: 1
     degree: [1, 4, 5, 1]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
 
-guitarifies:
-  porch:
+generators:
+  - name: porch
+    kind: guitarify
     # the ready-made bar: boom chick
     bar: [bass, nothing, down, nothing, alt_bass, nothing, down, nothing]
     accents: [true, false, false, false, true, false, false, false]
     cell: 1/8
-  thumb and fingers:
+  - name: thumb and fingers
+    kind: guitarify
     # the ready-made bar: travis pick
     bar: [bass, string_2, alt_bass, string_1, bass, string_3, alt_bass, string_2]
     accents: [false, false, false, false, false, false, false, false]
     cell: 1/8
     let_ring: true
-  crosspick:
+  - name: crosspick
+    kind: guitarify
     # the ready-made bar: crosspick
     bar: [string_3, string_2, string_1, string_3, string_2, string_1, string_3, string_2]
     accents: [true, false, false, true, false, false, true, false]
     cell: 1/8
     let_ring: true
-  four to the bar:
+  - name: four to the bar
+    kind: guitarify
     # the ready-made bar: four to the bar
     bar: [down, down, down, down]
     accents: [false, true, false, true]
@@ -186,7 +190,8 @@ guitarifies:
     position: 3
     strings: 4
     spread: 4
-  open g:
+  - name: open g
+    kind: guitarify
     # the ready-made bar: folk strum
     bar: [down, nothing, down, up, nothing, up, down, up]
     accents: [true, false, false, false, false, false, true, false]
@@ -194,31 +199,36 @@ guitarifies:
     tuning: open_g
     let_ring: true
     spread: 14
-  boogie:
+  - name: boogie
+    kind: guitarify
     # the ready-made bar: boogie
     bar: [down, down, down, down, down, down, down, down]
     accents: [false, false, true, false, false, false, true, false]
     cell: 1/8
     single_notes: power_chord
     spread: 2
-  tremolo:
+  - name: tremolo
+    kind: guitarify
     # the ready-made bar: tremolo
     bar: [string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1]
     accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
     cell: 1/16
     position: 5
-  campfire:
+  - name: campfire
+    kind: guitarify
     # the ready-made bar: folk strum
     bar: [down, nothing, down, up, nothing, up, down, up]
     accents: [true, false, false, false, false, false, true, false]
     cell: 1/8
-  chime:
+  - name: chime
+    kind: guitarify
     # the ready-made bar: chime
     bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2]
     accents: [false, false, false, false, false, false, false, false]
     cell: 1/8
     let_ring: true
-  backbeat:
+  - name: backbeat
+    kind: guitarify
     # the ready-made bar: backbeat
     bar: [nothing, nothing, stab, nothing, nothing, nothing, stab, nothing]
     accents: [false, false, true, false, false, false, true, false]
@@ -226,7 +236,8 @@ guitarifies:
     position: 4
     strings: 4
     spread: 3
-  scratch:
+  - name: scratch
+    kind: guitarify
     # the ready-made bar: scratch
     bar: [down, mute, mute, up, mute, mute, down, mute, mute, up, down, mute, mute, up, mute, mute]
     accents: [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false]
@@ -234,20 +245,16 @@ guitarifies:
     position: 6
     strings: 4
     spread: 2
-  harp:
+  - name: harp
+    kind: guitarify
     # the ready-made bar: roll up
     bar: [bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing]
     accents: [false, false, false, false, false, false, false, false]
     cell: 1/8
     let_ring: true
-  arena:
-    bar: [down, nothing, nothing, down, nothing, down, nothing, nothing]
-    accents: [true, false, false, false, false, false, false, false]
-    cell: 1/8
-    single_notes: power_chord
-    let_ring: true
-    spread: 2
-  three chords loud:
+  - { name: arena, kind: guitarify, bar: [down, nothing, nothing, down, nothing, down, nothing, nothing], accents: [true, false, false, false, false, false, false, false], cell: 1/8, single_notes: power_chord, let_ring: true, spread: 2 }
+  - name: three chords loud
+    kind: guitarify
     # the ready-made bar: all down
     bar: [down, down, down, down, down, down, down, down]
     accents: [false, false, false, false, false, false, false, false]
@@ -255,7 +262,8 @@ guitarifies:
     single_notes: power_chord
     spread: 2
     fade: 0
-  gallop:
+  - name: gallop
+    kind: guitarify
     # the ready-made bar: gallop
     bar: [muted_bass, nothing, muted_bass, muted_bass, muted_bass, nothing, muted_bass, muted_bass, muted_bass, nothing, muted_bass, muted_bass, down, nothing, muted_bass, muted_bass]
     accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
@@ -263,7 +271,8 @@ guitarifies:
     single_notes: power_chord
     spread: 2
     fade: 0
-  thrash:
+  - name: thrash
+    kind: guitarify
     # the ready-made bar: thrash
     bar: [down, muted_bass, muted_bass, muted_bass, muted_bass, muted_bass, down, muted_bass, muted_bass, muted_bass, down, muted_bass, muted_bass, muted_bass, muted_bass, muted_bass]
     accents: [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false]
@@ -271,7 +280,8 @@ guitarifies:
     single_notes: power_chord
     spread: 2
     fade: 0
-  low and slow:
+  - name: low and slow
+    kind: guitarify
     # the ready-made bar: held
     bar: [down, nothing, nothing, nothing]
     accents: [false, false, false, false]
@@ -281,187 +291,152 @@ guitarifies:
     let_ring: true
     spread: 2
     fade: 0
-  quiet loud:
-    bar: [bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up]
-    accents: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false]
-    cell: 1/8
-    let_ring: true
-  shuffle:
-    bar: [down, nothing, down, down, nothing, down, down, nothing, down, down, nothing, down]
-    accents: [false, false, false, true, false, false, false, false, false, true, false, false]
-    cell: 1/12
-    strings: 4
-    spread: 4
-  last chord:
-    bar: [down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing]
-    accents: [true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false]
-    cell: 1/8
-    let_ring: true
-
-chains:
-  porch:
-    - guitarify: porch
-  thumb and fingers:
-    - guitarify: thumb and fingers
-  crosspick:
-    - guitarify: crosspick
-  four to the bar:
-    - guitarify: four to the bar
-  open g:
-    - guitarify: open g
-  boogie:
-    - guitarify: boogie
-  tremolo:
-    - guitarify: tremolo
-  campfire:
-    - guitarify: campfire
-  chime:
-    - guitarify: chime
-  backbeat:
-    - guitarify: backbeat
-  scratch:
-    - guitarify: scratch
-  harp:
-    - guitarify: harp
-  arena:
-    - guitarify: arena
-  three chords loud:
-    - guitarify: three chords loud
-  gallop:
-    - guitarify: gallop
-  thrash:
-    - guitarify: thrash
-  low and slow:
-    - guitarify: low and slow
-  quiet loud:
-    - guitarify: quiet loud
-  shuffle:
-    - guitarify: shuffle
-  last chord:
-    - guitarify: last chord
+  - { name: quiet loud, kind: guitarify, bar: [bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up], accents: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false], cell: 1/8, let_ring: true }
+  - { name: shuffle, kind: guitarify, bar: [down, nothing, down, down, nothing, down, down, nothing, down, down, nothing, down], accents: [false, false, false, true, false, false, false, false, false, true, false, false], cell: 1/12, strings: 4, spread: 4 }
+  - { name: last chord, kind: guitarify, bar: [down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing], accents: [true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true }
+  - { name: porch guitar, kind: chain, generators: [{ name: porch }] }
+  - { name: thumb and fingers guitar, kind: chain, generators: [{ name: thumb and fingers }] }
+  - { name: crosspick guitar, kind: chain, generators: [{ name: crosspick }] }
+  - { name: four to the bar guitar, kind: chain, generators: [{ name: four to the bar }] }
+  - { name: open g guitar, kind: chain, generators: [{ name: open g }] }
+  - { name: boogie guitar, kind: chain, generators: [{ name: boogie }] }
+  - { name: tremolo guitar, kind: chain, generators: [{ name: tremolo }] }
+  - { name: campfire guitar, kind: chain, generators: [{ name: campfire }] }
+  - { name: chime guitar, kind: chain, generators: [{ name: chime }] }
+  - { name: backbeat guitar, kind: chain, generators: [{ name: backbeat }] }
+  - { name: scratch guitar, kind: chain, generators: [{ name: scratch }] }
+  - { name: harp guitar, kind: chain, generators: [{ name: harp }] }
+  - { name: arena guitar, kind: chain, generators: [{ name: arena }] }
+  - { name: three chords loud guitar, kind: chain, generators: [{ name: three chords loud }] }
+  - { name: gallop guitar, kind: chain, generators: [{ name: gallop }] }
+  - { name: thrash guitar, kind: chain, generators: [{ name: thrash }] }
+  - { name: low and slow guitar, kind: chain, generators: [{ name: low and slow }] }
+  - { name: quiet loud guitar, kind: chain, generators: [{ name: quiet loud }] }
+  - { name: shuffle guitar, kind: chain, generators: [{ name: shuffle }] }
+  - { name: last chord guitar, kind: chain, generators: [{ name: last chord }] }
 
 instruments:
-  nylon guitar: { device: "*FluidSynth", gm_sound: 25 }
-  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
-  jazz guitar: { device: "*FluidSynth", gm_sound: 27 }
-  clean guitar: { device: "*FluidSynth", gm_sound: 28 }
-  muted guitar: { device: "*FluidSynth", gm_sound: 29 }
-  overdriven guitar: { device: "*FluidSynth", gm_sound: 30 }
-  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
+  - { name: nylon guitar, device: "*FluidSynth", gm_sound: 25 }
+  - { name: steel guitar, device: "*FluidSynth", gm_sound: 26 }
+  - { name: jazz guitar, device: "*FluidSynth", gm_sound: 27 }
+  - { name: clean guitar, device: "*FluidSynth", gm_sound: 28 }
+  - { name: muted guitar, device: "*FluidSynth", gm_sound: 29 }
+  - { name: overdriven guitar, device: "*FluidSynth", gm_sound: 30 }
+  - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
 
 songs:
-  guitarify:
+  - name: guitarify
     tempo: 104
     scale: G Major
     genre: Exercise
 
     tracks:
-      nylon: { instrument: nylon guitar }
-      steel: { instrument: steel guitar }
-      jazz: { instrument: jazz guitar }
-      clean: { instrument: clean guitar }
-      muted: { instrument: muted guitar }
-      overdriven: { instrument: overdriven guitar }
-      distortion: { instrument: distortion guitar }
+      - { name: nylon, instrument: nylon guitar }
+      - { name: steel, instrument: steel guitar }
+      - { name: jazz, instrument: jazz guitar }
+      - { name: clean, instrument: clean guitar }
+      - { name: muted, instrument: muted guitar }
+      - { name: overdriven, instrument: overdriven guitar }
+      - { name: distortion, instrument: distortion guitar }
 
     scenes:
       - name: "country: porch"
         scale: G Major
         tempo: 104
-        tracks:
-          steel: { pattern: porch, chains: [porch] }
+        clips:
+          - { track: steel, pattern: porch, generators: [{ name: porch guitar }] }
       - name: "country: thumb and fingers"
         scale: C Major
         tempo: 96
-        tracks:
-          steel: { pattern: thumb and fingers, chains: [thumb and fingers] }
+        clips:
+          - { track: steel, pattern: thumb and fingers, generators: [{ name: thumb and fingers guitar }] }
       - name: "bluegrass: crosspick"
         scale: G Major
         tempo: 126
-        tracks:
-          steel: { pattern: crosspick, chains: [crosspick] }
+        clips:
+          - { track: steel, pattern: crosspick, generators: [{ name: crosspick guitar }] }
       - name: "jazz: four to the bar"
         scale: C Major
         tempo: 132
-        tracks:
-          jazz: { pattern: four to the bar, chains: [four to the bar] }
+        clips:
+          - { track: jazz, pattern: four to the bar, generators: [{ name: four to the bar guitar }] }
       - name: "blues: open g"
         scale: G Major
         tempo: 84
-        tracks:
-          steel: { pattern: open g, chains: [open g] }
+        clips:
+          - { track: steel, pattern: open g, generators: [{ name: open g guitar }] }
       - name: "rock and roll: boogie"
         scale: A Major
         tempo: 152
-        tracks:
-          clean: { pattern: boogie, chains: [boogie] }
+        clips:
+          - { track: clean, pattern: boogie, generators: [{ name: boogie guitar }] }
       - name: "surf: tremolo"
         scale: A Minor
         tempo: 150
-        tracks:
-          clean: { pattern: tremolo, chains: [tremolo] }
+        clips:
+          - { track: clean, pattern: tremolo, generators: [{ name: tremolo guitar }] }
       - name: "folk: campfire"
         scale: G Major
         tempo: 96
-        tracks:
-          steel: { pattern: campfire, chains: [campfire] }
+        clips:
+          - { track: steel, pattern: campfire, generators: [{ name: campfire guitar }] }
       - name: "folk rock: chime"
         scale: D Major
         tempo: 116
-        tracks:
-          clean: { pattern: chime, chains: [chime] }
+        clips:
+          - { track: clean, pattern: chime, generators: [{ name: chime guitar }] }
       - name: "soul: backbeat"
         scale: E Major
         tempo: 104
-        tracks:
-          clean: { pattern: backbeat, chains: [backbeat] }
+        clips:
+          - { track: clean, pattern: backbeat, generators: [{ name: backbeat guitar }] }
       - name: "funk: scratch"
         scale: E Major
         tempo: 100
-        tracks:
-          muted: { pattern: scratch, chains: [scratch] }
+        clips:
+          - { track: muted, pattern: scratch, generators: [{ name: scratch guitar }] }
       - name: "singer-songwriter: harp"
         scale: D Major
         tempo: 80
-        tracks:
-          nylon: { pattern: harp, chains: [harp] }
+        clips:
+          - { track: nylon, pattern: harp, generators: [{ name: harp guitar }] }
       - name: "hard rock: arena"
         scale: A Major
         tempo: 120
-        tracks:
-          overdriven: { pattern: arena, chains: [arena] }
+        clips:
+          - { track: overdriven, pattern: arena, generators: [{ name: arena guitar }] }
       - name: "punk: three chords loud"
         scale: G Major
         tempo: 184
-        tracks:
-          distortion: { pattern: three chords loud, chains: [three chords loud] }
+        clips:
+          - { track: distortion, pattern: three chords loud, generators: [{ name: three chords loud guitar }] }
       - name: "metal: gallop"
         scale: E Minor
         tempo: 150
-        tracks:
-          distortion: { pattern: gallop, chains: [gallop] }
+        clips:
+          - { track: distortion, pattern: gallop, generators: [{ name: gallop guitar }] }
       - name: "metal: thrash"
         scale: E Minor
         tempo: 190
-        tracks:
-          distortion: { pattern: thrash, chains: [thrash] }
+        clips:
+          - { track: distortion, pattern: thrash, generators: [{ name: thrash guitar }] }
       - name: "metal: low and slow"
         scale: D Minor
         tempo: 70
-        tracks:
-          distortion: { pattern: low and slow, chains: [low and slow] }
+        clips:
+          - { track: distortion, pattern: low and slow, generators: [{ name: low and slow guitar }] }
       - name: "alternative: quiet loud"
         scale: A Minor
         tempo: 110
-        tracks:
-          overdriven: { pattern: quiet loud, chains: [quiet loud] }
+        clips:
+          - { track: overdriven, pattern: quiet loud, generators: [{ name: quiet loud guitar }] }
       - name: "blues: shuffle"
         scale: E Major
         tempo: 120
-        tracks:
-          clean: { pattern: shuffle, chains: [shuffle] }
+        clips:
+          - { track: clean, pattern: shuffle, generators: [{ name: shuffle guitar }] }
       - name: "finale: last chord"
         scale: G Major
         tempo: 92
-        tracks:
-          steel: { pattern: last chord, chains: [last chord] }
+        clips:
+          - { track: steel, pattern: last chord, generators: [{ name: last chord guitar }] }

@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Angry shark
 description: "a menacing orchestral film score in the manner of Jaws (John Williams), a low figure speeding up as the shark comes"
 notes: |
@@ -50,10 +50,10 @@ real_time: true
 protected: true
 
 scales:
-  D Minor: { root: D, type: minor }
+  - { name: D Minor, root: D, type: minor }
 
 patterns:
-  cymbal:
+  - name: cymbal
     steps: 16
     drum: true
     step_size: 1/16
@@ -61,39 +61,39 @@ patterns:
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [90, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [D, ~, ~, D, ~, ~, D, ~, D, ~, ~, D, ~, ~, D, ~]
     octave: [3, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3, ~]
     velocity: [76, ~, ~, 76, ~, ~, 76, ~, 76, ~, ~, 76, ~, ~, 76, ~]
-  cell slow:
+  - name: cell slow
     steps: 32
     step_size: 1/8
     degree: [1, ~, ~, ~, 2, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 2, ~, ~, ~, 3, ~, 2, ~, 1, ~, ~, ~]
     octave: [2, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 2, ~, 2, ~, 2, ~, ~, ~]
     velocity: [108, ~, ~, ~, 99, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, false, false, false, true, false, true, false, true, false, false]
-  cell:
+  - name: cell
     steps: 8
     step_size: 1/8
     degree: [1, 1, 2, 1, 1, 1, 3, 2]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
     velocity: [116, 100, 104, 100, 107, 100, 104, 100]
-  cell fast:
+  - name: cell fast
     steps: 8
     step_size: 1/8
     degree: [1, 2, 1, 3, 1, 2, 1, 7]
     octave: [2, 2, 2, 2, 2, 2, 2, 1]
     velocity: [124, 108, 112, 108, 115, 108, 112, 108]
-  cell fast high:
+  - name: cell fast high
     steps: 8
     step_size: 1/8
     degree: [1, 2, 1, 3, 1, 2, 1, 7]
     octave: [3, 3, 3, 3, 3, 3, 3, 2]
     velocity: [116, 100, 104, 100, 107, 100, 104, 100]
-  tuba tune:
+  - name: tuba tune
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, ~, ~, 2, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
@@ -101,20 +101,20 @@ patterns:
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
     velocity: [112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, 100, ~, 112, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, 103, ~, ~, ~, 112, ~, ~, ~, ~, ~, 100, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
-  horn call:
+  - name: horn call
     steps: 64
     step_size: 1/8
     degree: [5, ~, ~, ~, 1, ~, ~, ~, 7, ~, 5, ~, 3, ~, ~, ~, 4, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, 2, ~, 1, ~, 7, ~, ~, ~, 6, ~, 4, ~, 2, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, 5, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     velocity: [120, ~, ~, ~, 111, ~, ~, ~, 120, ~, 108, ~, 111, ~, ~, ~, 120, ~, ~, ~, 111, ~, ~, ~, 120, ~, ~, ~, ~, ~, ~, ~, 120, ~, ~, ~, 111, ~, ~, ~, 120, ~, 108, ~, 111, ~, ~, ~, 120, ~, 108, ~, 111, ~, ~, ~, 120, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, true, true]
-  timpani:
+  - name: timpani
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, 1, ~, 5, ~]
     octave: [3, ~, ~, ~, 3, ~, 2, ~]
     velocity: [116, ~, ~, ~, 107, ~, 104, ~]
-  stab:
+  - name: stab
     steps: 8
     step_size: 1/8
     degree: [1, ~, 1, ~, 1, ~, ~, ~]
@@ -122,7 +122,7 @@ patterns:
     chord: ["3", ~, "3", ~, "3", ~, ~, ~]
     velocity: [112, ~, 100, ~, 103, ~, ~, ~]
     tie: [false, false, false, false, false, true, false, false]
-  held:
+  - name: held
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -130,7 +130,7 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [86, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  held high:
+  - name: held high
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -138,7 +138,7 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [78, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  chase tune:
+  - name: chase tune
     steps: 64
     step_size: 1/8
     degree: [1, ~, 5, ~, 3, ~, 5, ~, 6, ~, 1, ~, 3, ~, ~, ~, 4, ~, 1, ~, 6, ~, 4, ~, 5, ~, 7, ~, 2, ~, ~, ~, 1, ~, 3, ~, 5, ~, ~, ~, 3, ~, 1, ~, 6, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 2, ~, ~, ~, 7, ~, ~, ~]
@@ -146,7 +146,7 @@ patterns:
     octave: [5, ~, 4, ~, 4, ~, 4, ~, 4, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, 4, ~, 4, ~, 4, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, ~, ~, 4, ~, 4, ~, 5, ~, 5, ~, 5, ~, ~, ~, 4, ~, ~, ~]
     velocity: [120, ~, 108, ~, 111, ~, 108, ~, 120, ~, 108, ~, 111, ~, ~, ~, 120, ~, 108, ~, 111, ~, 108, ~, 120, ~, 108, ~, 111, ~, ~, ~, 120, ~, 108, ~, 111, ~, ~, ~, 120, ~, 108, ~, 111, ~, ~, ~, 120, ~, 108, ~, 111, ~, 108, ~, 120, ~, ~, ~, 111, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true]
-  calm tune:
+  - name: calm tune
     steps: 32
     step_size: 1/8
     degree: [5, ~, ~, ~, 3, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -154,105 +154,97 @@ patterns:
     velocity: [96, ~, ~, ~, 87, ~, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~, 96, ~, ~, ~, 87, ~, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
-arps:
-  harp: { step: 1/8, order: up, octave_range: 2 }
-
-progressions:
-  chase: { chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }
-  calm: { chords: [3, 7, 6, 3] }
-
-chains:
-  chase:
-    - progression: chase
-  calm:
-    - progression: calm
-  calm harp:
-    - progression: calm
-    - arp: harp
+generators:
+  - { name: harp, kind: arp, step: 1/8, order: up, octave_range: 2 }
+  - { name: chase, kind: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }
+  - { name: calm, kind: progression, chords: [3, 7, 6, 3] }
+  - { name: chase chords, kind: chain, generators: [{ name: chase }] }
+  - { name: calm chords, kind: chain, generators: [{ name: calm }] }
+  - { name: calm harp, kind: chain, generators: [{ name: calm }, { name: harp }] }
 
 instruments:
-  contrabass: { device: "*FluidSynth", gm_sound: 44 }
-  cello: { device: "*FluidSynth", gm_sound: 43 }
-  tuba: { device: "*FluidSynth", gm_sound: 59 }
-  timpani: { device: "*FluidSynth", gm_sound: 48 }
-  french horn: { device: "*FluidSynth", gm_sound: 61 }
-  strings: { device: "*FluidSynth", gm_sound: 49 }
-  harp: { device: "*FluidSynth", gm_sound: 47 }
-  flute: { device: "*FluidSynth", gm_sound: 74 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: contrabass, device: "*FluidSynth", gm_sound: 44 }
+  - { name: cello, device: "*FluidSynth", gm_sound: 43 }
+  - { name: tuba, device: "*FluidSynth", gm_sound: 59 }
+  - { name: timpani, device: "*FluidSynth", gm_sound: 48 }
+  - { name: french horn, device: "*FluidSynth", gm_sound: 61 }
+  - { name: strings, device: "*FluidSynth", gm_sound: 49 }
+  - { name: harp, device: "*FluidSynth", gm_sound: 47 }
+  - { name: flute, device: "*FluidSynth", gm_sound: 74 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  angry_shark:
+  - name: angry_shark
     tempo: 150
     scale: D Minor
     genre: Soundtrack
 
     tracks:
-      cymbal: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      basses: { instrument: contrabass }
-      cellos: { instrument: cello }
-      tuba: { instrument: tuba }
-      timpani: { instrument: timpani }
-      horns: { instrument: french horn }
-      strings: { instrument: strings }
-      harp: { instrument: harp }
-      flute: { instrument: flute }
+      - { name: cymbal, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: basses, instrument: contrabass }
+      - { name: cellos, instrument: cello }
+      - { name: tuba, instrument: tuba }
+      - { name: timpani, instrument: timpani }
+      - { name: horns, instrument: french horn }
+      - { name: strings, instrument: strings }
+      - { name: harp, instrument: harp }
+      - { name: flute, instrument: flute }
 
     scenes:
       - name: lurking
         tempo: 70
-        tracks:
-          basses: { pattern: cell slow, repeat: 2 }
+        clips:
+          - { track: basses, pattern: cell slow, repeat: 2 }
       - name: nearer
         tempo: 90
-        tracks:
-          basses: { pattern: cell, repeat: 8 }
-          cellos: { pattern: cell slow, loop: true }
+        clips:
+          - { track: basses, pattern: cell, repeat: 8 }
+          - { track: cellos, pattern: cell slow, loop: true }
       - name: approach
         tempo: 120
-        tracks:
-          basses: { pattern: cell, repeat: 8 }
-          cellos: { pattern: cell, loop: true }
-          tuba: { pattern: tuba tune, loop: true }
-          timpani: { pattern: timpani, loop: true }
+        clips:
+          - { track: basses, pattern: cell, repeat: 8 }
+          - { track: cellos, pattern: cell, loop: true }
+          - { track: tuba, pattern: tuba tune, loop: true }
+          - { track: timpani, pattern: timpani, loop: true }
       - name: attack
-        tracks:
-          basses: { pattern: cell fast, repeat: 16 }
-          cellos: { pattern: cell fast high, loop: true }
-          horns: { pattern: horn call, loop: true }
-          timpani: { pattern: timpani, loop: true }
-          snare: { pattern: snare, loop: true }
-          cymbal: { pattern: cymbal, loop: true }
+        clips:
+          - { track: basses, pattern: cell fast, repeat: 16 }
+          - { track: cellos, pattern: cell fast high, loop: true }
+          - { track: horns, pattern: horn call, loop: true }
+          - { track: timpani, pattern: timpani, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: cymbal, pattern: cymbal, loop: true }
       - name: chase
-        tracks:
-          basses: { pattern: cell fast, chains: [chase], repeat: 16 }
-          strings: { pattern: stab, chains: [chase], loop: true }
-          horns: { pattern: chase tune, loop: true }
-          timpani: { pattern: timpani, chains: [chase], loop: true }
-          snare: { pattern: snare, loop: true }
+        clips:
+          - { track: basses, pattern: cell fast, generators: [{ name: chase chords }], repeat: 16 }
+          - { track: strings, pattern: stab, generators: [{ name: chase chords }], loop: true }
+          - { track: horns, pattern: chase tune, loop: true }
+          - { track: timpani, pattern: timpani, generators: [{ name: chase chords }], loop: true }
+          - { track: snare, pattern: snare, loop: true }
       - name: calm
         tempo: 80
-        tracks:
-          strings: { pattern: held high, chains: [calm], repeat: 8 }
-          harp: { pattern: held, chains: [calm harp], loop: true }
-          flute: { pattern: calm tune, loop: true }
+        clips:
+          - { track: strings, pattern: held high, generators: [{ name: calm chords }], repeat: 8 }
+          - { track: harp, pattern: held, generators: [{ name: calm harp }], loop: true }
+          - { track: flute, pattern: calm tune, loop: true }
       - name: lurking again
         tempo: 70
-        tracks:
-          basses: { pattern: cell slow, repeat: 2 }
-          tuba: { pattern: tuba tune, loop: true }
+        clips:
+          - { track: basses, pattern: cell slow, repeat: 2 }
+          - { track: tuba, pattern: tuba tune, loop: true }
       - name: last attack
-        tracks:
-          basses: { pattern: cell fast, repeat: 8 }
-          cellos: { pattern: cell fast high, loop: true }
-          horns: { pattern: horn call, loop: true }
-          timpani: { pattern: timpani, loop: true }
-          snare: { pattern: snare, loop: true }
-          cymbal: { pattern: cymbal, loop: true }
-          strings: { pattern: stab, chains: [chase], loop: true }
+        clips:
+          - { track: basses, pattern: cell fast, repeat: 8 }
+          - { track: cellos, pattern: cell fast high, loop: true }
+          - { track: horns, pattern: horn call, loop: true }
+          - { track: timpani, pattern: timpani, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: cymbal, pattern: cymbal, loop: true }
+          - { track: strings, pattern: stab, generators: [{ name: chase chords }], loop: true }
       - name: ending
         tempo: 70
-        tracks:
-          basses: { pattern: cell slow, loop: true }
-          cymbal: { pattern: cymbal, repeat: 1 }
+        clips:
+          - { track: basses, pattern: cell slow, loop: true }
+          - { track: cymbal, pattern: cymbal, repeat: 1 }

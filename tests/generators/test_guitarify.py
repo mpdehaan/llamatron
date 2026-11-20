@@ -41,6 +41,7 @@ MAJOR = 'M'
 TEMPO = 120
 VELOCITY = 100
 PLAYED = 'played'
+PLAYED_CHAIN = 'played chain'
 WHOLE = '1'
 HALF = '1/2'
 NO_SUCH_CHOICE = 'blue'
@@ -87,11 +88,11 @@ STROKES_ONLY = {GuitarifySetting.SHAPE: False, **PLAIN}
 def guitar(*, settings=None, rows=None, steps=1, step_size=WHOLE, repeat=1):
     """Return a song whose lead plays C major triads, one a step, through a Guitarify with these settings."""
     made = dict(pattern(steps, **{Row.CHORD: [TRIAD] * steps, Row.VELOCITY: [VELOCITY] * steps, **(rows or {})}), **{PatternSetting.STEP_SIZE: step_size})
-    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [PLAYED], ClipSlotSetting.REPEAT: repeat}
+    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [PLAYED_CHAIN], ClipSlotSetting.REPEAT: repeat}
     data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
     data[SongSetting.TEMPO] = TEMPO
     data[Section.GUITARIFIES] = {PLAYED: dict(settings or {})}
-    data[Section.CHAINS] = {PLAYED: [{GeneratorKind.GUITARIFY: PLAYED}]}
+    data[Section.CHAINS] = {PLAYED_CHAIN: [{GeneratorKind.GUITARIFY: PLAYED}]}
     return data
 
 

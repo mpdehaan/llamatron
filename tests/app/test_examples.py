@@ -22,12 +22,12 @@ import io
 import os
 import tempfile
 import unittest
-import yaml
 
 from llamatron.cli import main
 from llamatron.composition import generator_settings
 from llamatron.composition.file_format import Section
 from llamatron.composition.setlist import Setlist
+from llamatron.composition.setlist_reader import set_file_data
 from llamatron.exporters.exports import ExportKind
 from llamatron.support import example_sets as example_sets_values
 from llamatron.support.example_sets import example_sets, folder_of_example, genre_folder
@@ -110,9 +110,8 @@ class TestExamples(unittest.TestCase):
     def test_every_generator_is_used(self):
         used = set()
         for path in self.paths:
-            with open(path) as file:
-                for chain in (yaml.safe_load(file).get(Section.CHAINS) or {}).values():
-                    used |= {next(iter(step)) for step in chain}
+            for chain in (set_file_data(path)[0].get(Section.CHAINS) or {}).values():
+                used |= {next(iter(step)) for step in chain}
         self.assertEqual(set(generator_settings.GENERATOR_SETTINGS) - used, set())
 
     def test_every_example_since_the_rule_lasts_two_to_four_minutes(self):

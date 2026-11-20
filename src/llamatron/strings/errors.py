@@ -80,7 +80,6 @@ ERR_CLIP_SLOT_NO_SUCH_PATTERN = 'no pattern called ({name})'
 ERR_NO_SUCH_CHAIN = 'no chain called ({name})'
 ERR_MAKE_A_CHAIN_FIRST = 'There are no chains yet. Make one on the Chains page first.'
 ERR_NOT_CHAIN_NAMES = 'expected a list of chains by name, got {value!r}'
-ERR_CHAIN_AND_CHAINS = 'chain and chains cannot both be given; chains holds them all'
 ERR_MORPH_NEEDS_BOTH = 'a morph needs both morph_to and morph_style'
 ERR_MORPH_TOO_FEW_REPEATS = 'a morph needs a repeat of {lowest} or more'
 ERR_BAD_MORPH_STYLE = 'morph_style must be one of: {choices}, got {value!r}'
@@ -95,6 +94,15 @@ ERR_ONE_GENERATOR_PER_STEP = 'each step must be one generator, got {step!r}'
 ERR_UNKNOWN_GENERATOR = 'unknown generator ({kind}), expected one of: {kinds}'
 ERR_NO_SUCH_GENERATOR = 'no {kind} called ({name})'
 ERR_CHAIN_NO_SUCH_STEP = 'no step {place} in a chain of {steps} steps'
+
+# composition/file_layout.py
+ERR_EXPECTED_ITEMS = 'expected a list, each item with a name, got {value!r}'
+ERR_ITEM_NEEDS_NAME = 'each item needs a name, got {value!r}'
+ERR_NAMED_TWICE = 'two items are called ({name})'
+ERR_NO_SUCH_KIND = 'generator ({name}): kind must be one of: {kinds}, got {value!r}'
+ERR_NO_GENERATOR_CALLED = 'no generator called ({name})'
+ERR_CHAIN_IN_CHAIN = 'chain ({name}): a chain runs generators, and ({step}) is a chain'
+ERR_EXPECTED_NAMES = 'expected a list of generators, each as {{ name: x }}, got {value!r}'
 
 # composition/checks.py
 ERR_AT = '{where}: {problem}'

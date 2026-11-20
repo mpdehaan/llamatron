@@ -19,7 +19,7 @@
 import unittest
 import yaml
 
-from llamatron.composition import file_format, sections
+from llamatron.composition import sections
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.named_scale import scale_type_name
@@ -47,9 +47,6 @@ ROOT_AND_A_TYPE = 'root and a type'
 NEEDS_A_PATTERN = 'needs a pattern'
 DESCRIPTION_MUST_BE_TEXT = 'description must be text'
 NOTES_MUST_BE_TEXT = 'notes must be text'
-# A version from before the notes existed, when the long text was the description.
-BEFORE_NOTES = '1.0.100'
-NO_TEXT = ''
 R = 'r'
 COUNT = 'count'
 # What a file's problem with that setting reads, after the place of the generator that has it.
@@ -84,7 +81,7 @@ class TestErrors(unittest.TestCase):
         self.assert_error('unknown setting (themes)', themes={})
 
     def test_unknown_chain_in_a_clip_slot(self):
-        self.assert_error('no chain called (nope)', scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: NOPE}}}])
+        self.assert_error('no chain called (nope)', scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NOPE]}}}])
 
     def test_unknown_pattern(self):
         self.assert_error('no pattern called (nope)', scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: NOPE}}}])
@@ -99,7 +96,7 @@ class TestErrors(unittest.TestCase):
         self.assert_error('unknown generator (wobble)', chains={song_testing.X: [{WOBBLE: {}}]})
 
     def test_unknown_generator_setting_names_the_generator(self):
-        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: song_testing.X}}}]
+        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}]
         self.assert_error(
             UNKNOWN_COUNT.format(where=errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[Section.AUTO_RATCHETS], name=R)),
             auto_ratchets={R: {COUNT: [2]}}, chains={song_testing.X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes,
@@ -110,12 +107,12 @@ class TestErrors(unittest.TestCase):
         self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}})
 
     def test_missing_generator_setting(self):
-        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: song_testing.X}}}]
+        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}]
         self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}}, chains={song_testing.X: [{GeneratorKind.AUTO_RATCHET: R}]}, scenes=scenes)
 
     def test_an_arp_with_no_step_plays_at_the_step_of_the_pattern_its_clip_plays(self):
         # A step left out is "(pattern)", where it was refused before.
-        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: song_testing.X}}}]
+        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}]
         data = with_parts(arps={R: {ArpSetting.ORDER: written_name(ChordOrder.UP)}}, chains={song_testing.X: [{GeneratorKind.ARP: R}]}, scenes=scenes)
         render_data(data)
 
@@ -145,15 +142,6 @@ class TestErrors(unittest.TestCase):
             song_from_data({SetlistSetting.DESCRIPTION: [A_LIST]})
         with self.assertRaisesRegex(SongFileError, NOTES_MUST_BE_TEXT):
             song_from_data({SetlistSetting.NOTES: [A_LIST]})
-
-    def test_a_file_from_before_notes_existed_holds_its_long_text_under_description_which_reads_as_notes(self):
-        old = {SetlistSetting.VERSION: BEFORE_NOTES, SetlistSetting.DESCRIPTION: 'Two lines\nof notes\n', Section.SONGS: {}}
-        setlist = setlist_from_data(old)
-        self.assertEqual(setlist.get_notes(), old[SetlistSetting.DESCRIPTION])
-        self.assertEqual(setlist.get_description(), NO_TEXT)
-        new = {SetlistSetting.VERSION: file_format.NOTES_SINCE, SetlistSetting.DESCRIPTION: 'A tune', Section.SONGS: {}}
-        self.assertEqual(setlist_from_data(new).get_description(), new[SetlistSetting.DESCRIPTION])
-        self.assertEqual(setlist_from_data(new).get_notes(), NO_TEXT)
 
     def test_missing_file(self):
         with self.assertRaises(SongFileError):

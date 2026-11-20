@@ -55,9 +55,16 @@ class NamedEdits:
             return self._setlist.get_groove_names()
         return self.owner_of(section).get_item_names(section)
 
+    def names_taken(self, section):
+        """Return the names a new or copied item of a section may not take: every generator's and chain's for a generator or a
+        chain, since they share one list in a set file, and the section's own otherwise."""
+        if section in sections.GENERATOR_SECTIONS:
+            return self._setlist.every_generator_name()
+        return self.names_of(section)
+
     def new_name(self, *, section, word):
-        """Return the name a new item of a section is given: the word, a dash and the number after the highest in use among the section's names."""
-        return new_name(word=word, taken=self.names_of(section))
+        """Return the name a new item of a section is given: the word, a dash and the number after the highest in use among the names it may not take."""
+        return new_name(word=word, taken=self.names_taken(section))
 
     def has_named(self, *, section, name):
         """Return whether a section has an item of a name, a factory groove among the grooves."""
@@ -81,7 +88,7 @@ class NamedEdits:
         if section == Section.TRACKS:
             return self._copy_track(name)
         owner = self.owner_of(section)
-        new = copy_name(name=name, taken=owner.get_item_names(section))
+        new = copy_name(name=name, taken=self.names_taken(section))
         self.change(owner.copy_item, section=section, name=name, new=new)
         return new
 

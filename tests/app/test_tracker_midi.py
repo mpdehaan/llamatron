@@ -101,10 +101,10 @@ def mary():
     data[Section.CHAINS] = {BROKEN_CHORDS: [{GeneratorKind.ARP: BROKEN}]}
     song[Section.SCENES] = [
         {SceneSetting.NAME: FIRST, SceneSetting.TRACKS: {
-            MELODY: {ClipSlotSetting.PATTERN: FIRST}, ACCOMPANIMENT: {ClipSlotSetting.PATTERN: CHORDS, ClipSlotSetting.CHAIN: BROKEN_CHORDS},
+            MELODY: {ClipSlotSetting.PATTERN: FIRST}, ACCOMPANIMENT: {ClipSlotSetting.PATTERN: CHORDS, ClipSlotSetting.CHAINS: [BROKEN_CHORDS]},
         }},
         {SceneSetting.NAME: SECOND, SceneSetting.TRACKS: {
-            MELODY: {ClipSlotSetting.PATTERN: SECOND}, ACCOMPANIMENT: {ClipSlotSetting.PATTERN: CHORDS, ClipSlotSetting.CHAIN: BROKEN_CHORDS},
+            MELODY: {ClipSlotSetting.PATTERN: SECOND}, ACCOMPANIMENT: {ClipSlotSetting.PATTERN: CHORDS, ClipSlotSetting.CHAINS: [BROKEN_CHORDS]},
         }},
     ]
     return data

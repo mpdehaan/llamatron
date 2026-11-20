@@ -255,7 +255,7 @@ class TestChainsPageAsANamedList(NamedListChecks, UITest):
     FIRST = ui_testing.NAMED
 
     def make_used(self):
-        self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.CHAIN, value=ui_testing.NAMED)
+        self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.CHAINS, value=[ui_testing.NAMED])
         return True
 
 

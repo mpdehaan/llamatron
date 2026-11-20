@@ -1,4 +1,4 @@
-version: 1.0.206
+version: 1.0.591
 title: Direction demo
 description: one theme in every step direction
 notes: |
@@ -27,17 +27,17 @@ real_time: true
 protected: true
 
 scales:
-  B Minor: { root: B, type: minor }
+  - { name: B Minor, root: B, type: minor }
 
 patterns:
-  theme:
+  - name: theme
     steps: 32
     step_size: 1/8
     degree: [1, 2, 3, 4, 5, 3, 5, ~, 5, 2, 5, ~, 4, 2, 4, ~, 1, 2, 3, 4, 5, 3, 5, 1, 7, 5, 3, 5, 7, ~, ~, ~]
     gate: [~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/2, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, b, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, 4, 4, 4, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, ~, ~, ~]
-  theme_pendulum:
+  - name: theme_pendulum
     steps: 32
     step_size: 1/8
     direction: pendulum
@@ -45,68 +45,68 @@ patterns:
     gate: [~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/2, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, b, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, 4, 4, 4, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, ~, ~, ~]
-  pedal:
+  - name: pedal
     steps: 4
     step_size: 1/4
     degree: [1, 3, 5, 7]
     octave: [3, 3, 2, 2]
 
 instruments:
-  marimba: { device: "*FluidSynth", gm_sound: 13 }
-  cello: { device: "*FluidSynth", gm_sound: 43 }
+  - { name: marimba, device: "*FluidSynth", gm_sound: 13 }
+  - { name: cello, device: "*FluidSynth", gm_sound: 43 }
 
 songs:
-  mtn_king_direction:
+  - name: mtn_king_direction
     tempo: 138
     scale: B Minor
     genre: Electronic
 
     tracks:
-      theme: { instrument: marimba }
-      pedal: { instrument: cello }
+      - { name: theme, instrument: marimba }
+      - { name: pedal, instrument: cello }
 
     scenes:
       - name: "Clip direction: forward"
-        tracks:
-          theme: { pattern: theme, repeat: 2 }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2 }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Clip direction: reverse_a"
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: reverse_a }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: reverse_a }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Clip direction: reverse_b"
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: reverse_b }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: reverse_b }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Clip direction: alternate"
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: alternate }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: alternate }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Clip direction: pendulum"
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: pendulum }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: pendulum }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Clip direction: random"
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: random }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: random }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Clip direction: brownian"
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: brownian }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: brownian }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Clip direction: eitherway"
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: eitherway }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: eitherway }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: "Pattern direction: pendulum"
-        tracks:
-          theme: { pattern: theme_pendulum, repeat: 2 }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme_pendulum, repeat: 2 }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: Clip forward overrides pattern
-        tracks:
-          theme: { pattern: theme_pendulum, repeat: 2, direction: forward }
-          pedal: { pattern: pedal, loop: true }
+        clips:
+          - { track: theme, pattern: theme_pendulum, repeat: 2, direction: forward }
+          - { track: pedal, pattern: pedal, loop: true }
       - name: Theme and pedal both reverse_a
-        tracks:
-          theme: { pattern: theme, repeat: 2, direction: reverse_a }
-          pedal: { pattern: pedal, loop: true, direction: reverse_a }
+        clips:
+          - { track: theme, pattern: theme, repeat: 2, direction: reverse_a }
+          - { track: pedal, pattern: pedal, loop: true, direction: reverse_a }

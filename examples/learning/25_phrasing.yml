@@ -1,6 +1,6 @@
-version: 1.0.468
+version: 1.0.591
 title: Phrasing
-description: a tune heard as written, then with each setting of Phrasing changed in turn, then sung with them together
+description: "a tune heard as written, then with each setting of Phrasing changed in turn, then sung with them together"
 notes: |
   Phrasing: a slow ballad at 68 beats a minute in A minor. One tune is heard again and again, each
   time through a Phrasing generator that changes one thing, so that each setting can be heard
@@ -29,67 +29,67 @@ real_time: true
 protected: true
 
 scales:
-  A Minor: { root: A, type: minor }
+  - { name: A Minor, root: A, type: minor }
 
 patterns:
-  verse tune:
+  - name: verse tune
     steps: 64
     step_size: 1/8
     degree: [5, ~, 4, 3, 1, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, 6, 5, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, 1, 7, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, 3, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 5, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true]
-  verse tune short:
+  - name: verse tune short
     steps: 64
     step_size: 1/8
     degree: [5, ~, 4, 3, 1, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, 6, 5, ~, 4, ~, 2, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, 1, 7, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 5, 4, 3, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 5, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true]
-  chorus tune:
+  - name: chorus tune
     steps: 64
     step_size: 1/8
     degree: [5, ~, 7, ~, 1, ~, 7, 1, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, 2, 1, 7, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, ~, 1, ~, 7, 1, 2, ~, ~, ~, ~, ~, ~, ~, 3, ~, 2, 1, 7, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 4, ~, 5, ~, 4, 5, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, 5, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, false, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true, false, true, false, true, false, true, false, false, false, true, true, true, true, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, true, true]
-  verse keys:
+  - name: verse keys
     steps: 8
     step_size: 1
     degree: [1, 6, 4, 5, 1, 6, 4, 5]
     octave: [4, 4, 4, 4, 4, 4, 4, 4]
     chord: [3, 3, 3, M, 3, 3, 3, M]
     velocity: [64, 64, 64, 64, 64, 64, 64, 64]
-  chorus keys:
+  - name: chorus keys
     steps: 8
     step_size: 1
     degree: [3, 7, 1, 6, 3, 7, 1, 6]
     octave: [4, 4, 4, 4, 4, 4, 4, 4]
     chord: [3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [64, 64, 64, 64, 64, 64, 64, 64]
-  verse bass:
+  - name: verse bass
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~, 4, ~, ~, 4, 4, ~, ~, ~, 5, ~, ~, 5, 5, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~, 4, ~, ~, 4, 4, ~, ~, ~, 5, ~, ~, 5, 5, ~, ~, ~]
     octave: [3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~]
     tie: [false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false]
-  chorus bass:
+  - name: chorus bass
     steps: 64
     step_size: 1/8
     degree: [3, ~, ~, 3, 3, ~, ~, ~, 7, ~, ~, 7, 7, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 7, ~, ~, 7, 7, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~]
     octave: [3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 3, 3, ~, ~, ~]
     tie: [false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, true, false]
-  kick:
+  - name: kick
     steps: 8
     drum: true
     step_size: 1/8
     degree: [C, ~, ~, C, C, ~, ~, ~]
     octave: [3, ~, ~, 3, 3, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 8
     drum: true
     step_size: 1/8
     degree: [~, ~, D, ~, ~, ~, D, ~]
     octave: [~, ~, 3, ~, ~, ~, 3, ~]
     velocity: [~, ~, 84, ~, ~, ~, 90, ~]
-  hats:
+  - name: hats
     steps: 8
     drum: true
     step_size: 1/8
@@ -98,118 +98,110 @@ patterns:
     octave: [3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [70, 44, 60, 44, 70, 44, 60, 44]
 
-phrasings:
-  deep breath: { breath: deep, rise_and_fall: none }
-  rise and fall: { breath: none, rise_and_fall: a lot }
-  choppy: { breath: none, rise_and_fall: none, notes: choppy }
-  flowing: { breath: none, rise_and_fall: none, notes: flowing }
-  sung: {}
-  sung chorus: { breath: deep, rise_and_fall: a lot, notes: flowing }
-
-chains:
-  deep breath:
-    - phrasing: deep breath
-  rise and fall:
-    - phrasing: rise and fall
-  choppy:
-    - phrasing: choppy
-  flowing:
-    - phrasing: flowing
-  sung:
-    - phrasing: sung
-  sung chorus:
-    - phrasing: sung chorus
+generators:
+  - { name: deep breath, kind: phrasing, breath: deep, rise_and_fall: none }
+  - { name: rise and fall, kind: phrasing, breath: none, rise_and_fall: a lot }
+  - { name: choppy, kind: phrasing, breath: none, rise_and_fall: none, notes: choppy }
+  - { name: flowing, kind: phrasing, breath: none, rise_and_fall: none, notes: flowing }
+  - { name: sung, kind: phrasing }
+  - { name: sung chorus, kind: phrasing, breath: deep, rise_and_fall: a lot, notes: flowing }
+  - { name: deep breath phrasing, kind: chain, generators: [{ name: deep breath }] }
+  - { name: rise and fall phrasing, kind: chain, generators: [{ name: rise and fall }] }
+  - { name: choppy phrasing, kind: chain, generators: [{ name: choppy }] }
+  - { name: flowing phrasing, kind: chain, generators: [{ name: flowing }] }
+  - { name: sung phrasing, kind: chain, generators: [{ name: sung }] }
+  - { name: sung chorus phrasing, kind: chain, generators: [{ name: sung chorus }] }
 
 instruments:
-  voice: { device: "*FluidSynth", gm_sound: 54 }
-  electric piano: { device: "*FluidSynth", gm_sound: 5 }
-  finger bass: { device: "*FluidSynth", gm_sound: 34 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: voice, device: "*FluidSynth", gm_sound: 54 }
+  - { name: electric piano, device: "*FluidSynth", gm_sound: 5 }
+  - { name: finger bass, device: "*FluidSynth", gm_sound: 34 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  phrasing:
+  - name: phrasing
     tempo: 68
     scale: A Minor
     genre: Pop
 
     tracks:
-      lead: { instrument: voice }
-      keys: { instrument: electric piano }
-      bass: { instrument: finger bass }
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hats: { drum: true, instrument: drum kit }
+      - { name: lead, instrument: voice }
+      - { name: keys, instrument: electric piano }
+      - { name: bass, instrument: finger bass }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hats, drum: true, instrument: drum kit }
 
     scenes:
-      - name: "as written"
+      - name: as written
         section: verse
-        tracks:
-          lead: { pattern: verse tune }
-          keys: { pattern: verse keys }
-          bass: { pattern: verse bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: verse tune }
+          - { track: keys, pattern: verse keys }
+          - { track: bass, pattern: verse bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "breath: deep"
         section: verse
-        tracks:
-          lead: { pattern: verse tune, chains: [deep breath] }
-          keys: { pattern: verse keys }
-          bass: { pattern: verse bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: verse tune, generators: [{ name: deep breath phrasing }] }
+          - { track: keys, pattern: verse keys }
+          - { track: bass, pattern: verse bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "rise and fall: a lot"
         section: verse
-        tracks:
-          lead: { pattern: verse tune, chains: [rise and fall] }
-          keys: { pattern: verse keys }
-          bass: { pattern: verse bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: verse tune, generators: [{ name: rise and fall phrasing }] }
+          - { track: keys, pattern: verse keys }
+          - { track: bass, pattern: verse bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "notes: choppy"
         section: verse
-        tracks:
-          lead: { pattern: verse tune, chains: [choppy] }
-          keys: { pattern: verse keys }
-          bass: { pattern: verse bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: verse tune, generators: [{ name: choppy phrasing }] }
+          - { track: keys, pattern: verse keys }
+          - { track: bass, pattern: verse bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "short notes, as written"
         section: verse
-        tracks:
-          lead: { pattern: verse tune short }
-          keys: { pattern: verse keys }
-          bass: { pattern: verse bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: verse tune short }
+          - { track: keys, pattern: verse keys }
+          - { track: bass, pattern: verse bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "notes: flowing"
         section: verse
-        tracks:
-          lead: { pattern: verse tune short, chains: [flowing] }
-          keys: { pattern: verse keys }
-          bass: { pattern: verse bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: verse tune short, generators: [{ name: flowing phrasing }] }
+          - { track: keys, pattern: verse keys }
+          - { track: bass, pattern: verse bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "verse, sung"
         section: verse
-        tracks:
-          lead: { pattern: verse tune, chains: [sung] }
-          keys: { pattern: verse keys }
-          bass: { pattern: verse bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: verse tune, generators: [{ name: sung phrasing }] }
+          - { track: keys, pattern: verse keys }
+          - { track: bass, pattern: verse bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "chorus, sung"
         section: chorus
-        tracks:
-          lead: { pattern: chorus tune, chains: [sung chorus] }
-          keys: { pattern: chorus keys }
-          bass: { pattern: chorus bass }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: lead, pattern: chorus tune, generators: [{ name: sung chorus phrasing }] }
+          - { track: keys, pattern: chorus keys }
+          - { track: bass, pattern: chorus bass }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }

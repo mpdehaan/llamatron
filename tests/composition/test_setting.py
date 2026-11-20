@@ -108,7 +108,7 @@ DESCRIBED = [
     (TrackSetting, track.SETTINGS, ()),
     (PatternSetting, pattern.SETTINGS, (PatternSetting.STEPS,)),
     # chain is only read, from a file saved before a clip held a list of chains.
-    (ClipSlotSetting, without_velocity(clip_slot.SETTINGS), (ClipSlotSetting.CHAIN, ClipSlotSetting.PATTERN)),
+    (ClipSlotSetting, without_velocity(clip_slot.SETTINGS), (ClipSlotSetting.PATTERN,)),
     (SceneSetting, without_velocity(scene.SETTINGS), (SceneSetting.TRACKS,)),
     # A scene and a clip hold the same velocity settings, under the same names.
     (VelocitySetting, {name: scene.SETTINGS[name] for name in file_format.VELOCITY_SETTINGS}, ()),

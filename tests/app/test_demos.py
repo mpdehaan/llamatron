@@ -35,7 +35,8 @@ import unittest
 import yaml
 
 from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
-from llamatron.composition.setlist_writer import dump_setlist
+from llamatron.composition.setlist_reader import set_file_data
+from llamatron.composition.setlist_writer import dump_file_layout
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.timing import timed_events
@@ -114,7 +115,7 @@ class TestDemos(TemporaryFolderTest):
             with open(path) as file:
                 data = yaml.safe_load(file)
             with self.subTest(path=path):
-                self.assertEqual(yaml.safe_load(dump_setlist(data)), data)
+                self.assertEqual(yaml.safe_load(dump_file_layout(data)), data)
 
     def test_every_demo_saves_and_loads_the_same_in_the_tracker(self):
         for path in PATHS:
@@ -148,8 +149,7 @@ class TestDemos(TemporaryFolderTest):
 
     def test_muted_tracks_and_only_those_are_named_silent(self):
         for path in PATHS:
-            with open(path) as file:
-                songs = yaml.safe_load(file)[Section.SONGS]
+            songs = set_file_data(path)[0][Section.SONGS]
             for song in songs.values():
                 for name, settings in song[Section.TRACKS].items():
                     with self.subTest(path=path, track=name):

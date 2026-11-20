@@ -18,7 +18,7 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
-from llamatron.composition.file_format import Approach, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.composition.file_format import Approach, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
 from llamatron.tui.keys import RowSection
 
 
@@ -26,6 +26,16 @@ def register_labels(*, rows, label):
     """Return each register's row in a group of register rows with its label, like ax_note with AX+Note."""
     return {row: label.format(name=name) for name, row in rows.items()}
 
+
+# macro_composer/composer.py
+# The word for each kind of generator that a generator named for its kind takes, as kick rush (names.MSG_NAMED_FOR_KIND).
+MSG_KIND_WORDS = {
+    GeneratorKind.ARP: 'arp', GeneratorKind.AUTO_RATCHET: 'ratchet', GeneratorKind.DRIFT: 'drift', GeneratorKind.PROGRESSION: 'chords',
+    GeneratorKind.VOICE_LEADING: 'voicing', GeneratorKind.STRUM: 'strum', GeneratorKind.EUCLID: 'rhythm', GeneratorKind.DENSITY: 'density',
+    GeneratorKind.SWELL: 'swell', GeneratorKind.ARTICULATE: 'articulation', GeneratorKind.GLIDE: 'glide', GeneratorKind.SHORTEN: 'shorten',
+    GeneratorKind.RUSH: 'rush', GeneratorKind.DRAG: 'drag', GeneratorKind.HOCKET: 'hocket', GeneratorKind.GUITARIFY: 'guitar',
+    GeneratorKind.FOLLOW_CHORDS: 'chords followed', GeneratorKind.PHRASING: 'phrasing', GeneratorKind.MUSICIAN: 'player',
+}
 
 # tui/dialogs/quit_dialog.py
 # The quit dialog's buttons, in the order of QUIT_WITHOUT_SAVING, SAVE_THEN_QUIT and CANCEL: quitting without

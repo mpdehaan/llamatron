@@ -57,6 +57,11 @@ MSG_SEARCH_STATUS = '/{text}'
 # The current song, at the right of every header.
 MSG_HELP_TITLE = 'Help: {where}, {panel}'
 
+# tui/document_parts/files.py: a set file in an older layout, opened converted
+MSG_CONVERTED = 'converted from an older format'
+MSG_CONVERTED_WITH_RENAMES = 'converted from an older format: {renames}'
+MSG_RENAMED_IN_CONVERSION = '{kind} ({old}) is now ({new})'
+
 # tui/document.py
 # How uses are described: one line each, like "song one, scene 2 (verse), track bass".
 MSG_USE_SCENE = 'scene {number} ({name})'

@@ -28,6 +28,7 @@ HARMONY = 'harmony'
 GRABBING = 'grabbing'
 VOICED = 'voiced'
 PROGRESSION = 'changes'
+PROGRESSION_CHAIN = 'changes chain'
 TRIAD = '3'
 STEPS = 4
 C = 60
@@ -46,17 +47,17 @@ def grabbed(*, inversion=None, voiced=False, chords=(1, 5, 6, 4)):
     data = song(
         patterns={HARMONY: chord_pattern, GRABBING: bass_pattern},
         scenes=[{SceneSetting.TRACKS: {
-            CHORDS: {ClipSlotSetting.PATTERN: HARMONY, ClipSlotSetting.REPEAT: STEPS, ClipSlotSetting.CHAINS: [PROGRESSION]},
+            CHORDS: {ClipSlotSetting.PATTERN: HARMONY, ClipSlotSetting.REPEAT: STEPS, ClipSlotSetting.CHAINS: [PROGRESSION_CHAIN]},
             BASS: {ClipSlotSetting.PATTERN: GRABBING, ClipSlotSetting.REPEAT: STEPS, ClipSlotSetting.GRAB_TRACK: CHORDS},
         }}],
         tracks=(CHORDS, BASS),
     )
     data[Section.TRACKS][CHORDS] = {TrackSetting.MUTE: True}
     data[Section.PROGRESSIONS] = {PROGRESSION: {'chords': list(chords)}}
-    data[Section.CHAINS] = {PROGRESSION: [{GeneratorKind.PROGRESSION: PROGRESSION}]}
+    data[Section.CHAINS] = {PROGRESSION_CHAIN: [{GeneratorKind.PROGRESSION: PROGRESSION}]}
     if voiced:
         data[Section.VOICE_LEADINGS] = {VOICED: {}}
-        data[Section.CHAINS][PROGRESSION].append({GeneratorKind.VOICE_LEADING: VOICED})
+        data[Section.CHAINS][PROGRESSION_CHAIN].append({GeneratorKind.VOICE_LEADING: VOICED})
     return [pitch for _, _, pitch, _ in notes_on(data, track=1)]
 
 

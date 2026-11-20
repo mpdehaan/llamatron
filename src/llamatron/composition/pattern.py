@@ -23,7 +23,7 @@ values, editing single values, resizing and rearranging it, and working out what
 from math import floor
 
 from llamatron.composition import corrections, file_format, limits, row_descriptions
-from llamatron.composition.checks import check_keys, is_whole_number, is_whole_number_from, reading, time_signature, written_length
+from llamatron.composition.checks import check_keys, is_whole_number_from, reading, time_signature, written_length
 from llamatron.composition.conditions import check_statement, statement_of
 from llamatron.composition.corrections import Correction
 from llamatron.composition.file_format import Direction, PatternSetting, Row, StepStatement
@@ -308,19 +308,6 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         moved = half_steps[place] + octaves_up * midi.HALF_STEPS_PER_OCTAVE + file_format.ACCIDENTALS.get(accidental, 0)
         note = Note(name=scale.get_root(), octave_number=REFERENCE_OCTAVE).half_step(moved)
         return NOTE_NAME.format(name=note.get_name(), octave=note.get_octave_number() - REFERENCE_OCTAVE + octave - octave_label_offset)
-
-    @classmethod
-    def with_octaves_moved(cls, *, data, offset):
-        """Return a copy of a pattern's file data with every whole number in its octave row moved by an offset.
-
-        This is how a file written in Live's numbering is read. Anything that isn't a list of
-        numbers is left for the usual checks to refuse.
-        """
-        if not isinstance(data, dict) or not isinstance(data.get(Row.OCTAVE), list):
-            return data
-        moved = dict(data)
-        moved[Row.OCTAVE] = [octave + offset if is_whole_number(octave) else octave for octave in data[Row.OCTAVE]]
-        return moved
 
     # Changing the pattern. Every change checks its value the way reading a file does, and raises
     # InvalidValue if it's wrong, leaving the pattern as it was.

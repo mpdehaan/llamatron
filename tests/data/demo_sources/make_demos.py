@@ -34,11 +34,12 @@ import re
 import sys
 
 from llamatron.composition import file_format, row_descriptions
-from llamatron.composition.setlist_reader import as_setlist_data
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.music import note as note_values
 from llamatron.music.scale import ScaleType
+from llamatron.strings import labels, names as names_text
 from llamatron.tui.screens.set import scale_page
+from tests.support.rendering import as_setlist
 
 # The demos are written with durations, as they were first written, and gate_conversion, in the
 # tests' support folder, turns them into gates, so the top folder has to be on the path before this import.
@@ -219,7 +220,27 @@ def write(*, file_name, header, song):
             'description': DESCRIPTIONS[name], 'notes': notes, 'protected': True, **song}
     # Each demo is a set of one song, named after the demo's file.
     with open(path, 'w') as file:
-        file.write(dump_setlist(as_setlist_data(data=song_to_gates(song), song_name=name)))
+        file.write(dump_setlist(chains_apart(as_setlist(song_to_gates(song), song_name=name))))
+
+
+def chains_apart(data):
+    """Return a demo's data with each chain named as its generator is named for its kind, as trade hocket for the chain that runs
+    the Hocket trade, and every clip following: a set file lists every generator, the chains among them, in one list."""
+    names = {name for kind, section in file_format.NAMED_GENERATORS.items() for name in data.get(section, {})}
+    renamed = {}
+    for chain, steps in data.get(file_format.Section.CHAINS, {}).items():
+        same = [kind for step in steps for kind, name in step.items() if name == chain]
+        if chain in names and same:
+            renamed[chain] = names_text.MSG_NAMED_FOR_KIND.format(name=chain, word=labels.MSG_KIND_WORDS[same[0]])
+    if not renamed:
+        return data
+    data[file_format.Section.CHAINS] = {renamed.get(chain, chain): steps for chain, steps in data[file_format.Section.CHAINS].items()}
+    for song in data[file_format.Section.SONGS].values():
+        for scene in song.get(file_format.Section.SCENES, []):
+            for clip in scene.get(file_format.SceneSetting.TRACKS, {}).values():
+                if file_format.ClipSlotSetting.CHAINS in clip:
+                    clip[file_format.ClipSlotSetting.CHAINS] = [renamed.get(chain, chain) for chain in clip[file_format.ClipSlotSetting.CHAINS]]
+    return data
 
 
 def song(title, tempo, scale, scales, patterns, tracks, scenes, **sections):
@@ -342,7 +363,7 @@ def arpeggiator():
     scenes = [{'name': 'Chords, no arp', 'tracks': {'chords': {'pattern': 'chords'}, 'tune': {'pattern': 'tune'}}}]
     for name in arps:
         scenes.append({'name': names[name], 'tracks': {
-            'chords': {'pattern': 'chords', 'chain': name}, 'tune': {'pattern': 'tune'},
+            'chords': {'pattern': 'chords', 'chains': [name]}, 'tune': {'pattern': 'tune'},
         }})
     write(file_name='12_sailor_arpeggiator.yml', header=[
         'Arpeggiator demo: one chord pattern played through a different arpeggiator in each scene.',
@@ -409,7 +430,7 @@ def ratchet():
     def scene(name, pattern_name, chain=None):
         clip_slot = {'pattern': pattern_name}
         if chain:
-            clip_slot['chain'] = chain
+            clip_slot['chains'] = [chain]
         return {'name': name, 'tracks': {'tune': clip_slot}}
 
     scenes = [
@@ -547,7 +568,7 @@ def chain():
     for name, pattern_name, chain in plan:
         clip_slot = {'pattern': pattern_name}
         if chain:
-            clip_slot['chain'] = chain
+            clip_slot['chains'] = [chain]
         scenes.append({'name': name, 'tracks': {'gifts': clip_slot}})
     write(file_name='17_complex_gifts_chain.yml', header=[
         'Chain demo: Simple Gifts on one track, turned from a plain tune into triads, synthwave and happy metal by chains.',
@@ -687,7 +708,7 @@ def arrangement_shanty():
             'harmony': {'pattern': melody},
             'counter': {'pattern': 'counter_rhythm', 'grab_track': 'lead', 'loop': True},
             'pad': {'pattern': harmony},
-            'pluck': {'pattern': harmony, 'chain': 'pluck'},
+            'pluck': {'pattern': harmony, 'chains': ['pluck']},
             'bass': {'pattern': 'bass_rhythm', 'grab_track': 'pad', 'loop': True},
             'stomp': {'pattern': 'stomp', 'loop': True},
             'clap': {'pattern': 'clap', 'loop': True},
