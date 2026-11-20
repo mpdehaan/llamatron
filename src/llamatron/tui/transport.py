@@ -419,6 +419,15 @@ class Transport:
                 )
         return None
 
+    def draw_places(self):
+        """Return where every draw stands in what plays now, by name, the place of the slot each last took its value from, for the
+        Draws page's lights: in the first scene that plays, and none while nothing plays."""
+        scenes = self.playing_scenes()
+        if not scenes:
+            return {}
+        elapsed = self.scene_elapsed(scenes[0])
+        return {} if elapsed is None else self._player.get_score().draw_places_at(scene=scenes[0], seconds=elapsed)
+
     def get_player(self):
         """Return the player, for the tests."""
         return self._player

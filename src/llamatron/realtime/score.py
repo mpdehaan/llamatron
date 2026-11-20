@@ -46,6 +46,14 @@ FIRST_SCENE = 0
 FIRST_ROW = 0
 
 
+# Where the draws stand before any has drawn.
+NO_DRAW_PLACES = {}
+
+
+def first_of(moment):
+    """Return when a moment of the draws' lights happens, the first of its two parts."""
+    return moment[0]
+
 class Row(NamedTuple):
     """One written-out repeat of a scene: when it starts within the scene, in seconds, how long it lasts, and its clock, which keeps its tempo and every change of tempo inside it."""
 
@@ -73,7 +81,7 @@ class Heard(NamedTuple):
 class Score:
     """What the player knows about a song: each scene's length and launch settings, and each clip's events from its scene's start."""
 
-    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_sounding', '_heard', '_bar')
+    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_sounding', '_heard', '_bar', '_draw_lights')
 
     def __init__(self, *, song, routes, seed=None):
         """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through."""
@@ -97,6 +105,8 @@ class Score:
         self._sounding = {}
         # Each clip's notes with their numbers and velocities, the times they start and the longest of them, worked out the first time the visualizer asks.
         self._heard = {}
+        # Each scene's moments at which a draw drew, in seconds from the scene's start, with where every draw then stood.
+        self._draw_lights = []
         song_start = START_OF_SCENE
         for index, scene in enumerate(song.get_scenes()):
             scene_rows = [place for place, written_scene in enumerate(written) if written_scene.get_scene() is scene]
@@ -104,6 +114,7 @@ class Score:
             self._scene_starts.append(song_start)
             scene_start = START_OF_SCENE
             self._rows.append([])
+            self._draw_lights.append([])
             for track in self._tracks:
                 self._events[(index, track)] = []
                 clip_slot = scene.get_clip_slot(track) if scene.has_clip_slot(track) else None
@@ -117,6 +128,8 @@ class Score:
                 clock = grid.clock_of(row)
                 row_seconds = clock.seconds_at(grid.row_length(row))
                 self._rows[index].append(Row(scene_start, row_seconds, clock))
+                if song.uses_draws():
+                    self._draw_lights[index] += [(scene_start + clock.seconds_at(time), places) for time, places in renderer.get_timeline(written[place]).get_draw_moments()]
                 for track in grid.get_columns():
                     name = track.get_name()
                     clip = grid.get_clip(row=row, column=track)
@@ -133,6 +146,12 @@ class Score:
                 self._events[(index, track)].sort(key=sort_key)
             self._scene_seconds.append(scene_start)
             song_start += scene_start
+
+    def draw_places_at(self, *, scene, seconds):
+        """Return where every draw stood a number of seconds into a scene, by name, the place of each one's last slot: none before the scene's first draw."""
+        moments = self._draw_lights[scene]
+        found = bisect.bisect_right(moments, seconds, key=first_of)
+        return moments[found - 1][1] if found else NO_DRAW_PLACES
 
     def get_tracks(self):
         return list(self._tracks)

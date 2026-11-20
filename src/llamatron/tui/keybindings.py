@@ -92,6 +92,7 @@ class MainPage(Page):
     GROOVES = Binding(Key.V, legends.KeyName.V, labels.PageName.GROOVES)
     INSTRUMENTS = Binding(Key.I, legends.KeyName.I, labels.PageName.INSTRUMENTS)
     REGISTERS = Binding(Key.R, legends.KeyName.R, labels.PageName.REGISTERS)
+    DRAWS = Binding(Key.D, legends.KeyName.D, labels.PageName.DRAWS)
     ARRANGE = Binding(Key.A, legends.KeyName.A, labels.PageName.ARRANGE)
     # The Real Time switch, a cell among the pages that turns real-time playback on and off.
     REAL_TIME = Binding(Key.T, legends.KeyName.T, labels.PageName.REAL_TIME)
@@ -108,7 +109,7 @@ class MainPage(Page):
     FOOTER_HELP = Binding(Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
     FOOTER_ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.MSG_ABOUT_FOOTER_WHAT)
     # The pages in the order of their cells, four to a row.
-    PAGES = [FILE, SONGS, PATTERNS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, ARRANGE, REAL_TIME]
+    PAGES = [FILE, SONGS, PATTERNS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, DRAWS, ARRANGE, REAL_TIME]
     IN_HELP = [*PAGES, OPEN_SET_HERE, EXPORT_HERE, IMPORT_HERE, QUIT, SELECT, OPEN]
     IN_LEGEND = [SELECT, OPEN, FOOTER_HELP, FOOTER_ABOUT]
 
@@ -310,6 +311,16 @@ class SongPage(FieldPage):
 
 class ScalePage(FieldPage):
     """The Scale page, with the settings keys alone."""
+
+
+class DrawsPage(FieldPage):
+    """The Draws page: each draw a section of settings over its strip, where Left and Right move between slots and [ and ] change one."""
+
+    # On a draw's strip, [ and ] change the slot under the cursor, Left and Right moving between slots.
+    SLOT_LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    SLOT_MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    IN_HELP = [Page.BACK, FieldPage.SELECT, FieldPage.ALONG_CELLS, FieldPage.LESS, FieldPage.MORE, SLOT_LESS, SLOT_MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION]
+    IN_LEGEND = [Page.BACK, FieldPage.SELECT, FieldPage.ALONG_CELLS, FieldPage.LESS, FieldPage.MORE, SLOT_LESS, SLOT_MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION]
 
 
 class RegistersPage(FieldPage):

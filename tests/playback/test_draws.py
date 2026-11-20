@@ -25,9 +25,10 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
+from llamatron.realtime.score import Score
 from llamatron.strings import errors
 from tests.support import song_testing
-from tests.support.rendering import render_data
+from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip
 
 CHROMATIC = 'chromatic'
@@ -41,6 +42,9 @@ ONE = 1
 QUIET = 60
 COUNT_IN = [0, 1, 2, 3]
 TWELVE_TONES = list(range(12))
+BEATS_A_MINUTE = 60
+HALF_A_SECOND = 0.5
+QUARTER = '1/4'
 
 
 def song_data(*, draws, rows, repeat=1, steps=STEPS, scenes=None, tracks=(LEAD,)):
@@ -196,6 +200,19 @@ class TestConditions(unittest.TestCase):
         song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}, scenes=[{SceneSetting.TRACKS: played}]))
         # Each pass's first step draws the next value; the second pass starts with AD at 0, the third with AD at 1, which sits the third pass out.
         self.assertEqual(len(pitches_of(song=song, scenes=1)[0]), 3 * STEPS)
+
+
+class TestLights(unittest.TestCase):
+    """What the Draws page lights while a song plays: the slot each draw last took its value from, by the second."""
+
+    def test_the_score_says_which_slot_each_draw_stands_on_by_the_second(self):
+        data = song_data(draws={DrawName.DD: a_draw(slots=COUNT_IN)}, rows={Row.DD_NOTE: every_step(), PatternSetting.STEP_SIZE: QUARTER}, steps=STEPS)
+        data[SongSetting.TEMPO] = BEATS_A_MINUTE
+        score = Score(song=song_from_data(data), routes={})
+        # Four quarter notes at 60 beats a minute: a second a step, each step drawing the next slot.
+        found = [score.draw_places_at(scene=0, seconds=second + HALF_A_SECOND) for second in range(STEPS)]
+        self.assertEqual(found, [{DrawName.DD: place} for place in range(STEPS)])
+        self.assertEqual(score.draw_places_at(scene=0, seconds=-HALF_A_SECOND), {})
 
 
 class TestShared(unittest.TestCase):

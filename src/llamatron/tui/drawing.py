@@ -61,6 +61,9 @@ class Style:
     READ_HEAD = 'khaki1'
     # The light on a piano roll's step that has keyswitches: magenta, which nothing else in the pattern editor uses.
     KEYSWITCH_LIGHT = 'bold magenta'
+    # The slot each draw last took its value from while a song plays, on the Draws page: bright violet, the draws' colour.
+    DRAW_LIGHT = 'bold #be5aff'
+    DRAW_LIGHT_REVERSED = 'bold reverse #be5aff'
     # Arrange's details view: its dividers between the tracks in blue, so that the view shows itself, and
     # each line naming a thing in its kind's theme colour (themes.text_style), the colours allowed for it.
     # The status line's refusals and problems, in amber, and the title of a dialog that deletes, in red.

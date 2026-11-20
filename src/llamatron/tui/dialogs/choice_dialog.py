@@ -37,12 +37,16 @@ class ChoiceDialog(Dialog):
 
     SHOWN = 12
 
-    def __init__(self, *, title, options, current=0):
+    def __init__(self, *, title, options, current=0, headings=()):
+        """headings are the places of options that only head a group, or stand blank between groups: drawn dim, never chosen,
+        passed over by the cursor and left out once anything is typed."""
         super().__init__()
         self.title = title
         self.options = list(options)
+        self.headings = frozenset(headings)
         self.cursor = Cursor(place=max(min(current, len(self.options) - 1), 0))
         self.search = Search()
+        self.settle()
 
     def keys(self):
         result = [
@@ -69,8 +73,14 @@ class ChoiceDialog(Dialog):
         return True
 
     def matches(self):
-        """Return the places of the options that contain what was typed, ignoring case: all of them with nothing typed."""
-        return self.search.places_matching(self.options)
+        """Return the places of the options that contain what was typed, ignoring case, all of them with nothing typed, leaving out the headings."""
+        return [place for place in self.search.places_matching(self.options) if place not in self.headings]
+
+    def shown_places(self):
+        """Return the places of the options the list shows: every match, and with nothing typed the headings among them."""
+        if self.search.get_typed() or not self.headings:
+            return self.matches()
+        return list(range(len(self.options)))
 
     def under_cursor(self):
         """Return the option the cursor is on, as the picker shows it."""
@@ -108,7 +118,9 @@ class ChoiceDialog(Dialog):
         result = []
         if self.search.get_typed():
             result.append(Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.search.get_typed()), width=width), style=Style.DIM))
-        at = matches.index(self.cursor.get_place()) if self.cursor.is_on_one_of(matches) else 0
-        for place in shown_around(places=matches, at=at, room=self.SHOWN):
-            result.append(Text(fit(text=cursor_mark(place == self.cursor.get_place()) + str(self.options[place]), width=width)))
+        shown = self.shown_places()
+        at = shown.index(self.cursor.get_place()) if self.cursor.is_on_one_of(matches) else 0
+        for place in shown_around(places=shown, at=at, room=self.SHOWN):
+            text = fit(text=cursor_mark(place == self.cursor.get_place()) + str(self.options[place]), width=width)
+            result.append(Text(text, style=Style.DIM) if place in self.headings else Text(text))
         return result

@@ -55,6 +55,10 @@ class DrawPlay:
         """Return each draw's last value, by name, NOTHING_DRAWN for one that has drawn nothing yet."""
         return {name: self._last[name][1] if name in self._last else NOTHING_DRAWN for name in file_format.DRAW_NAMES}
 
+    def places(self):
+        """Return the place of the slot each draw last took its value from, by name, for the draws that have drawn."""
+        return {name: last[0] for name, last in self._last.items()}
+
     def last_slot(self, name):
         """Return the place of the slot a draw last took its value from, or None before it has drawn."""
         return self._last[name][0] if name in self._last else None

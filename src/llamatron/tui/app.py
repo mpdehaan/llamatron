@@ -205,6 +205,10 @@ class LlamatronApp(App, inherit_bindings=False):
         """Return the class of the page that edits one named thing of a section, which a page asks for so that it imports no other page."""
         return editors.editor_of(section)
 
+    def section_page_of(self, section):
+        """Return the class of the page that shows the whole of a section of the song, which a page asks for so that it imports no other page."""
+        return editors.section_page_of(section)
+
     def is_open(self, page):
         return page in self.screen_stack
 

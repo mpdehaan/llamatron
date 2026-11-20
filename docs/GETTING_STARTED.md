@@ -92,6 +92,7 @@ Every screen opens from the main screen, and `ESC` goes back up the map one step
 flowchart TD
     MainPage["Main screen"]
     ArrangePage["Arrange"]
+    DrawsPage["Draws"]
     FilePage["File/Global"]
     GeneratorsPage["Generators"]
     GroovesPage["Grooves"]
@@ -119,6 +120,7 @@ flowchart TD
     GroovesPage --> GrooveEditor
     InstrumentsPage --> InstrumentEditor
     MainPage -- "A" --> ArrangePage
+    MainPage -- "D" --> DrawsPage
     MainPage -- "F" --> FilePage
     MainPage -- "G" --> GeneratorsPage
     MainPage -- "V" --> GroovesPage

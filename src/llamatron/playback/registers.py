@@ -122,7 +122,7 @@ class RegisterTimeline:
     Changes are RegisterChanges, applied in time order, and at the same time in track order.
     """
 
-    __slots__ = ('_start', '_moments', '_values', '_turned', '_draws')
+    __slots__ = ('_start', '_moments', '_values', '_turned', '_draws', '_draw_moments')
 
     def __init__(self, *, registers, start, changes, chooser=None, turned=NOT_TURNED, draws=None):
         """chooser draws the random values of a register whose Reset behavior picks one, and of a draw that chooses at random,
@@ -134,6 +134,8 @@ class RegisterTimeline:
         values = dict(start)
         turned = Turned(registers=registers, turned=turned)
         self._draws = None if draws is None else draws.copy()
+        # Each moment a draw drew, and where every draw then stood, for the Draws page's lights.
+        self._draw_moments = []
         for change in sorted(changes, key=_moment_of):
             for name, value in change.sets.items():
                 values[name] = registers[name].held(value)
@@ -145,9 +147,15 @@ class RegisterTimeline:
                     self._draws.reset(name)
                 for name in change.draws:
                     values[name] = self._draws.draw(name=name, chooser=chooser)
+                if change.draws:
+                    self._draw_moments.append((change.time, self._draws.places()))
             self._moments.append((change.time, change.place))
             self._values.append(dict(values))
         self._turned = turned.names()
+
+    def get_draw_moments(self):
+        """Return each moment in the scene at which a draw drew, as (time, the place of every draw's last slot), in time order."""
+        return list(self._draw_moments)
 
     def get_end_draws(self):
         """Return where the song's draws stand once the scene is over, which the next scene starts from, or None in a song with no draws."""

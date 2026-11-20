@@ -112,6 +112,14 @@ class Draw(HoldsSettings):
     def get_value_max(self):
         return self._setting(DrawSetting.VALUE_MAX)
 
+    def value_limits(self):
+        """Return the lowest and the highest value any draw's slot or range can take, which Value Min and Value Max lie between."""
+        return limits.MIN_DRAW_VALUE, limits.MAX_DRAW_VALUE
+
+    def slot_count_limits(self):
+        """Return the fewest and the most slots any draw can hold."""
+        return limits.MIN_DRAW_SLOTS, limits.MAX_DRAW_SLOTS
+
     def redraws_in_conditions(self):
         """Return whether a condition that reads the draw draws from it, as a step's Use Draws row does, rather than only looking at it."""
         return bool(self._setting(DrawSetting.CONDITIONS_REDRAW))

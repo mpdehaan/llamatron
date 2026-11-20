@@ -129,6 +129,30 @@ class SongEdits:
             self.change(self._setlist.hold_adds_within_limits)
         return None
 
+    def draw(self, name):
+        """Return a draw, AD to DD, as a Draw, with its defaults for anything not set."""
+        return self.song().get_draw(name)
+
+    def set_draw_setting(self, *, name, setting, value):
+        """Change one setting of a draw, or return why it can't change, like a Value Min above the Value Max. None goes back to the default."""
+        return self._draw_change(self.song().set_draw_setting, name=name, setting=setting, value=value)
+
+    def set_draw_slot(self, *, name, place, value):
+        """Give one slot of a draw a value, held within its range, or make it blank with None."""
+        return self._draw_change(self.song().set_draw_slot, name=name, place=place, value=value)
+
+    def set_draw_slot_count(self, *, name, count):
+        """Make a draw hold count slots, or return why it can't."""
+        return self._draw_change(self.song().set_draw_slot_count, name=name, count=count)
+
+    def _draw_change(self, method, **named):
+        """Make a change to a draw, returning why it was refused, or None."""
+        try:
+            self.change(method, **named)
+        except InvalidValue as problem:
+            return str(problem)
+        return None
+
     def resets(self, *, index, register):
         """Return whether a scene sets a register back to its default as it starts."""
         return self._scene(index).resets(register)

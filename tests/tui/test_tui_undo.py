@@ -28,7 +28,7 @@ import os
 import unittest
 
 from llamatron.composition import defaults, generator_settings
-from llamatron.composition.file_format import DriftValue, DriftVersion, EuclidPart, GeneratorKind, ReadyBar, RegisterName, RegisterSetting, Row, Section, ShapePart, SongSetting, StrumPart
+from llamatron.composition.file_format import DrawName, DriftValue, DriftVersion, EuclidPart, GeneratorKind, ReadyBar, RegisterName, RegisterSetting, Row, Section, ShapePart, SongSetting, StrumPart
 from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name, new_name
@@ -1027,6 +1027,18 @@ class TestRegistersPageUndo(UndoTest):
         await self.check_undo_and_redo(before=before, after=self.data())
         await self.undo()
         self.assertIn(messages.MSG_UNDONE.format(what=self.in_song(self.named(section=Section.REGISTERS, name=RegisterName.BX))), self.text())
+
+
+class TestDrawsPageUndo(UndoTest):
+
+    async def test_a_slot_is_one_step_and_the_cursor_stays(self):
+        await self.press(keybindings.MainPage.DRAWS)
+        before = self.data()
+        await self.select_field(labels.MSG_DRAW_STRIP_LABEL)
+        await self.press(keybindings.DrawsPage.SLOT_MORE)
+        await self.check_undo_and_redo(before=before, after=self.data())
+        await self.undo()
+        self.assertIn(messages.MSG_UNDONE.format(what=self.in_song(self.named(section=Section.DRAWS, name=DrawName.AD))), self.text())
 
 
 class TestEveryPageHasTestClasses(unittest.TestCase):

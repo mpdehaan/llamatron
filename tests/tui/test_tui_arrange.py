@@ -17,7 +17,7 @@
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
 from llamatron.composition import defaults, file_format, limits, setlist
-from llamatron.composition.file_format import ClipSlotSetting, Direction, FollowAction, PatternOrder, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
+from llamatron.composition.file_format import ClipSlotSetting, Direction, DrawName, FollowAction, PatternOrder, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
 from llamatron.composition.scene import TempoRamp
 from llamatron.generators.blend import BlendMode
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
@@ -869,6 +869,13 @@ class TestScenePage(UITest):
         self.assertEqual(self.scene().get_reset_names(), [RegisterName.BX])
         await self.press(Key.SPACE)
         self.assertEqual(self.scene().get_reset_names(), [])
+
+    async def test_it_can_reset_each_draw_as_it_first_starts(self):
+        await self.go_to(labels_text.MSG_RESET_LABEL.format(name=DrawName.CD))
+        await self.press(Key.ENTER)
+        self.assertEqual(self.scene().get_reset_draw_names(), [DrawName.CD])
+        await self.press(Key.SPACE)
+        self.assertEqual(self.scene().get_reset_draw_names(), [])
 
 
 class TestScenesAndClipsEdges(UITest):

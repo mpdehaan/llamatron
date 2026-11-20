@@ -75,6 +75,8 @@ SCREEN_BASE = 'Page'
 # The registry of editors, and how a page opens one by its section.
 EDITORS_MODULE = 'tui.screens.editors'
 OPEN_EDITOR_METHOD = 'open_editor'
+# The program's answer of the page that shows the whole of a section, section_page_of(Section.NAME), whose class a page then builds.
+SECTION_PAGE_METHOD = 'section_page_of'
 SECTION_ARGUMENT = 'section'
 # Screens whose names in words aren't just their class names split up.
 SCREEN_LABELS = {
@@ -266,10 +268,16 @@ def editors_by_section():
 
 
 def editor_opened(call):
-    """Return the class of the editor a call opens by its section, open_editor(section=Section.NAME, ...), or None for any other call."""
-    if not (isinstance(call.func, ast.Attribute) and call.func.attr == OPEN_EDITOR_METHOD):
+    """Return the class of the page a call opens by its section, open_editor(section=Section.NAME, ...) or section_page_of(Section.NAME),
+    or None for any other call."""
+    if not isinstance(call.func, ast.Attribute):
         return None
-    section = keyword(call=call, name=SECTION_ARGUMENT)
+    if call.func.attr == OPEN_EDITOR_METHOD:
+        section = keyword(call=call, name=SECTION_ARGUMENT)
+    elif call.func.attr == SECTION_PAGE_METHOD and call.args:
+        section = call.args[0]
+    else:
+        return None
     return editors_by_section().get(section.attr) if isinstance(section, ast.Attribute) else None
 
 

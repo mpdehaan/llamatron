@@ -29,7 +29,8 @@ from llamatron.composition import conditions, file_format, limits
 from llamatron.composition.file_format import StatementPart
 from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui import drawing
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.tui.dialogs import grouped_choices
+from llamatron.tui.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField
 
 # A page's first table and its second, which keep their lines' labels apart.
@@ -42,7 +43,6 @@ NUMBER_WIDTH = len(str(-limits.MAX_STATEMENT_NUMBER))
 # The number a statement divides by may not be this.
 ZERO = 0
 # The first choice of a value's picker is a number to type; the registers follow.
-NUMBER_PLACE = 0
 
 
 def statement_section(*, page, label, table, statements, store):
@@ -108,8 +108,9 @@ def _line(*, page, place, table, statements, store):
 
 def _register_cell(*, page, statement, store, clear):
     """Return the cell that names a line's register, or says the line is ignored."""
-    choices = [labels.MSG_STATEMENT_IGNORED, *file_format.REGISTER_NAMES]
+    choices = [labels.MSG_STATEMENT_IGNORED, *grouped_choices.VALUE_NAMES_IN_ORDER]
     current = labels.MSG_STATEMENT_IGNORED if statement is None else statement[StatementPart.REGISTER]
+    grouped = value_groups(first=(None, [(labels.MSG_STATEMENT_IGNORED, labels.MSG_STATEMENT_IGNORED)]))
 
     def chosen(register):
         if register == labels.MSG_STATEMENT_IGNORED:
@@ -118,17 +119,17 @@ def _register_cell(*, page, statement, store, clear):
             store(conditions.new_statement(register))
         else:
             store({**statement, StatementPart.REGISTER: register})
-    return _choice_cell(page=page, title=labels.MSG_STATEMENT_REGISTER_TITLE, choices=choices, current=current, width=REGISTER_WIDTH, store=chosen, clear=clear)
+    return _choice_cell(page=page, title=labels.MSG_STATEMENT_REGISTER_TITLE, choices=choices, current=current, width=REGISTER_WIDTH, store=chosen, clear=clear, grouped=grouped)
 
 
-def _choice_cell(*, page, title, choices, current, width, store, clear):
-    """Return a cell that picks one of a list, drawn at a width of its own."""
-    return ChoiceField(page=page, label=title, choices=choices, current=current, shown=current.ljust(width), set=store, clear=clear, clear_what=legends.What.CLEAR)
+def _choice_cell(*, page, title, choices, current, width, store, clear, grouped=None):
+    """Return a cell that picks one of a list, drawn at a width of its own, its picker in groups where grouped is given."""
+    return ChoiceField(page=page, label=title, choices=choices, current=current, shown=current.ljust(width), set=store, clear=clear, clear_what=legends.What.CLEAR, grouped=grouped)
 
 
 def _value_cell(*, page, current, divides, store, clear):
-    """Return a cell that holds a number or another register: ENTER offers a number to type and each register."""
-    choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *file_format.REGISTER_NAMES]
+    """Return a cell that holds a number, a draw or a register: ENTER offers a number to type, each draw and each register, under their headings."""
+    grouped = number_or_names()
 
     def typed(number):
         if divides and number == ZERO:
@@ -137,15 +138,15 @@ def _value_cell(*, page, current, divides, store, clear):
         store(number)
 
     def picked(place):
-        if place == NUMBER_PLACE:
+        chosen = grouped.value_at(place)
+        if chosen == grouped_choices.NUMBER_CHOSEN:
             page.ask_number(
-                title=labels.MSG_STATEMENT_VALUE_TITLE, value=str(current) if current not in file_format.REGISTER_NAMES else str(ZERO), then=typed,
+                title=labels.MSG_STATEMENT_VALUE_TITLE, value=str(current) if current not in file_format.VALUE_NAMES else str(ZERO), then=typed,
                 low=-limits.MAX_STATEMENT_NUMBER, high=limits.MAX_STATEMENT_NUMBER,
             )
         else:
-            store(choices[place])
+            store(chosen)
 
     def pick():
-        opens_on = choices.index(current) if current in file_format.REGISTER_NAMES else NUMBER_PLACE
-        page.ask(dialog=ChoiceDialog(title=labels.MSG_STATEMENT_VALUE_TITLE, options=choices, current=opens_on), then=picked)
+        page.ask(dialog=grouped.dialog(title=labels.MSG_STATEMENT_VALUE_TITLE, current=current if current in file_format.VALUE_NAMES else grouped_choices.NUMBER_CHOSEN), then=picked)
     return Field(label=labels.MSG_STATEMENT_VALUE_TITLE, value=lambda: str(current).ljust(NUMBER_WIDTH), enter=pick, enter_what=legends.What.CHOOSE, clear=clear)

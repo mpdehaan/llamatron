@@ -22,6 +22,7 @@ from llamatron.composition.row_descriptions import RowOfNumbers
 from llamatron.music.note import NoteName
 from llamatron.strings import errors, labels as labels_text, legends, marks, messages
 from llamatron.tui import keybindings
+from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
@@ -133,7 +134,8 @@ class TestStatementRows(PatternEditorTest):
                 for row in rows[1:]:
                     self.assertTrue(self.editor.row_for(row).blocked())
                 await self.press(keybindings.StatementRow.NEXT)
-                started = conditions.new_statement(file_format.REGISTER_NAMES[0])
+                # The first name in the order the picker lists them, the draws then the registers.
+                started = conditions.new_statement(grouped_choices.VALUE_NAMES_IN_ORDER[0])
                 self.assertEqual(self.statement(kind), started)
                 self.assertFalse(self.editor.row_for(value_row).blocked())
                 self.assertTrue(self.editor.row_for(comparison_row).blocked())
@@ -158,22 +160,35 @@ class TestStatementRows(PatternEditorTest):
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.LESS)
         self.assertIsNone(self.statement(StepStatement.MUTE))
-        for _ in range(len(file_format.REGISTER_NAMES) + 1):
+        for _ in range(len(grouped_choices.VALUE_NAMES_IN_ORDER) + 1):
             await self.press(keybindings.StatementRow.MORE)
-        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.REGISTER], file_format.REGISTER_NAMES[-1])
+        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.REGISTER], grouped_choices.VALUE_NAMES_IN_ORDER[-1])
         await self.go_to_row(operator_row)
         for _ in range(len(file_format.OPERATORS)):
             await self.press(keybindings.StatementRow.LESS)
         self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.OPERATOR], file_format.OPERATORS[0])
 
+    async def test_the_value_picker_heads_the_constant_the_draws_and_the_registers_and_the_cursor_passes_over_the_headings(self):
+        register_row, _, value_row = file_format.STATEMENT_ROWS[StepStatement.MUTE][:3]
+        await self.go_to_row(register_row)
+        await self.press(keybindings.StatementRow.NEXT)
+        await self.go_to_row(value_row)
+        await self.press(keybindings.StatementRow.CHOOSE)
+        for heading in (labels_text.MSG_PICKER_CONSTANT_HEADING, labels_text.MSG_PICKER_DRAWS_HEADING, labels_text.MSG_PICKER_REGISTERS_HEADING):
+            self.assertIn(heading, self.text())
+        # From the last draw, one Down passes the blank line and the registers' heading to the first register.
+        await self.press(*[Key.DOWN] * len(file_format.DRAW_NAMES), Key.DOWN, Key.ENTER)
+        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.VALUE], file_format.REGISTER_NAMES[0])
+
     async def test_the_picker_chooses_a_register_and_a_number_or_a_register_to_compare_with(self):
         register_row, _, value_row = file_format.STATEMENT_ROWS[StepStatement.STOP][:3]
         await self.go_to_row(register_row)
+        # The picker lists the draws, then the registers, each under its heading, which the cursor passes over.
         await self.press(keybindings.StatementRow.CHOOSE, Key.DOWN, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.REGISTER], file_format.REGISTER_NAMES[1])
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.REGISTER], grouped_choices.VALUE_NAMES_IN_ORDER[1])
         await self.go_to_row(value_row)
         await self.press(keybindings.StatementRow.CHOOSE, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], file_format.REGISTER_NAMES[0])
+        self.assertEqual(self.statement(StepStatement.STOP)[StatementPart.VALUE], grouped_choices.VALUE_NAMES_IN_ORDER[0])
         await self.press(keybindings.StatementRow.CHOOSE, Key.UP, Key.ENTER)
         await self.type(str(TYPED_NUMBER))
         await self.press(Key.ENTER)

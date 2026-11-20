@@ -176,6 +176,7 @@ class ScenePage(FieldPage):
                 set=lambda number: self.document().change(self.document().song().get_scene(self.index).set_repeat, number),
             ),
             *[self.reset_field(name) for name in file_format.REGISTER_NAMES],
+            *[self.reset_draw_field(name) for name in file_format.DRAW_NAMES],
             # Real-time playback alone reads it, so it comes last, after everything the export reads.
             Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().change(self.document().song().get_scene(self.index).set_launch_together, on)),
             generators_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().change(self.document().song().get_scene(self.index).set_chain_names, names=names, song=self.document().song())),
@@ -216,6 +217,12 @@ class ScenePage(FieldPage):
             page=self, shape=shape, value=lambda part: scene.get_written(shape_setting(shape=shape, part=part)),
             store=lambda part, value: self.document().change(self.document().song().get_scene(self.index).set_written, name=shape_setting(shape=shape, part=part), value=value),
         )
+
+    def reset_draw_field(self, draw):
+        """Return the field that makes the scene reset a draw as it first starts: back to its first slot, or a serial draw to a new round."""
+        scene = self.document().song().get_scene(self.index)
+        return Toggle(label=labels.MSG_RESET_LABEL.format(name=draw), on=draw in scene.get_reset_draw_names(),
+                      set=lambda on: self.document().change(self.document().song().get_scene(self.index).set_reset_draw, draw=draw, on=on))
 
     def reset_field(self, register):
         """Return the field that makes the scene reset a register as it starts."""

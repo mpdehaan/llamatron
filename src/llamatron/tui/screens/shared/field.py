@@ -160,6 +160,7 @@ class ChoiceField(Field):
     current is the choice now, and set(choice) stores one. names are what the picker calls the
     choices where those aren't the choices themselves, shown the text of the value where that
     isn't the choice, and picked the choice the picker opens on where that isn't the current one.
+    grouped, a GroupedChoices, is the picker's list in groups under headings, where the choices are offered so.
     """
 
     page: object
@@ -169,6 +170,7 @@ class ChoiceField(Field):
     names: list = None
     shown: object = None
     picked: object = None
+    grouped: object = None
     value: Callable = None
     enter_what: str = legends.What.CHOOSE
 
@@ -184,6 +186,9 @@ class ChoiceField(Field):
         self.set(stepped(values=self.choices, current=self.current, offset=offset))
 
     def pick(self):
+        if self.grouped is not None:
+            self.page.ask(dialog=self.grouped.dialog(title=self.label, current=self.current), then=lambda place: self.set(self.grouped.value_at(place)))
+            return
         opens_on = str(self.current if self.picked is None else self.picked)
         place = self.choices.index(opens_on) if opens_on in self.choices else FIRST_CHOICE
         dialog = ChoiceDialog(title=self.label, options=self.names or self.choices, current=place)
@@ -205,6 +210,16 @@ class Cells(Field):
     def shown(self):
         """Return every cell's value, in order, as the row reads."""
         return CELL_GAP.join(str(cell.value()) for cell in self.cells)
+
+
+@dataclass(slots=True, kw_only=True)
+class Strip(Cells):
+    """A strip of numbered slots, a draw's, drawn after a blank line as a grid boxed in dim lines with a row numbering the slots
+    over a row of their values: Left and Right move between the slots, and [ and ] step the slot under the cursor, which answers
+    Enter and Bksp as the NumberField it is. The grid scrolls to keep the cursor's slot in view. lit is the place of the slot
+    to light while a song plays, the one the draw last took its value from, or None."""
+
+    lit: object = None
 
 
 @dataclass(slots=True, kw_only=True)

@@ -187,6 +187,10 @@ MSG_CHAIN_STEP_AGAIN = '{name} {number} ({kind})'
 MSG_PATTERN_STEP_SHOWN = '(pattern)'
 # A list of chains, as a field shows it.
 MSG_CHAIN_JOIN = ', '
+# A draw's slot on the Draws page's strip: right-justified with a space after it, in a cell as wide as -99 and a space either side.
+MSG_DRAW_STRIP_CELL = '{value:>4} '
+# A draw's heading on the Draws page while a song plays: its mark of a value inside and the slot it last took a value from.
+MSG_DRAW_HEADING_LIT = '{mark}  ▸ {place}'
 # The gauge of offsets (tui/components/signed_gauge.py): a value with its sign and a mark when the gauge is too short to
 # reach it, above or below, and the brackets around the cursor's step number and value.
 MSG_POSITIVE_VALUE = '+{value}{mark}'
