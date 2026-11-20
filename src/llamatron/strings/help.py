@@ -233,13 +233,13 @@ ENTER edits the selected generator. A adds one, asking which type under headings
 / searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
 """
 
-# ChainListPage
-HELP_CHAIN_LIST_PAGE = """
-The chains this clip, scene or track runs, in the order they run.
+# GeneratorListPage
+HELP_GENERATOR_LIST_PAGE = """
+The generators this clip, scene or track runs, in the order they run: a chain runs its own generators in its place.
 
-A clip runs its own chains first, then its scene's, then its track's. A chain listed in two places runs twice.
+A clip runs its own generators first, then its scene's, then its track's. A generator listed in two places runs twice.
 
-A adds a chain, picked from the set's. M picks one up to carry with Up and Down, ENTER dropping it, and Bksp takes it out of the list. ESC goes back.
+A adds a generator, picked from the set's. M picks one up to carry with Up and Down, ENTER dropping it, and Bksp takes it out of the list. ESC goes back.
 """
 
 # ProgressionEditor

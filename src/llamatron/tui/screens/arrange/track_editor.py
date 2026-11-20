@@ -24,7 +24,7 @@ from llamatron.music import midi
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Style
-from llamatron.tui.screens.arrange.chains_field import chains_field
+from llamatron.tui.screens.arrange.generators_field import generators_field
 from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.generators.euclid_fields import euclid_section, pick_rhythm
 from llamatron.tui.screens.generators.strum_fields import strum_section
@@ -151,7 +151,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         ]
         result.append(self.register_field(label=labels.MSG_VELOCITY_REGISTER_LABEL, current=track.get_velocity_register(),
                                           bind=lambda register: self.document().change(self.document().song().get_track(self.item).set_velocity_register, register)))
-        result.append(chains_field(page=self, names=lambda: self.track().get_chain_names(), store=lambda names: self.document().change(self.document().song().get_track(self.item).set_chain_names, names=names, song=self.document().song())))
+        result.append(generators_field(page=self, names=lambda: self.track().get_chain_names(), store=lambda names: self.document().change(self.document().song().get_track(self.item).set_chain_names, names=names, song=self.document().song())))
         result.append(self.instrument_field())
         result += euclid_section(page=self, value=track.get_euclid_setting, store=lambda part, value: self.store_euclid(part=part, value=value))
         result += strum_section(

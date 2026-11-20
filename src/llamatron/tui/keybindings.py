@@ -240,7 +240,7 @@ class ChainEditor(ListPage):
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
 
 
-class ChainListPage(ListPage):
+class GeneratorListPage(ListPage):
     """The chains a clip, a scene or a track runs: A adds one, U and D move it, Bksp takes it out of the list."""
 
     REMOVE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)

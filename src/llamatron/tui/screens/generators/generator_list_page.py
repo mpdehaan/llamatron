@@ -19,24 +19,24 @@ from llamatron.strings import errors, help as help_text, labels, messages
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
+from llamatron.tui.screens.shared.generator_names import generators_to_add, listed_generator
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
-from llamatron.tui.text import sorted_names
 
 
-class ChainListPage(ListPage):
+class GeneratorListPage(ListPage):
 
-    THEME = themes.CHAINS
-    """A list of chains by name, in the order they run: A adds one, U and D move it, Bksp takes it out of the list.
+    THEME = themes.GENERATORS
+    """A list of generators by name, a chain among them, in the order they run: A adds one, M moves it, Bksp takes it out of the list.
 
     It edits whatever list the page that opened it hands over: names() returns the list as it is
     now, and store(names) keeps a new one, so the clip page, the Scene page and the track editor
-    share it. A chain may be listed more than once, and then runs more than once.
+    share it. A generator may be listed more than once, and then runs more than once.
     """
 
-    KEYS = keybindings.ChainListPage
-    HELP = help_text.HELP_CHAIN_LIST_PAGE
-    columns = ((labels.Column.SELECT_CHAIN, None, Align.LEFT),)
+    KEYS = keybindings.GeneratorListPage
+    HELP = help_text.HELP_GENERATOR_LIST_PAGE
+    columns = ((labels.Column.SELECT_ANY_GENERATOR, None, Align.LEFT),)
 
     def __init__(self, *, holder, opener, names, store):
         super().__init__(holder)
@@ -45,24 +45,26 @@ class ChainListPage(ListPage):
         self.store = store
 
     def crumb_trail(self):
-        return (*self.opener.crumb_trail(), labels.Crumb.CHAINS)
+        return (*self.opener.crumb_trail(), labels.Crumb.GENERATORS)
 
     def rows(self):
-        return [(place, [name]) for place, name in enumerate(self.names())]
+        setlist = self.document().get_setlist()
+        return [(place, [listed_generator(setlist=setlist, name=name)]) for place, name in enumerate(self.names())]
 
     def keys(self):
         return list_keys(page=self, extra=[self.bind(self.KEYS.REMOVE, action=self.remove_chain), move_key(self)])
 
     def add(self):
-        chains = sorted_names(self.document().song().get_chain_names())
-        if not chains:
-            self.tell(errors.ERR_NOTHING_TO_ADD_TITLE, errors.ERR_MAKE_A_CHAIN_FIRST)
+        setlist = self.document().get_setlist()
+        offered = [name for _, name in generators_to_add(setlist)]
+        if not offered:
+            self.tell(errors.ERR_NOTHING_TO_ADD_TITLE, errors.ERR_MAKE_A_GENERATOR_FIRST)
             return
 
         def picked(item):
-            self.store([*self.names(), chains[item]])
+            self.store([*self.names(), offered[item]])
             self.cursor.set_place(len(self.names()) - 1)
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_CHAIN_TITLE, options=chains), then=picked)
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_GENERATOR_TITLE, options=[listed_generator(setlist=setlist, name=name) for name in offered]), then=picked)
 
     def remove_chain(self):
         names = self.names()

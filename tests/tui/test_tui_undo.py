@@ -807,14 +807,14 @@ class TestArticulateEditorUndo(UndoTest):
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
-class TestChainListPageUndo(UndoTest):
+class TestGeneratorListPageUndo(UndoTest):
 
     async def test_adding_a_chain_to_a_track_is_one_step(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        await self.select_field(labels.MSG_CHAINS_LABEL)
+        await self.select_field(labels.MSG_GENERATORS_FIELD_LABEL)
         await self.press(Key.ENTER)
         before = self.data()
-        await self.press(keybindings.ChainListPage.ADD, Key.ENTER)
+        await self.press(keybindings.GeneratorListPage.ADD, Key.ENTER)
         self.assertEqual(len(self.document.song().get_track(ui_testing.LEAD).get_chain_names()), 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 

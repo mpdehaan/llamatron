@@ -34,11 +34,12 @@ from llamatron.tui.screens.arrange import arrange_drawing, arrange_page
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage, ArrangePlace
 from llamatron.tui.screens.arrange.clip_page import AddRow, ClipPage, PatternRow
 from llamatron.tui.screens.arrange.scene_page import ScenePage
-from llamatron.tui.screens.generators.chain_list_page import ChainListPage
+from llamatron.tui.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.shared.field import Heading
+from llamatron.tui.screens.shared.generator_names import listed_generator
 from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, fixed_text, forward_key, key_name, key_of, UITest
@@ -67,7 +68,7 @@ MORPH_DIRECTION = 'Morph direction'
 OTHER = 'other'
 NAMED = 'named'
 LOOP = 'Loop'
-CHAIN = labels_text.MSG_CHAINS_LABEL
+CHAIN = labels_text.MSG_GENERATORS_FIELD_LABEL
 GRAB_TRACK = 'Grab track'
 DRUMS = 'drums'
 CIRCULAR_GRAB = 'Circular grab'
@@ -669,14 +670,14 @@ class TestClipPage(UITest):
     async def test_chains_are_added_on_their_list_page_and_cleared_from_the_field(self):
         await self.go_to(CHAIN)
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChainListPage)
-        await self.press(keybindings.ChainListPage.ADD)
-        await self.pick(NAMED)
-        await self.press(keybindings.ChainListPage.ADD)
-        await self.pick(NAMED)
+        self.assertIsInstance(self.app.screen, GeneratorListPage)
+        await self.press(keybindings.GeneratorListPage.ADD)
+        await self.pick(listed_generator(setlist=self.document.get_setlist(), name=NAMED))
+        await self.press(keybindings.GeneratorListPage.ADD)
+        await self.pick(listed_generator(setlist=self.document.get_setlist(), name=NAMED))
         self.assertEqual(self.clip_slot().get_chain_names(), [NAMED, NAMED])
         await self.press(Key.ESCAPE)
-        self.assertIn(marks.MSG_CHAIN_JOIN.join([NAMED, NAMED]), self.text())
+        self.assertIn(marks.MSG_CHAIN_JOIN.join([listed_generator(setlist=self.document.get_setlist(), name=NAMED)] * 2), self.text())
         await self.press(Key.BACKSPACE)
         self.assertEqual(self.clip_slot().get_chain_names(), [])
 
@@ -915,7 +916,7 @@ class TestScenesAndClipsEdges(UITest):
         page = await self.clip_page()
         await self.go_to(page, CHAIN)
         await self.press(Key.ENTER)
-        await self.press(keybindings.ChainListPage.REMOVE)
+        await self.press(keybindings.GeneratorListPage.REMOVE)
         self.assertEqual(self.document.clip_slot(index=0, track=LEAD).get_chain_names(), [])
 
     async def test_stepping_past_the_last_direction_goes_back_to_the_patterns(self):

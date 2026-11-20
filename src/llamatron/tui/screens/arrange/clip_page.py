@@ -27,7 +27,7 @@ from llamatron.strings import errors, help as help_text, labels as labels_text, 
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Style
-from llamatron.tui.screens.arrange.chains_field import chains_field
+from llamatron.tui.screens.arrange.generators_field import generators_field
 from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.tui.screens.generators.shape_fields import shape_section
 from llamatron.tui.screens.generators.strum_fields import strum_section
@@ -326,7 +326,7 @@ class ClipPage(FieldPage):
             *self.pattern_rows(),
             Field(label=labels_text.MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=legends.What.CHOOSE,
                   clear=lambda: self.clear(ClipSlotSetting.SCALE), clear_what=legends.MSG_USE_SCENE_SCALE_WHAT),
-            chains_field(page=self, names=lambda: self.clip_slot().get_chain_names(),
+            generators_field(page=self, names=lambda: self.clip_slot().get_chain_names(),
                          store=lambda names: self.set_value(setting=ClipSlotSetting.CHAINS, value=names or None)),
             self.pattern_order_field(),
             Field(label=labels_text.MSG_DIRECTION_LABEL, value=self.direction_text, adjust=self.step_direction, enter=self.pick_direction, enter_what=legends.What.CHOOSE,

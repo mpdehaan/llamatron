@@ -169,8 +169,8 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
   register or `(none)` (`TrackEditor.register_field`, `set_track_cc_register`, `set_track_velocity_register`).
 - The track editor's Name field renames. Its Lowest octave and Highest octave fields, in the
   set's octave labels, are the range the piano roll marks (`TrackEditor.octave_field`).
-- The clip page, the Scene page and the track editor each have a Chains field
-  (`screens/arrange/chains_field.py`), which opens a `ChainListPage` (`screens/generators/chain_list_page.py`) on
+- The clip page, the Scene page and the track editor each have a Generators field, each generator shown with its kind, as Chain: fills
+  (`screens/arrange/generators_field.py`), which opens a `GeneratorListPage` (`screens/generators/generator_list_page.py`) on
   the list the opener hands it: `A` adds a chain from a picker, `M` moves, `Bksp` takes one
   out, and the crumbs are the opener's with `CHAINS` after.
 - The clip page's Scale field, under Pattern, picks a scale of the clip's own or `(scene)` (`ClipPage.pick_scale`,
