@@ -7,6 +7,9 @@ Reference notes for Claude, one part of `.claude/format/`: the rules for the set
 - `examples/` is for people interested in music, who may not be technical and may never develop
   the program: every set there is musically interesting to them. A set that exists only to test
   the program, such as one with wrong values, never lives there; test data lives under `tests/`.
+- A demo holds one song, never more (the user's rule, after Claude made a demo of two songs to fit every shape of a feature
+  in it unasked): where a feature seems to need more than one song or a shape no demo has, Claude asks first and keeps to what
+  was asked.
 - A song made from now on, by Claude or by the MacroComposer, orders its tracks with the chord tracks first, then the lead and
   the backing tracks, then the bass, and the drums last (the user's rule; the bass's place is Claude's choice). Existing examples
   keep the order they have.
