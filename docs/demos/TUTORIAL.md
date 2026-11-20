@@ -32,6 +32,7 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Advanced Conditionals](#advanced_conditionals): `27_advanced_conditionals.yml`
 - [Accents](#accents): `28_accents.yml`
 - [Pattern Lists](#pattern_lists): `29_pattern_lists.yml`
+- [LFO Modulators](#lfo_modulators): `30_lfo_modulators.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -582,3 +583,23 @@ keep their order.
 | :---: | :---: | :---: |
 | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
 <!-- end of the generated summary of 29_pattern_lists -->
+
+<a id="lfo_modulators"></a>
+## LFO Modulators: `30_lfo_modulators.yml`
+
+Weird techno in F minor, played twice: side A and side B share every pattern and differ only in their four modulators, values
+that move by themselves like a synthesizer's LFO. WMod swings the velocity of every note over a wide range, and takes it away
+from the kick, so the kick ducks as everything else swells. XMod and YMod move the pitch of every bass, stab and lead note
+along the scale. ZMod holds a random value, a sample and hold, and scattered steps of the hats, the bass and the lead mute
+themselves whenever it is high, so notes drop out unpredictably. Between the two sides every shape is heard: a sine, a
+triangle, a square and a sample and hold on side A, and a saw, a reverse saw, an inverted sine and a sample and hold on side B.
+Each side opens with the tempo ramping from 90 to 120 over 16 bars, where the modulators counted in bars speed up with it and
+the ones in Hz keep their pace. In the last scene, the lead's pattern sets XMod back to 0 at the top of every bar, starting its
+wave again there.
+
+[`examples/learning/30_lfo_modulators.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/30_lfo_modulators.yml) · F minor · 90 BPM · 4:26 · 8 scenes · 12 tracks
+
+| chords | tempo changes | conditional execution |
+| :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |
+<!-- end of the generated summary of 30_lfo_modulators -->
