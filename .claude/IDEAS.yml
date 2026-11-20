@@ -271,16 +271,6 @@
     (see "Pattern generators on the Patterns page", which already has notes for pattern builders, and
     "Transforms that enrich a melody") and which want a key of their own is the thing to decide.
 
-- title: "Copying a scene or a track on Arrange, its patterns shared or copied"
-  priority: 1
-  text: |
-    On Arrange, the copy key on a scene's name or a track's name asks in a dialog whether the copy shares the same patterns, its
-    clips naming the patterns the original's do, or gets copies of them, each pattern copied under a new name (naming.py) and the
-    copy's clips naming the copies. The copy is then inserted right after the original: a scene below it, a track to its right.
-    To check against what exists: Arrange's keys today (KEYMAP.md) and whether copy is bound there already, how a scene's and a
-    track's clip slots are copied (Song.copy_item and the scene's own copying), what a copied pattern is named, and undo making
-    the copy one step.
-
 - title: "Listening to a scene on the Scene page, and progress bars on every listen"
   priority: 2
   text: |
