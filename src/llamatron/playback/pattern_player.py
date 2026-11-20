@@ -253,32 +253,36 @@ class PatternPlayer:
         cut_at = None
         done = False
         step_draws = played.step_draws if changes_registers else None
+        # Where a step falls in the clip, a Rational, is only worked out for a pattern whose steps ask: one that draws, reads or
+        # changes the registers, grabs or hears a drift.
+        asks_moment = step_draws is not None or stops is not None or restarts is not None or mutes is not None or changes or reads_registers or grab is not None or self._drifts is not None
+        moment = None
         for slot, step in enumerate(steps):
+            if asks_moment:
+                moment = start + slot * step_size
             # Every draw the step takes is taken before its statements read the values, the step's one draw from it.
             drawing = step_draws[step] if step_draws is not None else None
             if not slot and pass_draws and changes_registers:
                 drawing = _with_pass_draws(drawing=drawing, names=pass_draws)
             if drawing is not None and (drawing.drawn or drawing.resets):
-                registers.before_statements(time=start + slot * step_size, draws=drawing.drawn, draw_resets=drawing.resets)
+                registers.before_statements(time=moment, draws=drawing.drawn, draw_resets=drawing.resets)
             # A step's statements are read first of all, before the step changes anything, in the order stop, restart, mute.
-            if stops is not None and stops[step] is not None and _holds(statement=stops[step], values=registers.before_step(start + slot * step_size)):
+            if stops is not None and stops[step] is not None and _holds(statement=stops[step], values=registers.before_step(moment)):
                 cut_at = slot
                 done = True
                 break
             # The first step played never starts the pattern over, which would take no time.
-            if restarts is not None and slot and restarts[step] is not None and _holds(statement=restarts[step], values=registers.before_step(start + slot * step_size)):
+            if restarts is not None and slot and restarts[step] is not None and _holds(statement=restarts[step], values=registers.before_step(moment)):
                 cut_at = slot
                 break
-            muted = mutes is not None and mutes[step] is not None and _holds(statement=mutes[step], values=registers.before_step(start + slot * step_size))
+            muted = mutes is not None and mutes[step] is not None and _holds(statement=mutes[step], values=registers.before_step(moment))
             time = Length.times(step_length, slot)
             values = played.values[step]
             # A step with no note can send CC values and add to the registers too.
             if played.sends_controls:
                 controls += _controls_sent(values=values, time=slot * step_size)
             if changes or reads_registers:
-                current = registers.at_step(
-                    time=start + slot * step_size, sets=_register_sets(values) if changes else NO_SETS, adds=_register_adds(values) if changes else NO_ADDS,
-                )
+                current = registers.at_step(time=moment, sets=_register_sets(values) if changes else NO_SETS, adds=_register_adds(values) if changes else NO_ADDS)
             if values[Row.TIE]:
                 if tied_to is not None:
                     sounding[tied_to] = _tied_to(sounding=sounding[tied_to], end=Length.add(time, step_length))
@@ -287,7 +291,7 @@ class PatternPlayer:
                 elif slot == leading_ties:
                     leading_ties += 1
                 continue
-            grabbed = grab.note_at(start + slot * step_size) if grab and values[Row.GRAB] else None
+            grabbed = grab.note_at(moment) if grab and values[Row.GRAB] else None
             # A step with no note of its own can still grab one; with nothing to grab yet, it's silence, like an empty step.
             if values[Row.DEGREE] is None and grabbed is None:
                 tied_to = None
@@ -296,20 +300,16 @@ class PatternPlayer:
             note_moved = NOTHING_ADDED
             velocity_added = self._accent if values[Row.ACCENT] else NOTHING_ADDED
             velocity = values[Row.VELOCITY]
-            heard = not muted
             if uses_registers:
-                # Drum patterns have no scale to move a note along, so registers only change their velocity.
-                note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
-                velocity_added += _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
-                if draws:
-                    note_moved += NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.DRAW_NOTE_ROWS)
-                    velocity_added += _used_values(values=values, current=current, rows=file_format.DRAW_VELOCITY_ROWS)
+                moved, added = _moved_by_values(values=values, current=current, drum=drum, draws=draws)
+                note_moved += moved
+                velocity_added += added
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
             effects = drift.NO_EFFECTS
             if self._drifts is not None:
                 play, names, scene_start, origins = self._drifts
-                effects = play.effects(names=names, time=scene_start + start + slot * step_size, origins=origins)
+                effects = play.effects(names=names, time=scene_start + moment, origins=origins)
                 velocity_added += effects.velocity
                 if not drum:
                     note_moved += effects.degree
@@ -321,7 +321,7 @@ class PatternPlayer:
                 keyswitches.append(SwitchedSlots(slot * step_size, slot * step_size + Length.rational(gate), values[Row.KEYSWITCH]))
             sounding.append((time, self._step(
                 values=values, grabbed=grabbed, length=gate, drum=drum, where=where, rolls=rolls, note_moved=note_moved, velocity=velocity,
-                velocity_added=velocity_added, heard=heard, counting=counting, effects=effects,
+                velocity_added=velocity_added, heard=not muted, counting=counting, effects=effects,
             )))
         clip = Clip(sounds=_in_sequence(sounding=sounding, length=pass_length, step_length=step_length), scale=self._scale, controls=controls)
         if cut_at is not None:
@@ -606,6 +606,17 @@ def _rests(*, start, end, step_length):
 def _register_adds(values):
     """Return what a step adds to each register it adds to, by register name."""
     return {name: values[row] for name, row in file_format.REGISTER_ADD_ROWS.items() if values[row]}
+
+
+def _moved_by_values(*, values, current, drum, draws):
+    """Return how far a step's +Note and +Vel rows move its note and its velocity by the registers' values, and by the draws'
+    where the pattern uses draws. A drum pattern has no scale to move a note along, so only its velocity moves."""
+    note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
+    velocity_added = _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
+    if draws:
+        note_moved += NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.DRAW_NOTE_ROWS)
+        velocity_added += _used_values(values=values, current=current, rows=file_format.DRAW_VELOCITY_ROWS)
+    return note_moved, velocity_added
 
 
 def _with_pass_draws(*, drawing, names):
