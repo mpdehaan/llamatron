@@ -169,7 +169,7 @@ def shaded(*, colour, level):
     return style_of(colour=colour, step=round(min(max(level, 0.0), 1.0) * LEVEL_STEPS))
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def style_of(*, colour, step):
     """Return the style of a colour at a step of LEVEL_STEPS, on black, made once."""
     red, green, blue = (round(channel * step / LEVEL_STEPS) for channel in colour)
