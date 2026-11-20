@@ -41,6 +41,11 @@ MAX_CLIP_REPEAT = 9999
 # The range of a register's settings, and of what a step can add to one.
 MIN_REGISTER_VALUE = -127
 MAX_REGISTER_VALUE = 127
+# The range of a draw's values, and how many slots a draw may hold.
+MIN_DRAW_VALUE = -99
+MAX_DRAW_VALUE = 99
+MIN_DRAW_SLOTS = 1
+MAX_DRAW_SLOTS = 64
 # How many statements about the registers one table holds, and the largest number a statement may be written with.
 MAX_STATEMENTS = 4
 MAX_STATEMENT_NUMBER = 9999

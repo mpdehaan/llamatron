@@ -360,6 +360,18 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   `RegisterTrial` rounds until the changes and lengths repeat); every other scene keeps the two plays, and what is asked of a
   pattern or a scene to choose between them is asked once a render (`_cutting_of`, `_is_settled_by_playing`). The old condition
   rows `ax_bx`, `ax_cx` and `ax_dx` are gone, with no conversion.
+- Draws (the user's design; `composition/draw.py`, `playback/draws.py`): a song's `draws: {AD: {direction, slots, value_min,
+  value_max, conditions_redraw}}`, four fixed names like the registers, the file naming only those changed. `slots` is a list of
+  whole numbers from -99 to 99 or blanks (`~`), 1 to 64 of them, each within the draw's `value_min` and `value_max`; moving an end
+  of the range moves every slot past it, and a value typed past an end is held at it. `direction` is any pattern direction or
+  `serial` (every filled slot once a round, in a random order) or `any` (a filled slot at random every time). A blank slot is
+  passed over without using up a draw, and a draw with no value adds nothing. A pattern's Use Draws rows, `ad_note` to `dd_note`
+  and `ad_velocity` to `dd_velocity`, hold 1 (add), -1 (subtract) or 0 as the register rows do, and `ad_reset` to `dd_reset` are
+  toggles; a step uses a draw once however many of its rows use it, whatever its note, its probability or its conditions decide,
+  and resets come before it draws. A scene's `reset_draws: [AD]` resets those draws as it first starts. The uses are counted with
+  the registers' changes (`RegisterChange.draws` and `draw_resets`), drawn in the scene's timeline in time order and then track
+  order, and a draw stands where the last scene left it (`RegisterTimeline.get_end_draws`); a step sees a draw's value beside the
+  registers' values, as having drawn nothing (0) before its first use.
 - Registers are shared by every track. `SongRenderer` plays each clip once with a
   `RegisterRecorder` to collect changes (the same play that finds lengths, since registers only
   change pitches, velocities and whether a note sounds), a `RegisterTimeline` applies them in

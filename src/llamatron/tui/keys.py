@@ -175,6 +175,7 @@ class RowSection:
     CC = 'cc'
     REGISTER_MOD = 'register_mod'
     REGISTER_APPLY = 'register_apply'
+    DRAW_APPLY = 'draw_apply'
     STOP_WHEN = 'stop_when'
     RESTART_WHEN = 'restart_when'
     MUTE_WHEN = 'mute_when'

@@ -406,8 +406,8 @@ class Setlist(HoldsSections, HoldsSettings):
         return pattern.get_steps() * self.get_pattern_step_size(pattern)
 
     def changes_registers(self):
-        """Return whether any pattern sets a register or adds to one, any arpeggiator adds to one, or any scene or clip sets or adds to one, so that playing changes the registers' values."""
-        return any(pattern.changes_registers() for pattern in self._section(Section.PATTERNS).values()) or any(
+        """Return whether any pattern sets a register, adds to one or uses a draw, any arpeggiator adds to one, or any scene or clip sets or adds to one, so that playing changes the registers' values; a draw's uses are counted with the registers' changes."""
+        return any(pattern.changes_registers() or pattern.uses_draws() for pattern in self._section(Section.PATTERNS).values()) or any(
             generator.adds_to_registers() for section in (Section.ARPS, Section.DRIFTS) for generator in self._section(section).values()
         ) or any(song.scenes_change_registers() for song in self._section(Section.SONGS).values())
 

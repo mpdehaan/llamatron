@@ -508,6 +508,9 @@ ROW_DESCRIPTIONS = described_rows(
     *[RowOfRegisterUses(name=name) for name in file_format.REGISTER_VELOCITY_ROWS.values()],
     *[register_change_row(name) for name in file_format.REGISTER_ADD_ROWS.values()],
     *[register_set_row(name) for name in file_format.REGISTER_SET_ROWS.values()],
+    *[RowOfNoteMoves(name=name) for name in file_format.DRAW_NOTE_ROWS.values()],
+    *[RowOfRegisterUses(name=name) for name in file_format.DRAW_VELOCITY_ROWS.values()],
+    *[RowOfToggles(name=name, kept_by_a_rest=True) for name in file_format.DRAW_RESET_ROWS.values()],
     *[statement_row(name) for name in file_format.STATEMENT_OF_ROW],
 )
 

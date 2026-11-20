@@ -222,6 +222,10 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
             return True
         return any(self.has_statements(kind) for kind in file_format.STATEMENT_ROWS)
 
+    def uses_draws(self):
+        """Return whether any step uses a draw or resets one: a row of the Use Draws section switched on there."""
+        return any(self._adds_on(row) for rows in (file_format.DRAW_NOTE_ROWS, file_format.DRAW_VELOCITY_ROWS, file_format.DRAW_RESET_ROWS) for row in rows.values())
+
     def has_statements(self, kind):
         """Return whether any step holds a statement of a kind about the registers: one that stops the clip, starts the pattern over or mutes the step."""
         return any(self._rows[file_format.STATEMENT_ROWS[kind][REGISTER_PART]] or [])

@@ -85,6 +85,8 @@ class PlayedPattern(NamedTuple):
     sends_keyswitches: bool
     changes_registers: bool
     uses_registers: bool
+    # Whether any step uses a draw or resets one, which is counted with the registers' changes.
+    uses_draws: bool
     # Each step's statement about the registers that stops the clip, that starts the pattern over and that mutes the step, or None where no step holds one.
     stops: object
     restarts: object
@@ -93,6 +95,8 @@ class PlayedPattern(NamedTuple):
 
 # What a step sets the registers to and adds to them when its pattern changes none, or when a morph's target plays.
 NO_ADDS = {}
+# A step that uses no draw and resets none.
+NO_DRAWS = ()
 NO_SETS = {}
 
 
@@ -132,7 +136,7 @@ class PatternPlayer:
         if pattern_name not in self._played_patterns:
             self._played_patterns[pattern_name] = PlayedPattern(
                 pattern.get_every_step_values(rows=PLAYED_ROWS), pattern.sends_controls(), pattern.sends_keyswitches(),
-                pattern.changes_registers(), pattern.uses_registers(),
+                pattern.changes_registers(), pattern.uses_registers(), pattern.uses_draws(),
                 pattern.get_statements(StepStatement.STOP), pattern.get_statements(StepStatement.RESTART), pattern.get_statements(StepStatement.MUTE),
             )
         return self._played_patterns[pattern_name]
@@ -194,7 +198,8 @@ class PatternPlayer:
         leading_ties = 0
         played = self._played(pattern_name=pattern_name, pattern=pattern)
         changes = changes_registers and played.changes_registers
-        uses_registers = played.uses_registers
+        draws = changes_registers and played.uses_draws
+        uses_registers = played.uses_registers or draws
         reads_registers = uses_registers or self._velocity_register is not None
         counting = registers.is_counting()
         drum = pattern.is_drum()
@@ -225,6 +230,7 @@ class PatternPlayer:
             if changes or reads_registers:
                 current = registers.at_step(
                     time=start + slot * step_size, sets=_register_sets(values) if changes else NO_SETS, adds=_register_adds(values) if changes else NO_ADDS,
+                    draws=_draws_used(values) if draws else NO_DRAWS, draw_resets=_draws_reset(values) if draws else NO_DRAWS,
                 )
             if values[Row.TIE]:
                 if tied_to is not None:
@@ -248,6 +254,9 @@ class PatternPlayer:
                 # Drum patterns have no scale to move a note along, so registers only change their velocity.
                 note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
                 velocity_added += _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
+                if draws:
+                    note_moved += NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.DRAW_NOTE_ROWS)
+                    velocity_added += _used_values(values=values, current=current, rows=file_format.DRAW_VELOCITY_ROWS)
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
             effects = drift.NO_EFFECTS
@@ -550,6 +559,16 @@ def _rests(*, start, end, step_length):
 def _register_adds(values):
     """Return what a step adds to each register it adds to, by register name."""
     return {name: values[row] for name, row in file_format.REGISTER_ADD_ROWS.items() if values[row]}
+
+
+def _draws_used(values):
+    """Return the draws a step uses, each once however many of its rows use it, in the order the draws come."""
+    return tuple(name for name in file_format.DRAW_NAMES if values[file_format.DRAW_NOTE_ROWS[name]] or values[file_format.DRAW_VELOCITY_ROWS[name]])
+
+
+def _draws_reset(values):
+    """Return the draws a step resets before it draws, in the order the draws come."""
+    return tuple(name for name, row in file_format.DRAW_RESET_ROWS.items() if values[row])
 
 
 def _register_sets(values):

@@ -61,6 +61,9 @@ DEFAULT_TRANSPOSE = 0
 DEFAULT_REGISTER_MINIMUM = 0
 DEFAULT_REGISTER_MAXIMUM = 10
 DEFAULT_REGISTER_VALUE = 0
+# A new draw: eight blank slots moving forward, its values bounded by the widest range, its conditions only looking at it.
+DEFAULT_DRAW_SLOT_COUNT = 8
+DEFAULT_DRAW_CONDITIONS_REDRAW = False
 DEFAULT_RESET_BEHAVIOR = ResetBehavior.CLIP
 DEFAULT_RESET_EACH_SCENE = False
 # The most a step may add to a register or take from it, unless the register says otherwise: enough for every example written before the limit came.

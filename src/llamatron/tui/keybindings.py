@@ -878,6 +878,10 @@ class TieRow(ToggleRow):
     """The Tie row."""
 
 
+class DrawResetRow(ToggleRow):
+    """A draw's Reset row, in the Use Draws section."""
+
+
 class RegisterRow(CycleRow):
     """A register's +Note or +Vel row: Space or Enter cycles add, subtract and off, and [ and ] step back and forward."""
 

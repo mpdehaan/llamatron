@@ -25,6 +25,7 @@ remove_item, rename_item and so on, and renaming or removing a track tells the s
 
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.checks import listed, number, pass_over_unknown, reading, time_signature, written_length
+from llamatron.composition.draw import Draw
 from llamatron.composition.file_format import GeneratorKind, SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
 from llamatron.composition.genres import sensible_style, style_name
 from llamatron.composition.groove import groove_for
@@ -162,6 +163,7 @@ class Song(HoldsSections, HoldsSettings):
         song = cls(setlist=setlist)
         song._read_settings(data=data, where=where)
         song._read_registers(data=data, where=where)
+        song._read_draws(data=data, where=where)
         song._read_tracks(data=data, where=where)
         song._read_scenes(data=data, where=where)
         return song
@@ -193,6 +195,17 @@ class Song(HoldsSections, HoldsSettings):
         if Section.REGISTERS in data:
             self._set_section(section=Section.REGISTERS, items={
                 name: Register.from_data(data=settings, where=self._where(where=where, label=names.MSG_REGISTER_WORD, name=name)) for name, settings in registers.items()
+            })
+
+    def _read_draws(self, *, data, where):
+        """Read the draws' settings. There are always four, so the file only names those it changes."""
+        draws = data.get(Section.DRAWS) or {}
+        with reading(where):
+            if not isinstance(draws, dict) or not set(draws) <= set(file_format.DRAW_NAMES):
+                raise InvalidValue(errors.ERR_DRAWS_NOT_NAMED.format(names=listed(file_format.DRAW_NAMES)))
+        if Section.DRAWS in data:
+            self._set_section(section=Section.DRAWS, items={
+                name: Draw.from_data(data=settings, where=self._where(where=where, label=names.MSG_DRAW_WORD, name=name)) for name, settings in draws.items()
             })
 
     def _read_tracks(self, *, data, where):
@@ -470,6 +483,38 @@ class Song(HoldsSections, HoldsSettings):
         registers = {**dict(self._section(Section.REGISTERS).items()), name: register}
         changed = {name: registers[name] for name in file_format.REGISTER_NAMES if name in registers and not registers[name].is_default()}
         self._set_section(section=Section.REGISTERS, items=changed or None)
+
+    # The draws. There are always four, and the file names only those with settings changed.
+
+    def get_draw(self, name):
+        """Return a draw by its name, AD to DD, with its default settings if the file leaves it out."""
+        return self._section(Section.DRAWS).find(name) or Draw()
+
+    def set_draw_setting(self, *, name, setting, value):
+        """Change one setting of a draw, AD to DD, by its file name, or None for its default."""
+        self._change_draw(name=name, change=lambda draw: draw.set_setting(name=setting, value=value))
+
+    def set_draw_slot(self, *, name, place, value):
+        """Give one slot of a draw a value, held within the draw's range, or make it blank with None."""
+        self._change_draw(name=name, change=lambda draw: draw.set_slot(place=place, value=value))
+
+    def set_draw_slot_count(self, *, name, count):
+        """Make a draw hold count slots, new ones blank."""
+        self._change_draw(name=name, change=lambda draw: draw.set_slot_count(count))
+
+    def _change_draw(self, *, name, change):
+        """Change a copy of a draw with change, and keep it, leaving the file to name only the draws with settings changed."""
+        if name not in file_format.DRAW_NAMES:
+            raise InvalidValue(errors.ERR_NO_SUCH_DRAW.format(name=name, names=listed(file_format.DRAW_NAMES)))
+        draw = self.get_draw(name).copy()
+        change(draw)
+        draws = {**dict(self._section(Section.DRAWS).items()), name: draw}
+        changed = {name: draws[name] for name in file_format.DRAW_NAMES if name in draws and not draws[name].is_default()}
+        self._set_section(section=Section.DRAWS, items=changed or None)
+
+    def uses_draws(self):
+        """Return whether any draw holds a value, so that a render need only follow the draws when one does."""
+        return any(self.get_draw(name).filled_places() for name in file_format.DRAW_NAMES)
 
     # The scenes, in the order they play.
 

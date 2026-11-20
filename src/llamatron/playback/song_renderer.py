@@ -39,6 +39,7 @@ from llamatron.music import midi, sound as sound_values
 from llamatron.playback import registers as registers_values
 from llamatron.playback.chord_source import ChordSource
 from llamatron.playback.clip_slot_player import ClipSlotPlayer
+from llamatron.playback.draws import DrawPlay
 from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
@@ -117,7 +118,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -131,6 +132,7 @@ class SongRenderer:
         self._seed = seed
         self._scenes = WrittenScene.write_out(song)
         self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
+        self._draws = {name: song.get_draw(name) for name in file_format.DRAW_NAMES}
         self._clips = {}
         # Clips played only to record their register changes, with those changes.
         self._counted = {}
@@ -445,6 +447,8 @@ class SongRenderer:
         values = starting_values(self._registers)
         # The registers that reverse and are counting the other way, which a reset puts back to counting forward.
         turned = registers_values.NOT_TURNED
+        # Where the song's draws stand, carried from scene to scene, or None in a song whose draws hold no value.
+        draws = DrawPlay(self._draws) if self._song.uses_draws() else None
         for written in self._scenes[:self._scenes.index(scene) + 1]:
             number = written.get_number()
             if number not in self._timelines:
@@ -452,12 +456,15 @@ class SongRenderer:
                 start = with_resets(values=values, registers=self._registers, names=resets)
                 if turned:
                     turned = turned.difference(resets)
+                if draws is not None:
+                    draws = self._with_draw_resets(draws=draws, written=written)
+                    start = {**start, **draws.values()}
                 try:
                     if self._is_settled_by_playing(written):
-                        self._timelines[number] = self._decide(scene=written, start=start, turned=turned)
+                        self._timelines[number] = self._decide(scene=written, start=start, turned=turned, draws=draws)
                     else:
                         self._timelines[number] = RegisterTimeline(
-                            registers=self._registers, start=start, changes=self._scene_changes(written), chooser=self._register_chooser, turned=turned,
+                            registers=self._registers, start=start, changes=self._scene_changes(written), chooser=self._register_chooser, turned=turned, draws=draws,
                         )
                 except SongFileError:
                     if written is scene:
@@ -465,6 +472,7 @@ class SongRenderer:
                     continue
             values = self._timelines[number].end_values()
             turned = self._timelines[number].get_end_turned()
+            draws = self._timelines[number].get_end_draws()
         return self._timelines[scene.get_number()]
 
     def _cutting_of(self, name):
@@ -490,7 +498,7 @@ class SongRenderer:
             self._settled_by_playing[number] = any(self._cuts_passes(scene=scene, track=track) for track in scene.get_track_names())
         return self._settled_by_playing[number]
 
-    def _decide(self, *, scene, start, turned):
+    def _decide(self, *, scene, start, turned, draws=None):
         """Return the register values through a scene in which a step's statement can stop a clip or start a pattern over, finding how long its clips and the scene last.
 
         What such a clip changes in the registers depends on the registers, since a step it
@@ -538,7 +546,7 @@ class SongRenderer:
                 found = (changes, [self._decided[(number, track)] for track in ending])
                 # Every round draws a register's random values from the same place, so that the same changes always make the same timeline.
                 self._register_chooser.setstate(drawn)
-                timeline = RegisterTimeline(registers=self._registers, start=start, changes=changes, chooser=self._register_chooser, turned=turned)
+                timeline = RegisterTimeline(registers=self._registers, start=start, changes=changes, chooser=self._register_chooser, turned=turned, draws=draws)
                 if found == settled:
                     return timeline
                 settled = found
@@ -566,6 +574,16 @@ class SongRenderer:
         for kept in (self._counted, self._chord_sources, self._tune_sources):
             for key in [key for key in kept if key[0] == number]:
                 del kept[key]
+
+    def _with_draw_resets(self, *, draws, written):
+        """Return the draws as a written-out scene starts them: the draws it resets sent back to their start, on its first play alone."""
+        names = written.get_scene().get_reset_draw_names() if written.is_first_play() else []
+        if not names:
+            return draws
+        draws = draws.copy()
+        for name in names:
+            draws.reset(name)
+        return draws
 
     def _resets_of(self, written):
         """Return the registers a written-out scene sets back to their defaults as it starts: its own resets, and on its first play every register that resets each scene."""
