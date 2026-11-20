@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Strange woodworking
 description: "a dark analog-synth score in the manner of Survive and John Carpenter, built on an arpeggiated sequence"
 notes: |
@@ -45,24 +45,24 @@ real_time: true
 protected: true
 
 scales:
-  E Minor: { root: E, type: minor }
+  - { name: E Minor, root: E, type: minor }
 
 patterns:
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [100, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  tom:
+  - name: tom
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, A, ~, A, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 80, ~, 80, ~]
-  chord:
+  - name: chord
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -70,7 +70,7 @@ patterns:
     chord: [m7, ~, ~, ~, ~, ~, ~, ~]
     velocity: [94, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  triad:
+  - name: triad
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -78,13 +78,13 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [94, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  pulse:
+  - name: pulse
     steps: 8
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 1, 1]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
     velocity: [112, 96, 100, 96, 103, 96, 100, 96]
-  held:
+  - name: held
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -92,7 +92,7 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [78, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  theme:
+  - name: theme
     steps: 64
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 3, ~, ~, ~, 6, ~, ~, ~, ~, ~, 5, ~, 4, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -100,87 +100,72 @@ patterns:
     velocity: [108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~, ~, ~, 96, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~, 99, ~, ~, ~, 108, ~, ~, ~, ~, ~, 96, ~, 108, ~, ~, ~, 99, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
-arps:
-  sequence: { step: 1/16, order: up, octave_range: 2 }
-
-progressions:
-  drone: { chords: [1, 1, 1, 1, 6, 6, 1, 1] }
-  theme: { chords: [1, 6, 4, 5] }
-
-swells:
-  rise: { start: 60, end: 120, accent: 0 }
-
-chains:
-  drone:
-    - progression: drone
-  theme:
-    - progression: theme
-  drone arp:
-    - progression: drone
-    - arp: sequence
-  theme arp:
-    - progression: theme
-    - arp: sequence
-  rising arp:
-    - progression: drone
-    - arp: sequence
-    - swell: rise
+generators:
+  - { name: sequence, kind: arp, step: 1/16, order: up, octave_range: 2 }
+  - { name: drone, kind: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] }
+  - { name: theme, kind: progression, chords: [1, 6, 4, 5] }
+  - { name: rise, kind: swell, start: 60, end: 120, accent: 0 }
+  - { name: drone chords, kind: chain, generators: [{ name: drone }] }
+  - { name: theme chords, kind: chain, generators: [{ name: theme }] }
+  - { name: drone arp, kind: chain, generators: [{ name: drone }, { name: sequence }] }
+  - { name: theme arp, kind: chain, generators: [{ name: theme }, { name: sequence }] }
+  - { name: rising arp, kind: chain, generators: [{ name: drone }, { name: sequence }, { name: rise }] }
 
 instruments:
-  saw lead: { device: "*FluidSynth", gm_sound: 82 }
-  synth bass: { device: "*FluidSynth", gm_sound: 39 }
-  sweep pad: { device: "*FluidSynth", gm_sound: 96 }
-  square lead: { device: "*FluidSynth", gm_sound: 81 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: saw lead, device: "*FluidSynth", gm_sound: 82 }
+  - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
+  - { name: sweep pad, device: "*FluidSynth", gm_sound: 96 }
+  - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  strange_woodworking:
+  - name: strange_woodworking
     tempo: 84
     scale: E Minor
     genre: Soundtrack
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      tom: { drum: true, instrument: drum kit }
-      sequence: { instrument: saw lead }
-      bass: { instrument: synth bass }
-      pad: { instrument: sweep pad }
-      lead: { instrument: square lead }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: tom, drum: true, instrument: drum kit }
+      - { name: sequence, instrument: saw lead }
+      - { name: bass, instrument: synth bass }
+      - { name: pad, instrument: sweep pad }
+      - { name: lead, instrument: square lead }
 
     scenes:
       - name: sequence
-        tracks:
-          sequence: { pattern: chord, chains: [drone arp], repeat: 8 }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: drone arp }], repeat: 8 }
       - name: gathering
-        tracks:
-          sequence: { pattern: chord, chains: [drone arp], repeat: 8 }
-          bass: { pattern: pulse, chains: [drone], loop: true }
-          kick: { pattern: kick, loop: true }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: drone arp }], repeat: 8 }
+          - { track: bass, pattern: pulse, generators: [{ name: drone chords }], loop: true }
+          - { track: kick, pattern: kick, loop: true }
       - name: theme
-        tracks:
-          sequence: { pattern: triad, chains: [theme arp], repeat: 16 }
-          bass: { pattern: pulse, chains: [theme], loop: true }
-          pad: { pattern: held, chains: [theme], loop: true }
-          kick: { pattern: kick, loop: true }
-          lead: { pattern: theme, loop: true }
+        clips:
+          - { track: sequence, pattern: triad, generators: [{ name: theme arp }], repeat: 16 }
+          - { track: bass, pattern: pulse, generators: [{ name: theme chords }], loop: true }
+          - { track: pad, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: lead, pattern: theme, loop: true }
       - name: rise
-        tracks:
-          sequence: { pattern: chord, chains: [rising arp], repeat: 8 }
-          bass: { pattern: pulse, chains: [drone], loop: true }
-          pad: { pattern: held, chains: [drone], loop: true }
-          kick: { pattern: kick, loop: true }
-          tom: { pattern: tom, loop: true }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: rising arp }], repeat: 8 }
+          - { track: bass, pattern: pulse, generators: [{ name: drone chords }], loop: true }
+          - { track: pad, pattern: held, generators: [{ name: drone chords }], loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: tom, pattern: tom, loop: true }
       - name: alone
-        tracks:
-          pad: { pattern: held, chains: [drone], repeat: 4 }
+        clips:
+          - { track: pad, pattern: held, generators: [{ name: drone chords }], repeat: 4 }
       - name: theme 2
-        tracks:
-          sequence: { pattern: triad, chains: [theme arp], repeat: 16 }
-          bass: { pattern: pulse, chains: [theme], loop: true }
-          pad: { pattern: held, chains: [theme], loop: true }
-          kick: { pattern: kick, loop: true }
-          tom: { pattern: tom, loop: true }
-          lead: { pattern: theme, loop: true }
+        clips:
+          - { track: sequence, pattern: triad, generators: [{ name: theme arp }], repeat: 16 }
+          - { track: bass, pattern: pulse, generators: [{ name: theme chords }], loop: true }
+          - { track: pad, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: tom, pattern: tom, loop: true }
+          - { track: lead, pattern: theme, loop: true }
       - name: ending
-        tracks:
-          sequence: { pattern: chord, chains: [drone arp], repeat: 4 }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: drone arp }], repeat: 4 }

@@ -168,9 +168,6 @@ class SongEdits:
         elif setting in CLIP_SLOT_NAME_SETTERS:
             setter, named = CLIP_SLOT_NAME_SETTERS[setting]
             self.change(MethodType(setter, clip_slot), song=song, **{named: value})
-        elif setting == ClipSlotSetting.CHAIN:
-            # One chain by name, as a file from before lists of chains held it.
-            self.change(clip_slot.set_chain_names, names=None if value is None else [value], song=song)
         elif setting == ClipSlotSetting.LOOP:
             self.change(clip_slot.set_loop, bool(value))
         elif setting == ClipSlotSetting.MORPH_TO:

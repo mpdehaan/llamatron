@@ -1,4 +1,4 @@
-version: 1.0.206
+version: 1.0.591
 title: Chain demo
 description: Simple Gifts
 notes: |
@@ -30,16 +30,16 @@ real_time: true
 protected: false
 
 scales:
-  A Major: { root: A, type: major }
+  - { name: A Major, root: A, type: major }
 
 patterns:
-  tune:
+  - name: tune
     steps: 64
     step_size: 1/8
     degree: [5, 5, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 2, ~, 1, ~, 2, 3, 2, 7, 5, ~, 5, ~, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 3, ~, 3, 2, 1, ~, 1, 2, 1, ~]
     gate: [~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, 1/4, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~]
     octave: [4, 4, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 5, 4, 4, ~, 4, ~, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~]
-  tune_in_triads:
+  - name: tune_in_triads
     steps: 64
     step_size: 1/8
     degree: [5, 5, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 2, ~, 1, ~, 2, 3, 2, 7, 5, ~, 5, ~, 1, ~, 1, 2, 3, 1, 3, 4, 5, ~, 5, 4, 3, ~, 2, 1, 2, ~, 2, ~, 3, ~, 3, 2, 1, ~, 1, 2, 1, ~]
@@ -47,74 +47,62 @@ patterns:
     octave: [4, 4, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 5, 4, 4, ~, 4, ~, 5, ~, 5, 5, 5, 5, 5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~]
     chord: [3, 3, 3, ~, 3, 3, 3, 3, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, 3, 3, 3, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, ~, 3, 3, 3, ~]
 
-arps:
-  octave_sparkle: { step: 1/16, order: up, octave_range: 2 }
-  trill_in_thirds: { step: 1/16, order: up, offsets: [0, 2] }
-  triad_up: { step: 1/16, order: up }
-  triad_wide: { step: 1/16, order: up_down, octave_range: 2 }
-  shred_up: { step: 1/32, order: up, offsets: [0, 2, 4, 7] }
-
-auto_ratchets:
-  double: { counts: [2] }
-  stutter: { counts: [1, 1, 1, 1, 1, 1, 1, 3] }
-
-chains:
-  octave_sparkle:
-    - arp: octave_sparkle
-  trill_in_thirds:
-    - arp: trill_in_thirds
-  double:
-    - auto_ratchet: double
-  shred:
-    - arp: shred_up
-  triad_up:
-    - arp: triad_up
-  triad_wide:
-    - arp: triad_wide
-  triad_up_then_stutter:
-    - arp: triad_up
-    - auto_ratchet: stutter
+generators:
+  - { name: octave_sparkle, kind: arp, step: 1/16, order: up, octave_range: 2 }
+  - { name: trill_in_thirds, kind: arp, step: 1/16, order: up, offsets: [0, 2] }
+  - { name: triad_up, kind: arp, step: 1/16, order: up }
+  - { name: triad_wide, kind: arp, step: 1/16, order: up_down, octave_range: 2 }
+  - { name: shred_up, kind: arp, step: 1/32, order: up, offsets: [0, 2, 4, 7] }
+  - { name: double, kind: auto_ratchet, counts: [2] }
+  - { name: stutter, kind: auto_ratchet, counts: [1, 1, 1, 1, 1, 1, 1, 3] }
+  - { name: octave_sparkle arp, kind: chain, generators: [{ name: octave_sparkle }] }
+  - { name: trill_in_thirds arp, kind: chain, generators: [{ name: trill_in_thirds }] }
+  - { name: double ratchet, kind: chain, generators: [{ name: double }] }
+  - { name: shred, kind: chain, generators: [{ name: shred_up }] }
+  - { name: triad_up arp, kind: chain, generators: [{ name: triad_up }] }
+  - { name: triad_wide arp, kind: chain, generators: [{ name: triad_wide }] }
+  - { name: triad_up_then_stutter, kind: chain, generators: [{ name: triad_up }, { name: stutter }] }
 
 instruments:
-  flute: { device: "*FluidSynth", gm_sound: 74 }
+  - { name: flute, device: "*FluidSynth", gm_sound: 74 }
 
 songs:
-  complex_gifts_chain:
+  - name: complex_gifts_chain
     tempo: 120
     scale: A Major
     genre: Folk
 
     tracks:
-      gifts: { instrument: flute }
+      - { name: gifts, instrument: flute }
 
     scenes:
       - name: Tune
-        tracks:
-          gifts: { pattern: tune }
+        clips:
+          - { track: gifts, pattern: tune }
       - name: "Tune: octave sparkle"
-        tracks:
-          gifts: { pattern: tune, chains: [octave_sparkle] }
+        clips:
+          - { track: gifts, pattern: tune, generators: [{ name: octave_sparkle arp }] }
       - name: "Tune: trill in thirds"
-        tracks:
-          gifts: { pattern: tune, chains: [trill_in_thirds] }
+        clips:
+          - { track: gifts, pattern: tune, generators: [{ name: trill_in_thirds arp }] }
       - name: "Tune: doubled"
-        tracks:
-          gifts: { pattern: tune, chains: [double] }
+        clips:
+          - { track: gifts, pattern: tune, generators: [{ name: double ratchet }] }
       - name: "Tune: shred up"
-        tracks:
-          gifts: { pattern: tune, chains: [shred] }
+        clips:
+          - { track: gifts, pattern: tune, generators: [{ name: shred }] }
       - name: "Triads: tune in triads"
-        tracks:
-          gifts: { pattern: tune_in_triads }
+        clips:
+          - { track: gifts, pattern: tune_in_triads }
       - name: "Triads: arpeggiated"
-        tracks:
-          gifts: { pattern: tune_in_triads, chains: [triad_up] }
+        clips:
+          - { track: gifts, pattern: tune_in_triads, generators: [{ name: triad_up arp }] }
       - name: "Triads: two octaves"
-        tracks:
-          gifts: { pattern: tune_in_triads, chains: [triad_wide] }
+        clips:
+          - { track: gifts, pattern: tune_in_triads, generators: [{ name: triad_wide arp }] }
       - name: "Triads: arp then stutter"
-        tracks:
-          gifts: { pattern: tune_in_triads, chains: [triad_up_then_stutter] }
+        clips:
+          - { track: gifts, pattern: tune_in_triads, generators: [{ name: triad_up_then_stutter }] }
       - name: "Tune: reprise"
-        tracks:
-          gifts: { pattern: tune }
+        clips:
+          - { track: gifts, pattern: tune }

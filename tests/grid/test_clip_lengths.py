@@ -181,7 +181,7 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
         self.document.add_generator(section=Section.ARPS, name=ARP)
         self.document.add_chain(CHAIN)
         self.document.change(self.document.get_setlist().get_chain(CHAIN).add_step, kind=GeneratorKind.ARP, name=ARP, setlist=self.document.get_setlist())
-        self.document.set_clip_slot_setting(index=SECOND, track=LEAD, setting=ClipSlotSetting.CHAIN, value=CHAIN)
+        self.document.set_clip_slot_setting(index=SECOND, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[CHAIN])
         self.assertEqual(self.document.lengths().clip_seconds(index=SECOND, track=LEAD), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))
         self.assertEqual(self.document.lengths().scene_seconds(SECOND), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))
 

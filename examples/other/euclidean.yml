@@ -1,4 +1,4 @@
-version: 1.0.206
+version: 1.0.591
 title: Euclidean
 description: an Afro-Latin percussion piece carved from full patterns by Euclidean rhythms
 notes: |
@@ -36,36 +36,36 @@ real_time: true
 protected: true
 
 scales:
-  D Dorian: { root: D, type: dorian }
+  - { name: D Dorian, root: D, type: dorian }
 
 patterns:
-  bass:
+  - name: bass
     steps: 16
     step_size: 1/16
     degree: [1, 1, 5, 1, 3, 1, 5, 4, 1, 1, 5, 1, 7, 1, 5, 3]
     octave: [2, 3, 2, 3, 2, 3, 2, 2, 2, 3, 2, 3, 2, 3, 2, 2]
-  bell:
+  - name: bell
     steps: 16
     drum: true
     step_size: 1/16
     degree: [G, G, G, G, G, G, G, G, G, G, G, G, G, G, G, G]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
-  clave:
+  - name: clave
     steps: 16
     drum: true
     step_size: 1/16
     degree: [D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
-  congas:
+  - name: congas
     steps: 16
     drum: true
     step_size: 1/16
     degree: [D, E, D, E, D, E, D, E, D, E, D, E, D, E, D, E]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
     velocity: [100, 80, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80]
-  shaker:
+  - name: shaker
     steps: 16
     drum: true
     step_size: 1/16
@@ -73,136 +73,122 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
     velocity: [90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50]
-  lead:
+  - name: lead
     steps: 16
     step_size: 1/16
     degree: [5, 4, 3, 1, 3, 4, 5, 6, 5, 3, 1, 2, 3, 5, 4, 2]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
 
-euclids:
-  tresillo: { hits: 3, steps: 8 }
-  cinquillo: { hits: 5, steps: 8 }
-  samba: { hits: 7, steps: 16 }
-  bossa nova: { hits: 5, steps: 16 }
-  tresillo in eighths: { hits: 3, steps: 8, step: 1/8 }
-  tresillo late: { hits: 3, steps: 8, rotate: 2 }
-  samba late: { hits: 7, steps: 16, rotate: 3 }
-  cinquillo late: { hits: 5, steps: 8, rotate: 1 }
-  bossa nova late: { hits: 5, steps: 16, rotate: 4 }
-  bembe: { hits: 7, steps: 12 }
-  venda: { hits: 5, steps: 12 }
-  aksak: { hits: 4, steps: 9 }
-
-chains:
-  tresillo:
-    - euclid: tresillo
-  cinquillo:
-    - euclid: cinquillo
-  samba:
-    - euclid: samba
-  bossa nova:
-    - euclid: bossa nova
-  tresillo in eighths:
-    - euclid: tresillo in eighths
-  tresillo late:
-    - euclid: tresillo late
-  samba late:
-    - euclid: samba late
-  cinquillo late:
-    - euclid: cinquillo late
-  bossa nova late:
-    - euclid: bossa nova late
-  bembe:
-    - euclid: bembe
-  venda:
-    - euclid: venda
-  aksak:
-    - euclid: aksak
+generators:
+  - { name: tresillo, kind: euclid, hits: 3, steps: 8 }
+  - { name: cinquillo, kind: euclid, hits: 5, steps: 8 }
+  - { name: samba, kind: euclid, hits: 7, steps: 16 }
+  - { name: bossa nova, kind: euclid, hits: 5, steps: 16 }
+  - { name: tresillo in eighths, kind: euclid, hits: 3, steps: 8, step: 1/8 }
+  - { name: tresillo late, kind: euclid, hits: 3, steps: 8, rotate: 2 }
+  - { name: samba late, kind: euclid, hits: 7, steps: 16, rotate: 3 }
+  - { name: cinquillo late, kind: euclid, hits: 5, steps: 8, rotate: 1 }
+  - { name: bossa nova late, kind: euclid, hits: 5, steps: 16, rotate: 4 }
+  - { name: bembe, kind: euclid, hits: 7, steps: 12 }
+  - { name: venda, kind: euclid, hits: 5, steps: 12 }
+  - { name: aksak, kind: euclid, hits: 4, steps: 9 }
+  - { name: tresillo rhythm, kind: chain, generators: [{ name: tresillo }] }
+  - { name: cinquillo rhythm, kind: chain, generators: [{ name: cinquillo }] }
+  - { name: samba rhythm, kind: chain, generators: [{ name: samba }] }
+  - { name: bossa nova rhythm, kind: chain, generators: [{ name: bossa nova }] }
+  - { name: tresillo in eighths rhythm, kind: chain, generators: [{ name: tresillo in eighths }] }
+  - { name: tresillo late rhythm, kind: chain, generators: [{ name: tresillo late }] }
+  - { name: samba late rhythm, kind: chain, generators: [{ name: samba late }] }
+  - { name: cinquillo late rhythm, kind: chain, generators: [{ name: cinquillo late }] }
+  - { name: bossa nova late rhythm, kind: chain, generators: [{ name: bossa nova late }] }
+  - { name: bembe rhythm, kind: chain, generators: [{ name: bembe }] }
+  - { name: venda rhythm, kind: chain, generators: [{ name: venda }] }
+  - { name: aksak rhythm, kind: chain, generators: [{ name: aksak }] }
 
 instruments:
-  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
-  pan flute: { device: "*FluidSynth", gm_sound: 76 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: acoustic bass, device: "*FluidSynth", gm_sound: 33 }
+  - { name: pan flute, device: "*FluidSynth", gm_sound: 76 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  euclidean:
+  - name: euclidean
     tempo: 110
     scale: D Dorian
     genre: World
 
     tracks:
-      bass: { instrument: acoustic bass }
-      bell: { drum: true, instrument: drum kit }
-      clave: { drum: true, instrument: drum kit }
-      congas: { drum: true, instrument: drum kit }
-      shaker: { drum: true, instrument: drum kit, euclid_hits: 11, euclid_steps: 16 }
-      lead: { instrument: pan flute }
+      - { name: bass, instrument: acoustic bass }
+      - { name: bell, drum: true, instrument: drum kit }
+      - { name: clave, drum: true, instrument: drum kit }
+      - { name: congas, drum: true, instrument: drum kit }
+      - { name: shaker, drum: true, instrument: drum kit, euclid_hits: 11, euclid_steps: 16 }
+      - { name: lead, instrument: pan flute }
 
     scenes:
       - name: the tresillo
-        tracks:
-          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+        clips:
+          - { track: clave, pattern: clave, generators: [{ name: tresillo rhythm }], repeat: 8 }
       - name: the cinquillo
-        tracks:
-          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
+        clips:
+          - { track: bell, pattern: bell, generators: [{ name: cinquillo rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo rhythm }], repeat: 8 }
       - name: the samba
-        tracks:
-          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
-          congas: { pattern: congas, chains: [samba], repeat: 8 }
+        clips:
+          - { track: bell, pattern: bell, generators: [{ name: cinquillo rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: samba rhythm }], repeat: 8 }
       - name: the shaker and the bossa nova
-        tracks:
-          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
-          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
-          congas: { pattern: congas, chains: [samba], repeat: 8 }
-          shaker: { pattern: shaker, repeat: 8 }
+        clips:
+          - { track: bass, pattern: bass, generators: [{ name: bossa nova rhythm }], repeat: 8 }
+          - { track: bell, pattern: bell, generators: [{ name: cinquillo rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: samba rhythm }], repeat: 8 }
+          - { track: shaker, pattern: shaker, repeat: 8 }
       - name: the lead
-        tracks:
-          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
-          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
-          congas: { pattern: congas, chains: [samba], repeat: 8 }
-          shaker: { pattern: shaker, repeat: 8 }
-          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }
+        clips:
+          - { track: bass, pattern: bass, generators: [{ name: bossa nova rhythm }], repeat: 8 }
+          - { track: bell, pattern: bell, generators: [{ name: cinquillo rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: samba rhythm }], repeat: 8 }
+          - { track: shaker, pattern: shaker, repeat: 8 }
+          - { track: lead, pattern: lead, generators: [{ name: tresillo in eighths rhythm }], repeat: 8 }
       - name: rotated
-        tracks:
-          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
-          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo late], repeat: 8 }
-          congas: { pattern: congas, chains: [samba late], repeat: 8 }
-          shaker: { pattern: shaker, repeat: 8 }
-          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }
+        clips:
+          - { track: bass, pattern: bass, generators: [{ name: bossa nova rhythm }], repeat: 8 }
+          - { track: bell, pattern: bell, generators: [{ name: cinquillo rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo late rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: samba late rhythm }], repeat: 8 }
+          - { track: shaker, pattern: shaker, repeat: 8 }
+          - { track: lead, pattern: lead, generators: [{ name: tresillo in eighths rhythm }], repeat: 8 }
       - name: rotated more
-        tracks:
-          bass: { pattern: bass, chains: [bossa nova late], repeat: 8 }
-          bell: { pattern: bell, chains: [cinquillo late], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo late], repeat: 8 }
-          congas: { pattern: congas, chains: [samba late], repeat: 8 }
-          shaker: { pattern: shaker, repeat: 8 }
-          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }
+        clips:
+          - { track: bass, pattern: bass, generators: [{ name: bossa nova late rhythm }], repeat: 8 }
+          - { track: bell, pattern: bell, generators: [{ name: cinquillo late rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo late rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: samba late rhythm }], repeat: 8 }
+          - { track: shaker, pattern: shaker, repeat: 8 }
+          - { track: lead, pattern: lead, generators: [{ name: tresillo in eighths rhythm }], repeat: 8 }
       - name: twelve against sixteen
-        tracks:
-          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
-          bell: { pattern: bell, chains: [bembe], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
-          congas: { pattern: congas, chains: [samba], repeat: 8 }
-          shaker: { pattern: shaker, repeat: 8 }
-          lead: { pattern: lead, chains: [venda], repeat: 8 }
+        clips:
+          - { track: bass, pattern: bass, generators: [{ name: bossa nova rhythm }], repeat: 8 }
+          - { track: bell, pattern: bell, generators: [{ name: bembe rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: samba rhythm }], repeat: 8 }
+          - { track: shaker, pattern: shaker, repeat: 8 }
+          - { track: lead, pattern: lead, generators: [{ name: venda rhythm }], repeat: 8 }
       - name: nine against sixteen
-        tracks:
-          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
-          bell: { pattern: bell, chains: [bembe], repeat: 8 }
-          clave: { pattern: clave, chains: [venda], repeat: 8 }
-          congas: { pattern: congas, chains: [aksak], repeat: 8 }
-          shaker: { pattern: shaker, repeat: 8 }
-          lead: { pattern: lead, chains: [venda], repeat: 8 }
+        clips:
+          - { track: bass, pattern: bass, generators: [{ name: bossa nova rhythm }], repeat: 8 }
+          - { track: bell, pattern: bell, generators: [{ name: bembe rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: venda rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: aksak rhythm }], repeat: 8 }
+          - { track: shaker, pattern: shaker, repeat: 8 }
+          - { track: lead, pattern: lead, generators: [{ name: venda rhythm }], repeat: 8 }
       - name: all six
-        tracks:
-          bass: { pattern: bass, chains: [bossa nova], repeat: 8 }
-          bell: { pattern: bell, chains: [cinquillo], repeat: 8 }
-          clave: { pattern: clave, chains: [tresillo], repeat: 8 }
-          congas: { pattern: congas, chains: [samba], repeat: 8 }
-          shaker: { pattern: shaker, repeat: 8 }
-          lead: { pattern: lead, chains: [tresillo in eighths], repeat: 8 }
+        clips:
+          - { track: bass, pattern: bass, generators: [{ name: bossa nova rhythm }], repeat: 8 }
+          - { track: bell, pattern: bell, generators: [{ name: cinquillo rhythm }], repeat: 8 }
+          - { track: clave, pattern: clave, generators: [{ name: tresillo rhythm }], repeat: 8 }
+          - { track: congas, pattern: congas, generators: [{ name: samba rhythm }], repeat: 8 }
+          - { track: shaker, pattern: shaker, repeat: 8 }
+          - { track: lead, pattern: lead, generators: [{ name: tresillo in eighths rhythm }], repeat: 8 }

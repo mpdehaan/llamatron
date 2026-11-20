@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Not werewolves
 description: "an upbeat honky-tonk piano rock song of outlaws on the chords of Warren Zevon's Frank and Jesse James, opening like saloon music"
 notes: |
@@ -58,24 +58,24 @@ real_time: true
 protected: true
 
 scales:
-  G Major: { root: G, type: major }
+  - { name: G Major, root: G, type: major }
 
 patterns:
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, ~, ~, ~, ~, 108, ~, 108, ~, ~, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -83,7 +83,7 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
     velocity: [76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~, 76, ~, 70, ~]
-  crash:
+  - name: crash
     steps: 16
     drum: true
     step_size: 1/16
@@ -91,49 +91,49 @@ patterns:
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  stride low:
+  - name: stride low
     steps: 4
     step_size: 1/8
     degree: [1, ~, ~, ~]
     octave: [3, ~, ~, ~]
     velocity: [102, ~, ~, ~]
     tie: [false, true, false, false]
-  stride chord:
+  - name: stride chord
     steps: 4
     step_size: 1/8
     degree: [~, ~, 1, ~]
     octave: [~, ~, 4, ~]
     chord: [~, ~, "3", ~]
     velocity: [~, ~, 80, ~]
-  bar low:
+  - name: bar low
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~]
     octave: [3, ~, ~, ~, 2, ~, ~, ~]
     velocity: [104, ~, ~, ~, 95, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, false]
-  bar chord:
+  - name: bar chord
     steps: 8
     step_size: 1/8
     degree: [~, ~, 1, ~, ~, ~, 1, ~]
     octave: [~, ~, 4, ~, ~, ~, 4, ~]
     chord: [~, ~, "3", ~, ~, ~, "3", ~]
     velocity: [~, ~, 78, ~, ~, ~, 78, ~]
-  bass:
+  - name: bass
     steps: 4
     step_size: 1/8
     degree: [1, ~, 5, ~]
     octave: [3, ~, 2, ~]
     velocity: [112, ~, 101, ~]
     tie: [false, true, false, true]
-  bar bass:
+  - name: bar bass
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, 1, 5, ~, ~, 5]
     octave: [3, ~, ~, 3, 2, ~, ~, 2]
     velocity: [112, ~, ~, 98, 103, ~, ~, 98]
     tie: [false, true, false, false, false, true, false, false]
-  held:
+  - name: held
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -141,42 +141,42 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [78, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  verse tune:
+  - name: verse tune
     steps: 64
     step_size: 1/8
     degree: [3, 5, 6, ~, 5, 3, 5, ~, 2, 5, 7, ~, 1, 5, 3, ~, 3, 6, 1, ~, 7, 5, 2, ~, 4, 6, 1, ~, 5, 3, 1, ~, 3, 5, 6, ~, 1, 6, 5, ~, 7, 5, 2, ~, 1, 5, 3, ~, 6, 1, 3, ~, 2, 7, 5, ~, 6, 4, 1, ~, 5, ~, ~, ~]
     octave: [5, 5, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 6, 5, 5, ~, 5, 5, 6, ~, 5, 5, 5, ~, 5, 5, 6, ~, 5, 5, 5, ~, 5, 5, 5, ~, 6, 5, 5, ~, 5, 5, 6, ~, 6, 5, 5, ~, 5, 6, 6, ~, 6, 5, 5, ~, 5, 5, 6, ~, 5, ~, ~, ~]
     velocity: [111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, ~, ~, ~]
     tie: [false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, true, false, false]
-  verse high:
+  - name: verse high
     steps: 64
     step_size: 1/8
     degree: [3, 5, 6, ~, 5, 3, 5, ~, 2, 5, 7, ~, 1, 5, 3, ~, 3, 6, 1, ~, 7, 5, 2, ~, 4, 6, 1, ~, 5, 3, 1, ~, 3, 5, 6, ~, 1, 6, 5, ~, 7, 5, 2, ~, 1, 5, 3, ~, 6, 1, 3, ~, 2, 7, 5, ~, 6, 4, 1, ~, 5, ~, ~, ~]
     octave: [6, 6, 6, ~, 6, 6, 6, ~, 6, 6, 6, ~, 7, 6, 6, ~, 6, 6, 7, ~, 6, 6, 6, ~, 6, 6, 7, ~, 6, 6, 6, ~, 6, 6, 6, ~, 7, 6, 6, ~, 6, 6, 7, ~, 7, 6, 6, ~, 6, 7, 7, ~, 7, 6, 6, ~, 6, 6, 7, ~, 6, ~, ~, ~]
     velocity: [111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, 97, 100, ~, 111, 97, 100, ~, 102, ~, ~, ~]
     tie: [false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, true, false, false]
-  verse end:
+  - name: verse end
     steps: 16
     step_size: 1/8
     degree: [6, ~, 1, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, 6, ~, 5, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
     velocity: [111, ~, 100, ~, 102, ~, 100, ~, 111, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  chorus tune:
+  - name: chorus tune
     steps: 64
     step_size: 1/8
     degree: [3, ~, 3, ~, 6, ~, 1, ~, 1, ~, 6, ~, 3, ~, ~, ~, 2, ~, 2, ~, 5, ~, 7, ~, 7, ~, 5, ~, 2, ~, ~, ~, 3, ~, 5, ~, 1, ~, 3, ~, 2, ~, 1, ~, 5, ~, ~, ~, 6, ~, 1, ~, 4, ~, 1, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, 5, ~, 5, ~, 6, ~, 6, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 6, ~, 6, ~, 6, ~, 6, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~]
     velocity: [112, ~, 104, ~, 104, ~, 116, ~, 104, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 104, ~, 116, ~, 104, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 104, ~, 116, ~, 104, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 116, ~, 104, ~, 100, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
-  last:
+  - name: last
     steps: 16
     step_size: 1/8
     degree: [6, ~, ~, ~, 1, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [111, ~, ~, ~, 102, ~, ~, ~, 111, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
-  ballad tune:
+  - name: ballad tune
     steps: 64
     step_size: 1/8
     degree: [3, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 3, ~, 2, ~, ~, ~, 5, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 1, ~, ~, ~, 7, ~, ~, ~, ~, ~, 5, ~, 6, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~]
@@ -184,176 +184,157 @@ patterns:
     velocity: [112, ~, ~, ~, 104, ~, ~, ~, 104, ~, ~, ~, ~, ~, 104, ~, 112, ~, ~, ~, 104, ~, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, 116, ~, ~, ~, 104, ~, ~, ~, ~, ~, 104, ~, 112, ~, ~, ~, 104, ~, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, false, false, true, true, true, true, false, false, true, false, true, true, true, false, true, true, false, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, false, false, true, true, true, true, false, false, true, false, true, true, true, false, true, true, false, false, true, true, true, true, true, true, true]
 
-progressions:
-  verse: { chords: [6, 1, 5, 1, 6, 5, 4, 1], every: 1/2 }
-  verse end: { chords: [4, 5, 1, 1], every: 1/2 }
-  chorus: { chords: [6, 6, 5, 5, 1, 1, 4, 1] }
-  ballad: { chords: [6, 1, 5, 1, 6, 5, 4, 1] }
-  last: { chords: [4, 6] }
-
-voice_leadings:
-  near: { lowest_octave: 4, highest_octave: 5 }
-
-chains:
-  verse:
-    - progression: verse
-  verse end:
-    - progression: verse end
-  chorus:
-    - progression: chorus
-  ballad:
-    - progression: ballad
-  last:
-    - progression: last
-  verse keys:
-    - progression: verse
-    - voice_leading: near
-  verse end keys:
-    - progression: verse end
-    - voice_leading: near
-  chorus keys:
-    - progression: chorus
-    - voice_leading: near
-  ballad keys:
-    - progression: ballad
-    - voice_leading: near
-  last keys:
-    - progression: last
-    - voice_leading: near
+generators:
+  - { name: verse, kind: progression, chords: [6, 1, 5, 1, 6, 5, 4, 1], every: 1/2 }
+  - { name: verse end, kind: progression, chords: [4, 5, 1, 1], every: 1/2 }
+  - { name: chorus, kind: progression, chords: [6, 6, 5, 5, 1, 1, 4, 1] }
+  - { name: ballad, kind: progression, chords: [6, 1, 5, 1, 6, 5, 4, 1] }
+  - { name: last, kind: progression, chords: [4, 6] }
+  - { name: near, kind: voice_leading, lowest_octave: 4, highest_octave: 5 }
+  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
+  - { name: verse end chords, kind: chain, generators: [{ name: verse end }] }
+  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
+  - { name: ballad chords, kind: chain, generators: [{ name: ballad }] }
+  - { name: last chords, kind: chain, generators: [{ name: last }] }
+  - { name: verse keys, kind: chain, generators: [{ name: verse }, { name: near }] }
+  - { name: verse end keys, kind: chain, generators: [{ name: verse end }, { name: near }] }
+  - { name: chorus keys, kind: chain, generators: [{ name: chorus }, { name: near }] }
+  - { name: ballad keys, kind: chain, generators: [{ name: ballad }, { name: near }] }
+  - { name: last keys, kind: chain, generators: [{ name: last }, { name: near }] }
 
 instruments:
-  honky-tonk piano: { device: "*FluidSynth", gm_sound: 4 }
-  bass: { device: "*FluidSynth", gm_sound: 34 }
-  strings: { device: "*FluidSynth", gm_sound: 49 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: honky-tonk piano, device: "*FluidSynth", gm_sound: 4 }
+  - { name: bass, device: "*FluidSynth", gm_sound: 34 }
+  - { name: strings, device: "*FluidSynth", gm_sound: 49 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  not_werewolves:
+  - name: not_werewolves
     tempo: 106
     scale: G Major
     genre: Rock
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      crash: { drum: true, instrument: drum kit }
-      left hand: { instrument: honky-tonk piano }
-      left chords: { instrument: honky-tonk piano }
-      right hand: { instrument: honky-tonk piano }
-      bass: { instrument: bass }
-      strings: { instrument: strings }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: crash, drum: true, instrument: drum kit }
+      - { name: left hand, instrument: honky-tonk piano }
+      - { name: left chords, instrument: honky-tonk piano }
+      - { name: right hand, instrument: honky-tonk piano }
+      - { name: bass, instrument: bass }
+      - { name: strings, instrument: strings }
 
     scenes:
       - name: saloon
-        tracks:
-          left hand: { pattern: stride low, chains: [verse], repeat: 16 }
-          left chords: { pattern: stride chord, chains: [verse keys], loop: true }
-          right hand: { pattern: verse tune, loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse chords }], repeat: 16 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse keys }], loop: true }
+          - { track: right hand, pattern: verse tune, loop: true }
       - name: saloon end
-        tracks:
-          left hand: { pattern: stride low, chains: [verse end], repeat: 4 }
-          left chords: { pattern: stride chord, chains: [verse end keys], loop: true }
-          right hand: { pattern: verse end, loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse end chords }], repeat: 4 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse end keys }], loop: true }
+          - { track: right hand, pattern: verse end, loop: true }
       - name: verse
-        tracks:
-          left hand: { pattern: stride low, chains: [verse], repeat: 16 }
-          left chords: { pattern: stride chord, chains: [verse keys], loop: true }
-          right hand: { pattern: verse tune, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse chords }], repeat: 16 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse keys }], loop: true }
+          - { track: right hand, pattern: verse tune, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
       - name: verse end
-        tracks:
-          left hand: { pattern: stride low, chains: [verse end], repeat: 4 }
-          left chords: { pattern: stride chord, chains: [verse end keys], loop: true }
-          right hand: { pattern: verse end, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse end], loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse end chords }], repeat: 4 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse end keys }], loop: true }
+          - { track: right hand, pattern: verse end, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: verse end chords }], loop: true }
       - name: chorus
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          left hand: { pattern: bar low, chains: [chorus], loop: true }
-          left chords: { pattern: bar chord, chains: [chorus keys], loop: true }
-          bass: { pattern: bar bass, chains: [chorus], loop: true }
-          strings: { pattern: held, chains: [chorus], loop: true }
-          right hand: { pattern: chorus tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: left hand, pattern: bar low, generators: [{ name: chorus chords }], loop: true }
+          - { track: left chords, pattern: bar chord, generators: [{ name: chorus keys }], loop: true }
+          - { track: bass, pattern: bar bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: strings, pattern: held, generators: [{ name: chorus chords }], loop: true }
+          - { track: right hand, pattern: chorus tune, loop: true }
       - name: piano solo
-        tracks:
-          left hand: { pattern: stride low, chains: [verse], repeat: 16 }
-          left chords: { pattern: stride chord, chains: [verse keys], loop: true }
-          right hand: { pattern: verse high, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse chords }], repeat: 16 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse keys }], loop: true }
+          - { track: right hand, pattern: verse high, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
       - name: solo end
-        tracks:
-          left hand: { pattern: stride low, chains: [verse end], repeat: 4 }
-          left chords: { pattern: stride chord, chains: [verse end keys], loop: true }
-          right hand: { pattern: verse end, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse end], loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse end chords }], repeat: 4 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse end keys }], loop: true }
+          - { track: right hand, pattern: verse end, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: verse end chords }], loop: true }
       - name: verse 2
-        tracks:
-          left hand: { pattern: stride low, chains: [verse], repeat: 16 }
-          left chords: { pattern: stride chord, chains: [verse keys], loop: true }
-          right hand: { pattern: verse tune, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse chords }], repeat: 16 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse keys }], loop: true }
+          - { track: right hand, pattern: verse tune, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
       - name: verse 2 end
-        tracks:
-          left hand: { pattern: stride low, chains: [verse end], repeat: 4 }
-          left chords: { pattern: stride chord, chains: [verse end keys], loop: true }
-          right hand: { pattern: verse end, loop: true }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [verse end], loop: true }
+        clips:
+          - { track: left hand, pattern: stride low, generators: [{ name: verse end chords }], repeat: 4 }
+          - { track: left chords, pattern: stride chord, generators: [{ name: verse end keys }], loop: true }
+          - { track: right hand, pattern: verse end, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: verse end chords }], loop: true }
       - name: ballad
         tempo: 84
-        tracks:
-          left hand: { pattern: bar low, chains: [ballad], repeat: 8 }
-          left chords: { pattern: bar chord, chains: [ballad keys], loop: true }
-          strings: { pattern: held, chains: [ballad], loop: true }
-          right hand: { pattern: ballad tune, loop: true }
+        clips:
+          - { track: left hand, pattern: bar low, generators: [{ name: ballad chords }], repeat: 8 }
+          - { track: left chords, pattern: bar chord, generators: [{ name: ballad keys }], loop: true }
+          - { track: strings, pattern: held, generators: [{ name: ballad chords }], loop: true }
+          - { track: right hand, pattern: ballad tune, loop: true }
       - name: chorus 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          left hand: { pattern: bar low, chains: [chorus], loop: true }
-          left chords: { pattern: bar chord, chains: [chorus keys], loop: true }
-          bass: { pattern: bar bass, chains: [chorus], loop: true }
-          strings: { pattern: held, chains: [chorus], loop: true }
-          right hand: { pattern: chorus tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: left hand, pattern: bar low, generators: [{ name: chorus chords }], loop: true }
+          - { track: left chords, pattern: bar chord, generators: [{ name: chorus keys }], loop: true }
+          - { track: bass, pattern: bar bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: strings, pattern: held, generators: [{ name: chorus chords }], loop: true }
+          - { track: right hand, pattern: chorus tune, loop: true }
       - name: last chorus
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          crash: { pattern: crash, loop: true }
-          left hand: { pattern: bar low, chains: [chorus], loop: true }
-          left chords: { pattern: bar chord, chains: [chorus keys], loop: true }
-          bass: { pattern: bar bass, chains: [chorus], loop: true }
-          strings: { pattern: held, chains: [chorus], loop: true }
-          right hand: { pattern: chorus tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: left hand, pattern: bar low, generators: [{ name: chorus chords }], loop: true }
+          - { track: left chords, pattern: bar chord, generators: [{ name: chorus keys }], loop: true }
+          - { track: bass, pattern: bar bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: strings, pattern: held, generators: [{ name: chorus chords }], loop: true }
+          - { track: right hand, pattern: chorus tune, loop: true }
       - name: ending
-        tracks:
-          left hand: { pattern: bar low, chains: [last], repeat: 2 }
-          left chords: { pattern: bar chord, chains: [last keys], loop: true }
-          bass: { pattern: bar bass, chains: [last], loop: true }
-          strings: { pattern: held, chains: [last], loop: true }
-          right hand: { pattern: last, loop: true }
-          crash: { pattern: crash, loop: true }
+        clips:
+          - { track: left hand, pattern: bar low, generators: [{ name: last chords }], repeat: 2 }
+          - { track: left chords, pattern: bar chord, generators: [{ name: last keys }], loop: true }
+          - { track: bass, pattern: bar bass, generators: [{ name: last chords }], loop: true }
+          - { track: strings, pattern: held, generators: [{ name: last chords }], loop: true }
+          - { track: right hand, pattern: last, loop: true }
+          - { track: crash, pattern: crash, loop: true }

@@ -48,7 +48,7 @@ from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.music.time_signature import TimeSignature
 from llamatron.strings import errors
-from tests.support.rendering import song_from_data
+from tests.support.rendering import as_setlist, song_from_data
 
 # Names the tests give to their own things, and other values they use.
 MAIN = 'main'
@@ -495,7 +495,7 @@ class TestChain(RoundTrip):
 class TestClipSlot(RoundTrip):
 
     def test_round_trip(self):
-        data = {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: X, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT), ClipSlotSetting.GRAB_TRACK: BASS}
+        data = {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [X], ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT), ClipSlotSetting.GRAB_TRACK: BASS}
         self.assert_round_trip(ClipSlot, data, a_song(), track=LEAD)
         self.assert_round_trip(ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.LOOP: False}, a_song(), track=LEAD)
 
@@ -547,7 +547,7 @@ class TestClipSlot(RoundTrip):
         song = a_song()
         self.assert_refused('here, track (lead): needs a pattern', ClipSlot, {}, song, track=LEAD)
         self.assert_refused('no pattern called (zz)', ClipSlot, {ClipSlotSetting.PATTERN: ZZ}, song, track=LEAD)
-        self.assert_refused('no chain called (y)', ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: Y}, song, track=LEAD)
+        self.assert_refused('no chain called (y)', ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [Y]}, song, track=LEAD)
         self.assert_refused('cannot grab from its own track', ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.GRAB_TRACK: LEAD}, song, track=LEAD)
         self.assert_refused(A_MORPH_NEEDS_BOTH, ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.REPEAT: 2}, song, track=LEAD)
         self.assert_refused('a morph needs a repeat of 2', ClipSlot, {ClipSlotSetting.PATTERN: A, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}, song, track=LEAD)
@@ -644,7 +644,7 @@ class TestSetlistAndSong(RoundTrip):
 
     def test_a_file_from_before_sets_is_read_as_a_set_of_one_song(self):
         data = {SongSetting.TEMPO: 90, Section.TRACKS: {LEAD: {}}, Section.SCENES: []}
-        setlist = Setlist.from_data(data=data, one_song_name=VERSE)
+        setlist = Setlist.from_data(data=as_setlist(data, song_name=VERSE))
         self.assertEqual(setlist.get_song_names(), [VERSE])
         self.assertEqual(setlist.get_song(VERSE).get_tempo(), 90)
         self.assertEqual(setlist.get_song(VERSE).get_track_names(), [LEAD])

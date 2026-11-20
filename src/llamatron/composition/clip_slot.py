@@ -140,8 +140,7 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_CLIP_SLOT_EXPECTED_SETTINGS.format(data=data))
-            check_keys(data=data, allowed={*SETTINGS, ClipSlotSetting.CHAIN, ClipSlotSetting.PATTERN})
-            _read_chain(data)
+            check_keys(data=data, allowed={*SETTINGS, ClipSlotSetting.PATTERN})
             # One pattern, as a file names it, is read as a list of one in the file's own data, where a correction is made, and
             # the data is then put back as the file had it, in the file's order, since it may be data the undo history keeps.
             keys = list(data)
@@ -372,12 +371,3 @@ def _unread_pattern(*, data, keys):
     now[ClipSlotSetting.PATTERN] = now.pop(ClipSlotSetting.PATTERNS)[0]
     data.clear()
     data.update({key: now[key] for key in [*keys, *now] if key in now})
-
-
-def _read_chain(data):
-    """Read chain, from a file saved before a clip held a list of chains, as a list of one, in the file's own data, so that a correction made after finds what it reads."""
-    if ClipSlotSetting.CHAIN not in data:
-        return
-    if ClipSlotSetting.CHAINS in data:
-        raise InvalidValue(errors.ERR_CHAIN_AND_CHAINS)
-    data[ClipSlotSetting.CHAINS] = [data.pop(ClipSlotSetting.CHAIN)]

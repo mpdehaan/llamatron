@@ -38,6 +38,7 @@ C = 60
 E = 64
 G = 67
 STRUMMED = 'strummed'
+STRUMMED_CHAIN = 'strummed chain'
 VELOCITY = 100
 
 
@@ -46,13 +47,13 @@ def chords(*, track=None, clip=None, rows=None, chain=None, generator=None, step
     made = dict(pattern(steps, **{Row.CHORD: [TRIAD] * steps, Row.VELOCITY: [VELOCITY] * steps, **(rows or {})}), **{PatternSetting.STEP_SIZE: step_size})
     clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, **(clip or {})}
     if chain:
-        clip_slot[ClipSlotSetting.CHAINS] = [STRUMMED]
+        clip_slot[ClipSlotSetting.CHAINS] = [STRUMMED_CHAIN]
     data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
     data[SongSetting.TEMPO] = TEMPO
     data[Section.TRACKS][test_registers.LEAD] = dict(track or {})
     if chain:
         data[Section.STRUMS] = {STRUMMED: generator or {}}
-        data[Section.CHAINS] = {STRUMMED: [{GeneratorKind.STRUM: STRUMMED}]}
+        data[Section.CHAINS] = {STRUMMED_CHAIN: [{GeneratorKind.STRUM: STRUMMED}]}
     return data
 
 

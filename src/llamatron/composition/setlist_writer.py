@@ -16,9 +16,10 @@
 
 """Writes a set back to the YAML set format, one setting or pattern row per line.
 
-The set's settings come first, then what every song shares (scales, patterns, generators,
-chains and grooves), then the songs, each with its settings, registers, tracks and scenes indented under its
-name. Comments aren't kept, because a set is only data by the time it gets here.
+The set's settings come first, then what every song shares (scales, patterns, generators, grooves and
+instruments), each a list whose items begin with their names, then the songs, each an item with its
+settings, registers, tracks and scenes indented under its name. The data written is laid out as the file is
+(composition/file_layout.py). Comments aren't kept, because a set is only data by the time it gets here.
 """
 
 import functools
@@ -27,7 +28,8 @@ import re
 import yaml
 
 from llamatron.composition import file_format
-from llamatron.composition.file_format import PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.composition.file_format import FileLayout, PatternSetting, Section, SetlistSetting, SongSetting
+from llamatron.composition.file_layout import as_file_layout
 from llamatron.support.safe_yaml import load_safely
 
 # Text that can be written without quotes: it starts with a letter, digit or underscore, and
@@ -43,7 +45,6 @@ _SETTINGS = [
 _BEFORE_NOTES = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION)
 # A song's settings, in the order they're written at the top of its entry.
 _SONG_SETTINGS = [SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.SEED, SongSetting.GROOVE, SongSetting.GENRE, SongSetting.SUBGENRE, SongSetting.VARIANT, SongSetting.LIVE_RESPONSIVENESS, SongSetting.VISUALIZER, SongSetting.PREVIEW_INSTRUMENT, SongSetting.WIZARD]
-_GENERATOR_SECTIONS = [Section.ARPS, Section.AUTO_RATCHETS, Section.DRIFTS, Section.PROGRESSIONS, Section.VOICE_LEADINGS, Section.STRUMS, Section.GUITARIFIES, Section.EUCLIDS, Section.DENSITIES, Section.SWELLS, Section.ARTICULATES, Section.GLIDES, Section.SHORTENS, Section.RUSHES, Section.DRAGS, Section.HOCKETS, Section.FOLLOW_CHORDS, Section.PHRASINGS, Section.MUSICIANS]
 _PATTERN_SETTINGS = [PatternSetting.GROUP, PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE, PatternSetting.DIRECTION]
 
 # The pieces of YAML this writes.
@@ -129,15 +130,22 @@ def _braces(settings):
     return MAP.format(items=ITEM_SEPARATOR.join(SETTING.format(key=_text(key), value=_text(value)) for key, value in settings.items()))
 
 
-def _named(*, section, items):
-    """Return a section of named objects, each on one line with its settings in braces."""
+def _keyed(*, section, items):
+    """Return a section of settings kept by fixed names, as a song's registers are, each on one line with its settings in braces."""
     return [HEADING.format(key=section)] + [INDENT + SETTING.format(key=_text(name), value=_braces(item)) for name, item in items.items()]
+
+
+def _items(*, section, items):
+    """Return a list of named things, each item on one line with its settings, its name first, in braces."""
+    if not items:
+        return [SETTING.format(key=section, value=EMPTY_LIST)]
+    return [HEADING.format(key=section)] + [INDENT + LIST_ITEM + _braces(item) for item in items]
 
 
 def _patterns(patterns):
     lines = [HEADING.format(key=Section.PATTERNS)]
-    for name, pattern in patterns.items():
-        lines.append(INDENT + HEADING.format(key=_text(name)))
+    for pattern in patterns:
+        lines.append(INDENT + LIST_ITEM + SETTING.format(key=FileLayout.NAME, value=_text(pattern[FileLayout.NAME])))
         lines += [INDENT * 2 + line for line in _pattern_lines(pattern)]
     return lines
 
@@ -154,17 +162,6 @@ def _pattern_lines(pattern):
     return lines
 
 
-def _chains(chains):
-    lines = [HEADING.format(key=Section.CHAINS)]
-    for name, steps in chains.items():
-        heading = SETTING.format(key=_text(name), value=EMPTY_LIST) if not steps else HEADING.format(key=_text(name))
-        lines.append(INDENT + heading)
-        for step in steps:
-            for generator, settings in step.items():
-                lines.append(INDENT * 2 + LIST_ITEM + SETTING.format(key=_text(generator), value=_text(settings)))
-    return lines
-
-
 def _scenes(scenes):
     if not scenes:
         return [SETTING.format(key=Section.SCENES, value=EMPTY_LIST)]
@@ -175,15 +172,15 @@ def _scenes(scenes):
 
 
 def _scene_lines(scene):
-    """Return one scene as a list item: its settings, then its tracks' clip slots, each on its own line."""
+    """Return one scene as a list item: its settings, then its clips, each on its own line."""
     if not scene:
         return [INDENT + LIST_ITEM + EMPTY_MAP]
     lines = []
     for key, value in scene.items():
         prefix = INDENT + LIST_ITEM if not lines else INDENT * 2
-        if key == SceneSetting.TRACKS:
-            lines.append(prefix + (HEADING.format(key=key) if value else SETTING.format(key=key, value=EMPTY_MAP)))
-            lines += [INDENT * 3 + SETTING.format(key=_text(track), value=_braces(clip_slot)) for track, clip_slot in (value or {}).items()]
+        if key == FileLayout.CLIPS:
+            lines.append(prefix + (HEADING.format(key=key) if value else SETTING.format(key=key, value=EMPTY_LIST)))
+            lines += [INDENT * 3 + LIST_ITEM + _braces(clip) for clip in value or []]
         else:
             lines.append(prefix + SETTING.format(key=key, value=_text(value)))
     return lines
@@ -205,22 +202,21 @@ def _song_groups(song):
     if settings:
         groups.append(settings)
     if song.get(Section.REGISTERS):
-        groups.append(_named(section=Section.REGISTERS, items=song[Section.REGISTERS]))
-    tracks = song.get(Section.TRACKS)
-    groups.append(_named(section=Section.TRACKS, items=tracks) if tracks else [SETTING.format(key=Section.TRACKS, value=EMPTY_MAP)])
+        groups.append(_keyed(section=Section.REGISTERS, items=song[Section.REGISTERS]))
+    groups.append(_items(section=Section.TRACKS, items=song.get(Section.TRACKS)))
     groups.append(_scenes(song.get(Section.SCENES) or []))
     return groups
 
 
 def _songs(songs):
-    """Return the songs section: each song's name, with its groups of lines indented under it and a blank line between."""
+    """Return the list of songs: each song's name as an item, with its groups of lines indented under it and a blank line between."""
     if not songs:
-        return [SETTING.format(key=Section.SONGS, value=EMPTY_MAP)]
+        return [SETTING.format(key=Section.SONGS, value=EMPTY_LIST)]
     lines = [HEADING.format(key=Section.SONGS)]
-    for number, (name, song) in enumerate(songs.items()):
+    for number, song in enumerate(songs):
         if number:
             lines.append(NOTHING)
-        lines.append(INDENT + HEADING.format(key=_text(name)))
+        lines.append(INDENT + LIST_ITEM + SETTING.format(key=FileLayout.NAME, value=_text(song[FileLayout.NAME])))
         for place, group in enumerate(_song_groups(song)):
             if place:
                 lines.append(NOTHING)
@@ -229,22 +225,21 @@ def _songs(songs):
 
 
 def dump_setlist(setlist):
-    """Return a set's data as the text of a set file."""
+    """Return a set's data, as the objects write it, as the text of a set file, laid out as the file is (composition/file_layout.py)."""
+    return dump_file_layout(as_file_layout(setlist))
+
+
+def dump_file_layout(setlist):
+    """Return a set's data, already laid out as the file is, as the text of a set file."""
     sections = [_settings_lines(setlist)]
     if setlist.get(Section.SCALES):
-        sections.append(_named(section=Section.SCALES, items=setlist[Section.SCALES]))
+        sections.append(_items(section=Section.SCALES, items=setlist[Section.SCALES]))
     if setlist.get(Section.PATTERNS):
         sections.append(_patterns(setlist[Section.PATTERNS]))
-    for section in _GENERATOR_SECTIONS:
+    for section in (FileLayout.GENERATORS, Section.GROOVES, Section.INSTRUMENTS):
         if setlist.get(section):
-            sections.append(_named(section=section, items=setlist[section]))
-    if setlist.get(Section.CHAINS):
-        sections.append(_chains(setlist[Section.CHAINS]))
-    if setlist.get(Section.GROOVES):
-        sections.append(_named(section=Section.GROOVES, items=setlist[Section.GROOVES]))
-    if setlist.get(Section.INSTRUMENTS):
-        sections.append(_named(section=Section.INSTRUMENTS, items=setlist[Section.INSTRUMENTS]))
-    sections.append(_songs(setlist.get(Section.SONGS) or {}))
+            sections.append(_items(section=section, items=setlist[section]))
+    sections.append(_songs(setlist.get(Section.SONGS) or []))
     written = [section for section in sections if section]
     return _joined(written) + LINE_BREAK
 

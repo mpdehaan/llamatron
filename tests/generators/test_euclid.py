@@ -32,6 +32,7 @@ from tests.support.rendering import setlist_from_data
 
 STEPS = 16
 MASKED = 'masked'
+MASKED_CHAIN = 'masked chain'
 SIXTEENTH = Rational(1, 16)
 
 
@@ -39,12 +40,12 @@ def sixteenths(*, track=None, generator=None, step_size='1/16', repeat=1):
     """Return a song whose lead plays a bar of sixteenths, the track given a mask and the clip's chain naming a Euclid generator."""
     clip = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat}
     if generator is not None:
-        clip[ClipSlotSetting.CHAINS] = [MASKED]
+        clip[ClipSlotSetting.CHAINS] = [MASKED_CHAIN]
     data = song(patterns={test_registers.X: dict(pattern(STEPS), **{PatternSetting.STEP_SIZE: step_size})}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip}}])
     data[Section.TRACKS][test_registers.LEAD] = {euclid_setting(part): value for part, value in (track or {}).items()}
     if generator is not None:
         data[Section.EUCLIDS] = {MASKED: generator}
-        data[Section.CHAINS] = {MASKED: [{GeneratorKind.EUCLID: MASKED}]}
+        data[Section.CHAINS] = {MASKED_CHAIN: [{GeneratorKind.EUCLID: MASKED}]}
     return data
 
 

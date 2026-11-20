@@ -1,4 +1,4 @@
-version: 1.0.206
+version: 1.0.591
 title: Voice leading
 description: "block chords on the piano in root position, inverted by hand and voice-led"
 notes: |
@@ -25,10 +25,10 @@ real_time: true
 protected: true
 
 scales:
-  D Major: { root: D, type: major }
+  - { name: D Major, root: D, type: major }
 
 patterns:
-  chords:
+  - name: chords
     steps: 4
     step_size: 1/4
     degree: [1, ~, 1, ~]
@@ -36,7 +36,7 @@ patterns:
     chord: [3, ~, 3, ~]
     velocity: [80, ~, 70, ~]
     tie: [false, true, false, true]
-  bass:
+  - name: bass
     steps: 4
     step_size: 1/4
     degree: [1, ~, ~, ~]
@@ -44,88 +44,72 @@ patterns:
     velocity: [90, ~, ~, ~]
     tie: [false, true, true, true]
 
-progressions:
-  pop: { chords: [1, 5, 6, 4] }
-  pop by hand: { chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
-  pachelbel: { chords: [1, 5, 6, 3, 4, 1, 4, 5] }
-  pachelbel by hand: { chords: [1, 5, 6, 3, 4, 1, 4, 5], inversions: [~, 1, ~, 1, 2, ~, 2, 1] }
-  circle: { chords: [6, 2, 5, 1] }
-  circle by hand: { chords: [6, 2, 5, 1], inversions: [~, 2, 1, ~] }
-
-voice_leadings:
-  smooth: {}
-  over the bass: { root_in_bass: true }
-
-chains:
-  pop:
-    - progression: pop
-  pop by hand:
-    - progression: pop by hand
-  pop smooth:
-    - progression: pop
-    - voice_leading: smooth
-  pachelbel:
-    - progression: pachelbel
-  pachelbel by hand:
-    - progression: pachelbel by hand
-  pachelbel smooth:
-    - progression: pachelbel
-    - voice_leading: smooth
-  circle:
-    - progression: circle
-  circle by hand:
-    - progression: circle by hand
-  circle over the bass:
-    - progression: circle
-    - voice_leading: over the bass
+generators:
+  - { name: pop, kind: progression, chords: [1, 5, 6, 4] }
+  - { name: pop by hand, kind: progression, chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
+  - { name: pachelbel, kind: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] }
+  - { name: pachelbel by hand, kind: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5], inversions: [~, 1, ~, 1, 2, ~, 2, 1] }
+  - { name: circle, kind: progression, chords: [6, 2, 5, 1] }
+  - { name: circle by hand, kind: progression, chords: [6, 2, 5, 1], inversions: [~, 2, 1, ~] }
+  - { name: smooth, kind: voice_leading }
+  - { name: over the bass, kind: voice_leading, root_in_bass: true }
+  - { name: pop chords, kind: chain, generators: [{ name: pop }] }
+  - { name: pop by hand chords, kind: chain, generators: [{ name: pop by hand }] }
+  - { name: pop smooth, kind: chain, generators: [{ name: pop }, { name: smooth }] }
+  - { name: pachelbel chords, kind: chain, generators: [{ name: pachelbel }] }
+  - { name: pachelbel by hand chords, kind: chain, generators: [{ name: pachelbel by hand }] }
+  - { name: pachelbel smooth, kind: chain, generators: [{ name: pachelbel }, { name: smooth }] }
+  - { name: circle chords, kind: chain, generators: [{ name: circle }] }
+  - { name: circle by hand chords, kind: chain, generators: [{ name: circle by hand }] }
+  - { name: circle over the bass, kind: chain, generators: [{ name: circle }, { name: over the bass }] }
 
 instruments:
-  piano: { device: "*FluidSynth", gm_sound: 1 }
+  - { name: piano, device: "*FluidSynth", gm_sound: 1 }
 
 songs:
-  voice_leading:
+  - name: voice_leading
     tempo: 96
     scale: D Major
     genre: Classical
 
     tracks:
-      right hand: { instrument: piano }
-      left hand: { instrument: piano }
+      - { name: right hand, instrument: piano }
+      - { name: left hand, instrument: piano }
 
     scenes:
       - name: "pop, root position"
-        tracks:
-          right hand: { pattern: chords, chains: [pop], repeat: 8 }
-          left hand: { pattern: bass, chains: [pop], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: pop chords }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: pop chords }], repeat: 8 }
       - name: "pop, by hand"
-        tracks:
-          right hand: { pattern: chords, chains: [pop by hand], repeat: 8 }
-          left hand: { pattern: bass, chains: [pop], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: pop by hand chords }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: pop chords }], repeat: 8 }
       - name: "pop, voice-led"
-        tracks:
-          right hand: { pattern: chords, chains: [pop smooth], repeat: 8 }
-          left hand: { pattern: bass, chains: [pop], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: pop smooth }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: pop chords }], repeat: 8 }
       - name: "pachelbel, root position"
-        tracks:
-          right hand: { pattern: chords, chains: [pachelbel], repeat: 8 }
-          left hand: { pattern: bass, chains: [pachelbel], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: pachelbel chords }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: pachelbel chords }], repeat: 8 }
       - name: "pachelbel, by hand"
-        tracks:
-          right hand: { pattern: chords, chains: [pachelbel by hand], repeat: 8 }
-          left hand: { pattern: bass, chains: [pachelbel], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: pachelbel by hand chords }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: pachelbel chords }], repeat: 8 }
       - name: "pachelbel, voice-led"
-        tracks:
-          right hand: { pattern: chords, chains: [pachelbel smooth], repeat: 8 }
-          left hand: { pattern: bass, chains: [pachelbel], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: pachelbel smooth }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: pachelbel chords }], repeat: 8 }
       - name: "circle, root position"
-        tracks:
-          right hand: { pattern: chords, chains: [circle], repeat: 8 }
-          left hand: { pattern: bass, chains: [circle], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: circle chords }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: circle chords }], repeat: 8 }
       - name: "circle, by hand"
-        tracks:
-          right hand: { pattern: chords, chains: [circle by hand], repeat: 8 }
-          left hand: { pattern: bass, chains: [circle], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: circle by hand chords }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: circle chords }], repeat: 8 }
       - name: "circle, over the bass"
-        tracks:
-          right hand: { pattern: chords, chains: [circle over the bass], repeat: 8 }
-          left hand: { pattern: bass, chains: [circle], repeat: 8 }
+        clips:
+          - { track: right hand, pattern: chords, generators: [{ name: circle over the bass }], repeat: 8 }
+          - { track: left hand, pattern: bass, generators: [{ name: circle chords }], repeat: 8 }

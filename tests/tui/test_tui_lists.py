@@ -796,7 +796,7 @@ class TestChainsPage(UITest):
         self.assertEqual(self.chains(), [NAMED, EMPTY, RISE_COPY, RISE])
 
     async def test_renaming_a_chain_updates_the_clips_that_use_it(self):
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAIN, value=NAMED)
+        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
         await self.press(keybindings.ChainsPage.RENAME)
         self.app.screen.value = BRIGHT
         await self.press(Key.ENTER)
@@ -809,7 +809,7 @@ class TestChainsPage(UITest):
         self.assertEqual(self.chains(), [NAMED])
 
     async def test_a_chain_in_use_cannot_be_deleted(self):
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAIN, value=NAMED)
+        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(TRACK_LEAD, self.text())
@@ -856,7 +856,7 @@ class TestChainEditor(UITest):
         render_song(self.document.song())
 
     async def test_n_renames_the_chain_and_the_clips_using_it(self):
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAIN, value=NAMED)
+        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
         await self.press(keybindings.ChainEditor.RENAME)
         self.app.screen.value = BRIGHT
         await self.press(Key.ENTER)

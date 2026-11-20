@@ -66,14 +66,6 @@ class TestChainPlaces(unittest.TestCase):
         scene = renderer.get_scenes()[0]
         self.assertEqual(renderer.chains_of(scene=scene, track=test_registers.LEAD), [OTHER_CHAIN, TWICE, OTHER_CHAIN, TWICE])
 
-    def test_a_file_from_before_lists_of_chains_reads_its_one_chain_as_a_list_of_one(self):
-        data = chained()
-        data[Section.SCENES][0][SceneSetting.TRACKS][test_registers.LEAD][ClipSlotSetting.CHAIN] = TWICE
-        clip = song_from_data(data).get_scenes()[0].get_clip_slot(test_registers.LEAD)
-        self.assertEqual(clip.get_chain_names(), [TWICE])
-        self.assertEqual(clip.to_data()[ClipSlotSetting.CHAINS], [TWICE])
-        self.assertNotIn(ClipSlotSetting.CHAIN, clip.to_data())
-
     def test_renaming_a_chain_renames_it_in_every_list(self):
         renamed = 'renamed'
         data = chained(clip_chains=[TWICE], scene_chains=[TWICE], track_chains=[OTHER_CHAIN, TWICE])

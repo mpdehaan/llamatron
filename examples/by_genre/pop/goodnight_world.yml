@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Goodnight world
 description: "an early eighties synth-pop song in the manner of Sweet Dreams (Eurythmics), with a melody of its own"
 notes: |
@@ -54,17 +54,17 @@ real_time: true
 protected: true
 
 scales:
-  D Minor: { root: D, type: minor }
+  - { name: D Minor, root: D, type: minor }
 
 patterns:
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
     velocity: [116, ~, ~, ~, 116, ~, ~, ~, 116, ~, ~, ~, 116, ~, ~, ~]
-  clap:
+  - name: clap
     steps: 16
     drum: true
     step_size: 1/16
@@ -72,7 +72,7 @@ patterns:
     accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, 108, ~, ~, ~]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -80,31 +80,31 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
     velocity: [80, ~, 67, ~, 80, ~, 67, ~, 80, ~, 67, ~, 80, ~, 67, ~]
-  bass:
+  - name: bass
     steps: 4
     step_size: 1/8
     degree: [1, 1, 1, 1]
     octave: [2, 2, 3, 2]
     velocity: [114, 107, 106, 107]
-  riff:
+  - name: riff
     steps: 16
     step_size: 1/8
     degree: [1, 1, 3, 1, 5, 3, 1, 5, 6, 3, 1, 3, 5, 2, 7, 2]
     octave: [3, 4, 4, 4, 4, 4, 4, 3, 3, 4, 4, 4, 3, 4, 3, 4]
     velocity: [111, 98, 100, 98, 102, 98, 100, 98, 111, 98, 100, 98, 102, 98, 100, 98]
-  riff high:
+  - name: riff high
     steps: 16
     step_size: 1/8
     degree: [1, 1, 3, 1, 5, 3, 1, 5, 6, 3, 1, 3, 5, 2, 7, 2]
     octave: [4, 5, 5, 5, 5, 5, 5, 4, 4, 5, 5, 5, 4, 5, 4, 5]
     velocity: [89, 76, 78, 76, 80, 76, 78, 76, 89, 76, 78, 76, 80, 76, 78, 76]
-  pulse:
+  - name: pulse
     steps: 8
     step_size: 1/8
     degree: [1, 1, 5, 1, 1, 1, 5, 1]
     octave: [4, 5, 4, 5, 4, 5, 4, 5]
     velocity: [107, 94, 96, 94, 98, 94, 96, 94]
-  pad:
+  - name: pad
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -112,7 +112,7 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [78, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  pad half:
+  - name: pad half
     steps: 4
     step_size: 1/8
     degree: [1, ~, ~, ~]
@@ -120,35 +120,35 @@ patterns:
     chord: ["3", ~, ~, ~]
     velocity: [78, ~, ~, ~]
     tie: [false, true, true, true]
-  verse tune:
+  - name: verse tune
     steps: 64
     step_size: 1/8
     degree: [1, ~, 1, 3, 3, ~, 3, ~, 1, ~, 2, ~, ~, ~, ~, ~, 3, ~, 3, 4, 4, ~, 3, ~, 1, ~, 2, ~, ~, ~, ~, ~, 1, ~, 1, 3, 3, ~, 4, ~, 3, ~, 2, ~, ~, ~, ~, ~, 3, ~, 3, 1, 1, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~]
     octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~]
     velocity: [112, ~, 104, 104, 104, ~, 104, ~, 104, ~, 100, ~, ~, ~, ~, ~, 112, ~, 104, 104, 104, ~, 104, ~, 104, ~, 100, ~, ~, ~, ~, ~, 112, ~, 104, 104, 104, ~, 104, ~, 104, ~, 100, ~, ~, ~, ~, ~, 112, ~, 104, 104, 104, ~, 104, ~, 104, ~, 100, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false]
-  pre third:
+  - name: pre third
     steps: 64
     step_size: 1/8
     degree: [~, ~, ~, ~, ~, ~, ~, ~, 7, ~, 7, 2, 2, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 4, 4, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, 7, ~, 7, 5, 7, ~, 2, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, 6, 4, ~, 4, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 6, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 5, 5, ~, 5, ~]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 100, 100, 100, ~, 96, ~, ~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 100, 100, 100, ~, 96, ~, ~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 100, 100, 100, ~, 96, ~, ~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 100, 100, 100, ~, 96, ~]
     tie: [false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true]
-  pre tune:
+  - name: pre tune
     steps: 64
     step_size: 1/8
     degree: [6, ~, 6, 5, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 3, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 1, 1, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 3, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, 5, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 6, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [112, ~, 104, 104, 104, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, ~, 104, 104, 104, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, ~, 104, 104, 116, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, ~, 104, 104, 104, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false]
-  bridge tune:
+  - name: bridge tune
     steps: 64
     step_size: 1/8
     degree: [5, ~, 5, ~, 4, ~, ~, ~, 1, ~, 1, ~, 4, ~, ~, ~, 5, ~, 5, ~, 7, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 2, ~, 2, ~, 1, ~, ~, ~, 7, ~, 7, ~, 4, ~, ~, ~, 3, ~, 3, ~, 2, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, 5, ~, 5, ~, ~, ~, 6, ~, 6, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [112, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 104, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, true, true, true, true, false, false]
-  solo tune:
+  - name: solo tune
     steps: 64
     step_size: 1/8
     degree: [1, 2, 3, 5, 4, 3, 2, 3, 6, 5, 3, 1, 2, 5, 7, 2, 1, 7, 5, 7, 1, 3, 2, 1, 6, 1, 3, 1, 7, 5, 2, ~, 3, 5, 1, 5, 3, 5, 1, 3, 3, 1, 6, 1, 2, 7, 5, 7, 1, 2, 3, 4, 3, 2, 1, 7, 1, ~, ~, ~, 7, ~, 5, ~]
@@ -156,138 +156,133 @@ patterns:
     velocity: [115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, ~, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, ~, ~, ~, 106, ~, 104, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, true]
 
-progressions:
-  loop: { chords: [1, 1, 6, 5], every: 1/2 }
-  pre: { chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] }
-  bridge: { chords: [1, 4], qualities: [sus4, M] }
-
-chains:
-  loop:
-    - progression: loop
-  pre:
-    - progression: pre
-  bridge:
-    - progression: bridge
+generators:
+  - { name: loop, kind: progression, chords: [1, 1, 6, 5], every: 1/2 }
+  - { name: pre, kind: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] }
+  - { name: bridge, kind: progression, chords: [1, 4], qualities: [sus4, M] }
+  - { name: loop chords, kind: chain, generators: [{ name: loop }] }
+  - { name: pre chords, kind: chain, generators: [{ name: pre }] }
+  - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }
 
 instruments:
-  synth bass: { device: "*FluidSynth", gm_sound: 39 }
-  square lead: { device: "*FluidSynth", gm_sound: 81 }
-  synth strings: { device: "*FluidSynth", gm_sound: 51 }
-  voice lead: { device: "*FluidSynth", gm_sound: 86 }
-  saw lead: { device: "*FluidSynth", gm_sound: 82 }
-  choir: { device: "*FluidSynth", gm_sound: 53 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
+  - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
+  - { name: synth strings, device: "*FluidSynth", gm_sound: 51 }
+  - { name: voice lead, device: "*FluidSynth", gm_sound: 86 }
+  - { name: saw lead, device: "*FluidSynth", gm_sound: 82 }
+  - { name: choir, device: "*FluidSynth", gm_sound: 53 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  goodnight_world:
+  - name: goodnight_world
     tempo: 126
     scale: D Minor
     genre: Pop
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      clap: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      bass: { instrument: synth bass }
-      riff: { instrument: square lead }
-      riff high: { instrument: synth strings }
-      pad: { instrument: synth strings }
-      lead: { instrument: voice lead }
-      solo: { instrument: saw lead }
-      choir: { instrument: choir }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: clap, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: bass, instrument: synth bass }
+      - { name: riff, instrument: square lead }
+      - { name: riff high, instrument: synth strings }
+      - { name: pad, instrument: synth strings }
+      - { name: lead, instrument: voice lead }
+      - { name: solo, instrument: saw lead }
+      - { name: choir, instrument: choir }
 
     scenes:
       - name: intro
-        tracks:
-          riff: { pattern: riff, repeat: 2 }
+        clips:
+          - { track: riff, pattern: riff, repeat: 2 }
       - name: intro 2
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          hat: { pattern: hat, loop: true }
-          riff: { pattern: riff, loop: true }
-          riff high: { pattern: riff high, loop: true }
-          bass: { pattern: bass, chains: [loop], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: riff high, pattern: riff high, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
       - name: verse
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          clap: { pattern: clap, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [loop], loop: true }
-          riff: { pattern: riff, loop: true }
-          riff high: { pattern: riff high, loop: true }
-          pad: { pattern: pad half, chains: [loop], loop: true }
-          lead: { pattern: verse tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: riff high, pattern: riff high, loop: true }
+          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: lead, pattern: verse tune, loop: true }
       - name: pre-chorus
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          clap: { pattern: clap, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [pre], loop: true }
-          riff: { pattern: pulse, chains: [pre], loop: true }
-          pad: { pattern: pad, chains: [pre], loop: true }
-          lead: { pattern: pre tune, loop: true }
-          choir: { pattern: pre third, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: pre chords }], loop: true }
+          - { track: riff, pattern: pulse, generators: [{ name: pre chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: pre chords }], loop: true }
+          - { track: lead, pattern: pre tune, loop: true }
+          - { track: choir, pattern: pre third, loop: true }
       - name: instrumental
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          clap: { pattern: clap, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [loop], loop: true }
-          riff: { pattern: riff, loop: true }
-          riff high: { pattern: riff high, loop: true }
-          pad: { pattern: pad half, chains: [loop], loop: true }
-          solo: { pattern: solo tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: riff high, pattern: riff high, loop: true }
+          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: solo, pattern: solo tune, loop: true }
       - name: verse 2
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          clap: { pattern: clap, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [loop], loop: true }
-          riff: { pattern: riff, loop: true }
-          riff high: { pattern: riff high, loop: true }
-          pad: { pattern: pad half, chains: [loop], loop: true }
-          lead: { pattern: verse tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: riff high, pattern: riff high, loop: true }
+          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: lead, pattern: verse tune, loop: true }
       - name: pre-chorus 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          clap: { pattern: clap, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [pre], loop: true }
-          riff: { pattern: pulse, chains: [pre], loop: true }
-          pad: { pattern: pad, chains: [pre], loop: true }
-          lead: { pattern: pre tune, loop: true }
-          choir: { pattern: pre third, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: pre chords }], loop: true }
+          - { track: riff, pattern: pulse, generators: [{ name: pre chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: pre chords }], loop: true }
+          - { track: lead, pattern: pre tune, loop: true }
+          - { track: choir, pattern: pre third, loop: true }
       - name: bridge
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          bass: { pattern: bass, chains: [bridge], loop: true }
-          riff: { pattern: pulse, chains: [bridge], loop: true }
-          pad: { pattern: pad, chains: [bridge], loop: true }
-          lead: { pattern: bridge tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: bass, pattern: bass, generators: [{ name: bridge chords }], loop: true }
+          - { track: riff, pattern: pulse, generators: [{ name: bridge chords }], loop: true }
+          - { track: pad, pattern: pad, generators: [{ name: bridge chords }], loop: true }
+          - { track: lead, pattern: bridge tune, loop: true }
       - name: verse 3
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          clap: { pattern: clap, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [loop], loop: true }
-          riff: { pattern: riff, loop: true }
-          riff high: { pattern: riff high, loop: true }
-          pad: { pattern: pad half, chains: [loop], loop: true }
-          lead: { pattern: verse tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: riff high, pattern: riff high, loop: true }
+          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: lead, pattern: verse tune, loop: true }
       - name: instrumental 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          clap: { pattern: clap, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [loop], loop: true }
-          riff: { pattern: riff, loop: true }
-          riff high: { pattern: riff high, loop: true }
-          pad: { pattern: pad half, chains: [loop], loop: true }
-          solo: { pattern: solo tune, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: riff high, pattern: riff high, loop: true }
+          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: solo, pattern: solo tune, loop: true }
       - name: outro
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          hat: { pattern: hat, loop: true }
-          riff: { pattern: riff, loop: true }
-          riff high: { pattern: riff high, loop: true }
-          bass: { pattern: bass, chains: [loop], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: riff, pattern: riff, loop: true }
+          - { track: riff high, pattern: riff high, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }

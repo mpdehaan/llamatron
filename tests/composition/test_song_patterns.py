@@ -31,7 +31,6 @@ from llamatron.exporters.timing import timed_events
 from llamatron.music.chord import Chord
 from llamatron.music.note import Note, NoteName, Rest
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support import version as version_values
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import build, clip, lead, lead_data, lead_song, pat, pitches, with_parts
@@ -40,7 +39,6 @@ QUARTER = '1/4'
 HALF = '1/2'
 EIGHTH = '1/8'
 NOPE = 'nope'
-YES = 'yes'
 B = 'b'
 SIXTEENTH = '1/16'
 DOM = 'dom'
@@ -51,8 +49,7 @@ M5 = 'M5'
 MAJ7 = 'maj7'
 C_MINOR = 'C minor'
 KICK = 'kick'
-# A version from before song files numbered octaves from C0.
-OLD_VERSION = '1.0.24'
+YES = 'yes'
 
 
 class TestPatterns(unittest.TestCase):
@@ -73,30 +70,6 @@ class TestPatterns(unittest.TestCase):
         data = with_parts(patterns={song_testing.X: pat([1, HALF])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}])
         del data[SetlistSetting.DEFAULT_OCTAVE]
         self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [60])
-
-    def test_a_file_saved_before_the_numbering_changed_has_its_octaves_moved_up(self):
-        # Older files numbered octaves as Live labels them, two lower, so an old 3 and a new 5 are both middle C.
-        data = with_parts(patterns={song_testing.X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}])
-        data[SetlistSetting.DEFAULT_OCTAVE] = 3
-        data[SetlistSetting.DEFAULT_DRUM_OCTAVE] = 1
-        data[SetlistSetting.VERSION] = OLD_VERSION
-        song = song_from_data(data)
-        self.assertEqual((song.get_default_octave(), song.get_default_drum_octave()), (3 + file_format.LIVE_OCTAVE_OFFSET, 1 + file_format.LIVE_OCTAVE_OFFSET))
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [60])
-
-    def test_a_file_saved_since_the_numbering_changed_or_without_a_version_is_read_as_it_is(self):
-        for version in [file_format.LLAMATRON_OCTAVES_SINCE, version_values.VERSION, None]:
-            with self.subTest(version=version):
-                data = with_parts(patterns={song_testing.X: pat([1, HALF], octave=[3])}, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: song_testing.X}}}])
-                if version is not None:
-                    data[SetlistSetting.VERSION] = version
-                self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [36])
-
-    def test_an_old_file_still_refuses_octaves_that_are_not_numbers(self):
-        data = with_parts(patterns={song_testing.X: pat([1, HALF], octave=[YES])})
-        data[SetlistSetting.VERSION] = OLD_VERSION
-        with self.assertRaises(SongFileError):
-            song_from_data(data)
 
     def test_octave_labels_are_a_song_setting_with_lives_as_the_default(self):
         self.assertEqual(song_from_data(with_parts()).get_octave_labels(), OctaveLabels.LIVE)

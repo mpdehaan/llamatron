@@ -33,10 +33,11 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
 
 from fractions import Fraction
 
+from llamatron.composition import naming, sections
 from llamatron.macro_composer import loudness, notation
 from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped
-from llamatron.strings import errors
+from llamatron.strings import errors, labels, names
 
 # The fields of an input.
 NAME = 'name'
@@ -164,6 +165,38 @@ def players_of(scenes):
     return {pattern: sorted(set(tracks)) for pattern, tracks in players.items()}
 
 
+def names_apart(*, generators, chains):
+    """Return the generators, by section, and the chains, with names no two share, since a set file lists every generator, the
+    chains among them, in one list: generators of two kinds that share a name each take their kind's word, as kick rush beside
+    kick drag, and a chain that shares a generator's name takes the word chain, as guitar player chain, which runs the
+    Musician guitar player. Every chain's steps and every clip follow."""
+    plain = [name for items in generators.values() for name in items]
+    clashing = {name for name in plain if sum(naming.same_name(one=name, other=other) for other in plain) > 1}
+    taken = plain + list(chains)
+    renamed = {}
+    apart = {}
+    for section, items in generators.items():
+        kind = sections.GENERATOR_KINDS[section]
+        apart[section] = {}
+        for name, settings in items.items():
+            if name in clashing:
+                renamed[(kind, name)] = naming.unique_name(base=names.MSG_NAMED_FOR_KIND.format(name=name, word=labels.MSG_KIND_WORDS[kind]), taken=taken)
+                taken.append(renamed[(kind, name)])
+            apart[section][renamed.get((kind, name), name)] = settings
+    held = [name for items in apart.values() for name in items]
+    chains_renamed = {}
+    for name in chains:
+        if naming.is_taken(name=name, taken=held):
+            chains_renamed[name] = naming.unique_name(base=names.MSG_NAMED_FOR_KIND.format(name=name, word=names.MSG_CHAIN_WORD), taken=taken)
+            taken.append(chains_renamed[name])
+    return apart, {chains_renamed.get(name, name): [_step_renamed(step=step, renamed=renamed) for step in steps] for name, steps in chains.items()}, chains_renamed
+
+
+def _step_renamed(*, step, renamed):
+    kind, name = next(iter(step.items()))
+    return {kind: renamed.get((kind, name), name)}
+
+
 def composed(*, given, version):
     """An input as a set's data."""
     signature = signature_of(given)
@@ -180,9 +213,14 @@ def composed(*, given, version):
         if optional in given:
             data[optional] = given[optional]
     data.update({NOTES: given.get(NOTES, ''), REAL_TIME: True, PROTECTED: True, SCALES: given[SCALES], PATTERNS: patterns})
-    data.update(given.get(GENERATORS, {}))
-    if given.get(CHAINS):
-        data[CHAINS] = given[CHAINS]
+    generators, chains, chains_renamed = names_apart(generators=given.get(GENERATORS, {}), chains=given.get(CHAINS, {}))
+    for scene in scenes:
+        for clip in scene[TRACKS].values():
+            if CHAINS in clip:
+                clip[CHAINS] = [chains_renamed.get(chain, chain) for chain in clip[CHAINS]]
+    data.update(generators)
+    if chains:
+        data[CHAINS] = chains
     data[INSTRUMENTS] = {name: instrument_of(sound) for name, sound in given[INSTRUMENTS].items()}
     song = {TEMPO: given[TEMPO], SCALE: given[SCALE], GENRE: given[GENRE]}
     for optional in (GROOVE, TIME_SIGNATURE):

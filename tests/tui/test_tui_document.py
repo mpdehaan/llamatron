@@ -23,6 +23,7 @@ import yaml
 from llamatron.composition import defaults, limits, setlist
 from llamatron.composition.clip_slot import morph_style_name
 from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, GeneratorKind, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
+from llamatron.composition.file_layout import as_object_layout
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import scale_type_name
@@ -157,7 +158,7 @@ def song_with_things():
         NAMED: [{GeneratorKind.ARP: UP}, {GeneratorKind.AUTO_RATCHET: ROLLS}],
     }
     song[Section.SCENES] = [
-        {SceneSetting.NAME: ONE, SceneSetting.REPEAT: 2, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAIN: NAMED}}},
+        {SceneSetting.NAME: ONE, SceneSetting.REPEAT: 2, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NAMED]}}},
         {SceneSetting.NAME: TWO, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.REPEAT: 2, ClipSlotSetting.MORPH_TO: B, ClipSlotSetting.MORPH_STYLE: morph_style_name(BlendMode.LEFT)}, BASS: {ClipSlotSetting.PATTERN: B}}},
         {SceneSetting.NAME: THREE, SceneSetting.SCALE: setlist.DEFAULT_SCALE, SceneSetting.TRACKS: {BASS: {ClipSlotSetting.PATTERN: B}}},
     ]
@@ -314,7 +315,7 @@ class TestSaving(unittest.TestCase):
         path = os.path.join(self.folder, 'x.yml')
         document.save(path=path)
         with open(path) as file:
-            self.assertNotIn(Row.VELOCITY, yaml.safe_load(file)[Section.PATTERNS][A])
+            self.assertNotIn(Row.VELOCITY, as_object_layout(yaml.safe_load(file))[Section.PATTERNS][A])
         self.assertIsNotNone(document.song().get_pattern(A).get_row(Row.VELOCITY))
 
     def test_makes_folders(self):

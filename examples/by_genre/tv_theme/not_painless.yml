@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Not painless
 description: "a gentle, wistful guitar theme in the manner of M*A*S*H (Johnny Mandel), with a melody of its own"
 notes: |
@@ -44,10 +44,10 @@ real_time: true
 protected: true
 
 scales:
-  G Minor: { root: G, type: minor }
+  - { name: G Minor, root: G, type: minor }
 
 patterns:
-  rim:
+  - name: rim
     steps: 16
     drum: true
     step_size: 1/16
@@ -55,7 +55,7 @@ patterns:
     accidental: [~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 62, ~, ~, ~, ~, ~, ~, ~, 62, ~, ~, ~]
-  shaker:
+  - name: shaker
     steps: 16
     drum: true
     step_size: 1/16
@@ -63,20 +63,20 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~]
     velocity: [58, ~, 34, ~, 52, ~, 34, ~, 55, ~, 34, ~, 52, ~, 34, ~]
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [70, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  pick:
+  - name: pick
     steps: 8
     step_size: 1/8
     degree: [1, 5, 1, 3, 5, 1, 3, 1]
     octave: [3, 3, 4, 4, 3, 4, 4, 4]
     velocity: [92, 76, 80, 76, 83, 76, 80, 76]
-  strum:
+  - name: strum
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -84,35 +84,35 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [70, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  bass:
+  - name: bass
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, 1, 5, ~]
     octave: [3, ~, ~, ~, ~, 3, 2, ~]
     velocity: [98, ~, ~, ~, ~, 82, 86, ~]
     tie: [false, true, true, true, true, false, false, true]
-  verse:
+  - name: verse
     steps: 64
     step_size: 1/8
     degree: [~, ~, 6, 7, 1, ~, 6, ~, 7, ~, ~, 5, 4, ~, ~, ~, ~, ~, 5, 6, 7, ~, 5, ~, 5, ~, ~, 3, 1, ~, ~, ~, ~, ~, 6, 7, 1, ~, 2, ~, 4, ~, ~, 2, 7, ~, ~, ~, ~, ~, 7, 1, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [~, ~, 5, 5, 6, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, ~, ~, 5, 5, 5, ~, 5, ~, 5, ~, ~, 5, 5, ~, ~, ~, ~, ~, 5, 5, 6, ~, 6, ~, 6, ~, ~, 6, 5, ~, ~, ~, ~, ~, 5, 6, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
     velocity: [~, ~, 98, 94, 101, ~, 98, ~, 110, ~, ~, 94, 101, ~, ~, ~, ~, ~, 98, 94, 101, ~, 98, ~, 110, ~, ~, 94, 101, ~, ~, ~, ~, ~, 98, 94, 101, ~, 98, ~, 110, ~, ~, 94, 101, ~, ~, ~, ~, ~, 98, 94, 101, ~, 98, ~, 110, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, true, true, true, true, false, false]
-  refrain:
+  - name: refrain
     steps: 64
     step_size: 1/8
     degree: [3, ~, ~, ~, 2, ~, 1, ~, 2, ~, ~, ~, 7, ~, ~, ~, 2, ~, ~, ~, 1, ~, 7, ~, 1, ~, ~, ~, 5, ~, ~, ~, 6, ~, 1, ~, 4, ~, 1, ~, 2, ~, ~, ~, 7, ~, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, 6, ~, 5, ~, 6, ~, ~, ~, 5, ~, ~, ~, 5, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [114, ~, ~, ~, 105, ~, 102, ~, 114, ~, ~, ~, 105, ~, ~, ~, 114, ~, ~, ~, 105, ~, 102, ~, 114, ~, ~, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, 102, ~, 114, ~, ~, ~, 105, ~, 102, ~, 114, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false]
-  echo:
+  - name: echo
     steps: 64
     step_size: 1/8
     degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 7, 1, ~, 5, ~, 3, ~, ~, ~, ~, ~, ~, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 6, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 81, ~, 78, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 81, ~, 78, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 78, 74, 81, ~, 78, ~, 90, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true, true, true, false, false]
-  first line:
+  - name: first line
     steps: 32
     step_size: 1/8
     degree: [~, ~, 6, 7, 1, ~, 6, ~, 7, ~, ~, 5, 4, ~, ~, ~, ~, ~, 5, 6, 7, ~, 5, ~, 5, ~, ~, 3, 1, ~, ~, ~]
@@ -120,74 +120,64 @@ patterns:
     velocity: [~, ~, 92, 88, 95, ~, 92, ~, 104, ~, ~, 88, 95, ~, ~, ~, ~, ~, 92, 88, 95, ~, 92, ~, 104, ~, ~, 88, 95, ~, ~, ~]
     tie: [false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true]
 
-progressions:
-  verse: { chords: [4, 7, 3, 1] }
-  refrain: { chords: [6, 7, 5, 1, 4, 7, 1, 1] }
-
-guitarifies:
-  soft: { bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 }
-
-chains:
-  verse:
-    - progression: verse
-  verse strum:
-    - progression: verse
-    - guitarify: soft
-  refrain:
-    - progression: refrain
-  refrain strum:
-    - progression: refrain
-    - guitarify: soft
+generators:
+  - { name: verse, kind: progression, chords: [4, 7, 3, 1] }
+  - { name: refrain, kind: progression, chords: [6, 7, 5, 1, 4, 7, 1, 1] }
+  - { name: soft, kind: guitarify, bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 }
+  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
+  - { name: verse strum, kind: chain, generators: [{ name: verse }, { name: soft }] }
+  - { name: refrain chords, kind: chain, generators: [{ name: refrain }] }
+  - { name: refrain strum, kind: chain, generators: [{ name: refrain }, { name: soft }] }
 
 instruments:
-  nylon guitar: { device: "*FluidSynth", gm_sound: 25 }
-  acoustic bass: { device: "*FluidSynth", gm_sound: 33 }
-  flute: { device: "*FluidSynth", gm_sound: 74 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: nylon guitar, device: "*FluidSynth", gm_sound: 25 }
+  - { name: acoustic bass, device: "*FluidSynth", gm_sound: 33 }
+  - { name: flute, device: "*FluidSynth", gm_sound: 74 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  not_painless:
+  - name: not_painless
     tempo: 90
     scale: G Minor
     genre: TV Theme
 
     tracks:
-      rim: { drum: true, instrument: drum kit }
-      shaker: { drum: true, instrument: drum kit }
-      kick: { drum: true, instrument: drum kit }
-      guitar: { instrument: nylon guitar }
-      guitar 2: { instrument: nylon guitar }
-      bass: { instrument: acoustic bass }
-      lead: { instrument: flute }
-      answer: { instrument: flute }
+      - { name: rim, drum: true, instrument: drum kit }
+      - { name: shaker, drum: true, instrument: drum kit }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: guitar, instrument: nylon guitar }
+      - { name: guitar 2, instrument: nylon guitar }
+      - { name: bass, instrument: acoustic bass }
+      - { name: lead, instrument: flute }
+      - { name: answer, instrument: flute }
 
     scenes:
       - name: theme
-        tracks:
-          guitar: { pattern: pick, chains: [verse], repeat: 8 }
-          guitar 2: { pattern: strum, chains: [verse strum], loop: true }
-          lead: { pattern: verse, loop: true }
+        clips:
+          - { track: guitar, pattern: pick, generators: [{ name: verse chords }], repeat: 8 }
+          - { track: guitar 2, pattern: strum, generators: [{ name: verse strum }], loop: true }
+          - { track: lead, pattern: verse, loop: true }
       - name: refrain
-        tracks:
-          guitar: { pattern: pick, chains: [refrain], repeat: 8 }
-          guitar 2: { pattern: strum, chains: [refrain strum], loop: true }
-          rim: { pattern: rim, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          kick: { pattern: kick, loop: true }
-          bass: { pattern: bass, chains: [refrain], loop: true }
-          lead: { pattern: refrain, loop: true }
-          answer: { pattern: echo, loop: true }
+        clips:
+          - { track: guitar, pattern: pick, generators: [{ name: refrain chords }], repeat: 8 }
+          - { track: guitar 2, pattern: strum, generators: [{ name: refrain strum }], loop: true }
+          - { track: rim, pattern: rim, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: refrain chords }], loop: true }
+          - { track: lead, pattern: refrain, loop: true }
+          - { track: answer, pattern: echo, loop: true }
       - name: theme again
-        tracks:
-          guitar: { pattern: pick, chains: [verse], repeat: 4 }
-          guitar 2: { pattern: strum, chains: [verse strum], loop: true }
-          rim: { pattern: rim, loop: true }
-          shaker: { pattern: shaker, loop: true }
-          kick: { pattern: kick, loop: true }
-          bass: { pattern: bass, chains: [verse], loop: true }
-          lead: { pattern: first line, loop: true }
+        clips:
+          - { track: guitar, pattern: pick, generators: [{ name: verse chords }], repeat: 4 }
+          - { track: guitar 2, pattern: strum, generators: [{ name: verse strum }], loop: true }
+          - { track: rim, pattern: rim, loop: true }
+          - { track: shaker, pattern: shaker, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: lead, pattern: first line, loop: true }
       - name: outro
-        tracks:
-          guitar: { pattern: pick, chains: [verse], repeat: 4 }
-          guitar 2: { pattern: strum, chains: [verse strum], loop: true }
-          answer: { pattern: first line, loop: true }
+        clips:
+          - { track: guitar, pattern: pick, generators: [{ name: verse chords }], repeat: 4 }
+          - { track: guitar 2, pattern: strum, generators: [{ name: verse strum }], loop: true }
+          - { track: answer, pattern: first line, loop: true }

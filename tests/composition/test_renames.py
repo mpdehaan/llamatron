@@ -84,6 +84,9 @@ EXAMPLES = example_sets()
 SETTINGS_OF = {ClipSlot: ClipSlotSetting, Scene: SceneSetting, Song: SongSetting, Track: TrackSetting, HocketSettings: HocketSetting, FollowChordsSettings: FollowChordsSetting, MusicianSettings: MusicianSetting}
 # One name given to a pattern, a scale, a chain, a groove, an arp, an AutoRatchet and a track at once.
 SHARED = 'shared'
+# The arp's and the AutoRatchet's names, which a set file lists beside the chain's, where no two generators share a name.
+SHARED_ARP = 'shared arp'
+SHARED_RATCHET = 'shared ratchet'
 RENAMED_SCALE = 'the scale renamed'
 RENAMED_ARP = 'the arp renamed'
 
@@ -135,7 +138,7 @@ def song_with_every_reference():
     document.set_clip_slot_morph_target(index=FIRST, track=LEAD, pattern=ANSWER)
     document.add_clip_slot(index=FIRST, track=BASS, pattern=ANSWER)
     document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.GRAB_TRACK, value=LEAD)
-    document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.CHAIN, value=NAMED)
+    document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.CHAINS, value=[NAMED])
     document.add_scene(index=SECOND, name=CHORUS)
     document.change(document.song().get_scene(SECOND).set_scale_name, name=OTHER, song=document.song())
     document.add_groove(SHUFFLE)
@@ -219,24 +222,25 @@ def constants_of(holder):
 
 
 def song_with_one_name_for_everything():
-    """Return a document in which a pattern, a scale, a chain, a groove, an arp, an AutoRatchet and a track share one name, and one clip names them all."""
+    """Return a document in which a pattern, a scale, a chain, a groove and a track share one name, and one clip names them all; the
+    chain's arp and AutoRatchet, which a set file lists beside the chain, have names of their own."""
     document = Document()
     document.add_scale(name=SHARED, root=NoteName.F, kind=scale_type_name(ScaleType.MINOR))
     document.add_pattern(name=SHARED, steps=STEPS)
     document.add_pattern(name=TUNE, steps=STEPS)
     document.add_track(SHARED)
     document.add_track(BASS)
-    document.add_generator(section=Section.ARPS, name=SHARED)
-    document.add_generator(section=Section.AUTO_RATCHETS, name=SHARED)
+    document.add_generator(section=Section.ARPS, name=SHARED_ARP)
+    document.add_generator(section=Section.AUTO_RATCHETS, name=SHARED_RATCHET)
     document.add_chain(SHARED)
-    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.ARP, name=SHARED, setlist=document.get_setlist())
-    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=SHARED, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.ARP, name=SHARED_ARP, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=SHARED_RATCHET, setlist=document.get_setlist())
     document.add_groove(SHARED)
     document.add_scene(index=FIRST, name=SHARED)
     document.change(document.song().get_scene(FIRST).set_scale_name, name=SHARED, song=document.song())
     document.change(document.song().get_scene(FIRST).set_groove_choice, choice=SHARED, song=document.song())
     document.add_clip_slot(index=FIRST, track=BASS, pattern=SHARED)
-    document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.CHAIN, value=SHARED)
+    document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.CHAINS, value=[SHARED])
     document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.GRAB_TRACK, value=SHARED)
     document.add_clip_slot(index=FIRST, track=SHARED, pattern=TUNE)
     return document
@@ -265,8 +269,8 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         # Everything else that was called the same is still called that.
         self.assertEqual(scene.get_groove_choice(), SHARED)
         self.assertEqual((clip.get_pattern_name(), clip.get_chain_names(), clip.get_grab_track()), (SHARED, [SHARED], SHARED))
-        setlist.rename_item(section=Section.ARPS, old=SHARED, new=RENAMED_ARP)
-        self.assertEqual([(step.kind, step.name) for step in setlist.get_chain(SHARED).get_steps()], [(GeneratorKind.ARP, RENAMED_ARP), (GeneratorKind.AUTO_RATCHET, SHARED)])
+        setlist.rename_item(section=Section.ARPS, old=SHARED_ARP, new=RENAMED_ARP)
+        self.assertEqual([(step.kind, step.name) for step in setlist.get_chain(SHARED).get_steps()], [(GeneratorKind.ARP, RENAMED_ARP), (GeneratorKind.AUTO_RATCHET, SHARED_RATCHET)])
         self.assertEqual(Setlist.from_data(data=setlist.to_data()).to_data(), setlist.to_data())
 
     def test_a_rename_changes_only_what_named_the_item(self):
@@ -312,8 +316,9 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         self.assertTrue(scene.names_item(section=Section.SCALES, name=SHARED))
         self.assertTrue(scene.names_item(section=Section.GROOVES, name=SHARED))
         chain = document.get_setlist().get_chain(SHARED)
-        self.assertTrue(chain.names_item(section=Section.ARPS, name=SHARED))
-        self.assertTrue(chain.names_item(section=Section.AUTO_RATCHETS, name=SHARED))
+        self.assertTrue(chain.names_item(section=Section.ARPS, name=SHARED_ARP))
+        self.assertTrue(chain.names_item(section=Section.AUTO_RATCHETS, name=SHARED_RATCHET))
+        self.assertFalse(chain.names_item(section=Section.ARPS, name=SHARED_RATCHET))
         self.assertFalse(chain.names_item(section=Section.ARPS, name=TUNE))
         self.assertFalse(chain.names_item(section=Section.PATTERNS, name=SHARED))
         self.assertIsInstance(chain, Chain)

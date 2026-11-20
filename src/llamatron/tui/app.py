@@ -250,6 +250,8 @@ class LlamatronApp(App, inherit_bindings=False):
         if self._offered is not None:
             offer_corrected(page=page, document=self._offered, corrections=self._corrections, then=lambda document: self._opened(page=page, document=document))
         elif self._document.get_path() is not None:
+            if self._document.conversion_note() is not None:
+                page.say(self._document.conversion_note())
             self._warn_of_silent_instruments(page)
         self._begin_launch(page)
         if self._start_screen:

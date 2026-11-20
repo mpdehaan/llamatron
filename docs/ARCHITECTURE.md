@@ -70,7 +70,8 @@ or a track can choose another or switch grooving off, the track's choice winning
    part in one scene), `Pattern`, `NamedScale`, `Chain`, `Groove` and the settings of each generator. Every
    object checks its own values as it loads, so a bad file is refused with a message that says
    where the problem is, down to the song. Every object can also turn itself back into file data,
-   which is how saving works. A file from before sets held one song, and is read as a set of one.
+   which is how saving works. A file saved by an older version is first moved to the layout written now by the migrations
+   (`src/llamatron/composition/migrations/`), so the rest of llamatron only knows one layout.
 2. **The song is played.** `playback` walks each scene and plays each clip slot's pattern as many
    times as it repeats, applying everything that changes the notes on the way: the scale, the
    track's transpose, probability, ratchets, ties, glide, play directions, grabs from other

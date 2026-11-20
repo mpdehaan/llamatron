@@ -1,4 +1,4 @@
-version: 1.0.206
+version: 1.0.591
 title: "Look ma, no notes"
 description: "a gospel song whose bass, piano and lead are all grabbed from the organ's chords"
 notes: |
@@ -38,73 +38,73 @@ real_time: true
 protected: true
 
 scales:
-  Ab Major: { root: Ab, type: major }
-  A Major: { root: A, type: major }
+  - { name: Ab Major, root: Ab, type: major }
+  - { name: A Major, root: A, type: major }
 
 patterns:
-  harmony:
+  - name: harmony
     steps: 1
     step_size: 1
     degree: [1]
     octave: [4]
     chord: [7]
     velocity: [64]
-  harmony turnaround:
+  - name: harmony turnaround
     steps: 4
     step_size: 1
     degree: [1, 1, 1, 1]
     octave: [4, 4, 4, 4]
     chord: [M7, m6, M7, dom7]
     velocity: [64, 64, 64, 64]
-  bass:
+  - name: bass
     steps: 8
     step_size: 1/8
     grab: [true, false, false, true, true, false, true, false]
-  piano:
+  - name: piano
     steps: 8
     step_size: 1/8
     chord: [7, ~, ~, 7, ~, ~, 7, ~]
     velocity: [90, ~, ~, 90, ~, ~, 90, ~]
     tie: [false, true, true, false, true, true, false, true]
     grab: [true, false, false, true, false, false, true, false]
-  piano turnaround:
+  - name: piano turnaround
     steps: 16
     step_size: 1/4
     chord: [M7, ~, ~, ~, m6, ~, ~, ~, M7, ~, ~, ~, dom7, ~, ~, ~]
     velocity: [90, ~, ~, ~, 90, ~, ~, ~, 90, ~, ~, ~, 90, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true]
     grab: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
-  lead from registers:
+  - name: lead from registers
     steps: 16
     step_size: 1/8
     grab: [true, false, true, true, false, true, true, true, true, false, true, false, true, true, true, false]
     ax_note: [1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0]
     ax_set: [0, ~, 2, 4, ~, 5, 4, 2, 4, ~, 2, ~, 0, 2, 0, ~]
-  lead for the arpeggiator:
+  - name: lead for the arpeggiator
     steps: 8
     step_size: 1/8
     chord: [7, ~, ~, ~, 7, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true]
     grab: [true, false, false, false, true, false, false, false]
-  lead from ratchets:
+  - name: lead from ratchets
     steps: 4
     step_size: 1/4
     ratchet: [4, 4, 4, 4]
     ratchet_offset: [1, 1, -1, -1]
     grab: [true, true, true, true]
-  kick:
+  - name: kick
     steps: 4
     drum: true
     step_size: 1/4
     degree: [C, ~, ~, C]
     octave: [3, ~, ~, 3]
-  snare:
+  - name: snare
     steps: 4
     drum: true
     step_size: 1/4
     degree: [~, D, ~, D]
     octave: [~, 3, ~, 3]
-  hats:
+  - name: hats
     steps: 8
     drum: true
     step_size: 1/8
@@ -113,96 +113,88 @@ patterns:
     octave: [3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [80, 50, 70, 50, 80, 50, 70, 50]
 
-arps:
-  gospel run: { step: 1/16, order: up, octave_range: 2 }
-
-progressions:
-  verse: { chords: [1, 4, 1, 5] }
-  chorus: { chords: [6, 2, 5, 1] }
-  turnaround: { chords: [4, 4, 1, 5] }
-
-chains:
-  verse:
-    - progression: verse
-  chorus:
-    - progression: chorus
-  turnaround:
-    - progression: turnaround
-  gospel run:
-    - arp: gospel run
+generators:
+  - { name: gospel run, kind: arp, step: 1/16, order: up, octave_range: 2 }
+  - { name: verse, kind: progression, chords: [1, 4, 1, 5] }
+  - { name: chorus, kind: progression, chords: [6, 2, 5, 1] }
+  - { name: turnaround, kind: progression, chords: [4, 4, 1, 5] }
+  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
+  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
+  - { name: turnaround chords, kind: chain, generators: [{ name: turnaround }] }
+  - { name: gospel run arp, kind: chain, generators: [{ name: gospel run }] }
 
 instruments:
-  drawbar organ: { device: "*FluidSynth", gm_sound: 17 }
-  finger bass: { device: "*FluidSynth", gm_sound: 34 }
-  piano: { device: "*FluidSynth", gm_sound: 1 }
-  choir: { device: "*FluidSynth", gm_sound: 53 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: drawbar organ, device: "*FluidSynth", gm_sound: 17 }
+  - { name: finger bass, device: "*FluidSynth", gm_sound: 34 }
+  - { name: piano, device: "*FluidSynth", gm_sound: 1 }
+  - { name: choir, device: "*FluidSynth", gm_sound: 53 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  look_ma_no_notes:
+  - name: look_ma_no_notes
     tempo: 76
     scale: Ab Major
     groove: 8th swing 66
     genre: Gospel
 
     tracks:
-      organ: { instrument: drawbar organ }
-      bass: { transpose: -7, instrument: finger bass }
-      piano: { instrument: piano }
-      lead: { transpose: 7, instrument: choir }
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hats: { drum: true, instrument: drum kit }
+      - { name: organ, instrument: drawbar organ }
+      - { name: bass, transpose: -7, instrument: finger bass }
+      - { name: piano, instrument: piano }
+      - { name: lead, transpose: 7, instrument: choir }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hats, drum: true, instrument: drum kit }
 
     scenes:
       - name: intro
-        tracks:
-          organ: { pattern: harmony, chains: [chorus], repeat: 4 }
-          bass: { pattern: bass, loop: true, grab_track: organ }
-          piano: { pattern: piano, loop: true, grab_track: organ }
+        clips:
+          - { track: organ, pattern: harmony, generators: [{ name: chorus chords }], repeat: 4 }
+          - { track: bass, pattern: bass, loop: true, grab_track: organ }
+          - { track: piano, pattern: piano, loop: true, grab_track: organ }
       - name: "verse, the lead from registers"
-        tracks:
-          organ: { pattern: harmony, chains: [verse], repeat: 12 }
-          bass: { pattern: bass, loop: true, grab_track: organ }
-          piano: { pattern: piano, loop: true, grab_track: organ }
-          lead: { pattern: lead from registers, loop: true, grab_track: organ }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: organ, pattern: harmony, generators: [{ name: verse chords }], repeat: 12 }
+          - { track: bass, pattern: bass, loop: true, grab_track: organ }
+          - { track: piano, pattern: piano, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead from registers, loop: true, grab_track: organ }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: chorus
-        tracks:
-          organ: { pattern: harmony, chains: [chorus], repeat: 8 }
-          bass: { pattern: bass, loop: true, grab_track: organ }
-          piano: { pattern: piano, loop: true, grab_track: organ }
-          lead: { pattern: lead from registers, loop: true, grab_track: organ }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: organ, pattern: harmony, generators: [{ name: chorus chords }], repeat: 8 }
+          - { track: bass, pattern: bass, loop: true, grab_track: organ }
+          - { track: piano, pattern: piano, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead from registers, loop: true, grab_track: organ }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "verse, the lead from the arpeggiator"
-        tracks:
-          organ: { pattern: harmony, chains: [verse], repeat: 12 }
-          bass: { pattern: bass, loop: true, grab_track: organ }
-          piano: { pattern: piano, loop: true, grab_track: organ }
-          lead: { pattern: lead for the arpeggiator, chains: [gospel run], loop: true, grab_track: organ }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: organ, pattern: harmony, generators: [{ name: verse chords }], repeat: 12 }
+          - { track: bass, pattern: bass, loop: true, grab_track: organ }
+          - { track: piano, pattern: piano, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead for the arpeggiator, generators: [{ name: gospel run arp }], loop: true, grab_track: organ }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "turnaround, the lead from ratchets"
-        tracks:
-          organ: { pattern: harmony turnaround, chains: [turnaround], repeat: 2 }
-          bass: { pattern: bass, loop: true, grab_track: organ }
-          piano: { pattern: piano turnaround, loop: true, grab_track: organ }
-          lead: { pattern: lead from ratchets, loop: true, grab_track: organ }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: organ, pattern: harmony turnaround, generators: [{ name: turnaround chords }], repeat: 2 }
+          - { track: bass, pattern: bass, loop: true, grab_track: organ }
+          - { track: piano, pattern: piano turnaround, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead from ratchets, loop: true, grab_track: organ }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
       - name: "last chorus, up a half step"
         scale: A Major
-        tracks:
-          organ: { pattern: harmony, chains: [chorus], repeat: 12 }
-          bass: { pattern: bass, loop: true, grab_track: organ }
-          piano: { pattern: piano, loop: true, grab_track: organ }
-          lead: { pattern: lead from registers, loop: true, grab_track: organ }
-          kick: { pattern: kick, loop: true }
-          snare: { pattern: snare, loop: true }
-          hats: { pattern: hats, loop: true }
+        clips:
+          - { track: organ, pattern: harmony, generators: [{ name: chorus chords }], repeat: 12 }
+          - { track: bass, pattern: bass, loop: true, grab_track: organ }
+          - { track: piano, pattern: piano, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead from registers, loop: true, grab_track: organ }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }

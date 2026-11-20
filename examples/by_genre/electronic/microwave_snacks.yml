@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: Microwave snacks
 description: "an early-seventies synthesizer novelty tune in the manner of Popcorn (Hot Butter), with a tune of its own"
 notes: |
@@ -49,25 +49,25 @@ real_time: true
 protected: true
 
 scales:
-  A Minor: { root: A, type: minor }
-  B Minor: { root: B, type: minor }
+  - { name: A Minor, root: A, type: minor }
+  - { name: B Minor, root: B, type: minor }
 
 patterns:
-  kick:
+  - name: kick
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
     velocity: [100, ~, ~, ~, 100, ~, ~, ~, 100, ~, ~, ~, 100, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 92, ~, ~, ~, ~, ~, ~, ~, 92, ~, ~, ~]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -75,20 +75,20 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [68, 39, 62, 39, 68, 39, 62, 39, 68, 39, 62, 39, 68, 39, 62, 39]
-  block:
+  - name: block
     steps: 16
     drum: true
     step_size: 1/16
     degree: [E, ~, ~, E, ~, ~, E, ~, E, ~, ~, E, ~, ~, E, ~]
     octave: [6, ~, ~, 6, ~, ~, 6, ~, 6, ~, ~, 6, ~, ~, 6, ~]
     velocity: [76, ~, ~, 65, ~, ~, 70, ~, 76, ~, ~, 65, ~, ~, 70, ~]
-  bass:
+  - name: bass
     steps: 8
     step_size: 1/8
     degree: [1, ~, 5, ~, 1, ~, 5, 1]
     octave: [3, ~, 2, ~, 3, ~, 2, 3]
     velocity: [112, ~, 101, ~, 103, ~, 101, 98]
-  held:
+  - name: held
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -96,19 +96,19 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [76, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  a:
+  - name: a
     steps: 64
     step_size: 1/8
     degree: [1, 3, 5, 3, 1, 5, 3, 5, 4, 5, 4, 2, 3, ~, ~, ~, 1, 3, 5, 3, 1, 5, 3, 5, 7, 1, 7, 5, 1, ~, ~, ~, 6, 1, 3, 1, 6, 1, 3, 1, 4, 3, 1, 6, 1, ~, ~, ~, 7, 2, 4, 2, 7, 5, 2, 7, 1, 5, 3, 5, 1, ~, ~, ~]
     octave: [4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, ~, ~, ~, 4, 4, 4, 4, 5, 4, 4, 4, 4, 5, 4, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 4, 5, 4, 5, 4, 4, 4, 4, ~, ~, ~]
     velocity: [115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~, 115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~, 115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~, 115, 101, 104, 101, 106, 101, 104, 101, 115, 101, 104, 101, 106, ~, ~, ~]
-  a low:
+  - name: a low
     steps: 64
     step_size: 1/8
     degree: [1, 3, 5, 3, 1, 5, 3, 5, 4, 5, 4, 2, 3, ~, ~, ~, 1, 3, 5, 3, 1, 5, 3, 5, 7, 1, 7, 5, 1, ~, ~, ~, 6, 1, 3, 1, 6, 1, 3, 1, 4, 3, 1, 6, 1, ~, ~, ~, 7, 2, 4, 2, 7, 5, 2, 7, 1, 5, 3, 5, 1, ~, ~, ~]
     octave: [4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, ~, ~, ~, 4, 4, 4, 4, 5, 4, 4, 4, 4, 5, 4, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 4, 5, ~, ~, ~, 4, 5, 5, 5, 4, 4, 5, 4, 5, 4, 4, 4, 4, ~, ~, ~]
     velocity: [91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~, 91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~, 91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~, 91, 77, 80, 77, 82, 77, 80, 77, 91, 77, 80, 77, 82, ~, ~, ~]
-  b:
+  - name: b
     steps: 32
     step_size: 1/8
     degree: [5, ~, 3, 5, 1, ~, 5, ~, 7, ~, 5, 7, 2, ~, 7, ~, 6, ~, 3, 6, 1, ~, 6, ~, 5, 7, 2, 7, 5, ~, ~, ~]
@@ -116,116 +116,112 @@ patterns:
     octave: [4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 4, ~, 4, 4, 5, ~, 4, ~, 4, 4, 5, 4, 4, ~, ~, ~]
     velocity: [111, ~, 100, 97, 102, ~, 100, ~, 111, ~, 100, 97, 102, ~, 100, ~, 111, ~, 100, 97, 102, ~, 100, ~, 111, 97, 100, 97, 102, ~, ~, ~]
 
-progressions:
-  a: { chords: [1, 1, 1, 1, 6, 6, 7, 1] }
-  b: { chords: [3, 7, 6, 5], qualities: [~, ~, ~, M] }
-
-chains:
-  a:
-    - progression: a
-  b:
-    - progression: b
+generators:
+  - { name: a, kind: progression, chords: [1, 1, 1, 1, 6, 6, 7, 1] }
+  - { name: b, kind: progression, chords: [3, 7, 6, 5], qualities: [~, ~, ~, M] }
+  - { name: a chords, kind: chain, generators: [{ name: a }] }
+  - { name: b chords, kind: chain, generators: [{ name: b }] }
 
 instruments:
-  synth bass: { device: "*FluidSynth", gm_sound: 39 }
-  square lead: { device: "*FluidSynth", gm_sound: 81 }
-  kalimba: { device: "*FluidSynth", gm_sound: 109 }
-  synth strings: { device: "*FluidSynth", gm_sound: 51 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
+  - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
+  - { name: kalimba, device: "*FluidSynth", gm_sound: 109 }
+  - { name: synth strings, device: "*FluidSynth", gm_sound: 51 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  microwave_snacks:
+  - name: microwave_snacks
     tempo: 130
     scale: A Minor
     genre: Electronic
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      block: { drum: true, instrument: drum kit }
-      bass: { instrument: synth bass }
-      lead: { instrument: square lead }
-      second: { instrument: kalimba }
-      strings: { instrument: synth strings }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: block, drum: true, instrument: drum kit }
+      - { name: bass, instrument: synth bass }
+      - { name: lead, instrument: square lead }
+      - { name: second, instrument: kalimba }
+      - { name: strings, instrument: synth strings }
 
     scenes:
       - name: intro
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          block: { pattern: block, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: a chords }], loop: true }
+          - { track: block, pattern: block, loop: true }
       - name: A
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          lead: { pattern: a, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: a chords }], loop: true }
+          - { track: lead, pattern: a, loop: true }
       - name: B
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [b], loop: true }
-          lead: { pattern: b, loop: true }
-          strings: { pattern: held, chains: [b], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: b chords }], loop: true }
+          - { track: lead, pattern: b, loop: true }
+          - { track: strings, pattern: held, generators: [{ name: b chords }], loop: true }
       - name: A 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          lead: { pattern: a, loop: true }
-          second: { pattern: a low, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: a chords }], loop: true }
+          - { track: lead, pattern: a, loop: true }
+          - { track: second, pattern: a low, loop: true }
       - name: alone
-        tracks:
-          lead: { pattern: a, repeat: 1 }
-          block: { pattern: block, loop: true }
+        clips:
+          - { track: lead, pattern: a, repeat: 1 }
+          - { track: block, pattern: block, loop: true }
       - name: A 3
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          lead: { pattern: a, loop: true }
-          block: { pattern: block, loop: true }
-          second: { pattern: a low, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: a chords }], loop: true }
+          - { track: lead, pattern: a, loop: true }
+          - { track: block, pattern: block, loop: true }
+          - { track: second, pattern: a low, loop: true }
       - name: B 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [b], loop: true }
-          lead: { pattern: b, loop: true }
-          strings: { pattern: held, chains: [b], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: b chords }], loop: true }
+          - { track: lead, pattern: b, loop: true }
+          - { track: strings, pattern: held, generators: [{ name: b chords }], loop: true }
       - name: A 4
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          lead: { pattern: a, loop: true }
-          strings: { pattern: held, chains: [a], loop: true }
-          second: { pattern: a low, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: a chords }], loop: true }
+          - { track: lead, pattern: a, loop: true }
+          - { track: strings, pattern: held, generators: [{ name: a chords }], loop: true }
+          - { track: second, pattern: a low, loop: true }
       - name: a step higher
         scale: B Minor
-        tracks:
-          kick: { pattern: kick, repeat: 16 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          lead: { pattern: a, loop: true }
-          strings: { pattern: held, chains: [a], loop: true }
-          block: { pattern: block, loop: true }
-          second: { pattern: a low, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 16 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: a chords }], loop: true }
+          - { track: lead, pattern: a, loop: true }
+          - { track: strings, pattern: held, generators: [{ name: a chords }], loop: true }
+          - { track: block, pattern: block, loop: true }
+          - { track: second, pattern: a low, loop: true }
       - name: ending
         scale: B Minor
-        tracks:
-          kick: { pattern: kick, repeat: 2 }
-          snare: { pattern: snare, loop: true }
-          hat: { pattern: hat, loop: true }
-          bass: { pattern: bass, chains: [a], loop: true }
-          block: { pattern: block, loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 2 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: a chords }], loop: true }
+          - { track: block, pattern: block, loop: true }

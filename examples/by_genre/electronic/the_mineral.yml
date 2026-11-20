@@ -1,4 +1,4 @@
-version: 1.0.365
+version: 1.0.591
 title: The mineral
 description: "a late-nineties big beat track in the manner of Trip Like I Do (the Crystal Method), with riffs of its own"
 notes: |
@@ -50,38 +50,38 @@ real_time: true
 protected: true
 
 scales:
-  E Minor: { root: E, type: minor }
+  - { name: E Minor, root: E, type: minor }
 
 patterns:
-  kick:
+  - name: kick
     steps: 32
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, ~, ~]
     velocity: [127, ~, ~, ~, ~, ~, ~, ~, ~, ~, 127, ~, ~, ~, ~, ~, 127, ~, ~, ~, ~, ~, 127, ~, ~, ~, 127, ~, ~, ~, ~, ~]
-  four:
+  - name: four
     steps: 16
     drum: true
     step_size: 1/16
     degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
     velocity: [118, ~, ~, ~, 118, ~, ~, ~, 118, ~, ~, ~, 118, ~, ~, ~]
-  snare:
+  - name: snare
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
     velocity: [~, ~, ~, ~, 124, ~, ~, ~, ~, ~, ~, ~, 124, ~, ~, ~]
-  ghost:
+  - name: ghost
     steps: 16
     drum: true
     step_size: 1/16
     degree: [~, ~, ~, ~, ~, ~, ~, D, ~, D, ~, ~, ~, ~, ~, D]
     octave: [~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, 3]
     velocity: [~, ~, ~, ~, ~, ~, ~, 56, ~, 56, ~, ~, ~, ~, ~, 56]
-  hat:
+  - name: hat
     steps: 16
     drum: true
     step_size: 1/16
@@ -89,7 +89,7 @@ patterns:
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [88, 51, 82, 51, 88, 51, 82, 51, 88, 51, 82, 51, 88, 51, 82, 51]
-  open:
+  - name: open
     steps: 16
     drum: true
     step_size: 1/16
@@ -97,7 +97,7 @@ patterns:
     accidental: [~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, "#", ~]
     octave: [~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~]
     velocity: [~, ~, 86, ~, ~, ~, 86, ~, ~, ~, 86, ~, ~, ~, 86, ~]
-  crash:
+  - name: crash
     steps: 64
     drum: true
     step_size: 1/16
@@ -105,20 +105,20 @@ patterns:
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [116, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-  roll:
+  - name: roll
     steps: 16
     drum: true
     step_size: 1/16
     degree: [D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [104, 93, 98, 93, 104, 93, 98, 93, 104, 93, 98, 93, 104, 93, 98, 93]
-  bass:
+  - name: bass
     steps: 16
     step_size: 1/16
     degree: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 1]
     octave: [2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 2, 2, 2, 3, 1, 2]
     velocity: [126, 106, 106, 106, 106, 106, 106, 106, 106, 106, 120, 106, 106, 106, 106, 106]
-  chord:
+  - name: chord
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -126,7 +126,7 @@ patterns:
     chord: [m7, ~, ~, ~, ~, ~, ~, ~]
     velocity: [90, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  held:
+  - name: held
     steps: 8
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
@@ -134,13 +134,13 @@ patterns:
     chord: ["3", ~, ~, ~, ~, ~, ~, ~]
     velocity: [76, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true]
-  acid:
+  - name: acid
     steps: 32
     step_size: 1/16
     degree: [1, 1, ~, 1, 1, ~, 3, 1, ~, 1, 7, 1, ~, 1, 5, 4, 1, 1, ~, 1, 1, ~, 3, 1, ~, 1, 7, 1, 5, ~, 7, 1]
     octave: [4, 4, ~, 5, 4, ~, 4, 4, ~, 4, 3, 4, ~, 5, 4, 4, 4, 4, ~, 5, 4, ~, 4, 4, ~, 4, 3, 4, 4, ~, 4, 5]
     velocity: [109, 93, ~, 93, 98, ~, 95, 103, ~, 93, 95, 103, ~, 93, 95, 93, 109, 93, ~, 93, 98, ~, 95, 103, ~, 93, 95, 93, 98, ~, 95, 93]
-  sample:
+  - name: sample
     steps: 32
     step_size: 1/8
     degree: [5, 5, ~, 3, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -148,141 +148,128 @@ patterns:
     velocity: [115, 109, ~, 101, 106, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
 
-arps:
-  sequence: { step: 1/16, order: up_down, octave_range: 2 }
-
-progressions:
-  riff: { chords: [1, 1, 1, 1, 1, 1, 6, 7] }
-  drop: { chords: [1, 1, 6, 7] }
-
-densities:
-  rise: { start: 0, end: 100 }
-
-chains:
-  riff:
-    - progression: riff
-  drop:
-    - progression: drop
-  riff arp:
-    - progression: riff
-    - arp: sequence
-  drop arp:
-    - progression: drop
-    - arp: sequence
-  rise:
-    - density: rise
+generators:
+  - { name: sequence, kind: arp, step: 1/16, order: up_down, octave_range: 2 }
+  - { name: riff, kind: progression, chords: [1, 1, 1, 1, 1, 1, 6, 7] }
+  - { name: drop, kind: progression, chords: [1, 1, 6, 7] }
+  - { name: rise, kind: density, start: 0, end: 100 }
+  - { name: riff chords, kind: chain, generators: [{ name: riff }] }
+  - { name: drop chords, kind: chain, generators: [{ name: drop }] }
+  - { name: riff arp, kind: chain, generators: [{ name: riff }, { name: sequence }] }
+  - { name: drop arp, kind: chain, generators: [{ name: drop }, { name: sequence }] }
+  - { name: rise density, kind: chain, generators: [{ name: rise }] }
 
 instruments:
-  synth bass: { device: "*FluidSynth", gm_sound: 40 }
-  distortion guitar: { device: "*FluidSynth", gm_sound: 31 }
-  saw lead: { device: "*FluidSynth", gm_sound: 82 }
-  square lead: { device: "*FluidSynth", gm_sound: 81 }
-  pad: { device: "*FluidSynth", gm_sound: 90 }
-  synth voice: { device: "*FluidSynth", gm_sound: 55 }
-  drum kit: { device: "*FluidSynth" }
+  - { name: synth bass, device: "*FluidSynth", gm_sound: 40 }
+  - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
+  - { name: saw lead, device: "*FluidSynth", gm_sound: 82 }
+  - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
+  - { name: pad, device: "*FluidSynth", gm_sound: 90 }
+  - { name: synth voice, device: "*FluidSynth", gm_sound: 55 }
+  - { name: drum kit, device: "*FluidSynth" }
 
 songs:
-  the_mineral:
+  - name: the_mineral
     tempo: 126
     scale: E Minor
     genre: Electronic
 
     tracks:
-      kick: { drum: true, instrument: drum kit }
-      kick 2: { drum: true, instrument: drum kit }
-      snare: { drum: true, instrument: drum kit }
-      ghost: { drum: true, instrument: drum kit }
-      hat: { drum: true, instrument: drum kit }
-      open: { drum: true, instrument: drum kit }
-      crash: { drum: true, instrument: drum kit }
-      roll: { drum: true, instrument: drum kit }
-      bass: { instrument: synth bass }
-      dirt: { instrument: distortion guitar }
-      sequence: { instrument: saw lead }
-      acid: { instrument: square lead }
-      pad: { instrument: pad }
-      sample: { instrument: synth voice }
+      - { name: kick, drum: true, instrument: drum kit }
+      - { name: kick 2, drum: true, instrument: drum kit }
+      - { name: snare, drum: true, instrument: drum kit }
+      - { name: ghost, drum: true, instrument: drum kit }
+      - { name: hat, drum: true, instrument: drum kit }
+      - { name: open, drum: true, instrument: drum kit }
+      - { name: crash, drum: true, instrument: drum kit }
+      - { name: roll, drum: true, instrument: drum kit }
+      - { name: bass, instrument: synth bass }
+      - { name: dirt, instrument: distortion guitar }
+      - { name: sequence, instrument: saw lead }
+      - { name: acid, instrument: square lead }
+      - { name: pad, instrument: pad }
+      - { name: sample, instrument: synth voice }
 
     scenes:
       - name: synth
-        tracks:
-          sequence: { pattern: chord, chains: [riff arp], repeat: 4 }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], repeat: 4 }
       - name: synth and sample
-        tracks:
-          sequence: { pattern: chord, chains: [riff arp], repeat: 8 }
-          pad: { pattern: held, chains: [riff], loop: true }
-          sample: { pattern: sample, loop: true }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], repeat: 8 }
+          - { track: pad, pattern: held, generators: [{ name: riff chords }], loop: true }
+          - { track: sample, pattern: sample, loop: true }
       - name: break
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          sequence: { pattern: chord, chains: [riff arp], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: open, pattern: open, loop: true }
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], loop: true }
       - name: bass
-        tracks:
-          kick: { pattern: kick, repeat: 4 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          bass: { pattern: bass, chains: [riff], loop: true }
-          dirt: { pattern: bass, chains: [riff], loop: true }
-          sample: { pattern: sample, loop: true }
-          sequence: { pattern: chord, chains: [riff arp], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 4 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: open, pattern: open, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: riff chords }], loop: true }
+          - { track: dirt, pattern: bass, generators: [{ name: riff chords }], loop: true }
+          - { track: sample, pattern: sample, loop: true }
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], loop: true }
       - name: acid
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          bass: { pattern: bass, chains: [riff], loop: true }
-          dirt: { pattern: bass, chains: [riff], loop: true }
-          acid: { pattern: acid, loop: true }
-          sequence: { pattern: chord, chains: [riff arp], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: open, pattern: open, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: riff chords }], loop: true }
+          - { track: dirt, pattern: bass, generators: [{ name: riff chords }], loop: true }
+          - { track: acid, pattern: acid, loop: true }
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], loop: true }
       - name: breakdown
-        tracks:
-          sequence: { pattern: chord, chains: [riff arp], repeat: 8 }
-          pad: { pattern: held, chains: [riff], loop: true }
-          sample: { pattern: sample, loop: true }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], repeat: 8 }
+          - { track: pad, pattern: held, generators: [{ name: riff chords }], loop: true }
+          - { track: sample, pattern: sample, loop: true }
       - name: build
-        tracks:
-          sequence: { pattern: chord, chains: [riff arp], repeat: 8 }
-          pad: { pattern: held, chains: [riff], loop: true }
-          roll: { pattern: roll, chains: [rise], loop: true }
-          acid: { pattern: acid, loop: true }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], repeat: 8 }
+          - { track: pad, pattern: held, generators: [{ name: riff chords }], loop: true }
+          - { track: roll, pattern: roll, generators: [{ name: rise density }], loop: true }
+          - { track: acid, pattern: acid, loop: true }
       - name: drop
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          bass: { pattern: bass, chains: [drop], loop: true }
-          dirt: { pattern: bass, chains: [drop], loop: true }
-          acid: { pattern: acid, loop: true }
-          sample: { pattern: sample, loop: true }
-          kick 2: { pattern: four, loop: true }
-          crash: { pattern: crash, loop: true }
-          sequence: { pattern: chord, chains: [drop arp], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: open, pattern: open, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: drop chords }], loop: true }
+          - { track: dirt, pattern: bass, generators: [{ name: drop chords }], loop: true }
+          - { track: acid, pattern: acid, loop: true }
+          - { track: sample, pattern: sample, loop: true }
+          - { track: kick 2, pattern: four, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: sequence, pattern: chord, generators: [{ name: drop arp }], loop: true }
       - name: drop 2
-        tracks:
-          kick: { pattern: kick, repeat: 8 }
-          snare: { pattern: snare, loop: true }
-          ghost: { pattern: ghost, loop: true }
-          hat: { pattern: hat, loop: true }
-          open: { pattern: open, loop: true }
-          bass: { pattern: bass, chains: [drop], loop: true }
-          dirt: { pattern: bass, chains: [drop], loop: true }
-          acid: { pattern: acid, loop: true }
-          sample: { pattern: sample, loop: true }
-          kick 2: { pattern: four, loop: true }
-          crash: { pattern: crash, loop: true }
-          sequence: { pattern: chord, chains: [drop arp], loop: true }
-          pad: { pattern: held, chains: [drop], loop: true }
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: ghost, pattern: ghost, loop: true }
+          - { track: hat, pattern: hat, loop: true }
+          - { track: open, pattern: open, loop: true }
+          - { track: bass, pattern: bass, generators: [{ name: drop chords }], loop: true }
+          - { track: dirt, pattern: bass, generators: [{ name: drop chords }], loop: true }
+          - { track: acid, pattern: acid, loop: true }
+          - { track: sample, pattern: sample, loop: true }
+          - { track: kick 2, pattern: four, loop: true }
+          - { track: crash, pattern: crash, loop: true }
+          - { track: sequence, pattern: chord, generators: [{ name: drop arp }], loop: true }
+          - { track: pad, pattern: held, generators: [{ name: drop chords }], loop: true }
       - name: synth again
-        tracks:
-          sequence: { pattern: chord, chains: [riff arp], repeat: 4 }
-          pad: { pattern: held, chains: [riff], loop: true }
+        clips:
+          - { track: sequence, pattern: chord, generators: [{ name: riff arp }], repeat: 4 }
+          - { track: pad, pattern: held, generators: [{ name: riff chords }], loop: true }

@@ -20,13 +20,14 @@ import contextlib
 import io
 import os
 
+from llamatron.composition.checks import listed
 from llamatron.composition.file_format import SetlistSetting
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_reader import file_stem
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.exports import earlier_export, export_name, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import errors
+from llamatron.strings import errors, messages
 from llamatron.support.ordered_data import same_in_order
 
 # What the set is called in the title until it's saved.
@@ -69,7 +70,11 @@ class DocumentFiles:
         setlist = Setlist.read_file(path)
         # What the file holds is what the set just read from it holds, so the file isn't read a second time to learn it.
         setlist.fill_in_defaults()
-        return cls(setlist=setlist, path=path, saved_data=comparable(setlist.to_data()))
+        document = cls(setlist=setlist, path=path, saved_data=comparable(setlist.to_data()))
+        if setlist.get_conversion().has_moved():
+            # The file still holds its older layout until the set is saved.
+            document._differs_from_its_file()
+        return document
 
     @classmethod
     def load_or_correct(cls, path):
@@ -89,6 +94,15 @@ class DocumentFiles:
         document = cls(setlist=setlist, path=path)
         document._differs_from_its_file()
         return document, corrections
+
+    def conversion_note(self):
+        """Return what the status line says of a set whose file was in an older layout: that it was converted, naming each name the
+        move changed, or None for a set read as its file holds it."""
+        conversion = self._setlist.get_conversion()
+        if not conversion.has_moved():
+            return None
+        renames = [messages.MSG_RENAMED_IN_CONVERSION.format(kind=kind, old=old, new=new) for kind, old, new in conversion.get_renames()]
+        return messages.MSG_CONVERTED_WITH_RENAMES.format(renames=listed(renames)) if renames else messages.MSG_CONVERTED
 
     def _differs_from_its_file(self):
         """Note that the set isn't what its file holds, so that it needs saving, and that no undo goes back to a saved state."""
