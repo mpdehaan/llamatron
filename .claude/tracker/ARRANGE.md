@@ -29,6 +29,10 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
   (`ArrangePage.OPEN_PATTERN`, `open_pattern`) opens the pattern editor on the clip's pattern,
   the user's choice over Shift+ENTER, which a stock terminal sends as ENTER. `P`
   is bound on a clip alone, so elsewhere it does nothing. `C` means copy everywhere.
+- On a scene's name or a track's name, `C` asks in a picker whether the copy plays the same patterns or copies of them
+  (`ask_how_patterns_copy`, `MSG_COPY_PATTERNS_CHOICES`, the user's design), the first answer keeping the copy as it always was;
+  with copies, each pattern the copy's clips play is copied once under a new name and the clips play the copies
+  (`Document.give_own_patterns`), the whole one undo step. The copy stands below the scene or right of the track.
 - New tracks and scenes are numbered, `track-2` and `scene-2` (`new_name` with `MSG_NEW_TRACK_WORD` and
   `MSG_NEW_SCENE_WORD` of `strings/names.py`), one more than the highest number in use, and renamed on their own pages.
 - Deleting a scene, track or clip confirms in a dialog, and the last scene or track is refused in

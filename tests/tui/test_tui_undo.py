@@ -909,7 +909,7 @@ class TestArrangePageUndo(UndoTest):
 
     async def test_copying_a_track_with_its_clips_is_one_step(self):
         before = self.data()
-        await self.press(Key.UP, keybindings.ArrangePage.COPY_TRACK)
+        await self.press(Key.UP, keybindings.ArrangePage.COPY_TRACK, Key.ENTER)
         self.assertEqual(len(self.document.song().get_track_names()), 3)
         await self.check_undo_and_redo(before=before, after=self.data())
 
@@ -948,7 +948,7 @@ class TestScenePageUndo(UndoTest):
         self.assertEqual(screen.shown_name, RENAMED)
 
     async def test_undoing_the_copy_while_the_copys_page_is_open_goes_back_to_arrange(self):
-        await self.press(keybindings.MainPage.ARRANGE, keybindings.ArrangePage.COPY_SCENE, Key.ENTER)
+        await self.press(keybindings.MainPage.ARRANGE, keybindings.ArrangePage.COPY_SCENE, Key.ENTER, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScenePage)
         await self.check_undo_goes_back_to(ArrangePage)
 
@@ -1012,7 +1012,7 @@ class TestTrackEditorUndo(UndoTest):
         await self.check_rename_follows(old=ui_testing.LEAD, new=RENAMED)
 
     async def test_undoing_the_copy_while_the_copys_editor_is_open_goes_back_to_arrange(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.UP, keybindings.ArrangePage.COPY_TRACK, Key.ENTER)
+        await self.press(keybindings.MainPage.ARRANGE, Key.UP, keybindings.ArrangePage.COPY_TRACK, Key.ENTER, Key.ENTER)
         self.assertIsInstance(self.app.screen, TrackEditor)
         await self.check_undo_goes_back_to(ArrangePage)
 

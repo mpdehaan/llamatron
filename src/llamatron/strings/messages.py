@@ -429,5 +429,8 @@ MSG_WIZARD_RIFF_UNCHANGED = '{riff} unchanged'
 MSG_CHANGE_GENRE_OWN_RIFFS = 'edited riffs: {count}'
 MSG_WIZARD_TUNE_KEPT = 'kept your notes of the {kind} melody'
 MSG_WIZARD_TUNE_UNCHANGED = 'the {kind} melody is unchanged'
+# tui/screens/arrange/arrange_page.py: copying a scene or a track asks what its clips play.
+MSG_COPY_SCENE_TITLE = 'Copy scene ({name})'
+MSG_COPY_TRACK_TITLE = 'Copy track ({name})'
 # tui/screens/set/draws_page.py
 MSG_DRAW_SLOT_PROMPT = '{name} slot {place} ({lowest} to {highest})'
