@@ -47,6 +47,8 @@ AS_A_PASS_STARTS = -1
 NO_CHANGES = {}
 # How far before a track's own change at a moment its step reads the registers to decide whether the clip goes on.
 BEFORE_OWN_CHANGE = 0.5
+# How far before a track's own change a step's statements draw from a draw that redraws in conditions: just before they read it.
+CONDITION_DRAWS = 0.75
 # When a scene's own changes happen: as it starts.
 SCENE_START = 0
 
@@ -209,6 +211,10 @@ class RegisterRecorder:
         """Return None: nothing is known of the values while a clip is only played to count changes that depend on none of them."""
         return None
 
+    def before_statements(self, *, time, draws):
+        """Note the draws a step's statements draw from at a time in the scene, just before they read the values."""
+        self._changes.append(RegisterChange(time, self._place - CONDITION_DRAWS, NO_CHANGES, NO_CHANGES, draws))
+
     def is_counting(self):
         """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take."""
         return True
@@ -242,6 +248,9 @@ class RegisterReader:
     def before_step(self, time):
         """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, after every earlier track's then."""
         return self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE)
+
+    def before_statements(self, *, time, draws):
+        """Do nothing: what a step's statements draw is already in the timeline, and before_step sees it."""
 
 
 class RegisterTrial(RegisterRecorder):

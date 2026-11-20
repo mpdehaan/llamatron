@@ -793,6 +793,8 @@ REGISTER_SET_ROWS = {
     RegisterName.AX: Row.AX_SET, RegisterName.BX: Row.BX_SET, RegisterName.CX: Row.CX_SET, RegisterName.DX: Row.DX_SET,
 }
 DRAW_NAMES = [DrawName.AD, DrawName.BD, DrawName.CD, DrawName.DD]
+# Every value a statement of Conditional Execution can read, by name: the registers and the draws.
+VALUE_NAMES = [*REGISTER_NAMES, *DRAW_NAMES]
 # Each draw's rows in a pattern, the Use Draws section: whether its value moves the note, whether it changes the velocity, and
 # whether the step resets the draw.
 DRAW_NOTE_ROWS = {DrawName.AD: Row.AD_NOTE, DrawName.BD: Row.BD_NOTE, DrawName.CD: Row.CD_NOTE, DrawName.DD: Row.DD_NOTE}

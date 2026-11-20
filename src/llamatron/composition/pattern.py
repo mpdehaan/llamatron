@@ -24,7 +24,7 @@ from math import floor
 
 from llamatron.composition import corrections, file_format, limits, row_descriptions
 from llamatron.composition.checks import is_whole_number_from, pass_over_unknown, reading, time_signature, written_length
-from llamatron.composition.conditions import check_statement, statement_of
+from llamatron.composition.conditions import check_statement, draws_read, statement_of
 from llamatron.composition.corrections import Correction
 from llamatron.composition.file_format import Direction, PatternSetting, Row, StepStatement
 from llamatron.composition.invalid_value import InvalidValue
@@ -225,6 +225,10 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     def uses_draws(self):
         """Return whether any step uses a draw or resets one: a row of the Use Draws section switched on there."""
         return any(self._adds_on(row) for rows in (file_format.DRAW_NOTE_ROWS, file_format.DRAW_VELOCITY_ROWS, file_format.DRAW_RESET_ROWS) for row in rows.values())
+
+    def reads_draws(self):
+        """Return whether any step's statement reads a draw, which a draw that redraws in conditions draws from."""
+        return any(draws_read(statement) for kind in file_format.STATEMENT_ROWS for statement in (self.get_statements(kind) or []) if statement is not None)
 
     def has_statements(self, kind):
         """Return whether any step holds a statement of a kind about the registers: one that stops the clip, starts the pattern over or mutes the step."""
