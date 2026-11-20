@@ -31,6 +31,9 @@ from llamatron.tui.screens.set.songs_page import SongsPage
 from tests.support import ui_testing
 from tests.support.ui_testing import key_name, key_of, UITest
 
+# The label a seed field had, before every play and export became a new take.
+SEED_LABEL = 'Seed'
+
 A_GENRE_WITH_VARIANTS = 'Rock'
 A_SUBGENRE_WITH_VARIANTS = 'hard rock'
 # Two instruments a test adds, in the order a picker lists them, and what the first is renamed to.
@@ -247,7 +250,7 @@ class TestSongPage(UITest):
         self.assertIn(NOT_AN_INTEGER, self.text())
 
     async def test_a_song_has_no_seed_since_every_play_and_export_is_a_new_take(self):
-        self.assertNotIn(labels_text.MSG_SEED_LABEL, self.text())
+        self.assertNotIn(SEED_LABEL, self.text())
 
     async def test_scale_can_be_none(self):
         await self.select_field(labels_text.MSG_SCALE_LABEL)

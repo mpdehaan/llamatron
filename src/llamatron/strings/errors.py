@@ -117,7 +117,6 @@ ERR_CHECKS_BAD_OCTAVE = 'an octave must be an integer from {lowest} to {highest}
 # composition/generator_settings.py
 ERR_NEEDS_SETTING = 'needs {name}'
 ERR_NOT_A_CHOICE = '{name} must be one of: {choices}, got {value!r}'
-ERR_GENERATOR_NOT_INTEGER = '{name} must be an integer, got {value!r}'
 ERR_GENERATOR_BAD_OCTAVE_RANGE = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
 ERR_GENERATOR_BAD_OFFSETS = '{problem}'
 ERR_DRIFT_BAD_SCALE = 'must be the name of a scale, got {value!r}'

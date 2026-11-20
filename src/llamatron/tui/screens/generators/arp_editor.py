@@ -72,7 +72,6 @@ class ArpEditor(GeneratorEditor, FieldPage):
         order = arp.get_order() or shared.DEFAULT_ORDER
         octaves = arp.get_octave_range() or arp_values.MIN_OCTAVE_RANGE
         jump = arp.get_octave_jump() or JUMPS[0]
-        seed = arp.get_seed()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(page=self, label=labels.MSG_STEP_LABEL, written=step, first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=ArpSetting.STEP, value=value)),
@@ -81,11 +80,6 @@ class ArpEditor(GeneratorEditor, FieldPage):
             ChoiceField(page=self, label=labels.MSG_OCTAVE_JUMP_LABEL, choices=JUMPS, current=jump, names=[words(name) for name in JUMPS], shown=words(jump), set=self.set_jump),
             Field(label=labels.MSG_OFFSETS_LABEL, value=lambda: offsets_text(arp.get_offsets()), adjust=None, enter=self.edit_offsets, enter_what=legends.What.EDIT,
                   clear=lambda: self.store(setting=ArpSetting.OFFSETS, value=None), clear_what=legends.What.REMOVE),
-            NumberField(
-                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_RANDOM_SEED_SHOWN if seed is None else None,
-                set=lambda number: self.store(setting=ArpSetting.SEED, value=number),
-                clear=lambda: self.store(setting=ArpSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
-            ),
             *[self.note_add_field(register) for register in file_format.REGISTER_NAMES],
             restart_field(self),
         ]

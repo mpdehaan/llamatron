@@ -29,7 +29,6 @@ velocity, probability, degree and scale (DriftEffects).
 """
 
 import math
-import random
 from typing import NamedTuple
 
 from llamatron.composition import generator_settings
@@ -134,13 +133,9 @@ class DriftPlay:
         return DriftEffects(velocity, probability, degree, scale, root)
 
     def _chooser(self, name):
-        """Return what draws a drift's random numbers: from its own seed, or else the render's with its name, or Python's own when neither has one."""
+        """Return what draws a drift's random numbers: from the render's seed with its name, when a test or a tool gives one, or else Python's own."""
         if name not in self._choosers:
-            own = self.settings(name).get_seed()
-            if own is not None:
-                self._choosers[name] = random.Random(own)
-            else:
-                self._choosers[name] = random_source(None if self._seed is None else DRIFT_SEED.format(seed=self._seed, name=name))
+            self._choosers[name] = random_source(None if self._seed is None else DRIFT_SEED.format(seed=self._seed, name=name))
         return self._choosers[name]
 
     def position(self, *, name, trigger):
