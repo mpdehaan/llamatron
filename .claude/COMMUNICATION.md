@@ -152,7 +152,9 @@ The user's rules for a reply that puts anything to them, gathered here so that e
   `sh llamatron.sh previews/some_folder/song.yml`, never the file's name alone (the user's ask).
 - When the user says they'll test something, Claude stops there and never reminds them to test (the user's rule).
 - When working through an agreed list of steps, Claude goes on from one step to the next without
-  stopping to report, committing each as it lands, and stops only for a question the designs
+  stopping to report, committing each as it lands (a feature at the points where it works, such as the model and its tests,
+  then the page, then the documents, three to five commits, since each commit runs the map's tests; a small refactoring step
+  a commit of its own; the user's rule), and stops only for a question the designs
   don't settle (the user's rule). The recap comes when the list is done or a
   question arises.
 - A clean layout and code quality matter more than a file's history in git: moving, splitting and

@@ -41,6 +41,11 @@ runs `internal_tools/test_changed.sh`, the classes that run the changed files by
 a change to `tests/support/`; `internal_tools/push_all.sh` runs the whole suite first and stops if it fails. The map is rebuilt
 with `internal_tools/test_map.sh` after moving code between files or adding many tests.
 
+**Three tiers of testing, so that a feature is tried quickly** (the user's rule): while building, Claude runs only the feature's own
+test modules, `internal_tools/test.sh test_name`, a few seconds a run; at a commit, `internal_tools/check_before_commit.sh` runs
+what the map picks; before a push, the whole suite. The full suite is never run while an idea is still being tried, since a
+change to the core, a pattern or the renderer, picks most of it through the examples.
+
 **No commit of code goes in without its tests passing, and no git hook enforces it** (the user's
 rule): the repository installs no pre-commit hook or any other git hook, and none is ever added, so that a
 person who only edits documents commits at once. Claude tests when appropriate instead: before committing
