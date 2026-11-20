@@ -23,11 +23,9 @@ what it writes against the source data kept beside it, so nothing here uses the 
 """
 
 import collections
-import contextlib
 from fractions import Fraction
 import glob
 import importlib.util
-import io
 import os
 import pathlib
 import tempfile
@@ -37,8 +35,6 @@ import yaml
 from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.composition.setlist_reader import set_file_data
 from llamatron.composition.setlist_writer import dump_file_layout
-from llamatron.exporters.ableton_project import AbletonProject
-from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.timing import timed_events
 from llamatron.support.example_sets import example_sets
 from llamatron.tui import drawing
@@ -53,9 +49,6 @@ HAND_WRITTEN = ['28_accents.yml', '29_pattern_lists.yml', '15_acid_articulate.ym
 SOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'demo_sources')
 
 # Names the tests give to their own things, and other values they use.
-WARNING = 'warning'
-LIVE = 'live'
-CLIPS = 'clips'
 SILENT = 'SILENT'
 MAKE_DEMOS = 'make_demos'
 # The pages that describe the demos, one for each genre.
@@ -89,43 +82,10 @@ class TemporaryFolderTest(unittest.TestCase):
         self.folder = temporary.name
 
 
-class TestDemosRender(TemporaryFolderTest):
-    """Renders every demo both ways, in a class of its own so that it runs alongside the other checks."""
-
-    def test_every_demo_renders_both_ways(self):
-        for path in PATHS:
-            name = os.path.splitext(os.path.basename(path))[0]
-            with self.subTest(path=path):
-                song = render_file(path)
-                output = io.StringIO()
-                with contextlib.redirect_stdout(output):
-                    ClipTree(directory=os.path.join(self.folder, CLIPS, name), grid=song).export()
-                    AbletonProject(directory=os.path.join(self.folder, LIVE, name), grid=song).export()
-                self.assertNotIn(WARNING, output.getvalue())
-                self.assertTrue(os.path.exists(os.path.join(self.folder, LIVE, name, f'{name}.als')))
-
-
 class TestDemos(TemporaryFolderTest):
 
     def test_there_are_demos(self):
         self.assertGreaterEqual(len(PATHS), 10)
-
-    def test_every_demo_reads_back_the_same_after_writing(self):
-        for path in PATHS:
-            with open(path) as file:
-                data = yaml.safe_load(file)
-            with self.subTest(path=path):
-                self.assertEqual(yaml.safe_load(dump_file_layout(data)), data)
-
-    def test_every_demo_saves_and_loads_the_same_in_the_tracker(self):
-        for path in PATHS:
-            target = os.path.join(self.folder, os.path.basename(path))
-            Document.load(path).save(path=target)
-            with open(path) as first, open(target) as second:
-                original = yaml.safe_load(first)
-                saved = yaml.safe_load(second)
-            with self.subTest(path=path):
-                self.assertEqual(without_version({key: saved[key] for key in original}), without_version(original))
 
     def test_every_demo_has_a_title_a_description_of_what_it_plays_and_notes_on_what_it_shows(self):
         for path in PATHS:
@@ -232,6 +192,25 @@ class TestDemoSources(unittest.TestCase):
         for time, number in onsets(song=song, scene=scene, track_name=BASS):
             latest = max(start for start in roots if start <= time)
             self.assertEqual(number, roots[latest] - 12)
+
+
+
+def check_demo_reads_back(*, test, path):
+    """A demo, written out, reads back as the same data."""
+    with open(path) as file:
+        data = yaml.safe_load(file)
+    test.assertEqual(yaml.safe_load(dump_file_layout(data)), data)
+
+
+def check_demo_saves_and_loads(*, test, path):
+    """A demo saved by the tracker holds what its file held."""
+    with tempfile.TemporaryDirectory() as folder:
+        target = os.path.join(folder, os.path.basename(path))
+        Document.load(path).save(path=target)
+        with open(path) as first, open(target) as second:
+            original = yaml.safe_load(first)
+            saved = yaml.safe_load(second)
+    test.assertEqual(without_version({key: saved[key] for key in original}), without_version(original))
 
 
 if __name__ == '__main__':

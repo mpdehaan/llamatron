@@ -50,6 +50,7 @@ from llamatron.realtime.timeline import Playing, Route, song_timeline, Tag
 from llamatron.strings import errors
 from llamatron.support.example_sets import example_sets
 from tests.support import sender_under_capture
+from tests.support.example_renders import rendered_example
 from tests.support.rendering import song_from_data, song_from_file
 
 EXAMPLES = example_sets()
@@ -80,13 +81,6 @@ VELOCITY = 100
 SCENE_ONE = Tag(0, 'lead')
 SCENE_TWO = Tag(1, 'lead')
 BASS_TAG = Tag(0, 'bass')
-
-
-def rendered_songs(path):
-    """Return each song of a set file with its grid, rendered with one seed."""
-    setlist = Setlist.read_file(path)
-    for name in setlist.get_song_names():
-        yield name, SongRenderer(setlist.get_song(name), seed=SEED).render()
 
 
 def routes_on_one_channel(grid):
@@ -132,23 +126,6 @@ def timeline_events(*, grid, timeline):
 
 class TestTimeline(unittest.TestCase):
     """The timeline holds what the MIDI export writes, for every example."""
-
-    def test_every_examples_timeline_holds_the_events_its_midi_export_writes_tick_for_tick(self):
-        for path in EXAMPLES:
-            for name, grid in rendered_songs(path):
-                with self.subTest(path=path, song=name):
-                    timeline = song_timeline(grid=grid, routes=routes_on_one_channel(grid))
-                    self.assertEqual(timeline_events(grid=grid, timeline=timeline), exported_events(grid))
-
-    def test_the_timeline_is_in_time_order_with_note_offs_before_note_ons_at_one_instant(self):
-        for path in EXAMPLES:
-            for name, grid in rendered_songs(path):
-                timeline = song_timeline(grid=grid, routes=routes_on_one_channel(grid))
-                for earlier, later in zip(timeline, timeline[1:]):
-                    self.assertLessEqual(earlier.whole, later.whole)
-                    self.assertLessEqual(earlier.seconds, later.seconds)
-                    if earlier.whole == later.whole and earlier.kind == timeline_values.NOTE_ON:
-                        self.assertNotEqual(later.kind, timeline_values.NOTE_OFF)
 
     def test_a_track_with_no_route_and_a_muted_track_are_left_out(self):
         song = song_from_file(LAG_SONG)
@@ -426,26 +403,11 @@ class TestScore(unittest.TestCase):
         self.assertIsNone(Score(song=song, routes=two_routes(), seed=SEED).clip_elapsed(scene=THIRD, track=BASS, elapsed=0.0))
 
 
-class TestPlayerFollowsTheExport(PlayerTest):
+class TestPlayerFollowsTheExport(unittest.TestCase):
 
-    def test_every_example_played_from_the_top_sends_what_its_timeline_holds_and_ends(self):
-        """Every song plays to its end as the export has it, looping clips included, since a scene is done when its clips that don't loop have finished."""
-        songs_that_loop = 0
-        for path in EXAMPLES:
-            setlist = Setlist.read_file(path)
-            for name in setlist.get_song_names():
-                with self.subTest(path=path, song=name):
-                    song = setlist.get_song(name)
-                    songs_that_loop += song_has_a_loop(song)
-                    routes = {track: Route(PORT, EXPORT_CHANNEL) for track in song.get_track_names()}
-                    timeline = song_timeline(grid=SongRenderer(song, seed=SEED).render(), routes=routes)
-                    player = self.start(song, routes=routes)
-                    player.play_song()
-                    self.clock.advance(FAR_AHEAD)
-                    player.tick()
-                    self.assertEqual(comparable(self.engine.pending()), comparable(timeline))
-                    self.assertFalse(player.is_playing())
-        self.assertGreater(songs_that_loop, 0)
+    def test_some_example_has_a_song_that_loops_which_its_check_plays_to_the_end(self):
+        # check_player_follows plays every example from the top; a looping clip among them shows a scene ends when its clips that don't loop have.
+        self.assertTrue(any(song_has_a_loop(Setlist.read_file(path).get_song(name)) for path in EXAMPLES for name in Setlist.read_file(path).get_song_names()))
 
 
 def song_has_a_loop(song):
@@ -620,3 +582,36 @@ class TestEngineSilence(unittest.TestCase):
         kinds = [data[0] & timeline_values.KIND_MASK for _, data in output.sent]
         self.assertEqual(kinds.count(timeline_values.NOTE_OFF), midi.MAX_MIDI_NUMBER - midi.MIN_MIDI_NUMBER + 1)
         self.assertEqual([data for _, data in output.sent][-2:], [[timeline_values.CONTROL_CHANGE | EXPORT_CHANNEL, engine_values.ALL_NOTES_OFF, timeline_values.NO_VELOCITY], [timeline_values.CONTROL_CHANGE | EXPORT_CHANNEL, engine_values.ALL_SOUND_OFF, timeline_values.NO_VELOCITY]])
+
+
+def check_timeline(*, test, path):
+    """Every song's timeline holds the events its MIDI export writes, tick for tick, in time order, a note off before a note on at one instant."""
+    for name, grid in rendered_example(path=path, seed=SEED):
+        with test.subTest(song=name):
+            timeline = song_timeline(grid=grid, routes=routes_on_one_channel(grid))
+            test.assertEqual(timeline_events(grid=grid, timeline=timeline), exported_events(grid))
+            for earlier, later in zip(timeline, timeline[1:]):
+                test.assertLessEqual(earlier.whole, later.whole)
+                test.assertLessEqual(earlier.seconds, later.seconds)
+                if earlier.whole == later.whole and earlier.kind == timeline_values.NOTE_ON:
+                    test.assertNotEqual(later.kind, timeline_values.NOTE_OFF)
+
+
+def check_player_follows(*, test, path):
+    """Every song played from the top sends what its timeline holds and ends, looping clips included, since a scene is done when its clips that don't loop have finished."""
+    setlist = Setlist.read_file(path)
+    for name, grid in rendered_example(path=path, seed=SEED):
+        with test.subTest(song=name):
+            song = setlist.get_song(name)
+            routes = {track: Route(PORT, EXPORT_CHANNEL) for track in song.get_track_names()}
+            timeline = song_timeline(grid=grid, routes=routes)
+            clock = SteppedClock()
+            engine = PlaybackEngine(clock=clock, outputs={PORT: RecordingOutput(), OTHER_PORT: RecordingOutput()})
+            engine.start()
+            player = Player(score=Score(song=song, routes=routes, seed=SEED), sender=engine, now=engine.elapsed)
+            player.play_song()
+            clock.advance(FAR_AHEAD)
+            player.tick()
+            test.assertEqual(comparable(engine.pending()), comparable(timeline))
+            test.assertFalse(player.is_playing())
+

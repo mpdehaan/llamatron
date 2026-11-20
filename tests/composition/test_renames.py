@@ -204,18 +204,6 @@ class TestRenamesFollowEveryReference(unittest.TestCase):
                 self.assertIn(repr(new), text)
 
 
-class TestEveryExampleSurvivesRenamingEverything(unittest.TestCase):
-
-    def test_every_example_plays_the_same_after_every_rename(self):
-        for path in EXAMPLES:
-            with self.subTest(path=path):
-                document = Document.load(path)
-                before = played(render_song(document.song(), seed=SEED))
-                rename_everything(document=document, sections=SECTIONS_THAT_LEAVE_THE_NOTES_ALONE)
-                reloaded = Setlist.from_data(data=document.get_setlist().to_data())
-                self.assertEqual(played(render_song(reloaded.get_song(document.get_current_song_name()), seed=SEED)), before)
-
-
 def constants_of(holder):
     """Return the values of a class that only holds constants."""
     return {value for name, value in vars(holder).items() if not name.startswith('_')}
@@ -373,6 +361,16 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
                         self.assertEqual(grabbers(song=song, song_name=song_name, track=track), [])
                         self.assertEqual(len(grabbers(song=song, song_name=song_name, track=new)), uses)
             self.assertEqual(Setlist.from_data(data=setlist.to_data()).to_data(), setlist.to_data())
+
+
+
+def check_renames(*, test, path):
+    """An example plays the same after every rename that leaves the notes alone."""
+    document = Document.load(path)
+    before = played(render_song(document.song(), seed=SEED))
+    rename_everything(document=document, sections=SECTIONS_THAT_LEAVE_THE_NOTES_ALONE)
+    reloaded = Setlist.from_data(data=document.get_setlist().to_data())
+    test.assertEqual(played(render_song(reloaded.get_song(document.get_current_song_name()), seed=SEED)), before)
 
 
 if __name__ == '__main__':

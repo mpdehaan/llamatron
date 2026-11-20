@@ -238,11 +238,6 @@ class TestEverythingNamed(unittest.TestCase):
             with self.subTest(section=section, name=name):
                 self.assertEqual((section, name) in named, setlist.is_named(section=section, name=name))
 
-    def test_the_walk_and_the_question_agree_on_every_item_of_every_example(self):
-        for path in sorted(EXAMPLES.rglob(SET_FILES)):
-            with self.subTest(path=path.name):
-                self.assert_the_walk_agrees(Setlist.read_file(str(path)))
-
     def test_they_agree_on_a_made_set_before_and_after_what_nothing_names_is_removed(self):
         setlist = made(name=FIRST)
         self.assert_the_walk_agrees(setlist)
@@ -257,3 +252,9 @@ class TestEverythingNamed(unittest.TestCase):
         self.assert_the_walk_agrees(setlist)
         for section, name in setlist.named_by_songs():
             self.assertTrue(setlist.is_named(section=section, name=name), (section, name))
+
+
+def check_walk(*, test, path):
+    """The walk of everything named and the question of one name agree on every item of an example."""
+    TestEverythingNamed.assert_the_walk_agrees(test, Setlist.read_file(path))
+

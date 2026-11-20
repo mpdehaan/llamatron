@@ -286,6 +286,9 @@ class FieldPagesTest(UITest):
 class TestFieldsOnThePages(FieldPagesTest):
     """The number fields and toggles of the real settings pages."""
 
+    async def test_every_toured_page_has_a_class_for_its_numbers(self):
+        self.assertEqual(len(self.pages()), PAGES_TOURED)
+
     async def test_every_page_of_fields_is_toured(self):
         every = sorted(page.__name__ for page in leaf_pages() if issubclass(page, FieldPage))
         self.assertEqual(sorted(type(page).__name__ for page in self.pages()), every)
@@ -357,52 +360,48 @@ class TestFieldsOnThePages(FieldPagesTest):
 
 
 class NumbersStopAtTheirEnds:
-    """Every number with ends stops at them, a quarter of the settings pages to a class, since holding an arrow down on every number
-    of every page takes long. A test class takes it with FieldPagesTest and says its quarter."""
+    """Every number with ends on one settings page stops at them, a page to a class, since holding an arrow down on every number of
+    every page takes long and the classes run side by side. A test class takes it with FieldPagesTest and says its page's place."""
 
     __slots__ = ()
 
-    # Which quarter of the pages the class goes through, of how many.
-    PART = 0
-    PARTS = 4
+    # The place of the page among FieldPagesTest.pages().
+    PAGE = 0
 
     async def test_every_number_with_ends_stops_at_them_however_long_an_arrow_is_held(self):
-        pages = self.pages()
-        for page in pages[self.PART * len(pages) // self.PARTS:(self.PART + 1) * len(pages) // self.PARTS]:
-            await self.show(page)
-            for place, field in enumerate(page.fields()):
-                if not isinstance(field, NumberField) or field.lowest is None or field.highest is None:
-                    continue
-                page.cursor.set_place(place)
-                for direction in (key_table.STEP_FORWARD, key_table.STEP_BACK):
-                    for _ in range(MORE_THAN_ANY_RANGE):
-                        before = page.fields()[place].number
-                        page.fields()[place].adjust(direction)
-                        if page.fields()[place].number == before:
-                            break
-                    for _ in range(STEPS_PAST_THE_END):
-                        page.fields()[place].adjust(direction)
-                    now = page.fields()[place]
-                    self.assertGreaterEqual(now.counted_from(), now.lowest, (type(page).__name__, now.label))
-                    self.assertLessEqual(now.counted_from(), now.highest, (type(page).__name__, now.label))
-            self.app.pop_screen()
-            await self.pilot.pause()
+        page = self.pages()[self.PAGE]
+        await self.show(page)
+        for place, field in enumerate(page.fields()):
+            if not isinstance(field, NumberField) or field.lowest is None or field.highest is None:
+                continue
+            page.cursor.set_place(place)
+            for direction in (key_table.STEP_FORWARD, key_table.STEP_BACK):
+                # The walk starts a step short of the end it walks to, since stepping the whole range, as far as 9999 steps, took long
+                # and proved no more than the last steps do.
+                held = page.fields()[place]
+                held.set(held.highest - 1 if direction == key_table.STEP_FORWARD else held.lowest + 1)
+                for _ in range(MORE_THAN_ANY_RANGE):
+                    held = page.fields()[place]
+                    before = held.number
+                    held.adjust(direction)
+                    if page.fields()[place].number == before:
+                        break
+                for _ in range(STEPS_PAST_THE_END):
+                    page.fields()[place].adjust(direction)
+                now = page.fields()[place]
+                self.assertGreaterEqual(now.counted_from(), now.lowest, (type(page).__name__, now.label))
+                self.assertLessEqual(now.counted_from(), now.highest, (type(page).__name__, now.label))
+        self.app.pop_screen()
+        await self.pilot.pause()
 
 
-class TestNumbersStopAtTheirEndsOnTheFirstQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
-    PART = 0
+# The settings pages FieldPagesTest tours, one class each for holding an arrow down on their numbers.
+PAGES_TOURED = 29
 
-
-class TestNumbersStopAtTheirEndsOnTheSecondQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
-    PART = 1
-
-
-class TestNumbersStopAtTheirEndsOnTheThirdQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
-    PART = 2
-
-
-class TestNumbersStopAtTheirEndsOnTheFourthQuarter(NumbersStopAtTheirEnds, FieldPagesTest):
-    PART = 3
+for a_place in range(PAGES_TOURED):
+    a_name = 'TestNumbersStopAtTheirEndsOnPage{}'.format(a_place + 1)
+    globals()[a_name] = type(a_name, (NumbersStopAtTheirEnds, FieldPagesTest), {'PAGE': a_place, '__slots__': ()})
+del a_place, a_name
 
 
 if __name__ == '__main__':

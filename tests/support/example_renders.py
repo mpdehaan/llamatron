@@ -39,6 +39,7 @@ def rendered_example(*, path, seed=None):
     return tuple((name, SongRenderer(setlist.get_song(name), seed=seed).render()) for name in setlist.get_song_names())
 
 
-def first_song_grid(path):
-    """Return the grid of a set file's first song, rendered with its own seed, as render_file gives it."""
-    return rendered_example(path=path)[0][1]
+def first_song_grid(path, *, seed=None):
+    """Return the grid of a set file's first song, the one a file opens on, rendered with its own seed or the one given."""
+    first = example_setlist(path).first_song_name()
+    return next(grid for name, grid in rendered_example(path=path, seed=seed) if name == first)

@@ -31,10 +31,8 @@ from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.music.sound import Sound
 from llamatron.strings import errors
-from llamatron.support.example_sets import example_sets
-from tests.support.rendering import render_file
+from tests.support.example_renders import first_song_grid
 
-EXAMPLE_PATHS = example_sets()
 QUARTER = Fraction(1, 4)
 EIGHTH = Fraction(1, 8)
 SIXTEENTH = Fraction(1, 16)
@@ -180,27 +178,22 @@ class TestWhatAClipHolds(unittest.TestCase):
             clip.get_sounds()
 
 
-class TestEveryExampleBothWays(BothWays):
-    """Every clip a render makes holds sounds, and its twin made of the same positions as objects answers the same."""
-
-    def test_every_clip_of_every_example_answers_the_same_both_ways(self):
-        clips = 0
-        for path in EXAMPLE_PATHS:
-            grid = render_file(path)
-            for row in grid.get_rows():
-                for column in grid.get_columns():
-                    clip = grid.get_clip(row=row, column=column)
-                    if clip is None:
-                        continue
-                    clips += 1
-                    length = clip.total_length()
-                    ends = [(0, length / 3), (length / 3, length), (length / 2, length * 2)]
-                    with self.subTest(path=path, row=row.get_name(), column=column.get_name()):
-                        self.assertAnswersTheSame(
-                            as_notes=held_as_notes(clip), as_sounds=held_as_sounds(clip),
-                            scale=grid.scale_at(row=row, column=column), section_ends=ends,
-                        )
-        self.assertGreater(clips, len(EXAMPLE_PATHS))
+def check_both_ways(*, test, path):
+    """Every clip a render of the example makes holds sounds, and its twin made of the same positions as objects answers the same.
+    test is a BothWays, whose checks this asks."""
+    grid = first_song_grid(path)
+    clips = 0
+    for row in grid.get_rows():
+        for column in grid.get_columns():
+            clip = grid.get_clip(row=row, column=column)
+            if clip is None:
+                continue
+            clips += 1
+            length = clip.total_length()
+            ends = [(0, length / 3), (length / 3, length), (length / 2, length * 2)]
+            with test.subTest(row=row.get_name(), column=column.get_name()):
+                test.assertAnswersTheSame(as_notes=held_as_notes(clip), as_sounds=held_as_sounds(clip), scale=grid.scale_at(row=row, column=column), section_ends=ends)
+    test.assertGreater(clips, 0)
 
 
 if __name__ == '__main__':
