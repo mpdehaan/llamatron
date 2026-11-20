@@ -21,7 +21,7 @@ tom-toms into a fast instrumental at 168; the chorus and the tune again at the g
 
 | chords | chains | ties | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of bad_pelican -->
 
 <a id="loud_complaint"></a>
@@ -38,5 +38,5 @@ shouting; a twin-guitar tune, a solo from each guitar and a breakdown.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of loud_complaint -->

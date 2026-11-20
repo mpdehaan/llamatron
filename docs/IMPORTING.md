@@ -4,7 +4,7 @@ A MIDI file, from a DAW, a website or anywhere else, can become a song of the se
 
 ## Starting an Import
 
-`M` on the main screen, or `ENTER` on the main screen's Import cell, imports a MIDI file as a new song of the set, named after the file. The file picker starts in your home directory, where `ENTER` goes into a folder or picks a `.mid` file. A dialog then says what the file holds, its tracks, bars, time signature, tempo and keys, and asks how to import it.
+`L` on the main screen, or `ENTER` on the main screen's Load MIDI cell, imports a MIDI file as a new song of the set, named after the file. The file picker starts in your home directory, where `ENTER` goes into a folder or picks a `.mid` file. A dialog then says what the file holds, its tracks, bars, time signature, tempo and keys, and asks how to import it.
 
 ## Import Settings
 

@@ -48,7 +48,6 @@ from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
-from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
@@ -59,6 +58,7 @@ from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.tui.screens.set.modulators_page import ModulatorsPage
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.scales_page import ScalesPage
@@ -315,8 +315,8 @@ class TestArrowsAndTheMark(UITest):
 
     async def test_no_cursor_goes_round_from_one_end_to_the_other(self):
         """Up on the first row and Down on the last stay put on a list page, a settings page and a picker, and so do Left and Right in the pattern editor and the one-row editors (.claude/UX.md)."""
-        names = self.document.get_setlist().get_chain_names()
-        await self.press(keybindings.MainPage.CHAINS, Key.UP)
+        names = self.document.get_setlist().get_scale_names()
+        await self.press(keybindings.MainPage.SCALES, Key.UP)
         self.assertEqual(self.app.screen.current(), names[0])
         await self.press(*[Key.DOWN] * (len(names) + 1))
         self.assertIsNone(self.app.screen.current())
@@ -372,7 +372,7 @@ class TestDesign(unittest.TestCase):
         # Naming a method remove or render here stops screens from closing or drawing.
         ours = {COMPOSE, ON_MOUNT, ON_KEY, ON_RESIZE, ON_SCREEN_RESUME}
         pages = [
-            Page, ListPage, FieldPage, MainPage, FilePage, OpenPage, SongsPage, SongPage, PatternsPage, TrackEditor, ChainsPage,
+            Page, ListPage, FieldPage, MainPage, FilePage, OpenPage, SongsPage, SongPage, PatternsPage, TrackEditor, ModulatorsPage,
             ChainEditor, GeneratorsPage, ArpEditor, AutoRatchetEditor,
             ScalesPage, ScalePage, GroovesPage, GrooveEditor, InstrumentsPage, InstrumentEditor, ArrangePage, ScenePage,
             ClipPage, PatternEditor, Dialog, MessageDialog, ConfirmDialog, PromptDialog, ChoiceDialog,

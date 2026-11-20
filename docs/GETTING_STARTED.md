@@ -78,7 +78,7 @@ The main screen is one block of buttons, the same size in every window. Arrange 
 | `R` | Registers | AX to DX, four numbers that pattern steps change and use, in the current song |
 | `A` | Arrange | The scenes, tracks and clips of the current song. The cell reads Arrange/Play while Real Time is on, since Arrange then plays the song too |
 | `T` | Real Time | A switch, not a page: `●` when the set plays through its instruments in real time, `○` when not |
-| `O`, `X`, `M` | Open, Export, Import | On this screen alone, without Ctrl |
+| `O`, `X`, `L` | Open, Export, Load MIDI | On this screen alone, without Ctrl |
 | `Q` | Quit | Asks first only when there are unsaved changes |
 
 Registers and Arrange edit the current song, which the Songs page picks. Patterns, Chains, Generators, Scales, Grooves and Instruments belong to the set, so a change there is seen by every song.
@@ -92,11 +92,11 @@ Every screen opens from the main screen, and `ESC` goes back up the map one step
 flowchart TD
     MainPage["Main screen"]
     ArrangePage["Arrange"]
-    ChainsPage["Chains"]
     FilePage["File/Global"]
     GeneratorsPage["Generators"]
     GroovesPage["Grooves"]
     InstrumentsPage["Instruments"]
+    ModulatorsPage["Modulators"]
     OpenPage["Open"]
     PatternsPage["Patterns"]
     RegistersPage["Registers"]
@@ -106,29 +106,25 @@ flowchart TD
     PatternEditor["Pattern editor"]
     ScenePage["Scene"]
     TrackEditor["Track editor"]
-    ChainEditor["Chain editor"]
     NotesPage["Notes"]
     GrooveEditor["Groove editor"]
     InstrumentEditor["Instrument editor"]
     ScalePage["Scale"]
     SongPage["Song"]
-    ChainStatementsPage["Chain statements"]
     ArrangePage -- "ENTER" --> ClipPage
     ArrangePage --> PatternEditor
     ArrangePage -- "ENTER" --> ScenePage
     ArrangePage -- "ENTER" --> TrackEditor
-    ChainEditor --> ChainStatementsPage
-    ChainsPage --> ChainEditor
     ClipPage --> PatternEditor
     FilePage -- "ENTER" --> NotesPage
     GroovesPage --> GrooveEditor
     InstrumentsPage --> InstrumentEditor
     MainPage -- "A" --> ArrangePage
-    MainPage -- "C" --> ChainsPage
     MainPage -- "F" --> FilePage
     MainPage -- "G" --> GeneratorsPage
     MainPage -- "V" --> GroovesPage
     MainPage -- "I" --> InstrumentsPage
+    MainPage -- "M" --> ModulatorsPage
     MainPage -- "Ctrl+O" --> OpenPage
     MainPage -- "P" --> PatternsPage
     MainPage -- "R" --> RegistersPage
@@ -146,7 +142,7 @@ flowchart TD
 - **`W` saves as** a new name, on the File/Global page, asking before replacing another file.
 - **`Ctrl+O` opens** a set file. The Open page starts in `examples/`, where folders show with a trailing slash, such as `learning/`: `ENTER` opens a file or goes into a folder, and `../` goes up. Opened again, the page comes back to the folder it last showed, until llamatron is closed. A file that holds values llamatron can't use, such as a velocity of 200 typed in by hand, opens only after a dialog lists each with the value that takes its place: the nearest number allowed, the longest length allowed, or the default. `YES` opens the set with those changes, marked unsaved, and the file stays as it is until you save; `No` opens nothing. Anything else wrong with a file, such as a clip that names a missing pattern, is refused with a message saying where.
 - **`N` starts** a new set, on the File/Global page, with one song called `untitled` whose first track plays a starter pattern.
-- **`Ctrl+X` exports** the current song, as [Exporting](EXPORTING.md) describes, and **`M` imports** a MIDI file as a new song, as [Importing](IMPORTING.md) describes.
+- **`Ctrl+X` exports** the current song, as [Exporting](EXPORTING.md) describes, and **`L` (Load MIDI) imports** a MIDI file as a new song, as [Importing](IMPORTING.md) describes.
 
 Opening, starting a new set and quitting ask first when there are unsaved changes.
 

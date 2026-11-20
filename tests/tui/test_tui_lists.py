@@ -39,10 +39,10 @@ from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor, step_shown
-from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.generators.drift_editor import DriftEditor
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
+from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from tests.support import ui_testing
@@ -438,6 +438,12 @@ class TestGeneratorsPage(UITest):
         self.assertIn(UP, self.document.song().get_generator_names(GeneratorKind.ARP))
         self.assertEqual(self.chain_steps(NAMED), steps)
 
+    async def test_a_chain_is_made_on_the_generators_page_and_opens_in_the_chain_editor(self):
+        await self.press(keybindings.MainPage.GENERATORS, keybindings.GeneratorsPage.ADD)
+        await self.pick(labels.MSG_CHAIN_LABEL)
+        self.assertIsInstance(self.app.screen, ChainEditor)
+        self.assertEqual(len(self.document.get_setlist().get_chain_names()), 3)
+
     async def test_an_unused_generator_is_deleted_after_asking_with_nothing_to_take_it_out_of(self):
         await self.open_page_on_the_arp()
         name = await self.add_generator(Section.ARPS)
@@ -756,7 +762,9 @@ class TestAutoRatchetAdded(UITest):
         self.app.screen.value = '1 1 4'
         await self.press(Key.ENTER)
         self.assertEqual(self.auto_ratchet(name).get_counts(), [1, 1, 4])
-        await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.CHAINS, Key.DOWN, Key.ENTER, keybindings.ChainEditor.ADD)
+        await self.press(Key.ESCAPE, Key.ESCAPE)
+        await self.open_chain(ui_testing.EMPTY)
+        await self.press(keybindings.ChainEditor.ADD)
         await self.pick(step_shown(kind=GeneratorKind.AUTO_RATCHET, name=name))
         self.assertEqual(self.chain_steps(EMPTY), [(GeneratorKind.AUTO_RATCHET, name)])
         render_song(self.document.song())
@@ -785,59 +793,11 @@ class TestAutoRatchetEditor(UITest):
         self.assertEqual(self.auto_ratchet(ui_testing.ROLLS).get_counts(), [1, 4])
         self.assertIn(INTEGERS, self.text())
 
-class TestChainsPage(UITest):
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.press(keybindings.MainPage.CHAINS)
-        self.assertIsInstance(self.app.screen, ChainsPage)
-
-    def chains(self):
-        return self.document.song().get_chain_names()
-
-    async def test_adding_renaming_copying_and_moving(self):
-        await self.press(keybindings.ChainsPage.ADD)
-        await self.type('lift')
-        await self.press(Key.ENTER)
-        self.assertEqual(self.chains(), [NAMED, EMPTY, LIFT])
-        await self.press(keybindings.ChainsPage.RENAME)
-        self.app.screen.value = RISE
-        await self.press(Key.ENTER)
-        self.assertEqual(self.chains(), [NAMED, EMPTY, RISE])
-        await self.press(keybindings.ChainsPage.COPY)
-        self.assertEqual(self.chains(), [NAMED, EMPTY, RISE, RISE_COPY])
-        await self.press(keybindings.ChainsPage.MOVE, Key.UP, Key.ENTER)
-        self.assertEqual(self.chains(), [NAMED, EMPTY, RISE_COPY, RISE])
-
-    async def test_renaming_a_chain_updates_the_clips_that_use_it(self):
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
-        await self.press(keybindings.ChainsPage.RENAME)
-        self.app.screen.value = BRIGHT
-        await self.press(Key.ENTER)
-        self.assertEqual(self.document.clip_slot(index=0, track=LEAD).get_chain_names(), [BRIGHT])
-
-    async def test_deleting_an_unused_chain_asks_first(self):
-        await self.press(Key.DOWN, Key.BACKSPACE)
-        self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.chains(), [NAMED])
-
-    async def test_a_chain_in_use_cannot_be_deleted(self):
-        self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[NAMED])
-        await self.press(Key.BACKSPACE)
-        self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(TRACK_LEAD, self.text())
-        self.assertIn(NAMED, self.chains())
-
-
-EMPTY_CHAIN = 'x'
-
-
 class TestChainEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.press(keybindings.MainPage.CHAINS, Key.ENTER)
+        await self.open_chain(ui_testing.NAMED)
         self.assertIsInstance(self.app.screen, ChainEditor)
 
     def steps(self):
@@ -903,14 +863,14 @@ class TestChainEditorAdding(UITest):
     """Adding steps to a chain, from the main screen."""
 
     async def test_a_chain_can_add_a_named_arp(self):
-        await self.press(keybindings.MainPage.CHAINS, Key.DOWN, Key.ENTER)
+        await self.open_chain(ui_testing.EMPTY)
         self.assertIsInstance(self.app.screen, ChainEditor)
         await self.press(keybindings.ChainEditor.ADD, Key.DOWN, Key.ENTER)
         self.assertEqual(self.chain_steps(EMPTY), [(GeneratorKind.ARP, UP)])
         self.document.song()
 
     async def test_a_new_generator_is_made_of_the_kind_picked_added_to_the_chain_and_opened(self):
-        await self.press(keybindings.MainPage.CHAINS, Key.DOWN, Key.ENTER)
+        await self.open_chain(ui_testing.EMPTY)
         await self.press(keybindings.ChainEditor.ADD, Key.ENTER)
         self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
         await self.pick(labels.MSG_ARP_LABEL)
@@ -924,20 +884,30 @@ class TestChainEditorAdding(UITest):
 
 
 
+# The instruments the move mode tests carry.
+CARRIED_INSTRUMENTS = ('organ', 'piano')
+
+
 class TestMoveModeOnALists(UITest):
     """Move mode on a list page: M picks up the row, Up and Down carry it, and Enter, Esc or M drops it."""
 
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        # Two instruments to carry one past the other.
+        for name in CARRIED_INSTRUMENTS:
+            self.document.add_instrument(name)
+
     def names(self):
-        return self.document.get_setlist().get_chain_names()
+        return self.document.get_setlist().get_instrument_names()
 
     def carried_line(self):
         return next(line for line in self.text().splitlines() if marks.MSG_MOVING_OPEN in line and marks.MSG_MOVING_CLOSE in line)
 
     async def test_the_carried_name_is_marked_without_moving_the_columns_and_one_move_is_one_undo_step(self):
-        await self.press(keybindings.MainPage.CHAINS)
+        await self.press(keybindings.MainPage.INSTRUMENTS)
         first = self.names()[0]
         still = next(line for line in self.text().splitlines() if first in line)
-        await self.press(keybindings.ChainsPage.MOVE)
+        await self.press(keybindings.InstrumentsPage.MOVE)
         carried = self.carried_line()
         self.assertIn(marks.MSG_MOVING_OPEN + first + marks.MSG_MOVING_CLOSE, carried)
         # The marks take the places of the spaces beside the name, so every column after it stays where it was.
@@ -946,14 +916,14 @@ class TestMoveModeOnALists(UITest):
         await self.press(*[Key.DOWN] * len(self.names()))
         self.assertEqual(self.names()[-1], first)
         await self.press(Key.ESCAPE)
-        self.assertIsInstance(self.app.screen, ChainsPage)
+        self.assertIsInstance(self.app.screen, InstrumentsPage)
         self.assertFalse(self.app.screen.moving)
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.names()[0], first)
 
     async def test_m_or_enter_drops_it_too(self):
-        await self.press(keybindings.MainPage.CHAINS, keybindings.ChainsPage.MOVE, keybindings.ChainsPage.MOVE)
+        await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.MOVE, keybindings.InstrumentsPage.MOVE)
         self.assertFalse(self.app.screen.moving)
-        await self.press(keybindings.ChainsPage.MOVE, Key.ENTER)
+        await self.press(keybindings.InstrumentsPage.MOVE, Key.ENTER)
         self.assertFalse(self.app.screen.moving)
-        self.assertIsInstance(self.app.screen, ChainsPage)
+        self.assertIsInstance(self.app.screen, InstrumentsPage)

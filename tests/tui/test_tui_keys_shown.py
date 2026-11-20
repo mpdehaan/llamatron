@@ -23,6 +23,7 @@ from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
+from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 
 MAIN = 'main'
@@ -144,12 +145,13 @@ class TestEveryKeyIsShownOnTheSetPages(EveryKeyIsShownTests, UITest):
 
 
 class TestEveryKeyIsShownOnTheSongPages(EveryKeyIsShownTests, UITest):
-    """Chains, Generators, Scales, Grooves, Arrange and the pages under them."""
+    """Modulators, Generators, a chain's editor, Scales, Grooves, Arrange and the pages under them."""
 
     async def visit(self):
-        await self.press(keybindings.MainPage.CHAINS)
-        yield Section.CHAINS
-        await self.press(Key.ENTER)
+        await self.press(keybindings.MainPage.MODULATORS)
+        yield Section.MODULATORS
+        await self.press(Key.ESCAPE)
+        await self.open_chain(ui_testing.NAMED)
         yield CHAIN_EDITOR
         await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GENERATORS)
         yield GENERATORS

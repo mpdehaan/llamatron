@@ -126,8 +126,9 @@ SHOTS = [
     # Offsets is the sixth setting of an arpeggiator, after its Name, and Enter on it opens the offsets editor.
     Shot(name='offsets_editor', generator=Section.ARPS, keys=[Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=ARP_SONG),
     Shot(name='auto_ratchet_editor', generator=Section.AUTO_RATCHETS, keys=[]),
-    Shot(name='chains', keys=[keybindings.MainPage.CHAINS]),
-    Shot(name='chain_editor', keys=[keybindings.MainPage.CHAINS, Key.ENTER]),
+    Shot(name='modulators', keys=[keybindings.MainPage.MODULATORS]),
+    # The chain is a kind on the Generators page: PgDn to its heading, Space opens it, and Down and ENTER open the chain.
+    Shot(name='chain_editor', keys=[keybindings.MainPage.GENERATORS, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER]),
     Shot(name='grooves', keys=[keybindings.MainPage.GROOVES]),
     Shot(name='groove_editor', keys=[keybindings.MainPage.GROOVES, Key.DOWN, Key.DOWN, Key.ENTER]),
     Shot(name='registers', keys=[keybindings.MainPage.REGISTERS]),

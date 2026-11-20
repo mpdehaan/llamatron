@@ -115,6 +115,26 @@ class SongEdits:
         """Return a register, AX to DX, as a Register, with its defaults for anything not set."""
         return self.song().get_register(name)
 
+    def modulator_range(self):
+        """Return the lowest and highest values a modulator's minimum, start and maximum may take."""
+        return limits.MIN_REGISTER_VALUE, limits.MAX_REGISTER_VALUE
+
+    def hertz_range(self):
+        """Return the slowest and fastest rate in hertz a modulator may have, and how many steps a hertz is set in."""
+        return limits.MIN_HERTZ, limits.MAX_HERTZ, limits.HERTZ_STEPS
+
+    def modulator(self, name):
+        """Return a modulator, XMod to ZMod, as a Modulator, with its defaults for anything not set."""
+        return self.song().get_modulator(name)
+
+    def set_modulator_setting(self, *, name, setting, value):
+        """Change one setting of a modulator, or return why it can't change, like a start above the maximum. None goes back to the default."""
+        try:
+            self.change(self.song().set_modulator_setting, name=name, setting=setting, value=value)
+        except InvalidValue as problem:
+            return str(problem)
+        return None
+
     def set_register_setting(self, *, name, setting, value):
         """Change one setting of a register, or return why it can't change, like a default above the maximum.
 

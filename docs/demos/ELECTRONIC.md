@@ -34,7 +34,7 @@ and long every bar, and a register bound to CC 74 opens the filter as the notes 
 
 | chords | chains | ties | CCs | registers | binding | shapes |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../TRACKS.md#track-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../TRACKS.md#track-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
 <!-- end of the generated summary of 15_acid_articulate -->
 
 <a id="acid_glide"></a>
@@ -49,7 +49,7 @@ each bar, though the line itself never changes.
 
 | chains | feel |
 | :---: | :---: |
-| [✓](../CHAINS.md) | [✓](../generators/GLIDE.md) |
+| [✓](../generators/CHAIN.md) | [✓](../generators/GLIDE.md) |
 <!-- end of the generated summary of 14_acid_glide -->
 
 <a id="edm_density"></a>
@@ -67,7 +67,7 @@ the drums half time and make the arp and the lead trade places across the second
 
 | chords | chains | ties | shapes |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#section-shapes) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#section-shapes) |
 <!-- end of the generated summary of edm_density -->
 
 [![The Density demo, edm_density.yml, on YouTube](https://img.youtube.com/vi/68vSj5sSW3c/hqdefault.jpg)](https://www.youtube.com/watch?v=68vSj5sSW3c)
@@ -85,7 +85,7 @@ lyrical middle in the dominant key and a last time a step higher. No club effect
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of mainstreet_hoedown -->
 
 <a id="microwave_snacks"></a>
@@ -101,7 +101,7 @@ early synthesizer records were.
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of microwave_snacks -->
 
 <a id="minimal_techno"></a>
@@ -114,7 +114,7 @@ A piece rather than a demo: minimal techno, meant only to sound good, about thre
 
 | chords | ratchets | chains | morphs | probability | key changes | tempo changes |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/AUTORATCHET.md) | [✓](../CHAINS.md) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/AUTORATCHET.md) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) |
 <!-- end of the generated summary of minimal_techno -->
 
 <a id="mtn_king_direction"></a>
@@ -143,7 +143,7 @@ on every beat, a house piano in the choruses and a breakdown on the pad.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of nomore_nomore -->
 
 <a id="ode_to_joy_ratchet"></a>
@@ -158,7 +158,7 @@ AutoRatchet leave the pattern alone and do the chopping in a chain instead.
 
 | chords | ratchets | chains | probability |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#advanced) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#glide-and-probability) |
+| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#glide-and-probability) |
 <!-- end of the generated summary of 11_ode_to_joy_ratchet -->
 
 <a id="percussion_fish"></a>
@@ -176,7 +176,7 @@ once more; and an ending for percussion and pad.
 
 | chords | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/DENSITY.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/DENSITY.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of percussion_fish -->
 
 <a id="registers"></a>
@@ -208,7 +208,7 @@ the dragon, a battle; the return, the theme with everything; an epilogue for the
 
 | chords | chains | ties | tempo changes | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/SWELL.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/SWELL.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of roll_d20 -->
 
 <a id="sailor_arpeggiator"></a>
@@ -224,7 +224,7 @@ arpeggio.
 
 | chords | arps | chains |
 | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) |
 <!-- end of the generated summary of 12_sailor_arpeggiator -->
 
 <a id="sandworm"></a>
@@ -240,7 +240,7 @@ Density before each drop; a long breakdown on the pad.
 
 | chords | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/DENSITY.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/DENSITY.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of sandworm -->
 
 <a id="techno_morph"></a>
@@ -268,7 +268,7 @@ its own.
 
 | chords | arps | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/DENSITY.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/DENSITY.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of the_mineral -->
 
 <a id="tie"></a>
@@ -284,5 +284,5 @@ thing here to a finished song.
 
 | chords | arps | ratchets | chains | grabs | morphs | directions | ties | probability | key changes | tempo changes | CCs | registers |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CHAINS.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
 <!-- end of the generated summary of 08_tie -->

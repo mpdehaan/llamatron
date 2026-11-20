@@ -87,7 +87,7 @@ class MainPage(Page):
     FILE = Binding(Key.F, legends.KeyName.F, labels.PageName.FILE)
     SONGS = Binding(Key.S, legends.KeyName.S, labels.PageName.SONGS)
     PATTERNS = Binding(Key.P, legends.KeyName.P, labels.PageName.PATTERNS)
-    CHAINS = Binding(Key.C, legends.KeyName.C, labels.PageName.CHAINS)
+    MODULATORS = Binding(Key.M, legends.KeyName.M, labels.PageName.MODULATORS)
     GENERATORS = Binding(Key.G, legends.KeyName.G, labels.PageName.GENERATORS)
     SCALES = Binding(Key.Z, legends.KeyName.Z, labels.PageName.SCALES)
     GROOVES = Binding(Key.V, legends.KeyName.V, labels.PageName.GROOVES)
@@ -101,7 +101,7 @@ class MainPage(Page):
     OPEN_SET_HERE = Binding(Key.O, legends.KeyName.O, legends.What.OPEN_SET)
     EXPORT_HERE = Binding(Key.X, legends.KeyName.X, legends.What.EXPORT)
     # Import MIDI, in the row of actions after Export.
-    IMPORT_HERE = Binding(Key.M, legends.KeyName.M, legends.What.IMPORT_MIDI)
+    IMPORT_HERE = Binding(Key.L, legends.KeyName.L, legends.What.IMPORT_MIDI)
     QUIT = Binding(Key.Q, legends.KeyName.Q, legends.What.QUIT)
     SELECT = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.SELECT)
     OPEN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
@@ -109,7 +109,7 @@ class MainPage(Page):
     FOOTER_HELP = Binding(Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
     FOOTER_ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.MSG_ABOUT_FOOTER_WHAT)
     # The pages in the order of their cells, four to a row.
-    PAGES = [FILE, SONGS, PATTERNS, CHAINS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, ARRANGE, REAL_TIME]
+    PAGES = [FILE, SONGS, PATTERNS, MODULATORS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, ARRANGE, REAL_TIME]
     IN_HELP = [*PAGES, OPEN_SET_HERE, EXPORT_HERE, IMPORT_HERE, QUIT, SELECT, OPEN]
     IN_LEGEND = [SELECT, OPEN, FOOTER_HELP, FOOTER_ABOUT]
 
@@ -180,10 +180,6 @@ class PatternsPage(NamedListPage):
         ListPage.RENAME, ListPage.COPY, ListPage.DELETE, UNGROUP, LISTEN, STOP_LISTENING, NEXT_GROUP, ListPage.SEARCH,
     ]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH, NEXT_GROUP])
-
-
-class ChainsPage(NamedListPage):
-    """The Chains page, with the list keys alone."""
 
 
 class ScalesPage(NamedListPage):
@@ -324,6 +320,16 @@ class RegistersPage(FieldPage):
     MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
     MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    IN_HELP = [Page.BACK, MOVE, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR]
+    IN_LEGEND = IN_HELP
+
+
+class ModulatorsPage(FieldPage):
+    """The Modulators page, a grid of the four modulators by their settings, moved over as the Registers page is."""
+
+    MOVE = RegistersPage.MOVE
+    LESS = RegistersPage.LESS
+    MORE = RegistersPage.MORE
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR]
     IN_LEGEND = IN_HELP
 

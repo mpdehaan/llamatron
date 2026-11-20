@@ -87,7 +87,6 @@ Each object of a set has a page in the tracker and a page here, with its setting
 | Clips | `A`, then a clip | [Clips](docs/CLIPS.md) |
 | Scales | `Z` | [Scales](docs/SCALES.md) |
 | Registers | `R` | [Registers](docs/REGISTERS.md) |
-| Chains | `C` | [Chains](docs/CHAINS.md) |
 | Grooves | `V` | [Grooves](docs/GROOVES.md) |
 
 ## Generators
@@ -103,6 +102,12 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | What it does | Page |
 | --- | --- |
 | A melody dealt out among tracks | [Hocket](docs/generators/HOCKET.md) |
+
+### Chains
+
+| What it does | Page |
+| --- | --- |
+| Several generators shared as one list | [Chain](docs/generators/CHAIN.md) |
 
 ### Articulation
 

@@ -48,6 +48,7 @@ from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.shared.list_page import ListPage
+from tests.support import ui_testing
 from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
 from tests.support.ui_testing import key_of, leaf_pages, UITest
 
@@ -259,7 +260,9 @@ class KeyTour(UITest):
         await self.press(Key.ESCAPE)
         await self.walk()
         # The chain editor's When key opens the chain's statements about the registers.
-        await self.press(Key.ESCAPE, keybindings.MainPage.CHAINS, Key.ENTER, keybindings.ChainEditor.WHEN)
+        await self.press(Key.ESCAPE)
+        await self.open_chain(ui_testing.NAMED)
+        await self.press(keybindings.ChainEditor.WHEN)
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.walk()
@@ -314,6 +317,8 @@ class KeyTour(UITest):
         await self.press(Key.ESCAPE)
         await self.walk()
         await self.press(Key.ESCAPE, keybindings.MainPage.REGISTERS)
+        await self.walk()
+        await self.press(Key.ESCAPE, keybindings.MainPage.MODULATORS)
         await self.walk()
         # Arrange opens on the first scene's name, with the corner above it, since the instrument added above turned Real Time on, and the first track's name to the corner's right.
         await self.press(Key.ESCAPE, keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER)

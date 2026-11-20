@@ -112,7 +112,7 @@ SET_REGISTERS_DOC = '../REGISTERS.md#set-registers-and-increment-registers'
 CONDITIONAL_EXECUTION_DOC = '../REGISTERS.md#conditional-execution'
 STEP_STATEMENTS_DOC = '../PATTERNS.md#stop-when-restart-when-and-mute-when'
 GROOVES_DOC = '../GROOVES.md'
-CHAINS_DOC = '../CHAINS.md'
+CHAINS_DOC = '../generators/CHAIN.md'
 GENERATOR_DOC = '../generators/{page}.md'
 FEATURE_LINKS = {
     'chords': CHORDS_DOC,

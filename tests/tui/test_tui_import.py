@@ -81,7 +81,7 @@ class TestImportDialog(UITest):
         await self.press(Key.ENTER)
 
     def test_the_main_screen_has_an_import_cell(self):
-        self.assertEqual(cell_opened_by(Key.M), labels.PageName.IMPORT)
+        self.assertEqual(cell_opened_by(Key.L), labels.PageName.IMPORT)
 
     async def test_the_cell_sits_in_the_bar_of_actions_above_export(self):
         # Import over Export, the bar's second column.

@@ -2,7 +2,7 @@
 
 A pattern says what a part is; a generator says how it is played. This page explains what generators are,
 how they are put to work, and the settings every kind shares. Each kind has a page of its own, listed under
-Generator Kinds below, and [Chains](CHAINS.md) covers the chains that run them.
+Generator Kinds below, and [Chain](generators/CHAIN.md) covers the chains that run them.
 
 ## What a Generator Does
 
@@ -17,7 +17,7 @@ Generators are heard everywhere a song is: in real time as it plays, and in ever
 
 A clip, a scene and a track each list the generators they run, one after another. A chain is a generator
 too, one that runs a list of other generators in its place, so that several clips can share the same list;
-[Chains](CHAINS.md) says how.
+[Chain](generators/CHAIN.md) says how.
 
 ## Generators as Paint
 

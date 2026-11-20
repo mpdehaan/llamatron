@@ -22,7 +22,7 @@ and AutoRatchets pages. What a page alone does, like adding, is tested with the 
 import unittest
 
 from llamatron.composition import file_format, groove, limits, setlist
-from llamatron.composition.file_format import ClipSlotSetting, Section
+from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
 from llamatron.strings import errors, labels, messages, names
 from llamatron.tui import drawing, keybindings
@@ -32,7 +32,6 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import fit
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import generator_pages
-from llamatron.tui.screens.generators.chains_page import ChainsPage
 from llamatron.tui.screens.pattern import patterns_page
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
@@ -248,17 +247,6 @@ class TestScalesPageAsANamedList(NamedListChecks, UITest):
     FIRST = setlist.DEFAULT_SCALE
 
 
-class TestChainsPageAsANamedList(NamedListChecks, UITest):
-
-    PAGE = ChainsPage
-    OPENING = (keybindings.MainPage.CHAINS,)
-    FIRST = ui_testing.NAMED
-
-    def make_used(self):
-        self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.CHAINS, value=[ui_testing.NAMED])
-        return True
-
-
 class TestGroovesPageAsANamedList(NamedListChecks, UITest):
 
     PAGE = GroovesPage
@@ -309,10 +297,10 @@ class TestSongsPageAsANamedList(NamedListChecks, UITest):
 
 # The test class of each page that lists named things, which the rule below reads.
 CHECKED = [
-    TestPatternsPageAsANamedList, TestScalesPageAsANamedList, TestChainsPageAsANamedList, TestGroovesPageAsANamedList, TestInstrumentsPageAsANamedList, TestSongsPageAsANamedList,
+    TestPatternsPageAsANamedList, TestScalesPageAsANamedList, TestGroovesPageAsANamedList, TestInstrumentsPageAsANamedList, TestSongsPageAsANamedList,
 ]
 # Every generator section is listed by the Generators page, every kind on one list.
-EVERY_NAMED_SECTION_OF_THE_SET = [Section.PATTERNS, Section.SCALES, Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
+EVERY_NAMED_SECTION_OF_THE_SET = [Section.PATTERNS, Section.SCALES, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 
 
 class TestEveryNamedListPageIsChecked(unittest.TestCase):

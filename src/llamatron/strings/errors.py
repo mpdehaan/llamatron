@@ -101,6 +101,7 @@ ERR_MODULATORS_NOT_NAMED = 'modulators: expected modulators from: {names}, each 
 ERR_BAD_HERTZ = 'hertz must be a number from {lowest} to {highest} in hundredths, got {value!r}'
 ERR_INVERT_NOT_TRUE_OR_FALSE = 'invert must be true or false, got {value!r}'
 ERR_NO_SUCH_MODULATOR = 'unknown modulator ({name}), expected one of: {names}'
+ERR_NOT_A_HERTZ = 'hertz must be a number such as 0.5, got {value!r}'
 ERR_MODULATOR_OUT_OF_ORDER = 'start must lie between minimum and maximum, got minimum {minimum}, start {start} and maximum {maximum}'
 
 # composition/file_layout.py

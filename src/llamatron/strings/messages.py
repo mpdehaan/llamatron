@@ -146,7 +146,7 @@ MSG_CHANGED_THE_SET = 'the set'
 MSG_CHANGED_WORDS = {
     Section.SCALES: 'scale', Section.PATTERNS: 'pattern', Section.ARPS: 'arp', Section.AUTO_RATCHETS: 'AutoRatchet', Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'Strum', Section.GUITARIFIES: 'Guitarify', Section.EUCLIDS: 'Euclid', Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag', Section.HOCKETS: 'Hocket', Section.FOLLOW_CHORDS: 'Follow Chords', Section.PHRASINGS: 'Phrasing', Section.MUSICIANS: 'Musician', Section.DENSITIES: 'Density', Section.SWELLS: 'Swell',
     Section.ARTICULATES: 'Articulate',
-    Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.REGISTERS: 'register',
+    Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.REGISTERS: 'register', Section.MODULATORS: 'modulator',
     SetlistSetting.TITLE: 'title', SetlistSetting.AUTHOR: 'author', SetlistSetting.DESCRIPTION: 'description', SetlistSetting.NOTES: 'notes',
     SetlistSetting.STEP_SIZE: 'step size', SetlistSetting.DEFAULT_OCTAVE: 'default octave', SetlistSetting.DEFAULT_DRUM_OCTAVE: 'default drum octave',
     SetlistSetting.OCTAVE_LABELS: 'octave labels', SetlistSetting.PROTECTED: 'protected',
@@ -176,7 +176,6 @@ MSG_COPY_GROUP_TITLE = 'Confirm copying the entire pattern group'
 MSG_GROUP_COPIED = 'copied to group {name}'
 MSG_UNGROUP_TITLE = 'Ungroup'
 MSG_UNGROUP_QUESTION = 'Take every pattern out of the group ({name})? No pattern is deleted.'
-MSG_NEW_CHAIN_PROMPT = 'New chain name'
 MSG_RENAME_CHAIN_PROMPT = 'Rename chain'
 MSG_RENAME_GENERATOR_PROMPT = 'Rename {label}'
 MSG_COPIED_TO = 'copied to {name}'
@@ -276,6 +275,7 @@ MSG_RESTING_CHORD = 'chord {chord}'
 
 # tui/screens/set/registers_page.py
 MSG_REGISTER_PROMPT = '{label} ({lowest} to {highest})'
+MSG_MODULATOR_PROMPT = '{label} ({lowest} to {highest})'
 
 # tui/screens/set/grooves_page.py
 MSG_RENAME_GROOVE_PROMPT = 'Rename groove'

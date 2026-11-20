@@ -199,15 +199,6 @@ A scale still named after its root and kind, like C Major, is renamed as they ch
 The notes the root and kind make are shown underneath, and how many songs and scenes use the scale, then a keyboard with the scale's keys filled and the root bracketed.
 """
 
-# ChainsPage
-HELP_CHAINS_PAGE = """
-A chain is a list of generators that run on a clip when exporting. A clip chooses one chain on its own page.
-
-ENTER edits the selected chain. A adds one, C copies it, N renames it, M moves it, and S sorts them by name.
-Bksp deletes it, but only once no clip uses it.
-/ searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
-"""
-
 # ChainEditor
 HELP_CHAIN_EDITOR = """
 The steps run from top to bottom, each working on what the last one made.
@@ -430,6 +421,15 @@ The four registers, AX to DX, are numbers the whole current song shares. Pattern
 Each starts at its default when the song starts, and again whenever a scene resets it. Adding never takes one past its minimum or maximum: it stops there, or, if it wraps, jumps to the other end.
 
 Up and down select. Left and right change a number, ENTER types one, and Bksp goes back to its default. ENTER switches wraps on and off.
+"""
+
+# ModulatorsPage
+HELP_MODULATORS_PAGE = """
+The four modulators, XMod, WMod, YMod and ZMod, are values that trace a wave by themselves as the current song plays. Pattern steps use them with XMod+Note and XMod+Vel, set them with XMod=, and the conditions read them as they read the registers.
+
+Each swings between its minimum and maximum in its shape, starting at its start: rising first, or falling first when inverted. Its rate is how long one whole wave takes, in bars, which follow the tempo, or in Hz, which do not.
+
+The arrows move. [ and ] change the value under the cursor, ENTER types or chooses one, Space switches Invert, and Bksp goes back to its default.
 """
 
 # GroovesPage

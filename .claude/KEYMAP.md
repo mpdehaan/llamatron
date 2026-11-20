@@ -79,12 +79,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - **the Bypass Generators When heading**: `ESC` back · `↑↓` select · `Space/ENTER` toggle · `PgUp/PgDn` next section
 - **the   field, the    field, the     field, the      field**: `ESC` back · `↑↓` select · `←→` move · `ENTER` choose · `Bksp` clear · `PgUp/PgDn` next section
 
-## ChainsPage
-
-- **a row**: `ESC` back · `↑↓` select · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `M` move · `S` sort · `/` search
-- **the + row**: `ESC` back · `ENTER` add · `↑↓` select · `A` add · `/` search
-- **while searching**: `ESC` CANCEL · `↑↓` select · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
-
 ## ChordsEditor
 
 - **anywhere**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `0-9` type · `I` insert step · `D` remove step · `H` pick progression
@@ -240,7 +234,13 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## MainPage
 
-- **anywhere**: `F` File/Global · `S` Songs · `P` Patterns · `C` Chains · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `R` Registers · `A` Arrange · `T` Real Time · `O` OPEN · `X` EXPORT · `M` IMPORT MIDI · `Q` QUIT · `←↑↓→` select · `ENTER` open
+- **anywhere**: `F` File/Global · `S` Songs · `P` Patterns · `M` Modulators · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `R` Registers · `A` Arrange · `T` Real Time · `O` OPEN · `X` EXPORT · `L` LOAD MIDI · `Q` QUIT · `←↑↓→` select · `ENTER` open
+
+## ModulatorsPage
+
+- **the XMod shape field, the XMod rate field, the XMod rate in field, the WMod shape field, the WMod rate field, the WMod rate in field, the YMod shape field, the YMod rate field, the YMod rate in field, the ZMod shape field, the ZMod rate field, the ZMod rate in field**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `ENTER` choose
+- **the XMod minimum field, the XMod start field, the XMod maximum field, the WMod minimum field, the WMod start field, the WMod maximum field, the YMod minimum field, the YMod start field, the YMod maximum field, the ZMod minimum field, the ZMod start field, the ZMod maximum field**: `ESC` back · `←↑↓→` move · `[` dec · `]` inc · `ENTER` type · `Bksp` default
+- **the XMod invert field, the WMod invert field, the YMod invert field, the ZMod invert field**: `ESC` back · `←↑↓→` move · `Space/ENTER` toggle
 
 ## MusicianEditor
 
@@ -452,7 +452,6 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `/`
 
 - ChainEditor: search (a row, the + row)
-- ChainsPage: search (a row, the + row)
 - GeneratorListPage: search (a row, the + row)
 - GeneratorsPage: search (the + row, a row)
 - GroovesPage: search (a row, the + row)
@@ -495,6 +494,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: dec (anywhere)
 - HocketEditor: dec (the Source track field, the Restart field)
 - InstrumentEditor: dec (the Channel field, the Keyswitch lead field, the GM sound field, the Default velocity field, the Accent field)
+- ModulatorsPage: dec (the XMod shape field, the XMod rate field, the XMod rate in field, the WMod shape field, the WMod rate field, the WMod rate in field, the YMod shape field, the YMod rate field, the YMod rate in field, the ZMod shape field, the ZMod rate field, the ZMod rate in field, the XMod minimum field, the XMod start field, the XMod maximum field, the WMod minimum field, the WMod start field, the WMod maximum field, the YMod minimum field, the YMod start field, the YMod maximum field, the ZMod minimum field, the ZMod start field, the ZMod maximum field)
 - MusicianEditor: dec (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field)
 - OffsetsEditor: dec (anywhere)
 - PatternEditor: shrink (the piano roll)
@@ -535,6 +535,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: inc (anywhere)
 - HocketEditor: inc (the Source track field, the Restart field)
 - InstrumentEditor: inc (the Channel field, the Keyswitch lead field, the GM sound field, the Default velocity field, the Accent field)
+- ModulatorsPage: inc (the XMod shape field, the XMod rate field, the XMod rate in field, the WMod shape field, the WMod rate field, the WMod rate in field, the YMod shape field, the YMod rate field, the YMod rate in field, the ZMod shape field, the ZMod rate field, the ZMod rate in field, the XMod minimum field, the XMod start field, the XMod maximum field, the WMod minimum field, the WMod start field, the WMod maximum field, the YMod minimum field, the YMod start field, the YMod maximum field, the ZMod minimum field, the ZMod start field, the ZMod maximum field)
 - MusicianEditor: inc (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field)
 - OffsetsEditor: inc (anywhere)
 - PatternEditor: stretch (the piano roll)
@@ -558,7 +559,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: add track (a track's name, the + after the tracks)
 - ArrangePage: add scene (a scene's name, a clip, an empty cell, the + row)
 - ChainEditor: add (a row, the + row)
-- ChainsPage: add (a row, the + row)
 - ClipPage: add pattern (the Name field, the Patterns field, the  field, the Scale field, the Generators field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - GeneratorListPage: add (a row, the + row)
 - GeneratorsPage: add (the + row, a row)
@@ -573,7 +573,6 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `A-Z 0-9`
 
 - ChainEditor: search (while searching)
-- ChainsPage: search (while searching)
 - GeneratorListPage: search (while searching)
 - GeneratorsPage: search (while searching)
 - GroovesPage: search (while searching)
@@ -601,8 +600,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: remove (a row)
 - ChainEditor: erase (while searching)
 - ChainStatementsPage: clear (the   field, the    field, the     field, the      field)
-- ChainsPage: delete (a row)
-- ChainsPage: erase (while searching)
 - ChordsEditor: clear (anywhere)
 - ClipPage: use pattern name (the Name field)
 - ClipPage: remove (the Patterns field)
@@ -635,6 +632,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentEditor: default (the Default velocity field, the Accent field)
 - InstrumentsPage: delete (a row)
 - InstrumentsPage: erase (while searching)
+- ModulatorsPage: default (the XMod minimum field, the XMod start field, the XMod maximum field, the WMod minimum field, the WMod start field, the WMod maximum field, the YMod minimum field, the YMod start field, the YMod maximum field, the ZMod minimum field, the ZMod start field, the ZMod maximum field)
 - MusicianEditor: no track (the Chords from field, the Tune from field)
 - MusicianEditor: clear (the Notes field, the   field, the    field, the     field, the      field)
 - NotesPage: erase (while typing)
@@ -688,11 +686,9 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: copy scene (a scene's name)
 - ArrangePage: copy clip (a clip)
 - ChainEditor: copy (a row)
-- ChainsPage: copy (a row)
 - GeneratorsPage: copy (a row)
 - GroovesPage: copy (a row)
 - InstrumentsPage: copy (a row)
-- MainPage: Chains (anywhere)
 - PatternsPage: copy (a group's heading, a pattern, a pattern in no group)
 - ScalesPage: copy (a row)
 - SongsPage: copy (a row)
@@ -740,9 +736,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: add (the + row)
 - ChainEditor: keep (while searching)
 - ChainStatementsPage: choose (the   field, the    field, the     field, the      field)
-- ChainsPage: edit (a row)
-- ChainsPage: add (the + row)
-- ChainsPage: keep (while searching)
 - ChordsEditor: choose (anywhere)
 - ClipPage: rename (the Name field)
 - ClipPage: edit (the Patterns field, the Generators field, the Repeat field, the Velocity field)
@@ -792,6 +785,8 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentsPage: add (the + row)
 - InstrumentsPage: keep (while searching)
 - MainPage: open (anywhere)
+- ModulatorsPage: choose (the XMod shape field, the XMod rate field, the XMod rate in field, the WMod shape field, the WMod rate field, the WMod rate in field, the YMod shape field, the YMod rate field, the YMod rate in field, the ZMod shape field, the ZMod rate field, the ZMod rate in field)
+- ModulatorsPage: type (the XMod minimum field, the XMod start field, the XMod maximum field, the WMod minimum field, the WMod start field, the WMod maximum field, the YMod minimum field, the YMod start field, the YMod maximum field, the ZMod minimum field, the ZMod start field, the ZMod maximum field)
 - MusicianEditor: rename (the Name field)
 - MusicianEditor: choose (the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Notes field, the   field, the    field, the     field, the      field)
 - MusicianEditor: edit (the Loudness field, the Looseness field)
@@ -866,8 +861,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - ChainEditor: back (a row, the + row)
 - ChainEditor: CANCEL (while searching)
 - ChainStatementsPage: back (the Bypass Generators When heading, the   field, the    field, the     field, the      field)
-- ChainsPage: back (a row, the + row)
-- ChainsPage: CANCEL (while searching)
 - ChordsEditor: back (anywhere)
 - ClipPage: back (the Name field, the Patterns field, the  field, the Scale field, the Generators field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - DensityEditor: back (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
@@ -892,6 +885,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - InstrumentEditor: back (the Name field, the Device field, the Channel field, the Keyswitch lead field, the GM sound field, the Default velocity field, the Accent field, the Keyswitch Map button)
 - InstrumentsPage: back (a row, the + row)
 - InstrumentsPage: CANCEL (while searching)
+- ModulatorsPage: back (the XMod shape field, the XMod rate field, the XMod rate in field, the WMod shape field, the WMod rate field, the WMod rate in field, the YMod shape field, the YMod rate field, the YMod rate in field, the ZMod shape field, the ZMod rate field, the ZMod rate in field, the XMod minimum field, the XMod start field, the XMod maximum field, the WMod minimum field, the WMod start field, the WMod maximum field, the YMod minimum field, the YMod start field, the YMod maximum field, the ZMod minimum field, the ZMod start field, the ZMod maximum field, the XMod invert field, the WMod invert field, the YMod invert field, the ZMod invert field)
 - MusicianEditor: back (the Name field, the Instrument field, the Activity field, the Accents field, the Range field, the Chords from field, the Tune from field, the Loudness field, the Looseness field, the Notes field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - NotesPage: CANCEL (while typing, anywhere)
 - NotesPage: back (anywhere)
@@ -1001,6 +995,7 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `L`
 
 - ClipPage: listen (the Name field, the Patterns field, the  field, the Scale field, the Generators field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
+- MainPage: LOAD MIDI (anywhere)
 - PatternEditor: listen (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the accent row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the stop_c2 row, the stop_c3 row, the stop_c4 row, the stop_c5 row, the restart_c1 row, the restart_c2 row, the restart_c3 row, the restart_c4 row, the restart_c5 row, the mute_c2 row, the mute_c3 row, the mute_c4 row, the mute_c5 row, the basics row, the chord_section row, the timing row, the keyswitch_section row, the advanced row, the cc row, the register_mod row, the register_apply row, the stop_when row, the restart_when row, the mute_when row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row, the stop_c1 row, the mute_c1 row)
 - PatternsPage: listen (a pattern, a pattern in no group)
 - WizardPage: listen (the Joins heading, the Kind field)
@@ -1011,12 +1006,11 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: move scene (a scene's name)
 - ArrangePage: move clip (a clip)
 - ChainEditor: move (a row)
-- ChainsPage: move (a row)
 - ClipPage: move pattern (the Patterns field)
 - GeneratorListPage: move (a row)
 - GroovesPage: move (a row)
 - InstrumentsPage: move (a row)
-- MainPage: IMPORT MIDI (anywhere)
+- MainPage: Modulators (anywhere)
 - PatternEditor: munge (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the accent row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the stop_c2 row, the stop_c3 row, the stop_c4 row, the stop_c5 row, the restart_c1 row, the restart_c2 row, the restart_c3 row, the restart_c4 row, the restart_c5 row, the mute_c2 row, the mute_c3 row, the mute_c4 row, the mute_c5 row, the basics row, the chord_section row, the timing row, the keyswitch_section row, the advanced row, the cc row, the register_mod row, the register_apply row, the stop_when row, the restart_when row, the mute_when row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row, the stop_c1 row, the mute_c1 row)
 - ScalesPage: move (a row)
 - SongsPage: move (a row)
@@ -1029,7 +1023,6 @@ settings page's fields. The keys that work everywhere are listed once:
 ## `N/F2`
 
 - ChainEditor: rename (a row, the + row)
-- ChainsPage: rename (a row)
 - GeneratorsPage: rename (a row)
 - GrooveEditor: rename (anywhere)
 - GroovesPage: rename (a row)
@@ -1091,7 +1084,6 @@ settings page's fields. The keys that work everywhere are listed once:
 
 ## `S`
 
-- ChainsPage: sort (a row)
 - GrooveEditor: cell length (anywhere)
 - GroovesPage: sort (a row)
 - GuitarBarEditor: cell length (anywhere)
@@ -1131,6 +1123,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - GuitarBarEditor: accent (anywhere)
 - GuitarifyEditor: toggle (the Shape heading, the Strokes heading, the Bypass Generators When heading)
 - HocketEditor: toggle (the Bypass Generators When heading)
+- ModulatorsPage: toggle (the XMod invert field, the WMod invert field, the YMod invert field, the ZMod invert field)
 - MusicianEditor: toggle (the Bypass Generators When heading)
 - OffsetsEditor: silent (anywhere)
 - PatternEditor: note (the piano roll)
@@ -1160,7 +1153,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: cell details (a track's name, a scene's name, a clip)
 - ArrangePage: leave the cell (a locked cell)
 - ChainEditor: complete (while searching)
-- ChainsPage: complete (while searching)
 - GeneratorListPage: complete (while searching)
 - GeneratorsPage: complete (while searching)
 - GroovesPage: complete (while searching)
@@ -1202,6 +1194,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - ArrangePage: carry (Move mode)
 - ChordsEditor: move (anywhere)
 - MainPage: select (anywhere)
+- ModulatorsPage: move (the XMod shape field, the XMod rate field, the XMod rate in field, the WMod shape field, the WMod rate field, the WMod rate in field, the YMod shape field, the YMod rate field, the YMod rate in field, the ZMod shape field, the ZMod rate field, the ZMod rate in field, the XMod minimum field, the XMod start field, the XMod maximum field, the WMod minimum field, the WMod start field, the WMod maximum field, the YMod minimum field, the YMod start field, the YMod maximum field, the ZMod minimum field, the ZMod start field, the ZMod maximum field, the XMod invert field, the WMod invert field, the YMod invert field, the ZMod invert field)
 - NotesPage: move (while typing)
 - PatternEditor: move (the piano roll, the degree row, the octave row, the accidental row, the velocity row, the accent row, the chord row, the tension row, the chord_scale row, the inversion row, the tie row, the gate row, the dot row, the glide row, the probability row, the ratchet row, the ratchet_offset row, the stop_c2 row, the stop_c3 row, the stop_c4 row, the stop_c5 row, the restart_c1 row, the restart_c2 row, the restart_c3 row, the restart_c4 row, the restart_c5 row, the mute_c2 row, the mute_c3 row, the mute_c4 row, the mute_c5 row, the basics row, the chord_section row, the timing row, the keyswitch_section row, the advanced row, the cc row, the register_mod row, the register_apply row, the stop_when row, the restart_when row, the mute_when row, the ax_note row, the bx_note row, the cx_note row, the dx_note row, the ax_velocity row, the bx_velocity row, the cx_velocity row, the dx_velocity row, the cc1 row, the cc2 row, the cc3 row, the cc4 row, the ax_set row, the bx_set row, the cx_set row, the dx_set row, the ax_add row, the bx_add row, the cx_add row, the dx_add row, the grab row, the slide row, the stop_c1 row, the mute_c1 row)
 - RegistersPage: move (the AX allowed inc max field, the AX minimum field, the AX default field, the AX maximum field, the BX allowed inc max field, the BX minimum field, the BX default field, the BX maximum field, the CX allowed inc max field, the CX minimum field, the CX default field, the CX maximum field, the DX allowed inc max field, the DX minimum field, the DX default field, the DX maximum field, the AX reset behavior field, the BX reset behavior field, the CX reset behavior field, the DX reset behavior field, the AX reset each scene field, the BX reset each scene field, the CX reset each scene field, the DX reset each scene field)
@@ -1256,7 +1249,6 @@ settings page's fields. The keys that work everywhere are listed once:
 - AutoRatchetEditor: select (the Name field, the Counts field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - ChainEditor: select (a row, the + row, while searching)
 - ChainStatementsPage: select (the Bypass Generators When heading, the   field, the    field, the     field, the      field)
-- ChainsPage: select (a row, the + row, while searching)
 - ClipPage: select (the Name field, the Patterns field, the  field, the Scale field, the Generators field, the Pattern order field, the Advance field, the Step direction field, the Repeat field, the Loop field, the Strum heading, the Velocity Ramp In heading, the Velocity Ramp Out heading, the Density heading, the Articulate heading, the Set Registers heading, the Increment Registers heading, the Bypass Generators When heading, the Skip Playback When heading, the Velocity field, the Grab track field, the   field, the    field, the     field, the      field, the Play button, the Stop button)
 - DensityEditor: select (the Name field, the Start field, the End field, the Over field, the Then field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
 - DragEditor: select (the Name field, the Step field, the Drag amount field, the Steps field, the Restart field, the Bypass Generators When heading, the   field, the    field, the     field, the      field)
@@ -1310,6 +1302,7 @@ settings page's fields. The keys that work everywhere are listed once:
 - **GuitarifyEditor**: Name, [Shape], Shape chords, Tuning, Position, Capo, Strings, Single notes, Color, [Strokes], Play strokes, Bar, Let ring, Spread, Fade, Loose timing, Upstroke strings, Approach, Restart
 - **HocketEditor**: Name, Source track, Restart
 - **InstrumentEditor**: Name, Device, Channel, GM sound, Default velocity, Accent, Keyswitch lead, (Keyswitch Map)
+- **ModulatorsPage**: XMod shape, XMod rate, XMod rate in, XMod minimum, XMod start, XMod maximum, XMod invert, WMod shape, WMod rate, WMod rate in, WMod minimum, WMod start, WMod maximum, WMod invert, YMod shape, YMod rate, YMod rate in, YMod minimum, YMod start, YMod maximum, YMod invert, ZMod shape, ZMod rate, ZMod rate in, ZMod minimum, ZMod start, ZMod maximum, ZMod invert
 - **MusicianEditor**: Name, Instrument, Chords from, Tune from, Activity, Loudness, Looseness, Accents, Notes, Range
 - **PhrasingEditor**: Name, Line, Breath, Rise and fall, Notes
 - **ProgressionEditor**: Name, Every, Chords, Restart

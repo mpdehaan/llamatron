@@ -19,8 +19,8 @@ a feature that already exists does what's being asked, that's pointed out first
   Ctrl+Q was awkward to type and nobody needs to quit from inside a page; Textual's own Ctrl+Q is
   switched off. A page's footer shows only its own keys, so
   that it stays short and leaves the page its room: the main screen has a cell for Save, Open,
-  Export and Import, in the row under the pages, where Open, Export and Import show the plain
-  letters `O`, `X` and `M`, which work on that screen alone to save a keystroke (Save stays
+  Export and Load MIDI, in the row under the pages, where Open, Export and Load MIDI show the plain
+  letters `O`, `X` and `L` (Load MIDI, the user's choice, freeing `M` for Modulators), which work on that screen alone to save a keystroke (Save stays
   Ctrl+S, since `S` is Songs), and F1 and F3 in its footer, and the F1 dialog, which
   every page opens, lists them all. Undo and Redo have no cell, since they're Ctrl+Z and Ctrl+Y
   everywhere, and F1 is where they're listed. Nothing reminds you of F1 and F3 on the other
@@ -164,6 +164,9 @@ a feature that already exists does what's being asked, that's pointed out first
   a closed heading saying `(set)` when anything inside holds a value (the user's design). Action rows are `Button`s, drawn below the settings after
   one blank line, the key's name in reverse video and then the button's name, so that what edits
   the set and what acts on it never run together.
+- A table-like layout, a grid of rows and columns such as the Registers and Modulators pages, gives every column the room of its
+  heading or the widest value it can ever hold, every choice of a list included, so that changing a value never moves the columns
+  beside it (the user's rule).
 - A settings page's buttons stand in one row where the row fits, and one under another, each a line in brackets, where a row
   would be wider than the page; Up and Down then go through them. A button deep in a page needs no key of its own: the arrows
   and ENTER reach and press it, and only what is pressed often keeps a letter (the user's rules).

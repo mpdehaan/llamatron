@@ -21,7 +21,7 @@ with the chords.
 
 | chords | chains | grooves | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../CHAINS.md) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of 07_blues_chords -->
 
 <a id="groove"></a>
@@ -39,7 +39,7 @@ can hear how the track's choice wins over the scene's, which wins over the song'
 
 | chords | arps | ratchets | chains | grooves |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../CHAINS.md) | [✓](../GROOVES.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of 09_groove -->
 
 <a id="intersection_pact"></a>
@@ -56,5 +56,5 @@ verses; two guitar choruses.
 
 | chains | ties | grooves | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../CHAINS.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of intersection_pact -->
