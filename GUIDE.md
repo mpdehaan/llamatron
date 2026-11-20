@@ -87,6 +87,7 @@ Each object of a set has a page in the tracker and a page here, with its setting
 | Clips | `A`, then a clip | [Clips](docs/CLIPS.md) |
 | Scales | `Z` | [Scales](docs/SCALES.md) |
 | Registers | `R` | [Registers](docs/REGISTERS.md) |
+| Draws | | [Draws](docs/DRAWS.md) |
 | Grooves | `V` | [Grooves](docs/GROOVES.md) |
 
 ## Generators

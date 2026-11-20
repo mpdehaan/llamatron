@@ -24,7 +24,7 @@ from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.checks import is_whole_number, listed, pass_over_unknown, reading
 from llamatron.composition.file_format import DrawSetting
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.llama_data import HoldsSettings
+from llamatron.composition.llama_data import HoldsSettings, own_copy
 from llamatron.composition.setting import Checked, Choice, described, Flag, WholeNumber
 from llamatron.strings import errors
 from llamatron.support.revised import notes_change
@@ -69,7 +69,8 @@ class Draw(HoldsSettings):
 
     def __init__(self, **settings):
         self.note_change()
-        self._settings = {name: settings.get(name) for name in SETTINGS}
+        # The slots are kept as a list of the draw's own, so that it shares nothing with the data it was read from.
+        self._settings = {name: own_copy(settings.get(name)) for name in SETTINGS}
 
     @classmethod
     def from_data(cls, *, data, where, song=None):
@@ -85,10 +86,10 @@ class Draw(HoldsSettings):
         return not self.to_data()
 
     def copy(self):
-        return Draw(**{name: (list(value) if isinstance(value, list) else value) for name, value in self._settings.items()})
+        return Draw(**self._settings)
 
     def to_data(self):
-        return {name: (list(value) if isinstance(value, list) else value) for name, value in self._settings.items() if value is not None}
+        return {name: own_copy(value) for name, value in self._settings.items() if value is not None}
 
     def get_direction(self):
         return self._setting(DrawSetting.DIRECTION)

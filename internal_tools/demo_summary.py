@@ -85,6 +85,7 @@ FEATURE_COLUMNS = [
     ('accents', ['accents']),
     ('CCs', ['CC rows', 'slides', 'track CC numbers']),
     ('registers', ['register note rows', 'register velocity rows', 'register adds', 'register sets', 'register resets', 'scene register sets', 'scene register adds', 'registers section']),
+    ('draws', ['draws section', 'draw rows', 'draw resets']),
     ('conditional execution', ['skip playback when', 'bypass generators when', 'stop when', 'restart when', 'mute when']),
     ('binding', ['register binding']),
     ('shapes', ['clip shapes', 'scene shapes', 'Densities', 'Swells', 'Articulates']),
@@ -111,6 +112,7 @@ SECTION_SHAPES_DOC = '../SCENES.md#section-shapes'
 TRACK_SETTINGS_DOC = '../TRACKS.md#track-settings'
 REGISTERS_DOC = '../REGISTERS.md'
 SET_REGISTERS_DOC = '../REGISTERS.md#set-registers-and-increment-registers'
+DRAWS_DOC = '../DRAWS.md'
 CONDITIONAL_EXECUTION_DOC = '../REGISTERS.md#conditional-execution'
 STEP_STATEMENTS_DOC = '../PATTERNS.md#stop-when-restart-when-and-mute-when'
 GROOVES_DOC = '../GROOVES.md'
@@ -155,6 +157,9 @@ FEATURE_LINKS = {
     'register sets': REGISTERS_DOC,
     'register resets': REGISTERS_DOC,
     'registers section': REGISTERS_DOC,
+    'draws section': DRAWS_DOC,
+    'draw rows': DRAWS_DOC,
+    'draw resets': DRAWS_DOC,
     'scene register sets': SET_REGISTERS_DOC,
     'scene register adds': SET_REGISTERS_DOC,
     'skip playback when': CONDITIONAL_EXECUTION_DOC,
