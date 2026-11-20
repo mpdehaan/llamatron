@@ -28,6 +28,7 @@ in an existing one.
 
 import argparse
 import csv
+import functools
 import io
 import os
 import sys
@@ -236,9 +237,16 @@ def short_name(path):
 
 
 def features_used(path):
-    """Return the set of feature names a set file uses."""
+    """Return the set of feature names a set file uses, worked out once for the file as it stands, since a run asks for each set's
+    features more than once."""
+    return set(features_used_at(path=path, modified=os.path.getmtime(path)))
+
+
+@functools.cache
+def features_used_at(*, path, modified):
+    """The feature names a set file used at a modification time, which is part of the key so that a file written again is read again."""
     data = Setlist.read_file(path).to_data()
-    return {name for name, check in FEATURES if check(data)}
+    return frozenset(name for name, check in FEATURES if check(data))
 
 
 def table(*, paths, used):

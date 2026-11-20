@@ -38,8 +38,10 @@ and tests/tools/test_demo_summary.py checks it is current, so that readers see w
 
 import argparse
 import csv
+import functools
 import importlib.util
 import io
+import os
 import pathlib
 import re
 import sys
@@ -307,9 +309,21 @@ def played_seconds(document):
     return total
 
 
+def loaded(path):
+    """Return the document of a set file, read once for the file as it stands: one run asks each set for its genre, its row and its
+    starting key, and reading it again for each took most of the run. Nothing here changes a document it is given."""
+    return loaded_at(path=path, modified=os.path.getmtime(path))
+
+
+@functools.cache
+def loaded_at(*, path, modified):
+    """The document of a set file as it was at a modification time, which is part of the key so that a file written again is read again."""
+    return Document.load(path)
+
+
 def summary_row(*, path, features):
     """Return one set's cells, as text, in the order of the headings."""
-    document = Document.load(path)
+    document = loaded(path)
     setlist = document.get_setlist()
     used = features.features_used(path)
     cells = [
@@ -414,7 +428,7 @@ def videos(*, path=None):
 
 def genre_of(path):
     """Return the genre a set's page of demos is named after: its first song's genre, or NO_GENRE."""
-    genres = Document.load(path).get_setlist().get_genres()
+    genres = loaded(path).get_setlist().get_genres()
     return genres[0] if genres else NO_GENRE
 
 
@@ -471,7 +485,7 @@ def with_new_features(*, section, cells, used, new):
 
 def starting_key_and_tempo(path):
     """Return the key a set's first song starts in, as its root and scale type, and its tempo there: the first scene's own, or else the song's."""
-    song = Document.load(path).song()
+    song = loaded(path).song()
     scenes = song.get_scenes()
     first = scenes[0] if scenes else None
     scale_name = (first.get_scale_name() if first else None) or song.get_scale_name()
