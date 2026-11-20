@@ -19,6 +19,8 @@ A page takes the colour of the section it shows or lists (an editor and its list
 the one it names; the main screen's is white, and Arrange has none and keeps the rule.
 """
 
+import functools
+
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
 
@@ -82,6 +84,7 @@ def mixed(*, low, high, share):
     return tuple(int(round(a + (b - a) * share)) for a, b in zip(low, high))
 
 
+@functools.cache
 def balanced(colour, *, target=EDGE_LUMINANCE):
     """Return a colour of the same hue moved toward black or toward white until its luminance is the target, so that every theme's edge looks as strong as the others."""
     low, high = (BLACK, colour) if luminance(colour) >= target else (colour, WHITE)

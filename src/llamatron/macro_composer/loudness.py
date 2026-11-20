@@ -22,6 +22,7 @@ every note is as loud as the next, and twice the style's distance at the most.
 """
 
 from fractions import Fraction
+import functools
 
 from llamatron.macro_composer import notation
 from llamatron.macro_composer.notation import clamped
@@ -56,6 +57,7 @@ def note_levels(velocity):
     return {notation.GHOST: clamped(velocity - GHOST_BELOW), notation.SOFT: clamped(velocity - SOFT_BELOW), NORMAL: velocity, notation.ACCENT: clamped(velocity + ACCENT_ABOVE)}
 
 
+@functools.cache
 def scaled(*, move, dynamics):
     """A distance from the normal level as a player's dynamics have it."""
     return round(Fraction(move * dynamics, USUAL_DYNAMICS))

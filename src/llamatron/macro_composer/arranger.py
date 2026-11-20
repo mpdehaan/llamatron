@@ -26,6 +26,7 @@ MacroComposer composes, so every choice can be read and changed there.
 
 import copy
 from fractions import Fraction
+import functools
 import math
 import os
 import random
@@ -478,10 +479,12 @@ def style_in(*, style, template, variant=None):
     return STYLES_IN_TEMPLATES[key]
 
 
+@functools.cache
 def bar_length(meter):
     return Fraction(meter)
 
 
+@functools.cache
 def step_of(*, meter, grid):
     return str(bar_length(meter) / grid)
 
