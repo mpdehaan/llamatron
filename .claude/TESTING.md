@@ -150,6 +150,11 @@ the data the demos were written from, and `tests/data/sample_sets/` the sets mad
 like the two with values out of range. Tests are split by feature, each a file of its own, and the
 shared helpers are modules beside them:
 
+- **Every example alone.** `tests/app/test_every_example.py` gives each example set a class of its own, which reads and renders the
+  example once (`tests/support/example_renders.py`) and runs on it every check that holds of each example: each a function in the
+  module of what it checks (`check_exports` in `tests/app/test_examples.py`, `check_round_trip` in `tests/importers/test_midi_import.py`,
+  `check_timeline` in `tests/realtime/test_realtime.py` and the rest), listed in `CHECKS` there. A new check of every example is such a
+  function, added to that list.
 - **The model and playback.** `tests/composition/test_song_files.py` (what a file refuses, and its title and
   author), `tests/composition/test_song_patterns.py`, `tests/composition/test_song_scenes.py`,
   `tests/composition/test_song_generators.py`, `tests/playback/test_morphs.py`, `tests/playback/test_directions.py`,

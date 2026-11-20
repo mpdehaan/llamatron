@@ -131,25 +131,6 @@ class TestDataAndObjectsShareNothing(unittest.TestCase):
         row = next(value for value in stored.values() if isinstance(value, dict) and Row.DEGREE in value)[Row.DEGREE]
         self.assertEqual(len(shared(setlist=setlist, data={Row.DEGREE: row})), 1)
 
-    def test_what_an_example_writes_shares_nothing_with_its_objects(self):
-        self.assertTrue(EXAMPLES)
-        for path in EXAMPLES:
-            with self.subTest(path=path):
-                setlist = example_set(path)
-                self.check_nothing_shared(path=path, setlist=setlist, data=setlist.to_data())
-
-    def test_what_an_example_keeps_shares_nothing_with_its_objects(self):
-        for path in EXAMPLES:
-            with self.subTest(path=path):
-                setlist = example_set(path)
-                self.check_nothing_shared(path=path, setlist=setlist, data=setlist.kept_data())
-
-    def test_an_example_read_from_data_shares_nothing_with_the_data(self):
-        for path in EXAMPLES:
-            with self.subTest(path=path):
-                data = example_data(path)
-                self.check_nothing_shared(path=path, setlist=Setlist.from_data(data=data), data=data)
-
     def test_a_copy_of_plain_data_is_equal_and_shares_no_list_or_dictionary(self):
         data = {Row.DEGREE: [1, [2, 3]], SetlistSetting.TITLE: {A_TITLE: [None]}}
         copied = own_copy(data)
@@ -325,6 +306,16 @@ class TestASetGoingBackToDataItKept(unittest.TestCase):
         document.change(document.get_setlist().get_pattern(ui_testing.TUNE).set_step_size, earlier[Section.PATTERNS][ui_testing.OTHER][PatternSetting.STEP_SIZE])
         self.assertEqual(setlist.kept_data(), setlist.to_data())
         self.assertNotEqual(setlist.kept_data(), earlier)
+
+
+
+def check_kept_data(*, test, path):
+    """What an example writes and keeps shares nothing with its objects, and an example read from data shares nothing with the data."""
+    setlist = example_set(path)
+    TestDataAndObjectsShareNothing.check_nothing_shared(test, path=path, setlist=setlist, data=setlist.to_data())
+    TestDataAndObjectsShareNothing.check_nothing_shared(test, path=path, setlist=setlist, data=setlist.kept_data())
+    data = example_data(path)
+    TestDataAndObjectsShareNothing.check_nothing_shared(test, path=path, setlist=Setlist.from_data(data=data), data=data)
 
 
 if __name__ == '__main__':

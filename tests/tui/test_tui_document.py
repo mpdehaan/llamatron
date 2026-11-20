@@ -263,18 +263,6 @@ class TestSaving(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.folder = temporary.name
 
-    def test_every_example_saves_and_loads_the_same(self):
-        for path in example_sets():
-            document = Document.load(path)
-            target = os.path.join(self.folder, os.path.basename(path))
-            document.save(path=target)
-            with open(path) as first, open(target) as second:
-                original = yaml.safe_load(first)
-                saved = yaml.safe_load(second)
-            # Saving writes out the song settings that a file left to their defaults.
-            with self.subTest(path=path):
-                self.assertEqual(without_version({key: saved[key] for key in original}), without_version(original))
-
     def test_a_set_loaded_from_a_file_knows_what_the_file_holds_without_reading_it_again(self):
         for path in example_sets()[:EXAMPLES_COMPARED]:
             with self.subTest(path=path):
@@ -1035,6 +1023,18 @@ class TestPickerLayouts(unittest.TestCase):
         self.assertEqual(scale_label(scale_type_name(ScaleType.WHOLE_HALF_DIMINISHED)), WHOLE_HALF_DIM)
         self.assertEqual(scale_label(scale_type_name(ScaleType.BEBOP_DOMINANT)), BEBOP_DOM)
         self.assertEqual(scale_label(NATURAL_MINOR_2), NATURAL_MINOR)
+
+
+def check_saves_and_loads(*, test, path):
+    """An example saved by the tracker holds what its file held, the song settings it left to their defaults written out besides."""
+    with tempfile.TemporaryDirectory() as folder:
+        target = os.path.join(folder, os.path.basename(path))
+        Document.load(path).save(path=target)
+        with open(path) as first, open(target) as second:
+            original = yaml.safe_load(first)
+            saved = yaml.safe_load(second)
+    test.assertEqual(without_version({key: saved[key] for key in original}), without_version(original))
+
 
 if __name__ == '__main__':
     unittest.main()

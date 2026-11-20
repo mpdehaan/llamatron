@@ -17,23 +17,21 @@
 """Every example song loads, plays and renders to every kind of output."""
 
 import contextlib
-import functools
 import io
 import os
 import tempfile
 import unittest
 
-from llamatron.cli import main
 from llamatron.composition import generator_settings
 from llamatron.composition.file_format import Section
-from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_reader import set_file_data
-from llamatron.exporters.exports import ExportKind
+from llamatron.exporters.exports import ExportKind, make_exporter
 from llamatron.support import example_sets as example_sets_values
 from llamatron.support.example_sets import example_sets, folder_of_example, genre_folder
 from llamatron.tui.document import Document
 from tests.support import rendering
-from tests.support.rendering import is_demo, render_file
+from tests.support.example_renders import example_setlist, first_song_grid
+from tests.support.rendering import is_demo
 from tests.support.song_testing import pitches
 
 SONG = 'song'
@@ -77,30 +75,26 @@ OTHER_LENGTHS = {
 }
 # The songs that are meant to sound good, rather than to teach one feature.
 SONG_PATHS = [path for path in EXAMPLE_PATHS if not is_demo(path)]
-
-
-@functools.cache
-def example_grid(path):
-    """Return an example's finished clips, rendered once however many tests read them."""
-    return render_file(path)
+THREE_MINUTES = 180
+BEATS_IN_A_WHOLE = 4
+SECONDS_IN_A_MINUTE = 60
+LOWEST_PIANO_KEY = 21
+HIGHEST_PIANO_KEY = 108
+# Every kind of output an example exports to.
+EXPORTED_KINDS = (ExportKind.ABLETON, ExportKind.MIDI_FILE, ExportKind.STEMS, ExportKind.CLIP_TREE, ExportKind.GENERAL_MIDI)
+# What an exporter prints when it has to leave something out, which a demo never does.
+WARNING = 'warning'
 
 
 class TestExamples(unittest.TestCase):
+    """What holds of the examples together. What holds of each example alone is checked once a class, with one reading and one
+    render of the example (tests/app/test_every_example.py), by the functions below."""
 
     paths = EXAMPLE_PATHS
     songs = SONG_PATHS
 
     def test_the_pieces_are_the_sets_besides_the_demos(self):
         self.assertEqual([os.path.basename(path) for path in self.songs], sorted(rendering.PIECES))
-
-    def test_every_homage_is_in_the_folder_of_its_genre(self):
-        for path in self.paths:
-            if folder_of_example(path) != example_sets_values.BY_GENRE:
-                continue
-            with self.subTest(path=path):
-                genres = Setlist.read_file(path).get_genres()
-                self.assertEqual(len(genres), 1)
-                self.assertEqual(os.path.basename(os.path.dirname(path)), genre_folder(genres[0]))
 
     def test_a_genres_folder_is_lower_case_with_underscores_for_spaces_and_hyphens(self):
         self.assertEqual(genre_folder(GENRE_WITH_A_SPACE), FOLDER_OF_GENRE_WITH_A_SPACE)
@@ -114,125 +108,85 @@ class TestExamples(unittest.TestCase):
                 used |= {next(iter(step)) for step in chain}
         self.assertEqual(set(generator_settings.GENERATOR_SETTINGS) - used, set())
 
-    def test_every_example_since_the_rule_lasts_two_to_four_minutes(self):
-        # A new example runs from two to four minutes unless it is named for another length.
-        for path in self.paths:
-            name = os.path.basename(path)
-            if name in WRITTEN_BEFORE_THE_LENGTH_RULE:
-                continue
-            with self.subTest(path=path):
-                seconds = float(Document.load(path).lengths().song_seconds())
-                if name in OTHER_LENGTHS:
-                    self.assertAlmostEqual(seconds, OTHER_LENGTHS[name], delta=LENGTH_LEEWAY)
-                else:
-                    self.assertGreaterEqual(seconds, SHORTEST_EXAMPLE)
-                    self.assertLessEqual(seconds, LONGEST_EXAMPLE)
-
-    def test_every_song_lasts_about_three_minutes(self):
-        for path in self.songs:
-            song = example_grid(path)
-            seconds = 0
-            for scene in song.get_rows():
-                lengths = [song.get_clip(row=scene, column=t).total_length() for t in song.get_columns() if song.get_clip(row=scene, column=t)]
-                seconds += float(max(lengths)) * 4 * 60 / (scene.get_tempo() or song.get_tempo())
-            with self.subTest(path=path):
-                self.assertAlmostEqual(seconds, 180, delta=10)
-
-    def test_every_clip_lasts_as_long_as_its_scene_and_fits_a_piano(self):
-        for path in self.paths:
-            song = example_grid(path)
-            for scene in song.get_rows():
-                clips = [song.get_clip(row=scene, column=t) for t in song.get_columns() if song.get_clip(row=scene, column=t)]
-                self.assertEqual(len({c.total_length() for c in clips}), 1)
-                for each in clips:
-                    found = pitches(each)
-                    if found:
-                        with self.subTest(path=path, scene=scene.get_name()):
-                            self.assertGreaterEqual(min(found), 21)
-                            self.assertLessEqual(max(found), 108)
-
     def test_tempo_keeps_rising_through_minimal_techno(self):
-        song = example_grid('examples/by_genre/electronic/minimal_techno.yml')
+        song = first_song_grid('examples/by_genre/electronic/minimal_techno.yml')
         tempos = [scene.get_tempo() or song.get_tempo() for scene in song.get_rows()]
         self.assertEqual(tempos, sorted(tempos))
         self.assertGreater(tempos[-1], tempos[0])
 
 
-class RendersEveryExample:
-    """Renders every example through the command line to one kind of output, set by TO.
-
-    It's mixed into one test class per kind, so that the kinds render in parallel.
-    """
-
-    TO = None
-
-    def test_every_example_renders(self):
-        for path in EXAMPLE_PATHS:
-            with tempfile.TemporaryDirectory() as parent:
-                out = os.path.join(parent, SONG)
-                with contextlib.redirect_stdout(io.StringIO()):
-                    self.assertEqual(main(argv=[path, '--to', self.TO, '--out', out]), 0)
-                with self.subTest(path=path, to=self.TO):
-                    self.assertTrue(os.listdir(out))
+def check_homage_folder(*, test, path):
+    """A homage is in the folder of its one genre."""
+    if folder_of_example(path) != example_sets_values.BY_GENRE:
+        return
+    genres = example_setlist(path).get_genres()
+    test.assertEqual(len(genres), 1)
+    test.assertEqual(os.path.basename(os.path.dirname(path)), genre_folder(genres[0]))
 
 
-class TestExamplesRenderToAbleton(RendersEveryExample, unittest.TestCase):
-    TO = ExportKind.ABLETON
+def check_length(*, test, path):
+    """A new example runs from two to four minutes unless it is named for another length; a piece lasts about three."""
+    name = os.path.basename(path)
+    if name not in WRITTEN_BEFORE_THE_LENGTH_RULE:
+        seconds = float(Document.load(path).lengths().song_seconds())
+        if name in OTHER_LENGTHS:
+            test.assertAlmostEqual(seconds, OTHER_LENGTHS[name], delta=LENGTH_LEEWAY)
+        else:
+            test.assertGreaterEqual(seconds, SHORTEST_EXAMPLE)
+            test.assertLessEqual(seconds, LONGEST_EXAMPLE)
+    if is_demo(path):
+        return
+    song = first_song_grid(path)
+    seconds = 0
+    for scene in song.get_rows():
+        lengths = [song.get_clip(row=scene, column=t).total_length() for t in song.get_columns() if song.get_clip(row=scene, column=t)]
+        seconds += float(max(lengths)) * BEATS_IN_A_WHOLE * SECONDS_IN_A_MINUTE / (scene.get_tempo() or song.get_tempo())
+    test.assertAlmostEqual(seconds, THREE_MINUTES, delta=LENGTH_LEEWAY)
 
 
-class TestExamplesRenderToOneMidiFile(RendersEveryExample, unittest.TestCase):
-    TO = ExportKind.MIDI_FILE
+def check_clips_fit(*, test, path):
+    """Every clip lasts as long as its scene, and every note is on a piano's keys."""
+    song = first_song_grid(path)
+    for scene in song.get_rows():
+        clips = [song.get_clip(row=scene, column=t) for t in song.get_columns() if song.get_clip(row=scene, column=t)]
+        test.assertEqual(len({c.total_length() for c in clips}), 1)
+        for each in clips:
+            found = pitches(each)
+            if found:
+                with test.subTest(scene=scene.get_name()):
+                    test.assertGreaterEqual(min(found), LOWEST_PIANO_KEY)
+                    test.assertLessEqual(max(found), HIGHEST_PIANO_KEY)
 
 
-class TestExamplesRenderToStems(RendersEveryExample, unittest.TestCase):
-    TO = ExportKind.STEMS
+def check_exports(*, test, path):
+    """The example's first song exports to every kind of output, as the command line exports it, and a demo with no warning."""
+    grid = first_song_grid(path)
+    for kind in EXPORTED_KINDS:
+        with tempfile.TemporaryDirectory() as parent, test.subTest(to=kind):
+            out = os.path.join(parent, SONG)
+            printed = io.StringIO()
+            with contextlib.redirect_stdout(printed):
+                make_exporter(kind=kind, directory=out, name=SONG, grid=grid).export()
+            test.assertTrue(os.listdir(out))
+            if is_demo(path):
+                test.assertNotIn(WARNING, printed.getvalue())
 
 
-class TestExamplesRenderToClipTree(RendersEveryExample, unittest.TestCase):
-    TO = ExportKind.CLIP_TREE
-
-
-class TestExamplesRenderToGeneralMidi(RendersEveryExample, unittest.TestCase):
-    TO = ExportKind.GENERAL_MIDI
-
-
-class TestExamplesHaveSounds(unittest.TestCase):
-    """Every example can be heard without a synth through its General MIDI export."""
-
-    def test_every_melodic_track_that_plays_has_an_instrument_with_a_sound(self):
-        for path in EXAMPLE_PATHS:
-            setlist = Setlist.read_file(path)
-            for song in setlist.get_songs():
-                for name in song.get_track_names():
-                    track = song.get_track(name)
-                    if track.is_drum() or track.is_muted():
-                        continue
-                    with self.subTest(path=path, track=name):
-                        self.assertIsNotNone(track.get_instrument_name())
-                        self.assertIsNotNone(setlist.get_instrument(track.get_instrument_name()).get_gm_sound())
-
-    def test_every_example_plays_in_real_time_through_fluidsynth_out_of_the_box(self):
-        # Open an example, press Space on Arrange's corner, and hear it, with no synth and no DAW.
-        for path in EXAMPLE_PATHS:
-            setlist = Setlist.read_file(path)
-            with self.subTest(path=path):
-                self.assertTrue(setlist.is_real_time())
-            for song in setlist.get_songs():
-                for name in song.get_track_names():
-                    track = song.get_track(name)
-                    if track.is_muted():
-                        continue
-                    with self.subTest(path=path, track=name):
-                        self.assertIsNotNone(track.get_instrument_name())
-                        self.assertTrue(setlist.get_instrument(track.get_instrument_name()).uses_fluidsynth())
-
-    def test_every_track_that_plays_only_drum_patterns_is_a_drum_track(self):
-        # A General MIDI player plays channel 10 as drums, and the export puts drum tracks there, so a drum pattern on another track would play as notes.
-        for path in EXAMPLE_PATHS:
-            setlist = Setlist.read_file(path)
-            for song in setlist.get_songs():
-                for name in song.get_track_names():
-                    patterns = {scene.get_clip_slot(name).get_pattern_name() for scene in song.get_scenes() if scene.get_clip_slot(name) is not None}
-                    if patterns and all(setlist.get_pattern(pattern).is_drum() for pattern in patterns):
-                        with self.subTest(path=path, track=name):
-                            self.assertTrue(song.get_track(name).is_drum())
+def check_sounds(*, test, path):
+    """Every track that plays can be heard out of the box: through FluidSynth with a sound, and a drum part on a drum track, as General MIDI's channel 10 plays it."""
+    setlist = example_setlist(path)
+    test.assertTrue(setlist.is_real_time())
+    for song in setlist.get_songs():
+        for name in song.get_track_names():
+            track = song.get_track(name)
+            patterns = {scene.get_clip_slot(name).get_pattern_name() for scene in song.get_scenes() if scene.get_clip_slot(name) is not None}
+            with test.subTest(track=name):
+                if patterns and all(setlist.get_pattern(pattern).is_drum() for pattern in patterns):
+                    test.assertTrue(track.is_drum())
+                if track.is_muted():
+                    continue
+                test.assertIsNotNone(track.get_instrument_name())
+                instrument = setlist.get_instrument(track.get_instrument_name())
+                test.assertTrue(instrument.uses_fluidsynth())
+                if not track.is_drum():
+                    test.assertIsNotNone(instrument.get_gm_sound())

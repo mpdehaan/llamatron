@@ -21,7 +21,6 @@ from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, R
 from llamatron.composition.file_layout import as_object_layout
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_writer import _text, dump_file_layout, dump_setlist
-from llamatron.support.example_sets import example_sets
 from tests.support.rendering import as_setlist, render_data
 
 # One song, laid out the way files were before sets existed, which as_setlist turns into a set of one song.
@@ -85,13 +84,6 @@ class TestDumpSetlist(unittest.TestCase):
 
     def test_reads_back_the_same(self):
         self.assertEqual(read_back(dump_setlist(SETLIST)), SETLIST)
-
-    def test_every_example_reads_back_the_same(self):
-        for path in example_sets():
-            with open(path) as file:
-                song = yaml.safe_load(file)
-            with self.subTest(path=path):
-                self.assertEqual(yaml.safe_load(dump_file_layout(song)), song)
 
     def test_the_notes_are_a_readable_block_after_the_title_author_and_description(self):
         setlist = {SetlistSetting.TITLE: T, SetlistSetting.AUTHOR: A, SetlistSetting.DESCRIPTION: D, SetlistSetting.NOTES: 'First line\n\n  indented: # not a comment\n', PatternSetting.STEP_SIZE: '1/8', Section.SONGS: {}}
@@ -174,12 +166,15 @@ class TestDumpSetlist(unittest.TestCase):
         self.assertEqual(setlist[Section.PATTERNS][A_2][Row.GATE][0], QUARTER)
         self.assertEqual(setlist[Section.SONGS][UNTITLED][SongSetting.TEMPO], 120)
 
-    def test_a_set_that_was_written_still_builds(self):
-        for path in example_sets():
-            with open(path) as file:
-                setlist = as_object_layout(yaml.safe_load(file))
-            with self.subTest(path=path):
-                Setlist.from_data(data=read_back(dump_setlist(setlist)))
+
+
+def check_written(*, test, path):
+    """An example, written out, reads back as the same data, and the set it describes still builds from what was written."""
+    with open(path) as file:
+        written = yaml.safe_load(file)
+    test.assertEqual(yaml.safe_load(dump_file_layout(written)), written)
+    setlist = as_object_layout(written)
+    Setlist.from_data(data=read_back(dump_setlist(setlist)))
 
 
 if __name__ == '__main__':

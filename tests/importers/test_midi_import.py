@@ -41,18 +41,12 @@ from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
 from llamatron.importers.voices import voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.music.scale import ScaleType
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors, importing
-from llamatron.support import example_sets as example_sets_values
-from llamatron.support.example_sets import example_sets, folder_of_example
 from llamatron.support.rational import Rational
+from tests.support.example_renders import example_setlist, first_song_grid
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SAMPLE_MIDI_FILES = os.path.join(ROOT, 'examples', 'midi', '*.mid')
-# The longest example, nine minutes of stage themes, whose round trip alone takes about a minute.
-LONGEST_EXAMPLE = 'incoming_message.yml'
-# How many classes share the round trip of the homages, which one class no longer finishes within the suite's time for a class.
-CLASSES_OF_HOMAGES = 3
 CC_SWEEPS = os.path.join(ROOT, 'tests', 'data', 'sample_sets', 'cc_sweeps.yml')
 EXPRESSION = 11
 REVERB = 91
@@ -139,10 +133,8 @@ def imported_into(*, setlist, midi, **choices):
 
 
 def exported(path):
-    """Return an example set's first song as one MIDI file in memory, with a fixed seed."""
-    setlist = Setlist.read_file(path)
-    name = setlist.first_song_name()
-    return MidiSong(directory=os.curdir, grid=SongRenderer(setlist.get_song(name), seed=SEED).render(), name=name).midi_file()
+    """Return an example set's first song as one MIDI file in memory, with a fixed seed, from the render the example's checks share."""
+    return MidiSong(directory=os.curdir, grid=first_song_grid(path, seed=SEED), name=example_setlist(path).first_song_name()).midi_file()
 
 
 class TestRoundTripOfTheSampleFiles(unittest.TestCase):
@@ -157,67 +149,10 @@ class TestRoundTripOfTheSampleFiles(unittest.TestCase):
                 self.assertTrue(trip.comparison.is_same(), trip.comparison)
 
 
-def check_round_trips(*, test, paths):
-    """Check that every example set at the paths, exported as MIDI and imported, plays back the same or the import says why."""
-    for path in paths:
-        with test.subTest(path=path):
-            trip = round_trip(midi_file=exported(path), choices=ImportChoices(song_name=os.path.basename(path)))
-            test.assertTrue(trip.comparison.is_same() or trip.imported.warnings)
-
-
-def examples_in(folder):
-    """Return the example sets of one folder of examples/, leaving out the longest, which has a class of its own, since it alone takes about a minute."""
-    return [path for path in example_sets(root=ROOT) if folder_of_example(path) == folder and os.path.basename(path) != LONGEST_EXAMPLE]
-
-
-# The round trip of every example, one class for each folder of examples/, so that the classes run side by side within the suite's time for a class.
-class TestRoundTripOfTheShowcase(unittest.TestCase):
-
-    def test_every_learning_demo_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=examples_in(example_sets_values.LEARNING))
-
-
-class TestRoundTripOfTheAdvancedDemos(unittest.TestCase):
-
-    def test_every_other_demo_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=examples_in(example_sets_values.OTHER))
-
-
-def homages_in_turn(*, turn):
-    """Return every third homage, starting at the turn given: the homages are too many for one class's time, so three classes share them."""
-    return examples_in(example_sets_values.BY_GENRE)[turn::CLASSES_OF_HOMAGES]
-
-
-class TestRoundTripOfTheHomages(unittest.TestCase):
-
-    def test_every_third_homage_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=homages_in_turn(turn=0))
-
-    def test_the_three_classes_hold_every_homage_once(self):
-        shared = [path for turn in range(CLASSES_OF_HOMAGES) for path in homages_in_turn(turn=turn)]
-        self.assertEqual(sorted(shared), sorted(examples_in(example_sets_values.BY_GENRE)))
-
-
-class TestRoundTripOfTheHomagesSecondTurn(unittest.TestCase):
-
-    def test_every_third_homage_from_the_second_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=homages_in_turn(turn=1))
-
-
-class TestRoundTripOfTheHomagesThirdTurn(unittest.TestCase):
-
-    def test_every_third_homage_from_the_third_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=homages_in_turn(turn=2))
-
-
-class TestRoundTripOfTheLongestExample(unittest.TestCase):
-
-    def test_the_longest_example_plays_back_the_same_or_the_import_says_why(self):
-        check_round_trips(test=self, paths=[path for path in example_sets(root=ROOT) if os.path.basename(path) == LONGEST_EXAMPLE])
-
-    def test_every_example_is_in_one_round_trip_class(self):
-        checked = [path for folder in example_sets_values.SET_FOLDERS for path in examples_in(folder)] + [path for path in example_sets(root=ROOT) if os.path.basename(path) == LONGEST_EXAMPLE]
-        self.assertEqual(sorted(checked), sorted(example_sets(root=ROOT)))
+def check_round_trip(*, test, path):
+    """An example set, exported as MIDI and imported, plays back the same, or the import says why."""
+    trip = round_trip(midi_file=exported(path), choices=ImportChoices(song_name=os.path.basename(path)))
+    test.assertTrue(trip.comparison.is_same() or trip.imported.warnings)
 
 
 class TestRoundTripWithALongerLongestPattern(unittest.TestCase):
