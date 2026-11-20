@@ -36,7 +36,7 @@ from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
 from llamatron.support import version
-from llamatron.support.memory import Memory, StaleAnswer
+from llamatron.support.kept import forget_kept, kept_while
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -79,8 +79,6 @@ BOLD_IN_COLOUR = '{bold} {colour}'
 LABEL_OF_FIELD = 'label'
 CHOICES_OF_FIELD = 'choices'
 # What the page keeps the tree's rows and a branch's fields under.
-ROWS_KEPT = 'rows'
-FIELDS_KEPT = 'fields'
 
 
 def said_of(answer):
@@ -123,9 +121,8 @@ class WizardPage(FieldPage):
         # The tune whose notes the pattern editor has open over the wizard: its kind of section, its pattern's name in the draft set and
         # the pattern as it was when opened. None when no tune is being edited.
         self._tune_open = None
-        # The tree's rows and each branch's fields as last worked out, and what they were worked out from (kept).
+        # The tree's rows and each branch's fields as last worked out, by what they were worked out from (support/kept.py).
         self._kept = {}
-        self._kept_of = None
         # The cell whose change holds what the panel offers (cursor_place), or None while nothing is held.
         self._held_at = None
         if start is not None:
@@ -441,34 +438,21 @@ class WizardPage(FieldPage):
             # so the cursor stays on the field by its label.
             label = self.label_under_cursor()
             self._choices.release_offers()
-            self._kept_of = None
+            forget_kept(self)
             if self.in_fields:
                 self.stay_on(label)
 
-    def kept(self, *, key, compute):
-        """Return an answer about what the page shows, worked out once for the choices and the page as they stand. One key asks for
-        the tree's rows and the fields of the branch under the cursor dozens of times, to find the cursor, to list the keys and to
-        draw, and each asking builds every branch and field again from the choices, which made every key slow. Everything the
-        rows and the fields are made from says whether they changed: the choices, the song's name, the open branches, move
-        mode and the sections of fields that are open. While the tests run, a kept answer is worked out again every time and has to say the same."""
+    def shown_state(self):
+        """Return everything the tree's rows and a branch's fields are made from, the key they are kept by: the choices, the song's
+        name, the open branches, move mode and the sections of fields that are open. One key asks for the rows and the fields
+        dozens of times, to find the cursor, to list the keys and to draw, and each asking built every branch and field again
+        from the choices, which made every key slow. The held offers are let go first, once the cursor has left their cell."""
         self.release_offers_once_left()
-        state = (repr(self._choices.to_data()), self._song_name, tuple(sorted(self._open)), self.moving, self._start, tuple(sorted(self.app.open_field_sections)))
-        if state != self._kept_of:
-            self._kept = {}
-            self._kept_of = state
-        if key not in self._kept:
-            self._kept[key] = compute()
-        elif Memory.checks_by_default():
-            again = said_of(compute())
-            if again != said_of(self._kept[key]):
-                raise StaleAnswer(errors.ERR_STALE_ANSWER.format(key=key, kept=said_of(self._kept[key]), again=again))
-        return self._kept[key]
+        return (repr(self._choices.to_data()), self._song_name, tuple(sorted(self._open)), self.moving, self._start, tuple(sorted(self.app.open_field_sections)))
 
+    @kept_while(shown_state, said=said_of)
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one, however deep."""
-        return self.kept(key=ROWS_KEPT, compute=self.rows_now)
-
-    def rows_now(self):
         rows = []
 
         def listed(*, branch, depth):
@@ -528,7 +512,12 @@ class WizardPage(FieldPage):
     # The fields, a settings page's, of the branch under the tree's cursor.
 
     def fields(self):
-        return self.kept(key=(FIELDS_KEPT, self.tree_place), compute=lambda: self.branch().fields())
+        return self.fields_at(place=self.tree_place)
+
+    @kept_while(shown_state, said=said_of)
+    def fields_at(self, *, place):
+        """Return the fields of the branch at a place of the tree, the branch under the cursor."""
+        return self.branch().fields()
 
     def remarks(self, width):
         return self.branch().remarks(width)

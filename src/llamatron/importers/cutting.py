@@ -44,6 +44,7 @@ from typing import NamedTuple
 
 from llamatron.importers.midi_reading import HeardNote, MidiPart, value_at
 from llamatron.importers.steps import control_error, controls_between_steps, NoteStep, repeated_pattern, scene_steps
+from llamatron.support.kept import kept_for_life
 from llamatron.support.rational import Rational
 
 # The step sizes the import tries, longest first, down to the one that holds triplets and 32nd notes together, and
@@ -196,7 +197,7 @@ def bar_lines(*, time_signatures, end, holding=None):
 class Cutter:
     """What cuts one song: its voices on a grid of steps, the step sizes its patterns may take, the bar lines, its keys and tempos, and the longest pattern asked for."""
 
-    __slots__ = ('_voices', '_step_size', '_clip_step_sizes', '_bars', '_keys', '_tempos', '_longest', '_end', '_blocked', '_clips_of')
+    __slots__ = ('_voices', '_step_size', '_clip_step_sizes', '_bars', '_keys', '_tempos', '_longest', '_end', '_blocked', '_kept')
 
     def __init__(self, *, voices, step_size, clip_step_sizes, bars, keys, tempos, longest):
         self._voices = voices
@@ -210,7 +211,7 @@ class Cutter:
         self._end = self.step_of(bars[-1])
         self._blocked = self.held_across()
         # Each voice's clip in a scene, worked out once whichever cuts ask for that scene.
-        self._clips_of = {}
+        self._kept = {}
 
     def step_of(self, time):
         """Return a time on the grid as its step."""
@@ -279,6 +280,7 @@ class Cutter:
         cuts.append(self._end)
         return cuts, off
 
+    @kept_for_life
     def voice_clip(self, *, voice, start, end, key):
         """Return a voice's clip across the scene from grid step start to grid step end, as a VoiceClip, worked out once whichever cuts ask for it.
 
@@ -286,17 +288,14 @@ class Cutter:
         as the file does, or, when none does, the longest that keeps every lane within
         CONTROL_TOLERANCE of the file, or else the one that strays least.
         """
-        place = (voice, start, end, key)
-        if place not in self._clips_of:
-            clips = []
-            for size in self.clip_step_sizes(voice=voice, start=start, end=end):
-                clips.append(self.clip_at(voice=voice, start=start, end=end, key=key, size=size))
-                if not clips[-1].controls_moved:
-                    break
-            exact = [clip for clip in clips if not clip.controls_moved]
-            near = [clip for clip in clips if clip.error <= CONTROL_TOLERANCE]
-            self._clips_of[place] = exact[0] if exact else near[0] if near else min(clips, key=lambda clip: clip.error)
-        return self._clips_of[place]
+        clips = []
+        for size in self.clip_step_sizes(voice=voice, start=start, end=end):
+            clips.append(self.clip_at(voice=voice, start=start, end=end, key=key, size=size))
+            if not clips[-1].controls_moved:
+                break
+        exact = [clip for clip in clips if not clip.controls_moved]
+        near = [clip for clip in clips if clip.error <= CONTROL_TOLERANCE]
+        return exact[0] if exact else near[0] if near else min(clips, key=lambda clip: clip.error)
 
     def clip_at(self, *, voice, start, end, key, size):
         """Return a voice's clip across a scene at one step size."""

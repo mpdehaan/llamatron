@@ -15,6 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The song wizard: its tree and its fields, the keys between them, what Create adds to the set, closing, and undo."""
 
+from unittest import mock
+
 from llamatron.composition import limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.naming import new_name
@@ -37,7 +39,7 @@ from llamatron.tui.note_names import note_shown, note_typed
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.songs_page import SongsPage
-from llamatron.tui.screens.wizard import solo_melody_branch, starts, wizard_page
+from llamatron.tui.screens.wizard import solo_melody_branch, starts
 from llamatron.tui.screens.wizard.hook_picture import picture_of
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.tui.text import clock
@@ -237,8 +239,9 @@ class TestWizardPage(WizardTest):
         await self.choose_genre_and_subgenre()
         wizard = self.wizard()
         wizard.rows()
-        with self.assertRaises(StaleAnswer):
-            wizard.kept(key=wizard_page.ROWS_KEPT, compute=lambda: [])
+        # Rows made from nothing, the way a key that left something out would find them, differ from the rows kept.
+        with mock.patch.object(WizardPage, WizardPage.roots.__name__, lambda page: []), self.assertRaises(StaleAnswer):
+            wizard.rows()
 
     async def test_the_cursor_stops_at_both_ends_of_the_tree(self):
         await self.press(Key.UP)

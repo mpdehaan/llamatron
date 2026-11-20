@@ -122,4 +122,9 @@ class Memory:
         again = compute()
         self._checked[key] = latest_revision()
         if again != kept.answer:
-            raise StaleAnswer(errors.ERR_STALE_ANSWER.format(key=key, kept=kept.answer, again=again))
+            raise stale_answer(key=key, kept=kept.answer, again=again)
+
+
+def stale_answer(*, key, kept, again):
+    """Return the StaleAnswer that says a kept answer differs from the same answer worked out again."""
+    return StaleAnswer(errors.ERR_STALE_ANSWER.format(key=key, kept=kept, again=again))

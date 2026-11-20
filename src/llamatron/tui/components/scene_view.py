@@ -36,6 +36,7 @@ from rich.text import Text
 from llamatron.composition.checks import fraction_text
 from llamatron.music import note as note_values
 from llamatron.strings import marks, visualizers
+from llamatron.support.kept import kept_for_life
 from llamatron.tui.components import title_card
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
@@ -124,13 +125,13 @@ def track_label(*, name, place):
 class SceneView:
     """One scene's notes in a read-only roll inside an Inset Window, as written or as played, with a cursor the arrows move, a zoom and a sidebar of each track's details."""
 
-    __slots__ = ('_document', '_index', '_written', '_notes', '_problem', '_column', '_row', '_left', '_top', '_cells', '_zoom', '_side_top')
+    __slots__ = ('_document', '_index', '_written', '_kept', '_problem', '_column', '_row', '_left', '_top', '_cells', '_zoom', '_side_top')
 
     def __init__(self, *, document, index):
         self._document = document
         self._index = index
         self._written = True
-        self._notes = {}
+        self._kept = {}
         self._problem = None
         self._column = 0
         self._row = 0
@@ -196,14 +197,18 @@ class SceneView:
         self._side_top = max(self._side_top + direction * SIDEBAR_SCROLL, 0)
 
     def notes(self):
-        """Return the scene's notes in the view showing, worked out the first time each view is shown, since nothing changes while the window is open."""
-        if self._written not in self._notes:
-            try:
-                self._notes[self._written] = scene_notes(song=self._document.song(), index=self._index, written=self._written)
-            except ValueError as problem:
-                self._problem = str(problem)
-                return None
-        return self._notes[self._written]
+        """Return the scene's notes in the view showing, or None, with the problem kept, where the scene cannot be played."""
+        try:
+            return self.notes_of(written=self._written)
+        except ValueError as problem:
+            self._problem = str(problem)
+            return None
+
+    @kept_for_life
+    def notes_of(self, *, written):
+        """Return the scene's notes as written or as played, worked out the first time each view is shown, since nothing
+        changes while the window is open."""
+        return scene_notes(song=self._document.song(), index=self._index, written=written)
 
     def get_problem(self):
         """Return why the scene can't be shown, or None."""
