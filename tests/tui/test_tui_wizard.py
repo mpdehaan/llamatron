@@ -338,16 +338,16 @@ class TestWizardPage(WizardTest):
         await self.choose_genre_and_subgenre()
         choices = self.choices()
         self.assertIn(choices.meter(), self.text())
-        self.assertIn(clock(choices.form_seconds()), self.text())
-        forms = choices.forms_by_length()
+        self.assertIn(clock(choices.get_song_form().form_seconds()), self.text())
+        forms = choices.get_song_form().forms_by_length()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_LENGTH_LABEL)
         back = key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)
         await self.press(*[back] * len(forms))
-        self.assertEqual(choices.get_form(), forms[0])
+        self.assertEqual(choices.get_song_form().get_form(), forms[0])
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.get_form(), forms[1])
-        self.assertIn(clock(choices.form_seconds()), self.text())
+        self.assertEqual(choices.get_song_form().get_form(), forms[1])
+        self.assertIn(clock(choices.get_song_form().form_seconds()), self.text())
         # The meter is the subgenre's, so its field does nothing.
         await self.select_field(labels_text.MSG_WIZARD_METER_LABEL)
         before = choices.to_data()
@@ -379,7 +379,7 @@ class TestWizardPage(WizardTest):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         choices = self.choices()
-        sections = choices.form_sections()
+        sections = choices.get_song_form().form_sections()
         text = self.text()
         self.assertIn(labels_text.MSG_WIZARD_FORM_LABEL, text)
         # The Form branch starts open, so that the sections show themselves.
@@ -406,22 +406,22 @@ class TestWizardPage(WizardTest):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         choices = self.choices()
-        forms = choices.forms()
+        forms = choices.get_song_form().forms()
         self.assertGreater(len(forms), 1)
-        self.assertEqual(choices.get_form(), forms[0])
+        self.assertEqual(choices.get_song_form().get_form(), forms[0])
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_SUGGESTED_FORM_BUTTON)
         # No key steps the form, which only the dialog changes.
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), Key.RIGHT, Key.DOWN)
-        self.assertEqual(choices.get_form(), forms[0])
+        self.assertEqual(choices.get_song_form().get_form(), forms[0])
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         for form in forms:
-            self.assertIn(marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.form_section_count(form), length=clock(choices.form_seconds(form=form))), self.text())
+            self.assertIn(marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.get_song_form().form_section_count(form), length=clock(choices.get_song_form().form_seconds(form=form))), self.text())
         await self.press(Key.ESCAPE)
-        self.assertEqual(choices.get_form(), forms[0])
+        self.assertEqual(choices.get_song_form().get_form(), forms[0])
         await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
-        self.assertEqual(choices.get_form(), forms[1])
+        self.assertEqual(choices.get_song_form().get_form(), forms[1])
 
     async def test_create_refuses_until_a_genre_and_a_subgenre_are_chosen(self):
         before = self.document.get_setlist().to_data()
@@ -902,13 +902,13 @@ class TestWizardForm(WizardTest):
         await self.press(Key.RIGHT, Key.DOWN)
 
     def sections(self):
-        return self.choices().form_sections()
+        return self.choices().get_song_form().form_sections()
 
     async def test_down_from_the_form_reaches_each_section_in_order(self):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         # A kind the form has several of is numbered, and one it has once is not.
-        labels = self.choices().section_labels()
+        labels = self.choices().get_song_form().section_labels()
         kinds = self.sections()
         repeated = [kind for kind in kinds if kinds.count(kind) > 1][0]
         self.assertEqual([label for label in labels if label.startswith(repeated)][:2], [marks.MSG_WIZARD_SECTION_NUMBERED.format(kind=repeated, number=number) for number in (1, 2)])
@@ -921,14 +921,14 @@ class TestWizardForm(WizardTest):
         await self.open_the_form()
         await self.press(Key.DOWN)
         before = self.sections()
-        kinds = self.choices().section_kinds()
+        kinds = self.choices().get_song_form().section_kinds()
         await self.press(keybindings.WizardPage.INSERT)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertIn(labels_text.MSG_WIZARD_INSERT_SECTION_TITLE, self.text())
         await self.press(*[Key.DOWN] * (len(kinds) - 1), Key.ENTER)
         self.assertEqual(self.sections(), [before[0], kinds[-1], *before[1:]])
-        self.assertEqual(self.wizard().branch().name(), self.choices().section_labels()[1])
-        self.assertTrue(self.choices().has_own_form())
+        self.assertEqual(self.wizard().branch().name(), self.choices().get_song_form().section_labels()[1])
+        self.assertTrue(self.choices().get_song_form().has_own_form())
 
     async def test_add_on_a_section_puts_the_new_section_at_the_end_and_leaves_the_cursor(self):
         await self.open_the_form()
@@ -936,8 +936,8 @@ class TestWizardForm(WizardTest):
         await self.press(keybindings.WizardPage.ADD)
         self.assertIn(labels_text.MSG_WIZARD_ADD_SECTION_TITLE, self.text())
         await self.press(Key.ENTER)
-        self.assertEqual(self.sections(), [*before, self.choices().section_kinds()[0]])
-        self.assertEqual(self.wizard().branch().name(), self.choices().section_labels()[0])
+        self.assertEqual(self.sections(), [*before, self.choices().get_song_form().section_kinds()[0]])
+        self.assertEqual(self.wizard().branch().name(), self.choices().get_song_form().section_labels()[0])
 
     async def test_add_on_the_form_puts_the_new_section_at_the_end_and_esc_adds_nothing(self):
         await self.choose_genre_and_subgenre()
@@ -946,7 +946,7 @@ class TestWizardForm(WizardTest):
         await self.press(keybindings.WizardPage.ADD, Key.ESCAPE)
         self.assertEqual(self.sections(), before)
         await self.press(keybindings.WizardPage.ADD, Key.ENTER)
-        self.assertEqual(self.sections(), [*before, self.choices().section_kinds()[0]])
+        self.assertEqual(self.sections(), [*before, self.choices().get_song_form().section_kinds()[0]])
         # The form opens to show what was added.
         self.assertGreater(len(self.wizard().rows()), len(before))
 
@@ -989,7 +989,7 @@ class TestWizardForm(WizardTest):
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.choices().section(place).bars(), offered[offered.index(self.choices().section(place).usual()[arranger.BARS]) + 1])
         self.assertNotEqual(self.sections()[place], before[place])
-        kinds = self.choices().section_kinds()
+        kinds = self.choices().get_song_form().section_kinds()
         await self.select_field(labels_text.MSG_WIZARD_KIND_LABEL)
         await self.press(Key.ENTER, *[Key.UP] * len(kinds), Key.ENTER)
         self.assertEqual(self.choices().section(place).kind(), kinds[0])
@@ -1016,7 +1016,7 @@ class TestWizardForm(WizardTest):
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_LENGTH_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), keybindings.WizardPage.TO_TREE)
-        self.assertTrue(self.choices().has_own_form())
+        self.assertTrue(self.choices().get_song_form().has_own_form())
         # The button asks before a suggested form replaces the sections changed, and NO keeps them.
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
@@ -1024,9 +1024,9 @@ class TestWizardForm(WizardTest):
         await self.press(Key.ENTER)
         self.assertIn(messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertTrue(self.choices().has_own_form())
+        self.assertTrue(self.choices().get_song_form().has_own_form())
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES, Key.ENTER)
-        self.assertFalse(self.choices().has_own_form())
+        self.assertFalse(self.choices().get_song_form().has_own_form())
         self.assertEqual(self.sections(), suggested)
 
     async def test_create_makes_the_songs_own_form_and_the_wizard_opens_on_it_again_from_the_last_settings(self):
@@ -1039,7 +1039,7 @@ class TestWizardForm(WizardTest):
         await self.press(keybindings.Page.WIZARD)
         await self.start_with(starts.NEW_FROM_LAST)
         self.assertEqual(self.sections(), sections)
-        self.assertTrue(self.choices().has_own_form())
+        self.assertTrue(self.choices().get_song_form().has_own_form())
 
 
 class TestWizardInterplay(WizardTest):
@@ -1101,7 +1101,7 @@ class TestWizardInterplay(WizardTest):
     async def test_a_section_shows_the_plans_role_takes_its_own_and_bksp_gives_it_back_to_the_plan(self):
         await self.open_rock()
         choices = self.choices()
-        place = next(place for place in range(len(choices.section_labels())) if choices.get_band().section_has_role(place))
+        place = next(place for place in range(len(choices.get_song_form().section_labels())) if choices.get_band().section_has_role(place))
         label = labels_text.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(choices.get_band().answered_by()).title())
         planned = choices.get_band().section_role(place)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
@@ -1116,7 +1116,7 @@ class TestWizardInterplay(WizardTest):
         self.assertFalse(choices.get_band().section_role_is_own(place))
         self.assertEqual(self.wizard().field().value(), marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
         # A section nobody has the tune in has no such field.
-        without = next(place for place in range(len(choices.section_labels())) if not choices.get_band().section_has_role(place))
+        without = next(place for place in range(len(choices.get_song_form().section_labels())) if not choices.get_band().section_has_role(place))
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         await self.press(*[Key.DOWN] * (without + 1), keybindings.WizardPage.INTO_FIELDS)

@@ -69,7 +69,7 @@ class TestWizardTunes(unittest.TestCase):
         self.assertIn(A_KIND, kinds)
         self.assertNotIn(A_KIND_WITH_NO_TUNE, kinds)
         self.assertEqual(len(kinds), len(set(kinds)))
-        in_form = choices.section_kinds_in_form()
+        in_form = choices.get_song_form().section_kinds_in_form()
         self.assertEqual(kinds, sorted(kinds, key=in_form.index))
 
     def test_until_edited_a_tune_is_the_one_the_choices_write_and_follows_them(self):

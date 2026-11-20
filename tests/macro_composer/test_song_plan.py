@@ -335,7 +335,7 @@ class TestStagedSolos(unittest.TestCase):
         choices.set_genre(BLUES)
         choices.set_subgenre(A_BLUES)
         choices.set_seed(SEED)
-        solos = [place for place, label in enumerate(choices.section_labels()) if label.startswith(SOLO)]
+        solos = [place for place, label in enumerate(choices.get_song_form().section_labels()) if label.startswith(SOLO)]
         self.assertGreater(len(solos), 1)
         names = choices.section(solos[0]).shapes()
         said = [choices.section(place).from_plan(field=wizard_limits.SHAPE_OF_SECTION) for place in solos]

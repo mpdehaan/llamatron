@@ -82,7 +82,7 @@ class RiffChoices(ChoicesPart):
         trial = self._choices.trial_for_riffs()
         trial.clear_answers()
         trial.get_riffs().play_nowhere()
-        trial.set_extra(name=riffs_values.RIFF, value={riffs_values.RIFF_ROLES: self._choices.get_band().roles_in(), riffs_values.RIFF_KINDS: self._choices.section_kinds()})
+        trial.set_extra(name=riffs_values.RIFF, value={riffs_values.RIFF_ROLES: self._choices.get_band().roles_in(), riffs_values.RIFF_KINDS: self._choices.get_song_form().section_kinds()})
         try:
             parts = arranged(style=self._choices.style(), song=trial.song_picks(wizard_limits.PREVIEW_NAME))[arranger.PARTS]
         except (ValueError, KeyError, SongFileError):
@@ -108,13 +108,13 @@ class RiffChoices(ChoicesPart):
 
     def riff_players_in(self, kind):
         """Return the players a riff can be heard from in a kind of section, by name."""
-        if not self._choices.is_ready() or kind not in self._choices.section_kinds_in_form() or self.riff_place(kind) is None:
+        if not self._choices.is_ready() or kind not in self._choices.get_song_form().section_kinds_in_form() or self.riff_place(kind) is None:
             return []
         return list(self._choices.remembered(key=(wizard_limits.RIFF_ABLE_ANSWER, kind), compute=lambda: self._riff_able_in(kind)))
 
     def riff_place(self, kind):
         """Return the place in the form of the first section of a kind that is played and not one held chord, where a riff of the kind is heard, or None."""
-        places = range(len(self._choices.section_labels()))
+        places = range(len(self._choices.get_song_form().section_labels()))
         return next((place for place in places if self._choices.section(place).kind() == kind and not self._choices.section(place).is_held()), None)
 
     def _riffs(self):
@@ -164,7 +164,7 @@ class RiffChoices(ChoicesPart):
         """Return the kinds of section a riff is played in by anybody in the band, in the form's order."""
         self._riff_entry(riff)
         played = self.riffs_played()
-        return [kind for kind in dict.fromkeys(self._choices.section_kinds_in_form()) if riff in played.get(kind, {}).values()]
+        return [kind for kind in dict.fromkeys(self._choices.get_song_form().section_kinds_in_form()) if riff in played.get(kind, {}).values()]
 
     def add_riff(self, *, role, settings=None):
         """Write a new riff for a player and return its name: the player knows the riff, and nobody plays it yet. What is no
@@ -270,7 +270,7 @@ class RiffChoices(ChoicesPart):
     def _riff_heard(self, riff):
         entry = self._riff_entry(riff)
         role = entry[arranger.RIFF_FOR]
-        kind = next((kind for kind in dict.fromkeys(self._choices.section_kinds_in_form()) if role in self.riff_players_in(kind) and self._choices.section(self.riff_place(kind)).bars() % self.riff_bar_count(riff) == 0), None)
+        kind = next((kind for kind in dict.fromkeys(self._choices.get_song_form().section_kinds_in_form()) if role in self.riff_players_in(kind) and self._choices.section(self.riff_place(kind)).bars() % self.riff_bar_count(riff) == 0), None)
         if kind is None:
             raise ValueError(errors.ERR_WIZARD_RIFF_FITS_NOWHERE.format(riff=riff))
         trial = self._choices.trial_for_riffs()
@@ -307,7 +307,7 @@ class RiffChoices(ChoicesPart):
     def kinds_playing(self, *, role, riff):
         """Return the kinds of section a player plays a riff in, in the form's order."""
         played = self.riffs_played()
-        return [kind for kind in dict.fromkeys(self._choices.section_kinds_in_form()) if played.get(kind, {}).get(role) == riff]
+        return [kind for kind in dict.fromkeys(self._choices.get_song_form().section_kinds_in_form()) if played.get(kind, {}).get(role) == riff]
 
     def take_riff_from(self, *, role, riff):
         """Have a player know a riff no longer: wherever the player played it, the player plays the accompaniment again."""
@@ -376,7 +376,7 @@ class RiffChoices(ChoicesPart):
         self._keep_riff({**settings, arranger.NAME: riff, arranger.RIFF_FOR: players[0], arranger.RIFF_DRAWN_AS: riff, wizard_limits.RIFF_OF_GENRE: True})
         for role in players[1:]:
             self._held[wizard_limits.RIFFS_KNOWN].setdefault(role, []).append(riff)
-        for kind in (self._choices.intro_kind() or wizard_limits.INTRO_KIND, wizard_limits.OUTRO_KIND, wizard_limits.VERSE_KIND):
+        for kind in (self._choices.get_song_form().intro_kind() or wizard_limits.INTRO_KIND, wizard_limits.OUTRO_KIND, wizard_limits.VERSE_KIND):
             here = {role: riff for role in players if role in self.riff_players_in(kind) and self._choices.section_part(kind=kind, role=role) == wizard_limits.ACCOMPANIMENT}
             if here:
                 self._held.setdefault(wizard_limits.RIFFS_PLAYED, {})[kind] = here

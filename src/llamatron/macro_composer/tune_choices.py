@@ -38,7 +38,7 @@ class TuneChoices(ChoicesPart):
         """Return each kind of section the song has a tune in, once, in the form's order: the kinds whose sections the tune's player plays in."""
         player = self._choices.get_band().tune_player()
         kinds = []
-        for place, kind in enumerate(self._choices.section_kinds_in_form()):
+        for place, kind in enumerate(self._choices.get_song_form().section_kinds_in_form()):
             if kind not in kinds and player is not None and player in self._choices.section(place).plays() and not self._choices.section(place).is_held():
                 kinds.append(kind)
         return kinds
@@ -46,7 +46,7 @@ class TuneChoices(ChoicesPart):
     def tune_place(self, kind):
         """Return the place in the form of the first section of a kind the tune's player plays in, or None."""
         player = self._choices.get_band().tune_player()
-        places = range(len(self._choices.section_labels()))
+        places = range(len(self._choices.get_song_form().section_labels()))
         return next((place for place in places if self._choices.section(place).kind() == kind and player in self._choices.section(place).plays() and not self._choices.section(place).is_held()), None)
 
     def tune_is_own(self, kind):

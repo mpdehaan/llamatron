@@ -81,7 +81,7 @@ class TestSongFile(unittest.TestCase):
     def test_a_written_form_is_the_songs_own_and_what_a_place_is_given_goes_to_the_plan(self):
         form = [VERSE, {KIND: CHORUS, song_plan.ENERGY: AN_ENERGY}, ENDING]
         made = choices({**BASIC, arranger.FORM: form})
-        self.assertTrue(made.has_own_form())
+        self.assertTrue(made.get_song_form().has_own_form())
         self.assertEqual([made.section(place).kind() for place in range(len(form))], [VERSE, CHORUS, ENDING])
         self.assertEqual(made.get_song_extras()[song_plan.PLAN_OF_SONG][song_plan.BY_PLACE], [{}, {song_plan.ENERGY: AN_ENERGY}, {}])
 

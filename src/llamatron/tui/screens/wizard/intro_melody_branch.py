@@ -109,16 +109,16 @@ class IntroMelodyBranch(Branch):
         """Return the field of how the song starts, which makes the intro's parts; parts a person changed read as the person's own."""
         choices = self.get_choices()
         page = self.get_page()
-        if not choices.starts():
+        if not choices.get_song_form().starts():
             return []
 
         def set_start(way):
             try:
-                page.choosing(choices.set_start)(way)
+                page.choosing(choices.get_song_form().set_start)(way)
             except ValueError as problem:
                 page.refuse(str(problem))
-        start = choices.get_start()
-        return [ChoiceField(page=page, label=labels.MSG_WIZARD_STARTS_LABEL, choices=choices.starts(), current=start or choices.starts()[0], shown=None if start is not None else labels.MSG_WIZARD_OWN_START, set=set_start)]
+        start = choices.get_song_form().get_start()
+        return [ChoiceField(page=page, label=labels.MSG_WIZARD_STARTS_LABEL, choices=choices.get_song_form().starts(), current=start or choices.get_song_form().starts()[0], shown=None if start is not None else labels.MSG_WIZARD_OWN_START, set=set_start)]
 
     def part_heading(self, *, number, place):
         """Return a part's heading, which says the part's bars, who plays and who says the hook, and opens onto the part's fields; Bksp deletes the part, after asking."""

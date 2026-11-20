@@ -76,7 +76,7 @@ def made(choices):
 
 def place_of(*, choices, kind, which=0):
     """The place in the form of a section of a kind: the first, or a later one."""
-    return [place for place, label in enumerate(choices.section_labels()) if label.split('-')[0] == kind][which]
+    return [place for place, label in enumerate(choices.get_song_form().section_labels()) if label.split('-')[0] == kind][which]
 
 
 class TestRoomInALine(unittest.TestCase):

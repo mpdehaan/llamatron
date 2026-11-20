@@ -283,7 +283,7 @@ class BandChoices(ChoicesPart):
         if self.answered_by() is None or (way is not None and way not in interplay_values.WAYS):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
         self._beside[wizard_limits.WAY] = way
-        self._choices.forget_section_beside()
+        self._choices.get_song_form().forget_section_beside()
 
     def section_has_role(self, place):
         """Return whether the answering player has something to choose in a section: somebody answers, and the tune's player plays in the section."""
@@ -317,7 +317,7 @@ class BandChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
         if way is None and not self.section_role_is_own(place):
             return
-        entry = self._choices.own_section_entries()[place]
+        entry = self._choices.get_song_form().own_section_entries()[place]
         entry.pop(wizard_limits.BESIDE_KEPT, None)
         if way is not None:
             entry[wizard_limits.BESIDE_KEPT] = way
@@ -345,7 +345,7 @@ class BandChoices(ChoicesPart):
         if self._beside is None or usual is None or not self._choices.player(usual).is_in():
             return {}
         answered = self.answered_by() is not None
-        ways = [self.section_role(place) if answered and self.section_has_role(place) else interplay_values.WAITS for place in range(len(self._choices.section_entries()))]
+        ways = [self.section_role(place) if answered and self.section_has_role(place) else interplay_values.WAITS for place in range(len(self._choices.get_song_form().section_entries()))]
         return {arranger.BESIDE: {arranger.ROLE: usual, arranger.BESIDE_BUSY: self._beside[wizard_limits.BUSY_BESIDE], arranger.BESIDE_WAYS: ways}}
 
     def take_kept_beside(self, *, kept):

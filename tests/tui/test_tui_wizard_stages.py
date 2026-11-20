@@ -51,9 +51,9 @@ class TestWizardStages(WizardTest):
 
     async def test_a_closing_section_s_fade_out_has_a_velocity_and_bars_of_its_own(self):
         choices = await self.to_form()
-        choices.set_end(wizard_limits.REPEAT_AND_FADE)
+        choices.get_song_form().set_end(wizard_limits.REPEAT_AND_FADE)
         await self.press(Key.DOWN, Key.UP)
-        last = len(choices.section_kinds_in_form()) - 1
+        last = len(choices.get_song_form().section_kinds_in_form()) - 1
         self.assertEqual(choices.section(last).fade_way(), wizard_limits.FADE_OUT)
         branch = SectionBranch(page=self.wizard(), place=last)
         fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_OUT]
@@ -71,7 +71,7 @@ class TestWizardStages(WizardTest):
             self.assertIn(said, shown)
         for label in (labels.MSG_WIZARD_FIRST_PLAYER_LABEL, labels.MSG_WIZARD_SETUP_BARS_LABEL):
             self.assertNotIn(label, shown)
-        self.assertEqual(choices.get_start(), wizard_limits.FULL_BAND)
+        self.assertEqual(choices.get_song_form().get_start(), wizard_limits.FULL_BAND)
 
     async def test_how_the_song_starts_and_ends_comes_before_the_form_on_the_panel(self):
         await self.to_form()
@@ -83,35 +83,35 @@ class TestWizardStages(WizardTest):
         choices = await self.to_form()
         before = len(self.wizard().rows())
         await self.select_field(labels.MSG_WIZARD_STARTS_LABEL)
-        offered = choices.starts()
+        offered = choices.get_song_form().starts()
         await self.press(*[self.more()] * offered.index(wizard_limits.DRUMS_FIRST))
-        self.assertEqual(choices.get_start(), wizard_limits.DRUMS_FIRST)
+        self.assertEqual(choices.get_song_form().get_start(), wizard_limits.DRUMS_FIRST)
         self.assertEqual(len(self.wizard().rows()), before + 1)
         self.assertIn(labels.MSG_WIZARD_SETUP_BARS_LABEL, self.text())
         self.assertTrue(self.wizard().has_choices_to_lose())
 
     async def test_the_first_player_and_the_setup_s_bars_are_chosen_under_a_way_with_stages(self):
         choices = await self.to_form()
-        choices.set_start(wizard_limits.LAYERS)
-        choices.set_end(wizard_limits.SLOWS_DOWN)
+        choices.get_song_form().set_start(wizard_limits.LAYERS)
+        choices.get_song_form().set_end(wizard_limits.SLOWS_DOWN)
         await self.press(Key.DOWN, Key.UP)
         await self.select_field(labels.MSG_WIZARD_FIRST_PLAYER_LABEL)
-        first = choices.get_first_player()
+        first = choices.get_song_form().get_first_player()
         await self.press(self.more())
-        self.assertNotEqual(choices.get_first_player(), first)
-        self.assertEqual(choices.section(FIRST).plays(), [choices.get_first_player()])
+        self.assertNotEqual(choices.get_song_form().get_first_player(), first)
+        self.assertEqual(choices.section(FIRST).plays(), [choices.get_song_form().get_first_player()])
         await self.select_field(labels.MSG_WIZARD_SETUP_BARS_LABEL)
-        bars = choices.get_setup_bars()
+        bars = choices.get_song_form().get_setup_bars()
         await self.press(self.more())
-        self.assertGreater(choices.get_setup_bars(), bars)
-        self.assertEqual(choices.section(FIRST).bars(), choices.get_setup_bars())
+        self.assertGreater(choices.get_song_form().get_setup_bars(), bars)
+        self.assertEqual(choices.section(FIRST).bars(), choices.get_song_form().get_setup_bars())
 
     async def test_opening_sections_a_person_changed_read_as_the_person_s_own(self):
         choices = await self.to_form()
-        choices.set_start(wizard_limits.DRUMS_FIRST)
+        choices.get_song_form().set_start(wizard_limits.DRUMS_FIRST)
         choices.section(FIRST).set_plays(role=THE_BASS, on=True)
         await self.press(Key.DOWN, Key.UP)
-        self.assertIsNone(choices.get_start())
+        self.assertIsNone(choices.get_song_form().get_start())
         self.assertIn(labels.MSG_WIZARD_OWN_START, self.text())
 
     async def test_an_intro_s_fade_in_is_switched_on_its_panel_and_shows_its_velocity_and_bars(self):

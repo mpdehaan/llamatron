@@ -52,7 +52,7 @@ class TestWizardPeople(WizardTest):
         return choices
 
     def plays(self, *, choices, role):
-        return [role in choices.section(place).plays() for place in range(len(choices.section_labels()))]
+        return [role in choices.section(place).plays() for place in range(len(choices.get_song_form().section_labels()))]
 
     def patterns(self, choices):
         return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
@@ -85,7 +85,7 @@ class TestWizardPeople(WizardTest):
     async def test_a_player_lays_out_never_in_the_breakdowns_or_whenever_it_is_quiet(self):
         choices = self.chosen()
         self.assertEqual(choices.lays_out_offered(THE_BASS), [wizard_limits.NEVER_LAYS_OUT, wizard_limits.IN_BREAKDOWNS, wizard_limits.WHEN_QUIET])
-        bridge = choices.section_kinds_in_form().index(THE_BRIDGE)
+        bridge = choices.get_song_form().section_kinds_in_form().index(THE_BRIDGE)
         choices.set_lays_out(role=THE_BASS, way=wizard_limits.IN_BREAKDOWNS)
         self.assertEqual(choices.get_lays_out(THE_BASS), wizard_limits.IN_BREAKDOWNS)
         self.assertFalse(self.plays(choices=choices, role=THE_BASS)[bridge])
@@ -140,7 +140,7 @@ class TestWizardPeople(WizardTest):
         await self.press(self.more())
         self.assertEqual(choices.get_reacts(THE_BASS), song_plan.USUAL_CONTRAST + 1)
         self.assertTrue(self.wizard().has_choices_to_lose())
-        choices.section(len(choices.section_labels()) - 2).set_plays(role=THE_BASS, on=False)
+        choices.section(len(choices.get_song_form().section_labels()) - 2).set_plays(role=THE_BASS, on=False)
         await self.press(Key.DOWN, Key.UP)
         self.assertIn(labels.MSG_WIZARD_OWN_START, self.text())
 

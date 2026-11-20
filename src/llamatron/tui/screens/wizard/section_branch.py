@@ -78,13 +78,13 @@ class SectionBranch(Branch):
         return SECTION_KEY.format(number=self._place + FIRST_SECTION_NUMBER, name=self.name())
 
     def name(self):
-        return self.get_choices().section_labels()[self._place]
+        return self.get_choices().get_song_form().section_labels()[self._place]
 
     def fields(self):
         choices = self.get_choices()
         page = self.get_page()
         place = self._place
-        kinds = choices.section_kinds()
+        kinds = choices.get_song_form().section_kinds()
         fields = [ChoiceField(page=page, label=labels.MSG_WIZARD_KIND_LABEL, choices=kinds, current=choices.section(place).kind(),
                               set=page.choosing(lambda kind: choices.section(place).set_kind(kind=kind)))]
         lengths = choices.section(place).bars_offered()
@@ -227,14 +227,14 @@ class SectionBranch(Branch):
 
     def add(self, kind):
         """Put a new section of a kind at the end of the form, as A does on any row of a list."""
-        self.get_choices().add_section(place=len(self.get_choices().form_sections()), kind=kind)
+        self.get_choices().get_song_form().add_section(place=len(self.get_choices().get_song_form().form_sections()), kind=kind)
 
     def insert(self, kind):
         """Put a new section of a kind before this one, as insert does on Arrange."""
-        self.get_choices().add_section(place=self._place, kind=kind)
+        self.get_choices().get_song_form().add_section(place=self._place, kind=kind)
 
     def kinds_to_add(self):
-        return self.get_choices().section_kinds()
+        return self.get_choices().get_song_form().section_kinds()
 
     def is_listed(self):
         return True
