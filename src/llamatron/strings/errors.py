@@ -77,7 +77,7 @@ ERR_NOT_PATTERN_NAMES = 'patterns must be a list of at least 1 pattern name, got
 ERR_PATTERN_AND_PATTERNS = 'a clip has pattern or patterns, not both'
 ERR_PATTERNS_DRUMS_AND_NOTES = 'a drum pattern and a pattern of notes cannot share a clip'
 ERR_CLIP_SLOT_NO_SUCH_PATTERN = 'no pattern called ({name})'
-ERR_MAKE_A_CHAIN_FIRST = 'There are no chains yet. Make one on the Chains page first.'
+ERR_MAKE_A_GENERATOR_FIRST = 'There are no generators yet. Make one on the Generators page first.'
 ERR_NOT_CHAIN_NAMES = 'expected a list of chains by name, got {value!r}'
 ERR_MORPH_NEEDS_BOTH = 'a morph needs both morph_to and morph_style'
 ERR_MORPH_TOO_FEW_REPEATS = 'a morph needs a repeat of {lowest} or more'
@@ -430,7 +430,7 @@ ERR_SAVE_BEFORE_EXPORT = 'the set has to be saved before it is exported, because
 # tui/screens/shared/list_page.py
 ERR_CANT_DELETE_TITLE = 'Cannot delete'
 # tui/screens/arrange/arrange_page.py: + under a cell's chains with no chain in the set to add.
-ERR_NO_CHAINS_TO_ADD = 'the set has no chains to add: make one on the Chains page'
+ERR_NO_GENERATORS_TO_ADD = 'the set has no generators to add: make one on the Generators page'
 ERR_STILL_USED = '{what} is still used, so change these first:'
 # After the first few lines of a list in a dialog, how many more there are.
 ERR_AND_MORE = '... and {count} more'

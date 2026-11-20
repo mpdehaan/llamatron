@@ -23,7 +23,7 @@ from llamatron.composition.file_format import RampPart, Section, shape_setting
 from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.drawing import Style
-from llamatron.tui.screens.arrange.chains_field import chains_field
+from llamatron.tui.screens.arrange.generators_field import generators_field
 from llamatron.tui.screens.arrange.groove_choice import groove_choice_field
 from llamatron.tui.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.tui.screens.generators.shape_fields import shape_section
@@ -178,7 +178,7 @@ class ScenePage(FieldPage):
             *[self.reset_field(name) for name in file_format.REGISTER_NAMES],
             # Real-time playback alone reads it, so it comes last, after everything the export reads.
             Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().change(self.document().song().get_scene(self.index).set_launch_together, on)),
-            chains_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().change(self.document().song().get_scene(self.index).set_chain_names, names=names, song=self.document().song())),
+            generators_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().change(self.document().song().get_scene(self.index).set_chain_names, names=names, song=self.document().song())),
             *[field for way in file_format.RAMP_WAYS for field in self.tempo_ramp_section(way)],
             *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
             *[field for shape in file_format.PLACED_SHAPES for field in self.shape_section(shape)],

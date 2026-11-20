@@ -32,6 +32,7 @@ from llamatron.tui.screens.generators.generator_pages import generator_page_of_k
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.scale_page import ScalePage
+from llamatron.tui.screens.shared.generator_names import listed_generator
 from llamatron.visualizers import modes
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest
@@ -424,7 +425,7 @@ class TestPickingDetails(UITest):
         self.assertEqual(self.picked_text(), marks.MSG_DETAILS_ADD_CHAIN)
         await self.press(keybindings.ArrangePage.ADD_CHAIN)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        await self.pick(ui_testing.NAMED)
+        await self.pick(listed_generator(setlist=self.document.get_setlist(), name=ui_testing.NAMED))
         self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).get_chain_names(), [ui_testing.NAMED, ui_testing.NAMED])
         await self.press(Key.UP, keybindings.ArrangePage.REMOVE_CHAIN)
         self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).get_chain_names(), [ui_testing.NAMED])

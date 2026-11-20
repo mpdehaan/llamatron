@@ -1052,6 +1052,10 @@ class Setlist(HoldsSections, HoldsSettings):
     def get_chain(self, name):
         return self._section(Section.CHAINS).get(name)
 
+    def generator_kind(self, name):
+        """Return the kind of the generator of a name, chain for a chain, or None for a name no generator has."""
+        return next((kind for kind, section in file_format.LISTED_GENERATORS.items() if self._section(section).has(name)), None)
+
     def has_generator_named(self, name):
         """Return whether a generator of any kind, a chain among them, has a name."""
         return name in self.every_generator_name()

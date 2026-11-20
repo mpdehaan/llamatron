@@ -18,7 +18,7 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
-from llamatron.composition.file_format import Approach, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.composition.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
 from llamatron.tui.keys import RowSection
 
 
@@ -104,7 +104,6 @@ MSG_PATTERN_ORDER_NAMES = {
     PatternOrder.FIRST_THEN_RANDOM: 'first, then random',
 }
 MSG_PATTERN_LABEL = 'Pattern'
-MSG_CHAINS_LABEL = 'Chains'
 MSG_LOOP_LABEL = 'Loop'
 MSG_DIRECTION_LABEL = 'Step direction'
 MSG_MORPH_TO_LABEL = 'Morph to'
@@ -1012,3 +1011,16 @@ MSG_WIZARD_BARS_LABEL = 'Bars'
 MSG_WIZARD_PLAYS_LABEL = 'Plays'
 MSG_WIZARD_CREATE_BUTTON = 'Apply'
 MSG_WIZARD_SCALE_TYPE_NAMES = {'major': 'Major', 'minor': 'Minor'}
+
+# tui/screens/generators/generator_list_page.py and tui/screens/arrange/arrange_page.py
+# What each kind of generator is called beside a generator's name in a clip's, a scene's or a track's list, as in Chain: fills.
+MSG_GENERATOR_KIND_LABELS = {
+    CHAIN_KIND: MSG_CHAIN_LABEL, GeneratorKind.ARP: MSG_ARP_LABEL, GeneratorKind.AUTO_RATCHET: MSG_AUTO_RATCHET_LABEL, GeneratorKind.DRIFT: MSG_DRIFT_LABEL,
+    GeneratorKind.PROGRESSION: MSG_PROGRESSION_LABEL, GeneratorKind.VOICE_LEADING: MSG_VOICE_LEADING_LABEL, GeneratorKind.STRUM: MSG_STRUM_LABEL,
+    GeneratorKind.EUCLID: MSG_EUCLID_LABEL, GeneratorKind.DENSITY: MSG_SHAPE_NAMES[Shape.DENSITY], GeneratorKind.SWELL: MSG_SHAPE_NAMES[Shape.SWELL],
+    GeneratorKind.ARTICULATE: MSG_SHAPE_NAMES[Shape.ARTICULATE], GeneratorKind.GLIDE: MSG_GLIDE_LABEL, GeneratorKind.SHORTEN: MSG_SHORTEN_LABEL_NAME,
+    GeneratorKind.RUSH: MSG_RUSH_LABEL, GeneratorKind.DRAG: MSG_DRAG_LABEL, GeneratorKind.HOCKET: MSG_HOCKET_LABEL, GeneratorKind.GUITARIFY: MSG_GUITARIFY_LABEL,
+    GeneratorKind.FOLLOW_CHORDS: MSG_FOLLOW_CHORDS_LABEL, GeneratorKind.PHRASING: MSG_PHRASING_LABEL, GeneratorKind.MUSICIAN: MSG_MUSICIAN_LABEL,
+}
+MSG_LISTED_GENERATOR = '{kind}: {name}'
+MSG_GENERATORS_FIELD_LABEL = 'Generators'

@@ -319,8 +319,8 @@ class KeyTour(UITest):
         await self.press(Key.ESCAPE, keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER)
         await self.walk()
         # The track editor's Chains field opens the list of its chains, given one so that its keys show.
-        await self.select_field(labels.MSG_CHAINS_LABEL)
-        await self.press(Key.ENTER, keybindings.ChainListPage.ADD, Key.ENTER)
+        await self.select_field(labels.MSG_GENERATORS_FIELD_LABEL)
+        await self.press(Key.ENTER, keybindings.GeneratorListPage.ADD, Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.press(Key.ESCAPE, Key.DOWN, Key.ENTER)

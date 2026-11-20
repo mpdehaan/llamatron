@@ -26,7 +26,8 @@ from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui.screens.generators.chain_list_page import ChainListPage
+from llamatron.tui.screens.generators.generator_list_page import GeneratorListPage
+from llamatron.tui.screens.shared.generator_names import generators_to_add
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, forward_key, key_of, UITest
 
@@ -161,25 +162,25 @@ class TestArrangeTracks(UITest):
         self.assertEqual(self.tracks(), [LEAD, DRUMS])
 
 
-class TestChainListPage(UITest):
+class TestGeneratorListPage(UITest):
     """The list of chains a track runs, opened from the track editor's Chains field: A adds, U and D move, Bksp takes one out."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        await self.select_field(labels.MSG_CHAINS_LABEL)
+        await self.select_field(labels.MSG_GENERATORS_FIELD_LABEL)
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChainListPage)
+        self.assertIsInstance(self.app.screen, GeneratorListPage)
 
     async def test_chains_are_added_moved_and_taken_out_in_the_order_they_run(self):
-        names = sorted(self.document.song().get_chain_names())
-        await self.press(keybindings.ChainListPage.ADD, Key.ENTER, keybindings.ChainListPage.ADD, Key.DOWN, Key.ENTER)
+        names = [name for _, name in generators_to_add(self.document.get_setlist())]
+        await self.press(keybindings.GeneratorListPage.ADD, Key.ENTER, keybindings.GeneratorListPage.ADD, Key.DOWN, Key.ENTER)
         self.assertEqual(self.track(LEAD).get_chain_names(), names[:2])
-        await self.press(keybindings.ChainListPage.MOVE, Key.UP, Key.ENTER)
+        await self.press(keybindings.GeneratorListPage.MOVE, Key.UP, Key.ENTER)
         self.assertEqual(self.track(LEAD).get_chain_names(), list(reversed(names[:2])))
-        await self.press(keybindings.ChainListPage.REMOVE)
+        await self.press(keybindings.GeneratorListPage.REMOVE)
         self.assertEqual(self.track(LEAD).get_chain_names(), [names[0]])
-        self.assertIn(labels.MSG_CHAINS_LABEL.upper(), self.text())
+        self.assertIn(labels.MSG_GENERATORS_FIELD_LABEL.upper(), self.text())
 
 
 class TestTrackEditor(UITest):

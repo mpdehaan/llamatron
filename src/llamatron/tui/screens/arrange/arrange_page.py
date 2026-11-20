@@ -53,6 +53,7 @@ from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing
 from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.scene_page import ScenePage
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind
+from llamatron.tui.screens.shared.generator_names import generators_to_add, listed_generator
 from llamatron.tui.screens.shared.page import Page
 from llamatron.tui.screens.shared.shared import play_through, scene_name
 from llamatron.tui.text import sorted_names
@@ -398,15 +399,16 @@ class ArrangePage(Page):
 
     def add_chain_to_cell(self):
         """Ask for one of the set's chains and add it to the cursor's cell alone, after the chains it runs."""
-        chains = sorted_names(self.document().song().get_chain_names())
-        if not chains:
-            self.refuse(errors.ERR_NO_CHAINS_TO_ADD)
+        setlist = self.document().get_setlist()
+        offered = [name for _, name in generators_to_add(setlist)]
+        if not offered:
+            self.refuse(errors.ERR_NO_GENERATORS_TO_ADD)
             return
         names = self.cell_chain_names()
 
         def chosen(place):
-            self.set_cell_chain_names([*names, chains[place]])
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_CHAIN_TITLE, options=chains), then=chosen)
+            self.set_cell_chain_names([*names, offered[place]])
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_GENERATOR_TITLE, options=[listed_generator(setlist=setlist, name=name) for name in offered]), then=chosen)
 
     def remove_chain_from_cell(self):
         """Take the picked chain out of the cursor's cell alone, the chain staying in the set."""
