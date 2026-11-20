@@ -105,7 +105,7 @@ def _text(value):
     return _scalar_text(kind=type(value), value=value)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _scalar_text(*, kind, value):
     """Return one text, number or true or false as YAML, worked out once for each: a set repeats a few hundred values many
     thousands of times, and asking YAML about each was most of the time a save took. The kind is part of what is remembered,

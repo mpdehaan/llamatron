@@ -283,6 +283,16 @@ caller that wants data to change asks `to_data()`, what `to_data()` returns shar
 dictionary with the object, and an object shares none with the data it was read from
 (`tests/composition/test_kept_data.py`).
 
+**Remembering an answer: three tools, by what the answer depends on** (the user's rule). A function whose answer depends on
+its arguments alone, all hashable, is written under `functools.cache`, the standard library's memoization; it is used on
+functions of a module only, never on a method, since the cache would keep every object alive and cannot forget one object's
+answers, and `functools.cached_property` is never used, since every class has `__slots__`. A method whose answer depends on what
+its object holds is written under `kept_while(key_of)` (`support/kept.py`), the decorator made for the purpose: its key holds
+that state, so a changed key is the invalidation and nothing has to be cleared by hand. An answer about anything stored in the
+set goes through the document's `Memory` (`support/memory.py`), which checks the revisions of what it came from. A cache whose
+answers no test can see going stale is not added: where none of the three fits, a new decorator is made, with tests of both its
+keeping and its forgetting.
+
 **Old layouts are moved by migrations, and only there.** A change that renames a key of the set file or changes a structure comes
 with a migration in `composition/migrations/`, a module of its own made of the package's small helpers, which turns the layout
 before the change into the one after it and is never changed once released; every piece of code that only runs on an older layout
