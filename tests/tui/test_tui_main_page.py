@@ -202,7 +202,7 @@ class TestMainPage(UITest):
         # What the video tutorial walks by: the arrows found are pressed and reach the cell.
         page = self.app.screen
         rows = page.rows()
-        cells = list({id(item.binding): item.binding for row in rows for item in row}.values())
+        cells = list({id(item.binding): item.binding for row in rows for item in row if item is not main_page.EMPTY_CELL}.values())
         for start in cells:
             for end in cells:
                 position = cell_positions(rows=rows, binding=start)[0]
@@ -254,11 +254,12 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertEqual(lines[arrange].count('«'), 1)
         self.assertLess(arrange, next(number for number, line in enumerate(lines) if '« S »' in line))
         self.assertEqual(sum(1 for line in lines if '« F »' in line), 1)
-        for row in ('« S »', '« G »', '« I »'):
+        for row in ('« S »', '« I »'):
             self.assertEqual(next(line for line in lines if row in line).count('«'), main_page.COLUMNS)
+        # Generators' row has an empty cell between Generators and Grooves.
+        self.assertEqual(next(line for line in lines if '« G »' in line).count('«'), main_page.COLUMNS - 1)
         self.assertIn('« P »', next(line for line in lines if '« S »' in line))
         self.assertIn('« Z »', next(line for line in lines if '« S »' in line))
-        self.assertIn('« M »', next(line for line in lines if '« G »' in line))
         self.assertIn('« V »', next(line for line in lines if '« G »' in line))
         self.assertIn('« R »', next(line for line in lines if '« I »' in line))
         self.assertIn('« T »', next(line for line in lines if '« I »' in line))
