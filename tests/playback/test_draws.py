@@ -180,6 +180,13 @@ def muted_when_equal(*, draw, value, steps=STEPS):
     return {Row.MUTE_C1: [draw] * steps, Row.MUTE_C2: [Operator.SAME] * steps, Row.MUTE_C3: [value] * steps}
 
 
+def skipped_when_ad_is_one(*, draw, rows):
+    """Return a song whose one clip plays its pattern four times and sits out each pass that starts with AD at 1."""
+    skip = [{StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.SAME, StatementPart.VALUE: 1}]
+    played = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: 4, ClipSlotSetting.SKIP_WHEN: skip}}
+    return song_data(draws={DrawName.AD: draw}, rows=rows, scenes=[{SceneSetting.TRACKS: played}])
+
+
 class TestConditions(unittest.TestCase):
     """A statement reads a draw as it reads a register: only looking at it, or, where the draw redraws in conditions, drawing from it."""
 
@@ -202,11 +209,27 @@ class TestConditions(unittest.TestCase):
         # AX stays 0, and each step draws AD before its condition compares: 0, 1, 2, 3, so only the first step sounds.
         self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C]])
 
-    def test_a_table_reads_a_draw_as_a_pass_starts(self):
-        played = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: 4, ClipSlotSetting.SKIP_WHEN: [{StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.SAME, StatementPart.VALUE: 1}]}}
-        song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}, scenes=[{SceneSetting.TRACKS: played}]))
-        # Each pass's first step draws the next value; the second pass starts with AD at 0, the third with AD at 1, which sits the third pass out.
+    def test_skip_playback_when_reads_what_the_passs_first_step_draws(self):
+        song = render_data(skipped_when_ad_is_one(draw=a_draw(slots=COUNT_IN), rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}))
+        # Each pass's first step draws 0, 1, 2, 3 before Skip Playback When reads AD, which sits the second pass out.
+        self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 2, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 3, MIDDLE_C, MIDDLE_C, MIDDLE_C]])
+
+    def test_skip_playback_when_draws_a_draw_that_redraws_as_each_pass_starts(self):
+        song = render_data(skipped_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}, rows={}))
+        # No step uses AD, and the pass's first step draws it for Skip Playback When: 0, 1, 2, 3, the second pass sat out.
         self.assertEqual(len(pitches_of(song=song, scenes=1)[0]), 3 * STEPS)
+
+    def test_the_first_step_and_skip_playback_when_share_one_draw(self):
+        song = render_data(skipped_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}, rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}))
+        self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 2, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 3, MIDDLE_C, MIDDLE_C, MIDDLE_C]])
+
+    def test_skip_playback_when_draws_nothing_from_a_draw_that_does_not_redraw_when_no_step_uses_it(self):
+        for redraws, found in ((False, {}), (True, {DrawName.AD: 0})):
+            with self.subTest(redraws=redraws):
+                data = skipped_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: redraws}, rows={PatternSetting.STEP_SIZE: QUARTER})
+                data[SongSetting.TEMPO] = BEATS_A_MINUTE
+                score = Score(song=song_from_data(data), routes={})
+                self.assertEqual(score.draw_places_at(scene=0, seconds=HALF_A_SECOND), found)
 
 
 class TestLights(unittest.TestCase):
