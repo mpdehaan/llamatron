@@ -651,6 +651,15 @@ class Song(HoldsSections, HoldsSettings):
     def get_chain(self, name):
         return self._setlist.get_chain(name)
 
+    def forget_generator(self, name):
+        """Take a generator out of every list of generators of the song: its tracks', its scenes' and its clips'."""
+        listing = [self._section(Section.TRACKS).get(track) for track in self.get_track_names()]
+        for scene in self.get_scenes():
+            listing += [scene, *[scene.get_clip_slot(track) for track in scene.get_track_names()]]
+        for holder in listing:
+            if name in holder.get_chain_names():
+                holder.set_chain_names(names=[each for each in holder.get_chain_names() if each != name], song=self)
+
     def chain_run(self, name):
         """Return the chain a name in a list of generators runs (Setlist.chain_run)."""
         return self._setlist.chain_run(name)

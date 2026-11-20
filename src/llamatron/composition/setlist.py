@@ -1052,6 +1052,17 @@ class Setlist(HoldsSections, HoldsSettings):
     def get_chain(self, name):
         return self._section(Section.CHAINS).get(name)
 
+    def delete_generator(self, *, section, name):
+        """Delete a generator, a chain among them, taking it out of every chain's steps and every list of generators of every song."""
+        for chain in self.get_chain_names():
+            steps = self.get_chain(chain).get_steps()
+            for place in reversed(range(len(steps))):
+                if steps[place].name == name:
+                    self.get_chain(chain).remove_step(place)
+        for song in self._section(Section.SONGS).values():
+            song.forget_generator(name)
+        self.remove_item(section=section, name=name)
+
     def generator_kind(self, name):
         """Return the kind of the generator of a name, chain for a chain, or None for a name no generator has."""
         return next((kind for kind, section in file_format.LISTED_GENERATORS.items() if self._section(section).has(name)), None)

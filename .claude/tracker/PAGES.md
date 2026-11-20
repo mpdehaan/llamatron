@@ -94,6 +94,9 @@ The user's design. `PatternsPage` (`tui/screens/pattern/patterns_page.py`) lists
   `LISTED_PAGES` in `tui/screens/generators/generator_pages.py`, `file_format.CHAIN_KIND` and `LISTED_GENERATORS`), opened in the
   chain editor; a chain's own steps offer only the plain kinds (`GENERATOR_PAGES`). The Chains button stays on the main screen until
   the Modulators button takes its place.
+- Deleting a generator, a chain among them, asks first and lists up to five uses under `It is taken out of:`
+  (`ListPage.delete_taking_out`); YES deletes it and takes it out of every chain's steps and every clip's, scene's and track's list
+  in one edit (`Setlist.delete_generator`, `Song.forget_generator`), the user's design.
 
 - The Generators page (`G`, `screens/generators/generators_page.py`, the user's design) lists every generator of the set under a
   heading for its type, `- Density (2)` (`MSG_GROUP_HEADING`), the types sorted by what the tracker calls each and the generators

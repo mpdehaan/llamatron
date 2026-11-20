@@ -81,6 +81,8 @@ MSG_NOTHING_TO_FRACTURE = 'every clip already has its own pattern'
 # tui/screens/arrange/arrange_page.py: the picker of chains to add to a cell from its details.
 MSG_ADD_GENERATOR_TITLE = 'Add a generator'
 MSG_DELETE_QUESTION = 'Delete {what}?'
+# Said under the question when what is deleted is a generator that lists run, which deleting takes out of them.
+MSG_TAKEN_OUT_OF = 'It is taken out of:'
 MSG_ALSO_DELETES_CLIPS = 'This also deletes its {count} clip(s).'
 
 # tui/screens/set/main_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
