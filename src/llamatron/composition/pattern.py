@@ -210,15 +210,16 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def sets_registers(self):
         """Return whether any step sets a register to a value, which is a value on a register's = row, 0 included."""
-        return any(value is not None for row in file_format.REGISTER_SET_ROWS.values() for value in self._rows[row] or [])
+        return any(value is not None for rows in (file_format.REGISTER_SET_ROWS, file_format.MODULATOR_SET_ROWS) for row in rows.values() for value in self._rows[row] or [])
 
     def changes_registers(self):
         """Return whether any step sets a register or adds to one, so that playing the pattern changes the registers' values."""
         return self.adds_to_registers() or self.sets_registers()
 
     def uses_registers(self):
-        """Return whether any step reads a register: a row of +Note or +Vel switched on there, or a statement about the registers."""
-        if any(self._adds_on(row) for rows in (file_format.REGISTER_NOTE_ROWS, file_format.REGISTER_VELOCITY_ROWS) for row in rows.values()):
+        """Return whether any step reads a register or a modulator: a row of +Note or +Vel switched on there, or a statement about them."""
+        reading = (file_format.REGISTER_NOTE_ROWS, file_format.REGISTER_VELOCITY_ROWS, file_format.MODULATOR_NOTE_ROWS, file_format.MODULATOR_VELOCITY_ROWS)
+        if any(self._adds_on(row) for rows in reading for row in rows.values()):
             return True
         return any(self.has_statements(kind) for kind in file_format.STATEMENT_ROWS)
 

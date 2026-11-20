@@ -38,7 +38,7 @@ SAVED_SET = 'saved.yml'
 # The step of tune that holds nothing.
 EMPTY_STEP = 2
 # The register rows whose line is narrower than a file allows, and an Allowed Inc Max narrower than the default.
-NARROWER_ROWS = {*file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values()}
+NARROWER_ROWS = {*file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values(), *file_format.MODULATOR_SET_ROWS.values()}
 NARROW_INC_MAX = 4
 # A number typed into a statement.
 TYPED_NUMBER = 12
@@ -158,9 +158,9 @@ class TestStatementRows(PatternEditorTest):
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.LESS)
         self.assertIsNone(self.statement(StepStatement.MUTE))
-        for _ in range(len(file_format.REGISTER_NAMES) + 1):
+        for _ in range(len(file_format.STATEMENT_NAMES) + 1):
             await self.press(keybindings.StatementRow.MORE)
-        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.REGISTER], file_format.REGISTER_NAMES[-1])
+        self.assertEqual(self.statement(StepStatement.MUTE)[StatementPart.REGISTER], file_format.STATEMENT_NAMES[-1])
         await self.go_to_row(operator_row)
         for _ in range(len(file_format.OPERATORS)):
             await self.press(keybindings.StatementRow.LESS)

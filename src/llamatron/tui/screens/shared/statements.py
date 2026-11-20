@@ -108,7 +108,7 @@ def _line(*, page, place, table, statements, store):
 
 def _register_cell(*, page, statement, store, clear):
     """Return the cell that names a line's register, or says the line is ignored."""
-    choices = [labels.MSG_STATEMENT_IGNORED, *file_format.REGISTER_NAMES]
+    choices = [labels.MSG_STATEMENT_IGNORED, *file_format.STATEMENT_NAMES]
     current = labels.MSG_STATEMENT_IGNORED if statement is None else statement[StatementPart.REGISTER]
 
     def chosen(register):
@@ -128,7 +128,7 @@ def _choice_cell(*, page, title, choices, current, width, store, clear):
 
 def _value_cell(*, page, current, divides, store, clear):
     """Return a cell that holds a number or another register: ENTER offers a number to type and each register."""
-    choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *file_format.REGISTER_NAMES]
+    choices = [labels.MSG_STATEMENT_NUMBER_CHOICE, *file_format.STATEMENT_NAMES]
 
     def typed(number):
         if divides and number == ZERO:
@@ -139,13 +139,13 @@ def _value_cell(*, page, current, divides, store, clear):
     def picked(place):
         if place == NUMBER_PLACE:
             page.ask_number(
-                title=labels.MSG_STATEMENT_VALUE_TITLE, value=str(current) if current not in file_format.REGISTER_NAMES else str(ZERO), then=typed,
+                title=labels.MSG_STATEMENT_VALUE_TITLE, value=str(current) if current not in file_format.STATEMENT_NAMES else str(ZERO), then=typed,
                 low=-limits.MAX_STATEMENT_NUMBER, high=limits.MAX_STATEMENT_NUMBER,
             )
         else:
             store(choices[place])
 
     def pick():
-        opens_on = choices.index(current) if current in file_format.REGISTER_NAMES else NUMBER_PLACE
+        opens_on = choices.index(current) if current in file_format.STATEMENT_NAMES else NUMBER_PLACE
         page.ask(dialog=ChoiceDialog(title=labels.MSG_STATEMENT_VALUE_TITLE, options=choices, current=opens_on), then=picked)
     return Field(label=labels.MSG_STATEMENT_VALUE_TITLE, value=lambda: str(current).ljust(NUMBER_WIDTH), enter=pick, enter_what=legends.What.CHOOSE, clear=clear)
