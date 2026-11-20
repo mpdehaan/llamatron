@@ -60,6 +60,10 @@ NEW_AUTO_RATCHET_COUNTS = [2]
 RESTART_SETTING = Choice(name=file_format.GENERATOR_RESTART, choices=file_format.RESTARTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
 
 
+# What the arpeggiator is handed to draw its random choices from: the render's seed, never a setting of the file.
+ARP_SEED = 'seed'
+
+
 class ArpSetting:
     """An arpeggiator's settings, as a file names them."""
 
@@ -67,7 +71,6 @@ class ArpSetting:
 
     STEP = 'step'
     ORDER = 'order'
-    SEED = 'seed'
     OCTAVE_RANGE = 'octave_range'
     OCTAVE_JUMP = 'octave_jump'
     OFFSETS = 'offsets'
@@ -97,7 +100,6 @@ class DriftSetting:
     EVERY = 'every'
     STEPS_TO_B = 'steps_to_b'
     DIRECTION = 'direction'
-    SEED = 'seed'
 
 
 # Each register's add at a drift's trigger, by register.
@@ -318,7 +320,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
 
 
 class ArpSettings(HasCells, GeneratorSettings):
-    """An arpeggiator's settings: its step length, order, seed, octave range and jump, and offsets."""
+    """An arpeggiator's settings: its step length, order, octave range and jump, and offsets."""
 
     __slots__ = ()
 
@@ -326,7 +328,6 @@ class ArpSettings(HasCells, GeneratorSettings):
     SETTINGS = described(
         Checked(name=ArpSetting.STEP, check=time_length),
         Choice(name=ArpSetting.ORDER, choices=sorted(ORDERS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        WholeNumber(name=ArpSetting.SEED, error=errors.ERR_GENERATOR_NOT_INTEGER),
         WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=arp.MAX_OCTAVE_RANGE, error=errors.ERR_GENERATOR_BAD_OCTAVE_RANGE),
         Choice(name=ArpSetting.OCTAVE_JUMP, choices=sorted(OCTAVE_JUMPS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Checked(name=ArpSetting.OFFSETS, check=_check_arp_offsets, nearest=_nearest_offsets),
@@ -339,8 +340,7 @@ class ArpSettings(HasCells, GeneratorSettings):
     TAKEN_AS = {ArpSetting.STEP: time_length, ArpSetting.ORDER: _order, ArpSetting.OCTAVE_JUMP: _octave_jump}
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
-        if ArpSetting.SEED not in values:
-            values[ArpSetting.SEED] = default_seed
+        values[ARP_SEED] = default_seed
         if ArpSetting.STEP not in values:
             values[ArpSetting.STEP] = default_step
         elif isinstance(values[ArpSetting.STEP], Bars):
@@ -354,9 +354,6 @@ class ArpSettings(HasCells, GeneratorSettings):
 
     def get_order(self):
         return self.get_written(ArpSetting.ORDER)
-
-    def get_seed(self):
-        return self.get_written(ArpSetting.SEED)
 
     def get_octave_range(self):
         return self.get_written(ArpSetting.OCTAVE_RANGE)
@@ -1048,14 +1045,13 @@ def _drift_settings():
         Checked(name=DriftSetting.EVERY, check=time_length),
         WholeNumber(name=DriftSetting.STEPS_TO_B, lowest=MIN_STEPS_TO_B, highest=MAX_STEPS_TO_B, error=errors.ERR_GENERATOR_BAD_ADD),
         Choice(name=DriftSetting.DIRECTION, choices=file_format.DRIFT_DIRECTIONS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        WholeNumber(name=DriftSetting.SEED, error=errors.ERR_GENERATOR_NOT_INTEGER),
         *versions,
         RESTART_SETTING,
     )
 
 
 class DriftSettings(GeneratorSettings):
-    """A drift's settings: how often it triggers, how many triggers it takes from A to B, which way it moves, its seed, and what each version sets.
+    """A drift's settings: how often it triggers, how many triggers it takes from A to B, which way it moves, and what each version sets.
 
     A drift is not a generator a chain runs on a clip's notes: the render reads these settings
     as one process for the whole song (playback/drift.py), and every clip whose chain names the
@@ -1081,9 +1077,6 @@ class DriftSettings(GeneratorSettings):
 
     def get_direction(self):
         return self.get_written(DriftSetting.DIRECTION) or file_format.DRIFT_DIRECTIONS[0]
-
-    def get_seed(self):
-        return self.get_written(DriftSetting.SEED)
 
     def get_value(self, *, version, value):
         """Return one version's value as the file writes it, or None when the version leaves it out."""

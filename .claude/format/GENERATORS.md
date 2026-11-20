@@ -168,7 +168,7 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
   `SongRenderer.continuation`, which works out the clips before first, with no grabs waiting; each
   clip starts from the state it was handed and `end_state()` is kept by `keep_end_state`, by pass,
   written scene, track and the generator's place (its kind, name and how often it came up in the
-  chains). The AutoRatchet's next count, Voice leading's chord before, a seeded arpeggiator's
+  chains). The AutoRatchet's next count, Voice leading's chord before, an arpeggiator's
   random state, and a Strum generator's down up (`StrumPlan.chords_before`, from the chords the
   render loop counted) carry on. Each track keeps its own copy (the user's answer).
 - A drift's clock starts at its run's start (`SongRenderer.drift_origin`, `DriftPlay.effects`
@@ -217,8 +217,9 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
   `ClipSlotPlayer._through_chain`, and the render reads the drift as one process for the song
   (`playback/drift.py`, `DriftPlay`, built once per render by `SongRenderer`).
 - Its own settings: `every` (whole notes, blank for a bar of the song's time signature),
-  `steps_to_b` (default 16), `direction` (`DriftDirection`: forward, loop, pendulum, brownian)
-  and `seed`. Each version's values are named with its letter, `a_` or `b_` (`versioned`,
+  `steps_to_b` (default 16) and `direction` (`DriftDirection`: forward, loop, pendulum, brownian).
+  A drift has no seed of its own, nor has an arpeggiator: each draws from the render's seed, so every play is a new take (the user's
+  rule); a file's old `seed` on either is passed over. Each version's values are named with its letter, `a_` or `b_` (`versioned`,
   `DriftValue`): the four register adds, `velocity`, `probability`, `degree`, `degree_random`,
   `scale`, `scale_probability`, `root` and `root_probability`.
 - Its clock runs from the song's top, the written-out scenes laid end to end

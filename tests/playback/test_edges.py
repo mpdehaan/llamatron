@@ -84,7 +84,6 @@ SCENES_IS_A_DICT = 'scenes is a dict'
 SCENE_IS_A_LIST = 'scene is a list'
 SCENE_REPEAT_IS_ZERO = 'scene repeat is zero'
 TEMPO_RAMP_BARS_ARE_ZERO = 'tempo ramp bars are zero'
-ARP_SEED_IS_WORDS = 'arp seed is words'
 COUNTS_IS_NOT_A_LIST = 'counts is not a list'
 UP = 'up'
 LEAD = 'lead'
@@ -95,7 +94,6 @@ BASS = 'bass'
 ONE = 'one'
 R = 'r'
 EIGHTH = '1/8'
-LUCKY = 'lucky'
 A = 'a'
 HIGH = 'high'
 TIME = 'time'
@@ -151,11 +149,10 @@ class TestMalformedFiles(unittest.TestCase):
             SCENE_IS_A_LIST: changed(scenes=[[LEAD]]),
             SCENE_REPEAT_IS_ZERO: changed(scenes__0__repeat=0),
             TEMPO_RAMP_BARS_ARE_ZERO: changed(scenes__0__tempo_in_over=0),
-            ARP_SEED_IS_WORDS: changed(arps={UP: {ArpSetting.STEP: EIGHTH, ArpSetting.SEED: LUCKY}}),
             COUNTS_IS_NOT_A_LIST: changed(auto_ratchets={R: {AutoRatchetSetting.COUNTS: 4}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}),
         }
         for name, data in cases.items():
-            if name in (ARP_SEED_IS_WORDS, COUNTS_IS_NOT_A_LIST):
+            if name == COUNTS_IS_NOT_A_LIST:
                 data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.CHAINS] = [X]
             with self.subTest(name=name), self.assertRaises(SongFileError):
                 render_data(data)

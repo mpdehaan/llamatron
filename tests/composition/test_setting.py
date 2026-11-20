@@ -480,7 +480,7 @@ class TestReadingAndSettingAgree(unittest.TestCase):
         )
 
     def test_a_generator(self):
-        for name, value in [(ArpSetting.OCTAVE_RANGE, arp.MAX_OCTAVE_RANGE + 1), (ArpSetting.ORDER, NOT_A_DIRECTION), (ArpSetting.SEED, NOT_A_NUMBER)]:
+        for name, value in [(ArpSetting.OCTAVE_RANGE, arp.MAX_OCTAVE_RANGE + 1), (ArpSetting.ORDER, NOT_A_DIRECTION)]:
             with self.subTest(name=name):
                 self.assert_same_refusal(
                     read=lambda: ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, name: value}, where=HERE),

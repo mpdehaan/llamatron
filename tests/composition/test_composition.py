@@ -26,7 +26,7 @@ import random
 import re
 import unittest
 
-from llamatron.composition import defaults, file_format, limits
+from llamatron.composition import defaults, file_format, generator_settings, limits
 from llamatron.composition.chain import Chain
 from llamatron.composition.clip_slot import ClipSlot, morph_style_name
 from llamatron.composition.file_format import Accidental, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
@@ -89,7 +89,6 @@ UNKNOWN_COUNT_IN_CHAIN = 'chain (x), auto_ratchet: unknown setting (count)'
 # Settings of an arp that reading a file refuses, each wrong in one setting.
 WRONG_ARP_SETTINGS = [
     {ArpSetting.ORDER: 'sideways'},
-    {ArpSetting.SEED: 'seven'},
     {ArpSetting.OCTAVE_RANGE: arp_values.MAX_OCTAVE_RANGE + 1},
     {ArpSetting.OCTAVE_JUMP: 'never'},
     {ArpSetting.OFFSETS: 'up'},
@@ -455,9 +454,9 @@ class TestGeneratorSettings(RoundTrip):
         self.assertEqual((arp.get_step(), arp.get_order(), arp.get_seed()), (Fraction(1, 8), ChordOrder.DOWN, 7))
         self.assertIsInstance(AutoRatchetSettings.from_data(data={AutoRatchetSetting.COUNTS: [2]}, where=HERE).make_generator(where=CHAIN_X, default_seed=7), AutoRatchet)
 
-    def test_a_seed_of_its_own_beats_the_default(self):
-        arp = ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, ArpSetting.SEED: 3}, where=HERE).make_generator(where=CHAIN_X, default_seed=7)
-        self.assertEqual(arp.get_seed(), 3)
+    def test_a_seed_in_an_older_file_is_passed_over_and_the_render_seed_used(self):
+        arp = ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, generator_settings.ARP_SEED: 3}, where=HERE).make_generator(where=CHAIN_X, default_seed=7)
+        self.assertEqual(arp.get_seed(), 7)
 
     def test_wrong_settings_are_refused_when_read_and_name_the_place(self):
         with self.assertRaisesRegex(SongFileError, re.escape(NO_COUNTS_HERE)):

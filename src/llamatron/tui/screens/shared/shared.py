@@ -26,8 +26,6 @@ from llamatron.tui import drawing
 
 
 SONG_SUFFIX = '.yml'
-# Where a seed starts counting from when one is set on a field that had none.
-NO_SEED = 0
 SONG_SUFFIXES = (SONG_SUFFIX, '.yaml')
 # The MIDI files the import's picker shows.
 MIDI_SUFFIXES = ('.mid', '.midi')

@@ -226,7 +226,6 @@ REFUSED = [
     with_pattern({PatternSetting.STEP_SIZE: STRAIGHT}),
     with_pattern({PatternSetting.STEP_SIZE: NOT_A_NUMBER}),
     with_groove({GrooveSetting.CELLS: []}),
-    with_arp({ArpSetting.SEED: NOT_A_NUMBER}),
     {SetlistSetting.TITLE: A_DEGREE},
     [NOT_A_NAME],
 ]

@@ -14,7 +14,6 @@ A drift triggers every so often and picks new amounts, holding them until the ne
 | Every | How often it triggers: `1 bar` of the song, the default, or another time from the list every time setting shares. |
 | Steps to B | How many triggers it takes to get from A to B, 16 unless set. |
 | Direction | `forward` goes from A to B and stays there, `loop` starts again at A, `pendulum` goes from A to B and back forever, and `brownian` wanders a step either way at each trigger. |
-| Seed | The seed for its random choices. `Bksp` goes back to a new draw each play. |
 | Restart | When it starts over, as [Generators](../GENERATORS.md#restart) describes. |
 
 ## Versions A and B

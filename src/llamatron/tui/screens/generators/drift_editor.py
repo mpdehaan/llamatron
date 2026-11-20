@@ -24,7 +24,6 @@ from llamatron.tui import keybindings
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
-from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
@@ -50,7 +49,6 @@ class DriftEditor(GeneratorEditor, FieldPage):
 
     def own_fields(self):
         drift = self.settings()
-        seed = drift.get_seed()
         every = drift.get_every()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
@@ -59,11 +57,6 @@ class DriftEditor(GeneratorEditor, FieldPage):
                         set=lambda number: self.store(setting=DriftSetting.STEPS_TO_B, value=number)),
             ChoiceField(page=self, label=labels.MSG_DRIFT_DIRECTION_LABEL, choices=file_format.DRIFT_DIRECTIONS, current=drift.get_direction(),
                         set=lambda value: self.store(setting=DriftSetting.DIRECTION, value=None if value == file_format.DRIFT_DIRECTIONS[0] else value)),
-            NumberField(
-                page=self, label=labels.MSG_SEED_LABEL, number=seed, start=shared.NO_SEED, shown=marks.MSG_RANDOM_SEED_SHOWN if seed is None else None,
-                set=lambda number: self.store(setting=DriftSetting.SEED, value=number),
-                clear=lambda: self.store(setting=DriftSetting.SEED, value=None), clear_what=legends.MSG_USE_SONG_SEED_WHAT,
-            ),
             restart_field(self),
         ]
 

@@ -236,7 +236,8 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
 
 - Probability is rolled at render once per repeat and ratchet slice. A song holds no seed: every play and export draws its
   random parts afresh, from Python's own random stream, seeded by the system, so each is a new take (the user's rule, since a
-  kept seed could not promise the same take once Python's random numbers change). A file's old `seed` is passed over as an unknown name.
+  kept seed could not promise the same take once Python's random numbers change). No generator keeps a seed of its own either, the arpeggiator's and the drift's gone the same way;
+  a file's old `seed`, on a song or a generator, is passed over as an unknown name.
 - `random_source(seed)` (`src/llamatron/support/random_source.py`) is the one place that decides
   between a seeded generator and the shared random stream.
 - `SongRenderer(song, seed=n)` renders from a seed, the internal way that tests and tools repeat a take, which no person and no

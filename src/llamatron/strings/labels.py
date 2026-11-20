@@ -287,7 +287,6 @@ MSG_PREVIEW_INSTRUMENT_UNSET = '(General MIDI piano)'
 MSG_LIVE_RESPONSIVENESS_NAMES = {LiveResponsiveness.NEXT_BAR: 'next bar', LiveResponsiveness.CLIP_RESTART: 'clip restart', LiveResponsiveness.ASAP: 'ASAP'}
 MSG_TITLE_LABEL = 'Title'
 MSG_AUTHOR_LABEL = 'Author'
-MSG_SEED_LABEL = 'Seed'
 MSG_STEP_SIZE_LABEL = 'Step size'
 MSG_DEFAULT_OCTAVE_LABEL = 'Default octave'
 MSG_DEFAULT_DRUM_OCTAVE_LABEL = 'Default drum octave'

@@ -147,7 +147,7 @@ generators:
   - { name: tapping, kind: arp, step: 1/24, order: down }
   - { name: tapping wide, kind: arp, step: 1/24, order: up_down, octave_range: 2 }
   - { name: tremolo, kind: auto_ratchet, counts: [4] }
-  - { name: climb, kind: drift, every: 1/2, steps_to_b: 12, direction: forward, seed: 7, restart: on_new_scene, a_degree: 0, b_degree: 4, a_degree_random: 1, b_degree_random: 2 }
+  - { name: climb, kind: drift, every: 1/2, steps_to_b: 12, direction: forward, restart: on_new_scene, a_degree: 0, b_degree: 4, a_degree_random: 1, b_degree_random: 2 }
   - { name: study, kind: progression, chords: [1, 4, 7, 3, 6, 2, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
   - { name: tap, kind: progression, chords: [1, 6, 7, 5], qualities: [~, ~, ~, M] }
   - { name: tap high, kind: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }

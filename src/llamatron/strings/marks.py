@@ -187,7 +187,6 @@ MSG_CHAIN_STEP_AGAIN = '{name} {number} ({kind})'
 MSG_PATTERN_STEP_SHOWN = '(pattern)'
 # A list of chains, as a field shows it.
 MSG_CHAIN_JOIN = ', '
-MSG_RANDOM_SEED_SHOWN = '(random)'
 # The gauge of offsets (tui/components/signed_gauge.py): a value with its sign and a mark when the gauge is too short to
 # reach it, above or below, and the brackets around the cursor's step number and value.
 MSG_POSITIVE_VALUE = '+{value}{mark}'

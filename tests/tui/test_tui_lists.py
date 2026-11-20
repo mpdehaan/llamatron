@@ -49,6 +49,9 @@ from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_name, key_of, UITest
 
+# The label a seed field had, before every play and export became a new take.
+SEED_LABEL = 'Seed'
+
 # Names the tests give to their own things, and other values they use.
 LEAD = 'lead'
 # What a test types into a list's search.
@@ -574,13 +577,8 @@ class TestArpEditorFields(UITest):
         await self.press(Key.ENTER)
         self.assertIsNone(self.up().get_octave_jump())
 
-    async def test_a_seed_of_its_own_and_back_to_random(self):
-        await self.select_field(labels.MSG_SEED_LABEL)
-        await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.up().get_seed(), 1)
-        await self.press(Key.BACKSPACE)
-        self.assertIsNone(self.up().get_seed())
-        self.assertIn(marks.MSG_RANDOM_SEED_SHOWN, self.text())
+    async def test_an_arp_has_no_seed_since_every_play_is_a_new_take(self):
+        self.assertNotIn(SEED_LABEL, self.text())
 
     async def test_typing_an_offset_too_big_starts_a_new_number(self):
         self.document.change(self.document.generator(section=Section.ARPS, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0, -3])
