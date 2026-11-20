@@ -231,7 +231,7 @@ class PlayerChoices:
         if not self._choices.is_ready() or self._choices.melody_engine() != melody_writer.SERIAL or not self._choices.get_sounds().has_sound(self._role) or not self.plays_lines():
             return []
         # A player who plays in no section of the song's form is dealt nothing, so has no row to change.
-        if not any(self._role in self._choices.section_plays(place) for place in range(len(self._choices.section_entries()))):
+        if not any(self._role in self._choices.section(place).plays() for place in range(len(self._choices.section_entries()))):
             return []
         return list(wizard_limits.PLAYER_ROWS)
 

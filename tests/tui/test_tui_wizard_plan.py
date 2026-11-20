@@ -174,7 +174,7 @@ class TestWizardSectionOwnFields(WizardTest):
         self.assertIn(self.label(song_plan.ENERGY), shown)
         self.assertNotIn(self.label(song_plan.TEMPO_END_OF_PLACE), shown)
         self.assertNotIn(marks.MSG_SECTION_SET, shown)
-        choices.set_section_own(place=A_PLACE, field=song_plan.RISES, value=not choices.section_from_plan(place=A_PLACE, field=song_plan.RISES))
+        choices.section(A_PLACE).set_own(field=song_plan.RISES, value=not choices.section(A_PLACE).from_plan(field=song_plan.RISES))
         await self.press(Key.DOWN, Key.UP)
         self.assertIn(marks.MSG_SECTION_SET, self.text())
         await self.open_every_group()
@@ -184,29 +184,29 @@ class TestWizardSectionOwnFields(WizardTest):
         choices = self.choices()
         await self.open_every_group()
         shown = self.text()
-        for field in choices.section_own_fields(A_PLACE):
+        for field in choices.section(A_PLACE).own_fields():
             self.assertIn(self.label(field), shown)
             if field in (song_plan.RISES, song_plan.FADES):
                 # A switch shows on or off and no origin.
                 continue
-            self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.section_from_plan(place=A_PLACE, field=field), origin=labels.MSG_WIZARD_SECTION_ORIGINS[field]), shown)
+            self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.section(A_PLACE).from_plan(field=field), origin=labels.MSG_WIZARD_SECTION_ORIGINS[field]), shown)
 
     async def test_energy_steps_from_the_plan_s_and_bksp_gives_it_back(self):
         choices = self.choices()
         usual = choices.energies()[A_PLACE]
         await self.select_field(self.label(song_plan.ENERGY))
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.section_own(place=A_PLACE, field=song_plan.ENERGY), usual + 1)
+        self.assertEqual(choices.section(A_PLACE).own(field=song_plan.ENERGY), usual + 1)
         self.assertNotIn(labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=labels.MSG_WIZARD_SECTION_ORIGINS[song_plan.ENERGY]), self.text())
         await self.press(keybindings.FieldPage.CLEAR)
-        self.assertIsNone(choices.section_own(place=A_PLACE, field=song_plan.ENERGY))
+        self.assertIsNone(choices.section(A_PLACE).own(field=song_plan.ENERGY))
 
     async def test_a_way_of_leaving_a_key_and_a_scale_are_chosen_from_a_list(self):
         choices = self.choices()
         for field in (joins.LEAVES, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE):
             await self.select_field(self.label(field))
             await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-            self.assertIsNotNone(choices.section_own(place=A_PLACE, field=field))
+            self.assertIsNotNone(choices.section(A_PLACE).own(field=field))
 
     async def test_chords_are_typed_and_what_cannot_be_chords_is_said(self):
         choices = self.choices()
@@ -216,11 +216,11 @@ class TestWizardSectionOwnFields(WizardTest):
             await self.press(Key.BACKSPACE)
         await self.type(SOME_CHORDS)
         await self.press(Key.ENTER)
-        self.assertEqual(chords_as_text(choices.section_own(place=A_PLACE, field=arranger.CHORDS)), SOME_CHORDS)
+        self.assertEqual(chords_as_text(choices.section(A_PLACE).own(field=arranger.CHORDS)), SOME_CHORDS)
         await self.press(Key.ENTER)
         await self.type(NOT_A_CHORD)
         await self.press(Key.ENTER)
-        self.assertEqual(chords_as_text(choices.section_own(place=A_PLACE, field=arranger.CHORDS)), SOME_CHORDS)
+        self.assertEqual(chords_as_text(choices.section(A_PLACE).own(field=arranger.CHORDS)), SOME_CHORDS)
         self.assertIn(errors.ERR_WIZARD_CHORDS.split('{')[0][:A_FEW_WORDS], self.text())
 
     async def test_a_song_with_no_plan_keeps_the_chords_the_tempo_the_key_and_the_scale(self):
@@ -272,7 +272,7 @@ class TestWizardFormQuestions(WizardTest):
 
     async def test_a_form_a_person_changed_is_replaced_only_on_a_yes(self):
         choices = self.choices()
-        choices.copy_section(A_PLACE)
+        choices.section(A_PLACE).copy()
         before = choices.section_kinds_in_form()
         await self.press(Key.ENTER)
         for _ in choices.form_questions():

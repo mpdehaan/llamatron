@@ -39,7 +39,7 @@ class TuneChoices(ChoicesPart):
         player = self._choices.get_band().tune_player()
         kinds = []
         for place, kind in enumerate(self._choices.section_kinds_in_form()):
-            if kind not in kinds and player is not None and player in self._choices.section_plays(place) and not self._choices.section_is_held(place):
+            if kind not in kinds and player is not None and player in self._choices.section(place).plays() and not self._choices.section(place).is_held():
                 kinds.append(kind)
         return kinds
 
@@ -47,7 +47,7 @@ class TuneChoices(ChoicesPart):
         """Return the place in the form of the first section of a kind the tune's player plays in, or None."""
         player = self._choices.get_band().tune_player()
         places = range(len(self._choices.section_labels()))
-        return next((place for place in places if self._choices.section_kind(place) == kind and player in self._choices.section_plays(place) and not self._choices.section_is_held(place)), None)
+        return next((place for place in places if self._choices.section(place).kind() == kind and player in self._choices.section(place).plays() and not self._choices.section(place).is_held()), None)
 
     def tune_is_own(self, kind):
         """Return whether a kind of section's tune was written by hand, so that nothing the wizard chooses writes over it."""
@@ -136,7 +136,7 @@ class TuneChoices(ChoicesPart):
             try:
                 place = self.tune_place(kind)
                 if place is not None:
-                    heard[kind] = copy.deepcopy(self._choices.section_own(place=place, field=arranger.CHORDS) or (self._choices.made_song_plan().chords_at(place) if self._choices.has_song_plan() else self._choices.chords_at(place)))
+                    heard[kind] = copy.deepcopy(self._choices.section(place).own(field=arranger.CHORDS) or (self._choices.made_song_plan().chords_at(place) if self._choices.has_song_plan() else self._choices.section(place).chords_at()))
             except (ValueError, KeyError, IndexError, SongFileError):
                 continue
         return heard

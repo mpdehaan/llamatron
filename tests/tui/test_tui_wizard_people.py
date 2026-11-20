@@ -52,7 +52,7 @@ class TestWizardPeople(WizardTest):
         return choices
 
     def plays(self, *, choices, role):
-        return [role in choices.section_plays(place) for place in range(len(choices.section_labels()))]
+        return [role in choices.section(place).plays() for place in range(len(choices.section_labels()))]
 
     def patterns(self, choices):
         return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
@@ -101,7 +101,7 @@ class TestWizardPeople(WizardTest):
 
     async def test_sections_changed_one_by_one_read_as_the_person_s_own_and_what_is_no_way_is_refused(self):
         choices = self.chosen()
-        choices.set_section_plays(place=THE_VERSE + 1, role=THE_BASS, on=False)
+        choices.section(THE_VERSE + 1).set_plays(role=THE_BASS, on=False)
         self.assertIsNone(choices.get_lays_out(THE_BASS))
         for setter in (choices.set_comes_in, choices.set_lays_out):
             with self.assertRaises(ValueError):
@@ -140,7 +140,7 @@ class TestWizardPeople(WizardTest):
         await self.press(self.more())
         self.assertEqual(choices.get_reacts(THE_BASS), song_plan.USUAL_CONTRAST + 1)
         self.assertTrue(self.wizard().has_choices_to_lose())
-        choices.set_section_plays(place=len(choices.section_labels()) - 2, role=THE_BASS, on=False)
+        choices.section(len(choices.section_labels()) - 2).set_plays(role=THE_BASS, on=False)
         await self.press(Key.DOWN, Key.UP)
         self.assertIn(labels.MSG_WIZARD_OWN_START, self.text())
 

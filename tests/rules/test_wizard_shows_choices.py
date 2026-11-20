@@ -30,6 +30,7 @@ from llamatron.macro_composer.hook_choices import HookChoices
 from llamatron.macro_composer.kit_choices import KitChoices
 from llamatron.macro_composer.player_choices import PlayerChoices
 from llamatron.macro_composer.riff_choices import RiffChoices
+from llamatron.macro_composer.section_choices import SectionChoices
 from llamatron.macro_composer.solo_choices import SoloChoices
 from llamatron.macro_composer.sound_choices import SoundChoices
 from llamatron.macro_composer.tune_choices import TuneChoices
@@ -40,7 +41,9 @@ SETTER_START = 'set_'
 # The choices and every part of them.
 CHOICES_CLASSES = (WizardChoices, BandChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
 # What changes a choice without being named a setter.
-OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section', 'new_hook', 'new_second_hook')
+OTHER_CHANGES = ('add_section', 'new_hook', 'new_second_hook')
+# What changes one section of the form without being named a setter: its names are common words, so a call is looked for on a section.
+SECTION_CHANGES = ('copy', 'move', 'remove')
 # Changes with no field of their own: the sections a song kept are taken back one by one through the other setters, and
 # the seed is never shown, since every run of the wizard draws a new one when it starts; and a song file's own picks, the song
 # plan among them, are given by a file alone until the wizard's pages for them are built.
@@ -53,6 +56,7 @@ OTHER_CHANGES = ('add_section', 'copy_section', 'remove_section', 'move_section'
 # One thing laid over the song's picks under a name is set by a part of the choices, whose own setters the pages call.
 NOT_ON_THE_PAGE = ('set_extra', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_melody_gauge', 'set_melody_setting', 'set_tune_played_by_in')
 A_CALL = r'\.{name}\b'
+A_CALL_ON_A_SECTION = r'\.section\([^)]*\)\.{name}\b'
 SOURCE_FILES = '*.py'
 
 
@@ -68,12 +72,24 @@ def wizard_screens_source():
     return ''.join(path.read_text() for path in sorted(folder.glob(SOURCE_FILES)))
 
 
+def section_changes():
+    """Return the name of every public method of one section of the form that changes it."""
+    names = sorted(name for name, _ in inspect.getmembers(SectionChoices, inspect.isfunction))
+    return [name for name in names if name.startswith(SETTER_START) or name in SECTION_CHANGES]
+
+
 class TestWizardShowsEveryChoice(unittest.TestCase):
 
     def test_every_change_of_the_wizards_choices_is_made_from_the_wizards_screens(self):
         source = wizard_screens_source()
         missing = [name for name in changes() if name not in NOT_ON_THE_PAGE and not re.search(A_CALL.format(name=name), source)]
         self.assertEqual(missing, [])
+
+    def test_every_change_of_a_section_is_made_from_the_wizards_screens(self):
+        source = wizard_screens_source()
+        missing = [name for name in section_changes() if not re.search(A_CALL_ON_A_SECTION.format(name=name), source)]
+        self.assertEqual(missing, [])
+        self.assertTrue(set(SECTION_CHANGES) <= set(section_changes()))
 
     def test_the_exceptions_are_real_and_are_not_on_the_page(self):
         source = wizard_screens_source()

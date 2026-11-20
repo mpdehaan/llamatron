@@ -105,7 +105,7 @@ class FormBranch(Branch):
                 said = []
             if len(said) == len(sections):
                 return hint + [Text(drawing.INDENT + labels.MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
-        return hint + [Text(drawing.INDENT + marks.MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section_bars(place)))
+        return hint + [Text(drawing.INDENT + marks.MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section(place).bars()))
                 for place, name in enumerate(sections)]
 
     # A new section is added at the end of the form from here, and after a section from the section.

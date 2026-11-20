@@ -71,7 +71,7 @@ class HookChoices(ChoicesPart):
     def can_have_hook(self):
         """Return whether a hook can be made at all: a section of the song's form marks a line as its hook, and, in a form of
         the subgenre's own, a player carries a tune there."""
-        if not self._choices.is_ready() or not any(entry.get(melody_writer.HOOK) for place in range(len(self._choices.section_entries())) for entry in self._choices.section_as_played(place).get(wizard_limits.PLAN, [])):
+        if not self._choices.is_ready() or not any(entry.get(melody_writer.HOOK) for place in range(len(self._choices.section_entries())) for entry in self._choices.section(place).as_played().get(wizard_limits.PLAN, [])):
             return False
         return self._choices.hook_changes_song()
 

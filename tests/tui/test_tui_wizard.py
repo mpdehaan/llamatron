@@ -983,26 +983,26 @@ class TestWizardForm(WizardTest):
         await self.press(Key.DOWN)
         place = 1
         before = self.sections()
-        offered = self.choices().bars_offered(place)
+        offered = self.choices().section(place).bars_offered()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_BARS_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.choices().section_bars(place), offered[offered.index(self.choices()._usual(place)[arranger.BARS]) + 1])
+        self.assertEqual(self.choices().section(place).bars(), offered[offered.index(self.choices().section(place).usual()[arranger.BARS]) + 1])
         self.assertNotEqual(self.sections()[place], before[place])
         kinds = self.choices().section_kinds()
         await self.select_field(labels_text.MSG_WIZARD_KIND_LABEL)
         await self.press(Key.ENTER, *[Key.UP] * len(kinds), Key.ENTER)
-        self.assertEqual(self.choices().section_kind(place), kinds[0])
+        self.assertEqual(self.choices().section(place).kind(), kinds[0])
 
     async def test_a_player_sits_a_section_out_and_the_sections_last_player_stays(self):
         await self.open_the_form()
         place = 0
-        players = self.choices().section_plays(place)
+        players = self.choices().section(place).plays()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         for player in players:
             await self.select_field(self.choices().player(player).title())
             await self.press(Key.SPACE)
-        self.assertEqual(len(self.choices().section_plays(place)), 1)
+        self.assertEqual(len(self.choices().section(place).plays()), 1)
         self.assertIn(errors.ERR_WIZARD_SECTION_NEEDS_PLAYER, self.text())
 
     async def test_a_form_of_the_songs_own_says_so_and_holds_the_length_until_a_suggested_form_is_chosen_again(self):

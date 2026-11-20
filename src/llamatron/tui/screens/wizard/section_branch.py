@@ -47,18 +47,18 @@ def fade_field(*, branch, place, field):
     bars the fade takes, the first of the section for a fade in and the last for a fade out. The level and the bars show what a fade takes until they are given, and Bksp gives each back."""
     choices = branch.get_choices()
     page = branch.get_page()
-    label = labels.MSG_WIZARD_FADE_LABELS[choices.fade_way(place)][field]
-    own = choices.section_own(place=place, field=field)
+    label = labels.MSG_WIZARD_FADE_LABELS[choices.section(place).fade_way()][field]
+    own = choices.section(place).own(field=field)
 
     def set_own(value):
         try:
-            page.choosing(lambda wanted: choices.set_section_own(place=place, field=field, value=wanted))(value)
+            page.choosing(lambda wanted: choices.section(place).set_own(field=field, value=wanted))(value)
         except ValueError as problem:
             page.refuse(str(problem))
     if field == song_plan.FADES:
         return Toggle(label=label, on=bool(own), set=set_own)
-    usual = choices.section_from_plan(place=place, field=field)
-    lowest, highest = (song_plan.FADED, song_plan.LOUDEST_FADE_LEVEL) if field == song_plan.FADE_LEVEL else (FIRST_SECTION_NUMBER, choices.section_bars(place))
+    usual = choices.section(place).from_plan(field=field)
+    lowest, highest = (song_plan.FADED, song_plan.LOUDEST_FADE_LEVEL) if field == song_plan.FADE_LEVEL else (FIRST_SECTION_NUMBER, choices.section(place).bars())
     now = usual if own is None else min(own, highest)
     said = labels.MSG_WIZARD_FADE_VELOCITY.format(value=now) if field == song_plan.FADE_LEVEL else labels.MSG_WIZARD_FADE_ONE_BAR if now == 1 else labels.MSG_WIZARD_FADE_BARS.format(value=now)
     clear = dict(clear=lambda: set_own(None), clear_what=legends.MSG_TUNE_USUAL_WHAT) if own is not None else {}
@@ -85,19 +85,19 @@ class SectionBranch(Branch):
         page = self.get_page()
         place = self._place
         kinds = choices.section_kinds()
-        fields = [ChoiceField(page=page, label=labels.MSG_WIZARD_KIND_LABEL, choices=kinds, current=choices.section_kind(place),
-                              set=page.choosing(lambda kind: choices.set_section_kind(place=place, kind=kind)))]
-        lengths = choices.bars_offered(place)
+        fields = [ChoiceField(page=page, label=labels.MSG_WIZARD_KIND_LABEL, choices=kinds, current=choices.section(place).kind(),
+                              set=page.choosing(lambda kind: choices.section(place).set_kind(kind=kind)))]
+        lengths = choices.section(place).bars_offered()
         if len(lengths) > 1:
-            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_BARS_LABEL, choices=lengths, names=[str(bars) for bars in lengths], current=choices.section_bars(place),
-                                      set=page.choosing(lambda bars: choices.set_section_bars(place=place, bars=bars))))
+            fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_BARS_LABEL, choices=lengths, names=[str(bars) for bars in lengths], current=choices.section(place).bars(),
+                                      set=page.choosing(lambda bars: choices.section(place).set_bars(bars=bars))))
         else:
             # A held section, or one whose parts fill only its usual length, shows its bars and takes no key.
-            fields.append(Field(label=labels.MSG_WIZARD_BARS_LABEL, value=lambda: choices.section_bars(place)))
-        own = choices.section_own_fields(place)
+            fields.append(Field(label=labels.MSG_WIZARD_BARS_LABEL, value=lambda: choices.section(place).bars()))
+        own = choices.section(place).own_fields()
         fields += [self.own_field(field) for field in own if field == song_plan.ENERGY]
-        plays = choices.section_plays(place)
-        usual = choices.section_usually_plays(place)
+        plays = choices.section(place).plays()
+        usual = choices.section(place).usually_plays()
         players = [Toggle(label=choices.player(role).title(), on=role in plays, set=self.plays_setter(role)) for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
         # The rest in groups, the same on every section and in the order a section is shaped; a group with nothing to offer in this section is left out.
         groups = [(labels.MSG_WIZARD_GROUP_TUNE, [*self.own_lines_fields(), *([self.role_field()] if choices.get_band().section_has_role(place) else [])], lambda: self.has_own_lines() or self.has_own_role()),
@@ -114,19 +114,19 @@ class SectionBranch(Branch):
         panel of its kind of section, so a section with no such line has no such field."""
         choices = self.get_choices()
         place = self._place
-        own = {count: line[wizard_limits.LINE_OWN] for count, line in enumerate(choices.section_lines(place)) if line[wizard_limits.LINE_OWN]}
+        own = {count: line[wizard_limits.LINE_OWN] for count, line in enumerate(choices.section(place).lines()) if line[wizard_limits.LINE_OWN]}
         if not own:
             return []
 
         def give_back(nothing):
             for count, given in own.items():
                 for field in given:
-                    choices.set_section_line(place=place, line=count, field=field, value=None)
-        return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: marks.MSG_LINES_COUNT_OWN.format(count=len(choices.section_lines(place)), own=len(own)),
+                    choices.section(place).set_line(line=count, field=field, value=None)
+        return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: marks.MSG_LINES_COUNT_OWN.format(count=len(choices.section(place).lines()), own=len(own)),
                       clear=lambda: self.get_page().choosing(give_back)(None), clear_what=legends.MSG_TUNE_USUAL_WHAT)]
 
     def has_own_lines(self):
-        return any(line[wizard_limits.LINE_OWN] for line in self.get_choices().section_lines(self._place))
+        return any(line[wizard_limits.LINE_OWN] for line in self.get_choices().section(self._place).lines())
 
     def has_own_role(self):
         choices = self.get_choices()
@@ -135,7 +135,7 @@ class SectionBranch(Branch):
     def own_checker(self, of_group):
         """Return what says whether the section was given anything of its own for a group's fields."""
         choices = self.get_choices()
-        return lambda: any(choices.section_own(place=self._place, field=field) is not None for field in of_group)
+        return lambda: any(choices.section(self._place).own(field=field) is not None for field in of_group)
 
     # A section's lines, one by one, in the Lines dialog.
 
@@ -149,7 +149,7 @@ class SectionBranch(Branch):
 
         def set_own(value):
             try:
-                page.choosing(lambda wanted: choices.set_section_own(place=place, field=field, value=wanted))(value)
+                page.choosing(lambda wanted: choices.section(place).set_own(field=field, value=wanted))(value)
             except ValueError as problem:
                 page.refuse(str(problem))
         return set_own
@@ -160,8 +160,8 @@ class SectionBranch(Branch):
         place = self._place
         if field in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER):
             return self.fade_field(field)
-        own = choices.section_own(place=place, field=field)
-        usual = choices.section_from_plan(place=place, field=field)
+        own = choices.section(place).own(field=field)
+        usual = choices.section(place).from_plan(field=field)
         origin = labels.MSG_WIZARD_SECTION_ORIGINS[field]
         shown = labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=origin) if own is None else None
         label = labels.MSG_WIZARD_SECTION_OWN_LABELS[field]
@@ -180,7 +180,7 @@ class SectionBranch(Branch):
         if field in (song_plan.RISES, song_plan.FADES):
             return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
         from_above = labels.MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
-        offered = choices.section_shapes(place) if field == wizard_limits.SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
+        offered = choices.section(place).shapes() if field == wizard_limits.SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
         return ChoiceField(page=page, label=label, choices=[from_above, *offered], current=from_above if own is None else own, shown=shown,
                            set=lambda picked: set_own(None if picked == from_above else picked), **clear)
 
@@ -215,7 +215,7 @@ class SectionBranch(Branch):
 
         def set_plays(on):
             try:
-                page.choosing(lambda wanted: choices.set_section_plays(place=place, role=role, on=wanted))(on)
+                page.choosing(lambda wanted: choices.section(place).set_plays(role=role, on=wanted))(on)
             except ValueError as problem:
                 page.refuse(str(problem))
         return set_plays
@@ -240,10 +240,10 @@ class SectionBranch(Branch):
         return True
 
     def copy(self):
-        self.get_choices().copy_section(self._place)
+        self.get_choices().section(self._place).copy()
 
     def remove(self):
-        self.get_choices().remove_section(self._place)
+        self.get_choices().section(self._place).remove()
 
     def shift(self, offset):
-        return self.get_choices().move_section(place=self._place, offset=offset)
+        return self.get_choices().section(self._place).move(offset=offset)

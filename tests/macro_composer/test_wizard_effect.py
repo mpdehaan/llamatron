@@ -182,12 +182,12 @@ def nothing_first(made):
 
 
 def plays_nowhere(*, choices, role):
-    return not any(role in choices.section_plays(place) for place in range(len(choices.form_sections())))
+    return not any(role in choices.section(place).plays() for place in range(len(choices.form_sections())))
 
 
 def put_in(role):
     """Return what puts a player into the first section, where the player's choices are heard."""
-    return lambda made: made.set_section_plays(place=FIRST_PLACE, role=role, on=True)
+    return lambda made: made.section(FIRST_PLACE).set_plays(role=role, on=True)
 
 
 def under_each_drummer(*, choices, role, first):
@@ -260,9 +260,9 @@ def every_choice(choices):
         if len(choices.get_band().roles_in()) > 1:
             yield PLAYER_OUT, role, lambda made, role=role: made.player(role).set_in(on=False), [first]
         if role in choices.get_band().roles_shown():
-            on = role not in choices.section_plays(FIRST_PLACE)
-            if on or len(choices.section_plays(FIRST_PLACE)) > 1:
-                yield PLAYS_IN_SECTION, (role, on), lambda made, role=role, on=on: made.set_section_plays(place=FIRST_PLACE, role=role, on=on), [nothing_first]
+            on = role not in choices.section(FIRST_PLACE).plays()
+            if on or len(choices.section(FIRST_PLACE).plays()) > 1:
+                yield PLAYS_IN_SECTION, (role, on), lambda made, role=role, on=on: made.section(FIRST_PLACE).set_plays(role=role, on=on), [nothing_first]
     for sounds in wizard_limits.BAND_SOUNDS:
         # A band already of a family is not changed by choosing the family, which is no dead choice.
         if sounds != wizard_limits.USUAL_SOUNDS and any(choices.get_sounds().has_sound(role) and band_sound_differs(choices=choices, role=role, sounds=sounds) for role in choices.get_band().roles_in()):
@@ -282,7 +282,7 @@ def every_choice(choices):
             yield ROLE_PLAN, way, lambda made, way=way: made.get_band().set_role_plan(way), [lambda made, another=another: made.get_band().set_role_plan(another)]
         kinds_seen = set()
         for place, label in enumerate(choices.section_labels()):
-            kind = choices.section_kind(place)
+            kind = choices.section(place).kind()
             if not choices.get_band().section_has_role(place) or kind in kinds_seen:
                 continue
             kinds_seen.add(kind)
@@ -373,29 +373,29 @@ def every_choice(choices):
             for place in under_plan.intro_parts():
                 yield INTRO_PART_MELODY, (place, role), lambda made, place=place, role=role: made.set_intro_melody(place=place, role=role), [planned_first]
         for place in range(len(under_plan.section_labels())):
-            for shape in under_plan.section_shapes(place):
-                yield SECTION_SHAPE, (place, shape), lambda made, place=place, shape=shape: made.set_section_own(place=place, field='shape', value=shape), [planned_first]
+            for shape in under_plan.section(place).shapes():
+                yield SECTION_SHAPE, (place, shape), lambda made, place=place, shape=shape: made.section(place).set_own(field='shape', value=shape), [planned_first]
         for field, value in SECTION_OWN_TRIED:
-            if field in under_plan.section_own_fields(A_SECOND_PLACE) and value != under_plan.section_from_plan(place=A_SECOND_PLACE, field=field):
-                yield SECTION_OWN, (field, value), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [planned_first]
+            if field in under_plan.section(A_SECOND_PLACE).own_fields() and value != under_plan.section(A_SECOND_PLACE).from_plan(field=field):
+                yield SECTION_OWN, (field, value), lambda made, field=field, value=value: made.section(A_SECOND_PLACE).set_own(field=field, value=value), [planned_first]
     # A fade, with or without a plan: a section that opens the song fades in and one that closes it fades out, each from or to a
     # velocity, and a fade in over its bars.
     for place in range(len(choices.section_labels())):
-        if choices.fade_way(place) is None:
+        if choices.section(place).fade_way() is None:
             continue
 
         def fades_first(made, place=place):
-            made.set_section_own(place=place, field=song_plan.FADES, value=True)
+            made.section(place).set_own(field=song_plan.FADES, value=True)
         yield A_FADE, place, fades_first, [nothing_first]
-        yield A_FADE_LEVEL, place, lambda made, place=place: made.set_section_own(place=place, field=song_plan.FADE_LEVEL, value=A_VELOCITY), [fades_first]
-        if choices.fade_way(place) == wizard_limits.FADE_IN and choices.section_bars(place) > A_BAR:
-            yield A_FADE_OVER, place, lambda made, place=place: made.set_section_own(place=place, field=song_plan.FADE_OVER, value=A_BAR), [fades_first]
+        yield A_FADE_LEVEL, place, lambda made, place=place: made.section(place).set_own(field=song_plan.FADE_LEVEL, value=A_VELOCITY), [fades_first]
+        if choices.section(place).fade_way() == wizard_limits.FADE_IN and choices.section(place).bars() > A_BAR:
+            yield A_FADE_OVER, place, lambda made, place=place: made.section(place).set_own(field=song_plan.FADE_OVER, value=A_BAR), [fades_first]
     if choices.intro_parts():
         yield INTRO_PART, None, lambda made: made.add_intro_part(), [nothing_first]
     for field, value in SECTION_OWN_ANYWHERE:
         # What a section of any genre can be given of its own, held with no plan, on the second section where it takes any.
-        if field in without_plan(choices).section_own_fields(A_SECOND_PLACE) and value != without_plan(choices).section_from_plan(place=A_SECOND_PLACE, field=field):
-            yield SECTION_OWN, (field, value, NO_PLAN), lambda made, field=field, value=value: made.set_section_own(place=A_SECOND_PLACE, field=field, value=value), [switch_plan_off]
+        if field in without_plan(choices).section(A_SECOND_PLACE).own_fields() and value != without_plan(choices).section(A_SECOND_PLACE).from_plan(field=field):
+            yield SECTION_OWN, (field, value, NO_PLAN), lambda made, field=field, value=value: made.section(A_SECOND_PLACE).set_own(field=field, value=value), [switch_plan_off]
     # A tune written by hand, for each kind of section that has one: its first note another degree.
     for kind in choices.get_tunes().tune_kinds():
         if choices.get_tunes().tune_pattern(kind) is not None:
@@ -457,13 +457,13 @@ def every_choice(choices):
         yield TUNE_TAKE, kind, lambda made, kind=kind: made.get_tunes().new_tune_take(kind), [nothing_first]
     # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
     for place in range(len(choices.section_labels())):
-        lines = choices.section_lines(place)
+        lines = choices.section(place).lines()
         line = next((count for count, said in enumerate(lines) if said[wizard_limits.LINE_BREATHES]), None)
         if line is None:
             continue
         for breath in (phrasing.NO_BREATH, phrasing.LONGEST_BREATH - 1):
-            yield A_LINE, (phrasing.LINE_BREATH, breath), lambda made, place=place, line=line, breath=breath: made.set_section_line(place=place, line=line, field=phrasing.LINE_BREATH, value=breath), [nothing_first]
-        yield A_LINE, melody.LINE_NOTES, lambda made, place=place, line=line: made.set_section_line(place=place, line=line, field=melody.LINE_NOTES, value=first_note_moved(made.section_lines(place)[line][melody.LINE_NOTES])), [nothing_first]
+            yield A_LINE, (phrasing.LINE_BREATH, breath), lambda made, place=place, line=line, breath=breath: made.section(place).set_line(line=line, field=phrasing.LINE_BREATH, value=breath), [nothing_first]
+        yield A_LINE, melody.LINE_NOTES, lambda made, place=place, line=line: made.section(place).set_line(line=line, field=melody.LINE_NOTES, value=first_note_moved(made.section(place).lines()[line][melody.LINE_NOTES])), [nothing_first]
         break
     # A player as a person: each other way of coming in and of laying out, and Reacts at either end.
     for role in choices.get_band().roles_in():
@@ -512,12 +512,12 @@ def every_choice(choices):
         for swing in choices.swings():
             if swing != choices.get_swing():
                 yield SWING, swing, lambda made, swing=swing: made.set_swing(swing), [nothing_first]
-    for bars in choices.bars_offered(FIRST_PLACE):
-        if bars != choices.section_bars(FIRST_PLACE):
-            yield SECTION_BARS, bars, lambda made, bars=bars: made.set_section_bars(place=FIRST_PLACE, bars=bars), [nothing_first]
+    for bars in choices.section(FIRST_PLACE).bars_offered():
+        if bars != choices.section(FIRST_PLACE).bars():
+            yield SECTION_BARS, bars, lambda made, bars=bars: made.section(FIRST_PLACE).set_bars(bars=bars), [nothing_first]
     for kind in choices.section_kinds():
-        if kind != choices.section_kind(FIRST_PLACE):
-            yield SECTION_KIND, kind, lambda made, kind=kind: made.set_section_kind(place=FIRST_PLACE, kind=kind), [nothing_first]
+        if kind != choices.section(FIRST_PLACE).kind():
+            yield SECTION_KIND, kind, lambda made, kind=kind: made.section(FIRST_PLACE).set_kind(kind=kind), [nothing_first]
     for form in choices.forms():
         if form != choices.get_form():
             yield FORM, form, lambda made, form=form: made.set_form(form), [nothing_first]

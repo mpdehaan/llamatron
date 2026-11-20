@@ -133,7 +133,7 @@ class HooksBranch(Branch):
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the first section that sings the hook under the cursor's heading."""
         heard = self.listens()
-        return None if heard is None else (messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=self.get_choices().section_kind(heard[1])), heard[1], None)
+        return None if heard is None else (messages.MSG_WIZARD_SECTION_WITH_BAND.format(kind=self.get_choices().section(heard[1]).kind()), heard[1], None)
 
     def listens_alone(self):
         return True
@@ -147,7 +147,7 @@ class HooksBranch(Branch):
             return None
         second = self.on_second_hook() and choices.get_hook().has_second_hook()
         scene = choices.get_hook().second_hook_scene() if second else choices.get_hook().hook_scene()
-        player = None if scene is None else choices.get_tunes().tune_player_in(choices.section_kind(scene))
+        player = None if scene is None else choices.get_tunes().tune_player_in(choices.section(scene).kind())
         if player is None:
             return None
         return (messages.MSG_WIZARD_LISTEN_SECOND_HOOK if second else messages.MSG_WIZARD_LISTEN_HOOK), scene, player

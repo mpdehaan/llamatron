@@ -115,7 +115,7 @@ class RiffChoices(ChoicesPart):
     def riff_place(self, kind):
         """Return the place in the form of the first section of a kind that is played and not one held chord, where a riff of the kind is heard, or None."""
         places = range(len(self._choices.section_labels()))
-        return next((place for place in places if self._choices.section_kind(place) == kind and not self._choices.section_is_held(place)), None)
+        return next((place for place in places if self._choices.section(place).kind() == kind and not self._choices.section(place).is_held()), None)
 
     def _riffs(self):
         """The song's riffs whose player is in the band and can play one: a riff of a player who is out waits, unseen, for the player to come back."""
@@ -270,7 +270,7 @@ class RiffChoices(ChoicesPart):
     def _riff_heard(self, riff):
         entry = self._riff_entry(riff)
         role = entry[arranger.RIFF_FOR]
-        kind = next((kind for kind in dict.fromkeys(self._choices.section_kinds_in_form()) if role in self.riff_players_in(kind) and self._choices.section_bars(self.riff_place(kind)) % self.riff_bar_count(riff) == 0), None)
+        kind = next((kind for kind in dict.fromkeys(self._choices.section_kinds_in_form()) if role in self.riff_players_in(kind) and self._choices.section(self.riff_place(kind)).bars() % self.riff_bar_count(riff) == 0), None)
         if kind is None:
             raise ValueError(errors.ERR_WIZARD_RIFF_FITS_NOWHERE.format(riff=riff))
         trial = self._choices.trial_for_riffs()
