@@ -60,6 +60,9 @@ GRAB_ARROW = ' → '
 SEED_SONG_FACTOR = 1_000_003
 SEED_SCENE_FACTOR = 1_009
 SEED_TRACK_FACTOR = 31
+# How far a clip's seeds move for each take after the first, a prime far past what a song's places reach.
+SEED_TAKE_FACTOR = 1_000_000_007
+FIRST_TAKE = 0
 # The registers' random values, for a Reset behavior that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
 REGISTER_SEED_OFFSET = 7
 # The generators that move notes early or late in the timing, rather than running on a clip's notes.
@@ -122,9 +125,9 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes', '_takes', '_song_places')
 
-    def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None):
+    def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None, takes=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
 
         A scene whose every clip loops can't be exported, since nothing says how long it lasts. With
@@ -133,10 +136,16 @@ class SongRenderer:
 
         data, the set's data as its objects kept it (Setlist.kept_data) when the song was copied from it, makes a render that a
         later render of the same song, after an edit, can take its first scenes from (render(after=), scene_reuse.py).
+
+        takes gives a clip new random choices, its take, by (the scene's place in the song, the track): every random choice of the
+        clip, its probabilities, its order of steps and patterns, its generators and its strum, is drawn from its seed and its
+        take, while the song's draws and drifts stay the song's. Take 0, every clip's unless given, draws as a render always has.
         """
         self._looping_scenes_go_round = looping_scenes_go_round
         self._song = song
         self._seed = seed
+        self._takes = {} if takes is None else dict(takes)
+        self._song_places = {id(scene): place for place, scene in enumerate(song.get_scenes())}
         self._scenes = WrittenScene.write_out(song)
         self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
         # Whether playing changes the registers, which every scene asks and which looks through every pattern of the set, asked
@@ -277,6 +286,14 @@ class SongRenderer:
             clip.set_keyswitch_lead(self.keyswitch_lead(track=track, tempo=tempo))
         return clip
 
+    def take_of(self, *, scene, track):
+        """Return which take a written-out scene's clip on a track plays, 0 unless the render was given another."""
+        return self._takes.get((self._song_places[id(scene.get_scene())], track), FIRST_TAKE)
+
+    def taken_seed(self, *, seed, scene, track):
+        """Return a whole-number seed made from a clip's place moved on by the clip's take, the same seed for take 0."""
+        return seed + self.take_of(scene=scene, track=track) * SEED_TAKE_FACTOR
+
     def get_reused_scene_count(self):
         """Return how many written scenes, from the first, the render took from an earlier render rather than playing them."""
         return self._reused
@@ -288,13 +305,28 @@ class SongRenderer:
         if not self._can_take_from(after):
             return
         name = _song_name_of(self._song)
-        first = first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
+        first = min(first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes()), self._first_retaken(after))
         count = min(sum(scene.get_repeat() for scene in self._song.get_scenes()[:first]), len(after._checkpoints))
         self._take_scenes(after=after, count=count)
         if self._clips_stand_apart():
             changed = changed_clips(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
             if changed is not None:
+                changed = self._with_retaken(changed=changed, after=after)
                 self._take_clips(after=after, changed=changed)
+
+    def _retaken(self, after):
+        """Return the (scene's place in the song, track) of every clip whose take differs from an earlier render's."""
+        return {key for key in set(self._takes) | set(after._takes) if self._takes.get(key, FIRST_TAKE) != after._takes.get(key, FIRST_TAKE)}
+
+    def _first_retaken(self, after):
+        """Return the place in the song of the first scene a clip of which has another take than in an earlier render, or the
+        number of scenes when none has."""
+        return min((place for place, _track in self._retaken(after)), default=len(self._song.get_scenes()))
+
+    def _with_retaken(self, *, changed, after):
+        """Return each scene's changed tracks with the tracks whose take differs from an earlier render's added."""
+        retaken = self._retaken(after)
+        return [here if here is None else {*here, *(track for place, track in retaken if place == index)} for index, here in enumerate(changed)]
 
     def _can_take_from(self, after):
         """Return whether this render can take anything from an earlier one: both made with data from the same seed, the song's
@@ -488,7 +520,7 @@ class SongRenderer:
         place = self._song.get_track_names().index(track)
         return StrumPlan(
             direction=strum.direction, gap=Rational(gap.numerator, gap.denominator), fade=strum.fade, loose_timing=strum.loose_timing,
-            upstroke_count=strum.upstroke_count, beat=self._song.get_time_signature().beat_length(), seed=self._strum_seed + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR,
+            upstroke_count=strum.upstroke_count, beat=self._song.get_time_signature().beat_length(), seed=self.taken_seed(seed=self._strum_seed + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR, scene=scene, track=track),
             offset=self.run_offset(scene=scene, restart=restart), chords_before=self._chords_before(scene=scene, track=track, restart=restart),
         )
 
@@ -1054,7 +1086,7 @@ class SongRenderer:
         if step.kind == GeneratorKind.PHRASING:
             return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=self._song.get_time_signature().bar_length())
         place = self._song.get_track_names().index(track)
-        seed = None if self._seed is None else self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index
+        seed = None if self._seed is None else self.taken_seed(seed=self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index, scene=scene, track=track)
         if step.kind == GeneratorKind.MUSICIAN:
             signature = self._song.get_time_signature()
             surroundings = Surroundings(

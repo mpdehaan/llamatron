@@ -69,15 +69,16 @@ class Score:
 
     __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_renderer', '_routes', '_taken_tracks')
 
-    def __init__(self, *, song, routes, seed=None, data=None, earlier=None):
+    def __init__(self, *, song, routes, seed=None, data=None, earlier=None, takes=None):
         """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through.
 
         data, the set's data the song was copied from (Setlist.kept_data), lets a later score take from this one the scenes an
         edit cannot change; earlier, such a score of the same seed and routes, gives this one those scenes (score_records.py).
+        takes gives clips new random choices, by (the scene's place in the song, the track), as SongRenderer's does.
         """
         if earlier is not None and earlier._routes != routes:
             earlier = None
-        renderer = SongRenderer(song, seed=seed, looping_scenes_go_round=True, data=data)
+        renderer = SongRenderer(song, seed=seed, looping_scenes_go_round=True, data=data, takes=takes)
         grid = renderer.render(after=None if earlier is None else earlier._renderer)
         reused = renderer.get_reused_scene_count()
         self._renderer = renderer
@@ -153,7 +154,7 @@ class Score:
             self._scene_seconds.append(scene_start)
             song_start += scene_start
         if renderer.has_taken_anything() and memory.Memory.checks_by_default():
-            score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed)._records())
+            score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed, takes=takes)._records())
 
     def get_reused_scene_count(self):
         """Return how many written scenes, from the first, the score took from an earlier one rather than rendering them."""

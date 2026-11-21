@@ -49,6 +49,8 @@ DIRECTION_SEED = '{seed}/{scene}/{track}/direction'
 # clip can't change what the clip's own pattern draws.
 MORPH_DIRECTION_SEED = '{seed}/{scene}/{track}/morph direction'
 PATTERN_ORDER_SEED = '{seed}/{scene}/{track}/pattern order'
+# A clip's seed for a take after the first, which gives the clip new random choices.
+TAKE_SEED = '{seed}/take {take}'
 # A morph moves from 0 percent of the way to its target on the first repeat to 100 on the last.
 FULL_MORPH = 100
 # A clip with nothing in it ends straight away.
@@ -378,7 +380,9 @@ class ClipSlotPlayer:
         seed = self._renderer.get_seed()
         if seed is None:
             return None
-        return template.format(seed=seed, scene=self._scene.get_number(), track=self._track_name)
+        made = template.format(seed=seed, scene=self._scene.get_number(), track=self._track_name)
+        take = self._renderer.take_of(scene=self._scene, track=self._track_name)
+        return TAKE_SEED.format(seed=made, take=take) if take else made
 
     def _play_pass(self, *, player, grab, scale, place, repeat, where, rolls, order, target_order, registers, start, turn, pattern_rolls, pass_draws):
         """Return one pass through the clip slot's pattern as a Pass, part way through any morph.
