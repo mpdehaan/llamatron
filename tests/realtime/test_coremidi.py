@@ -20,13 +20,14 @@
 nothing is heard: events handed ahead arrive at their moments, a flush takes back what is still to come, and a name that is no
 destination is refused in the program's words, and no flush ever reaches the destination as a system reset; and elsewhere, CoreMIDI is not there to use."""
 
+import ctypes
 import sys
 import threading
 import time
 import unittest
 from unittest import mock
 
-from llamatron.realtime import coremidi, outputs, timeline
+from llamatron.realtime import coremidi, timeline
 from llamatron.realtime.coremidi import CoreMidiOutput
 from llamatron.strings import errors
 
@@ -45,6 +46,44 @@ ALLOWED_SECONDS = 0.003
 # A note handed far enough ahead for a flush to take it back, and how long the test waits to be sure it never comes.
 FAR_AHEAD_SECONDS = 0.2
 WAIT_SECONDS = 0.4
+# Where a packet list's first packet starts, and where a packet's length and bytes start, in CoreMIDI's MIDIPacketList.
+FIRST_PACKET = 4
+PACKET_LENGTH = 8
+PACKET_DATA = 10
+PACKET_ALIGNMENT = 4
+READ_PROC = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p)
+
+
+class Destination:
+    """A CoreMIDI destination of the test's own, made in the process's one client, so that the suite makes no second client, which
+    under load the MIDI server once refused; it keeps each message it receives with the clock's reading."""
+
+    __slots__ = ('arrived', '_read', '_endpoint')
+
+    def __init__(self, name):
+        self.arrived = []
+        core = coremidi.core_midi()
+        def received(packets, _read_context, _source_context):
+            moment = time.perf_counter()
+            self.arrived.extend((moment, message) for message in messages_in(packets))
+        # Kept, so that the callback CoreMIDI calls lives as long as the destination.
+        self._read = READ_PROC(received)
+        self._endpoint = ctypes.c_uint32()
+        coremidi.checked(call=name, status=core.midi.MIDIDestinationCreate(core.client, core.text(name), self._read, None, ctypes.byref(self._endpoint)))
+
+    def close(self):
+        coremidi.core_midi().midi.MIDIEndpointDispose(self._endpoint)
+
+
+def messages_in(packets):
+    """Return the bytes of each packet of a CoreMIDI packet list, read at its address."""
+    messages = []
+    place = packets + FIRST_PACKET
+    for _ in range(ctypes.c_uint32.from_address(packets).value):
+        length = ctypes.c_uint16.from_address(place + PACKET_LENGTH).value
+        messages.append(list(ctypes.string_at(place + PACKET_DATA, length)))
+        place = (place + PACKET_DATA + length + PACKET_ALIGNMENT - 1) & ~(PACKET_ALIGNMENT - 1)
+    return messages
 
 
 def note_on():
@@ -62,16 +101,13 @@ class TestElsewhere(unittest.TestCase):
             self.assertFalse(coremidi.is_available())
 
 
-@unittest.skipUnless(sys.platform == coremidi.MACOS and outputs.has_midi_library(), 'CoreMIDI is on macOS only')
+@unittest.skipUnless(sys.platform == coremidi.MACOS, 'CoreMIDI is on macOS only')
 class TestCoreMidiOutput(unittest.TestCase):
 
     def setUp(self):
-        import rtmidi
-        self.arrived = []
-        self.listener = rtmidi.MidiIn()
-        self.listener.open_virtual_port(DESTINATION)
-        self.listener.set_callback(lambda message, data: self.arrived.append((time.perf_counter(), message[0])))
-        self.addCleanup(self.listener.close_port)
+        self.destination = Destination(DESTINATION)
+        self.addCleanup(self.destination.close)
+        self.arrived = self.destination.arrived
         self.output = CoreMidiOutput(name=DESTINATION)
         self.addCleanup(self.output.close)
 
