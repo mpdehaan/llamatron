@@ -512,6 +512,12 @@ ERR_BAD_VERSION_TEXT = 'a version must be three integers separated by dots, such
 # realtime/outputs.py
 ERR_NO_MIDI_LIBRARY = 'python-rtmidi is not installed, so no MIDI port can be opened'
 ERR_SENDER_DID_NOT_START = 'the Realtime Sender Process did not start: a MIDI port could not be opened'
+# realtime/playback_process.py
+ERR_PLAYBACK_DID_NOT_START = 'the render process did not start'
+ERR_PLAYBACK_DID_NOT_ANSWER = 'the render process did not answer'
+# tui/transport.py and tui/app.py: the dialog shown when the render process ends without being closed.
+ERR_PLAYBACK_ENDED_TITLE = 'Playback stopped'
+ERR_PLAYBACK_ENDED = 'The render process ended unexpectedly, which is a bug. Playing again starts it afresh.'
 # exporters/wave_level.py and exporters/wave_fluidsynth.py: the WAV export through FluidSynth.
 ERR_NOT_16_BIT_WAVE = '{path}: expected a 16-bit PCM WAV file, got {bits}-bit samples'
 ERR_WAV_NEEDS_FLUIDSYNTH = 'the WAV export plays the song through FluidSynth, which is not installed: run sh user_scripts/install_fluidsynth.sh'

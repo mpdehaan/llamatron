@@ -171,6 +171,9 @@ class LlamatronApp(App, inherit_bindings=False):
                 message = self.transport.take_live_message() or self.pattern_preview().take_live_message()
                 if message is not None:
                     self.screen.refuse(message)
+                problem = self.transport.take_problem()
+                if problem is not None:
+                    self.screen.tell(problem.title, *problem.lines)
                 self.screen.draw()
         return self.set_interval(seconds, ticked)
 

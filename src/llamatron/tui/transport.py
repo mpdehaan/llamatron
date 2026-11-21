@@ -50,6 +50,7 @@ from llamatron.realtime.engine import MonotonicClock
 from llamatron.realtime.fluidsynth import FluidSynth, installed
 from llamatron.realtime.outputs import output_port_names
 from llamatron.realtime.playback import Launch, LAUNCH_CLIP, LAUNCH_CLIPS, LAUNCH_SCENE, LocalPlayback, Wanted
+from llamatron.realtime.playback_process import PlaybackProcess
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Route
 from llamatron.strings import errors, messages
@@ -110,12 +111,12 @@ class Tried(NamedTuple):
 class Transport:
     """Plays the current song through the Realtime Sender Process, and answers what is playing."""
 
-    __slots__ = ('_playback', '_next_seed', '_pending', '_requested', '_closing', '_document_holder', '_clock', '_make_sender', '_set_timer', '_wanted', '_ports', '_timer',
+    __slots__ = ('_playback', '_lead', '_next_seed', '_pending', '_requested', '_closing', '_document_holder', '_clock', '_make_sender', '_set_timer', '_wanted', '_ports', '_timer',
                  '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_instead', '_seed', '_seen_revision', '_changed_at',
                  '_scenes', '_tracks', '_previewing', '_live_message')
 
-    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=None, lead=LAUNCH_LEAD_SECONDS):
-        """document_holder answers get_document(). clock and make_sender(ports) are for the tests, which give a stepped clock and an engine; set_timer(seconds, callback) starts a repeating timer and returns something with stop(). fluidsynth and fluidsynth_installed() are for the tests too, which start no real FluidSynth."""
+    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=None, lead=LAUNCH_LEAD_SECONDS, playback=None):
+        """document_holder answers get_document(). clock and make_sender(ports) are for the tests, which give a stepped clock and an engine; set_timer(seconds, callback) starts a repeating timer and returns something with stop(). fluidsynth and fluidsynth_installed() are for the tests too, which start no real FluidSynth, and playback is a player's side a test gives, a render process with a recording sender."""
         self._document_holder = document_holder
         # Whether the tracker is quitting, so that a sender started under the start screen meanwhile is closed rather than left behind.
         self._closing = False
@@ -123,9 +124,16 @@ class Transport:
         self._fluidsynth_installed = fluidsynth_is_installed if fluidsynth_installed is None else fluidsynth_installed
         self._clock = MonotonicClock() if clock is None else clock
         self._make_sender = process_sender if make_sender is None else make_sender
-        # The scores, the player and the sender; lead is how far ahead of now a launch from silence starts, and a test on a clock that
-        # never moves asks for none. A transport given its own sender, a test's or a preview's, builds every score in its request.
-        self._playback = LocalPlayback(make_sender=self._make_sender, clock=self._clock, lead=lead, at_once=make_sender is not None)
+        # The scores, the player and the sender: in the render process, or, for a transport given its own sender, a test's or a
+        # preview's, in this process, building every score in its request. lead is how far ahead of now a launch from silence
+        # starts, and a test on a clock that never moves asks for none.
+        self._lead = lead
+        if playback is not None:
+            self._playback = playback
+        elif make_sender is None:
+            self._playback = PlaybackProcess(lead=lead)
+        else:
+            self._playback = LocalPlayback(make_sender=self._make_sender, clock=self._clock, lead=lead, at_once=True)
         self._build_ahead()
         self._set_timer = set_timer
         # What the player's score was made from (Wanted), and the ports the sender was last asked to open.
@@ -330,6 +338,7 @@ class Transport:
 
         def get_ready():
             try:
+                self._playback.start()
                 if self._fluidsynth_installed():
                     self._fluidsynth.ensure_running()
                 ports = output_port_names()
@@ -375,6 +384,17 @@ class Transport:
     def is_previewing(self):
         """Return whether what plays is a listening page's preview, which stops when its page is left."""
         return self._previewing and self.is_playing()
+
+    def take_problem(self):
+        """Return the dialog to show when the render process ended without being closed, once, and start afresh, or None."""
+        if not self._playback.has_ended():
+            return None
+        self._stop_timer()
+        self._playback = PlaybackProcess(lead=self._lead)
+        self._wanted = None
+        self._requested = None
+        self._pending = None
+        return Problem(title=errors.ERR_PLAYBACK_ENDED_TITLE, lines=[errors.ERR_PLAYBACK_ENDED])
 
     def take_live_message(self):
         """Return what the status line should say about the last edit made while playing, once, or None."""
@@ -565,7 +585,7 @@ class Transport:
         """Ask for the current song's score to be built ahead, off the screen's thread, whenever the set has changed since the last
         one asked for and nothing plays, so that the next play from silence starts with no render. Called on a light timer while
         the tracker runs (prepare)."""
-        if self.is_playing() or not self.may_play():
+        if not self._playback.is_ready() or self.is_playing() or not self.may_play():
             return
         wanted = self._wanted_now(routes=self.routes(instead=None), seed=self._next_seed)
         if wanted != self._requested:

@@ -105,11 +105,12 @@ page ties its bindings to what they do, and a key that steps something one way o
 handed its direction rather than its name (`src/llamatron/tui/key_table.py`). Saving, exporting and quitting work from every page, through one module the
 pages share, and exporting from the tracker runs the same playback and writers as the command
 line. Playing in real time goes through the tracker's transport (`src/llamatron/tui/transport.py`),
-which renders the song into a score (`src/llamatron/realtime/score.py`), each clip's events
-counted from its scene's start, and keeps a player (`src/llamatron/realtime/player.py`) that
-launches scenes and clips into the Realtime Sender Process, following each clip's Follow action
-and each scene's Launch together, so that the song plays from the top as the export plays, and
-the pages ask the transport what plays for their lights.
+which hands the set's changes and each launch to a render process of its own
+(`src/llamatron/realtime/playback_process.py`). There the song is rendered into a score
+(`src/llamatron/realtime/score.py`), each clip's events counted from its scene's start, and a player
+(`src/llamatron/realtime/player.py`) launches scenes and clips into the Realtime Sender Process,
+following each clip's Follow action and each scene's Launch together, so that the song plays from
+the top as the export plays, and the pages ask the transport what plays for their lights.
 
 ## Parts
 

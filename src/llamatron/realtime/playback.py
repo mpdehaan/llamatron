@@ -56,6 +56,30 @@ class Launch(NamedTuple):
     forever: bool = False
 
 
+class Status(NamedTuple):
+    """What plays, as the player's side tells the tracker in a status message, for the lights, the visualizer and the Draws page.
+
+    at is the system's monotonic clock when it was read, which every process shares, so that the tracker carries the elapsed
+    times on to the moment it draws; now is the player's own clock then. heard holds what the visualizer hears since the
+    status before, as Player.heard gives it.
+    """
+
+    at: float
+    now: float
+    playing: bool
+    scenes: tuple
+    clips: frozenset
+    sounding: frozenset
+    scene_elapsed: dict
+    clip_elapsed: dict
+    repeats_left: dict
+    song_position: float
+    song_seconds: float
+    seconds_per_quarter: float
+    heard: tuple
+    draw_places: dict
+
+
 class LocalPlayback:
     """The scores, the player and the sender in the tracker's own process."""
 
@@ -75,6 +99,17 @@ class LocalPlayback:
         self._player = None
         # What the player's score was made from.
         self._playing = None
+
+    def start(self):
+        """Nothing to start: the player's side is in this process."""
+
+    def has_ended(self):
+        """Return False: the player's side in this process ends only with it."""
+        return False
+
+    def is_ready(self):
+        """Return True: the player's side in this process is ready as soon as it is made."""
+        return True
 
     # The set and its scores.
 
@@ -157,12 +192,14 @@ class LocalPlayback:
         self._player = None
 
     def close(self):
-        """Stop everything and end the sender, as the tracker quits."""
+        """Stop everything and end the sender, as the tracker quits, returning what a recording sender sent, or None."""
         self.stop_all()
+        sent = None
         if self._sender is not None:
-            self._sender.close()
+            sent = self._sender.close()
             self._sender = None
         self._player = None
+        return sent
 
     def tick(self):
         """Plan ahead and send what falls due."""
@@ -208,6 +245,22 @@ class LocalPlayback:
     def draw_places(self, *, scene, seconds):
         """Return where every draw stands a time into a scene of what plays, by name."""
         return self._player.get_score().draw_places_at(scene=scene, seconds=seconds)
+
+    def status(self, *, at, since):
+        """Return what plays now as a Status, read at a moment of the system's monotonic clock, with what is heard after since,
+        a moment of the player's clock, or what sounds now alone with since None."""
+        if not self.is_playing():
+            return Status(at, 0.0, False, (), frozenset(), frozenset(), {}, {}, {}, None, None, None, (), {})
+        now, heard = self._player.heard(since=since)
+        scenes = tuple(self.playing_scenes())
+        plays = [(play.scene, play.track) for play in self._player.running_plays()]
+        first = None if not scenes else self.scene_elapsed(scenes[0])
+        return Status(
+            at, now, True, scenes, frozenset(plays), frozenset(track for _scene, track in plays if self.is_track_sounding(track)),
+            {scene: self.scene_elapsed(scene) for scene in scenes}, {play: self.clip_elapsed(index=play[0], track=play[1]) for play in plays},
+            {play: self.repeats_left(index=play[0], track=play[1]) for play in plays}, self.song_position(), self.song_seconds(),
+            self.seconds_per_quarter(), tuple(heard), {} if first is None else self.draw_places(scene=scenes[0], seconds=first),
+        )
 
     def get_player(self):
         """Return the player, for the tests."""
