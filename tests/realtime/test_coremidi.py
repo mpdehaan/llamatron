@@ -4,7 +4,7 @@
 
 
 
-"""The CoreMIDI port (realtime/coremidi.py) on macOS, through a destination of the test's own that nothing else listens to, so
+"""The CoreMIDI port (realtime/sender_process/coremidi.py) on macOS, through a destination of the test's own that nothing else listens to, so
 nothing is heard: events handed ahead arrive at their moments, a flush takes back what is still to come, and a name that is no
 destination is refused in the program's words, and no flush ever reaches the destination as a system reset; and elsewhere, CoreMIDI is not there to use."""
 
@@ -15,8 +15,9 @@ import time
 import unittest
 from unittest import mock
 
-from llamatron.realtime import coremidi, timeline
-from llamatron.realtime.coremidi import CoreMidiOutput
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.sender_process import coremidi
+from llamatron.realtime.sender_process.coremidi import CoreMidiOutput
 from llamatron.user_strings import errors
 
 DESTINATION = 'llamatron test destination'

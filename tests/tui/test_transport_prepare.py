@@ -9,7 +9,7 @@ import threading
 import unittest
 from unittest import mock
 
-from llamatron.realtime import fluidsynth as fluidsynth_values
+from llamatron.realtime.devices import fluidsynth as fluidsynth_values
 from llamatron.tui import transport as transport_values
 from llamatron.tui.transport import Transport
 

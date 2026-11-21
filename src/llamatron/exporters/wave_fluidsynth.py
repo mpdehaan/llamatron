@@ -18,7 +18,7 @@ import tempfile
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.wave_level import normalize_wave
-from llamatron.realtime.fluidsynth import fluidsynth_path, installed, soundfont_path
+from llamatron.realtime.devices.fluidsynth import fluidsynth_path, installed, soundfont_path
 from llamatron.user_strings import errors, names
 
 WAV_FILE = '{name}.wav'

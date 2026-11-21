@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""FluidSynth as a real-time instrument (realtime/fluidsynth.py): found where user_scripts/install_fluidsynth.sh puts it, started and waited for, and ended.
+"""FluidSynth as a real-time instrument (realtime/devices/fluidsynth.py): found where user_scripts/install_fluidsynth.sh puts it, started and waited for, and ended.
 
 No real FluidSynth starts: a fake process and a fake list of the computer's ports stand in, and a clock that moves only
 when the waiting loop sleeps.
@@ -13,8 +13,8 @@ import subprocess
 import unittest
 from unittest import mock
 
-from llamatron.realtime import fluidsynth
-from llamatron.realtime.fluidsynth import command, FluidSynth, FluidSynthNotStarted
+from llamatron.realtime.devices import fluidsynth
+from llamatron.realtime.devices.fluidsynth import command, FluidSynth, FluidSynthNotStarted
 from llamatron.user_strings import errors
 
 OTHER_PORT = 'IAC Driver Bus 1'

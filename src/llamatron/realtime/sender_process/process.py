@@ -11,7 +11,7 @@ events from a time, stop a clip, stop everything, close. The process sleeps in s
 next event is due and then spins on the clock, since sleep alone is loose on macOS, and polls the pipe between.
 
 Two drivers send, chosen once as the process starts. On macOS the timestamped driver hands each event to CoreMIDI a tenth of a
-second ahead, stamped with its moment (realtime/coremidi.py, realtime/scheduled_engine.py), so that the system delivers it on time
+second ahead, stamped with its moment (realtime/sender_process/coremidi.py, realtime/sender_process/scheduled_engine.py), so that the system delivers it on time
 however late the process wakes, and the process sleeps until the next event is to be handed rather than spinning. Elsewhere the
 immediate driver sends each event as its moment comes, through python-rtmidi. Both are tested on the Mac.
 """
@@ -25,11 +25,12 @@ import sys
 import time
 from typing import NamedTuple
 
-from llamatron.realtime import coremidi, timeline
-from llamatron.realtime.coremidi import CoreMidiOutput
-from llamatron.realtime.engine import MonotonicClock, PlaybackEngine
-from llamatron.realtime.outputs import RecordingOutput, RtMidiOutput, ScheduledRecordingOutput
-from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.sender_process import coremidi
+from llamatron.realtime.sender_process.coremidi import CoreMidiOutput
+from llamatron.realtime.sender_process.engine import MonotonicClock, PlaybackEngine
+from llamatron.realtime.sender_process.outputs import RecordingOutput, RtMidiOutput, ScheduledRecordingOutput
+from llamatron.realtime.sender_process.scheduled_engine import ScheduledPlaybackEngine
 from llamatron.user_strings import errors
 
 SPAWN = 'spawn'

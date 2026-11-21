@@ -7,12 +7,12 @@ as each clip starts; and a launch from silence starts its given lead ahead of no
 import pathlib
 import unittest
 
-from llamatron.realtime import player as player_values
-from llamatron.realtime.engine import PlaybackEngine, SteppedClock
-from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime.player import Player
-from llamatron.realtime.score import Score
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.render_process import player as player_values
+from llamatron.realtime.render_process.player import Player
+from llamatron.realtime.render_process.score import Score
+from llamatron.realtime.render_process.timeline import Route
+from llamatron.realtime.sender_process.engine import PlaybackEngine, SteppedClock
+from llamatron.realtime.sender_process.outputs import RecordingOutput
 from tests.support.rendering import song_from_file
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent

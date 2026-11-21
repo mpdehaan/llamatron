@@ -106,14 +106,14 @@ handed its direction rather than its name (`src/llamatron/tui/key_table.py`). Sa
 pages share, and exporting from the tracker runs the same playback and writers as the command
 line. Playing in real time goes through the tracker's transport (`src/llamatron/tui/transport.py`),
 which hands the set's changes and each launch to a render process of its own
-(`src/llamatron/realtime/playback_process.py`). There the song is rendered into a score
-(`src/llamatron/realtime/score.py`), each clip's events counted from its scene's start, and a player
-(`src/llamatron/realtime/player.py`) launches scenes and clips into the Realtime Sender Process,
+(`src/llamatron/realtime/render_process/playback_process.py`). There the song is rendered into a score
+(`src/llamatron/realtime/render_process/score.py`), each clip's events counted from its scene's start, and a player
+(`src/llamatron/realtime/render_process/player.py`) launches scenes and clips into the Realtime Sender Process,
 following each clip's Follow action and each scene's Launch together, so that the song plays from
 the top as the export plays, and the pages ask the transport what plays for their lights. On macOS
 the Realtime Sender Process hands each event to CoreMIDI, the system's MIDI service, a tenth of a
 second ahead and stamped with its moment, so that it is sent on time however busy the computer is
-(`src/llamatron/realtime/coremidi.py`); on other systems it sends each event as its moment comes.
+(`src/llamatron/realtime/sender_process/coremidi.py`); on other systems it sends each event as its moment comes.
 
 ## Parts
 

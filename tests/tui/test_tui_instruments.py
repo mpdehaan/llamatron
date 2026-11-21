@@ -8,7 +8,7 @@ from unittest import mock
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.model.values import midi
-from llamatron.realtime import fluidsynth
+from llamatron.realtime.devices import fluidsynth
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog

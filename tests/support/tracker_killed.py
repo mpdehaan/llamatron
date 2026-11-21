@@ -14,10 +14,10 @@ import sys
 import threading
 
 from llamatron.model.schema.file_format import ClipSlotSetting, Section
-from llamatron.realtime import playback as playback_values
-from llamatron.realtime.playback import PlayRequest, Wanted
-from llamatron.realtime.playback_process import PlaybackProcess
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.render_process import playback as playback_values
+from llamatron.realtime.render_process.playback import PlayRequest, Wanted
+from llamatron.realtime.render_process.playback_process import PlaybackProcess
+from llamatron.realtime.render_process.timeline import Route
 from tests.support import song_testing
 from tests.support.rendering import setlist_from_data
 

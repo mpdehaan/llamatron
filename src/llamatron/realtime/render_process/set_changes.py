@@ -4,7 +4,7 @@
 
 
 """What changed in the set between two of its data, and the data with the changes made, which is how the set crosses into the render
-process (realtime/playback_process.py): the set's data as its objects keep it (Setlist.kept_data) shares every unchanged part from
+process (realtime/render_process/playback_process.py): the set's data as its objects keep it (Setlist.kept_data) shares every unchanged part from
 one edit to the next, so the changes are found by following the data down to the parts that are not the same objects."""
 
 

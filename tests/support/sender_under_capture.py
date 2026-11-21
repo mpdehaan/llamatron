@@ -13,7 +13,7 @@ file descriptor, and the spawn failed with "bad value(s) in fds_to_keep".
 
 import sys
 
-from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
+from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess
 
 STARTED = 'started'
 INVALID_DESCRIPTOR = -1

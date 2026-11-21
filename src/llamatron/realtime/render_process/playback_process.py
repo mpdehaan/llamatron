@@ -5,11 +5,11 @@
 
 """The player's side of real-time playback in a process of its own, the render process, apart from the tracker's screen.
 
-The render process (realtime/render_process.py) holds a LocalPlayback (realtime/playback.py): it builds the scores, its player
+The render process (realtime/render_process/process.py) holds a LocalPlayback (realtime/render_process/playback.py): it builds the scores, its player
 ticks on its own loop whatever the screen is doing, and it starts the Realtime Sender Process. The tracker holds a PlaybackProcess,
 which answers the transport as a LocalPlayback does, through a pipe, and starts the render process the first time it needs it:
 
-- The set crosses as the parts that changed since the last it sent, with each build and launch (realtime/set_changes.py), so an
+- The set crosses as the parts that changed since the last it sent, with each build and launch (realtime/render_process/set_changes.py), so an
   edit to a step sends little more than that step's values. The render process keeps its own copy, replacing what leads to a
   change rather than changing it, so that a score being built never sees the set change.
 - Launches wait for their answer, which says whether the launch waits for the next bar, or why it could not play, as the
@@ -28,12 +28,13 @@ import threading
 import time
 
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.realtime import render_process, sender_process
-from llamatron.realtime.playback import Status
-from llamatron.realtime.render_process import run_playback
-from llamatron.realtime.score_builder import Built
-from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.realtime.set_changes import changed_items
+from llamatron.realtime.render_process import process as render_process
+from llamatron.realtime.render_process.playback import Status
+from llamatron.realtime.render_process.process import run_playback
+from llamatron.realtime.render_process.score_builder import Built
+from llamatron.realtime.render_process.set_changes import changed_items
+from llamatron.realtime.sender_process import process as sender_process
+from llamatron.realtime.sender_process.process import SenderNotStarted
 from llamatron.user_strings import errors
 
 # How long the tracker waits for the render process to start, for a launch's answer, and for it to close.

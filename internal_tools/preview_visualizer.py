@@ -23,7 +23,7 @@ import importlib.util
 import os
 import sys
 
-from llamatron.realtime.outputs import output_port_names
+from llamatron.realtime.devices.ports import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch

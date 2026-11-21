@@ -11,7 +11,7 @@ MIDI output port of the computer, as the port lists itself, or blank until one i
 channel is numbered 1 to 16 as people and devices number them, so the byte sent is one less. Two
 instruments may share a device and a channel. Its General MIDI sound, if it has one, is what the
 General MIDI export gives its tracks; no other export reads an instrument. A device of
-FLUIDSYNTH_DEVICE plays through FluidSynth, which the tracker starts (realtime/fluidsynth.py): the
+FLUIDSYNTH_DEVICE plays through FluidSynth, which the tracker starts (realtime/devices/fluidsynth.py): the
 channel is then ignored, each track getting one as the General MIDI export gives them, and the
 sound is sent as a program change, which no MIDI port's instrument is sent.
 

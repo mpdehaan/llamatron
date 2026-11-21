@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-"""The render process (realtime/playback_process.py, realtime/render_process.py, realtime/set_changes.py): the set crossing as the items that changed, a launch played through a
+"""The render process (realtime/render_process/playback_process.py, realtime/render_process/process.py, realtime/render_process/set_changes.py): the set crossing as the items that changed, a launch played through a
 recording Realtime Sender Process and its notes sent, what plays read from its status messages, and a song that cannot be
 played refused as the transport's pages expect."""
 
@@ -17,11 +17,11 @@ import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, Section
-from llamatron.realtime import playback
-from llamatron.realtime.playback import PlayRequest, Wanted
-from llamatron.realtime.playback_process import PlaybackProcess
-from llamatron.realtime.set_changes import changed_items, with_changes
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.render_process import playback
+from llamatron.realtime.render_process.playback import PlayRequest, Wanted
+from llamatron.realtime.render_process.playback_process import PlaybackProcess
+from llamatron.realtime.render_process.set_changes import changed_items, with_changes
+from llamatron.realtime.render_process.timeline import Route
 from tests.support import song_testing
 from tests.support.rendering import setlist_from_data
 

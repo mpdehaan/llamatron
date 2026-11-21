@@ -9,7 +9,8 @@ from llamatron.exporters import midi_arrangement
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import PatternSetting, Row
 from llamatron.model.values.note import NoteName
-from llamatron.realtime import fluidsynth, timeline
+from llamatron.realtime.devices import fluidsynth
+from llamatron.realtime.render_process import timeline
 from llamatron.tui import drawing, keybindings, note_names, pattern_preview
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.drawing import Box

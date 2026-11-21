@@ -498,12 +498,12 @@ ERR_WRONG_RESTORE = 'the set restored from a snapshot differs from the set read 
 
 # model/file/version.py
 ERR_BAD_VERSION_TEXT = 'a version must be three integers separated by dots, such as 1.0.2, got {value!r}'
-# realtime/outputs.py
+# realtime/sender_process/outputs.py
 ERR_NO_MIDI_LIBRARY = 'python-rtmidi is not installed, so no MIDI port can be opened'
 ERR_SENDER_DID_NOT_START = 'the Realtime Sender Process did not start: a MIDI port could not be opened'
-# realtime/coremidi.py
+# realtime/sender_process/coremidi.py
 ERR_COREMIDI_CALL_FAILED = 'CoreMIDI refused {call}, with status {status}'
-# realtime/playback_process.py
+# realtime/render_process/playback_process.py
 ERR_PLAYBACK_DID_NOT_START = 'the render process did not start'
 ERR_PLAYBACK_DID_NOT_ANSWER = 'the render process did not answer'
 # tui/transport.py and tui/app.py: the dialog shown when the render process ends without being closed.
@@ -514,7 +514,7 @@ ERR_NOT_16_BIT_WAVE = '{path}: expected a 16-bit PCM WAV file, got {bits}-bit sa
 ERR_WAV_NEEDS_FLUIDSYNTH = 'the WAV export plays the song through FluidSynth, which is not installed: run sh user_scripts/install_fluidsynth.sh'
 ERR_NO_FLUIDSYNTH_TRACKS = 'no track plays through an instrument whose Device is *FluidSynth, so the WAV export would be silent: choose *FluidSynth on the Instruments page'
 ERR_FLUIDSYNTH_RENDER_FAILED = 'FluidSynth could not write the WAV file: {problem}'
-# realtime/fluidsynth.py
+# realtime/devices/fluidsynth.py
 ERR_FLUIDSYNTH_DID_NOT_START = 'FluidSynth did not start: its MIDI port did not appear within {seconds} seconds'
 ERR_FLUIDSYNTH_ENDED = 'FluidSynth ended as it started, with exit code {code}'
 

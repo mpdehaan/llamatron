@@ -19,8 +19,8 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import RegisterName, Row, Section
 from llamatron.model.values import midi
-from llamatron.realtime.score import Keeping, Score
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.render_process.score import Keeping, Score
+from llamatron.realtime.render_process.timeline import Route
 
 PORT = 'test port'
 CHANNELS = 16

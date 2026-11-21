@@ -9,7 +9,7 @@ hears, and what sounds at a moment where a clip is cut. Each answer is worked ou
 import bisect
 from typing import NamedTuple
 
-from llamatron.realtime import timeline
+from llamatron.realtime.render_process import timeline
 
 # How long the longest note of a clip with none lasts.
 NO_NOTE = 0.0

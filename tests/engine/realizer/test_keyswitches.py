@@ -23,9 +23,9 @@ from llamatron.model.objects.pattern import Pattern
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi
-from llamatron.realtime import timeline as timeline_values
-from llamatron.realtime.clip_notes import ClipNotes
-from llamatron.realtime.timeline import Route, song_timeline
+from llamatron.realtime.render_process import timeline as timeline_values
+from llamatron.realtime.render_process.clip_notes import ClipNotes
+from llamatron.realtime.render_process.timeline import Route, song_timeline
 from tests.engine.realizer import test_registers
 from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import song_from_data

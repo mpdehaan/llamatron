@@ -12,7 +12,7 @@ missing object in the layer below.
 ALLOWED = {
     'order': (
         'model/objects/clip_slot.py imports engine.generators.blend',
-        'exporters/wave_fluidsynth.py imports realtime.fluidsynth',
+        'exporters/wave_fluidsynth.py imports realtime.devices.fluidsynth',
         'user_strings/labels.py imports model.schema.file_format',
         'user_strings/labels.py imports tui.keys',
         'user_strings/marks.py imports model.schema.file_format',
@@ -20,7 +20,7 @@ ALLOWED = {
     ),
     'front doors': (
         'cli.py imports wizards.create_song.wizard_file',
-        'exporters/wave_fluidsynth.py imports realtime.fluidsynth',
+        'exporters/wave_fluidsynth.py imports realtime.devices.fluidsynth',
         'importers/comparison.py imports exporters.midi_arrangement',
         'importers/comparison.py imports exporters.midi_messages',
         'tui/dialogs/new_riff_dialog.py imports wizards.create_song.riffs',
@@ -41,7 +41,7 @@ ALLOWED = {
         'tui/screens/wizard/section_melody_branch.py imports wizards.create_song.hook_writing',
         'tui/screens/wizard/section_melody_branch.py imports wizards.create_song.melody',
         'tui/screens/wizard/wizard_page.py imports wizards.create_song.notation',
-        'tui/screens/wizard/wizard_page.py imports realtime.sender_process',
+        'tui/screens/wizard/wizard_page.py imports realtime.sender_process.process',
         'tui/transport.py imports exporters.midi_arrangement',
         'tui/transport.py imports engine.realizer.step_order',
     ),

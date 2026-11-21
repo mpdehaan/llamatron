@@ -16,9 +16,9 @@ import functools
 from typing import NamedTuple
 
 from llamatron.model.objects.setlist import Setlist
-from llamatron.realtime.player import Player
-from llamatron.realtime.score import Keeping, Score
-from llamatron.realtime.score_builder import ScoreBuilder
+from llamatron.realtime.render_process.player import Player
+from llamatron.realtime.render_process.score import Keeping, Score
+from llamatron.realtime.render_process.score_builder import ScoreBuilder
 
 # What a launch plays: a scene and every clip of it, one clip, or several clips of one scene together.
 LAUNCH_SCENE = 'scene'

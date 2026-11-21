@@ -29,9 +29,9 @@ import sys
 import threading
 import time
 
-from llamatron.realtime import sender_process
-from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
-from llamatron.realtime.timeline import ClipTag, Playing
+from llamatron.realtime.render_process.timeline import ClipTag, Playing
+from llamatron.realtime.sender_process import process as sender_process
+from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess
 
 PROBE_PORT = 'llamatron timing probe'
 TEMPO = 130

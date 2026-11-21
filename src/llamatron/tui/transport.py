@@ -7,7 +7,7 @@
 The pages ask it to play the song, a scene or a clip of the current song, or to stop, and ask it
 what is playing for their lights. It works out each track's Route from the set's instruments, the
 seed of each play and what stops a song from playing, and hands the rest to the player's side
-(realtime/playback.py): the set's data, what each score is made from (Wanted), the launches, the
+(realtime/render_process/playback.py): the set's data, what each score is made from (Wanted), the launches, the
 edits made while playing and the ports of the devices those instruments name, where the scores are
 built, the Player launches their clips and the Realtime Sender Process sends them. It ticks on a
 timer while anything plays, so that the player plans ahead and the page on top redraws its lights,
@@ -33,14 +33,15 @@ from llamatron.exporters import midi_arrangement
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
-from llamatron.realtime import fluidsynth as fluidsynth_values, playback as playback_values, player as player_values
-from llamatron.realtime.engine import MonotonicClock
-from llamatron.realtime.fluidsynth import FluidSynth, installed
-from llamatron.realtime.outputs import output_port_names
-from llamatron.realtime.playback import LocalPlayback, PlayRequest, Wanted
-from llamatron.realtime.playback_process import PlaybackProcess
-from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.devices import fluidsynth as fluidsynth_values
+from llamatron.realtime.devices.fluidsynth import FluidSynth, installed
+from llamatron.realtime.devices.ports import output_port_names
+from llamatron.realtime.render_process import playback as playback_values, player as player_values
+from llamatron.realtime.render_process.playback import LocalPlayback, PlayRequest, Wanted
+from llamatron.realtime.render_process.playback_process import PlaybackProcess
+from llamatron.realtime.render_process.timeline import Route
+from llamatron.realtime.sender_process.engine import MonotonicClock
+from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.tui.uses import loop_error_lines
 from llamatron.user_strings import errors, messages
 from llamatron.visualizers import heard as heard_values
@@ -147,7 +148,7 @@ class Transport:
         self._tracks = {}
 
     def _build_ahead(self):
-        """Make ready to build scores ahead (realtime/score_builder.py)."""
+        """Make ready to build scores ahead (realtime/render_process/score_builder.py)."""
         # The seed the next play from silence draws its random parts from, chosen ahead so that its score can be built ahead.
         self._next_seed = random.randrange(SEED_RANGE)
         # The key of the score last asked for ahead of a play, and of the score an edit made while playing waits for, if any.

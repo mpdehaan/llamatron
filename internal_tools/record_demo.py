@@ -56,9 +56,9 @@ import time
 
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.values import midi
-from llamatron.realtime import fluidsynth as fluidsynth_values
-from llamatron.realtime.fluidsynth import fluidsynth_path, is_installed, soundfont_path
-from llamatron.realtime.outputs import output_port_names
+from llamatron.realtime.devices import fluidsynth as fluidsynth_values
+from llamatron.realtime.devices.fluidsynth import fluidsynth_path, is_installed, soundfont_path
+from llamatron.realtime.devices.ports import output_port_names
 from llamatron.tui import batch_stage, launch as launch_values
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components.scroll_text import scroll_text_for

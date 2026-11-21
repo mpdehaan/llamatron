@@ -20,7 +20,7 @@ import functools
 import sys
 import time
 
-from llamatron.realtime.outputs import ScheduledOutput
+from llamatron.realtime.sender_process.outputs import ScheduledOutput
 from llamatron.user_strings import errors
 
 MACOS = 'darwin'

@@ -4,7 +4,7 @@
 
 
 
-"""The engine for a scheduled port (realtime/scheduled_engine.py) on a stepped clock, against a recording port that forgets on a
+"""The engine for a scheduled port (realtime/sender_process/scheduled_engine.py) on a stepped clock, against a recording port that forgets on a
 flush what was still to come, as CoreMIDI does: events handed a horizon ahead and heard at their moments, and every way of taking
 events back, a forget, a stopped clip, a stop of everything and Ctrl+T, heard as the engine that sends each event as it comes would
 send it; then the uncertain instant at a flush; and the same random plays on both engines, heard alike."""
@@ -12,11 +12,12 @@ send it; then the uncertain instant at a flush; and the same random plays on bot
 import random
 import unittest
 
-from llamatron.realtime import engine as engine_values, scheduled_engine, timeline
-from llamatron.realtime.engine import PlaybackEngine, SteppedClock
-from llamatron.realtime.outputs import ScheduledRecordingOutput
-from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
-from llamatron.realtime.timeline import ClipTag, Playing
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.render_process.timeline import ClipTag, Playing
+from llamatron.realtime.sender_process import engine as engine_values, scheduled_engine
+from llamatron.realtime.sender_process.engine import PlaybackEngine, SteppedClock
+from llamatron.realtime.sender_process.outputs import ScheduledRecordingOutput
+from llamatron.realtime.sender_process.scheduled_engine import ScheduledPlaybackEngine
 
 PORT = 'a port'
 OTHER_PORT = 'another port'

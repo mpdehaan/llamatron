@@ -22,9 +22,9 @@ from llamatron.caching import memory
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import FollowAction
-from llamatron.realtime import score_records, timeline
-from llamatron.realtime.clip_notes import ClipNotes
-from llamatron.realtime.timeline import clip_timeline, ClipTag, sort_key
+from llamatron.realtime.render_process import score_records, timeline
+from llamatron.realtime.render_process.clip_notes import ClipNotes
+from llamatron.realtime.render_process.timeline import clip_timeline, ClipTag, sort_key
 
 NO_PLAY = 0
 START_OF_SCENE = 0.0

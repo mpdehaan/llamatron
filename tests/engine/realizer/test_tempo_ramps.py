@@ -15,8 +15,8 @@ from llamatron.engine.realizer.tempo_ramps import ramped_tempos
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.model.objects.scene import TempoRamp
 from llamatron.model.schema.file_format import ClipSlotSetting, SceneSetting, SongSetting
-from llamatron.realtime import timeline
-from llamatron.realtime.timeline import Route, song_timeline
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.render_process.timeline import Route, song_timeline
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import with_parts

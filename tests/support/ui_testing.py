@@ -27,7 +27,7 @@ from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, EuclidPart, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.model.values.note import NoteName
-from llamatron.realtime.fluidsynth import FluidSynth
+from llamatron.realtime.devices.fluidsynth import FluidSynth
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

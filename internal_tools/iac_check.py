@@ -39,10 +39,11 @@ from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import Row
 from llamatron.model.values import midi, note
-from llamatron.realtime import engine, timeline
-from llamatron.realtime.outputs import midi_library, output_port_names
-from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
-from llamatron.realtime.timeline import Route, song_timeline
+from llamatron.realtime.devices.ports import midi_library, output_port_names
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.render_process.timeline import Route, song_timeline
+from llamatron.realtime.sender_process import engine
+from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess
 
 DEFAULT_SECONDS = 10.0
 # The scale run: the degrees of one octave up and back down, a note a beat, in the new set's C major.

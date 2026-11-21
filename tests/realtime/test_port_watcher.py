@@ -12,12 +12,13 @@ import threading
 import unittest
 from unittest import mock
 
-from llamatron.realtime import coremidi, outputs
-from llamatron.realtime.outputs import PortWatcher
+from llamatron.realtime.devices import ports
+from llamatron.realtime.devices.ports import PortWatcher
+from llamatron.realtime.sender_process import coremidi
 
 A_PORT = 'a port'
 ANOTHER_PORT = 'another port'
-HAS_LIBRARY = outputs.has_midi_library.__name__
+HAS_LIBRARY = ports.has_midi_library.__name__
 # A port another process makes once the first listing is taken, through a CoreMIDI destination of the tests' own, and how long the
 # test looks for it.
 LATER_PORT = 'llamatron port made later'
@@ -69,9 +70,9 @@ class TestPortWatcher(unittest.TestCase):
 
     def test_the_ports_are_listed_through_coremidi_where_it_is_and_python_rtmidi_elsewhere(self):
         with mock.patch.object(coremidi, coremidi.is_available.__name__, return_value=True):
-            self.assertIs(outputs.default_listing(), coremidi.destination_names)
-        with mock.patch.object(coremidi, coremidi.is_available.__name__, return_value=False), mock.patch.object(outputs, HAS_LIBRARY, return_value=True):
-            self.assertIs(outputs.default_listing(), outputs.rtmidi_names)
+            self.assertIs(ports.default_listing(), coremidi.destination_names)
+        with mock.patch.object(coremidi, coremidi.is_available.__name__, return_value=False), mock.patch.object(ports, HAS_LIBRARY, return_value=True):
+            self.assertIs(ports.default_listing(), ports.rtmidi_names)
 
 
 @unittest.skipUnless(sys.platform == coremidi.MACOS, 'CoreMIDI is on macOS only')

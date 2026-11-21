@@ -24,10 +24,10 @@ from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.objects.naming import new_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import PatternSetting, Row, Section, SetlistSetting
-from llamatron.realtime import timeline
-from llamatron.realtime.engine import PlaybackEngine, SteppedClock
-from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime.timeline import Route, song_timeline
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.render_process.timeline import Route, song_timeline
+from llamatron.realtime.sender_process.engine import PlaybackEngine, SteppedClock
+from llamatron.realtime.sender_process.outputs import RecordingOutput
 from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.caption_strip import parts

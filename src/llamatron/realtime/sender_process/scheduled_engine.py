@@ -17,8 +17,8 @@ is ended with a note off, in case it went out; and any other event kept is taken
 
 from typing import NamedTuple
 
-from llamatron.realtime import timeline
-from llamatron.realtime.engine import PlaybackEngine
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.sender_process.engine import PlaybackEngine
 
 # How far ahead of its moment each event is handed to the port. Under twenty busy processes for ten minutes the sender woke at
 # worst about 10 ms late, so a tenth of a second leaves room many times over, and it bounds what a flush hands back again.

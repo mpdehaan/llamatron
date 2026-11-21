@@ -14,8 +14,8 @@ import heapq
 import time
 
 from llamatron.model.values import midi
-from llamatron.realtime import timeline
-from llamatron.realtime.timeline import sort_key
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.render_process.timeline import sort_key
 
 # The two controls that silence a channel, sent in this order when anything stops: all notes off, then all sound off, since some hardware gets stuck.
 ALL_NOTES_OFF = 123

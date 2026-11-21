@@ -18,10 +18,11 @@ from llamatron.exporters import midi_arrangement
 from llamatron.model.file.checks import listed
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
-from llamatron.realtime import fluidsynth, playback as playback_values, timeline
-from llamatron.realtime.engine import PlaybackEngine, SteppedClock
-from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.devices import fluidsynth
+from llamatron.realtime.render_process import playback as playback_values, timeline
+from llamatron.realtime.render_process.timeline import Route
+from llamatron.realtime.sender_process.engine import PlaybackEngine, SteppedClock
+from llamatron.realtime.sender_process.outputs import RecordingOutput
 from llamatron.tui import batch_stage, keybindings, pattern_preview
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components.stage_drawing import Rect

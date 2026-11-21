@@ -51,7 +51,7 @@ import sys
 
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.objects.setlist import Setlist
-from llamatron.realtime.outputs import output_port_names
+from llamatron.realtime.devices.ports import output_port_names
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
 from llamatron.tui.launch import Launch, recording_problem

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-"""The tracker playing through a real render process (realtime/playback_process.py), on the real clock, its Realtime Sender
+"""The tracker playing through a real render process (realtime/render_process/playback_process.py), on the real clock, its Realtime Sender
 Process recording what it would send so that nothing is heard: a song played from Arrange, an edit made while it plays heard on
 it, and the dialog shown when the render process ends as a crash would end it."""
 
@@ -11,8 +11,8 @@ import os
 import signal
 
 from llamatron.model.schema.file_format import ClipSlotSetting, LiveResponsiveness, Row
-from llamatron.realtime import timeline
-from llamatron.realtime.playback_process import PlaybackProcess
+from llamatron.realtime.render_process import timeline
+from llamatron.realtime.render_process.playback_process import PlaybackProcess
 from llamatron.tui import keybindings, transport as transport_values
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.message_dialog import MessageDialog

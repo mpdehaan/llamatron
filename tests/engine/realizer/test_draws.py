@@ -13,7 +13,7 @@ from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, Operator, PatternSetting, RegisterName, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.realtime.score import Score
+from llamatron.realtime.render_process.score import Score
 from llamatron.user_strings import errors
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data

@@ -33,8 +33,8 @@ from llamatron.model.objects.track import Track
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
 from llamatron.model.values import note
-from llamatron.realtime import fluidsynth
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.devices import fluidsynth
+from llamatron.realtime.render_process.timeline import Route
 from llamatron.tui import transport
 from llamatron.tui.transport import Transport
 from llamatron.user_strings import errors, names as names_text

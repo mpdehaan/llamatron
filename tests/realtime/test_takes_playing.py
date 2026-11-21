@@ -4,16 +4,16 @@
 
 
 
-"""Takes as a song plays (realtime/playback.py, LocalPlayback): a scene launched again by hand during a play plays another take of
+"""Takes as a song plays (realtime/render_process/playback.py, LocalPlayback): a scene launched again by hand during a play plays another take of
 its clips, new random choices, and a looping clip plays another take each time round, on a stepped clock into a recording sender."""
 
 import unittest
 
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
-from llamatron.realtime import playback as playback_values, timeline
-from llamatron.realtime.engine import SteppedClock
-from llamatron.realtime.playback import LocalPlayback, PlayRequest, Wanted
-from llamatron.realtime.timeline import Route
+from llamatron.realtime.render_process import playback as playback_values, timeline
+from llamatron.realtime.render_process.playback import LocalPlayback, PlayRequest, Wanted
+from llamatron.realtime.render_process.timeline import Route
+from llamatron.realtime.sender_process.engine import SteppedClock
 from tests.support import song_testing
 from tests.support.rendering import setlist_from_data
 

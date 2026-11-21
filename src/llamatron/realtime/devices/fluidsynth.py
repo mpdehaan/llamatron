@@ -23,8 +23,8 @@ import shutil
 import subprocess
 import time
 
-from llamatron.realtime.outputs import output_port_names_now
-from llamatron.realtime.sender_process import SenderNotStarted
+from llamatron.realtime.devices.ports import output_port_names_now
+from llamatron.realtime.sender_process.process import SenderNotStarted
 from llamatron.user_strings import errors
 
 # Where user_scripts/install_fluidsynth.sh puts FluidSynth: the Apple Silicon Homebrew's, which only an Apple Silicon Mac has, or an

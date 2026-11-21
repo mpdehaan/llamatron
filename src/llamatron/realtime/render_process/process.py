@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-"""The render process: the player's side of real-time playback (a LocalPlayback, realtime/playback.py) in a process of its own,
+"""The render process: the player's side of real-time playback (a LocalPlayback, realtime/render_process/playback.py) in a process of its own,
 apart from the tracker's screen, its player ticking on its own loop every PLAYER_TICK_SECONDS while anything plays, whatever the
-screen is doing. The messages that cross between it and the tracker's side (realtime/playback_process.py) are named here: each a
+screen is doing. The messages that cross between it and the tracker's side (realtime/render_process/playback_process.py) are named here: each a
 tuple of its kind and what it carries.
 """
 
@@ -16,11 +16,11 @@ import threading
 import time
 
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.realtime import sender_process
-from llamatron.realtime.engine import MonotonicClock
-from llamatron.realtime.playback import LocalPlayback
-from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
-from llamatron.realtime.set_changes import with_changes
+from llamatron.realtime.render_process.playback import LocalPlayback
+from llamatron.realtime.render_process.set_changes import with_changes
+from llamatron.realtime.sender_process import process as sender_process
+from llamatron.realtime.sender_process.engine import MonotonicClock
+from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess, SenderNotStarted
 
 # What the tracker tells the render process.
 SET = 'set'

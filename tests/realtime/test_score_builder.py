@@ -1,14 +1,14 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Scores built off the screen's thread (realtime/score_builder.py): at once for the tests, in a thread otherwise, a song's problem kept
+"""Scores built off the screen's thread (realtime/render_process/score_builder.py): at once for the tests, in a thread otherwise, a song's problem kept
 in place of a score, and a newer request replacing one not yet started."""
 
 import threading
 import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.realtime.score_builder import ScoreBuilder
+from llamatron.realtime.render_process.score_builder import ScoreBuilder
 
 A_KEY = 'first'
 ANOTHER_KEY = 'second'

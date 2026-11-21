@@ -29,13 +29,14 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import ClipSlotSetting, FollowAction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.scale import ScaleType
-from llamatron.realtime import engine as engine_values, sender_process, timeline as timeline_values
-from llamatron.realtime.engine import PlaybackEngine, SteppedClock
-from llamatron.realtime.outputs import RecordingOutput
-from llamatron.realtime.player import Player
-from llamatron.realtime.score import Score
-from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
-from llamatron.realtime.timeline import ClipTag, Playing, Route, song_timeline
+from llamatron.realtime.render_process import timeline as timeline_values
+from llamatron.realtime.render_process.player import Player
+from llamatron.realtime.render_process.score import Score
+from llamatron.realtime.render_process.timeline import ClipTag, Playing, Route, song_timeline
+from llamatron.realtime.sender_process import engine as engine_values, process as sender_process
+from llamatron.realtime.sender_process.engine import PlaybackEngine, SteppedClock
+from llamatron.realtime.sender_process.outputs import RecordingOutput
+from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.user_strings import errors
 from tests.support import sender_under_capture
 from tests.support.example_renders import rendered_example
