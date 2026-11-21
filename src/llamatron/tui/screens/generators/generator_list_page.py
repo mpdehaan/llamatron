@@ -26,6 +26,8 @@ from llamatron.tui.screens.shared.shared import list_keys, move_key
 
 class GeneratorListPage(ListPage):
 
+    """A list of the generators of one kind, with the keys every list of named things has."""
+
     THEME = themes.GENERATORS
     """A list of generators by name, a chain among them, in the order they run: A adds one, M moves it, Bksp takes it out of the list.
 

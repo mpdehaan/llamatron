@@ -328,6 +328,8 @@ MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
 # tui/screens/generators/generator_pages.py: the headings the kinds of generator are offered under, by what each kind is for.
 class GeneratorGroup:
+    """The names of the groups the Generators page lists the kinds of generator under."""
+
     ARRANGEMENT = 'Arrangement'
     CHAINS = 'Chains'
     ARTICULATION = 'Articulation'
@@ -605,6 +607,8 @@ MSG_CC_ROW_LABEL = '{label} ({number})'
 MSG_DOT_NAMES = {GateModifier.DOTTED: ' dotted', GateModifier.TRIPLET: ' triplet'}
 # The headings the munge dialog lists its choices under.
 class MungeGroup:
+    """The names of the groups the Munge picker lists the munges under."""
+
     CLEAR = 'Clear'
     COPY = 'Copy'
     OTHER_PATTERNS = 'Other Patterns'

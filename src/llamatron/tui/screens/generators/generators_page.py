@@ -49,6 +49,8 @@ class Listed(NamedTuple):
 
 class GeneratorsPage(ListPage):
 
+    """The Generators page: every kind of generator under its group, each opening the list of its kind."""
+
     THEME = themes.GENERATORS
     KEYS = keybindings.GeneratorsPage
     crumbs = (labels.Crumb.GENERATORS,)

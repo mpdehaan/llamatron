@@ -49,6 +49,8 @@ def offsets_text(offsets):
 
 class ArpEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits an arpeggiator: the order its notes play in, its rate, its range and its other settings."""
+
     KEYS = keybindings.ArpEditor
     HELP = help_text.HELP_ARP_EDITOR
     SECTION = Section.ARPS

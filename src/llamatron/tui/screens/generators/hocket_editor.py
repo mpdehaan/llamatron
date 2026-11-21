@@ -28,6 +28,8 @@ from llamatron.tui.text import sorted_names
 
 class HocketEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Hocket, which passes a part's notes in turn among tracks."""
+
     KEYS = keybindings.HocketEditor
     HELP = help_text.HELP_HOCKET_EDITOR
     SECTION = Section.HOCKETS

@@ -32,6 +32,8 @@ COUNT_SEPARATOR = ','
 
 class AutoRatchetEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits an AutoRatchet, which repeats notes quickly inside their steps."""
+
     KEYS = keybindings.AutoRatchetEditor
     HELP = help_text.HELP_AUTO_RATCHET_EDITOR
     SECTION = Section.AUTO_RATCHETS

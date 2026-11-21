@@ -32,6 +32,8 @@ NEW_SCALE_KIND = scale_type_name(ScaleType.MAJOR)
 
 class ScalesPage(NamedListPage):
 
+    """The Scales page: the set's scales, listed by name."""
+
     KEYS = keybindings.ScalesPage
     LISTED_SECTION = Section.SCALES
     RENAME_PROMPT = messages.MSG_RENAME_SCALE_PROMPT

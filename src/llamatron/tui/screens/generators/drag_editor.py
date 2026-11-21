@@ -26,6 +26,8 @@ from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGe
 
 class DragEditor(StepRowGeneratorEditor):
 
+    """The page that edits a Drag generator, which plays notes late, step by step."""
+
     KEYS = keybindings.DragEditor
     HELP = help_text.HELP_DRAG_EDITOR
     SECTION = Section.DRAGS

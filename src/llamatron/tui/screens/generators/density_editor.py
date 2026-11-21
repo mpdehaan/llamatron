@@ -23,6 +23,8 @@ from llamatron.tui.screens.generators.shape_editor import ShapeEditor
 
 class DensityEditor(ShapeEditor):
 
+    """The page that edits a Density generator: how many of a clip's notes sound, over time."""
+
     KEYS = keybindings.DensityEditor
     HELP = help_text.HELP_DENSITY_EDITOR
     SECTION = Section.DENSITIES

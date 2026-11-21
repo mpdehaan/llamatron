@@ -43,6 +43,8 @@ def song_scale(song):
 
 class ProgressionEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Progression, the chords a part is moved through."""
+
     KEYS = keybindings.ProgressionEditor
     HELP = help_text.HELP_PROGRESSION_EDITOR
     SECTION = Section.PROGRESSIONS

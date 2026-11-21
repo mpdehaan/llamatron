@@ -38,6 +38,8 @@ BUTTON_LINES = 2
 
 class NotesPage(Page):
 
+    """The set's Notes: a page of text written about the set."""
+
     THEME = themes.SET_FILE
     """The set's notes: text of any length, for people reading or sharing the file.
 

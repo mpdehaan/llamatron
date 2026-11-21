@@ -23,6 +23,8 @@ from llamatron.tui.screens.generators.step_row_editor import StepRowEditor
 
 class GlideStepsEditor(StepRowEditor):
 
+    """The editor of a Glide generator's row of steps, how far each step glides."""
+
     KEYS = keybindings.GlideStepsEditor
     SECTION = Section.GLIDES
     KIND = GeneratorKind.GLIDE

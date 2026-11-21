@@ -26,6 +26,8 @@ from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGe
 
 class RushEditor(StepRowGeneratorEditor):
 
+    """The page that edits a Rush generator, which plays notes early, step by step."""
+
     KEYS = keybindings.RushEditor
     HELP = help_text.HELP_RUSH_EDITOR
     SECTION = Section.RUSHES

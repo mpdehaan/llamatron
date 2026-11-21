@@ -27,6 +27,8 @@ from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 class StrumEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Strum generator, which spreads a chord's notes as a strum."""
+
     KEYS = keybindings.StrumEditor
     HELP = help_text.HELP_STRUM_EDITOR
     SECTION = Section.STRUMS

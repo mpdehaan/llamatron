@@ -23,6 +23,8 @@ from llamatron.tui.screens.generators.shape_editor import ShapeEditor
 
 class SwellEditor(ShapeEditor):
 
+    """The page that edits a Swell generator: how loud a clip's notes play, over time."""
+
     KEYS = keybindings.SwellEditor
     HELP = help_text.HELP_SWELL_EDITOR
     SECTION = Section.SWELLS

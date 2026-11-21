@@ -30,6 +30,8 @@ from llamatron.tui.text import sorted_names
 
 class MusicianEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Musician generator, which plays a player's clips as a band's player would."""
+
     KEYS = keybindings.MusicianEditor
     HELP = help_text.HELP_MUSICIAN_EDITOR
     SECTION = Section.MUSICIANS

@@ -23,6 +23,8 @@ from llamatron.tui.screens.generators.shape_editor import ShapeEditor
 
 class ArticulateEditor(ShapeEditor):
 
+    """The page that edits an Articulate generator: how long notes sound by their place in a bar, over time."""
+
     KEYS = keybindings.ArticulateEditor
     HELP = help_text.HELP_ARTICULATE_EDITOR
     SECTION = Section.ARTICULATES

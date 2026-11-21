@@ -30,6 +30,8 @@ from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGe
 
 class GlideEditor(StepRowGeneratorEditor):
 
+    """The page that edits a Glide generator, which slides notes into the next, step by step."""
+
     KEYS = keybindings.GlideEditor
     HELP = help_text.HELP_GLIDE_EDITOR
     SECTION = Section.GLIDES

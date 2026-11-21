@@ -28,6 +28,8 @@ from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 class PhrasingEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Phrasing generator, which shapes where a tune's lines breathe."""
+
     KEYS = keybindings.PhrasingEditor
     HELP = help_text.HELP_PHRASING_EDITOR
     SECTION = Section.PHRASINGS

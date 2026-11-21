@@ -30,6 +30,8 @@ from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 
 class EuclidEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Euclidean mask, which keeps the notes on an even spread of a bar's steps."""
+
     KEYS = keybindings.EuclidEditor
     HELP = help_text.HELP_EUCLID_EDITOR
     SECTION = Section.EUCLIDS

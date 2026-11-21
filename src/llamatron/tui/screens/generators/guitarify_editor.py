@@ -44,6 +44,8 @@ def bar_shown(guitar):
 
 class GuitarifyEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Guitarify generator, which voices and strums a part as a guitar would."""
+
     KEYS = keybindings.GuitarifyEditor
     HELP = help_text.HELP_GUITARIFY_EDITOR
     SECTION = Section.GUITARIFIES

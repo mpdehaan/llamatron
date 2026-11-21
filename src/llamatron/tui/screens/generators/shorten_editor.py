@@ -26,6 +26,8 @@ from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGe
 
 class ShortenEditor(StepRowGeneratorEditor):
 
+    """The page that edits a Shorten generator, which makes notes shorter, step by step."""
+
     KEYS = keybindings.ShortenEditor
     HELP = help_text.HELP_SHORTEN_EDITOR
     SECTION = Section.SHORTENS

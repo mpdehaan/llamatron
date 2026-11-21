@@ -202,6 +202,8 @@ def reconfigure_choices(*, drum):
 
 class PatternEditor(ShowsNamedItem, StepEditor):
 
+    """The pattern editor: one pattern's steps, in the rows view and on the piano roll."""
+
     KEYS = keybindings.PatternEditor
     HELP = help_text.HELP_PATTERN_EDITOR
     SECTION = Section.PATTERNS

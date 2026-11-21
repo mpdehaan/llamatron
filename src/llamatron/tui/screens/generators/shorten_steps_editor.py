@@ -23,6 +23,8 @@ from llamatron.tui.screens.generators.step_row_editor import StepRowEditor
 
 class ShortenStepsEditor(StepRowEditor):
 
+    """The editor of a Shorten generator's row of steps, how much shorter each step's note plays."""
+
     KEYS = keybindings.ShortenStepsEditor
     SECTION = Section.SHORTENS
     KIND = GeneratorKind.SHORTEN

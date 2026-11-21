@@ -23,6 +23,8 @@ from llamatron.tui.screens.generators.step_row_editor import StepRowEditor
 
 class RushStepsEditor(StepRowEditor):
 
+    """The editor of a Rush generator's row of steps, how early each step plays."""
+
     KEYS = keybindings.RushStepsEditor
     SECTION = Section.RUSHES
     KIND = GeneratorKind.RUSH

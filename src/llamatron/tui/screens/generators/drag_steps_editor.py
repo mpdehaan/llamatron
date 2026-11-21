@@ -23,6 +23,8 @@ from llamatron.tui.screens.generators.step_row_editor import StepRowEditor
 
 class DragStepsEditor(StepRowEditor):
 
+    """The editor of a Drag generator's row of steps, how late each step plays."""
+
     KEYS = keybindings.DragStepsEditor
     SECTION = Section.DRAGS
     KIND = GeneratorKind.DRAG

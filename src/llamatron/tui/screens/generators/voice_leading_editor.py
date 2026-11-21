@@ -30,6 +30,8 @@ from llamatron.tui.screens.shared.octave_field import octave_field
 
 class VoiceLeadingEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits Voice leading, which voices each chord nearest the one before."""
+
     KEYS = keybindings.VoiceLeadingEditor
     HELP = help_text.HELP_VOICE_LEADING_EDITOR
     SECTION = Section.VOICE_LEADINGS

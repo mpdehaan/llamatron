@@ -27,6 +27,8 @@ from llamatron.tui.drawing import wrapped
 
 class MessageDialog(Dialog):
 
+    """A dialog that says one thing and waits for OK."""
+
     KEYS = keybindings.MessageDialog
 
     def __init__(self, *, title, messages):

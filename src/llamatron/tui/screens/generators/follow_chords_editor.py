@@ -28,6 +28,8 @@ from llamatron.tui.text import sorted_names
 
 class FollowChordsEditor(GeneratorEditor, FieldPage):
 
+    """The page that edits a Follow Chords generator, which moves a part's notes along the song's chords."""
+
     KEYS = keybindings.FollowChordsEditor
     HELP = help_text.HELP_FOLLOW_CHORDS_EDITOR
     SECTION = Section.FOLLOW_CHORDS

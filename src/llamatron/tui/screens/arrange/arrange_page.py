@@ -107,6 +107,8 @@ class ArrangePlace(NamedTuple):
 
 class ArrangePage(Page):
 
+    """Arrange: the song's scenes as rows and its tracks as columns, each cell a clip, where a song is laid out and played."""
+
     KEYS = keybindings.ArrangePage
     crumbs = (labels.Crumb.ARRANGE,)
     HELP = help_text.HELP_ARRANGE_PAGE
