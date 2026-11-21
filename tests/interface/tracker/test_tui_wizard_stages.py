@@ -42,10 +42,10 @@ class TestWizardStages(WizardTest):
         choices.get_song_form().set_end(wizard_limits.REPEAT_AND_FADE)
         await self.press(Key.DOWN, Key.UP)
         last = len(choices.get_song_form().section_kinds_in_form()) - 1
-        self.assertEqual(choices.section(last).fade_way(), wizard_limits.FADE_OUT)
+        self.assertEqual(choices.section(last).fade().way(), wizard_limits.FADE_OUT)
         branch = SectionBranch(page=self.wizard(), place=last)
         fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_OUT]
-        self.assertEqual([branch.fade_field(field).label for field in choices.section(last).fade_fields()], [fade[wizard_names.SONG_PLAN_FADES], fade[wizard_names.FADE_LEVEL], fade[wizard_names.FADE_OVER]])
+        self.assertEqual([branch.fade_field(field).label for field in choices.section(last).fade().fields()], [fade[wizard_names.SONG_PLAN_FADES], fade[wizard_names.FADE_LEVEL], fade[wizard_names.FADE_OVER]])
         # Until given, the fade takes every bar of the section.
         self.assertEqual(branch.fade_field(wizard_names.FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=choices.section(last).bars()))
 

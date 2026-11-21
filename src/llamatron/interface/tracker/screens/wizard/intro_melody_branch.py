@@ -139,7 +139,7 @@ class IntroMelodyBranch(Branch):
                                  set=self.refusing(lambda title: choices.set_intro_melody(place=place, role=titles.get(title))))
         else:
             melody = Field(label=labels.MSG_WIZARD_PART_MELODY_LABEL, value=lambda: labels.MSG_WIZARD_NOBODY)
-        fades = [fade_field(branch=self, place=place, field=field) for field in choices.section(place).fade_fields()]
+        fades = [fade_field(branch=self, place=place, field=field) for field in choices.section(place).fade().fields()]
         plays = choices.section(place).plays()
         players = [Toggle(label=choices.player(role).title(), on=role in plays,
                           set=self.refusing(lambda on, role=role: choices.section(place).set_plays(role=role, on=on)))

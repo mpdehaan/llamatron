@@ -36,7 +36,7 @@ def fade_field(*, branch, place, field):
     bars the fade takes, the first of the section for a fade in and the last for a fade out. The level and the bars show what a fade takes until they are given, and Bksp gives each back."""
     choices = branch.get_choices()
     page = branch.get_page()
-    label = labels.MSG_WIZARD_FADE_LABELS[choices.section(place).fade_way()][field]
+    label = labels.MSG_WIZARD_FADE_LABELS[choices.section(place).fade().way()][field]
     own = choices.section(place).own(field=field)
 
     def set_own(value):
@@ -103,19 +103,19 @@ class SectionBranch(Branch):
         panel of its kind of section, so a section with no such line has no such field."""
         choices = self.get_choices()
         place = self._place
-        own = {count: line[wizard_limits.LINE_OWN] for count, line in enumerate(choices.section(place).lines()) if line[wizard_limits.LINE_OWN]}
+        own = {count: line[wizard_limits.LINE_OWN] for count, line in enumerate(choices.section(place).lines().as_made()) if line[wizard_limits.LINE_OWN]}
         if not own:
             return []
 
         def give_back(nothing):
             for count, given in own.items():
                 for field in given:
-                    choices.section(place).set_line(line=count, field=field, value=None)
-        return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: marks.MSG_LINES_COUNT_OWN.format(count=len(choices.section(place).lines()), own=len(own)),
+                    choices.section(place).lines().set_line(line=count, field=field, value=None)
+        return [Field(label=labels.MSG_WIZARD_LINES_LABEL, value=lambda: marks.MSG_LINES_COUNT_OWN.format(count=len(choices.section(place).lines().as_made()), own=len(own)),
                       clear=lambda: self.get_page().choosing(give_back)(None), clear_what=legends.MSG_TUNE_USUAL_WHAT)]
 
     def has_own_lines(self):
-        return any(line[wizard_limits.LINE_OWN] for line in self.get_choices().section(self._place).lines())
+        return any(line[wizard_limits.LINE_OWN] for line in self.get_choices().section(self._place).lines().as_made())
 
     def has_own_role(self):
         choices = self.get_choices()

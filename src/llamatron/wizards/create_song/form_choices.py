@@ -186,7 +186,7 @@ class FormChoices(ChoicesPart):
             if not self._choices.has_song_plan() and self._own_without_plan(entry):
                 # A section with chords, a tempo, a key or a scale of its own is a section of its own, where no plan makes one for each place.
                 # A fade is told apart by its way, since a kind that opens the song and closes it fades in at one and out at the other.
-                own = (*own, repr(sorted(self._choices.section(place).with_fade_way(own=self._own_without_plan(entry)).items(), key=str)))
+                own = (*own, repr(sorted(self._choices.section(place).fade().with_way(own=self._own_without_plan(entry)).items(), key=str)))
             # The kind as the genre describes it comes first, so that an unchanged section keeps the kind's plain name.
             variants = seen.setdefault(entry[arranger.KIND], [(None, None)])
             if own not in variants:
@@ -229,7 +229,7 @@ class FormChoices(ChoicesPart):
         if wizard_names.ROOT_OF_PLACE in own or wizard_names.TYPE_OF_PLACE in own:
             settings[song_plan.SCALE_OF_PLACE] = {wizard_names.ROOT_OF_PLACE: own.get(wizard_names.ROOT_OF_PLACE, self._choices.get_root()), wizard_names.TYPE_OF_PLACE: own.get(wizard_names.TYPE_OF_PLACE, self._choices.get_scale_type())}
         if own.get(wizard_names.SONG_PLAN_FADES):
-            settings.update(faded(own=self._choices.section(place).with_fade_way(own=own), loud=wizard_names.UNFADED))
+            settings.update(faded(own=self._choices.section(place).fade().with_way(own=own), loud=wizard_names.UNFADED))
         if own.get(wizard_limits.LINES_OF_SECTION):
             return {wizard_limits.PLAN: self._choices.plan_with_lines(kind=entry[arranger.KIND], plan=None, lines=own[wizard_limits.LINES_OF_SECTION]), **({wizard_names.ARRANGER_CHORDS: copy.deepcopy(own[wizard_names.ARRANGER_CHORDS])} if wizard_names.ARRANGER_CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}
         return {**({wizard_names.ARRANGER_CHORDS: copy.deepcopy(own[wizard_names.ARRANGER_CHORDS])} if wizard_names.ARRANGER_CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}

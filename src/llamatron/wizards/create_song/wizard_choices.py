@@ -1065,7 +1065,7 @@ class WizardChoices:
         own.pop(wizard_limits.INTRO_HOOK, None)
         own.update(self._intro_hook_at(place))
         section = self.section(place)
-        own = section.with_fade_way(own=own)
+        own = section.fade().with_way(own=own)
         lines = own.pop(wizard_limits.LINES_OF_SECTION, None)
         if lines:
             own[wizard_limits.PLAN] = self.plan_with_lines(kind=entry[arranger.KIND], plan=own.get(wizard_limits.PLAN), lines=lines)

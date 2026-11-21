@@ -371,14 +371,14 @@ def every_choice(choices):
     # A fade, with or without a plan: a section that opens the song fades in and one that closes it fades out, each from or to a
     # velocity, and a fade in over its bars.
     for place in range(len(choices.get_song_form().section_labels())):
-        if choices.section(place).fade_way() is None:
+        if choices.section(place).fade().way() is None:
             continue
 
         def fades_first(made, place=place):
             made.section(place).set_own(field=wizard_names.SONG_PLAN_FADES, value=True)
         yield A_FADE, place, fades_first, [nothing_first]
         yield A_FADE_LEVEL, place, lambda made, place=place: made.section(place).set_own(field=wizard_names.FADE_LEVEL, value=A_VELOCITY), [fades_first]
-        if choices.section(place).fade_way() == wizard_limits.FADE_IN and choices.section(place).bars() > A_BAR:
+        if choices.section(place).fade().way() == wizard_limits.FADE_IN and choices.section(place).bars() > A_BAR:
             yield A_FADE_OVER, place, lambda made, place=place: made.section(place).set_own(field=wizard_names.FADE_OVER, value=A_BAR), [fades_first]
     if choices.intro_parts():
         yield INTRO_PART, None, lambda made: made.add_intro_part(), [nothing_first]
@@ -447,13 +447,13 @@ def every_choice(choices):
         yield TUNE_TAKE, kind, lambda made, kind=kind: made.get_tunes().new_tune_take(kind), [nothing_first]
     # A section's lines, one by one: the first line that breathes of the first section with a tune, its breath, its early note either way and its notes moved.
     for place in range(len(choices.get_song_form().section_labels())):
-        lines = choices.section(place).lines()
+        lines = choices.section(place).lines().as_made()
         line = next((count for count, said in enumerate(lines) if said[wizard_limits.LINE_BREATHES]), None)
         if line is None:
             continue
         for breath in (phrasing.NO_BREATH, phrasing.LONGEST_BREATH - 1):
-            yield A_LINE, (phrasing.LINE_BREATH, breath), lambda made, place=place, line=line, breath=breath: made.section(place).set_line(line=line, field=phrasing.LINE_BREATH, value=breath), [nothing_first]
-        yield A_LINE, melody.LINE_NOTES, lambda made, place=place, line=line: made.section(place).set_line(line=line, field=melody.LINE_NOTES, value=first_note_moved(made.section(place).lines()[line][melody.LINE_NOTES])), [nothing_first]
+            yield A_LINE, (phrasing.LINE_BREATH, breath), lambda made, place=place, line=line, breath=breath: made.section(place).lines().set_line(line=line, field=phrasing.LINE_BREATH, value=breath), [nothing_first]
+        yield A_LINE, melody.LINE_NOTES, lambda made, place=place, line=line: made.section(place).lines().set_line(line=line, field=melody.LINE_NOTES, value=first_note_moved(made.section(place).lines().as_made()[line][melody.LINE_NOTES])), [nothing_first]
         break
     # A player as a person: each other way of coming in and of laying out, and Reacts at either end.
     for role in choices.get_band().roles_in():

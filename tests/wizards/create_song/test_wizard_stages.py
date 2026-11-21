@@ -208,14 +208,14 @@ class TestWizardEnds(unittest.TestCase):
             choices.set_song_plan(plan)
             choices.get_song_form().set_end(wizard_limits.REPEAT_AND_FADE)
             last = len(choices.get_song_form().section_kinds_in_form()) - 1
-            self.assertEqual((choices.section(FIRST).fade_way(), choices.section(A_VERSE).fade_way(), choices.section(last).fade_way()), (wizard_limits.FADE_IN, None, wizard_limits.FADE_OUT))
+            self.assertEqual((choices.section(FIRST).fade().way(), choices.section(A_VERSE).fade().way(), choices.section(last).fade().way()), (wizard_limits.FADE_IN, None, wizard_limits.FADE_OUT))
             self.assertNotIn(wizard_names.SONG_PLAN_FADES, choices.section(A_VERSE).own_fields())
             with self.assertRaises(ValueError):
                 choices.section(A_VERSE).set_own(field=wizard_names.SONG_PLAN_FADES, value=True)
             # A fade in rises from silence over the whole section until it is given a velocity and its bars.
-            self.assertEqual(choices.section(FIRST).fade_fields(), [wizard_names.SONG_PLAN_FADES])
+            self.assertEqual(choices.section(FIRST).fade().fields(), [wizard_names.SONG_PLAN_FADES])
             choices.section(FIRST).set_own(field=wizard_names.SONG_PLAN_FADES, value=True)
-            self.assertEqual(choices.section(FIRST).fade_fields(), [wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER])
+            self.assertEqual(choices.section(FIRST).fade().fields(), [wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER])
             self.assertEqual(choices.section(FIRST).from_plan(field=wizard_names.FADE_LEVEL), wizard_names.FADED)
             self.assertEqual(choices.section(FIRST).from_plan(field=wizard_names.FADE_OVER), choices.section(FIRST).bars())
             scene = made(choices).get_song(A_NAME).get_scenes()[FIRST].to_data()
@@ -234,7 +234,7 @@ class TestWizardEnds(unittest.TestCase):
             again = WizardChoices.from_data(choices.to_data())
             self.assertEqual(again.section(FIRST).own(field=wizard_names.FADE_OVER), TWO_BARS)
             # A fade out falls to its velocity over the whole section until it is given its bars, the last of the section.
-            self.assertEqual(choices.section(last).fade_fields(), [wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER])
+            self.assertEqual(choices.section(last).fade().fields(), [wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER])
             choices.section(last).set_own(field=wizard_names.FADE_LEVEL, value=HALF_VELOCITY)
             scene = made(choices).get_song(A_NAME).get_scenes()[last].to_data()
             self.assertEqual(scene[VelocitySetting.OUT_END], HALF_VELOCITY)
@@ -245,4 +245,4 @@ class TestWizardEnds(unittest.TestCase):
             # A fade switched off keeps nothing of how it faded.
             choices.section(FIRST).set_own(field=wizard_names.SONG_PLAN_FADES, value=False)
             self.assertIsNone(choices.section(FIRST).own(field=wizard_names.FADE_LEVEL))
-            self.assertEqual(choices.section(FIRST).fade_fields(), [wizard_names.SONG_PLAN_FADES])
+            self.assertEqual(choices.section(FIRST).fade().fields(), [wizard_names.SONG_PLAN_FADES])

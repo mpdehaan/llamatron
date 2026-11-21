@@ -10,10 +10,11 @@ import copy
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, interplay as interplay_values, joins as joins_values, line_edits, melody as melody_writer, notation as tune_notation, phrasing, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, interplay as interplay_values, joins as joins_values, section_fade, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import chord_of, picked, section_of, values_of
-from llamatron.wizards.create_song.choices_part import cached_until_choices_change
-from llamatron.wizards.create_song.own_values import checked_line, checked_own, chords_as_text
+from llamatron.wizards.create_song.own_values import checked_own, chords_as_text
+from llamatron.wizards.create_song.section_fade import SectionFade
+from llamatron.wizards.create_song.section_lines import SectionLines
 
 
 def own_copy_of(entry):
@@ -21,6 +22,9 @@ def own_copy_of(entry):
     return copy.deepcopy(entry)
 
 
+
+# What the song's plan gives a section.
+PLANNED_FIELDS = (wizard_names.SONG_PLAN_ENERGY, wizard_names.JOINS_LEAVES, wizard_names.SONG_PLAN_SETUP, wizard_limits.SHAPE_OF_SECTION, wizard_names.SONG_PLAN_RISES)
 
 
 class SectionChoices:
@@ -74,7 +78,9 @@ class SectionChoices:
     def copy(self):
         """Put a copy of a section straight after it."""
         entry = own_copy_of(self.entry())
-        self._choices.get_song_form().own_section_entries().insert(self._place + 1, entry)
+        form = self._choices.get_song_form()
+        entries = form.own_section_entries()
+        entries.insert(self._place + 1, entry)
 
     def remove(self):
         self.entry()
@@ -117,12 +123,15 @@ class SectionChoices:
     def bars_fit(self, *, bars):
         """Return whether the players of a section can fill the section at a length: on their own, and then in this song, where
         a part may be written differently beside another section of the kind."""
-        if not self._choices.fills(kind=self.entry()[arranger.KIND], bars=bars, plays=tuple(self.plays())):
+        kind = self.kind()
+        if not self._choices.fills(kind=kind, bars=bars, plays=tuple(self.plays())):
             return False
         trial = self._choices.copied_for_trial()
-        trial.get_song_form().own_section_entries()[self._place][arranger.BARS] = bars
+        trial_form = trial.get_song_form()
+        entries = trial_form.own_section_entries()
+        entries[self._place][arranger.BARS] = bars
         try:
-            trial.written_setlist(name=self.entry()[arranger.KIND], version=version_values.VERSION)
+            trial.written_setlist(name=kind, version=version_values.VERSION)
         except (ValueError, SongFileError):
             return False
         return True
@@ -150,45 +159,29 @@ class SectionChoices:
             del entry[arranger.BARS]
 
     def own_fields(self):
-        """Return the fields a section can be given of its own, in the order shown: none without a plan, and no join for the last section or a held one."""
+        """Return the fields a section can be given of its own, in the order shown: none without a plan, and no join for the last
+        section or a held one."""
         if not self._choices.is_ready() or self.is_held():
             return []
-        fade = self.fade_fields()
+        fade_fields = self.fade().fields()
         if not self._choices.has_song_plan():
-            return [*wizard_limits.OWN_WITHOUT_PLAN, *fade]
+            return [*wizard_limits.OWN_WITHOUT_PLAN, *fade_fields]
+        leaves = self._leaves_for_next()
+        fields = [wizard_names.SONG_PLAN_ENERGY]
+        if self.shapes():
+            fields.append(wizard_limits.SHAPE_OF_SECTION)
+        if leaves:
+            fields.append(wizard_names.SONG_PLAN_RISES)
+        fields.extend(fade_fields)
+        if leaves:
+            fields.extend([wizard_names.JOINS_LEAVES, wizard_names.SONG_PLAN_SETUP])
+        fields.extend([wizard_names.ARRANGER_CHORDS, wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE, wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE])
+        return fields
+
+    def _leaves_for_next(self):
+        """Return whether the plan has the section leave for the next one."""
         joins = self._choices.plan_joins()
-        leaves = [wizard_names.JOINS_LEAVES, wizard_names.SONG_PLAN_SETUP] if self._place < len(joins) and joins[self._place] is not None else []
-        shape = [wizard_limits.SHAPE_OF_SECTION] if self.shapes() else []
-        rises = [wizard_names.SONG_PLAN_RISES] if self._place < len(joins) and joins[self._place] is not None else []
-        return [wizard_names.SONG_PLAN_ENERGY, *shape, *rises, *fade, *leaves, wizard_names.ARRANGER_CHORDS, wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE, wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE]
-
-    def fade_way(self):
-        """Return how a section can fade: in, for a section that opens the song before its first tune; out, for one that closes
-        the song after its last; and None for any other and for a held chord."""
-        if self.is_held():
-            return None
-        if self._place < self._choices.get_song_form().head_count():
-            return wizard_limits.FADE_IN
-        return wizard_limits.FADE_OUT if self._place >= len(self._choices.get_song_form().section_entries()) - self._choices.get_song_form().tail_count() else None
-
-    def fade_fields(self):
-        """Return the fields of a section's fade, in the order shown: the switch where the section can fade, and while it is on,
-        the level the fade starts from or ends at, and the bars the fade takes, the first of the section for a fade in and the last for a fade out."""
-        way = self.fade_way()
-        if way is None:
-            return []
-        if not self.entry().get(wizard_limits.OWN_OF_SECTION, {}).get(wizard_names.SONG_PLAN_FADES):
-            return [wizard_names.SONG_PLAN_FADES]
-        return [wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER]
-
-    def with_fade_way(self, *, own):
-        """What a section says of its own, with whether its fade is a fade in and the bars the fade takes, never more than the section has."""
-        if not own.get(wizard_names.SONG_PLAN_FADES):
-            return {field: value for field, value in own.items() if field not in (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER)}
-        if self.fade_way() is None:
-            # A section that fades was moved to where none does.
-            return {field: value for field, value in own.items() if field not in (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER)}
-        return {**own, **({song_plan.FADES_IN: True} if self.fade_way() == wizard_limits.FADE_IN else {}), wizard_names.FADE_OVER: min(own.get(wizard_names.FADE_OVER, self.bars()), self.bars())}
+        return self._place < len(joins) and joins[self._place] is not None
 
     def shapes(self):
         """Return the shapes a section's lines may take besides its kind's own, by name."""
@@ -196,100 +189,83 @@ class SectionChoices:
 
     def own(self, *, field):
         """Return what a section was given of its own for a field, or None."""
-        return copy.deepcopy(self.entry().get(wizard_limits.OWN_OF_SECTION, {}).get(field))
+        given = self._own_given()
+        return copy.deepcopy(given.get(field))
+
+    def _own_given(self):
+        """Return what the section was given of its own, as its entry holds it; no caller changes it."""
+        entry = self.entry()
+        return entry.get(wizard_limits.OWN_OF_SECTION, {})
 
     def from_plan(self, *, field):
-        """Return what a section takes for a field where it is given nothing: the plan's Energy and join, the progression's chords, the song's tempo and key."""
+        """Return what a section takes for a field where it is given nothing: the song's chords, tempo and key, no fade, and the
+        plan's Energy, join, setup, shape and rise."""
+        if field in section_fade.FADE_FIELDS:
+            fade = self.fade()
+            return fade.from_plan(field)
+        if field in PLANNED_FIELDS:
+            return self._planned(field)
+        return self._from_song(field)
+
+    def _from_song(self, field):
+        """Return what the song gives a section that was given no chords, tempo or key of its own."""
         if field == wizard_names.ARRANGER_CHORDS:
             return chords_as_text(self.chords_at())
-        if field in (wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE):
-            return self.own(field=wizard_names.TEMPO_OF_PLACE) or self._choices.get_tempo()
-        if field in (wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE):
-            return self._choices.get_root() if field == wizard_names.ROOT_OF_PLACE else self._choices.get_scale_type()
-        if field == wizard_names.SONG_PLAN_FADES:
-            return False
-        if field == wizard_names.FADE_LEVEL:
-            return wizard_names.FADED
-        if field == wizard_names.FADE_OVER:
-            return self.bars()
+        if field == wizard_names.ROOT_OF_PLACE:
+            return self._choices.get_root()
+        if field == wizard_names.TYPE_OF_PLACE:
+            return self._choices.get_scale_type()
+        # Both of a section's tempos start from its own first tempo, or the song's.
+        return self.own(field=wizard_names.TEMPO_OF_PLACE) or self._choices.get_tempo()
+
+    def _planned(self, field):
+        """Return what the song's plan gives a section: its Energy, how it leaves for the next, its setup, its shape and whether it rises."""
+        # The plan's place in the extras is made here, and a song with no plan is refused.
         self._choices.plan_extras()
         if field == wizard_names.SONG_PLAN_ENERGY:
-            return self._choices.energies()[self._place]
+            energies = self._choices.energies()
+            return energies[self._place]
         if field == wizard_names.JOINS_LEAVES:
-            join = self._choices.plan_joins()[self._place] or {}
-            if join.get(joins_values.TAIL):
-                return join[joins_values.TAIL]
-            # A fill is said by its size, as it is chosen.
-            fills = self._choices.style()[song_plan.PLAN_OF_SONG].get(song_plan.FILL_SIZES, {})
-            return next((way for way, given in wizard_limits.LEAVES_AS_JOIN.items() if song_plan.FILL_SIZE in given and fills.get(given[song_plan.FILL_SIZE]) == join.get(joins_values.FILL_OF_JOIN)), wizard_limits.LEAVES_NOTHING)
+            return self._planned_leaving()
         if field == wizard_names.SONG_PLAN_SETUP:
             return wizard_limits.SETUP_USUAL
         if field == wizard_limits.SHAPE_OF_SECTION:
             # A solo after the song's first is a stage, which takes the next of its kind's shapes.
-            return self._choices.plan_shapes()[self._place] or wizard_limits.SHAPE_USUAL
-        if field == wizard_names.SONG_PLAN_RISES:
-            return self.entry()[arranger.KIND] in self._choices.style()[song_plan.PLAN_OF_SONG].get(song_plan.RISING, [])
-        if field == wizard_names.ARRANGER_CHORDS:
-            return chords_as_text(self._choices.made_song_plan().chords_at(self._place))
-        if field in (wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE):
-            return self.own(field=wizard_names.TEMPO_OF_PLACE) or self._choices.get_tempo()
-        return self._choices.get_root() if field == wizard_names.ROOT_OF_PLACE else self._choices.get_scale_type()
+            shapes = self._choices.plan_shapes()
+            return shapes[self._place] or wizard_limits.SHAPE_USUAL
+        style = self._choices.style()
+        plan = style[song_plan.PLAN_OF_SONG]
+        return self.kind() in plan.get(song_plan.RISING, [])
+
+    def _planned_leaving(self):
+        """Return how the plan has the section leave for the next: its tail, or the size of its fill, or nothing."""
+        joins = self._choices.plan_joins()
+        join = joins[self._place] or {}
+        if join.get(joins_values.TAIL):
+            return join[joins_values.TAIL]
+        # A fill is said by its size, as it is chosen.
+        style = self._choices.style()
+        plan = style[song_plan.PLAN_OF_SONG]
+        fills = plan.get(song_plan.FILL_SIZES, {})
+        fill = join.get(joins_values.FILL_OF_JOIN)
+        for way, given in wizard_limits.LEAVES_AS_JOIN.items():
+            if song_plan.FILL_SIZE in given and fills.get(given[song_plan.FILL_SIZE]) == fill:
+                return way
+        return wizard_limits.LEAVES_NOTHING
 
     def chords_at(self):
-        """The chords a section plays where it is given none: its kind's own, the progression's for the kind, or the progression's."""
+        """Return the chords a section plays where it is given none: its kind's own, the progression's for the kind, or the progression's."""
         style = self._choices.style()
-        picks = picked(style=style, song=self._choices.song_picks(wizard_limits.PREVIEW_NAME))
-        entry = values_of(style=style, trait=self._choices.progression_trait())[picks[self._choices.progression_trait()]]
-        kind = self.entry()[arranger.KIND]
-        return [chord_of(chord) for chord in style[arranger.SECTIONS][kind].get(wizard_names.ARRANGER_CHORDS) or entry.get(arranger.BY_SECTION, {}).get(kind) or entry[arranger.PATTERN]]
-
-    def plan(self):
-        """The plan of lines a section is played by, with what its lines were given."""
-        if self._choices.has_song_plan():
-            by_place = self._choices.extras_with_sections().get(song_plan.PLAN_OF_SONG, {}).get(song_plan.BY_PLACE) or []
-            given = by_place[self._place].get(wizard_limits.PLAN) if self._place < len(by_place) and by_place[self._place] else None
-            if given is not None:
-                return given
-        return self._choices.plan_with_lines(kind=self.entry()[arranger.KIND], plan=None, lines=self.entry().get(wizard_limits.OWN_OF_SECTION, {}).get(wizard_limits.LINES_OF_SECTION, {}))
-
-    def lines(self):
-        """Return a section's lines in order, each a mapping: who plays the line, its notes (line_edits.py) or None where nobody of the band plays the line,
-        whether its breath and early note can be set (a new idea of the tune in a song in four, not the hook), and what the line was given of its own."""
-        self.entry()
-        return self._lines()
-
-    @cached_until_choices_change
-    def _lines(self):
-        made = self._choices.made_form()
-        scene = made[arranger.FORM][self._place]
-        own = self.entry().get(wizard_limits.OWN_OF_SECTION, {}).get(wizard_limits.LINES_OF_SECTION, {})
-        seen = set()
-        lines = []
-        for count, entry in enumerate(self.plan()):
-            player = self._choices.interplay().answered_by() if entry.get(melody_writer.ANSWER) else self._choices.get_band().tune_player()
-            part = made[arranger.PARTS].get((scene.get(wizard_limits.PLAY_OF_SCENE, {}).get(player) or {}).get(wizard_limits.PART))
-            notes = copy.deepcopy(part[tune_notation.LINES][count]) if part is not None and tune_notation.LINES in part and count < len(part[tune_notation.LINES]) else None
-            letter = (bool(entry.get(melody_writer.ANSWER)), entry.get(melody_writer.LINE, str(count)))
-            new = letter not in seen
-            seen.add(letter)
-            breathes = new and notes is not None and not entry.get(melody_writer.HOOK) and self._choices.counts_in_four() and melody_writer.LINE_NOTES not in (own.get(count) or {})
-            lines.append({wizard_limits.LINE_PLAYER: player, melody_writer.LINE_NOTES: notes, wizard_limits.LINE_BREATHES: breathes, wizard_limits.LINE_IS_HOOK: bool(entry.get(melody_writer.HOOK)), wizard_limits.LINE_OWN: copy.deepcopy(own.get(count) or {})})
-        return lines
-
-    def set_line(self, *, line, field, value):
-        """Give one line of a section its own notes, breath or early note, or give the field back with None. What the song cannot then be made with is refused."""
-        lines = self.lines()
-        if isinstance(line, bool) or not isinstance(line, int) or not 0 <= line < len(lines) or field not in (melody_writer.LINE_NOTES, phrasing.LINE_BREATH, phrasing.LINE_EARLY):
-            raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=line))
-        if field == melody_writer.LINE_NOTES and value is not None and (lines[line][melody_writer.LINE_NOTES] is None or not isinstance(value, list) or line_edits.steps_of(checked_line(line=value, steps=line_edits.steps_of(lines[line][melody_writer.LINE_NOTES]))) == 0):
-            raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
-        own = {count: dict(given) for count, given in (self.entry().get(wizard_limits.OWN_OF_SECTION, {}).get(wizard_limits.LINES_OF_SECTION) or {}).items()}
-        given = own.setdefault(line, {})
-        given.pop(field, None)
-        if value is not None:
-            given[field] = value
-        own = {count: given for count, given in own.items() if given}
-        self.store_own(field=wizard_limits.LINES_OF_SECTION, value=own or None)
+        song = self._choices.song_picks(wizard_limits.PREVIEW_NAME)
+        picks = picked(style=style, song=song)
+        trait = self._choices.progression_trait()
+        ways = values_of(style=style, trait=trait)
+        entry = ways[picks[trait]]
+        kind = self.kind()
+        sections = style[arranger.SECTIONS]
+        by_section = entry.get(arranger.BY_SECTION, {})
+        written = sections[kind].get(wizard_names.ARRANGER_CHORDS) or by_section.get(kind) or entry[arranger.PATTERN]
+        return [chord_of(chord) for chord in written]
 
     def set_own(self, *, field, value):
         """Give a section something of its own, or give the field back with None. What the song cannot then be made with is refused, and nothing changes."""
@@ -298,33 +274,55 @@ class SectionChoices:
         self.store_own(field=field, value=value)
 
     def store_own(self, *, field, value):
+        """Give the section a value of its own for a field, or give the field back with None. A value the section cannot take,
+        and one the song cannot then be made with, are refused and nothing changes."""
+        # A section no longer in the form is refused.
         self.entry()
-        checked = None if value is None else checked_own(field=field, value=value)
-        if field == wizard_limits.SHAPE_OF_SECTION and checked is not None and checked not in self.shapes():
+        checked = None
+        if value is not None:
+            checked = checked_own(field=field, value=value)
+        if checked is not None and not self._takes_own(field=field, checked=checked):
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
-        if field in (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER) and checked is not None and (field not in (wizard_names.SONG_PLAN_FADES, *self.fade_fields()) or self.fade_way() is None or (field == wizard_names.FADE_OVER and checked > self.bars())):
-            # Only a section that opens or closes the song fades, and a fade's level and bars are a fade's that is switched on.
-            raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
-        before = copy.deepcopy(self._choices.get_song_form().get_own_sections())
-        entry = self._choices.get_song_form().own_section_entries()[self._place]
+        form = self._choices.get_song_form()
+        before = copy.deepcopy(form.get_own_sections())
+        self._write_own(field=field, checked=checked)
+        self._choices.clear_answers()
+        try:
+            self._choices.written_setlist(name=wizard_limits.PREVIEW_NAME, version=version_values.VERSION)
+        except (ValueError, KeyError, IndexError, SongFileError) as problem:
+            form.restore_own_sections(before)
+            self._choices.clear_answers()
+            raise ValueError(errors.ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
+
+    def _takes_own(self, *, field, checked):
+        """Return whether the section can take a value of its own: a shape its kind has, and a fade only where the section opens
+        or closes the song, its level and bars only while the fade is switched on, and never more bars than the section has."""
+        if field == wizard_limits.SHAPE_OF_SECTION:
+            return checked in self.shapes()
+        if field not in section_fade.FADE_FIELDS:
+            return True
+        fade = self.fade()
+        if fade.way() is None:
+            return False
+        if field != wizard_names.SONG_PLAN_FADES and field not in fade.fields():
+            return False
+        return field != wizard_names.FADE_OVER or checked <= self.bars()
+
+    def _write_own(self, *, field, checked):
+        """Write a value of the section's own into its entry, or take the field away with None; a fade switched off keeps
+        nothing of how it faded, and a section left with nothing of its own holds no place for it."""
+        form = self._choices.get_song_form()
+        entries = form.own_section_entries()
+        entry = entries[self._place]
         own = entry.setdefault(wizard_limits.OWN_OF_SECTION, {})
         own.pop(field, None)
         if checked is not None:
             own[field] = checked
         if field == wizard_names.SONG_PLAN_FADES and not checked:
-            # A fade switched off keeps nothing of how it faded.
-            own.pop(wizard_names.SONG_PLAN_FADES, None)
-            own.pop(wizard_names.FADE_LEVEL, None)
-            own.pop(wizard_names.FADE_OVER, None)
+            for fade_field in section_fade.FADE_FIELDS:
+                own.pop(fade_field, None)
         if not own:
             del entry[wizard_limits.OWN_OF_SECTION]
-        self._choices.clear_answers()
-        try:
-            self._choices.written_setlist(name=wizard_limits.PREVIEW_NAME, version=version_values.VERSION)
-        except (ValueError, KeyError, IndexError, SongFileError) as problem:
-            self._choices.get_song_form().restore_own_sections(before)
-            self._choices.clear_answers()
-            raise ValueError(errors.ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
 
     def has_own_role(self):
         """Return whether the section gives the answering player a role of its own, apart from the plan."""
@@ -369,3 +367,11 @@ class SectionChoices:
         if own is None:
             return None
         return chords_as_text(own)
+
+    def lines(self):
+        """Return the section's lines: the plan it is played by, and each line as the song makes it."""
+        return SectionLines(choices=self._choices, place=self._place)
+
+    def fade(self):
+        """Return the section's fade: whether it can fade in or out, and how."""
+        return SectionFade(choices=self._choices, place=self._place)
