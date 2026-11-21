@@ -26,8 +26,11 @@ RULE_CLASS = 'tests.rules.test_slots.TestSlots'
 NAMING_CLASS = 'tests.composition.test_naming.TestNaming'
 ARP_CLASS = 'tests.generators.test_arp.TestArp'
 EXAMPLES_CLASS = 'tests.app.test_examples.TestExamples'
-EVERY_CLASS = [RULE_CLASS, NAMING_CLASS, ARP_CLASS, EXAMPLES_CLASS]
-BY_FILE = {SOURCE_FILE: [NAMING_CLASS], ANOTHER_SOURCE_FILE: [ARP_CLASS]}
+SWEEP_CLASS = 'tests.app.test_every_example.TestEveryExampleMinimalTechno'
+TUI_FILE = 'src/llamatron/tui/app.py'
+TUI_CLASS = 'tests.tui.test_tui_app.TestApp'
+EVERY_CLASS = [RULE_CLASS, NAMING_CLASS, ARP_CLASS, EXAMPLES_CLASS, SWEEP_CLASS, TUI_CLASS]
+BY_FILE = {SOURCE_FILE: [NAMING_CLASS, SWEEP_CLASS], ANOTHER_SOURCE_FILE: [ARP_CLASS], TUI_FILE: [TUI_CLASS, SWEEP_CLASS]}
 
 
 def needed(changed):
@@ -37,7 +40,12 @@ def needed(changed):
 class TestWhatAChangeNeeds(unittest.TestCase):
 
     def test_a_source_file_needs_the_classes_that_ran_it_and_the_rule_tests(self):
-        self.assertEqual(needed([SOURCE_FILE]), sorted([NAMING_CLASS, RULE_CLASS]))
+        self.assertEqual(needed([SOURCE_FILE]), sorted([NAMING_CLASS, RULE_CLASS, SWEEP_CLASS]))
+
+    def test_a_sweep_runs_only_for_a_change_to_a_folder_that_brings_it_back_or_to_its_own_file(self):
+        self.assertEqual(needed([TUI_FILE]), sorted([TUI_CLASS, RULE_CLASS]))
+        self.assertIn(SWEEP_CLASS, needed([SOURCE_FILE]))
+        self.assertIn(SWEEP_CLASS, needed(['tests/app/test_every_example.py']))
 
     def test_a_test_file_needs_its_own_classes(self):
         self.assertEqual(needed(['tests/generators/test_arp.py']), sorted([ARP_CLASS, RULE_CLASS]))

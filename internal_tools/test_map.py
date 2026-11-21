@@ -45,6 +45,16 @@ FOLDERS_READ = {
 # Changes that need nothing run: notes only for Claude that no test reads.
 NOTHING_NEEDED = ('.claude/QUEUE.md', '.claude/DESIGNS.md', '.claude/IDEAS.yml', '.claude/features/')
 EVERYTHING = 'ALL'
+# The long sweeps the commit check leaves out, each with the folders of the program whose change brings it back, since a sweep
+# tries every example, every subgenre or every page and the map finds that nearly every change ran it: they run before every
+# push, and for a change to the sweep's own test file.
+MUSIC = ('src/llamatron/music/', 'src/llamatron/composition/', 'src/llamatron/grid/', 'src/llamatron/generators/', 'src/llamatron/playback/', 'src/llamatron/exporters/')
+SWEEPS = {
+    'tests.app.test_every_example.': MUSIC,
+    'tests.macro_composer.test_wizard_effect.': (*MUSIC, 'src/llamatron/macro_composer/'),
+    'tests.macro_composer.test_wizard_choices.TestWizardFormLengthsOf': (*MUSIC, 'src/llamatron/macro_composer/'),
+    'tests.tui.test_tui_help_keys.': ('src/llamatron/tui/', '.claude/'),
+}
 BUILD = 'build'
 CHANGED = 'changed'
 PYTHON = '.py'
@@ -127,7 +137,17 @@ def needed(*, changed, by_file, every_class):
             for folder in folders:
                 wanted.update(classes_in(path=folder, every_class=every_class))
     wanted.update(classes_in(path=RULE_TESTS, every_class=every_class))
-    return sorted(wanted)
+    return sorted(name for name in wanted if not is_left_out(name=name, changed=changed))
+
+
+def is_left_out(*, name, changed):
+    """Return whether a class is a long sweep that no change given brings back: none to the folders that bring it back, nor to its
+    own test file."""
+    for prefix, folders in SWEEPS.items():
+        if name.startswith(prefix):
+            own = TESTS + prefix.split('.')[1] + '/' + prefix.split('.')[2] + PYTHON
+            return not any(path.startswith(folders) or path == own for path in changed)
+    return False
 
 
 def main(arguments):
