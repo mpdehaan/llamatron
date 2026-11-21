@@ -27,7 +27,7 @@ from textual.widgets import Static
 import time
 
 from llamatron.tui import drawing
-from llamatron.tui.components.title_card import title_lines
+from llamatron.tui.components.title_card import Prompt, title_lines
 from llamatron.tui.key_table import pressed_key, quits_at_once
 
 SPLASH_VIEW_ID = 'splash-view'
@@ -73,7 +73,7 @@ class Splash(Screen):
 
     def lines(self, *, width, height):
         """Return the screen's lines: the title at this moment."""
-        return title_lines(width=width, height=height, elapsed=self.elapsed(), prompt=self.PROMPT, seconds=self._seconds)
+        return title_lines(width=width, height=height, elapsed=self.elapsed(), prompt=Prompt() if self.PROMPT else None, seconds=self._seconds)
 
     def draw(self):
         if not self.is_attached:

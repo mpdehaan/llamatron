@@ -26,7 +26,7 @@ from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components import scroll_text, title_card
 from llamatron.tui.components.scroll_text import banner, demo_name, scroll_lines, scroll_seconds, scroll_text_for, words_of
-from llamatron.tui.components.title_card import Entrance, prompt_level, scan_end, scan_start, scanner_level, title_lines, whole_title_seconds, words_width
+from llamatron.tui.components.title_card import Entrance, Prompt, prompt_level, scan_end, scan_start, scanner_level, title_lines, whole_title_seconds, words_width
 from llamatron.tui.launch import Launch
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.start_screen import StartScreen
@@ -53,7 +53,7 @@ def settled():
 
 def lines_at(*, elapsed, screen=WIDE_SCREEN, prompt=True, seconds=None):
     width, height = screen
-    return title_lines(width=width, height=height, elapsed=elapsed, prompt=prompt, seconds=seconds)
+    return title_lines(width=width, height=height, elapsed=elapsed, prompt=Prompt() if prompt else None, seconds=seconds)
 
 
 def block_rows(lines):

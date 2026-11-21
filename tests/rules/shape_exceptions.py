@@ -271,7 +271,8 @@ ALLOWED = {'long': ('cli.py:_arguments',
                  'tui/transport.py:Transport',
                  'tutorial/plan.py:TutorialPlan')}
 
-WITH_REASON = {'catches': {'macro_composer/hook_choices.py:HookChoices.set_hook_line': "notes written by hand can fail in any way a set's data can: the change is undone and refused with the error's own words",
+WITH_REASON = {'catches': {'realtime/outputs.py:PortWatcher._serve': 'the MIDI library can fail in any way when it lists the ports; the thread that alone sees every port lives on and answers none, so that no caller waits for ever',
+             'macro_composer/hook_choices.py:HookChoices.set_hook_line': "notes written by hand can fail in any way a set's data can: the change is undone and refused with the error's own words",
              'macro_composer/riff_choices.py:RiffChoices.set_riff_pattern': "notes written by hand can fail in any way a set's data can: the change is undone and refused with the error's own words",
              'macro_composer/solo_choices.py:SoloChoices.set_solo_pattern': "notes written by hand can fail in any way a set's data can: the change is undone and refused with the error's own words",
              'macro_composer/tune_choices.py:TuneChoices.set_tune_pattern': "notes written by hand can fail in any way a set's data can: the change is undone and refused with the error's own words",

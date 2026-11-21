@@ -41,6 +41,7 @@ from typing import NamedTuple
 
 from llamatron.composition import limits
 from llamatron.composition.file_format import Section
+from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import midi_arrangement
 from llamatron.playback.step_order import walk_order
@@ -53,12 +54,15 @@ from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Route
 from llamatron.strings import errors, messages
+from llamatron.tui.score_builder import made, ScoreBuilder
 from llamatron.tui.uses import loop_error_lines
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.heard import Heard, HeardNote
 
 # How often the player plans ahead and the page redraws while something plays.
 TICK_SECONDS = 0.1
+# How often the tracker looks, while nothing plays, whether the set has changed and the next play's score should be built ahead.
+KEEP_READY_SECONDS = 0.25
 # How far ahead of now a launch from silence starts: long enough for its first window of events to reach the Realtime Sender
 # Process before they are due, a fraction of a millisecond for a window, so that every track's first note leaves at the same instant.
 LAUNCH_LEAD_SECONDS = 0.003
@@ -103,7 +107,7 @@ class Tried(NamedTuple):
 class Transport:
     """Plays the current song through the Realtime Sender Process, and answers what is playing."""
 
-    __slots__ = ('_closing', '_lead', '_document_holder', '_clock', '_make_sender', '_set_timer', '_sender', '_ports', '_zero', '_player', '_score_revision', '_score_key', '_timer',
+    __slots__ = ('_builder', '_next_seed', '_pending', '_requested', '_closing', '_lead', '_document_holder', '_clock', '_make_sender', '_set_timer', '_sender', '_ports', '_zero', '_player', '_score_revision', '_score_key', '_timer',
                  '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_song_is_copy', '_instead', '_seed', '_seen_revision', '_changed_at',
                  '_scenes', '_tracks', '_previewing', '_live_message')
 
@@ -114,6 +118,7 @@ class Transport:
         self._lead = lead
         # Whether the tracker is quitting, so that a sender started under the start screen meanwhile is closed rather than left behind.
         self._closing = False
+        self._build_ahead(at_once=make_sender is not None)
         self._fluidsynth = FluidSynth() if fluidsynth is None else fluidsynth
         self._fluidsynth_installed = fluidsynth_is_installed if fluidsynth_installed is None else fluidsynth_installed
         self._clock = MonotonicClock() if clock is None else clock
@@ -126,8 +131,15 @@ class Transport:
         self._score_revision = None
         self._score_key = None
         self._timer = None
-        # What plays, for following edits made while it plays: the song rendered, its name, whether it's a copy a listening page made, the instruments
-        # chosen in place of the tracks', the seed of this play, and the song's scenes and tracks as they were, to find them again after an edit.
+        self._know_nothing_plays()
+        # Whether what plays is a listening page's preview, which stops when its page is left, where a song played from Arrange plays on.
+        self._previewing = False
+        self._live_message = None
+
+    def _know_nothing_plays(self):
+        """Start with nothing known of what plays, which following edits made while it plays needs: the song rendered, its name,
+        whether it's a copy a listening page made, the instruments chosen in place of the tracks', the seed of this play, and the
+        song's scenes and tracks as they were, to find them again after an edit."""
         self._song = None
         self._song_name = None
         self._song_is_copy = False
@@ -137,9 +149,16 @@ class Transport:
         self._changed_at = None
         self._scenes = []
         self._tracks = {}
-        # Whether what plays is a listening page's preview, which stops when its page is left, where a song played from Arrange plays on.
-        self._previewing = False
-        self._live_message = None
+
+    def _build_ahead(self, *, at_once):
+        """Make ready to build scores ahead: off the screen's thread, or at once for the tests, which give their own sender
+        (tui/score_builder.py)."""
+        self._builder = ScoreBuilder(at_once=at_once)
+        # The seed the next play from silence draws its random parts from, chosen ahead so that its score can be built ahead.
+        self._next_seed = random.randrange(SEED_RANGE)
+        # The key of the score last asked for ahead of a play, and of the score an edit made while playing waits for, if any.
+        self._requested = None
+        self._pending = None
 
     def document(self):
         return self._document_holder.get_document()
@@ -337,6 +356,8 @@ class Transport:
                     self.close()
                 done.set()
         threading.Thread(target=get_ready, daemon=True).start()
+        if self._set_timer is not None:
+            self._set_timer(seconds=KEEP_READY_SECONDS, tick=self.keep_ready)
         return done.is_set
 
     def close(self):
@@ -477,12 +498,14 @@ class Transport:
         self._song_is_copy = song is not None and song is not document.song()
         song = document.song() if song is None else song
         if not self.is_playing() or self._seed is None:
-            self._seed = random.randrange(SEED_RANGE)
+            self._seed = self._next_seed
+            self._next_seed = random.randrange(SEED_RANGE)
         routes = self.routes(instead=instead)
         key = (id(song), tuple(sorted(routes.items())))
         self._remember_song(song=song, instead=instead)
         if self._player is None or self._score_revision != document.get_revision() or self._score_key != key:
-            score = Score(song=song, routes=routes, seed=self._seed)
+            built = None if self._song_is_copy or instead is not None else self._builder.built(self._build_key(routes=routes, seed=self._seed))
+            score = built.score if built is not None and built.score is not None else Score(song=song, routes=routes, seed=self._seed)
             sender = self._sender_for(sorted({route.port for route in routes.values()}))
             if self._player is None or self._player.get_sender() is not sender:
                 self._player = Player(score=score, sender=sender, now=self._now, lead=self._lead)
@@ -528,21 +551,58 @@ class Transport:
             return
         if self._changed_at is not None and now - self._changed_at < LIVE_SETTLE_SECONDS:
             return
-        self._score_revision = revision
         song = self._playing_song()
         routes = self.routes(instead=self._instead)
         if set(route.port for route in routes.values()) - set(self._ports):
+            self._score_revision = revision
             self._live_message = messages.MSG_LIVE_EDIT_NEEDS_A_DEVICE
             return
-        try:
-            score = Score(song=song, routes=routes, seed=self._seed)
-        except (SongFileError, ValueError) as error:
-            self._live_message = messages.MSG_LIVE_EDIT_NOT_HEARD.format(problem=error)
+        # The edit is rendered off the screen's thread, from a copy of the set; a later tick hands the score over once it is made.
+        key = self._build_key(routes=routes, seed=self._seed)
+        if self._song_is_copy:
+            # A song a listening page made is not in the set, so it renders here, as it always has.
+            built = made(lambda: Score(song=song, routes=routes, seed=self._seed))
+        else:
+            if self._pending != key:
+                self._pending = key
+                self._request(song=song, routes=routes, seed=self._seed, key=key)
+            built = self._builder.built(key)
+        if built is None:
             return
+        self._score_revision = revision
+        self._pending = None
+        if built.problem is not None:
+            self._live_message = messages.MSG_LIVE_EDIT_NOT_HEARD.format(problem=built.problem)
+            return
+        score = built.score
         scene_map, track_map = self._places_after_the_edit(song)
         self._player.update_score(score=score, responsiveness=song.get_live_responsiveness(), scene_map=scene_map, track_map=track_map)
         self._score_key = (id(song), tuple(sorted(routes.items())))
         self._remember_song(song=song, instead=self._instead)
+
+    def keep_ready(self):
+        """Ask for the current song's score to be built ahead, off the screen's thread, whenever the set has changed since the last
+        one asked for and nothing plays, so that the next play from silence starts with no render. Called on a light timer while
+        the tracker runs (prepare)."""
+        if self.is_playing() or not self.may_play():
+            return
+        routes = self.routes(instead=None)
+        key = self._build_key(routes=routes, seed=self._next_seed)
+        if key != self._requested:
+            self._requested = key
+            self._request(song=self.document().song(), routes=routes, seed=self._next_seed, key=key)
+
+    def _build_key(self, *, routes, seed):
+        """Return what a score of the current song is built from: the set's revision, the song, the routes and the seed."""
+        document = self.document()
+        return (document.get_revision(), document.get_current_song_name(), tuple(sorted(routes.items())), seed)
+
+    def _request(self, *, song, routes, seed, key):
+        """Ask the builder for a song's score, from a copy of its set made now, on the screen's thread, so that nothing the render
+        reads changes while it renders."""
+        name = self.document().get_current_song_name()
+        copied = Setlist.from_data(data=song.get_setlist().kept_data()).get_song(name)
+        self._builder.request(key=key, build=lambda: Score(song=copied, routes=routes, seed=seed))
 
     def _places_after_the_edit(self, song):
         """Return each scene's new place by its old one and each track's new name by its old one, found by the objects themselves, else by place or name when an undo read the song again, None for one that has gone."""

@@ -23,7 +23,7 @@ screen away and leave the main screen, with any dialog the opening raised, to be
 """
 
 from llamatron.tui import keybindings
-from llamatron.tui.components.title_card import title_lines
+from llamatron.tui.components.title_card import Prompt, title_lines
 from llamatron.tui.key_table import BindsKeys, pressed_key, quits_at_once
 from llamatron.tui.screens.set.splash import Splash
 
@@ -50,7 +50,7 @@ class StartScreen(Splash, BindsKeys):
         return self._loaded_at
 
     def lines(self, *, width, height):
-        return title_lines(width=width, height=height, elapsed=self.elapsed(), prompt=self.PROMPT, seconds=self._seconds, loaded_at=self.loaded_at())
+        return title_lines(width=width, height=height, elapsed=self.elapsed(), prompt=Prompt(loaded_at=self.loaded_at()), seconds=self._seconds)
 
     def keys(self):
         return [self.bind(self.KEYS.START, action=self.start)]

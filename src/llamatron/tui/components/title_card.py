@@ -32,6 +32,7 @@ import math
 from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
+from typing import NamedTuple
 
 from llamatron.strings import about
 from llamatron.tui import drawing
@@ -201,16 +202,23 @@ def centred_text(*, text, width, colour, level):
     return line
 
 
-def title_lines(*, width, height, elapsed, prompt=False, seconds=None, loaded_at=0.0):
-    """Return the title's lines for a screen width by height at a moment, with the prompt or without, fading out over its last
-    moments when it is shown for seconds. loaded_at is when what loads under the title was done, None while it loads, which keeps
-    the scanner sweeping and the prompt away."""
+class Prompt(NamedTuple):
+    """The prompt under a title, which waits for what loads under it: loaded_at is when that was done, None while it loads, which
+    keeps the scanner sweeping and the prompt away."""
+
+    loaded_at: object = 0.0
+
+
+def title_lines(*, width, height, elapsed, prompt=None, seconds=None):
+    """Return the title's lines for a screen width by height at a moment, with a Prompt or without, fading out over its last
+    moments when it is shown for seconds."""
+    loaded_at = 0.0 if prompt is None else prompt.loaded_at
     scale = scale_for(word=about.MSG_SPLASH_WORD, width=width)
     rows = letter_rows(word=about.MSG_SPLASH_WORD, scale=scale)
     letters_width = words_width(word=about.MSG_SPLASH_WORD, scale=scale)
     gap = LETTER_GAP * scale
     left = max((width - letters_width) // 2, 0)
-    tall = (PROMPT_ROW if prompt else ADDRESS_ROW) + 1
+    tall = (PROMPT_ROW if prompt is not None else ADDRESS_ROW) + 1
     top = max((height - tall) // 2, 0)
     fade = fade_level(elapsed=elapsed, seconds=seconds)
     letters = eased(elapsed / FADE_IN_SECONDS) * fade
@@ -236,7 +244,7 @@ def title_lines(*, width, height, elapsed, prompt=False, seconds=None, loaded_at
     if address_line < height:
         lines[address_line] = centred_text(text=about.MSG_SPLASH_ADDRESS, width=width, colour=ADDRESS_BLUE, level=eased((elapsed - settled_at()) / ADDRESS_FADE_SECONDS) * fade)
     prompt_line = top + PROMPT_ROW
-    if prompt and prompt_line < height:
+    if prompt is not None and prompt_line < height:
         level = prompt_level(elapsed, loaded_at=loaded_at)
         colour = tuple(round(dim + (bright - dim) * level) for dim, bright in zip(PROMPT_DIM, PROMPT_BRIGHT))
         lines[prompt_line] = centred_text(text=about.MSG_START_PROMPT, width=width, colour=colour, level=min(level * 2.5, 1.0) * fade)

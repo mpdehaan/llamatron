@@ -35,7 +35,7 @@ from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.timeline import Route
 from llamatron.strings import about, errors, labels, legends, marks, messages
-from llamatron.tui import batch_stage, keybindings, pattern_preview
+from llamatron.tui import batch_stage, keybindings, pattern_preview, transport as transport_values
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components.stage_drawing import Rect
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -516,6 +516,26 @@ class TestArrangePlayback(PlaybackTest):
         self.give_lead_an_instrument()
         await self.press(Key.ESCAPE, keybindings.Page.SILENCE)
         self.assertIn(messages.MSG_SILENCED.format(channels=ONE_CHANNEL, devices=ONE_DEVICE), self.text())
+
+
+class TestScoreBuiltAhead(PlaybackTest):
+    """While nothing plays, the next play's score is built ahead, so that a launch from silence renders nothing."""
+
+    async def test_a_launch_from_silence_plays_the_score_built_ahead(self):
+        self.give_lead_an_instrument()
+        self.app.transport.keep_ready()
+        with mock.patch.object(transport_values, transport_values.Score.__name__) as score:
+            await self.press(keybindings.MainPage.ARRANGE, *CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
+        score.assert_not_called()
+        self.assertTrue(self.app.transport.is_playing())
+
+    async def test_an_edit_after_it_was_built_renders_the_launch_afresh(self):
+        self.give_lead_an_instrument()
+        self.app.transport.keep_ready()
+        self.document.set_clip_slot_setting(index=FIRST_INDEX, track=ui_testing.LEAD, setting=ClipSlotSetting.REPEAT, value=1)
+        with mock.patch.object(transport_values, transport_values.Score.__name__, wraps=transport_values.Score) as score:
+            await self.press(keybindings.MainPage.ARRANGE, *CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
+        score.assert_called_once()
 
 
 class TestLiveEditing(PlaybackTest):
