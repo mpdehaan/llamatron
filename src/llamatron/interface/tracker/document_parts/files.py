@@ -106,6 +106,7 @@ class DocumentFiles:
         path = path or self._path
         if self.file_is_protected(path=path):
             raise SongFileError(errors.ERR_FILE_PROTECTED.format(path=path))
+        self._setlist.set_page_record(self._pages.record(self._setlist))
         self._setlist.write_file(path)
         self._path = path
         self._dirty = False

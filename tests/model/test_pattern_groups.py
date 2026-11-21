@@ -8,6 +8,7 @@ import os
 import tempfile
 import unittest
 
+from llamatron.interface.tracker.page_memory import PageMemory
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import name_in_copied_group
 from llamatron.model.objects.setlist import new_setlist, Setlist
@@ -104,42 +105,52 @@ class TestClosedGroups(unittest.TestCase):
     def setUp(self):
         self.setlist = Setlist.from_data(data=a_set())
 
+        self.memory = PageMemory(self.setlist.get_page_record())
+
     def saved_and_read(self):
+        """Return the closed groups of the set saved with the pages' memory and read back."""
+        self.setlist.set_page_record(self.memory.record(self.setlist))
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, SAVED_FILE)
             self.setlist.write_file(path)
-            return Setlist.read_file(path)
+            read = Setlist.read_file(path)
+        return PageMemory(read.get_page_record()).closed_pattern_groups(read)
+
+    def closed_on_opening(self, data):
+        setlist = Setlist.from_data(data=data)
+        return PageMemory(setlist.get_page_record()).closed_pattern_groups(setlist)
 
     def test_a_closed_group_is_written_to_the_file_and_read_back_and_is_not_in_the_sets_data(self):
         before = self.setlist.to_data()
-        self.setlist.show_pattern_group(group=DRUMS, closed=True)
-        self.assertTrue(self.setlist.is_pattern_group_closed(DRUMS))
+        self.memory.show_pattern_group(group=DRUMS, closed=True)
+        self.assertTrue(self.memory.is_pattern_group_closed(DRUMS))
         self.assertEqual(self.setlist.to_data(), before)
-        self.assertEqual(self.saved_and_read().get_closed_pattern_groups(), [DRUMS])
-        self.setlist.show_pattern_group(group=DRUMS, closed=False)
-        self.assertEqual(self.saved_and_read().get_closed_pattern_groups(), [])
+        self.assertEqual(self.saved_and_read(), [DRUMS])
+        self.memory.show_pattern_group(group=DRUMS, closed=False)
+        self.assertEqual(self.saved_and_read(), [])
 
     def test_the_patterns_in_no_group_can_be_shown_closed_for_the_session(self):
-        self.setlist.show_pattern_group(group=None, closed=True)
-        self.assertTrue(self.setlist.is_pattern_group_closed(None))
+        self.memory.show_pattern_group(group=None, closed=True)
+        self.assertTrue(self.memory.is_pattern_group_closed(None))
 
     def test_a_file_naming_a_group_no_pattern_is_in_opens_and_forgets_it(self):
         data = a_set()
         data[file_format.CLOSED_PATTERN_GROUPS] = [NO_SUCH_GROUP, DRUMS]
-        self.assertEqual(Setlist.from_data(data=data).get_closed_pattern_groups(), [DRUMS])
+        self.assertEqual(self.closed_on_opening(data), [DRUMS])
 
     def test_a_file_holding_anything_else_there_still_opens(self):
         for held in (A_NUMBER, [A_NUMBER, DRUMS], {DRUMS: True}):
             data = a_set()
             data[file_format.CLOSED_PATTERN_GROUPS] = held
-            self.assertIn(Setlist.from_data(data=data).get_closed_pattern_groups(), ([], [DRUMS]))
+            self.assertIn(self.closed_on_opening(data), ([], [DRUMS]))
 
     def test_a_renamed_group_stays_closed_and_an_emptied_one_is_forgotten(self):
-        self.setlist.show_pattern_group(group=BASS, closed=True)
+        self.memory.show_pattern_group(group=BASS, closed=True)
         self.setlist.rename_pattern_group(old=BASS, new=SOLO)
-        self.assertEqual(self.setlist.get_closed_pattern_groups(), [SOLO])
+        self.memory.rename_pattern_group(old=BASS, new=SOLO)
+        self.assertEqual(self.memory.closed_pattern_groups(self.setlist), [SOLO])
         self.setlist.ungroup_patterns(SOLO)
-        self.assertEqual(self.setlist.get_closed_pattern_groups(), [])
+        self.assertEqual(self.memory.closed_pattern_groups(self.setlist), [])
 
 
 class TestCopyingAGroup(unittest.TestCase):

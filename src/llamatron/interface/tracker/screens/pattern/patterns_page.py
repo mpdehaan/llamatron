@@ -78,7 +78,7 @@ class PatternsPage(NamedListPage):
         return sorted([*held, *(group for group in self.new_groups if group not in held)], key=name_order)
 
     def is_closed(self, group):
-        return self.document().get_setlist().is_pattern_group_closed(group)
+        return self.document().get_page_memory().is_pattern_group_closed(group)
 
     def rows_depend_on(self):
         """Return what the rows depend on besides the set: which groups are closed, the groups made here, and a search, which looks inside every group."""
@@ -300,7 +300,7 @@ class PatternsPage(NamedListPage):
         def renamed(new):
             if group in self.new_groups:
                 self.new_groups = [new if made == group else made for made in self.new_groups]
-            self.document().change_set(self.document().get_setlist().rename_pattern_group, old=group, new=new)
+            self.document().rename_pattern_group(old=group, new=new)
             self.put_cursor_on_row(Listed(HEADING, new))
         self.ask_name(title=messages.MSG_RENAME_GROUP_PROMPT, value=group, taken=self.groups(), then=renamed)
 

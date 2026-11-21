@@ -71,7 +71,7 @@ class GeneratorsPage(ListPage):
 
     def is_closed(self, kind):
         """Return whether a type is closed, as every type is until opened; the set keeps which are open, so that the page comes back as it was left."""
-        return not self.document().get_setlist().is_generator_type_open(kind)
+        return not self.document().get_page_memory().is_generator_type_open(kind)
 
     def rows_depend_on(self):
         """Return what the rows depend on besides the set: which types are closed, and a search, which looks inside every type."""

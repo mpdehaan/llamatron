@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin
+from llamatron.interface.tracker.page_memory import PageMemory
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import SetlistSetting
@@ -61,36 +62,46 @@ class TestOpenGeneratorTypes(unittest.TestCase):
 
     def test_every_type_is_closed_until_opened_and_closes_again(self):
         setlist = a_set()
-        self.assertEqual(setlist.get_open_generator_types(), [])
-        setlist.show_generator_type(kind=auto_ratchet_plugin.NAME, opened=True)
-        setlist.show_generator_type(kind=arp_plugin.NAME, opened=True)
-        self.assertEqual(setlist.get_open_generator_types(), [arp_plugin.NAME, auto_ratchet_plugin.NAME])
-        setlist.show_generator_type(kind=arp_plugin.NAME, opened=False)
-        self.assertFalse(setlist.is_generator_type_open(arp_plugin.NAME))
-        self.assertTrue(setlist.is_generator_type_open(auto_ratchet_plugin.NAME))
+        memory = PageMemory(setlist.get_page_record())
+        self.assertEqual(memory.open_generator_types(setlist), [])
+        memory.show_generator_type(kind=auto_ratchet_plugin.NAME, opened=True)
+        memory.show_generator_type(kind=arp_plugin.NAME, opened=True)
+        self.assertEqual(memory.open_generator_types(setlist), [arp_plugin.NAME, auto_ratchet_plugin.NAME])
+        memory.show_generator_type(kind=arp_plugin.NAME, opened=False)
+        self.assertFalse(memory.is_generator_type_open(arp_plugin.NAME))
+        self.assertTrue(memory.is_generator_type_open(auto_ratchet_plugin.NAME))
 
     def test_the_open_types_are_no_part_of_the_sets_data(self):
         setlist = a_set()
         before = setlist.to_data()
-        setlist.show_generator_type(kind=arp_plugin.NAME, opened=True)
+        memory = PageMemory(setlist.get_page_record())
+        memory.show_generator_type(kind=arp_plugin.NAME, opened=True)
+        setlist.set_page_record(memory.record(setlist))
         self.assertEqual(setlist.to_data(), before)
         self.assertNotIn(file_format.OPEN_GENERATOR_TYPES, setlist.to_data())
+
+    def open_on_opening(self, data):
+        setlist = Setlist.from_data(data=data)
+        return PageMemory(setlist.get_page_record()).open_generator_types(setlist)
 
     def test_a_file_keeps_the_open_types_and_forgets_a_type_with_no_generator(self):
         data = a_set().to_data()
         data[file_format.OPEN_GENERATOR_TYPES] = [arp_plugin.NAME, drift_plugin.NAME, UNKNOWN]
-        self.assertEqual(Setlist.from_data(data=data).get_open_generator_types(), [arp_plugin.NAME])
+        self.assertEqual(self.open_on_opening(data), [arp_plugin.NAME])
 
     def test_a_file_holding_anything_else_there_still_opens(self):
         for held in (A_NUMBER, [A_NUMBER, arp_plugin.NAME], {arp_plugin.NAME: True}):
             data = a_set().to_data()
             data[file_format.OPEN_GENERATOR_TYPES] = held
-            self.assertIn(Setlist.from_data(data=data).get_open_generator_types(), ([], [arp_plugin.NAME]))
+            self.assertIn(self.open_on_opening(data), ([], [arp_plugin.NAME]))
 
     def test_an_open_type_is_written_to_the_file_and_read_back(self):
         setlist = a_set()
-        setlist.show_generator_type(kind=auto_ratchet_plugin.NAME, opened=True)
+        memory = PageMemory(setlist.get_page_record())
+        memory.show_generator_type(kind=auto_ratchet_plugin.NAME, opened=True)
+        setlist.set_page_record(memory.record(setlist))
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, SAVED_FILE)
             setlist.write_file(path)
-            self.assertEqual(Setlist.read_file(path).get_open_generator_types(), [auto_ratchet_plugin.NAME])
+            read = Setlist.read_file(path)
+        self.assertEqual(PageMemory(read.get_page_record()).open_generator_types(read), [auto_ratchet_plugin.NAME])

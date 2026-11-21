@@ -36,8 +36,9 @@ CONSTRUCTOR = '__init__'
 DECORATOR = notes_change.__name__
 NOTE_CHANGE_CALL = 'self.note_change()'
 SELF = 'self'
-# The member that holds the data an object keeps of itself, which is worked out from the object and isn't part of it.
-KEPT_DATA_MEMBER = '_kept'
+# The members that are no part of an object: the data it keeps of itself, worked out from it, and the record of how the pages
+# show a set, which its file holds and nothing undoes or remembers an answer from (interface/tracker/page_memory.py).
+NOT_PART_OF_IT = ('_kept', '_page_record')
 # The methods that change a list, a dictionary or a set in place.
 IN_PLACE_METHODS = frozenset({'append', 'insert', 'pop', 'remove', 'clear', 'update', 'sort', 'reverse', 'extend', 'setdefault', 'popitem', 'add', 'discard'})
 MSG_UNMARKED = '{kind}.{method} changes the object and is not written under @notes_change'
@@ -80,7 +81,7 @@ def is_on_self(node):
     while isinstance(node, (ast.Attribute, ast.Subscript)):
         member = node.attr if isinstance(node, ast.Attribute) else member
         node = node.value
-    return isinstance(node, ast.Name) and node.id == SELF and member != KEPT_DATA_MEMBER
+    return isinstance(node, ast.Name) and node.id == SELF and member not in NOT_PART_OF_IT
 
 
 def assigned_targets(node):

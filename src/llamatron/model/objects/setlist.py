@@ -23,7 +23,7 @@ from llamatron.model.file.checks import reading, written_length
 from llamatron.model.file.corrections import Correction
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.migrations import Conversion
-from llamatron.model.file.setlist_reader import as_a_set_is_written, closed_groups_held, open_types_held, read_corrected, set_file_data
+from llamatron.model.file.setlist_reader import as_a_set_is_written, page_record_held, read_corrected, set_file_data
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.file.version import is_version
@@ -150,7 +150,7 @@ class Setlist(HoldsSections, HoldsSettings):
     name, and the set looks the names up; each song does the same for what it shares.
     """
 
-    __slots__ = ('_sections', '_closed_groups', '_open_types', '_conversion', '_generator_sections')
+    __slots__ = ('_sections', '_page_record', '_conversion', '_generator_sections')
 
     SETTINGS = SETTINGS
 
@@ -158,10 +158,9 @@ class Setlist(HoldsSections, HoldsSettings):
         self.note_change()
         # The section of each generator plugin, by its name, held so that a render's every look up of a generator is one step.
         self._generator_sections = generator_plugins.sections_by_name()
-        # The pattern groups shown closed: no part of the set's data, so no undo or restore touches it (file_format.CLOSED_PATTERN_GROUPS).
-        self._closed_groups = []
-        # The types of generator shown open on the Generators page, kept the same way (file_format.OPEN_GENERATOR_TYPES).
-        self._open_types = []
+        # What the pages remember of how they show the set, as its file holds it: no part of the set's data, so no undo or restore
+        # touches it, and nothing here reads it (interface/tracker/page_memory.py).
+        self._page_record = {}
         # What reading the set's file moved from an older layout, which the tracker says once the file is open.
         self._conversion = Conversion()
         self._settings = {name: None for name in SETTINGS}
@@ -206,15 +205,16 @@ class Setlist(HoldsSections, HoldsSettings):
             file.write(dump_setlist(self._file_data()))
 
     def _file_data(self):
-        """Return what a file holds: the set's data, and the pattern groups shown closed and the types of generator shown open, where any are."""
-        data = self.to_data()
-        closed = self.get_closed_pattern_groups()
-        if closed:
-            data[file_format.CLOSED_PATTERN_GROUPS] = closed
-        opened = self.get_open_generator_types()
-        if opened:
-            data[file_format.OPEN_GENERATOR_TYPES] = opened
-        return data
+        """Return what a file holds: the set's data, and what the pages remember of how they show it."""
+        return {**self.to_data(), **self._page_record}
+
+    def get_page_record(self):
+        """Return what the pages remember of how they show the set, as its file holds it."""
+        return self._page_record
+
+    def set_page_record(self, record):
+        """Keep what the pages remember of how they show the set, for its file; no change to the set, so it moves no revision."""
+        self._page_record = dict(record)
 
     @classmethod
     def new(cls):
@@ -238,8 +238,7 @@ class Setlist(HoldsSections, HoldsSettings):
         setlist = cls()
         written = as_a_set_is_written(data=data, where=where, allowed=SETTINGS)
         setlist._read(written)
-        setlist._closed_groups = closed_groups_held(written)
-        setlist._open_types = open_types_held(written)
+        setlist._page_record = page_record_held(written)
         return setlist
 
     @classmethod
@@ -871,18 +870,11 @@ class Setlist(HoldsSections, HoldsSettings):
         """Return the names of a group's patterns, sorted as names are; None is the patterns in no group."""
         return sorted((name for name in self.get_pattern_names() if self.get_pattern(name).get_group() == group), key=name_order)
 
-    def get_closed_pattern_groups(self):
-        """Return the groups the Patterns page shows closed, leaving out any that no pattern is in any more."""
-        groups = self.get_pattern_groups()
-        return [group for group in groups if group in self._closed_groups]
-
     @notes_change
     def rename_pattern_group(self, *, old, new):
-        """Give a group another name, for every pattern in it, shown closed or open as it was."""
+        """Give a group another name, for every pattern in it."""
         for name in self.patterns_in_group(old):
             self.get_pattern(name).set_group(new)
-        if old in self._closed_groups:
-            self._closed_groups = [new if group == old else group for group in self._closed_groups]
 
     @notes_change
     def ungroup_patterns(self, group):
@@ -977,30 +969,6 @@ class Setlist(HoldsSections, HoldsSettings):
                     if scene.has_clip_slot(track) and pattern in scene.get_clip_slot(track).get_pattern_names():
                         return track
         return None
-
-    def is_pattern_group_closed(self, group):
-        return group in self._closed_groups
-
-    @notes_change
-    def show_pattern_group(self, *, group, closed):
-        """Show a group closed or open on the Patterns page. This changes nothing of the set's data: it is neither undone nor an unsaved change."""
-        self._closed_groups = [name for name in self._closed_groups if name != group]
-        if closed:
-            self._closed_groups.append(group)
-
-    def get_open_generator_types(self):
-        """Return the kinds of generator the Generators page shows open, in the order kinds are listed, leaving out any the set has no generator of any more."""
-        return [kind for kind, section in generator_plugins.sections_by_name().items() if kind in self._open_types and self._section(section).names()]
-
-    def is_generator_type_open(self, kind):
-        return kind in self._open_types
-
-    @notes_change
-    def show_generator_type(self, *, kind, opened):
-        """Show a type of generator open or closed on the Generators page. This changes nothing of the set's data: it is neither undone nor an unsaved change."""
-        self._open_types = [held for held in self._open_types if held != kind]
-        if opened:
-            self._open_types.append(kind)
 
     def has_generator(self, *, kind, name):
         """Return whether there's a generator of a kind, like arp, with this name."""

@@ -21,7 +21,7 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import sections
 from llamatron.model.objects.naming import is_taken
-from llamatron.model.schema import file_format, generator_plugins
+from llamatron.model.schema import file_format
 from llamatron.user_strings import errors
 
 # The most corrections one file is opened with, so that a correction that fails to put its value right cannot go on for ever.
@@ -56,20 +56,9 @@ def set_file_data(path):
     return as_object_layout(data), conversion
 
 
-def closed_groups_held(data):
-    """Return the pattern groups a file's data shows closed: its list's names, and none where the file holds anything else, since a view's state is never worth refusing a file for."""
-    held = data.get(file_format.CLOSED_PATTERN_GROUPS)
-    if not isinstance(held, list):
-        return []
-    return [name for name in held if isinstance(name, str)]
-
-
-def open_types_held(data):
-    """Return the types of generator a file's data shows open: its list's kinds of generator, and none where the file holds anything else, as for the closed groups."""
-    held = data.get(file_format.OPEN_GENERATOR_TYPES)
-    if not isinstance(held, list):
-        return []
-    return [kind for kind in held if isinstance(kind, str) and kind in generator_plugins.sections_by_name()]
+def page_record_held(data):
+    """Return what a file's data holds of how the pages show the set, by the file's names, left for the pages to read."""
+    return {name: data[name] for name in (file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES) if name in data}
 
 
 def as_a_set_is_written(*, data, where, allowed):

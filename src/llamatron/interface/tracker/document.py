@@ -34,6 +34,7 @@ from llamatron.interface.tracker.document_parts.song_edits import SongEdits
 from llamatron.interface.tracker.document_parts.undo import DocumentUndo
 from llamatron.interface.tracker.history import History
 from llamatron.interface.tracker.lengths import Lengths, measured
+from llamatron.interface.tracker.page_memory import PageMemory
 from llamatron.interface.tracker.uses import uses_of
 from llamatron.model.objects.setlist import Setlist
 from llamatron.user_strings import names
@@ -54,7 +55,7 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
     pattern.
     """
 
-    __slots__ = ('_setlist', '_current', '_path', '_dirty', '_memory', '_outside_patterns', '_saved_data', '_clean_data', '_history', '_edited', '_continues')
+    __slots__ = ('_setlist', '_pages', '_current', '_path', '_dirty', '_memory', '_outside_patterns', '_saved_data', '_clean_data', '_history', '_edited', '_continues')
 
     def __init__(self, *, setlist=None, path=None, saved_data=files.NOT_READ):
         """Hold a set, or a new one, saved at path if it has one.
@@ -65,6 +66,8 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         """
         self._setlist = Setlist.new() if setlist is None else setlist
         self._setlist.fill_in_defaults()
+        # What the pages remember of how they show the set, which its file holds and nothing undoes.
+        self._pages = PageMemory(self._setlist.get_page_record())
         if not self._setlist.get_song_names():
             self._setlist.add_new_song(names.MSG_DEFAULT_SONG_NAME)
         self._current = self._setlist.first_song_name()
@@ -153,6 +156,10 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
     def _measured(self):
         """Return the current song's estimate, taken when first asked for and kept until the set changes."""
         return self.remembered(key=MEASURED_KEY, on=(self,), compute=lambda: measured(self.song()))
+
+    def get_page_memory(self):
+        """Return what the pages remember of how they show the set: the groups shown closed and the types of generator shown open."""
+        return self._pages
 
     def change_pattern(self, method, *arguments, **named):
         """Make one change to a pattern through one of its methods, a pattern found by pattern(name), note it as a change inside

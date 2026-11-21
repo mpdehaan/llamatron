@@ -387,11 +387,11 @@ class TestGeneratorsPage(UITest):
         await self.press(keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE), Key.ESCAPE, keybindings.MainPage.GENERATORS)
         self.assertIn(self.heading(kind=arp_plugin.NAME), self.text())
         self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, UP))
-        self.assertEqual(self.document.get_setlist().get_open_generator_types(), [arp_plugin.NAME])
+        self.assertEqual(self.document.get_page_memory().open_generator_types(self.document.get_setlist()), [arp_plugin.NAME])
         self.assertEqual(self.document.get_setlist().to_data(), before)
         await self.press(Key.UP, Key.ENTER)
         self.assertIn(self.heading(kind=arp_plugin.NAME, closed=True), self.text())
-        self.assertEqual(self.document.get_setlist().get_open_generator_types(), [])
+        self.assertEqual(self.document.get_page_memory().open_generator_types(self.document.get_setlist()), [])
 
     async def test_page_down_and_page_up_jump_between_the_headings(self):
         page = await self.open_page_on_the_arp()
@@ -413,7 +413,7 @@ class TestGeneratorsPage(UITest):
         self.assertEqual(self.arp(name).get_order(), written_name(ChordOrder.UP))
         await self.press(Key.ESCAPE)
         self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, name))
-        self.assertTrue(self.document.get_setlist().is_generator_type_open(arp_plugin.NAME))
+        self.assertTrue(self.document.get_page_memory().is_generator_type_open(arp_plugin.NAME))
 
     async def test_a_generator_in_a_chain_is_deleted_after_asking_and_taken_out_of_the_chain(self):
         await self.open_page_on_the_arp()

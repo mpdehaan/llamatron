@@ -12,6 +12,7 @@ from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.page_memory import PageMemory
 from llamatron.interface.tracker.screens.pattern import patterns_page
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.pattern.patterns_page import Listed
@@ -209,14 +210,14 @@ class TestPatternsPage(PatternsPageTest):
         self.assertEqual(self.page.current(), ui_testing.BEAT)
         await self.press(Key.ENTER)
         self.assertEqual(self.page.current(), ui_testing.BEAT)
-        self.assertFalse(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertFalse(self.document.get_page_memory().is_pattern_group_closed(ui_testing.RHYTHMS))
 
     async def test_a_search_left_with_esc_leaves_a_closed_group_closed(self):
         self.document.show_pattern_group(group=ui_testing.RHYTHMS, closed=True)
         await self.press(keybindings.PatternsPage.SEARCH)
         await self.type(ui_testing.BEAT)
         await self.press(Key.ESCAPE)
-        self.assertTrue(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertTrue(self.document.get_page_memory().is_pattern_group_closed(ui_testing.RHYTHMS))
         self.assertEqual(self.page.current(), ui_testing.TUNE)
 
 
@@ -264,11 +265,12 @@ class TestPatternGroups(PatternsPageTest):
         self.assertEqual(self.document.is_dirty(), dirty)
         self.assertEqual(self.document.get_setlist().to_data(), before)
         await self.press(keybindings.Page.UNDO)
-        self.assertTrue(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertTrue(self.document.get_page_memory().is_pattern_group_closed(ui_testing.RHYTHMS))
         self.assertEqual(self.document.get_setlist().to_data(), before)
         path = os.path.join(self.folder, SAVED_FILE)
-        self.document.get_setlist().write_file(path)
-        self.assertEqual(Setlist.read_file(path).get_closed_pattern_groups(), [ui_testing.RHYTHMS])
+        self.document.save(path=path)
+        read = Setlist.read_file(path)
+        self.assertEqual(PageMemory(read.get_page_record()).closed_pattern_groups(read), [ui_testing.RHYTHMS])
 
     async def test_page_down_and_page_up_jump_between_the_headings_and_stop_at_the_ends(self):
         await self.go_to_pattern(ui_testing.TUNE)
@@ -423,12 +425,12 @@ class TestPatternGroups(PatternsPageTest):
         self.document.show_pattern_group(group=ui_testing.RHYTHMS, closed=True)
         self.page.put_cursor_on(ui_testing.BEAT)
         self.assertEqual(self.page.current(), ui_testing.BEAT)
-        self.assertFalse(self.document.get_setlist().is_pattern_group_closed(ui_testing.RHYTHMS))
+        self.assertFalse(self.document.get_page_memory().is_pattern_group_closed(ui_testing.RHYTHMS))
 
     async def test_the_closed_groups_in_a_file_are_only_groups_that_exist(self):
         self.document.show_pattern_group(group=ui_testing.RHYTHMS, closed=True)
-        self.document.change_set(self.document.get_setlist().rename_pattern_group, old=ui_testing.RHYTHMS, new=BASSES)
-        self.assertEqual(self.document.get_setlist().get_closed_pattern_groups(), [BASSES])
+        self.document.rename_pattern_group(old=ui_testing.RHYTHMS, new=BASSES)
+        self.assertEqual(self.document.get_page_memory().closed_pattern_groups(self.document.get_setlist()), [BASSES])
         self.document.change_set(self.document.get_setlist().ungroup_patterns, BASSES)
-        self.assertNotIn(BASSES, self.document.get_setlist().get_closed_pattern_groups())
+        self.assertNotIn(BASSES, self.document.get_page_memory().closed_pattern_groups(self.document.get_setlist()))
         self.assertNotIn(file_format.CLOSED_PATTERN_GROUPS, self.document.get_setlist().to_data())

@@ -126,4 +126,4 @@ class NamedEdits:
 
     def show_generator_type(self, *, kind, opened):
         """Show a type of generator open or closed on the Generators page, which is no change to the set: nothing to undo and nothing to save."""
-        self._setlist.show_generator_type(kind=kind, opened=opened)
+        self._pages.show_generator_type(kind=kind, opened=opened)
