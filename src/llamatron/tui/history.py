@@ -48,7 +48,7 @@ class Snapshot:
 
 
 @dataclass(slots=True, kw_only=True)
-class Change:
+class HistoryStep:
     """What one undo or redo did: words for the status line, and what it renamed, by section, as old name to new."""
 
     words: str

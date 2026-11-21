@@ -16,12 +16,12 @@ from llamatron.realtime import engine as engine_values, scheduled_engine, timeli
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import ScheduledRecordingOutput
 from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
-from llamatron.realtime.timeline import Playing, Tag
+from llamatron.realtime.timeline import ClipTag, Playing
 
 PORT = 'a port'
 OTHER_PORT = 'another port'
-LEAD = Tag(0, 'lead')
-BASS = Tag(0, 'bass')
+LEAD = ClipTag(0, 'lead')
+BASS = ClipTag(0, 'bass')
 CHANNEL = 0
 OTHER_CHANNEL = 1
 MIDDLE_C = 60

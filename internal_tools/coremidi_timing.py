@@ -31,7 +31,7 @@ import time
 
 from llamatron.realtime import sender_process
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
-from llamatron.realtime.timeline import Playing, Tag
+from llamatron.realtime.timeline import ClipTag, Playing
 
 PROBE_PORT = 'llamatron timing probe'
 TEMPO = 130
@@ -54,7 +54,7 @@ KIND_MASK = 0xF0
 GATE_SECONDS = 0.05
 # The clock's own zero, which the sender is given as its timeline's, so that its events are timed by readings of the clock.
 CLOCK_ZERO = 0.0
-TAG = Tag(0, 'probe')
+TAG = ClipTag(0, 'probe')
 SPAWN = 'spawn'
 MACOS = 'darwin'
 MILLISECONDS = 1000

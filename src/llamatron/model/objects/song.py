@@ -27,7 +27,7 @@ from llamatron.model.objects.track import Track
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
 from llamatron.model.schema.file_format import SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
-from llamatron.model.schema.setting import Checked, Choice, described, Length, settings_held
+from llamatron.model.schema.setting import Checked, Choice, described, settings_held, TimeLength
 from llamatron.user_strings import errors, names
 
 
@@ -66,7 +66,7 @@ def _never_refused(value):
 SETTINGS = described(
     Checked(name=SongSetting.TEMPO, check=number),
     Checked(name=SongSetting.TIME_SIGNATURE, check=time_signature),
-    Length(name=SongSetting.ENTRY_SIZE, most=limits.MAX_GATE, blank_allowed=True),
+    TimeLength(name=SongSetting.ENTRY_SIZE, most=limits.MAX_GATE, blank_allowed=True),
     Checked(name=SongSetting.SCALE, check=_check_scale_name, needs_song=True),
     Checked(name=SongSetting.GROOVE, check=_check_groove_name, needs_song=True),
     Checked(name=SongSetting.GENRE, check=_never_refused),

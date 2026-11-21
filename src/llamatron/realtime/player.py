@@ -43,7 +43,7 @@ from typing import NamedTuple
 from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import FollowAction, LiveResponsiveness
 from llamatron.realtime import engine, timeline
-from llamatron.realtime.timeline import Playing, Tag
+from llamatron.realtime.timeline import ClipTag, Playing
 
 # How far ahead moments are turned into queued events. A tick comes many times a second, so a moment is never missed, and half a second
 # ahead leaves an edit made while playing room to change a scene's end.
@@ -459,7 +459,7 @@ class Player:
         self._play_count += 1
         end = at + self._score.get_scene_seconds(scene)
         loops = forever or self._score.loops(scene=scene, track=track)
-        play = Play(scene=scene, track=track, start=at, end=end, tag=Tag(scene, track, self._play_count), alone=alone, loops=loops, preview=preview)
+        play = Play(scene=scene, track=track, start=at, end=end, tag=ClipTag(scene, track, self._play_count), alone=alone, loops=loops, preview=preview)
         self._plays.append(play)
         play.take_events(events=self._score.clip_events(scene=scene, track=track), offset=at)
         if loops:

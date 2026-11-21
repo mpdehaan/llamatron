@@ -24,7 +24,7 @@ from llamatron.visualizers.mandelbrot import Mandelbrot
 from llamatron.visualizers.maze import Maze
 from llamatron.visualizers.milkdrop import Milkdrop
 from llamatron.visualizers.mystify import Mystify
-from llamatron.visualizers.piano_roll import PianoRoll
+from llamatron.visualizers.piano_roll import PianoRollVisualizer
 from llamatron.visualizers.pipes import Pipes
 from llamatron.visualizers.plasma import Plasma
 from llamatron.visualizers.spectrum import Spectrum
@@ -34,7 +34,7 @@ from llamatron.visualizers.warpzone import WarpZone
 # How long each mode shows before the next, hard-coded for now, and the modes it goes through.
 CYCLE_SECONDS = 15.0
 CYCLED = (
-    LavaLamp, PianoRoll, Spectrum, Milkdrop, Llamas, Hypercube, Fireworks, WarpZone, Pipes, Plasma, Maze, Mystify, LaserLlama, Mandelbrot, Life, DigitalRain,
+    LavaLamp, PianoRollVisualizer, Spectrum, Milkdrop, Llamas, Hypercube, Fireworks, WarpZone, Pipes, Plasma, Maze, Mystify, LaserLlama, Mandelbrot, Life, DigitalRain,
 )
 
 

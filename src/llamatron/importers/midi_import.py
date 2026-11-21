@@ -17,7 +17,7 @@ from typing import NamedTuple
 from llamatron.importers import cutting
 from llamatron.importers.cutting import bar_lines, Cutter, grid_for, snapped, step_size_for
 from llamatron.importers.keys import key_of_notes, key_of_signature
-from llamatron.importers.midi_reading import Change, read_midi
+from llamatron.importers.midi_reading import MidiFileChange, read_midi
 from llamatron.importers.voices import voices_of
 from llamatron.importers.writing import SongWriter, tempo_of, time_signature_text
 from llamatron.math.rational import Rational
@@ -92,17 +92,17 @@ class MidiImport:
         return self._contents
 
     def keys(self):
-        """Return the song's keys in time order, each a Change to a Key: the file's key signatures, or the key its notes are in when it has none."""
+        """Return the song's keys in time order, each a MidiFileChange to a Key: the file's key signatures, or the key its notes are in when it has none."""
         keys = []
         for change in self._contents.keys:
             key = key_of_signature(change.value)
             if keys and keys[-1].time == change.time:
-                keys[-1] = Change(change.time, key)
+                keys[-1] = MidiFileChange(change.time, key)
             elif not keys or keys[-1].value != key:
-                keys.append(Change(change.time, key))
+                keys.append(MidiFileChange(change.time, key))
         if not keys or keys[0].time != 0:
             first = keys[0].value if keys else key_of_notes([note for part in self._contents.parts for note in part.notes])
-            keys.insert(0, Change(Rational(0), first))
+            keys.insert(0, MidiFileChange(Rational(0), first))
         return keys
 
     def found(self):

@@ -19,7 +19,7 @@ from llamatron.engine.clips.clip_column import ClipColumn
 from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.exporters import ableton_project
-from llamatron.exporters.ableton_project import AbletonProject, Attribute, ElementPath, Tag
+from llamatron.exporters.ableton_project import AbletonProject, Attribute, ElementPath, LiveTag
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Degree, Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType
@@ -94,7 +94,7 @@ class ProjectTestCase(unittest.TestCase):
     def read_set(self):
         path = os.path.join(self.directory, 'my_song.als')
         with open(path, READ_BYTES) as file:
-            return ET.fromstring(gzip.decompress(file.read())).find(Tag.LIVE_SET)
+            return ET.fromstring(gzip.decompress(file.read())).find(LiveTag.LIVE_SET)
 
     def one_clip_set(self, clip):
         track = self.song.add_column(ClipColumn())
@@ -109,10 +109,10 @@ class ProjectTestCase(unittest.TestCase):
     def clip_notes(self, clip):
         """Return (MIDI number, time, duration) for each note in a Live clip."""
         return sorted(
-            (int(key_track.find(Tag.MIDI_KEY).get(Tag.VALUE)),
+            (int(key_track.find(LiveTag.MIDI_KEY).get(LiveTag.VALUE)),
              float(event.get(Attribute.TIME)), float(event.get(Attribute.DURATION)))
             for key_track in clip.find('Notes/KeyTracks')
-            for event in key_track.find(Tag.NOTES)
+            for event in key_track.find(LiveTag.NOTES)
         )
 
 
@@ -192,16 +192,16 @@ class TestExistingFiles(ProjectTestCase):
 class TestTempo(ProjectTestCase):
 
     def tempo_values(self, live_set):
-        main_track = live_set.find(Tag.MAIN_TRACK)
+        main_track = live_set.find(LiveTag.MAIN_TRACK)
         tempo = main_track.find('DeviceChain/Mixer/Tempo')
         target = tempo.find(ElementPath.AUTOMATION_TARGET).get(Attribute.ID)
         events = [
-            event.get(Tag.VALUE)
+            event.get(LiveTag.VALUE)
             for envelope in main_track.find('AutomationEnvelopes/Envelopes')
-            if envelope.find('EnvelopeTarget/PointeeId').get(Tag.VALUE) == target
+            if envelope.find('EnvelopeTarget/PointeeId').get(LiveTag.VALUE) == target
             for event in envelope.find('Automation/Events')
         ]
-        return tempo.find(ElementPath.MANUAL).get(Tag.VALUE), events
+        return tempo.find(ElementPath.MANUAL).get(LiveTag.VALUE), events
 
     def test_song_tempo_sets_the_control_and_its_automation(self):
         self.song.set_tempo(95)
@@ -217,14 +217,14 @@ class TestTempo(ProjectTestCase):
         live_set = self.live_set()
         # The automation's own first point, then a point for each tempo of the ramp.
         self.assertEqual(self.tempo_values(live_set)[1][1:], [str(tempo) for tempo in RAMP_TEMPOS])
-        self.assertEqual(live_set.find(Tag.SCENES)[0].find(ElementPath.SCENE_TEMPO).get(Tag.VALUE), str(RAMP_TEMPOS[0]))
+        self.assertEqual(live_set.find(LiveTag.SCENES)[0].find(ElementPath.SCENE_TEMPO).get(LiveTag.VALUE), str(RAMP_TEMPOS[0]))
 
     def test_other_automation_is_left_alone(self):
         self.song.set_tempo(95)
         self.song.add_column(ClipColumn())
         self.song.add_row(ClipRow())
         live_set = self.live_set()
-        values = [event.get(Tag.VALUE) for event in live_set.find('MainTrack/AutomationEnvelopes').iter(ENUMEVENT)]
+        values = [event.get(LiveTag.VALUE) for event in live_set.find('MainTrack/AutomationEnvelopes').iter(ENUMEVENT)]
         self.assertEqual(values, [COMMON_TIME_CODE])
 
     def test_the_time_signature_sets_its_control_and_its_automation_as_one_number(self):
@@ -232,9 +232,9 @@ class TestTempo(ProjectTestCase):
         self.song.add_column(ClipColumn())
         self.song.add_row(ClipRow())
         live_set = self.live_set()
-        signature = live_set.find(Tag.MAIN_TRACK).find(ElementPath.TIME_SIGNATURE)
-        self.assertEqual(signature.find(ElementPath.MANUAL).get(Tag.VALUE), WALTZ_CODE)
-        values = [event.get(Tag.VALUE) for event in live_set.find('MainTrack/AutomationEnvelopes').iter(ENUMEVENT)]
+        signature = live_set.find(LiveTag.MAIN_TRACK).find(ElementPath.TIME_SIGNATURE)
+        self.assertEqual(signature.find(ElementPath.MANUAL).get(LiveTag.VALUE), WALTZ_CODE)
+        values = [event.get(LiveTag.VALUE) for event in live_set.find('MainTrack/AutomationEnvelopes').iter(ENUMEVENT)]
         self.assertEqual(values, [WALTZ_CODE])
 
     def clip_signature(self, clip):
@@ -244,7 +244,7 @@ class TestTempo(ProjectTestCase):
         scene = self.song.add_row(ClipRow())
         self.song.set_clip(row=scene, column=track, clip=clip)
         element = self.first_clip(self.live_set())
-        return (element.find(ElementPath.CLIP_SIGNATURE_BEATS).get(Tag.VALUE), element.find(ElementPath.CLIP_SIGNATURE_UNIT).get(Tag.VALUE))
+        return (element.find(ElementPath.CLIP_SIGNATURE_BEATS).get(LiveTag.VALUE), element.find(ElementPath.CLIP_SIGNATURE_UNIT).get(LiveTag.VALUE))
 
     def test_a_clip_shows_the_song_time_signature(self):
         self.assertEqual(self.clip_signature(Clip(notes=[C4])), ('3', '4'))
@@ -275,9 +275,9 @@ class TestScenes(ProjectTestCase):
         self.song.add_column(ClipColumn())
         self.song.add_row(ClipRow(name=VERSE))
         self.song.add_row(ClipRow())
-        scenes = self.live_set().find(Tag.SCENES)
+        scenes = self.live_set().find(LiveTag.SCENES)
         self.assertEqual(
-            [(scene.get(Attribute.ID), scene.find(ElementPath.NAME).get(Tag.VALUE)) for scene in scenes],
+            [(scene.get(Attribute.ID), scene.find(ElementPath.NAME).get(LiveTag.VALUE)) for scene in scenes],
             [('0', VERSE), ('1', '')],
         )
 
@@ -286,9 +286,9 @@ class TestScenes(ProjectTestCase):
         self.song.add_column(ClipColumn())
         self.song.add_row(ClipRow(tempo=90))
         self.song.add_row(ClipRow())
-        scenes = self.live_set().find(Tag.SCENES)
+        scenes = self.live_set().find(LiveTag.SCENES)
         self.assertEqual(
-            [(scene.find(ElementPath.SCENE_TEMPO).get(Tag.VALUE), scene.find(ElementPath.TEMPO_ENABLED).get(Tag.VALUE))
+            [(scene.find(ElementPath.SCENE_TEMPO).get(LiveTag.VALUE), scene.find(ElementPath.TEMPO_ENABLED).get(LiveTag.VALUE))
              for scene in scenes],
             [('90', TRUE), ('100', FALSE)],
         )
@@ -298,7 +298,7 @@ class TestScenes(ProjectTestCase):
         for _ in range(30):
             self.song.add_row(ClipRow())
         live_set = self.live_set()
-        self.assertEqual(len(live_set.find(Tag.SCENES)), 30)
+        self.assertEqual(len(live_set.find(LiveTag.SCENES)), 30)
 
     def test_rejects_a_song_without_scenes_or_tracks(self):
         with self.assertRaises(ValueError):
@@ -318,48 +318,48 @@ class TestTracks(ProjectTestCase):
         self.scenes = [self.song.add_row(ClipRow()) for _ in range(3)]
 
     def test_one_midi_track_per_song_track_with_returns_kept_after_them(self):
-        tags = [track.tag for track in self.live_set().find(Tag.TRACKS)]
-        self.assertEqual(tags, [Tag.MIDI_TRACK] * 3 + [Tag.RETURN_TRACK] * 2)
+        tags = [track.tag for track in self.live_set().find(LiveTag.TRACKS)]
+        self.assertEqual(tags, [LiveTag.MIDI_TRACK] * 3 + [LiveTag.RETURN_TRACK] * 2)
 
     def test_track_names(self):
-        tracks = self.live_set().find(Tag.TRACKS).findall(Tag.MIDI_TRACK)
+        tracks = self.live_set().find(LiveTag.TRACKS).findall(LiveTag.MIDI_TRACK)
         self.assertEqual(
-            [(track.find('Name/EffectiveName').get(Tag.VALUE), track.find('Name/UserName').get(Tag.VALUE))
+            [(track.find('Name/EffectiveName').get(LiveTag.VALUE), track.find('Name/UserName').get(LiveTag.VALUE))
              for track in tracks],
             [(MELODY, MELODY), ('2-MIDI', ''), (BASS, BASS)],
         )
 
     def test_every_track_has_one_slot_per_scene_numbered_in_order(self):
-        for track in self.live_set().find(Tag.TRACKS).findall(Tag.MIDI_TRACK):
+        for track in self.live_set().find(LiveTag.TRACKS).findall(LiveTag.MIDI_TRACK):
             for path in ['DeviceChain/MainSequencer/ClipSlotList', 'DeviceChain/FreezeSequencer/ClipSlotList']:
                 self.assertEqual([slot.get(Attribute.ID) for slot in track.find(path)], ['0', '1', '2'])
 
     def test_track_ids_are_unique(self):
-        ids = [track.get(Attribute.ID) for track in self.live_set().find(Tag.TRACKS)]
+        ids = [track.get(Attribute.ID) for track in self.live_set().find(LiveTag.TRACKS)]
         self.assertEqual(len(ids), len(set(ids)))
 
     def test_shared_ids_are_unique_and_below_the_next_id(self):
         live_set = self.live_set()
         ids = [
             int(element.get(Attribute.ID))
-            for track in live_set.find(Tag.TRACKS).findall(Tag.MIDI_TRACK)
+            for track in live_set.find(LiveTag.TRACKS).findall(LiveTag.MIDI_TRACK)
             for element in track.iter()
             if Attribute.ID in element.attrib and SHARED_ID_TAGS.search(element.tag)
         ]
         others = [
             int(element.get(Attribute.ID))
-            for section in [live_set.find(Tag.MAIN_TRACK), live_set.find(PREHEARTRACK)]
-            + live_set.find(Tag.TRACKS).findall(Tag.RETURN_TRACK)
+            for section in [live_set.find(LiveTag.MAIN_TRACK), live_set.find(PREHEARTRACK)]
+            + live_set.find(LiveTag.TRACKS).findall(LiveTag.RETURN_TRACK)
             for element in section.iter()
             if Attribute.ID in element.attrib and SHARED_ID_TAGS.search(element.tag)
         ]
         repeated = [number for number, count in collections.Counter(ids + others).items() if count > 1]
         self.assertEqual(repeated, [])
-        self.assertLess(max(ids + others), int(live_set.find(Tag.NEXT_POINTEE_ID).get(Tag.VALUE)))
+        self.assertLess(max(ids + others), int(live_set.find(LiveTag.NEXT_POINTEE_ID).get(LiveTag.VALUE)))
 
     def test_no_clips_on_frozen_slots_and_only_filled_slots_have_clips(self):
         self.song.set_clip(row=self.scenes[1], column=self.second, clip=Clip(notes=[C4]))
-        tracks = self.live_set().find(Tag.TRACKS).findall(Tag.MIDI_TRACK)
+        tracks = self.live_set().find(LiveTag.TRACKS).findall(LiveTag.MIDI_TRACK)
         filled = [
             [slot.find('ClipSlot/Value/MidiClip') is not None
              for slot in track.find('DeviceChain/MainSequencer/ClipSlotList')]
@@ -373,44 +373,44 @@ class TestTracks(ProjectTestCase):
 
     def test_muted_tracks_start_switched_off(self):
         self.second.set_mute(True)
-        tracks = self.live_set().find(Tag.TRACKS).findall(Tag.MIDI_TRACK)
+        tracks = self.live_set().find(LiveTag.TRACKS).findall(LiveTag.MIDI_TRACK)
         self.assertEqual(
-            [track.find('DeviceChain/Mixer/Speaker/Manual').get(Tag.VALUE) for track in tracks],
+            [track.find('DeviceChain/Mixer/Speaker/Manual').get(LiveTag.VALUE) for track in tracks],
             [TRUE, FALSE, TRUE],
         )
 
     def test_no_audio_tracks_are_left(self):
-        self.assertEqual(self.live_set().find(Tag.TRACKS).findall(AUDIOTRACK), [])
+        self.assertEqual(self.live_set().find(LiveTag.TRACKS).findall(AUDIOTRACK), [])
 
 
 class TestClips(ProjectTestCase):
 
     def test_name_and_times(self):
         clip = self.first_clip(self.one_clip_set(Clip(name=MY_RIFF, notes=[C4, D4])))
-        self.assertEqual(clip.find(ElementPath.NAME).get(Tag.VALUE), MY_RIFF)
-        self.assertEqual(clip.find(ElementPath.CURRENT_END).get(Tag.VALUE), '2')
+        self.assertEqual(clip.find(ElementPath.NAME).get(LiveTag.VALUE), MY_RIFF)
+        self.assertEqual(clip.find(ElementPath.CURRENT_END).get(LiveTag.VALUE), '2')
         loop = clip.find(LOOP)
         self.assertEqual(
-            {tag: loop.find(tag).get(Tag.VALUE) for tag in [LOOPSTART, LOOPEND, OUTMARKER, HIDDENLOOPEND]},
+            {tag: loop.find(tag).get(LiveTag.VALUE) for tag in [LOOPSTART, LOOPEND, OUTMARKER, HIDDENLOOPEND]},
             {LOOPSTART: '0', LOOPEND: '2', OUTMARKER: '2', HIDDENLOOPEND: '2'},
         )
 
     def test_clip_without_a_name(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[C4])))
-        self.assertEqual(clip.find(ElementPath.NAME).get(Tag.VALUE), '')
+        self.assertEqual(clip.find(ElementPath.NAME).get(LiveTag.VALUE), '')
 
     def test_set_length_sets_the_loop(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[C4], length=2)))
-        self.assertEqual(clip.find('Loop/LoopEnd').get(Tag.VALUE), '8')
+        self.assertEqual(clip.find('Loop/LoopEnd').get(LiveTag.VALUE), '8')
 
     def test_empty_clip_still_gets_a_length(self):
         clip = self.first_clip(self.one_clip_set(Clip()))
-        self.assertEqual(clip.find('Loop/LoopEnd').get(Tag.VALUE), '4')
+        self.assertEqual(clip.find('Loop/LoopEnd').get(LiveTag.VALUE), '4')
         self.assertEqual(len(clip.find('Notes/KeyTracks')), 0)
 
     def test_clip_has_no_groove_so_notes_stay_on_their_times(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[C4])))
-        self.assertEqual(clip.find('GrooveSettings/GrooveId').get(Tag.VALUE), '-1')
+        self.assertEqual(clip.find('GrooveSettings/GrooveId').get(LiveTag.VALUE), '-1')
 
     def test_clip_follows_the_same_order_of_details_as_the_template(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[C4])))
@@ -426,7 +426,7 @@ class TestArrangement(ProjectTestCase):
         self.chords = self.song.add_column(ClipColumn(name=CHORDS))
 
     def clips(self, *, live_set, number=0):
-        track = live_set.find(Tag.TRACKS).findall(Tag.MIDI_TRACK)[number]
+        track = live_set.find(LiveTag.TRACKS).findall(LiveTag.MIDI_TRACK)[number]
         return list(track.find('DeviceChain/MainSequencer/ClipTimeable/ArrangerAutomation/Events'))
 
     def test_clips_play_one_after_another_from_the_start(self):
@@ -435,8 +435,8 @@ class TestArrangement(ProjectTestCase):
             self.song.set_clip(row=scene, column=self.melody, clip=Clip(name=RIFF, notes=[Note(name=NoteName.C, octave_number=4, length=length)]))
         clips = self.clips(live_set=self.live_set())
         self.assertEqual([clip.get(Attribute.TIME) for clip in clips], ['0', '4', '12'])
-        self.assertEqual([clip.find(ElementPath.CURRENT_START).get(Tag.VALUE) for clip in clips], ['0', '4', '12'])
-        self.assertEqual([clip.find(ElementPath.CURRENT_END).get(Tag.VALUE) for clip in clips], ['4', '12', '14'])
+        self.assertEqual([clip.find(ElementPath.CURRENT_START).get(LiveTag.VALUE) for clip in clips], ['0', '4', '12'])
+        self.assertEqual([clip.find(ElementPath.CURRENT_END).get(LiveTag.VALUE) for clip in clips], ['4', '12', '14'])
 
     def test_the_loop_is_relative_to_the_clip(self):
         self.song.add_row(ClipRow())
@@ -444,8 +444,8 @@ class TestArrangement(ProjectTestCase):
         self.song.set_clip(row=self.song.get_rows()[0], column=self.melody, clip=Clip(notes=[Note(name=NoteName.C, octave_number=4, length=1)]))
         self.song.set_clip(row=scene, column=self.melody, clip=Clip(notes=[Note(name=NoteName.C, octave_number=4, length=1)]))
         clip = self.clips(live_set=self.live_set())[1]
-        self.assertEqual(clip.find('Loop/LoopStart').get(Tag.VALUE), '0')
-        self.assertEqual(clip.find('Loop/LoopEnd').get(Tag.VALUE), '4')
+        self.assertEqual(clip.find('Loop/LoopStart').get(LiveTag.VALUE), '0')
+        self.assertEqual(clip.find('Loop/LoopEnd').get(LiveTag.VALUE), '4')
 
     def test_notes_are_relative_to_the_clip(self):
         self.song.add_row(ClipRow())
@@ -463,7 +463,7 @@ class TestArrangement(ProjectTestCase):
         self.song.set_clip(row=second, column=self.chords, clip=Clip(notes=[Note(name=NoteName.C, octave_number=3, length=1)]))
         live_set = self.live_set()
         self.assertEqual([clip.get(Attribute.TIME) for clip in self.clips(live_set=live_set, number=1)], ['0', '8'])
-        self.assertEqual(self.clips(live_set=live_set, number=0)[0].find(ElementPath.CURRENT_END).get(Tag.VALUE), '4')
+        self.assertEqual(self.clips(live_set=live_set, number=0)[0].find(ElementPath.CURRENT_END).get(LiveTag.VALUE), '4')
 
     def test_a_scene_with_no_clips_still_takes_up_time(self):
         self.song.add_row(ClipRow())
@@ -479,26 +479,26 @@ class TestArrangement(ProjectTestCase):
         session = self.first_clip(live_set)
         arrangement = self.clips(live_set=live_set)[0]
         self.assertEqual(session.get(Attribute.TIME), '0')
-        self.assertEqual(session.find(ElementPath.TAKE_ID).get(Tag.VALUE), self.template_session_take())
-        self.assertEqual(session.find(ElementPath.NAME).get(Tag.VALUE), arrangement.find(ElementPath.NAME).get(Tag.VALUE))
+        self.assertEqual(session.find(ElementPath.TAKE_ID).get(LiveTag.VALUE), self.template_session_take())
+        self.assertEqual(session.find(ElementPath.NAME).get(LiveTag.VALUE), arrangement.find(ElementPath.NAME).get(LiveTag.VALUE))
         self.assertEqual(self.clip_notes(session), self.clip_notes(arrangement))
 
     def template_session_take(self):
-        return template_root().find('LiveSet/Tracks/MidiTrack').find('.//MidiClip/TakeId').get(Tag.VALUE)
+        return template_root().find('LiveSet/Tracks/MidiTrack').find('.//MidiClip/TakeId').get(LiveTag.VALUE)
 
     def test_arrangement_clips_use_the_details_from_a_real_arrangement_clip(self):
         scene = self.song.add_row(ClipRow())
         self.song.set_clip(row=scene, column=self.melody, clip=Clip(notes=[C4]))
         clip = self.clips(live_set=self.live_set())[0]
-        self.assertEqual(clip.find(ElementPath.TAKE_ID).get(Tag.VALUE), '1')
-        self.assertEqual(clip.find('GrooveSettings/GrooveId').get(Tag.VALUE), '-1')
-        self.assertEqual(clip.find(DISABLED).get(Tag.VALUE), FALSE)
+        self.assertEqual(clip.find(ElementPath.TAKE_ID).get(LiveTag.VALUE), '1')
+        self.assertEqual(clip.find('GrooveSettings/GrooveId').get(LiveTag.VALUE), '-1')
+        self.assertEqual(clip.find(DISABLED).get(LiveTag.VALUE), FALSE)
 
     def tempo_events(self, live_set):
-        main_track = live_set.find(Tag.MAIN_TRACK)
+        main_track = live_set.find(LiveTag.MAIN_TRACK)
         target = main_track.find('DeviceChain/Mixer/Tempo/AutomationTarget').get(Attribute.ID)
         for envelope in main_track.find('AutomationEnvelopes/Envelopes'):
-            if envelope.find('EnvelopeTarget/PointeeId').get(Tag.VALUE) == target:
+            if envelope.find('EnvelopeTarget/PointeeId').get(LiveTag.VALUE) == target:
                 return list(envelope.find('Automation/Events'))
         return []
 
@@ -514,10 +514,10 @@ class TestArrangement(ProjectTestCase):
         self.song.set_clip(row=second, column=self.melody, clip=Clip(notes=[Note(name=NoteName.C, octave_number=4, length=1)]))
         events = self.tempo_events(self.live_set())
         self.assertEqual(
-            [(event.tag, event.get(Attribute.TIME), event.get(Tag.VALUE)) for event in events[1:]],
-            [(Tag.FLOAT_EVENT, '0', '90'), (Tag.FLOAT_EVENT, '4', '100')],
+            [(event.tag, event.get(Attribute.TIME), event.get(LiveTag.VALUE)) for event in events[1:]],
+            [(LiveTag.FLOAT_EVENT, '0', '90'), (LiveTag.FLOAT_EVENT, '4', '100')],
         )
-        self.assertEqual(events[0].get(Tag.VALUE), '100')
+        self.assertEqual(events[0].get(LiveTag.VALUE), '100')
         ids = [event.get(Attribute.ID) for event in events]
         self.assertEqual(len(ids), len(set(ids)))
 
@@ -531,9 +531,9 @@ class TestNotes(ProjectTestCase):
     def test_notes_are_grouped_by_pitch_in_order(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[D4, C4, D4])))
         key_tracks = clip.find('Notes/KeyTracks')
-        self.assertEqual([track.find(Tag.MIDI_KEY).get(Tag.VALUE) for track in key_tracks], ['48', '50'])
+        self.assertEqual([track.find(LiveTag.MIDI_KEY).get(LiveTag.VALUE) for track in key_tracks], ['48', '50'])
         self.assertEqual([track.get(Attribute.ID) for track in key_tracks], ['0', '1'])
-        self.assertEqual([event.get(Attribute.TIME) for event in key_tracks[1].find(Tag.NOTES)], ['0', '2'])
+        self.assertEqual([event.get(Attribute.TIME) for event in key_tracks[1].find(LiveTag.NOTES)], ['0', '2'])
 
     def test_note_event_details(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[C4])))
@@ -541,18 +541,18 @@ class TestNotes(ProjectTestCase):
         self.assertEqual(event.attrib, {
             Attribute.TIME: '0', Attribute.DURATION: '1', Attribute.VELOCITY: '127', Attribute.OFF_VELOCITY: '64', Attribute.NOTE_ID: '1',
         })
-        self.assertEqual(clip.find('Notes/NoteIdGenerator/NextId').get(Tag.VALUE), '2')
+        self.assertEqual(clip.find('Notes/NoteIdGenerator/NextId').get(LiveTag.VALUE), '2')
 
     def test_note_ids_are_unique_within_a_clip(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[C4, D4, C4, D4])))
-        ids = [event.get(Attribute.NOTE_ID) for event in clip.iter(Tag.MIDI_NOTE_EVENT)]
+        ids = [event.get(Attribute.NOTE_ID) for event in clip.iter(LiveTag.MIDI_NOTE_EVENT)]
         self.assertEqual(sorted(ids), ['1', '2', '3', '4'])
-        self.assertEqual(clip.find('Notes/NoteIdGenerator/NextId').get(Tag.VALUE), '5')
+        self.assertEqual(clip.find('Notes/NoteIdGenerator/NextId').get(LiveTag.VALUE), '5')
 
     def test_rests_move_later_notes(self):
         clip = self.first_clip(self.one_clip_set(Clip(notes=[Rest(0.5), C4])))
         self.assertEqual(self.clip_notes(clip), [(48, 2, 1)])
-        self.assertEqual(clip.find('Loop/LoopEnd').get(Tag.VALUE), '3')
+        self.assertEqual(clip.find('Loop/LoopEnd').get(LiveTag.VALUE), '3')
 
     def test_chords_start_together(self):
         chord = Chord([C4, Note(name=NoteName.E, octave_number=4, length=0.5)])
@@ -627,7 +627,7 @@ class TestTemplates(ProjectTestCase):
     def test_rejects_a_template_without_a_midi_track(self):
         def remove_midi_tracks(root):
             tracks = root.find('LiveSet/Tracks')
-            for track in tracks.findall(Tag.MIDI_TRACK):
+            for track in tracks.findall(LiveTag.MIDI_TRACK):
                 tracks.remove(track)
         with self.assertRaises(ValueError):
             self.export(template=self.write_template(remove_midi_tracks))

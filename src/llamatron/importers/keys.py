@@ -31,7 +31,7 @@ MAJOR_ROOTS = ('C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B')
 MINOR_ROOTS = ('C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B')
 
 
-class Key(NamedTuple):
+class MusicalKey(NamedTuple):
     """A key: its root's name, its scale type as a file writes it, like minor, and whether notes outside it are spelled with flats."""
 
     root: str
@@ -63,7 +63,7 @@ def key_of_signature(text):
         # A flat no scale has, Cb or Fb, is the white key a half step below its letter.
         root = note_values.SHARP_NAMES[(pitch_class_of(root[0]) - 1) % midi.HALF_STEPS_PER_OCTAVE]
     kind = scale_type_name(ScaleType.MINOR if minor else ScaleType.MAJOR)
-    return Key(root=root, kind=kind, flats=flats)
+    return MusicalKey(root=root, kind=kind, flats=flats)
 
 
 def key_of_notes(notes):
@@ -78,7 +78,7 @@ def key_of_notes(notes):
             if best is None or fit > best[0]:
                 best = (fit, names[root], kind)
     _, root, kind = best
-    return Key(root=root, kind=scale_type_name(kind), flats=root.endswith(note_values.FLAT_SIGN))
+    return MusicalKey(root=root, kind=scale_type_name(kind), flats=root.endswith(note_values.FLAT_SIGN))
 
 
 def correlation(*, first, second):

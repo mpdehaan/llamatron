@@ -13,7 +13,7 @@ import unittest
 
 from llamatron.visualizers import cycle as cycle_values, llamas as llamas_values, modes, pixels as pixels_values, spectrum as spectrum_values
 from llamatron.visualizers.cycle import Cycle, shuffled
-from llamatron.visualizers.heard import Heard, HeardNote
+from llamatron.visualizers.heard import FrameHearing, HeardNote
 from llamatron.visualizers.lava_lamp import derezzed, LavaLamp
 from llamatron.visualizers.llamas import Llamas, mirrored
 from llamatron.visualizers.modes import mode_called, mode_options
@@ -100,7 +100,7 @@ class TestPixelModes(unittest.TestCase):
         visualizer.resized(columns=WIDTH // 2, rows=HEIGHT)
         pictures = []
         for number in range(count):
-            heard = Heard(notes=notes_at(number), seconds_per_beat=BEAT_SECONDS, beats=number * FRAME_SECONDS / BEAT_SECONDS)
+            heard = FrameHearing(notes=notes_at(number), seconds_per_beat=BEAT_SECONDS, beats=number * FRAME_SECONDS / BEAT_SECONDS)
             pictures.append(visualizer.pixels(now=number * FRAME_SECONDS, heard=heard))
         return pictures
 
@@ -133,7 +133,7 @@ class TestSpectrum(unittest.TestCase):
 
     def heights(self, spectrum, *, notes=(), now):
         """Return how many cells of each bar's column are drawn, from the frame at a moment hearing the notes given."""
-        lines = spectrum.frame(width=WIDTH, height=HEIGHT, now=now, heard=Heard(notes=notes, seconds_per_beat=BEAT_SECONDS, beats=0.0))
+        lines = spectrum.frame(width=WIDTH, height=HEIGHT, now=now, heard=FrameHearing(notes=notes, seconds_per_beat=BEAT_SECONDS, beats=0.0))
         return [sum(1 for line in lines if line.plain[column] != SPACE) for column in range(0, WIDTH, BAR_STRIDE)]
 
     def started(self):
@@ -167,7 +167,7 @@ class TestLlamas(unittest.TestCase):
         lines = []
         for number in range(frames):
             notes = tuple(HeardNote(track, MIDDLE_C, velocity, number % NOTE_EVERY == 0, False) for track in range(tracks))
-            lines = llamas.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=Heard(notes=notes, seconds_per_beat=BEAT_SECONDS, beats=0.0))
+            lines = llamas.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=FrameHearing(notes=notes, seconds_per_beat=BEAT_SECONDS, beats=0.0))
         return llamas, lines
 
     def test_in_silence_there_are_no_llamas(self):

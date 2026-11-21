@@ -27,7 +27,7 @@ from llamatron.model.objects.llama_data import LlamaData, or_default
 from llamatron.model.objects.traits import HasCells
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import GrooveSetting
-from llamatron.model.schema.setting import Checked, described, Length
+from llamatron.model.schema.setting import Checked, described, TimeLength
 from llamatron.user_strings import errors
 
 # A groove's amounts are percentages of a cell.
@@ -191,7 +191,7 @@ def _nearest_cells(cells):
 # A groove's settings, each described once, in the order they're written to a file.
 SETTINGS = described(
     Checked(name=GrooveSetting.CELLS, check=_check_cells, nearest=_nearest_cells),
-    Length(name=GrooveSetting.CELL_LENGTH, most=limits.MAX_GROOVE_CELL_LENGTH),
+    TimeLength(name=GrooveSetting.CELL_LENGTH, most=limits.MAX_GROOVE_CELL_LENGTH),
 )
 
 

@@ -92,7 +92,7 @@ class RolledNote:
         self.end = None
 
 
-class PianoRoll(Visualizer):
+class PianoRollVisualizer(Visualizer):
     """The notes as bars rolling in from the right, every key a row, each track in its colour, the drums in lanes at the bottom."""
 
     __slots__ = ('_notes', '_centre', '_seconds_per_beat', '_names', '_heard_tracks', '_lowest', '_highest', '_placed')

@@ -31,7 +31,7 @@ from math import ceil
 from typing import NamedTuple
 
 from llamatron.caching.kept import kept_for_life
-from llamatron.importers.midi_reading import HeardNote, MidiPart, value_at
+from llamatron.importers.midi_reading import MidiPart, PartNote, value_at
 from llamatron.importers.steps import control_error, controls_between_steps, NoteStep, repeated_pattern, scene_steps
 from llamatron.math.rational import Rational
 
@@ -161,7 +161,7 @@ def snapped(*, parts, step_size):
             start = round(note.start / step_size) * step_size
             if start != note.start:
                 moved += 1
-            notes.append(HeardNote(start, note.end + start - note.start, note.pitch, note.velocity))
+            notes.append(PartNote(start, note.end + start - note.start, note.pitch, note.velocity))
         snapped_parts.append(MidiPart(name=part.name, channel=part.channel, notes=sorted(notes), controls=part.controls))
     return snapped_parts, moved
 

@@ -15,7 +15,7 @@ import threading
 
 from llamatron.model.schema.file_format import ClipSlotSetting, Section
 from llamatron.realtime import playback as playback_values
-from llamatron.realtime.playback import Launch, Wanted
+from llamatron.realtime.playback import PlayRequest, Wanted
 from llamatron.realtime.playback_process import PlaybackProcess
 from llamatron.realtime.timeline import Route
 from tests.support import song_testing
@@ -42,7 +42,7 @@ def main():
     playback = PlaybackProcess(lead=NO_LEAD, recording=True)
     playback.take_set(setlist.kept_data())
     wanted = Wanted(FIRST_REVISION, setlist.first_song_name(), ((song_testing.LEAD, Route(PORT, 0)),), SEED)
-    playback.launch(wanted=wanted, launch=Launch(playback_values.LAUNCH_SCENE, 0), ports=[PORT])
+    playback.launch(wanted=wanted, launch=PlayRequest(playback_values.LAUNCH_SCENE, 0), ports=[PORT])
     print(playback.get_process_id(), flush=True)
     threading.Event().wait(WAIT_SECONDS)
     sys.exit(1)

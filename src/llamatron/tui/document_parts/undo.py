@@ -9,7 +9,7 @@ import copy
 from llamatron.caching.memory import StaleAnswer
 from llamatron.model.file.ordered_data import same_in_order
 from llamatron.model.objects.setlist import Setlist
-from llamatron.tui.history import Change, describe_change, renamed_items, Snapshot
+from llamatron.tui.history import describe_change, HistoryStep, renamed_items, Snapshot
 from llamatron.user_strings import errors
 
 
@@ -70,11 +70,11 @@ class DocumentUndo:
         return self._history.can_redo()
 
     def undo(self):
-        """Put the set back as it was before the last edit, and return the Change it made, or None if there was none."""
+        """Put the set back as it was before the last edit, and return the HistoryStep it made, or None if there was none."""
         return self._step_history(self._history.undo)
 
     def redo(self):
-        """Put back the last undone edit, and return the Change it made, or None if there was none."""
+        """Put back the last undone edit, and return the HistoryStep it made, or None if there was none."""
         return self._step_history(self._history.redo)
 
     def _step_history(self, step):
@@ -83,7 +83,7 @@ class DocumentUndo:
         if arriving is None:
             return None
         self._restore(arriving)
-        return Change(words=describe_change(leaving=leaving, arriving=arriving), renames=renamed_items(leaving=leaving, arriving=arriving))
+        return HistoryStep(words=describe_change(leaving=leaving, arriving=arriving), renames=renamed_items(leaving=leaving, arriving=arriving))
 
     def _restore(self, snapshot):
         """Put the set back as a snapshot has it, keeping the song that was current then if it still exists.

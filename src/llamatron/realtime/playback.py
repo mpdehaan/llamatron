@@ -35,7 +35,7 @@ class Wanted(NamedTuple):
     seed: int
 
 
-class Launch(NamedTuple):
+class PlayRequest(NamedTuple):
     """What a page asks to play: what kind of launch, the scene, the tracks of a launch of clips, and whether it plays again and again."""
 
     kind: str

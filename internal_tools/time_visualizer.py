@@ -19,7 +19,7 @@ import time
 
 from llamatron.tui.screens.arrange import arrange_page
 from llamatron.visualizers import modes
-from llamatron.visualizers.heard import Heard, HeardNote
+from llamatron.visualizers.heard import FrameHearing, HeardNote
 
 FRAMES = 200
 SEED = 1
@@ -58,7 +58,7 @@ def timed(*, mode, tracks, columns, rows):
     visualizer = mode()
     costs = []
     for number in range(FRAMES):
-        heard = Heard(notes=made_up_notes(tracks=tracks, chooser=chooser), seconds_per_beat=SECONDS_PER_BEAT, beats=number * arrange_page.FRAME_SECONDS / SECONDS_PER_BEAT)
+        heard = FrameHearing(notes=made_up_notes(tracks=tracks, chooser=chooser), seconds_per_beat=SECONDS_PER_BEAT, beats=number * arrange_page.FRAME_SECONDS / SECONDS_PER_BEAT)
         start = time.perf_counter()
         visualizer.frame(width=columns, height=rows, now=number * arrange_page.FRAME_SECONDS, heard=heard)
         costs.append(time.perf_counter() - start)

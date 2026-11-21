@@ -23,7 +23,7 @@ from llamatron.model.objects.pattern_notes import PatternNotes
 from llamatron.model.schema import file_format, limits, row_descriptions
 from llamatron.model.schema.file_format import Direction, PatternSetting, Row, StepStatement
 from llamatron.model.schema.row_descriptions import row_described, rows_where
-from llamatron.model.schema.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
+from llamatron.model.schema.setting import Checked, Choice, described, Flag, settings_held, Text, TimeLength, WholeNumber
 from llamatron.model.values import midi
 from llamatron.model.values.note import Note
 from llamatron.user_strings import errors
@@ -37,9 +37,9 @@ HALF = 0.5
 REGISTER_PART = 0
 # A pattern's settings besides its steps and rows, each described once, in the order they're written to a file.
 SETTINGS = described(
-    Length(name=PatternSetting.STEP_SIZE, most=limits.MAX_STEP_SIZE),
+    TimeLength(name=PatternSetting.STEP_SIZE, most=limits.MAX_STEP_SIZE),
     Checked(name=PatternSetting.TIME_SIGNATURE, check=time_signature),
-    Length(name=PatternSetting.ENTRY_SIZE, most=limits.MAX_GATE),
+    TimeLength(name=PatternSetting.ENTRY_SIZE, most=limits.MAX_GATE),
     Flag(name=PatternSetting.DRUM, error=errors.ERR_DRUM_NOT_TRUE_OR_FALSE),
     Choice(name=PatternSetting.DIRECTION, choices=file_format.DIRECTIONS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_DIRECTION),
     Text(name=PatternSetting.GROUP, error=errors.ERR_NOT_TEXT),

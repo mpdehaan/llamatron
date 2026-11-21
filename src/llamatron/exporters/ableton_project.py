@@ -61,7 +61,7 @@ LIVE_FALSE = 'false'
 TARGET_NUMBER_SEPARATOR = '.'
 
 
-class Tag:
+class LiveTag:
     """The names of the elements in a Live set that this exporter reads or writes."""
 
     LIVE_SET = 'LiveSet'
@@ -252,14 +252,14 @@ class AbletonProject(WritesOneFile, Exporter):
         if not _saved_by_live_12(root):
             raise ValueError(errors.ERR_NOT_LIVE_12.format(template=self._template, attributes=root.attrib))
 
-        live_set = root.find(Tag.LIVE_SET)
-        next_shared_id = itertools.count(int(live_set.find(Tag.NEXT_POINTEE_ID).get(Attribute.VALUE)))
+        live_set = root.find(LiveTag.LIVE_SET)
+        next_shared_id = itertools.count(int(live_set.find(LiveTag.NEXT_POINTEE_ID).get(Attribute.VALUE)))
         starts = self._scene_starts()
         self._set_tempo(live_set=live_set, starts=starts)
         self._set_time_signature(live_set)
         self._build_scenes(live_set)
         self._build_tracks(live_set=live_set, next_shared_id=next_shared_id, starts=starts)
-        _set_value(parent=live_set, path=Tag.NEXT_POINTEE_ID, value=next(next_shared_id))
+        _set_value(parent=live_set, path=LiveTag.NEXT_POINTEE_ID, value=next(next_shared_id))
 
         xml = ET.tostring(root, encoding=XML_TEXT)
         return (XML_DECLARATION + xml).encode(XML_BYTES)
@@ -290,7 +290,7 @@ class AbletonProject(WritesOneFile, Exporter):
 
     def _set_tempo(self, *, live_set, starts):
         """Set the tempo control and its automation, with changes for any scene tempos."""
-        main_track = live_set.find(Tag.MAIN_TRACK)
+        main_track = live_set.find(LiveTag.MAIN_TRACK)
         tempo = main_track.find(ElementPath.TEMPO)
         _set_value(parent=tempo, path=ElementPath.MANUAL, value=self._grid.get_tempo())
         target = tempo.find(ElementPath.AUTOMATION_TARGET).get(Attribute.ID)
@@ -304,7 +304,7 @@ class AbletonProject(WritesOneFile, Exporter):
 
     def _set_time_signature(self, live_set):
         """Set the time signature control and its automation, so that Live draws the song's bars."""
-        main_track = live_set.find(Tag.MAIN_TRACK)
+        main_track = live_set.find(LiveTag.MAIN_TRACK)
         signature = main_track.find(ElementPath.TIME_SIGNATURE)
         code = _live_time_signature(self._grid.get_time_signature())
         _set_value(parent=signature, path=ElementPath.MANUAL, value=code)
@@ -319,11 +319,11 @@ class AbletonProject(WritesOneFile, Exporter):
         next_id = len(events)
         for scene, start in zip(self._grid.get_rows(), starts):
             for time, tempo in self._grid.tempos_in(scene):
-                ET.SubElement(events, Tag.FLOAT_EVENT, {Attribute.ID: str(next_id), Attribute.TIME: _beats(start + time), Attribute.VALUE: str(tempo)})
+                ET.SubElement(events, LiveTag.FLOAT_EVENT, {Attribute.ID: str(next_id), Attribute.TIME: _beats(start + time), Attribute.VALUE: str(tempo)})
                 next_id += 1
 
     def _build_scenes(self, live_set):
-        scenes = live_set.find(Tag.SCENES)
+        scenes = live_set.find(LiveTag.SCENES)
         prototype = scenes[0]
         scenes[:] = [self._build_scene(prototype=prototype, scene=scene) for scene in self._grid.get_rows()]
 
@@ -337,8 +337,8 @@ class AbletonProject(WritesOneFile, Exporter):
         return element
 
     def _build_tracks(self, *, live_set, next_shared_id, starts):
-        tracks = live_set.find(Tag.TRACKS)
-        midi_tracks = tracks.findall(Tag.MIDI_TRACK)
+        tracks = live_set.find(LiveTag.TRACKS)
+        midi_tracks = tracks.findall(LiveTag.MIDI_TRACK)
         if not midi_tracks:
             raise ValueError(errors.ERR_NO_MIDI_TRACK.format(template=self._template))
         clip_prototype = self._find_clip(midi_tracks[0])
@@ -349,10 +349,10 @@ class AbletonProject(WritesOneFile, Exporter):
         for number, track in enumerate(self._grid.get_columns()):
             color = colors[number % len(colors)]
             built.append(self._build_track(prototype=midi_tracks[0], clip_prototype=clip_prototype, track=track, number=number, color=color, track_id=next(next_track_id), next_shared_id=next_shared_id, starts=starts))
-        tracks[:] = built + tracks.findall(Tag.RETURN_TRACK)
+        tracks[:] = built + tracks.findall(LiveTag.RETURN_TRACK)
 
     def _find_clip(self, track):
-        for clip in track.find(ElementPath.CLIP_SLOTS).iter(Tag.MIDI_CLIP):
+        for clip in track.find(ElementPath.CLIP_SLOTS).iter(LiveTag.MIDI_CLIP):
             return clip
         raise ValueError(errors.ERR_NO_CLIP.format(template=self._template))
 
@@ -443,20 +443,20 @@ class AbletonProject(WritesOneFile, Exporter):
         """Write one clip envelope for each CC number the clip sends."""
         _remove_children(envelopes)
         for envelope_id, (number, lane) in enumerate(sorted(control_points(clip=clip, length=length).items())):
-            envelope = ET.SubElement(envelopes, Tag.CLIP_ENVELOPE, Id=str(envelope_id))
-            target = ET.SubElement(envelope, Tag.ENVELOPE_TARGET)
-            ET.SubElement(target, Tag.POINTEE_ID, Value=controllers[number])
-            automation = ET.SubElement(envelope, Tag.AUTOMATION)
-            events = ET.SubElement(automation, Tag.EVENTS)
+            envelope = ET.SubElement(envelopes, LiveTag.CLIP_ENVELOPE, Id=str(envelope_id))
+            target = ET.SubElement(envelope, LiveTag.ENVELOPE_TARGET)
+            ET.SubElement(target, LiveTag.POINTEE_ID, Value=controllers[number])
+            automation = ET.SubElement(envelope, LiveTag.AUTOMATION)
+            events = ET.SubElement(automation, LiveTag.EVENTS)
             for event_id, (time, value) in enumerate(_envelope_points(lane)):
-                ET.SubElement(events, Tag.FLOAT_EVENT, Id=str(event_id), Time=time, Value=str(value))
-            view = ET.SubElement(automation, Tag.TRANSFORM_VIEW_STATE)
-            ET.SubElement(view, Tag.IS_TRANSFORM_PENDING, Value=LIVE_FALSE)
-            ET.SubElement(view, Tag.TIME_AND_VALUE_TRANSFORMS)
-            ET.SubElement(ET.SubElement(envelope, Tag.LOOP_SLOT), Tag.VALUE)
-            scroller = ET.SubElement(envelope, Tag.SCROLLER_TIME_PRESERVER)
-            ET.SubElement(scroller, Tag.LEFT_TIME, Value=str(CLIP_START))
-            ET.SubElement(scroller, Tag.RIGHT_TIME, Value=str(CLIP_START))
+                ET.SubElement(events, LiveTag.FLOAT_EVENT, Id=str(event_id), Time=time, Value=str(value))
+            view = ET.SubElement(automation, LiveTag.TRANSFORM_VIEW_STATE)
+            ET.SubElement(view, LiveTag.IS_TRANSFORM_PENDING, Value=LIVE_FALSE)
+            ET.SubElement(view, LiveTag.TIME_AND_VALUE_TRANSFORMS)
+            ET.SubElement(ET.SubElement(envelope, LiveTag.LOOP_SLOT), LiveTag.VALUE)
+            scroller = ET.SubElement(envelope, LiveTag.SCROLLER_TIME_PRESERVER)
+            ET.SubElement(scroller, LiveTag.LEFT_TIME, Value=str(CLIP_START))
+            ET.SubElement(scroller, LiveTag.RIGHT_TIME, Value=str(CLIP_START))
 
     def _write_notes(self, *, element, notes):
         key_tracks = element.find(ElementPath.KEY_TRACKS)
@@ -464,18 +464,18 @@ class AbletonProject(WritesOneFile, Exporter):
 
         note_ids = itertools.count(FIRST_NUMBER)
         for key_id, pitch in enumerate(_pitches(notes)):
-            key_track = ET.SubElement(key_tracks, Tag.KEY_TRACK, Id=str(key_id))
-            events = ET.SubElement(key_track, Tag.NOTES)
+            key_track = ET.SubElement(key_tracks, LiveTag.KEY_TRACK, Id=str(key_id))
+            events = ET.SubElement(key_track, LiveTag.NOTES)
             for start, end, midi_number, velocity in sorted(notes):
                 if midi_number == pitch:
-                    ET.SubElement(events, Tag.MIDI_NOTE_EVENT, {
+                    ET.SubElement(events, LiveTag.MIDI_NOTE_EVENT, {
                         Attribute.TIME: _beats(start),
                         Attribute.DURATION: _beats(end - start),
                         Attribute.VELOCITY: str(velocity),
                         Attribute.OFF_VELOCITY: str(NOTE_OFF_VELOCITY),
                         Attribute.NOTE_ID: str(next(note_ids)),
                     })
-            ET.SubElement(key_track, Tag.MIDI_KEY, Value=str(pitch))
+            ET.SubElement(key_track, LiveTag.MIDI_KEY, Value=str(pitch))
         _set_value(parent=element, path=ElementPath.NEXT_NOTE_ID, value=next(note_ids))
 
 

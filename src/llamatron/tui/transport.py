@@ -37,14 +37,14 @@ from llamatron.realtime import fluidsynth as fluidsynth_values, playback as play
 from llamatron.realtime.engine import MonotonicClock
 from llamatron.realtime.fluidsynth import FluidSynth, installed
 from llamatron.realtime.outputs import output_port_names
-from llamatron.realtime.playback import Launch, LocalPlayback, Wanted
+from llamatron.realtime.playback import LocalPlayback, PlayRequest, Wanted
 from llamatron.realtime.playback_process import PlaybackProcess
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Route
 from llamatron.tui.uses import loop_error_lines
 from llamatron.user_strings import errors, messages
 from llamatron.visualizers import heard as heard_values
-from llamatron.visualizers.heard import Heard, HeardNote
+from llamatron.visualizers.heard import FrameHearing, HeardNote
 
 # How often the player plans ahead and the page redraws while something plays.
 TICK_SECONDS = 0.1
@@ -281,7 +281,7 @@ class Transport:
     def play_scene(self, *, index):
         """Play the current song from a scene, every clip of it, the follow actions taking it on. Return whether it waits for the next bar of what plays."""
         self._previewing = False
-        return self._launch(launch=Launch(playback_values.LAUNCH_SCENE, index), instead=None)
+        return self._launch(launch=PlayRequest(playback_values.LAUNCH_SCENE, index), instead=None)
 
     def play_clip(self, *, index, track, instead=None, forever=False):
         """Play one clip on its own, through its track's instrument or the one instead names, once as its scene would or again and again. Return whether it waits for the next bar.
@@ -291,14 +291,14 @@ class Transport:
         if forever and self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = forever
-        return self._launch(launch=Launch(playback_values.LAUNCH_CLIP, index, (track,), forever), instead=instead)
+        return self._launch(launch=PlayRequest(playback_values.LAUNCH_CLIP, index, (track,), forever), instead=instead)
 
     def play_clips(self, *, index, tracks):
         """Play several clips of one scene together, again and again, as a preview of a few players, which stops when its page is left."""
         if self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = True
-        self._launch(launch=Launch(playback_values.LAUNCH_CLIPS, index, tuple(tracks), True), instead=None)
+        self._launch(launch=PlayRequest(playback_values.LAUNCH_CLIPS, index, tuple(tracks), True), instead=None)
 
     def stop_clip(self, track):
         self._playback.stop_clip(track)
@@ -451,7 +451,7 @@ class Transport:
             notes += [HeardNote(places[track], note.number, note.velocity, False, drum) for note in held]
         seconds_per_beat = self._playback.seconds_per_quarter() or heard_values.REFERENCE_SECONDS_PER_BEAT
         position = self._playback.song_position() or 0.0
-        return now, Heard(notes=tuple(notes), seconds_per_beat=seconds_per_beat, beats=position / seconds_per_beat, names=tuple(song.get_track_names()))
+        return now, FrameHearing(notes=tuple(notes), seconds_per_beat=seconds_per_beat, beats=position / seconds_per_beat, names=tuple(song.get_track_names()))
 
     def playing_step(self, pattern):
         """Return the step of a pattern that sounds now, for the piano roll's read head: the step of the first playing clip that plays the pattern, in the clip's

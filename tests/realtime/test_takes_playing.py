@@ -12,7 +12,7 @@ import unittest
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
 from llamatron.realtime import playback as playback_values, timeline
 from llamatron.realtime.engine import SteppedClock
-from llamatron.realtime.playback import Launch, LocalPlayback, Wanted
+from llamatron.realtime.playback import LocalPlayback, PlayRequest, Wanted
 from llamatron.realtime.timeline import Route
 from tests.support import song_testing
 from tests.support.rendering import setlist_from_data
@@ -93,7 +93,7 @@ class TakesTest(unittest.TestCase):
         self.playback = LocalPlayback(make_sender=lambda ports: self.sender, clock=self.clock, lead=NO_LEAD, at_once=True)
         self.playback.take_set(setlist.kept_data())
         self.wanted = Wanted(REVISION, setlist.first_song_name(), ((LEAD, Route(PORT, 0)),), SEED)
-        self.playback.launch(wanted=self.wanted, launch=Launch(playback_values.LAUNCH_SCENE, FIRST_SCENE), ports=[PORT])
+        self.playback.launch(wanted=self.wanted, launch=PlayRequest(playback_values.LAUNCH_SCENE, FIRST_SCENE), ports=[PORT])
 
     def run_for(self, seconds):
         for _ in range(round(seconds / TICK_SECONDS)):
@@ -106,7 +106,7 @@ class TestTakesWhilePlaying(TakesTest):
     def test_a_scene_launched_again_by_hand_plays_another_take(self):
         self.play(loops=True)
         self.run_for(TICK_SECONDS)
-        self.playback.launch(wanted=self.wanted, launch=Launch(playback_values.LAUNCH_SCENE, FIRST_SCENE), ports=[PORT])
+        self.playback.launch(wanted=self.wanted, launch=PlayRequest(playback_values.LAUNCH_SCENE, FIRST_SCENE), ports=[PORT])
         self.run_for(PLAYED_SECONDS)
         plays = notes_by_play(self.sender.events)
         self.assertGreater(len(plays), 1)

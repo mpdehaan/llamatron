@@ -40,7 +40,7 @@ from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits as set_limits
 from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
-from llamatron.model.schema.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
+from llamatron.model.schema.setting import Checked, Choice, described, Flag, settings_held, Text, TimeLength, WholeNumber
 from llamatron.model.values import note
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, names as names_text
@@ -64,7 +64,7 @@ SETTINGS = described(
     Text(name=SetlistSetting.AUTHOR, error=errors.ERR_NOT_TEXT),
     Text(name=SetlistSetting.DESCRIPTION, error=errors.ERR_NOT_TEXT),
     Text(name=SetlistSetting.NOTES, error=errors.ERR_NOT_TEXT),
-    Length(name=SetlistSetting.STEP_SIZE, most=set_limits.MAX_STEP_SIZE),
+    TimeLength(name=SetlistSetting.STEP_SIZE, most=set_limits.MAX_STEP_SIZE),
     WholeNumber(name=SetlistSetting.DEFAULT_OCTAVE, lowest=set_limits.MIN_OCTAVE, highest=set_limits.MAX_OCTAVE, error=errors.ERR_CHECKS_BAD_OCTAVE),
     WholeNumber(name=SetlistSetting.DEFAULT_DRUM_OCTAVE, lowest=set_limits.MIN_OCTAVE, highest=set_limits.MAX_OCTAVE, error=errors.ERR_CHECKS_BAD_OCTAVE),
     Choice(name=SetlistSetting.OCTAVE_LABELS, choices=file_format.OCTAVE_LABEL_CHOICES, default=corrections_values.LEFT_OUT, error=errors.ERR_SONG_BAD_OCTAVE_LABELS),

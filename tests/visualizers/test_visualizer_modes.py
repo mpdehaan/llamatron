@@ -16,13 +16,13 @@ from llamatron.user_strings import visualizers
 from llamatron.visualizers import cells, fireworks as fireworks_values, life as life_values, mystify as mystify_values, piano_roll, pipes as pipes_values, warpzone
 from llamatron.visualizers.digital_rain import DigitalRain
 from llamatron.visualizers.fireworks import brightest_of_blocks, Fireworks
-from llamatron.visualizers.heard import Heard, HeardNote
+from llamatron.visualizers.heard import FrameHearing, HeardNote
 from llamatron.visualizers.laser_llama import LaserLlama, mirrored_drawing
 from llamatron.visualizers.life import Life, stepped
 from llamatron.visualizers.mandelbrot import escape_times
 from llamatron.visualizers.maze import carved, inside, Maze
 from llamatron.visualizers.mystify import Mystify
-from llamatron.visualizers.piano_roll import drum_lane, nth_colour, PianoRoll
+from llamatron.visualizers.piano_roll import drum_lane, nth_colour, PianoRollVisualizer
 from llamatron.visualizers.pipes import Pipes
 from llamatron.visualizers.warpzone import WarpZone
 
@@ -49,7 +49,7 @@ FAR_APART = 100
 
 
 def heard(notes):
-    return Heard(notes=tuple(notes), seconds_per_beat=BEAT_SECONDS, beats=0.0)
+    return FrameHearing(notes=tuple(notes), seconds_per_beat=BEAT_SECONDS, beats=0.0)
 
 
 def every_track_starting(*, tracks, number, every=4):
@@ -208,7 +208,7 @@ class TestLife(unittest.TestCase):
         life.frame(width=WIDTH, height=HEIGHT, now=FRAME_SECONDS, heard=heard(every_track_starting(tracks=TRACKS, number=0)))
         self.assertGreaterEqual(int(life.alive().sum()), before)
         for number in range(2, 200):
-            life.frame(width=WIDTH, height=HEIGHT, now=number * BEAT_SECONDS, heard=Heard(notes=(), seconds_per_beat=BEAT_SECONDS, beats=float(number)))
+            life.frame(width=WIDTH, height=HEIGHT, now=number * BEAT_SECONDS, heard=FrameHearing(notes=(), seconds_per_beat=BEAT_SECONDS, beats=float(number)))
             self.assertTrue(life.alive().any())
 
     def test_every_line_is_as_wide_as_the_area(self):
@@ -243,7 +243,7 @@ class TestPianoRoll(unittest.TestCase):
         lines = []
         now = start
         for _ in range(frames):
-            lines = roll.frame(width=ROLL_WIDTH, height=ROLL_HEIGHT, now=now, heard=Heard(notes=tuple(notes), seconds_per_beat=BEAT_SECONDS, beats=now / BEAT_SECONDS, names=TRACK_NAMES))
+            lines = roll.frame(width=ROLL_WIDTH, height=ROLL_HEIGHT, now=now, heard=FrameHearing(notes=tuple(notes), seconds_per_beat=BEAT_SECONDS, beats=now / BEAT_SECONDS, names=TRACK_NAMES))
             notes = [note._replace(started=False) for note in notes]
             now += FRAME_SECONDS
         return lines, now
@@ -252,12 +252,12 @@ class TestPianoRoll(unittest.TestCase):
         return [place for place, line in enumerate(lines) if piano_roll.NOTE_CHARACTER in line.plain[piano_roll.LABEL_COLUMNS:]]
 
     def test_a_frame_fills_its_area(self):
-        lines, _ = self.played(roll=PianoRoll(), frames=1, notes=[])
+        lines, _ = self.played(roll=PianoRollVisualizer(), frames=1, notes=[])
         self.assertEqual(len(lines), ROLL_HEIGHT)
         self.assertTrue(all(line.cell_len == ROLL_WIDTH for line in lines))
 
     def test_a_note_comes_in_at_the_right_and_rolls_left_and_grows_while_it_sounds(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)])
         row = self.row_with_note(lines)[0]
         self.assertEqual(lines[row].plain[-1], piano_roll.NOTE_CHARACTER)
@@ -271,7 +271,7 @@ class TestPianoRoll(unittest.TestCase):
         self.assertEqual(lines[row].plain.count(piano_roll.NOTE_CHARACTER), sounding)
 
     def test_it_rolls_columns_per_beat(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)])
         row = self.row_with_note(lines)[0]
         beats = 2
@@ -279,7 +279,7 @@ class TestPianoRoll(unittest.TestCase):
         self.assertAlmostEqual(lines[row].plain.index(piano_roll.NOTE_CHARACTER), ROLL_WIDTH - 1 - beats * piano_roll.COLUMNS_PER_BEAT, delta=1)
 
     def test_drums_take_lanes_at_the_bottom_only_once_a_drum_plays(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)])
         self.assertFalse(any(line.plain.startswith(visualizers.MSG_PIANO_ROLL_DRUM_LANES[0]) for line in lines))
         lines, _ = self.played(roll=roll, frames=1, notes=[HeardNote(DRUM_TRACK, KICK, FULL_VELOCITY, True, True)], start=now)
@@ -289,19 +289,19 @@ class TestPianoRoll(unittest.TestCase):
         self.assertEqual(len(visualizers.MSG_PIANO_ROLL_DRUM_LANES), piano_roll.DRUM_ROWS)
 
     def test_every_key_has_a_row_and_each_c_a_line(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         lines, _ = self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)])
         c_rows = [place for place, line in enumerate(lines) if piano_roll.LINE_CHARACTER in line.plain]
         self.assertGreaterEqual(len(c_rows), 2)
         self.assertEqual(c_rows[1] - c_rows[0], OCTAVE)
 
     def test_the_first_notes_place_the_rows_at_once(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         self.played(roll=roll, frames=1, notes=[HeardNote(LEAD_TRACK, HIGH_NOTE, FULL_VELOCITY, True, False)])
         self.assertEqual(roll.get_centre(), HIGH_NOTE)
 
     def test_the_rows_stay_still_while_every_pitch_heard_fits(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         low = HeardNote(LEAD_TRACK, MIDDLE_C, FULL_VELOCITY, True, False)
         high = HeardNote(LEAD_TRACK, MIDDLE_C + OCTAVE, FULL_VELOCITY, True, False)
         _, now = self.played(roll=roll, frames=1, notes=[low, high])
@@ -313,7 +313,7 @@ class TestPianoRoll(unittest.TestCase):
             self.assertEqual(roll.get_centre(), settled)
 
     def test_the_rows_ease_slowly_toward_what_sounds_only_when_the_pitches_heard_do_not_fit(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         low = HeardNote(LEAD_TRACK, FAR_LOW_NOTE, FULL_VELOCITY, True, False)
         high = HeardNote(LEAD_TRACK, FAR_HIGH_NOTE, FULL_VELOCITY, True, False)
         _, now = self.played(roll=roll, frames=1, notes=[low])
@@ -333,7 +333,7 @@ class TestPianoRoll(unittest.TestCase):
         self.assertEqual(roll.get_centre(), resting)
 
     def test_the_legend_names_the_tracks_on_the_roll_in_track_order_and_a_track_keeps_the_colour_it_was_first_heard_with(self):
-        roll = PianoRoll()
+        roll = PianoRollVisualizer()
         lines, now = self.played(roll=roll, frames=1, notes=[HeardNote(DRUM_TRACK, KICK, FULL_VELOCITY, True, True)])
         self.assertIn(visualizers.MSG_PIANO_ROLL_LEGEND_MARK + TRACK_NAMES[DRUM_TRACK], lines[0].plain)
         self.assertNotIn(TRACK_NAMES[LEAD_TRACK], lines[0].plain)
@@ -357,7 +357,7 @@ class TestDigitalRain(unittest.TestCase):
         rain.frame(width=WIDTH, height=HEIGHT, now=0.0, heard=heard(every_track_starting(tracks=TRACKS, number=0)))
         self.assertGreaterEqual(rain.stream_count(), TRACKS)
         for number in range(1, 400):
-            rain.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=Heard(notes=(), seconds_per_beat=BEAT_SECONDS, beats=0.0))
+            rain.frame(width=WIDTH, height=HEIGHT, now=number * FRAME_SECONDS, heard=FrameHearing(notes=(), seconds_per_beat=BEAT_SECONDS, beats=0.0))
         # The notes' streams have gone; only the dim rain that falls by itself is left.
         self.assertLess(rain.stream_count(), TRACKS * 3)
 

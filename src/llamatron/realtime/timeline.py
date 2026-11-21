@@ -42,7 +42,7 @@ class Route(NamedTuple):
     keyswitches: bool = True
 
 
-class Tag(NamedTuple):
+class ClipTag(NamedTuple):
     """Which clip an event belongs to: the scene's place in the song, from 0, the track's name, and which play of that clip, since the player can launch one clip again and again."""
 
     scene: int
@@ -62,7 +62,7 @@ class Playing(NamedTuple):
     kind: int
     number: int
     value: int
-    tag: Tag
+    tag: ClipTag
     # Whether the event is a keyswitch's, a note a plugin reads as an order, which sounds nothing: the lights and the visualizers pass it by.
     switch: bool = False
 
@@ -93,7 +93,7 @@ def song_timeline(*, grid, routes):
             clip = grid.get_clip(row=scene, column=track)
             if route is None or clip is None or track.get_mute():
                 continue
-            tag = Tag(place, track.get_name())
+            tag = ClipTag(place, track.get_name())
             events.extend(clip_timeline(clip=clip, scale=grid.scale_at(row=scene, column=track), route=route, tag=tag,
                                         scene_start=scene_start, scene_seconds=scene_seconds, clock=clock))
         scene_seconds += clock.seconds_at(grid.row_length(scene))

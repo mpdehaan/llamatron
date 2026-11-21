@@ -185,7 +185,7 @@ class Choice(Setting):
         return self._default
 
 
-class Length(Setting):
+class TimeLength(Setting):
     """A setting that is a length written as a whole number or a fraction, like 2 or 5/16, more than nothing and at most most. blank_allowed lets a file write it as nothing, for the default."""
 
     __slots__ = ('_most', '_blank_allowed')

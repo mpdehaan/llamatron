@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Shorten generator: a row of on-or-off steps that makes the notes starting on the steps that are on play short, a share of their length with a rest after."""
 
-from llamatron.engine.generators.glide.generator import StepRow
+from llamatron.engine.generators.glide.generator import StepRowGenerator
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
 from llamatron.model.values import sound
@@ -12,7 +12,7 @@ from llamatron.model.values.sound import Sound
 PERCENT = 100
 
 
-class Shorten(StepRow):
+class Shorten(StepRowGenerator):
     """Plays a single note starting on a step that's on for its shorten amount of its length, the rest of its place a rest."""
 
     __slots__ = ('_shorten',)

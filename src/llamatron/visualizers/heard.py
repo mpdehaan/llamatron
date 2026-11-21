@@ -23,7 +23,7 @@ class HeardNote(NamedTuple):
     drum: bool
 
 
-class Heard(NamedTuple):
+class FrameHearing(NamedTuple):
     """What a frame hears: its notes, the seconds a beat lasts now, how many beats the song has played, for the motion that follows the beat, and the song's track names, by the places the notes give, for a mode that names the tracks."""
 
     notes: tuple
@@ -37,4 +37,4 @@ class Heard(NamedTuple):
 
 
 # What a frame hears when nothing plays: no notes, at the reference tempo, on no beat.
-SILENCE = Heard(notes=(), seconds_per_beat=REFERENCE_SECONDS_PER_BEAT, beats=0.0)
+SILENCE = FrameHearing(notes=(), seconds_per_beat=REFERENCE_SECONDS_PER_BEAT, beats=0.0)

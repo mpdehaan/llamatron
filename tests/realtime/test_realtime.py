@@ -35,7 +35,7 @@ from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
-from llamatron.realtime.timeline import Playing, Route, song_timeline, Tag
+from llamatron.realtime.timeline import ClipTag, Playing, Route, song_timeline
 from llamatron.user_strings import errors
 from tests.support import sender_under_capture
 from tests.support.example_renders import rendered_example
@@ -66,9 +66,9 @@ MILLISECONDS = 1000
 MIDDLE_C = 60
 A_FIFTH_UP = 67
 VELOCITY = 100
-SCENE_ONE = Tag(0, 'lead')
-SCENE_TWO = Tag(1, 'lead')
-BASS_TAG = Tag(0, 'bass')
+SCENE_ONE = ClipTag(0, 'lead')
+SCENE_TWO = ClipTag(1, 'lead')
+BASS_TAG = ClipTag(0, 'bass')
 
 
 def routes_on_one_channel(grid):

@@ -18,9 +18,9 @@ import unittest
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.importers import cutting, voices as voices_values
 from llamatron.importers.comparison import round_trip
-from llamatron.importers.keys import degree_of, drum_note_of, Key, key_of_notes, key_of_signature
+from llamatron.importers.keys import degree_of, drum_note_of, key_of_notes, key_of_signature, MusicalKey
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
-from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
+from llamatron.importers.midi_reading import MidiPart, PartNote, read_midi
 from llamatron.importers.voices import Played, Voice, voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.math.rational import Rational
@@ -207,20 +207,20 @@ class TestKeys(unittest.TestCase):
                     self.assertEqual(note.get_midi_number(), pitch)
 
     def test_a_key_signature_is_a_major_or_minor_scale_with_a_root_a_scale_can_have(self):
-        self.assertEqual(key_of_signature('Bbm'), Key(root='Bb', kind=scale_type_name(ScaleType.MINOR), flats=True))
+        self.assertEqual(key_of_signature('Bbm'), MusicalKey(root='Bb', kind=scale_type_name(ScaleType.MINOR), flats=True))
         self.assertEqual(key_of_signature('Cb').root, 'B')
         self.assertTrue(key_of_signature('F').flats)
         self.assertFalse(key_of_signature('G').flats)
 
     def test_a_file_with_no_key_signature_is_in_the_key_its_notes_are_in(self):
-        notes = [HeardNote(Rational(place), Rational(place + 1), pitch, VELOCITY) for place, pitch in enumerate(C_MAJOR_SCALE + (MIDDLE_C, 67))]
-        self.assertEqual(key_of_notes(notes), Key(root='C', kind=scale_type_name(ScaleType.MAJOR), flats=False))
+        notes = [PartNote(Rational(place), Rational(place + 1), pitch, VELOCITY) for place, pitch in enumerate(C_MAJOR_SCALE + (MIDDLE_C, 67))]
+        self.assertEqual(key_of_notes(notes), MusicalKey(root='C', kind=scale_type_name(ScaleType.MAJOR), flats=False))
 
 
 class TestVoices(unittest.TestCase):
 
     def part(self, *, notes, channel=0):
-        return MidiPart(name='keys', channel=channel, controls=[], notes=sorted(HeardNote(Rational(start, SIXTEENTHS_IN_A_WHOLE_NOTE), Rational(start + length, SIXTEENTHS_IN_A_WHOLE_NOTE), pitch, VELOCITY) for start, length, pitch in notes))
+        return MidiPart(name='keys', channel=channel, controls=[], notes=sorted(PartNote(Rational(start, SIXTEENTHS_IN_A_WHOLE_NOTE), Rational(start + length, SIXTEENTHS_IN_A_WHOLE_NOTE), pitch, VELOCITY) for start, length, pitch in notes))
 
     def test_drums_are_a_voice_for_each_sound_named_by_general_midi(self):
         part = self.part(notes=[(0, 1, KICK), (0, 1, SNARE), (1, 1, UNNAMED_DRUM_NOTE)], channel=DRUM_CHANNEL)

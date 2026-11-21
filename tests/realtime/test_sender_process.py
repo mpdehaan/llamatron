@@ -14,14 +14,14 @@ from llamatron.math.rational import Rational
 from llamatron.realtime import coremidi, sender_process, timeline
 from llamatron.realtime.engine import PlaybackEngine
 from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
-from llamatron.realtime.timeline import Playing, Tag
+from llamatron.realtime.timeline import ClipTag, Playing
 
 A_PORT = 'a port'
 WAIT_SECONDS = 5
 ANOTHER_SYSTEM = 'linux'
 ANOTHER_PORT = 'another port'
-A_TAG = Tag(0, 'lead', 1)
-ANOTHER_TAG = Tag(0, 'bass', 2)
+A_TAG = ClipTag(0, 'lead', 1)
+ANOTHER_TAG = ClipTag(0, 'bass', 2)
 TAG_NUMBER = 7
 A_TIME = 1.25
 CHANNEL = 2

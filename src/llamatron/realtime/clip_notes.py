@@ -22,7 +22,7 @@ class Sounding(NamedTuple):
     off: float
 
 
-class Heard(NamedTuple):
+class HeardClipNote(NamedTuple):
     """One note of a clip as the visualizer hears it: when it starts and ends, in seconds from the scene's start, its MIDI number and its velocity."""
 
     on: float
@@ -54,7 +54,7 @@ class ClipNotes:
         return False
 
     def heard(self, *, since, until):
-        """Return the notes the visualizer hears between two moments counted from the scene's start: those that started after since and by until, and those still sounding at until, each a Heard.
+        """Return the notes the visualizer hears between two moments counted from the scene's start: those that started after since and by until, and those still sounding at until, each a HeardClipNote.
 
         Only notes that have started are heard, so the visualizer never knows what is coming.
         """
@@ -95,7 +95,7 @@ def _heard_notes(events):
             open_notes[key] = (event.seconds, event.value)
         elif event.kind == timeline.NOTE_OFF and key in open_notes:
             on, velocity = open_notes.pop(key)
-            notes.append(Heard(on, event.seconds, event.number, velocity))
+            notes.append(HeardClipNote(on, event.seconds, event.number, velocity))
     notes.sort()
     return notes
 

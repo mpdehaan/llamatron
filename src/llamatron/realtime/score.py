@@ -24,7 +24,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import FollowAction
 from llamatron.realtime import score_records, timeline
 from llamatron.realtime.clip_notes import ClipNotes
-from llamatron.realtime.timeline import clip_timeline, sort_key, Tag
+from llamatron.realtime.timeline import clip_timeline, ClipTag, sort_key
 
 NO_PLAY = 0
 START_OF_SCENE = 0.0
@@ -44,7 +44,7 @@ def first_of(moment):
     """Return when a moment of the draws' lights happens, the first of its two parts."""
     return moment[0]
 
-class Row(NamedTuple):
+class ScoreRow(NamedTuple):
     """One written-out repeat of a scene: when it starts within the scene, in seconds, how long it lasts, and its clock, which keeps its tempo and every change of tempo inside it."""
 
     start: float
@@ -134,7 +134,7 @@ class Score:
                 row = rows[place]
                 clock = grid.clock_of(row)
                 row_seconds = clock.seconds_at(grid.row_length(row))
-                self._rows[index].append(Row(scene_start, row_seconds, clock))
+                self._rows[index].append(ScoreRow(scene_start, row_seconds, clock))
                 if song.uses_draws():
                     self._draw_lights[index] += [(scene_start + clock.seconds_at(time), places) for time, places in realizer.get_timeline(written[place]).get_draw_moments()]
                 for track in grid.get_columns():
@@ -148,7 +148,7 @@ class Score:
                         continue
                     # Each row's events are put in time order by where they fall in the row, and the rows follow one another, so
                     # that a clip's events are in time order across every repeat of its scene, as the player reads them.
-                    self._events[(index, name)].extend(sorted(clip_timeline(clip=clip, scale=grid.scale_at(row=row, column=track), route=route, tag=Tag(index, name),
+                    self._events[(index, name)].extend(sorted(clip_timeline(clip=clip, scale=grid.scale_at(row=row, column=track), route=route, tag=ClipTag(index, name),
                                                                             scene_start=Rational(0), scene_seconds=scene_start, clock=clock), key=sort_key))
                 scene_start += row_seconds
             for track in kept:

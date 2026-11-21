@@ -12,7 +12,7 @@ from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
 
 
-class StepRow(ClipGenerator):
+class StepRowGenerator(ClipGenerator):
     """What Glide and Shorten share: a row of on-or-off steps, each as long as step, from the clip's start, changing the single notes starting on a step that's on."""
 
     __slots__ = ('_steps', '_step', '_offset')
@@ -44,7 +44,7 @@ class StepRow(ClipGenerator):
         raise NotImplementedError
 
 
-class Glide(StepRow):
+class Glide(StepRowGenerator):
     """Holds a single note starting on a step that's on past its place, by the glide amount, into a next note of another pitch, as the pattern's Glide row does."""
 
     __slots__ = ('_amount',)

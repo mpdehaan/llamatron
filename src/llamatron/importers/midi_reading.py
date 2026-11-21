@@ -42,7 +42,7 @@ DEFAULT_TEMPO = 500000
 DEFAULT_TIME_SIGNATURE = (4, 4)
 
 
-class HeardNote(NamedTuple):
+class PartNote(NamedTuple):
     """One note a part plays: when it starts and ends, in whole notes from the song's start, its MIDI number and its velocity."""
 
     start: Rational
@@ -59,7 +59,7 @@ class HeardControl(NamedTuple):
     value: int
 
 
-class Change(NamedTuple):
+class MidiFileChange(NamedTuple):
     """Something the file sets from a time on: a tempo in microseconds a quarter note, a time signature as beats and unit, or a key as mido writes it, like Bbm."""
 
     time: Rational
@@ -115,7 +115,7 @@ def from_the_start(*, changes, default):
     """Return changes in time order, with no change repeating the one before, starting at the song's start with the default if the file set nothing there."""
     ordered = sorted(changes, key=lambda change: change.time)
     if not ordered or ordered[0].time != 0:
-        ordered.insert(0, Change(Rational(0), default))
+        ordered.insert(0, MidiFileChange(Rational(0), default))
     kept = []
     for change in ordered:
         if kept and kept[-1].time == change.time:
@@ -148,11 +148,11 @@ def read_midi(midi_file):
             if message.type == TRACK_NAME and name is None:
                 name = trimmed_name(message.name)
             elif message.type == SET_TEMPO:
-                tempos.append(Change(time, message.tempo))
+                tempos.append(MidiFileChange(time, message.tempo))
             elif message.type == TIME_SIGNATURE:
-                time_signatures.append(Change(time, (message.numerator, message.denominator)))
+                time_signatures.append(MidiFileChange(time, (message.numerator, message.denominator)))
             elif message.type == KEY_SIGNATURE:
-                keys.append(Change(time, message.key))
+                keys.append(MidiFileChange(time, message.key))
             elif message.type in LEFT_OUT_MESSAGES:
                 left_out += 1
             elif message.type == CONTROL_CHANGE:
@@ -162,13 +162,13 @@ def read_midi(midi_file):
             elif message.type in (NOTE_ON, NOTE_OFF) and held.get((message.channel, message.note)):
                 start, velocity = held[(message.channel, message.note)].pop(0)
                 if time > start:
-                    notes_by_channel.setdefault(message.channel, []).append(HeardNote(start, time, message.note, velocity))
+                    notes_by_channel.setdefault(message.channel, []).append(PartNote(start, time, message.note, velocity))
         end = whole_notes(tick=tick, ticks_per_beat=ticks_per_beat)
         for (channel, pitch), starts in held.items():
             for start, velocity in starts:
                 unended += 1
                 if end > start:
-                    notes_by_channel.setdefault(channel, []).append(HeardNote(start, end, pitch, velocity))
+                    notes_by_channel.setdefault(channel, []).append(PartNote(start, end, pitch, velocity))
         controls_without_notes += sum(len(controls) for channel, controls in controls_by_channel.items() if channel not in notes_by_channel)
         if not notes_by_channel:
             continue
