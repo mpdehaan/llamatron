@@ -18,6 +18,7 @@ from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.form_choices import FormChoices
 from llamatron.wizards.create_song.hook_choices import HookChoices
 from llamatron.wizards.create_song.kit_choices import KitChoices
+from llamatron.wizards.create_song.melody_choices import MelodyChoices
 from llamatron.wizards.create_song.player_choices import PlayerChoices
 from llamatron.wizards.create_song.riff_choices import RiffChoices
 from llamatron.wizards.create_song.section_choices import SectionChoices
@@ -28,7 +29,7 @@ from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 SETTER_START = 'set_'
 # The choices and every part of them.
-CHOICES_CLASSES = (WizardChoices, BandChoices, FormChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
+CHOICES_CLASSES = (WizardChoices, MelodyChoices, BandChoices, FormChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
 # What changes a choice without being named a setter.
 OTHER_CHANGES = ('add_section', 'new_hook', 'new_second_hook')
 # What changes one section of the form without being named a setter: its names are common words, so a call is looked for on a section.

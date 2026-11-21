@@ -216,7 +216,7 @@ class PlayerChoices:
     def rows(self):
         """Return the rows of numbers a player's notes are dealt, by name, while the song's tunes are written in the serial style
         and the player plays lines of the tune in some section of the form; none otherwise."""
-        if not self._choices.is_ready() or self._choices.melody_engine() != melody_writer.SERIAL or not self._choices.get_sounds().has_sound(self._role) or not self.plays_lines():
+        if not self._choices.is_ready() or self._choices.melodies().melody_engine() != melody_writer.SERIAL or not self._choices.get_sounds().has_sound(self._role) or not self.plays_lines():
             return []
         # A player who plays in no section of the song's form is dealt nothing, so has no row to change.
         if not any(self._role in self._choices.section(place).plays() for place in range(len(self._choices.get_song_form().section_entries()))):
@@ -225,7 +225,7 @@ class PlayerChoices:
 
     def genre_row(self, name):
         """Return a player's row as the genre gives it, or the row that plays as none would."""
-        habits = {**self._choices.melody_habits(), **self._band().role_named(self._role).get(arranger.HABITS, {})}
+        habits = {**self._choices.melodies().melody_habits(), **self._band().role_named(self._role).get(arranger.HABITS, {})}
         return list(habits.get(name) or wizard_limits.ROWS_UNASKED[name])
 
     def get_row(self, name):

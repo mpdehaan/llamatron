@@ -560,7 +560,7 @@ class TestWizardSongWays(unittest.TestCase):
     def test_nothing_of_the_song_is_offered_before_a_subgenre_is_chosen(self):
         choices = WizardChoices()
         self.assertIsNone(choices.get_band().song_trait(wizard_limits.PROGRESSION_TRAITS))
-        self.assertEqual(choices.melody_styles(), [])
+        self.assertEqual(choices.melodies().melody_styles(), [])
 
     def test_a_trait_a_player_owns_is_not_the_songs(self):
         for place in range(len(genre_names())):
@@ -582,32 +582,32 @@ class TestWizardSongWays(unittest.TestCase):
             choices.set_seed(A_SEED)
             usual = self.patterns(choices)
             made = []
-            for style in choices.melody_styles():
-                choices.set_melody(style)
+            for style in choices.melodies().melody_styles():
+                choices.melodies().set_melody(style)
                 made.append(self.patterns(choices))
             if len(made) > 1:
                 self.assertTrue(any(patterns != usual for patterns in made), genre_names()[place])
 
     def test_a_style_the_subgenre_cannot_use_is_not_offered_and_is_refused(self):
-        refused = [(place, style) for place in range(len(genre_names())) for style in wizard_limits.MELODY_STYLES if style not in chosen(genre=place).melody_styles()]
+        refused = [(place, style) for place in range(len(genre_names())) for style in wizard_limits.MELODY_STYLES if style not in chosen(genre=place).melodies().melody_styles()]
         self.assertTrue(refused)
         place, style = refused[0]
         with self.assertRaises(ValueError):
-            chosen(genre=place).set_melody(style)
+            chosen(genre=place).melodies().set_melody(style)
         with self.assertRaises(ValueError):
-            self.rock().set_melody(NOT_A_CHOICE)
+            self.rock().melodies().set_melody(NOT_A_CHOICE)
 
     def test_the_melody_style_is_kept_with_the_choices_and_another_subgenre_goes_back_to_the_usual(self):
         choices = self.rock()
         self.assertNotIn(wizard_limits.MELODY_STYLE, choices.to_data())
-        choices.set_melody(choices.melody_styles()[-1])
+        choices.melodies().set_melody(choices.melodies().melody_styles()[-1])
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_melody(), choices.get_melody())
+        self.assertEqual(again.melodies().get_melody(), choices.melodies().get_melody())
         self.assertEqual(self.patterns(again), self.patterns(choices))
-        choices.set_melody(None)
-        self.assertIsNone(choices.get_melody())
+        choices.melodies().set_melody(None)
+        self.assertIsNone(choices.melodies().get_melody())
         again.set_subgenre(again.subgenres()[1])
-        self.assertIsNone(again.get_melody())
+        self.assertIsNone(again.melodies().get_melody())
 
 
 class TestWizardSounds(unittest.TestCase):
@@ -944,7 +944,7 @@ class TestWizardMelodySettings(unittest.TestCase):
         choices = chosen(genre=genre_names().index(A_GENRE_WITH_TUNES))
         choices.set_seed(A_SEED)
         if style is not None:
-            choices.set_melody(style)
+            choices.melodies().set_melody(style)
         return choices
 
     def patterns(self, choices):
@@ -952,63 +952,63 @@ class TestWizardMelodySettings(unittest.TestCase):
 
     def another_value(self, *, choices, name):
         """A value of a setting other than the one it has."""
-        now = choices.get_melody_setting(name)
-        if choices.melody_setting_is_switch(name):
+        now = choices.melodies().get_melody_setting(name)
+        if choices.melodies().melody_setting_is_switch(name):
             return not now
-        lowest, highest = choices.melody_setting_range(name)
+        lowest, highest = choices.melodies().melody_setting_range(name)
         return lowest if now != lowest else highest
 
     def styles(self):
         """The usual style, under no name, and each style the subgenre can be asked for."""
-        return [None, *self.rock().melody_styles()]
+        return [None, *self.rock().melodies().melody_styles()]
 
     def test_each_style_shows_its_own_settings_and_the_usual_style_its_range(self):
         self.assertGreater(len(self.styles()), 1)
         for style in self.styles():
-            self.assertEqual(self.rock(style=style).melody_settings(), list(wizard_limits.MELODY_SETTINGS_OF[style]))
-        self.assertEqual(WizardChoices().melody_settings(), [])
+            self.assertEqual(self.rock(style=style).melodies().melody_settings(), list(wizard_limits.MELODY_SETTINGS_OF[style]))
+        self.assertEqual(WizardChoices().melodies().melody_settings(), [])
 
     def test_a_setting_is_the_genres_until_changed_and_every_setting_changes_the_song_and_is_kept(self):
         for style in self.styles():
-            for name in self.rock(style=style).melody_settings():
+            for name in self.rock(style=style).melodies().melody_settings():
                 choices = self.rock(style=style)
                 before = self.patterns(choices)
                 self.assertNotIn(wizard_limits.MELODY_SETTINGS_KEPT, choices.to_data())
                 value = self.another_value(choices=choices, name=name)
-                choices.set_melody_setting(name=name, value=value)
-                self.assertEqual(choices.get_melody_setting(name), value)
+                choices.melodies().set_melody_setting(name=name, value=value)
+                self.assertEqual(choices.melodies().get_melody_setting(name), value)
                 self.assertNotEqual(self.patterns(choices), before, (style, name))
                 again = WizardChoices.from_data(choices.to_data())
-                self.assertEqual(again.get_melody_setting(name), value)
+                self.assertEqual(again.melodies().get_melody_setting(name), value)
                 self.assertEqual(self.patterns(again), self.patterns(choices))
 
     def test_the_usual_style_has_no_settings_of_its_own_since_a_tunes_range_is_its_players_gauge(self):
-        self.assertEqual(self.rock().melody_settings(), [])
-        self.assertTrue(self.rock(style=melody.EVOLVING).melody_settings())
+        self.assertEqual(self.rock().melodies().melody_settings(), [])
+        self.assertTrue(self.rock(style=melody.EVOLVING).melodies().melody_settings())
 
     def test_a_setting_of_another_style_is_kept_and_says_nothing(self):
         choices = self.rock(style=melody.SERIAL)
-        choices.set_melody_setting(name=melody.LEAPS, value=True)
-        choices.set_melody(melody.SMART)
+        choices.melodies().set_melody_setting(name=melody.LEAPS, value=True)
+        choices.melodies().set_melody(melody.SMART)
         self.assertEqual(self.patterns(choices), self.patterns(self.rock(style=melody.SMART)))
-        choices.set_melody(melody.SERIAL)
-        self.assertTrue(choices.get_melody_setting(melody.LEAPS))
+        choices.melodies().set_melody(melody.SERIAL)
+        self.assertTrue(choices.melodies().get_melody_setting(melody.LEAPS))
 
     def test_a_setting_the_style_has_not_and_a_value_out_of_range_are_refused(self):
         choices = self.rock(style=melody.SERIAL)
-        for refused in (lambda: choices.set_melody_setting(name=melody.MOVE, value=A_SECOND), lambda: choices.set_melody_setting(name=NO_SUCH_GAUGE, value=True),
-                        lambda: choices.set_melody_setting(name=melody.LEAPS, value=A_SECOND)):
+        for refused in (lambda: choices.melodies().set_melody_setting(name=melody.MOVE, value=A_SECOND), lambda: choices.melodies().set_melody_setting(name=NO_SUCH_GAUGE, value=True),
+                        lambda: choices.melodies().set_melody_setting(name=melody.LEAPS, value=A_SECOND)):
             with self.assertRaises(ValueError):
                 refused()
         evolving = self.rock(style=melody.EVOLVING)
-        lowest, highest = evolving.melody_setting_range(melody.MOVE)
+        lowest, highest = evolving.melodies().melody_setting_range(melody.MOVE)
         for value in (lowest - 1, highest + 1, True, NOT_A_NUMBER):
             with self.assertRaises(ValueError):
-                evolving.set_melody_setting(name=melody.MOVE, value=value)
+                evolving.melodies().set_melody_setting(name=melody.MOVE, value=value)
 
     def test_a_new_genre_forgets_the_settings(self):
         choices = self.rock(style=melody.EVOLVING)
-        choices.set_melody_setting(name=melody.MOVE, value=self.another_value(choices=choices, name=melody.MOVE))
+        choices.melodies().set_melody_setting(name=melody.MOVE, value=self.another_value(choices=choices, name=melody.MOVE))
         choices.set_genre(ANOTHER_GENRE)
         self.assertNotIn(wizard_limits.MELODY_SETTINGS_KEPT, choices.to_data())
 
@@ -1018,7 +1018,7 @@ class TestWizardPlayerRows(unittest.TestCase):
 
     def serial(self):
         choices = chosen(genre=genre_names().index(A_GENRE_WITH_STYLES))
-        choices.set_melody(melody.SERIAL)
+        choices.melodies().set_melody(melody.SERIAL)
         choices.set_seed(wizard_limits.FIRST_SEED)
         return choices
 
@@ -1040,7 +1040,7 @@ class TestWizardPlayerRows(unittest.TestCase):
         self.assertLess(len(with_rows), len(choices.get_band().roles_in()))
         for role in with_rows:
             self.assertEqual(choices.player(role).rows(), list(wizard_limits.PLAYER_ROWS))
-        choices.set_melody(None)
+        choices.melodies().set_melody(None)
         for role in choices.get_band().roles_in():
             self.assertEqual(choices.player(role).rows(), [])
 
@@ -1089,7 +1089,7 @@ class TestWizardPlayerRows(unittest.TestCase):
             choices.player(role).set_row(name=NO_SUCH_GAUGE, values=[lowest])
         choices.player(role).set_row(name=melody.LENGTHS, values=[lowest] * wizard_limits.MOST_ROW_CELLS)
         choices.player(role).set_row(name=melody.LENGTHS, values=[highest])
-        choices.set_melody(None)
+        choices.melodies().set_melody(None)
         with self.assertRaises(ValueError):
             choices.player(role).get_row(name=melody.LENGTHS)
 
@@ -1097,9 +1097,9 @@ class TestWizardPlayerRows(unittest.TestCase):
         choices = self.serial()
         role = self.a_player(choices)
         choices.player(role).set_row(name=melody.LENGTHS, values=[choices.get_band().row_limits(melody.LENGTHS)[1]])
-        choices.set_melody(None)
+        choices.melodies().set_melody(None)
         plain = self.serial()
-        plain.set_melody(None)
+        plain.melodies().set_melody(None)
         self.assertEqual(self.parts(choices), self.parts(plain))
         choices.set_genre(ANOTHER_GENRE)
         self.assertNotIn(wizard_limits.PLAYER_ROWS_KEPT, choices.to_data())
@@ -1204,41 +1204,41 @@ class TestWizardMelodyGauges(unittest.TestCase):
 
     def test_the_gauges_show_only_while_the_melody_style_is_smart(self):
         choices = self.rock()
-        self.assertEqual(choices.melody_gauges(), [])
-        choices.set_melody(melody.SMART)
-        self.assertEqual(choices.melody_gauges(), list(melody.DEFAULT_GAUGES))
-        choices.set_melody(None)
-        self.assertEqual(choices.melody_gauges(), [])
+        self.assertEqual(choices.melodies().melody_gauges(), [])
+        choices.melodies().set_melody(melody.SMART)
+        self.assertEqual(choices.melodies().melody_gauges(), list(melody.DEFAULT_GAUGES))
+        choices.melodies().set_melody(None)
+        self.assertEqual(choices.melodies().melody_gauges(), [])
 
     def test_a_gauge_stands_where_the_genre_sets_it_until_moved(self):
         choices = self.rock()
-        choices.set_melody(melody.SMART)
+        choices.melodies().set_melody(melody.SMART)
         style = style_of(A_GENRE_WITH_TUNES)[arranger.MELODY]
         own = (style if melody.GRID in style else style[choices.meter()])[melody.SMART]
-        for name in choices.melody_gauges():
-            self.assertEqual(choices.get_melody_gauge(name), own.get(name, melody.DEFAULT_GAUGES[name]))
-            self.assertIn(choices.get_melody_gauge(name), range(melody.LOWEST_GAUGE, melody.HIGHEST_GAUGE + 1))
+        for name in choices.melodies().melody_gauges():
+            self.assertEqual(choices.melodies().get_melody_gauge(name), own.get(name, melody.DEFAULT_GAUGES[name]))
+            self.assertIn(choices.melodies().get_melody_gauge(name), range(melody.LOWEST_GAUGE, melody.HIGHEST_GAUGE + 1))
 
     def test_a_gauge_set_where_it_stands_makes_the_same_song_and_a_moved_one_another_and_is_kept(self):
         choices = self.rock()
-        choices.set_melody(melody.SMART)
+        choices.melodies().set_melody(melody.SMART)
         usual = self.patterns(choices)
-        name = choices.melody_gauges()[0]
-        choices.set_melody_gauge(name=name, position=choices.get_melody_gauge(name))
+        name = choices.melodies().melody_gauges()[0]
+        choices.melodies().set_melody_gauge(name=name, position=choices.melodies().get_melody_gauge(name))
         self.assertEqual(self.patterns(choices), usual)
-        choices.set_melody_gauge(name=name, position=melody.HIGHEST_GAUGE)
+        choices.melodies().set_melody_gauge(name=name, position=melody.HIGHEST_GAUGE)
         self.assertNotEqual(self.patterns(choices), usual)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_melody_gauge(name), melody.HIGHEST_GAUGE)
+        self.assertEqual(again.melodies().get_melody_gauge(name), melody.HIGHEST_GAUGE)
         self.assertEqual(self.patterns(again), self.patterns(choices))
 
     def test_a_gauge_there_is_none_of_and_a_position_out_of_range_are_refused(self):
         choices = self.rock()
-        choices.set_melody(melody.SMART)
-        name = choices.melody_gauges()[0]
+        choices.melodies().set_melody(melody.SMART)
+        name = choices.melodies().melody_gauges()[0]
         for refused_name, position in ((NO_SUCH_GAUGE, melody.LOWEST_GAUGE), (name, melody.LOWEST_GAUGE - 1), (name, melody.HIGHEST_GAUGE + 1), (name, True), (name, A_GAUGE_IN_WORDS)):
             with self.assertRaises(ValueError) as refused:
-                choices.set_melody_gauge(name=refused_name, position=position)
+                choices.melodies().set_melody_gauge(name=refused_name, position=position)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_GAUGE.format(name=refused_name, low=melody.LOWEST_GAUGE, high=melody.HIGHEST_GAUGE, value=position))
 
 

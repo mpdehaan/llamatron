@@ -56,10 +56,10 @@ class SectionMelodyBranch(Branch):
         if choices.get_hook().is_body_of_hook(kind):
             # The chorus that holds the hook is written around it: where the hook sits among its lines, and the gauges of the lines between.
             fields = [*self.placement_fields(), *(self.body_gauge_field(name) for name in choices.get_hook().body_gauges())]
-        elif wizard_names.MELODY_HEIGHT in choices.section_melody_fields(kind):
-            fields.append(self.own_field(field=wizard_names.MELODY_HEIGHT, label=labels.MSG_WIZARD_HEIGHT_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=wizard_names.MELODY_HEIGHT), usual=choices.genre_height_in(kind), origin=labels.MSG_WIZARD_USUAL_MELODY))
-        if wizard_limits.MELODY_BUSY in choices.section_melody_fields(kind) and not choices.get_hook().is_body_of_hook(kind):
-            fields.append(self.own_field(field=wizard_limits.MELODY_BUSY, label=labels.MSG_WIZARD_SECTION_BUSY_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=wizard_limits.MELODY_BUSY), usual=choices.get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
+        elif wizard_names.MELODY_HEIGHT in choices.melodies().section_melody_fields(kind):
+            fields.append(self.own_field(field=wizard_names.MELODY_HEIGHT, label=labels.MSG_WIZARD_HEIGHT_LABEL, ways=choices.melodies().section_melody_ways_offered(kind=kind, field=wizard_names.MELODY_HEIGHT), usual=choices.genre_height_in(kind), origin=labels.MSG_WIZARD_USUAL_MELODY))
+        if wizard_limits.MELODY_BUSY in choices.melodies().section_melody_fields(kind) and not choices.get_hook().is_body_of_hook(kind):
+            fields.append(self.own_field(field=wizard_limits.MELODY_BUSY, label=labels.MSG_WIZARD_SECTION_BUSY_LABEL, ways=choices.melodies().section_melody_ways_offered(kind=kind, field=wizard_limits.MELODY_BUSY), usual=choices.melodies().get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
         return fields + self.hook_fields() + self.buttons()
 
     def says_the_hook(self):
@@ -111,12 +111,12 @@ class SectionMelodyBranch(Branch):
         """Return a field of the kind's own melody: one list of the field's values in their order, the value the genre or the song
         gives said to be so, which gives the field back when picked; a value that makes the same song as that one is left out."""
         choices = self.get_choices()
-        chosen = choices.get_section_melody(kind=self._kind, field=field)
+        chosen = choices.melodies().get_section_melody(kind=self._kind, field=field)
         values = [value for value in wizard_limits.SECTION_MELODY_WAYS[field] if value == usual or value in ways]
         names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=origin) if value == usual else value for value in values]
         now = chosen if chosen in values else usual
         return ChoiceField(page=self.get_page(), label=label, choices=values, names=names, current=now, shown=names[values.index(now)],
-                           set=self.get_page().choosing(lambda value: choices.set_section_melody(kind=self._kind, field=field, value=None if value == usual else value)))
+                           set=self.get_page().choosing(lambda value: choices.melodies().set_section_melody(kind=self._kind, field=field, value=None if value == usual else value)))
 
     def buttons(self):
         """Return the buttons that open the melody's notes in the pattern editor, that have the melody written again, and that
