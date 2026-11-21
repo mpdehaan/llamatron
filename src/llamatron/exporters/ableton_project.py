@@ -10,9 +10,9 @@ from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
 
-from llamatron.exporters import timing
+from llamatron.engine.timing import timing
+from llamatron.engine.timing.timing import control_points, keyswitch_events, timed_events
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
-from llamatron.exporters.timing import control_points, keyswitch_events, timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file import files
 from llamatron.user_strings import errors, names

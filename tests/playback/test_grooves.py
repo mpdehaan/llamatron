@@ -9,9 +9,9 @@ import os
 import tempfile
 import unittest
 
+from llamatron.engine.timing.timing import control_events, timed_events
 from llamatron.exporters import clip_tree
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.exporters.timing import control_events, timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError

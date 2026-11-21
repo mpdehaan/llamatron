@@ -9,8 +9,8 @@ import math
 import re
 
 from llamatron.caching.kept import as_is, kept_while
-from llamatron.grid.control import Control
-from llamatron.grid.positions import exact_length, fit_to_length, piece_of
+from llamatron.engine.clips.control import Control
+from llamatron.engine.clips.positions import exact_length, fit_to_length, piece_of
 from llamatron.math.length import Length
 from llamatron.model.file.checks import check_clip_length, check_loop, check_name, check_scale, check_time_signature_override
 from llamatron.model.objects.groove import Groove

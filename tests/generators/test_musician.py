@@ -6,7 +6,7 @@
 
 import unittest
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.generators import musician
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError

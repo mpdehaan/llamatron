@@ -10,7 +10,7 @@ MAXIMUM, MAXIMUM], and scale_notes turns those into the notes of C major they mo
 
 import unittest
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.generators.blend import BlendMode
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name

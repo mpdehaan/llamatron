@@ -6,10 +6,10 @@
 
 from itertools import count
 
-from llamatron.grid.clip import Clip
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.row_clock import RowClock
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.clip_column import ClipColumn
+from llamatron.engine.clips.clip_row import ClipRow
+from llamatron.engine.clips.row_clock import RowClock
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import check_scale, check_tempo, check_time_signature, time_signature as time_signature_object
 from llamatron.model.schema import defaults

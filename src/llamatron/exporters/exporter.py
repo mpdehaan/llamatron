@@ -15,7 +15,7 @@ for another DAW say, is one class and its place in the lists of exports.py.
 import glob
 import os
 
-from llamatron.grid.clip_grid import ClipGrid
+from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.user_strings import errors
 
 # What joins the names of the files that are in the way, in a warning.

@@ -6,7 +6,7 @@
 
 from bisect import bisect_right
 
-from llamatron.exporters.timing import as_note, clip_end
+from llamatron.engine.timing.timing import as_note, clip_end
 from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.model.values import sound as sound_values

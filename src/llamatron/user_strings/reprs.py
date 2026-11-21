@@ -28,19 +28,19 @@ REPR_REST = 'Rest(length={length!r})'
 REPR_DEGREE = 'Degree(number={number!r}, length={length!r}, octave={octave!r}, scale_notes={scale_notes!r}, half_steps={half_steps!r})'
 REPR_NOTE = 'Note(name={name!r}, octave_number={octave_number!r}, length={length!r}, velocity={velocity!r}, glide={glide!r})'
 
-# grid/control.py
+# engine/clips/control.py
 # How a control prints, as the expression that would build it.
 REPR_CONTROL = 'Control(time={time!r}, number={number!r}, value={value!r}, slide={slide!r})'
 
-# grid/clip_column.py
+# engine/clips/clip_column.py
 # How a column prints, as the expression that would build it.
 REPR_CLIP_COLUMN = 'ClipColumn(name={name!r}, mute={mute!r}, drum={drum!r}, gm_sound={gm_sound!r}, id={id!r})'
 
-# grid/clip_row.py
+# engine/clips/clip_row.py
 # How a row prints, as the expression that would build it.
 REPR_CLIP_ROW = 'ClipRow(name={name!r}, tempo={tempo!r}, scale={scale!r}, id={id!r})'
 
-# grid/clip.py
+# engine/clips/clip.py
 # How a clip prints, as the expression that would build it.
 REPR_CLIP = 'Clip(name={name!r}, notes={notes!r}, scale={scale!r}, length={length!r}, note_length={note_length!r}, id={id!r})'
 

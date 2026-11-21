@@ -8,7 +8,7 @@ exporters place them; nothing else about the set is kept, so the measures can't 
 
 from dataclasses import dataclass
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.playback.song_renderer import SongRenderer
 
 # A whole note's beats when the beat is a quarter note, which every measure counts in.

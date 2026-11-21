@@ -6,10 +6,10 @@
 
 from math import ceil
 
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.timing.keyswitch import SwitchNote
 from llamatron.generators.blend import Blend
 from llamatron.generators.euclid import EuclidMask
-from llamatron.grid.clip import Clip
-from llamatron.grid.keyswitch import SwitchNote
 from llamatron.math.length import Length
 from llamatron.math.random_source import drawn_from_when_asked
 from llamatron.math.rational import Rational

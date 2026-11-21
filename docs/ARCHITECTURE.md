@@ -79,7 +79,7 @@ or a track can choose another or switch grooving off, the track's choice winning
    notes, chords and rests, each with an exact length. While a song plays, each of those is
    plain data, a tuple, since a song has thousands: the `Note`, `Chord` and `Rest` classes say
    the same thing wherever a clip is built or read by hand.
-3. **The clips are gridded.** `grid` holds the finished clips in a `ClipGrid`, with a `ClipRow`
+3. **The clips are gridded.** `engine/clips` holds the finished clips in a `ClipGrid`, with a `ClipRow`
    for every scene and a `ClipColumn` for every track. The `ClipGrid` knows how long each row lasts and
    where each one starts when they're laid end to end, which is the arithmetic every writer uses.
 4. **The grid is written.** `exporters` turn the grid into files: a Live set with the clips in
@@ -130,7 +130,7 @@ flowchart LR
     model["model"]
     playback["playback"]
     generators["generators"]
-    grid["grid"]
+    engine["engine"]
     exporters["exporters"]
     importers["importers"]
     macro_composer["macro_composer"]
@@ -142,12 +142,13 @@ flowchart LR
     caching["caching"]
     user_strings["user_strings"]
     end
-    exporters --> grid
+    engine --> model
+    exporters --> engine
     exporters --> model
     exporters --> realtime
-    generators --> grid
+    generators --> engine
     generators --> model
-    grid --> model
+    importers --> engine
     importers --> exporters
     importers --> model
     importers --> playback
@@ -161,13 +162,13 @@ flowchart LR
     macro_composer --> model
     macro_composer --> playback
     model --> generators
-    playback --> exporters
+    playback --> engine
     playback --> generators
-    playback --> grid
     playback --> model
-    realtime --> exporters
+    realtime --> engine
     realtime --> model
     realtime --> playback
+    tui --> engine
     tui --> exporters
     tui --> generators
     tui --> importers
@@ -188,7 +189,7 @@ flowchart LR
 | `model` | The Model: the set as it is stored, in four parts. values/ holds the musical values every part of llamatron works with; |
 | `playback` | Playing a song's composition objects into finished clips, which the exporters then write. |
 | `generators` | The generators that change a clip's notes as it exports: arpeggiators, AutoRatchets and blending for morphs. |
-| `grid` | The finished clips a song exports into, and the grid that maps them to tracks and scenes. |
+| `engine` | The Engine: what makes a song into music. clips/ holds the finished clips a song is realized into and the grid that maps |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
 | `macro_composer` | The MacroComposer: a set made from structured data that says what to play. composer.py turns a |

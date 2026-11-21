@@ -5,7 +5,7 @@
 
 import unittest
 
-from llamatron.exporters import sounding
+from llamatron.engine.timing import sounding
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section

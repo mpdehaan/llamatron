@@ -10,7 +10,7 @@ eighths between and the sixteenths between those.
 
 import unittest
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import ShapeSetting

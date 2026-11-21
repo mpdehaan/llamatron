@@ -2,4 +2,4 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The finished clips."""
+"""The tests of engine/: the finished clips and their timing."""

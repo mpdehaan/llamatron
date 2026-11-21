@@ -10,8 +10,8 @@ every export is the same either way."""
 
 import math
 
-from llamatron.exporters import sounding
-from llamatron.exporters.sounding import degree_to_note, NoteEvent, sounding_notes, velocity_of
+from llamatron.engine.timing import sounding
+from llamatron.engine.timing.sounding import degree_to_note, NoteEvent, sounding_notes, velocity_of
 from llamatron.math.length import Length
 from llamatron.math.rational import reduced
 from llamatron.model.values import sound

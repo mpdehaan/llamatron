@@ -11,7 +11,7 @@ adds the track's accent on top of its instrument's, stopping at MIDI's loudest.
 
 import unittest
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import InstrumentSetting, Row, Section, TrackSetting, VelocitySetting

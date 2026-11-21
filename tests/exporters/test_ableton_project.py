@@ -14,12 +14,12 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.clip_column import ClipColumn
+from llamatron.engine.clips.clip_grid import ClipGrid
+from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.exporters import ableton_project
 from llamatron.exporters.ableton_project import AbletonProject, Attribute, ElementPath, Tag
-from llamatron.grid.clip import Clip
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Degree, Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType

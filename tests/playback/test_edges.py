@@ -14,11 +14,11 @@ import unittest
 from unittest import mock
 import yaml
 
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.control import Control
+from llamatron.engine.clips.positions import cut_position
+from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.exports import ExportKind
-from llamatron.exporters.timing import timed_events
-from llamatron.grid.clip import Clip
-from llamatron.grid.control import Control
-from llamatron.grid.positions import cut_position
 from llamatron.math.length import Length
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting

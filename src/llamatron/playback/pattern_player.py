@@ -7,10 +7,10 @@
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.control import Control
+from llamatron.engine.timing.keyswitch import SwitchedSlots
 from llamatron.generators.arp import along_scale
-from llamatron.grid.clip import Clip
-from llamatron.grid.control import Control
-from llamatron.grid.keyswitch import SwitchedSlots
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational

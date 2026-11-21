@@ -4,7 +4,7 @@
 
 """A MIDI CC value sent at a time in a clip."""
 
-from llamatron.grid.positions import exact_length
+from llamatron.engine.clips.positions import exact_length
 from llamatron.model.values import midi
 from llamatron.user_strings import errors, reprs
 

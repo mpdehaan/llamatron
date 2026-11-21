@@ -26,7 +26,7 @@ ERR_NEEDS_FORCE = '{path} holds values that cannot be used, pass --force to expo
 # The line printed on stderr when the command line or the tracker can't go on.
 ERR_PRINTED = 'error: {problem}'
 
-# grid/clip_grid.py
+# engine/clips/clip_grid.py
 ERR_CLIP_GRID_NOT_A_POSITION = 'expected a Note, Chord, Rest, Degree or shorthand for one, got {value!r}'
 ERR_INVALID_NAME = 'a name must be text, got {name!r}'
 ERR_INVALID_TEMPO = 'tempo must be a number of at least {lowest}, got {tempo!r}'
@@ -283,7 +283,7 @@ ERR_BAD_KEYSWITCH_SLOT = 'a keyswitch slot must be an integer from {lowest} to {
 ERR_INSTRUMENTS_NOT_NAMED = 'instruments: expected instruments by name, each with its settings'
 ERR_NO_SUCH_INSTRUMENT = 'no instrument called ({name})'
 ERR_REAL_TIME_NOT_TRUE_OR_FALSE = 'real_time must be true or false, got {value!r}'
-# grid/clip.py
+# engine/clips/clip.py
 ERR_NOT_A_GROOVE = 'expected a Groove, got {value!r}'
 ERR_TRACK_NOT_TRUE_OR_FALSE = '{name} must be true or false, got {value!r}'
 ERR_BAD_TRANSPOSE = 'transpose must be an integer from -{most} to {most}, got {value!r}'
@@ -305,7 +305,7 @@ ERR_AUTO_RATCHET_NOT_A_LIST = 'expected a list of counts, got {value!r}'
 ERR_BAD_COUNT = 'a count must be a positive integer, got {value!r}'
 
 
-# generators/blend.py, and exporters/timing.py for the scale
+# generators/blend.py, and engine/timing/timing.py for the scale
 ERR_NOT_A_MODE = 'expected a BlendMode, got {value!r}'
 ERR_BAD_AMOUNT = 'amount must be from {lowest} to {highest}, got {value!r}'
 ERR_DEGREE_NEEDS_SCALE = '{degree!r} needs a scale, and none is set'
@@ -368,7 +368,7 @@ ERR_NOT_A_GRID = 'expected a ClipGrid, got {value!r}'
 ERR_NEEDS_EXPORT = '{kind} needs an export() method'
 ERR_NEEDS_FILES = '{kind} needs to say which files it writes, as WritesOneFile or WritesManyFiles'
 
-# exporters/timing.py
+# engine/timing/timing.py
 ERR_TIMING_NOT_A_POSITION = 'expected a Note, Chord or Rest, got {value!r}'
 
 # model/values/scale.py

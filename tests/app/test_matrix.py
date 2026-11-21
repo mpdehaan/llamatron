@@ -7,12 +7,12 @@ import os
 import tempfile
 import unittest
 
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.clip_column import ClipColumn
+from llamatron.engine.clips.clip_grid import ClipGrid
+from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.exporters import midi_messages
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.grid.clip import Clip
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
 from llamatron.model.values.note import Note
 
 # Names the tests give to their own things, and other values they use.

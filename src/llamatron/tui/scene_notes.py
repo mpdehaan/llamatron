@@ -19,7 +19,7 @@ numbered in the scene's scale, with the bass after a slash when it isn't the roo
 
 from typing import NamedTuple
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.model.objects.euclid import euclid_settings
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.shapes import shape_settings

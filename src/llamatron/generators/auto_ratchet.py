@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
+from llamatron.engine.clips.positions import fit_to_length
 from llamatron.generators.base import ClipGenerator
-from llamatron.grid.positions import fit_to_length
 from llamatron.math.length import Length
 from llamatron.model.values import sound
 from llamatron.model.values.sound import Sound

@@ -11,13 +11,13 @@ import os
 import tempfile
 import unittest
 
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.clip_column import ClipColumn
+from llamatron.engine.clips.clip_grid import ClipGrid
+from llamatron.engine.clips.clip_row import ClipRow
+from llamatron.engine.clips.control import Control
 from llamatron.exporters import midi_arrangement, midi_messages
 from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
-from llamatron.grid.clip import Clip
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.control import Control
 from llamatron.model.values.note import Note
 from llamatron.model.values.time_signature import TimeSignature
 from llamatron.user_strings import errors

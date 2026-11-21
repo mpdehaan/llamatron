@@ -40,7 +40,7 @@ NOT_A_POSITION = 'C4'
 SOURCE = pathlib.Path(llamatron.__file__).parent
 RENDER_MODULES = [
     *sorted((SOURCE / 'playback').glob('*.py')), *sorted((SOURCE / 'generators').glob('*.py')),
-    SOURCE / 'grid' / 'positions.py', SOURCE / 'exporters' / 'timing.py',
+    SOURCE / 'engine' / 'clips' / 'positions.py', SOURCE / 'engine' / 'timing' / 'timing.py',
 ]
 THE_CLASSES = {Note.__name__, Rest.__name__, Chord.__name__, Degree.__name__, Held.__name__, phrase.__name__}
 MSG_MAKES_OBJECTS = 'these modules of the render import the classes, where a render makes sounds:\n{places}'

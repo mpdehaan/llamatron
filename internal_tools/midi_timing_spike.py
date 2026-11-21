@@ -31,7 +31,7 @@ import sys
 import threading
 import time
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 

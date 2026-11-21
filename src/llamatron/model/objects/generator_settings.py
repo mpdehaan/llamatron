@@ -788,7 +788,7 @@ class StrumSettings(GeneratorSettings):
     """A Strum generator's settings, which win over a clip's and its track's: its direction, spread, fade, loose timing and upstroke strings.
 
     Like a drift, it runs on no clip's notes: the renderer reads it for each clip that names it,
-    and the exporters' timing strums the notes (exporters/timing.py), so GENERATOR is None.
+    and the exporters' timing strums the notes (engine/timing/timing.py), so GENERATOR is None.
     """
 
     __slots__ = ()
@@ -978,7 +978,7 @@ class MovingRowSettings(StepRowSettings):
     """A Rush's or a Drag's settings: its row, and how far a note starting on a step that's on moves, as a share of a step.
 
     It runs on no clip's notes itself: the renderer reads it for each clip that names it, and the
-    exporters' timing moves the notes, on top of the groove (exporters/timing.py), so GENERATOR is None.
+    exporters' timing moves the notes, on top of the groove (engine/timing/timing.py), so GENERATOR is None.
     """
 
     __slots__ = ()
@@ -1155,7 +1155,7 @@ class HocketSettings(GeneratorSettings):
 
     Like a drift, it runs on no clip's notes itself: the renderer works out each scene's turns
     once from the source track's clip, and hands each hocketing clip its notes, which the
-    exporters' timing adds to the clip's own (exporters/timing.py), so GENERATOR is None. The
+    exporters' timing adds to the clip's own (engine/timing/timing.py), so GENERATOR is None. The
     source names a track of the song it plays in, and a rename of that track follows.
     """
 

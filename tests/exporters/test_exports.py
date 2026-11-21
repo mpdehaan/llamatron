@@ -11,12 +11,12 @@ import os
 import tempfile
 import unittest
 
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.clip_column import ClipColumn
+from llamatron.engine.clips.clip_grid import ClipGrid
+from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.exporters import exports
 from llamatron.exporters.exports import earlier_export, export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
-from llamatron.grid.clip import Clip
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
 from llamatron.model.values.note import Note
 
 QUARTER = 0.25

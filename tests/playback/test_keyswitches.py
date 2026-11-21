@@ -8,10 +8,10 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
+from llamatron.engine.timing.timing import keyswitch_events, timed_events
 from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
-from llamatron.exporters.timing import keyswitch_events, timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError

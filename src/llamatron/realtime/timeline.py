@@ -6,7 +6,7 @@
 
 Real-time playback renders a song the way the exporters do and then only schedules: everything that makes
 the music, probability, directions, arps, registers, grabs, morphs, ties, glides and grooves, has happened
-in the grid, so the timeline is read from the same note timing the MIDI export writes (exporters/timing.py),
+in the grid, so the timeline is read from the same note timing the MIDI export writes (engine/timing/timing.py),
 and tests/realtime/test_realtime.py holds it to the export, tick for tick. Each event carries the whole-note time it
 came from, for that comparison, the seconds it plays at, the port and channel of its track's route, and a
 tag naming the scene and track it belongs to, so that one clip's events can be dropped or stopped.
@@ -14,7 +14,7 @@ tag naming the scene and track it belongs to, so that one clip's events can be d
 
 from typing import NamedTuple
 
-from llamatron.exporters.timing import control_events, keyswitch_events, timed_events
+from llamatron.engine.timing.timing import control_events, keyswitch_events, timed_events
 from llamatron.math.rational import Rational
 
 # The three kinds of event the timeline holds, as the status byte without its channel.

@@ -16,14 +16,15 @@ import unittest
 import xml.etree.ElementTree as ET
 import yaml
 
-from llamatron.exporters import midi_messages, timing
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.control import Control
+from llamatron.engine.timing import timing
+from llamatron.engine.timing.timing import control_events, timed_events
+from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters.timing import control_events, timed_events
 from llamatron.generators.arp import along_scale, Arp, ChordOrder, OctaveJump
 from llamatron.generators.blend import BlendMode
-from llamatron.grid.clip import Clip
-from llamatron.grid.control import Control
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name

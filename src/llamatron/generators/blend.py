@@ -6,8 +6,8 @@ from enum import auto, Enum
 from fractions import Fraction
 from math import isfinite
 
+from llamatron.engine.clips.clip import Clip
 from llamatron.generators.base import ClipGenerator
-from llamatron.grid.clip import Clip
 from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational

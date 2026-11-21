@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""How a finished clip strums its chords, worked out by the renderer and played by the exporters' timing (exporters/timing.py)."""
+"""How a finished clip strums its chords, worked out by the renderer and played by the exporters' timing (engine/timing/timing.py)."""
 
 from typing import NamedTuple
 

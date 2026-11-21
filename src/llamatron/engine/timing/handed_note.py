@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The notes a Hocket hands a clip, which the exporters' timing adds to the clip's own (exporters/timing.py)."""
+"""The notes a Hocket hands a clip, which the exporters' timing adds to the clip's own (engine/timing/timing.py)."""
 
 from typing import NamedTuple
 

@@ -7,18 +7,18 @@
 from fractions import Fraction
 from typing import NamedTuple
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.clips.clip_column import ClipColumn
+from llamatron.engine.clips.clip_grid import ClipGrid
+from llamatron.engine.clips.clip_row import ClipRow
+from llamatron.engine.clips.control import Control
+from llamatron.engine.clips.row_clock import RowClock
+from llamatron.engine.timing.handed_note import HandedNote
+from llamatron.engine.timing.nudge_plan import amount_moved, MovingRow, NudgePlan
+from llamatron.engine.timing.strum_plan import StrumPlan
+from llamatron.engine.timing.timing import timed_events
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.musician import Surroundings
-from llamatron.grid.clip_column import ClipColumn
-from llamatron.grid.clip_grid import ClipGrid
-from llamatron.grid.clip_row import ClipRow
-from llamatron.grid.control import Control
-from llamatron.grid.handed_note import HandedNote
-from llamatron.grid.nudge_plan import amount_moved, MovingRow, NudgePlan
-from llamatron.grid.row_clock import RowClock
-from llamatron.grid.strum_plan import StrumPlan
 from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError

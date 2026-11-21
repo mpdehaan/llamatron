@@ -5,7 +5,7 @@
 
 import unittest
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.generators import phrasing
 from llamatron.math.rational import Rational
 from llamatron.model.objects import generator_settings

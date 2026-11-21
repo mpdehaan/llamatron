@@ -10,9 +10,10 @@ import os
 import tempfile
 import unittest
 
-from llamatron.exporters import midi_messages, sounding
+from llamatron.engine.timing import sounding
+from llamatron.engine.timing.timing import timed_events
+from llamatron.exporters import midi_messages
 from llamatron.exporters.clip_tree import ClipTree
-from llamatron.exporters.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting

@@ -10,9 +10,9 @@ clips written by hand with every kind of position, and on every clip of every ex
 from fractions import Fraction
 import unittest
 
-from llamatron.exporters.timing import timed_events
-from llamatron.grid.clip import Clip
-from llamatron.grid.control import Control
+from llamatron.engine.clips.clip import Clip
+from llamatron.engine.clips.control import Control
+from llamatron.engine.timing.timing import timed_events
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held, phrase
 from llamatron.model.values.note import Degree, Note, NoteName, Rest

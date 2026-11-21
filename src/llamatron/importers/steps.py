@@ -23,8 +23,8 @@ A value that comes and goes between two steps is not heard, which the comparison
 from bisect import bisect_right
 from typing import NamedTuple
 
-from llamatron.exporters import timing
-from llamatron.exporters.timing import value_on_the_way
+from llamatron.engine.timing import timing
+from llamatron.engine.timing.timing import value_on_the_way
 from llamatron.importers.keys import degree_of, drum_note_of
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text

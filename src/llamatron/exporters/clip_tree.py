@@ -7,10 +7,10 @@
 import mido
 import os
 
+from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters import midi_messages
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles
 from llamatron.exporters.midi_messages import clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event
-from llamatron.exporters.timing import timed_events
 from llamatron.user_strings import names
 
 # A clip's file name: the song's name, then its scene and track, each as a number counted from 1

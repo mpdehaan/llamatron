@@ -4,8 +4,8 @@
 
 from enum import auto, Enum
 
+from llamatron.engine.clips.positions import fit_to_length
 from llamatron.generators.base import ClipGenerator
-from llamatron.grid.positions import fit_to_length
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source

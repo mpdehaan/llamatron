@@ -6,8 +6,8 @@
 
 import unittest
 
+from llamatron.engine.clips.clip import Clip
 from llamatron.generators.auto_ratchet import AutoRatchet
-from llamatron.grid.clip import Clip
 from llamatron.model.values.note import Note, Rest
 
 SIXTEENTH = 0.0625

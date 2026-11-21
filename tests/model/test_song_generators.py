@@ -7,8 +7,8 @@
 from fractions import Fraction
 import unittest
 
-from llamatron.exporters import sounding
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing import sounding
+from llamatron.engine.timing.timing import timed_events
 from llamatron.generators.arp import ChordOrder
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, written_name

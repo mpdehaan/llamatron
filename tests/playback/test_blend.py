@@ -5,9 +5,9 @@
 from fractions import Fraction
 import unittest
 
+from llamatron.engine.clips.clip import Clip
 from llamatron.generators.base import ClipGenerator
 from llamatron.generators.blend import Blend, BlendMode
-from llamatron.grid.clip import Clip
 from llamatron.model.values.note import Degree, Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType
 

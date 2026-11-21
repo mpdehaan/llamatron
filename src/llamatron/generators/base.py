@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
-from llamatron.grid.clip import Clip
+from llamatron.engine.clips.clip import Clip
 from llamatron.user_strings import errors
 
 

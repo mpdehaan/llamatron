@@ -9,7 +9,7 @@ note lasts two seconds, so 8 milliseconds between strings is 1/250 of a whole no
 
 import unittest
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, strum_setting, StrumDirection, StrumPart, StrumSpread, TrackSetting, UpstrokeStrings

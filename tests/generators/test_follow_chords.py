@@ -6,7 +6,7 @@
 
 import unittest
 
-from llamatron.exporters.timing import timed_events
+from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import FollowChordsSetting, ProgressionSetting
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, TrackSetting

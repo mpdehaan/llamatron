@@ -11,7 +11,7 @@ song across an edit, and a remembered pass that differs from the pass worked out
 import unittest
 
 from llamatron.caching.memory import Memory, StaleAnswer
-from llamatron.grid.clip import Clip
+from llamatron.engine.clips.clip import Clip
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
