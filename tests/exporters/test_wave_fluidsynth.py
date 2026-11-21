@@ -24,12 +24,12 @@ from llamatron.exporters import exports, wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
+from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
+from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
+from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import file_format
-from llamatron.tui import keybindings
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.keys import Key
 from llamatron.user_strings import errors, labels, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text, UITest
@@ -47,7 +47,7 @@ STEREO = 2
 FAILED = 1
 FLUIDSYNTH_SAYS = 'fluidsynth: error: no audio'
 INSTALLED = 'llamatron.exporters.wave_fluidsynth.installed'
-TRACKER_INSTALLED = 'llamatron.tui.transport.installed'
+TRACKER_INSTALLED = 'llamatron.interface.tracker.transport.installed'
 PROGRAM_CHANGE = 'program_change'
 READ_BYTES = 'rb'
 WRITE_BYTES = 'wb'

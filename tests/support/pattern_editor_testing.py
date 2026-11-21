@@ -4,10 +4,10 @@
 
 """Helpers the tests of the pattern editor share: the class that opens the editor on a pattern, and a section's heading as drawn."""
 
-from llamatron.tui import keybindings
-from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.pattern.pattern_editor import munges_in_order
+from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
+from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.screens.pattern.pattern_editor import munges_in_order
 from llamatron.user_strings import labels
 from tests.support.ui_testing import UITest
 

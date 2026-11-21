@@ -11,7 +11,7 @@ Each constant starts with MSG_, and the class What groups what the keys many pag
 class KeyName:
     """What each key, and each group of keys bound together, is called in a legend and in the F1 dialog.
 
-    A key is named here once, and tui/keybindings.py gives each binding its name from these.
+    A key is named here once, and interface/tracker/keybindings.py gives each binding its name from these.
     """
 
     TAB = 'Tab'
@@ -82,7 +82,7 @@ class KeyName:
     NOTE_LETTERS = 'A-G'
 
 
-# tui/screens/arrange/arrange_page.py
+# interface/tracker/screens/arrange/arrange_page.py
 # What the Arrange page's keys do, on a scene, a track or a clip. C copies everywhere:
 # a scene or track in place, and a clip to be pasted with V.
 MSG_ADD_SCENE_WHAT = 'add scene'
@@ -125,7 +125,7 @@ MSG_USE_PATTERN_DIRECTION_WHAT = "use the pattern's"
 MSG_NO_MORPH_WHAT = 'no morph'
 MSG_NO_GRAB_WHAT = 'no grab'
 
-# tui/key_table.py and tui/keybindings.py: the key names, and the words every page shares
+# interface/tracker/key_table.py and interface/tracker/keybindings.py: the key names, and the words every page shares
 
 # AboutDialog: the cowsay cow saying the program's name, then the version, the links, a quote and the license.
 # One line of a key legend: how a key's label and what it does are spaced.
@@ -200,9 +200,9 @@ class What:
     WIZARD = 'WIZARD'
 
 
-# tui/screens/shared/list_page.py and tui/screens/shared/field_page.py
+# interface/tracker/screens/shared/list_page.py and interface/tracker/screens/shared/field_page.py
 
-# tui/screens/set/main_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
+# interface/tracker/screens/set/main_page.py, interface/tracker/screens/set/file_page.py and interface/tracker/screens/shared/everywhere.py
 # The main screen's footer says help and about in lower case like the rest of a legend, where the F1 dialog's capitals would shout.
 MSG_HELP_FOOTER_WHAT = 'help'
 MSG_ABOUT_FOOTER_WHAT = 'about'
@@ -210,11 +210,11 @@ MSG_ABOUT_FOOTER_WHAT = 'about'
 MSG_NEW_WHAT = 'new'
 MSG_SAVE_AS_WHAT = 'save as'
 
-# tui/dialogs/import_dialog.py
+# interface/tracker/dialogs/import_dialog.py
 MSG_IMPORT_WHAT = 'import'
 MSG_PRESS_WHAT = 'press'
 
-# tui/screens/arrange/arrange_page.py: the visualizer key, and ESC while it shows, which brings the clips back.
+# interface/tracker/screens/arrange/arrange_page.py: the visualizer key, and ESC while it shows, which brings the clips back.
 MSG_VISUALIZER_WHAT = 'visualizer'
 MSG_STEP_VISUALIZER_WHAT = 'mode'
 MSG_SHOW_DETAILS_WHAT = 'details'
@@ -235,7 +235,7 @@ MSG_SCROLL_SIDEBAR_WHAT = 'scroll tracks'
 MSG_LEAVE_CELL_WHAT = 'leave cell'
 MSG_TO_CLIPS_WHAT = 'to clips'
 
-# tui/screens/arrange/track_editor.py
+# interface/tracker/screens/arrange/track_editor.py
 MSG_SONG_WHAT = 'song {name}'
 MSG_MAKE_CURRENT_WHAT = 'make current'
 # The notes page.
@@ -257,7 +257,7 @@ MSG_A_OR_B_WHAT = 'A or B'
 MSG_SILENT_WHAT = 'silent'
 MSG_PLAY_WHAT = 'play'
 
-# tui/screens/arrange/arrange_page.py, tui/screens/arrange/clip_page.py and tui/screens/pattern/pattern_editor.py: real-time playback.
+# interface/tracker/screens/arrange/arrange_page.py, interface/tracker/screens/arrange/clip_page.py and interface/tracker/screens/pattern/pattern_editor.py: real-time playback.
 MSG_PLAY_SONG_WHAT = 'play song'
 MSG_PLAY_SCENE_WHAT = 'play scene'
 MSG_PLAY_CLIP_WHAT = 'play clip'
@@ -269,7 +269,7 @@ MSG_FROM_GENRE_WHAT = 'from genre'
 MSG_OWN_DRUM_WHAT = 'own drum'
 MSG_FROM_PLAN_WHAT = 'from plan'
 MSG_TYPE_NOTE_WHAT = 'type a note'
-# tui/keybindings.py: the Patterns page's groups.
+# interface/tracker/keybindings.py: the Patterns page's groups.
 MSG_GROUP_WHAT = 'group'
 MSG_NEXT_GROUP_WHAT = 'next group'
 MSG_NEXT_TYPE_WHAT = 'next type'
@@ -279,7 +279,7 @@ MSG_UNGROUP_WHAT = 'ungroup'
 # Padded to the width of listen, so that the legend's keys stay where they are while a clip plays.
 MSG_STOP_LISTENING_WHAT = 'stop'.ljust(len(MSG_LISTEN_WHAT))
 
-# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
+# interface/tracker/screens/pattern/pattern_editor.py, its two drawings and the rows in interface/tracker/components/
 # What a section's row does with Space or ENTER, and what Tab does.
 MSG_OPEN_SECTION_WHAT = 'open section'
 MSG_CLOSE_SECTION_WHAT = 'close section'
@@ -321,11 +321,11 @@ MSG_PATTERN_DIRECTION_WHAT = "use each pattern's direction"
 MSG_LETTERS_WHAT = 'letters'
 MSG_DEGREES_WHAT = 'scale degrees'
 
-# tui/screens/set/registers_page.py
+# interface/tracker/screens/set/registers_page.py
 MSG_REGISTER_ENTER_WHAT = 'type'
 MSG_REGISTER_CLEAR_WHAT = 'default'
 
-# tui/screens/set/grooves_page.py
+# interface/tracker/screens/set/grooves_page.py
 MSG_GROOVE_WHAT = 'groove {name}'
 MSG_INSTRUMENT_WHAT = 'instrument {name}'
 MSG_NO_INSTRUMENT_WHAT = 'no instrument'
@@ -335,22 +335,22 @@ MSG_NO_SOURCE_WHAT = 'no source'
 MSG_NO_TRACK_WHAT = 'no track'
 MSG_VIEW_WHAT = 'view'
 
-# tui/screens/set/groove_editor.py
+# interface/tracker/screens/set/groove_editor.py
 MSG_CELL_LENGTH_WHAT = 'cell length'
 MSG_ACCENT_WHAT = 'accent'
 MSG_READY_BARS_WHAT = 'ready-made'
 
-# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_USE_SONG_GROOVE_WHAT = 'use the song groove'
 MSG_USE_SCENE_GROOVE_WHAT = 'use the scene or song groove'
 
-# tui/keybindings.py, the chord editor: H fills it with a named progression.
+# interface/tracker/keybindings.py, the chord editor: H fills it with a named progression.
 MSG_PICK_PROGRESSION_WHAT = 'pick progression'
 
-# tui/keybindings.py, on a mask's Hits field: H fills the hits and steps with a named rhythm.
+# interface/tracker/keybindings.py, on a mask's Hits field: H fills the hits and steps with a named rhythm.
 MSG_PICK_RHYTHM_WHAT = 'pick rhythm'
 
-# tui/screens/wizard/wizard_page.py
+# interface/tracker/screens/wizard/wizard_page.py
 MSG_WIZARD_FOLD_WHAT = 'fold'
 MSG_WIZARD_TO_TREE_WHAT = 'to tree'
 MSG_WIZARD_CREATE_WHAT = 'apply'

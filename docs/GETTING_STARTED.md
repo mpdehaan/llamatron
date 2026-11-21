@@ -91,48 +91,6 @@ Every screen opens from the main screen, and `ESC` goes back up the map one step
 ```mermaid
 flowchart TD
     MainPage["Main screen"]
-    ArrangePage["Arrange"]
-    DrawsPage["Draws"]
-    FilePage["File/Global"]
-    GeneratorsPage["Generators"]
-    GroovesPage["Grooves"]
-    InstrumentsPage["Instruments"]
-    OpenPage["Open"]
-    PatternsPage["Patterns"]
-    RegistersPage["Registers"]
-    ScalesPage["Scales"]
-    SongsPage["Songs"]
-    ClipPage["Clip"]
-    PatternEditor["Pattern editor"]
-    ScenePage["Scene"]
-    TrackEditor["Track editor"]
-    NotesPage["Notes"]
-    GrooveEditor["Groove editor"]
-    InstrumentEditor["Instrument editor"]
-    ScalePage["Scale"]
-    SongPage["Song"]
-    ArrangePage -- "ENTER" --> ClipPage
-    ArrangePage --> PatternEditor
-    ArrangePage -- "ENTER" --> ScenePage
-    ArrangePage -- "ENTER" --> TrackEditor
-    ClipPage --> PatternEditor
-    FilePage -- "ENTER" --> NotesPage
-    GroovesPage --> GrooveEditor
-    InstrumentsPage --> InstrumentEditor
-    MainPage -- "A" --> ArrangePage
-    MainPage -- "D" --> DrawsPage
-    MainPage -- "F" --> FilePage
-    MainPage -- "G" --> GeneratorsPage
-    MainPage -- "V" --> GroovesPage
-    MainPage -- "I" --> InstrumentsPage
-    MainPage -- "Ctrl+O" --> OpenPage
-    MainPage -- "P" --> PatternsPage
-    MainPage -- "R" --> RegistersPage
-    MainPage -- "Z" --> ScalesPage
-    MainPage -- "S" --> SongsPage
-    PatternsPage --> PatternEditor
-    ScalesPage --> ScalePage
-    SongsPage --> SongPage
 ```
 <!-- end of the generated diagram -->
 

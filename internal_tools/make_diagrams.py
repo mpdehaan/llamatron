@@ -14,7 +14,7 @@ them is replaced, so the words around a diagram can be edited by hand. The packa
 comes from the imports between llamatron's packages, with each package described by the first
 line of its __init__.py docstring. The screens diagram comes from which of the tracker's screens
 open which others, labelled with the key that opens each where the screen binds it with bind().
-A screen that tui/screens/shared/everywhere.py opens from every page is drawn from the main screen.
+A screen that interface/tracker/screens/shared/everywhere.py opens from every page is drawn from the main screen.
 tests/rules/test_diagrams.py runs the check, so a change to the code that moves a diagram fails the
 tests until this is run again.
 """
@@ -78,7 +78,7 @@ EDITOR_SUFFIX = 'Editor'
 EDITOR_WORD = ' editor'
 CAMEL_CASE_BOUNDARY = re.compile(r'(?<=[a-z])(?=[A-Z])')
 WORD_SEPARATOR = ' '
-# A screen binds a key with self.bind(self.KEYS.NAME, action=...), where KEYS is its class of tui/keybindings.py.
+# A screen binds a key with self.bind(self.KEYS.NAME, action=...), where KEYS is its class of interface/tracker/keybindings.py.
 BIND_METHOD = 'bind'
 PAGE_BINDINGS = 'Page'
 # A settings field whose Enter opens a screen, like the File page's Description.
@@ -103,7 +103,7 @@ USED_EVERYWHERE_ID = 'everywhere'
 USED_EVERYWHERE_LABEL = 'used by every other part'
 TEXT_PACKAGE = 'user_strings'
 # Packages in the order a reader meets them, following a song from the tracker to the files.
-PACKAGE_ORDER = ['tui', 'llamatron', 'model', 'engine', 'exporters']
+PACKAGE_ORDER = ['interface', 'llamatron', 'model', 'engine', 'exporters']
 
 MSG_NO_MARKER = 'no marker ({marker}) in {path}'
 MSG_OUT_OF_DATE = 'out of date: the {name} diagram in {path}'
@@ -115,7 +115,7 @@ SUCCESS = 0
 
 
 def module_name(path):
-    """Return a source file's dotted module name, like llamatron.tui.screens.set.song_page."""
+    """Return a source file's dotted module name, like llamatron.interface.tracker.screens.set.song_page."""
     parts = path.relative_to(SOURCE.parent).with_suffix(NO_DESCRIPTION).parts
     if parts[-1] == PACKAGE_FILE[:-len(PYTHON_SUFFIX)]:
         parts = parts[:-1]
@@ -144,7 +144,7 @@ def is_package(name):
 
 
 def modules_of(node):
-    """Return the modules one import statement names: the module imported from, or each module taken from a package, as in from llamatron.tui import keybindings."""
+    """Return the modules one import statement names: the module imported from, or each module taken from a package, as in from llamatron.interface.tracker import keybindings."""
     if is_package(node.module):
         return [node.module + DOT + alias.name for alias in node.names]
     return [node.module]
@@ -282,7 +282,7 @@ def keyword(*, call, name):
 
 def enter_key_label():
     """Return how the tracker shows the Enter key, which opens a screen from a settings field."""
-    from llamatron.tui import keybindings
+    from llamatron.interface.tracker import keybindings
     _, name, _ = keybindings.FieldPage.ENTER
     return name
 
@@ -294,7 +294,7 @@ def is_binding(call):
 
 def shown_key(*, binding, class_name):
     """Return how the tracker shows the keys of a binding named like self.KEYS.NAME, in a class's bindings, or None if it can't be read."""
-    from llamatron.tui import keybindings
+    from llamatron.interface.tracker import keybindings
     if not isinstance(binding, ast.Attribute):
         return None
     found = getattr(getattr(keybindings, class_name, None), binding.attr, None)

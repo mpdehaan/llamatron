@@ -6,7 +6,7 @@
 Run from the top folder, naming files or folders:
 
     .venv/bin/python internal_tools/repeated_values.py tests internal_tools      # a count per file, most first
-    .venv/bin/python internal_tools/repeated_values.py -v tests/tui/test_x.py    # each string, its line and the constant that names it
+    .venv/bin/python internal_tools/repeated_values.py -v tests/interface/tracker/test_x.py    # each string, its line and the constant that names it
 
 The values are those of the classes of constants in model/schema/file_format.py and of NoteName
 in model/values/note.py. Docstrings are left out. Not everything it lists is wrong: a test's own name

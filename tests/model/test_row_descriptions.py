@@ -11,6 +11,8 @@ description.
 
 import unittest
 
+from llamatron.interface.tracker.components import pattern_rows
+from llamatron.interface.tracker.components.number_row import NumberRow
 from llamatron.model.file import corrections
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
@@ -21,8 +23,6 @@ from llamatron.model.schema.file_format import Accidental, ChordSymbol, GateModi
 from llamatron.model.schema.row_descriptions import is_note_letter, row_described, RowOfChoices, RowOfChords, RowOfDegrees, RowOfKeyswitches, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfStatementValues, RowOfTensions, RowOfToggles, rows_where
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
-from llamatron.tui.components import pattern_rows
-from llamatron.tui.components.number_row import NumberRow
 from llamatron.user_strings import errors, labels
 
 TUNE = 'tune'

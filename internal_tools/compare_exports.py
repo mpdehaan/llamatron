@@ -48,11 +48,11 @@ from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exports import export_name
 from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
+from llamatron.interface.tracker.document import Document
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import FileLayout, SetlistSetting
-from llamatron.tui.document import Document
 
 EXAMPLES = 'examples/**/*.yml'
 CAPTURE = 'capture'

@@ -18,11 +18,11 @@ import tempfile
 import unittest
 import yaml
 
+from llamatron.interface.tracker.document import Document
 from llamatron.model.file import safe_yaml
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.safe_yaml import load_safely, uses_c_parser
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.tui.document import Document
 from tests.support.rendering import render_file
 
 ROOT = Path(__file__).resolve().parent.parent.parent

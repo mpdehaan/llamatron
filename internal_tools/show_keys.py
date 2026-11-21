@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Print the tracker's key bindings from tui/keybindings.py: every class's, one class's, or every binding that has one key.
+"""Print the tracker's key bindings from interface/tracker/keybindings.py: every class's, one class's, or every binding that has one key.
 
 Run from the top folder:
 
@@ -19,9 +19,9 @@ no bindings of its own has the ones of the class it builds on.
 import inspect
 import sys
 
-from llamatron.tui import keybindings
-from llamatron.tui.key_table import every_key, place_of
-from llamatron.tui.keys import Binding
+from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.key_table import every_key, place_of
+from llamatron.interface.tracker.keys import Binding
 
 KEY_FLAG = '--key'
 SEPARATOR = ' '
@@ -39,14 +39,14 @@ NOTHING = ''
 # How many keys of a binding are shown before the rest are counted, since a search binds every letter.
 KEYS_SHOWN = 6
 MORE_KEYS = ' +{count}'
-MSG_NO_SUCH_CLASS = 'no class called {name} in tui/keybindings.py: expected one of: {names}'
+MSG_NO_SUCH_CLASS = 'no class called {name} in interface/tracker/keybindings.py: expected one of: {names}'
 MSG_NOTHING_HAS_KEY = 'no binding has the key {key}'
 # How many things a binding holds: its keys, its name on screen and what it does.
 EVERYWHERE_LIST = 'EVERYWHERE'
 
 
 def binding_classes():
-    """Return every class of tui/keybindings.py by name, in the order the module defines them."""
+    """Return every class of interface/tracker/keybindings.py by name, in the order the module defines them."""
     found = [(name, kind) for name, kind in inspect.getmembers(keybindings, inspect.isclass) if kind.__module__ == keybindings.__name__]
     return dict(sorted(found, key=first_line))
 

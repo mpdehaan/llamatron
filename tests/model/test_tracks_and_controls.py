@@ -28,6 +28,7 @@ from llamatron.engine.timing.timing import control_events, timed_events
 from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
+from llamatron.interface.tracker.document import Document
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
@@ -38,7 +39,6 @@ from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType
 from llamatron.model.values.sound import Sound
-from llamatron.tui.document import Document
 from tests.support.rendering import as_setlist, dump_song_data, render_data, setlist_from_data, song_from_data
 
 C_MAJOR = Scale(root=Note(name='C', octave_number=5), typ=ScaleType.MAJOR)

@@ -20,12 +20,12 @@ from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.exporters import exports, midi_messages
 from llamatron.exporters.exports import ExportKind
+from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.keys import Key
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SongSetting
 from llamatron.model.values.note import NoteName
-from llamatron.tui import keybindings
-from llamatron.tui.document import Document
-from llamatron.tui.keys import Key
 from llamatron.user_strings import names as names_text
 from tests.support.gate_conversion import to_gates
 from tests.support.rendering import bare_document

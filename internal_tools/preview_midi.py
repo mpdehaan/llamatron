@@ -30,9 +30,9 @@ import tempfile
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.midi_messages import safe_file_name
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.text import clock
 from llamatron.model.objects.setlist import Setlist
-from llamatron.tui.document import Document
-from llamatron.tui.text import clock
 
 EXAMPLES = os.path.join('examples', '*.yml')
 PREVIEWS = 'previews'

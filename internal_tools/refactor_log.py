@@ -34,7 +34,7 @@ PYTHON_FILES = '*.py'
 FILE_ENCODING = 'utf-8'
 # The license header that opens every file, which is no part of the program.
 HEADER_LINES = 3
-IMPORT_UI = 'import llamatron.tui.app'
+IMPORT_UI = 'import llamatron.interface.tracker.app'
 IMPORT_RUNS = 5
 TOTAL_ROW = 'every example'
 STRINGS_PACKAGE = 'llamatron.user_strings'

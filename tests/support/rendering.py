@@ -12,11 +12,11 @@ import os
 
 from llamatron.caching.memory import Memory
 from llamatron.engine.realizer.song_realizer import SongRealizer
+from llamatron.interface.tracker.document import Document
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults
 from llamatron.model.schema.file_format import Section, SongSetting
-from llamatron.tui.document import Document
 from llamatron.user_strings import names
 
 # Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (caching/memory.py).

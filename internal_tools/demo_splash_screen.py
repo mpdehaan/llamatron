@@ -10,7 +10,7 @@
 
 internal_tools/demo_splash_screen.sh runs it. --seconds is how long the finished title holds, with its
 prompt pulsing, after the letters, the scanner and the address have come in. With --batch it opens the
-set named, the Entertainer unless told, as a batch video would (tui/batch_stage.py), and quits once READY
+set named, the Entertainer unless told, as a batch video would (interface/tracker/batch_stage.py), and quits once READY
 has shown. With --scroll-text the title is followed by what a recording shows next, words crossing the
 screen: the words given, or the Entertainer's, DEMO: ENTERTAINER, as a recording of that set would show.
 Nothing is played, recorded or saved.
@@ -19,11 +19,11 @@ Nothing is played, recorded or saved.
 import argparse
 import sys
 
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.components.scroll_text import scroll_text_for
-from llamatron.tui.components.title_card import scan_end
-from llamatron.tui.document import Document
-from llamatron.tui.launch import Launch
+from llamatron.interface.tracker.app import LlamatronApp
+from llamatron.interface.tracker.components.scroll_text import scroll_text_for
+from llamatron.interface.tracker.components.title_card import scan_end
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.launch import Launch
 
 DEFAULT_HOLD_SECONDS = 5.0
 DEFAULT_SET = 'examples/by_genre/ragtime/entertainer.yml'

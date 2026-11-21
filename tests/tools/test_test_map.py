@@ -15,8 +15,8 @@ NAMING_CLASS = 'tests.model.test_naming.TestNaming'
 ARP_CLASS = 'tests.engine.generators.test_arp.TestArp'
 EXAMPLES_CLASS = 'tests.app.test_examples.TestExamples'
 SWEEP_CLASS = 'tests.app.test_every_example.TestEveryExampleMinimalTechno'
-TUI_FILE = 'src/llamatron/tui/app.py'
-TUI_CLASS = 'tests.tui.test_tui_app.TestApp'
+TUI_FILE = 'src/llamatron/interface/tracker/app.py'
+TUI_CLASS = 'tests.interface.tracker.test_tui_app.TestApp'
 EVERY_CLASS = [RULE_CLASS, NAMING_CLASS, ARP_CLASS, EXAMPLES_CLASS, SWEEP_CLASS, TUI_CLASS]
 BY_FILE = {SOURCE_FILE: [NAMING_CLASS, SWEEP_CLASS], ANOTHER_SOURCE_FILE: [ARP_CLASS], TUI_FILE: [TUI_CLASS, SWEEP_CLASS]}
 

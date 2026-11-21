@@ -8,7 +8,7 @@ Each constant starts with MSG_.
 
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, Direction, Quality, Shape, Stroke
 
-# engine/realizer/track_output.py, engine/realizer/song_realizer.py and tui/screens/arrange/clip_page.py: how a circle of tracks reading
+# engine/realizer/track_output.py, engine/realizer/song_realizer.py and interface/tracker/screens/arrange/clip_page.py: how a circle of tracks reading
 # each other is joined in its message, like a → b → a.
 MSG_CIRCLE_ARROW = ' → '
 
@@ -18,10 +18,10 @@ MSG_NONE_SHOWN = '(none)'
 MSG_UNDEFINED_SHOWN = '(undefined)'
 MSG_ANY_SCALE_LENGTH = '(any)'
 
-# tui/app.py
+# interface/tracker/app.py
 MSG_CONFIRM_BUTTON_GAP = '    '
 
-# tui/screens/arrange/arrange_page.py
+# interface/tracker/screens/arrange/arrange_page.py
 # A scene's name as a recording announces the scene when it starts.
 MSG_SCENE_ANNOUNCED = 'SCENE: {name}'
 # A scene's row: its number from 1, then its name.
@@ -36,7 +36,7 @@ MSG_LAUNCH_APART_MARK = '┆'
 MSG_REPEAT_MARK = '×{repeat}'
 MSG_CLIP_WITH_MARKS = '{name} {marks}'
 
-# tui/screens/arrange/arrange_details.py: what Arrange shows in its details view (R): the lines of details under
+# interface/tracker/screens/arrange/arrange_details.py: what Arrange shows in its details view (R): the lines of details under
 # each bar, each a word and a colon, a chain's name in parentheses with its generators under it, and a clip's morph and
 # direction spelled out, chosen over marks.
 MSG_DETAILS_MORPH = 'morph: {pattern}'
@@ -68,7 +68,7 @@ MSG_DETAILS_LIST_SEPARATOR = ', '
 # Around the line of details Tab picked, which ENTER opens, chosen over the triangle, which marks play.
 MSG_DETAILS_STOCK = 'stock'
 
-# tui/components/scene_view.py and tui/scene_notes.py: Scene View, an inset window over Arrange showing
+# interface/tracker/components/scene_view.py and interface/tracker/scene_notes.py: Scene View, an inset window over Arrange showing
 # every track's notes in a scene laid over each other, its caption saying which view shows, as written or as played.
 MSG_SCENE_VIEW_TITLE = ' SCENE VIEW FOR SCENE: {scene} '
 MSG_SCENE_VIEW_CLOSING = ' {key} {what} '
@@ -120,7 +120,7 @@ MSG_ADD_ROW = '+'
 MSG_EACH_PATTERN_DIRECTION_SHOWN = '(each pattern)'
 MSG_PATTERN_DIRECTION_SHOWN = '{direction} (from pattern)'
 
-# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# interface/tracker/screens/shared/page.py and interface/tracker/key_table.py: the key names, the labels and the words every page shares
 # What a picker shows while something is typed into it, and what a list page's status line shows.
 MSG_SEARCH_SHOWN = 'search: {text}'
 # The header's first line: the program's name, then the open set and its song, with the save mark at the right.
@@ -139,20 +139,20 @@ MSG_PREVIOUS_PAGE_MARK = '◂ Shift+Tab '
 MSG_NEXT_PAGE_MARK = 'Tab ▸'
 MSG_PAGE_TAB = ' {name} '
 
-# tui/document.py
+# interface/tracker/document.py
 MSG_SCALE_NOTES_TEXT = '{root} {kind}'
 # How time is shown.
 MSG_NO_TIME = '--:--'
 MSG_CLOCK = '{minutes}:{seconds:02}'
 
-# tui/screens/set/main_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
+# interface/tracker/screens/set/main_page.py, interface/tracker/screens/set/file_page.py and interface/tracker/screens/shared/everywhere.py
 # The main screen: the set's name and the current song, and the song's summary; the song's length is in the header, and the counts are on the cells.
 MSG_NOT_SAVED_YET = '(not saved yet)'
 MSG_EXPORTS_BESIDE = '{prefix}.als and the MIDI files beside it'
 MSG_EXPORTS_AFTER_SAVING = '(save the set first)'
 MSG_NOT_SET = 'not set'
 
-# tui/screens/arrange/track_editor.py
+# interface/tracker/screens/arrange/track_editor.py
 MSG_CURRENT_SONG_MARK = '●'
 MSG_PARENT_ROW = '../'
 MSG_FOLDER_ROW = '{name}/'
@@ -183,7 +183,7 @@ MSG_CHAIN_JOIN = ', '
 MSG_DRAW_STRIP_CELL = '{value:>4} '
 # A draw's heading on the Draws page while a song plays: its mark of a value inside and the slot it last took a value from.
 MSG_DRAW_HEADING_LIT = '{mark}  ▸ {place}'
-# The gauge of offsets (tui/components/signed_gauge.py): a value with its sign and a mark when the gauge is too short to
+# The gauge of offsets (interface/tracker/components/signed_gauge.py): a value with its sign and a mark when the gauge is too short to
 # reach it, above or below, and the brackets around the cursor's step number and value.
 MSG_POSITIVE_VALUE = '+{value}{mark}'
 MSG_OTHER_VALUE = '{value}{mark}'
@@ -193,18 +193,18 @@ MSG_CURSOR_VALUE_MARKS = '<{text}>'
 # The scales page.
 MSG_SONG_SCALE_MARK = ' (song)'
 
-# tui/screens/set/scale_page.py
-# The keyboard under the scale's fields (tui/components/keyboard.py): a key in the scale, one outside it, and the root's name.
+# interface/tracker/screens/set/scale_page.py
+# The keyboard under the scale's fields (interface/tracker/components/keyboard.py): a key in the scale, one outside it, and the root's name.
 MSG_KEY_IN_SCALE = '███'
 MSG_KEY_OUT_OF_SCALE = '░░░'
 MSG_KEY_OF_SCALE_OUTLINED = '▒▒▒'
 MSG_KEY_IN_CHORD = '███'
 MSG_ROOT_KEY_NAME = '[{name}]'
 
-# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
+# interface/tracker/screens/pattern/pattern_editor.py, its two drawings and the rows in interface/tracker/components/
 MSG_SECTION_CLOSED_MARK = '+'
 MSG_SECTION_OPEN_MARK = '-'
-# tui/dialogs/grouped_choice_dialog.py: a heading of choices, and a choice under one.
+# interface/tracker/dialogs/grouped_choice_dialog.py: a heading of choices, and a choice under one.
 MSG_GROUP_OF_CHOICES = '{mark} {name}'
 MSG_GROUPED_CHOICE = '    {name}'
 # What a settings page's section heading says when a field inside it holds a value, so that a closed one never hides it.
@@ -256,7 +256,7 @@ MSG_DRUM_OFF = '[ ]'
 MSG_TOGGLE_ON = '●'
 # The Degree gauge: the bar in each step's column, and the mark after a number the gauge is too short to reach.
 MSG_GAUGE_BAR = '███'
-# tui/screens/generators/chords_editor.py: the lower half of a gauge's cell, for the odd degree of a line that holds two, and a numeral's marks.
+# interface/tracker/screens/generators/chords_editor.py: the lower half of a gauge's cell, for the odd degree of a line that holds two, and a numeral's marks.
 MSG_GAUGE_HALF_BAR = '▄▄▄'
 MSG_DIMINISHED_NUMERAL_MARK = '°'
 MSG_AUGMENTED_NUMERAL_MARK = '+'
@@ -266,11 +266,11 @@ MSG_OVER_THE_TOP_MARK = '▲'
 MSG_CC_LANE_OFF = 'off'
 MSG_CC_LANE_VARIES = '?'
 MSG_TOGGLE_OFF = ' '
-# After the value of a settings field whose ENTER opens a list of choices (tui/screens/shared/field_page.py).
+# After the value of a settings field whose ENTER opens a list of choices (interface/tracker/screens/shared/field_page.py).
 MSG_PICKER_MARK = '▾'
-# A button of a settings page whose buttons stand one under another (tui/screens/shared/field_page.py).
+# A button of a settings page whose buttons stand one under another (interface/tracker/screens/shared/field_page.py).
 MSG_STACKED_BUTTON = '[ {name} ]'
-# tui/dialogs/chord_dialog.py: a row that opens a flyout, drawn as a button, alone and with the choice made inside it, with and without room for its own name, and the
+# interface/tracker/dialogs/chord_dialog.py: a row that opens a flyout, drawn as a button, alone and with the choice made inside it, with and without room for its own name, and the
 # flyout's heading.
 MSG_FLYOUT_CHOSEN = '[ {name} ▸ {chosen} ]'
 MSG_FLYOUT_CHOSEN_ALONE = '[ ▸ {chosen} ]'
@@ -294,14 +294,14 @@ MSG_DRUM_LETTER_ROW = 'Note'
 MSG_STEP_SIZE_SHOWN = 'Step size {size}{whose}'
 MSG_FROM_SONG_SHOWN = " (song's)"
 
-# tui/screens/set/grooves_page.py
+# interface/tracker/screens/set/grooves_page.py
 MSG_FACTORY_GROOVE_SHOWN = 'factory'
 
-# tui/screens/set/main_page.py and tui/screens/set/instruments_page.py
+# interface/tracker/screens/set/main_page.py and interface/tracker/screens/set/instruments_page.py
 MSG_REAL_TIME_ON_MARK = '●'
 MSG_REAL_TIME_OFF_MARK = '○'
 
-# tui/screens/arrange/arrange_drawing.py: the lights of real-time playback, the one place the tracker draws in colour.
+# interface/tracker/screens/arrange/arrange_drawing.py: the lights of real-time playback, the one place the tracker draws in colour.
 # The play button before each scene's and clip's bar, and the corner's, which turns into the stop mark while it plays.
 MSG_PLAY_MARK = '▶'
 MSG_STOP_MARK = '■'
@@ -316,10 +316,10 @@ MSG_NO_DEVICE_SHOWN = '(none)'
 MSG_AUTO_CHANNEL_SHOWN = '(auto)'
 MSG_OWN_GROOVE_SHOWN = 'yours'
 
-# tui/screens/set/groove_editor.py
+# interface/tracker/screens/set/groove_editor.py
 MSG_GROOVE_NAME_SHOWN = '  {label}: {name}'
 
-# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_GROOVE_OFF_SHOWN = 'off'
 MSG_SONG_GROOVE_SHOWN = '{groove} (from song)'
 MSG_FROM_TRACK_SHOWN = '{value} (from track)'
@@ -327,7 +327,7 @@ MSG_FROM_INSTRUMENT_SHOWN = '{value} (from instrument)'
 MSG_FROM_SET_SHOWN = '{value} (from set)'
 MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
 
-# tui/screens/shared/list_page.py and tui/screens/arrange/arrange_page.py
+# interface/tracker/screens/shared/list_page.py and interface/tracker/screens/arrange/arrange_page.py
 # The row at the bottom of a list that adds to it, and the cell on Arrange that adds a scene or a track.
 MSG_ADD_ROW_MARK = '+'
 
@@ -346,22 +346,22 @@ MSG_CHORD_SUFFIXES = {
     ChordSymbol.DOMINANT13: '13', ChordSymbol.MAJOR13: 'M13', ChordSymbol.MINOR13: 'm13',
 }
 MSG_UNNAMED_CHORD_SUFFIX = '?'
-# tui/keyswitch_text.py, tui/components/keyswitch_row.py and tui/dialogs/keyswitch_dialog.py: a keyswitch's note with its MIDI number, a slot with no name,
+# interface/tracker/keyswitch_text.py, interface/tracker/components/keyswitch_row.py and interface/tracker/dialogs/keyswitch_dialog.py: a keyswitch's note with its MIDI number, a slot with no name,
 # a step's keyswitches joined in words, and a slot's row in the dialog that picks a step's: its number, its toggle, its name and its note.
 MSG_KEYSWITCH_NOTE = '{name} ({number})'
 MSG_KEYSWITCH_SLOT_NAMED = 'slot {slot}'
 MSG_KEYSWITCH_SEPARATOR = ', '
 MSG_KEYSWITCH_SLOT_ROW = '{slot:>2}   {toggle}   '
-# tui/dialogs/keyswitch_map_dialog.py: a slot's row in an instrument's Keyswitch Map, its number before its name and note.
+# interface/tracker/dialogs/keyswitch_map_dialog.py: a slot's row in an instrument's Keyswitch Map, its number before its name and note.
 # A note cell of the Keyswitch Map as drawn, before the picker's mark: the note, or (none).
 MSG_KEYSWITCH_NOTE_CELL = '{note} '
 MSG_KEYSWITCH_MAP_ROW = ' {slot:>2}  '
-# tui/screens/set/instrument_editor.py: how many of an instrument's keyswitch slots hold anything, and its keyswitch lead.
+# interface/tracker/screens/set/instrument_editor.py: how many of an instrument's keyswitch slots hold anything, and its keyswitch lead.
 MSG_KEYSWITCH_LEAD_SHOWN = '{milliseconds} ms'
 # An accent, what an accented step adds to its velocity.
 MSG_ACCENT_SHOWN = '+{accent}'
 
-# tui/components/tension_row.py: a step's tensions in a cell, and how many when they don't fit.
+# interface/tracker/components/tension_row.py: a step's tensions in a cell, and how many when they don't fit.
 MSG_TENSIONS_IN_CELL_SEPARATOR = ' '
 MSG_TENSIONS_COUNTED = '{count} set'
 MSG_CHORD_SYMBOL_NAMED = '{symbol:<6}{name}'
@@ -375,7 +375,7 @@ MSG_FLAT_SPELLED = 'b'
 MSG_NUMERALS_SEPARATOR = ' '
 MSG_PRESET_NUMERALS_SEPARATOR = '–'
 
-# tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's values, and what each stroke is drawn as in its cell.
+# interface/tracker/screens/generators/guitarify_editor.py, interface/tracker/screens/generators/guitar_bar_editor.py: a Guitarify's values, and what each stroke is drawn as in its cell.
 MSG_GUITAR_OPEN_POSITION = 'open'
 MSG_GUITAR_FRET = 'fret {fret}'
 MSG_GUITAR_NO_CAPO = '(none)'
@@ -387,7 +387,7 @@ MSG_STROKE_MARKS = {
     Stroke.STRING_1: '1', Stroke.STRING_2: '2', Stroke.STRING_3: '3', Stroke.STRING_4: '4',
 }
 
-# tui/screens/wizard/wizard_page.py and the branches beside it
+# interface/tracker/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CHOOSE = '(choose)'
 MSG_WIZARD_NEEDS_GENRE = '(genre?)'
 MSG_WIZARD_BRANCH_OPEN = '▾'
@@ -421,7 +421,7 @@ MSG_SOUND_NOTE_ROW = 'Note   {note}'
 MSG_SOUND_NOTE_TYPED = 'Note   {text}_'
 MSG_WIZARD_GAUGE_FULL = '█'
 MSG_WIZARD_GAUGE_EMPTY = '░'
-# tui/screens/wizard/branch.py: a gauge of a melody's writing, a block for each position above the lowest, and then its number.
+# interface/tracker/screens/wizard/branch.py: a gauge of a melody's writing, a block for each position above the lowest, and then its number.
 MSG_WIZARD_WRITING_GAUGE_SHOWN = '{gauge}  {place}'
 MSG_WIZARD_LENGTH_SHOWN = '{length}  ({form})'
 MSG_WIZARD_FORM_SHOWN = '{form}: {count} sections'
@@ -458,7 +458,7 @@ MSG_LINES_COUNT_OWN = '{count} ({own} your own)'
 MSG_WIZARD_COMPOSITION_LINE = '{name:<{width}}  {value}'
 MSG_WIZARD_SECTION_LINE = '{number:>2}  {name:<{width}}  {bars:>3} bars'
 
-# tui/screens/wizard/riffs_branch.py: a tune a person edited, a kind of section whose tune is not made, and the Composition panel's line about the tunes.
+# interface/tracker/screens/wizard/riffs_branch.py: a tune a person edited, a kind of section whose tune is not made, and the Composition panel's line about the tunes.
 MSG_WIZARD_TUNE_EDITED = '{name} (edited)'
 # A riff's row on the Riffs panel, under BARS and USED IN; a riff's row on the Riff Assign panel, under FOR and PLAYED IN; and how many a heading holds.
 MSG_WIZARD_RIFF_ROW = '{bars:>4}  {used}'

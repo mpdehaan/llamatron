@@ -13,10 +13,10 @@ import tempfile
 import unittest
 from unittest import mock
 
+from llamatron.interface.tracker import launch as launch_values
+from llamatron.interface.visualizers import modes
 from llamatron.model.schema import file_format
 from llamatron.realtime.devices import fluidsynth
-from llamatron.tui import launch as launch_values
-from llamatron.visualizers import modes
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song
 

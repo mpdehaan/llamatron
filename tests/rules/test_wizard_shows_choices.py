@@ -13,7 +13,7 @@ import pathlib
 import re
 import unittest
 
-from llamatron.tui.screens import wizard
+from llamatron.interface.tracker.screens import wizard
 from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.form_choices import FormChoices
 from llamatron.wizards.create_song.hook_choices import HookChoices

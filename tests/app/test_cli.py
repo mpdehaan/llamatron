@@ -21,13 +21,13 @@ from llamatron import cli as cli_values
 from llamatron.cli import main
 from llamatron.exporters import exports, midi_arrangement, midi_messages
 from llamatron.exporters.exports import export_name, ExportKind
+from llamatron.interface.visualizers import modes
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import Row
 from llamatron.user_strings import cli, errors
-from llamatron.visualizers import modes
 from tests.support import song_testing
 from tests.support.rendering import as_setlist, dump_song_data
 from tests.support.song_testing import lead_data
@@ -109,7 +109,7 @@ class TestCli(unittest.TestCase):
 
     def test_without_to_it_opens_the_tracker(self):
         # The tracker's main runs for real, with only the app's run patched out, so that the call into it is checked.
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             self.assertEqual(self.run_exactly()[0], 0)
             app.return_value.run.assert_called_once_with()
             self.assertIsNone(app.call_args.kwargs[DOCUMENT_ARGUMENT])
@@ -179,7 +179,7 @@ class TestCli(unittest.TestCase):
 
     def test_export_options_need_to(self):
         for arguments in [['--out', self.out], ['--replace'], ['--template', self.song], ['--force']]:
-            with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
+            with self.subTest(arguments=arguments), mock.patch('llamatron.interface.tracker.app.main') as tracker:
                 code, _, stderr = self.run_exactly(self.song, *arguments)
                 self.assertEqual(code, 2)
                 self.assertIn('only works with --to', stderr)
@@ -197,33 +197,33 @@ class TestCli(unittest.TestCase):
         self.assertNotEqual(takes[0], takes[1])
 
     def test_the_launch_options_reach_the_tracker_and_need_a_set(self):
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             self.assertEqual(self.run_exactly(self.song, '--autoplay-quit-when-finished', '--launch-for-recording', '--max-seconds', '30')[0], 0)
             launch = app.call_args.kwargs[LAUNCH_ARGUMENT]
             self.assertTrue(launch.autoplay and launch.quit_when_finished and launch.for_recording)
             self.assertEqual(launch.max_seconds, 30)
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             self.assertEqual(self.run_exactly(self.song, '--visualizer', modes.MODES[0].OPTION)[0], 0)
             launch = app.call_args.kwargs[LAUNCH_ARGUMENT]
             self.assertEqual(launch.visualizer, modes.MODES[0].OPTION)
             self.assertTrue(launch.autoplay)
         for arguments in [['--autoplay'], ['--autoplay-quit-when-finished'], ['--launch-for-recording'], ['--max-seconds', '30'], ['--visualizer', modes.MODES[0].OPTION]]:
-            with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
+            with self.subTest(arguments=arguments), mock.patch('llamatron.interface.tracker.app.main') as tracker:
                 code, _, stderr = self.run_exactly(*arguments)
                 self.assertEqual(code, 2)
                 self.assertIn(errors.ERR_LAUNCH_NEEDS_SET, stderr)
                 tracker.assert_not_called()
-            with self.subTest(arguments=arguments), mock.patch('llamatron.tui.app.main') as tracker:
+            with self.subTest(arguments=arguments), mock.patch('llamatron.interface.tracker.app.main') as tracker:
                 code, _, stderr = self.run_exactly(self.song, '--to', *arguments)
                 self.assertEqual(code, 2)
                 self.assertIn(arguments[0], stderr)
                 tracker.assert_not_called()
 
     def test_with_no_set_named_the_main_screens_cursor_starts_on_open(self):
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             self.assertEqual(self.run_exactly()[0], 0)
             self.assertTrue(app.call_args.kwargs[CURSOR_ON_OPEN_ARGUMENT])
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             self.assertEqual(self.run_exactly(self.song)[0], 0)
             self.assertFalse(app.call_args.kwargs[CURSOR_ON_OPEN_ARGUMENT])
 
@@ -231,7 +231,7 @@ class TestCli(unittest.TestCase):
         # The basic song's kick loops beside a lead that ends, which plays to its end; with the lead looping too the scene would never end.
         with open(self.song, WRITE_TEXT) as file:
             file.write(song_testing.BASIC.replace(LEAD_CLIP, LOOPING_LEAD_CLIP))
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             code, _, stderr = self.run_exactly(self.song, '--launch-for-recording')
             self.assertEqual(code, 1)
             self.assertIn(errors.ERR_RECORDING_SONG_LOOPS.split(RECORDING_LOOPS_PLACE)[0], stderr)
@@ -271,7 +271,7 @@ class TestCli(unittest.TestCase):
         self.assertEqual(sorted(os.listdir(self.out)), self.clip_files(SECOND_SONG))
 
     def test_song_needs_to_and_a_song_the_set_has(self):
-        with mock.patch('llamatron.tui.app.main') as tracker:
+        with mock.patch('llamatron.interface.tracker.app.main') as tracker:
             code, _, stderr = self.run_exactly(self.song, '--song', SONG_NAME)
         self.assertEqual(code, 2)
         self.assertIn('only works with --to', stderr)
@@ -396,7 +396,7 @@ class TestCliWizard(unittest.TestCase):
         return code, stdout.getvalue(), stderr.getvalue()
 
     def test_batch_writes_the_set_beside_the_song_file_and_opens_nothing(self):
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             code, said, _ = self.run_exactly(cli_values.OPTION_WIZARD, self.song_file, cli_values.OPTION_BATCH)
             app.assert_not_called()
         self.assertEqual(code, 0)
@@ -409,7 +409,7 @@ class TestCliWizard(unittest.TestCase):
         self.assertFalse(Setlist.read_file(self.out).to_data() == Setlist.read_file(self.beside).to_data())
 
     def test_without_batch_the_tracker_opens_on_the_set_made(self):
-        with mock.patch('llamatron.tui.app.LlamatronApp') as app:
+        with mock.patch('llamatron.interface.tracker.app.LlamatronApp') as app:
             self.assertEqual(self.run_exactly(cli_values.OPTION_WIZARD, self.song_file)[0], 0)
             app.return_value.run.assert_called_once_with()
             self.assertEqual(app.call_args.kwargs[DOCUMENT_ARGUMENT].get_path(), self.beside)

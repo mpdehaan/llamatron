@@ -9,11 +9,11 @@ import tempfile
 import unittest
 import yaml
 
+from llamatron.interface.tracker.document import Document
 from llamatron.model.file import version
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.file.version import is_version, version_numbers
 from llamatron.model.schema.file_format import Section, SetlistSetting
-from llamatron.tui.document import Document
 from tests.support.rendering import dump_song_data, song_from_data, song_from_file
 
 # A version older than any llamatron that writes files with a version, standing in for a song

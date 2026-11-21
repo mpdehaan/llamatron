@@ -21,11 +21,11 @@ from pathlib import Path
 import re
 import sys
 
+from llamatron.interface.tracker.screens.set import scale_page
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.schema import file_format, generator_plugins, row_descriptions
 from llamatron.model.values import note as note_values
 from llamatron.model.values.scale import ScaleType
-from llamatron.tui.screens.set import scale_page
 from llamatron.user_strings import names as names_text
 from tests.support.rendering import as_setlist
 
@@ -136,7 +136,7 @@ DESCRIPTIONS = {
 EDITING = {
     'scale': [
         'Keep it to scale runs only, one scene per distinct scale, in the order of the scale',
-        'picker (SCALE_PAGES in src/llamatron/tui/pages.py). A scale added to llamatron needs a',
+        'picker (SCALE_PAGES in src/llamatron/interface/tracker/pages.py). A scale added to llamatron needs a',
         'scene here, and a new size of scale needs its own run pattern.',
     ],
     'sailor_arpeggiator': [

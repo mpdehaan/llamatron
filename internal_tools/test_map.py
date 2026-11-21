@@ -28,7 +28,7 @@ FOLDERS_READ = {
     'docs/': ('tests/rules/', 'tests/tools/'),
     'internal_tools/': ('tests/tools/', 'tests/genres/'),
     'user_scripts/': ('tests/tools/',),
-    '.claude/': ('tests/rules/', 'tests/tui/test_tui_help_keys.py'),
+    '.claude/': ('tests/rules/', 'tests/interface/tracker/test_tui_help_keys.py'),
 }
 # Changes that need nothing run: notes only for Claude that no test reads.
 NOTHING_NEEDED = ('.claude/QUEUE.md', '.claude/DESIGNS.md', '.claude/IDEAS.yml', '.claude/features/')
@@ -41,7 +41,7 @@ SWEEPS = {
     'tests.app.test_every_example.': MUSIC,
     'tests.wizards.create_song.test_wizard_effect.': (*MUSIC, 'src/llamatron/wizards/create_song/'),
     'tests.wizards.create_song.test_wizard_choices.TestWizardFormLengthsOf': (*MUSIC, 'src/llamatron/wizards/create_song/'),
-    'tests.tui.test_tui_help_keys.': ('src/llamatron/tui/', '.claude/'),
+    'tests.interface.tracker.test_tui_help_keys.': ('src/llamatron/interface/tracker/', '.claude/'),
 }
 BUILD = 'build'
 CHANGED = 'changed'
@@ -94,7 +94,7 @@ def import_lines(path):
 
 
 def prefix_of(path):
-    """Return the start of the names of the classes a test folder or a test file holds, like tests.app. or tests.tui.test_tui_wizard."""
+    """Return the start of the names of the classes a test folder or a test file holds, like tests.app. or tests.interface.tracker.test_tui_wizard."""
     if path.endswith(PYTHON):
         return path[:-len(PYTHON)].replace('/', '.') + '.'
     return path.replace('/', '.')

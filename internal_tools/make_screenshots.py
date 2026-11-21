@@ -20,13 +20,13 @@ import pathlib
 import re
 
 from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, glide as glide_plugin, hocket as hocket_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
+from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.app import LlamatronApp
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.key_table import first_key
+from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.screens.generators import generator_pages
 from llamatron.model.file import version
-from llamatron.tui import keybindings
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
-from llamatron.tui.key_table import first_key
-from llamatron.tui.keys import Key
-from llamatron.tui.screens.generators import generator_pages
 from llamatron.user_strings import labels
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

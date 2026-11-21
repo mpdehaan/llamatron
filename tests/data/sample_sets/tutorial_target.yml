@@ -2,7 +2,7 @@ version: 1.0.591
 title: Tutorial target
 description: "a set made to test the video tutorial's plan"
 notes: |
-  A set made to test internal_tools/make_video_tutorial.py (tutorial/plan.py): it holds what the hello world
+  A set made to test internal_tools/make_video_tutorial.py (interface/tutorial/plan.py): it holds what the hello world
   demo doesn't, so that every way the plan sets a thing is tried. A scale with a name of its own and
   one named after its kind, a song with a tempo and a time signature of its own, a track that
   transposes and a muted drum track, a scene with a repeat, a clip that repeats and one that loops, a

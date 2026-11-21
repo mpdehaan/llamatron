@@ -7,7 +7,7 @@
     .venv/bin/python internal_tools/record_batch.py
     LLAMATRON_BATCH_RECORD_MAX=2 sh user_scripts/record_all.sh     # the two shortest only, to try it
 
-Each take is internal_tools/record_demo.py's batch video (tui/batch_stage.py): the
+Each take is internal_tools/record_demo.py's batch video (interface/tracker/batch_stage.py): the
 title on black, Arrange with READY, then the song with its mode filling the scene frame, recorded from
 the rectangle the terminal window's cells cover alone, written as recordings/<set>_<mode>.mov. The
 examples go shortest first, so that a problem shows in the first minute; an example that has any video in
@@ -25,13 +25,13 @@ import importlib.util
 import os
 import sys
 
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.visualizers import modes
+from llamatron.interface.visualizers.cycle import Cycle
+from llamatron.interface.visualizers.modes import mode_options
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.setlist_reader import file_stem
-from llamatron.tui.document import Document
-from llamatron.visualizers import modes
-from llamatron.visualizers.cycle import Cycle
-from llamatron.visualizers.modes import mode_options
 
 PAIRINGS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'visualizer_pairings.yml')
 RECORDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'record_demo.py')

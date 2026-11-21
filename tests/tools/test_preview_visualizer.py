@@ -10,7 +10,7 @@ import pathlib
 import unittest
 from unittest import mock
 
-from llamatron.visualizers import modes
+from llamatron.interface.visualizers import modes
 from tests.support.ui_testing import a_song
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'preview_visualizer.py'

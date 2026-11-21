@@ -21,10 +21,10 @@ import unittest
 import yaml
 
 from llamatron.engine.timing.timing import timed_events
+from llamatron.interface.tracker import drawing
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.setlist_reader import set_file_data
 from llamatron.model.schema.file_format import Section, SetlistSetting, TrackSetting
-from llamatron.tui import drawing
 from tests.support.rendering import is_demo, render_file
 
 PATHS = sorted(path for path in example_sets() if is_demo(path))

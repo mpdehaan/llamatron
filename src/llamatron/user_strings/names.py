@@ -22,7 +22,7 @@ MSG_SPLIT_BASE = '{name}-split'
 MSG_DEFAULT_SCALE_NAME = '{root}_{kind}'
 MSG_LEGACY_SCALE_NAME = '{root} {kind}'
 
-# tui/document.py
+# interface/tracker/document.py
 # How a scene with no name is described.
 MSG_DOCUMENT_UNNAMED_SCENE = 'unnamed'
 MSG_SCENE_WITHOUT_A_NAME = 'scene'
@@ -35,7 +35,7 @@ MSG_DEFAULT_SONG_NAME = 'untitled'
 # Arrange page names the ones it adds the same way, to be renamed on their own pages.
 MSG_NEW_SCENE_NAME = 'scene-{number}'
 MSG_NEW_TRACK_NAME = 'track-{number}'
-# The track a pattern's preview plays on, in the copy of the set the preview plays (tui/pattern_preview.py).
+# The track a pattern's preview plays on, in the copy of the set the preview plays (interface/tracker/pattern_preview.py).
 MSG_PREVIEW_TRACK_NAME = '(preview)'
 MSG_PREVIEW_PATTERN_NAME = '(sound)'
 MSG_NEW_PATTERN_NAME = 'pattern-{number}'

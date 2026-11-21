@@ -22,14 +22,14 @@ from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.exports import ExportKind
+from llamatron.interface.tracker import app as tui_app
+from llamatron.interface.tracker.document import Document
 from llamatron.math.length import Length
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
 from llamatron.model.values.sound import Sound
-from llamatron.tui import app as tui_app
-from llamatron.tui.document import Document
 from llamatron.user_strings import names
 from tests.support.rendering import render_data, setlist_from_data
 
@@ -251,7 +251,7 @@ class TestWaysIn(unittest.TestCase):
         self.assertIn('usage: llamatron', result.stdout)
 
     def test_python_m_llamatron_tui_explains_a_bad_song(self):
-        result = self.run_module('llamatron.tui', 'nowhere.yml')
+        result = self.run_module('llamatron.interface.tracker', 'nowhere.yml')
         self.assertEqual(result.returncode, 1)
         self.assertIn('error: cannot read nowhere.yml', result.stderr)
 

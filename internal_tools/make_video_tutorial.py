@@ -14,9 +14,9 @@ Run from the top folder, in the terminal window the video should show:
     internal_tools/tutorial.sh examples/learning/01_hello_world.yml                                # the same as the second
 
 In the tutorial nothing is scripted by
-hand. The set named is read, and the plan (tutorial/plan.py) works out the keys that build it in the
+hand. The set named is read, and the plan (interface/tutorial/plan.py) works out the keys that build it in the
 tracker from the state of the screen as it goes, so that any demo becomes a tutorial. The tracker is
-launched with the tutorial (tui/launch.py) on a new set, presses one key every --pace seconds, says a
+launched with the tutorial (interface/tracker/launch.py) on a new set, presses one key every --pace seconds, says a
 sentence at each part worth one in the caption strip at the foot of the screen, printed again after the tracker
 quits, and at the end adds an instrument per track on the MIDI port --use-driver names (IAC by
 default, the Mac's bus from one program to another), one channel each, turns Real Time on and plays
@@ -49,15 +49,15 @@ import pty
 import subprocess
 import sys
 
+from llamatron.interface.tracker.app import LlamatronApp
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.launch import Launch, recording_problem
+from llamatron.interface.tutorial import runner
+from llamatron.interface.tutorial.runner import tutorial
+from llamatron.interface.tutorial.subtitles import subtitles
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.objects.setlist import Setlist
 from llamatron.realtime.devices.ports import output_port_names
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
-from llamatron.tui.launch import Launch, recording_problem
-from llamatron.tutorial import runner
-from llamatron.tutorial.runner import tutorial
-from llamatron.tutorial.subtitles import subtitles
 
 RECORDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'record_demo.py')
 RECORDER_MODULE = 'record_demo'

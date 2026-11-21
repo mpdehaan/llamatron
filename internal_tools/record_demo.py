@@ -24,7 +24,7 @@ take is heard as it records, else to the audio device recorded, or to --fluidsyn
 
 docs/RECORDING.md says how to set the Mac and the DAW up for it. The recorder works on a Mac alone,
 with the system's own screencapture, and touches no file but the video: the set is read, given the
-recorder's instruments in memory, and played by the tracker launched for recording (tui/launch.py),
+recorder's instruments in memory, and played by the tracker launched for recording (interface/tracker/launch.py),
 which opens on the splash, plays the song from the top on Arrange with no save mark in its header,
 and quits when the song ends. After the set it asks whether the take shows the clips or a
 visualizer mode over the clip area, unless --clips or --visualizer says. The instruments are one per MIDI channel used, RECORDER 1, RECORDER 2
@@ -54,19 +54,19 @@ import sys
 import tempfile
 import time
 
+from llamatron.interface.tracker import batch_stage, launch as launch_values
+from llamatron.interface.tracker.app import LlamatronApp
+from llamatron.interface.tracker.components.scroll_text import scroll_text_for
+from llamatron.interface.tracker.components.title_card import whole_title_seconds
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.launch import Launch, recording_problem
+from llamatron.interface.visualizers import modes
+from llamatron.interface.visualizers.modes import mode_options
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.values import midi
 from llamatron.realtime.devices import fluidsynth as fluidsynth_values
 from llamatron.realtime.devices.fluidsynth import fluidsynth_path, is_installed, soundfont_path
 from llamatron.realtime.devices.ports import output_port_names
-from llamatron.tui import batch_stage, launch as launch_values
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.components.scroll_text import scroll_text_for
-from llamatron.tui.components.title_card import whole_title_seconds
-from llamatron.tui.document import Document
-from llamatron.tui.launch import Launch, recording_problem
-from llamatron.visualizers import modes
-from llamatron.visualizers.modes import mode_options
 
 RECORDINGS = 'recordings'
 VIDEO_SUFFIX = '.mov'
@@ -462,7 +462,7 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
     device recorded, or to fluidsynth_output, an output device that also reaches it. With interactive,
     nothing plays until the person recording starts it, and the take ends when they stop it from
     Arrange's corner, so a song whose every clip loops is welcome; recording is the screen recording
-    the tests give in place of the tutorial's. With batch, the take is a batch video (tui/batch_stage.py)
+    the tests give in place of the tutorial's. With batch, the take is a batch video (interface/tracker/batch_stage.py)
     of the visualizer mode given, recorded from the rectangle the window's cells cover alone, so that
     no title bar or margin is in it, and named after the set and the mode; region is what finds that
     rectangle, which the tests give. A take that isn't interactive and shows a visualizer mode is a batch video

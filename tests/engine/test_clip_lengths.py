@@ -17,9 +17,9 @@ from unittest import mock
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.realizer import song_realizer
 from llamatron.engine.realizer.song_realizer import SongRealizer
+from llamatron.interface.tracker.lengths import measured
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.schema.file_format import ClipSlotSetting, Row
-from llamatron.tui.lengths import measured
 from llamatron.user_strings import errors, marks
 from tests.support.rendering import bare_document, song_from_file
 
@@ -52,7 +52,7 @@ FIRST_STEP = 0
 FIRST_DEGREE = 1
 ARP = 'arp'
 # Where the document finds the function that measures a song, which a test wraps to count its calls.
-MEASURED_BY_THE_DOCUMENT = 'llamatron.tui.document.measured'
+MEASURED_BY_THE_DOCUMENT = 'llamatron.interface.tracker.document.measured'
 CHAIN = 'chain'
 # Lengths in whole notes.
 ONE_PASS = Fraction(1)

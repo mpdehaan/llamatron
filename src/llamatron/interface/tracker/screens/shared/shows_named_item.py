@@ -1,0 +1,113 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""What a page that shows one named thing of the set shares: which thing it shows, whether the thing is still there, and renaming it.
+
+The pattern, chain and groove editors, the arpeggiator and AutoRatchet editors, the offsets
+editor, the Scale page and the track editor each show one item of a section by its name. Each
+kept the name and its crumbs, asked whether an undo had taken the item away, and renamed it, in
+its own words. They descend from three different pages (Page, ListPage and FieldPage), so what
+they share is a mixin beside whichever of those a page is.
+"""
+
+from llamatron.engine.generators import drift as drift_plugin
+from llamatron.interface.tracker.screens.shared import statements
+from llamatron.interface.tracker.screens.shared.statements import statement_section
+from llamatron.model.schema import generator_plugins
+from llamatron.user_strings import labels
+
+NOTHING = ''
+from llamatron.interface.tracker.themes import theme_of
+
+
+
+def caption_word(section):
+    """Return the word a page's caption names what it edits by: a generator plugin's own word, or the section's."""
+    plugin = generator_plugins.plugins_by_section().get(section)
+    return labels.MSG_CAPTION_WORDS.get(section, NOTHING) if plugin is None else plugin.strings.MSG_CAPTION_WORD
+
+class ShowsNamedItem:
+    """A page of one named thing: `self.item` is its name, and `SECTION` the section it is in.
+
+    A page says where it is in the crumbs with CRUMBS_BEFORE and CRUMBS_AFTER, how its thing's
+    name reads there with ITEM_CRUMB, and what its rename prompt is called with RENAME_PROMPT.
+    """
+
+    __slots__ = ()
+
+    # The section of the set the page's thing is in.
+    SECTION = None
+    # The crumbs before and after the thing's name, and how the name reads among them, a template that takes the name.
+    CRUMBS_BEFORE = ()
+    CRUMBS_AFTER = ()
+    ITEM_CRUMB = labels.MSG_ITEM_CRUMB
+    # The title of the prompt that renames the thing, on a page that renames one.
+    RENAME_PROMPT = None
+    # The page that opened this one when it isn't the thing's own list, such as Arrange's details view, whose crumbs come first, so that
+    # the crumbs say where Esc goes back to, and the word for the thing among them, like chain. None when the thing's list opened it.
+    opener = None
+    opener_word = None
+
+    def __init__(self, *, holder, name):
+        """Open on a named thing; a page that takes more than the name has a constructor of its own."""
+        super().__init__(holder)
+        self.show_item(name)
+
+    def shared_sections(self):
+        """Return, on a generator's page, the generator's statements about the registers, which every kind of generator has."""
+        # A drift changes values as a pattern plays, not a clip's notes in a chain, so no pass of a clip goes by one and it shows no table.
+        if self.SECTION not in generator_plugins.names_by_section() or self.SECTION == drift_plugin.SECTION:
+            return []
+        document = self.document()
+        return statement_section(
+            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE,
+            statements=lambda: document.song().get_generator_settings(kind=generator_plugins.names_by_section()[self.SECTION], name=self.item).get_bypass_when(),
+            store=lambda place, statement: document.change(document.generator(section=self.SECTION, name=self.item).set_bypass_statement, place=place, statement=statement),
+        )
+
+    def caption(self):
+        """Return what the theme's stripe says: what kind of thing the page edits, and its name."""
+        return labels.MSG_EDITING_CAPTION.format(what=caption_word(self.SECTION).upper(), name=self.item)
+
+    def theme(self):
+        """Return the theme colour of the section the page's thing is in, as its list's."""
+        return theme_of(self.SECTION)
+
+    def opened_from(self, *, page, word):
+        """Say that another page opened this one, whose crumbs come first in this one's, the thing named after word, and return this page."""
+        self.opener = page
+        self.opener_word = word
+        return self
+
+    def crumb_trail(self):
+        """Return the crumbs: the opener's and then the thing's word and name, when another page opened this one, and the page's own otherwise."""
+        if self.opener is None:
+            return self.crumbs
+        return (*self.opener.crumb_trail(), labels.MSG_OPENED_ITEM_CRUMB.format(word=self.opener_word, name=self.item))
+
+    def show_item(self, name):
+        """Show the thing under a name. This is the one place that sets the name and the crumbs that carry it."""
+        self.item = name
+        self.crumbs = (*self.CRUMBS_BEFORE, self.ITEM_CRUMB.format(name=name), *self.CRUMBS_AFTER)
+
+    def still_exists(self):
+        """Return whether the thing is still in the set, which an undo or redo can take away."""
+        return self.document().has_named(section=self.SECTION, name=self.item)
+
+    def follow_renames(self, renames):
+        """Keep showing the same thing after an undo or redo renamed it.
+
+        renames is what the step renamed, by section, as old name to new name.
+        """
+        new = renames.get(self.SECTION, {}).get(self.item)
+        if new is not None:
+            self.show_item(new)
+
+    def rename(self):
+        """Rename the thing, which changes every reference to it by name, and show it under the new name."""
+        name = self.item
+
+        def renamed(new):
+            self.document().rename_named(section=self.SECTION, old=name, new=new)
+            self.show_item(new)
+        self.ask_name(title=self.RENAME_PROMPT, value=name, taken=self.document().names_of(self.SECTION), then=renamed)

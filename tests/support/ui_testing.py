@@ -23,26 +23,26 @@ from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
 from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.engine.generators.progression.model import ProgressionSetting
 from llamatron.engine.generators.step_row import StepRowSetting
+from llamatron.interface.tracker import drawing, keybindings
+from llamatron.interface.tracker.app import LlamatronApp
+from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
+from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.key_table import every_key, first_key, key_event
+from llamatron.interface.tracker.keys import Key, Steps
+import llamatron.interface.tracker.screens
+from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePlace
+from llamatron.interface.tracker.screens.generators import generator_pages
+from llamatron.interface.tracker.screens.shared import page as page_values
+from llamatron.interface.tracker.screens.shared.field import Button
+from llamatron.interface.tracker.screens.shared.field_page import FieldPage
+from llamatron.interface.tracker.screens.shared.list_page import ListPage
+from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, EuclidPart, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.model.values.note import NoteName
 from llamatron.realtime.devices.fluidsynth import FluidSynth
-from llamatron.tui import drawing, keybindings
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
-from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.tui.document import Document
-from llamatron.tui.key_table import every_key, first_key, key_event
-from llamatron.tui.keys import Key, Steps
-import llamatron.tui.screens
-from llamatron.tui.screens.arrange.arrange_page import ArrangePlace
-from llamatron.tui.screens.generators import generator_pages
-from llamatron.tui.screens.shared import page as page_values
-from llamatron.tui.screens.shared.field import Button
-from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.shared.page import Page
 from llamatron.user_strings import names as names_text
 
 # Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (caching/memory.py).
@@ -57,9 +57,9 @@ SPACE = ' '
 SETTLED = 0
 MSG_REAL_FLUIDSYNTH = 'a test started a real FluidSynth: give its transport a stand-in, as test_tui_playback.py does'
 # Where the warning of silent instruments asks whether FluidSynth is installed.
-FLUIDSYNTH_INSTALLED = 'llamatron.tui.transport.installed'
+FLUIDSYNTH_INSTALLED = 'llamatron.interface.tracker.transport.installed'
 # Where the transport asks the same.
-TRANSPORT_FINDS_FLUIDSYNTH = 'llamatron.tui.transport.installed'
+TRANSPORT_FINDS_FLUIDSYNTH = 'llamatron.interface.tracker.transport.installed'
 ROW_SHOWN = '│ {label}'
 
 
@@ -165,9 +165,9 @@ PACKAGE_DOT = '.'
 
 
 def leaf_pages():
-    """Return every page class in tui/screens that isn't there to be subclassed, which the rules about every page go through."""
+    """Return every page class in interface/tracker/screens that isn't there to be subclassed, which the rules about every page go through."""
     found = []
-    for module_info in pkgutil.walk_packages(llamatron.tui.screens.__path__, prefix=llamatron.tui.screens.__name__ + PACKAGE_DOT):
+    for module_info in pkgutil.walk_packages(llamatron.interface.tracker.screens.__path__, prefix=llamatron.interface.tracker.screens.__name__ + PACKAGE_DOT):
         if module_info.ispkg:
             continue
         module = importlib.import_module(module_info.name)
@@ -191,12 +191,12 @@ def keys_stepping(*, binding, back):
 
 
 def back_key(binding):
-    """Return the key a test presses to step a binding of tui/keybindings.py back: the first of the keys that do, which is the one the legend names."""
+    """Return the key a test presses to step a binding of interface/tracker/keybindings.py back: the first of the keys that do, which is the one the legend names."""
     return keys_stepping(binding=binding, back=True)[0]
 
 
 def forward_key(binding):
-    """Return the key a test presses to step a binding of tui/keybindings.py forward: the first of the keys that do, which is the one the legend names."""
+    """Return the key a test presses to step a binding of interface/tracker/keybindings.py forward: the first of the keys that do, which is the one the legend names."""
     return keys_stepping(binding=binding, back=False)[0]
 
 
@@ -212,7 +212,7 @@ def key_of(*, binding, key):
 
 
 def pressed(key):
-    """Return the name of the key to press: a key's name as it is, or the first key of a binding of tui/keybindings.py, which says what the key does."""
+    """Return the name of the key to press: a key's name as it is, or the first key of a binding of interface/tracker/keybindings.py, which says what the key does."""
     if isinstance(key, str):
         return key
     assert not isinstance(key.keys, Steps), STEPS_NEED_A_WAY.format(binding=key)
@@ -259,7 +259,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         os.chdir(temporary.name)
         self.folder = temporary.name
         # FluidSynth counts as installed, whatever this computer has, so that opening an example, whose instruments play through it,
-        # warns of nothing; tests/tui/test_tui_silent_instruments.py says otherwise where it tests the warning.
+        # warns of nothing; tests/interface/tracker/test_tui_silent_instruments.py says otherwise where it tests the warning.
         installed = mock.patch(FLUIDSYNTH_INSTALLED, return_value=True)
         installed.start()
         self.addCleanup(installed.stop)

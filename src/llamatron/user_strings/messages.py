@@ -12,11 +12,11 @@ from llamatron.user_strings.labels import PageName
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NO_SCALE = 'no scale'
 
-# tui/app.py
+# interface/tracker/app.py
 MSG_QUIT_UNSAVED_NOTE = 'unsaved changes'
 MSG_QUIT_UNSAVED_QUESTION = 'The set has unsaved changes.'
 
-# tui/screens/arrange/arrange_page.py
+# interface/tracker/screens/arrange/arrange_page.py
 # Dialogs and messages.
 MSG_DELETE_SCENE_QUESTION = 'Delete scene {name}?'
 MSG_DELETE_TRACK_QUESTION = 'Delete track {name}?'
@@ -39,17 +39,17 @@ MSG_LOOP_NOTE = '  Plays until the other clips are done. One clip in a scene mus
 MSG_MORPH_HINT_NOTE = '  Set Repeat above 1 to choose a pattern to morph to.'
 MSG_GRAB_HINT_NOTE = '  Grab track only changes Grab steps, and this pattern has none yet.'
 
-# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# interface/tracker/screens/shared/page.py and interface/tracker/key_table.py: the key names, the labels and the words every page shares
 MSG_SEARCH_STATUS = '/{text}'
 # The current song, at the right of every header.
 MSG_HELP_TITLE = 'Help: {where}, {panel}'
 
-# tui/document_parts/files.py: a set file in an older layout, opened converted
+# interface/tracker/document_parts/files.py: a set file in an older layout, opened converted
 MSG_CONVERTED = 'converted from an older format'
 MSG_CONVERTED_WITH_RENAMES = 'converted from an older format: {renames}'
 MSG_RENAMED_IN_CONVERSION = '{kind} ({old}) is now ({new})'
 
-# tui/document.py
+# interface/tracker/document.py
 # How uses are described: one line each, like "song one, scene 2 (verse), track bass".
 MSG_USE_SCENE = 'scene {number} ({name})'
 MSG_USE_SONG_SCENE = 'song {song}, {scene}'
@@ -58,21 +58,21 @@ MSG_USE_CHAIN = 'chain {name}'
 MSG_USE_SONG = 'song {name}'
 MSG_USE_SONG_TRACK = 'song {song}, track {track}'
 
-# tui/screens/shared/list_page.py and tui/screens/shared/field_page.py
+# interface/tracker/screens/shared/list_page.py and interface/tracker/screens/shared/field_page.py
 MSG_DELETE_TITLE = 'Delete'
 # Fracture, on Arrange: every clip of the song given a pattern of its own.
 MSG_FRACTURE_TITLE = 'Fracture'
 MSG_FRACTURE_QUESTION = 'Do you really want to give all clips unique patterns?'
 MSG_FRACTURED = 'fractured: {count} patterns copied'
 MSG_NOTHING_TO_FRACTURE = 'every clip already has its own pattern'
-# tui/screens/arrange/arrange_page.py: the picker of chains to add to a cell from its details.
+# interface/tracker/screens/arrange/arrange_page.py: the picker of chains to add to a cell from its details.
 MSG_ADD_GENERATOR_TITLE = 'Add a generator'
 MSG_DELETE_QUESTION = 'Delete {what}?'
 # Said under the question when what is deleted is a generator that lists run, which deleting takes out of them.
 MSG_TAKEN_OUT_OF = 'It is taken out of:'
 MSG_ALSO_DELETES_CLIPS = 'This also deletes its {count} clip(s).'
 
-# tui/screens/set/main_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
+# interface/tracker/screens/set/main_page.py, interface/tracker/screens/set/file_page.py and interface/tracker/screens/shared/everywhere.py
 MSG_QUIT_TITLE = PageName.QUIT
 MSG_SONG_SCALE_TITLE = 'Song scale'
 # The notes under the File/Global page's fields.
@@ -95,7 +95,7 @@ MSG_PROTECTED_TITLE = 'Protected set'
 MSG_PROTECTED_EXPLAINED = '{path} is protected, so it is not written over. Protected on the File/Global page turns that off.'
 MSG_PROTECTED_SAVE_COPY_QUESTION = 'Save a copy under another name?'
 MSG_PROTECTED_CHOOSE_ANOTHER_NAME = 'Choose another name for the copy.'
-# model/file/corrections.py and tui/dialogs/corrections_dialog.py: a set file that holds values that cannot be
+# model/file/corrections.py and interface/tracker/dialogs/corrections_dialog.py: a set file that holds values that cannot be
 # used, each with an allowed value near it. One line for each, with its place in the file, then the question.
 MSG_CORRECTED = '{where}: {name} {found} becomes {used}'
 MSG_CORRECTED_TO_DEFAULT = '{where}: {name} {found} becomes the default'
@@ -120,7 +120,7 @@ MSG_REPLACE_EXPORT_QUESTION = 'Are you sure you want to overwrite {path}?'
 MSG_EXPORT_REPLACES_LIVE_WORK = 'Anything saved over it in Live is lost. Save your own work under another name.'
 MSG_EXPORTED = 'exported the {name} to {path}'
 
-# tui/history.py: what the status line says after an undo or a redo, and how it names what changed.
+# interface/tracker/history.py: what the status line says after an undo or a redo, and how it names what changed.
 MSG_UNDONE = 'undone: {what}'
 MSG_RESTORED = 'restored: {what}'
 MSG_NOTHING_TO_UNDO = 'nothing to undo'
@@ -145,7 +145,7 @@ MSG_CHANGED_WORDS = {
 MSG_NEW_SONG_PROMPT = 'New song name'
 MSG_RENAME_SONG_PROMPT = 'Rename song'
 
-# tui/screens/arrange/track_editor.py
+# interface/tracker/screens/arrange/track_editor.py
 MSG_RENAME_TRACK_PROMPT = 'Rename track'
 MSG_EDITING = 'editing: Tab reaches Save and CANCEL, ESC cancels'
 MSG_CLEAR_NOTES_TITLE = 'Clear the notes'
@@ -155,7 +155,7 @@ MSG_NO_NOTES_NOTE = '  No notes yet. Press E to write some.'
 MSG_NO_NOTES_PROTECTED = '  No notes. The set is protected, so they cannot be written here.'
 MSG_NOTES_PROTECTED = 'the set is protected, so its notes can only be read'
 MSG_NEW_PATTERN_PROMPT = 'New pattern name'
-# tui/screens/pattern/patterns_page.py: the pattern groups.
+# interface/tracker/screens/pattern/patterns_page.py: the pattern groups.
 MSG_NEW_GROUP_PROMPT = 'New pattern group name'
 MSG_RENAME_GROUP_PROMPT = 'Rename pattern group'
 MSG_GROUP_TITLE = 'Group'
@@ -176,13 +176,13 @@ MSG_CHANGE_STEP_TITLE = 'Change step'
 MSG_OFFSETS_NOTE = '  Steps start again with each chord. A blank step is silent. Tab: next row'
 MSG_RENAME_SCALE_PROMPT = 'Rename scale'
 
-# tui/screens/set/scale_page.py
+# interface/tracker/screens/set/scale_page.py
 MSG_ROOT_TITLE = 'Root note'
 MSG_KIND_TITLE = 'Kind of {root} scale'
 MSG_SCALE_USES_NOTE = '  Used by {count} song(s) and scene(s).'
 MSG_SCALE_NOTES_DETAIL = '{root} {kind}: {notes}'
 
-# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
+# interface/tracker/screens/pattern/pattern_editor.py, its two drawings and the rows in interface/tracker/components/
 MSG_GATE_PROMPT = 'Gate'
 MSG_STEP_SIZE_PROMPT = "Step size (blank for the song's)"
 MSG_TIME_SIGNATURE_PROMPT = "Time signature (blank for the song's)"
@@ -191,9 +191,9 @@ MSG_DESCRIBE_TIED = 'Step {step}: tie, holding the note before it'
 MSG_DESCRIBE_NOTE = 'Step {step}: {sound}, gate {gate}{chord}'
 MSG_DESCRIBE_CHORD = ', chord {chord}'
 MSG_DESCRIBE_KEYSWITCHES = ', keyswitches: {names}'
-# tui/dialogs/keyswitch_dialog.py and tui/components/keyswitch_row.py: the dialog that picks a step's keyswitches, in both views of the pattern editor.
+# interface/tracker/dialogs/keyswitch_dialog.py and interface/tracker/components/keyswitch_row.py: the dialog that picks a step's keyswitches, in both views of the pattern editor.
 MSG_KEYSWITCH_DIALOG_TITLE = 'Keyswitches: step {step}'
-# tui/dialogs/keyswitch_map_dialog.py: an instrument's Keyswitch Map, the prompt for a slot's name, and the note picker drawn over the map.
+# interface/tracker/dialogs/keyswitch_map_dialog.py: an instrument's Keyswitch Map, the prompt for a slot's name, and the note picker drawn over the map.
 MSG_KEYSWITCH_MAP_TITLE = 'Keyswitch Map: {instrument}'
 MSG_KEYSWITCH_NAME_PROMPT = 'Name of slot {slot} (blank for none)'
 MSG_KEYSWITCH_NOTE_TITLE = 'Note of slot {slot}'
@@ -205,7 +205,7 @@ MSG_KEYSWITCH_SEVERAL_INSTRUMENTS = 'This pattern plays on more than one instrum
 # The hint over the rows while the cursor is in the Keyswitch section, when one instrument's Keyswitch Map names the rows.
 MSG_KEYSWITCH_SECTION_HINT = 'Keyswitch: the slots of the Keyswitch Map of ({instrument})'
 MSG_KEYSWITCH_NO_INSTRUMENT = 'No instrument plays this pattern.'
-# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
+# interface/tracker/screens/pattern/pattern_editor.py, its two drawings and the rows in interface/tracker/components/
 # What the description line calls the sound of a step marked to grab, whose note is whatever the other track played.
 MSG_GRABBED_SOUND = 'the grabbed note'
 MSG_DESCRIBE_GATE_OVERRIDDEN = ' (the ties after it override it)'
@@ -242,7 +242,7 @@ MSG_CHANGE_TYPE_TITLE = 'Change pattern type'
 MSG_CHANGE_TYPE_QUESTION = 'This pattern will use {what}, which clears the notes it has now. Continue?'
 MSG_CHANGE_TYPE_EMPTY_QUESTION = 'This pattern will use {what}. Continue?'
 MSG_RENAME_PATTERN_PROMPT = 'Rename pattern'
-# tui/dialogs/chord_dialog.py and tui/chord_text.py: the Chord dialog, shared by the pattern editor and a progression's chord editor.
+# interface/tracker/dialogs/chord_dialog.py and interface/tracker/chord_text.py: the Chord dialog, shared by the pattern editor and a progression's chord editor.
 MSG_CHORD_DIALOG_TITLE = 'Chord: {where}'
 MSG_CHORD_OF_STEP = 'step {step} of {pattern}'
 MSG_CHORD_OF_PROGRESSION = 'chord {chord} of {progression}'
@@ -260,30 +260,30 @@ MSG_CHORD_RESTING_OWN = '; in {scale} it is {name}'
 MSG_RESTING_STEP = 'step {step}'
 MSG_RESTING_CHORD = 'chord {chord}'
 
-# tui/screens/set/registers_page.py
+# interface/tracker/screens/set/registers_page.py
 MSG_REGISTER_PROMPT = '{label} ({lowest} to {highest})'
 
-# tui/screens/set/grooves_page.py
+# interface/tracker/screens/set/grooves_page.py
 MSG_RENAME_GROOVE_PROMPT = 'Rename groove'
 
-# tui/screens/set/instruments_page.py and tui/screens/set/instrument_editor.py
+# interface/tracker/screens/set/instruments_page.py and interface/tracker/screens/set/instrument_editor.py
 MSG_RENAME_INSTRUMENT_PROMPT = 'Rename instrument'
 MSG_DEVICE_TITLE = 'MIDI device'
 MSG_GM_SOUND_TITLE = 'General MIDI sound'
 MSG_CHANNEL_PROMPT = 'Channel ({lowest} to {highest})'
 
-# tui/screens/set/main_page.py
+# interface/tracker/screens/set/main_page.py
 MSG_REAL_TIME_ON = 'real time on: tracks with an instrument play through it'
 MSG_REAL_TIME_OFF = 'real time off'
 MSG_REAL_TIME_OFF_STOPPED = 'real time off: stopped what was playing'
 
-# tui/transport.py and the pages that play: the status line's notes about real-time playback.
+# interface/tracker/transport.py and the pages that play: the status line's notes about real-time playback.
 MSG_SCENE_NUMBER = 'scene {number}'
 MSG_CLIP_ON_TRACK = 'clip ({name}) on track ({track})'
 MSG_PLAYING_FROM = 'playing from {scene}'
 MSG_PLAYING_CLIP = 'playing {clip} on its own'
 MSG_LISTENING = 'listening to ({name}) through track ({track})'
-# tui/screens/shared/listening.py: a pattern's preview, with its scale, and a drum pattern's, which has none.
+# interface/tracker/screens/shared/listening.py: a pattern's preview, with its scale, and a drum pattern's, which has none.
 MSG_LISTENING_IN_SCALE = 'listening to ({name}) in {scale}'
 MSG_LISTENING_TO_PATTERN = 'listening to ({name})'
 # A clip listened to while Real Time is off.
@@ -292,7 +292,7 @@ MSG_STARTS_AT_NEXT_BAR = '{what} starts at the next bar'
 # The visualizer key on Arrange when the File/Global page hides every visualizer mode.
 MSG_EVERY_VISUALIZER_HIDDEN = 'every visualizer is hidden on the File/Global page'
 MSG_STOPPED = 'stopped'
-# tui/transport.py: an edit made while the song plays that can't be heard, which the status line says, what plays going on as it was.
+# interface/tracker/transport.py: an edit made while the song plays that can't be heard, which the status line says, what plays going on as it was.
 MSG_LIVE_EDIT_NOT_HEARD = 'the edit cannot be heard while playing: {problem}'
 MSG_LIVE_EDIT_NEEDS_A_DEVICE = 'the edit plays through a MIDI device not open yet, so it is heard from the next launch'
 MSG_STOPPED_TRACK = 'stopped track ({track})'
@@ -300,38 +300,38 @@ MSG_SILENCED = 'silenced {channels} channels on {devices} devices'
 MSG_NOTHING_TO_SILENCE = 'no instrument has a connected device to silence'
 MSG_LISTEN_INSTRUMENT_TITLE = 'Listen through which instrument?'
 
-# tui/screens/set/groove_editor.py
+# interface/tracker/screens/set/groove_editor.py
 MSG_GROOVE_NOTE = '  Each cell is {length} of a whole note. An amount is a percentage of a cell: + plays late, - plays early.'
 MSG_GROOVE_REPEATS_NOTE = '  The row repeats from the start of each scene, and a note takes the amount of the cell its time falls in.'
 MSG_FACTORY_GROOVE_NOTE = '  A factory groove, which cannot be changed. C on the Grooves page copies it to one you can edit.'
 
-# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_SONG_GROOVE_TITLE = 'Song groove'
 MSG_PREVIEW_INSTRUMENT_TITLE = 'Preview instrument'
 MSG_SCENE_GROOVE_TITLE = 'Scene groove'
 MSG_TRACK_GROOVE_TITLE = 'Track groove'
 
-# tui/screens/generators/chords_editor.py: the line above a progression's chords, and the title of the picker of named progressions.
+# interface/tracker/screens/generators/chords_editor.py: the line above a progression's chords, and the title of the picker of named progressions.
 MSG_CHORDS_NOTE = 'each chord moves the clip from chord I, in the song\'s scale'
 MSG_PROGRESSION_PICKER_TITLE = 'Progressions'
 
-# tui/screens/generators/euclid_fields.py: the title of the picker of named rhythms.
+# interface/tracker/screens/generators/euclid_fields.py: the title of the picker of named rhythms.
 MSG_RHYTHM_PICKER_TITLE = 'Rhythms'
 
 
-# tui/screens/shared/list_page.py and tui/screens/arrange/arrange_page.py: Move mode.
+# interface/tracker/screens/shared/list_page.py and interface/tracker/screens/arrange/arrange_page.py: Move mode.
 MSG_MOVING = 'moving {what}: the arrows carry it, ENTER drops it'
 MSG_MOVING_SCENE = 'scene ({name})'
 MSG_MOVING_TRACK = 'track ({name})'
 MSG_MOVING_CLIP = 'clip ({name})'
 MSG_MOVING_ROW = '({name})'
 
-# tui/screens/generators/guitar_bar_editor.py: the lines above the bar of strokes.
+# interface/tracker/screens/generators/guitar_bar_editor.py: the lines above the bar of strokes.
 MSG_GUITAR_BAR_NOTE = 'one stroke a cell of {cell}, played on whatever sounds, following the song\'s bars'
 MSG_GUITAR_CELL_NOTE = 'cell {number}: {stroke}'
 MSG_GUITAR_CELL_ACCENTED_NOTE = 'cell {number}: {stroke}, accented'
 
-# tui/screens/wizard/wizard_page.py and the branches beside it
+# interface/tracker/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CLOSE_TITLE = 'Close the wizard'
 MSG_CHANGE_GENRE_TITLE = 'Change Genre'
 MSG_CHANGE_GENRE_LOST = 'LOST'
@@ -351,7 +351,7 @@ MSG_WIZARD_ROW_TITLE = '{row}: {player}'
 MSG_WIZARD_HOOK_MADE = 'made by the wizard'
 MSG_WIZARD_HOOK_OWN = 'your own notes'
 MSG_WIZARD_NOTES_BY_HAND = 'edited by hand'
-# tui/screens/wizard/intro_melody_branch.py: what the Intro panel says of the part its buttons act on.
+# interface/tracker/screens/wizard/intro_melody_branch.py: what the Intro panel says of the part its buttons act on.
 MSG_WIZARD_PART_NOTES = 'part {number}: {notes}'
 MSG_WIZARD_PART_NO_MELODY = 'part {number}: no melody, choose a player in Melody under Part {number}'
 MSG_WIZARD_NO_PARTS = 'the song starts straight in: Add Part gives the song an intro'
@@ -381,7 +381,7 @@ MSG_WIZARD_ALREADY_OPEN = 'the wizard is open'
 MSG_WIZARD_SONG_NAME_PROMPT = 'Name of the new song'
 MSG_WIZARD_CHOOSE_FIRST = 'Choose a genre and a subgenre first.'
 
-# tui/screens/wizard/section_melody_branch.py, tui/screens/wizard/wizard_page.py: giving an edited tune back to the wizard, and what editing a tune did.
+# interface/tracker/screens/wizard/section_melody_branch.py, interface/tracker/screens/wizard/wizard_page.py: giving an edited tune back to the wizard, and what editing a tune did.
 MSG_WIZARD_TUNE_GIVE_BACK_TITLE = 'Wizard\'s Notes'
 MSG_WIZARD_TUNE_GIVE_BACK_QUESTION = 'Lose your notes of the {kind} melody and let the wizard write the melody?'
 MSG_WIZARD_REGENERATE_TITLE = 'Regenerate {name}?'
@@ -410,8 +410,8 @@ MSG_WIZARD_RIFF_UNCHANGED = '{riff} unchanged'
 MSG_CHANGE_GENRE_OWN_RIFFS = 'edited riffs: {count}'
 MSG_WIZARD_TUNE_KEPT = 'kept your notes of the {kind} melody'
 MSG_WIZARD_TUNE_UNCHANGED = 'the {kind} melody is unchanged'
-# tui/screens/arrange/arrange_page.py: copying a scene or a track asks what its clips play.
+# interface/tracker/screens/arrange/arrange_page.py: copying a scene or a track asks what its clips play.
 MSG_COPY_SCENE_TITLE = 'Copy scene ({name})'
 MSG_COPY_TRACK_TITLE = 'Copy track ({name})'
-# tui/screens/set/draws_page.py
+# interface/tracker/screens/set/draws_page.py
 MSG_DRAW_SLOT_PROMPT = '{name} slot {place} ({lowest} to {highest})'

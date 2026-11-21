@@ -1,9 +1,9 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The rules of tui/keybindings.py: every page, dialog and component that binds keys has a class of bindings named after it, and nothing in it is left over.
+"""The rules of interface/tracker/keybindings.py: every page, dialog and component that binds keys has a class of bindings named after it, and nothing in it is left over.
 
-The classes of tui/keybindings.py are where a key is changed, so they have to be the whole truth:
+The classes of interface/tracker/keybindings.py are where a key is changed, so they have to be the whole truth:
 a class for every part of the tracker that binds keys, every binding listed for the F1 dialog,
 and no binding, key or key name that nothing uses. test_tui_help_keys.py checks the rest by
 touring the tracker: that each bound key comes from its own class and that no key does two things
@@ -17,13 +17,13 @@ import pkgutil
 import re
 import unittest
 
-import llamatron.tui
-from llamatron.tui import keybindings, keys as keys_values
-from llamatron.tui.key_table import BindsKeys, every_key, place_of
-from llamatron.tui.keys import Binding, Key
+import llamatron.interface.tracker
+from llamatron.interface.tracker import keybindings, keys as keys_values
+from llamatron.interface.tracker.key_table import BindsKeys, every_key, place_of
+from llamatron.interface.tracker.keys import Binding, Key
 from llamatron.user_strings import legends
 
-SOURCE = pathlib.Path(llamatron.tui.__file__).parent
+SOURCE = pathlib.Path(llamatron.interface.tracker.__file__).parent
 PYTHON_FILES = '*.py'
 FILE_ENCODING = 'utf-8'
 # A __main__ module starts the program when it's imported, so it's left out. It defines no classes.
@@ -46,7 +46,7 @@ NEVER_BOUND = (Key.DELETE, *keys_values.SHIFT_UP_DOWN, *keys_values.SHIFT_LEFT_R
 
 def every_module():
     """Import and return every module of the tracker."""
-    found = pkgutil.walk_packages(llamatron.tui.__path__, prefix=f'{llamatron.tui.__name__}.')
+    found = pkgutil.walk_packages(llamatron.interface.tracker.__path__, prefix=f'{llamatron.interface.tracker.__name__}.')
     return [importlib.import_module(module.name) for module in found if not module.name.endswith(STARTS_THE_PROGRAM)]
 
 
@@ -61,7 +61,7 @@ def classes_that_bind_keys():
 
 
 def binding_classes():
-    """Return every class of tui/keybindings.py, by its name."""
+    """Return every class of interface/tracker/keybindings.py, by its name."""
     return {name: kind for name, kind in inspect.getmembers(keybindings, inspect.isclass) if kind.__module__ == keybindings.__name__}
 
 
@@ -70,12 +70,12 @@ def is_binding(value):
 
 
 def own_bindings(kind):
-    """Return the bindings a class of tui/keybindings.py defines itself, by name."""
+    """Return the bindings a class of interface/tracker/keybindings.py defines itself, by name."""
     return {name: value for name, value in vars(kind).items() if name.isupper() and is_binding(value)}
 
 
 def all_bindings(kind):
-    """Return every binding of a class of tui/keybindings.py, its own and the ones it inherits."""
+    """Return every binding of a class of interface/tracker/keybindings.py, its own and the ones it inherits."""
     return [value for name, value in inspect.getmembers(kind) if name.isupper() and is_binding(value)]
 
 

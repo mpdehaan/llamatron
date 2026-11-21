@@ -2,7 +2,7 @@ version: 1.0.591
 title: Tutorial target with an empty first cell
 description: "a set made to test that the video tutorial's plan deletes a clip"
 notes: |
-  A set made to test tutorial/plan.py: its first track plays nothing in its first scene, where a new
+  A set made to test interface/tutorial/plan.py: its first track plays nothing in its first scene, where a new
   set holds a clip, so that the plan has to delete that clip. It is test data, not music.
 
 scales:

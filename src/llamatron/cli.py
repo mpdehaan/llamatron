@@ -31,12 +31,12 @@ import sys
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters import exports
 from llamatron.exporters.exports import export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.interface.tracker.launch import Launch
+from llamatron.interface.visualizers.modes import mode_options
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
-from llamatron.tui.launch import Launch
 from llamatron.user_strings import cli, errors
-from llamatron.visualizers.modes import mode_options
 
 PROGRAM = 'llamatron'
 # What --to writes when it doesn't say.
@@ -199,11 +199,11 @@ def main(*, argv=None):
             return FAILED
         if arguments.batch:
             return SUCCEEDED
-        from llamatron.tui.app import main as open_tracker
+        from llamatron.interface.tracker.app import main as open_tracker
         return open_tracker(argv=[made], launch=launch_of(arguments), start_screen=False)
     if arguments.to is None:
         # Imported here so that exporting doesn't need to load the text UI.
-        from llamatron.tui.app import main as open_tracker
+        from llamatron.interface.tracker.app import main as open_tracker
         return open_tracker(argv=[arguments.set] if arguments.set else [], launch=launch_of(arguments), start_screen=True)
     directory = arguments.out or export_directory(arguments.set)
     try:

@@ -6,7 +6,7 @@
 Each constant starts with MSG_.
 """
 
-# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# interface/tracker/screens/shared/page.py and interface/tracker/key_table.py: the key names, the labels and the words every page shares
 # Shown at the bottom right of the main screen.
 MSG_SITE = 'home.laserllama.net'
 
@@ -24,10 +24,10 @@ MSG_COW = (
 )
 MSG_ABOUT_VERSION = 'version {version}, built {date} ({time})'
 
-# tui/components/title_card.py: the title on black, in block letters, with the scanner and the address under it, which the start screen, the
+# interface/tracker/components/title_card.py: the title on black, in block letters, with the scanner and the address under it, which the start screen, the
 # recordings' splash and the batch videos show, and the start screen's prompt; and the READY box of the batch videos. Each block letter is
 # five rows of five columns, drawn twice as wide where the screen has room. The whole alphabet, the digits and the colon are here for
-# the demo's name, which a recording scrolls across the screen after the title (tui/components/scroll_text.py).
+# the demo's name, which a recording scrolls across the screen after the title (interface/tracker/components/scroll_text.py).
 MSG_SPLASH_WORD = 'LLAMATRON'
 MSG_SPLASH_ADDRESS = 'github.com/mpdehaan/llamatron.git'
 MSG_START_PROMPT = 'Press ENTER to Start'

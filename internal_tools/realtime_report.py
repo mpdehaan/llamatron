@@ -31,13 +31,13 @@ import time
 
 from llamatron.engine.clips.row_clock import seconds_per_whole
 from llamatron.engine.realizer.song_realizer import SongRealizer
+from llamatron.interface.tracker import transport as transport_values
 from llamatron.model.objects.setlist import Setlist
 from llamatron.realtime.render_process.player import Player
 from llamatron.realtime.render_process.score import Score
 from llamatron.realtime.render_process.timeline import Route, song_timeline
 from llamatron.realtime.sender_process import process as sender_process
 from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess
-from llamatron.tui import transport as transport_values
 
 DEFAULT_SONG = 'examples/by_genre/ragtime/entertainer.yml'
 HEAVY_SET = 'tests/data/sample_sets/heavy_chain.yml'

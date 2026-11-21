@@ -17,9 +17,9 @@ A mode that stays well under its budget leaves the computer cool and the screen 
 import random
 import time
 
-from llamatron.tui.screens.arrange import arrange_page
-from llamatron.visualizers import modes
-from llamatron.visualizers.heard import FrameHearing, HeardNote
+from llamatron.interface.tracker.screens.arrange import arrange_page
+from llamatron.interface.visualizers import modes
+from llamatron.interface.visualizers.heard import FrameHearing, HeardNote
 
 FRAMES = 200
 SEED = 1

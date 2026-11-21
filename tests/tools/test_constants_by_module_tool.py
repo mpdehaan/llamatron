@@ -31,7 +31,7 @@ MIDDLE_SOURCE = """
     OWN = LOWEST + 1
 """
 MUSIC_PACKAGE = 'llamatron.music'
-OTHER_PACKAGE = 'llamatron.tui'
+OTHER_PACKAGE = 'llamatron.interface.tracker'
 
 
 def load_tool():

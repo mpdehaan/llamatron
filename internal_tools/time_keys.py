@@ -25,11 +25,11 @@ import sys
 from textual import events
 import timeit
 
-from llamatron.tui import keybindings
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
-from llamatron.tui.key_table import first_key
-from llamatron.tui.keys import Key
+from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.app import LlamatronApp
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.key_table import first_key
+from llamatron.interface.tracker.keys import Key
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'

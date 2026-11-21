@@ -6,8 +6,8 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
+from llamatron.interface.tracker.keys import RowSection
 from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
-from llamatron.tui.keys import RowSection
 
 
 def register_labels(*, rows, label):
@@ -16,7 +16,7 @@ def register_labels(*, rows, label):
 
 
 
-# tui/dialogs/quit_dialog.py
+# interface/tracker/dialogs/quit_dialog.py
 # The quit dialog's buttons, in the order of QUIT_WITHOUT_SAVING, SAVE_THEN_QUIT and CANCEL: quitting without
 # saving comes first, and is what ENTER does, because Quit is never pressed by accident; the dialog only appears when there are
 # changes to lose.
@@ -28,7 +28,7 @@ MSG_OK_CANCEL_BUTTONS = ('OK', 'CANCEL')
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
-# tui/screens/shared/statements.py: Conditional Execution, the table of statements about the registers, and a scene's and a clip's sets and adds
+# interface/tracker/screens/shared/statements.py: Conditional Execution, the table of statements about the registers, and a scene's and a clip's sets and adds
 MSG_BYPASS_WHEN_LABEL = 'Bypass Generators When'
 MSG_SKIP_WHEN_LABEL = 'Skip Playback When'
 MSG_SET_REGISTERS_LABEL = 'Set Registers'
@@ -44,7 +44,7 @@ MSG_STATEMENT_NUMBER_CHOICE = 'number'
 # A statement's line has no name of its own: its label is blank, and as long as its place on the page, which tells the lines apart.
 MSG_STATEMENT_LINE_LABEL = ' '
 
-# tui/screens/arrange/arrange_page.py
+# interface/tracker/screens/arrange/arrange_page.py
 # A scene's field for each register it can reset, like "Reset AX".
 MSG_RESET_LABEL = 'Reset {name}'
 MSG_SONG_OPTION = '(song)'
@@ -89,7 +89,7 @@ MSG_MORPH_TO_LABEL = 'Morph to'
 MSG_MORPH_DIRECTION_LABEL = 'Morph direction'
 MSG_GRAB_TRACK_LABEL = 'Grab track'
 
-# tui/screens/set/instrument_editor.py and tui/screens/arrange/track_editor.py
+# interface/tracker/screens/set/instrument_editor.py and interface/tracker/screens/arrange/track_editor.py
 MSG_DEVICE_LABEL = 'Device'
 MSG_CHANNEL_LABEL = 'Channel'
 MSG_INSTRUMENT_LABEL = 'Instrument'
@@ -103,7 +103,7 @@ MSG_FOLLOW_ACTION_NAMES = {FollowAction.WITH_SCENE: 'With Scene', FollowAction.N
 MSG_LAUNCH_TOGETHER_LABEL = 'Launch together'
 MSG_SCENE_SECTION_LABEL = 'Section'
 
-# tui/screens/shared/page.py and tui/key_table.py: the key names, the labels and the words every page shares
+# interface/tracker/screens/shared/page.py and interface/tracker/key_table.py: the key names, the labels and the words every page shares
 # The file crumb, right after the title on every page: the file's name, or this before the set is saved.
 MSG_NO_FILE_CRUMB = '(unsaved)'
 # The file crumb carries the current song too: minimal_techno.yml, song: minimal techno.
@@ -190,7 +190,7 @@ class Crumb:
     ARRANGE = 'ARRANGE'
 
 
-# tui/document.py
+# interface/tracker/document.py
 # Each direction, and what it does.
 MSG_DIRECTION_NAMES = {
     Direction.FORWARD: 'first step to last', Direction.REVERSE_A: 'step 1, then backward from the last',
@@ -204,10 +204,10 @@ class Column:
     """The headings of the lists' columns."""
 
     NAME = 'NAME'
-    # tui/dialogs/keyswitch_map_dialog.py: the note each slot sends.
+    # interface/tracker/dialogs/keyswitch_map_dialog.py: the note each slot sends.
     NOTE = 'NOTE'
     TYPE = 'TYPE'
-    # tui/dialogs/chord_dialog.py: the Chord dialog's four lists.
+    # interface/tracker/dialogs/chord_dialog.py: the Chord dialog's four lists.
     SELECT_QUALITY = 'SELECT QUALITY'
     INVERSION = 'INV.'
     TENSIONS = 'TENSIONS'
@@ -251,7 +251,7 @@ class Column:
     # A generator page's first column, with the kind's name, like SELECT ARPEGGIATOR.
 
 
-# tui/screens/set/file_page.py and tui/screens/set/song_page.py
+# interface/tracker/screens/set/file_page.py and interface/tracker/screens/set/song_page.py
 # The File and Song pages' fields, and how they show what has no value.
 MSG_GENRE_LABEL = 'Genre'
 MSG_SUBGENRE_LABEL = 'Subgenre'
@@ -268,7 +268,7 @@ MSG_STEP_SIZE_LABEL = 'Step size'
 MSG_DEFAULT_OCTAVE_LABEL = 'Default octave'
 MSG_DEFAULT_DRUM_OCTAVE_LABEL = 'Default drum octave'
 MSG_OCTAVE_LABELS_LABEL = 'Octave labels'
-# tui/screens/set/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
+# interface/tracker/screens/set/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
 MSG_VISUALIZER_LABEL = 'Visualizer'
 MSG_SETS_VISUALIZER_CHOICE = "(set's)"
 # The File/Global page's sections.
@@ -284,24 +284,24 @@ MSG_DESCRIPTION_LABEL = 'Description'
 MSG_NOTES_LABEL = 'Notes'
 MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Single File)', 'MIDI (Clips)', 'MIDI (General MIDI)', 'WAV (FluidSynth)']
 
-# tui/screens/arrange/track_editor.py
+# interface/tracker/screens/arrange/track_editor.py
 # The two buttons under the text while editing, which Tab reaches and Left and Right move between.
 MSG_NOTES_BUTTONS = ('Save', 'CANCEL')
 # The lists of named things.
 MSG_DRUM_KIND = 'drum'
-# tui/screens/pattern/patterns_page.py: a group's heading, the heading of the patterns in no group, the two buttons that add, and
+# interface/tracker/screens/pattern/patterns_page.py: a group's heading, the heading of the patterns in no group, the two buttons that add, and
 # the entry of the Group picker that makes a group. A button has no +, so that + and - mean only closed and open.
 MSG_GROUP_HEADING = '{mark} {name} ({count})'
 MSG_UNGROUPED = 'Ungrouped'
 MSG_NEW_PATTERN_BUTTON = '[ New Pattern ]'
-# tui/dialogs/new_pattern_dialog.py: its two rows and its buttons; the Scale length is also a choice of the pattern editor's Reconfigure.
+# interface/tracker/dialogs/new_pattern_dialog.py: its two rows and its buttons; the Scale length is also a choice of the pattern editor's Reconfigure.
 MSG_SCALE_LENGTH_LABEL = 'Scale length'
 MSG_DRUM_PATTERN_LABEL = 'Drum pattern'
 MSG_NEW_PATTERN_BUTTONS = ('OK', 'CANCEL')
 MSG_NEW_GROUP_BUTTON = '[ New Pattern Group ]'
 MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
-# tui/screens/generators/generator_pages.py: the headings the kinds of generator are offered under, by what each kind is for.
+# interface/tracker/screens/generators/generator_pages.py: the headings the kinds of generator are offered under, by what each kind is for.
 class GeneratorGroup:
     """The names of the groups the Generators page lists the kinds of generator under."""
 
@@ -317,7 +317,7 @@ class GeneratorGroup:
 
 
 MSG_CHAIN_LABEL = 'Chain'
-# tui/screens/generators/drift_editor.py: its own fields, then each version's values, shown as A and B side by side.
+# interface/tracker/screens/generators/drift_editor.py: its own fields, then each version's values, shown as A and B side by side.
 MSG_EVERY_LABEL = 'Every'
 MSG_STEPS_TO_B_LABEL = 'Steps to B'
 MSG_DRIFT_DIRECTION_LABEL = 'Direction'
@@ -329,7 +329,7 @@ MSG_DRIFT_VALUE_LABELS = {
 # A version row's two values, the one the cursor is on marked like the offsets editor's cursor.
 MSG_DRIFT_PAIR = '{a:<10}{b}'
 MSG_DRIFT_PICKED = '<{value}>'
-# tui/screens/generators/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
+# interface/tracker/screens/generators/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
 MSG_SHAPE_NAMES = {Shape.DENSITY: 'Density', Shape.SWELL: 'Swell', Shape.ARTICULATE: 'Articulate'}
 MSG_SHAPE_FIELD_LABELS = {ShapePart.START: '{shape} start', ShapePart.END: '{shape} end', ShapePart.OVER: '{shape} over', ShapePart.THEN: '{shape} then'}
 MSG_SHAPE_PART_LABELS = {ShapePart.START: 'Start', ShapePart.END: 'End', ShapePart.OVER: 'Over', ShapePart.THEN: 'Then'}
@@ -408,7 +408,7 @@ MSG_STRUM_WORDS = {
     StrumDirection.BY_THE_BEAT: 'by the beat', StrumDirection.DOWN_UP: 'down up', UpstrokeStrings.TOP_3: 'top 3', UpstrokeStrings.TOP_4: 'top 4',
 }
 MSG_TRACK_STRUM_CHOICE = '(track)'
-# tui/screens/generators/restart_field.py: when a generator starts over, as its editor names the choices.
+# interface/tracker/screens/generators/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
 MSG_GLIDE_AMOUNT_LABEL = 'Glide amount'
 MSG_SHORTEN_LABEL = 'Shorten amount'
@@ -443,7 +443,7 @@ MSG_PROGRESSION_NAMES = {
     NamedProgression.LONG_TURNAROUND: 'Long turnaround', NamedProgression.CIRCLE_OF_FIFTHS: 'Circle of fifths', NamedProgression.RHYTHM_CHANGES: 'Rhythm changes',
     NamedProgression.FOLK: 'Folk, country', NamedProgression.GOSPEL: 'Gospel', NamedProgression.PACHELBEL: 'Pachelbel', NamedProgression.ANDALUSIAN: 'Andalusian', NamedProgression.MINOR: 'Minor',
 }
-# tui/screens/generators/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
+# interface/tracker/screens/generators/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
 MSG_TIME_NAMES = {
     '1/24': '1/16 triplet', '3/32': 'dotted 1/16', '1/12': '1/8 triplet', '3/16': 'dotted 1/8', '1/6': '1/4 triplet',
 }
@@ -471,7 +471,7 @@ MSG_OFFSET_ROW_LABEL = ' Offset'
 MSG_STEP_ADD_ROW_LABEL = ' {name}+='
 MSG_ARP_NOTE_ADD_LABEL = '{name}+= per note'
 
-# tui/screens/set/scale_page.py
+# interface/tracker/screens/set/scale_page.py
 MSG_ROOT_LABEL = 'Root'
 MSG_KIND_LABEL = 'Kind'
 # Names to show where the full ones are too long to fit.
@@ -480,7 +480,7 @@ MSG_SHORT_SCALE_NAMES = {
     ScaleKind.LYDIAN_DOMINANT: 'lydian dom', ScaleKind.BEBOP_DOMINANT: 'bebop dom', ScaleKind.PHRYGIAN_DOMINANT: 'phrygian dom',
 }
 
-# tui/screens/pattern/pattern_editor.py, its two drawings and the rows in tui/components/
+# interface/tracker/screens/pattern/pattern_editor.py, its two drawings and the rows in interface/tracker/components/
 # How each register's rows are labelled: AX+Note moves the note by AX, AX+Vel adds AX to the
 # velocity, and AX+= adds to AX.
 MSG_REGISTER_NOTE_LABEL = '{name}+Note'
@@ -489,16 +489,16 @@ MSG_REGISTER_VELOCITY_LABEL = '{name}+Vel'
 MSG_DRAW_NOTE_LABEL = 'Note+={name}'
 MSG_DRAW_VELOCITY_LABEL = 'Vel+={name}'
 MSG_DRAW_RESET_LABEL = 'Reset {name}'
-# tui/screens/arrange/arrange_page.py: what a copied scene's or track's clips play, as the copy's picker offers it.
+# interface/tracker/screens/arrange/arrange_page.py: what a copied scene's or track's clips play, as the copy's picker offers it.
 MSG_COPY_PATTERNS_CHOICES = ['the same patterns', 'copies of the patterns']
-# tui/screens/set/draws_page.py
+# interface/tracker/screens/set/draws_page.py
 MSG_DRAW_DIRECTION_LABEL = 'Direction'
 MSG_DRAW_SLOTS_LABEL = 'Slots'
 MSG_DRAW_VALUE_MIN_LABEL = 'Value Min'
 MSG_DRAW_VALUE_MAX_LABEL = 'Value Max'
 MSG_DRAW_CONDITIONS_REDRAW_LABEL = 'Conditions redraw'
 MSG_DRAW_STRIP_LABEL = 'Strip'
-# tui/dialogs/grouped_choices.py: the headings of a statement's pickers.
+# interface/tracker/dialogs/grouped_choices.py: the headings of a statement's pickers.
 MSG_PICKER_CONSTANT_HEADING = '--Constant--'
 MSG_PICKER_DRAWS_HEADING = '--Draws--'
 MSG_PICKER_REGISTERS_HEADING = '--Registers--'
@@ -604,7 +604,7 @@ MSG_CHORD_NAMES = {
     ChordSymbol.SCALE_ELEVENTH: 'eleventh from the scale', ChordSymbol.SCALE_THIRTEENTH: 'thirteenth from the scale',
 }
 
-# tui/screens/set/registers_page.py
+# interface/tracker/screens/set/registers_page.py
 # Each register's settings on the page, labelled like "AX minimum", in the order they're shown.
 # The Registers page's columns, in the grid's order.
 MSG_REGISTER_COLUMNS = ('Inc max', 'Reset behavior', 'Minimum', 'Default', 'Maximum', 'Scene reset')
@@ -620,16 +620,16 @@ MSG_RESET_BEHAVIOR_NAMES = {
     ResetBehavior.REVERSE: 'reverse', ResetBehavior.OVERFLOW: 'overflow', ResetBehavior.PICK_RANDOM: 'pick random',
 }
 
-# tui/screens/set/groove_editor.py
+# interface/tracker/screens/set/groove_editor.py
 MSG_CELL_ROW_LABEL = ' Cell'
 MSG_AMOUNT_ROW_LABEL = ' Amount'
 
-# tui/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_GROOVE_LABEL = 'Groove'
 MSG_GROOVE_OFF_OPTION = '(off: no groove here, whatever else chooses one)'
 
-# tui/screens/set/scale_page.py: the scale picker's two pages, and the headings of the groups of scales on them
-# tui/scale_categories.py: the categories of scale type the Chord dialog lists, each opening a flyout.
+# interface/tracker/screens/set/scale_page.py: the scale picker's two pages, and the headings of the groups of scales on them
+# interface/tracker/scale_categories.py: the categories of scale type the Chord dialog lists, each opening a flyout.
 MSG_SCALE_CATEGORY_COMMON = 'Common'
 MSG_SCALE_CATEGORY_MODES = 'Modes'
 MSG_SCALE_CATEGORY_HARMONIC_AND_MELODIC = 'Harmonic & Melodic'
@@ -651,7 +651,7 @@ MSG_SCALE_GROUP_MIDDLE_EAST_AND_EUROPE = 'MIDDLE EAST & EUROPE'
 MSG_SCALE_GROUP_EAST_ASIA = 'EAST ASIA'
 MSG_SCALE_GROUP_INDIA = 'INDIA'
 
-# tui/screens/set/instrument_editor.py: General MIDI's 128 sounds, numbered from 1 in this order, and its 16 families of eight.
+# interface/tracker/screens/set/instrument_editor.py: General MIDI's 128 sounds, numbered from 1 in this order, and its 16 families of eight.
 MSG_GM_SOUNDS = [
     'Acoustic Grand Piano',
     'Bright Acoustic Piano',
@@ -807,11 +807,11 @@ MSG_KEYSWITCH_LEAD_LABEL = 'Keyswitch lead'
 MSG_DEFAULT_VELOCITY_LABEL = 'Default velocity'
 MSG_GM_SOUND_SHOWN = '{number} {name}'
 
-# tui/screens/wizard/wizard_page.py and the branches beside it
+# interface/tracker/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CAPTION = 'NEW SONG WIZARD: {name}'
 MSG_WIZARD_REPLACE_CAPTION = 'SONG WIZARD, REPLACING: {name}'
 MSG_WIZARD_START_TITLE = 'Song Wizard'
-# The four ways a run starts when the current song was made by the wizard, by the constants of tui/screens/wizard/starts.py.
+# The four ways a run starts when the current song was made by the wizard, by the constants of interface/tracker/screens/wizard/starts.py.
 MSG_WIZARD_START_NAMES = {
     'new from last': 'New song, from last settings',
     'new from scratch': 'New song, from scratch',
@@ -846,7 +846,7 @@ MSG_WIZARD_MORE_SOUNDS_TITLE = 'More sounds'
 MSG_WIZARD_COMPOSITION_BRANCH = 'Composition'
 MSG_WIZARD_CHORDS_BRANCH = 'Chords'
 MSG_WIZARD_MELODY_BRANCH = 'Melody'
-# tui/screens/wizard/melody_branch.py, tui/screens/wizard/section_melody_branch.py: the whole song's melodies, and one kind of section's.
+# interface/tracker/screens/wizard/melody_branch.py, interface/tracker/screens/wizard/section_melody_branch.py: the whole song's melodies, and one kind of section's.
 MSG_WIZARD_MELODY_WAY_LABELS = {'busy': 'Busy', 'range': 'Range', 'repeats': 'Repeats'}
 MSG_WIZARD_CHARACTER_LABEL = 'Character'
 MSG_WIZARD_HEIGHT_LABEL = 'Height'
@@ -854,13 +854,13 @@ MSG_WIZARD_SECTION_BUSY_LABEL = 'Busy'
 MSG_WIZARD_FROM_SONG = 'from song'
 MSG_WIZARD_NOTES_EDITED = 'edited'
 MSG_WIZARD_EDIT_NOTES_BUTTON = 'Edit Notes'
-# tui/screens/wizard/solo_melody_branch.py: one solo's notes.
+# interface/tracker/screens/wizard/solo_melody_branch.py: one solo's notes.
 MSG_WIZARD_SOLO_NUMBERED = '{kind} {number}'
 MSG_WIZARD_SOLO_PLAYED_BY_LABEL = 'Played by'
 MSG_WIZARD_SOLO_SECTION_LABEL = 'Section'
 MSG_WIZARD_LISTEN_BUTTON = 'Listen'
 MSG_WIZARD_REGENERATE_BUTTON = 'Regenerate'
-# tui/screens/wizard/riffs_branch.py, tui/screens/wizard/riff_assign_branch.py, tui/screens/wizard/section_players_branch.py, tui/dialogs/new_riff_dialog.py: the riffs.
+# interface/tracker/screens/wizard/riffs_branch.py, interface/tracker/screens/wizard/riff_assign_branch.py, interface/tracker/screens/wizard/section_players_branch.py, interface/tracker/dialogs/new_riff_dialog.py: the riffs.
 MSG_WIZARD_RIFFS_BRANCH = 'Riffs'
 MSG_WIZARD_RIFF_ASSIGN_BRANCH = 'Riff Assign'
 MSG_WIZARD_SECTION_PLAYERS_BRANCH = 'Section Players'
@@ -873,14 +873,14 @@ MSG_NEW_RIFF_TITLE = 'New Riff for {player}'
 MSG_NEW_RIFF_LABELS = {'bars': 'Bars', 'notes': 'Made of', 'with chords': 'Follows chords', 'between': 'Gaps'}
 MSG_NEW_RIFF_VALUES = {1: '1', 2: '2', 'single notes': 'notes', 'chords on the accents': 'notes and chords', 'muted roots': 'muted roots', 'rests': 'silence'}
 MSG_NEW_RIFF_BUTTONS = ('Write Riff', 'CANCEL')
-# tui/screens/wizard/section_melody_branch.py: a kind of section's melody.
+# interface/tracker/screens/wizard/section_melody_branch.py: a kind of section's melody.
 MSG_WIZARD_LISTEN_BAND_BUTTON = 'Listen With Band'
 MSG_WIZARD_BODY_GAUGE_LABELS = {'sameness': 'Sameness', 'space': 'Space', 'lift': 'Lift', 'resolve': 'Resolve', 'call_and_answer': 'Call and answer'}
-# tui/screens/wizard/hooks_branch.py: the song's hooks.
+# interface/tracker/screens/wizard/hooks_branch.py: the song's hooks.
 MSG_WIZARD_HOOKS_BRANCH = 'Hook'
 MSG_WIZARD_BEHAVIOR_LABEL = 'Behavior'
 MSG_WIZARD_HOOK_GAUGE_LABELS = {'catchiness': 'Catchiness', 'simplicity': 'Simplicity', 'leap': 'Leap', 'height': 'Height', 'hold': 'Hold', 'bounce': 'Bounce'}
-# tui/screens/wizard/melodies_branch.py: the group of the song's melodies.
+# interface/tracker/screens/wizard/melodies_branch.py: the group of the song's melodies.
 MSG_WIZARD_MELODIES_BRANCH = 'Melodies'
 MSG_WIZARD_MAIN_HOOK_HEADING = 'Main Hook'
 MSG_WIZARD_HOOK_HEADING = 'Hook'
@@ -939,7 +939,7 @@ MSG_WIZARD_VALUE_FROM = '{value} ({origin})'
 # A fade's fields, named for its way: a section that opens the song fades in, and one that closes the song fades out.
 MSG_WIZARD_FADE_LABELS = {'in': {'fades': 'Fade in', 'fade_level': 'Fade from', 'fade_over': 'Fade over'}, 'out': {'fades': 'Fade out', 'fade_level': 'Fade to', 'fade_over': 'Fade over'}}
 MSG_WIZARD_FADE_VELOCITY = '{value}%'
-# tui/screens/wizard/intro_melody_branch.py: the intro's parts.
+# interface/tracker/screens/wizard/intro_melody_branch.py: the intro's parts.
 MSG_WIZARD_INTRO_PART = 'Part {number}'
 MSG_WIZARD_PART_MELODY_LABEL = 'Melody'
 MSG_WIZARD_ADD_PART_BUTTON = 'Add Part'

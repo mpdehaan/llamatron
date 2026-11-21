@@ -4,11 +4,11 @@
 
 """What the video tutorial says as it builds a set: a sentence at each point worth a word, and what a key does the first time it matters.
 
-The tutorial (tutorial/plan.py) says each of these as it reaches that part of the build, and the
-caption strip shows them at the foot of the screen (tui/caption_strip.py).
+The tutorial (interface/tutorial/plan.py) says each of these as it reaches that part of the build, and the
+caption strip shows them at the foot of the screen (interface/tracker/caption_strip.py).
 """
 
-# tutorial/plan.py
+# interface/tutorial/plan.py
 MSG_NARRATE_START = 'This is llamatron. We start from a new set and build {title} from nothing.'
 MSG_NARRATE_SONG = 'First the song itself: its name and its settings.'
 # Said as each thing is made, or as one the new set already has is renamed to what the target calls it,
@@ -49,7 +49,7 @@ MSG_EXPLAIN_BACKSPACE_ON_ROLL = 'If we need to, notes can be removed with Bksp.'
 MSG_EXPLAIN_SPACE_ON_ARRANGE = 'Space starts and stops songs, scenes, and tracks.'
 MSG_EXPLAIN_SPACE_TOGGLES = 'Pressing space toggles many types of cells.'
 
-# tutorial/plan.py: what the plan found in the target and cannot set yet, in the report.
+# interface/tutorial/plan.py: what the plan found in the target and cannot set yet, in the report.
 MSG_LEFT_OUT_SONG_SETTING = 'the song setting {setting}'
 MSG_LEFT_OUT_SCALE = 'deleting the scale ({name}), which the song still uses'
 MSG_LEFT_OUT_TRACK_SETTING = 'the track setting {setting} of ({name})'
@@ -58,19 +58,19 @@ MSG_LEFT_OUT_CLIP_SETTING = 'the clip setting {setting} of track ({track}) in sc
 MSG_LEFT_OUT_PATTERN_SETTING = 'the pattern setting {setting} of ({name})'
 MSG_LEFT_OUT_ROW = 'the {row} row of ({name})'
 
-# tutorial/runner.py: the lines of the tutorial's report after it ran.
+# interface/tutorial/runner.py: the lines of the tutorial's report after it ran.
 MSG_TUTORIAL_SAID = '{seconds:7.1f}  {text}'
 MSG_TUTORIAL_LEFT_OUT = 'left out, since the tutorial cannot set it yet: {what}'
 MSG_TUTORIAL_KEYS = '{count} keys pressed in {seconds:.1f} seconds'
 
-# tutorial/plan.py: what is said on the main screen once the cursor's box is on the cell the tutorial
+# interface/tutorial/plan.py: what is said on the main screen once the cursor's box is on the cell the tutorial
 # is about to open, or the Real Time switch it is about to turn on.
 MSG_NARRATE_OPENING = 'Opening {cell}'
 MSG_NARRATE_TURNING_ON = 'Turning on {cell}'
-# tutorial/plan.py: the call-out of a letter key the first time it is pressed on a kind of page, with
+# interface/tutorial/plan.py: the call-out of a letter key the first time it is pressed on a kind of page, with
 # the words its legend gives it.
 MSG_CALL_LETTER = 'Press {key} for {what}'
 
-# tutorial/subtitles.py: a cue of the SubRip file written beside the video, and a moment as SubRip writes it.
+# interface/tutorial/subtitles.py: a cue of the SubRip file written beside the video, and a moment as SubRip writes it.
 MSG_SUBTITLE_CUE = '{number}\n{start} --> {end}\n{text}\n\n'
 MSG_SUBTITLE_TIME = '{hours:02d}:{minutes:02d}:{seconds:02d},{milliseconds:03d}'

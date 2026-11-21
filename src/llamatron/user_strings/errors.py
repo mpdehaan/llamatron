@@ -379,7 +379,7 @@ ERR_NOT_A_SCALE_TYPE = 'expected a ScaleType, got {value!r}'
 ERR_BAD_TIME_SIGNATURE = 'time signature must be beats over a note value such as 6/8, with {lowest} to {highest} beats over one of: {units}, got {value!r}'
 ERR_NOT_A_TIME_SIGNATURE = 'expected a TimeSignature, got {value!r}'
 
-# tui/screens/arrange/arrange_page.py
+# interface/tracker/screens/arrange/arrange_page.py
 # The mark beside a scene on the Arrange grid. The full explanation is the loop errors dialog.
 ERR_ADD_A_PATTERN_FIRST = 'Add a pattern first, on the Patterns page.'
 # Deleting the last scene or track is refused in a dialog.
@@ -392,21 +392,21 @@ ERR_NO_PATTERNS_TITLE = 'No patterns'
 ERR_NO_OTHER_TRACKS_TITLE = 'No other tracks'
 ERR_ADD_ANOTHER_TRACK = 'Add another track to grab notes from, on the Tracks page.'
 
-# tui/screens/set/main_page.py
+# interface/tracker/screens/set/main_page.py
 ERR_NO_INSTRUMENTS_TITLE = 'No instruments'
 ERR_ADD_INSTRUMENT_FIRST = 'Add an instrument first, on the Instruments page, and give a track it.'
-# tui/transport.py: why nothing plays.
+# interface/tracker/transport.py: why nothing plays.
 ERR_CANT_PLAY_TITLE = 'Cannot play'
 ERR_REAL_TIME_OFF = 'Turn Real Time on first, with T on the main screen.'
 ERR_NO_TRACK_HAS_AN_INSTRUMENT = 'No track has an instrument. Choose one at the bottom of a track editor, from Arrange.'
 ERR_NO_TRACK_HAS_A_DEVICE = 'No track plays through an instrument with a device. Choose a device for an instrument on the Instruments page.'
 ERR_DEVICE_NOT_CONNECTED = 'The device of instrument ({instrument}), ({device}), is not connected. Choose another on the Instruments page.'
-# tui/silent_instruments.py: the warning when a set opens whose tracks play through instruments that cannot sound here.
+# interface/tracker/silent_instruments.py: the warning when a set opens whose tracks play through instruments that cannot sound here.
 ERR_SILENT_INSTRUMENTS_TITLE = 'Silent instruments'
 ERR_FLUIDSYNTH_WILL_NOT_SOUND = 'Since FluidSynth is not installed, instruments using FluidSynth will not sound. Run sh user_scripts/install_fluidsynth.sh in the llamatron folder to install it.'
 ERR_DEVICE_WILL_NOT_SOUND = 'The device of instrument ({instrument}), ({device}), is not connected, so it will not sound. The set keeps it, and the Instruments page can choose another.'
 ERR_FLUIDSYNTH_NOT_INSTALLED = 'Some tracks play through FluidSynth, which is not installed. Run sh user_scripts/install_fluidsynth.sh in the llamatron folder to install it.'
-# tui/pattern_preview.py: why Listen cannot play a pattern through the song's Preview instrument, on the status line.
+# interface/tracker/pattern_preview.py: why Listen cannot play a pattern through the song's Preview instrument, on the status line.
 ERR_NOT_A_NOTE_NAME = 'note must be a letter from A to G, # or b where wanted, and an octave, such as C3, got {text}'
 ERR_NOTHING_TO_TRY_A_SOUND_WITH = 'to listen, install FluidSynth or set the Preview instrument on the Song page'
 ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE = 'preview instrument ({name}) has no device, so nothing plays'
@@ -419,15 +419,15 @@ ERR_REMOVE_OTHER_GRAB = 'Remove the grab from another clip in this scene first.'
 ERR_LOOP_SCENES_TITLE = 'Scene loop errors'
 ERR_LOOP_SCENES_INTRO = 'The following scenes have too many loops and need at least one non-looping clip:'
 
-# tui/document.py
+# interface/tracker/document.py
 ERR_NOTHING_TO_EXPORT = 'there is nothing to export yet, because the song needs a track and a scene'
 ERR_LAST_SONG = 'the set needs at least one song'
 ERR_FILE_PROTECTED = '{path} is protected, so it cannot be written over'
 ERR_SAVE_BEFORE_EXPORT = 'the set has to be saved before it is exported, because the exports are named after its file and written beside it'
 
-# tui/screens/shared/list_page.py
+# interface/tracker/screens/shared/list_page.py
 ERR_CANT_DELETE_TITLE = 'Cannot delete'
-# tui/screens/arrange/arrange_page.py: + under a cell's chains with no chain in the set to add.
+# interface/tracker/screens/arrange/arrange_page.py: + under a cell's chains with no chain in the set to add.
 ERR_NO_GENERATORS_TO_ADD = 'the set has no generators to add: make one on the Generators page'
 ERR_STILL_USED = '{what} is still used, so change these first:'
 # After the first few lines of a list in a dialog, how many more there are.
@@ -441,7 +441,7 @@ ERR_TYPED_NOT_A_TIME_SIGNATURE = '({text}) is not a time signature such as 6/8, 
 ERR_CANNOT_DIVIDE_BY_ZERO = 'cannot divide by 0'
 ERR_OUT_OF_RANGE = '{number} must be from {low} to {high}'
 
-# tui/screens/set/song_page.py, tui/screens/set/file_page.py and tui/screens/shared/everywhere.py
+# interface/tracker/screens/set/song_page.py, interface/tracker/screens/set/file_page.py and interface/tracker/screens/shared/everywhere.py
 ERR_ADD_A_SCALE_FIRST = 'add a scale first, on the Scales page'
 ERR_CANT_SAVE_TITLE = 'Cannot save'
 ERR_CANT_SAVE = '{path}: {error}'
@@ -452,7 +452,7 @@ ERR_LAST_SONG_SHOWN = 'the set needs at least one song, so the last one cannot b
 ERR_NOTHING_TO_ADD_TITLE = 'Nothing to add'
 ERR_BAD_COUNTS = 'counts must be integers of 1 or more, separated by spaces'
 
-# tui/screens/pattern/pattern_editor.py and the rows in tui/components/
+# interface/tracker/screens/pattern/pattern_editor.py and the rows in interface/tracker/components/
 ERR_NOT_A_LENGTH = '({text}) is not an integer or a fraction such as 1/8'
 ERR_LENGTH_OUT_OF_RANGE = 'a length must be more than 0 and at most {most}'
 ERR_ROW_OUT_OF_RANGE = '{row} must be from {low} to {high}'
@@ -489,10 +489,10 @@ ERR_STEPS_OUT_OF_RANGE = 'steps must be from {low} to {high}'
 # caching/memory.py
 ERR_STALE_ANSWER = 'the answer kept for {key} is stale: kept {kept!r}, and worked out again {again!r}'
 
-# tui/history.py
+# interface/tracker/history.py
 ERR_CHANGED_SNAPSHOT = 'a snapshot the undo history shares was changed after the history kept it'
 
-# tui/document_parts/undo.py
+# interface/tracker/document_parts/undo.py
 ERR_STALE_DATA = 'the data the set keeps is stale: kept {kept!r}, and built again {again!r}'
 ERR_WRONG_RESTORE = 'the set restored from a snapshot differs from the set read afresh from it: restored {restored!r}, and read afresh {afresh!r}'
 
@@ -506,7 +506,7 @@ ERR_COREMIDI_CALL_FAILED = 'CoreMIDI refused {call}, with status {status}'
 # realtime/render_process/playback_process.py
 ERR_PLAYBACK_DID_NOT_START = 'the render process did not start'
 ERR_PLAYBACK_DID_NOT_ANSWER = 'the render process did not answer'
-# tui/transport.py and tui/app.py: the dialog shown when the render process ends without being closed.
+# interface/tracker/transport.py and interface/tracker/app.py: the dialog shown when the render process ends without being closed.
 ERR_PLAYBACK_ENDED_TITLE = 'Playback stopped'
 ERR_PLAYBACK_ENDED = 'The render process ended unexpectedly, which is a bug. Playing again starts it afresh.'
 # exporters/wave_level.py and exporters/wave_fluidsynth.py: the WAV export through FluidSynth.
@@ -518,7 +518,7 @@ ERR_FLUIDSYNTH_RENDER_FAILED = 'FluidSynth could not write the WAV file: {proble
 ERR_FLUIDSYNTH_DID_NOT_START = 'FluidSynth did not start: its MIDI port did not appear within {seconds} seconds'
 ERR_FLUIDSYNTH_ENDED = 'FluidSynth ended as it started, with exit code {code}'
 
-# cli.py and tui/launch.py: launching the tracker to play on its own.
+# cli.py and interface/tracker/launch.py: launching the tracker to play on its own.
 ERR_RECORDING_SONG_LOOPS = 'every clip loops in {scenes}, so playing the song would wait there forever: turn Loop off on one clip to record it'
 ERR_LAUNCH_NEEDS_SET = 'the launch options need a set file to play'
 ERR_BATCH_VIDEO_NEEDS_VISUALIZER = '--batch-video needs --visualizer to name the mode the video shows'
@@ -527,7 +527,7 @@ ERR_NO_SUCH_MIDI_PORT = 'no MIDI output port called ({name})'
 # importers/midi_import.py
 ERR_MIDI_NO_NOTES = 'the MIDI file plays no notes'
 
-# tui/screens/set/importing.py
+# interface/tracker/screens/set/importing.py
 ERR_CANT_IMPORT_TITLE = 'Cannot import'
 ERR_CANT_READ_MIDI = 'The file {file} cannot be read as MIDI: {problem}.'
 
@@ -661,6 +661,6 @@ ERR_WIZARD_SECTION_BARS = 'bars must be a length the section can have, got {valu
 ERR_WIZARD_SECTION_NEEDS_PLAYER = 'a section needs one player'
 ERR_WIZARD_BAD_SECTIONS = 'sections must be a list of sections of the genre, got {value!r}'
 
-# tui/screens/wizard/wizard_page.py and the branches beside it
+# interface/tracker/screens/wizard/wizard_page.py and the branches beside it
 ERR_WIZARD_CHOOSE_GENRE = 'choose a genre first'
 ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE = 'choose a genre and a subgenre first'

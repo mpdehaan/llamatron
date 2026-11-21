@@ -23,12 +23,12 @@ import importlib.util
 import os
 import sys
 
+from llamatron.interface.tracker.app import LlamatronApp
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.launch import Launch
+from llamatron.interface.visualizers import modes
+from llamatron.interface.visualizers.modes import mode_options
 from llamatron.realtime.devices.ports import output_port_names
-from llamatron.tui.app import LlamatronApp
-from llamatron.tui.document import Document
-from llamatron.tui.launch import Launch
-from llamatron.visualizers import modes
-from llamatron.visualizers.modes import mode_options
 
 RECORDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'record_demo.py')
 RECORDER_MODULE = 'record_demo'

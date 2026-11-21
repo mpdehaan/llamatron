@@ -5,7 +5,7 @@
 
 """The player's side of real-time playback: the scores, the player and the sender, apart from the tracker's pages.
 
-The transport (tui/transport.py) knows the document: the set, the routes, what stops a song from playing, the seeds and how
+The transport (interface/tracker/transport.py) knows the document: the set, the routes, what stops a song from playing, the seeds and how
 to find a scene or a track again after an edit. What it asks of the player's side goes through a few commands, each naming
 what a score is made from (Wanted): take the set's data, build a score ahead, launch, hand an edit's score to the player,
 stop, silence; and a few questions, what plays and what is heard, for the lights and the visualizer. LocalPlayback answers

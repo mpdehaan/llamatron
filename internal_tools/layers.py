@@ -10,7 +10,7 @@ say what an import may do, and tests/rules/test_layers.py holds them:
 - Order. A package imports only packages below it in LAYERS.
 - Front doors. Outside a package of FRONT_DOORS, only its front-door modules are imported, and
   the real-time package is imported only by the files of REALTIME_USERS.
-- Pages. A page, a file under tui/screens/ outside shared/, imports no other page, and of the
+- Pages. A page, a file under interface/tracker/screens/ outside shared/, imports no other page, and of the
   model in model/ only the schema's names and the version of PAGE_SCHEMA, and the values.
 
 The imports that broke a rule when it was made are listed in tests/rules/layer_exceptions.py,
@@ -36,7 +36,7 @@ DOT = '.'
 TOP = '(top)'
 # The packages from the bottom up: each imports only those before it. The strings package is text every layer may name.
 LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'exporters', 'importers', 'realtime',
-          'wizards', 'visualizers', 'tui', 'tutorial', TOP)
+          'wizards', 'interface', TOP)
 VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.
 FRONT_DOORS = {
@@ -48,9 +48,9 @@ FRONT_DOORS = {
     'realtime': (),
 }
 # The only files outside the real-time package that import it.
-REALTIME_USERS = ('tui/transport.py', 'tui/pattern_preview.py', 'cli.py')
+REALTIME_USERS = ('interface/tracker/transport.py', 'interface/tracker/pattern_preview.py', 'cli.py')
 REALTIME = 'realtime'
-PAGES_FOLDER = ('tui', 'screens')
+PAGES_FOLDER = ('interface', 'tracker', 'screens')
 SHARED_PAGES = 'shared'
 MODEL = 'model'
 # What a page may import of the Model: its names, which are words and no behaviour, the generator plugins found, and the version every file records.

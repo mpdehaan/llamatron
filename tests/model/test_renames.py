@@ -16,6 +16,8 @@ from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_
 from llamatron.engine.generators.follow_chords.model import FollowChordsSetting, FollowChordsSettings
 from llamatron.engine.generators.hocket.model import HocketSetting, HocketSettings
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
+from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.uses import grabbers, uses_of
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects import sections as sections_values
 from llamatron.model.objects.chain import Chain
@@ -30,8 +32,6 @@ from llamatron.model.schema import defaults, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.tui.document import Document
-from llamatron.tui.uses import grabbers, uses_of
 from tests.model.test_llama_data import every_subclass
 from tests.support.rendering import render_song
 

@@ -56,7 +56,7 @@ MSG_WARN_CONTROLS_OFF = '{count} CC messages were left out, with Import CCs off.
 MSG_WARN_CONTROLS_MOVED = '{count} CC messages fell between steps, and are sent on a step or lost to a later one.'
 MSG_WARN_NUMBERS_JOIN = ', '
 
-# tui/dialogs/import_dialog.py: A dialog of fields over the file picker.
+# interface/tracker/dialogs/import_dialog.py: A dialog of fields over the file picker.
 # The title says what is imported, since the main screen's cell only says Import.
 MSG_IMPORT_TITLE = 'Import MIDI file'
 MSG_IMPORT_FOUND = 'found: {tracks} tracks, {bars} bars, {time_signature}, {tempo} bpm, {keys}'
@@ -78,7 +78,7 @@ MSG_IMPORT_AUTO_STEP = 'auto ({size})'
 MSG_IMPORT_BUTTONS = ('Import', 'CANCEL')
 MSG_IMPORT_SONG_PROMPT = 'Song name'
 
-# tui/dialogs/imported_dialog.py: the dialog after an import.
+# interface/tracker/dialogs/imported_dialog.py: the dialog after an import.
 MSG_IMPORTED_TITLE = 'Import complete'
 MSG_IMPORTED_SONG = 'Song imported as ({name}).'
 MSG_IMPORTED_COUNTS = 'It has {tracks} tracks, {patterns} new patterns and {scenes} scenes.'
@@ -86,5 +86,5 @@ MSG_IMPORTED_NO_WARNINGS = 'Import complete with no warnings.'
 MSG_IMPORTED_WARNINGS = 'Import complete with these warnings:'
 MSG_IMPORTED_BUTTON = 'OK'
 
-# tui/screens/set/importing.py
+# interface/tracker/screens/set/importing.py
 MSG_IMPORTED = 'imported song ({name}): {tracks} tracks, {patterns} patterns, {scenes} scenes'
