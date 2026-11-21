@@ -8,7 +8,7 @@ from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, band, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import values_of
 from llamatron.wizards.create_song.characters import preset
-from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only
+from llamatron.wizards.create_song.choices_part import add_counted, ChoicesPart, chosen_only
 
 
 class BandChoices(ChoicesPart):
@@ -119,15 +119,15 @@ class BandChoices(ChoicesPart):
 
     def counted(self):
         """Return every setting of the band, each under a name of its own, so that two bands can be compared setting by setting."""
-        by_name = {(wizard_limits.GENRE_SETTING, name): value for name, value in (
-            (arranger.WITHOUT, sorted(self._without)), (wizard_limits.GUITARISTS_SAVED, self._guitarists))}
-        for kept_as, held in ((arranger.PICKS, self._ways), (arranger.PLAYERS, self._levels), (wizard_limits.PLAYER_GAUGES_SAVED, self._own_gauges), (wizard_limits.PLAYER_ROWS_SAVED, self._rows)):
-            for name, value in held.items():
-                if isinstance(value, dict):
-                    by_name.update({(kept_as, name, inner): each for inner, each in value.items()})
-                else:
-                    by_name[(kept_as, name)] = value
-        return by_name
+        counted = {
+            (wizard_limits.GENRE_SETTING, arranger.WITHOUT): sorted(self._without),
+            (wizard_limits.GENRE_SETTING, wizard_limits.GUITARISTS_SAVED): self._guitarists,
+        }
+        add_counted(counted, kind=arranger.PICKS, held=self._ways)
+        add_counted(counted, kind=arranger.PLAYERS, held=self._levels)
+        add_counted(counted, kind=wizard_limits.PLAYER_GAUGES_SAVED, held=self._own_gauges)
+        add_counted(counted, kind=wizard_limits.PLAYER_ROWS_SAVED, held=self._rows)
+        return counted
 
     def restore_without(self, role):
         """Leave out a player a kept song left out."""

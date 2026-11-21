@@ -289,22 +289,22 @@ def every_choice(choices):
             if busy != choices.interplay().get_fills_busy():
                 yield FILLS_BUSY, busy, lambda made, busy=busy: made.interplay().set_fills_busy(busy), [answering, filling]
     # What every melody of the song shares: each other value of how busy, how wide and how repeated, and each character offered.
-    for field in choices.melodies().melody_fields():
-        for value in choices.melodies().melody_ways_offered(field):
-            if value != choices.melodies().get_melody_way(field):
-                yield MELODY_WAY, (field, value), lambda made, field=field, value=value: made.melodies().set_melody_way(field=field, value=value), [nothing_first]
-    for character in choices.melodies().melody_characters_offered():
-        yield MELODY_CHARACTER_CHOICE, character, lambda made, character=character: made.melodies().set_melody_character(character), [nothing_first]
+    for field in choices.melody_ways().fields():
+        for value in choices.melody_ways().ways_offered(field):
+            if value != choices.melody_ways().get_way(field):
+                yield MELODY_WAY, (field, value), lambda made, field=field, value=value: made.melody_ways().set_way(field=field, value=value), [nothing_first]
+    for character in choices.melody_ways().characters_offered():
+        yield MELODY_CHARACTER_CHOICE, character, lambda made, character=character: made.melody_ways().set_character(character), [nothing_first]
     # A kind of section's own melody: each height but the genre's, and each way of busy but the song's.
     for kind in choices.get_tunes().tune_kinds():
-        for field in choices.melodies().section_melody_fields(kind):
-            for value in choices.melodies().section_melody_ways_offered(kind=kind, field=field):
-                if value != choices.melodies().get_section_melody(kind=kind, field=field):
-                    yield MELODY_OF_KIND, (kind, field, value), lambda made, kind=kind, field=field, value=value: made.melodies().set_section_melody(kind=kind, field=field, value=value), [nothing_first]
+        for field in choices.melody_ways().of_kind(kind).fields():
+            for value in choices.melody_ways().of_kind(kind).ways_offered(field):
+                if value != choices.melody_ways().of_kind(kind).get_way(field):
+                    yield MELODY_OF_KIND, (kind, field, value), lambda made, kind=kind, field=field, value=value: made.melody_ways().of_kind(kind).set_way(field=field, value=value), [nothing_first]
     # A player's rows show under the serial style, and each row with every cell moved to the far end of its range is held against the genre's own.
-    for character in (None, *(offered for offered in choices.melodies().melody_characters_offered() if offered == wizard_limits.ATONAL)):
+    for character in (None, *(offered for offered in choices.melody_ways().characters_offered() if offered == wizard_limits.ATONAL)):
         chosen = choices if character is None else fresh_with_character(choices=choices, character=character)
-        first = nothing_first if character is None else (lambda made, character=character: made.melodies().set_melody_character(character))
+        first = nothing_first if character is None else (lambda made, character=character: made.melody_ways().set_character(character))
         for role in chosen.get_band().roles_in():
             for name in chosen.player(role).rows():
                 row = far_row(choices=chosen, role=role, name=name)
@@ -583,7 +583,7 @@ def far_row(*, choices, role, name):
 def fresh_with_character(*, choices, character):
     """Return choices like some others with a character chosen for the melodies, to read what shows under it from."""
     chosen = WizardChoices.from_data(choices.to_data())
-    chosen.melodies().set_melody_character(character)
+    chosen.melody_ways().set_character(character)
     return chosen
 
 

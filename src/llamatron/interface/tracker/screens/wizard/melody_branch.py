@@ -37,8 +37,8 @@ class MelodyBranch(Branch):
         if not self.has_melody():
             return []
         choices = self.get_choices()
-        fields = [self.player_field(), *(self.way_field(field) for field in choices.melodies().melody_fields())]
-        if choices.melodies().melody_characters_offered():
+        fields = [self.player_field(), *(self.way_field(field) for field in choices.melody_ways().fields())]
+        if choices.melody_ways().characters_offered():
             fields.append(self.character_field())
         return fields + self.phrasing_fields()
 
@@ -51,20 +51,20 @@ class MelodyBranch(Branch):
     def way_field(self, field):
         """Return the field of how busy the melodies are, how wide they range or how much they repeat."""
         choices = self.get_choices()
-        ways = choices.melodies().melody_ways_offered(field)
+        ways = choices.melody_ways().ways_offered(field)
         # The genre's own value is said to be so, in the field and in its list.
-        names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == choices.melodies().genre_melody_way(field) else value for value in ways]
-        now = choices.melodies().get_melody_way(field)
+        names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == choices.melody_ways().genre_way(field) else value for value in ways]
+        now = choices.melody_ways().get_way(field)
         return ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_MELODY_WAY_LABELS[field], choices=ways, names=names, current=now, shown=names[ways.index(now)],
-                           set=self.get_page().choosing(lambda value: choices.melodies().set_melody_way(field=field, value=value)))
+                           set=self.get_page().choosing(lambda value: choices.melody_ways().set_way(field=field, value=value)))
 
     def character_field(self):
         """Return the field of the melodies' character: the genre's own until one is chosen, which the list's first entry gives back."""
         choices = self.get_choices()
-        offered = choices.melodies().melody_characters_offered()
+        offered = choices.melody_ways().characters_offered()
         return ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_CHARACTER_LABEL, choices=[FROM_GENRE, *offered], names=[labels.MSG_WIZARD_USUAL_MELODY, *offered],
-                           current=choices.melodies().get_melody_character() or FROM_GENRE, shown=choices.melodies().get_melody_character() or labels.MSG_WIZARD_USUAL_MELODY,
-                           set=self.get_page().choosing(lambda chosen: choices.melodies().set_melody_character(chosen or None)))
+                           current=choices.melody_ways().get_character() or FROM_GENRE, shown=choices.melody_ways().get_character() or labels.MSG_WIZARD_USUAL_MELODY,
+                           set=self.get_page().choosing(lambda chosen: choices.melody_ways().set_character(chosen or None)))
 
     def phrasing_fields(self):
         """Return how the melody is delivered: the Phrasing switch, and under it the button that opens the Phrasing page, where a

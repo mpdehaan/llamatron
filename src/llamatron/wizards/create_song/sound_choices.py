@@ -54,7 +54,10 @@ class SoundChoices(ChoicesPart):
 
     def counted(self):
         """Return every setting of the sounds, each under a name of its own, so that two bands can be compared setting by setting."""
-        return {(wizard_limits.GENRE_SETTING, wizard_limits.BAND_SOUNDS_SAVED): self._band_sounds, **{(wizard_limits.SOUNDS_SAVED, role): sound for role, sound in self._sounds.items()}}
+        counted = {(wizard_limits.GENRE_SETTING, wizard_limits.BAND_SOUNDS_SAVED): self._band_sounds}
+        for role, sound in self._sounds.items():
+            counted[(wizard_limits.SOUNDS_SAVED, role)] = sound
+        return counted
 
     # A player's sound: the one the player's way of playing has, moved by the band's Sounds, unless the player has a sound of its own.
 

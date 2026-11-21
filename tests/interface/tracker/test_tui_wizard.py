@@ -1111,7 +1111,7 @@ class TestWizardPlayerRows(WizardTest):
         choices = self.choices()
         choices.set_genre(A_GENRE_WITH_RHYTHMS)
         choices.set_subgenre(choices.subgenres()[0])
-        choices.melodies().set_melody(melody.SERIAL)
+        choices.melody().set_style(melody.SERIAL)
         await self.press(Key.DOWN, Key.UP)
         role = next(role for role in choices.get_band().roles_in() if choices.player(role).rows())
         await self.go_to_named_branch(choices.player(role).title())
@@ -1129,7 +1129,7 @@ class TestWizardPlayerRows(WizardTest):
         choices, role = await self.serial()
         for name in wizard_limits.PLAYER_ROWS:
             self.assertIn(marks.MSG_WIZARD_GENRE_ROW_SHOWN.format(row=self.shown_row(choices=choices, role=role, name=name)), self.text())
-        choices.melodies().set_melody(None)
+        choices.melody().set_style(None)
         await self.press(Key.DOWN, Key.UP)
         # By the fields' labels, since a row's label may be part of another field's.
         labels = [field.label for field in self.wizard().fields()]

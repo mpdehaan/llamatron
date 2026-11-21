@@ -169,7 +169,7 @@ class TestTheWizardsSong(unittest.TestCase):
         choices = arena_rock()
         setlist = choices.made_setlist(name=A_NAME, version=version.VERSION)
         song = setlist.get_song(A_NAME)
-        melodies = choices.melodies().melody_players()
+        melodies = choices.melody().players()
         for scene_name, track in self.clips_with_a_velocity(setlist):
             scene = [scene for scene in song.get_scenes() if scene.get_name() == scene_name][0]
             own = scene.get_clip_slot(track).get_velocity(scene)

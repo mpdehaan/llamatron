@@ -9,7 +9,7 @@ from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, player_of
 from llamatron.wizards.create_song.breaks import break_names
-from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart, chosen_only
+from llamatron.wizards.create_song.choices_part import add_counted, cached_until_choices_change, ChoicesPart, chosen_only
 
 
 class KitChoices(ChoicesPart):
@@ -71,12 +71,15 @@ class KitChoices(ChoicesPart):
 
     def counted(self):
         """Return every setting of the kit, each under a name of its own, so that two kits can be compared setting by setting."""
-        by_name = {(wizard_limits.GENRE_SETTING, name): value for name, value in (
-            (wizard_limits.PIECES_OFF_SAVED, sorted(self._pieces_off)), (wizard_limits.FILLS_SAVED, self._fills), (wizard_limits.QUIET_NOTES_SAVED, self._quiet_notes),
-            (wizard_limits.BREAK_SAVED, self._break), (wizard_limits.BREAK_CUT_SAVED, self._break_cut))}
-        for piece, sounds_as in self._piece_sounds.items():
-            by_name.update({(wizard_limits.PIECE_SOUNDS_SAVED, piece, inner): each for inner, each in sounds_as.items()})
-        return by_name
+        counted = {
+            (wizard_limits.GENRE_SETTING, wizard_limits.PIECES_OFF_SAVED): sorted(self._pieces_off),
+            (wizard_limits.GENRE_SETTING, wizard_limits.FILLS_SAVED): self._fills,
+            (wizard_limits.GENRE_SETTING, wizard_limits.QUIET_NOTES_SAVED): self._quiet_notes,
+            (wizard_limits.GENRE_SETTING, wizard_limits.BREAK_SAVED): self._break,
+            (wizard_limits.GENRE_SETTING, wizard_limits.BREAK_CUT_SAVED): self._break_cut,
+        }
+        add_counted(counted, kind=wizard_limits.PIECE_SOUNDS_SAVED, held=self._piece_sounds)
+        return counted
 
     def add_picks(self, picks):
         """Add the kit's picks to the song's: a break and its cut, the pieces left out, what a piece sounds as, how often a fill

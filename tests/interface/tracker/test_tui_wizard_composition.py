@@ -93,10 +93,10 @@ class TestWizardMelody(CompositionTest):
 
     async def test_the_panel_holds_who_plays_the_melody_then_what_every_melody_shares_and_the_phrasing(self):
         choices = self.choices()
-        ways = [labels.MSG_WIZARD_MELODY_WAY_LABELS[field] for field in choices.melodies().melody_fields()]
+        ways = [labels.MSG_WIZARD_MELODY_WAY_LABELS[field] for field in choices.melody_ways().fields()]
         self.assertEqual(self.field_labels()[:len(ways) + 2], [labels.MSG_WIZARD_TUNE_LABEL, *ways, labels.MSG_WIZARD_CHARACTER_LABEL])
         self.assertIn(labels.MSG_WIZARD_PHRASING_LABEL, self.field_labels())
-        self.assertEqual(set(choices.melodies().melody_fields()), {wizard_limits.MELODY_BUSY, wizard_limits.MELODY_RANGE, melody.REPEATS})
+        self.assertEqual(set(choices.melody_ways().fields()), {wizard_limits.MELODY_BUSY, wizard_limits.MELODY_RANGE, melody.REPEATS})
 
     async def test_each_field_is_chosen_from_its_list_and_changes_the_song(self):
         choices = self.choices()
@@ -104,10 +104,10 @@ class TestWizardMelody(CompositionTest):
             before = choices.made_for_listening()[0].to_data()
             await self.select_field(labels.MSG_WIZARD_MELODY_WAY_LABELS[field])
             await self.press(Key.ENTER)
-            usual = choices.melodies().genre_melody_way(field)
+            usual = choices.melody_ways().genre_way(field)
             self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_VALUE_FROM.format(value=way, origin=labels.MSG_WIZARD_USUAL_MELODY) if way == usual else way for way in wizard_limits.MELODY_WAYS[field]])
             await self.pick(value)
-            self.assertEqual(choices.melodies().get_melody_way(field), value)
+            self.assertEqual(choices.melody_ways().get_way(field), value)
             self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
 
     async def test_the_character_is_the_genres_until_one_is_chosen_and_the_first_entry_gives_it_back(self):
@@ -115,12 +115,12 @@ class TestWizardMelody(CompositionTest):
         await self.select_field(labels.MSG_WIZARD_CHARACTER_LABEL)
         self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_USUAL_MELODY)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_USUAL_MELODY, *choices.melodies().melody_characters_offered()])
+        self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_USUAL_MELODY, *choices.melody_ways().characters_offered()])
         await self.pick(wizard_limits.SMOOTH)
-        self.assertEqual(choices.melodies().get_melody_character(), wizard_limits.SMOOTH)
+        self.assertEqual(choices.melody_ways().get_character(), wizard_limits.SMOOTH)
         await self.press(Key.ENTER)
         await self.pick(labels.MSG_WIZARD_USUAL_MELODY)
-        self.assertIsNone(choices.melodies().get_melody_character())
+        self.assertIsNone(choices.melody_ways().get_character())
 
     async def test_the_melody_is_given_to_another_player(self):
         choices = self.choices()
@@ -146,20 +146,20 @@ class TestWizardSectionMelody(CompositionTest):
         other = melody.HIGH if choices.genre_height_in(A_KIND) != melody.HIGH else melody.LOW
         await self.press(Key.ENTER)
         await self.pick(other)
-        self.assertEqual(choices.melodies().get_section_melody(kind=A_KIND, field=wizard_names.MELODY_HEIGHT), other)
+        self.assertEqual(choices.melody_ways().of_kind(A_KIND).get_way(wizard_names.MELODY_HEIGHT), other)
         self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
         await self.select_field(labels.MSG_WIZARD_SECTION_BUSY_LABEL)
-        self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_VALUE_FROM.format(value=choices.melodies().get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
+        self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_VALUE_FROM.format(value=choices.melody_ways().get_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
         await self.press(Key.ENTER)
         await self.pick(wizard_limits.MELODY_SPARSE)
-        self.assertEqual(choices.melodies().get_section_melody(kind=A_KIND, field=wizard_limits.MELODY_BUSY), wizard_limits.MELODY_SPARSE)
+        self.assertEqual(choices.melody_ways().of_kind(A_KIND).get_way(wizard_limits.MELODY_BUSY), wizard_limits.MELODY_SPARSE)
         await self.press(Key.ENTER)
         # One list holds every value, the song's own said to be so, and picking the song's own gives the field back.
-        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=choices.melodies().get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG)
+        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=choices.melody_ways().get_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG)
         self.assertIn(usual, self.app.screen.options)
         self.assertNotIn(labels.MSG_WIZARD_FROM_SONG, self.app.screen.options)
         await self.pick(usual)
-        self.assertIsNone(choices.melodies().get_section_melody(kind=A_KIND, field=wizard_limits.MELODY_BUSY))
+        self.assertIsNone(choices.melody_ways().of_kind(A_KIND).get_way(wizard_limits.MELODY_BUSY))
 
     async def test_the_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
         choices = self.choices()

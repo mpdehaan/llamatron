@@ -20,9 +20,11 @@ from llamatron.wizards.create_song.hook_choices import HookChoices
 from llamatron.wizards.create_song.interplay_choices import InterplayChoices
 from llamatron.wizards.create_song.kit_choices import KitChoices
 from llamatron.wizards.create_song.melody_choices import MelodyChoices
+from llamatron.wizards.create_song.melody_ways import MelodyWays
 from llamatron.wizards.create_song.player_choices import PlayerChoices
 from llamatron.wizards.create_song.riff_choices import RiffChoices
 from llamatron.wizards.create_song.section_choices import SectionChoices
+from llamatron.wizards.create_song.section_melody import SectionMelody
 from llamatron.wizards.create_song.solo_choices import SoloChoices
 from llamatron.wizards.create_song.sound_choices import SoundChoices
 from llamatron.wizards.create_song.tune_choices import TuneChoices
@@ -30,7 +32,7 @@ from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 SETTER_START = 'set_'
 # The choices and every part of them.
-CHOICES_CLASSES = (WizardChoices, MelodyChoices, BandChoices, InterplayChoices, FormChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
+CHOICES_CLASSES = (WizardChoices, MelodyChoices, MelodyWays, SectionMelody, BandChoices, InterplayChoices, FormChoices, PlayerChoices, KitChoices, HookChoices, RiffChoices, SoundChoices, SoloChoices, TuneChoices)
 # What changes a choice without being named a setter.
 OTHER_CHANGES = ('add_section', 'new_hook', 'new_second_hook')
 # What changes one section of the form without being named a setter: its names are common words, so a call is looked for on a section.
@@ -46,7 +48,7 @@ SECTION_CHANGES = ('copy', 'move', 'remove')
 # Who says the hook in every part of an intro at once is kept from songs made before an intro had parts; the Intro panel sets each part's.
 # One thing laid over the song's picks under a name is set by a part of the choices, whose own setters the pages call, and so
 # are the sections a player plays in, which the player's Comes in and Lays out set.
-NOT_ON_THE_PAGE = ('set_extra', 'set_plays_of', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_melody', 'set_melody_gauge', 'set_melody_setting', 'set_tune_played_by_in')
+NOT_ON_THE_PAGE = ('set_extra', 'set_plays_of', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_style', 'set_style_gauge', 'set_setting', 'set_tune_played_by_in')
 A_CALL = r'\.{name}\b'
 A_CALL_ON_A_SECTION = r'\.section\([^)]*\)\.{name}\b'
 SOURCE_FILES = '*.py'

@@ -13,7 +13,7 @@ from llamatron.model.schema import limits
 from llamatron.user_strings import errors, marks as marks_text
 from llamatron.wizards.create_song import arranger, interplay as interplay_values, notation as tune_notation, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import bar_length, forms_of, share_of
-from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only
+from llamatron.wizards.create_song.choices_part import add_counted, ChoicesPart, chosen_only
 from llamatron.wizards.create_song.section_choices import own_copy_of
 from llamatron.wizards.create_song.song_plan import faded
 
@@ -572,3 +572,18 @@ class FormChoices(ChoicesPart):
         """Take how a song starts and ends as a song kept it: the sections are the song's already, so only what was chosen is kept, where it is still offered."""
         kept = {field: value for field, value in stages.items() if field in (wizard_limits.START_SAVED, wizard_limits.END_SAVED, wizard_limits.FIRST_PLAYER_SAVED, wizard_limits.SETUP_BARS_SAVED)}
         self._stages = {field: value for field, value in kept.items() if isinstance(value, (str, int)) and not isinstance(value, bool)}
+
+    def counted(self):
+        """Return how the song starts and ends as chosen, each under a name of its own, so that two songs can be compared setting by setting."""
+        counted = {}
+        add_counted(counted, kind=wizard_limits.STAGES_SAVED, held=self._stages)
+        return counted
+
+    def own_chords_count(self):
+        """Return how many sections were given chords of their own."""
+        count = 0
+        for entry in self.section_entries():
+            own = entry.get(wizard_limits.OWN_OF_SECTION, {})
+            if own.get(wizard_names.ARRANGER_CHORDS):
+                count += 1
+        return count

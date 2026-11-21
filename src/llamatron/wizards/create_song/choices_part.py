@@ -27,6 +27,17 @@ def chosen_only(held):
     return {field: value for field, value in held.items() if value is not None}
 
 
+def add_counted(counted, *, kind, held):
+    """Add each of held's settings to counted under its kind and its name, and a setting held by name under each inner name,
+    so that two sets of choices can be compared setting by setting."""
+    for name, value in held.items():
+        if isinstance(value, dict):
+            for inner, each in value.items():
+                counted[(kind, name, inner)] = each
+        else:
+            counted[(kind, name)] = value
+
+
 class SavedChoices:
     """What a song file saved of the song wizard's choices, read back value by value to restore them.
 

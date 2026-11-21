@@ -227,7 +227,7 @@ class HookChoices(ChoicesPart):
         if part is None:
             return None
         at, notes = self._sounded(lines=[part[tune_notation.LINES][line]], octave=part[tune_notation.OCTAVE])
-        return at, self._choices.melodies().melody_habits()[melody_writer.GRID], notes
+        return at, self._choices.melody().habits()[melody_writer.GRID], notes
 
     def _sounded(self, *, lines, octave):
         """Lines of a tune as how many steps they last and each note as where it starts, how many steps it lasts and its MIDI
@@ -256,7 +256,7 @@ class HookChoices(ChoicesPart):
         place = self.hook_line_place()
         if place is None or not self.has_hook():
             return None
-        bars = self._choices.melodies().melody_habits()[melody_writer.LINE_BARS]
+        bars = self._choices.melody().habits()[melody_writer.LINE_BARS]
         return (place[1] - 1) * bars + 1, place[1] * bars
 
     def hook_section_notes(self):
@@ -267,7 +267,7 @@ class HookChoices(ChoicesPart):
         if kind is None or not self.has_hook() or self._choices.get_tunes().tune_place(kind) is None or self._choices.get_tunes().tune_player_in(kind) is None:
             return None
         pattern = self._choices.get_tunes().tune_pattern(kind)
-        bar = self._choices.melodies().melody_habits()[melody_writer.GRID]
+        bar = self._choices.melody().habits()[melody_writer.GRID]
         if pattern is None or pattern[tune_notation.STEPS] % bar:
             return None
         try:
@@ -293,10 +293,10 @@ class HookChoices(ChoicesPart):
 
     def writes_hook(self):
         """Return whether the song's hook is written by a behavior and gauges: a song with a hook whose bar is counted in eighths."""
-        return self._choices.is_ready() and self.can_have_hook() and self.has_hook() and not self._choices.melodies().melody_habits()[melody_writer.GRID] % hook_writing.UNITS
+        return self._choices.is_ready() and self.can_have_hook() and self.has_hook() and not self._choices.melody().habits()[melody_writer.GRID] % hook_writing.UNITS
 
     def genre_hook_behavior(self):
-        return hook_writing.hook_ways(self._choices.melodies().melody_habits())[0]
+        return hook_writing.hook_ways(self._choices.melody().habits())[0]
 
     def get_hook_behavior(self):
         return self._writing.get(wizard_names.HOOK_WRITING, {}).get(hook_writing.BEHAVIOR, self.genre_hook_behavior())
@@ -312,7 +312,7 @@ class HookChoices(ChoicesPart):
         return list(hook_writing.HOOK_GAUGES_OF[self.get_hook_behavior()]) if self.writes_hook() else []
 
     def genre_hook_gauge(self, name):
-        return hook_writing.hook_ways(self._choices.melodies().melody_habits())[1][name]
+        return hook_writing.hook_ways(self._choices.melody().habits())[1][name]
 
     def get_hook_gauge(self, name):
         return self._writing.get(wizard_names.HOOK_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_hook_gauge(name))
@@ -323,7 +323,7 @@ class HookChoices(ChoicesPart):
 
     def writes_body(self):
         """Return whether the lines of the chorus that are no hook are written by the body's gauges: where the hook is written and its section has such lines."""
-        return self.writes_hook() and self._choices.melodies().get_melody() not in wizard_limits.ENGINES_OF_THEIR_OWN and self._body_entries() != []
+        return self.writes_hook() and self._choices.melody().get_style() not in wizard_limits.ENGINES_OF_THEIR_OWN and self._body_entries() != []
 
     def is_body_of_hook(self, kind):
         """Return whether a kind of section is the one that holds the hook, in a song whose hook is written by its gauges: its panel
@@ -350,7 +350,7 @@ class HookChoices(ChoicesPart):
         return [name for name in hook_writing.BODY_GAUGES if needed.get(name, True)]
 
     def genre_body_gauge(self, name):
-        return hook_writing.body_ways(self._choices.melodies().melody_habits())[name]
+        return hook_writing.body_ways(self._choices.melody().habits())[name]
 
     def get_body_gauge(self, name):
         return self._writing.get(wizard_names.BODY_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_body_gauge(name))
