@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Progression editor page: one progression's name, how long each chord lasts, and its chords, which Enter opens in the chord editor."""
 
-from llamatron.model.objects.generator_settings import ProgressionSetting
+from llamatron.engine.generators.progression.settings import ProgressionSetting
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values.progressions import roman_numeral

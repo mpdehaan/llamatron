@@ -4,8 +4,8 @@
 
 """The musician's editor: its fields, the instrument's own habits, and a heading for each kind of section the song has."""
 
-from llamatron.generators import musician
-from llamatron.model.objects.generator_settings import MusicianSetting
+from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician.settings import MusicianSetting
 from llamatron.model.schema.file_format import GeneratorKind, Section, SectionKind
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

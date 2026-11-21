@@ -9,20 +9,21 @@ import importlib
 import pkgutil
 import unittest
 
+from llamatron.engine.generators.musician.settings import MusicianSettings
 import llamatron.model
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects.generator_settings import MusicianSettings
 from llamatron.model.objects.llama_data import HoldsSettings, LlamaData
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
-from llamatron.model.schema import defaults, limits
+from llamatron.model.schema import defaults, generator_plugins, limits
 from llamatron.model.schema.file_format import Section, TrackSetting
 from llamatron.user_strings import errors
 
 
 def every_subclass():
-    """Return every LlamaData subclass in the Model, importing all of it first."""
+    """Return every LlamaData subclass in the Model and the generator plugins, importing all of them first."""
+    generator_plugins.plugins()
     for module in pkgutil.walk_packages(llamatron.model.__path__, llamatron.model.__name__ + '.'):
         importlib.import_module(module.name)
     found = []

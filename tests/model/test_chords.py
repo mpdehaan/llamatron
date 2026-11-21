@@ -16,7 +16,7 @@ from llamatron.model.values import chords
 from llamatron.model.values.chords import chord_half_steps, replaced_places, spelled_chord
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from tests.generators import test_progression
+from tests.engine.generators import test_progression
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes

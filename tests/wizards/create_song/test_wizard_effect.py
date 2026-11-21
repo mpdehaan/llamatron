@@ -20,10 +20,11 @@ import datetime
 import json
 import unittest
 
-from llamatron.generators import musician, phrasing as phrasing_values
+from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician.settings import MusicianSetting
+from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings
+from llamatron.engine.generators.phrasing.settings import PhrasingSetting
 from llamatron.model.file import version
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import MusicianSetting, PhrasingSetting
 from llamatron.model.schema.file_format import GeneratorKind, Row, Section
 from llamatron.wizards.create_song import arranger, breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
@@ -154,7 +155,7 @@ def fresh(*, genre, subgenre):
         choices.get_band().set_way(trait=trait, value=choices.get_band().get_way(trait))
     return choices
 # Every value each setting of a Phrasing takes.
-PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: generator_settings.LINES_IN_BARS, PhrasingSetting.BREATH: phrasing_values.BREATHS, PhrasingSetting.RISE_AND_FALL: phrasing_values.RISES, PhrasingSetting.NOTES: phrasing_values.JOINS}
+PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: phrasing_settings.LINES_IN_BARS, PhrasingSetting.BREATH: phrasing_values.BREATHS, PhrasingSetting.RISE_AND_FALL: phrasing_values.RISES, PhrasingSetting.NOTES: phrasing_values.JOINS}
 
 
 def song_of(choices):
@@ -415,7 +416,7 @@ def every_choice(choices):
         yield TUNE_PHRASING_CHOICE, False, lambda made: made.set_tune_phrasing(False), [nothing_first]
         for setting, offered in PHRASING_OFFERED_VALUES.items():
             for value in offered:
-                if value != generator_settings.PHRASING_DEFAULTS[setting]:
+                if value != phrasing_settings.PHRASING_DEFAULTS[setting]:
                     yield TUNE_PHRASING_CHOICE, (setting, value), lambda made, setting=setting, value=value: made.set_tune_phrasing({setting: value}), [nothing_first]
     if choices.get_band().has_musicians():
         # A player's Musician of the person's own, for each player whose clips run one: the loudest.

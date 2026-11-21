@@ -4,10 +4,10 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from llamatron.generators import arp
-from llamatron.generators.arp import ChordOrder, OctaveJump
+from llamatron.engine.generators.arp import generator as arp
+from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
+from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.model.objects import setlist
-from llamatron.model.objects.generator_settings import ArpSetting, written_name
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import new_name, suggested_word
 from llamatron.model.schema import file_format

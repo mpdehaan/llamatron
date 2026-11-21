@@ -15,14 +15,14 @@ import os
 import unittest
 import yaml
 
-from llamatron.generators import arp
+from llamatron.engine.generators.arp import generator as arp
+from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.model.file import corrections as corrections_values
 from llamatron.model.file.corrections import changed_count, Correction, place_without
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.migrations import migrated
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import clip_slot
-from llamatron.model.objects.generator_settings import ArpSetting
 from llamatron.model.objects.pattern import nearest_step_value
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format, limits

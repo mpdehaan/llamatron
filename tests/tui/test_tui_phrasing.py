@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Phrasing pages: a new one, the editor's fields, and the By Section table of what each kind of section does of its own."""
 
-from llamatron.generators import phrasing as phrasing_values
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import PhrasingSetting
+from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings
+from llamatron.engine.generators.phrasing.settings import PhrasingSetting
 from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -15,7 +14,7 @@ from llamatron.user_strings import labels
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 
-LONGEST_LINE = generator_settings.LINES_IN_BARS[-1]
+LONGEST_LINE = phrasing_settings.LINES_IN_BARS[-1]
 
 
 class TestPhrasingAdded(UITest):
@@ -42,17 +41,17 @@ class TestPhrasingEditor(UITest):
         shown = self.text()
         for label in (labels.MSG_PHRASING_LINE_LABEL, labels.MSG_PHRASING_BREATH_LABEL, labels.MSG_PHRASING_RISE_LABEL, labels.MSG_PHRASING_NOTES_LABEL):
             self.assertIn(label, shown)
-        self.assertIn(labels.MSG_PHRASING_LINE_NAMES[generator_settings.DEFAULT_LINE_BARS], shown)
+        self.assertIn(labels.MSG_PHRASING_LINE_NAMES[phrasing_settings.DEFAULT_LINE_BARS], shown)
         self.assertIn(phrasing_values.QUICK_BREATH, shown)
 
     async def test_the_line_is_stepped_through_its_lengths_and_stops_at_each_end(self):
         await self.select_field(labels.MSG_PHRASING_LINE_LABEL)
-        self.assertEqual(self.phrasing().get_own(PhrasingSetting.LINE_BARS), generator_settings.DEFAULT_LINE_BARS)
-        await self.press(*[keybindings.PhrasingEditor.MORE] * len(generator_settings.LINES_IN_BARS))
+        self.assertEqual(self.phrasing().get_own(PhrasingSetting.LINE_BARS), phrasing_settings.DEFAULT_LINE_BARS)
+        await self.press(*[keybindings.PhrasingEditor.MORE] * len(phrasing_settings.LINES_IN_BARS))
         self.assertEqual(self.phrasing().get_own(PhrasingSetting.LINE_BARS), LONGEST_LINE)
         self.assertIn(labels.MSG_PHRASING_LINE_NAMES[LONGEST_LINE], self.text())
-        await self.press(*[keybindings.PhrasingEditor.LESS] * len(generator_settings.LINES_IN_BARS))
-        self.assertEqual(self.phrasing().get_own(PhrasingSetting.LINE_BARS), generator_settings.LINES_IN_BARS[0])
+        await self.press(*[keybindings.PhrasingEditor.LESS] * len(phrasing_settings.LINES_IN_BARS))
+        self.assertEqual(self.phrasing().get_own(PhrasingSetting.LINE_BARS), phrasing_settings.LINES_IN_BARS[0])
 
     async def test_the_breath_is_stepped_and_the_rise_and_the_notes_are_chosen_from_their_lists(self):
         await self.select_field(labels.MSG_PHRASING_BREATH_LABEL)

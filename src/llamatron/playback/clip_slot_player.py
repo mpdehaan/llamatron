@@ -7,17 +7,16 @@
 from math import ceil
 
 from llamatron.engine.clips.clip import Clip
+from llamatron.engine.generators.blend import Blend
+from llamatron.engine.generators.euclid.generator import EuclidMask
 from llamatron.engine.timing.keyswitch import SwitchNote
-from llamatron.generators.blend import Blend
-from llamatron.generators.euclid import EuclidMask
 from llamatron.math.length import Length
 from llamatron.math.random_source import drawn_from_when_asked
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects import generator_settings
 from llamatron.model.objects.conditions import any_true, draws_read
-from llamatron.model.schema import file_format, limits
+from llamatron.model.schema import file_format, generator_plugins, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
@@ -164,7 +163,7 @@ class ClipSlotPlayer:
             for step in written.get_steps():
                 # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
-                if generator_settings.GENERATOR_SETTINGS[step.kind].GENERATOR is not None and not (step.kind in KINDS_MOVING_PITCHES and self._plays_drums()):
+                if generator_plugins.settings_of(step.kind).GENERATOR is not None and not (step.kind in KINDS_MOVING_PITCHES and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
                     times[(step.kind, step.name)] = key[-1] + 1
                     generator = self._renderer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=chain, index=index, key=key, counting=counting)

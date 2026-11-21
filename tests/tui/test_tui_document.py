@@ -8,16 +8,17 @@ import tempfile
 import unittest
 import yaml
 
+from llamatron.engine.generators.arp.generator import ChordOrder
+from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.blend import BlendMode
 from llamatron.exporters.exports import export_name, ExportKind
-from llamatron.generators.arp import ChordOrder
-from llamatron.generators.blend import BlendMode
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import setlist
 from llamatron.model.objects.clip_slot import morph_style_name
-from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import copy_name, unique_name
 from llamatron.model.objects.setlist import new_setlist, Setlist

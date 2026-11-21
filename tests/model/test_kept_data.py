@@ -17,9 +17,9 @@ makes, and the items whose data is the same are the very objects they were.
 import copy
 import unittest
 
+from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.setlist_reader import set_file_data
-from llamatron.model.objects.generator_settings import ArpSetting
 from llamatron.model.objects.llama_data import LlamaData, own_copy
 from llamatron.model.objects.named_items import NamedItems
 from llamatron.model.objects.setlist import Setlist

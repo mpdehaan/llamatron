@@ -8,9 +8,9 @@ from fractions import Fraction
 import unittest
 
 from llamatron.engine.clips.clip import Clip
+from llamatron.engine.generators.arp.generator import Arp
+from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
 from llamatron.engine.timing.timing import timed_events
-from llamatron.generators.arp import Arp
-from llamatron.generators.auto_ratchet import AutoRatchet
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held, phrase
 from llamatron.model.values.note import Note, NoteName, Rest

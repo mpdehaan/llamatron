@@ -103,7 +103,7 @@ USED_EVERYWHERE_ID = 'everywhere'
 USED_EVERYWHERE_LABEL = 'used by every other part'
 TEXT_PACKAGE = 'user_strings'
 # Packages in the order a reader meets them, following a song from the tracker to the files.
-PACKAGE_ORDER = ['tui', 'llamatron', 'model', 'playback', 'generators', 'engine', 'exporters']
+PACKAGE_ORDER = ['tui', 'llamatron', 'model', 'playback', 'engine', 'exporters']
 
 MSG_NO_MARKER = 'no marker ({marker}) in {path}'
 MSG_OUT_OF_DATE = 'out of date: the {name} diagram in {path}'

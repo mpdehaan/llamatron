@@ -11,12 +11,11 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 
 import unittest
 
-from llamatron.generators import arp as arp_values
+from llamatron.engine.generators.arp import generator as arp_values, settings as arp_settings
+from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings
 from llamatron.math.rational import Rational
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import ArpSetting, ArpSettings
 from llamatron.model.objects.register import Register
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
@@ -240,19 +239,19 @@ class TestArpAdds(unittest.TestCase):
         return [(time, value) for time, _, value in controls_of(data)]
 
     def test_every_note_the_arp_plays_adds(self):
-        data = self.driven_by_an_arp(arp={generator_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED})
+        data = self.driven_by_an_arp(arp={arp_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED})
         self.assertEqual(self.sent(data), [(SIXTEENTH_TIME * place, ADDED * (place + 1)) for place in range(ARP_NOTES)])
 
     def test_each_step_of_the_offsets_adds_silent_ones_too(self):
-        data = self.driven_by_an_arp(arp={ArpSetting.OFFSETS: [0, None], generator_settings.ARP_STEP_ADDS[test_registers.AX]: STEP_ADDS})
+        data = self.driven_by_an_arp(arp={ArpSetting.OFFSETS: [0, None], arp_settings.ARP_STEP_ADDS[test_registers.AX]: STEP_ADDS})
         self.assertEqual([value for _, value in self.sent(data)], RUNNING_STEP_ADDS)
 
     def test_an_arps_adds_count_even_when_probability_silences_its_notes(self):
-        data = self.driven_by_an_arp(arp={generator_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED}, driver_rows={Row.PROBABILITY: [0]})
+        data = self.driven_by_an_arp(arp={arp_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED}, driver_rows={Row.PROBABILITY: [0]})
         self.assertEqual([value for _, value in self.sent(data)], [ADDED * (place + 1) for place in range(ARP_NOTES)])
 
     def test_an_arp_with_adds_counts_among_what_changes_the_registers(self):
-        data = as_setlist(self.driven_by_an_arp(arp={generator_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED}))
+        data = as_setlist(self.driven_by_an_arp(arp={arp_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED}))
         self.assertTrue(Setlist.from_data(data=data).changes_registers())
         self.assertFalse(Setlist.from_data(data=as_setlist(self.driven_by_an_arp(arp={}))).changes_registers())
 
@@ -260,12 +259,12 @@ class TestArpAdds(unittest.TestCase):
         self.assertEqual(list(arp_values.REGISTERS), file_format.REGISTER_NAMES)
 
     def test_inserting_and_removing_an_offset_keeps_the_step_adds_lined_up(self):
-        settings = ArpSettings({ArpSetting.STEP: SIXTEENTH, ArpSetting.OFFSETS: [0, 0], generator_settings.ARP_STEP_ADDS[test_registers.AX]: [ADDED, None]})
+        settings = ArpSettings({ArpSetting.STEP: SIXTEENTH, ArpSetting.OFFSETS: [0, 0], arp_settings.ARP_STEP_ADDS[test_registers.AX]: [ADDED, None]})
         settings.insert_cell(0)
         self.assertEqual(settings.get_step_adds(test_registers.AX), [None, ADDED, None])
         settings.remove_cell(1)
         self.assertEqual(settings.get_step_adds(test_registers.AX), [None, None])
-        self.assertNotIn(generator_settings.ARP_STEP_ADDS[test_registers.AX], settings.to_data())
+        self.assertNotIn(arp_settings.ARP_STEP_ADDS[test_registers.AX], settings.to_data())
 
 
 if __name__ == '__main__':

@@ -7,11 +7,11 @@
 from fractions import Fraction
 import unittest
 
+from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.timing.timing import timed_events
-from llamatron.generators.blend import BlendMode
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
-from llamatron.model.objects.generator_settings import ArpSetting
 from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.chord import Chord

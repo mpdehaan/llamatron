@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Rush editor: a Rush's name, step, amount, row of steps and Restart."""
 
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import StepRowSetting
+from llamatron.engine.generators import step_row_settings
+from llamatron.engine.generators.step_row_settings import StepRowSetting
 from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
@@ -25,4 +25,4 @@ class RushEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_RUSH_LABEL)
 
     def amount_fields(self):
-        return [self.number_field(label=labels.MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.settings().get_amount(), default=generator_settings.DEFAULT_RUSH)]
+        return [self.number_field(label=labels.MSG_RUSH_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.settings().get_amount(), default=step_row_settings.DEFAULT_RUSH)]

@@ -8,9 +8,10 @@ import copy
 import unittest
 import yaml
 
-from llamatron.generators.arp import ChordOrder
+from llamatron.engine.generators.arp.generator import ChordOrder
+from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.model.values.note import NoteName

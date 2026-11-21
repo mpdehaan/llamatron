@@ -15,8 +15,7 @@ notes added on top. On those rows [ and ] and Space step through the choices and
 pattern editor opens, on that row's list. The Name row and the status line say what the cursor's chord comes to.
 """
 
-
-from llamatron.model.objects import generator_settings
+from llamatron.engine.generators.progression import settings as progression_settings
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Section
@@ -65,7 +64,7 @@ THIRD_AND_FIFTH = 2
 # How much of a scale type's name and of a chord's tensions a cell shows.
 CELL_ROOM = 5
 # The inversions a chord steps through: root position first.
-INVERSION_CYCLE = [None, *generator_settings.PROGRESSION_INVERSIONS]
+INVERSION_CYCLE = [None, *progression_settings.PROGRESSION_INVERSIONS]
 # The chord I inserts.
 INSERTED_DEGREE = limits.MIN_PROGRESSION_DEGREE
 # What a digit types on the Inv. row to go back to root position.
@@ -171,7 +170,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
             if number is not None:
                 self.set_value(number)
         elif self.edited_row == INVERSION_ROW:
-            number = self.typed_number(digit=digit, low=ROOT_POSITION_TYPED, high=generator_settings.PROGRESSION_INVERSIONS[-1])
+            number = self.typed_number(digit=digit, low=ROOT_POSITION_TYPED, high=progression_settings.PROGRESSION_INVERSIONS[-1])
             if number is not None:
                 self.changed_here(row=INVERSION_ROW, value=number or None)
 

@@ -13,7 +13,7 @@ setting names something the song holds.
 """
 
 from llamatron.caching.revised import notes_change
-from llamatron.generators.blend import BlendMode
+from llamatron.engine.generators.blend import BlendMode
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import check_name, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue

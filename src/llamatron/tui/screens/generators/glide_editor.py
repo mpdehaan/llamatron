@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Glide editor: a Glide's name, step, amount, row of steps and Restart."""
 
-from llamatron.model.objects.generator_settings import StepRowSetting
+from llamatron.engine.generators.step_row_settings import StepRowSetting
 from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.user_strings import help as help_text, labels, messages

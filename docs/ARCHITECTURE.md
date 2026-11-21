@@ -129,7 +129,6 @@ flowchart LR
     llamatron["llamatron"]
     model["model"]
     playback["playback"]
-    generators["generators"]
     engine["engine"]
     exporters["exporters"]
     importers["importers"]
@@ -146,8 +145,6 @@ flowchart LR
     exporters --> engine
     exporters --> model
     exporters --> realtime
-    generators --> engine
-    generators --> model
     importers --> engine
     importers --> exporters
     importers --> model
@@ -158,16 +155,14 @@ flowchart LR
     llamatron --> tui
     llamatron --> visualizers
     llamatron --> wizards
-    model --> generators
+    model --> engine
     playback --> engine
-    playback --> generators
     playback --> model
     realtime --> engine
     realtime --> model
     realtime --> playback
     tui --> engine
     tui --> exporters
-    tui --> generators
     tui --> importers
     tui --> model
     tui --> playback
@@ -177,7 +172,7 @@ flowchart LR
     tutorial --> model
     tutorial --> tui
     visualizers --> model
-    wizards --> generators
+    wizards --> engine
     wizards --> model
     wizards --> playback
 ```
@@ -188,7 +183,6 @@ flowchart LR
 | `llamatron` | llamatron composes music in MIDI for DAWs, from a text UI. This top level holds the command line and the text every part shows. |
 | `model` | The Model: the set as it is stored, in four parts. values/ holds the musical values every part of llamatron works with; |
 | `playback` | Playing a song's composition objects into finished clips, which the exporters then write. |
-| `generators` | The generators that change a clip's notes as it exports: arpeggiators, AutoRatchets and blending for morphs. |
 | `engine` | The Engine: what makes a song into music. clips/ holds the finished clips a song is realized into and the grid that maps |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |

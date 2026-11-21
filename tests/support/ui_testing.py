@@ -15,8 +15,13 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
-from llamatron.generators.arp import ChordOrder
-from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, FollowChordsSetting, HocketSetting, ProgressionSetting, StepRowSetting, written_name
+from llamatron.engine.generators.arp.generator import ChordOrder
+from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
+from llamatron.engine.generators.hocket.settings import HocketSetting
+from llamatron.engine.generators.progression.settings import ProgressionSetting
+from llamatron.engine.generators.step_row_settings import StepRowSetting
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart

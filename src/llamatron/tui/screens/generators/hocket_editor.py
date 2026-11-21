@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Hocket editor: its name, the track whose notes it shares out, and its Restart."""
 
-from llamatron.model.objects.generator_settings import HocketSetting
+from llamatron.engine.generators.hocket.settings import HocketSetting
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field

@@ -12,11 +12,13 @@ here checks that what is declared is real and that the two can't disagree, in ev
 
 import unittest
 
+from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting, FollowChordsSettings
+from llamatron.engine.generators.hocket.settings import HocketSetting, HocketSettings
+from llamatron.engine.generators.musician.settings import MusicianSetting, MusicianSettings
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects import sections as sections_values
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.clip_slot import ClipSlot
-from llamatron.model.objects.generator_settings import FollowChordsSetting, FollowChordsSettings, HocketSetting, HocketSettings, MusicianSetting, MusicianSettings
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist

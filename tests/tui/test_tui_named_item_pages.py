@@ -10,7 +10,7 @@ tested with the page, so these checks call the page's rename and answer its prom
 
 import unittest
 
-from llamatron.model.objects.generator_settings import ArpSetting
+from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog

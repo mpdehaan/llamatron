@@ -9,14 +9,15 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 """
 
 
+from llamatron.engine.generators.progression.settings import ProgressionSetting
 from llamatron.importers.writing import add_imported
-from llamatron.model.objects import generator_settings, sections
+from llamatron.model.objects import sections
 from llamatron.model.objects.chain import Chain
-from llamatron.model.objects.generator_settings import ProgressionSetting
 from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note
 from llamatron.user_strings import marks
@@ -150,7 +151,7 @@ class SetEdits:
             self.add_chain(name)
             return
         kind = sections.GENERATOR_KINDS[section]
-        settings = generator_settings.GENERATOR_SETTINGS[kind].new()
+        settings = generator_plugins.settings_of(kind).new()
         self.change(self._setlist.add_item, section=section, name=name, item=settings)
 
     def set_musician_section(self, *, name, section, setting, value):

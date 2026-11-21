@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Drift editor page: a drift's own settings, then each of its values for version A and version B side by side."""
 
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import DriftSetting, versioned
+from llamatron.engine.generators.drift import settings as drift_settings
+from llamatron.engine.generators.drift.settings import DriftSetting, versioned
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import DriftValue, Section
 from llamatron.model.values import note
@@ -42,7 +42,7 @@ class DriftEditor(GeneratorEditor, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(page=self, label=labels.MSG_EVERY_LABEL, written=every, first=file_format.ONE_BAR_WRITTEN, store=lambda value: self.store(setting=DriftSetting.EVERY, value=value)),
-            NumberField(page=self, label=labels.MSG_STEPS_TO_B_LABEL, number=drift.get_steps_to_b(), lowest=generator_settings.MIN_STEPS_TO_B, highest=generator_settings.MAX_STEPS_TO_B,
+            NumberField(page=self, label=labels.MSG_STEPS_TO_B_LABEL, number=drift.get_steps_to_b(), lowest=drift_settings.MIN_STEPS_TO_B, highest=drift_settings.MAX_STEPS_TO_B,
                         set=lambda number: self.store(setting=DriftSetting.STEPS_TO_B, value=number)),
             ChoiceField(page=self, label=labels.MSG_DRIFT_DIRECTION_LABEL, choices=file_format.DRIFT_DIRECTIONS, current=drift.get_direction(),
                         set=lambda value: self.store(setting=DriftSetting.DIRECTION, value=None if value == file_format.DRIFT_DIRECTIONS[0] else value)),
@@ -54,7 +54,7 @@ class DriftEditor(GeneratorEditor, FieldPage):
 
     def version_values(self):
         """Return each value a version has, in the editor's order."""
-        numbers = [name for name, _, _ in generator_settings.DRIFT_NUMBERS]
+        numbers = [name for name, _, _ in drift_settings.DRIFT_NUMBERS]
         return [*numbers[:-2], DriftValue.SCALE, numbers[-2], DriftValue.ROOT, numbers[-1]]
 
     def is_version_row(self):
@@ -101,7 +101,7 @@ class DriftEditor(GeneratorEditor, FieldPage):
         return str(written)
 
     def range_of(self, value):
-        for name, lowest, highest in generator_settings.DRIFT_NUMBERS:
+        for name, lowest, highest in drift_settings.DRIFT_NUMBERS:
             if name == value:
                 return lowest, highest
         raise KeyError(value)

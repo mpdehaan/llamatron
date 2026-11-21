@@ -9,9 +9,9 @@ import os
 import unittest
 import unittest.mock
 
+from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
 from llamatron.model.file import version
 from llamatron.model.file.safe_yaml import load_safely
-from llamatron.model.objects.generator_settings import FollowChordsSetting
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, Section

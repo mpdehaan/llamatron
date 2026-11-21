@@ -17,11 +17,12 @@ import yaml
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.positions import cut_position
+from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.exports import ExportKind
 from llamatron.math.length import Length
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName

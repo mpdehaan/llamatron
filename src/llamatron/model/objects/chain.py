@@ -9,11 +9,11 @@ from typing import NamedTuple
 from llamatron.caching.revised import notes_change
 from llamatron.model.file.checks import listed, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import generator_settings, sections
+from llamatron.model.objects import sections
 from llamatron.model.objects.conditions import statements_setting
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy
 from llamatron.model.objects.traits import BypassedWhen
-from llamatron.model.schema import file_format
+from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ChainSetting
 from llamatron.user_strings import errors
 
@@ -134,8 +134,8 @@ class Chain(BypassedWhen, HoldsSettings):
 
 def _checked_step(*, kind, name, setlist):
     """Return a step naming a generator the set has, or raise InvalidValue."""
-    if kind not in generator_settings.GENERATOR_SETTINGS:
-        raise InvalidValue(errors.ERR_UNKNOWN_GENERATOR.format(kind=kind, kinds=listed(sorted(generator_settings.GENERATOR_SETTINGS))))
+    if not generator_plugins.is_plugin(kind):
+        raise InvalidValue(errors.ERR_UNKNOWN_GENERATOR.format(kind=kind, kinds=listed(sorted(generator_plugins.plugins()))))
     if not isinstance(name, str) or not setlist.has_generator(kind=kind, name=name):
         raise InvalidValue(errors.ERR_NO_SUCH_GENERATOR.format(kind=kind, name=name))
     return ChainStep(kind, name)

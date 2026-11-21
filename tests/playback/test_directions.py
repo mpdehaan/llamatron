@@ -7,7 +7,7 @@
 from fractions import Fraction
 import unittest
 
-from llamatron.generators.blend import BlendMode
+from llamatron.engine.generators.blend import BlendMode
 from llamatron.math.random_source import random_source
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name

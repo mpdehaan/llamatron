@@ -5,17 +5,18 @@
 
 import unittest
 
+from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.drift.settings import DriftSetting
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import Bars, in_whole_notes, time_length
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects.generator_settings import ArpSetting, DriftSetting
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen, SongSetting
 from llamatron.playback.drift import DriftPlay
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.user_strings import labels
-from tests.generators.test_drift import drifting
+from tests.engine.generators.test_drift import drifting
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes, one_scene

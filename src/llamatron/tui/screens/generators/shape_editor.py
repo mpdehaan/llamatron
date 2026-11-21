@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The shape generators' editors: a Density's, Swell's or Articulate's name, start, end, over and then, and a Swell's accent."""
 
-from llamatron.model.objects.generator_settings import ShapeSetting
+from llamatron.engine.generators.shape_settings import ShapeSetting
 from llamatron.model.schema import limits
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field

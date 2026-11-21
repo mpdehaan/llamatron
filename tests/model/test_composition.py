@@ -14,15 +14,16 @@ import random
 import re
 import unittest
 
-from llamatron.generators import arp as arp_values
-from llamatron.generators.arp import Arp, ChordOrder
-from llamatron.generators.auto_ratchet import AutoRatchet
-from llamatron.generators.blend import BlendMode
+from llamatron.engine.generators.arp import generator as arp_values
+from llamatron.engine.generators.arp.generator import Arp, ChordOrder
+from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings, written_name
+from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting, AutoRatchetSettings
+from llamatron.engine.generators.blend import BlendMode
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.clip_slot import ClipSlot, morph_style_name
-from llamatron.model.objects.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, written_name
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.register import Bounced, Register

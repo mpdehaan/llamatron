@@ -27,7 +27,7 @@ from llamatron.model.file.setlist_reader import as_a_set_is_written, closed_grou
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.file.version import is_version
-from llamatron.model.objects import generator_settings, groove, sections
+from llamatron.model.objects import groove, sections
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.groove import check_groove_name, factory_groove, Groove, is_factory_groove
 from llamatron.model.objects.instrument import Instrument
@@ -38,7 +38,7 @@ from llamatron.model.objects.naming import copy_name, is_taken, name_in_copied_g
 from llamatron.model.objects.pattern import held_add, Pattern
 from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
-from llamatron.model.schema import defaults, file_format, limits as set_limits
+from llamatron.model.schema import defaults, file_format, generator_plugins, limits as set_limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.model.values import note
@@ -79,16 +79,21 @@ SETTINGS = described(
 NAMED_BY_THEIR_MESSAGE = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION, SetlistSetting.NOTES)
 # What a text setting is when the file leaves it out.
 NO_TEXT = ''
-# The class that reads each item of a section of the set.
+# The class that reads each item of a section of the set, but for the generators, whose plugins say (item_class).
 ITEM_KINDS = {
     Section.SCALES: NamedScale,
     Section.PATTERNS: Pattern,
-    **{section: generator_settings.GENERATOR_SETTINGS[kind] for kind, section in file_format.NAMED_GENERATORS.items()},
     Section.CHAINS: Chain,
     Section.GROOVES: Groove,
     Section.INSTRUMENTS: Instrument,
     Section.SONGS: Song,
 }
+def item_class(section):
+    """Return the class that reads each item of a section of the set: a generator plugin's settings, or the section's own class."""
+    plugin = generator_plugins.plugins_by_section().get(section)
+    return ITEM_KINDS[section] if plugin is None else plugin.settings
+
+
 # The sections taken in from another set, in the order a set is read, so that each can name what the ones before it hold.
 SECTIONS_TAKEN_IN = [Section.SCALES, Section.PATTERNS, *file_format.NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 # The sections whose items are read knowing the set, where the others take the set in place of a song, to look names up in.
@@ -346,8 +351,8 @@ class Setlist(HoldsSections, HoldsSettings):
             return same
         where = self._where(section=section, name=name)
         if section in READ_WITH_THE_SET:
-            return ITEM_KINDS[section].from_data(data=data, where=where, setlist=self)
-        return ITEM_KINDS[section].from_data(data=data, where=where, song=self)
+            return item_class(section).from_data(data=data, where=where, setlist=self)
+        return item_class(section).from_data(data=data, where=where, song=self)
 
     def _where(self, *, section, name):
         """Return how a message places one item of a section, like pattern (tune)."""

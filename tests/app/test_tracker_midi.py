@@ -15,10 +15,10 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
+from llamatron.engine.generators.arp.generator import ChordOrder
+from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.exporters import exports, midi_messages
 from llamatron.exporters.exports import ExportKind
-from llamatron.generators.arp import ChordOrder
-from llamatron.model.objects.generator_settings import ArpSetting, written_name
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting
 from llamatron.model.values.note import NoteName

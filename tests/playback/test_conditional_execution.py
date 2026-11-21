@@ -11,11 +11,11 @@ pass with two notes is one the generator ran on.
 
 import unittest
 
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import conditions
-from llamatron.model.objects.generator_settings import AutoRatchetSetting
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting

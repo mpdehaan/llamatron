@@ -13,8 +13,8 @@ player who plays lines, the tune or a voice beside it, is told to give way to no
 play its notes as written, since the lines were written to sound together.
 """
 
-from llamatron.generators import musician
-from llamatron.model.objects.generator_settings import MusicianSetting
+from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician.settings import MusicianSetting
 from llamatron.user_strings import song_wizard as wizard_text
 from llamatron.wizards.create_song import players
 

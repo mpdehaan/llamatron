@@ -6,8 +6,8 @@
 
 import unittest
 
+from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.timing.timing import timed_events
-from llamatron.generators.blend import BlendMode
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, PatternSetting, Row, SceneSetting, Section, TrackSetting

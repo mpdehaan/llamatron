@@ -9,8 +9,8 @@ from typing import NamedTuple
 
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
+from llamatron.engine.generators.arp.generator import along_scale
 from llamatron.engine.timing.keyswitch import SwitchedSlots
-from llamatron.generators.arp import along_scale
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational

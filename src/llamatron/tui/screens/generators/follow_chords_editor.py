@@ -4,7 +4,7 @@
 
 """The Follow Chords editor: its name and the track whose chords it follows."""
 
-from llamatron.model.objects.generator_settings import FollowChordsSetting
+from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField

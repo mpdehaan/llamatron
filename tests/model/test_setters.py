@@ -7,11 +7,13 @@ InvalidValue when it's wrong, and leaves the object as it was."""
 
 import unittest
 
+from llamatron.engine.generators.arp import settings as arp_settings
+from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting, AutoRatchetSettings
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import clip_slot, generator_settings, setlist as setlist_values
+from llamatron.model.objects import clip_slot, setlist as setlist_values
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.clip_slot import ClipSlot
-from llamatron.model.objects.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.register import Register
@@ -395,7 +397,7 @@ class TestGeneratorSettings(SetterTestCase):
         self.assertRefused(self.arp, self.arp.set_cell, step=FIRST, value=AN_OFFSET)
         self.arp.set_setting(name=ArpSetting.OFFSETS, value=[AN_OFFSET])
         self.arp.insert_cell(FIRST)
-        self.assertEqual(self.arp.get_offsets(), [generator_settings.NO_OFFSET, AN_OFFSET])
+        self.assertEqual(self.arp.get_offsets(), [arp_settings.NO_OFFSET, AN_OFFSET])
         self.arp.set_cell(step=FIRST, value=ANOTHER_OFFSET)
         self.assertRefused(self.arp, self.arp.set_cell, step=PAST_THE_OFFSETS, value=AN_OFFSET)
         self.arp.remove_cell(FIRST)

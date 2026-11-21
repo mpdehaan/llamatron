@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Progression: the Progressions page, the progression editor and the chord editor, with the picker of named progressions."""
 
-from llamatron.model.objects import generator_settings
+from llamatron.engine.generators.progression import settings as progression_settings
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Section, Tension
@@ -178,7 +178,7 @@ class TestChordsEditor(UITest):
         await self.press(Key.ENTER)
         self.assertEqual(self.progression().get_tensions()[1], (Tension.FLAT_NINTH,))
         self.assertEqual(self.progression().get_qualities()[1], ChordSymbol.DOMINANT7)
-        self.assertEqual(self.progression().get_inversions()[1], generator_settings.PROGRESSION_INVERSIONS[0])
+        self.assertEqual(self.progression().get_inversions()[1], progression_settings.PROGRESSION_INVERSIONS[0])
         self.assertIn(G_SEVEN_FLAT_NINE, self.text())
 
     async def test_escape_in_the_dialog_changes_nothing(self):

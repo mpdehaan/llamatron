@@ -4,10 +4,9 @@
 
 """The Arp editor page."""
 
-from llamatron.generators import arp as arp_values
-from llamatron.generators.arp import OctaveJump
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import ArpSetting, written_name
+from llamatron.engine.generators.arp import generator as arp_values, settings as arp_settings
+from llamatron.engine.generators.arp.generator import OctaveJump
+from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
@@ -54,7 +53,7 @@ class ArpEditor(GeneratorEditor, FieldPage):
 
     def edit_offsets(self):
         if self.settings().get_offsets() is None:
-            self.store(setting=ArpSetting.OFFSETS, value=[generator_settings.NO_OFFSET] * DEFAULT_OFFSET_STEPS)
+            self.store(setting=ArpSetting.OFFSETS, value=[arp_settings.NO_OFFSET] * DEFAULT_OFFSET_STEPS)
         self.show_page(OffsetsEditor(holder=self.holder, name=self.item))
 
     def fields(self):
@@ -78,7 +77,7 @@ class ArpEditor(GeneratorEditor, FieldPage):
     def note_add_field(self, register):
         """Return the field for what every note the arp plays adds to a register, within the current song's Allowed Inc Max, nothing being left out of the file."""
         most = self.document().song().get_register(register).get_allowed_inc_max()
-        setting = generator_settings.ARP_NOTE_ADDS[register]
+        setting = arp_settings.ARP_NOTE_ADDS[register]
         return NumberField(
             page=self, label=labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register), number=self.settings().get_note_add(register) or NO_ADD, lowest=-most, highest=most,
             set=lambda number: self.store(setting=setting, value=number or None), clear=lambda: self.store(setting=setting, value=None),

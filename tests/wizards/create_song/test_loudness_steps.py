@@ -7,9 +7,9 @@
 import unittest
 import unittest.mock
 
+from llamatron.engine.generators.guitarify.settings import GuitarifySettings
 from llamatron.math.rational import Rational
 from llamatron.model.file import version
-from llamatron.model.objects.generator_settings import GuitarifySettings
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
 from llamatron.wizards.create_song import breaks, loudness_steps, song_plan

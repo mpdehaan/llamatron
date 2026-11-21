@@ -35,7 +35,7 @@ FILE_ENCODING = 'utf-8'
 DOT = '.'
 TOP = '(top)'
 # The packages from the bottom up: each imports only those before it. The strings package is text every layer may name.
-LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'generators', 'exporters', 'playback', 'importers', 'realtime',
+LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'exporters', 'playback', 'importers', 'realtime',
           'wizards', 'visualizers', 'tui', 'tutorial', TOP)
 VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.

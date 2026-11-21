@@ -12,7 +12,7 @@ The pattern editor shares StepEditor with them, and its own tests cover its scro
 
 import unittest
 
-from llamatron.model.objects.generator_settings import ArpSetting
+from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.model.objects.groove import FactoryGroove
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings

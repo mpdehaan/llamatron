@@ -10,10 +10,10 @@ eighths between and the sixteenths between those.
 
 import unittest
 
+from llamatron.engine.generators.shape_settings import ShapeSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects.generator_settings import ShapeSetting
 from llamatron.model.objects.shapes import ShapeValues
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen

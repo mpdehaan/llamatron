@@ -4,7 +4,7 @@
 
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
-from llamatron.generators.blend import BlendMode
+from llamatron.engine.generators.blend import BlendMode
 from llamatron.model.objects import setlist
 from llamatron.model.objects.scene import TempoRamp
 from llamatron.model.schema import defaults, file_format, limits

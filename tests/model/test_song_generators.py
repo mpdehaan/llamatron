@@ -7,11 +7,12 @@
 from fractions import Fraction
 import unittest
 
+from llamatron.engine.generators.arp.generator import ChordOrder
+from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
 from llamatron.engine.timing import sounding
 from llamatron.engine.timing.timing import timed_events
-from llamatron.generators.arp import ChordOrder
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section
 from llamatron.model.values.note import Note, NoteName
 from tests.support import song_testing

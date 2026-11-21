@@ -6,8 +6,8 @@
 
 import unittest
 
-from llamatron.generators import musician
-from llamatron.model.objects.generator_settings import MusicianSetting
+from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician.settings import MusicianSetting
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Section
 from llamatron.wizards.create_song import band, players
 from llamatron.wizards.create_song.wizard_choices import WizardChoices

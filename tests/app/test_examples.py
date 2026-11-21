@@ -14,7 +14,7 @@ from llamatron.exporters.exports import ExportKind, make_exporter
 from llamatron.model.file import example_sets as example_sets_values
 from llamatron.model.file.example_sets import example_sets, folder_of_example, genre_folder
 from llamatron.model.file.setlist_reader import set_file_data
-from llamatron.model.objects import generator_settings
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import Section
 from tests.support import rendering
 from tests.support.example_renders import example_setlist, first_song_grid
@@ -60,7 +60,7 @@ class TestExamples(unittest.TestCase):
         for path in self.paths:
             for chain in (set_file_data(path)[0].get(Section.CHAINS) or {}).values():
                 used |= {next(iter(step)) for step in chain}
-        self.assertEqual(set(generator_settings.GENERATOR_SETTINGS) - used, set())
+        self.assertEqual(set(generator_plugins.plugins()) - used, set())
 
     def test_tempo_keeps_rising_through_minimal_techno(self):
         song = first_song_grid('examples/by_genre/electronic/minimal_techno.yml')

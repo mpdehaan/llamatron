@@ -13,8 +13,8 @@ which replaces the strokes, the accents and the cell's length together.
 
 from rich.text import Text
 
-from llamatron.model.objects import generator_settings, guitar_bars
-from llamatron.model.objects.guitar_bars import ready_bar_matching
+from llamatron.engine.generators.guitarify import bars as guitar_bars, settings as guitarify_settings
+from llamatron.engine.generators.guitarify.bars import ready_bar_matching
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, key_table, keybindings
@@ -63,7 +63,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
             self.bind(self.KEYS.LESS, action=lambda: self.nudge(key_table.STEP_BACK)), self.bind(self.KEYS.MORE, action=lambda: self.nudge(key_table.STEP_FORWARD)),
             self.bind(self.KEYS.ACCENT, action=self.accent),
         ]
-        if self.step_count() < generator_settings.MAX_GUITAR_BAR:
+        if self.step_count() < guitarify_settings.MAX_GUITAR_BAR:
             result.append(self.bind(self.KEYS.INSERT_CELL, action=self.insert))
         if self.step_count() > FEWEST_CELLS:
             result.append(self.bind(self.KEYS.REMOVE_CELL, action=self.remove_cell))

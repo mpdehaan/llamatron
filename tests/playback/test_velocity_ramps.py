@@ -10,11 +10,11 @@ track plays two bars.
 
 import unittest
 
+from llamatron.engine.generators.shape_settings import ShapeSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import velocity_ramps
-from llamatron.model.objects.generator_settings import ShapeSetting
 from llamatron.model.objects.velocity_ramps import Velocity, velocity_of, VelocityRamp
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting

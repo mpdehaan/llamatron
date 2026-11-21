@@ -15,10 +15,10 @@ import functools
 import random
 
 from llamatron.caching.kept import kept_while
+from llamatron.engine.generators.phrasing import settings as phrasing_settings
+from llamatron.engine.generators.phrasing.settings import PhrasingSettings
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import PhrasingSettings
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
@@ -1232,7 +1232,7 @@ class WizardChoices:
             self._extras[arranger.TUNE_PHRASING] = False
         else:
             try:
-                given = {name: value for name, value in dict(settings or {}).items() if value != generator_settings.PHRASING_DEFAULTS.get(name, value) or name not in generator_settings.PHRASING_DEFAULTS}
+                given = {name: value for name, value in dict(settings or {}).items() if value != phrasing_settings.PHRASING_DEFAULTS.get(name, value) or name not in phrasing_settings.PHRASING_DEFAULTS}
                 kept = PhrasingSettings.handed_over(data=given, where=wizard_text.MSG_TUNE_PHRASING_NAME).to_data()
             except (SongFileError, TypeError, ValueError) as problem:
                 raise ValueError(errors.ERR_WIZARD_TUNE_PHRASING.format(value=settings, problem=problem)) from None

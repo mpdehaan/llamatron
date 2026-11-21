@@ -11,9 +11,9 @@ from typing import NamedTuple
 import unittest
 
 from llamatron.engine.clips.clip import Clip
+from llamatron.engine.generators.base import Continuation
+from llamatron.engine.generators.voice_leading.generator import VoiceLeading
 from llamatron.engine.timing.timing import timed_events
-from llamatron.generators.base import Continuation
-from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Restart, Row, SceneSetting, Section

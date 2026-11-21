@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Voice leading editor page: one voice leading's name, the octaves its chords stay within, and whether the root stays in the bass."""
 
-from llamatron.model.objects import generator_settings
-from llamatron.model.objects.generator_settings import VoiceLeadingSetting
+from llamatron.engine.generators.voice_leading import settings as voice_leading_settings
+from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSetting
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note
 from llamatron.tui import keybindings
@@ -32,11 +32,11 @@ class VoiceLeadingEditor(GeneratorEditor, FieldPage):
             NameField(value=lambda: self.item, rename=self.rename),
             octave_field(
                 page=self, label=labels.MSG_LOWEST_OCTAVE_LABEL, current=voicing.get_lowest_octave, lowest=lambda: note.MIN_OCTAVE, highest=voicing.get_highest_octave,
-                default=generator_settings.DEFAULT_VOICING_LOWEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.LOWEST_OCTAVE, value=octave),
+                default=voice_leading_settings.DEFAULT_VOICING_LOWEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.LOWEST_OCTAVE, value=octave),
             ),
             octave_field(
                 page=self, label=labels.MSG_HIGHEST_OCTAVE_LABEL, current=voicing.get_highest_octave, lowest=voicing.get_lowest_octave, highest=lambda: note.MAX_OCTAVE,
-                default=generator_settings.DEFAULT_VOICING_HIGHEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.HIGHEST_OCTAVE, value=octave),
+                default=voice_leading_settings.DEFAULT_VOICING_HIGHEST_OCTAVE, set_octave=lambda octave: self.store(setting=VoiceLeadingSetting.HIGHEST_OCTAVE, value=octave),
             ),
             Toggle(label=labels.MSG_ROOT_IN_BASS_LABEL, on=voicing.keeps_root_in_bass(), set=lambda on: self.store(setting=VoiceLeadingSetting.ROOT_IN_BASS, value=on or None)),
             restart_field(self),

@@ -39,7 +39,8 @@ NOT_A_POSITION = 'C4'
 # The modules a render runs for every note, which make sounds and never the classes.
 SOURCE = pathlib.Path(llamatron.__file__).parent
 RENDER_MODULES = [
-    *sorted((SOURCE / 'playback').glob('*.py')), *sorted((SOURCE / 'generators').glob('*.py')),
+    *sorted((SOURCE / 'playback').glob('*.py')), *sorted((SOURCE / 'engine' / 'generators').glob('*/generator.py')),
+    *(SOURCE / 'engine' / 'generators' / name for name in ('base.py', 'parts.py', 'blend.py')),
     SOURCE / 'engine' / 'clips' / 'positions.py', SOURCE / 'engine' / 'timing' / 'timing.py',
 ]
 THE_CLASSES = {Note.__name__, Rest.__name__, Chord.__name__, Degree.__name__, Held.__name__, phrase.__name__}

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Voice leading: its list page and its editor, with the range shown in the set's octave labels."""
 
-from llamatron.model.objects import generator_settings
+from llamatron.engine.generators.voice_leading import settings as voice_leading_settings
 from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
@@ -34,15 +34,15 @@ class TestVoiceLeadingEditor(UITest):
 
     async def test_the_lowest_octave_never_passes_the_highest(self):
         await self.select_field(labels.MSG_LOWEST_OCTAVE_LABEL)
-        await self.press(*[keybindings.VoiceLeadingEditor.MORE] * (generator_settings.DEFAULT_VOICING_HIGHEST_OCTAVE - generator_settings.DEFAULT_VOICING_LOWEST_OCTAVE + 1))
-        self.assertEqual(self.voicing().get_lowest_octave(), generator_settings.DEFAULT_VOICING_HIGHEST_OCTAVE)
+        await self.press(*[keybindings.VoiceLeadingEditor.MORE] * (voice_leading_settings.DEFAULT_VOICING_HIGHEST_OCTAVE - voice_leading_settings.DEFAULT_VOICING_LOWEST_OCTAVE + 1))
+        self.assertEqual(self.voicing().get_lowest_octave(), voice_leading_settings.DEFAULT_VOICING_HIGHEST_OCTAVE)
 
     async def test_the_highest_octave_steps_down_and_bksp_puts_it_back(self):
         await self.select_field(labels.MSG_HIGHEST_OCTAVE_LABEL)
         await self.press(keybindings.VoiceLeadingEditor.LESS)
-        self.assertEqual(self.voicing().get_highest_octave(), generator_settings.DEFAULT_VOICING_HIGHEST_OCTAVE - 1)
+        self.assertEqual(self.voicing().get_highest_octave(), voice_leading_settings.DEFAULT_VOICING_HIGHEST_OCTAVE - 1)
         await self.press(Key.BACKSPACE)
-        self.assertEqual(self.voicing().get_highest_octave(), generator_settings.DEFAULT_VOICING_HIGHEST_OCTAVE)
+        self.assertEqual(self.voicing().get_highest_octave(), voice_leading_settings.DEFAULT_VOICING_HIGHEST_OCTAVE)
 
     async def test_keep_the_root_in_the_bass_turns_on_and_off(self):
         await self.select_field(labels.MSG_ROOT_IN_BASS_LABEL)

@@ -4,8 +4,8 @@
 
 """What several screens share: the scale and root pickers, the note lengths, the file suffixes and the key lists that list pages build from."""
 
-from llamatron.generators.arp import ChordOrder
-from llamatron.model.objects.generator_settings import written_name
+from llamatron.engine.generators.arp.generator import ChordOrder
+from llamatron.engine.generators.arp.settings import written_name
 from llamatron.model.schema import limits
 from llamatron.model.values import time_signature
 from llamatron.model.values.time_signature import is_time_signature

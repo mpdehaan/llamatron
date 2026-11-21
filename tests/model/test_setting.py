@@ -6,16 +6,33 @@ nearest a wrong one, and the rules that every setting a file can hold is describ
 reading a file and calling a setter refuse a value in the same words."""
 
 import inspect
+import sys
 import unittest
 
-from llamatron.generators import arp
+from llamatron.engine.generators import settings_base, shape_settings, step_row_settings
+from llamatron.engine.generators.arp import generator as arp
+from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings
+from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting, AutoRatchetSettings
+from llamatron.engine.generators.drift.settings import DriftSetting, DriftSettings, versioned
+from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting, FollowChordsSettings
+from llamatron.engine.generators.glide.settings import GlideSettings
+from llamatron.engine.generators.guitarify.settings import GuitarifySettings
+from llamatron.engine.generators.hocket.settings import HocketSetting, HocketSettings
+from llamatron.engine.generators.musician.settings import MusicianSetting, MusicianSettings
+from llamatron.engine.generators.phrasing.settings import PhrasingSetting, PhrasingSettings
+from llamatron.engine.generators.progression.settings import ProgressionSetting, ProgressionSettings
+from llamatron.engine.generators.rush.settings import RushSettings
+from llamatron.engine.generators.shape_settings import ShapeSetting
+from llamatron.engine.generators.shorten.settings import ShortenSettings
+from llamatron.engine.generators.step_row_settings import StepRowSetting
+from llamatron.engine.generators.swell.settings import SwellSettings
+from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects import chain, clip_slot, draw, generator_settings, groove, instrument, named_scale, pattern, register, scene, setlist, song, track
+from llamatron.model.objects import chain, clip_slot, draw, groove, instrument, named_scale, pattern, register, scene, setlist, song, track
 from llamatron.model.objects.clip_slot import ClipSlot
-from llamatron.model.objects.generator_settings import ArpSetting, ArpSettings, AutoRatchetSetting, AutoRatchetSettings, DriftSetting, DriftSettings, FollowChordsSetting, FollowChordsSettings, GlideSettings, GuitarifySettings, HocketSetting, HocketSettings, MusicianSetting, MusicianSettings, PhrasingSetting, PhrasingSettings, ProgressionSetting, ProgressionSettings, RushSettings, ShapeSetting, ShortenSettings, StepRowSetting, SwellSettings, versioned, VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.model.objects.groove import Groove, new_groove
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
@@ -24,7 +41,7 @@ from llamatron.model.objects.register import Register
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
-from llamatron.model.schema import file_format, limits
+from llamatron.model.schema import file_format, generator_plugins, limits
 from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, Setting, Text, WholeNumber
 from llamatron.model.values import midi
@@ -77,7 +94,7 @@ FIRST = 1
 PATTERN_ONE = names_text.MSG_NEW_PATTERN_NAME.format(number=FIRST)
 TRACK_ONE = names_text.MSG_NEW_TRACK_NAME.format(number=FIRST)
 # The modules that hold classes of setting names.
-NAMING_MODULES = [file_format, generator_settings]
+NAMING_MODULES = [file_format, step_row_settings, shape_settings, *(sys.modules[plugin.settings.__module__] for plugin in generator_plugins.plugins().values())]
 SETTING_CLASS_ENDING = 'Setting'
 # Each class of setting names, the descriptions of those settings, and the names that aren't settings with a
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.
@@ -327,7 +344,7 @@ class TestEverySettingIsDescribedOnce(unittest.TestCase):
                 self.assertEqual(set(settings) - SHARED_BY_GENERATORS, names_in(names) - set(others) - SHARED_BY_GENERATORS)
 
     def test_every_generator_keeps_the_statements_that_bypass_it(self):
-        for kind, settings in generator_settings.GENERATOR_SETTINGS.items():
+        for kind, settings in ((name, plugin.settings) for name, plugin in generator_plugins.plugins().items()):
             with self.subTest(kind=kind):
                 self.assertIn(file_format.BYPASS_WHEN, settings.SETTINGS)
 
@@ -519,7 +536,7 @@ class TestEveryGeneratorSettingRefusesAlike(unittest.TestCase):
     being described."""
 
     def test_every_setting_of_every_generator_refuses_alike_what_its_description_refuses(self):
-        kinds = [kind for kind in every_subclass() if issubclass(kind, generator_settings.GeneratorSettings) and kind.SETTINGS]
+        kinds = [kind for kind in every_subclass() if issubclass(kind, settings_base.GeneratorSettings) and kind.SETTINGS]
         self.assertTrue(kinds)
         for kind in kinds:
             for name, description in kind.SETTINGS.items():

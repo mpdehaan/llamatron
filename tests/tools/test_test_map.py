@@ -12,7 +12,7 @@ ANOTHER_SOURCE_FILE = 'src/llamatron/generators/arp.py'
 NEW_SOURCE_FILE = 'src/llamatron/composition/brand_new.py'
 RULE_CLASS = 'tests.rules.test_slots.TestSlots'
 NAMING_CLASS = 'tests.model.test_naming.TestNaming'
-ARP_CLASS = 'tests.generators.test_arp.TestArp'
+ARP_CLASS = 'tests.engine.generators.test_arp.TestArp'
 EXAMPLES_CLASS = 'tests.app.test_examples.TestExamples'
 SWEEP_CLASS = 'tests.app.test_every_example.TestEveryExampleMinimalTechno'
 TUI_FILE = 'src/llamatron/tui/app.py'
@@ -36,7 +36,7 @@ class TestWhatAChangeNeeds(unittest.TestCase):
         self.assertIn(SWEEP_CLASS, needed(['tests/app/test_every_example.py']))
 
     def test_a_test_file_needs_its_own_classes(self):
-        self.assertEqual(needed(['tests/generators/test_arp.py']), sorted([ARP_CLASS, RULE_CLASS]))
+        self.assertEqual(needed(['tests/engine/generators/test_arp.py']), sorted([ARP_CLASS, RULE_CLASS]))
 
     def test_an_example_needs_the_tests_that_read_examples(self):
         self.assertIn(EXAMPLES_CLASS, needed(['examples/learning/01_hello_world.yml']))
