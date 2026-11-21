@@ -21,6 +21,11 @@ screen draws; a separate process measured within a tenth of a millisecond (inter
 keeps a RealtimeMIDISenderProcess and talks to it in a few messages over a pipe: start, add events, forget a clip's
 events from a time, stop a clip, stop everything, close. The process sleeps in short slices until just before the
 next event is due and then spins on the clock, since sleep alone is loose on macOS, and polls the pipe between.
+
+Two drivers send, chosen once as the process starts. On macOS the timestamped driver hands each event to CoreMIDI a tenth of a
+second ahead, stamped with its moment (realtime/coremidi.py, realtime/scheduled_engine.py), so that the system delivers it on time
+however late the process wakes, and the process sleeps until the next event is to be handed rather than spinning. Elsewhere the
+immediate driver sends each event as its moment comes, through python-rtmidi. Both are tested on the Mac.
 """
 
 import contextlib
@@ -32,12 +37,17 @@ import sys
 import time
 from typing import NamedTuple
 
-from llamatron.realtime import timeline
+from llamatron.realtime import coremidi, timeline
+from llamatron.realtime.coremidi import CoreMidiOutput
 from llamatron.realtime.engine import MonotonicClock, PlaybackEngine
-from llamatron.realtime.outputs import RecordingOutput, RtMidiOutput
+from llamatron.realtime.outputs import RecordingOutput, RtMidiOutput, ScheduledRecordingOutput
+from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
 from llamatron.strings import errors
 
 SPAWN = 'spawn'
+# The two ways of sending: each event handed to CoreMIDI ahead of time with its moment, or each sent as its moment comes.
+TIMESTAMPED = 'timestamped'
+IMMEDIATE = 'immediate'
 # How long before an event is due the process stops sleeping and spins, and how long it sleeps at a time until then.
 SPIN_SECONDS = 0.0015
 SLEEP_SLICE_SECONDS = 0.0005
@@ -111,12 +121,14 @@ class SenderNotStarted(RuntimeError):
 class RealtimeMIDISenderProcess:
     """The tracker's side of the sender: starts the process on the ports named, and sends it the messages above."""
 
-    __slots__ = ('_ports', '_recording', '_connection', '_process', '_port_places', '_tag_numbers')
+    __slots__ = ('_ports', '_recording', '_driver', '_connection', '_process', '_port_places', '_tag_numbers')
 
-    def __init__(self, *, ports, recording=False):
-        """ports are the names of the output ports to open. With recording, the process opens RecordingOutputs in their place and hands back what it sent on close."""
+    def __init__(self, *, ports, recording=False, driver=None):
+        """ports are the names of the output ports to open. With recording, the process opens recording outputs in their place and
+        hands back what it sent on close. driver is TIMESTAMPED or IMMEDIATE, by default the timestamped one where CoreMIDI is."""
         self._ports = list(ports)
         self._recording = recording
+        self._driver = default_driver() if driver is None else driver
         self._connection = None
         self._process = None
         self._port_places = {name: place for place, name in enumerate(self._ports)}
@@ -127,7 +139,7 @@ class RealtimeMIDISenderProcess:
         """Start the process, which opens the ports, and take this moment, or a reading of the clock given, as the timeline's zero."""
         context = multiprocessing.get_context(SPAWN)
         self._connection, far_end = context.Pipe()
-        self._process = context.Process(target=run_sender, kwargs=dict(connection=far_end, ports=self._ports, recording=self._recording))
+        self._process = context.Process(target=run_sender, kwargs=dict(connection=far_end, ports=self._ports, recording=self._recording, driver=self._driver))
         with real_standard_error():
             self._process.start()
         # Wait until the process has opened its ports, so that the first event is not sent late while it starts up, which measured about 150 ms on the IAC bus.
@@ -173,6 +185,21 @@ class RealtimeMIDISenderProcess:
             self._process.terminate()
         self._connection.close()
         return result
+
+
+def default_driver():
+    """Return the driver that sends best here: the timestamped one where CoreMIDI is, on macOS, and the immediate one elsewhere."""
+    return TIMESTAMPED if coremidi.is_available() else IMMEDIATE
+
+
+def engine_for(*, driver, ports, recording):
+    """Return the engine a driver sends through, on the real clock, with its outputs opened: recording ones with recording."""
+    clock = MonotonicClock()
+    if driver == TIMESTAMPED:
+        outputs = {name: (ScheduledRecordingOutput(clock=clock) if recording else CoreMidiOutput(name=name)) for name in ports}
+        return ScheduledPlaybackEngine(clock=clock, outputs=outputs)
+    outputs = {name: (RecordingOutput() if recording else RtMidiOutput(name=name)) for name in ports}
+    return PlaybackEngine(clock=clock, outputs=outputs)
 
 
 @contextlib.contextmanager
@@ -229,21 +256,27 @@ def ask_to_be_urgent():
         return
 
 
-def run_sender(*, connection, ports, recording):
+def run_sender(*, connection, ports, recording, driver):
     """The process: an engine on the real clock, fed by the pipe, sending each event when its time comes."""
     try:
-        outputs = {name: (RecordingOutput() if recording else RtMidiOutput(name=name)) for name in ports}
+        engine = engine_for(driver=driver, ports=ports, recording=recording)
     except Exception:  # noqa: BLE001, the process boundary: a port that cannot be opened, for whatever reason the library gives, ends the process quietly, and the tracker's side raises SenderNotStarted when the pipe closes without READY, rather than a traceback written over the tracker's screen.
         return
-    engine = PlaybackEngine(clock=MonotonicClock(), outputs=outputs)
     hold_garbage_back()
     ask_to_be_urgent()
     connection.send(READY)
     started = None
     while True:
-        due = engine.next_due()
+        due = engine.next_action()
         if due is None or not engine.is_started():
             wait = None
+        elif not engine.spins():
+            # The timestamped driver needs no precision of its own: it wakes to hand what comes into the horizon, and the pipe's poll
+            # wakes it sooner for a message.
+            wait = due - engine.elapsed()
+            if wait <= 0:
+                engine.send_due()
+                continue
         else:
             left = due - engine.elapsed()
             if left <= SPIN_SECONDS:
@@ -273,6 +306,6 @@ def run_sender(*, connection, ports, recording):
             FORWARDED[kind](engine=engine, message=message)
         elif kind == CLOSE:
             engine.close()
-            sent = {name: output.sent for name, output in outputs.items()} if recording else None
+            sent = engine.recordings() if recording else None
             connection.send((started, sent))
             return

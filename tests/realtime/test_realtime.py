@@ -40,7 +40,7 @@ from llamatron.exporters.midi_messages import ticks
 from llamatron.music import midi, note as note_values
 from llamatron.music.scale import ScaleType
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime import engine as engine_values, timeline as timeline_values
+from llamatron.realtime import engine as engine_values, sender_process, timeline as timeline_values
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.player import Player
@@ -255,11 +255,19 @@ class TestRealtimeSenderProcess(unittest.TestCase):
         self.assertIsNone(sender.close())
 
     def test_a_few_seconds_of_a_song_arrive_in_order_within_the_suites_limit_and_stop_silences(self):
+        """Sent as each event's moment comes, where the recording keeps when each was really sent, so the lag is measured."""
+        self.check_a_song_arrives(sender_process.IMMEDIATE)
+
+    def test_a_few_seconds_of_a_song_handed_ahead_with_their_moments_arrive_in_order_and_stop_silences(self):
+        """Handed a horizon ahead, as on macOS through CoreMIDI, where the recording keeps the moment each was stamped with."""
+        self.check_a_song_arrives(sender_process.TIMESTAMPED)
+
+    def check_a_song_arrives(self, driver):
         song = song_from_file(LAG_SONG)
         grid = SongRenderer(song, seed=SEED).render()
         routes = {track.get_name(): Route(PORT, place) for place, track in enumerate(grid.get_columns())}
         events = [event for event in song_timeline(grid=grid, routes=routes) if event.seconds < LAG_SECONDS]
-        sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True)
+        sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True, driver=driver)
         sender.start()
         sender.add(events)
         time.sleep(LAG_SECONDS + LAG_SETTLE_SECONDS)

@@ -15,13 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-"""Measure how tightly MIDI arrives from today's Realtime Sender Process against a prototype that hands each event to CoreMIDI
-ahead of time, stamped with the moment it should sound, so that the system's MIDI driver delivers it on time however late the
-sender's process wakes (macOS only).
+"""Measure how tightly MIDI arrives from the Realtime Sender Process with each of its drivers: the immediate one, which sends each
+event as its moment comes, and the timestamped one, which hands each event to CoreMIDI ahead of time, stamped with its moment, so
+that the system's MIDI driver delivers it on time however late the sender's process wakes (macOS only).
 
-Both senders are fed alike: a grid of sixteenth notes at TEMPO, in windows of the next WINDOW_SECONDS added every FEED_SECONDS,
+Both drivers are fed alike: a grid of sixteenth notes at TEMPO, in windows of the next WINDOW_SECONDS added every FEED_SECONDS,
 as the player feeds the sender. One receiver notes when each note arrives on its own clock, the same for both, and the report
-gives each sender's arrival error after the constant part is taken out: the median, the 99th and 99.9th percentiles, the worst,
+gives each driver's offset, the constant part of its arrival error, and then with the offset taken out the 99th and 99.9th percentiles, the worst,
 and how many notes were later than LATE_SECONDS. --load starts that many busy processes for the length of each run, to measure
 under load.
 
@@ -34,7 +34,6 @@ port loops back to an input of the same name, as the IAC bus does.
 """
 
 import argparse
-import ctypes
 import multiprocessing
 import rtmidi
 import statistics
@@ -42,6 +41,7 @@ import sys
 import threading
 import time
 
+from llamatron.realtime import sender_process
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
 from llamatron.realtime.timeline import Playing, Tag
 
@@ -64,29 +64,18 @@ NOTE_ON = 0x90
 NOTE_OFF = 0x80
 KIND_MASK = 0xF0
 GATE_SECONDS = 0.05
-# The clock's own zero, which today's sender is given as its timeline's, so that its events are timed by readings of the clock.
+# The clock's own zero, which the sender is given as its timeline's, so that its events are timed by readings of the clock.
 CLOCK_ZERO = 0.0
 TAG = Tag(0, 'probe')
-TODAY = 'today'
-TIMESTAMPED = 'timestamped'
 SPAWN = 'spawn'
 MACOS = 'darwin'
-# CoreMIDI's name of the property that holds an endpoint's name.
-NAME_PROPERTY = 'kMIDIPropertyName'
-COREMIDI = '/System/Library/Frameworks/CoreMIDI.framework/CoreMIDI'
-CORE_FOUNDATION = '/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation'
-UTF8 = 0x08000100
-NAME_BYTES = 256
-PACKET_LIST_BYTES = 1024
-NANOSECONDS = 1_000_000_000
 MILLISECONDS = 1000
 PERCENT = 100
 P99 = 99
 P999 = 99.9
-REPORT = '{sender:12} notes {count:6}  median {median:7.3f} ms  p99 {p99:7.3f} ms  p99.9 {p999:7.3f} ms  worst {worst:7.3f} ms  late {late}'
+REPORT = '{sender:12} notes {count:6}  offset {median:7.3f} ms  p99 {p99:7.3f} ms  p99.9 {p999:7.3f} ms  worst {worst:7.3f} ms  late {late}'
 RUN = 'running {sender} for {seconds} s with {load} busy processes'
 MISSING = '{sender}: {missing} notes never arrived'
-NO_DESTINATION = 'no MIDI destination called {port}'
 
 
 def note_times(seconds):
@@ -110,95 +99,10 @@ def busy():
         pass
 
 
-class CoreMidiSender:
-    """The prototype: a CoreMIDI output port that hands each event to the system ahead of time, stamped with its moment."""
-
-    __slots__ = ('_midi', '_port', '_destination', '_buffer', '_mach_per_second', '_mach_zero', '_clock_zero')
-
-    def __init__(self, port_name):
-        self._midi = ctypes.CDLL(COREMIDI)
-        foundation = ctypes.CDLL(CORE_FOUNDATION)
-        system = ctypes.CDLL(None)
-        foundation.CFStringCreateWithCString.restype = ctypes.c_void_p
-        foundation.CFStringCreateWithCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32]
-        foundation.CFStringGetCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
-        self._midi.MIDIGetDestination.restype = ctypes.c_uint32
-        self._midi.MIDIPacketListInit.restype = ctypes.c_void_p
-        self._midi.MIDIPacketListAdd.restype = ctypes.c_void_p
-        self._midi.MIDIPacketListAdd.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.c_void_p, ctypes.c_uint64, ctypes.c_size_t, ctypes.c_char_p]
-        system.mach_absolute_time.restype = ctypes.c_uint64
-        timebase = (ctypes.c_uint32 * 2)()
-        system.mach_timebase_info(timebase)
-        self._mach_per_second = NANOSECONDS * timebase[1] / timebase[0]
-        client = ctypes.c_uint32()
-        self._port = ctypes.c_uint32()
-        self._midi.MIDIClientCreate(ctypes.c_void_p(foundation.CFStringCreateWithCString(None, PROBE_PORT.encode(), UTF8)), None, None, ctypes.byref(client))
-        self._midi.MIDIOutputPortCreate(client, ctypes.c_void_p(foundation.CFStringCreateWithCString(None, PROBE_PORT.encode(), UTF8)), ctypes.byref(self._port))
-        self._destination = self._find(foundation=foundation, name=port_name)
-        self._buffer = ctypes.create_string_buffer(PACKET_LIST_BYTES)
-        # The same moment on the two clocks, the system's mach clock that CoreMIDI stamps with and the clock the events are timed by.
-        self._mach_zero = system.mach_absolute_time()
-        self._clock_zero = time.perf_counter()
-
-    def _find(self, *, foundation, name):
-        names = ctypes.c_void_p.in_dll(self._midi, NAME_PROPERTY)
-        for place in range(self._midi.MIDIGetNumberOfDestinations()):
-            destination = self._midi.MIDIGetDestination(place)
-            found = ctypes.c_void_p()
-            self._midi.MIDIObjectGetStringProperty(destination, names, ctypes.byref(found))
-            text = ctypes.create_string_buffer(NAME_BYTES)
-            foundation.CFStringGetCString(found, text, NAME_BYTES, UTF8)
-            if text.value == name.encode():
-                return destination
-        raise ValueError(NO_DESTINATION.format(port=name))
-
-    def send(self, event):
-        """Hand an event to CoreMIDI now, stamped with the moment it should sound."""
-        packet = self._midi.MIDIPacketListInit(self._buffer)
-        stamp = self._mach_zero + int((event.seconds - self._clock_zero) * self._mach_per_second)
-        data = bytes(event.data())
-        self._midi.MIDIPacketListAdd(self._buffer, PACKET_LIST_BYTES, packet, stamp, len(data), data)
-        self._midi.MIDISend(self._port, self._destination, self._buffer)
-
-
-def run_timestamped(*, connection, port):
-    """The prototype's process: each window of events is handed to CoreMIDI the moment it comes."""
-    sender = CoreMidiSender(port)
-    connection.send(True)
-    while True:
-        events = connection.recv()
-        if events is None:
-            return
-        for event in events:
-            sender.send(event)
-
-
-class TimestampedProcess:
-    """The prototype in a process of its own, fed as the Realtime Sender Process is."""
-
-    __slots__ = ('_connection', '_process')
-
-    def __init__(self, port):
-        context = multiprocessing.get_context(SPAWN)
-        self._connection, far_end = context.Pipe()
-        self._process = context.Process(target=run_timestamped, kwargs=dict(connection=far_end, port=port))
-        self._process.start()
-        self._connection.recv()
-
-    def add(self, events):
-        self._connection.send(list(events))
-
-    def close(self):
-        self._connection.send(None)
-        self._process.join()
-
-
 def started_sender(*, kind, port):
-    """Return a running sender of a kind, both timing events by the same system clock: today's takes the clock's own zero as its
-    timeline's, so that an event's seconds are a reading of the clock, as the prototype's are."""
-    if kind == TIMESTAMPED:
-        return TimestampedProcess(port)
-    sender = RealtimeMIDISenderProcess(ports=[port])
+    """Return the Realtime Sender Process running with a driver, taking the clock's own zero as its timeline's, so that an event's
+    seconds are a reading of the clock, as the receiver's are."""
+    sender = RealtimeMIDISenderProcess(ports=[port], driver=kind)
     sender.start(at=CLOCK_ZERO)
     return sender
 
@@ -270,7 +174,7 @@ def main():
     arguments = parser.parse_args()
     if sys.platform != MACOS:
         raise SystemExit(__doc__.splitlines()[0])
-    for kind in (TODAY, TIMESTAMPED):
+    for kind in (sender_process.IMMEDIATE, sender_process.TIMESTAMPED):
         print(RUN.format(sender=kind, seconds=arguments.seconds, load=arguments.load), flush=True)
         errors, missing = measure(kind=kind, port=arguments.port, seconds=arguments.seconds, load=arguments.load)
         report(kind=kind, errors=errors, missing=missing)

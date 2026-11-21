@@ -22,8 +22,9 @@ import threading
 import unittest
 from unittest import mock
 
-from llamatron.realtime import sender_process, timeline
+from llamatron.realtime import coremidi, sender_process, timeline
 from llamatron.realtime.engine import PlaybackEngine
+from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
 from llamatron.realtime.timeline import Playing, Tag
 from llamatron.support.rational import Rational
 
@@ -43,11 +44,16 @@ VELOCITY = 100
 class TestSenderEnds(unittest.TestCase):
 
     def test_the_sender_stops_every_note_when_the_trackers_end_of_the_pipe_closes(self):
+        for driver in (sender_process.IMMEDIATE, sender_process.TIMESTAMPED):
+            with self.subTest(driver=driver):
+                self.check_the_sender_stops_when_the_pipe_closes(driver)
+
+    def check_the_sender_stops_when_the_pipe_closes(self, driver):
         tracker_end, sender_end = multiprocessing.Pipe()
         # The process's own settings for garbage and urgency would reach the whole test run in a thread, so they are left out here.
         with mock.patch.object(PlaybackEngine, PlaybackEngine.close.__name__) as closed, \
                 mock.patch.object(sender_process, sender_process.hold_garbage_back.__name__), mock.patch.object(sender_process, sender_process.ask_to_be_urgent.__name__):
-            sender = threading.Thread(target=sender_process.run_sender, kwargs=dict(connection=sender_end, ports=[A_PORT], recording=True))
+            sender = threading.Thread(target=sender_process.run_sender, kwargs=dict(connection=sender_end, ports=[A_PORT], recording=True, driver=driver))
             sender.start()
             self.assertEqual(tracker_end.recv(), sender_process.READY)
             tracker_end.close()
@@ -75,6 +81,26 @@ class TestSenderStarts(unittest.TestCase):
             sender_process.ask_to_be_urgent()
         library.assert_not_called()
 
+
+
+class TestDrivers(unittest.TestCase):
+    """The driver chosen once as the sender starts: timestamped where CoreMIDI is, immediate elsewhere, each with its engine."""
+
+    def test_the_timestamped_driver_is_the_default_where_coremidi_is(self):
+        with mock.patch.object(coremidi, coremidi.is_available.__name__, return_value=True):
+            self.assertEqual(sender_process.default_driver(), sender_process.TIMESTAMPED)
+
+    def test_the_immediate_driver_is_the_default_elsewhere(self):
+        with mock.patch.object(coremidi, coremidi.is_available.__name__, return_value=False):
+            self.assertEqual(sender_process.default_driver(), sender_process.IMMEDIATE)
+
+    def test_each_driver_sends_through_its_own_engine_and_records_what_it_would_send(self):
+        timestamped = sender_process.engine_for(driver=sender_process.TIMESTAMPED, ports=[A_PORT], recording=True)
+        immediate = sender_process.engine_for(driver=sender_process.IMMEDIATE, ports=[A_PORT], recording=True)
+        self.assertIsInstance(timestamped, ScheduledPlaybackEngine)
+        self.assertNotIsInstance(immediate, ScheduledPlaybackEngine)
+        self.assertEqual(timestamped.recordings(), {A_PORT: []})
+        self.assertEqual(immediate.recordings(), {A_PORT: []})
 
 
 class TestRecords(unittest.TestCase):

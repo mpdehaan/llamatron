@@ -113,11 +113,23 @@ class PlaybackEngine:
         """Return the seconds of the next event, or None when nothing is queued."""
         return self._pending[0][0] if self._pending else None
 
+    def next_action(self):
+        """Return the seconds at which the sending loop next has something to do, or None when nothing is queued: here, when the next
+        event is due, since each is sent as its moment comes."""
+        return self.next_due()
+
+    def spins(self):
+        """Return whether the sending loop spins on the clock up to the next action, for an event sent the moment it is due."""
+        return True
+
     def send_due(self):
         """Send every event whose time has come, and return how many were sent."""
+        return self._send_until(self.elapsed())
+
+    def _send_until(self, seconds):
+        """Send every queued event due by a moment of the timeline, in order, and return how many were sent."""
         sent = 0
-        now = self.elapsed()
-        while self._pending and self._pending[0][0] <= now:
+        while self._pending and self._pending[0][0] <= seconds:
             event = heapq.heappop(self._pending)[3]
             self._send(event)
             sent += 1
@@ -159,6 +171,10 @@ class PlaybackEngine:
         """Return the (port, channel, number) of every note that has started and not ended."""
         return sorted(self._sounding)
 
+    def recordings(self):
+        """Return what each recording output was given, by the name of its port: every (seconds, bytes)."""
+        return {name: output.sent for name, output in self._outputs.items()}
+
     def close(self):
         """Stop everything and close the outputs."""
         self.stop_all()
@@ -166,13 +182,17 @@ class PlaybackEngine:
             output.close()
 
     def _send(self, event):
+        self._note_sounding(event)
+        self._channels_used.add((event.port, event.channel))
+        self._outputs[event.port].send(event.data())
+
+    def _note_sounding(self, event):
+        """Note the start or the end of a note an event sends."""
         key = (event.port, event.channel, event.number)
         if event.kind == timeline.NOTE_ON:
             self._sounding[key] = event.tag
         elif event.kind == timeline.NOTE_OFF:
             self._sounding.pop(key, None)
-        self._channels_used.add((event.port, event.channel))
-        self._outputs[event.port].send(event.data())
 
     def _note_off(self, key):
         port, channel, number = key

@@ -512,6 +512,8 @@ ERR_BAD_VERSION_TEXT = 'a version must be three integers separated by dots, such
 # realtime/outputs.py
 ERR_NO_MIDI_LIBRARY = 'python-rtmidi is not installed, so no MIDI port can be opened'
 ERR_SENDER_DID_NOT_START = 'the Realtime Sender Process did not start: a MIDI port could not be opened'
+# realtime/coremidi.py
+ERR_COREMIDI_CALL_FAILED = 'CoreMIDI refused {call}, with status {status}'
 # realtime/playback_process.py
 ERR_PLAYBACK_DID_NOT_START = 'the render process did not start'
 ERR_PLAYBACK_DID_NOT_ANSWER = 'the render process did not answer'

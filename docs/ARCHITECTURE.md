@@ -110,7 +110,10 @@ which hands the set's changes and each launch to a render process of its own
 (`src/llamatron/realtime/score.py`), each clip's events counted from its scene's start, and a player
 (`src/llamatron/realtime/player.py`) launches scenes and clips into the Realtime Sender Process,
 following each clip's Follow action and each scene's Launch together, so that the song plays from
-the top as the export plays, and the pages ask the transport what plays for their lights.
+the top as the export plays, and the pages ask the transport what plays for their lights. On macOS
+the Realtime Sender Process hands each event to CoreMIDI, the system's MIDI service, a tenth of a
+second ahead and stamped with its moment, so that it is sent on time however busy the computer is
+(`src/llamatron/realtime/coremidi.py`); on other systems it sends each event as its moment comes.
 
 ## Parts
 

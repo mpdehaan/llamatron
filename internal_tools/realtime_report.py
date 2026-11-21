@@ -27,7 +27,9 @@ The report has two parts. The first plays the song from the top through the play
 handing windows of events to the real Realtime Sender Process, a launch from silence starting the tracker's lead ahead,
 into recording outputs, which write down the clock as each message is handed over, and compares each event's scheduled
 second with the second it went out: the mean, the 99th percentile and the worst, and how many events were more than
-half a millisecond, one and five off. tests/realtime/test_realtime.py proves the timeline holds the MIDI export's events tick
+half a millisecond, one and five off. The sender runs its immediate driver, which sends each event as its moment comes, since
+only there is the second a message went out the sender's to keep; the timestamped driver hands events to CoreMIDI ahead, which
+internal_tools/coremidi_timing.py measures as they arrive. tests/realtime/test_realtime.py proves the timeline holds the MIDI export's events tick
 for tick, so this is the skew between real time and the export. It takes as long as the song, so it is not part of
 the suite. The second part times the stage before the process on tests/data/sample_sets/heavy_chain.yml, a chain of twenty
 generators with grabs and chords: how long rendering and building the timeline take against the length of one pass,
@@ -42,6 +44,7 @@ import time
 from llamatron.composition.setlist import Setlist
 from llamatron.grid.row_clock import seconds_per_whole
 from llamatron.playback.song_renderer import SongRenderer
+from llamatron.realtime import sender_process
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
@@ -110,7 +113,7 @@ def play_report(*, path, seconds):
     length = song_timeline(grid=grid, routes=routes)[-1].seconds
     if seconds is not None:
         length = min(length, seconds)
-    sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True)
+    sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True, driver=sender_process.IMMEDIATE)
     zero = time.perf_counter()
     sender.start(at=zero)
     handed = HandedOver(sender)
