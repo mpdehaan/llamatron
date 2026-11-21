@@ -4,6 +4,7 @@
 
 """A scale the song names, like main: { root: F, type: minor }, for the song and scenes to use."""
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import file_format, limits
 from llamatron.composition.checks import reading
 from llamatron.composition.file_format import Accidental, ScaleSetting
@@ -13,8 +14,7 @@ from llamatron.composition.setting import check_settings, Checked, described
 from llamatron.music import midi, note
 from llamatron.music.note import Note
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 # Scale type names, as error messages list them.
 NAME_LIST_SEPARATOR = ', '

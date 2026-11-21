@@ -5,9 +5,9 @@
 """The Tension row of the pattern editor: the notes added on top of a step's chord, like a flat ninth."""
 
 from llamatron.composition.file_format import Row
-from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.chord_row import ChordRow
+from llamatron.user_strings import marks
 
 # The widest a step's tensions are written out in a cell; more are counted.
 CELL_ROOM = 5

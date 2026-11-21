@@ -6,13 +6,13 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import AutoRatchetSetting
-from llamatron.strings import errors, help as help_text, labels, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.shared import counts_text
+from llamatron.user_strings import errors, help as help_text, labels, messages
 
 
 COUNT_SEPARATOR = ','

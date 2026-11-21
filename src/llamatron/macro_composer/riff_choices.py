@@ -13,7 +13,7 @@ from llamatron.macro_composer import arranger, notation as tune_notation, riffs 
 from llamatron.macro_composer.arranger import arranged, bar_length, in_octaves_of
 from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change
 from llamatron.macro_composer.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
-from llamatron.strings import errors, macro_composer as composer_text, names as names_text
+from llamatron.user_strings import errors, macro_composer as composer_text, names as names_text
 
 
 class RiffChoices(ChoicesPart):

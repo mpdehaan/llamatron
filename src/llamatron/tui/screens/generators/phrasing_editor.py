@@ -7,11 +7,11 @@ from llamatron.composition import generator_settings
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing as phrasing_values
-from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
+from llamatron.user_strings import help as help_text, labels, messages
 
 
 class PhrasingEditor(GeneratorEditor, FieldPage):

@@ -21,7 +21,7 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import scale_type_names
 from llamatron.composition.setting import Length
 from llamatron.music import midi
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # A drum pattern's degree row holds one note letter per step.
 NOTE_LETTER_LENGTH = 1

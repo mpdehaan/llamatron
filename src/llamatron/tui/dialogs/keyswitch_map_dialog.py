@@ -16,7 +16,6 @@ from rich.text import Text
 from llamatron.composition import file_format, instrument, limits
 from llamatron.composition.instrument import Keyswitch
 from llamatron.music import midi
-from llamatron.strings import labels, marks, messages
 from llamatron.tui import drawing, key_table, keybindings, keyswitch_text
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.components.keyboard import KeyKind, one_octave_rows
@@ -27,6 +26,7 @@ from llamatron.tui.drawing import cursor_mark, fit, legend, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.keyswitch_text import keyswitch_note_text, shown_name
+from llamatron.user_strings import labels, marks, messages
 
 # The place of the row of buttons, under the last slot, and the buttons' places in the order of MSG_OK_CANCEL_BUTTONS.
 BUTTONS_PLACE = file_format.KEYSWITCH_SLOT_COUNT

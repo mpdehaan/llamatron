@@ -14,7 +14,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.naming import copy_name
-from llamatron.strings import errors, names as names_text
+from llamatron.user_strings import errors, names as names_text
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song
 

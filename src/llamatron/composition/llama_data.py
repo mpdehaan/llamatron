@@ -4,8 +4,8 @@
 
 """The base class for everything a set file stores."""
 
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change, Revised
+from llamatron.caching.revised import notes_change, Revised
+from llamatron.user_strings import errors
 
 
 def settings_by_name(*, names, given):
@@ -51,7 +51,7 @@ class LlamaData(Revised):
     the file the problem is. A setting the data leaves out gets its default, so that a file from an
     older version still loads.
 
-    Every one carries a revision (support/revised.py), which its constructor and every method that
+    Every one carries a revision (caching/revised.py), which its constructor and every method that
     changes it move with note_change(), so that what is worked out from an object can be kept until
     the object changes.
 

@@ -15,8 +15,8 @@ from llamatron.macro_composer.arranger import arranged, share_in, style_named, s
 from llamatron.macro_composer.wizard_choices import genre_names, genre_title, style_of, WizardChoices
 from llamatron.music.note import NoteName
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
+from llamatron.user_strings import errors, macro_composer as composer_text
 from tests.macro_composer.test_wizard_effect import subgenre_of_the_day
 
 A_NAME = 'made'

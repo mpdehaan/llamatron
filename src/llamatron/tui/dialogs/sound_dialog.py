@@ -20,7 +20,6 @@ the sound the dialog opened on with the note shown. The dialog then answers (val
 
 from rich.text import Text
 
-from llamatron.strings import errors, marks
 from llamatron.tui import drawing, keybindings, keys as keys_values, note_names
 from llamatron.tui.cursor import completed, Cursor, places_matching
 from llamatron.tui.dialogs.dialog import Dialog
@@ -28,6 +27,7 @@ from llamatron.tui.drawing import cursor_mark, fit, legend, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.note_names import note_shown, note_typed
+from llamatron.user_strings import errors, marks
 
 # How many rows show at once, the list scrolling to keep the cursor's in view, so that the dialog fits an 80 by 24 console.
 SHOWN = 12

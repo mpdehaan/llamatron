@@ -12,9 +12,9 @@ import math
 
 from llamatron.exporters import sounding
 from llamatron.exporters.sounding import degree_to_note, NoteEvent, sounding_notes, velocity_of
+from llamatron.math.length import Length
+from llamatron.math.rational import reduced
 from llamatron.music import sound
-from llamatron.support.length import Length
-from llamatron.support.rational import reduced
 
 UNMOVED = 0
 

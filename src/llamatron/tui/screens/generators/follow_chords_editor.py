@@ -6,12 +6,12 @@
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import FollowChordsSetting
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
 class FollowChordsEditor(GeneratorEditor, FieldPage):

@@ -14,7 +14,7 @@ it with a sharp, and plain degrees then follow later edits of the scale, as a pa
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Accidental, NamedProgression, Quality
 from llamatron.music.scale import ScaleType
-from llamatron.strings import marks
+from llamatron.user_strings import marks
 
 HALF_STEPS_PER_OCTAVE = 12
 # The half steps without a scale: the major scale's, as a song with no scale places degrees.

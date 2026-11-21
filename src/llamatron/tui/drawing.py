@@ -10,7 +10,7 @@ any terminal background.
 
 from rich.text import Text
 
-from llamatron.strings import legends
+from llamatron.user_strings import legends
 
 
 # How Textual's queries name a widget by its id.

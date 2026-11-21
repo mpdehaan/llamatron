@@ -15,7 +15,7 @@ from typing import NamedTuple
 from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RampPart, RampWay, VelocitySetting
 from llamatron.composition.setting import WholeNumber
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # What a velocity left blank everywhere plays as: every note as loud as written.
 AS_WRITTEN = 100

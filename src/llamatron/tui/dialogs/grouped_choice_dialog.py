@@ -5,11 +5,11 @@
 
 from rich.text import Text
 
-from llamatron.strings import marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import cursor_mark, fit
 from llamatron.tui.key_table import cursor_moved
+from llamatron.user_strings import marks
 
 
 class GroupedChoiceDialog(ChoiceDialog):

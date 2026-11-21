@@ -5,8 +5,8 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import StepRowSetting
-from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui.screens.shared.field import ChoiceField
+from llamatron.user_strings import help as help_text, labels, messages
 
 # How far a glide can run into the next note, shortest first.
 GLIDE_AMOUNTS = ['1/256', '1/128', '1/64', '1/32', '1/16']

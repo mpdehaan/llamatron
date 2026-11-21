@@ -12,7 +12,7 @@ carry theirs. The one member left out is the data an object keeps of itself (Lla
 which is worked out from the object and is no part of what the object stores: filling it or
 dropping it changes nothing, and moving the revision for it would drop it again. The tracker's
 tests are the second guard: every memory checks its answers while
-they run (support/memory.py), which finds a change this rule can't see.
+they run (caching/memory.py), which finds a change this rule can't see.
 """
 
 import ast
@@ -22,6 +22,7 @@ import pkgutil
 import textwrap
 import unittest
 
+from llamatron.caching.revised import ChangeMark, latest_revision, notes_change, Revised
 import llamatron.composition
 from llamatron.composition.file_format import Row
 from llamatron.composition.groove import Groove
@@ -30,7 +31,6 @@ from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.support.revised import ChangeMark, latest_revision, notes_change, Revised
 
 CONSTRUCTOR = '__init__'
 DECORATOR = notes_change.__name__

@@ -13,7 +13,7 @@ another tune. No note is left out, no pitch changes and nothing is drawn by chan
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.generators.parts import parts_of
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 
 EIGHTH = Rational(1, 8)
 QUARTER = Rational(1, 4)

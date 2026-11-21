@@ -5,12 +5,12 @@
 """The page of a chain's statements about the registers, which say when a clip's pass goes by the whole chain."""
 
 from llamatron.composition.file_format import Section
-from llamatron.strings import help as help_text, labels
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.statements import statement_section
+from llamatron.user_strings import help as help_text, labels
 
 
 class ChainStatementsPage(ShowsNamedItem, FieldPage):

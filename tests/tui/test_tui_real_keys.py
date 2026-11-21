@@ -5,7 +5,6 @@
 """Keys as a terminal sends them, and the function keys."""
 
 from llamatron.composition.file_format import Row
-from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -17,6 +16,7 @@ from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.user_strings import labels
 from tests.support.ui_testing import key_of, UITest
 
 SET_FILE = 'my_set.yml'

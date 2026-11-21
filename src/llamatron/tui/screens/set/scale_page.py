@@ -16,7 +16,6 @@ from llamatron.composition.naming import words
 from llamatron.music import note
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import help as help_text, labels, legends, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.keyboard import Keyboard
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
@@ -25,6 +24,7 @@ from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.user_strings import help as help_text, labels, legends, messages
 
 
 # The kinds of scale, in two pages of grouped columns, as the picker lays them out.

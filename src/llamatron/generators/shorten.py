@@ -4,10 +4,10 @@
 """The Shorten generator: a row of on-or-off steps that makes the notes starting on the steps that are on play short, a share of their length with a rest after."""
 
 from llamatron.generators.glide import StepRow
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 from llamatron.music import sound
 from llamatron.music.sound import Sound
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
 
 PERCENT = 100
 

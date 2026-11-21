@@ -19,7 +19,7 @@ from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.naming import default_scale_name, is_default_scale_name, words
 from llamatron.importers.writing import add_imported
 from llamatron.music import note
-from llamatron.strings import marks
+from llamatron.user_strings import marks
 
 
 

@@ -10,7 +10,7 @@ what it makes so that it sits among what the set has.
 import re
 
 from llamatron.composition import named_scale
-from llamatron.strings import names
+from llamatron.user_strings import names
 
 # The number a duplicate of a name with no number gets: the name the user picked counts as the first, and is never renamed.
 FIRST_COPY_NUMBER = 2

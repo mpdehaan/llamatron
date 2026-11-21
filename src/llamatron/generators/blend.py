@@ -8,12 +8,12 @@ from math import isfinite
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.grid.clip import Clip
+from llamatron.math import length
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 from llamatron.music import sound
 from llamatron.music.sound import Sound
-from llamatron.strings import errors
-from llamatron.support import length
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors
 
 # How far a blend has moved to its target, as a percentage.
 NONE_OF_THE_TARGET = 0

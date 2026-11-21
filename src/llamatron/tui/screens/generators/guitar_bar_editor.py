@@ -16,7 +16,6 @@ from rich.text import Text
 from llamatron.composition import file_format, generator_settings, guitar_bars
 from llamatron.composition.file_format import Section
 from llamatron.composition.guitar_bars import ready_bar_matching
-from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style
@@ -24,6 +23,7 @@ from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.shared import stepped
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
+from llamatron.user_strings import help as help_text, labels, marks, messages
 
 # The lengths S steps a cell through, going round.
 CELL_LENGTHS = ['1/4', '1/8', '1/16', '1/12', '1/32']

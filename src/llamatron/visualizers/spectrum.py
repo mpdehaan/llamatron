@@ -17,7 +17,7 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers.colour_styles import rgb_style
 from llamatron.visualizers.visualizer import Visualizer
 

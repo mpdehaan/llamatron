@@ -6,11 +6,11 @@
 
 from rich.text import Text
 
-from llamatron.strings import labels
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import wrapped
+from llamatron.user_strings import labels
 
 
 class MessageDialog(Dialog):

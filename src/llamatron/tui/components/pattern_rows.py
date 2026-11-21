@@ -15,7 +15,6 @@ PgDn jump between the headings, and which sections are open is kept on the app f
 
 from llamatron.composition import file_format, row_descriptions
 from llamatron.composition.file_format import Row, StepStatement
-from llamatron.strings import labels as labels_text
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.components import degree_row
 from llamatron.tui.components.accent_row import AccentRow
@@ -43,6 +42,7 @@ from llamatron.tui.components.tension_row import TensionRow
 from llamatron.tui.components.tie_row import TieRow
 from llamatron.tui.key_table import BindsKeys, cursor_moved
 from llamatron.tui.keys import Key, RowSection
+from llamatron.user_strings import labels as labels_text
 
 # The rows at the top, which stay in place while the rows beneath them scroll: the note's gauge and its octave right under it.
 PINNED_ROWS = [Row.DEGREE, Row.OCTAVE]

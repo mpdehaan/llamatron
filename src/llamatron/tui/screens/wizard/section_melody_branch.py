@@ -15,12 +15,12 @@ hook and who else plays them is on the Hook panel (hooks_branch.py).
 from rich.text import Text
 
 from llamatron.macro_composer import hook_writing, melody, wizard_limits
-from llamatron.strings import labels, legends, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.user_strings import labels, legends, messages
 
 # What a panel of a kind's melody is remembered by, apart from a section of the form with the kind's name.
 MELODY_KEY = 'melody of {kind}'

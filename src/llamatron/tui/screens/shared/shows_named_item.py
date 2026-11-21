@@ -12,9 +12,9 @@ they share is a mixin beside whichever of those a page is.
 
 from llamatron.composition import sections
 from llamatron.composition.file_format import Section
-from llamatron.strings import labels
 from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.statements import statement_section
+from llamatron.user_strings import labels
 
 NOTHING = ''
 from llamatron.tui.themes import theme_of

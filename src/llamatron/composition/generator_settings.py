@@ -9,6 +9,7 @@ that a problem is reported with the name of the generator, whether or not a chai
 are checked again when a chain makes the generator, since settings can be built without a file.
 """
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, euclid, file_format, guitar_bars, limits, shapes as shapes_values
 from llamatron.composition.checks import Bars, in_whole_notes, is_true_or_false, is_whole_number, is_whole_number_from, listed, number, pass_over_unknown, reading, refuse_unknown, time_length
 from llamatron.composition.conditions import statements_setting
@@ -32,10 +33,9 @@ from llamatron.generators.phrasing import Phrasing
 from llamatron.generators.progression import Progression
 from llamatron.generators.shorten import Shorten
 from llamatron.generators.voice_leading import VoiceLeading
+from llamatron.math.rational import Rational
 from llamatron.music import note
-from llamatron.strings import errors
-from llamatron.support.rational import Rational
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 MIN_OCTAVE_RANGE = 1
 # An offset that leaves the note where it is, which a new step of offsets starts with.

@@ -7,14 +7,14 @@
 Every position has a length, in fractions of a whole note, and these functions cut positions
 to a length and take pieces out of them, which is what sections, repeats and generators need.
 The positions are sounds, the tuples of music/sound.py, and every length here is a pair of
-whole numbers (support/length.py), since this is done for every note of a render.
+whole numbers (math/length.py), since this is done for every note of a render.
 """
 
+from llamatron.math import length as length_values
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 from llamatron.music import sound as sound_values
 from llamatron.music.sound import Sound
-from llamatron.support import length as length_values
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
 
 
 

@@ -132,25 +132,35 @@ flowchart LR
     generators["generators"]
     grid["grid"]
     exporters["exporters"]
+    caching["caching"]
     importers["importers"]
     macro_composer["macro_composer"]
+    math["math"]
     realtime["realtime"]
     tutorial["tutorial"]
     visualizers["visualizers"]
     subgraph everywhere ["used by every other part"]
     music["music"]
     support["support"]
-    strings["strings"]
+    user_strings["user_strings"]
     end
+    composition --> caching
     composition --> generators
+    composition --> math
     exporters --> composition
     exporters --> grid
+    exporters --> math
     exporters --> realtime
     generators --> composition
     generators --> grid
+    generators --> math
+    grid --> caching
     grid --> composition
+    grid --> math
+    importers --> caching
     importers --> composition
     importers --> exporters
+    importers --> math
     importers --> playback
     llamatron --> composition
     llamatron --> exporters
@@ -158,21 +168,29 @@ flowchart LR
     llamatron --> playback
     llamatron --> tui
     llamatron --> visualizers
+    macro_composer --> caching
     macro_composer --> composition
     macro_composer --> generators
     macro_composer --> playback
+    music --> math
+    playback --> caching
     playback --> composition
     playback --> exporters
     playback --> generators
     playback --> grid
+    playback --> math
+    realtime --> caching
     realtime --> composition
     realtime --> exporters
+    realtime --> math
     realtime --> playback
+    tui --> caching
     tui --> composition
     tui --> exporters
     tui --> generators
     tui --> importers
     tui --> macro_composer
+    tui --> math
     tui --> playback
     tui --> realtime
     tui --> visualizers
@@ -190,14 +208,16 @@ flowchart LR
 | `generators` | The generators that change a clip's notes as it exports: arpeggiators, AutoRatchets and blending for morphs. |
 | `grid` | The finished clips a song exports into, and the grid that maps them to tracks and scenes. |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
+| `caching` | Caching: revisions, how anything that changes says so, and the answers kept until something they came from changes, which |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
 | `macro_composer` | The MacroComposer: a set made from structured data that says what to play. composer.py turns a |
+| `math` | Math: exact arithmetic for lengths and times, Rationals and the pairs a realization uses, and where random numbers come |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
 | `tutorial` | The video tutorial: a plan that rebuilds a set from nothing in the running tracker, key by key, and the runner that presses its keys at a human pace, saying a sentence at each part worth one (internal_tools/make_video_tutorial.py). |
 | `visualizers` | The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time. |
 | `music` | The musical values every part of llamatron works with: notes, chords, scales, time signatures, held notes and MIDI numbers. |
-| `support` | Plumbing the rest of llamatron stands on: exact fractions, file names, safe YAML loading, random sources and the version. |
-| `strings` | Every piece of text llamatron shows people, one module for each way the text is used. |
+| `support` | File names, safe YAML loading, the examples' folders and the version, which move into the Model's File part with the Model. |
+| `user_strings` | User strings: every piece of text llamatron shows people, one module for each way the text is used. |
 <!-- end of the generated diagram -->
 
 A few things the picture doesn't say:
@@ -254,7 +274,7 @@ These are the things a reader will notice everywhere, and they're deliberate:
   take by giving the renderer a seed of their own, which no person or command-line option reaches.
 - **Nothing is worked out twice.** Everything a set file stores carries a revision, a number
   that moves whenever the object changes. What the tracker works out from some objects is kept
-  in one memory with their revisions (`src/llamatron/support/memory.py`) and used again until one
+  in one memory with their revisions (`src/llamatron/caching/memory.py`) and used again until one
   of them has moved, so typing into one pattern leaves what is known about everything else
   alone. While the tests run, every kept answer is worked out again after each change and
   compared, so an answer can't quietly outlive what it came from.

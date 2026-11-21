@@ -23,11 +23,11 @@ import functools
 
 from llamatron.composition.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.generators.base import ClipGenerator
+from llamatron.math.length import Length
+from llamatron.math.random_source import random_source
+from llamatron.math.rational import Rational
 from llamatron.music import midi as midi_numbers, sound as sound_values
 from llamatron.music.sound import Sound
-from llamatron.support.length import Length
-from llamatron.support.random_source import random_source
-from llamatron.support.rational import Rational
 
 
 # Each tuning's open strings as MIDI numbers, the lowest string first.

@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Chains list page: the chains a clip, a scene or a track runs, in the order they run, which the page that opened it reads and stores."""
 
-from llamatron.strings import errors, help as help_text, labels, messages
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.generator_names import generators_to_add, listed_generator
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
+from llamatron.user_strings import errors, help as help_text, labels, messages
 
 
 class GeneratorListPage(ListPage):

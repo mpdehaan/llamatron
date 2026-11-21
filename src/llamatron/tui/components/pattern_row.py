@@ -4,9 +4,9 @@
 """One row of the pattern editor: what each of its cells shows, and what its keys do when the cursor is on it."""
 
 from llamatron.composition import row_descriptions
-from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.key_table import BindsKeys
+from llamatron.user_strings import labels as labels_text, marks
 
 
 class PatternRow(BindsKeys):

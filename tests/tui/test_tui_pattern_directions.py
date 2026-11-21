@@ -7,11 +7,11 @@
 from llamatron.composition import limits
 from llamatron.composition.file_format import ClipSlotSetting, Direction, Row
 from llamatron.composition.naming import words
-from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
+from llamatron.user_strings import labels, marks, messages
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import open_section
 from tests.support.rendering import render_song

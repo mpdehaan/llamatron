@@ -11,7 +11,7 @@ goes through the modes in an order of its own, and keeps that order for the whol
 
 import random
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.digital_rain import DigitalRain
 from llamatron.visualizers.fireworks import Fireworks

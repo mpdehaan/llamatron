@@ -4,13 +4,13 @@
 """The picker of a new generator's type: the types under headings that open and close, searched by typing, on the Generators page."""
 
 from llamatron.composition.file_format import Section
-from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
+from llamatron.user_strings import labels, marks, messages
 from tests.support.ui_testing import back_key, forward_key, UITest
 
 HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.CHAINS, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])

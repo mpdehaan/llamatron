@@ -12,8 +12,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, joins as joins_values, line_edits, melody as melody_writer, notation as tune_notation, phrasing, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import chord_of, fits_by_halves, picked, section_of, shares_a_bar, values_of
 from llamatron.macro_composer.choices_part import kept_until_choices_change
-from llamatron.strings import errors
 from llamatron.support import version as version_values
+from llamatron.user_strings import errors
 
 
 def own_copy_of(entry):

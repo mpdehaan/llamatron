@@ -35,8 +35,8 @@ from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Playing, Route, song_timeline, Tag
-from llamatron.strings import errors
 from llamatron.support.example_sets import example_sets
+from llamatron.user_strings import errors
 from tests.support import sender_under_capture
 from tests.support.example_renders import rendered_example
 from tests.support.rendering import song_from_data, song_from_file

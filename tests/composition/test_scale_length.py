@@ -9,7 +9,7 @@ from llamatron.composition import limits
 from llamatron.composition.file_format import PatternSetting, Section
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.support.rendering import song_from_data
 from tests.support.song_testing import lead_data
 from tests.support.ui_testing import fixed_text

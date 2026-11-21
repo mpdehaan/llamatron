@@ -8,8 +8,8 @@ import unittest
 
 from llamatron.macro_composer import arranger, interplay, melody, notation, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
+from llamatron.user_strings import errors, macro_composer as composer_text
 
 ROCK = 'rock'
 BLUES = 'blues'

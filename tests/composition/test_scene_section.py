@@ -10,8 +10,8 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import SceneSetting, Section, SectionKind
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import errors
 from llamatron.support import version
+from llamatron.user_strings import errors
 from tests.support import song_testing
 from tests.support.rendering import render_song, song_from_data
 from tests.support.song_testing import clip, lead_data, pitches

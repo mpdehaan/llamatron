@@ -14,7 +14,7 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.naming import copy_name
 from llamatron.composition.scene import Scene
 from llamatron.composition.track import Track
-from llamatron.strings import names as names_text
+from llamatron.user_strings import names as names_text
 
 
 # What a setter that takes a name of the song, or several, calls what it is given.

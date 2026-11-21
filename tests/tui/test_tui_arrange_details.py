@@ -6,7 +6,6 @@
 import unittest
 
 from llamatron.composition.file_format import ClipSlotSetting, Direction, EuclidPart, FollowAction, GeneratorKind, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
-from llamatron.strings import labels, legends, marks, names
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style
@@ -21,6 +20,7 @@ from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.shared.generator_names import listed_generator
+from llamatron.user_strings import labels, legends, marks, names
 from llamatron.visualizers import modes
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest

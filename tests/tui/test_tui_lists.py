@@ -14,7 +14,6 @@ from llamatron.generators.arp import ChordOrder, OctaveJump
 from llamatron.music import note
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import keyboard
 from llamatron.tui.components.keyboard import Keyboard
@@ -33,6 +32,7 @@ from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.scales_page import ScalesPage
+from llamatron.user_strings import labels, legends, marks, messages, names as names_text
 from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_name, key_of, UITest

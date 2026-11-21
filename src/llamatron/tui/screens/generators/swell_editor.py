@@ -4,9 +4,9 @@
 """The Swell editor page: one Swell generator's settings."""
 
 from llamatron.composition.file_format import GeneratorKind, Section, Shape
-from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.shape_editor import ShapeEditor
+from llamatron.user_strings import help as help_text, labels, messages
 
 
 class SwellEditor(ShapeEditor):

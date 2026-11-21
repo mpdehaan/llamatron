@@ -19,9 +19,9 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.migrations import migrated
 from llamatron.composition.naming import is_taken
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings import errors
 from llamatron.support import files
 from llamatron.support.safe_yaml import load_safely
+from llamatron.user_strings import errors
 
 # The most corrections one file is opened with, so that a correction that fails to put its value right cannot go on for ever.
 MOST_CORRECTIONS = 10000

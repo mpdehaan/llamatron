@@ -13,19 +13,19 @@ is added to the set until Import, which dismisses the dialog with what the impor
 
 from rich.text import Text
 
+from llamatron.caching.kept import kept_for_life
 from llamatron.composition import limits
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.naming import copy_name, default_scale_name
 from llamatron.importers import midi_import as midi_import_values
 from llamatron.importers.midi_import import ImportChoices
-from llamatron.strings import importing, marks
-from llamatron.support.kept import kept_for_life
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.drawing import cursor_mark, padded, Style, wrapped
 from llamatron.tui.key_table import cursor_moved
+from llamatron.user_strings import importing, marks
 
 # The rows the cursor moves over: the fields in the order drawn, then the buttons.
 SONG_NAME = 0

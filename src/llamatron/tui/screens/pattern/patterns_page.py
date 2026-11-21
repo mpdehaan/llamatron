@@ -9,7 +9,6 @@ from typing import NamedTuple
 from llamatron.composition import limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.naming import copy_name, is_taken, name_order, new_name
-from llamatron.strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.cursor import Cursor, key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -20,6 +19,7 @@ from llamatron.tui.screens.shared.listening import pattern_listen_keys
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.text import clock
 from llamatron.tui.themes import text_style, theme_of
+from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
 
 # The kinds of row the page lists: a pattern, a group's heading, the button that makes a pattern in a group, and the button that makes a group.
 PATTERN = 'pattern'

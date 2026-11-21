@@ -10,7 +10,7 @@ same way, through a NamedItems each, and these lists say which is which.
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
-from llamatron.strings import names
+from llamatron.user_strings import names
 
 # How error messages name one object in each section of named objects.
 SECTION_LABELS = {

@@ -15,11 +15,11 @@ changes the one under the cursor, and Bksp sets the line back to ignored.
 
 from llamatron.composition import conditions, file_format, limits
 from llamatron.composition.file_format import StatementPart
-from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui import drawing
 from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.tui.screens.shared.field import Cells, ChoiceField, Field, NumberField
+from llamatron.user_strings import errors, labels, legends, marks
 
 # A page's first table and its second, which keep their lines' labels apart.
 FIRST_TABLE = 0

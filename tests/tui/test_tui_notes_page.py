@@ -4,7 +4,6 @@
 
 """The Notes page."""
 
-from llamatron.strings import labels, marks
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
@@ -12,6 +11,7 @@ from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.notes_page import NotesPage
+from llamatron.user_strings import labels, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

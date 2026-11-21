@@ -5,11 +5,11 @@
 
 from llamatron.composition import limits, velocity_ramps
 from llamatron.composition.file_format import RampPart, RampWay, VelocitySetting
-from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 from llamatron.tui.screens.arrange.arrange_details import clip_details, scene_details
 from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.scene_page import ScenePage
+from llamatron.user_strings import labels as labels_text, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

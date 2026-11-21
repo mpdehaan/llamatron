@@ -15,7 +15,7 @@ and held under the limiter. The amounts are named constants here, to tune by eye
 import math
 import numpy
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import colour as colour_values, heard as heard_values, plasma
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.energy import Energy

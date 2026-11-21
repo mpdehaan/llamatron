@@ -9,7 +9,6 @@ import string
 import unittest
 from unittest import mock
 
-from llamatron.strings import about
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components import scroll_text, title_card
@@ -19,6 +18,7 @@ from llamatron.tui.launch import Launch
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.start_screen import StartScreen
 from llamatron.tui.transport import Transport
+from llamatron.user_strings import about
 from tests.support.ui_testing import UITest
 
 WIDE_SCREEN = (120, 30)

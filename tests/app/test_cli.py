@@ -26,7 +26,7 @@ from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import exports, midi_arrangement, midi_messages
 from llamatron.exporters.exports import export_name, ExportKind
-from llamatron.strings import cli, errors
+from llamatron.user_strings import cli, errors
 from llamatron.visualizers import modes
 from tests.support import song_testing
 from tests.support.rendering import as_setlist, dump_song_data

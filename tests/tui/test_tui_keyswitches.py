@@ -7,7 +7,6 @@ from llamatron.composition import file_format, instrument as instrument_values, 
 from llamatron.composition.file_format import Row
 from llamatron.composition.instrument import Keyswitch
 from llamatron.music import midi
-from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import keybindings, keys
 from llamatron.tui.components.keyswitch_row import slot_row_name
 from llamatron.tui.dialogs import keyswitch_map_dialog
@@ -20,6 +19,7 @@ from llamatron.tui.keyswitch_text import keyswitch_note_text
 from llamatron.tui.screens.pattern import roll_drawing
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
+from llamatron.user_strings import errors, labels, marks, messages
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import open_section, PatternEditorTest
 from tests.support.ui_testing import first_key, key_name, UITest

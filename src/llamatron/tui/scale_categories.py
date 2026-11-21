@@ -8,7 +8,7 @@ modes after their parent, and the rest as the Scale page's picker groups them. C
 categories; every scale type is in one of the others exactly once."""
 
 from llamatron.composition.file_format import ScaleKind
-from llamatron.strings import labels
+from llamatron.user_strings import labels
 
 COMMON_SCALE_TYPES = [ScaleKind.MINOR, ScaleKind.MAJOR, ScaleKind.HARMONIC_MINOR, ScaleKind.MELODIC_MINOR, ScaleKind.MIXOLYDIAN, ScaleKind.DORIAN]
 # The categories after Common, which between them hold every scale type once.

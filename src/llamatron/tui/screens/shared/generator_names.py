@@ -5,7 +5,7 @@
 """How a clip's, a scene's and a track's list of generators names each one, and which of the set's generators may be added to it."""
 
 from llamatron.composition.naming import name_order
-from llamatron.strings import labels
+from llamatron.user_strings import labels
 
 
 def listed_generator(*, setlist, name):

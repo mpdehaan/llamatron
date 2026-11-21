@@ -9,8 +9,8 @@ import math
 import operator
 import unittest
 
-from llamatron.strings import errors
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
+from llamatron.user_strings import errors
 
 # A sweep of values: the lengths a song uses, halves of them, thirds, negatives and zero.
 NUMERATORS = range(-5, 6)

@@ -15,6 +15,9 @@ from llamatron.generators.blend import Blend
 from llamatron.generators.euclid import EuclidMask
 from llamatron.grid.clip import Clip
 from llamatron.grid.keyswitch import SwitchNote
+from llamatron.math.length import Length
+from llamatron.math.random_source import drawn_from_when_asked
+from llamatron.math.rational import Rational
 from llamatron.music import sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.playback import pattern_player as pattern_values
@@ -23,10 +26,7 @@ from llamatron.playback.pattern_order import ordered_patterns
 from llamatron.playback.pattern_player import Pass, PatternPlayer
 from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, reshaped
 from llamatron.playback.step_order import StepOrder
-from llamatron.strings import errors
-from llamatron.support.length import Length
-from llamatron.support.random_source import drawn_from_when_asked
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors
 
 # The seeds for a clip slot's random choices: which steps play, by probability, and the order of steps
 # in directions that choose as they go. They come from the render's seed, the scene and the track,

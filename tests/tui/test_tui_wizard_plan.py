@@ -7,9 +7,9 @@
 from llamatron.composition import limits
 from llamatron.macro_composer import arranger, hook_writing, joins, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import chords_as_text
-from llamatron.strings import errors, labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
+from llamatron.user_strings import errors, labels, marks
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 

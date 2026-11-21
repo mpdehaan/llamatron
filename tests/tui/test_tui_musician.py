@@ -7,12 +7,12 @@
 from llamatron.composition.file_format import GeneratorKind, Section, SectionKind
 from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
-from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.shared.field import gauge_shown
+from llamatron.user_strings import labels, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

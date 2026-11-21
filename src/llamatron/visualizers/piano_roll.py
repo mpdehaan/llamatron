@@ -15,7 +15,7 @@ The amounts are named constants here, to tune by eye.
 """
 
 from llamatron.composition import file_format
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.cells import styled_line
 from llamatron.visualizers.colour_styles import colour_style

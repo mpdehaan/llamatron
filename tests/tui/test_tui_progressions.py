@@ -8,7 +8,6 @@ from llamatron.composition.file_format import Accidental, ChordSymbol, Generator
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.progressions import named_progression
 from llamatron.music.scale import ScaleType
-from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import chord_dialog
 from llamatron.tui.dialogs.chord_dialog import ChordDialog
@@ -17,6 +16,7 @@ from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import chords_editor
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
 from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
+from llamatron.user_strings import labels, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

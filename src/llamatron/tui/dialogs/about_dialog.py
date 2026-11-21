@@ -7,12 +7,12 @@
 import random
 from rich.text import Text
 
-from llamatron.strings import about
 from llamatron.support import version
 from llamatron.support.version import build_year
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import wrapped
+from llamatron.user_strings import about
 
 
 # What the speech bubble is drawn with: its top and bottom rules, as wide as the text and the space either side of it.

@@ -5,8 +5,8 @@
 
 from llamatron.composition import file_format, limits, strum
 from llamatron.composition.file_format import StrumPart
-from llamatron.strings import labels, marks
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
+from llamatron.user_strings import labels, marks
 
 NO_PERCENT = 0
 

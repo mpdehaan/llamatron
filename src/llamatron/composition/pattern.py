@@ -10,6 +10,7 @@ values, editing single values, resizing and rearranging it, and working out what
 
 from math import floor
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, file_format, limits, row_descriptions
 from llamatron.composition.checks import is_whole_number_from, pass_over_unknown, reading, time_signature, written_length
 from llamatron.composition.conditions import check_statement, draws_read, statement_of
@@ -21,11 +22,10 @@ from llamatron.composition.pattern_munges import PatternMunges
 from llamatron.composition.pattern_notes import PatternNotes
 from llamatron.composition.row_descriptions import row_described, rows_where
 from llamatron.composition.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
+from llamatron.math.random_source import random_source
 from llamatron.music import midi
 from llamatron.music.note import Note
-from llamatron.strings import errors
-from llamatron.support.random_source import random_source
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 # Steps are counted from 1 in messages, as the editor shows them.
 FIRST_STEP_NUMBER = 1

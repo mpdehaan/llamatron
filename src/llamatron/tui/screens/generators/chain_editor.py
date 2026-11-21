@@ -7,7 +7,6 @@
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
 from llamatron.composition.naming import suggested_word
-from llamatron.strings import help as help_text, labels as labels_text, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align
@@ -18,6 +17,7 @@ from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import help as help_text, labels as labels_text, marks, messages
 
 
 # The number a generator listed again in one chain is shown with, the second time.

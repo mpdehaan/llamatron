@@ -11,8 +11,8 @@ from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import arranger, composer, drum_solo, joins, melody, notation, phrasing, song_plan, wizard_limits
 from llamatron.macro_composer.song_plan import level_at, loudness_at, SongPlan
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import macro_composer as composer_text
 from llamatron.support import version
+from llamatron.user_strings import macro_composer as composer_text
 
 ROCK = 'rock'
 ARENA = 'arena rock'

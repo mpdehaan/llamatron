@@ -4,11 +4,11 @@
 
 from enum import Enum
 
+from llamatron.math.length import Length
 from llamatron.music import midi as midi_numbers, note
 from llamatron.music.note import Note
 from llamatron.music.sound import Sound
-from llamatron.strings import errors, reprs
-from llamatron.support.length import Length
+from llamatron.user_strings import errors, reprs
 
 
 class ScaleType(Enum):

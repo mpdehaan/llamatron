@@ -12,7 +12,6 @@ from llamatron.composition import clip_slot as clip_slot_values, defaults, file_
 from llamatron.composition.file_format import ClipSlotSetting, Section, shape_setting, strum_setting
 from llamatron.composition.naming import words
 from llamatron.playback import song_renderer
-from llamatron.strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Style
@@ -28,6 +27,7 @@ from llamatron.tui.screens.shared.shared import columns, scene_name
 from llamatron.tui.screens.shared.statements import register_fields, statement_section
 from llamatron.tui.text import clock, sorted_names
 from llamatron.tui.uses import loop_error_lines
+from llamatron.user_strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
 
 EXISTING_PATTERN = 0
 ONE_PATTERN = 1

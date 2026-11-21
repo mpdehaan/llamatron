@@ -5,10 +5,10 @@
 """The song wizard's Listen: a part of the song as it would be made, heard through FluidSynth's stand-in and thrown away."""
 
 from llamatron.realtime import fluidsynth
-from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.wizard import section_melody_branch
+from llamatron.user_strings import errors, labels, messages
 from tests.tui.test_tui_playback import PlaybackTest
 
 GENRE = 'rock'

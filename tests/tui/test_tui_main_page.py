@@ -6,7 +6,6 @@
 
 from unittest import mock
 
-from llamatron.strings import labels, legends, marks, messages, names
 from llamatron.support import version
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.app import LlamatronApp
@@ -26,6 +25,7 @@ from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.text import clock
+from llamatron.user_strings import labels, legends, marks, messages, names
 from tests.support.page_testing import boxed_line
 from tests.support.ui_testing import key_name, UITest
 

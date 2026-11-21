@@ -7,7 +7,6 @@
 from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.file_format import InstrumentSetting, Section
 from llamatron.music import midi
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
@@ -16,6 +15,7 @@ from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.sound_trial import run_in_sound, SoundTrial
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 # The place of (none) in the sound picker, before the sounds.
 NO_SOUND_PLACE = 0

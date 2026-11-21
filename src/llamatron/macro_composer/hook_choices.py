@@ -11,7 +11,7 @@ from llamatron.macro_composer import arranger, hook_writing, line_edits, melody 
 from llamatron.macro_composer.arranger import arranged
 from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
 from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed
-from llamatron.strings import errors, macro_composer as composer_text
+from llamatron.user_strings import errors, macro_composer as composer_text
 
 
 class HookChoices(ChoicesPart):

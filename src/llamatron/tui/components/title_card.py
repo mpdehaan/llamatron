@@ -22,8 +22,8 @@ from rich.style import Style as RichStyle
 from rich.text import Text
 from typing import NamedTuple
 
-from llamatron.strings import about
 from llamatron.tui import drawing
+from llamatron.user_strings import about
 
 
 class Entrance:

@@ -25,7 +25,6 @@ from typing import NamedTuple
 
 from llamatron.composition.file_format import ClipSlotSetting, Section
 from llamatron.composition.naming import new_name
-from llamatron.strings import errors, help as help_text, labels, marks, messages, names as names_text
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.inset_window import drawn_over, inside_size
 from llamatron.tui.components.scene_view import SceneView
@@ -46,6 +45,7 @@ from llamatron.tui.screens.shared.page import Page
 from llamatron.tui.screens.shared.shared import play_through, scene_name
 from llamatron.tui.text import sorted_names
 from llamatron.tui.uses import grabbers
+from llamatron.user_strings import errors, help as help_text, labels, marks, messages, names as names_text
 from llamatron.visualizers import modes
 from llamatron.visualizers.modes import mode_called
 

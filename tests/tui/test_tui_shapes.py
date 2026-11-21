@@ -5,7 +5,6 @@
 
 from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import GeneratorKind, RampWay, Section, Shape, shape_setting, ShapePart
-from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.clip_page import ClipPage
@@ -14,6 +13,7 @@ from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
 from llamatron.tui.screens.generators.density_editor import DensityEditor
 from llamatron.tui.screens.generators.swell_editor import SwellEditor
 from llamatron.tui.screens.shared.field import Heading
+from llamatron.user_strings import labels as labels_text, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, forward_key, UITest
 

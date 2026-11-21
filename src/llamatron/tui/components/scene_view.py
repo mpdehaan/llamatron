@@ -21,16 +21,16 @@ shown.
 from rich.style import Style as RichStyle
 from rich.text import Text
 
+from llamatron.caching.kept import kept_for_life
 from llamatron.composition.checks import fraction_text
 from llamatron.music import note as note_values
-from llamatron.strings import marks, visualizers
-from llamatron.support.kept import kept_for_life
 from llamatron.tui.components import title_card
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, effective_values, scene_notes
 from llamatron.tui.screens.arrange import arrange_details
 from llamatron.tui.screens.arrange.arrange_details import clip_details, or_stock, track_details
+from llamatron.user_strings import marks, visualizers
 from llamatron.visualizers import piano_roll
 from llamatron.visualizers.cells import styled_line
 from llamatron.visualizers.colour_styles import colour_style

@@ -4,9 +4,9 @@
 """Tests of the Swing field on the song wizard's Subgenre panel."""
 
 from llamatron.macro_composer import arranger
-from llamatron.strings import labels as labels_text, legends
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
+from llamatron.user_strings import labels as labels_text, legends
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 

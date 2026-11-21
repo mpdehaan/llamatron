@@ -8,11 +8,11 @@ import unittest
 from llamatron.composition import file_format
 from llamatron.composition.file_format import sensible_hidden_visualizers, sensible_visualizer, SetlistSetting, SongSetting
 from llamatron.composition.setlist import new_setlist, Setlist
-from llamatron.strings import labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.file_page import FilePage
+from llamatron.user_strings import labels, messages
 from llamatron.visualizers import modes
 from llamatron.visualizers.cycle import Cycle
 from llamatron.visualizers.modes import mode_called, mode_options

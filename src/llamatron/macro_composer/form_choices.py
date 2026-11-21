@@ -6,6 +6,7 @@ song starts and ends."""
 
 import copy
 
+from llamatron.caching.kept import as_is, kept_while
 from llamatron.composition import limits
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, interplay as interplay_values, joins as joins_values, notation as tune_notation, song_plan, wizard_limits
@@ -13,9 +14,8 @@ from llamatron.macro_composer.arranger import bar_length, forms_of, share_of
 from llamatron.macro_composer.choices_part import ChoicesPart
 from llamatron.macro_composer.section_choices import own_copy_of
 from llamatron.macro_composer.song_plan import faded
-from llamatron.strings import errors, marks as marks_text
 from llamatron.support import version as version_values
-from llamatron.support.kept import as_is, kept_while
+from llamatron.user_strings import errors, marks as marks_text
 
 
 class FormChoices(ChoicesPart):

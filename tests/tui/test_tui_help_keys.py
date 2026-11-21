@@ -23,7 +23,6 @@ import re
 import unittest
 
 from llamatron.composition.file_format import Section
-from llamatron.strings import help as help_text, labels, legends
 from llamatron.tui import keybindings
 from llamatron.tui.components import pattern_rows
 from llamatron.tui.key_table import first_key
@@ -36,6 +35,7 @@ from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.user_strings import help as help_text, labels, legends
 from tests.support import ui_testing
 from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
 from tests.support.ui_testing import key_of, leaf_pages, UITest

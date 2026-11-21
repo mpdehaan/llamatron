@@ -8,13 +8,13 @@ from llamatron.composition import conditions, file_format, limits, row_descripti
 from llamatron.composition.file_format import Operator, RegisterName, RegisterSetting, Row, StatementPart, StepStatement
 from llamatron.composition.row_descriptions import RowOfNumbers
 from llamatron.music.note import NoteName
-from llamatron.strings import errors, labels as labels_text, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
+from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import PatternEditorTest
 from tests.support.rendering import render_song

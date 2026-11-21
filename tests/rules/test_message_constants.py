@@ -4,7 +4,7 @@
 
 """Every ERR_, MSG_ and HELP_ constant lives in the strings package, each in the module for how the text is used, and each is used.
 
-strings/errors.py holds every ERR_ constant, strings/help.py every HELP_ constant, strings/reprs.py the REPR_ text a class
+user_strings/errors.py holds every ERR_ constant, user_strings/help.py every HELP_ constant, user_strings/reprs.py the REPR_ text a class
 prints itself with, and the package's other modules the MSG_ constants. The package holds all of the program's visible text, so that wording can be read in one place and
 a string in a test can't be mistaken for a data key. Nothing else may define a constant with either
 prefix outside the package, no module defines a name twice, since the second would quietly replace the first, and a constant
@@ -19,9 +19,9 @@ import re
 import unittest
 
 import llamatron
-from llamatron import strings
+from llamatron import user_strings
 from llamatron.composition import defaults, limits
-from llamatron.strings import errors, help, reprs
+from llamatron.user_strings import errors, help, reprs
 
 SOURCE_FOLDER = os.path.dirname(llamatron.__file__)
 TEST_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,16 +36,16 @@ MESSAGE_PREFIX = 'MSG_'
 HELP_PREFIX = 'HELP_'
 REPR_PREFIX = 'REPR_'
 PREFIXES = (ERROR_PREFIX, MESSAGE_PREFIX, HELP_PREFIX, REPR_PREFIX)
-STRINGS_FOLDER = os.path.dirname(strings.__file__)
+STRINGS_FOLDER = os.path.dirname(user_strings.__file__)
 PACKAGE_FILE = '__init__.py'
 # The modules whose constants have a prefix other than MSG_.
 OTHER_PREFIXES = {errors.__file__: ERROR_PREFIX, help.__file__: HELP_PREFIX, reprs.__file__: REPR_PREFIX}
 # The modules a strings module may import from: the names the file format and the keys define, and the package's own modules.
-ALLOWED_IMPORTS = ('llamatron.composition.file_format', 'llamatron.tui.keys', 'llamatron.strings.')
+ALLOWED_IMPORTS = ('llamatron.composition.file_format', 'llamatron.tui.keys', 'llamatron.user_strings.')
 # Names that are allowed to be used by a module's own code alone, since nothing else can see them.
 PRIVATE_PREFIX = '_'
 # Words a constant's name must not repeat after its prefix, like ERR_ERROR_LINE, MSG_MESSAGE or HELP_HELP_SONG. A message
-# about an error belongs in strings/errors.py, so the message words and the error words are redundant in both of those modules.
+# about an error belongs in user_strings/errors.py, so the message words and the error words are redundant in both of those modules.
 MESSAGE_WORDS = ('ERR', 'ERROR', 'ERRORS', 'MSG', 'MESSAGE', 'MESSAGES')
 REDUNDANT_WORDS = {ERROR_PREFIX: MESSAGE_WORDS, MESSAGE_PREFIX: MESSAGE_WORDS, HELP_PREFIX: ('HELP',), REPR_PREFIX: ('REPR',)}
 # A comment at the start of a line that opens a group of constants by naming the module that uses them, and each module path such a comment names.

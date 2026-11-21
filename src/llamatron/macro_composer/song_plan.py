@@ -20,7 +20,7 @@ import random
 
 from llamatron.composition.file_format import VelocitySetting
 from llamatron.macro_composer import hook_writing, joins as joins_values, melody as melody_values
-from llamatron.strings import macro_composer as composer_text
+from llamatron.user_strings import macro_composer as composer_text
 
 # The fields of a song's plan, and of the plan a style gives.
 PLAN_OF_SONG = 'song_plan'

@@ -16,7 +16,7 @@ from llamatron.composition import corrections, file_format, limits
 from llamatron.composition.checks import time_length
 from llamatron.composition.file_format import Shape, shape_setting, ShapePart
 from llamatron.composition.setting import Checked, Choice, WholeNumber
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # The lowest and highest percentage of each shape.
 SHAPE_LIMITS = {Shape.DENSITY: (limits.MIN_DENSITY, limits.MAX_DENSITY), Shape.SWELL: (limits.MIN_SWELL, limits.MAX_SWELL), Shape.ARTICULATE: (limits.MIN_ARTICULATE, limits.MAX_ARTICULATE)}

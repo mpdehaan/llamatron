@@ -16,10 +16,10 @@ from llamatron.composition.generator_settings import ShapeSetting
 from llamatron.composition.shapes import ShapeValues
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
+from llamatron.math.rational import Rational
 from llamatron.music import midi
 from llamatron.playback import shapes
 from llamatron.playback.shapes import percent_at, plays_at, strength
-from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data

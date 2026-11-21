@@ -25,7 +25,6 @@ from rich.style import Style as RichStyle
 from rich.text import Text
 
 from llamatron.composition.sections import Section
-from llamatron.strings import errors, help as help_text, labels as labels_text, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.drawing import Box, Canvas, padded, Style
 from llamatron.tui.keys import Key
@@ -41,6 +40,7 @@ from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.shared.everywhere import everywhere_actions, everywhere_key, quit_key
 from llamatron.tui.screens.shared.page import Page
+from llamatron.user_strings import errors, help as help_text, labels as labels_text, marks, messages
 
 
 # The grid: three columns, a space between them, this wide in all on every console, never widened to the window.

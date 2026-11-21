@@ -347,7 +347,7 @@ ERR_CIRCULAR_GRAB = '{scene}: the grabs go round in a circle ({loop}), so remove
 # How messages name the chain a generator is used in.
 ERR_WHERE_CHAIN = 'chain ({chain}), {kind}'
 
-# support/rational.py
+# math/rational.py
 ERR_CANT_MAKE = 'expected an integer, a fraction, a float or text such as 5/16, got {value!r}'
 ERR_DIVIDE_BY_ZERO = 'division by zero'
 
@@ -485,7 +485,7 @@ ERR_NO_ROOM_AFTER = 'no room after the note'
 ERR_NOTE_IS_ONE_STEP = 'the drag stops at one step'
 ERR_STEPS_OUT_OF_RANGE = 'steps must be from {low} to {high}'
 
-# support/memory.py
+# caching/memory.py
 ERR_STALE_ANSWER = 'the answer kept for {key} is stale: kept {kept!r}, and worked out again {again!r}'
 
 # tui/history.py

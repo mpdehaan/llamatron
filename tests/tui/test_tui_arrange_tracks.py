@@ -6,7 +6,6 @@ renamed and deleted since the Tracks page went, and the track editor it opens.""
 
 from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, TrackSetting
-from llamatron.strings import labels, marks, names as names_text
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -16,6 +15,7 @@ from llamatron.tui.screens.arrange.arrange_page import ArrangePage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.tui.screens.shared.generator_names import generators_to_add
+from llamatron.user_strings import labels, marks, names as names_text
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, forward_key, key_of, UITest
 

@@ -4,13 +4,13 @@
 """What the Glide, Shorten, Rush and Drag editors share: a generator's name, its step, its own amounts, its row of steps, which Enter opens in the step row editor, and its Restart."""
 
 from llamatron.composition.generator_settings import StepRowSetting
-from llamatron.strings import labels, legends, marks
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import Field, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
+from llamatron.user_strings import labels, legends, marks
 
 
 def steps_text(values):

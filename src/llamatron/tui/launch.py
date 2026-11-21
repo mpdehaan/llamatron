@@ -18,10 +18,10 @@ that presses keys into it, the video tutorial (tutorial/runner.py), which the tr
 """
 
 from llamatron.composition.checks import listed
-from llamatron.strings import errors
 from llamatron.tui import batch_stage
 from llamatron.tui.components.title_card import whole_title_seconds
 from llamatron.tui.uses import looping_scenes
+from llamatron.user_strings import errors
 
 # How long the splash shows before Arrange, how long Arrange is shown before play starts, and how long the last note is given to ring out before the tracker quits.
 SPLASH_SECONDS = 6.0

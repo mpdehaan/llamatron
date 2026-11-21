@@ -15,7 +15,7 @@ from llamatron.composition import file_format
 from llamatron.composition.checks import listed as listed_text, reading
 from llamatron.composition.file_format import FileLayout, Section
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # What the objects call the generators a clip, a scene and a track run, and a scene's clips by track.
 OBJECT_CHAINS = 'chains'

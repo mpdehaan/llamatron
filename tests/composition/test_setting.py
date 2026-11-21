@@ -28,7 +28,7 @@ from llamatron.generators import arp
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import names as names_text
+from llamatron.user_strings import names as names_text
 from tests.support_code.test_llama_data import every_subclass
 
 # The settings the tests of each kind describe, and the messages they refuse with.

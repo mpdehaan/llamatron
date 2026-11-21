@@ -35,7 +35,7 @@ from llamatron.generators.blend import BlendMode
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.music.time_signature import TimeSignature
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.support.rendering import as_setlist, song_from_data
 
 # Names the tests give to their own things, and other values they use.

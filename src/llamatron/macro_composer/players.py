@@ -11,7 +11,7 @@ player is imaginary. The family name says the complexity: a Llama is plain and d
 song, a Vicuna wilder and busier, a Guanaco the most advanced.
 """
 
-from llamatron.strings import macro_composer as composer_text
+from llamatron.user_strings import macro_composer as composer_text
 
 PLAIN = 1
 TASTEFUL = 2

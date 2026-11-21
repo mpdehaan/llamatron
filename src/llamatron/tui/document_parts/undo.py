@@ -6,11 +6,11 @@
 
 import copy
 
+from llamatron.caching.memory import StaleAnswer
 from llamatron.composition.setlist import Setlist
-from llamatron.strings import errors
-from llamatron.support.memory import StaleAnswer
 from llamatron.support.ordered_data import same_in_order
 from llamatron.tui.history import Change, describe_change, renamed_items, Snapshot
+from llamatron.user_strings import errors
 
 
 

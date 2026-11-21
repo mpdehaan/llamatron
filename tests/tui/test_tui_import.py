@@ -15,7 +15,6 @@ from unittest import mock
 
 from llamatron.composition.file_format import Section
 from llamatron.importers import midi_import
-from llamatron.strings import importing, labels
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import import_dialog
 from llamatron.tui.dialogs.import_dialog import ImportDialog
@@ -25,6 +24,7 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import cell_name, cell_opened_by, MainPage
 from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.user_strings import importing, labels
 from tests.support.ui_testing import UITest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

@@ -10,7 +10,7 @@ from llamatron.macro_composer import arranger, band, loudness, melody as melody_
 from llamatron.macro_composer.arranger import fits, share_of, values_of
 from llamatron.macro_composer.characters import gauges_of
 from llamatron.macro_composer.loudness import drum_levels, note_levels, with_own
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 
 class PlayerChoices:

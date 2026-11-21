@@ -26,7 +26,7 @@ from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators import arp
 from llamatron.music import midi
-from llamatron.strings import errors, messages, names
+from llamatron.user_strings import errors, messages, names
 from tests.support.rendering import as_setlist
 
 # The two sets made for these tests.

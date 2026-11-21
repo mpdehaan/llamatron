@@ -10,11 +10,11 @@ or Esc closes it.
 
 from rich.text import Text
 
-from llamatron.strings import importing
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.drawing import wrapped
+from llamatron.user_strings import importing
 
 
 class ImportedDialog(MessageDialog):

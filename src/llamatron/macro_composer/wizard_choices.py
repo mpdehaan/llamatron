@@ -14,6 +14,7 @@ import copy
 import functools
 import random
 
+from llamatron.caching.kept import kept_while
 from llamatron.composition import generator_settings, limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import PhrasingSettings
@@ -37,9 +38,8 @@ from llamatron.macro_composer.sound_choices import SoundChoices
 from llamatron.macro_composer.tune_choices import TuneChoices
 from llamatron.music import note as note_values
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version as version_values
-from llamatron.support.kept import kept_while
+from llamatron.user_strings import errors, macro_composer as composer_text
 
 
 def data_laid_over(*, under, over):
@@ -131,7 +131,7 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
 def style_key(choices):
     """What the style is worked out from: the genre, the subgenre and the kind of song chosen. The answers kept by it, and the
     picks kept by it with the ways chosen, are made from their keys and nothing else, so they cannot go stale and the tests
-    need not work them out again (support/kept.py)."""
+    need not work them out again (caching/kept.py)."""
     return (choices.get_genre(), choices.get_subgenre(), choices.get_variant())
 
 

@@ -4,9 +4,9 @@
 """Tests of how loud a player is on the song wizard's player panels: the Dynamics gauge and the levels under the Loudness heading."""
 
 from llamatron.macro_composer import loudness, notation
-from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
+from llamatron.user_strings import labels as labels_text, marks
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 

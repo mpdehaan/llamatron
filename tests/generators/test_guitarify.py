@@ -17,9 +17,9 @@ from llamatron.composition.guitar_bars import ready_bar_matching
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.generators import guitarify
+from llamatron.math.rational import Rational
 from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data, song_from_data

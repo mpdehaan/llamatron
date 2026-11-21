@@ -11,9 +11,9 @@ they had been toggles: a cell shows + for add, - for subtract and nothing for of
 """
 
 from llamatron.composition.file_format import RegisterUse
-from llamatron.strings import marks
 from llamatron.tui import keybindings
 from llamatron.tui.components.cycle_row import CycleRow
+from llamatron.user_strings import marks
 
 # What a cell shows for each use.
 USE_MARKS = {RegisterUse.ADD: marks.MSG_REGISTER_ADDS, RegisterUse.SUBTRACT: marks.MSG_REGISTER_SUBTRACTS, RegisterUse.OFF: marks.MSG_TOGGLE_OFF}

@@ -9,10 +9,10 @@ list. Both know nothing of what is drawn, so the rules every cursor keeps, stopp
 staying on a row a search still shows, are written once and are tested without a screen.
 """
 
-from llamatron.strings import errors
 from llamatron.tui import keys
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
+from llamatron.user_strings import errors
 
 FIRST_PLACE = 0
 NOTHING_TYPED = ''

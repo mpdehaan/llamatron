@@ -8,12 +8,12 @@ from rich.text import Text
 from llamatron.composition.chords import root_name
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.progressions import quality_of, roman_numeral
-from llamatron.strings import labels, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard import song_ways_branch
 from llamatron.tui.screens.wizard.song_ways_branch import SongWaysBranch
+from llamatron.user_strings import labels, marks, messages
 
 
 class ChordsBranch(SongWaysBranch):

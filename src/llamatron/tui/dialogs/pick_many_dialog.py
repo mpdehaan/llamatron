@@ -8,11 +8,11 @@ cursor on or off, Enter finishes and answers with the choices picked, and Esc ca
 
 from rich.text import Text
 
-from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.cursor import Cursor
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import cursor_mark, fit
+from llamatron.user_strings import marks
 
 
 class PickManyDialog(Dialog):

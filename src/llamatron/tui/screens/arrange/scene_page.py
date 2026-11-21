@@ -9,7 +9,6 @@ from rich.text import Text
 
 from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RampPart, Section, shape_setting
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.generators_field import generators_field
@@ -22,6 +21,7 @@ from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.screens.shared.statements import register_fields, statement_section
 from llamatron.tui.text import clock, plain_number, sorted_names, tempo_text
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
 class ScenePage(FieldPage):

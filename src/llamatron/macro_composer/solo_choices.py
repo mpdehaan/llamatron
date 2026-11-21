@@ -10,7 +10,7 @@ import zlib
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, wizard_limits
 from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 
 class SoloChoices(ChoicesPart):

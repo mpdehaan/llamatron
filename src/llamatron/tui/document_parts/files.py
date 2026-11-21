@@ -15,8 +15,8 @@ from llamatron.composition.setlist_reader import file_stem
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.exports import earlier_export, export_name, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import errors, messages
 from llamatron.support.ordered_data import same_in_order
+from llamatron.user_strings import errors, messages
 
 # What the set is called in the title until it's saved.
 UNTITLED = 'untitled'

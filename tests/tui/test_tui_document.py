@@ -23,12 +23,12 @@ from llamatron.generators.arp import ChordOrder
 from llamatron.generators.blend import BlendMode
 from llamatron.music.note import Note, NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import errors, labels as labels_text, marks as marks_text, names as names_text
 from llamatron.support.example_sets import example_sets
 from llamatron.tui.document import Document
 from llamatron.tui.document_parts import pattern_edits
 from llamatron.tui.text import clock
 from llamatron.tui.uses import grabbers, uses_of
+from llamatron.user_strings import errors, labels as labels_text, marks as marks_text, names as names_text
 from tests.support.rendering import render_song
 
 # A setting from an early version of the format, which a new song must not write.

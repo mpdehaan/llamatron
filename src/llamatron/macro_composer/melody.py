@@ -17,7 +17,7 @@ import random
 from llamatron.macro_composer import hook_kinds, hook_writing, notation, phrasing
 from llamatron.macro_composer.operations import backwards, moved, rotated, upside_down
 from llamatron.macro_composer.phrasing import breathed, ended_early, is_shorter
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # The fields of a style's melody habits.
 GRID = 'grid'

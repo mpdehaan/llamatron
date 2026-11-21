@@ -8,7 +8,6 @@ from llamatron.composition import defaults, file_format, limits, setlist
 from llamatron.composition.file_format import ClipSlotSetting, Direction, DrawName, FollowAction, PatternOrder, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
 from llamatron.composition.scene import TempoRamp
 from llamatron.generators.blend import BlendMode
-from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.cursor import NoSuchPlace
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -28,6 +27,7 @@ from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.registers_page import RegistersPage
 from llamatron.tui.screens.shared.field import Heading
 from llamatron.tui.screens.shared.generator_names import listed_generator
+from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages, names
 from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, fixed_text, forward_key, key_name, key_of, UITest

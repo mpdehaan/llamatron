@@ -10,7 +10,6 @@ from llamatron.composition.file_format import PatternSetting, Row
 from llamatron.exporters import midi_arrangement
 from llamatron.music.note import NoteName
 from llamatron.realtime import fluidsynth, timeline
-from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui import drawing, keybindings, note_names, pattern_preview
 from llamatron.tui.dialogs.sound_dialog import SoundDialog
 from llamatron.tui.drawing import Box
@@ -20,6 +19,7 @@ from llamatron.tui.pattern_preview import trial_pattern
 from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_families, sound_text
 from llamatron.tui.screens.shared import sound_trial
 from llamatron.tui.screens.shared.sound_trial import hits_of, run_of, SoundTrial
+from llamatron.user_strings import errors, labels, legends, marks
 from tests.tui import test_tui_playback
 from tests.tui.test_tui_playback import PatternPreviewTest
 

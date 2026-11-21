@@ -12,7 +12,7 @@ import numpy
 import random
 import unittest
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import cells, fireworks as fireworks_values, life as life_values, mystify as mystify_values, piano_roll, pipes as pipes_values, warpzone
 from llamatron.visualizers.digital_rain import DigitalRain
 from llamatron.visualizers.fireworks import brightest_of_blocks, Fireworks

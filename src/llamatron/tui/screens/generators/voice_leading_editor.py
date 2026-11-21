@@ -7,13 +7,13 @@ from llamatron.composition import generator_settings
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import VoiceLeadingSetting
 from llamatron.music import note
-from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import NameField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.octave_field import octave_field
+from llamatron.user_strings import help as help_text, labels, messages
 
 
 class VoiceLeadingEditor(GeneratorEditor, FieldPage):

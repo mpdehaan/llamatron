@@ -11,10 +11,10 @@ from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Pa
 from llamatron.composition.generator_settings import ArpSetting, DriftSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.math.rational import Rational
 from llamatron.playback.drift import DriftPlay
-from llamatron.strings import labels
-from llamatron.support.rational import Rational
 from llamatron.tui.screens.generators.time_field import time_field
+from llamatron.user_strings import labels
 from tests.generators.test_drift import drifting
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song

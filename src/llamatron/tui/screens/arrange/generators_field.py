@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Chains field, which the clip page, the Scene page and the track editor share: the chains something runs, and the list page that edits them."""
 
-from llamatron.strings import labels, legends, marks
 from llamatron.tui.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.tui.screens.shared.field import Field
 from llamatron.tui.screens.shared.generator_names import listed_generator
+from llamatron.user_strings import labels, legends, marks
 
 
 def generators_field(*, page, names, store):

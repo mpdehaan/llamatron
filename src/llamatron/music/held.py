@@ -12,7 +12,7 @@ the steps after it.
 
 from llamatron.music.chord import Chord
 from llamatron.music.note import _check_length, Degree, Note, Rest
-from llamatron.strings import errors, reprs
+from llamatron.user_strings import errors, reprs
 
 # What a held phrase can hold: anything a clip can, played one after another from the Held's start.
 PHRASE_TYPES = (Note, Chord, Rest, Degree)

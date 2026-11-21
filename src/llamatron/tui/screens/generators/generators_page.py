@@ -10,13 +10,13 @@ from typing import NamedTuple
 
 from llamatron.composition import file_format
 from llamatron.composition.naming import name_order, suggested_word
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, key_table, keybindings, themes
 from llamatron.tui.cursor import Cursor
 from llamatron.tui.drawing import Align, Style
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.generators.generator_pages import generator_page_of_kind, generator_type_dialog
 from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 # The kinds of row the page lists: a generator, a type's heading, and the row that adds a generator.
 GENERATOR = 'generator'

@@ -10,9 +10,9 @@ plain CC 1 when no track plays the pattern yet.
 """
 
 from llamatron.composition import file_format
-from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.components.control_row import ControlRow
+from llamatron.user_strings import labels, marks
 
 
 class CcRow(ControlRow):

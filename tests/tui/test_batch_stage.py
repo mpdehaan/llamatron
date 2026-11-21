@@ -7,13 +7,13 @@
 from rich.text import Text
 import unittest
 
-from llamatron.strings import about
 from llamatron.tui import batch_stage
 from llamatron.tui.batch_stage import BatchStage
 from llamatron.tui.components import stage_drawing, title_card
 from llamatron.tui.components.stage_drawing import faded, frame_box, inside_of, pulse_levels, ready_box, track_cells, visualizer_area
 from llamatron.tui.components.title_card import words_width
 from llamatron.tui.drawing import Box
+from llamatron.user_strings import about
 
 WIDTH = 100
 HEIGHT = 30

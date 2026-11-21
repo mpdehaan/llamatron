@@ -18,12 +18,12 @@ from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
 from llamatron.exporters.timing import keyswitch_events, timed_events
+from llamatron.math.rational import Rational
 from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline as timeline_values
 from llamatron.realtime.clip_notes import ClipNotes
 from llamatron.realtime.timeline import Route, song_timeline
-from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import song_from_data

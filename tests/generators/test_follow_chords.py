@@ -11,7 +11,7 @@ from llamatron.composition.generator_settings import FollowChordsSetting, Progre
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.music.note import NoteName
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data

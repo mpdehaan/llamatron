@@ -6,11 +6,11 @@
 
 from rich.text import Text
 
-from llamatron.strings import errors, messages
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.user_strings import errors, messages
 
 # A field is worth showing once there is more than one way to choose.
 A_CHOICE = 2

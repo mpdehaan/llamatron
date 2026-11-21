@@ -34,7 +34,7 @@ from llamatron.realtime.render_process import run_playback
 from llamatron.realtime.score_builder import Built
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.realtime.set_changes import changed_items
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # How long the tracker waits for the render process to start, for a launch's answer, and for it to close.
 START_SECONDS = 15.0

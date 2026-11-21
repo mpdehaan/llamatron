@@ -8,11 +8,11 @@ import functools
 
 from llamatron.composition import limits
 from llamatron.macro_composer import breaks as breaks_values, characters, interplay, loudness, notation, song_plan, wizard_limits
-from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui.dialogs.row_dialog import RowDialog
 from llamatron.tui.note_names import note_shown
 from llamatron.tui.screens.shared.field import Button, Cells, ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.user_strings import labels, legends, marks, messages
 
 # A field is worth showing once there is more than one way to choose.
 A_CHOICE = 2

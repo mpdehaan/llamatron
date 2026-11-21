@@ -4,7 +4,6 @@
 """The New Pattern dialog and a pattern's scale length in the tracker: the dialog's rows and buttons, the Patterns page's new pattern, Arrange's blank pattern, the Reconfigure choice and the header's warning."""
 
 from llamatron.composition import limits
-from llamatron.strings import labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog
@@ -12,6 +11,7 @@ from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.user_strings import labels, legends, marks, messages, names
 from tests.support import ui_testing
 from tests.support.ui_testing import fixed_text, UITest
 

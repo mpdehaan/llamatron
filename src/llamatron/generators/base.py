@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import NamedTuple
 
 from llamatron.grid.clip import Clip
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 
 class Continuation(NamedTuple):

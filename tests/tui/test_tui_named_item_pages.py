@@ -12,7 +12,6 @@ import unittest
 
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
-from llamatron.strings import errors, marks
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
@@ -21,6 +20,7 @@ from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
+from llamatron.user_strings import errors, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import leaf_pages, UITest
 

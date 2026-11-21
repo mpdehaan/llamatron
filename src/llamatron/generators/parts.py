@@ -10,10 +10,10 @@ how loud it is, and leaves where it starts alone: a Part holds one sound for tha
 the sounds that fill the same place when the generator is done.
 """
 
+from llamatron.math import length as length_values
+from llamatron.math.length import Length
 from llamatron.music import midi, sound as sound_values
 from llamatron.music.sound import Sound
-from llamatron.support import length as length_values
-from llamatron.support.length import Length
 
 # What stands for the pitch of a sound that has none of its own to compare.
 NO_PITCH = -1

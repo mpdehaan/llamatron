@@ -19,11 +19,11 @@ from dataclasses import dataclass
 from rich.text import Text
 from typing import Callable
 
-from llamatron.strings import labels, legends, marks
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, cursor_mark, padded, Style
 from llamatron.tui.screens.shared.shared import stepped
+from llamatron.user_strings import labels, legends, marks
 
 # Where a picker opens when the value isn't one of the choices.
 FIRST_CHOICE = 0

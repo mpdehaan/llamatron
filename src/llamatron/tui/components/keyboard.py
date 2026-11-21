@@ -17,8 +17,8 @@ colour. chord_keys() says which keys a chord's notes are, from its root up.
 from llamatron.composition import named_scale
 from llamatron.music import midi, note
 from llamatron.music.note import Note
-from llamatron.strings import marks
 from llamatron.tui import drawing
+from llamatron.user_strings import marks
 
 # The white keys of an octave as half steps above C, and the black key after each white key that has one.
 WHITE_KEYS = [0, 2, 4, 5, 7, 9, 11]

@@ -14,7 +14,7 @@ out leaves its start on its first step and is at its end on the scene's last ste
 
 from typing import NamedTuple
 
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 
 # How finely a tempo inside a ramp is kept: more than any export can write.
 TEMPO_PLACES = 4

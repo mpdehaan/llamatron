@@ -6,10 +6,10 @@
 from llamatron.composition import generator_settings
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import StepRowSetting
-from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor
+from llamatron.user_strings import help as help_text, labels, messages
 
 
 class RushEditor(StepRowGeneratorEditor):

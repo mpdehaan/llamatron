@@ -12,13 +12,13 @@ import unittest
 
 from llamatron.composition import defaults
 from llamatron.composition.file_format import ClipSlotSetting, Direction
-from llamatron.strings import marks, names
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import length_bar
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange import arrange_drawing
 from llamatron.tui.screens.arrange.arrange_drawing import ArrangeDrawing, clip_text
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.user_strings import marks, names
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest
 

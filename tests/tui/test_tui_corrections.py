@@ -24,7 +24,6 @@ from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music import midi
-from llamatron.strings import errors as errors_text, labels, marks, messages
 from llamatron.tui import app as tui_app, drawing, keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import corrections_dialog, dialog
@@ -35,6 +34,7 @@ from llamatron.tui.drawing import Box, fit
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.user_strings import errors as errors_text, labels, marks, messages
 from tests.support.ui_testing import a_song, UITest
 
 # The two sets made for these tests, and the names their copies go by in a test's own folder.

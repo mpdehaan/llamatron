@@ -5,9 +5,9 @@
 
 import unittest
 
-from llamatron.support import memory as memory_values
-from llamatron.support.memory import Memory, StaleAnswer
-from llamatron.support.revised import ChangeMark
+from llamatron.caching import memory as memory_values
+from llamatron.caching.memory import Memory, StaleAnswer
+from llamatron.caching.revised import ChangeMark
 
 QUESTION = 'question'
 OTHER_QUESTION = 'other question'

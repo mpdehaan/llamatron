@@ -4,13 +4,13 @@
 """The tracker's Strum: the Strums page and editor, and the + Strum sections of the track editor and the clip page."""
 
 from llamatron.composition.file_format import GeneratorKind, Section, StrumDirection, StrumPart, StrumSpread
-from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.strum_editor import StrumEditor
 from llamatron.tui.screens.generators.strum_fields import spread_name
+from llamatron.user_strings import labels, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

@@ -5,7 +5,6 @@
 
 from rich.text import Text
 
-from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.wizard.branch import Branch
@@ -15,6 +14,7 @@ from llamatron.tui.screens.wizard.melody_branch import MelodyBranch
 from llamatron.tui.screens.wizard.riff_assign_branch import RiffAssignBranch
 from llamatron.tui.screens.wizard.riffs_branch import RiffsBranch
 from llamatron.tui.screens.wizard.section_players_branch import SectionPlayersBranch
+from llamatron.user_strings import errors, labels, marks, messages
 
 
 class CompositionBranch(Branch):

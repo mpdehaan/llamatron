@@ -6,13 +6,13 @@
 
 from llamatron.composition.file_format import ClipSlotSetting, Row
 from llamatron.music.note import NoteName
-from llamatron.strings import errors, legends
 from llamatron.tui import keybindings, keys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, Reconfigure
+from llamatron.user_strings import errors, legends
 from tests.support.pattern_editor_testing import munge
 from tests.support.rendering import render_song
 from tests.support.ui_testing import UITest

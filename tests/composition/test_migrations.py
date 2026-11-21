@@ -18,7 +18,7 @@ from llamatron.composition.migrations import migrated
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import names
+from llamatron.user_strings import names
 from tests.support import song_testing
 from tests.support.rendering import as_setlist, render_data
 from tests.support.song_testing import clip, pat, pitches, with_parts

@@ -9,10 +9,10 @@ play the tune in the second, so the tune is shared by three clips, and the beat 
 """
 
 from llamatron.composition.file_format import ClipSlotSetting
-from llamatron.strings import messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
+from llamatron.user_strings import messages
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

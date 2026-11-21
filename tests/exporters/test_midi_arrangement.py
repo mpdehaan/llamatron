@@ -20,7 +20,7 @@ from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.control import Control
 from llamatron.music.note import Note
 from llamatron.music.time_signature import TimeSignature
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 QUARTER = 0.25
 C4 = Note(name='C', octave_number=4, length=QUARTER)

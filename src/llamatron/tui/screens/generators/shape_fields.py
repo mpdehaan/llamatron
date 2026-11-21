@@ -7,9 +7,9 @@ import functools
 
 from llamatron.composition import file_format, shapes
 from llamatron.composition.file_format import ShapePart
-from llamatron.strings import labels, marks
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
+from llamatron.user_strings import labels, marks
 
 # Where a nudge starts on a percentage left blank: 100%, which is what blank plays as.
 UNCHANGED = 100

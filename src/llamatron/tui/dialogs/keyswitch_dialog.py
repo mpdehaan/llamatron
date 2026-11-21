@@ -14,11 +14,11 @@ nothing until the instrument gives it one."""
 from rich.text import Text
 
 from llamatron.composition import file_format
-from llamatron.strings import labels, marks
 from llamatron.tui import drawing, keybindings, keys as keys_values, keyswitch_text
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.tui.drawing import cursor_mark, fit, legend, Style
+from llamatron.user_strings import labels, marks
 
 # The OK button is the one Enter presses, so it is the one drawn selected.
 OK = 0

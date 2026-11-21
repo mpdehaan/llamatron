@@ -4,8 +4,8 @@
 """The field of a time setting, Step, Every or Over, which every page with one shares: the one list of times, after the setting's own first choice."""
 
 from llamatron.composition import file_format
-from llamatron.strings import labels
 from llamatron.tui.screens.shared.field import ChoiceField
+from llamatron.user_strings import labels
 
 
 def time_field(*, page, label, written, first, store):

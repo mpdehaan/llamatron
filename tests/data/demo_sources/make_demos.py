@@ -25,8 +25,8 @@ from llamatron.composition import file_format, row_descriptions
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.music import note as note_values
 from llamatron.music.scale import ScaleType
-from llamatron.strings import labels, names as names_text
 from llamatron.tui.screens.set import scale_page
+from llamatron.user_strings import labels, names as names_text
 from tests.support.rendering import as_setlist
 
 # The demos are written with durations, as they were first written, and gate_conversion, in the

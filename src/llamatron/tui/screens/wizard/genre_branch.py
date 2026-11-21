@@ -6,12 +6,12 @@
 from llamatron.macro_composer import wizard_limits
 from llamatron.macro_composer.wizard_choices import genre_names, genre_title
 from llamatron.music import note
-from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.text import clock
+from llamatron.user_strings import labels, legends, marks, messages
 
 # How the Change Genre question words each kind of thing lost and kept.
 LOST_SHOWN = {

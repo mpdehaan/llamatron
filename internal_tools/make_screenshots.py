@@ -20,7 +20,6 @@ import pathlib
 import re
 
 from llamatron.composition.file_format import Section
-from llamatron.strings import labels
 from llamatron.support import version
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
@@ -28,6 +27,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import generator_pages
+from llamatron.user_strings import labels
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'

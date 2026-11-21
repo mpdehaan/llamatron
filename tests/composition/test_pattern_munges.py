@@ -15,10 +15,10 @@ from llamatron.composition.file_format import ChordSymbol, Operator, PatternSett
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
+from llamatron.math.rational import Rational
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.support.rational import Rational
 
 SIXTEENTH = Rational(1, 16)
 C_MAJOR = NamedScale(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))

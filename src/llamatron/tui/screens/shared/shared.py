@@ -9,8 +9,8 @@ from llamatron.composition.generator_settings import written_name
 from llamatron.generators.arp import ChordOrder
 from llamatron.music import time_signature
 from llamatron.music.time_signature import is_time_signature
-from llamatron.strings import errors, marks, messages, names
 from llamatron.tui import drawing
+from llamatron.user_strings import errors, marks, messages, names
 
 
 SONG_SUFFIX = '.yml'

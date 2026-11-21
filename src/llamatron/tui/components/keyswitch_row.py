@@ -10,11 +10,11 @@ them, the same one the piano roll opens, and Bksp clears them. A step with no no
 
 from llamatron.composition import instrument as instrument_values
 from llamatron.composition.file_format import Row
-from llamatron.strings import marks, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog
 from llamatron.tui.keyswitch_text import keyswitch_note_text, keyswitches_of, slot_name
+from llamatron.user_strings import marks, messages
 
 # What the rows view calls the row of one slot.
 SLOT_ROW_NAME = 'keyswitch slot {slot}'

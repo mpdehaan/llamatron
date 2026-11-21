@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """A row that's on or off for each step, like Glide, Grab and the registers' uses."""
 
-from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
+from llamatron.user_strings import marks
 
 
 class ToggleRow(PatternRow):

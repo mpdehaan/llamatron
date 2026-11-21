@@ -20,8 +20,8 @@ from llamatron.importers.keys import key_of_notes, key_of_signature
 from llamatron.importers.midi_reading import Change, read_midi
 from llamatron.importers.voices import voices_of
 from llamatron.importers.writing import SongWriter, tempo_of, time_signature_text
-from llamatron.strings import errors, importing
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
+from llamatron.user_strings import errors, importing
 
 # The share of all the notes moved to a step from which the import says they were played to a timing feel, a swing,
 # a groove or a live performance, rather than a few strays.

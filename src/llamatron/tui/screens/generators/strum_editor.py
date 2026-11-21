@@ -4,13 +4,13 @@
 """The Strum editor page: one Strum generator's name and its strum, which wins over a clip's and its track's."""
 
 from llamatron.composition.file_format import Section
-from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.strum_fields import strum_fields
 from llamatron.tui.screens.shared.field import NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
+from llamatron.user_strings import help as help_text, labels, messages
 
 
 class StrumEditor(GeneratorEditor, FieldPage):

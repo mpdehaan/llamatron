@@ -12,8 +12,8 @@ import functools
 
 from llamatron.composition import file_format, limits, velocity_ramps
 from llamatron.composition.file_format import RampPart, VelocitySetting
-from llamatron.strings import labels, legends, marks
 from llamatron.tui.screens.shared.field import NumberField
+from llamatron.user_strings import labels, legends, marks
 
 
 def bars_shown(bars):

@@ -5,10 +5,10 @@
 
 from llamatron.composition import generator_settings
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.user_strings import labels
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

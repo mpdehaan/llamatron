@@ -5,7 +5,7 @@
 
 import unittest
 
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 from llamatron.tui import drawing
 from llamatron.tui.components import length_bar
 from llamatron.tui.components.frame import Frame

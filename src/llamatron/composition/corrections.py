@@ -15,7 +15,7 @@ or a problem with no correction stops it, and returns the corrections made, for 
 dialog or the command line to show before anything is opened. Nothing here changes a file.
 """
 
-from llamatron.strings import errors, messages, names
+from llamatron.user_strings import errors, messages, names
 
 # What nearest() answers for a value with no allowed value near it. None can't say so, since None is a value a file can hold.
 NO_NEAREST_VALUE = object()

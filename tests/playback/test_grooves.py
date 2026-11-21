@@ -18,7 +18,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import clip_tree
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.timing import control_events, timed_events
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, with_parts

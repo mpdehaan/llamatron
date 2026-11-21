@@ -6,11 +6,11 @@
 
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import FollowChordsSetting
-from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
+from llamatron.user_strings import labels, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

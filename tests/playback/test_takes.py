@@ -11,9 +11,9 @@ and every take of a scene."""
 
 import unittest
 
+from llamatron.caching.memory import Memory
 from llamatron.composition.file_format import ClipSlotSetting, DrawDirection, DrawName, Row, SceneSetting, Section
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.memory import Memory
 from tests.playback import test_draws
 from tests.support import song_testing
 from tests.support.rendering import setlist_from_data, song_from_data

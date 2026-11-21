@@ -5,13 +5,13 @@
 
 from llamatron.composition import limits
 from llamatron.composition.generator_settings import ShapeSetting
-from llamatron.strings import labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.shape_fields import shape_fields
 from llamatron.tui.screens.shared.field import NameField, NumberField
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
+from llamatron.user_strings import labels, marks
 
 NO_ACCENT = 0
 

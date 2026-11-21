@@ -23,6 +23,8 @@ from llamatron.grid.handed_note import HandedNote
 from llamatron.grid.nudge_plan import amount_moved, MovingRow, NudgePlan
 from llamatron.grid.row_clock import RowClock
 from llamatron.grid.strum_plan import StrumPlan
+from llamatron.math.random_source import random_source
+from llamatron.math.rational import Rational
 from llamatron.music import midi, sound as sound_values
 from llamatron.playback import registers as registers_values
 from llamatron.playback.chord_source import ChordSource
@@ -37,9 +39,7 @@ from llamatron.playback.scene_reuse import changed_clips, first_changed_scene, S
 from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
 from llamatron.playback.tune_source import TuneSource
 from llamatron.playback.written_scene import WrittenScene
-from llamatron.strings import errors
-from llamatron.support.random_source import random_source
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors
 
 # How a circular grab's tracks are joined in its message, like a → b → a.
 GRAB_ARROW = ' → '

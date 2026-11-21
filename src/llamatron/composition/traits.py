@@ -9,11 +9,11 @@ before it, and that reads and stores through get_written() and set_written(). A 
 setting it keeps its value under, which every class with the trait writes under the same name.
 """
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import sections
 from llamatron.composition.conditions import with_register_value, with_statement
 from llamatron.composition.llama_data import own_copy
 from llamatron.composition.named_items import NamedItems
-from llamatron.support.revised import notes_change
 
 
 class RunsChains:

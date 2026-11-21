@@ -8,7 +8,7 @@ from llamatron.macro_composer import arranger, band, characters, interplay as in
 from llamatron.macro_composer.arranger import values_of
 from llamatron.macro_composer.characters import preset
 from llamatron.macro_composer.choices_part import ChoicesPart
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 
 class BandChoices(ChoicesPart):

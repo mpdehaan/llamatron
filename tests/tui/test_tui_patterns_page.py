@@ -8,7 +8,6 @@ import os
 
 from llamatron.composition import file_format, limits
 from llamatron.composition.setlist import Setlist
-from llamatron.strings import errors, labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -19,6 +18,7 @@ from llamatron.tui.screens.pattern import patterns_page
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern.patterns_page import Listed
 from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.user_strings import errors, labels, marks, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, every_key, first_key, forward_key, key_name, UITest
 

@@ -35,9 +35,9 @@ from llamatron.music import note
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.timeline import Route
-from llamatron.strings import errors, names as names_text
 from llamatron.tui import transport
 from llamatron.tui.transport import Transport
+from llamatron.user_strings import errors, names as names_text
 
 # The one scene of the copy the preview plays.
 PREVIEW_SCENE = 0

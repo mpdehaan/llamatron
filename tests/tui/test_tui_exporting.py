@@ -9,7 +9,6 @@ import os
 from llamatron.composition.file_format import ClipSlotSetting
 from llamatron.exporters import exports
 from llamatron.exporters.exports import earlier_export, ExportKind, shown_export_path
-from llamatron.strings import errors, labels, messages, names
 from llamatron.tui import keybindings, uses
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -19,6 +18,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.main_page import MainPage
+from llamatron.user_strings import errors, labels, messages, names
 from tests.support.ui_testing import fixed_text, UITest
 
 SET_FILE = 'my_set.yml'

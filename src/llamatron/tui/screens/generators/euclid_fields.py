@@ -6,10 +6,10 @@
 from llamatron.composition import euclid, limits
 from llamatron.composition.euclid import rhythm
 from llamatron.composition.file_format import EuclidPart
-from llamatron.strings import labels, marks, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import NumberField
+from llamatron.user_strings import labels, marks, messages
 
 
 def drawn_rhythm(*, hits, steps, rotate=limits.NO_ROTATION):

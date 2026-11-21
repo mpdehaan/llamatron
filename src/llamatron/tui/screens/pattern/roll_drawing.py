@@ -19,11 +19,11 @@ from typing import NamedTuple
 
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.file_format import Row
-from llamatron.strings import marks
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, fit, Style
 from llamatron.tui.screens.pattern import grid_drawing
 from llamatron.tui.screens.pattern.grid_drawing import GridDrawing
+from llamatron.user_strings import marks
 
 # The blocks of a note's bar, which the read head never draws over, and how wide the edge before each step is.
 NOTE_BLOCKS = (marks.MSG_NOTE_EDGE, marks.MSG_CURSOR_BLOCK, marks.MSG_NOTE_HOLLOW, marks.MSG_NOTE_HOLLOW_UNDER_CURSOR)

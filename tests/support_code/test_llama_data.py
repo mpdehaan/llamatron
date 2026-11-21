@@ -18,7 +18,7 @@ from llamatron.composition.llama_data import HoldsSettings, LlamaData
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.song import Song
 from llamatron.composition.track import Track
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 
 def every_subclass():

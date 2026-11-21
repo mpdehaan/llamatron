@@ -16,7 +16,7 @@ from llamatron.composition import sections
 from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.naming import copy_name, new_name
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # The place of the song before a deleted one, which becomes current, and the first place, for when the first song was deleted.
 ONE_BEFORE = 1

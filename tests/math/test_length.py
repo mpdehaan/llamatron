@@ -7,9 +7,9 @@ from fractions import Fraction
 import itertools
 import unittest
 
-from llamatron.support import length
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.math import length
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 
 # A sweep of values: the lengths a song uses, thirds, sevenths, negatives and zero.
 NUMERATORS = range(-5, 6)

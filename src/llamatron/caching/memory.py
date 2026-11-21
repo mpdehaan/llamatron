@@ -6,7 +6,7 @@
 The tracker asks the same questions over and over as it draws: which scale a pattern plays under,
 which notes cover each step, what uses a scale. An answer is asked for through remembered(), with
 a key naming the question, the things the answer is worked out from, and the function that works
-it out. The answer is kept with the revisions of those things (support/revised.py) and returned
+it out. The answer is kept with the revisions of those things (caching/revised.py) and returned
 until one of them has moved, so an edit to one pattern leaves what is known about everything else
 alone.
 
@@ -18,8 +18,8 @@ after anything at all has changed, and a difference raises StaleAnswer.
 
 from typing import NamedTuple
 
-from llamatron.strings import errors
-from llamatron.support.revised import latest_revision
+from llamatron.caching.revised import latest_revision
+from llamatron.user_strings import errors
 
 # How many answers a memory keeps before it forgets them all, so that keys naming things long gone can't pile up for ever.
 MAX_ANSWERS = 20000

@@ -8,12 +8,12 @@ from llamatron.composition import file_format, generator_settings
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, gauge_shown, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
 class MusicianEditor(GeneratorEditor, FieldPage):

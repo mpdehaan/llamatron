@@ -41,8 +41,8 @@ from llamatron.realtime.playback import Launch, LocalPlayback, Wanted
 from llamatron.realtime.playback_process import PlaybackProcess
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Route
-from llamatron.strings import errors, messages
 from llamatron.tui.uses import loop_error_lines
+from llamatron.user_strings import errors, messages
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.heard import Heard, HeardNote
 

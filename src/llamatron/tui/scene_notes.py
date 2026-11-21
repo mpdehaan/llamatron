@@ -28,7 +28,7 @@ from llamatron.composition.strum import strum_settings
 from llamatron.exporters.timing import timed_events
 from llamatron.music import note as note_values
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import marks
+from llamatron.user_strings import marks
 
 HALF_STEPS_PER_OCTAVE = 12
 # How many pitch classes may sound in a beat besides its chord, as a melody's passing notes.

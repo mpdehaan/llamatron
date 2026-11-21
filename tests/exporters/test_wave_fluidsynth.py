@@ -25,12 +25,12 @@ from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import errors, labels, messages
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
+from llamatron.user_strings import errors, labels, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text, UITest
 

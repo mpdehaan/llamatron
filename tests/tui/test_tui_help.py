@@ -6,7 +6,6 @@
 
 from unittest import mock
 
-from llamatron.strings import about, labels, legends, marks
 from llamatron.support import version
 from llamatron.support.version import build_year
 from llamatron.tui import drawing, keybindings
@@ -18,6 +17,7 @@ from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.shared import page as page_values
+from llamatron.user_strings import about, labels, legends, marks
 from tests.support.ui_testing import fixed_text, UITest
 
 # The file the export tests save their set as, and where its untitled song's exports then go: beside it, as <set>_<song>.

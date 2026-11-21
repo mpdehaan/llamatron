@@ -6,7 +6,6 @@
 from llamatron.composition import defaults, file_format, genres, limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.genres import subgenres_of, variants_of
-from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings, themes
 from llamatron.tui.screens.set.visualizer_fields import visualizer_field
 from llamatron.tui.screens.shared.everywhere import export
@@ -14,6 +13,7 @@ from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, Nu
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import ask_time_signature, stepped
 from llamatron.tui.text import sorted_names, tempo_text
+from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages
 
 
 class SongPage(FieldPage):

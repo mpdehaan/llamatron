@@ -18,7 +18,7 @@ import math
 import numpy
 import random
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import cells, colour
 from llamatron.visualizers.cells import packed, styled_line
 from llamatron.visualizers.colour import note_colour

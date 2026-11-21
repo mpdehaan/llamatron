@@ -13,7 +13,7 @@ from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, S
 from llamatron.composition.naming import name_in_copied_group
 from llamatron.composition.setlist import new_setlist, Setlist
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings import errors, names as names_text
+from llamatron.user_strings import errors, names as names_text
 
 # The tests' own names.
 BASS = 'bass'

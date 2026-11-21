@@ -22,9 +22,9 @@ A page binds a key with `self.bind(self.KEYS.RENAME, action=self.rename)`, and t
 one key.
 """
 
-from llamatron.strings import labels, legends
 from llamatron.tui import keys
 from llamatron.tui.keys import Binding, Key, Steps
+from llamatron.user_strings import labels, legends
 
 
 def all_but(*, bindings, hidden):

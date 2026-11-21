@@ -6,7 +6,6 @@
 
 import os
 
-from llamatron.strings import labels, marks, names
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key
@@ -14,6 +13,7 @@ from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.importing import home_folder
 from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.user_strings import labels, marks, names
 from tests.support.ui_testing import a_song, UITest
 
 LEAD = 'lead'

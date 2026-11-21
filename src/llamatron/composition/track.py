@@ -4,6 +4,7 @@
 
 """A track: a column of the song, with settings that apply to every clip on it."""
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import is_whole_number_from, pass_over_unknown, reading
@@ -17,8 +18,7 @@ from llamatron.composition.setting import check_settings, Checked, Choice, descr
 from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.traits import RunsChains
 from llamatron.music import midi
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 # A track's settings, in the order they're written to a file.
 

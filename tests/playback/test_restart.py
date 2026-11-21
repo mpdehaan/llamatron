@@ -16,9 +16,9 @@ from llamatron.exporters.timing import timed_events
 from llamatron.generators.base import Continuation
 from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.grid.clip import Clip
+from llamatron.math.rational import Rational
 from llamatron.music.chord import Chord
 from llamatron.music.note import Note, NoteName
-from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data

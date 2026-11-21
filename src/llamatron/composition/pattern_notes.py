@@ -24,8 +24,8 @@ from llamatron.composition import file_format, limits
 from llamatron.composition.checks import fraction_text, written_length
 from llamatron.composition.chords import borrowed, chord_half_steps
 from llamatron.composition.file_format import Row
+from llamatron.math.rational import Rational
 from llamatron.music import midi
-from llamatron.support.rational import Rational
 
 # What a note's second half keeps of it when the piano roll's knife splits it: its pitch, chord and velocity.
 SPLIT_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY)

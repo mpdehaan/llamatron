@@ -13,7 +13,6 @@ from textual.app import App
 import time
 
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings import errors, labels, messages
 from llamatron.tui import keys, launch as launch_values
 from llamatron.tui.batch_stage import BatchStage
 from llamatron.tui.components.scroll_text import scroll_seconds
@@ -35,6 +34,7 @@ from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.tui.silent_instruments import warn_of_silent_instruments
 from llamatron.tui.status_line import StatusLine
 from llamatron.tui.transport import Transport
+from llamatron.user_strings import errors, labels, messages
 from llamatron.visualizers.modes import mode_called
 
 

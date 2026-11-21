@@ -5,10 +5,10 @@
 
 from rich.text import Text
 
-from llamatron.strings import messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import fit, Style, wrapped
+from llamatron.user_strings import messages
 
 # The most corrections listed, so that the dialog fits an 80 by 24 console with its sentences and its buttons. The rest are counted on one line.
 MOST_SHOWN = 5

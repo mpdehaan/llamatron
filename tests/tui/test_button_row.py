@@ -6,12 +6,12 @@
 
 import unittest
 
-from llamatron.strings import messages
 from llamatron.tui.components import button_row as button_row_values
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.status_line import StatusLine
+from llamatron.user_strings import messages
 
 SAID = 'cannot delete a track while the song plays'
 WIDTH = 60

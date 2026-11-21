@@ -34,7 +34,6 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.naming import words
 from llamatron.composition.pattern import Pattern
 from llamatron.music import midi
-from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows
@@ -49,6 +48,7 @@ from llamatron.tui.screens.shared.shared import ask_time_signature, columns
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.text import fraction, sorted_names
+from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages
 
 
 def direction_choices(directions):

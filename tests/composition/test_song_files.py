@@ -15,7 +15,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.support import song_testing
 from tests.support.rendering import as_setlist, dump_song_data, render_data, render_file, setlist_from_data, song_from_data
 from tests.support.song_testing import pat, with_parts

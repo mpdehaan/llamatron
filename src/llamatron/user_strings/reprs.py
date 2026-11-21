@@ -44,6 +44,6 @@ REPR_CLIP_ROW = 'ClipRow(name={name!r}, tempo={tempo!r}, scale={scale!r}, id={id
 # How a clip prints, as the expression that would build it.
 REPR_CLIP = 'Clip(name={name!r}, notes={notes!r}, scale={scale!r}, length={length!r}, note_length={note_length!r}, id={id!r})'
 
-# support/rational.py
+# math/rational.py
 # How a Rational prints, as the expression that would build it.
 REPR_RATIONAL = 'Rational({numerator}, {denominator})'

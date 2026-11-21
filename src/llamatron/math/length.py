@@ -18,7 +18,7 @@ the methods beside it.
 
 import math
 
-from llamatron.support.rational import in_lowest_terms, Rational
+from llamatron.math.rational import in_lowest_terms, Rational
 
 # No time at all, which is also where a clip starts.
 ZERO = (0, 1)

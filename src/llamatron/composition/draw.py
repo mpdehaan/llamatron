@@ -8,14 +8,14 @@ a pattern's steps move in, serial, which deals every slot once a round in a rand
 every time. A blank slot is passed over without using up a draw.
 """
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.checks import is_whole_number, listed, pass_over_unknown, reading
 from llamatron.composition.file_format import DrawSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, own_copy
 from llamatron.composition.setting import Checked, Choice, described, Flag, WholeNumber
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 
 def is_slot_value(value):

@@ -16,12 +16,12 @@ from rich.text import Text
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Section
 from llamatron.generators import arp as arp_values
-from llamatron.strings import help as help_text, labels, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.signed_gauge import SignedGauge
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
+from llamatron.user_strings import help as help_text, labels, messages
 
 
 # The lines around the gauge: the note, a blank line, the top rule, the Step row, the zero line, the Offset row and the bottom rule; and the rule over the add rows, when any shows.

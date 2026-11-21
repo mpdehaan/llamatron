@@ -12,6 +12,7 @@ something the song holds.
 
 from typing import NamedTuple
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import listed, number, pass_over_unknown, reading
@@ -25,8 +26,7 @@ from llamatron.composition.setting import check_settings, Checked, Choice, descr
 from llamatron.composition.shapes import shape_settings, shape_values
 from llamatron.composition.traits import BypassedWhen, RunsChains, SetsRegisters
 from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 # The settings of a scene's tempo ramps that are tempos, which a file writes as it writes a scene's tempo.
 RAMP_TEMPOS = tuple(file_format.TEMPO_RAMP_SETTINGS[(way, part)] for way in file_format.RAMP_WAYS for part in (RampPart.START, RampPart.END))

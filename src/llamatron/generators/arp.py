@@ -6,13 +6,13 @@ from enum import auto, Enum
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.grid.positions import fit_to_length
+from llamatron.math import length as length_values
+from llamatron.math.length import Length
+from llamatron.math.random_source import random_source
 from llamatron.music import midi, sound
 from llamatron.music.note import _check_length
 from llamatron.music.sound import Sound
-from llamatron.strings import errors
-from llamatron.support import length as length_values
-from llamatron.support.length import Length
-from llamatron.support.random_source import random_source
+from llamatron.user_strings import errors
 
 # How many steps an arpeggiator's offsets can have, as on a groovebox.
 MIN_OFFSETS = 1

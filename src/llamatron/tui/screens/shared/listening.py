@@ -11,10 +11,10 @@ page and the pattern editor listen to a pattern through the pattern preview (tui
 which plays beside the song with one key and asks nothing.
 """
 
-from llamatron.strings import errors, messages
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.shared import play_through
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import errors, messages
 
 
 def listen(*, page, index, track, name):

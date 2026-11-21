@@ -8,10 +8,10 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages, names
 
 
 NEW_SCALE_ROOT = NoteName.C

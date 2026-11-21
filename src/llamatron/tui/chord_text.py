@@ -8,8 +8,8 @@ Chord dialog all say it through here, so that a chord reads the same wherever it
 
 from llamatron.composition.chords import borrowed, root_name, spelled_chord
 from llamatron.composition.naming import words
-from llamatron.strings import marks, messages
 from llamatron.tui import drawing
+from llamatron.user_strings import marks, messages
 
 
 def scale_shown(scale):

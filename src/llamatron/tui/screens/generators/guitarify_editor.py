@@ -7,13 +7,13 @@
 from llamatron.composition import file_format, generator_settings
 from llamatron.composition.file_format import Approach, ChordColor, GuitarifySetting, Section, SingleNotes, Tuning
 from llamatron.composition.guitar_bars import ready_bar_matching
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 SHAPE_SETTINGS = (GuitarifySetting.SHAPE, GuitarifySetting.TUNING, GuitarifySetting.POSITION, GuitarifySetting.CAPO, GuitarifySetting.STRINGS, GuitarifySetting.SINGLE_NOTES, GuitarifySetting.COLOR)
 STROKE_SETTINGS = (

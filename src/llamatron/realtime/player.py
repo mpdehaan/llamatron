@@ -41,9 +41,9 @@ import heapq
 from typing import NamedTuple
 
 from llamatron.composition.file_format import FollowAction, LiveResponsiveness
+from llamatron.math.rational import Rational
 from llamatron.realtime import engine, timeline
 from llamatron.realtime.timeline import Playing, Tag
-from llamatron.support.rational import Rational
 
 # How far ahead moments are turned into queued events. A tick comes many times a second, so a moment is never missed, and half a second
 # ahead leaves an edit made while playing room to change a scene's end.

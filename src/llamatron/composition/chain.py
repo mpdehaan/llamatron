@@ -6,6 +6,7 @@
 
 from typing import NamedTuple
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import file_format, generator_settings, sections
 from llamatron.composition.checks import listed, reading
 from llamatron.composition.conditions import statements_setting
@@ -13,8 +14,7 @@ from llamatron.composition.file_format import ChainSetting
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, own_copy
 from llamatron.composition.traits import BypassedWhen
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 # Each step of a chain names exactly one generator.
 GENERATORS_PER_STEP = 1

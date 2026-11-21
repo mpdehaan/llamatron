@@ -7,11 +7,11 @@ sounds by MIDI number, and a note as it plays, with how loud a note with no velo
 
 from typing import NamedTuple
 
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 from llamatron.music import midi, sound
 from llamatron.music.sound import Sound
-from llamatron.strings import errors
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors
 
 # A note with no velocity of its own plays as loud as MIDI allows.
 VELOCITY = midi.MAX_VELOCITY

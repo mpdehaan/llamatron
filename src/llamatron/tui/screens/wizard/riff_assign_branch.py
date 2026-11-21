@@ -12,12 +12,12 @@ Players offers the player in each kind of section.
 import functools
 
 from llamatron.composition.checks import listed
-from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.shared.field import Field
 from llamatron.tui.screens.wizard.riffs_branch import RiffsBranch
+from llamatron.user_strings import errors, labels, legends, marks, messages
 
 # What a riff's row is known by: the player and the riff, since two players may know one riff.
 KNOWN_KEY = '{player}: {riff}'

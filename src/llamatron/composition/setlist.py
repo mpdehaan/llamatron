@@ -17,6 +17,7 @@ wrong, leaving the set as it was.
 import copy
 import os
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import checks, corrections as corrections_values, defaults, file_format, generator_settings, groove, limits as set_limits, sections
 from llamatron.composition.chain import Chain
 from llamatron.composition.checks import reading, written_length
@@ -39,10 +40,9 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.traits import HoldsSections
 from llamatron.music import note
 from llamatron.music.scale import ScaleType
-from llamatron.strings import errors, names as names_text
 from llamatron.support import files, version as version_values
-from llamatron.support.revised import notes_change
 from llamatron.support.version import is_version
+from llamatron.user_strings import errors, names as names_text
 
 
 

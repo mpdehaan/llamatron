@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """One section of a song's named objects, in the order the file lists them, with the same operations for every kind."""
 
+from llamatron.caching.revised import notes_change, Revised
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import data_as_kept, data_built_anew
 from llamatron.composition.naming import is_taken, name_order, same_name
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change, Revised
+from llamatron.user_strings import errors
 
 FIRST_PLACE = 0
 

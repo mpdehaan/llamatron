@@ -7,7 +7,6 @@ import os
 from rich.text import Text
 
 from llamatron.composition import file_format
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.document import Document
 from llamatron.tui.drawing import Style
@@ -17,6 +16,7 @@ from llamatron.tui.screens.shared.everywhere import open_set, save, save_as, unl
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.shared import octave_moved
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
 class FilePage(FieldPage):

@@ -10,7 +10,7 @@ holds a tempo for each beat of the ramp, and a moment is found among them.
 
 from bisect import bisect_right
 
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 
 # What a tempo counts, quarter notes per minute, and the seconds in a minute.
 QUARTERS_PER_WHOLE = 4

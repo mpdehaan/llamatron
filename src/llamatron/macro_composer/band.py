@@ -16,7 +16,7 @@ play its notes as written, since the lines were written to sound together.
 from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
 from llamatron.macro_composer import players
-from llamatron.strings import macro_composer as composer_text
+from llamatron.user_strings import macro_composer as composer_text
 
 # The genres whose songs are given no musicians: their players are machines, played another way.
 ELECTRONIC = 'Electronic'

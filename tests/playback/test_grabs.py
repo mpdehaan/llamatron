@@ -16,7 +16,7 @@ from llamatron.generators.blend import BlendMode
 from llamatron.music import midi, note as note_values
 from llamatron.music.chord import Chord
 from llamatron.music.note import NoteName
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, pitches, with_parts

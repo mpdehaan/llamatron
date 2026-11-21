@@ -7,11 +7,11 @@ from llamatron.composition import generator_settings
 from llamatron.composition.file_format import GeneratorKind, Section
 from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing as phrasing_values
-from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
+from llamatron.user_strings import labels
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

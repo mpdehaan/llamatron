@@ -15,7 +15,7 @@ from unittest import mock
 
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.fluidsynth import command, FluidSynth, FluidSynthNotStarted
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 OTHER_PORT = 'IAC Driver Bus 1'
 BLACKHOLE = 'BlackHole 2ch'

@@ -7,7 +7,6 @@ from llamatron.composition import file_format, generator_settings
 from llamatron.composition.file_format import DriftValue, Section
 from llamatron.composition.generator_settings import DriftSetting, versioned
 from llamatron.music import note
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.generators.restart_field import restart_field
@@ -16,6 +15,7 @@ from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, Nu
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 # What a value of a version is when the drift leaves it out.
 NOTHING = 0

@@ -14,7 +14,7 @@ from typing import NamedTuple
 from llamatron.composition import corrections, file_format, limits
 from llamatron.composition.file_format import strum_setting, StrumDirection, StrumPart, StrumSpread, UpstrokeStrings
 from llamatron.composition.setting import Choice, WholeNumber
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # How many milliseconds apart each spread sounds two strings: a hand's speed, whatever the tempo.
 SPREAD_MILLISECONDS = {StrumSpread.TIGHT: 2, StrumSpread.CRISP: 4, StrumSpread.NORMAL: 8, StrumSpread.LOOSE: 15, StrumSpread.RAKE: 30, StrumSpread.HARP: 70}

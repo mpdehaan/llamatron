@@ -11,7 +11,7 @@ first two when they choose. Versions are compared number by number, never as dec
 and time of the last version bump, written here by hand with it, and the About dialog shows them.
 """
 
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 VERSION = '1.0.656'
 BUILD_DATE = '2026-11-21'

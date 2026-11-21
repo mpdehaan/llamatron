@@ -21,7 +21,7 @@ from fractions import Fraction
 import math
 import sys
 
-from llamatron.strings import errors, reprs
+from llamatron.user_strings import errors, reprs
 
 # The denominator of a whole number.
 WHOLE = 1

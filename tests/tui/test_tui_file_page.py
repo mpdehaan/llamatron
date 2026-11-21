@@ -10,7 +10,6 @@ from unittest import mock
 
 from llamatron.composition import defaults, file_format, setlist as setlist_values
 from llamatron.composition.file_format import Section
-from llamatron.strings import errors, labels as labels_text, legends, marks, messages, names
 from llamatron.support import version
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -21,6 +20,7 @@ from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.open_page import OpenPage
+from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages, names
 from tests.support import ui_testing
 from tests.support.ui_testing import key_name, key_of, UITest
 

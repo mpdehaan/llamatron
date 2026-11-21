@@ -4,8 +4,8 @@
 """How the tracker shows a value as text, shared by its pages. How a new thing is named is in composition/naming.py."""
 
 from llamatron.composition.naming import name_order
-from llamatron.strings import marks
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
+from llamatron.user_strings import marks
 
 SECONDS_PER_MINUTE = 60
 # A whole number has this denominator.

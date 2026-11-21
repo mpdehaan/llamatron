@@ -25,7 +25,7 @@ from llamatron.composition import naming, sections
 from llamatron.macro_composer import loudness, notation
 from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped
-from llamatron.strings import errors, labels, names
+from llamatron.user_strings import errors, labels, names
 
 # The fields of an input.
 NAME = 'name'

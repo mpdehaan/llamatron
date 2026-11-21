@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The field of one end of a range of octaves, which the track editor and the voice leading editor share, shown and typed in the set's octave labels."""
 
-from llamatron.strings import legends
 from llamatron.tui.screens.shared.field import Field
 from llamatron.tui.screens.shared.shared import octave_moved
+from llamatron.user_strings import legends
 
 
 def octave_field(*, page, label, current, lowest, highest, default, set_octave):

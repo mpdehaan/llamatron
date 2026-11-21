@@ -19,9 +19,9 @@ from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.music import midi
 from llamatron.music.note import NoteName
-from llamatron.strings import errors, labels
 from llamatron.tui.components import pattern_rows
 from llamatron.tui.components.number_row import NumberRow
+from llamatron.user_strings import errors, labels
 
 TUNE = 'tune'
 STEPS = 2

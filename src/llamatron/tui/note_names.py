@@ -5,8 +5,8 @@
 """A MIDI note as its name and octave, shown and typed: C3 is note 36, as a drum pattern writes its notes."""
 
 from llamatron.music import note as note_values
-from llamatron.strings import marks
 from llamatron.tui import keys
+from llamatron.user_strings import marks
 
 NOTES_IN_OCTAVE = 12
 LOWEST_NOTE = 0

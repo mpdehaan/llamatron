@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from typing import NamedTuple
 
 from llamatron.composition import file_format
-from llamatron.strings import importing
+from llamatron.user_strings import importing
 
 # Middle C, where a part that plays both hands is split. A part plays both hands when enough of its
 # notes sound together with a note further away than one hand reaches, a tenth and a little more.

@@ -8,7 +8,7 @@ import unittest
 from llamatron.music import note as note_values
 from llamatron.music.note import Note, NoteName
 from llamatron.music.scale import Scale, ScaleType
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # Names the tests give to their own things, and other values they use.
 D = 'D'

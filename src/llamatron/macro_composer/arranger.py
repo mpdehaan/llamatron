@@ -37,8 +37,8 @@ from llamatron.macro_composer.players import player_name
 from llamatron.macro_composer.riffs import accent_bars, bars_of as riff_bars_of, bars_played, flattened_in, held_bar, line_of as riff_line_of, single, split_bars
 from llamatron.macro_composer.shaping import is_compound
 from llamatron.macro_composer.song_plan import SongPlan
-from llamatron.strings import errors, labels, macro_composer as composer_text
 from llamatron.support.safe_yaml import load_safely
+from llamatron.user_strings import errors, labels, macro_composer as composer_text
 
 # The fields of a style template.
 NAME = 'name'

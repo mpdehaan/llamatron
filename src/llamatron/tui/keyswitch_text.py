@@ -5,7 +5,7 @@
 
 from llamatron.composition import file_format, instrument as instrument_values
 from llamatron.music import midi, note as note_values
-from llamatron.strings import marks
+from llamatron.user_strings import marks
 
 # The room a slot's note takes at the right of its row, in both keyswitch dialogs.
 KEYSWITCH_NOTE_WIDTH = 12

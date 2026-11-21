@@ -16,7 +16,6 @@ from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.setlist import new_setlist
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import about, labels, marks
 from llamatron.tui import app as tui_app, drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import chord_dialog
@@ -31,6 +30,7 @@ from llamatron.tui.screens.set import main_page
 from llamatron.tui.screens.set.file_page import FilePage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.shared import page as page_values
+from llamatron.user_strings import about, labels, marks
 from tests.support import ui_testing
 from tests.support.page_testing import boxed_line
 from tests.support.rendering import render_song

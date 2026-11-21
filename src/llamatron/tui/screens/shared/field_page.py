@@ -7,7 +7,6 @@
 from rich.text import Text
 
 from llamatron.composition import setlist
-from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.cursor import Cursor, key_between, NoSuchPlace
@@ -16,6 +15,7 @@ from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field import Button, Cells, Field, Heading, NameField, NumberField
 from llamatron.tui.screens.shared.page import Page
+from llamatron.user_strings import errors, labels as labels_text, legends, marks
 
 
 class FieldPage(Page):

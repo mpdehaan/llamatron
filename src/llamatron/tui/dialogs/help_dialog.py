@@ -6,10 +6,10 @@
 
 from rich.text import Text
 
-from llamatron.strings import labels, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import padded, Style, wrapped
+from llamatron.user_strings import labels, messages
 
 
 # The panel that opens first, listing the keys, and how many columns it lays them out in.

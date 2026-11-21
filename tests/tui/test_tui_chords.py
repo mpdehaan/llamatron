@@ -14,13 +14,13 @@ from llamatron.composition.file_format import ChordSymbol, Row, ScaleKind, Tensi
 from llamatron.composition.named_scale import scale_type_name, scale_type_names
 from llamatron.composition.naming import words
 from llamatron.music.scale import ScaleType
-from llamatron.strings import labels, marks, messages
 from llamatron.tui import drawing, keybindings, scale_categories
 from llamatron.tui.dialogs import chord_dialog, dialog as dialog_values
 from llamatron.tui.dialogs.chord_dialog import ChordDialog
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
+from llamatron.user_strings import labels, marks, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import key_name, UITest
 

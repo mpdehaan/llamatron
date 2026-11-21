@@ -4,8 +4,8 @@
 
 """The picture of a hook: a row for each note it plays, drawn as long as each note lasts."""
 
-from llamatron.strings import marks
 from llamatron.tui.note_names import note_shown
+from llamatron.user_strings import marks
 
 # A step of the picture is two cells wide where the hook fits so, and one where it is long.
 WIDE_STEP = 2

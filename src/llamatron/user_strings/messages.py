@@ -7,7 +7,7 @@ Each constant starts with MSG_. A message that says what went wrong is an error,
 """
 
 from llamatron.composition.file_format import Section, SetlistSetting, SongSetting
-from llamatron.strings.labels import PageName
+from llamatron.user_strings.labels import PageName
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NO_SCALE = 'no scale'

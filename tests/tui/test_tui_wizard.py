@@ -5,15 +5,14 @@
 
 from unittest import mock
 
+from llamatron.caching.memory import StaleAnswer
 from llamatron.composition import limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.naming import new_name
 from llamatron.macro_composer import arranger, breaks, melody, wizard_limits
 from llamatron.macro_composer.breaks import break_names
 from llamatron.macro_composer.wizard_choices import genre_names, genre_title, WizardChoices
-from llamatron.strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
 from llamatron.support import version
-from llamatron.support.memory import StaleAnswer
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import dialog as dialog_values, row_dialog
@@ -31,6 +30,7 @@ from llamatron.tui.screens.wizard import solo_melody_branch, starts
 from llamatron.tui.screens.wizard.hook_picture import picture_of
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.tui.text import clock
+from llamatron.user_strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
 from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_of, UITest
 
 # The tree's first branch, by its place from the top.

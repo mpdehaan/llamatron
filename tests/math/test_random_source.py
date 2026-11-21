@@ -4,15 +4,15 @@
 
 
 
-"""Where random numbers come from (support/random_source.py): a stream seeded on its first draw draws what random.Random draws from
+"""Where random numbers come from (math/random_source.py): a stream seeded on its first draw draws what random.Random draws from
 the same seed, whichever draw comes first, and seeds nothing until it is drawn from; with no seed, the program's own stream."""
 
 import random
 import unittest
 from unittest import mock
 
-from llamatron.support import random_source
-from llamatron.support.random_source import drawn_from_when_asked
+from llamatron.math import random_source
+from llamatron.math.random_source import drawn_from_when_asked
 
 SEED = '7 scene 2 track lead probability'
 DRAWS = 5

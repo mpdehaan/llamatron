@@ -6,8 +6,8 @@
 from typing import NamedTuple
 
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.math.rational import Rational
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.rational import Rational
 from llamatron.tui import text
 
 QUARTER_NOTES_PER_WHOLE_NOTE = 4

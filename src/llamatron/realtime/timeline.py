@@ -15,7 +15,7 @@ tag naming the scene and track it belongs to, so that one clip's events can be d
 from typing import NamedTuple
 
 from llamatron.exporters.timing import control_events, keyswitch_events, timed_events
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 
 # The three kinds of event the timeline holds, as the status byte without its channel.
 NOTE_ON = 0x90

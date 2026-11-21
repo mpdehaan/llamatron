@@ -35,7 +35,7 @@ PACKAGE_FILE = '__init__'
 FILE_ENCODING = 'utf-8'
 DOT = '.'
 # The strings package's modules import names from each other, which keeps them free of everything else.
-STRINGS_PACKAGE = 'llamatron.strings'
+STRINGS_PACKAGE = 'llamatron.user_strings'
 # What a module is imported as where its own name is taken in the file.
 OTHER_NAME = '{name}_values'
 FROM_IMPORT = '{indent}from {package} import {names}'

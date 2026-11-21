@@ -20,7 +20,7 @@ from llamatron.generators.blend import BlendMode
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.support.rendering import render_data, setlist_from_data, song_from_data
 
 AX = RegisterName.AX

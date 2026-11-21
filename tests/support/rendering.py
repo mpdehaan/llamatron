@@ -10,16 +10,16 @@ song, so that the same data builds a Setlist, a Song or a Document.
 
 import os
 
+from llamatron.caching.memory import Memory
 from llamatron.composition import defaults
 from llamatron.composition.file_format import Section, SongSetting
 from llamatron.composition.setlist import Setlist
 from llamatron.composition.setlist_writer import dump_setlist
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import names
-from llamatron.support.memory import Memory
 from llamatron.tui.document import Document
+from llamatron.user_strings import names
 
-# Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (support/memory.py).
+# Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (caching/memory.py).
 Memory.check_every_answer()
 
 # The sets in examples/ that are meant to sound good rather than to teach one feature: every other set there is a demo.

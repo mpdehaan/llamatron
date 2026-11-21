@@ -9,7 +9,7 @@ import queue
 import threading
 import time
 
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 RTMIDI_MODULE = 'rtmidi'
 

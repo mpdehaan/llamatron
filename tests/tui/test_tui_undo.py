@@ -21,7 +21,6 @@ from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name, new_name
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import labels, messages, names as names_text
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
@@ -36,6 +35,7 @@ from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.set.song_page import SongPage
+from llamatron.user_strings import labels, messages, names as names_text
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import munge
 from tests.support.ui_testing import a_song, fixed_text, key_of, leaf_pages, UITest

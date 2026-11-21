@@ -5,7 +5,7 @@
 """A row of the grid a song renders into: one scene's clips."""
 
 from llamatron.composition.checks import check_name, check_scale, check_tempo_override
-from llamatron.strings import errors, reprs
+from llamatron.user_strings import errors, reprs
 
 
 class ClipRow:

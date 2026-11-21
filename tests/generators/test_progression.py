@@ -14,8 +14,8 @@ from llamatron.composition.generator_settings import ProgressionSetting
 from llamatron.composition.named_scale import NamedScale
 from llamatron.composition.progressions import named_progression_in, roman_numeral
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.math.rational import Rational
 from llamatron.music.note import NoteName
-from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes

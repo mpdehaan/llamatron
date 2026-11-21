@@ -15,7 +15,7 @@ MODULE_NAME = 'constants_by_module'
 # A small project of the tests' own: a module of values, a module that passes one of them on, and the file rewritten.
 VALUES = 'llamatron.music.values'
 MIDDLE = 'llamatron.music.middle'
-TEXT = 'llamatron.strings.text'
+TEXT = 'llamatron.user_strings.text'
 USER = 'llamatron.music.user'
 VALUES_SOURCE = """
     LOW = 1

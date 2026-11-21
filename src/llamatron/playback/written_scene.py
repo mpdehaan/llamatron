@@ -4,7 +4,7 @@
 
 """One scene of the song as it plays, with a repeating scene written out once for each repeat."""
 
-from llamatron.strings import names
+from llamatron.user_strings import names
 
 # Scenes are numbered from 1 as they play, and so are a scene's repeats in their names.
 FIRST_NUMBER = 1

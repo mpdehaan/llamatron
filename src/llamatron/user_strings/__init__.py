@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Every piece of text llamatron shows people, one module for each way the text is used.
+"""User strings: every piece of text llamatron shows people, one module for each way the text is used.
 
 errors.py holds what went wrong (ERR_), help.py each page's help (HELP_), and the rest hold the
 MSG_ constants: labels.py the names of things on screen, legends.py what keys are called and do,

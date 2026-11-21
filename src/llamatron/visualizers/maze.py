@@ -14,7 +14,7 @@ new one is made. It draws at the characters' own resolution. The amounts are nam
 import numpy
 import random
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import cells
 from llamatron.visualizers.cells import coloured_cells
 from llamatron.visualizers.colour import track_colour, vivid

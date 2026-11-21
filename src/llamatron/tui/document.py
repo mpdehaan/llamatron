@@ -23,11 +23,10 @@ work on: the set, the current song, the note that something changed, and the ans
 until it does.
 """
 
+from llamatron.caching.memory import Memory
+from llamatron.caching.revised import ChangeMark, Revised
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.setlist import Setlist
-from llamatron.strings import names
-from llamatron.support.memory import Memory
-from llamatron.support.revised import ChangeMark, Revised
 from llamatron.tui.document_parts import files
 from llamatron.tui.document_parts.files import DocumentFiles, file_data
 from llamatron.tui.document_parts.named_edits import NamedEdits
@@ -38,6 +37,7 @@ from llamatron.tui.document_parts.undo import DocumentUndo
 from llamatron.tui.history import History
 from llamatron.tui.lengths import Lengths, measured
 from llamatron.tui.uses import uses_of
+from llamatron.user_strings import names
 
 
 # The key the current song's estimate is remembered by.

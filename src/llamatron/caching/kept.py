@@ -18,7 +18,7 @@ object nothing changes once it is made.
 
 import functools
 
-from llamatron.support.memory import Memory, stale_answer
+from llamatron.caching.memory import Memory, stale_answer
 
 # The attribute an object keeps its answers in, by the method's name.
 KEPT = '_kept'

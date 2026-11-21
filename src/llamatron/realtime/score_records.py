@@ -5,11 +5,11 @@
 
 """What a score read from its render, which a score after an edit takes scene by scene from the score before it; and such a
 score held to a whole render of the same song while the tests check every remembered answer, as a memory holds a kept answer to
-the same answer worked out again (support/memory.py)."""
+the same answer worked out again (caching/memory.py)."""
 
 from typing import NamedTuple
 
-from llamatron.support import memory
+from llamatron.caching import memory
 
 # What a score is held to, as a difference names it.
 CHECKED_EVENTS = 'events'

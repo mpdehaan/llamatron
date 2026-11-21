@@ -12,12 +12,12 @@ and what to do with the file chosen, until the file picker is designed for the w
 import os
 from rich.text import Text
 
-from llamatron.strings import help as help_text, labels, marks
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.drawing import Align, Style
 from llamatron.tui.screens.shared import shared
 from llamatron.tui.screens.shared.everywhere import open_file
 from llamatron.tui.screens.shared.list_page import ListPage
+from llamatron.user_strings import help as help_text, labels, marks
 
 
 # The file picker.

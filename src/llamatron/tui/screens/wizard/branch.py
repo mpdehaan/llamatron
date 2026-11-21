@@ -10,10 +10,10 @@ revise how the wizard is organized).
 """
 
 from llamatron.macro_composer import hook_writing
-from llamatron.strings import labels, legends, marks
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
+from llamatron.user_strings import labels, legends, marks
 
 # Where a picker opens, and what stepping picks, before anything is chosen.
 FIRST_CHOICE = 0

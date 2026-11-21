@@ -4,7 +4,7 @@
 """Revisions: how anything that changes says so, so that work done from it can be kept until it does.
 
 Everything a set file stores carries a revision, a number that moves whenever the object changes.
-An answer worked out from some objects is kept with their revisions (support/memory.py), and is
+An answer worked out from some objects is kept with their revisions (caching/memory.py), and is
 good for as long as none of them has moved, which is how the tracker avoids working anything out
 again when nothing it came from has changed, and how playback will know which clips to make again.
 

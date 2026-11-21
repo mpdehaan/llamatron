@@ -22,13 +22,13 @@ from llamatron.exporters.timing import timed_events
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
 from llamatron.grid.positions import cut_position
+from llamatron.math.length import Length
 from llamatron.music.chord import Chord
 from llamatron.music.note import Note, NoteName
 from llamatron.music.sound import Sound
-from llamatron.strings import names
-from llamatron.support.length import Length
 from llamatron.tui import app as tui_app
 from llamatron.tui.document import Document
+from llamatron.user_strings import names
 from tests.support.rendering import render_data, setlist_from_data
 
 ROOT = Path(__file__).resolve().parents[2]

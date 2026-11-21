@@ -6,12 +6,12 @@
 
 from rich.text import Text
 
-from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import fit, padded, Style
 from llamatron.tui.keys import Key
+from llamatron.user_strings import marks
 
 
 class Heading(str):

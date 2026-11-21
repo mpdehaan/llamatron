@@ -34,8 +34,8 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import exports
 from llamatron.exporters.exports import export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.strings import cli, errors
 from llamatron.tui.launch import Launch
+from llamatron.user_strings import cli, errors
 from llamatron.visualizers.modes import mode_options
 
 PROGRAM = 'llamatron'

@@ -23,7 +23,7 @@ A drum's bar is a list with one of accent, loud, soft, ghost and none for every 
 from collections import Counter
 from fractions import Fraction
 
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # The rows of a pattern, as a set file names them.
 STEPS = 'steps'

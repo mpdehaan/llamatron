@@ -28,9 +28,9 @@ from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImpor
 from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
 from llamatron.importers.voices import Played, Voice, voices_of
 from llamatron.importers.writing import add_imported
+from llamatron.math.rational import Rational
 from llamatron.music.scale import ScaleType
-from llamatron.strings import errors, importing
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors, importing
 from tests.support.example_renders import example_setlist, first_song_grid
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

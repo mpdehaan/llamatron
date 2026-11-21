@@ -8,8 +8,8 @@ import unittest
 
 from llamatron.macro_composer import arranger, characters, players, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import errors
 from llamatron.support import version
+from llamatron.user_strings import errors
 
 ROCK = 'rock'
 SONG_NAME = 'anthem'

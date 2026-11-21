@@ -5,9 +5,9 @@
 
 import unittest
 
-from llamatron.support import kept
-from llamatron.support.kept import forget_kept, kept_for_life, kept_while
-from llamatron.support.memory import Memory, StaleAnswer
+from llamatron.caching import kept
+from llamatron.caching.kept import forget_kept, kept_for_life, kept_while
+from llamatron.caching.memory import Memory, StaleAnswer
 
 A_KEY = 'first'
 ANOTHER_KEY = 'second'

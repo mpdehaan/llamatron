@@ -12,12 +12,12 @@ video, as in the offsets editor, and the line above the grid says what a step th
 from rich.text import Text
 
 from llamatron.composition import limits
-from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
+from llamatron.user_strings import help as help_text, labels, marks, messages
 
 class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
     """A row of on-or-off steps. A page of this kind names its SECTION, KIND and CRUMBS_BEFORE."""

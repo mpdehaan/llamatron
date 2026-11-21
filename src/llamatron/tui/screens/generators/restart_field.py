@@ -5,8 +5,8 @@
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import Restart
-from llamatron.strings import labels
 from llamatron.tui.screens.shared.field import ChoiceField
+from llamatron.user_strings import labels
 
 # Each named section's generator kind, the other way round from NAMED_GENERATORS.
 KINDS_BY_SECTION = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}

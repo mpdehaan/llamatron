@@ -10,7 +10,6 @@ from rich.text import Text
 from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.file_format import EuclidPart, Section, TrackSetting
 from llamatron.music import midi
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.generators_field import generators_field
@@ -24,6 +23,7 @@ from llamatron.tui.screens.shared.octave_field import octave_field
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.tui.screens.shared.statements import statement_section
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
 

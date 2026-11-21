@@ -14,11 +14,11 @@ told in a dialog, and the picker stays.
 import os
 
 from llamatron.importers.midi_import import MidiImport
-from llamatron.strings import errors, importing, labels
 from llamatron.tui.dialogs.import_dialog import ImportDialog
 from llamatron.tui.dialogs.imported_dialog import ImportedDialog
 from llamatron.tui.screens.set.open_page import OpenPage
 from llamatron.tui.screens.shared import shared
+from llamatron.user_strings import errors, importing, labels
 
 # What reading a MIDI file can raise: mido raises these for a file that isn't MIDI or stops short, and the import its own
 # MidiImportProblem, a ValueError, for one with no notes.

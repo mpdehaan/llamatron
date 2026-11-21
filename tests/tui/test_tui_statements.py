@@ -6,7 +6,6 @@
 
 from llamatron.composition import conditions, limits
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Operator, RegisterName, Section, StatementPart, TrackSetting
-from llamatron.strings import errors, labels, marks
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
@@ -17,6 +16,7 @@ from llamatron.tui.screens.generators.chain_editor import ChainEditor
 from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field import Cells
+from llamatron.user_strings import errors, labels, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

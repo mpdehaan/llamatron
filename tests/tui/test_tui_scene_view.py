@@ -8,7 +8,6 @@ import unittest
 
 from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
 from llamatron.composition.setlist import Setlist
-from llamatron.strings import marks
 from llamatron.support.example_sets import example_sets
 from llamatron.tui import keybindings
 from llamatron.tui.components import inset_window, scene_view
@@ -17,6 +16,7 @@ from llamatron.tui.components.scene_view import coloured, SceneView, track_label
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
 from llamatron.tui.scene_notes import beat_chords, chord_of, chord_texts, effective_values, marked_tracks, scene_notes, written_song
+from llamatron.user_strings import marks
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, forward_key, UITest
 

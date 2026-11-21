@@ -5,9 +5,9 @@
 from fractions import Fraction
 from math import isfinite
 
+from llamatron.math.rational import Rational
 from llamatron.music import midi
-from llamatron.strings import errors, reprs
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors, reprs
 
 class NoteName:
     """Every way a note can be spelled: a letter, then # for sharp or b for flat.

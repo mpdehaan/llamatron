@@ -13,11 +13,11 @@ import signal
 from llamatron.composition.file_format import ClipSlotSetting, LiveResponsiveness, Row
 from llamatron.realtime import timeline
 from llamatron.realtime.playback_process import PlaybackProcess
-from llamatron.strings import errors
 from llamatron.tui import keybindings, transport as transport_values
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.transport import Transport
+from llamatron.user_strings import errors
 from tests.support import ui_testing
 from tests.tui import test_tui_playback
 from tests.tui.test_tui_playback import FakeFluidSynth, PlaybackTest

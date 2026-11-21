@@ -4,12 +4,12 @@
 """The Songs page: the set's songs, which one is current, and each one's settings."""
 
 from llamatron.composition.file_format import Section
-from llamatron.strings import errors, help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.text import tempo_text
+from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages
 
 
 class SongsPage(NamedListPage):

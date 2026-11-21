@@ -9,8 +9,8 @@ import unittest
 from llamatron.macro_composer import arranger
 from llamatron.macro_composer.arranger import style_in, style_named, style_names
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import errors
 from llamatron.support import version
+from llamatron.user_strings import errors
 from tests.support.ui_testing import fixed_text
 
 SONG_NAME = 'a_song'

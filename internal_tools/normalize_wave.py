@@ -24,7 +24,7 @@ import wave
 
 from llamatron.exporters import wave_level
 from llamatron.exporters.wave_level import normalize_wave
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # What it says of each file: the program's own refusal of a file that isn't 16-bit, and what it did.
 NOT_16_BIT = errors.ERR_NOT_16_BIT_WAVE

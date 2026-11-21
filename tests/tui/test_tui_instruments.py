@@ -9,7 +9,6 @@ from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.music import midi
 from llamatron.realtime import fluidsynth
-from llamatron.strings import errors, labels, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -19,6 +18,7 @@ from llamatron.tui.screens.set.instrument_editor import InstrumentEditor, sound_
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.shared.field import Heading
+from llamatron.user_strings import errors, labels, marks, messages, names
 from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import UITest

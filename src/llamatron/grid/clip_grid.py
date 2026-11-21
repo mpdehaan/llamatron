@@ -12,8 +12,8 @@ from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.row_clock import RowClock
-from llamatron.strings import errors
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
+from llamatron.user_strings import errors
 
 # How long a row with no clips lasts.
 NO_LENGTH = 0

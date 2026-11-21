@@ -16,7 +16,7 @@ import glob
 import os
 
 from llamatron.grid.clip_grid import ClipGrid
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # What joins the names of the files that are in the way, in a warning.
 FILE_LIST_SEPARATOR = ', '

@@ -10,11 +10,11 @@ import threading
 import unittest
 from unittest import mock
 
+from llamatron.math.rational import Rational
 from llamatron.realtime import coremidi, sender_process, timeline
 from llamatron.realtime.engine import PlaybackEngine
 from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
 from llamatron.realtime.timeline import Playing, Tag
-from llamatron.support.rational import Rational
 
 A_PORT = 'a port'
 WAIT_SECONDS = 5

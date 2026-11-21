@@ -7,9 +7,9 @@
 from bisect import bisect_right
 
 from llamatron.exporters.timing import as_note, clip_end
+from llamatron.math import length
+from llamatron.math.length import Length
 from llamatron.music import sound as sound_values
-from llamatron.support import length
-from llamatron.support.length import Length
 
 HALF_STEPS_PER_OCTAVE = 12
 

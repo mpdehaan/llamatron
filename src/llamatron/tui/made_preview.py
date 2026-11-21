@@ -9,8 +9,8 @@ of it through General MIDI in FluidSynth, beside whatever the tracker's own tran
 who plays in it, or one player's clip again and again, as a hook or a tune.
 """
 
-from llamatron.strings import errors
 from llamatron.tui.transport import Transport
+from llamatron.user_strings import errors
 
 MADE_REVISION = 0
 FIRST_SCENE = 0

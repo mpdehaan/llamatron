@@ -11,7 +11,6 @@ from llamatron.composition.file_format import Accidental, ChordSymbol, GateModif
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import errors, labels as labels_text, legends, marks, messages
 from llamatron.tui import drawing as drawing_values, keybindings, keys
 from llamatron.tui.components import degree_row, pattern_rows
 from llamatron.tui.components.chord_row import chord_value
@@ -22,6 +21,7 @@ from llamatron.tui.drawing import Align, Box, fit, Style
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern import grid_drawing
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
+from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import open_section, PatternEditorTest
 from tests.support.rendering import render_song

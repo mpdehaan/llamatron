@@ -8,13 +8,13 @@ SAVE_THEN_QUIT, or None for Cancel."""
 
 from rich.text import Text
 
-from llamatron.strings import labels
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.drawing import legend
 from llamatron.tui.key_table import cursor_moved
+from llamatron.user_strings import labels
 
 # A width no legend reaches, to measure the keys on one line.
 UNLIMITED_WIDTH = 1000

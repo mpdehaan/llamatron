@@ -15,7 +15,7 @@ from llamatron.composition import limits
 from llamatron.composition.checks import time_length
 from llamatron.composition.file_format import euclid_setting, EuclidPart, NamedRhythm
 from llamatron.composition.setting import Checked, WholeNumber
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # The named rhythms, each its hits and steps, in the order the picker offers them.
 NAMED_RHYTHMS = {

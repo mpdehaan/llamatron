@@ -18,7 +18,6 @@ from textual.widgets import Static
 
 from llamatron.composition import limits
 from llamatron.composition.naming import is_taken
-from llamatron.strings import errors, help as help_text, labels, marks as marks_text, messages as messages_text
 from llamatron.tui import caption_strip, drawing, keybindings
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -31,6 +30,7 @@ from llamatron.tui.key_table import BindsKeys, pressed_key, quits_at_once
 from llamatron.tui.screens.shared.everywhere import everywhere_keys
 from llamatron.tui.text import clock
 from llamatron.tui.themes import luminance
+from llamatron.user_strings import errors, help as help_text, labels, marks as marks_text, messages as messages_text
 
 
 PROGRAM_NAME = 'llamatron'

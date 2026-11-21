@@ -21,7 +21,6 @@ from llamatron.composition.chords import borrowed, chord_half_steps
 from llamatron.composition.file_format import Section
 from llamatron.composition.naming import words
 from llamatron.composition.progressions import named_progression_in, shown_numerals
-from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, key_table, keybindings, keys as keys_values, scale_categories
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.chord_row import quality_names
@@ -33,6 +32,7 @@ from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
+from llamatron.user_strings import help as help_text, labels, marks, messages
 
 # The rows the cursor edits, top to bottom, in the order that is the same wherever a chord is chosen: its root, with the root's sharp or flat, then its quality, its
 # tensions, the scale it borrows, and how it is voiced.

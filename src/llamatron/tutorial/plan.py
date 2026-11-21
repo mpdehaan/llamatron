@@ -22,7 +22,6 @@ the plan knows still builds the rest.
 from llamatron.composition import file_format, limits, row_descriptions
 from llamatron.composition.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.composition.naming import new_name
-from llamatron.strings import labels as labels_text, names as names_text, narration
 from llamatron.tui import keybindings, keys as keys_values
 from llamatron.tui.components.chord_row import chord_text, ChordRow
 from llamatron.tui.components.cycle_row import CycleRow
@@ -49,6 +48,7 @@ from llamatron.tui.screens.set.scale_page import scale_label
 from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tutorial.steps import Gap, Press, Say, Wait
+from llamatron.user_strings import labels as labels_text, names as names_text, narration
 
 # The song's settings the plan can set on the Song page, each by the label of its field, and whether its value is typed into a prompt (True) or chosen from a picker, which the plan tells apart by what Enter opens.
 SONG_FIELDS = {

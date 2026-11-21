@@ -14,7 +14,7 @@ from llamatron.exporters.timing import timed_events
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.realtime.score import Score
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip

@@ -12,7 +12,6 @@ import unittest
 from llamatron.composition import file_format, groove, limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
-from llamatron.strings import errors, labels, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -23,6 +22,7 @@ from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.pattern import patterns_page
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
+from llamatron.user_strings import errors, labels, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import leaf_pages, UITest
 

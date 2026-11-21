@@ -5,7 +5,6 @@
 
 from llamatron.composition import generator_settings, limits
 from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import glide_editor
@@ -17,6 +16,7 @@ from llamatron.tui.screens.generators.rush_editor import RushEditor
 from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
 from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
 from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
+from llamatron.user_strings import labels
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

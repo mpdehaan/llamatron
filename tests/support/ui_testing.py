@@ -14,6 +14,7 @@ from textual.widgets import Static
 import unittest
 from unittest import mock
 
+from llamatron.caching.memory import Memory
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, FollowChordsSetting, HocketSetting, ProgressionSetting, StepRowSetting, written_name
@@ -21,8 +22,6 @@ from llamatron.composition.setlist import new_setlist, Setlist
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
 from llamatron.realtime.fluidsynth import FluidSynth
-from llamatron.strings import names as names_text
-from llamatron.support.memory import Memory
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -38,8 +37,9 @@ from llamatron.tui.screens.shared.field import Button
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.page import Page
+from llamatron.user_strings import names as names_text
 
-# Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (support/memory.py).
+# Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (caching/memory.py).
 Memory.check_every_answer()
 # A space, which the header's lines start with.
 SPACE = ' '

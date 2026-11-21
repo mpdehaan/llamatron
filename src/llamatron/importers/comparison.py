@@ -27,8 +27,8 @@ from llamatron.exporters.midi_messages import ticks
 from llamatron.importers.midi_import import MidiImport
 from llamatron.importers.midi_reading import read_midi
 from llamatron.importers.writing import add_imported
+from llamatron.math.rational import Rational
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.rational import Rational
 
 class ComparedNote(NamedTuple):
     """A note as compared: its start and end in llamatron's ticks, its MIDI number and its velocity."""

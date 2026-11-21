@@ -6,11 +6,11 @@
 from llamatron.composition import groove
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import is_factory_groove
-from llamatron.strings import help as help_text, labels, legends, marks, messages, names
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from llamatron.tui.screens.shared.shared import numbers_text
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages, names
 
 
 class GroovesPage(NamedListPage):

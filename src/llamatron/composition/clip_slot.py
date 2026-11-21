@@ -12,6 +12,7 @@ reading a file does and raise InvalidValue if it's wrong, with the song passed i
 setting names something the song holds.
 """
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.chain import check_chain_names
 from llamatron.composition.checks import check_name, pass_over_unknown, reading
@@ -25,8 +26,7 @@ from llamatron.composition.strum import strum_settings, strum_values
 from llamatron.composition.traits import RunsChains, SetsRegisters
 from llamatron.composition.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.generators.blend import BlendMode
-from llamatron.strings import errors, marks
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors, marks
 
 
 def morph_style_name(mode):

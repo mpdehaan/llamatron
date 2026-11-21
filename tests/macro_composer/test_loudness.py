@@ -10,8 +10,8 @@ from llamatron.composition.file_format import Section
 from llamatron.macro_composer import arranger, loudness, notation
 from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import errors
 from llamatron.support import version
+from llamatron.user_strings import errors
 from tests.support.ui_testing import fixed_text
 
 A_NAME = 'a_song'

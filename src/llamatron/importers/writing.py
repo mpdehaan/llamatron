@@ -28,9 +28,9 @@ from llamatron.composition.pattern import Pattern
 from llamatron.composition.song import Song
 from llamatron.importers import steps as steps_values
 from llamatron.importers.steps import has_a_value
+from llamatron.math.rational import Rational
 from llamatron.music.time_signature import TimeSignature
-from llamatron.strings import importing
-from llamatron.support.rational import Rational
+from llamatron.user_strings import importing
 
 FIRST_BAR_NUMBER = 1
 NO_REPEAT = 1

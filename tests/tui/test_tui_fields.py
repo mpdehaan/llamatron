@@ -12,7 +12,6 @@ import unittest
 
 from llamatron.composition import limits, setlist
 from llamatron.macro_composer.wizard_choices import genre_names
-from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
@@ -49,6 +48,7 @@ from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Heading, NameField, NumberField, Toggle, within
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
+from llamatron.user_strings import errors, labels, legends, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import leaf_pages, UITest
 

@@ -22,7 +22,6 @@ from llamatron.realtime import fluidsynth, playback as playback_values, timeline
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.timeline import Route
-from llamatron.strings import about, errors, labels, legends, marks, messages
 from llamatron.tui import batch_stage, keybindings, pattern_preview
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components.stage_drawing import Rect
@@ -42,6 +41,7 @@ from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.text import clock
 from llamatron.tui.transport import Transport
 from llamatron.tui.uses import looping_scenes
+from llamatron.user_strings import about, errors, labels, legends, marks, messages
 from llamatron.visualizers import modes
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text, key_name, UITest

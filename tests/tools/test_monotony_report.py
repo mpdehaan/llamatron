@@ -7,8 +7,8 @@ import importlib.util
 import pathlib
 import unittest
 
+from llamatron.math.rational import Rational
 from llamatron.music.note import Note, NoteName
-from llamatron.support.rational import Rational
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'monotony_report.py'
 MODULE_NAME = 'monotony_report'

@@ -10,11 +10,11 @@ word one of its things, and what Enter opens. Adding stays with each page, since
 starts with something else: a name that is asked for, a numbered name, or a C major scale.
 """
 
-from llamatron.strings import messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.list_page import ListPage
 from llamatron.tui.screens.shared.shared import list_keys, move_key
 from llamatron.tui.themes import theme_of
+from llamatron.user_strings import messages
 
 
 class NamedListPage(ListPage):

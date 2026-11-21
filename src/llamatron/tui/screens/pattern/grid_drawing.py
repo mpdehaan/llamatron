@@ -15,10 +15,10 @@ from rich.text import Text
 from llamatron.composition.checks import fraction_text
 from llamatron.composition.file_format import Row
 from llamatron.composition.naming import words
-from llamatron.strings import labels, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Align, Box, fit, Style
 from llamatron.tui.keyswitch_text import keyswitches_of, slots_in_words
+from llamatron.user_strings import labels, marks, messages
 
 # How wide a cell of the grid is, which every value fits.
 CELL_WIDTH = 5

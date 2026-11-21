@@ -4,9 +4,9 @@
 """The song wizard's Subgenre branch, under Genre: the subgenre and the settings that are the subgenre's own."""
 
 from llamatron.composition import limits
-from llamatron.strings import errors, labels, legends, marks
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.tui.screens.wizard.branch import Branch
+from llamatron.user_strings import errors, labels, legends, marks
 
 
 class SubgenreBranch(Branch):

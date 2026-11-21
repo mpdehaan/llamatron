@@ -17,11 +17,11 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.composition.file_format import ShapeThen
+from llamatron.math import length as length_values
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 from llamatron.music import midi, sound as sound_values
 from llamatron.music.sound import Sound
-from llamatron.support import length as length_values
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
 
 FULL = 100
 # How strong a place in the bar is, strongest first: the bar's start, its middle, a beat, an eighth, a sixteenth, anything finer.

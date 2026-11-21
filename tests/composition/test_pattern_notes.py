@@ -16,9 +16,9 @@ from llamatron.composition.file_format import Accidental, ChordSymbol, GateModif
 from llamatron.composition.named_scale import NamedScale, scale_type_name
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.pattern_notes import whole_steps_down, whole_steps_up
+from llamatron.math.rational import Rational
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.support.rational import Rational
 
 HERE = 'here'
 WHOLE = Rational(1, 1)

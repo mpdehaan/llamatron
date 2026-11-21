@@ -10,8 +10,8 @@ import unittest
 from llamatron.composition.file_format import Section
 from llamatron.macro_composer import arranger, song_plan, wizard_file, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import errors
 from llamatron.support import version
+from llamatron.user_strings import errors
 
 SONG_FILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'wizard_songs')
 EVERYTHING = os.path.join(SONG_FILES, 'rock_everything.yml')

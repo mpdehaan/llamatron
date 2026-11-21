@@ -7,7 +7,6 @@ from typing import NamedTuple
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import GeneratorKind, Section, Shape
-from llamatron.strings import labels, messages
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
@@ -28,6 +27,7 @@ from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
 from llamatron.tui.screens.generators.strum_editor import StrumEditor
 from llamatron.tui.screens.generators.swell_editor import SwellEditor
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.user_strings import labels, messages
 
 
 class GeneratorListing(NamedTuple):

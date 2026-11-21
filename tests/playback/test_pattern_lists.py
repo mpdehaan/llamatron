@@ -12,8 +12,8 @@ import unittest
 from llamatron.composition import file_format
 from llamatron.composition.file_format import ClipSlotSetting, Direction, Operator, PatternOrder, PatternSetting, RegisterName, Section, StatementPart, StepStatement
 from llamatron.composition.song_file_error import SongFileError
+from llamatron.math.random_source import random_source
 from llamatron.playback.pattern_order import ordered_patterns
-from llamatron.support.random_source import random_source
 from tests.support import song_testing
 from tests.support.rendering import render_data
 from tests.support.song_testing import clip, pat, pitches, with_parts

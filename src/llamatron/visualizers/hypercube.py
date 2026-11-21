@@ -20,7 +20,7 @@ import itertools
 import math
 import numpy
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.colour import Limiter, note_colour
 from llamatron.visualizers.fields import blurred

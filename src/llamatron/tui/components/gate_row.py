@@ -5,10 +5,10 @@
 
 from llamatron.composition import file_format
 from llamatron.composition.checks import fraction_text
-from llamatron.strings import messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.text import fraction
+from llamatron.user_strings import messages
 
 class GateRow(PatternRow):
     """[ and ] step through the plain lengths, Enter types any length and Bksp makes it one step."""

@@ -16,7 +16,7 @@ constants here, to tune by eye.
 import math
 import numpy
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers import cells
 from llamatron.visualizers.cells import braille_lines
 from llamatron.visualizers.colour import note_colour, track_colour, vivid

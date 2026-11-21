@@ -11,7 +11,7 @@ some song plays through count, and nothing about the set changes: the set keeps 
 plays again where the device is, and the Instruments page can choose another.
 """
 
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 
 def instruments_played(setlist):

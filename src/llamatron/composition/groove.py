@@ -18,6 +18,7 @@ deleted, because people may not know the values to rebuild them, and a groove of
 can't take a factory name.
 """
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, defaults, limits
 from llamatron.composition.checks import is_whole_number, is_whole_number_from, listed, pass_over_unknown, reading, written_length
 from llamatron.composition.file_format import GrooveSetting
@@ -25,9 +26,8 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import LlamaData, or_default
 from llamatron.composition.setting import Checked, described, Length
 from llamatron.composition.traits import HasCells
-from llamatron.strings import errors
-from llamatron.support.rational import Rational
-from llamatron.support.revised import notes_change
+from llamatron.math.rational import Rational
+from llamatron.user_strings import errors
 
 # A groove's amounts are percentages of a cell.
 PERCENT = 100

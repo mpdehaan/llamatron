@@ -14,13 +14,13 @@ import os
 import random
 import unittest
 
+from llamatron.caching.memory import Memory
 from llamatron.composition import file_format
 from llamatron.composition.file_format import RegisterName, Row, Section
 from llamatron.composition.setlist import Setlist
 from llamatron.music import midi
 from llamatron.realtime.score import Keeping, Score
 from llamatron.realtime.timeline import Route
-from llamatron.support.memory import Memory
 
 PORT = 'test port'
 CHANNELS = 16

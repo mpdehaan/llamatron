@@ -5,10 +5,10 @@
 
 from llamatron.composition import file_format
 from llamatron.composition.file_format import DrawSetting
-from llamatron.strings import help as help_text, labels, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Strip, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.user_strings import help as help_text, labels, marks, messages
 
 
 class DrawsPage(FieldPage):

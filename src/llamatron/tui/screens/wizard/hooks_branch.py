@@ -14,13 +14,13 @@ written unlike the hook and under its top, sung in another kind of section.
 
 from rich.text import Text
 
-from llamatron.strings import labels, legends, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.hook_picture import picture_of
+from llamatron.user_strings import labels, legends, messages
 
 
 class HooksBranch(Branch):

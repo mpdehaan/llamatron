@@ -17,7 +17,7 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import Accidental, ChordSymbol, Tension
 from llamatron.composition.named_scale import NamedScale
 from llamatron.music import midi, note
-from llamatron.strings import labels, marks
+from llamatron.user_strings import labels, marks
 
 # The place of each of a chord's notes among the notes of a scale of seven, counted up from the chord's root at 0: the notes a
 # quality replaces, and the notes between them, which a tension replaces.

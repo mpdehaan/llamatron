@@ -6,7 +6,7 @@
 import math
 from typing import NamedTuple
 
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 
 PERCENT = 100
 

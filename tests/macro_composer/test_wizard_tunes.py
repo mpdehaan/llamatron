@@ -12,7 +12,7 @@ from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing
 from llamatron.macro_composer import arranger, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.strings import errors, macro_composer as composer_text
+from llamatron.user_strings import errors, macro_composer as composer_text
 from tests.support.ui_testing import fixed_text
 
 A_GENRE = 'rock'

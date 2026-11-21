@@ -8,7 +8,6 @@ from rich.text import Text
 
 from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import RegisterSetting
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.drawing import cursor_mark, padded, Style
@@ -16,6 +15,7 @@ from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
 # The grid's settings across, a register's name's room at the left, and the room either side of a value.

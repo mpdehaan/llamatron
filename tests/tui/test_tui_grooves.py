@@ -6,7 +6,6 @@
 from llamatron.composition import defaults, groove as groove_values, limits
 from llamatron.composition.file_format import GrooveSetting
 from llamatron.composition.groove import FactoryGroove
-from llamatron.strings import labels, legends, marks, messages, names as names_text
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -16,6 +15,7 @@ from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.set.grooves_page import GroovesPage
 from llamatron.tui.text import sorted_names
+from llamatron.user_strings import labels, legends, marks, messages, names as names_text
 from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import key_of, UITest

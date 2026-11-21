@@ -10,10 +10,10 @@ window of steps that scrolls sideways so that the cursor's step is always shown,
 that say which steps are on screen. They are here once.
 """
 
-from llamatron.strings import marks
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.key_table import cursor_moved, pressed_key
 from llamatron.tui.screens.shared.page import Page
+from llamatron.user_strings import marks
 
 
 class StepEditor(Page):

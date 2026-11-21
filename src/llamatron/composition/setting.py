@@ -21,7 +21,7 @@ from llamatron.composition import checks, corrections
 from llamatron.composition.checks import is_true_or_false, is_whole_number, is_written_length, listed, positive_length, written_length
 from llamatron.composition.corrections import Correction
 from llamatron.composition.invalid_value import InvalidValue
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 
 def described(*settings):

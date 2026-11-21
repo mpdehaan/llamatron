@@ -9,15 +9,15 @@ the pattern editor's Munge dialog offers. The munges that only reorder, copy or 
 on Pattern itself.
 """
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import Row
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.row_descriptions import row_described, rows_where
+from llamatron.math.random_source import random_source
 from llamatron.music import midi
 from llamatron.music.chord import movement
-from llamatron.strings import errors
-from llamatron.support.random_source import random_source
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 # What makes a step's note, which a rest holds none of: every row but the ones a rest keeps.
 REST_ROWS = rows_where(lambda row: row.is_kept_by_a_rest())

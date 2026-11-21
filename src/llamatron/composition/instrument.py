@@ -23,6 +23,7 @@ lead is how many milliseconds before its note a keyswitch is sent, nothing unles
 
 from typing import NamedTuple
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.checks import pass_over_unknown, reading
 from llamatron.composition.file_format import InstrumentSetting, KeyswitchSetting
@@ -30,8 +31,7 @@ from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
 from llamatron.composition.setting import check_settings, Checked, described, Text, WholeNumber
 from llamatron.music import midi
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 class Keyswitch(NamedTuple):
     """One keyswitch slot as an instrument answers it: its name and its MIDI note, each None when the slot has none."""

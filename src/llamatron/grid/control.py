@@ -6,7 +6,7 @@
 
 from llamatron.grid.positions import exact_length
 from llamatron.music import midi
-from llamatron.strings import errors, reprs
+from llamatron.user_strings import errors, reprs
 
 # What the two CC numbers are called when one is out of range.
 NUMBER_WORD = 'number'

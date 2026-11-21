@@ -30,7 +30,7 @@ from llamatron.realtime.coremidi import CoreMidiOutput
 from llamatron.realtime.engine import MonotonicClock, PlaybackEngine
 from llamatron.realtime.outputs import RecordingOutput, RtMidiOutput, ScheduledRecordingOutput
 from llamatron.realtime.scheduled_engine import ScheduledPlaybackEngine
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 SPAWN = 'spawn'
 # The two ways of sending: each event handed to CoreMIDI ahead of time with its moment, or each sent as its moment comes.

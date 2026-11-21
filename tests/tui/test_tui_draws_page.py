@@ -8,12 +8,12 @@ from unittest import mock
 
 from llamatron.composition import defaults, limits
 from llamatron.composition.file_format import DrawDirection, DrawName, DrawSetting
-from llamatron.strings import labels as labels_text, marks
 from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.draws_page import DrawsPage
 from llamatron.tui.transport import Transport
+from llamatron.user_strings import labels as labels_text, marks
 from tests.support.ui_testing import key_of, UITest
 
 TYPED = '7'

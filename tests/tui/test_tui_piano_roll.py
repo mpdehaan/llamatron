@@ -14,11 +14,10 @@ from llamatron.composition import defaults, file_format, limits, row_description
 from llamatron.composition.file_format import Accidental, ChordSymbol, Direction, Row
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import words
+from llamatron.math.rational import Rational
 from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
-from llamatron.strings import errors, labels, legends, marks
-from llamatron.support.rational import Rational
 from llamatron.tui import drawing, keys
 from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.dialogs import chord_dialog
@@ -29,6 +28,7 @@ from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern import grid_drawing, roll_drawing
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.pattern.roll_drawing import filled_columns
+from llamatron.user_strings import errors, labels, legends, marks
 
 # The header's two lines come after the page's own header: its two lines and the rule.
 HEADER_LINES = 3

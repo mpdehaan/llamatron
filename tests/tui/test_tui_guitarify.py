@@ -6,12 +6,12 @@
 
 from llamatron.composition import file_format, generator_settings, guitar_bars
 from llamatron.composition.file_format import GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
-from llamatron.strings import labels, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import guitar_bar_editor
 from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
+from llamatron.user_strings import labels, marks, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

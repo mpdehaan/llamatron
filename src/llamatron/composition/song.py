@@ -11,6 +11,7 @@ holds what. Its tracks and registers are changed the same way as the set's secti
 remove_item, rename_item and so on, and renaming or removing a track tells the scenes.
 """
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, defaults, file_format, limits, sections
 from llamatron.composition.checks import listed, number, pass_over_unknown, reading, time_signature, written_length
 from llamatron.composition.draw import Draw
@@ -25,8 +26,7 @@ from llamatron.composition.scene import Scene
 from llamatron.composition.setting import Checked, Choice, described, Length, settings_held
 from llamatron.composition.track import Track
 from llamatron.composition.traits import HoldsSections
-from llamatron.strings import errors, names
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors, names
 
 
 # The kinds of generator whose settings name a track of the song.

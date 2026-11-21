@@ -9,15 +9,15 @@ import pathlib
 import unittest
 
 import llamatron
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 from llamatron.music import midi, note as note_values, sound as sound_values
 from llamatron.music.chord import Chord, ChordType
 from llamatron.music.held import Held, phrase
 from llamatron.music.note import Degree, Note, NoteName, Rest
 from llamatron.music.scale import Scale, ScaleType
 from llamatron.music.sound import Sound
-from llamatron.strings import errors
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors
 
 QUARTER = Fraction(1, 4)
 EIGHTH = Fraction(1, 8)

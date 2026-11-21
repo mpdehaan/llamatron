@@ -16,13 +16,13 @@ from rich.text import Text
 
 from llamatron.composition.checks import listed
 from llamatron.macro_composer import wizard_limits
-from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Heading, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import fade_field
+from llamatron.user_strings import errors, labels, legends, marks, messages
 
 # What the panel is remembered by, apart from a section of the form called intro.
 INTRO_MELODY_KEY = 'melody of the intro'

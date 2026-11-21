@@ -5,7 +5,7 @@
 """The video tutorial's captions as a SubRip (.srt) file, so that YouTube has them for search and
 translation as well as in the picture: each sentence and key called out, from the second it was said until the next."""
 
-from llamatron.strings import narration
+from llamatron.user_strings import narration
 
 MILLISECONDS_IN_A_SECOND = 1000
 SECONDS_IN_A_MINUTE = 60

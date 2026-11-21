@@ -17,7 +17,7 @@ from unittest import mock
 
 from llamatron.realtime import coremidi, timeline
 from llamatron.realtime.coremidi import CoreMidiOutput
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 DESTINATION = 'llamatron test destination'
 NO_SUCH_DESTINATION = 'no such destination for llamatron'

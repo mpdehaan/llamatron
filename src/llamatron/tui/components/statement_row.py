@@ -11,13 +11,13 @@ one setter of a whole statement, so that no step is left holding half of one.
 
 from llamatron.composition import conditions, file_format, limits
 from llamatron.composition.file_format import StatementPart, StepStatement
-from llamatron.strings import errors, labels, marks
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
+from llamatron.user_strings import errors, labels, marks
 
 # The first step, which cannot start the pattern over.
 FIRST_STEP = 0

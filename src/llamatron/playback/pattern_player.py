@@ -17,13 +17,13 @@ from llamatron.generators.arp import along_scale
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
 from llamatron.grid.keyswitch import SwitchedSlots
+from llamatron.math import length as length_values
+from llamatron.math.length import Length
+from llamatron.math.rational import Rational
 from llamatron.music import midi, note as note_values, sound as sound_values
 from llamatron.music.sound import Sound
 from llamatron.playback import drift
-from llamatron.strings import errors
-from llamatron.support import length as length_values
-from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.user_strings import errors
 
 # How many octaves away a moved note can go to find one that fits the MIDI range. A move of
 # whole octaves is taken out first, so this only has to cover the MIDI range itself.
@@ -251,7 +251,7 @@ class PatternPlayer:
         pattern = self._song.get_pattern(pattern_name)
         step_size = self._song.get_pattern_step_size(pattern)
         length = self.pattern_length(pattern)
-        # What each step plays is worked out in pairs of whole numbers, which make no object for a sum (support/length.py).
+        # What each step plays is worked out in pairs of whole numbers, which make no object for a sum (math/length.py).
         # The times the registers, the grabs and the CC values are asked for stay Rationals, and are only made for a step that asks.
         step_length = Length.exact(step_size)
         pass_length = Length.exact(length)

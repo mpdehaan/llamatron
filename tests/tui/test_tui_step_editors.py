@@ -15,7 +15,6 @@ import unittest
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
 from llamatron.composition.groove import FactoryGroove
-from llamatron.strings import legends, marks
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
@@ -30,6 +29,7 @@ from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
 from llamatron.tui.screens.set.groove_editor import GrooveEditor
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
+from llamatron.user_strings import legends, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import key_name, leaf_pages, UITest
 

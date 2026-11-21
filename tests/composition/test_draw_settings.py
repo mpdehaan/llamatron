@@ -11,7 +11,7 @@ from llamatron.composition.checks import listed
 from llamatron.composition.draw import Draw
 from llamatron.composition.file_format import DrawDirection, DrawName, DrawSetting, SceneSetting, Section
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 from tests.support.rendering import as_setlist, setlist_from_data
 from tests.support.song_testing import with_parts
 

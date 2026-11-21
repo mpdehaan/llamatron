@@ -14,7 +14,6 @@ from the editor.
 from rich.text import Text
 
 from llamatron.composition import defaults
-from llamatron.strings import legends, marks as marks_text
 from llamatron.tui import drawing
 from llamatron.tui.components.frame import Frame
 from llamatron.tui.components.length_bar import LengthBar
@@ -23,6 +22,7 @@ from llamatron.tui.screens.arrange import arrange_details
 from llamatron.tui.screens.arrange.arrange_details import clip_cell, detailed_clip_text, details_layout, scene_cell, track_cell
 from llamatron.tui.screens.shared.shared import scene_name
 from llamatron.tui.text import clock
+from llamatron.user_strings import legends, marks as marks_text
 
 SCENE_WIDTH = 24
 CELL_WIDTH = 13

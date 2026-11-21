@@ -16,7 +16,7 @@ import numpy
 import os
 import wave
 
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # The loudest moment's level after normalizing, in decibels below full scale.
 PEAK_DECIBELS = -1.0

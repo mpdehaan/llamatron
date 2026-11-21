@@ -21,7 +21,7 @@ While the tests check every remembered answer (Memory.checks_by_default), a pass
 compared, and a difference raises StaleAnswer, so a key that leaves out something a pass reads fails the tests.
 """
 
-from llamatron.support.memory import Memory, stale_answer
+from llamatron.caching.memory import Memory, stale_answer
 
 
 class PassMemory:

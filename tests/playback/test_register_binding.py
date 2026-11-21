@@ -20,8 +20,8 @@ from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.composition.track import Track
 from llamatron.generators import arp as arp_values
+from llamatron.math.rational import Rational
 from llamatron.music import midi
-from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
 from tests.support.rendering import as_setlist, render_data

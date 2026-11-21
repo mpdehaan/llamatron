@@ -11,7 +11,7 @@ a clip from and reads a clip as: Sound.of turns one into its tuple and Sound.pos
 tuple back, so the two say the same thing.
 
 Every sound starts with its kind and its length, the time until the next position of the clip
-starts, as a pair of whole numbers (support/length.py), or None for a note, degree or chord
+starts, as a pair of whole numbers (math/length.py), or None for a note, degree or chord
 that takes the clip's note_length:
 
     a rest      (REST, length)
@@ -22,12 +22,12 @@ that takes the clip's note_length:
     a phrase    (PHRASE, length, parts), sounds played one after another from a held place
 """
 
+from llamatron.math.length import Length
 from llamatron.music import midi as midi_numbers, note as note_values
 from llamatron.music.chord import Chord
 from llamatron.music.held import Held, is_phrase, phrase
 from llamatron.music.note import Degree, Note, Rest
-from llamatron.strings import errors
-from llamatron.support.length import Length
+from llamatron.user_strings import errors
 
 # The kinds of sound, the first thing in every tuple.
 REST = 0

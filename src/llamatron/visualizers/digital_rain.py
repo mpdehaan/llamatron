@@ -16,7 +16,7 @@ heads never white. The amounts are named constants here, to tune.
 import numpy
 import random
 
-from llamatron.strings import visualizers
+from llamatron.user_strings import visualizers
 from llamatron.visualizers.cells import coloured_cells
 from llamatron.visualizers.energy import Energy
 from llamatron.visualizers.visualizer import Visualizer

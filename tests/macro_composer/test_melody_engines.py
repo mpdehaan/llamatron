@@ -9,7 +9,7 @@ import functools
 import unittest
 
 from llamatron.macro_composer import arranger, composer, hook_writing, melody, notation, operations
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 MINOR = 'minor'
 SEED = 9

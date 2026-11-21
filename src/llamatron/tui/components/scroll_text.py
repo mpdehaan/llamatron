@@ -14,10 +14,10 @@ import os
 import re
 from rich.text import Text
 
-from llamatron.strings import about
 from llamatron.tui import drawing
 from llamatron.tui.components import title_card
 from llamatron.tui.components.title_card import blank_line, shaded
+from llamatron.user_strings import about
 
 # The words' colour, a light orange.
 SCROLL_ORANGE = (255, 180, 100)

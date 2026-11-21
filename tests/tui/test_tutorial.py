@@ -28,7 +28,6 @@ from llamatron.realtime import timeline
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
 from llamatron.realtime.timeline import Route, song_timeline
-from llamatron.strings import labels, legends, names, narration
 from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.caption_strip import parts
@@ -51,6 +50,7 @@ from llamatron.tutorial import plan as plan_values, runner as runner_values
 from llamatron.tutorial.plan import TutorialPlan, TutorialStuck, without_instrument
 from llamatron.tutorial.runner import Narrator, tutorial, TutorialRunner
 from llamatron.tutorial.steps import Press, Say
+from llamatron.user_strings import labels, legends, names, narration
 from tests.support.ui_testing import UITest
 
 # A clock that never moves on its own starts a launch at once, with no lead.

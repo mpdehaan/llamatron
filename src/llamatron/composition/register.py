@@ -6,14 +6,14 @@
 
 from typing import NamedTuple
 
+from llamatron.caching.revised import notes_change
 from llamatron.composition import corrections, defaults, file_format, limits
 from llamatron.composition.checks import listed, pass_over_unknown, reading
 from llamatron.composition.file_format import RegisterSetting, ResetBehavior
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings
 from llamatron.composition.setting import Choice, described, Flag, WholeNumber
-from llamatron.strings import errors
-from llamatron.support.revised import notes_change
+from llamatron.user_strings import errors
 
 # A register's settings, each described once, in the order they're written to a file.
 SETTINGS = described(

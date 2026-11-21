@@ -10,7 +10,6 @@ from llamatron.composition.generator_settings import ArpSetting, written_name
 from llamatron.composition.naming import words
 from llamatron.generators import arp as arp_values
 from llamatron.generators.arp import OctaveJump
-from llamatron.strings import help as help_text, labels, legends, marks, messages
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.generators.restart_field import restart_field
@@ -20,6 +19,7 @@ from llamatron.tui.screens.shared.field import ChoiceField, Field, NameField, Nu
 from llamatron.tui.screens.shared.field_page import FieldPage
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.shared import numbers_text
+from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
 JUMPS = [written_name(jump) for jump in OctaveJump]

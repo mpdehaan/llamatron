@@ -5,7 +5,7 @@
 from enum import Enum
 
 from llamatron.music.note import Note
-from llamatron.strings import errors, reprs
+from llamatron.user_strings import errors, reprs
 
 # A note with no length yet sorts as if it had none, after the ones that have one.
 NO_LENGTH = 0

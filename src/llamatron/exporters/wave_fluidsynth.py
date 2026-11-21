@@ -19,7 +19,7 @@ from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.wave_level import normalize_wave
 from llamatron.realtime.fluidsynth import fluidsynth_path, installed, soundfont_path
-from llamatron.strings import errors, names
+from llamatron.user_strings import errors, names
 
 WAV_FILE = '{name}.wav'
 # The MIDI file FluidSynth plays, in the temporary folder.

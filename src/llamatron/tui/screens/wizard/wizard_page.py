@@ -15,6 +15,7 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 
 from rich.text import Text
 
+from llamatron.caching.kept import forget_kept, kept_while
 from llamatron.composition.checks import listed
 from llamatron.composition.file_format import GeneratorKind
 from llamatron.composition.naming import new_name
@@ -22,9 +23,7 @@ from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import notation, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
 from llamatron.support import version
-from llamatron.support.kept import forget_kept, kept_while
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -49,6 +48,7 @@ from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
 from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
 from llamatron.tui.text import clock
+from llamatron.user_strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
 TREE_WIDTH = 24
@@ -109,7 +109,7 @@ class WizardPage(FieldPage):
         # The tune whose notes the pattern editor has open over the wizard: its kind of section, its pattern's name in the draft set and
         # the pattern as it was when opened. None when no tune is being edited.
         self._tune_open = None
-        # The tree's rows and each branch's fields as last worked out, by what they were worked out from (support/kept.py).
+        # The tree's rows and each branch's fields as last worked out, by what they were worked out from (caching/kept.py).
         self._kept = {}
         # The cell whose change holds what the panel offers (cursor_place), or None while nothing is held.
         self._held_at = None

@@ -23,7 +23,7 @@ from llamatron.composition.checks import is_whole_number, listed
 from llamatron.composition.file_format import Operator, StatementPart
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.setting import Checked
-from llamatron.strings import errors
+from llamatron.user_strings import errors
 
 # What a number is divided by to learn whether it is odd.
 PARITY = 2

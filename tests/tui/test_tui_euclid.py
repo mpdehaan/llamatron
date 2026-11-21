@@ -5,13 +5,13 @@
 
 from llamatron.composition import euclid
 from llamatron.composition.file_format import EuclidPart, GeneratorKind, NamedRhythm, Section
-from llamatron.strings import labels
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
 from llamatron.tui.screens.generators.euclid_fields import drawn_rhythm
+from llamatron.user_strings import labels
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 

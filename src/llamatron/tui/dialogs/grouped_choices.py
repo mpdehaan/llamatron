@@ -4,9 +4,9 @@
 """Choices offered in groups, each under a heading: a picker's list with its headings, and what each place in it stands for."""
 
 from llamatron.composition import file_format
-from llamatron.strings import labels
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
+from llamatron.user_strings import labels
 
 # The names a statement of Conditional Execution can read, in the order its pickers list them and its keys step through them: the
 # draws, then the registers.

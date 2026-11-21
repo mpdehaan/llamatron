@@ -10,7 +10,7 @@ from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Pa
 from llamatron.composition.generator_settings import PhrasingSetting, PhrasingSettings
 from llamatron.exporters.timing import timed_events
 from llamatron.generators import phrasing
-from llamatron.support.rational import Rational
+from llamatron.math.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data

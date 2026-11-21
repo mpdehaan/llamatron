@@ -18,10 +18,10 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults, file_format, velocity_ramps
 from llamatron.composition.file_format import Section, VelocitySetting
-from llamatron.strings import labels, marks as marks_text
 from llamatron.tui import themes
 from llamatron.tui.drawing import fit, Style
 from llamatron.tui.text import plain_number
+from llamatron.user_strings import labels, marks as marks_text
 
 # The widest a detail line is drawn: a longer one is cut with an ellipsis. A clip's name is never cut.
 DETAIL_WIDTH = 24

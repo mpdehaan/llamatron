@@ -10,7 +10,7 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, is_taken, name_order, new_name, same_name, split_trailing_number, suggested_word, unique_name
 from llamatron.composition.setlist import Setlist
-from llamatron.strings import names
+from llamatron.user_strings import names
 
 # Names of the tests' own.
 FOO = 'foo'

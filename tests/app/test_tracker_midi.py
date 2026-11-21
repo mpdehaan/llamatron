@@ -22,10 +22,10 @@ from llamatron.exporters import exports, midi_messages
 from llamatron.exporters.exports import ExportKind
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import NoteName
-from llamatron.strings import names as names_text
 from llamatron.tui import keybindings
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key
+from llamatron.user_strings import names as names_text
 from tests.support.gate_conversion import to_gates
 from tests.support.rendering import bare_document
 from tests.support.ui_testing import UITest

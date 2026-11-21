@@ -4,9 +4,9 @@
 """The fields that choose visualizer modes: the mode Arrange's visualizer key shows first, on the File/Global page and the Song page, the song's over the set's, and the File/Global page's Hide Visualizers section."""
 
 from llamatron.composition import file_format
-from llamatron.strings import labels, legends, marks
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field
+from llamatron.user_strings import labels, legends, marks
 from llamatron.visualizers.modes import mode_called
 
 

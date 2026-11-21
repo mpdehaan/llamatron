@@ -7,12 +7,12 @@
 from rich.text import Text
 
 from llamatron.composition import limits
-from llamatron.strings import errors, marks, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.cursor import Cursor, key_between, place_of, Search, shown_around
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import cursor_mark, fit, Style
 from llamatron.tui.screens.shared.page import Page
+from llamatron.user_strings import errors, marks, messages
 
 
 # A list page that can add has a method of this name.

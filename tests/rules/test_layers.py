@@ -30,7 +30,7 @@ A_SENDER = ('realtime', 'engine')
 THE_TRANSPORT = ('tui', 'transport.py')
 THE_FILE_FORMAT = ('composition', 'file_format')
 THE_LIMITS = ('composition', 'limits')
-SOME_TEXT = ('strings', 'labels')
+SOME_TEXT = ('user_strings', 'labels')
 
 
 def load_tool():

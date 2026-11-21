@@ -8,7 +8,6 @@ from llamatron.composition import defaults, file_format, genres
 from llamatron.composition.file_format import LiveResponsiveness, Section, SongSetting
 from llamatron.composition.genres import subgenres_of, variants_of
 from llamatron.music import time_signature
-from llamatron.strings import errors, labels as labels_text, legends, marks, names as names_text
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -16,6 +15,7 @@ from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
+from llamatron.user_strings import errors, labels as labels_text, legends, marks, names as names_text
 from tests.support import ui_testing
 from tests.support.ui_testing import key_name, key_of, UITest
 
