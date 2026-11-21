@@ -64,18 +64,32 @@ class Row(NamedTuple):
     clock: object
 
 
+class Keeping(NamedTuple):
+    """What a score keeps from and lets a later one keep: the set's data its song was copied from, and the earlier score it may
+    take scenes and clips from, either of which may be None."""
+
+    data: object
+    earlier: object
+
+
+# A score made to be kept from by none and keeping nothing.
+NOT_KEEPING = Keeping(None, None)
+
+
 class Score:
     """What the player knows about a song: each scene's length and launch settings, and each clip's events from its scene's start."""
 
     __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_renderer', '_routes', '_taken_tracks')
 
-    def __init__(self, *, song, routes, seed=None, data=None, earlier=None, takes=None):
+    def __init__(self, *, song, routes, seed=None, keeping=None, takes=None):
         """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through.
 
-        data, the set's data the song was copied from (Setlist.kept_data), lets a later score take from this one the scenes an
-        edit cannot change; earlier, such a score of the same seed and routes, gives this one those scenes (score_records.py).
+        keeping, a Keeping, holds the set's data the song was copied from (Setlist.kept_data), which lets a later score take from
+        this one the scenes an edit cannot change, and the earlier score, of the same seed and routes, that gives this one those
+        scenes (score_records.py).
         takes gives clips new random choices, by (the scene's place in the song, the track), as SongRenderer's does.
         """
+        data, earlier = keeping or NOT_KEEPING
         if earlier is not None and earlier._routes != routes:
             earlier = None
         renderer = SongRenderer(song, seed=seed, looping_scenes_go_round=True, data=data, takes=takes)

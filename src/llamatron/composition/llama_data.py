@@ -107,7 +107,7 @@ class LlamaData(Revised):
 
     def names_item(self, *, section, name):
         """Return whether one of its own settings names an item of a section, as a clip names its pattern."""
-        return any(_names(value=self._settings[setting], name=name) for setting in self.REFERENCES.get(section, ()))
+        return any(_names(value=self._settings.get(setting), name=name) for setting in self.REFERENCES.get(section, ()))
 
     def named_items(self):
         """Return everything its own settings name, as a set of (section, name): what names_item() answers one item at a time,
@@ -115,7 +115,8 @@ class LlamaData(Revised):
         named = set()
         for section, settings in self.REFERENCES.items():
             for setting in settings:
-                value = self._settings[setting]
+                # A setting the file leaves out names nothing.
+                value = self._settings.get(setting)
                 if isinstance(value, list):
                     named.update((section, name) for name in value)
                 elif value is not None:

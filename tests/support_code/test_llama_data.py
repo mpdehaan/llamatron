@@ -23,7 +23,8 @@ import unittest
 
 import llamatron.composition
 from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import TrackSetting
+from llamatron.composition.file_format import Section, TrackSetting
+from llamatron.composition.generator_settings import MusicianSettings
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.llama_data import HoldsSettings, LlamaData
 from llamatron.composition.setlist import Setlist
@@ -49,6 +50,8 @@ SUPERCLASSES = (HoldsSettings,)
 # What holds everything else and is never copied whole by copy(): the set, and a song, which the set copies through its data.
 NEVER_COPIED = (Setlist, Song)
 
+# A track's name made up for a test.
+A_TRACK = 'lead'
 
 class TestLlamaData(unittest.TestCase):
 
@@ -108,3 +111,13 @@ class TestLlamaData(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestASettingLeftOutNamesNothing(unittest.TestCase):
+    """A setting that names an item and that a file leaves out names nothing: a musician that follows no track's chords, asked what
+    it names as a render keeps clips after an edit, once failed for want of the setting."""
+
+    def test_a_musician_with_no_track_to_follow_names_nothing(self):
+        musician = MusicianSettings({})
+        self.assertEqual(musician.named_items(), set())
+        self.assertFalse(musician.names_item(section=Section.TRACKS, name=A_TRACK))

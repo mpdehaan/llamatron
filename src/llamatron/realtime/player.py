@@ -150,7 +150,7 @@ class Play:
 class Player:
     """Launches scenes and clips of a score through a sender, following the follow actions and Launch together."""
 
-    __slots__ = ('_score', '_sender', '_now', '_plays', '_moments', '_count', '_play_count', '_lead')
+    __slots__ = ('_score', '_sender', '_now', '_plays', '_moments', '_count', '_play_count', '_lead', '_laps')
 
     def __init__(self, *, score, sender, now, lead=0.0):
         """now is a function returning the sender's seconds, the clock the events' seconds are on. lead is how far ahead of now a
@@ -164,9 +164,17 @@ class Player:
         self._moments = []
         self._count = 0
         self._play_count = 0
+        # The (scene, track) of each looping clip that started a lap since last asked, whose next lap is to be another take.
+        self._laps = []
 
     def get_score(self):
         return self._score
+
+    def take_laps(self):
+        """Return the (scene, track) of each looping clip that started a lap since last asked, and forget them."""
+        laps = self._laps
+        self._laps = []
+        return laps
 
     def get_sender(self):
         return self._sender
@@ -466,6 +474,8 @@ class Player:
         play = Play(scene=scene, track=track, start=at, end=end, tag=Tag(scene, track, self._play_count), alone=alone, loops=loops, preview=preview)
         self._plays.append(play)
         play.take_events(events=self._score.clip_events(scene=scene, track=track), offset=at)
+        if loops:
+            self._laps.append((scene, track))
         if next_start is not None and next_start < end:
             self._cut(play=play, at=next_start)
         # A clip launched with its scene is checked by the scene's own moment; one launched alone, or played again to loop, needs a moment of its own.

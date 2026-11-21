@@ -326,7 +326,7 @@ class SongRenderer:
     def _with_retaken(self, *, changed, after):
         """Return each scene's changed tracks with the tracks whose take differs from an earlier render's added."""
         retaken = self._retaken(after)
-        return [here if here is None else {*here, *(track for place, track in retaken if place == index)} for index, here in enumerate(changed)]
+        return [here if here is None else here | _tracks_retaken_in(place=index, retaken=retaken) for index, here in enumerate(changed)]
 
     def _can_take_from(self, after):
         """Return whether this render can take anything from an earlier one: both made with data from the same seed, the song's
@@ -1126,6 +1126,11 @@ def _second_part(key):
 
 def _whole_key(key):
     return key
+
+
+def _tracks_retaken_in(*, place, retaken):
+    """Return the tracks of a scene, by its place in the song, whose clips have another take."""
+    return {track for scene, track in retaken if scene == place}
 
 
 def _song_name_of(song):

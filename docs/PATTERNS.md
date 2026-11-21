@@ -222,7 +222,7 @@ Ties win over the gate: a note with ties after it sounds to the end of its ties 
 
 ### Glide and Probability
 
-Glide does nothing before a rest or before the same pitch. Probability, on the Advanced rows, is rolled each time the song plays or exports, once for each repeat and each ratchet slice. A note that probability drops is silent however long its gate, and the note after it plays as normal. A song with a seed plays the same every time until the seed changes, and a song without one rolls afresh each time.
+Glide does nothing before a rest or before the same pitch. Probability, on the Advanced rows, is rolled each time the song plays or exports, once for each repeat and each ratchet slice. A note that probability drops is silent however long its gate, and the note after it plays as normal. Each play rolls afresh, and so does a scene or clip launched again while the song plays, and a looping clip each time round; an edit made while the song plays keeps what was already rolled.
 
 ### Chords
 

@@ -30,7 +30,7 @@ from llamatron.composition import file_format
 from llamatron.composition.file_format import RegisterName, Row, Section
 from llamatron.composition.setlist import Setlist
 from llamatron.music import midi
-from llamatron.realtime.score import Score
+from llamatron.realtime.score import Keeping, Score
 from llamatron.realtime.timeline import Route
 from llamatron.support.memory import Memory
 
@@ -100,7 +100,7 @@ class Edited:
         """Return a score of the song as it is now, made from a copy of the set as the transport makes one; kept, made with the set's data, so that a later score can take scenes from it."""
         data = self.setlist.kept_data()
         copied = Setlist.from_data(data=data).get_song(self.name)
-        return Score(song=copied, routes=self.routes if routes is None else routes, seed=seed, data=data if kept else None, earlier=earlier)
+        return Score(song=copied, routes=self.routes if routes is None else routes, seed=seed, keeping=Keeping(data if kept else None, earlier))
 
     def last_pattern(self):
         """Return the name of the pattern whose first scene is the latest in the song."""
