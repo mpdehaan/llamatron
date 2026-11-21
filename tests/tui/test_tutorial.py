@@ -65,6 +65,8 @@ from llamatron.tutorial.runner import Narrator, tutorial, TutorialRunner
 from llamatron.tutorial.steps import Press, Say
 from tests.support.ui_testing import UITest
 
+# A clock that never moves on its own starts a launch at once, with no lead.
+NO_LEAD = 0.0
 HELLO_WORLD = os.path.join('examples', 'learning', '01_hello_world.yml')
 TARGET = os.path.join('tests', 'data', 'sample_sets', 'tutorial_target.yml')
 # A target whose first track plays nothing in its first scene, where a new set holds a clip.
@@ -142,7 +144,7 @@ class TutorialTest(UITest):
             for port in ports:
                 self.outputs.setdefault(port, RecordingOutput())
             return PlaybackEngine(clock=self.clock, outputs={port: self.outputs[port] for port in ports})
-        app.transport = Transport(document_holder=app, clock=self.clock, make_sender=make_sender, set_timer=app.playback_timer)
+        app.transport = Transport(document_holder=app, clock=self.clock, make_sender=make_sender, set_timer=app.playback_timer, lead=NO_LEAD)
         self.exited = False
         quit_for_real = app.exit
 

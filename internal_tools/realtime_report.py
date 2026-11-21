@@ -23,8 +23,9 @@ Run from the top folder:
     .venv/bin/python internal_tools/realtime_report.py examples/by_genre/electronic/minimal_techno.yml --seconds 30
     internal_tools/realtime_report.sh                                                       # the same as the first
 
-The report has two parts. The first plays the song's timeline through the real Realtime Sender Process into
-recording outputs, which write down the clock as each message is handed over, and compares each event's scheduled
+The report has two parts. The first plays the song from the top through the player, as the tracker does, its ticks
+handing windows of events to the real Realtime Sender Process, a launch from silence starting the tracker's lead ahead,
+into recording outputs, which write down the clock as each message is handed over, and compares each event's scheduled
 second with the second it went out: the mean, the 99th percentile and the worst, and how many events were more than
 half a millisecond, one and five off. tests/realtime/test_realtime.py proves the timeline holds the MIDI export's events tick
 for tick, so this is the skew between real time and the export. It takes as long as the song, so it is not part of
@@ -41,8 +42,11 @@ import time
 from llamatron.composition.setlist import Setlist
 from llamatron.grid.row_clock import seconds_per_whole
 from llamatron.playback.song_renderer import SongRenderer
+from llamatron.realtime.player import Player
+from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
 from llamatron.realtime.timeline import Route, song_timeline
+from llamatron.tui import transport as transport_values
 
 DEFAULT_SONG = 'examples/by_genre/ragtime/entertainer.yml'
 HEAVY_SET = 'tests/data/sample_sets/heavy_chain.yml'
@@ -76,17 +80,48 @@ def routes_for(grid):
     return {track.get_name(): Route(PORT, place % 16) for place, track in enumerate(grid.get_columns())}
 
 
+class HandedOver:
+    """The Realtime Sender Process, keeping every event the player hands it, to hold each against when it went out."""
+
+    __slots__ = ('_sender', 'events')
+
+    def __init__(self, sender):
+        self._sender = sender
+        self.events = []
+
+    def add(self, events):
+        events = list(events)
+        self.events += events
+        self._sender.add(events)
+
+    def forget(self, *, tag, after):
+        self._sender.forget(tag=tag, after=after)
+
+    def stop_tag(self, tag):
+        self._sender.stop_tag(tag)
+
+    def stop_all(self):
+        self._sender.stop_all()
+
+
 def play_report(*, path, seconds):
     song, grid = first_song_grid(path)
-    events = song_timeline(grid=grid, routes=routes_for(grid))
+    routes = routes_for(grid)
+    length = song_timeline(grid=grid, routes=routes)[-1].seconds
     if seconds is not None:
-        events = [event for event in events if event.seconds < seconds]
-    length = events[-1].seconds if events else 0.0
+        length = min(length, seconds)
     sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True)
-    sender.start()
-    sender.add(events)
-    time.sleep(length + SETTLE_SECONDS)
+    zero = time.perf_counter()
+    sender.start(at=zero)
+    handed = HandedOver(sender)
+    player = Player(score=Score(song=song, routes=routes, seed=SEED), sender=handed, now=lambda: time.perf_counter() - zero, lead=transport_values.LAUNCH_LEAD_SECONDS)
+    player.play_song()
+    while time.perf_counter() - zero < length:
+        time.sleep(transport_values.TICK_SECONDS)
+        player.tick()
+    time.sleep(SETTLE_SECONDS)
     started, sent = sender.close()
+    events = sorted((event for event in handed.events if event.seconds < length), key=lambda event: event.seconds)
     arrived = sent[PORT][:len(events)]
     print(HEADING.format(count=len(events), path=path, seconds=length))
     if len(arrived) < len(events):

@@ -58,6 +58,8 @@ from llamatron.visualizers import modes
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text, key_name, UITest
 
+# A clock that never moves on its own starts a launch at once, with no lead.
+NO_LEAD = 0.0
 SYNTH = 'synth'
 SYNTH_PORT = 'IAC Driver Bus 1'
 DRUM_MACHINE = 'drum machine'
@@ -180,7 +182,7 @@ class PlaybackTest(UITest):
             return PlaybackEngine(clock=self.clock, outputs={port: self.outputs[port] for port in ports})
         self.fluidsynth = FakeFluidSynth()
         self.fluidsynth_installed = True
-        app.transport = Transport(document_holder=app, clock=self.clock, make_sender=make_sender, set_timer=app.playback_timer,
+        app.transport = Transport(document_holder=app, clock=self.clock, make_sender=make_sender, set_timer=app.playback_timer, lead=NO_LEAD,
                                   fluidsynth=self.fluidsynth, fluidsynth_installed=lambda: self.fluidsynth_installed)
         return app
 

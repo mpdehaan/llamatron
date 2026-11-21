@@ -189,10 +189,9 @@ class Score:
         """Return a clip's events in time order, counted from its scene's start, tagged with play 0."""
         return list(self._events[(scene, track)])
 
-    def played_events(self, *, scene, track, start, play):
-        """Return a clip's events moved to start at a moment, tagged with the number of this play of the clip."""
-        tag = Tag(scene, track, play)
-        return [event._replace(seconds=start + event.seconds, tag=tag) for event in self._events[(scene, track)]]
+    def clip_events(self, *, scene, track):
+        """Return a clip's events, each at its seconds from the scene's start and untagged, which a play places and tags as it sends them."""
+        return self._events[(scene, track)]
 
     def sounding(self, *, scene, track):
         """Return when each note of a clip sounds, from the scene's start, in the order the notes start."""

@@ -58,6 +58,9 @@ from llamatron.visualizers.heard import Heard, HeardNote
 
 # How often the player plans ahead and the page redraws while something plays.
 TICK_SECONDS = 0.1
+# How far ahead of now a launch from silence starts: long enough for its first window of events to reach the Realtime Sender
+# Process before they are due, a fraction of a millisecond for a window, so that every track's first note leaves at the same instant.
+LAUNCH_LEAD_SECONDS = 0.003
 # MIDI channels are sent one less than people number them.
 CHANNEL_OFFSET = 1
 # How long after the last edit made while playing the edit is heard, so that typed digits, 1 then 12 then 120, are heard as 120 alone.
@@ -99,13 +102,15 @@ class Tried(NamedTuple):
 class Transport:
     """Plays the current song through the Realtime Sender Process, and answers what is playing."""
 
-    __slots__ = ('_document_holder', '_clock', '_make_sender', '_set_timer', '_sender', '_ports', '_zero', '_player', '_score_revision', '_score_key', '_timer',
+    __slots__ = ('_lead', '_document_holder', '_clock', '_make_sender', '_set_timer', '_sender', '_ports', '_zero', '_player', '_score_revision', '_score_key', '_timer',
                  '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_song_is_copy', '_instead', '_seed', '_seen_revision', '_changed_at',
                  '_scenes', '_tracks', '_previewing', '_live_message')
 
-    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=None):
+    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=None, lead=LAUNCH_LEAD_SECONDS):
         """document_holder answers get_document(). clock and make_sender(ports) are for the tests, which give a stepped clock and an engine; set_timer(seconds, callback) starts a repeating timer and returns something with stop(). fluidsynth and fluidsynth_installed() are for the tests too, which start no real FluidSynth."""
         self._document_holder = document_holder
+        # How far ahead of now a launch from silence starts; a test on a clock that never moves asks for none.
+        self._lead = lead
         self._fluidsynth = FluidSynth() if fluidsynth is None else fluidsynth
         self._fluidsynth_installed = fluidsynth_is_installed if fluidsynth_installed is None else fluidsynth_installed
         self._clock = MonotonicClock() if clock is None else clock
@@ -265,7 +270,7 @@ class Transport:
         self._previewing = False
         at = self._ready(song=song, instead=None).play_scene(index)
         self._run()
-        return at > self._now()
+        return self._waits_for_bar(at)
 
     def play_clip(self, *, index, track, song=None, instead=None, forever=False):
         """Play one clip on its own, through its track's instrument or the one instead names, once as its scene would or again and again. Return whether it waits for the next bar.
@@ -277,7 +282,12 @@ class Transport:
         self._previewing = forever
         at = self._ready(song=song, instead=instead).play_clip(scene=index, track=track, forever=forever)
         self._run()
-        return at > self._now()
+        return self._waits_for_bar(at)
+
+    def _waits_for_bar(self, at):
+        """Return whether a launch starting at a moment waits for the next bar of what plays, rather than starting at once, a launch
+        from silence starting only its lead ahead."""
+        return at > self._now() + self._lead
 
     def play_clips(self, *, index, tracks):
         """Play several clips of one scene together, again and again, as a preview of a few players, which stops when its page is left."""
@@ -451,7 +461,7 @@ class Transport:
             score = Score(song=song, routes=routes, seed=self._seed)
             sender = self._sender_for(sorted({route.port for route in routes.values()}))
             if self._player is None or self._player.get_sender() is not sender:
-                self._player = Player(score=score, sender=sender, now=self._now)
+                self._player = Player(score=score, sender=sender, now=self._now, lead=self._lead)
             else:
                 self._player.set_score(score)
             self._score_revision = document.get_revision()

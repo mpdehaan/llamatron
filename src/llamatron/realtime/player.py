@@ -58,8 +58,12 @@ from llamatron.realtime.timeline import Playing, Tag
 from llamatron.support.rational import Rational
 
 # How far ahead moments are turned into queued events. A tick comes many times a second, so a moment is never missed, and half a second
-# ahead leaves an edit made while playing room to change a scene's end, where every clip already queues all its notes as it starts.
+# ahead leaves an edit made while playing room to change a scene's end.
 LOOKAHEAD_SECONDS = 0.5
+# How far ahead each play's events are handed to the sender, every play's in one message a tick, rather than a whole clip's as it
+# starts, which made the first beat wait for thousands of events to cross the pipe. As long as the lookahead while the tracker's own
+# thread still renders a live edit, so that the sender's queue outlasts the longest render.
+WINDOW_SECONDS = LOOKAHEAD_SECONDS
 # The kinds of moment the heap holds, in the order they run at one time: a clip's and a scene's done checks and the launches their follow actions send, then the launches by hand.
 CLIP_DONE = 0
 SCENE_DONE = 1
@@ -93,7 +97,7 @@ class Moment(NamedTuple):
 class Play:
     """One launch of one clip on its track: when it starts and ends on the sender's clock, its tag, and how it was launched and ended."""
 
-    __slots__ = ('scene', 'track', 'start', 'end', 'tag', 'alone', 'loops', 'cut', 'done', 'preview')
+    __slots__ = ('scene', 'track', 'start', 'end', 'tag', 'alone', 'loops', 'cut', 'done', 'preview', 'events', 'offset', 'fed')
 
     def __init__(self, *, scene, track, start, end, tag, alone, loops, preview=False):
         self.scene = scene
@@ -109,6 +113,35 @@ class Play:
         self.done = False
         # Played again and again by hand, as a listening page plays a clip, rather than looping by its clip's Loop, so that an edit to the Loop leaves it looping.
         self.preview = preview
+        # The events it sends, each at offset plus the event's seconds on the sender's clock, and how many of them are queued already.
+        self.events = ()
+        self.offset = 0.0
+        self.fed = 0
+
+    def take_events(self, *, events, offset):
+        """Send these events from the first, each at offset plus its seconds, in place of any not yet queued."""
+        self.events = events
+        self.offset = offset
+        self.fed = 0
+
+    def events_due(self, *, end, before=False):
+        """Return the events not yet queued that are due by a moment, placed on the sender's clock and tagged, and mark them queued;
+        with before, only those due before it. A play cut short sends nothing from its end on; the note offs at the cut are sent with it."""
+        events = self.events
+        offset = self.offset
+        tag = self.tag
+        limit = self.end if self.cut else None
+        due = []
+        place = self.fed
+        while place < len(events):
+            seconds = offset + events[place].seconds
+            if seconds > end or (before and seconds == end):
+                break
+            if limit is None or seconds < limit:
+                due.append(events[place]._replace(seconds=seconds, tag=tag))
+            place += 1
+        self.fed = place
+        return due
 
     def is_running(self, now):
         return self.start <= now < self.end
@@ -117,13 +150,15 @@ class Play:
 class Player:
     """Launches scenes and clips of a score through a sender, following the follow actions and Launch together."""
 
-    __slots__ = ('_score', '_sender', '_now', '_plays', '_moments', '_count', '_play_count')
+    __slots__ = ('_score', '_sender', '_now', '_plays', '_moments', '_count', '_play_count', '_lead')
 
-    def __init__(self, *, score, sender, now):
-        """now is a function returning the sender's seconds, the clock the events' seconds are on."""
+    def __init__(self, *, score, sender, now, lead=0.0):
+        """now is a function returning the sender's seconds, the clock the events' seconds are on. lead is how far ahead of now a
+        launch from silence starts, so that its first notes reach the sender before they are due and every track starts at once."""
         self._score = score
         self._sender = sender
         self._now = now
+        self._lead = lead
         # Every play launched and not yet over: running, queued ahead within the lookahead, or ended and waiting for a tick to forget it.
         self._plays = []
         self._moments = []
@@ -179,6 +214,10 @@ class Player:
                 play.loops = play.preview or score.loops(scene=new_scene, track=new_track)
                 continue
             else:
+                # What the old notes play before the edit is heard still plays: what of it is not yet queued goes now.
+                earlier = play.events_due(end=at, before=True)
+                if earlier:
+                    self._sender.add(earlier)
                 self._sender.forget(tag=play.tag, after=at)
                 self._end_notes_across(play=play, at=at, score=old, scene=old_scene, track=old_track)
                 whole = old.whole_at(scene=old_scene, elapsed=at - play.start)
@@ -189,10 +228,11 @@ class Player:
             play.loops = play.preview or score.loops(scene=new_scene, track=new_track)
             if not play.cut:
                 play.end = start + score.get_scene_seconds(new_scene)
-            self._sender.add(score.events_from(scene=new_scene, track=new_track, start=start, tag=play.tag, after=max(at, start)))
+            play.take_events(events=score.events_from(scene=new_scene, track=new_track, start=start, tag=play.tag, after=max(at, start)), offset=0.0)
         self._moments = [_renumbered(moment=moment, scene_map=scene_map, track_map=track_map) for moment in self._moments if scene_map.get(moment.scene) is not None]
         heapq.heapify(self._moments)
         self._plan_ends_again(now)
+        self._send_windows(now)
 
     def _switch_time(self, *, play, score, responsiveness, now, bar):
         """Return when an edit is heard on a play: at once, at the next bar of what plays (bar, worked out before the new score came), or at the play's next pass by the old score, never before LIVE_LATENCY_SECONDS from now."""
@@ -237,7 +277,7 @@ class Player:
         """Launch every clip of a scene, whatever its clips' settings say, in place of everything playing. Return when it starts: now, or the next bar of what plays."""
         at = self.next_bar()
         if at is None:
-            at = self._now()
+            at = self._now() + self._lead
         self._plan(time=at, kind=SCENE_BY_HAND, scene=scene)
         self.tick()
         return at
@@ -246,7 +286,7 @@ class Player:
         """Launch one clip on its own, cutting whatever its track plays. With forever, it loops as a looping clip does, which a listening page wants. Return when it starts."""
         at = self.next_bar()
         if at is None:
-            at = self._now()
+            at = self._now() + self._lead
         self._plan(time=at, kind=CLIP_BY_HAND, scene=scene, tracks=(track,), forever=forever)
         self.tick()
         return at
@@ -255,7 +295,7 @@ class Player:
         """Launch several clips of one scene together, as play_clip launches one, so that they start at one moment. Return when they start."""
         at = self.next_bar()
         if at is None:
-            at = self._now()
+            at = self._now() + self._lead
         self._plan(time=at, kind=CLIP_BY_HAND, scene=scene, tracks=tuple(tracks), forever=forever)
         self.tick()
         return at
@@ -306,7 +346,17 @@ class Player:
             else:
                 for track in moment.tracks:
                     self._start_play(scene=moment.scene, track=track, at=moment.time, alone=True, forever=moment.forever, preview=moment.forever)
+        self._send_windows(now)
         self._plays = [play for play in self._plays if play.end > now or not (play.done or play.cut)]
+
+    def _send_windows(self, now):
+        """Queue with the sender, in one message, every play's events due within the window ahead of now."""
+        end = now + WINDOW_SECONDS
+        due = []
+        for play in self._plays:
+            due += play.events_due(end=end)
+        if due:
+            self._sender.add(due)
 
     # What is playing, for the lights.
 
@@ -415,7 +465,7 @@ class Player:
         loops = forever or self._score.loops(scene=scene, track=track)
         play = Play(scene=scene, track=track, start=at, end=end, tag=Tag(scene, track, self._play_count), alone=alone, loops=loops, preview=preview)
         self._plays.append(play)
-        self._sender.add(self._score.played_events(scene=scene, track=track, start=at, play=self._play_count))
+        play.take_events(events=self._score.clip_events(scene=scene, track=track), offset=at)
         if next_start is not None and next_start < end:
             self._cut(play=play, at=next_start)
         # A clip launched with its scene is checked by the scene's own moment; one launched alone, or played again to loop, needs a moment of its own.
