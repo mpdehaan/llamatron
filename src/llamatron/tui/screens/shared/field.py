@@ -100,7 +100,7 @@ class Field:
         """Return whether the setting is on or off, which answers to Space and Enter alike."""
         return False
 
-    def drawn_label(self, page):
+    def get_drawn_label(self, page):
         """Return the label as the page draws it."""
         return self.label
 
@@ -390,7 +390,7 @@ class Heading(Field):
     def is_toggle(self):
         return True
 
-    def drawn_label(self, page):
+    def get_drawn_label(self, page):
         """Return the section's name after its open or closed mark."""
         mark = marks.MSG_SECTION_OPEN_MARK if page.is_open(self) else marks.MSG_SECTION_CLOSED_MARK
         return labels.MSG_SECTION_LABEL.format(mark=mark, name=self.label)
@@ -398,7 +398,7 @@ class Heading(Field):
     def lines(self, *, page, here, label_width, width):
         line = Text(no_wrap=True)
         line.append(cursor_mark(here))
-        line.append(self.drawn_label(page).ljust(label_width), style=Style.BOLD)
+        line.append(self.get_drawn_label(page).ljust(label_width), style=Style.BOLD)
         line.append(padded(self.value()), style=Style.DIM)
         return [line]
 

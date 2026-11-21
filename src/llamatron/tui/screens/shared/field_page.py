@@ -266,7 +266,7 @@ class FieldPage(Page):
         """
         fields = self.shown_fields()
         self.field()
-        label_width = max((len(field.drawn_label(self)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
+        label_width = max((len(field.get_drawn_label(self)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
         cursor = self.cursor.get_place()
         lines = [Text(drawing.NOTHING)]
         selected = 0
