@@ -101,13 +101,30 @@ def percent_at(*, values, time, span):
 
 def strength(*, time, bar, beat):
     """Return how strong a time's place in the bar is, BAR_START the strongest."""
-    within = time - bar * math.floor(time / bar)
+    return strengths(starts=[Length.exact(time)], bar=bar, beat=beat)[0]
+
+
+def strengths(*, starts, bar, beat):
+    """Return how strong each of some starts, pairs in whole notes, is in the bar, BAR_START the strongest.
+
+    Every start is counted in whole-number ticks fine enough for each of them, the bar and its half, the beat, its eighths and its
+    sixteenths, so that a place is found by a remainder: a division of fractions for every note was most of reshaping a clip.
+    """
+    units = (bar, bar / HALF, beat, beat / HALF, beat / QUARTER)
+    ticks = math.lcm(*(unit.denominator for unit in units), *(start[1] for start in starts))
+    bar_ticks, half_bar, *finer = (unit.numerator * (ticks // unit.denominator) for unit in units)
+    levels = tuple(zip((ON_A_BEAT, ON_AN_EIGHTH, ON_A_SIXTEENTH), finer))
+    return [_strength_in_ticks(within=Length.ticks_of(start, ticks) % bar_ticks, half_bar=half_bar, levels=levels) for start in starts]
+
+
+def _strength_in_ticks(*, within, half_bar, levels):
+    """Return how strong a place within the bar is, counted in ticks, given the bar's half and each finer level's unit in ticks."""
     if within == 0:
         return BAR_START
-    if within == bar / HALF:
+    if within == half_bar:
         return BAR_MIDDLE
-    for level, unit in ((ON_A_BEAT, beat), (ON_AN_EIGHTH, beat / HALF), (ON_A_SIXTEENTH, beat / QUARTER)):
-        if (within / unit).denominator == 1:
+    for level, unit in levels:
+        if within % unit == 0:
             return level
     return FINER
 
@@ -127,14 +144,15 @@ def reshaped(*, sounds, density=None, swell=None, articulate=None, velocity=None
     for sound in sounds:
         starts.append(now)
         now = Length.add(now, sound[sound_values.LENGTH])
-    sounding = [place for place, sound in enumerate(sounds) if sound[sound_values.KIND] != sound_values.REST]
+    levels = strengths(starts=starts, bar=bar, beat=beat)
+    following = _next_sounding_starts(sounds=sounds, starts=starts) if articulate is not None else None
     result = []
     for place, sound in enumerate(sounds):
         if sound[sound_values.KIND] == sound_values.REST:
             result.append(sound)
             continue
         time = Length.rational(starts[place])
-        level = strength(time=time, bar=bar, beat=beat)
+        level = levels[place]
         if density is not None and not plays_at(density=percent_at(values=density[0], time=time + density[2], span=density[1]), level=level):
             result.append(Sound.rest(sound[sound_values.LENGTH]))
             continue
@@ -146,12 +164,22 @@ def reshaped(*, sounds, density=None, swell=None, articulate=None, velocity=None
         if velocity is not None:
             sound = _with_velocity(sound=sound, scale=velocity_percent_at(velocity=velocity, time=time))
         if articulate is not None:
-            later = [starts[other] for other in sounding if other > place]
-            room = Length.subtract(later[0] if later else Length.exact(span), starts[place])
+            room = Length.subtract(Length.exact(span) if following[place] is None else following[place], starts[place])
             result += _with_length(sound=sound, share=percent_at(values=articulate[0], time=time + articulate[2], span=articulate[1]), room=room)
             continue
         result.append(sound)
     return result
+
+
+def _next_sounding_starts(*, sounds, starts):
+    """Return, for each sound, where the next sound that is no rest starts, or None after the last, found in one pass from the end."""
+    following = [None] * len(sounds)
+    upcoming = None
+    for place in range(len(sounds) - 1, -1, -1):
+        following[place] = upcoming
+        if sounds[place][sound_values.KIND] != sound_values.REST:
+            upcoming = starts[place]
+    return following
 
 
 def _rational(number):

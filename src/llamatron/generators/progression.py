@@ -78,9 +78,16 @@ class Progression(ClipGenerator):
         scale = clip.get_scale()
         result = []
         now = length.ZERO
+        # Each sound is moved to each chord once a clip: a figure plays the same few sounds over every chord, and moving one is
+        # worked out from the sound, the chord's place and the scale alone.
+        moved = {}
         for sound in clip.resolved_sounds():
             place = self.chord_at(Length.rational(now))
-            result.append(self._moved(sound=sound, place=place, scale=scale))
+            found = moved.get((sound, place))
+            if found is None:
+                found = self._moved(sound=sound, place=place, scale=scale)
+                moved[(sound, place)] = found
+            result.append(found)
             now = Length.add(now, sound[sound_values.LENGTH])
         return result, clip.get_length()
 

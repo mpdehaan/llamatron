@@ -26,28 +26,34 @@ earlier one. A render in the render process hands its memory on to the next rend
 every other pattern's passes remembered. Nothing is let go: memory is cheap beside speed, and a pass kept under a pattern's older
 revision is never found again, since every edit gives the pattern a new one.
 
+It also holds what each pattern's player gathers of a pattern's steps (pattern_player.PlayedPattern), once a render rather than once
+a clip, which a render cannot change but the next may, since the song's draws can change between renders.
+
 While the tests check every remembered answer (Memory.checks_by_default), a pass found in the memory is worked out again and
 compared, and a difference raises StaleAnswer, so a key that leaves out something a pass reads fails the tests.
 """
-
-import dataclasses
 
 from llamatron.support.memory import Memory, stale_answer
 
 
 class PassMemory:
-    """The passes the renders of a song have played, by key."""
+    """The passes the renders of a song have played, by key, and what this render has gathered of each pattern's steps."""
 
-    __slots__ = ('_kept', '_checking')
+    __slots__ = ('_kept', '_played_patterns', '_checking')
 
     def __init__(self, *, earlier=None):
         """earlier is the PassMemory of the render before, of the same song, whose passes this one goes on keeping, or None."""
         self._kept = {} if earlier is None else earlier.get_kept()
+        self._played_patterns = {}
         self._checking = Memory.checks_by_default()
 
     def get_kept(self):
         """Return the passes kept, by key, for the next render to take from."""
         return self._kept
+
+    def get_played_patterns(self):
+        """Return what this render's players have gathered of each pattern's steps, by the pattern's name, for them to share."""
+        return self._played_patterns
 
     def is_checking(self):
         return self._checking
@@ -55,14 +61,14 @@ class PassMemory:
     def recall(self, key):
         """Return a copy of the pass kept under a key, or None; the caller may change the copy."""
         kept = self._kept.get(key)
-        return None if kept is None else dataclasses.replace(kept)
+        return None if kept is None else kept.copied()
 
     def keep(self, *, key, played, remembered):
         """Keep a pass played under its key, a copy, so that what the caller changes of it is not kept; remembered is the pass the
         memory gave for the key while checking, held to the pass worked out again."""
         if remembered is not None and fingerprint(remembered) != fingerprint(played):
             raise stale_answer(key=key, kept=fingerprint(remembered), again=fingerprint(played))
-        self._kept[key] = dataclasses.replace(played)
+        self._kept[key] = played.copied()
 
 
 def fingerprint(played):

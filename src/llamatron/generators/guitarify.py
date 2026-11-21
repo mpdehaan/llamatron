@@ -31,6 +31,7 @@ and the notes of a picked chord overlap as they do on a guitar.
 """
 
 from fractions import Fraction
+import functools
 
 from llamatron.composition.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.generators.base import ClipGenerator
@@ -115,7 +116,7 @@ class Guitarify(ClipGenerator):
 
     __slots__ = (
         '_shape', '_open', '_position', '_single_notes', '_color', '_approach', '_strokes', '_bar', '_accents', '_cell', '_let_ring', '_gap', '_fade', '_loose_timing', '_upstroke',
-        '_seed', '_offset', '_voicings',
+        '_seed', '_offset',
     )
 
     def __init__(self, *, shape, tuning, position, capo, strings, single_notes, strokes, bar, accents, cell, let_ring, spread, fade, loose_timing, upstroke,
@@ -141,8 +142,6 @@ class Guitarify(ClipGenerator):
         self._seed = seed
         # How far into the song's bars the clip starts, so that the bar of strokes follows them.
         self._offset = NO_TIME if continuation is None else Rational(continuation.offset)
-        # Each chord's voicing, worked out once: the same chord comes round every bar.
-        self._voicings = {}
 
     def _generate(self, clip):
         scale = clip.get_scale()
@@ -216,58 +215,11 @@ class Guitarify(ClipGenerator):
         notes = self._colored(sorted(chord[sound_values.NOTES], key=_pitch_of))
         classes = tuple(sorted({note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE for note in notes}))
         root = notes[0][sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE
-        key = (classes, root)
-        if key not in self._voicings:
-            self._voicings[key] = self._best_voicing(classes=classes, root=root)
-        pitches = self._voicings[key]
+        pitches = best_voicing(strings=self._open, position=self._position, classes=classes, root=root)
         if not pitches:
             return chord
         by_class = {note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE: note for note in reversed(notes)}
         return Sound.chord([_moved(note=by_class[pitch % midi_numbers.HALF_STEPS_PER_OCTAVE], midi=pitch) for pitch in pitches])
-
-    def _frets(self):
-        """Return the frets a hand at the position reaches, the open string among them in the open position."""
-        if self._position == OPEN_POSITION:
-            return range(REACH)
-        return range(self._position, self._position + REACH)
-
-    def _best_voicing(self, *, classes, root):
-        """Return the pitches of the best way to hold a chord, the lowest string first, or an empty tuple when no string can play any of it."""
-        choices = []
-        for open_pitch in self._open:
-            frets = [fret for fret in self._frets() if (open_pitch + fret) % midi_numbers.HALF_STEPS_PER_OCTAVE in classes and open_pitch + fret <= midi_numbers.MAX_MIDI_NUMBER]
-            choices.append([None, *frets])
-        best = None
-        for held in _every_way(choices):
-            if all(fret is None for fret in held):
-                continue
-            score = self._cost(held=held, classes=classes, root=root)
-            if best is None or score < best[0]:
-                best = (score, held)
-        if best is None:
-            return ()
-        return tuple(open_pitch + fret for open_pitch, fret in zip(self._open, best[1]) if fret is not None)
-
-    def _cost(self, *, held, classes, root):
-        """Return how poor a way of holding a chord is, lower being better, with the way itself last so that two equal ways always choose the same."""
-        sounding = [place for place, fret in enumerate(held) if fret is not None]
-        pitches = [self._open[place] + held[place] for place in sounding]
-        played = {pitch % midi_numbers.HALF_STEPS_PER_OCTAVE for pitch in pitches}
-        cost = sum(self._missing_cost(missing=missing, root=root) for missing in set(classes) - played)
-        if pitches[0] % midi_numbers.HALF_STEPS_PER_OCTAVE != root:
-            cost += WRONG_BASS_COST
-        cost += INSIDE_MUTE_COST * (sounding[-1] - sounding[0] + 1 - len(sounding))
-        cost += MUTED_STRING_COST * (len(held) - len(sounding))
-        cost += FRET_COST * sum(held[place] for place in sounding)
-        return (cost, tuple(-1 if fret is None else fret for fret in held))
-
-    def _missing_cost(self, *, missing, root):
-        """Return what leaving one note of a chord out costs: the root most, the fifth least."""
-        if missing == root:
-            return MISSING_ROOT_COST
-        if missing == (root + FIFTH) % midi_numbers.HALF_STEPS_PER_OCTAVE:
-            return MISSING_FIFTH_COST
-        return MISSING_NOTE_COST
 
     # Strokes: the other hand.
 
@@ -336,16 +288,7 @@ class Guitarify(ClipGenerator):
                 begins = time + delay
                 if stops <= begins:
                     continue
-                share = Rational(1)
-                if stroke == Stroke.MUTE:
-                    share = share * MUTE_VELOCITY
-                if stroke == Stroke.MUTED_BASS:
-                    if not accent:
-                        share = share * MUTED_BASS_VELOCITY
-                elif any_accent and not accent and stroke != Stroke.SQUEAL:
-                    share = share * UNACCENTED_VELOCITY
-                if self._fade and len(chosen) > 1:
-                    share = share * (1 - Rational(self._fade * string, PERCENT * (len(chosen) - 1)))
+                share = stroke_share(stroke=stroke, accented=accent if any_accent else None, fade=self._fade, string=string, count=len(chosen))
                 events.append((begins, STRUCK, _softened(note=Sound.with_length(note, Length.of(stops - begins)), share=share), stops))
         return events
 
@@ -450,6 +393,77 @@ def _triad_above(*, note, scale):
         octaves, wrapped = divmod(index + along, len(steps))
         above.append(octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[wrapped] - place)
     return tuple(above)
+
+
+@functools.cache
+def best_voicing(*, strings, position, classes, root):
+    """Return the pitches of the best way to hold a chord, the lowest string first, or an empty tuple when no string can play any of
+    it: strings are the open strings' pitches, position the hand's, classes the chord's pitch classes and root its root's. Remembered
+    for the run, since it follows from those alone and every clip of a song holds the same few chords, where each clip worked them
+    out again."""
+    choices = []
+    for open_pitch in strings:
+        frets = [fret for fret in _frets(position) if (open_pitch + fret) % midi_numbers.HALF_STEPS_PER_OCTAVE in classes and open_pitch + fret <= midi_numbers.MAX_MIDI_NUMBER]
+        choices.append([None, *frets])
+    best = None
+    for held in _every_way(choices):
+        if all(fret is None for fret in held):
+            continue
+        score = _cost(strings=strings, held=held, classes=classes, root=root)
+        if best is None or score < best[0]:
+            best = (score, held)
+    if best is None:
+        return ()
+    return tuple(open_pitch + fret for open_pitch, fret in zip(strings, best[1]) if fret is not None)
+
+
+@functools.cache
+def stroke_share(*, stroke, accented, fade, string, count):
+    """Return the share of its velocity a note of a stroke keeps: a mute and an unaccented muted bass quieter, an unaccented stroke
+    quieter in a bar with accents, accented being None in a bar with none, and each string after the first faded by a further
+    share of fade when the stroke strikes count strings. Remembered for the run, since a bar's few strokes come round on every
+    chord, where every note of every stroke worked its share out again."""
+    share = Rational(1)
+    if stroke == Stroke.MUTE:
+        share = share * MUTE_VELOCITY
+    if stroke == Stroke.MUTED_BASS:
+        if not accented:
+            share = share * MUTED_BASS_VELOCITY
+    elif accented is False and stroke != Stroke.SQUEAL:
+        share = share * UNACCENTED_VELOCITY
+    if fade and count > 1:
+        share = share * (1 - Rational(fade * string, PERCENT * (count - 1)))
+    return share
+
+
+def _frets(position):
+    """Return the frets a hand at a position reaches, the open string among them in the open position."""
+    if position == OPEN_POSITION:
+        return range(REACH)
+    return range(position, position + REACH)
+
+
+def _cost(*, strings, held, classes, root):
+    """Return how poor a way of holding a chord is, lower being better, with the way itself last so that two equal ways always choose the same."""
+    sounding = [place for place, fret in enumerate(held) if fret is not None]
+    pitches = [strings[place] + held[place] for place in sounding]
+    played = {pitch % midi_numbers.HALF_STEPS_PER_OCTAVE for pitch in pitches}
+    cost = sum(_missing_cost(missing=missing, root=root) for missing in set(classes) - played)
+    if pitches[0] % midi_numbers.HALF_STEPS_PER_OCTAVE != root:
+        cost += WRONG_BASS_COST
+    cost += INSIDE_MUTE_COST * (sounding[-1] - sounding[0] + 1 - len(sounding))
+    cost += MUTED_STRING_COST * (len(held) - len(sounding))
+    cost += FRET_COST * sum(held[place] for place in sounding)
+    return (cost, tuple(-1 if fret is None else fret for fret in held))
+
+
+def _missing_cost(*, missing, root):
+    """Return what leaving one note of a chord out costs: the root most, the fifth least."""
+    if missing == root:
+        return MISSING_ROOT_COST
+    if missing == (root + FIFTH) % midi_numbers.HALF_STEPS_PER_OCTAVE:
+        return MISSING_FIFTH_COST
+    return MISSING_NOTE_COST
 
 
 def _every_way(choices):

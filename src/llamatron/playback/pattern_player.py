@@ -73,6 +73,10 @@ class Pass:
     keyswitches: list = field(default_factory=list)
     # Whether a step's statement ended the clip during the pass, which then lasts only as far as it played, as a pass a step started over does.
     done: bool = False
+
+    def copied(self):
+        """Return a copy of the pass, sharing its clip and keyswitches, which no one changes, for a caller to replace fields of."""
+        return Pass(clip=self.clip, tied_from_before=self.tied_from_before, length=self.length, keyswitches=self.keyswitches, done=self.done)
 class PlayedPattern(NamedTuple):
     """What playing needs to know of a pattern, gathered once for a clip: every step's values, and what no step of it does.
 
@@ -128,11 +132,11 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_drifts', '_passes')
+    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_drifts', '_passes', '_context')
 
     def __init__(self, *, song, scene, scale, track, scale_name=None, drifts=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
-        passes is the render's PassMemory, or None to remember no pass.
+        passes is the render's PassMemory, or None to remember no pass and gather each pattern's steps for this player alone.
 
         drifts is what the clip hears of the song's drifts, (DriftPlay, the names its chain names,
         where the scene starts from the song's top), or None for a clip that names none.
@@ -150,10 +154,13 @@ class PatternPlayer:
         # The scene's scale at each octave a note asked for, and its size, built once rather than for every note of every pass, since the scene's scale can't change while a clip plays.
         self._scales_by_octave = {}
         self._scale_size = None
-        # Each pattern's step values, gathered the first pass it plays rather than for every pass, since no pattern changes while a clip plays.
-        self._played_patterns = {}
+        # Each pattern's step values, gathered the first pass it plays in the render rather than for every pass or clip, since no
+        # pattern changes while a render plays.
+        self._played_patterns = {} if passes is None else passes.get_played_patterns()
         # A clip that hears a drift or binds a register to its velocity reads what carries between passes in every pass.
         self._passes = passes if drifts is None and self._velocity_register is None else None
+        # What the player's passes are remembered by besides their patterns, worked out the first time a pass is remembered.
+        self._context = None
 
     def _played(self, *, pattern_name, pattern):
         """Return a pattern's PlayedPattern, gathered the first time the pattern plays."""
@@ -205,7 +212,9 @@ class PatternPlayer:
         remembers none."""
         if self._passes is None or pass_draws or not played.is_plain():
             return None
-        return (self.pass_context(), pattern_name, pattern.get_revision(), self._song.get_pattern_step_size(pattern), self.pattern_length(pattern), tuple(steps))
+        if self._context is None:
+            self._context = self.pass_context()
+        return (self._context, pattern_name, pattern.get_revision(), self._song.get_pattern_step_size(pattern), self.pattern_length(pattern), tuple(steps))
 
     def _remembered(self, *, key, result, remembered):
         """Keep a pass played under its key, if it has one, and return it."""
