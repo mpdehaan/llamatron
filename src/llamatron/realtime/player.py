@@ -248,7 +248,7 @@ class Player:
 
     def _end_notes_across(self, *, play, at, score, scene, track):
         """Send a note off at a moment for every note of a play, by the score it was queued from, that started before it and sounds across it."""
-        notes = score.sounding_across(scene=scene, track=track, elapsed=at - play.start)
+        notes = score.clip_notes(scene=scene, track=track).sounding_across(at - play.start)
         self._sender.add([Playing(Rational(0), at, port, channel, timeline.NOTE_OFF, number, timeline.NO_VELOCITY, play.tag) for port, channel, number in notes])
 
     def _plan_ends_again(self, now):
@@ -388,7 +388,7 @@ class Player:
         since = now if since is None else since
         heard = []
         for play in self.running_plays():
-            started, held = self._score.heard(scene=play.scene, track=play.track, since=since - play.start, until=now - play.start)
+            started, held = self._score.clip_notes(scene=play.scene, track=play.track).heard(since=since - play.start, until=now - play.start)
             if started or held:
                 heard.append((play.track, started, held))
         return now, heard
@@ -411,7 +411,7 @@ class Player:
     def is_track_sounding(self, track):
         """Return whether a note sounds on a track now, read from the score rather than the sender, which may be in another process."""
         play = self.running_on(track)
-        return play is not None and self._score.is_sounding(scene=play.scene, track=track, elapsed=self._now() - play.start)
+        return play is not None and self._score.clip_notes(scene=play.scene, track=track).is_sounding(self._now() - play.start)
 
     def scene_elapsed(self, scene):
         """Return how far into a scene its earliest running clip is, in seconds, or None when none plays."""
@@ -548,7 +548,7 @@ class Player:
             self._sender.stop_tag(play.tag)
         else:
             self._sender.forget(tag=play.tag, after=at)
-            notes = score.sounding_across(scene=play.scene, track=play.track, elapsed=at - play.start)
+            notes = score.clip_notes(scene=play.scene, track=play.track).sounding_across(at - play.start)
             self._sender.add([Playing(Rational(0), at, port, channel, timeline.NOTE_OFF, number, timeline.NO_VELOCITY, play.tag) for port, channel, number in notes])
         play.end = min(play.end, at)
         play.cut = True

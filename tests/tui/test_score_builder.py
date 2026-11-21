@@ -45,16 +45,16 @@ class TestScoreBuilder(unittest.TestCase):
 
     def test_at_once_it_builds_in_the_request(self):
         builder = ScoreBuilder(at_once=True)
-        builder.request(key=A_KEY, build=lambda: A_SCORE)
+        builder.request(key=A_KEY, build=lambda earlier: A_SCORE)
         self.assertEqual(builder.built(A_KEY).score, A_SCORE)
         self.assertIsNone(builder.built(ANOTHER_KEY))
 
     def test_in_a_thread_it_builds_and_keeps_a_problem_in_place_of_a_score(self):
         builder = ScoreBuilder()
-        builder.request(key=A_KEY, build=lambda: A_SCORE)
+        builder.request(key=A_KEY, build=lambda earlier: A_SCORE)
         self.assertEqual(wait_for(builder=builder, key=A_KEY).score, A_SCORE)
 
-        def unplayable():
+        def unplayable(earlier):
             raise SongFileError(PROBLEM)
         builder.request(key=ANOTHER_KEY, build=unplayable)
         self.assertEqual(str(wait_for(builder=builder, key=ANOTHER_KEY).problem), PROBLEM)
@@ -65,17 +65,29 @@ class TestScoreBuilder(unittest.TestCase):
         release = threading.Event()
         built = []
 
-        def slow():
+        def slow(earlier):
             started.set()
             release.wait(WAIT_SECONDS)
             return A_SCORE
         builder.request(key=A_KEY, build=slow)
         started.wait(WAIT_SECONDS)
-        builder.request(key=ANOTHER_KEY, build=lambda: built.append(A_KEY) or A_SCORE)
-        builder.request(key=ANOTHER_KEY, build=lambda: ANOTHER_SCORE)
+        builder.request(key=ANOTHER_KEY, build=lambda earlier: built.append(A_KEY) or A_SCORE)
+        builder.request(key=ANOTHER_KEY, build=lambda earlier: ANOTHER_SCORE)
         release.set()
         self.assertEqual(wait_for(builder=builder, key=ANOTHER_KEY).score, ANOTHER_SCORE)
         self.assertEqual(built, [])
+
+    def test_each_build_is_handed_the_last_score_made_and_a_problem_leaves_it(self):
+        builder = ScoreBuilder(at_once=True)
+        handed = []
+
+        def unplayable(earlier):
+            handed.append(earlier)
+            raise SongFileError(PROBLEM)
+        builder.request(key=A_KEY, build=lambda earlier: handed.append(earlier) or A_SCORE)
+        builder.request(key=ANOTHER_KEY, build=unplayable)
+        builder.request(key=A_KEY, build=lambda earlier: handed.append(earlier) or ANOTHER_SCORE)
+        self.assertEqual(handed, [None, A_SCORE, A_SCORE])
 
 
 if __name__ == '__main__':

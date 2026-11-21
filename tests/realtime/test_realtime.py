@@ -388,9 +388,9 @@ class TestScore(unittest.TestCase):
 
     def test_the_sounding_notes_and_the_repeats_left_are_read_from_the_events(self):
         score = Score(song=player_song(), routes=two_routes(), seed=SEED)
-        self.assertTrue(score.is_sounding(scene=FIRST, track=LEAD, elapsed=0.1))
-        self.assertFalse(score.is_sounding(scene=FIRST, track=BASS, elapsed=0.6))
-        self.assertEqual(score.sounding_across(scene=FIRST, track=LEAD, elapsed=0.1), [(PORT, EXPORT_CHANNEL, score.get_events(scene=FIRST, track=LEAD)[0].number)])
+        self.assertTrue(score.clip_notes(scene=FIRST, track=LEAD).is_sounding(0.1))
+        self.assertFalse(score.clip_notes(scene=FIRST, track=BASS).is_sounding(0.6))
+        self.assertEqual(score.clip_notes(scene=FIRST, track=LEAD).sounding_across(0.1), [(PORT, EXPORT_CHANNEL, score.get_events(scene=FIRST, track=LEAD)[0].number)])
         self.assertEqual(score.repeats_left(scene=FIRST, track=LEAD, elapsed=0.1), 1)
 
     def test_how_far_into_a_clip_a_moment_is_stops_at_the_clips_end_and_starts_over_for_a_looping_clip(self):

@@ -32,8 +32,10 @@ from typing import NamedTuple
 
 from llamatron.composition.file_format import FollowAction
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.realtime import timeline
+from llamatron.realtime import score_records, timeline
+from llamatron.realtime.clip_notes import ClipNotes
 from llamatron.realtime.timeline import clip_timeline, sort_key, Tag
+from llamatron.support import memory
 from llamatron.support.rational import Rational
 
 NO_PLAY = 0
@@ -62,31 +64,24 @@ class Row(NamedTuple):
     clock: object
 
 
-class Sounding(NamedTuple):
-    """When one note of a clip starts and ends, in seconds from the scene's start, for the lights."""
-
-    on: float
-    off: float
-
-
-class Heard(NamedTuple):
-    """One note of a clip as the visualizer hears it: when it starts and ends, in seconds from the scene's start, its MIDI number and its velocity."""
-
-    on: float
-    off: float
-    number: int
-    velocity: int
-
-
 class Score:
     """What the player knows about a song: each scene's length and launch settings, and each clip's events from its scene's start."""
 
-    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_sounding', '_heard', '_bar', '_draw_lights')
+    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_renderer', '_routes')
 
-    def __init__(self, *, song, routes, seed=None):
-        """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through."""
-        renderer = SongRenderer(song, seed=seed, looping_scenes_go_round=True)
-        grid = renderer.render()
+    def __init__(self, *, song, routes, seed=None, data=None, earlier=None):
+        """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through.
+
+        data, the set's data the song was copied from (Setlist.kept_data), lets a later score take from this one the scenes an
+        edit cannot change; earlier, such a score of the same seed and routes, gives this one those scenes (score_records.py).
+        """
+        if earlier is not None and earlier._routes != routes:
+            earlier = None
+        renderer = SongRenderer(song, seed=seed, looping_scenes_go_round=True, data=data)
+        grid = renderer.render(after=None if earlier is None else earlier._renderer)
+        reused = renderer.get_reused_scene_count()
+        self._renderer = renderer
+        self._routes = dict(routes)
         setlist = song.get_setlist()
         self._tracks = list(song.get_track_names())
         # How long a bar is in whole notes, by the song's time signature, which a launch by hand waits for.
@@ -102,9 +97,8 @@ class Score:
         self._launches_together = []
         self._repeats = {}
         self._clip_seconds = {}
-        self._sounding = {}
-        # Each clip's notes with their numbers and velocities, the times they start and the longest of them, worked out the first time the visualizer asks.
-        self._heard = {}
+        # Each clip's notes as they sound, made the first time the lights, the visualizer or a cut asks.
+        self._notes = {}
         # Each scene's moments at which a draw drew, in seconds from the scene's start, with where every draw then stood.
         self._draw_lights = []
         song_start = START_OF_SCENE
@@ -123,6 +117,10 @@ class Score:
                 # An empty slot is done when its scene is done and counts as "With Scene", so the track below starts as the export has it start.
                 self._follow_actions[(index, track)] = FollowAction.WITH_SCENE if clip_slot is None else setlist.follow_action_of(clip_slot)
                 self._repeats[(index, track)] = None if clip_slot is None or clip_slot.loops() else clip_slot.get_repeat()
+            if scene_rows and scene_rows[-1] < reused:
+                self._scene_seconds.append(score_records.take_scene(into=self._records(), earlier=earlier._records(), index=index, tracks=self._tracks))
+                song_start += self._scene_seconds[-1]
+                continue
             for place in scene_rows:
                 row = rows[place]
                 clock = grid.clock_of(row)
@@ -146,6 +144,15 @@ class Score:
                 self._events[(index, track)].sort(key=sort_key)
             self._scene_seconds.append(scene_start)
             song_start += scene_start
+        if reused and memory.Memory.checks_by_default():
+            score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed)._records())
+
+    def get_reused_scene_count(self):
+        """Return how many written scenes, from the first, the score took from an earlier one rather than rendering them."""
+        return self._renderer.get_reused_scene_count()
+
+    def _records(self):
+        return score_records.Records(events=self._events, scene_seconds=self._scene_seconds, clip_seconds=self._clip_seconds, draw_lights=self._draw_lights, rows=self._rows)
 
     def draw_places_at(self, *, scene, seconds):
         """Return where every draw stood a number of seconds into a scene, by name, the place of each one's last slot: none before the scene's first draw."""
@@ -193,55 +200,12 @@ class Score:
         """Return a clip's events, each at its seconds from the scene's start and untagged, which a play places and tags as it sends them."""
         return self._events[(scene, track)]
 
-    def sounding(self, *, scene, track):
-        """Return when each note of a clip sounds, from the scene's start, in the order the notes start."""
+    def clip_notes(self, *, scene, track):
+        """Return a clip's notes as they sound, a ClipNotes, for the lights, the visualizer and a cut."""
         key = (scene, track)
-        if key not in self._sounding:
-            self._sounding[key] = self._note_spans(self._events[key])
-        return self._sounding[key]
-
-    def heard(self, *, scene, track, since, until):
-        """Return the notes of a clip the visualizer hears between two moments counted from the scene's start: those that started after since and by until, and those still sounding at until, each a Heard.
-
-        Only notes that have started are heard, so the visualizer never knows what is coming.
-        """
-        key = (scene, track)
-        if key not in self._heard:
-            notes = self._heard_notes(self._events[key])
-            self._heard[key] = (notes, [note.on for note in notes], max((note.off - note.on for note in notes), default=0.0))
-        notes, starts, longest = self._heard[key]
-        last = bisect.bisect_right(starts, until)
-        first_started = bisect.bisect_right(starts, since)
-        earliest_held = bisect.bisect_left(starts, until - longest)
-        started = notes[first_started:last]
-        held = [note for note in notes[min(earliest_held, first_started):first_started] if note.off > until]
-        return started, held
-
-    @staticmethod
-    def _heard_notes(events):
-        """Return each note on with its note off, number and velocity, in the order the notes start."""
-        notes = []
-        open_notes = {}
-        for event in events:
-            if event.switch:
-                continue
-            key = (event.port, event.channel, event.number)
-            if event.kind == timeline.NOTE_ON:
-                open_notes[key] = (event.seconds, event.value)
-            elif event.kind == timeline.NOTE_OFF and key in open_notes:
-                on, velocity = open_notes.pop(key)
-                notes.append(Heard(on, event.seconds, event.number, velocity))
-        notes.sort()
-        return notes
-
-    def is_sounding(self, *, scene, track, elapsed):
-        """Return whether a note of a clip sounds at a moment counted from the scene's start."""
-        for span in self.sounding(scene=scene, track=track):
-            if span.on > elapsed:
-                return False
-            if span.off > elapsed:
-                return True
-        return False
+        if key not in self._notes:
+            self._notes[key] = ClipNotes(self._events[key])
+        return self._notes[key]
 
     def events_from(self, *, scene, track, start, tag, after):
         """Return a clip's events played from a moment, start, tagged with tag, leaving out those before after and the note offs of notes that started before it, for a clip whose notes change while it plays."""
@@ -293,19 +257,6 @@ class Score:
             counted += row_whole
         return START_OF_SCENE
 
-    def sounding_across(self, *, scene, track, elapsed):
-        """Return the (port, channel, number) of every note of a clip that has started and not ended at a moment, for cutting the clip there."""
-        notes = set()
-        for event in self._events[(scene, track)]:
-            if event.seconds >= elapsed:
-                break
-            key = (event.port, event.channel, event.number)
-            if event.kind == timeline.NOTE_ON:
-                notes.add(key)
-            elif event.kind == timeline.NOTE_OFF:
-                notes.discard(key)
-        return sorted(notes)
-
     def bar_seconds(self, *, scene, elapsed):
         """Return how long a bar of the song's time signature lasts, in seconds, at a moment of a scene counted from the scene's start, at the tempo of that moment."""
         return self._bar * self.seconds_per_whole(scene=scene, elapsed=elapsed)
@@ -349,19 +300,3 @@ class Score:
             return None
         played = int((elapsed - row.start) // (clip_seconds / repeat))
         return max(repeat - played, NO_PLAY)
-
-    @staticmethod
-    def _note_spans(events):
-        """Return when each note on's note sounds until its note off, in the order the notes start."""
-        spans = []
-        open_notes = {}
-        for event in events:
-            if event.switch:
-                continue
-            key = (event.port, event.channel, event.number)
-            if event.kind == timeline.NOTE_ON:
-                open_notes[key] = event.seconds
-            elif event.kind == timeline.NOTE_OFF and key in open_notes:
-                spans.append(Sounding(open_notes.pop(key), event.seconds))
-        spans.sort()
-        return spans

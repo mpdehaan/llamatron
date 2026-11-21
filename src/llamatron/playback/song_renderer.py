@@ -44,6 +44,7 @@ from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
+from llamatron.playback.scene_reuse import first_changed_scene, SceneCheckpoint
 from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
 from llamatron.playback.tune_source import TuneSource
 from llamatron.playback.written_scene import WrittenScene
@@ -118,14 +119,17 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused')
 
-    def __init__(self, song, *, seed=None, looping_scenes_go_round=False):
+    def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
 
         A scene whose every clip loops can't be exported, since nothing says how long it lasts. With
         looping_scenes_go_round, as real-time playback renders, such a scene lasts as long as its longest
         clip would play once, and goes round, so that a scene made to loop while it plays plays on.
+
+        data, the set's data as its objects kept it (Setlist.kept_data) when the song was copied from it, makes a render that a
+        later render of the same song, after an edit, can take its first scenes from (render(after=), scene_reuse.py).
         """
         self._looping_scenes_go_round = looping_scenes_go_round
         self._song = song
@@ -165,6 +169,11 @@ class SongRenderer:
         # What is asked once for the render: of each pattern, whether a step can cut a pass short, and of each written scene, whether any of its clips plays such a pattern.
         self._cutting = {}
         self._settled_by_playing = {}
+        # The set's data the song was copied from, where its threads were kept at each written scene's start, and how many
+        # written scenes the render took from an earlier one.
+        self._data = data
+        self._checkpoints = None if data is None else []
+        self._reused = 0
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it has none."""
@@ -184,30 +193,111 @@ class SongRenderer:
         instrument = self.instrument_of(track)
         return instrument is not None and instrument.uses_fluidsynth()
 
-    def render(self):
-        """Return a ClipGrid with every scene's finished clips, or raise SongFileError."""
+    def render(self, *, after=None):
+        """Return a ClipGrid with every scene's finished clips, or raise SongFileError.
+
+        after, an earlier render of the same song from the same seed, made with data, gives this render every written scene
+        before the first an edit since can change, its clips finished already, so that only the scenes from there are played.
+        """
         grid = ClipGrid(tempo=_whole_if_possible(float(self._song.get_tempo())), time_signature=self._song.get_time_signature())
         tracks = self._add_tracks(grid)
-        for scene in self._scenes:
+        self._take_over(after)
+        for place, scene in enumerate(self._scenes):
+            if self._checkpoints is not None and place >= self._reused:
+                self._checkpoints.append(SceneCheckpoint(self._register_chooser.getstate(), self._drifts.snapshot()))
             tempo = None if scene.get_tempo() is None else float(scene.get_tempo())
             grid_scene = grid.add_row(ClipRow(name=scene.get_name(), tempo=tempo))
             for name in self._song.get_track_names():
-                clip = self.get_clip(scene=scene, track=name)
+                clip = self._finished_clip(scene=scene, track=name, tempo=tempo, kept=place < self._reused)
                 if clip is not None:
-                    # The groove goes on last, so that generators, grabs and lengths never see it.
-                    clip.set_groove(self._song.groove_at(scene=scene, track=name))
-                    clip.set_strum(self.strum_plan(scene=scene, track=name, tempo=self._song.get_tempo() if tempo is None else tempo))
-                    self._chord_counts[(scene.get_number(), name)] = _chords_in(clip)
-                    clip.set_nudge(self.nudge_plan(scene=scene, track=name))
-                    clip.set_handed(self.handed_notes(scene=scene, track=name))
-                    if clip.get_keyswitches():
-                        clip.set_keyswitch_lead(self.keyswitch_lead(track=name, tempo=self._song.get_tempo() if tempo is None else tempo))
                     grid.set_clip(row=grid_scene, column=tracks[name], clip=clip)
             tempos = self.tempos_of(scene)
             if tempos is not None:
                 grid_scene.set_tempo(tempos[0].tempo)
                 grid_scene.set_tempo_changes(tempos[1:])
         return grid
+
+    def _finished_clip(self, *, scene, track, tempo, kept):
+        """Return a track's clip in a written-out scene with its groove, strums, nudges, handed notes and keyswitch lead, or None
+        when it plays nothing there; kept, a clip taken from an earlier render, which has them already."""
+        if kept:
+            return self._clips.get((scene.get_number(), track))
+        clip = self.get_clip(scene=scene, track=track)
+        if clip is None:
+            return None
+        tempo = self._song.get_tempo() if tempo is None else tempo
+        # The groove goes on last, so that generators, grabs and lengths never see it.
+        clip.set_groove(self._song.groove_at(scene=scene, track=track))
+        clip.set_strum(self.strum_plan(scene=scene, track=track, tempo=tempo))
+        self._chord_counts[(scene.get_number(), track)] = _chords_in(clip)
+        clip.set_nudge(self.nudge_plan(scene=scene, track=track))
+        clip.set_handed(self.handed_notes(scene=scene, track=track))
+        if clip.get_keyswitches():
+            clip.set_keyswitch_lead(self.keyswitch_lead(track=track, tempo=tempo))
+        return clip
+
+    def get_reused_scene_count(self):
+        """Return how many written scenes, from the first, the render took from an earlier render rather than playing them."""
+        return self._reused
+
+    def _take_over(self, after):
+        """Take from an earlier render everything it worked out about the written scenes an edit since cannot change, and its
+        random streams as they stood at the first scene that can change, so that the render goes on from there as if it had
+        played every scene before."""
+        count = self._unchanged_scene_count(after)
+        if count == 0:
+            return
+        self._reused = count
+        self._checkpoints = after._checkpoints[:count]
+        self._clips = _through_scene(entries=after._clips, count=count, number_of=_first_part)
+        self._counted = _through_scene(entries=after._counted, count=count, number_of=_first_part)
+        self._decided = _through_scene(entries=after._decided, count=count, number_of=_first_part)
+        self._hocket_turns = _through_scene(entries=after._hocket_turns, count=count, number_of=_first_part)
+        self._source_turns = _through_scene(entries=after._source_turns, count=count, number_of=_first_part)
+        self._chord_sources = _through_scene(entries=after._chord_sources, count=count, number_of=_first_part)
+        self._tune_sources = _through_scene(entries=after._tune_sources, count=count, number_of=_first_part)
+        self._chord_counts = _through_scene(entries=after._chord_counts, count=count, number_of=_first_part)
+        self._end_states = _through_scene(entries=after._end_states, count=count, number_of=_second_part)
+        self._lengths = _through_scene(entries=after._lengths, count=count, number_of=_whole_key)
+        self._timelines = _through_scene(entries=after._timelines, count=count, number_of=_whole_key)
+        self._starts = _through_scene(entries=after._starts, count=count, number_of=_whole_key)
+        if count < len(after._checkpoints):
+            checkpoint = after._checkpoints[count]
+            self._register_chooser.setstate(checkpoint.register_state)
+            self._drifts.restore(checkpoint.drifts)
+
+    def _unchanged_scene_count(self, after):
+        """Return how many written scenes, from the first, play in this render as they did in an earlier one: none unless both
+        were made with data from the same seed and every scene lasts as long in both, since a generator's run and a drift's clock
+        reach across scenes by their lengths; none either where a register can cut a clip short, since such a scene is played
+        to find how long it lasts."""
+        if after is None or after._checkpoints is None or self._checkpoints is None or self._seed is None or after._seed != self._seed:
+            return 0
+        if after._looping_scenes_go_round != self._looping_scenes_go_round or after._song_flags() != self._song_flags():
+            return 0
+        name = _song_name_of(self._song)
+        first = first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
+        if first == 0:
+            return 0
+        try:
+            if after._settles_any() or self._settles_any() or after._every_length() != self._every_length():
+                return 0
+        except SongFileError:
+            return 0
+        scenes = self._song.get_scenes()[:first]
+        return min(sum(scene.get_repeat() for scene in scenes), len(after._checkpoints))
+
+    def _song_flags(self):
+        """Return what the song as a whole says about how every scene renders: whether anything changes a register, whether a draw holds a value, and whether a scene changes registers."""
+        return (self._song.changes_registers(), self._song.uses_draws(), self._song.scenes_change_registers())
+
+    def _settles_any(self):
+        """Return whether any written scene is played to find how long it lasts."""
+        return any(self._is_settled_by_playing(scene) for scene in self._scenes)
+
+    def _every_length(self):
+        """Return how long every written scene lasts, in order."""
+        return [self.get_scene_length(scene) for scene in self._scenes]
 
     def tempos_of(self, scene):
         """Return a written-out scene's tempos where its scene ramps its tempo, (time in whole notes from its start, tempo) with the first at its start, or None for a scene with no ramp, which keeps one tempo.
@@ -844,6 +934,29 @@ class SongRenderer:
             where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), default_seed=seed, default_step=pattern_step, bar=self._song.get_time_signature().bar_length(),
             continuation=continuation, tempo=self._song.get_tempo() if scene.get_tempo() is None else scene.get_tempo(),
         )
+
+
+def _through_scene(*, entries, count, number_of):
+    """Return the entries of what a render worked out whose written scene, which number_of finds in a key, is among the first count."""
+    return {key: value for key, value in entries.items() if number_of(key) <= count}
+
+
+def _first_part(key):
+    return key[0]
+
+
+def _second_part(key):
+    return key[1]
+
+
+def _whole_key(key):
+    return key
+
+
+def _song_name_of(song):
+    """Return the name a song goes by in its set."""
+    setlist = song.get_setlist()
+    return next(name for name in setlist.get_song_names() if setlist.get_song(name) is song)
 
 
 def _seconds_of(*, length, clock, whole):

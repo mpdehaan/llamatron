@@ -601,8 +601,9 @@ class Transport:
         """Ask the builder for a song's score, from a copy of its set made now, on the screen's thread, so that nothing the render
         reads changes while it renders."""
         name = self.document().get_current_song_name()
-        copied = Setlist.from_data(data=song.get_setlist().kept_data()).get_song(name)
-        self._builder.request(key=key, build=lambda: Score(song=copied, routes=routes, seed=seed))
+        data = song.get_setlist().kept_data()
+        copied = Setlist.from_data(data=data).get_song(name)
+        self._builder.request(key=key, build=lambda earlier: Score(song=copied, routes=routes, seed=seed, data=data, earlier=earlier))
 
     def _places_after_the_edit(self, song):
         """Return each scene's new place by its old one and each track's new name by its old one, found by the objects themselves, else by place or name when an undo read the song again, None for one that has gone."""

@@ -18,11 +18,13 @@
 holding up the keys.
 
 A ScoreBuilder builds one score at a time in a thread of its own. A request names what the score is built from, its key, and a
-function that builds it, which works on a copy of the set made on the screen's thread, so nothing it reads changes while it renders.
+function that builds it, which works on a copy of the set made on the screen's thread, so nothing it reads changes while it renders,
+and is handed the last score built, from which a score of the same song after an edit takes the scenes the edit cannot change.
 A newer request replaces one not yet started, so a render that a newer edit overtook is never done. The tests make one that builds
 at once, in the request, so that what they press is heard at the moment it would be.
 """
 
+import functools
 import threading
 
 from llamatron.composition.song_file_error import SongFileError
@@ -41,7 +43,7 @@ class Built:
 class ScoreBuilder:
     """Builds the newest score asked for, off the screen's thread or, for the tests, at once."""
 
-    __slots__ = ('_at_once', '_lock', '_waiting', '_built', '_wake', '_thread')
+    __slots__ = ('_at_once', '_lock', '_waiting', '_built', '_wake', '_thread', '_last')
 
     def __init__(self, *, at_once=False):
         self._at_once = at_once
@@ -51,11 +53,13 @@ class ScoreBuilder:
         self._built = None
         self._wake = threading.Event()
         self._thread = None
+        # The last score built, which only the thread that builds reads and replaces.
+        self._last = None
 
     def request(self, *, key, build):
-        """Ask for a score built from what key names, by build(), replacing a request not yet started."""
+        """Ask for a score built from what key names, by build(earlier=), earlier being the last score built or None, replacing a request not yet started."""
         if self._at_once:
-            self._built = (key, made(build))
+            self._built = (key, self._made(build))
             return
         with self._lock:
             self._waiting = (key, build)
@@ -81,9 +85,17 @@ class ScoreBuilder:
             if waiting is None:
                 continue
             key, build = waiting
-            result = made(build)
+            result = self._made(build)
             with self._lock:
                 self._built = (key, result)
+
+
+    def _made(self, build):
+        """Return what a request came to, handing it the last score built, and keep the score it made for the next."""
+        result = made(functools.partial(build, earlier=self._last))
+        if result.score is not None:
+            self._last = result.score
+        return result
 
 
 def made(build):

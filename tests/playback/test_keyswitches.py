@@ -33,7 +33,7 @@ from llamatron.exporters.timing import keyswitch_events, timed_events
 from llamatron.music import midi
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline as timeline_values
-from llamatron.realtime.score import Score
+from llamatron.realtime.clip_notes import ClipNotes
 from llamatron.realtime.timeline import Route, song_timeline
 from llamatron.support.rational import Rational
 from tests.playback import test_registers
@@ -68,6 +68,8 @@ A_DIRECTORY = '.'
 WHERE = 'a test'
 MIDI_KEY = 'MidiKey'
 VALUE = 'Value'
+# A moment before a clip's first note, from which the visualizer hears every note.
+BEFORE_ANY_NOTE = -1.0
 
 
 def slots_written(**slots):
@@ -347,8 +349,10 @@ class TestKeyswitchesInRealTime(unittest.TestCase):
 
     def test_the_lights_and_the_visualizers_pass_a_keyswitch_by(self):
         events = self.timeline(Route(PORT, 0))
-        self.assertEqual(len(Score._heard_notes(events)), len([event for event in events if event.kind == timeline_values.NOTE_ON and not event.switch]))
-        self.assertEqual(len(Score._note_spans(events)), len(Score._heard_notes(events)))
+        notes = [event for event in events if event.kind == timeline_values.NOTE_ON and not event.switch]
+        started, _held = ClipNotes(events).heard(since=BEFORE_ANY_NOTE, until=events[-1].seconds)
+        self.assertEqual(len(started), len(notes))
+        self.assertEqual(ClipNotes([event for event in events if event.switch]).heard(since=BEFORE_ANY_NOTE, until=events[-1].seconds), ([], []))
 
 
 if __name__ == '__main__':

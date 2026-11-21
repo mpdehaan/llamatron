@@ -132,6 +132,20 @@ class DriftPlay:
             root = picked.root or root
         return DriftEffects(velocity, probability, degree, scale, root)
 
+    def snapshot(self):
+        """Return where every drift stands now, what each trigger picked, each brownian walk and each chooser's state, for a
+        render after an edit that starts at a later scene (scene_reuse.SceneCheckpoint)."""
+        return (dict(self._triggers), {name: list(walk) for name, walk in self._walks.items()}, {name: chooser.getstate() for name, chooser in self._choosers.items()})
+
+    def restore(self, snapshot):
+        """Put every drift back where a snapshot found it."""
+        triggers, walks, states = snapshot
+        self._triggers = dict(triggers)
+        self._walks = {name: list(walk) for name, walk in walks.items()}
+        self._choosers = {}
+        for name, state in states.items():
+            self._chooser(name).setstate(state)
+
     def _chooser(self, name):
         """Return what draws a drift's random numbers: from the render's seed with its name, when a test or a tool gives one, or else Python's own."""
         if name not in self._choosers:

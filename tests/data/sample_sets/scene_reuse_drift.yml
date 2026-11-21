@@ -1,0 +1,42 @@
+version: 1.0.591
+title: Scene Reuse Drift
+description: "a brownian drift with random degrees in every scene, and a pattern of its own in each scene, for tests/realtime/test_scene_reuse.py"
+
+scales:
+  - { name: C Major, root: C, type: major }
+
+patterns:
+  - name: first
+    steps: 8
+    step_size: 1/8
+    degree: [1, 2, 3, 4, 5, 4, 3, 2]
+  - name: second
+    steps: 8
+    step_size: 1/8
+    degree: [5, 6, 7, 1, 7, 6, 5, 4]
+  - name: third
+    steps: 8
+    step_size: 1/8
+    degree: [3, 3, 4, 5, 5, 4, 3, 2]
+
+generators:
+  - { name: wander, kind: drift, every: 1/8, steps_to_b: 6, direction: brownian, restart: whole_song, a_degree: 0, b_degree: 4, a_degree_random: 2, b_degree_random: 3 }
+
+songs:
+  - name: wander
+    tempo: 120
+    scale: C Major
+
+    tracks:
+      - { name: lead }
+
+    scenes:
+      - name: one
+        clips:
+          - { track: lead, pattern: first, generators: [{ name: wander }], repeat: 2 }
+      - name: two
+        clips:
+          - { track: lead, pattern: second, generators: [{ name: wander }], repeat: 2 }
+      - name: three
+        clips:
+          - { track: lead, pattern: third, generators: [{ name: wander }], repeat: 2 }
