@@ -448,7 +448,12 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def get_genres(self):
         """Return the genres the set's songs say they are, each once in the songs' order."""
-        return list(dict.fromkeys(genre for genre in (self.get_song(name).get_style_name() for name in self.get_song_names()) if genre))
+        styles = [self.get_song(name).get_style_name() for name in self.get_song_names()]
+        return list(dict.fromkeys(genre for genre in styles if genre))
+
+    def _names_but(self, *, section, old):
+        """Return the names of a section's items but the name an item is being renamed from."""
+        return [each for each in self._section(section).names() if each != old]
 
     def get_title(self):
         return self._setting(name=SetlistSetting.TITLE, default=NO_TEXT)
@@ -564,7 +569,7 @@ class Setlist(HoldsSections, HoldsSettings):
         if section not in sections.GENERATOR_SECTIONS:
             return
         others = [held for held in sections.GENERATOR_SECTIONS if held != section]
-        taken = next((held for held in others if is_taken(name=name, taken=[each for each in self._section(held).names() if each != old])), None)
+        taken = next((held for held in others if is_taken(name=name, taken=self._names_but(section=held, old=old))), None)
         if taken is not None:
             raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.SECTION_LABELS[taken], name=name))
 

@@ -155,7 +155,7 @@ def pass_controls(*, lanes, begin, length):
     for place in range(length):
         holding = [lane for lane in range(len(lanes)) if points[lane][place] is not None]
         runs = {lane: straight_run(values=lanes[lane], begin=begin + place, last=begin + length - 1) for lane in holding}
-        steady = [lane for lane in holding if runs[lane] is None and not any(value is not None for value in points[lane][place + 1:])]
+        steady = [lane for lane in holding if runs[lane] is None and not has_a_value(points[lane][place + 1:])]
         if not any(run is not None for run in runs.values()) or len(steady) + sum(1 for run in runs.values() if run is not None) < len(holding):
             continue
         for lane, run in runs.items():
@@ -295,3 +295,8 @@ def repeated_pattern(*, steps, gated, lanes=()):
         ):
             return (tuple(pattern), pattern_controls), len(passes)
     return (tuple(steps), pass_controls(lanes=lanes, begin=0, length=count)), 1
+
+
+def has_a_value(values):
+    """Return whether any of the values is set."""
+    return any(value is not None for value in values)

@@ -142,7 +142,8 @@ class ClipGrid:
 
     def _clips_in(self, row):
         """Return a row's clips, in column order."""
-        return [clip for clip in (self.get_clip(row=row, column=column) for column in self.get_columns()) if clip is not None]
+        placed = [self.get_clip(row=row, column=column) for column in self.get_columns()]
+        return [clip for clip in placed if clip is not None]
 
     def scale_at(self, *, row, column):
         """Return the scale for a cell: its clip's, else its row's, else the song's.

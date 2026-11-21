@@ -211,9 +211,10 @@ class PatternMunges:
                 continue
             written = self._held(row=Row.OCTAVE, step=step)
             octave = default_octave if written is None else written
+            voicings = [(shift, inversion) for shift in (OCTAVE_SHIFTS if octaves else NO_SHIFT) for inversion in (0, *limits.INVERSIONS)]
             choices = [
                 (movement(pitches=voiced(pitches=pitches, inversion=inversion, shift=shift), before=before), place, inversion, shift)
-                for place, (shift, inversion) in enumerate((shift, inversion) for shift in (OCTAVE_SHIFTS if octaves else NO_SHIFT) for inversion in (0, *limits.INVERSIONS))
+                for place, (shift, inversion) in enumerate(voicings)
                 if inversion < len(pitches) and limits.MIN_OCTAVE <= octave + shift <= limits.MAX_OCTAVE
             ]
             _, _, inversion, shift = min(choices)
@@ -248,4 +249,9 @@ def movement(*, pitches, before):
     now = sorted(pitches)
     if len(now) == len(before):
         return sum(abs(pitch - other) for pitch, other in zip(now, before))
-    return sum(min(abs(pitch - other) for other in before) for pitch in now)
+    return sum(_distance_to_nearest(pitch=pitch, others=before) for pitch in now)
+
+
+def _distance_to_nearest(*, pitch, others):
+    """Return how far a pitch is from the nearest of other pitches."""
+    return min(abs(pitch - other) for other in others)

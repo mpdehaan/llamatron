@@ -152,7 +152,8 @@ class MidiImport:
         track_names = writer.track_names()
         control_tracks = [(place, track_names[first], voices[first].lanes) for place, first in enumerate(firsts) if voices[first].lanes]
         left_out = [control for part, first in zip(parts, firsts) for control in part.controls if control.number not in voices[first].lanes]
-        numbers = importing.MSG_WARN_NUMBERS_JOIN.join(str(number) for number in sorted({control.number for control in left_out}))
+        left_out_numbers = sorted({control.number for control in left_out})
+        numbers = importing.MSG_WARN_NUMBERS_JOIN.join(str(number) for number in left_out_numbers)
         tempos_moved = sum(1 for change in contents.tempos if scene_tempo_at(cut=cut, time=change.time, step_size=grid) != change.value)
         swung = moved >= SWING_SHARE * contents.note_count()
         for count, message in (

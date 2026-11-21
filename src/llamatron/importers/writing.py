@@ -39,6 +39,7 @@ from llamatron.composition.naming import copy_name, default_scale_name, is_defau
 from llamatron.composition.pattern import Pattern
 from llamatron.composition.song import Song
 from llamatron.importers import steps as steps_values
+from llamatron.importers.steps import has_a_value
 from llamatron.music.time_signature import TimeSignature
 from llamatron.strings import importing
 from llamatron.support.rational import Rational
@@ -83,7 +84,7 @@ def pattern_data(*, pattern, set_step_size):
         data[PatternSetting.STEP_SIZE] = fraction_text(step_size)
     if drum:
         data[PatternSetting.DRUM] = True
-    data.update({row: values for row, values in rows.items() if any(value is not None for value in values)})
+    data.update({row: values for row, values in rows.items() if has_a_value(values)})
     if any(ties):
         data[Row.TIE] = ties
     data.update(control_rows(controls))

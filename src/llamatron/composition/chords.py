@@ -159,7 +159,8 @@ def spelled_chord(*, scale, degree, accidental=None, kind=None, symbol=None, ten
     shown_tensions = marks.MSG_CHORD_TENSIONS_SHOWN.format(tensions=marks.MSG_TENSION_SEPARATOR.join(added)) if added else ''
     suffix = marks.MSG_UNNAMED_CHORD_SUFFIX if named is None else marks.MSG_CHORD_SUFFIXES[named]
     long_name = root if named is None else root + ' ' + labels.MSG_CHORD_NAMES[named].split(',')[0].title()
-    notes = (root, *[spelled_note(root=root, half_steps=half_steps) for half_steps in (*own, *[file_format.TENSIONS[tension] for tension in added])])
+    heard = (*own, *[file_format.TENSIONS[tension] for tension in added])
+    notes = (root, *[spelled_note(root=root, half_steps=half_steps) for half_steps in heard])
     return SpelledChord(root=root, name=root + suffix + shown_tensions, long_name=(long_name + ' ' + shown_tensions).strip(), notes=notes)
 
 

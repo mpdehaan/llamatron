@@ -276,10 +276,18 @@ class AbletonProject(WritesOneFile, Exporter):
         xml = ET.tostring(root, encoding=XML_TEXT)
         return (XML_DECLARATION + xml).encode(XML_BYTES)
 
+    def _tempos(self):
+        """Return every tempo the song plays at: its own, each scene's, and every tempo a scene changes to."""
+        found = [self._grid.get_tempo()]
+        for scene in self._grid.get_rows():
+            found.append(scene.get_tempo())
+            found += [changed for _, changed in scene.get_tempo_changes()]
+        return found
+
     def _check_song_fits_live(self):
         if not self._grid.get_rows() or not self._grid.get_columns():
             raise ValueError(errors.ERR_EMPTY_SONG)
-        for tempo in [self._grid.get_tempo()] + [tempo for scene in self._grid.get_rows() for tempo in (scene.get_tempo(), *(changed for _, changed in scene.get_tempo_changes()))]:
+        for tempo in self._tempos():
             if tempo is not None and not MIN_LIVE_TEMPO <= tempo <= MAX_LIVE_TEMPO:
                 raise ValueError(errors.ERR_BAD_TEMPO.format(lowest=MIN_LIVE_TEMPO, highest=MAX_LIVE_TEMPO, value=tempo))
 

@@ -561,7 +561,7 @@ class ProgressionSettings(GeneratorSettings):
 
     def get_tensions(self):
         """Return each chord's tensions as a tuple, lowest first, or None for none."""
-        return [None if value is None else tuple(tension for tension in file_format.TENSIONS if tension in value) for value in _lined_up(values=self.get_written(ProgressionSetting.TENSIONS), count=len(self.get_chords()))]
+        return [_tensions_in_order(value) for value in _lined_up(values=self.get_written(ProgressionSetting.TENSIONS), count=len(self.get_chords()))]
 
 
 def _lined_up(*, values, count):
@@ -1444,3 +1444,8 @@ GENERATOR_SETTINGS = {
 BYPASS_SETTING = statements_setting(file_format.BYPASS_WHEN)
 for _settings_class in GENERATOR_SETTINGS.values():
     _settings_class.SETTINGS = {**_settings_class.SETTINGS, file_format.BYPASS_WHEN: BYPASS_SETTING}
+
+
+def _tensions_in_order(value):
+    """Return the tensions a chord's value holds, in the order the tensions come, as a tuple, or None for none."""
+    return None if value is None else tuple(tension for tension in file_format.TENSIONS if tension in value)

@@ -314,7 +314,7 @@ class Cutter:
         starts = [played.start - begin for played in self._voices[voice].played_between(begin=start * self._step_size, end=end * self._step_size)]
         sizes = [
             size for size in self._clip_step_sizes
-            if (begin / size).is_whole() and (self.time_of(end - start) / size).is_whole() and all((time / size).is_whole() for time in starts)
+            if (begin / size).is_whole() and (self.time_of(end - start) / size).is_whole() and all_on_steps(times=starts, size=size)
         ]
         return sizes or [self._step_size]
 
@@ -363,3 +363,8 @@ class Cutter:
     def best_cut(self):
         """Return the cheapest cut of every phrase length tried, the first tried winning a tie."""
         return min((self.cut(length) for length in self.phrase_lengths()), key=lambda cut: cut.cost)
+
+
+def all_on_steps(*, times, size):
+    """Return whether every time falls on a step of a size."""
+    return all((time / size).is_whole() for time in times)
