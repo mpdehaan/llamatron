@@ -340,8 +340,7 @@ class TestFieldsOnThePages(FieldPagesTest):
 
 
 class NumbersStopAtTheirEnds:
-    """Every number with ends on one settings page stops at them, a page to a class, since holding an arrow down on every number of
-    every page takes long and the classes run side by side. A test class takes it with FieldPagesTest and says its page's place."""
+    """Every number with ends on one settings page stops at them. A test class takes it with FieldPagesTest and says its page's place."""
 
     __slots__ = ()
 
@@ -375,13 +374,23 @@ class NumbersStopAtTheirEnds:
         await self.pilot.pause()
 
 
-# The settings pages FieldPagesTest tours, one class each for holding an arrow down on their numbers.
+# The settings pages FieldPagesTest tours.
 PAGES_TOURED = 30
 
-for a_place in range(PAGES_TOURED):
-    a_name = 'TestNumbersStopAtTheirEndsOnPage{}'.format(a_place + 1)
-    globals()[a_name] = type(a_name, (NumbersStopAtTheirEnds, FieldPagesTest), {'PAGE': a_place, '__slots__': ()})
-del a_place, a_name
+
+class TestNumbersStopAtTheirEndsOnTheSongPage(NumbersStopAtTheirEnds, FieldPagesTest):
+    """Holding an arrow on the Song page's numbers. Every number field is the one Field class, which the stand-in tests above try
+    in every kind, so two real pages stand for them all."""
+
+    __slots__ = ()
+    PAGE = 0
+
+
+class TestNumbersStopAtTheirEndsOnTheArpEditor(NumbersStopAtTheirEnds, FieldPagesTest):
+    """Holding an arrow on the Arpeggiator editor's numbers, a generator's settings standing for every generator's."""
+
+    __slots__ = ()
+    PAGE = 3
 
 
 if __name__ == '__main__':

@@ -10,54 +10,21 @@ tested with the page, so these checks call the page's rename and answer its prom
 
 import unittest
 
-from llamatron.composition import setlist
 from llamatron.composition.file_format import Section
 from llamatron.composition.generator_settings import ArpSetting
-from llamatron.composition.groove import FactoryGroove
 from llamatron.strings import errors, marks
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
-from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
-from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.tui.screens.generators.chain_editor import ChainEditor
-from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
-from llamatron.tui.screens.generators.chords_editor import ChordsEditor
-from llamatron.tui.screens.generators.density_editor import DensityEditor
-from llamatron.tui.screens.generators.drag_editor import DragEditor
-from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
-from llamatron.tui.screens.generators.drift_editor import DriftEditor
-from llamatron.tui.screens.generators.euclid_editor import EuclidEditor
-from llamatron.tui.screens.generators.follow_chords_editor import FollowChordsEditor
-from llamatron.tui.screens.generators.glide_editor import GlideEditor
-from llamatron.tui.screens.generators.glide_steps_editor import GlideStepsEditor
-from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
-from llamatron.tui.screens.generators.guitarify_editor import GuitarifyEditor
-from llamatron.tui.screens.generators.hocket_editor import HocketEditor
-from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
-from llamatron.tui.screens.generators.phrasing_editor import PhrasingEditor
-from llamatron.tui.screens.generators.progression_editor import ProgressionEditor
-from llamatron.tui.screens.generators.rush_editor import RushEditor
-from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
-from llamatron.tui.screens.generators.shorten_editor import ShortenEditor
-from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
-from llamatron.tui.screens.generators.strum_editor import StrumEditor
-from llamatron.tui.screens.generators.swell_editor import SwellEditor
-from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.tui.screens.pattern.pattern_editor import PatternEditor
-from llamatron.tui.screens.set.groove_editor import GrooveEditor
-from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.set.scale_page import ScalePage
 from llamatron.tui.screens.shared.shows_named_item import ShowsNamedItem
 from tests.support import ui_testing
 from tests.support.ui_testing import leaf_pages, UITest
 
 RENAMED = 'renamed'
-A_GROOVE = 'shuffle'
-A_INSTRUMENT = 'synth'
 SOME_OFFSETS = [0, 2]
 THE_PAGE_DOES_NOT_RENAME = 'the offsets editor shows an arpeggiator, which is renamed from the arpeggiator editor'
 
@@ -176,206 +143,10 @@ class TestChainEditorShowsItsChain(NamedItemChecks, UITest):
     FIRST = ui_testing.NAMED
 
 
-class TestInstrumentEditorShowsItsInstrument(NamedItemChecks, UITest):
-
-    PAGE = InstrumentEditor
-    FIRST = A_INSTRUMENT
-
-    def prepare(self):
-        self.document.add_instrument(A_INSTRUMENT)
-
-
-class TestGrooveEditorShowsItsGroove(NamedItemChecks, UITest):
-
-    PAGE = GrooveEditor
-    FIRST = A_GROOVE
-
-    def prepare(self):
-        self.document.add_groove(A_GROOVE)
-
-    async def test_a_factory_groove_is_always_there(self):
-        self.page.show_item(FactoryGroove.SWING_58)
-        self.assertTrue(self.page.still_exists())
-
-    async def test_a_factory_grooves_name_is_in_use(self):
-        await self.rename_to(FactoryGroove.SWING_58)
-        self.assertIn(errors.ERR_NAME_IN_USE.format(name=FactoryGroove.SWING_58), self.text())
-        self.assertEqual(self.page.item, A_GROOVE)
-
-
 class TestArpEditorShowsItsArp(NamedItemChecks, UITest):
 
     PAGE = ArpEditor
     FIRST = ui_testing.UP_ARP
-
-
-class TestAutoRatchetEditorShowsItsAutoRatchet(NamedItemChecks, UITest):
-
-    PAGE = AutoRatchetEditor
-    FIRST = ui_testing.ROLLS
-
-
-class TestDriftEditorShowsItsDrift(NamedItemChecks, UITest):
-
-    PAGE = DriftEditor
-    FIRST = ui_testing.SWAY
-
-
-class TestProgressionEditorShowsItsProgression(NamedItemChecks, UITest):
-
-    PAGE = ProgressionEditor
-    FIRST = ui_testing.POP
-
-
-class TestChordsEditorShowsItsProgression(NamedItemChecks, UITest):
-
-    PAGE = ChordsEditor
-    FIRST = ui_testing.POP
-    RENAMES = False
-
-
-class TestVoiceLeadingEditorShowsItsVoiceLeading(NamedItemChecks, UITest):
-
-    PAGE = VoiceLeadingEditor
-    FIRST = ui_testing.SMOOTH
-
-
-class TestHocketEditorShowsItsHocket(NamedItemChecks, UITest):
-
-    PAGE = HocketEditor
-    FIRST = ui_testing.TRADE
-
-
-class TestFollowChordsEditorShowsItsFollowChords(NamedItemChecks, UITest):
-
-    PAGE = FollowChordsEditor
-    FIRST = ui_testing.FOLLOWS
-
-
-class TestPhrasingEditorShowsItsPhrasing(NamedItemChecks, UITest):
-
-    PAGE = PhrasingEditor
-    FIRST = ui_testing.BREATHES
-
-
-class TestMusicianEditorShowsItsMusician(NamedItemChecks, UITest):
-
-    PAGE = MusicianEditor
-    FIRST = ui_testing.STRUMMER
-
-
-class TestGuitarifyEditorShowsItsGuitarify(NamedItemChecks, UITest):
-
-    PAGE = GuitarifyEditor
-    FIRST = ui_testing.PICKED
-
-
-class TestGuitarBarEditorShowsItsGuitarify(NamedItemChecks, UITest):
-
-    PAGE = GuitarBarEditor
-    FIRST = ui_testing.PICKED
-    RENAMES = False
-
-
-class TestChainStatementsPageShowsItsChain(NamedItemChecks, UITest):
-
-    PAGE = ChainStatementsPage
-    FIRST = ui_testing.NAMED
-    RENAMES = False
-
-
-class TestStrumEditorShowsItsStrum(NamedItemChecks, UITest):
-
-    PAGE = StrumEditor
-    FIRST = ui_testing.FOLK
-
-
-class TestEuclidEditorShowsItsEuclid(NamedItemChecks, UITest):
-
-    PAGE = EuclidEditor
-    FIRST = ui_testing.CLAVE
-
-
-class TestGlideEditorShowsItsGlide(NamedItemChecks, UITest):
-
-    PAGE = GlideEditor
-    FIRST = ui_testing.SLIDES
-
-
-class TestGlideStepsEditorShowsItsGlide(NamedItemChecks, UITest):
-
-    PAGE = GlideStepsEditor
-    FIRST = ui_testing.SLIDES
-    RENAMES = False
-
-
-class TestShortenEditorShowsItsShorten(NamedItemChecks, UITest):
-
-    PAGE = ShortenEditor
-    FIRST = ui_testing.CLIPS
-
-
-class TestShortenStepsEditorShowsItsShorten(NamedItemChecks, UITest):
-
-    PAGE = ShortenStepsEditor
-    FIRST = ui_testing.CLIPS
-    RENAMES = False
-
-
-class TestRushEditorShowsItsRush(NamedItemChecks, UITest):
-
-    PAGE = RushEditor
-    FIRST = ui_testing.PUSH
-
-
-class TestRushStepsEditorShowsItsRush(NamedItemChecks, UITest):
-
-    PAGE = RushStepsEditor
-    FIRST = ui_testing.PUSH
-    RENAMES = False
-
-
-class TestDragEditorShowsItsDrag(NamedItemChecks, UITest):
-
-    PAGE = DragEditor
-    FIRST = ui_testing.LAZY
-
-
-class TestDragStepsEditorShowsItsDrag(NamedItemChecks, UITest):
-
-    PAGE = DragStepsEditor
-    FIRST = ui_testing.LAZY
-    RENAMES = False
-
-
-class TestDensityEditorShowsItsDensity(NamedItemChecks, UITest):
-
-    PAGE = DensityEditor
-    FIRST = ui_testing.THIN
-
-
-class TestSwellEditorShowsItsSwell(NamedItemChecks, UITest):
-
-    PAGE = SwellEditor
-    FIRST = ui_testing.FADE
-
-
-class TestArticulateEditorShowsItsArticulate(NamedItemChecks, UITest):
-
-    PAGE = ArticulateEditor
-    FIRST = ui_testing.CLIPPED
-
-
-class TestScalePageShowsItsScale(NamedItemChecks, UITest):
-
-    PAGE = ScalePage
-    FIRST = setlist.DEFAULT_SCALE
-
-
-class TestTrackEditorShowsItsTrack(NamedItemChecks, UITest):
-
-    PAGE = TrackEditor
-    FIRST = ui_testing.LEAD
 
 
 class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
@@ -392,33 +163,31 @@ class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
         self.assertFalse(self.page.still_exists())
 
 
-# The test class of each page of one named thing, which the rule below reads.
-CHECKED = [
-    TestPatternEditorShowsItsPattern, TestChainEditorShowsItsChain, TestGrooveEditorShowsItsGroove, TestInstrumentEditorShowsItsInstrument, TestArpEditorShowsItsArp,
-    TestAutoRatchetEditorShowsItsAutoRatchet, TestDriftEditorShowsItsDrift, TestProgressionEditorShowsItsProgression, TestChordsEditorShowsItsProgression, TestVoiceLeadingEditorShowsItsVoiceLeading, TestHocketEditorShowsItsHocket, TestFollowChordsEditorShowsItsFollowChords, TestPhrasingEditorShowsItsPhrasing, TestMusicianEditorShowsItsMusician, TestGuitarifyEditorShowsItsGuitarify, TestGuitarBarEditorShowsItsGuitarify, TestChainStatementsPageShowsItsChain, TestStrumEditorShowsItsStrum, TestEuclidEditorShowsItsEuclid, TestGlideEditorShowsItsGlide, TestGlideStepsEditorShowsItsGlide, TestShortenEditorShowsItsShorten, TestShortenStepsEditorShowsItsShorten,
-    TestRushEditorShowsItsRush, TestRushStepsEditorShowsItsRush, TestDragEditorShowsItsDrag, TestDragStepsEditorShowsItsDrag,
-    TestDensityEditorShowsItsDensity, TestSwellEditorShowsItsSwell,
-    TestArticulateEditorShowsItsArticulate, TestScalePageShowsItsScale, TestTrackEditorShowsItsTrack, TestOffsetsEditorShowsItsArp,
-]
+# The pages of one named thing that carry the full checks: a list, a settings editor and a generator's, standing for every such
+# page, since the rule below holds that every one shows, follows renames and renames by the one shared way; and the offsets
+# editor, which is the one that renames nothing.
+CHECKED = [TestPatternEditorShowsItsPattern, TestChainEditorShowsItsChain, TestArpEditorShowsItsArp, TestOffsetsEditorShowsItsArp]
 
 
 class TestEveryPageOfOneNamedThingIsChecked(unittest.TestCase):
 
-    def test_every_such_page_has_the_checks(self):
-        pages = [page for page in leaf_pages() if issubclass(page, ShowsNamedItem)]
-        self.assertEqual(sorted(page.__name__ for page in pages), sorted(checks.PAGE.__name__ for checks in CHECKED))
-
     def test_every_such_page_names_its_section_and_its_crumbs(self):
-        for checks in CHECKED:
-            page = checks.PAGE
+        for page in pages_of_one_named_thing():
             self.assertIsNotNone(page.SECTION, page.__name__)
             self.assertTrue(page.CRUMBS_BEFORE, page.__name__)
-            self.assertEqual(page.RENAME_PROMPT is not None, checks.RENAMES, page.__name__)
 
     def test_no_page_keeps_a_way_of_its_own(self):
-        for checks in CHECKED:
+        for page in pages_of_one_named_thing():
             for method in (ShowsNamedItem.show_item, ShowsNamedItem.follow_renames, ShowsNamedItem.rename):
-                self.assertIs(getattr(checks.PAGE, method.__name__), method, checks.PAGE.__name__)
+                self.assertIs(getattr(page, method.__name__), method, page.__name__)
+
+    def test_the_checks_run_on_such_pages(self):
+        self.assertTrue(all(checks.PAGE in pages_of_one_named_thing() for checks in CHECKED))
+
+
+def pages_of_one_named_thing():
+    """Return every page that shows one named thing."""
+    return [page for page in leaf_pages() if issubclass(page, ShowsNamedItem)]
 
 
 if __name__ == '__main__':

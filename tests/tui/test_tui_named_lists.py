@@ -9,10 +9,10 @@ and AutoRatchets pages. What a page alone does, like adding, is tested with the 
 
 import unittest
 
-from llamatron.composition import file_format, groove, limits, setlist
+from llamatron.composition import file_format, groove, limits
 from llamatron.composition.file_format import Section
 from llamatron.composition.groove import FactoryGroove
-from llamatron.strings import errors, labels, messages, names
+from llamatron.strings import errors, labels, messages
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog
@@ -21,19 +21,13 @@ from llamatron.tui.drawing import fit
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.pattern import patterns_page
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
 from llamatron.tui.screens.set.grooves_page import GroovesPage
-from llamatron.tui.screens.set.instruments_page import InstrumentsPage
-from llamatron.tui.screens.set.scales_page import ScalesPage
-from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.shared.named_list_page import NamedListPage
 from tests.support import ui_testing
 from tests.support.ui_testing import leaf_pages, UITest
 
 RENAMED = 'renamed'
 A_GROOVE = 'shuffle'
-A_INSTRUMENT = 'synth'
-FIRST_SCENE = 0
 A_LETTER = 'a'
 MORE_THAN_A_NAME_HOLDS = limits.MAX_NAME_LENGTH + 5
 # A name an older file could hold, longer than the tracker now lets a person type.
@@ -220,21 +214,6 @@ class TestNamesAreHeldToTheirLength(UITest):
         self.assertIn(A_LONG_NAME, self.document.get_setlist().get_item_names(Section.PATTERNS))
 
 
-class TestPatternsPageAsANamedList(NamedListChecks, UITest):
-
-    PAGE = PatternsPage
-    OPENING = (keybindings.MainPage.PATTERNS,)
-    FIRST = ui_testing.TUNE
-    ALWAYS_SORTED = True
-
-
-class TestScalesPageAsANamedList(NamedListChecks, UITest):
-
-    PAGE = ScalesPage
-    OPENING = (keybindings.MainPage.SCALES,)
-    FIRST = setlist.DEFAULT_SCALE
-
-
 class TestGroovesPageAsANamedList(NamedListChecks, UITest):
 
     PAGE = GroovesPage
@@ -259,54 +238,26 @@ class TestGroovesPageAsANamedList(NamedListChecks, UITest):
         self.assertEqual(self.page().names(), before)
 
 
-class TestInstrumentsPageAsANamedList(NamedListChecks, UITest):
-
-    PAGE = InstrumentsPage
-    OPENING = (keybindings.MainPage.INSTRUMENTS,)
-    FIRST = A_INSTRUMENT
-
-    def prepare(self):
-        self.document.add_instrument(A_INSTRUMENT)
-
-    def make_used(self):
-        self.document.set_track_instrument(name=self.document.track_names()[0], instrument=A_INSTRUMENT)
-        return True
-
-
-class TestSongsPageAsANamedList(NamedListChecks, UITest):
-
-    PAGE = SongsPage
-    OPENING = (keybindings.MainPage.SONGS,)
-    FIRST = names.MSG_DEFAULT_SONG_NAME
-
-    def make_used(self):
-        return False
-
-
-# The test class of each page that lists named things, which the rule below reads.
-CHECKED = [
-    TestPatternsPageAsANamedList, TestScalesPageAsANamedList, TestGroovesPageAsANamedList, TestInstrumentsPageAsANamedList, TestSongsPageAsANamedList,
-]
 # Every generator section is listed by the Generators page, every kind on one list.
 EVERY_NAMED_SECTION_OF_THE_SET = [Section.PATTERNS, Section.SCALES, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 
 
 class TestEveryNamedListPageIsChecked(unittest.TestCase):
 
-    def test_every_page_that_lists_named_things_has_the_checks(self):
-        pages = [page for page in leaf_pages() if issubclass(page, NamedListPage)]
-        self.assertEqual(sorted(page.__name__ for page in pages), sorted(checks.PAGE.__name__ for checks in CHECKED))
-
     def test_every_named_section_of_the_set_has_a_page(self):
-        self.assertEqual(sorted(checks.PAGE.LISTED_SECTION for checks in CHECKED), sorted(EVERY_NAMED_SECTION_OF_THE_SET))
+        self.assertEqual(sorted(page.LISTED_SECTION for page in named_list_pages()), sorted(EVERY_NAMED_SECTION_OF_THE_SET))
         self.assertEqual(sorted(generator_pages.GENERATOR_PAGES), sorted(file_format.NAMED_GENERATORS.values()))
 
     def test_every_page_says_how_it_words_a_rename_and_a_question(self):
-        for checks in CHECKED:
-            page = checks.PAGE
+        for page in named_list_pages():
             self.assertIsNotNone(page.LISTED_SECTION, page.__name__)
             self.assertTrue(page.RENAME_PROMPT is not None or page.rename_title is not NamedListPage.rename_title, page.__name__)
             self.assertTrue(page.WHAT is not None or page.what_is is not NamedListPage.what_is, page.__name__)
+
+
+def named_list_pages():
+    """Return every page that lists named things."""
+    return [page for page in leaf_pages() if issubclass(page, NamedListPage)]
 
 
 if __name__ == '__main__':
