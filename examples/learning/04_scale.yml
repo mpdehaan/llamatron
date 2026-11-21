@@ -16,7 +16,7 @@ notes: |
 
   When changing this demo:
   Keep it to scale runs only, one scene per distinct scale, in the order of the scale
-  picker (SCALE_PAGES in src/llamatron/tui/pages.py). A scale added to llamatron needs a
+  picker (SCALE_PAGES in src/llamatron/interface/tracker/screens/set/scale_page.py). A scale added to llamatron needs a
   scene here, and a new size of scale needs its own run pattern.
 real_time: true
 protected: true
