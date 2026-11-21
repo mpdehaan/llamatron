@@ -93,8 +93,14 @@ def scan_start():
     return settled_at() + SCAN_DELAY_SECONDS
 
 
-def scan_end():
-    return scan_start() + SCAN_SECONDS
+def scan_end(*, loaded_at=0.0):
+    """Return when the scanner stops: at the end of its one sweep, or, while something loads under the title, at the end of the
+    sweep it is in once the load is done, so that it always sweeps at least once and goes on sweeping while anything loads.
+    loaded_at is when the load was done, None while it is not."""
+    if loaded_at is None:
+        return math.inf
+    sweeps = max(math.ceil((loaded_at - scan_start()) / SCAN_SECONDS), 1)
+    return scan_start() + sweeps * SCAN_SECONDS
 
 
 def whole_title_seconds():
@@ -130,12 +136,13 @@ def wave_offset(*, elapsed, place, count):
     return round(height * math.sin(math.tau * (WAVES_PER_SECOND * elapsed + place / count)))
 
 
-def scanner_level(*, column, width, elapsed):
-    """Return how bright the scanner is at a column of a title width columns wide, at a moment: 0 outside the glow, 1 at its middle."""
-    if not scan_start() <= elapsed < scan_end():
+def scanner_level(*, column, width, elapsed, loaded_at=0.0):
+    """Return how bright the scanner is at a column of a title width columns wide, at a moment: 0 outside the glow, 1 at its middle.
+    Each sweep goes right and back left; it sweeps again while something loads (scan_end)."""
+    if not scan_start() <= elapsed < scan_end(loaded_at=loaded_at):
         return 0.0
     half = max(width * SCANNER_SHARE, 1.0)
-    sweep = (elapsed - scan_start()) / SCAN_SECONDS * 2
+    sweep = (elapsed - scan_start()) % SCAN_SECONDS / SCAN_SECONDS * 2
     share = sweep if sweep < 1 else 2 - sweep
     middle = -half + share * (width + 2 * half)
     distance = abs(column - middle)
@@ -144,9 +151,9 @@ def scanner_level(*, column, width, elapsed):
     return math.cos(math.pi / 2 * distance / half) ** 2
 
 
-def prompt_level(elapsed):
+def prompt_level(elapsed, *, loaded_at=0.0):
     """Return how bright the prompt is at a moment: nothing until the scanner is gone, then fading in and pulsing."""
-    since = elapsed - scan_end()
+    since = elapsed - scan_end(loaded_at=loaded_at)
     if since < 0:
         return 0.0
     pulse = (1 + math.cos(math.tau * since / PULSE_SECONDS)) / 2
@@ -194,8 +201,10 @@ def centred_text(*, text, width, colour, level):
     return line
 
 
-def title_lines(*, width, height, elapsed, prompt=False, seconds=None):
-    """Return the title's lines for a screen width by height at a moment, with the prompt or without, fading out over its last moments when it is shown for seconds."""
+def title_lines(*, width, height, elapsed, prompt=False, seconds=None, loaded_at=0.0):
+    """Return the title's lines for a screen width by height at a moment, with the prompt or without, fading out over its last
+    moments when it is shown for seconds. loaded_at is when what loads under the title was done, None while it loads, which keeps
+    the scanner sweeping and the prompt away."""
     scale = scale_for(word=about.MSG_SPLASH_WORD, width=width)
     rows = letter_rows(word=about.MSG_SPLASH_WORD, scale=scale)
     letters_width = words_width(word=about.MSG_SPLASH_WORD, scale=scale)
@@ -219,7 +228,7 @@ def title_lines(*, width, height, elapsed, prompt=False, seconds=None):
     scanner_line = top + SCANNER_ROW
     if scanner_line < height:
         for offset in range(letters_width):
-            level = scanner_level(column=offset, width=letters_width, elapsed=elapsed)
+            level = scanner_level(column=offset, width=letters_width, elapsed=elapsed, loaded_at=loaded_at)
             if level > 0 and 0 <= left + offset < width:
                 cells[scanner_line][left + offset] = (about.MSG_BLOCK, SCANNER_BLUE, level * fade)
     lines = [drawn_line(cells=row, width=width) for row in cells]
@@ -228,7 +237,7 @@ def title_lines(*, width, height, elapsed, prompt=False, seconds=None):
         lines[address_line] = centred_text(text=about.MSG_SPLASH_ADDRESS, width=width, colour=ADDRESS_BLUE, level=eased((elapsed - settled_at()) / ADDRESS_FADE_SECONDS) * fade)
     prompt_line = top + PROMPT_ROW
     if prompt and prompt_line < height:
-        level = prompt_level(elapsed)
+        level = prompt_level(elapsed, loaded_at=loaded_at)
         colour = tuple(round(dim + (bright - dim) * level) for dim, bright in zip(PROMPT_DIM, PROMPT_BRIGHT))
         lines[prompt_line] = centred_text(text=about.MSG_START_PROMPT, width=width, colour=colour, level=min(level * 2.5, 1.0) * fade)
     return lines

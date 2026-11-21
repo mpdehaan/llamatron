@@ -36,6 +36,7 @@ nothing, so that nothing sleeps.
 """
 
 import random
+import threading
 from typing import NamedTuple
 
 from llamatron.composition import limits
@@ -102,7 +103,7 @@ class Tried(NamedTuple):
 class Transport:
     """Plays the current song through the Realtime Sender Process, and answers what is playing."""
 
-    __slots__ = ('_lead', '_document_holder', '_clock', '_make_sender', '_set_timer', '_sender', '_ports', '_zero', '_player', '_score_revision', '_score_key', '_timer',
+    __slots__ = ('_closing', '_lead', '_document_holder', '_clock', '_make_sender', '_set_timer', '_sender', '_ports', '_zero', '_player', '_score_revision', '_score_key', '_timer',
                  '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_song_is_copy', '_instead', '_seed', '_seen_revision', '_changed_at',
                  '_scenes', '_tracks', '_previewing', '_live_message')
 
@@ -111,6 +112,8 @@ class Transport:
         self._document_holder = document_holder
         # How far ahead of now a launch from silence starts; a test on a clock that never moves asks for none.
         self._lead = lead
+        # Whether the tracker is quitting, so that a sender started under the start screen meanwhile is closed rather than left behind.
+        self._closing = False
         self._fluidsynth = FluidSynth() if fluidsynth is None else fluidsynth
         self._fluidsynth_installed = fluidsynth_is_installed if fluidsynth_installed is None else fluidsynth_installed
         self._clock = MonotonicClock() if clock is None else clock
@@ -316,8 +319,32 @@ class Transport:
         self._sender_for(sorted({port for port, _ in channels})).silence(channels=channels)
         return messages.MSG_SILENCED.format(channels=len(channels), devices=len({port for port, _ in channels}))
 
+    def prepare(self):
+        """Get real time ready in the background while the start screen shows, as a game loads behind its title: the MIDI ports
+        listed, FluidSynth started where it is installed, whether or not the set uses it, and the Realtime Sender Process opened on
+        every port, so that no play waits for them and no song's port makes the process start again. Return a function answering
+        whether it is done. What fails here is tried again by the first play, as without the start screen."""
+        done = threading.Event()
+
+        def get_ready():
+            try:
+                if self._fluidsynth_installed():
+                    self._fluidsynth.ensure_running()
+                ports = output_port_names()
+                if ports:
+                    self._sender_for(sorted(set(ports)))
+            except SenderNotStarted:
+                pass
+            finally:
+                if self._closing:
+                    self.close()
+                done.set()
+        threading.Thread(target=get_ready, daemon=True).start()
+        return done.is_set
+
     def close(self):
         """Stop everything and end the process and FluidSynth, as the tracker quits."""
+        self._closing = True
         self.stop_all()
         if self._sender is not None:
             self._sender.close()

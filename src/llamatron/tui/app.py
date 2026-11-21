@@ -259,7 +259,7 @@ class LlamatronApp(App, inherit_bindings=False):
             self._warn_of_silent_instruments(page)
         self._begin_launch(page)
         if self._start_screen:
-            self.push_screen(StartScreen())
+            self.push_screen(StartScreen(ready=self.transport.prepare()))
 
     def _opened(self, *, page, document):
         """Hold the set the Corrections dialog was answered Yes for, and warn of its instruments that will not sound."""

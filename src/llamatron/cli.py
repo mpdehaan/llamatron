@@ -47,7 +47,7 @@ from llamatron.exporters import exports
 from llamatron.exporters.exports import export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import cli, errors
-from llamatron.tui.launch import Launch, start_screen_wanted
+from llamatron.tui.launch import Launch
 from llamatron.visualizers.modes import mode_options
 
 PROGRAM = 'llamatron'
@@ -216,7 +216,7 @@ def main(*, argv=None):
     if arguments.to is None:
         # Imported here so that exporting doesn't need to load the text UI.
         from llamatron.tui.app import main as open_tracker
-        return open_tracker(argv=[arguments.set] if arguments.set else [], launch=launch_of(arguments), start_screen=start_screen_wanted(os.environ))
+        return open_tracker(argv=[arguments.set] if arguments.set else [], launch=launch_of(arguments), start_screen=True)
     directory = arguments.out or export_directory(arguments.set)
     try:
         setlist = read_set(path=arguments.set, force=arguments.force)

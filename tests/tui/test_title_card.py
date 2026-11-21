@@ -19,16 +19,18 @@
 from rich.color import Color
 import string
 import unittest
+from unittest import mock
 
 from llamatron.strings import about
-from llamatron.tui import keybindings, launch
+from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.components import scroll_text, title_card
 from llamatron.tui.components.scroll_text import banner, demo_name, scroll_lines, scroll_seconds, scroll_text_for, words_of
 from llamatron.tui.components.title_card import Entrance, prompt_level, scan_end, scan_start, scanner_level, title_lines, whole_title_seconds, words_width
-from llamatron.tui.launch import Launch, start_screen_wanted
+from llamatron.tui.launch import Launch
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.start_screen import StartScreen
+from llamatron.tui.transport import Transport
 from tests.support.ui_testing import UITest
 
 WIDE_SCREEN = (120, 30)
@@ -38,6 +40,10 @@ DURING_SCAN = 4.0
 LONG_AFTER = 20.0
 STEPS = 200
 LONG_LAUNCH_SECONDS = 600.0
+# A title's width in columns, a quarter of a sweep, and how many sweeps past the first a load may run on.
+TITLE_WIDTH = 60
+QUARTER_SWEEP = 0.25
+SWEEPS_LATER = 3
 
 
 def settled():
@@ -195,17 +201,35 @@ class TestScrollText(unittest.TestCase):
         return sorted({column for line in lines for column, character in enumerate(line.plain) if character == about.MSG_BLOCK})
 
 
-class TestStartScreenWanted(unittest.TestCase):
+class TestScannerWhileLoading(unittest.TestCase):
+    """The scanner sweeps at least once, and on while something loads under the title, the prompt coming after the sweep it is in."""
 
-    def test_the_command_line_wants_it_unless_the_environment_says_not(self):
-        self.assertTrue(start_screen_wanted({}))
-        self.assertFalse(start_screen_wanted({launch.NO_SPLASH_VARIABLE: launch.NO_SPLASH}))
+    def test_a_load_done_before_the_first_sweep_ends_leaves_one_sweep(self):
+        self.assertEqual(scan_end(loaded_at=scan_start()), scan_end())
+
+    def test_while_loading_the_scanner_never_stops_and_no_prompt_shows(self):
+        later = scan_end() + title_card.SCAN_SECONDS * SWEEPS_LATER
+        self.assertEqual(prompt_level(later, loaded_at=None), 0.0)
+        self.assertGreater(max(scanner_level(column=column, width=TITLE_WIDTH, elapsed=later + QUARTER_SWEEP, loaded_at=None) for column in range(TITLE_WIDTH)), 0.0)
+
+    def test_a_load_done_during_a_later_sweep_ends_the_scanner_with_that_sweep(self):
+        loaded = scan_end() + title_card.SCAN_SECONDS / 2
+        self.assertEqual(scan_end(loaded_at=loaded), scan_end() + title_card.SCAN_SECONDS)
 
 
 class TestStartScreen(UITest):
-    """The tracker opens on the start screen when the command line asks, and Enter leaves the main screen."""
+    """The tracker opens on the start screen when the command line asks, Enter waiting until what loads under it is done, and then
+    leaving the main screen."""
+
+    # Whether what loads under the title is done as the tracker opens.
+    LOADED = True
 
     def make_app(self):
+        self.loaded = self.LOADED
+        # The transport's loading under the title is the test's to say done, so that no real FluidSynth or sender starts.
+        patcher = mock.patch.object(Transport, Transport.prepare.__name__, return_value=lambda: self.loaded)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         return LlamatronApp(document=self.document, start_screen=True)
 
     async def test_it_shows_over_the_main_screen_until_enter(self):
@@ -216,6 +240,23 @@ class TestStartScreen(UITest):
     async def test_other_keys_do_nothing(self):
         await self.press(keybindings.MainPage.QUIT)
         self.assertIsInstance(self.app.screen, StartScreen)
+
+
+class TestStartScreenWhileLoading(TestStartScreen):
+    """Enter does nothing while what loads under the title is not done."""
+
+    LOADED = False
+
+    async def test_it_shows_over_the_main_screen_until_enter(self):
+        self.loaded = True
+        await super().test_it_shows_over_the_main_screen_until_enter()
+
+    async def test_enter_waits_until_what_loads_under_it_is_done(self):
+        await self.press(keybindings.StartScreen.START)
+        self.assertIsInstance(self.app.screen, StartScreen)
+        self.loaded = True
+        await self.press(keybindings.StartScreen.START)
+        self.assertIsInstance(self.app.screen, MainPage)
 
 
 class TestNoStartScreenWhenPlayingOnItsOwn(UITest):

@@ -43,9 +43,6 @@ LEAD_OUT_SECONDS = 2.0
 NO_HOLD = 0.0
 # How often the launch asks whether the song is still playing, once it has started.
 FINISHED_CHECK_SECONDS = 0.25
-# The environment variable that skips the start screen when it is set to NO_SPLASH.
-NO_SPLASH_VARIABLE = 'LLAMATRON_NO_SPLASH'
-NO_SPLASH = '1'
 
 
 class Launch:
@@ -129,11 +126,6 @@ class Launch:
     def boxes_playing_scene(self):
         """Return whether Arrange draws a blue box around the playing scene and no box around its cursor: in a recording nobody performs."""
         return self.for_recording and not self.interactive
-
-
-def start_screen_wanted(environment):
-    """Return whether the tracker started from the command line opens on the start screen: unless the environment says NO_SPLASH; a launch that plays on its own never shows it."""
-    return environment.get(NO_SPLASH_VARIABLE) != NO_SPLASH
 
 
 def recording_problem(song):
