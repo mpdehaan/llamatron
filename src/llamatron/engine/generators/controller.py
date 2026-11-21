@@ -38,6 +38,12 @@ class GeneratorController:
         return None
 
 
+    def notes_dealt(self, *, settings, place):
+        """Return the notes its generator deals out to the tracks whose clips name it in a written-out scene, by the track, at
+        a DealingPlace, which answers what the Realizer knows of the scene; an empty dictionary for none."""
+        return {}
+
+
 def generator_from_settings(*, settings, place):
     """Return the generator a kind's settings make on their own, given the seed, the pattern's step, the bar, where it
     carries on from and the tempo of its place: what most plugins' make_generator does."""

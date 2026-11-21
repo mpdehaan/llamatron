@@ -12,7 +12,7 @@ from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.row_clock import RowClock
-from llamatron.engine.generators import drift as drift_plugin, hocket as hocket_plugin, registry
+from llamatron.engine.generators import drift as drift_plugin, registry
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.timing.handed_note import HandedNote
 from llamatron.engine.timing.nudge_plan import NudgePlan
@@ -29,6 +29,7 @@ from llamatron.playback import registers as registers_values
 from llamatron.playback.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
 from llamatron.playback.chord_source import ChordSource
 from llamatron.playback.clip_slot_player import ClipSlotPlayer
+from llamatron.playback.dealing_place import DealingPlace
 from llamatron.playback.draws import DrawPlay
 from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.grab_source import GrabSource
@@ -58,6 +59,8 @@ REGISTER_SEED_OFFSET = 7
 # The controller's methods that strum a clip's chords and move its notes early or late.
 STRUMS = 'strum'
 MOVES_NOTES = 'moving_row'
+# The controller's method that deals a track's notes out among the clips naming its generator.
+DEALS_NOTES = 'notes_dealt'
 # What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
 STRUM_SEED_OFFSET = 977
 STRUM_SEEDS = 1_000_000
@@ -114,7 +117,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes', '_takes', '_song_places')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_dealt', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes', '_takes', '_song_places')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None, takes=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -160,8 +163,8 @@ class SongRenderer:
         self._strum_seed = random_source(None if self._seed is None else self._seed * SEED_SONG_FACTOR + STRUM_SEED_OFFSET).randrange(STRUM_SEEDS)
         # Where each written-out scene starts from the song's top, in whole notes, for the drifts' clocks.
         self._starts = {}
-        # Each Hocket's notes dealt out to its pool in each written scene, and each source track's notes there as turns, each worked out once.
-        self._hocket_turns = {}
+        # The notes each generator that deals notes out hands each track in each written scene, and each source track's notes there as turns, each worked out once.
+        self._dealt = {}
         self._source_turns = {}
         # The clips waiting on the chords of a track they follow, as (scene, track), which finds tracks following each other in a circle, and the chords each followed track plays in each written scene, worked out once.
         self._following = []
@@ -341,7 +344,7 @@ class SongRenderer:
         self._clips = _through_scene(entries=after._clips, count=count, number_of=_first_part)
         self._counted = _through_scene(entries=after._counted, count=count, number_of=_first_part)
         self._decided = _through_scene(entries=after._decided, count=count, number_of=_first_part)
-        self._hocket_turns = _through_scene(entries=after._hocket_turns, count=count, number_of=_first_part)
+        self._dealt = _through_scene(entries=after._dealt, count=count, number_of=_first_part)
         self._source_turns = _through_scene(entries=after._source_turns, count=count, number_of=_first_part)
         self._chord_sources = _through_scene(entries=after._chord_sources, count=count, number_of=_first_part)
         self._tune_sources = _through_scene(entries=after._tune_sources, count=count, number_of=_first_part)
@@ -390,7 +393,7 @@ class SongRenderer:
 
     def _reach_through(self, *, scene, reached):
         """Add to the reached tracks every track of a written scene whose clip plays from a reached track's notes, by a grab or
-        by chords or a tune it follows, and through those, the tracks that play from theirs; where a hocket deals notes out
+        by chords or a tune it follows, and through those, the tracks that play from theirs; where a generator deals notes out
         among tracks, every track of the scene once any is reached."""
         names = scene.get_track_names()
         if not reached.intersection(names):
@@ -405,8 +408,8 @@ class SongRenderer:
             reached.update(grown)
 
     def _deals_out(self, scene):
-        """Return whether a clip of a written scene runs a hocket, which deals a track's notes out among the clips naming it."""
-        return any(step.kind == hocket_plugin.NAME for track in scene.get_track_names() for step in self._chain_steps(scene=scene, track=track))
+        """Return whether a clip of a written scene runs a generator that deals a track's notes out among the clips naming it."""
+        return any(registry.fills(name=step.kind, method=DEALS_NOTES) for track in scene.get_track_names() for step in self._chain_steps(scene=scene, track=track))
 
     def _tracks_followed(self, *, scene, track):
         """Return the tracks whose notes a track's clip in a written scene plays from: the one it grabs from, and those whose chords or tune its generators follow."""
@@ -526,50 +529,35 @@ class SongRenderer:
         return NudgePlan(rows=rows) if rows else None
 
     def handed_notes(self, *, scene, track):
-        """Return the notes the Hockets a track's clip names hand it in a written-out scene, in time order, or none.
-
-        A Hocket whose source is the track itself is skipped there, since a track can't hand notes to itself.
-        """
+        """Return the notes the generators a track's clip names deal it in a written-out scene, in time order, or none."""
         handed = []
-        for name in self.hockets_of(scene=scene, track=track):
-            if self._song.get_generator_settings(kind=hocket_plugin.NAME, name=name).get_source() != track:
-                handed += self.hocket_turns(scene=scene, name=name).get(track, [])
+        for step in self._dealing_steps(scene=scene, track=track):
+            handed += self.notes_dealt(scene=scene, step=step).get(track, [])
         return sorted(handed)
 
-    def hockets_of(self, *, scene, track):
-        """Return the names of the Hockets a track's clip names in its chains in a written-out scene, each once, in order."""
-        names = [step.name for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps() if step.kind == hocket_plugin.NAME]
-        return list(dict.fromkeys(names))
+    def _dealing_steps(self, *, scene, track):
+        """Return the steps of a track's clip's chains in a written-out scene whose generators deal notes out, each generator once, in order."""
+        steps = [step for step in self._chain_steps(scene=scene, track=track) if registry.fills(name=step.kind, method=DEALS_NOTES)]
+        return list(dict.fromkeys(steps))
 
-    def hocket_pool(self, *, scene, name):
-        """Return the tracks that take turns at a Hocket's notes in a written-out scene: every track but the source whose clip names it, in the song's track order."""
-        source = self._song.get_generator_settings(kind=hocket_plugin.NAME, name=name).get_source()
-        return [track for track in self._song.get_track_names() if track != source and name in self.hockets_of(scene=scene, track=track)]
+    def tracks_naming(self, *, scene, name):
+        """Return the tracks whose clips' chains name a generator in a written-out scene, in the song's track order."""
+        return [track for track in self._song.get_track_names() if self._names_generator(scene=scene, track=track, name=name)]
 
-    def hocket_turns(self, *, scene, name):
-        """Return the notes a Hocket hands each track of its pool in a written-out scene, by the track, worked out once for the scene.
+    def _names_generator(self, *, scene, track, name):
+        """Return whether a track's clip's chains name a generator in a written-out scene."""
+        return any(step.name == name for step in self._chain_steps(scene=scene, track=track))
 
-        Each turn is the source's notes that start together, a chord passing whole, and a rest
-        passes no turn. The turns go round the pool from its first track, carrying on from the
-        scenes before in the Hocket's run, as its Restart says, counted from the source's clips.
-        """
-        key = (scene.get_number(), name)
-        if key not in self._hocket_turns:
-            settings = self._song.get_generator_settings(kind=hocket_plugin.NAME, name=name)
-            pool = self.hocket_pool(scene=scene, name=name)
-            dealt = {}
-            if pool and self.plays_source(scene=scene, source=settings.get_source()):
-                start = self._scenes.index(self.run_start(scene=scene, restart=settings.get_restart()))
-                turn = sum(len(self.source_turns(scene=written, source=settings.get_source())) for written in self._scenes[start:self._scenes.index(scene)]
-                           if self.hocket_pool(scene=written, name=name) and self.plays_source(scene=written, source=settings.get_source()))
-                for notes in self.source_turns(scene=scene, source=settings.get_source()):
-                    dealt.setdefault(pool[turn % len(pool)], []).extend(notes)
-                    turn += 1
-            self._hocket_turns[key] = dealt
-        return self._hocket_turns[key]
+    def notes_dealt(self, *, scene, step):
+        """Return the notes a generator that deals notes out hands each track in a written-out scene, by the track, worked out once for the scene."""
+        key = (scene.get_number(), step.name)
+        if key not in self._dealt:
+            settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
+            self._dealt[key] = registry.controller_of(step.kind).notes_dealt(settings=settings, place=DealingPlace(realizer=self, scene=scene, name=step.name))
+        return self._dealt[key]
 
     def plays_source(self, *, scene, source):
-        """Return whether a Hocket's source track is a track of the song with a clip in a written-out scene."""
+        """Return whether a source track of notes dealt out is a track of the song with a clip in a written-out scene."""
         return source in self._song.get_track_names() and scene.get_clip_slot(source) is not None
 
     def source_turns(self, *, scene, source):
