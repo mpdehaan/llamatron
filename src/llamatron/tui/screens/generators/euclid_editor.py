@@ -5,7 +5,9 @@
 
 from rich.text import Text
 
-from llamatron.model.schema.file_format import EuclidPart, Section
+from llamatron.engine.generators import euclid as euclid_plugin
+from llamatron.engine.generators.euclid import strings as euclid_strings
+from llamatron.model.schema.file_format import EuclidPart
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.generators.euclid_fields import drawn_rhythm, euclid_fields, pick_rhythm
@@ -22,9 +24,9 @@ class EuclidEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.EuclidEditor
     HELP = help_text.HELP_EUCLID_EDITOR
-    SECTION = Section.EUCLIDS
+    SECTION = euclid_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_EUCLID_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=euclid_strings.MSG_LABEL)
 
     def fields(self):
         return [NameField(value=lambda: self.item, rename=self.rename), *euclid_fields(page=self, value=self.settings().get_euclid_setting, store=lambda part, value: self.store(setting=part, value=value), prefixed=False), restart_field(self)]

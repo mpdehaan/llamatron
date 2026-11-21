@@ -4,8 +4,9 @@
 
 """The Follow Chords editor: its name and the track whose chords it follows."""
 
+from llamatron.engine.generators import follow_chords as follow_chords_plugin
+from llamatron.engine.generators.follow_chords import strings as follow_chords_strings
 from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -20,9 +21,9 @@ class FollowChordsEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.FollowChordsEditor
     HELP = help_text.HELP_FOLLOW_CHORDS_EDITOR
-    SECTION = Section.FOLLOW_CHORDS
+    SECTION = follow_chords_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_FOLLOW_CHORDS_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=follow_chords_strings.MSG_LABEL)
 
     def store_chords_from(self, track):
         self.store(setting=FollowChordsSetting.CHORDS_FROM, value=track)

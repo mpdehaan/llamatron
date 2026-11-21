@@ -4,9 +4,10 @@
 
 """Tests for the Guitarify editor, its two sections, and the editor of its bar of strokes."""
 
+from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import bars as guitar_bars, settings as guitarify_settings
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
+from llamatron.model.schema.file_format import GuitarifySetting, ReadyBar, SingleNotes, Stroke, Tuning
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import guitar_bar_editor
@@ -25,11 +26,11 @@ class GuitarifyTest(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.GUITARIFIES)
+        await self.open_generator(section=guitarify_plugin.SECTION)
         self.assertIsInstance(self.app.screen, GuitarifyEditor)
 
     def guitar(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=ui_testing.PICKED)
+        return self.document.song().get_generator_settings(kind=guitarify_plugin.NAME, name=ui_testing.PICKED)
 
     def written(self):
         return self.guitar().to_data()
@@ -38,9 +39,9 @@ class GuitarifyTest(UITest):
 class TestGuitarifyAdded(UITest):
 
     async def test_a_new_one_shapes_and_plays_the_default_bar_with_nothing_written(self):
-        name = await self.add_generator(Section.GUITARIFIES)
+        name = await self.add_generator(guitarify_plugin.SECTION)
         self.assertIsInstance(self.app.screen, GuitarifyEditor)
-        guitar = self.document.song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=name)
+        guitar = self.document.song().get_generator_settings(kind=guitarify_plugin.NAME, name=name)
         self.assertTrue(guitar.shapes())
         self.assertTrue(guitar.strikes())
         self.assertEqual(guitar.get_bar(), list(guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].strokes))
@@ -59,7 +60,7 @@ class TestGuitarifyEditor(GuitarifyTest):
 
     async def test_a_closed_section_says_when_something_inside_is_set(self):
         self.assertNotIn(marks.MSG_SECTION_SET, self.text())
-        self.document.change(self.document.generator(section=Section.GUITARIFIES, name=ui_testing.PICKED).set_setting, name=GuitarifySetting.CAPO, value=2)
+        self.document.change(self.document.generator(section=guitarify_plugin.SECTION, name=ui_testing.PICKED).set_setting, name=GuitarifySetting.CAPO, value=2)
         await self.press(Key.DOWN)
         self.assertIn(marks.MSG_SECTION_SET, self.text())
 

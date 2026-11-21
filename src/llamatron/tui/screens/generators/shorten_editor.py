@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Shorten editor: a Shorten's name, step, amount, row of steps and Restart."""
 
-from llamatron.engine.generators import step_row_settings
+from llamatron.engine.generators import shorten as shorten_plugin, step_row_settings
+from llamatron.engine.generators.shorten import strings as shorten_strings
 from llamatron.engine.generators.step_row_settings import StepRowSetting
-from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.shorten_steps_editor import ShortenStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor
@@ -18,11 +18,11 @@ class ShortenEditor(StepRowGeneratorEditor):
 
     KEYS = keybindings.ShortenEditor
     HELP = help_text.HELP_SHORTEN_EDITOR
-    SECTION = Section.SHORTENS
-    KIND = GeneratorKind.SHORTEN
+    SECTION = shorten_plugin.SECTION
+    KIND = shorten_plugin.NAME
     STEPS_EDITOR = ShortenStepsEditor
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_SHORTEN_LABEL_NAME)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=shorten_strings.MSG_LABEL)
 
     def amount_fields(self):
         return [self.number_field(label=labels.MSG_SHORTEN_LABEL, setting=StepRowSetting.SHORTEN, current=self.settings().get_shorten(), default=step_row_settings.DEFAULT_SHORTEN)]

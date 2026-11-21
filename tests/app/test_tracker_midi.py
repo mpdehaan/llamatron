@@ -15,12 +15,13 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.exporters import exports, midi_messages
 from llamatron.exporters.exports import ExportKind
 from llamatron.model.objects.setlist import new_setlist, Setlist
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SongSetting
 from llamatron.model.values.note import NoteName
 from llamatron.tui import keybindings
 from llamatron.tui.document import Document
@@ -85,8 +86,8 @@ def mary():
         },
     }
     song[Section.TRACKS] = {MELODY: {}, ACCOMPANIMENT: {}}
-    data[Section.ARPS] = {BROKEN: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP_DOWN)}}
-    data[Section.CHAINS] = {BROKEN_CHORDS: [{GeneratorKind.ARP: BROKEN}]}
+    data[arp_plugin.SECTION] = {BROKEN: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP_DOWN)}}
+    data[Section.CHAINS] = {BROKEN_CHORDS: [{arp_plugin.NAME: BROKEN}]}
     song[Section.SCENES] = [
         {SceneSetting.NAME: FIRST, SceneSetting.TRACKS: {
             MELODY: {ClipSlotSetting.PATTERN: FIRST}, ACCOMPANIMENT: {ClipSlotSetting.PATTERN: CHORDS, ClipSlotSetting.CHAINS: [BROKEN_CHORDS]},

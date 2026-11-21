@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Phrasing editor: how long a line is, how the lines breathe, and a table of what each kind of section does of its own."""
 
-from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings
+from llamatron.engine.generators import phrasing as phrasing_plugin
+from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings, strings as phrasing_strings
 from llamatron.engine.generators.phrasing.settings import PhrasingSetting
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -19,9 +19,9 @@ class PhrasingEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.PhrasingEditor
     HELP = help_text.HELP_PHRASING_EDITOR
-    SECTION = Section.PHRASINGS
+    SECTION = phrasing_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_PHRASING_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=phrasing_strings.MSG_LABEL)
 
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a Phrasing starts with."""

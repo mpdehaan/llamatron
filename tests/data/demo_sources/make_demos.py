@@ -22,11 +22,11 @@ import re
 import sys
 
 from llamatron.model.file.setlist_writer import dump_setlist
-from llamatron.model.schema import file_format, row_descriptions
+from llamatron.model.schema import file_format, generator_plugins, row_descriptions
 from llamatron.model.values import note as note_values
 from llamatron.model.values.scale import ScaleType
 from llamatron.tui.screens.set import scale_page
-from llamatron.user_strings import labels, names as names_text
+from llamatron.user_strings import names as names_text
 from tests.support.rendering import as_setlist
 
 # The demos are written with durations, as they were first written, and gate_conversion, in the
@@ -214,12 +214,12 @@ def write(*, file_name, header, song):
 def chains_apart(data):
     """Return a demo's data with each chain named as its generator is named for its kind, as trade hocket for the chain that runs
     the Hocket trade, and every clip following: a set file lists every generator, the chains among them, in one list."""
-    names = {name for kind, section in file_format.NAMED_GENERATORS.items() for name in data.get(section, {})}
+    names = {name for kind, section in generator_plugins.sections_by_name().items() for name in data.get(section, {})}
     renamed = {}
     for chain, steps in data.get(file_format.Section.CHAINS, {}).items():
         same = [kind for step in steps for kind, name in step.items() if name == chain]
         if chain in names and same:
-            renamed[chain] = names_text.MSG_NAMED_FOR_KIND.format(name=chain, word=labels.MSG_KIND_WORDS[same[0]])
+            renamed[chain] = names_text.MSG_NAMED_FOR_KIND.format(name=chain, word=generator_plugins.plugins()[same[0]].strings.MSG_KIND_WORD)
     if not renamed:
         return data
     data[file_format.Section.CHAINS] = {renamed.get(chain, chain): steps for chain, steps in data[file_format.Section.CHAINS].items()}

@@ -4,7 +4,8 @@
 
 """Every key of every page is shown in its legend or in the F1 dialog, on a large console and a usual one."""
 
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, GeneratorKind, Section, SetlistSetting
+from llamatron.engine.generators import arp as arp_plugin
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, Section, SetlistSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog
@@ -141,7 +142,7 @@ class TestEveryKeyIsShownOnTheSongPages(EveryKeyIsShownTests, UITest):
         await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GENERATORS)
         yield GENERATORS
         await self.press(Key.ENTER)
-        yield GeneratorKind.ARP
+        yield arp_plugin.NAME
         await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SCALES)
         yield Section.SCALES
         await self.press(Key.ENTER)

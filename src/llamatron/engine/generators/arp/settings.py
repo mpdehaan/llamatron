@@ -111,6 +111,8 @@ class ArpSettings(HasCells, GeneratorSettings):
 
     __slots__ = ()
 
+    MAY_ADD_TO_REGISTERS = True
+
     GENERATOR = Arp
     SETTINGS = described(
         Checked(name=ArpSetting.STEP, check=time_length),

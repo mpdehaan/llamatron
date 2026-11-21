@@ -5,7 +5,8 @@
 
 import unittest
 
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, EuclidPart, FollowAction, GeneratorKind, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
+from llamatron.model.schema import generator_plugins
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, EuclidPart, FollowAction, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style
@@ -395,7 +396,7 @@ class TestPickingDetails(UITest):
                 await self.press(Key.ESCAPE, keybindings.ArrangePage.OUT_OF_DETAILS)
 
     def test_every_kind_of_generator_has_a_page_with_an_editor(self):
-        for kind in [value for name, value in vars(GeneratorKind).items() if name.isupper()]:
+        for kind in list(generator_plugins.plugins()):
             with self.subTest(kind=kind):
                 self.assertIsNotNone(generator_page_of_kind(kind).EDITOR)
 

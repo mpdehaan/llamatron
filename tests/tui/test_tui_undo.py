@@ -15,10 +15,11 @@ import inspect
 import os
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import default_scale_name, new_name
 from llamatron.model.schema import defaults
-from llamatron.model.schema.file_format import GeneratorKind, Row, Section, SongSetting
+from llamatron.model.schema.file_format import Row, Section, SongSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.tui import keybindings
@@ -331,10 +332,10 @@ class TestOffsetsEditorUndo(UndoTest):
         self.assertIsInstance(self.app.screen, OffsetsEditor)
 
     def offsets(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.ARP, name=ui_testing.UP_ARP).get_offsets()
+        return self.document.song().get_generator_settings(kind=arp_plugin.NAME, name=ui_testing.UP_ARP).get_offsets()
 
     async def test_typing_an_offset_is_one_step_and_two_digits_are_still_one(self):
-        await self.open_generator(section=Section.ARPS)
+        await self.open_generator(section=arp_plugin.SECTION)
         await self.open_offsets()
         before = self.data()
         await self.press(Key.RIGHT, SEVEN)
@@ -346,12 +347,12 @@ class TestOffsetsEditorUndo(UndoTest):
         self.assertEqual(self.offsets()[2], 0)
 
     async def test_undoing_the_offsets_and_then_the_arp_closes_this_editor_and_then_the_arps(self):
-        name = await self.add_generator(Section.ARPS)
+        name = await self.add_generator(arp_plugin.SECTION)
         self.assertIsInstance(self.app.screen, ArpEditor)
         # Opening the offsets editor gives a new arp its row of offsets, which is the first thing to undo.
         await self.open_offsets()
         await self.check_undo_goes_back_to(ArpEditor)
-        self.assertIsNone(self.document.song().get_generator_settings(kind=GeneratorKind.ARP, name=name).get_offsets())
+        self.assertIsNone(self.document.song().get_generator_settings(kind=arp_plugin.NAME, name=name).get_offsets())
         await self.check_undo_goes_back_to(GeneratorsPage)
 
 

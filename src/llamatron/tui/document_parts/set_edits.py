@@ -9,9 +9,9 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 """
 
 
+from llamatron.engine.generators import arp as arp_plugin, musician as musician_plugin, progression as progression_plugin
 from llamatron.engine.generators.progression.settings import ProgressionSetting
 from llamatron.importers.writing import add_imported
-from llamatron.model.objects import sections
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.instrument import Instrument
@@ -143,24 +143,24 @@ class SetEdits:
     # Arps and chains.
 
     def generator(self, *, section, name):
-        return self._setlist.get_generator_settings(kind=sections.GENERATOR_KINDS[section], name=name)
+        return self._setlist.get_generator_settings(kind=generator_plugins.names_by_section()[section], name=name)
 
     def add_generator(self, *, section, name):
         """Add a generator of a section with the settings a new one starts with, a chain with no steps."""
         if section == Section.CHAINS:
             self.add_chain(name)
             return
-        kind = sections.GENERATOR_KINDS[section]
+        kind = generator_plugins.names_by_section()[section]
         settings = generator_plugins.settings_of(kind).new()
         self.change(self._setlist.add_item, section=section, name=name, item=settings)
 
     def set_musician_section(self, *, name, section, setting, value):
         """Set what a kind of section has of its own for a musician, whether the musician plays there or how the part is played, or None for what a section does unasked."""
-        self.change(self.generator(section=Section.MUSICIANS, name=name).set_section_own, section=section, name=setting, value=value)
+        self.change(self.generator(section=musician_plugin.SECTION, name=name).set_section_own, section=section, name=setting, value=value)
 
     def set_progression(self, *, name, chords, accidentals, inversions, scales=None, qualities=None, tensions=None):
         """Set a progression's chords, with a sharp or flat, an inversion, a borrowed scale type, a quality and tensions for each, a row of nothing left out."""
-        progression = self.generator(section=Section.PROGRESSIONS, name=name)
+        progression = self.generator(section=progression_plugin.SECTION, name=name)
         nothing = [None] * len(chords)
         rows = {
             ProgressionSetting.CHORDS: chords, ProgressionSetting.ACCIDENTALS: accidentals, ProgressionSetting.INVERSIONS: inversions,
@@ -172,18 +172,18 @@ class SetEdits:
 
     def set_arp_offset(self, *, name, step, offset):
         """Set one step of an arp's offsets, where None is a silent step."""
-        self.change(self.generator(section=Section.ARPS, name=name).set_cell, step=step, value=offset)
+        self.change(self.generator(section=arp_plugin.SECTION, name=name).set_cell, step=step, value=offset)
 
     def insert_arp_offset(self, *, name, step):
         """Add a step of 0 before a step of an arp's offsets."""
-        self.change(self.generator(section=Section.ARPS, name=name).insert_cell, step)
+        self.change(self.generator(section=arp_plugin.SECTION, name=name).insert_cell, step)
 
     def set_arp_step_add(self, *, name, register, step, add):
         """Set what one step of an arp's offsets adds to a register, where None or 0 adds nothing."""
-        self.change(self.generator(section=Section.ARPS, name=name).set_step_add, register=register, step=step, add=add)
+        self.change(self.generator(section=arp_plugin.SECTION, name=name).set_step_add, register=register, step=step, add=add)
 
     def remove_arp_offset(self, *, name, step):
-        self.change(self.generator(section=Section.ARPS, name=name).remove_cell, step)
+        self.change(self.generator(section=arp_plugin.SECTION, name=name).remove_cell, step)
 
     def _chain(self, name):
         return self._setlist.get_chain(name)

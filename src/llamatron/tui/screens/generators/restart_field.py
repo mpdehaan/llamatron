@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Restart field every generator's editor ends its own settings with: when the generator starts over, every clip, on new scene or whole song."""
 
-from llamatron.model.schema import file_format
+from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import Restart
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.user_strings import labels
 
 # Each named section's generator kind, the other way round from NAMED_GENERATORS.
-KINDS_BY_SECTION = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
+KINDS_BY_SECTION = {section: kind for kind, section in generator_plugins.sections_by_name().items()}
 
 
 def restart_field(page):

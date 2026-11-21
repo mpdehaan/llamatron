@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Phrasing pages: a new one, the editor's fields, and the By Section table of what each kind of section does of its own."""
 
-from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings
+from llamatron.engine.generators import phrasing as phrasing_plugin
+from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings, strings as phrasing_strings
 from llamatron.engine.generators.phrasing.settings import PhrasingSetting
-from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
@@ -20,22 +20,22 @@ LONGEST_LINE = phrasing_settings.LINES_IN_BARS[-1]
 class TestPhrasingAdded(UITest):
 
     async def test_a_new_one_is_found_under_articulation_and_starts_with_its_usual_values(self):
-        name = await self.add_generator(Section.PHRASINGS)
-        settings = self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=name)
+        name = await self.add_generator(phrasing_plugin.SECTION)
+        settings = self.document.song().get_generator_settings(kind=phrasing_plugin.NAME, name=name)
         self.assertEqual(settings.to_data(), {})
         self.assertIsInstance(self.app.screen, PhrasingEditor)
-        self.assertIn(labels.MSG_PHRASING_LABEL.upper(), self.text().upper())
+        self.assertIn(phrasing_strings.MSG_LABEL.upper(), self.text().upper())
 
 
 class TestPhrasingEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.PHRASINGS)
+        await self.open_generator(section=phrasing_plugin.SECTION)
         self.assertIsInstance(self.app.screen, PhrasingEditor)
 
     def phrasing(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=ui_testing.BREATHES)
+        return self.document.song().get_generator_settings(kind=phrasing_plugin.NAME, name=ui_testing.BREATHES)
 
     async def test_the_page_shows_its_four_fields_each_with_its_value_in_words(self):
         shown = self.text()

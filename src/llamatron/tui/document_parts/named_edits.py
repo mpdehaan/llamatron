@@ -46,7 +46,7 @@ class NamedEdits:
     def names_taken(self, section):
         """Return the names a new or copied item of a section may not take: every generator's and chain's for a generator or a
         chain, since they share one list in a set file, and the section's own otherwise."""
-        if section in sections.GENERATOR_SECTIONS:
+        if section in sections.generator_sections():
             return self._setlist.every_generator_name()
         return self.names_of(section)
 

@@ -19,10 +19,11 @@ stay quick. The drummer's timekeeping cymbals, the closed hat, the open hat and 
 drummer moves from one to another. The trade is written as each clip's own velocity, the scene's velocity lowered.
 """
 
+from llamatron.engine.generators import arp as arp_plugin, guitarify as guitarify_plugin
 from llamatron.model.file.checks import time_length
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import defaults, file_format
-from llamatron.model.schema.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
+from llamatron.model.schema.file_format import ChordSymbol, Row, Stroke, VelocitySetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held
 from llamatron.model.values.note import Note
@@ -126,9 +127,9 @@ def clip_count(*, song, slot, bar_length):
     notes = sum(chord_notes(symbol) for symbol in symbols) / bars
     for name in slot.get_chain_names():
         for step in song.chain_run(name).get_steps():
-            if step.kind == GeneratorKind.GUITARIFY:
+            if step.kind == guitarify_plugin.NAME:
                 notes = strummed(symbols=symbols, lasts=lasting(steps=steps, count=pattern.get_steps()), settings=song.get_generator_settings(kind=step.kind, name=step.name), bar_length=bar_length)
-            elif step.kind == GeneratorKind.ARP:
+            elif step.kind == arp_plugin.NAME:
                 notes = float(bar_length / time_length(song.get_generator_settings(kind=step.kind, name=step.name).get_step()))
     return notes, loudness
 

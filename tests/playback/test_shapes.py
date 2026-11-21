@@ -10,13 +10,14 @@ eighths between and the sixteenths between those.
 
 import unittest
 
+from llamatron.engine.generators import density as density_plugin, swell as swell_plugin
 from llamatron.engine.generators.shape_settings import ShapeSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.shapes import ShapeValues
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen
 from llamatron.model.values import midi
 from llamatron.playback import shapes
 from llamatron.playback.shapes import percent_at, plays_at, strength
@@ -90,7 +91,7 @@ def steady(*, shape, percent):
 
 def swelling(*, start, end):
     """Return what one_scene takes to run the lead's clip through a Swell generator from one percentage to another."""
-    return {CHAIN: [{GeneratorKind.SWELL: SHAPED}], GENERATORS: {Section.SWELLS: {SHAPED: {ShapeSetting.START: start, ShapeSetting.END: end}}}}
+    return {CHAIN: [{swell_plugin.NAME: SHAPED}], GENERATORS: {swell_plugin.SECTION: {SHAPED: {ShapeSetting.START: start, ShapeSetting.END: end}}}}
 
 
 class TestPercentOverTime(unittest.TestCase):
@@ -182,8 +183,8 @@ class TestSwell(unittest.TestCase):
         self.assertLess(found[0], found[-1])
 
     def test_a_generators_accent_lifts_the_beats(self):
-        generators = {Section.SWELLS: {SHAPED: {ShapeSetting.START: FULL - ACCENT, ShapeSetting.END: FULL - ACCENT, ShapeSetting.ACCENT: ACCENT}}}
-        found = velocities(one_scene(rows={Row.VELOCITY: [VELOCITY] * STEPS}, chain=[{GeneratorKind.SWELL: SHAPED}], generators=generators))
+        generators = {swell_plugin.SECTION: {SHAPED: {ShapeSetting.START: FULL - ACCENT, ShapeSetting.END: FULL - ACCENT, ShapeSetting.ACCENT: ACCENT}}}
+        found = velocities(one_scene(rows={Row.VELOCITY: [VELOCITY] * STEPS}, chain=[{swell_plugin.NAME: SHAPED}], generators=generators))
         self.assertGreater(found[4], found[1])
         self.assertEqual(found[1], VELOCITY * (FULL - ACCENT) // FULL)
 
@@ -213,8 +214,8 @@ class TestWhichShapeWins(unittest.TestCase):
         self.assertEqual(len(notes(data)), STEPS // 2)
 
     def test_the_generator_beats_the_clip(self):
-        generators = {Section.DENSITIES: {SHAPED: {ShapeSetting.START: QUARTER, ShapeSetting.END: QUARTER}}}
-        data = one_scene(clip=steady(shape=Shape.DENSITY, percent=HALF), chain=[{GeneratorKind.DENSITY: SHAPED}], generators=generators)
+        generators = {density_plugin.SECTION: {SHAPED: {ShapeSetting.START: QUARTER, ShapeSetting.END: QUARTER}}}
+        data = one_scene(clip=steady(shape=Shape.DENSITY, percent=HALF), chain=[{density_plugin.NAME: SHAPED}], generators=generators)
         self.assertEqual(len(notes(data)), 4)
 
     def test_a_scenes_ramp_runs_over_the_whole_scene_and_a_clips_over_the_clip(self):

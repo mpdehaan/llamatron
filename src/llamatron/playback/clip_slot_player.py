@@ -7,6 +7,7 @@
 from math import ceil
 
 from llamatron.engine.clips.clip import Clip
+from llamatron.engine.generators import articulate as articulate_plugin, density as density_plugin, follow_chords as follow_chords_plugin, progression as progression_plugin, swell as swell_plugin
 from llamatron.engine.generators.blend import Blend
 from llamatron.engine.generators.euclid.generator import EuclidMask
 from llamatron.engine.timing.keyswitch import SwitchNote
@@ -17,7 +18,7 @@ from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.conditions import any_true, draws_read
 from llamatron.model.schema import file_format, generator_plugins, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, Restart, Shape, TrackSetting
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
 from llamatron.playback import pattern_player as pattern_values
@@ -44,14 +45,14 @@ FULL_MORPH = 100
 # A clip with nothing in it ends straight away.
 NO_LENGTH = 0
 # The kinds of generator that move a clip's notes to a chord, which a drum pattern is spared.
-KINDS_MOVING_PITCHES = (GeneratorKind.PROGRESSION, GeneratorKind.FOLLOW_CHORDS)
+KINDS_MOVING_PITCHES = (progression_plugin.NAME, follow_chords_plugin.NAME)
 
 
 # What a chain's generator sets in the registers: nothing, since only the pattern's = rows set.
 # The generator kind of each shape, which the render reads for each clip rather than running on its notes.
 # Where a clip's or a scene's own shape starts: with the clip.
 NO_OFFSET = 0
-SHAPE_KINDS = {GeneratorKind.DENSITY: Shape.DENSITY, GeneratorKind.SWELL: Shape.SWELL, GeneratorKind.ARTICULATE: Shape.ARTICULATE}
+SHAPE_KINDS = {density_plugin.NAME: Shape.DENSITY, swell_plugin.NAME: Shape.SWELL, articulate_plugin.NAME: Shape.ARTICULATE}
 NO_SETS = {}
 # The pass a clip launches on, when it sets registers, and the pass whose statements speak for a shape, which works on the whole clip.
 FIRST_PASS = 0

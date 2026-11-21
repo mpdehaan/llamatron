@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Drift editor page: a drift's own settings, then each of its values for version A and version B side by side."""
 
-from llamatron.engine.generators.drift import settings as drift_settings
+from llamatron.engine.generators import drift as drift_plugin
+from llamatron.engine.generators.drift import settings as drift_settings, strings as drift_strings
 from llamatron.engine.generators.drift.settings import DriftSetting, versioned
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import DriftValue, Section
+from llamatron.model.schema.file_format import DriftValue
 from llamatron.model.values import note
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import cursor_moved
@@ -27,9 +28,9 @@ class DriftEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.DriftEditor
     HELP = help_text.HELP_DRIFT_EDITOR
-    SECTION = Section.DRIFTS
+    SECTION = drift_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_DRIFT_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=drift_strings.MSG_LABEL)
 
     def __init__(self, *, holder, name):
         super().__init__(holder=holder, name=name)

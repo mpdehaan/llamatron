@@ -22,7 +22,7 @@ import inspect
 import re
 import unittest
 
-from llamatron.model.schema.file_format import Section
+from llamatron.engine.generators import arp as arp_plugin, drag as drag_plugin, glide as glide_plugin, guitarify as guitarify_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin
 from llamatron.tui import keybindings
 from llamatron.tui.components import pattern_rows
 from llamatron.tui.key_table import first_key
@@ -267,26 +267,26 @@ class KeyTour(UITest):
             await self.walk()
             await self.press(Key.ESCAPE)
         await self.press(Key.ESCAPE)
-        await self.open_generator(section=Section.ARPS)
+        await self.open_generator(section=arp_plugin.SECTION)
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A Glide's, a Shorten's, a Rush's and a Drag's Steps field opens its steps page.
-        for section in (Section.GLIDES, Section.SHORTENS, Section.RUSHES, Section.DRAGS):
+        for section in (glide_plugin.SECTION, shorten_plugin.SECTION, rush_plugin.SECTION, drag_plugin.SECTION):
             await self.open_generator(section=section)
             await self.select_field(labels.MSG_STEPS_LABEL)
             await self.press(Key.ENTER)
             await self.walk()
             await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A Guitarify's Bar field, in its Strokes section, opens the bar of strokes.
-        await self.open_generator(section=Section.GUITARIFIES)
+        await self.open_generator(section=guitarify_plugin.SECTION)
         await self.select_field(labels.MSG_GUITAR_BAR_LABEL)
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A progression's Chords field opens the chord editor.
-        await self.open_generator(section=Section.PROGRESSIONS)
+        await self.open_generator(section=progression_plugin.SECTION)
         await self.select_field(labels.MSG_CHORDS_LABEL)
         await self.press(Key.ENTER)
         await self.walk()

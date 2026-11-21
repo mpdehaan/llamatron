@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Strum: the Strums page and editor, and the + Strum sections of the track editor and the clip page."""
 
-from llamatron.model.schema.file_format import GeneratorKind, Section, StrumDirection, StrumPart, StrumSpread
+from llamatron.engine.generators import strum as strum_plugin
+from llamatron.engine.generators.strum import strings as strum_strings
+from llamatron.model.schema.file_format import StrumDirection, StrumPart, StrumSpread
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.clip_page import ClipPage
@@ -20,9 +22,9 @@ NEW_ONE = 'ukulele'
 class TestStrumAdded(UITest):
 
     async def test_a_new_one_strums_by_the_beat(self):
-        name = await self.add_generator(Section.STRUMS)
+        name = await self.add_generator(strum_plugin.SECTION)
         self.assertIsInstance(self.app.screen, StrumEditor)
-        strum = self.document.song().get_generator_settings(kind=GeneratorKind.STRUM, name=name)
+        strum = self.document.song().get_generator_settings(kind=strum_plugin.NAME, name=name)
         self.assertEqual(strum.get_strum().direction, StrumDirection.BY_THE_BEAT)
 
 
@@ -30,11 +32,11 @@ class TestStrumEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.STRUMS)
+        await self.open_generator(section=strum_plugin.SECTION)
         self.assertIsInstance(self.app.screen, StrumEditor)
 
     def strum(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.STRUM, name=ui_testing.FOLK)
+        return self.document.song().get_generator_settings(kind=strum_plugin.NAME, name=ui_testing.FOLK)
 
     async def test_the_spread_steps_through_its_choices_and_shows_milliseconds(self):
         self.assertIn(spread_name(StrumSpread.NORMAL), self.text())
@@ -56,7 +58,7 @@ class TestStrumSections(UITest):
     async def test_the_track_strums_and_the_clip_takes_it_until_set(self):
         self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=ui_testing.LEAD))
         await self.pilot.pause()
-        await self.select_field(labels.MSG_STRUM_LABEL)
+        await self.select_field(strum_strings.MSG_LABEL)
         await self.press(Key.ENTER)
         await self.select_field(labels.MSG_STRUM_FIELD_LABELS[StrumPart.DIRECTION])
         await self.press(keybindings.FieldPage.MORE)

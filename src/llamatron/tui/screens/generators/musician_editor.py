@@ -4,10 +4,10 @@
 
 """The musician's editor: the instrument, the tracks the chords and the tune are read from, the player's touch, and a heading for each kind of section the song has."""
 
-from llamatron.engine.generators.musician import generator as musician, settings as musician_settings
+from llamatron.engine.generators import musician as musician_plugin
+from llamatron.engine.generators.musician import generator as musician, settings as musician_settings, strings as musician_strings
 from llamatron.engine.generators.musician.settings import MusicianSetting
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, gauge_shown, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage
@@ -22,9 +22,9 @@ class MusicianEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.MusicianEditor
     HELP = help_text.HELP_MUSICIAN_EDITOR
-    SECTION = Section.MUSICIANS
+    SECTION = musician_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_MUSICIAN_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=musician_strings.MSG_LABEL)
 
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a musician does unasked."""

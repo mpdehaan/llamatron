@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Glide editor: a Glide's name, step, amount, row of steps and Restart."""
 
+from llamatron.engine.generators import glide as glide_plugin
+from llamatron.engine.generators.glide import strings as glide_strings
 from llamatron.engine.generators.step_row_settings import StepRowSetting
-from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.user_strings import help as help_text, labels, messages
 
@@ -22,11 +23,11 @@ class GlideEditor(StepRowGeneratorEditor):
 
     KEYS = keybindings.GlideEditor
     HELP = help_text.HELP_GLIDE_EDITOR
-    SECTION = Section.GLIDES
-    KIND = GeneratorKind.GLIDE
+    SECTION = glide_plugin.SECTION
+    KIND = glide_plugin.NAME
     STEPS_EDITOR = GlideStepsEditor
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_GLIDE_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=glide_strings.MSG_LABEL)
 
     def amount_fields(self):
         written = self.settings().get_written_glide_amount()

@@ -10,6 +10,7 @@ track plays two bars.
 
 import unittest
 
+from llamatron.engine.generators import swell as swell_plugin
 from llamatron.engine.generators.shape_settings import ShapeSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
@@ -17,7 +18,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.objects.velocity_ramps import Velocity, velocity_of, VelocityRamp
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.model.values import midi
 from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, velocity_percent_at
 from tests.playback import test_registers, test_shapes
@@ -78,8 +79,8 @@ class TestTheVelocityThatHolds(unittest.TestCase):
         self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: limits.MIN_VELOCITY_PERCENT}))), {midi.MIN_VELOCITY})
 
     def test_a_swell_generator_scales_what_the_scene_already_scaled(self):
-        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALF}, chain=[{GeneratorKind.SWELL: test_shapes.SHAPED}],
-                         generators={Section.SWELLS: {test_shapes.SHAPED: {ShapeSetting.START: HALF, ShapeSetting.END: HALF}}})
+        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALF}, chain=[{swell_plugin.NAME: test_shapes.SHAPED}],
+                         generators={swell_plugin.SECTION: {test_shapes.SHAPED: {ShapeSetting.START: HALF, ShapeSetting.END: HALF}}})
         self.assertEqual(set(played(data)), {QUARTER})
 
 

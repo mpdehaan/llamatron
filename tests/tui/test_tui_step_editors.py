@@ -12,9 +12,9 @@ The pattern editor shares StepEditor with them, and its own tests cover its scro
 
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.model.objects.groove import FactoryGroove
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key
@@ -204,7 +204,7 @@ class TestOffsetsEditorIsOneRow(OneRowChecks, UITest):
     SHOWN = marks.MSG_STEPS_SHOWN
 
     def prepare(self):
-        self.document.change(self.document.generator(section=Section.ARPS, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
 
     async def test_a_silent_step_is_stepped_and_typed_from_nothing(self):
         await self.press(OffsetsEditor.KEYS.SILENT)

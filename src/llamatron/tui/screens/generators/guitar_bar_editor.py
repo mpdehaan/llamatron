@@ -13,10 +13,10 @@ which replaces the strokes, the accents and the cell's length together.
 
 from rich.text import Text
 
+from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import bars as guitar_bars, settings as guitarify_settings
 from llamatron.engine.generators.guitarify.bars import ready_bar_matching
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style
@@ -37,7 +37,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
 
     KEYS = keybindings.GuitarBarEditor
     HELP = help_text.HELP_GUITAR_BAR_EDITOR
-    SECTION = Section.GUITARIFIES
+    SECTION = guitarify_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     CRUMBS_AFTER = (labels.Crumb.STROKES,)
     CELL_WIDTH = 3

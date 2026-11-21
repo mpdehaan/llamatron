@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Euclidean mask: the Euclids page and editor, the track editor's + Euclid section, and the picker of named rhythms that H opens on Hits."""
 
+from llamatron.engine.generators import euclid as euclid_plugin
+from llamatron.engine.generators.euclid import strings as euclid_strings
 from llamatron.model.objects import euclid
-from llamatron.model.schema.file_format import EuclidPart, GeneratorKind, NamedRhythm, Section
+from llamatron.model.schema.file_format import EuclidPart, NamedRhythm
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
@@ -22,8 +24,8 @@ TRESILLO_HITS, TRESILLO_STEPS = euclid.NAMED_RHYTHMS[NamedRhythm.TRESILLO]
 class TestEuclidAdded(UITest):
 
     async def test_a_new_one_is_the_tresillo(self):
-        name = await self.add_generator(Section.EUCLIDS)
-        mask = self.document.song().get_generator_settings(kind=GeneratorKind.EUCLID, name=name).get_euclid()
+        name = await self.add_generator(euclid_plugin.SECTION)
+        mask = self.document.song().get_generator_settings(kind=euclid_plugin.NAME, name=name).get_euclid()
         self.assertEqual((mask.hits, mask.steps), (TRESILLO_HITS, TRESILLO_STEPS))
 
 
@@ -31,11 +33,11 @@ class TestEuclidEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.EUCLIDS)
+        await self.open_generator(section=euclid_plugin.SECTION)
         self.assertIsInstance(self.app.screen, EuclidEditor)
 
     def mask(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.EUCLID, name=ui_testing.CLAVE).get_euclid()
+        return self.document.song().get_generator_settings(kind=euclid_plugin.NAME, name=ui_testing.CLAVE).get_euclid()
 
     async def test_rotate_steps_and_the_drawing_follows(self):
         await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.ROTATE])
@@ -58,7 +60,7 @@ class TestTrackEuclidSection(UITest):
     async def test_the_track_takes_a_named_rhythm(self):
         self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=ui_testing.LEAD))
         await self.pilot.pause()
-        await self.select_field(labels.MSG_EUCLID_LABEL)
+        await self.select_field(euclid_strings.MSG_LABEL)
         await self.press(Key.ENTER)
         await self.select_field(labels.MSG_EUCLID_FIELD_LABELS[EuclidPart.HITS])
         await self.press(keybindings.TrackEditor.PICK_RHYTHM, Key.DOWN, Key.ENTER)

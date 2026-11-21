@@ -9,11 +9,10 @@ from typing import NamedTuple
 from llamatron.caching.revised import notes_change
 from llamatron.model.file.checks import listed, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import sections
 from llamatron.model.objects.conditions import statements_setting
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy
 from llamatron.model.objects.traits import BypassedWhen
-from llamatron.model.schema import file_format, generator_plugins
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import ChainSetting
 from llamatron.user_strings import errors
 
@@ -79,11 +78,11 @@ class Chain(BypassedWhen, HoldsSettings):
 
     def names_item(self, *, section, name):
         """Return whether one of its steps runs a generator of a section, like an arp of the arps. A chain names nothing else."""
-        return section in sections.GENERATOR_KINDS and ChainStep(sections.GENERATOR_KINDS[section], name) in self._steps
+        return section in generator_plugins.names_by_section() and ChainStep(generator_plugins.names_by_section()[section], name) in self._steps
 
     def named_items(self):
         """Return the generators its steps run, as a set of (section, name)."""
-        return {(file_format.NAMED_GENERATORS[step.kind], step.name) for step in self._steps}
+        return {(generator_plugins.sections_by_name()[step.kind], step.name) for step in self._steps}
 
     def copy(self):
         return Chain(self._steps, bypass_when=self._settings[ChainSetting.BYPASS_WHEN])
@@ -124,7 +123,7 @@ class Chain(BypassedWhen, HoldsSettings):
     @notes_change
     def _rename_own_references(self, *, section, old, new):
         """Make every step that ran the renamed generator run it under its new name."""
-        kind = sections.GENERATOR_KINDS[section]
+        kind = generator_plugins.names_by_section()[section]
         self._steps = [ChainStep(kind, new) if step == (kind, old) else step for step in self._steps]
 
     def _check_place(self, place):

@@ -11,6 +11,7 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp import generator as arp_values, settings as arp_settings
 from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings
 from llamatron.math.rational import Rational
@@ -20,7 +21,7 @@ from llamatron.model.objects.register import Register
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import defaults as set_defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values import midi
 from tests.playback import test_registers
 from tests.playback.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
@@ -230,8 +231,8 @@ class TestArpAdds(unittest.TestCase):
         """Return a song whose driver plays a quarter-note chord through an arp, and whose lead's CC 1 lane is bound to AX, the lead's clip a quarter note long."""
         driver = pattern(1, **{Row.CHORD: [CHORD], **(driver_rows or {})})
         data = two_tracks(lead=pattern(1), driver=driver, lead_track=dict(TestBoundControls.BOUND), registers_=registers(AX=0))
-        data[Section.ARPS] = {ARP: {ArpSetting.STEP: SIXTEENTH, **arp}}
-        data[Section.CHAINS] = {ARP_CHAIN: [{GeneratorKind.ARP: ARP}]}
+        data[arp_plugin.SECTION] = {ARP: {ArpSetting.STEP: SIXTEENTH, **arp}}
+        data[Section.CHAINS] = {ARP_CHAIN: [{arp_plugin.NAME: ARP}]}
         data[Section.SCENES][0][SceneSetting.TRACKS][DRIVER][ClipSlotSetting.CHAINS] = [ARP_CHAIN]
         return data
 

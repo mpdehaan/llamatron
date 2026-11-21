@@ -14,8 +14,9 @@ from fractions import Fraction
 import unittest
 from unittest import mock
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.model.file.example_sets import example_sets
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Row, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Row
 from llamatron.playback import song_renderer
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.lengths import measured
@@ -166,9 +167,9 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
 
     def test_a_morph_and_a_chain_leave_the_lengths_alone(self):
         self.document.set_clip_slot_morph_target(index=SECOND, track=LEAD, pattern=DRONE)
-        self.document.add_generator(section=Section.ARPS, name=ARP)
+        self.document.add_generator(section=arp_plugin.SECTION, name=ARP)
         self.document.add_chain(CHAIN)
-        self.document.change(self.document.get_setlist().get_chain(CHAIN).add_step, kind=GeneratorKind.ARP, name=ARP, setlist=self.document.get_setlist())
+        self.document.change(self.document.get_setlist().get_chain(CHAIN).add_step, kind=arp_plugin.NAME, name=ARP, setlist=self.document.get_setlist())
         self.document.set_clip_slot_setting(index=SECOND, track=LEAD, setting=ClipSlotSetting.CHAINS, value=[CHAIN])
         self.assertEqual(self.document.lengths().clip_seconds(index=SECOND, track=LEAD), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))
         self.assertEqual(self.document.lengths().scene_seconds(SECOND), seconds(whole_notes=ONE_PASS * LEAD_REPEATS))

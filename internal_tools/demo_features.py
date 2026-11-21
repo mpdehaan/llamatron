@@ -21,9 +21,10 @@ import io
 import os
 import sys
 
+from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema import defaults, file_format, generator_plugins, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, shape_setting, SongSetting, StepStatement, TrackSetting
 
 SET_SUFFIX = '.yml'
@@ -107,7 +108,7 @@ def any_song_section(section):
 
 def bypasses_generators(data):
     """Return whether any generator, chain, scene, clip or track of the set has statements that bypass generators."""
-    generators = [settings for section in file_format.NAMED_GENERATORS.values() for settings in data.get(section, {}).values()]
+    generators = [settings for section in generator_plugins.sections_by_name().values() for settings in data.get(section, {}).values()]
     chains = [chain for chain in data.get(Section.CHAINS, {}).values() if isinstance(chain, dict)]
     return any(file_format.BYPASS_WHEN in item for item in [*generators, *chains, *scenes(data), *clip_slots(data), *tracks(data)])
 
@@ -194,26 +195,26 @@ FEATURES = [
     ('draw resets', any_scene_setting(SceneSetting.RESET_DRAWS)),
     ('several songs', lambda data: len(songs(data)) > 1),
     ('several scales', lambda data: len(data.get(Section.SCALES, {})) > 1),
-    ('arps', has_section(Section.ARPS)),
-    ('AutoRatchets', has_section(Section.AUTO_RATCHETS)),
-    ('drifts', has_section(Section.DRIFTS)),
-    ('progressions', has_section(Section.PROGRESSIONS)),
-    ('voice leadings', has_section(Section.VOICE_LEADINGS)),
+    ('arps', has_section(arp_plugin.SECTION)),
+    ('AutoRatchets', has_section(auto_ratchet_plugin.SECTION)),
+    ('drifts', has_section(drift_plugin.SECTION)),
+    ('progressions', has_section(progression_plugin.SECTION)),
+    ('voice leadings', has_section(voice_leading_plugin.SECTION)),
     ('inversions', any_pattern_row(Row.INVERSION)),
-    ('euclids', lambda data: has_section(Section.EUCLIDS)(data) or any_track_setting(TrackSetting.EUCLID_HITS)(data)),
-    ('glides', has_section(Section.GLIDES)),
-    ('shortens', has_section(Section.SHORTENS)),
-    ('rushes', has_section(Section.RUSHES)),
-    ('drags', has_section(Section.DRAGS)),
-    ('hockets', has_section(Section.HOCKETS)),
-    ('guitarifies', has_section(Section.GUITARIFIES)),
-    ('follow chords', has_section(Section.FOLLOW_CHORDS)),
-    ('phrasings', has_section(Section.PHRASINGS)),
-    ('musicians', has_section(Section.MUSICIANS)),
-    ('strums', lambda data: has_section(Section.STRUMS)(data) or any_track_setting(TrackSetting.STRUM_DIRECTION)(data) or any_clip_slot_setting(ClipSlotSetting.STRUM_DIRECTION)(data)),
-    ('Densities', has_section(Section.DENSITIES)),
-    ('Swells', has_section(Section.SWELLS)),
-    ('Articulates', has_section(Section.ARTICULATES)),
+    ('euclids', lambda data: has_section(euclid_plugin.SECTION)(data) or any_track_setting(TrackSetting.EUCLID_HITS)(data)),
+    ('glides', has_section(glide_plugin.SECTION)),
+    ('shortens', has_section(shorten_plugin.SECTION)),
+    ('rushes', has_section(rush_plugin.SECTION)),
+    ('drags', has_section(drag_plugin.SECTION)),
+    ('hockets', has_section(hocket_plugin.SECTION)),
+    ('guitarifies', has_section(guitarify_plugin.SECTION)),
+    ('follow chords', has_section(follow_chords_plugin.SECTION)),
+    ('phrasings', has_section(phrasing_plugin.SECTION)),
+    ('musicians', has_section(musician_plugin.SECTION)),
+    ('strums', lambda data: has_section(strum_plugin.SECTION)(data) or any_track_setting(TrackSetting.STRUM_DIRECTION)(data) or any_clip_slot_setting(ClipSlotSetting.STRUM_DIRECTION)(data)),
+    ('Densities', has_section(density_plugin.SECTION)),
+    ('Swells', has_section(swell_plugin.SECTION)),
+    ('Articulates', has_section(articulate_plugin.SECTION)),
     ('chains', has_section(Section.CHAINS)),
     ('own grooves', has_section(Section.GROOVES)),
     ('description', lambda data: SetlistSetting.DESCRIPTION in data),

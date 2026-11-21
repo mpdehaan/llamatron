@@ -5,6 +5,7 @@
 
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin, drift as drift_plugin
 from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.engine.generators.drift.settings import DriftSetting
 from llamatron.math.rational import Rational
@@ -12,7 +13,7 @@ from llamatron.model.file.checks import Bars, in_whole_notes, time_length
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen, SongSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen, SongSetting
 from llamatron.playback.drift import DriftPlay
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.user_strings import labels
@@ -74,7 +75,7 @@ class TestBarsInTheRender(unittest.TestCase):
         data = drifting(drift={DriftSetting.EVERY: TWO_BARS})
         data[SongSetting.TIME_SIGNATURE] = THREE_FOUR
         play = DriftPlay(song=song_from_data(data), seed=SEED)
-        self.assertEqual(play.every(next(iter(data[Section.DRIFTS]))), Rational(3, 2))
+        self.assertEqual(play.every(next(iter(data[drift_plugin.SECTION]))), Rational(3, 2))
 
     def test_a_shapes_over_in_bars(self):
         ramp = {
@@ -92,11 +93,11 @@ class TestBarsInTheRender(unittest.TestCase):
             patterns={test_registers.X: dict(pattern(STEPS, chord=[CHORD] * STEPS), **{PatternSetting.STEP_SIZE: '1/4'})},
             scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [ARPEGGIATED]}}}],
         )
-        data[Section.ARPS] = {ARP: {ArpSetting.STEP: file_format.ONE_BAR_WRITTEN}}
-        data[Section.CHAINS] = {ARPEGGIATED: [{GeneratorKind.ARP: ARP}]}
+        data[arp_plugin.SECTION] = {ARP: {ArpSetting.STEP: file_format.ONE_BAR_WRITTEN}}
+        data[Section.CHAINS] = {ARPEGGIATED: [{arp_plugin.NAME: ARP}]}
         # A step as long as a bar is longer than each quarter-note chord, so each chord plays one note, where a sixteenth plays four.
         self.assertEqual(len(notes(data)), STEPS)
-        data[Section.ARPS][ARP][ArpSetting.STEP] = '1/16'
+        data[arp_plugin.SECTION][ARP][ArpSetting.STEP] = '1/16'
         self.assertEqual(len(notes(data)), STEPS * STEPS)
 
     def test_a_wrong_time_in_a_file_is_refused(self):

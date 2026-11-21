@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Voice leading editor page: one voice leading's name, the octaves its chords stay within, and whether the root stays in the bass."""
 
-from llamatron.engine.generators.voice_leading import settings as voice_leading_settings
+from llamatron.engine.generators import voice_leading as voice_leading_plugin
+from llamatron.engine.generators.voice_leading import settings as voice_leading_settings, strings as voice_leading_strings
 from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSetting
-from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
@@ -22,9 +22,9 @@ class VoiceLeadingEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.VoiceLeadingEditor
     HELP = help_text.HELP_VOICE_LEADING_EDITOR
-    SECTION = Section.VOICE_LEADINGS
+    SECTION = voice_leading_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_VOICE_LEADING_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=voice_leading_strings.MSG_LABEL)
 
     def fields(self):
         voicing = self.settings()

@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """The Voice leading generator plugin's declaration: the name a set file and a chain write it by, the section of a set that holds its
-generators, and the class of its settings."""
+generators, the class of its settings, and its words."""
 
+from llamatron.engine.generators import voice_leading
+from llamatron.engine.generators.voice_leading import strings
 from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSettings
-from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import GeneratorKind
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=GeneratorKind.VOICE_LEADING, section=file_format.NAMED_GENERATORS[GeneratorKind.VOICE_LEADING], settings=VoiceLeadingSettings)
+PLUGIN = GeneratorPlugin(name=voice_leading.NAME, section=voice_leading.SECTION, settings=VoiceLeadingSettings, strings=strings)

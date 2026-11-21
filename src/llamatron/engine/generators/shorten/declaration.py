@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """The Shorten generator plugin's declaration: the name a set file and a chain write it by, the section of a set that holds its
-generators, and the class of its settings."""
+generators, the class of its settings, and its words."""
 
+from llamatron.engine.generators import shorten
+from llamatron.engine.generators.shorten import strings
 from llamatron.engine.generators.shorten.settings import ShortenSettings
-from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import GeneratorKind
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=GeneratorKind.SHORTEN, section=file_format.NAMED_GENERATORS[GeneratorKind.SHORTEN], settings=ShortenSettings)
+PLUGIN = GeneratorPlugin(name=shorten.NAME, section=shorten.SECTION, settings=ShortenSettings, strings=strings)

@@ -12,6 +12,7 @@ here checks that what is declared is real and that the two can't disagree, in ev
 
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting, FollowChordsSettings
 from llamatron.engine.generators.hocket.settings import HocketSetting, HocketSettings
 from llamatron.engine.generators.musician.settings import MusicianSetting, MusicianSettings
@@ -19,13 +20,14 @@ from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects import sections as sections_values
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.clip_slot import ClipSlot
+from llamatron.model.objects.llama_data import references_of
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
-from llamatron.model.schema import defaults
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema import defaults, generator_plugins
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.tui.document import Document
@@ -39,7 +41,7 @@ SEED = 1
 # The sections whose items are renamed, and what refers to each: the song and scenes name a
 # scale, clip slots name patterns, tracks and chains, chains name arps and AutoRatchets, and the
 # song, scenes and tracks name grooves.
-RENAMED_SECTIONS = [Section.SCALES, Section.PATTERNS, Section.TRACKS, Section.ARPS, Section.AUTO_RATCHETS, Section.CHAINS, Section.GROOVES, Section.SONGS]
+RENAMED_SECTIONS = [Section.SCALES, Section.PATTERNS, Section.TRACKS, arp_plugin.SECTION, auto_ratchet_plugin.SECTION, Section.CHAINS, Section.GROOVES, Section.SONGS]
 RENAMED = '{name} renamed'
 # Probability and random directions are rolled from the song's seed, the scene and the track's
 # name (ClipSlotPlayer), so renaming a track changes what they roll. Whether that should stay so is
@@ -118,11 +120,11 @@ def song_with_every_reference():
     document.change(document.get_setlist().get_pattern(ANSWER).set_value, row=Row.GRAB, step=FIRST, value=True)
     document.add_track(LEAD)
     document.add_track(BASS)
-    document.add_generator(section=Section.ARPS, name=CLIMBER)
-    document.add_generator(section=Section.AUTO_RATCHETS, name=ROLLS)
+    document.add_generator(section=arp_plugin.SECTION, name=CLIMBER)
+    document.add_generator(section=auto_ratchet_plugin.SECTION, name=ROLLS)
     document.add_chain(NAMED)
-    document.change(document.get_setlist().get_chain(NAMED).add_step, kind=GeneratorKind.ARP, name=CLIMBER, setlist=document.get_setlist())
-    document.change(document.get_setlist().get_chain(NAMED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=ROLLS, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(NAMED).add_step, kind=arp_plugin.NAME, name=CLIMBER, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(NAMED).add_step, kind=auto_ratchet_plugin.NAME, name=ROLLS, setlist=document.get_setlist())
     document.add_scene(index=FIRST, name=VERSE)
     document.add_clip_slot(index=FIRST, track=LEAD, pattern=TUNE)
     document.set_clip_slot_repeat(index=FIRST, track=LEAD, repeat=TWO_REPEATS)
@@ -171,7 +173,7 @@ class TestRenamesFollowEveryReference(unittest.TestCase):
         chain = song.get_chain(self.renamed[Section.CHAINS, NAMED])
         self.assertEqual(
             [step.name for step in chain.get_steps()],
-            [self.renamed[Section.ARPS, CLIMBER], self.renamed[Section.AUTO_RATCHETS, ROLLS]],
+            [self.renamed[arp_plugin.SECTION, CLIMBER], self.renamed[auto_ratchet_plugin.SECTION, ROLLS]],
         )
 
     def test_the_uses_the_tracker_lists_follow_too(self):
@@ -180,7 +182,7 @@ class TestRenamesFollowEveryReference(unittest.TestCase):
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.PATTERNS, name=new_tune)), TUNE_USES)
         self.assertEqual(uses_of(setlist=setlist, section=Section.PATTERNS, name=TUNE), [])
         self.assertEqual(len(grabbers(song=self.document.song(), song_name=self.document.get_current_song_name(), track=self.renamed[Section.TRACKS, LEAD])), ONE_USE)
-        self.assertEqual(len(uses_of(setlist=setlist, section=Section.ARPS, name=self.renamed[Section.ARPS, CLIMBER])), ONE_USE)
+        self.assertEqual(len(uses_of(setlist=setlist, section=arp_plugin.SECTION, name=self.renamed[arp_plugin.SECTION, CLIMBER])), ONE_USE)
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.SCALES, name=self.renamed[Section.SCALES, OTHER])), ONE_USE)
         self.assertEqual(len(uses_of(setlist=setlist, section=Section.GROOVES, name=self.renamed[Section.GROOVES, SHUFFLE])), GROOVE_USES)
 
@@ -209,11 +211,11 @@ def song_with_one_name_for_everything():
     document.add_pattern(name=TUNE, steps=STEPS)
     document.add_track(SHARED)
     document.add_track(BASS)
-    document.add_generator(section=Section.ARPS, name=SHARED_ARP)
-    document.add_generator(section=Section.AUTO_RATCHETS, name=SHARED_RATCHET)
+    document.add_generator(section=arp_plugin.SECTION, name=SHARED_ARP)
+    document.add_generator(section=auto_ratchet_plugin.SECTION, name=SHARED_RATCHET)
     document.add_chain(SHARED)
-    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.ARP, name=SHARED_ARP, setlist=document.get_setlist())
-    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=GeneratorKind.AUTO_RATCHET, name=SHARED_RATCHET, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=arp_plugin.NAME, name=SHARED_ARP, setlist=document.get_setlist())
+    document.change(document.get_setlist().get_chain(SHARED).add_step, kind=auto_ratchet_plugin.NAME, name=SHARED_RATCHET, setlist=document.get_setlist())
     document.add_groove(SHARED)
     document.add_scene(index=FIRST, name=SHARED)
     document.change(document.song().get_scene(FIRST).set_scale_name, name=SHARED, song=document.song())
@@ -228,11 +230,11 @@ def song_with_one_name_for_everything():
 class TestReferencesAreDeclaredOnce(unittest.TestCase):
 
     def test_every_declared_reference_is_a_setting_of_its_class_and_names_a_section(self):
-        declaring = {kind for kind in every_subclass() if kind.REFERENCES}
+        declaring = {kind for kind in every_subclass() if kind.REFERENCES or kind.CHAINS_NAMED_BY}
         self.assertEqual(declaring, set(SETTINGS_OF))
-        sections = constants_of(Section)
+        sections = constants_of(Section) | set(generator_plugins.names_by_section())
         for kind, settings in SETTINGS_OF.items():
-            for section, named in kind.REFERENCES.items():
+            for section, named in references_of(kind).items():
                 with self.subTest(kind=kind.__name__, section=section):
                     self.assertIn(section, sections)
                     self.assertTrue(named)
@@ -248,8 +250,8 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         # Everything else that was called the same is still called that.
         self.assertEqual(scene.get_groove_choice(), SHARED)
         self.assertEqual((clip.get_pattern_name(), clip.get_chain_names(), clip.get_grab_track()), (SHARED, [SHARED], SHARED))
-        setlist.rename_item(section=Section.ARPS, old=SHARED_ARP, new=RENAMED_ARP)
-        self.assertEqual([(step.kind, step.name) for step in setlist.get_chain(SHARED).get_steps()], [(GeneratorKind.ARP, RENAMED_ARP), (GeneratorKind.AUTO_RATCHET, SHARED_RATCHET)])
+        setlist.rename_item(section=arp_plugin.SECTION, old=SHARED_ARP, new=RENAMED_ARP)
+        self.assertEqual([(step.kind, step.name) for step in setlist.get_chain(SHARED).get_steps()], [(arp_plugin.NAME, RENAMED_ARP), (auto_ratchet_plugin.NAME, SHARED_RATCHET)])
         self.assertEqual(Setlist.from_data(data=setlist.to_data()).to_data(), setlist.to_data())
 
     def test_a_rename_changes_only_what_named_the_item(self):
@@ -295,10 +297,10 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         self.assertTrue(scene.names_item(section=Section.SCALES, name=SHARED))
         self.assertTrue(scene.names_item(section=Section.GROOVES, name=SHARED))
         chain = document.get_setlist().get_chain(SHARED)
-        self.assertTrue(chain.names_item(section=Section.ARPS, name=SHARED_ARP))
-        self.assertTrue(chain.names_item(section=Section.AUTO_RATCHETS, name=SHARED_RATCHET))
-        self.assertFalse(chain.names_item(section=Section.ARPS, name=SHARED_RATCHET))
-        self.assertFalse(chain.names_item(section=Section.ARPS, name=TUNE))
+        self.assertTrue(chain.names_item(section=arp_plugin.SECTION, name=SHARED_ARP))
+        self.assertTrue(chain.names_item(section=auto_ratchet_plugin.SECTION, name=SHARED_RATCHET))
+        self.assertFalse(chain.names_item(section=arp_plugin.SECTION, name=SHARED_RATCHET))
+        self.assertFalse(chain.names_item(section=arp_plugin.SECTION, name=TUNE))
         self.assertFalse(chain.names_item(section=Section.PATTERNS, name=SHARED))
         self.assertIsInstance(chain, Chain)
 
@@ -330,7 +332,7 @@ class TestReferencesAreDeclaredOnce(unittest.TestCase):
         self.assertEqual(len(grabbers(song=document.song(), song_name=song_name, track=LEAD)), ONE_USE)
 
     def test_in_every_example_what_uses_an_item_is_what_its_rename_changes(self):
-        shared = [section for section in sections_values.SETLIST_SECTIONS if section != Section.SONGS]
+        shared = [section for section in sections_values.setlist_sections() if section != Section.SONGS]
         for path in EXAMPLES:
             document = Document.load(path)
             setlist = document.get_setlist()

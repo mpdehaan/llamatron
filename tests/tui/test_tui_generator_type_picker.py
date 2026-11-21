@@ -3,7 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The picker of a new generator's type: the types under headings that open and close, searched by typing, on the Generators page."""
 
-from llamatron.model.schema.file_format import Section
+from llamatron.engine.generators import follow_chords as follow_chords_plugin, strum as strum_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators.follow_chords import strings as follow_chords_strings
+from llamatron.engine.generators.progression import strings as progression_strings
+from llamatron.engine.generators.strum import strings as strum_strings
+from llamatron.engine.generators.voice_leading import strings as voice_leading_strings
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.keys import Key
@@ -16,7 +20,7 @@ from tests.support.ui_testing import back_key, forward_key, UITest
 HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.CHAINS, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
 HARMONY_PLACE = HEADINGS.index(labels.GeneratorGroup.HARMONY)
 # What is typed to search for Strum: its name in small letters, since a search ignores case.
-SEARCHED = labels.MSG_STRUM_LABEL.lower()
+SEARCHED = strum_strings.MSG_LABEL.lower()
 
 
 def heading(*, name, is_open):
@@ -36,30 +40,30 @@ class TestGeneratorTypePicker(UITest):
         self.assertIn(messages.MSG_NEW_GENERATOR_KIND_TITLE, shown)
         places = [shown.index(heading(name=name, is_open=False)) for name in HEADINGS]
         self.assertEqual(places, sorted(places))
-        self.assertNotIn(labels.MSG_FOLLOW_CHORDS_LABEL, shown)
+        self.assertNotIn(follow_chords_strings.MSG_LABEL, shown)
 
     async def test_every_type_is_under_a_heading_once_by_name(self):
         self.assertEqual(sorted(self.dialog.options), sorted(listing.label for listing in generator_pages.LISTED_PAGES.values()))
         self.assertIn(labels.MSG_CHAIN_LABEL, self.dialog.options)
         self.assertEqual(self.dialog.headings, HEADINGS)
         in_harmony = [listing.label for listing in generator_pages.GENERATOR_PAGES.values() if listing.group == labels.GeneratorGroup.HARMONY]
-        self.assertEqual(in_harmony, [labels.MSG_FOLLOW_CHORDS_LABEL, labels.MSG_PROGRESSION_LABEL])
-        self.assertEqual(generator_pages.GENERATOR_PAGES[Section.STRUMS].group, labels.GeneratorGroup.RHYTHM)
-        self.assertEqual(generator_pages.GENERATOR_PAGES[Section.VOICE_LEADINGS].group, labels.GeneratorGroup.VOICING)
+        self.assertEqual(in_harmony, [follow_chords_strings.MSG_LABEL, progression_strings.MSG_LABEL])
+        self.assertEqual(generator_pages.GENERATOR_PAGES[strum_plugin.SECTION].group, labels.GeneratorGroup.RHYTHM)
+        self.assertEqual(generator_pages.GENERATOR_PAGES[voice_leading_plugin.SECTION].group, labels.GeneratorGroup.VOICING)
 
     async def test_space_or_enter_opens_a_heading_and_closes_it_again(self):
         await self.press(*[Key.DOWN] * HARMONY_PLACE, Key.SPACE)
         self.assertIn(heading(name=labels.GeneratorGroup.HARMONY, is_open=True), self.text())
-        self.assertIn(labels.MSG_FOLLOW_CHORDS_LABEL, self.text())
+        self.assertIn(follow_chords_strings.MSG_LABEL, self.text())
         await self.press(Key.ENTER)
         self.assertIn(heading(name=labels.GeneratorGroup.HARMONY, is_open=False), self.text())
-        self.assertNotIn(labels.MSG_FOLLOW_CHORDS_LABEL, self.text())
+        self.assertNotIn(follow_chords_strings.MSG_LABEL, self.text())
         self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
 
     async def test_enter_on_a_type_makes_one_and_opens_it(self):
         await self.press(*[Key.DOWN] * HARMONY_PLACE, Key.SPACE, Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, FollowChordsEditor)
-        self.assertEqual(len(self.document.names_of(Section.FOLLOW_CHORDS)), 2)
+        self.assertEqual(len(self.document.names_of(follow_chords_plugin.SECTION)), 2)
 
     async def test_an_open_heading_is_remembered_when_the_picker_opens_again(self):
         await self.press(*[Key.DOWN] * HARMONY_PLACE, Key.SPACE, Key.ESCAPE)
@@ -80,13 +84,13 @@ class TestGeneratorTypePicker(UITest):
     async def test_typing_searches_every_type_with_no_headings_and_enter_picks(self):
         await self.type(SEARCHED)
         shown = self.text()
-        self.assertIn(labels.MSG_STRUM_LABEL, shown)
+        self.assertIn(strum_strings.MSG_LABEL, shown)
         self.assertNotIn(heading(name=labels.GeneratorGroup.RHYTHM, is_open=False), shown)
         await self.press(Key.ENTER)
-        self.assertEqual(len(self.document.names_of(Section.STRUMS)), 2)
+        self.assertEqual(len(self.document.names_of(strum_plugin.SECTION)), 2)
 
     async def test_erasing_the_search_shows_the_headings_again_on_the_found_types_heading(self):
-        await self.type(labels.MSG_VOICE_LEADING_LABEL)
-        await self.press(*[keybindings.ChoiceDialog.ERASE] * len(labels.MSG_VOICE_LEADING_LABEL))
+        await self.type(voice_leading_strings.MSG_LABEL)
+        await self.press(*[keybindings.ChoiceDialog.ERASE] * len(voice_leading_strings.MSG_LABEL))
         self.assertEqual(self.dialog.headings[self.dialog.rows()[self.dialog.row][0]], labels.GeneratorGroup.VOICING)
         self.assertIn(heading(name=labels.GeneratorGroup.VOICING, is_open=False), self.text())

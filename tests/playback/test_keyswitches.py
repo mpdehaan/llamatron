@@ -8,6 +8,7 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.timing.timing import keyswitch_events, timed_events
 from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
@@ -19,7 +20,7 @@ from llamatron.model.objects import instrument as instrument_values
 from llamatron.model.objects.instrument import Instrument, Keyswitch
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline as timeline_values
@@ -255,7 +256,7 @@ class TestKeyswitchesPlayed(unittest.TestCase):
         return [event.midi_number for event in timed_events(clip=clip, scale=scale)[0]]
 
     def test_a_generator_changes_the_notes_and_leaves_the_keyswitches(self):
-        chained = {Section.ARPS: {ARP: {}}, Section.CHAINS: {CHAIN: [{GeneratorKind.ARP: ARP}]}}
+        chained = {arp_plugin.SECTION: {ARP: {}}, Section.CHAINS: {CHAIN: [{arp_plugin.NAME: ARP}]}}
         rows = {Row.CHORD: ['M', None], Row.DEGREE: [1, None]}
         plain = switched(keyswitch=[[STACCATO_SLOT], None], rows=rows)
         arpeggiated = switched(keyswitch=[[STACCATO_SLOT], None], rows=rows, clip={ClipSlotSetting.CHAINS: [CHAIN]}, extra=chained)

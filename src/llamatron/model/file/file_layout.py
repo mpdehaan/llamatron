@@ -13,7 +13,7 @@ keep their fixed names, AX to DX, as keys, since they are settings of the song a
 
 from llamatron.model.file.checks import listed as listed_text, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.schema import file_format
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import FileLayout, Section
 from llamatron.user_strings import errors
 
@@ -23,7 +23,6 @@ OBJECT_SCENE_TRACKS = 'tracks'
 # A chain with statements keeps its steps under this in the objects' data.
 OBJECT_CHAIN_STEPS = 'steps'
 LISTED_SECTIONS = (Section.SCALES, Section.PATTERNS, Section.GROOVES, Section.INSTRUMENTS)
-SECTIONS_OF_KINDS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
 
 
 def as_items(mapping, *, key=FileLayout.NAME):
@@ -48,8 +47,8 @@ def as_file_layout(data):
     written = {}
     generators = []
     for key, value in data.items():
-        if key in SECTIONS_OF_KINDS:
-            generators += [{FileLayout.NAME: name, FileLayout.KIND: SECTIONS_OF_KINDS[key], **settings} for name, settings in value.items()]
+        if key in generator_plugins.names_by_section():
+            generators += [{FileLayout.NAME: name, FileLayout.KIND: generator_plugins.names_by_section()[key], **settings} for name, settings in value.items()]
         elif key == Section.CHAINS:
             generators += [_chain_item(name=name, chain=chain) for name, chain in value.items()]
         elif key in LISTED_SECTIONS:
@@ -137,8 +136,8 @@ def _generators_by_kind(items):
     with reading(FileLayout.GENERATORS):
         for name, settings in by_name.items():
             kind = settings.get(FileLayout.KIND)
-            if kind != FileLayout.CHAIN and kind not in file_format.NAMED_GENERATORS:
-                raise InvalidValue(errors.ERR_NO_SUCH_KIND.format(name=name, kinds=listed_text([*file_format.NAMED_GENERATORS, FileLayout.CHAIN]), value=kind))
+            if kind != FileLayout.CHAIN and kind not in generator_plugins.sections_by_name():
+                raise InvalidValue(errors.ERR_NO_SUCH_KIND.format(name=name, kinds=listed_text([*generator_plugins.sections_by_name(), FileLayout.CHAIN]), value=kind))
             kinds[name] = kind
     read = {}
     for name, settings in by_name.items():
@@ -146,7 +145,7 @@ def _generators_by_kind(items):
         if kinds[name] == FileLayout.CHAIN:
             read.setdefault(Section.CHAINS, {})[name] = _chain_of_file(name=name, settings=own, kinds=kinds)
         else:
-            read.setdefault(file_format.NAMED_GENERATORS[kinds[name]], {})[name] = own
+            read.setdefault(generator_plugins.sections_by_name()[kinds[name]], {})[name] = own
     return read
 
 

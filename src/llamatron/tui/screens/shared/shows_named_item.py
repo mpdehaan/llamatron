@@ -10,8 +10,8 @@ its own words. They descend from three different pages (Page, ListPage and Field
 they share is a mixin beside whichever of those a page is.
 """
 
-from llamatron.model.objects import sections
-from llamatron.model.schema.file_format import Section
+from llamatron.engine.generators import drift as drift_plugin
+from llamatron.model.schema import generator_plugins
 from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.statements import statement_section
 from llamatron.user_strings import labels
@@ -19,6 +19,12 @@ from llamatron.user_strings import labels
 NOTHING = ''
 from llamatron.tui.themes import theme_of
 
+
+
+def caption_word(section):
+    """Return the word a page's caption names what it edits by: a generator plugin's own word, or the section's."""
+    plugin = generator_plugins.plugins_by_section().get(section)
+    return labels.MSG_CAPTION_WORDS.get(section, NOTHING) if plugin is None else plugin.strings.MSG_CAPTION_WORD
 
 class ShowsNamedItem:
     """A page of one named thing: `self.item` is its name, and `SECTION` the section it is in.
@@ -50,18 +56,18 @@ class ShowsNamedItem:
     def shared_sections(self):
         """Return, on a generator's page, the generator's statements about the registers, which every kind of generator has."""
         # A drift changes values as a pattern plays, not a clip's notes in a chain, so no pass of a clip goes by one and it shows no table.
-        if self.SECTION not in sections.GENERATOR_KINDS or self.SECTION == Section.DRIFTS:
+        if self.SECTION not in generator_plugins.names_by_section() or self.SECTION == drift_plugin.SECTION:
             return []
         document = self.document()
         return statement_section(
             page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE,
-            statements=lambda: document.song().get_generator_settings(kind=sections.GENERATOR_KINDS[self.SECTION], name=self.item).get_bypass_when(),
+            statements=lambda: document.song().get_generator_settings(kind=generator_plugins.names_by_section()[self.SECTION], name=self.item).get_bypass_when(),
             store=lambda place, statement: document.change(document.generator(section=self.SECTION, name=self.item).set_bypass_statement, place=place, statement=statement),
         )
 
     def caption(self):
         """Return what the theme's stripe says: what kind of thing the page edits, and its name."""
-        return labels.MSG_EDITING_CAPTION.format(what=labels.MSG_CAPTION_WORDS.get(self.SECTION, NOTHING).upper(), name=self.item)
+        return labels.MSG_EDITING_CAPTION.format(what=caption_word(self.SECTION).upper(), name=self.item)
 
     def theme(self):
         """Return the theme colour of the section the page's thing is in, as its list's."""

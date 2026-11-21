@@ -19,10 +19,11 @@ velocity, probability, degree and scale (DriftEffects).
 import math
 from typing import NamedTuple
 
+from llamatron.engine.generators import drift as drift_plugin
 from llamatron.engine.generators.drift import settings as drift_settings
 from llamatron.math.random_source import random_source
 from llamatron.model.file.checks import in_whole_notes
-from llamatron.model.schema.file_format import DriftDirection, DriftValue, DriftVersion, GeneratorKind
+from llamatron.model.schema.file_format import DriftDirection, DriftValue, DriftVersion
 
 # How a drift's own random numbers are seeded from the render's seed and its name, so that each drift draws its own.
 DRIFT_SEED = '{seed}/drift/{name}'
@@ -67,7 +68,7 @@ class DriftPlay:
         self._choosers = {}
 
     def settings(self, name):
-        return self._song.get_generator_settings(kind=GeneratorKind.DRIFT, name=name)
+        return self._song.get_generator_settings(kind=drift_plugin.NAME, name=name)
 
     def every(self, name):
         """Return how long one of a drift's triggers lasts, in whole notes."""
@@ -205,6 +206,6 @@ def drifts_named(*, song, chain_names):
     names = []
     for chain in chain_names:
         for step in song.chain_run(chain).get_steps():
-            if step.kind == GeneratorKind.DRIFT:
+            if step.kind == drift_plugin.NAME:
                 names.append(step.name)
     return names

@@ -6,7 +6,7 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
-from llamatron.model.schema.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
 from llamatron.tui.keys import RowSection
 
 
@@ -15,15 +15,6 @@ def register_labels(*, rows, label):
     return {row: label.format(name=name) for name, row in rows.items()}
 
 
-# wizards/create_song/composer.py
-# The word for each kind of generator that a generator named for its kind takes, as kick rush (names.MSG_NAMED_FOR_KIND).
-MSG_KIND_WORDS = {
-    GeneratorKind.ARP: 'arp', GeneratorKind.AUTO_RATCHET: 'ratchet', GeneratorKind.DRIFT: 'drift', GeneratorKind.PROGRESSION: 'chords',
-    GeneratorKind.VOICE_LEADING: 'voicing', GeneratorKind.STRUM: 'strum', GeneratorKind.EUCLID: 'rhythm', GeneratorKind.DENSITY: 'density',
-    GeneratorKind.SWELL: 'swell', GeneratorKind.ARTICULATE: 'articulation', GeneratorKind.GLIDE: 'glide', GeneratorKind.SHORTEN: 'shorten',
-    GeneratorKind.RUSH: 'rush', GeneratorKind.DRAG: 'drag', GeneratorKind.HOCKET: 'hocket', GeneratorKind.GUITARIFY: 'guitar',
-    GeneratorKind.FOLLOW_CHORDS: 'chords followed', GeneratorKind.PHRASING: 'phrasing', GeneratorKind.MUSICIAN: 'player',
-}
 
 # tui/dialogs/quit_dialog.py
 # The quit dialog's buttons, in the order of QUIT_WITHOUT_SAVING, SAVE_THEN_QUIT and CANCEL: quitting without
@@ -120,11 +111,7 @@ MSG_NO_FILE_CRUMB = '(unsaved)'
 MSG_EDITING_CAPTION = 'EDITING {what}: {name}'
 MSG_CAPTION_WORDS = {
     Section.SONGS: 'song', Section.PATTERNS: 'pattern', Section.CHAINS: 'chain', Section.SCALES: 'scale', Section.GROOVES: 'groove',
-    Section.INSTRUMENTS: 'instrument', Section.TRACKS: 'track', Section.ARPS: 'arpeggiator', Section.AUTO_RATCHETS: 'AutoRatchet',
-    Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'strum',
-    Section.EUCLIDS: 'Euclid', Section.DENSITIES: 'density', Section.SWELLS: 'swell', Section.ARTICULATES: 'articulate',
-    Section.GLIDES: 'glide', Section.SHORTENS: 'shorten', Section.RUSHES: 'rush', Section.DRAGS: 'drag', Section.HOCKETS: 'hocket', Section.GUITARIFIES: 'guitarify',
-    Section.FOLLOW_CHORDS: 'follow chords', Section.PHRASINGS: 'phrasing', Section.MUSICIANS: 'musician',
+    Section.INSTRUMENTS: 'instrument', Section.TRACKS: 'track',
 }
 MSG_SCENE_CAPTION_WORD = 'scene'
 MSG_CLIP_CAPTION_WORD = 'clip'
@@ -329,10 +316,7 @@ class GeneratorGroup:
     VOICING = 'Voicing'
 
 
-MSG_ARP_LABEL = 'Arpeggiator'
 MSG_CHAIN_LABEL = 'Chain'
-MSG_AUTO_RATCHET_LABEL = 'AutoRatchet'
-MSG_DRIFT_LABEL = 'Drift'
 # tui/screens/generators/drift_editor.py: its own fields, then each version's values, shown as A and B side by side.
 MSG_EVERY_LABEL = 'Every'
 MSG_STEPS_TO_B_LABEL = 'Steps to B'
@@ -350,23 +334,12 @@ MSG_SHAPE_NAMES = {Shape.DENSITY: 'Density', Shape.SWELL: 'Swell', Shape.ARTICUL
 MSG_SHAPE_FIELD_LABELS = {ShapePart.START: '{shape} start', ShapePart.END: '{shape} end', ShapePart.OVER: '{shape} over', ShapePart.THEN: '{shape} then'}
 MSG_SHAPE_PART_LABELS = {ShapePart.START: 'Start', ShapePart.END: 'End', ShapePart.OVER: 'Over', ShapePart.THEN: 'Then'}
 MSG_WHOLE_SPAN = '(whole)'
-# tui/screens/generators/chords_editor.py: a progression's fields, and the chord editor's rows, which the progression editor shares.
-MSG_PROGRESSION_LABEL = 'Progression'
-# tui/screens/generators/voice_leading_editor.py: a voice leading's name in a prompt, and its toggle.
-MSG_VOICE_LEADING_LABEL = 'VoiceLeading'
-MSG_HOCKET_LABEL = 'Hocket'
-# tui/screens/generators/guitarify_editor.py, tui/screens/generators/guitar_bar_editor.py: a Guitarify's name, its two sections, their fields, and what its choices are called.
-MSG_GUITARIFY_LABEL = 'Guitarify'
-MSG_FOLLOW_CHORDS_LABEL = 'FollowChords'
 MSG_CHORDS_FROM_LABEL = 'Chords from'
-MSG_PHRASING_LABEL = 'Phrasing'
 MSG_PHRASING_LINE_LABEL = 'Line'
 MSG_PHRASING_LINE_NAMES = {1: '1 bar', 2: '2 bars', 4: '4 bars'}
 MSG_PHRASING_BREATH_LABEL = 'Breath'
 MSG_PHRASING_RISE_LABEL = 'Rise and fall'
 MSG_PHRASING_NOTES_LABEL = 'Notes'
-# tui/screens/generators/musician_editor.py: a musician's settings, then a heading for each kind of section.
-MSG_MUSICIAN_LABEL = 'Musician'
 MSG_MUSICIAN_INSTRUMENT_LABEL = 'Instrument'
 MSG_TUNE_FROM_LABEL = 'Tune from'
 MSG_MUSICIAN_ACTIVITY_LABEL = 'Activity'
@@ -423,8 +396,6 @@ MSG_ACCENT_ROW_LABEL = 'Accent'
 MSG_READY_BARS_TITLE = 'Ready-made bar'
 MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
-# tui/screens/generators/strum_fields.py: a strum's section and its fields, Strum in front where the strum is one section among others, and what its choices are called.
-MSG_STRUM_LABEL = 'Strum'
 MSG_STRUM_FIELD_LABELS = {
     StrumPart.DIRECTION: 'Strum direction', StrumPart.SPREAD: 'Strum spread', StrumPart.FADE: 'Strum fade', StrumPart.LOOSE_TIMING: 'Strum loose timing',
     StrumPart.UPSTROKE_STRINGS: 'Strum upstrokes',
@@ -439,21 +410,13 @@ MSG_STRUM_WORDS = {
 MSG_TRACK_STRUM_CHOICE = '(track)'
 # tui/screens/generators/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
-# tui/screens/generators/step_row_editor.py: a Glide's, a Shorten's, a Rush's and a Drag's names, fields and the row's labels.
-MSG_GLIDE_LABEL = 'Glide'
-MSG_SHORTEN_LABEL_NAME = 'Shorten'
-MSG_RUSH_LABEL = 'Rush'
-MSG_DRAG_LABEL = 'Drag'
 MSG_GLIDE_AMOUNT_LABEL = 'Glide amount'
 MSG_SHORTEN_LABEL = 'Shorten amount'
 MSG_RUSH_AMOUNT_LABEL = 'Rush amount'
 MSG_DRAG_AMOUNT_LABEL = 'Drag amount'
 MSG_STEPS_LABEL = 'Steps'
 MSG_STEP_NUMBER_ROW_LABEL = 'Step'
-MSG_STEP_ROW_NAMES = {Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag'}
 MSG_RESTART_NAMES = {Restart.EVERY_CLIP: 'every clip', Restart.ON_NEW_SCENE: 'on new scene', Restart.WHOLE_SONG: 'whole song'}
-# tui/screens/generators/euclid_fields.py: a mask's section and fields, Euclid in front in a section, and the named rhythms the Hits field's H offers.
-MSG_EUCLID_LABEL = 'Euclid'
 MSG_EUCLID_FIELD_LABELS = {EuclidPart.HITS: 'Euclid hits', EuclidPart.STEPS: 'Euclid steps', EuclidPart.ROTATE: 'Euclid rotate', EuclidPart.STEP: 'Euclid step'}
 MSG_EUCLID_PART_LABELS = {EuclidPart.HITS: 'Hits', EuclidPart.STEPS: 'Steps', EuclidPart.ROTATE: 'Rotate', EuclidPart.STEP: 'Step'}
 MSG_RHYTHM_NAMES = {
@@ -1027,15 +990,5 @@ MSG_WIZARD_PLAYS_LABEL = 'Plays'
 MSG_WIZARD_CREATE_BUTTON = 'Apply'
 MSG_WIZARD_SCALE_TYPE_NAMES = {'major': 'Major', 'minor': 'Minor'}
 
-# tui/screens/generators/generator_list_page.py and tui/screens/arrange/arrange_page.py
-# What each kind of generator is called beside a generator's name in a clip's, a scene's or a track's list, as in Chain: fills.
-MSG_GENERATOR_KIND_LABELS = {
-    CHAIN_KIND: MSG_CHAIN_LABEL, GeneratorKind.ARP: MSG_ARP_LABEL, GeneratorKind.AUTO_RATCHET: MSG_AUTO_RATCHET_LABEL, GeneratorKind.DRIFT: MSG_DRIFT_LABEL,
-    GeneratorKind.PROGRESSION: MSG_PROGRESSION_LABEL, GeneratorKind.VOICE_LEADING: MSG_VOICE_LEADING_LABEL, GeneratorKind.STRUM: MSG_STRUM_LABEL,
-    GeneratorKind.EUCLID: MSG_EUCLID_LABEL, GeneratorKind.DENSITY: MSG_SHAPE_NAMES[Shape.DENSITY], GeneratorKind.SWELL: MSG_SHAPE_NAMES[Shape.SWELL],
-    GeneratorKind.ARTICULATE: MSG_SHAPE_NAMES[Shape.ARTICULATE], GeneratorKind.GLIDE: MSG_GLIDE_LABEL, GeneratorKind.SHORTEN: MSG_SHORTEN_LABEL_NAME,
-    GeneratorKind.RUSH: MSG_RUSH_LABEL, GeneratorKind.DRAG: MSG_DRAG_LABEL, GeneratorKind.HOCKET: MSG_HOCKET_LABEL, GeneratorKind.GUITARIFY: MSG_GUITARIFY_LABEL,
-    GeneratorKind.FOLLOW_CHORDS: MSG_FOLLOW_CHORDS_LABEL, GeneratorKind.PHRASING: MSG_PHRASING_LABEL, GeneratorKind.MUSICIAN: MSG_MUSICIAN_LABEL,
-}
 MSG_LISTED_GENERATOR = '{kind}: {name}'
 MSG_GENERATORS_FIELD_LABEL = 'Generators'

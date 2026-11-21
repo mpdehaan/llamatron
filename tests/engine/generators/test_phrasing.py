@@ -5,11 +5,12 @@
 
 import unittest
 
+from llamatron.engine.generators import phrasing as phrasing_plugin
 from llamatron.engine.generators.phrasing import generator as phrasing, settings as phrasing_settings
 from llamatron.engine.generators.phrasing.settings import PhrasingSetting, PhrasingSettings
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data
@@ -56,8 +57,8 @@ def phrased_data(*, settings, rows=None, steps=STEPS):
     tune[PatternSetting.STEP_SIZE] = EIGHTH_STEP
     scene = {SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.CHAINS: [CHAIN]}}}
     data = song(patterns={TUNE: tune}, scenes=[scene])
-    data[Section.PHRASINGS] = {DELIVERY: settings}
-    data[Section.CHAINS] = {CHAIN: [{GeneratorKind.PHRASING: DELIVERY}]}
+    data[phrasing_plugin.SECTION] = {DELIVERY: settings}
+    data[Section.CHAINS] = {CHAIN: [{phrasing_plugin.NAME: DELIVERY}]}
     return data
 
 

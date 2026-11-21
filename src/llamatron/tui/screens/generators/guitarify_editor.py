@@ -4,10 +4,11 @@
 
 """The Guitarify editor: Shape, the fretting hand, and Strokes, the other hand, each a section with a switch of its own."""
 
-from llamatron.engine.generators.guitarify import settings as guitarify_settings
+from llamatron.engine.generators import guitarify as guitarify_plugin
+from llamatron.engine.generators.guitarify import settings as guitarify_settings, strings as guitarify_strings
 from llamatron.engine.generators.guitarify.bars import ready_bar_matching
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Approach, ChordColor, GuitarifySetting, Section, SingleNotes, Tuning
+from llamatron.model.schema.file_format import Approach, ChordColor, GuitarifySetting, SingleNotes, Tuning
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.tui.screens.generators.restart_field import restart_field
@@ -37,9 +38,9 @@ class GuitarifyEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.GuitarifyEditor
     HELP = help_text.HELP_GUITARIFY_EDITOR
-    SECTION = Section.GUITARIFIES
+    SECTION = guitarify_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_GUITARIFY_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=guitarify_strings.MSG_LABEL)
 
     def any_written(self, settings):
         written = self.settings().to_data()

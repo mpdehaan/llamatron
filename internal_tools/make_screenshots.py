@@ -19,8 +19,8 @@ from dataclasses import dataclass
 import pathlib
 import re
 
+from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, glide as glide_plugin, hocket as hocket_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
 from llamatron.model.file import version
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document
@@ -110,10 +110,10 @@ SHOTS = [
     # With Real Time on, Up from the first scene's name reaches Arrange's corner, and Right the first track's name.
     Shot(name='track_editor', keys=[keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER]),
     Shot(name='generators', keys=[keybindings.MainPage.GENERATORS]),
-    Shot(name='arp_editor', generator=Section.ARPS, keys=[], song=ARP_SONG),
+    Shot(name='arp_editor', generator=arp_plugin.SECTION, keys=[], song=ARP_SONG),
     # Offsets is the sixth setting of an arpeggiator, after its Name, and Enter on it opens the offsets editor.
-    Shot(name='offsets_editor', generator=Section.ARPS, keys=[Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=ARP_SONG),
-    Shot(name='auto_ratchet_editor', generator=Section.AUTO_RATCHETS, keys=[]),
+    Shot(name='offsets_editor', generator=arp_plugin.SECTION, keys=[Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=ARP_SONG),
+    Shot(name='auto_ratchet_editor', generator=auto_ratchet_plugin.SECTION, keys=[]),
     # The chain is a kind on the Generators page: PgDn to its heading, Space opens it, and Down and ENTER open the chain.
     Shot(name='chain_editor', keys=[keybindings.MainPage.GENERATORS, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER]),
     Shot(name='grooves', keys=[keybindings.MainPage.GROOVES]),
@@ -136,20 +136,20 @@ SHOTS = [
     Shot(name='track_euclid', keys=[keybindings.MainPage.ARRANGE, Key.UP, *[Key.RIGHT] * EUCLID_TRACK_PLACE, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=EUCLID_SONG),
     Shot(name='instruments', keys=[keybindings.MainPage.INSTRUMENTS]),
     Shot(name='instrument_editor', keys=[keybindings.MainPage.INSTRUMENTS, Key.ENTER]),
-    Shot(name='progression_editor', generator=Section.PROGRESSIONS, keys=[], song=PROGRESSION_SONG),
-    Shot(name='chords_editor', generator=Section.PROGRESSIONS, keys=[Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
-    Shot(name='drift_editor', generator=Section.DRIFTS, keys=[], song=DRIFT_SONG),
-    Shot(name='hocket_editor', generator=Section.HOCKETS, keys=[], song=HOCKET_SONG),
-    Shot(name='voice_leading_editor', generator=Section.VOICE_LEADINGS, keys=[], song=VOICE_LEADING_SONG),
-    Shot(name='strum_editor', generator=Section.STRUMS, keys=[], song=STRUM_SONG),
-    Shot(name='euclid_editor', generator=Section.EUCLIDS, keys=[], song=EUCLID_SONG),
-    Shot(name='density_editor', generator=Section.DENSITIES, keys=[], song=DENSITY_SONG),
-    Shot(name='swell_editor', generator=Section.SWELLS, keys=[], song=SWELL_SONG),
-    Shot(name='articulate_editor', generator=Section.ARTICULATES, keys=[], song=ARTICULATE_SONG),
-    Shot(name='glide_editor', generator=Section.GLIDES, keys=[], song=GLIDE_SONG),
-    Shot(name='shorten_editor', generator=Section.SHORTENS, keys=[], song=GLIDE_SONG),
-    Shot(name='rush_editor', generator=Section.RUSHES, keys=[], song=RUSH_SONG),
-    Shot(name='drag_editor', generator=Section.DRAGS, keys=[], song=RUSH_SONG),
+    Shot(name='progression_editor', generator=progression_plugin.SECTION, keys=[], song=PROGRESSION_SONG),
+    Shot(name='chords_editor', generator=progression_plugin.SECTION, keys=[Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
+    Shot(name='drift_editor', generator=drift_plugin.SECTION, keys=[], song=DRIFT_SONG),
+    Shot(name='hocket_editor', generator=hocket_plugin.SECTION, keys=[], song=HOCKET_SONG),
+    Shot(name='voice_leading_editor', generator=voice_leading_plugin.SECTION, keys=[], song=VOICE_LEADING_SONG),
+    Shot(name='strum_editor', generator=strum_plugin.SECTION, keys=[], song=STRUM_SONG),
+    Shot(name='euclid_editor', generator=euclid_plugin.SECTION, keys=[], song=EUCLID_SONG),
+    Shot(name='density_editor', generator=density_plugin.SECTION, keys=[], song=DENSITY_SONG),
+    Shot(name='swell_editor', generator=swell_plugin.SECTION, keys=[], song=SWELL_SONG),
+    Shot(name='articulate_editor', generator=articulate_plugin.SECTION, keys=[], song=ARTICULATE_SONG),
+    Shot(name='glide_editor', generator=glide_plugin.SECTION, keys=[], song=GLIDE_SONG),
+    Shot(name='shorten_editor', generator=shorten_plugin.SECTION, keys=[], song=GLIDE_SONG),
+    Shot(name='rush_editor', generator=rush_plugin.SECTION, keys=[], song=RUSH_SONG),
+    Shot(name='drag_editor', generator=drag_plugin.SECTION, keys=[], song=RUSH_SONG),
     Shot(name='chain_list', keys=[keybindings.MainPage.ARRANGE, *[Key.RIGHT] * CHAINED_TRACK_PLACE, Key.ENTER, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
     Shot(name='wizard_genre', wizard=labels.MSG_WIZARD_GENRE_BRANCH, keys=[]),
     Shot(name='wizard_band', wizard=labels.MSG_WIZARD_BAND_BRANCH, keys=[]),

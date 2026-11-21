@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Progression editor page: one progression's name, how long each chord lasts, and its chords, which Enter opens in the chord editor."""
 
+from llamatron.engine.generators import progression as progression_plugin
+from llamatron.engine.generators.progression import strings as progression_strings
 from llamatron.engine.generators.progression.settings import ProgressionSetting
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Section
 from llamatron.model.values.progressions import roman_numeral
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.chords_editor import ChordsEditor
@@ -35,9 +36,9 @@ class ProgressionEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.ProgressionEditor
     HELP = help_text.HELP_PROGRESSION_EDITOR
-    SECTION = Section.PROGRESSIONS
+    SECTION = progression_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_PROGRESSION_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=progression_strings.MSG_LABEL)
 
     def fields(self):
         progression = self.settings()

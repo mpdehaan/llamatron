@@ -11,7 +11,7 @@ import unittest
 
 from llamatron.model.objects import groove
 from llamatron.model.objects.groove import FactoryGroove
-from llamatron.model.schema import file_format, limits
+from llamatron.model.schema import generator_plugins, limits
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -247,7 +247,7 @@ class TestEveryNamedListPageIsChecked(unittest.TestCase):
 
     def test_every_named_section_of_the_set_has_a_page(self):
         self.assertEqual(sorted(page.LISTED_SECTION for page in named_list_pages()), sorted(EVERY_NAMED_SECTION_OF_THE_SET))
-        self.assertEqual(sorted(generator_pages.GENERATOR_PAGES), sorted(file_format.NAMED_GENERATORS.values()))
+        self.assertEqual(sorted(generator_pages.GENERATOR_PAGES), sorted(generator_plugins.sections_by_name().values()))
 
     def test_every_page_says_how_it_words_a_rename_and_a_question(self):
         for page in named_list_pages():

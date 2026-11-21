@@ -17,7 +17,6 @@ from llamatron.engine.generators.blend import BlendMode
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import check_name, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import sections
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import register_values_setting, statements_setting, with_statement
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
@@ -113,10 +112,10 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     # A clip names the pattern it plays and the one it morphs to, the chain it runs and the track it grabs from.
     REFERENCES = {
         Section.PATTERNS: (ClipSlotSetting.PATTERNS, ClipSlotSetting.MORPH_TO),
-        **{section: (ClipSlotSetting.CHAINS,) for section in sections.GENERATOR_SECTIONS},
         Section.TRACKS: (ClipSlotSetting.GRAB_TRACK,),
         Section.SCALES: (ClipSlotSetting.SCALE,),
     }
+    CHAINS_NAMED_BY = (ClipSlotSetting.CHAINS,)
 
     def __init__(self, **settings):
         self.note_change()

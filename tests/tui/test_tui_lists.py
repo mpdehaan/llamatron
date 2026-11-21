@@ -4,14 +4,15 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from llamatron.engine.generators.arp import generator as arp
+from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators.arp import generator as arp, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import new_name, suggested_word
-from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section
+from llamatron.model.schema import file_format, generator_plugins
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, Section
 from llamatron.model.values import note
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -343,20 +344,20 @@ class TestGeneratorsPage(UITest):
 
     def heading(self, *, kind, closed=False):
         mark = marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK
-        return labels.MSG_GROUP_HEADING.format(mark=mark, name=generator_page_of_kind(kind).label, count=len(self.document.names_of(file_format.LISTED_GENERATORS[kind])))
+        return labels.MSG_GROUP_HEADING.format(mark=mark, name=generator_page_of_kind(kind).label, count=len(self.document.names_of(generator_plugins.listed_sections()[kind])))
 
     async def open_page_on_the_arp(self):
         """Open the Generators page and put the cursor on the set's arpeggiator, which opens its type."""
         await self.press(keybindings.MainPage.GENERATORS)
-        self.app.screen.put_cursor_on(kind=GeneratorKind.ARP, name=UP)
+        self.app.screen.put_cursor_on(kind=arp_plugin.NAME, name=UP)
         await self.settle()
         return self.app.screen
 
     async def test_every_type_the_set_has_gets_a_heading_and_each_starts_closed(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
-        held = [kind for kind, section in file_format.LISTED_GENERATORS.items() if self.document.names_of(section)]
-        self.assertEqual(len(page.generators()), sum(len(self.document.names_of(file_format.LISTED_GENERATORS[kind])) for kind in held))
+        held = [kind for kind, section in generator_plugins.listed_sections().items() if self.document.names_of(section)]
+        self.assertEqual(len(page.generators()), sum(len(self.document.names_of(generator_plugins.listed_sections()[kind])) for kind in held))
         self.assertEqual([cells[0] for _, cells in page.rows()][:-1], [self.heading(kind=kind, closed=True) for kind in page.kinds()])
         self.assertEqual(set(page.kinds()), set(held))
         self.assertIsNone(page.current())
@@ -364,32 +365,32 @@ class TestGeneratorsPage(UITest):
 
     async def test_a_heading_opens_its_type_and_enter_on_a_generator_opens_its_editor(self):
         await self.press(keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE))
-        self.assertIn(self.heading(kind=GeneratorKind.ARP), self.text())
+        self.assertIn(self.heading(kind=arp_plugin.NAME), self.text())
         await self.press(Key.DOWN)
-        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, UP))
+        self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, UP))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ArpEditor)
 
     async def test_the_types_and_the_generators_under_each_are_sorted_by_name(self):
-        first = await self.add_generator(Section.ARPS)
+        first = await self.add_generator(arp_plugin.SECTION)
         await self.press(Key.ESCAPE)
         page = self.app.screen
         pairs = page.generators()
         shown = [generator_page_of_kind(kind).label.casefold() for kind, _ in pairs]
         self.assertEqual(shown, sorted(shown))
-        arps = [name for kind, name in pairs if kind == GeneratorKind.ARP]
+        arps = [name for kind, name in pairs if kind == arp_plugin.NAME]
         self.assertIn(first, arps)
         self.assertEqual(arps, sorted(arps, key=str.casefold))
 
     async def test_an_open_type_stays_open_when_the_page_opens_again_and_in_the_file_and_is_no_unsaved_change(self):
         before = self.document.get_setlist().to_data()
         await self.press(keybindings.MainPage.GENERATORS, first_key(keybindings.GeneratorsPage.TOGGLE_TYPE), Key.ESCAPE, keybindings.MainPage.GENERATORS)
-        self.assertIn(self.heading(kind=GeneratorKind.ARP), self.text())
-        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, UP))
-        self.assertEqual(self.document.get_setlist().get_open_generator_types(), [GeneratorKind.ARP])
+        self.assertIn(self.heading(kind=arp_plugin.NAME), self.text())
+        self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, UP))
+        self.assertEqual(self.document.get_setlist().get_open_generator_types(), [arp_plugin.NAME])
         self.assertEqual(self.document.get_setlist().to_data(), before)
         await self.press(Key.UP, Key.ENTER)
-        self.assertIn(self.heading(kind=GeneratorKind.ARP, closed=True), self.text())
+        self.assertIn(self.heading(kind=arp_plugin.NAME, closed=True), self.text())
         self.assertEqual(self.document.get_setlist().get_open_generator_types(), [])
 
     async def test_page_down_and_page_up_jump_between_the_headings(self):
@@ -407,12 +408,12 @@ class TestGeneratorsPage(UITest):
         self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
 
     async def test_adding_asks_the_kind_names_it_opens_it_and_opens_its_type(self):
-        name = await self.add_generator(Section.ARPS)
+        name = await self.add_generator(arp_plugin.SECTION)
         self.assertIsInstance(self.app.screen, ArpEditor)
         self.assertEqual(self.arp(name).get_order(), written_name(ChordOrder.UP))
         await self.press(Key.ESCAPE)
-        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, name))
-        self.assertTrue(self.document.get_setlist().is_generator_type_open(GeneratorKind.ARP))
+        self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, name))
+        self.assertTrue(self.document.get_setlist().is_generator_type_open(arp_plugin.NAME))
 
     async def test_a_generator_in_a_chain_is_deleted_after_asking_and_taken_out_of_the_chain(self):
         await self.open_page_on_the_arp()
@@ -421,13 +422,13 @@ class TestGeneratorsPage(UITest):
         self.assertIn(messages.MSG_TAKEN_OUT_OF, self.text())
         self.assertIn(CHAIN_NAMED, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertIn(UP, self.document.song().get_generator_names(GeneratorKind.ARP))
+        self.assertIn(UP, self.document.song().get_generator_names(arp_plugin.NAME))
         steps = self.chain_steps(NAMED)
         await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
-        self.assertNotIn(UP, self.document.song().get_generator_names(GeneratorKind.ARP))
-        self.assertNotIn((GeneratorKind.ARP, UP), self.chain_steps(NAMED))
+        self.assertNotIn(UP, self.document.song().get_generator_names(arp_plugin.NAME))
+        self.assertNotIn((arp_plugin.NAME, UP), self.chain_steps(NAMED))
         await self.press(keybindings.Page.UNDO)
-        self.assertIn(UP, self.document.song().get_generator_names(GeneratorKind.ARP))
+        self.assertIn(UP, self.document.song().get_generator_names(arp_plugin.NAME))
         self.assertEqual(self.chain_steps(NAMED), steps)
 
     async def test_a_chain_is_made_on_the_generators_page_and_opens_in_the_chain_editor(self):
@@ -438,34 +439,34 @@ class TestGeneratorsPage(UITest):
 
     async def test_an_unused_generator_is_deleted_after_asking_with_nothing_to_take_it_out_of(self):
         await self.open_page_on_the_arp()
-        name = await self.add_generator(Section.ARPS)
+        name = await self.add_generator(arp_plugin.SECTION)
         await self.press(Key.ESCAPE, Key.BACKSPACE)
         self.assertNotIn(messages.MSG_TAKEN_OUT_OF, self.text())
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertNotIn(name, self.document.song().get_generator_names(GeneratorKind.ARP))
+        self.assertNotIn(name, self.document.song().get_generator_names(arp_plugin.NAME))
 
     async def test_renaming_updates_its_chains_and_keeps_the_cursor_on_it(self):
         await self.open_page_on_the_arp()
         await self.press(keybindings.GeneratorsPage.RENAME)
         self.app.screen.value = CLIMB
         await self.press(Key.ENTER)
-        self.assertEqual(self.chain_steps(NAMED)[0], (GeneratorKind.ARP, CLIMB))
-        self.assertEqual(self.app.screen.current(), (GeneratorKind.ARP, CLIMB))
+        self.assertEqual(self.chain_steps(NAMED)[0], (arp_plugin.NAME, CLIMB))
+        self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, CLIMB))
 
     async def test_a_copy_is_listed_under_its_type_with_the_cursor_on_it(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
-        page.put_cursor_on(kind=GeneratorKind.AUTO_RATCHET, name=ui_testing.ROLLS)
+        page.put_cursor_on(kind=auto_ratchet_plugin.NAME, name=ui_testing.ROLLS)
         await self.press(keybindings.GeneratorsPage.COPY)
         self.assertEqual(self.auto_ratchet(ROLLS_COPY).get_counts(), [1, 4])
-        self.assertEqual(page.current(), (GeneratorKind.AUTO_RATCHET, ROLLS_COPY))
+        self.assertEqual(page.current(), (auto_ratchet_plugin.NAME, ROLLS_COPY))
 
 
 class TestArpEditor(UITest):
     """An arpeggiator's settings page, reached from the main screen."""
 
     async def test_editing_an_arps_offsets_and_octaves(self):
-        await self.open_generator(section=Section.ARPS)
+        await self.open_generator(section=arp_plugin.SECTION)
         self.assertIsInstance(self.app.screen, ArpEditor)
         await self.select_field(labels.MSG_OCTAVE_RANGE_LABEL)
         await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
@@ -492,7 +493,7 @@ class TestArpEditor(UITest):
         render_song(self.document.song())
 
     async def test_editing_an_arp(self):
-        await self.open_generator(section=Section.ARPS)
+        await self.open_generator(section=arp_plugin.SECTION)
         self.assertIsInstance(self.app.screen, ArpEditor)
         await self.select_field(labels.MSG_STEP_LABEL)
         before = self.arp(UP).get_step()
@@ -507,7 +508,7 @@ class TestArpEditorFields(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.ARPS)
+        await self.open_generator(section=arp_plugin.SECTION)
         self.assertIsInstance(self.app.screen, ArpEditor)
 
     def up(self):
@@ -527,8 +528,8 @@ class TestArpEditorFields(UITest):
         await self.press(Key.ENTER)
         self.app.screen.value = RISE
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_generator_names(GeneratorKind.ARP), [RISE])
-        self.assertEqual(self.chain_steps(NAMED)[0], (GeneratorKind.ARP, RISE))
+        self.assertEqual(self.document.song().get_generator_names(arp_plugin.NAME), [RISE])
+        self.assertEqual(self.chain_steps(NAMED)[0], (arp_plugin.NAME, RISE))
         self.assertIn(RISE, self.crumbs_line())
         await self.select_field(labels.MSG_ORDER_LABEL)
         await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
@@ -570,7 +571,7 @@ class TestArpEditorFields(UITest):
         self.assertNotIn(SEED_LABEL, self.text())
 
     async def test_typing_an_offset_too_big_starts_a_new_number(self):
-        self.document.change(self.document.generator(section=Section.ARPS, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0, -3])
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0, -3])
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, OffsetsEditor)
@@ -587,8 +588,8 @@ NEW_DRIFT = 'tide'
 class TestDriftAdded(UITest):
 
     async def test_a_new_one_does_nothing_until_given_values(self):
-        name = await self.add_generator(Section.DRIFTS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRIFT, name=name).to_data(), {})
+        name = await self.add_generator(drift_plugin.SECTION)
+        self.assertEqual(self.document.song().get_generator_settings(kind=drift_plugin.NAME, name=name).to_data(), {})
 
 
 class TestListSearchErases(UITest):
@@ -608,11 +609,11 @@ class TestDriftEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.DRIFTS)
+        await self.open_generator(section=drift_plugin.SECTION)
         self.assertIsInstance(self.app.screen, DriftEditor)
 
     def drift(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.DRIFT, name=ui_testing.SWAY)
+        return self.document.song().get_generator_settings(kind=drift_plugin.NAME, name=ui_testing.SWAY)
 
     async def test_left_and_right_pick_a_version_and_the_brackets_change_only_that_one(self):
         await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.DEGREE])
@@ -651,8 +652,8 @@ class TestOffsetsEditor(UITest):
     """The editor of an arpeggiator's offsets: a gauge of bars either side of a zero line."""
 
     async def open_offsets(self, offsets):
-        self.document.change(self.document.generator(section=Section.ARPS, name=UP).set_setting, name=ArpSetting.OFFSETS, value=offsets)
-        await self.open_generator(section=Section.ARPS)
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=offsets)
+        await self.open_generator(section=arp_plugin.SECTION)
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, OffsetsEditor)
@@ -707,12 +708,12 @@ class TestOffsetsEditor(UITest):
         self.assertNotIn(marks.MSG_CURSOR_STEP_MARKS.format(text=1), text)
 
     async def test_offsets_have_one_to_sixteen_steps(self):
-        self.document.change(self.document.generator(section=Section.ARPS, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0] * 16)
-        await self.open_generator(section=Section.ARPS)
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0] * 16)
+        await self.open_generator(section=arp_plugin.SECTION)
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         self.assertNotIn('« I »', self.text())
-        self.document.change(self.document.generator(section=Section.ARPS, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[3])
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[3])
         await self.press(Key.RIGHT)
         self.assertNotIn('« D »', self.text())
 
@@ -720,8 +721,8 @@ class TestOffsetsEditorOnAUsualConsole(UITest):
     SIZE = (80, 24)
 
     async def test_five_levels_fit_with_the_keys_and_the_row_scrolls_sideways(self):
-        self.document.change(self.document.generator(section=Section.ARPS, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[7] + [0] * 15)
-        await self.open_generator(section=Section.ARPS)
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[7] + [0] * 15)
+        await self.open_generator(section=arp_plugin.SECTION)
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         text = self.text()
@@ -741,7 +742,7 @@ class TestOffsetsEditorOnAUsualConsole(UITest):
 class TestAutoRatchetAdded(UITest):
 
     async def test_an_auto_ratchet_can_be_made_edited_and_added_to_a_chain(self):
-        name = await self.add_generator(Section.AUTO_RATCHETS)
+        name = await self.add_generator(auto_ratchet_plugin.SECTION)
         self.assertIsInstance(self.app.screen, AutoRatchetEditor)
         self.assertEqual(self.auto_ratchet(name).get_counts(), [2])
         await self.select_field(labels.MSG_COUNTS_LABEL)
@@ -752,8 +753,8 @@ class TestAutoRatchetAdded(UITest):
         await self.press(Key.ESCAPE, Key.ESCAPE)
         await self.open_chain(ui_testing.EMPTY)
         await self.press(keybindings.ChainEditor.ADD)
-        await self.pick(step_shown(kind=GeneratorKind.AUTO_RATCHET, name=name))
-        self.assertEqual(self.chain_steps(EMPTY), [(GeneratorKind.AUTO_RATCHET, name)])
+        await self.pick(step_shown(kind=auto_ratchet_plugin.NAME, name=name))
+        self.assertEqual(self.chain_steps(EMPTY), [(auto_ratchet_plugin.NAME, name)])
         render_song(self.document.song())
 
 
@@ -761,18 +762,18 @@ class TestAutoRatchetEditor(UITest):
     """An AutoRatchet's settings page."""
 
     async def test_the_name_field_renames_the_auto_ratchet_and_its_chains(self):
-        await self.open_generator(section=Section.AUTO_RATCHETS)
+        await self.open_generator(section=auto_ratchet_plugin.SECTION)
         self.assertIsInstance(self.app.screen, AutoRatchetEditor)
         await self.select_field(labels.MSG_NAME_LABEL)
         await self.press(Key.ENTER)
         self.app.screen.value = FAST
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_generator_names(GeneratorKind.AUTO_RATCHET), [FAST])
-        self.assertEqual(self.chain_steps(NAMED)[1], (GeneratorKind.AUTO_RATCHET, FAST))
+        self.assertEqual(self.document.song().get_generator_names(auto_ratchet_plugin.NAME), [FAST])
+        self.assertEqual(self.chain_steps(NAMED)[1], (auto_ratchet_plugin.NAME, FAST))
         self.assertIn(FAST, self.crumbs_line())
 
     async def test_bad_counts_are_refused(self):
-        await self.open_generator(section=Section.AUTO_RATCHETS)
+        await self.open_generator(section=auto_ratchet_plugin.SECTION)
         await self.select_field(labels.MSG_COUNTS_LABEL)
         await self.press(Key.ENTER)
         self.app.screen.value = '1 x'
@@ -795,25 +796,27 @@ class TestChainEditor(UITest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options[0], messages.MSG_NEW_GENERATOR_CHOICE)
         named = [
-            (GeneratorKind.ARP, ui_testing.UP_ARP), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.DRIFT, ui_testing.SWAY), (GeneratorKind.PROGRESSION, ui_testing.POP), (GeneratorKind.VOICE_LEADING, ui_testing.SMOOTH),
-            (GeneratorKind.STRUM, ui_testing.FOLK), (GeneratorKind.EUCLID, ui_testing.CLAVE), (GeneratorKind.DENSITY, ui_testing.THIN), (GeneratorKind.SWELL, ui_testing.FADE), (GeneratorKind.ARTICULATE, ui_testing.CLIPPED),
-            (GeneratorKind.GLIDE, ui_testing.SLIDES), (GeneratorKind.SHORTEN, ui_testing.CLIPS), (GeneratorKind.RUSH, ui_testing.PUSH), (GeneratorKind.DRAG, ui_testing.LAZY), (GeneratorKind.HOCKET, ui_testing.TRADE),
-            (GeneratorKind.GUITARIFY, ui_testing.PICKED), (GeneratorKind.FOLLOW_CHORDS, ui_testing.FOLLOWS), (GeneratorKind.PHRASING, ui_testing.BREATHES), (GeneratorKind.MUSICIAN, ui_testing.STRUMMER),
+            (arp_plugin.NAME, ui_testing.UP_ARP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS), (drift_plugin.NAME, ui_testing.SWAY), (progression_plugin.NAME, ui_testing.POP), (voice_leading_plugin.NAME, ui_testing.SMOOTH),
+            (strum_plugin.NAME, ui_testing.FOLK), (euclid_plugin.NAME, ui_testing.CLAVE), (density_plugin.NAME, ui_testing.THIN), (swell_plugin.NAME, ui_testing.FADE), (articulate_plugin.NAME, ui_testing.CLIPPED),
+            (glide_plugin.NAME, ui_testing.SLIDES), (shorten_plugin.NAME, ui_testing.CLIPS), (rush_plugin.NAME, ui_testing.PUSH), (drag_plugin.NAME, ui_testing.LAZY), (hocket_plugin.NAME, ui_testing.TRADE),
+            (guitarify_plugin.NAME, ui_testing.PICKED), (follow_chords_plugin.NAME, ui_testing.FOLLOWS), (phrasing_plugin.NAME, ui_testing.BREATHES), (musician_plugin.NAME, ui_testing.STRUMMER),
         ]
+        # The generators are offered in the order of their plugins' names.
+        named.sort()
         self.assertEqual(self.app.screen.options[1:], [step_shown(kind=kind, name=name) for kind, name in named])
-        self.app.screen.cursor.set_place(2)
+        self.app.screen.cursor.set_place(1 + named.index((auto_ratchet_plugin.NAME, ui_testing.ROLLS)))
         await self.press(Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS)])
+        self.assertEqual(self.steps(), [(auto_ratchet_plugin.NAME, ui_testing.ROLLS), (auto_ratchet_plugin.NAME, ui_testing.ROLLS)])
         await self.press(Key.DOWN, Key.ENTER)
         self.app.screen.cursor.set_place(1)
         await self.press(Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.ARP, UP)])
+        self.assertEqual(self.steps(), [(auto_ratchet_plugin.NAME, ui_testing.ROLLS), (arp_plugin.NAME, UP)])
         await self.press(keybindings.ChainEditor.COPY)
-        self.assertEqual(self.steps(), [(GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.ARP, UP), (GeneratorKind.ARP, UP)])
+        self.assertEqual(self.steps(), [(auto_ratchet_plugin.NAME, ui_testing.ROLLS), (arp_plugin.NAME, UP), (arp_plugin.NAME, UP)])
         await self.press(Key.UP, Key.UP, keybindings.ChainEditor.MOVE, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS), (GeneratorKind.ARP, UP)])
+        self.assertEqual(self.steps(), [(arp_plugin.NAME, UP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS), (arp_plugin.NAME, UP)])
         await self.press(Key.BACKSPACE, Key.BACKSPACE)
-        self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP)])
+        self.assertEqual(self.steps(), [(arp_plugin.NAME, UP)])
         render_song(self.document.song())
 
     async def test_n_renames_the_chain_and_the_clips_using_it(self):
@@ -828,16 +831,16 @@ class TestChainEditor(UITest):
 
     async def test_a_step_cannot_move_past_the_ends(self):
         await self.press(keybindings.ChainEditor.MOVE, Key.UP, Key.ENTER)
-        self.assertEqual(self.steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, ui_testing.ROLLS)])
+        self.assertEqual(self.steps(), [(arp_plugin.NAME, UP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS)])
 
     async def test_each_step_shows_its_generators_name_then_its_kind_and_a_repeat_is_numbered_on_screen_only(self):
-        self.document.change(self.document.get_setlist().get_chain(NAMED).add_step, kind=GeneratorKind.ARP, name=UP, setlist=self.document.get_setlist())
+        self.document.change(self.document.get_setlist().get_chain(NAMED).add_step, kind=arp_plugin.NAME, name=UP, setlist=self.document.get_setlist())
         self.document.record_edit()
         await self.press(Key.DOWN)
         texts = [row[1][0] for row in self.app.screen.rows()]
-        self.assertEqual(texts[-1], marks.MSG_CHAIN_STEP_AGAIN.format(name=UP, number=2, kind=labels.MSG_ARP_LABEL))
-        self.assertEqual(texts[0], marks.MSG_CHAIN_STEP_SHOWN.format(name=UP, kind=labels.MSG_ARP_LABEL))
-        self.assertEqual(self.steps()[-1], (GeneratorKind.ARP, UP))
+        self.assertEqual(texts[-1], marks.MSG_CHAIN_STEP_AGAIN.format(name=UP, number=2, kind=arp_strings.MSG_LABEL))
+        self.assertEqual(texts[0], marks.MSG_CHAIN_STEP_SHOWN.format(name=UP, kind=arp_strings.MSG_LABEL))
+        self.assertEqual(self.steps()[-1], (arp_plugin.NAME, UP))
 
     async def test_with_no_generators_the_picker_offers_a_new_one_alone(self):
         # The chain's own steps go first, since a generator a chain uses can't be deleted.
@@ -853,18 +856,18 @@ class TestChainEditorAdding(UITest):
         await self.open_chain(ui_testing.EMPTY)
         self.assertIsInstance(self.app.screen, ChainEditor)
         await self.press(keybindings.ChainEditor.ADD, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.chain_steps(EMPTY), [(GeneratorKind.ARP, UP)])
+        self.assertEqual(self.chain_steps(EMPTY), [(arp_plugin.NAME, UP)])
         self.document.song()
 
     async def test_a_new_generator_is_made_of_the_kind_picked_added_to_the_chain_and_opened(self):
         await self.open_chain(ui_testing.EMPTY)
         await self.press(keybindings.ChainEditor.ADD, Key.ENTER)
         self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
-        await self.pick(labels.MSG_ARP_LABEL)
-        name = new_name(word=suggested_word(labels.MSG_ARP_LABEL), taken=())
-        self.assertEqual(self.chain_steps(EMPTY), [(GeneratorKind.ARP, name)])
+        await self.pick(arp_strings.MSG_LABEL)
+        name = new_name(word=suggested_word(arp_strings.MSG_LABEL), taken=())
+        self.assertEqual(self.chain_steps(EMPTY), [(arp_plugin.NAME, name)])
         self.assertIsInstance(self.app.screen, ArpEditor)
-        self.assertEqual(self.app.screen.crumb_trail()[-1], labels.MSG_OPENED_ITEM_CRUMB.format(word=labels.MSG_ARP_LABEL, name=name))
+        self.assertEqual(self.app.screen.crumb_trail()[-1], labels.MSG_OPENED_ITEM_CRUMB.format(word=arp_strings.MSG_LABEL, name=name))
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, ChainEditor)
 

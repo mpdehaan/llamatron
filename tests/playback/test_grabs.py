@@ -7,12 +7,13 @@
 from fractions import Fraction
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
-from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import NoteName
@@ -66,7 +67,7 @@ class TestGrab(unittest.TestCase):
 
     def test_it_grabs_what_the_track_sounds_like_after_its_chain(self):
         bass = pat([1, 1], chord=['M'], octave=[5])
-        found = self.lead(bass=bass, kick_clip_slot={ClipSlotSetting.CHAINS: [song_testing.X]}, arps={UP: {ArpSetting.STEP: QUARTER}}, chains={song_testing.X: [{GeneratorKind.ARP: UP}]})
+        found = self.lead(bass=bass, kick_clip_slot={ClipSlotSetting.CHAINS: [song_testing.X]}, arps={UP: {ArpSetting.STEP: QUARTER}}, chains={song_testing.X: [{arp_plugin.NAME: UP}]})
         self.assertEqual(pitches(found), [60, 48, 67, 48])
 
     def test_a_chord_gives_its_lowest_note(self):

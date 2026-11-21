@@ -6,12 +6,13 @@
 
 import unittest
 
+from llamatron.engine.generators import musician as musician_plugin
 from llamatron.engine.generators.musician import generator as musician
 from llamatron.engine.generators.musician.settings import MusicianSetting, MusicianSettings
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SectionKind, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SectionKind, TrackSetting
 from llamatron.model.values import midi
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
@@ -75,8 +76,8 @@ def band_data(*, settings, rows=None, section=None, tune=False, chords=False, dr
     if drum:
         part[PatternSetting.DRUM] = True
         data[Section.TRACKS][BAND] = {TrackSetting.DRUM: True}
-    data[Section.MUSICIANS] = {PLAYER: settings}
-    data[Section.CHAINS] = {CHAIN: [{GeneratorKind.MUSICIAN: PLAYER}]}
+    data[musician_plugin.SECTION] = {PLAYER: settings}
+    data[Section.CHAINS] = {CHAIN: [{musician_plugin.NAME: PLAYER}]}
     return data
 
 
@@ -246,7 +247,7 @@ class TestMusicianRoundTheBand(unittest.TestCase):
         setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.CHORDS_FROM: CHORDS}), tune=True, chords=True))
         made = setlist.get_songs()[0]
         made.rename_item(section=Section.TRACKS, old=test_registers.LEAD, new=RENAMED)
-        settings = made.get_generator_settings(kind=GeneratorKind.MUSICIAN, name=PLAYER)
+        settings = made.get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
         self.assertEqual(settings.get_tune_from(), RENAMED)
         self.assertEqual(settings.get_chords_from(), CHORDS)
 
@@ -266,7 +267,7 @@ class TestMusicianSettings(unittest.TestCase):
         # As a file saved before one was taken away, or by a later version, may hold them: the set opens and what is known stays.
         by_section = {SectionKind.VERSE: {musician.PLAYED: musician.SOFTER, NOT_A_SETTING: 1}, NOT_A_SECTION: {musician.PLAYED: musician.MUTED}}
         setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.BY_SECTION: by_section})))
-        settings = setlist.get_songs()[0].get_generator_settings(kind=GeneratorKind.MUSICIAN, name=PLAYER)
+        settings = setlist.get_songs()[0].get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
         self.assertEqual(settings.to_data()[MusicianSetting.BY_SECTION], {SectionKind.VERSE: {musician.PLAYED: musician.SOFTER}})
 
     def test_a_section_setting_back_to_what_a_section_does_unasked_is_left_out(self):

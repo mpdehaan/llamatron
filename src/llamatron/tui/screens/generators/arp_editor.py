@@ -4,12 +4,12 @@
 
 """The Arp editor page."""
 
-from llamatron.engine.generators.arp import generator as arp_values, settings as arp_settings
+from llamatron.engine.generators import arp as arp_plugin
+from llamatron.engine.generators.arp import generator as arp_values, settings as arp_settings, strings as arp_strings
 from llamatron.engine.generators.arp.generator import OctaveJump
 from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.generators.restart_field import restart_field
@@ -41,9 +41,9 @@ class ArpEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.ArpEditor
     HELP = help_text.HELP_ARP_EDITOR
-    SECTION = Section.ARPS
+    SECTION = arp_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_ARP_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=arp_strings.MSG_LABEL)
 
     def set_range(self, octaves):
         self.store(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == arp_values.MIN_OCTAVE_RANGE else octaves)

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The fields of a strum, which the track editor's and the clip page's + Strum sections and the Strum editor share: direction, spread, fade, loose timing and upstroke strings."""
 
+from llamatron.engine.generators.strum import strings as strum_strings
 from llamatron.model.objects import strum
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import StrumPart
@@ -60,5 +61,5 @@ def strum_fields(*, page, value, store, first=None, prefixed=True, inherited=Non
 
 def strum_section(*, page, value, store, first, inherited=None):
     """Return a + Strum section, closed until opened and saying when anything inside is set, and its five fields."""
-    heading = page.heading(label=labels.MSG_STRUM_LABEL, is_set=lambda: value(StrumPart.DIRECTION) is not None)
+    heading = page.heading(label=strum_strings.MSG_LABEL, is_set=lambda: value(StrumPart.DIRECTION) is not None)
     return [heading, *strum_fields(page=page, value=value, store=store, first=first, inherited=inherited)]

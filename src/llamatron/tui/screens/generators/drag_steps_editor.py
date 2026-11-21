@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Drag steps page: a Drag's row of steps, each on or off."""
 
-from llamatron.model.schema.file_format import GeneratorKind, Section
+from llamatron.engine.generators import drag as drag_plugin
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.step_row_editor import StepRowEditor
 from llamatron.user_strings import labels
@@ -14,6 +14,6 @@ class DragStepsEditor(StepRowEditor):
     """The editor of a Drag generator's row of steps, how late each step plays."""
 
     KEYS = keybindings.DragStepsEditor
-    SECTION = Section.DRAGS
-    KIND = GeneratorKind.DRAG
+    SECTION = drag_plugin.SECTION
+    KIND = drag_plugin.NAME
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)

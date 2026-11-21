@@ -21,8 +21,9 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
 
 from fractions import Fraction
 
-from llamatron.model.objects import naming, sections
-from llamatron.user_strings import errors, labels, names
+from llamatron.model.objects import naming
+from llamatron.model.schema import generator_plugins
+from llamatron.user_strings import errors, names
 from llamatron.wizards.create_song import loudness, notation
 from llamatron.wizards.create_song.notation import drum_rows, tune_rows
 from llamatron.wizards.create_song.shaping import is_compound, role_of, shaped
@@ -164,11 +165,11 @@ def names_apart(*, generators, chains):
     renamed = {}
     apart = {}
     for section, items in generators.items():
-        kind = sections.GENERATOR_KINDS[section]
+        kind = generator_plugins.names_by_section()[section]
         apart[section] = {}
         for name, settings in items.items():
             if name in clashing:
-                renamed[(kind, name)] = naming.unique_name(base=names.MSG_NAMED_FOR_KIND.format(name=name, word=labels.MSG_KIND_WORDS[kind]), taken=taken)
+                renamed[(kind, name)] = naming.unique_name(base=names.MSG_NAMED_FOR_KIND.format(name=name, word=generator_plugins.plugins()[kind].strings.MSG_KIND_WORD), taken=taken)
                 taken.append(renamed[(kind, name)])
             apart[section][renamed.get((kind, name), name)] = settings
     held = [name for items in apart.values() for name in items]

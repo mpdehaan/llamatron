@@ -11,6 +11,7 @@ pass with two notes is one the generator ran on.
 
 import unittest
 
+from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.invalid_value import InvalidValue
@@ -18,7 +19,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import conditions
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
+from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -63,13 +64,13 @@ def song(*, clip=None, scene=None, track=None, chain=None, generator=None, chain
     if other is not None:
         tracks[OTHER] = {}
         clips[OTHER] = {ClipSlotSetting.PATTERN: X, **other}
-    steps = [{GeneratorKind.AUTO_RATCHET: TWICE}]
+    steps = [{auto_ratchet_plugin.NAME: TWICE}]
     return {
         Section.SCALES: {MAIN: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}}, SongSetting.SCALE: MAIN,
         Section.PATTERNS: {X: {
             PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: STEP_SIZE, Row.DEGREE: [1], Row.OCTAVE: [OCTAVE], file_format.REGISTER_NOTE_ROWS[AX]: [RegisterUse.ADD],
         }},
-        Section.AUTO_RATCHETS: {TWICE: {AutoRatchetSetting.COUNTS: [RATCHETS], **(generator or {})}},
+        auto_ratchet_plugin.SECTION: {TWICE: {AutoRatchetSetting.COUNTS: [RATCHETS], **(generator or {})}},
         Section.CHAINS: {DOUBLED: steps if chain is None else {ChainSetting.STEPS: steps, **chain}},
         Section.REGISTERS: registers or ROOMY,
         Section.TRACKS: tracks,
@@ -265,7 +266,7 @@ class TestBypassingGenerators(unittest.TestCase):
         setlist = setlist_from_data(data)
         self.assertEqual(setlist.get_chain(DOUBLED).get_bypass_when(), self.TABLE)
         self.assertEqual(setlist.get_chain(DOUBLED).to_data()[ChainSetting.BYPASS_WHEN], self.TABLE)
-        self.assertEqual(setlist.get_generator_settings(kind=GeneratorKind.AUTO_RATCHET, name=TWICE).get_bypass_when(), self.TABLE)
+        self.assertEqual(setlist.get_generator_settings(kind=auto_ratchet_plugin.NAME, name=TWICE).get_bypass_when(), self.TABLE)
         self.assertIsInstance(setlist_from_data(song(chained=True)).get_chain(DOUBLED).to_data(), list)
 
 

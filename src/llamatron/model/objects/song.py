@@ -25,14 +25,13 @@ from llamatron.model.objects.register import Register
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.track import Track
 from llamatron.model.objects.traits import HoldsSections
-from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import GeneratorKind, SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
+from llamatron.model.schema import defaults, file_format, generator_plugins, limits
+from llamatron.model.schema.file_format import SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
 from llamatron.model.schema.setting import Checked, Choice, described, Length, settings_held
 from llamatron.user_strings import errors, names
 
 
 # The kinds of generator whose settings name a track of the song.
-KINDS_NAMING_A_TRACK = (GeneratorKind.HOCKET, GeneratorKind.FOLLOW_CHORDS, GeneratorKind.MUSICIAN)
 
 
 def _check_scale_name(*, value, song):
@@ -129,7 +128,7 @@ class Song(HoldsSections, HoldsSettings):
         self.note_change()
         self._setlist = setlist
         self._settings = {name: None for name in SETTINGS}
-        self._sections = {name: NamedItems(label=sections.SECTION_LABELS[name]) for name in sections.SONG_SECTIONS}
+        self._sections = {name: NamedItems(label=sections.section_label(name)) for name in sections.SONG_SECTIONS}
         self._scenes = None
 
     @classmethod
@@ -430,9 +429,9 @@ class Song(HoldsSections, HoldsSettings):
         """Rename an item, keeping its place, and update everything in the song that names it."""
         self._section(section).rename(old=old, new=new)
         self.rename_references(section=section, old=old, new=new)
-        # A Hocket and a Follow Chords belong to the set but name a track of the song, so a track's rename reaches the set's too.
+        # A generator such as a Hocket belongs to the set but may name a track of the song, so a track's rename reaches the set's too.
         if section == Section.TRACKS and self._setlist is not None:
-            for kind in KINDS_NAMING_A_TRACK:
+            for kind in generator_plugins.names_naming(Section.TRACKS):
                 for name in self._setlist.get_generator_names(kind):
                     self._setlist.get_generator_settings(kind=kind, name=name).rename_references(section=section, old=old, new=new)
 

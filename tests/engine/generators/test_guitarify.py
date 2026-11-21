@@ -10,6 +10,7 @@ seconds, so 8 milliseconds between strings is 1/250 of a whole note.
 
 import unittest
 
+from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import bars as guitar_bars, generator as guitarify, settings as guitarify_settings
 from llamatron.engine.generators.guitarify.bars import ready_bar_matching
 from llamatron.engine.generators.guitarify.settings import GuitarifySettings
@@ -17,7 +18,7 @@ from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
+from llamatron.model.schema.file_format import Approach, ChordColor, ClipSlotSetting, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
 from llamatron.model.values import midi
 from llamatron.playback.song_renderer import SongRenderer
 from tests.playback import test_registers
@@ -79,8 +80,8 @@ def guitar(*, settings=None, rows=None, steps=1, step_size=WHOLE, repeat=1):
     clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [PLAYED_CHAIN], ClipSlotSetting.REPEAT: repeat}
     data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
     data[SongSetting.TEMPO] = TEMPO
-    data[Section.GUITARIFIES] = {PLAYED: dict(settings or {})}
-    data[Section.CHAINS] = {PLAYED_CHAIN: [{GeneratorKind.GUITARIFY: PLAYED}]}
+    data[guitarify_plugin.SECTION] = {PLAYED: dict(settings or {})}
+    data[Section.CHAINS] = {PLAYED_CHAIN: [{guitarify_plugin.NAME: PLAYED}]}
     return data
 
 

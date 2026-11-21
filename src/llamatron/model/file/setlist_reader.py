@@ -21,7 +21,7 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import sections
 from llamatron.model.objects.naming import is_taken
-from llamatron.model.schema import file_format
+from llamatron.model.schema import file_format, generator_plugins
 from llamatron.user_strings import errors
 
 # The most corrections one file is opened with, so that a correction that fails to put its value right cannot go on for ever.
@@ -69,7 +69,7 @@ def open_types_held(data):
     held = data.get(file_format.OPEN_GENERATOR_TYPES)
     if not isinstance(held, list):
         return []
-    return [kind for kind in held if isinstance(kind, str) and kind in file_format.NAMED_GENERATORS]
+    return [kind for kind in held if isinstance(kind, str) and kind in generator_plugins.sections_by_name()]
 
 
 def as_a_set_is_written(*, data, where, allowed):
@@ -80,7 +80,7 @@ def as_a_set_is_written(*, data, where, allowed):
     if not isinstance(data, dict):
         raise SongFileError(errors.ERR_NOT_A_SETLIST)
     with reading(where):
-        pass_over_unknown(data=data, allowed={*allowed, *sections.SETLIST_SECTIONS, file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES})
+        pass_over_unknown(data=data, allowed={*allowed, *sections.setlist_sections(), file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES})
         _check_generator_names(data)
     return data
 
@@ -88,10 +88,10 @@ def as_a_set_is_written(*, data, where, allowed):
 def _check_generator_names(data):
     """Refuse two generators of different kinds, a chain among them, of one name: a set file lists them in one list."""
     held = []
-    for section in sections.GENERATOR_SECTIONS:
+    for section in sections.generator_sections():
         for name in data.get(section) or {}:
             if is_taken(name=name, taken=held):
-                raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.SECTION_LABELS[section], name=name))
+                raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.section_label(section), name=name))
             held.append(name)
 
 

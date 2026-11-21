@@ -5,10 +5,11 @@
 
 import unittest
 
+from llamatron.engine.generators import drag as drag_plugin, glide as glide_plugin, rush as rush_plugin, shorten as shorten_plugin
 from llamatron.engine.timing import sounding
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
@@ -35,19 +36,19 @@ def through(*rows):
 
 
 def glide(steps, **settings):
-    return (Section.GLIDES, GeneratorKind.GLIDE, {'steps': steps, **settings})
+    return (glide_plugin.SECTION, glide_plugin.NAME, {'steps': steps, **settings})
 
 
 def shorten(steps, **settings):
-    return (Section.SHORTENS, GeneratorKind.SHORTEN, {'steps': steps, **settings})
+    return (shorten_plugin.SECTION, shorten_plugin.NAME, {'steps': steps, **settings})
 
 
 def rush(steps, **settings):
-    return (Section.RUSHES, GeneratorKind.RUSH, {'steps': steps, **settings})
+    return (rush_plugin.SECTION, rush_plugin.NAME, {'steps': steps, **settings})
 
 
 def drag(steps, **settings):
-    return (Section.DRAGS, GeneratorKind.DRAG, {'steps': steps, **settings})
+    return (drag_plugin.SECTION, drag_plugin.NAME, {'steps': steps, **settings})
 
 
 def lengths(*rows):

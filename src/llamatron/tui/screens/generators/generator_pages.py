@@ -5,8 +5,25 @@
 
 from typing import NamedTuple
 
+from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators.arp import strings as arp_strings
+from llamatron.engine.generators.auto_ratchet import strings as auto_ratchet_strings
+from llamatron.engine.generators.drag import strings as drag_strings
+from llamatron.engine.generators.drift import strings as drift_strings
+from llamatron.engine.generators.euclid import strings as euclid_strings
+from llamatron.engine.generators.follow_chords import strings as follow_chords_strings
+from llamatron.engine.generators.glide import strings as glide_strings
+from llamatron.engine.generators.guitarify import strings as guitarify_strings
+from llamatron.engine.generators.hocket import strings as hocket_strings
+from llamatron.engine.generators.musician import strings as musician_strings
+from llamatron.engine.generators.phrasing import strings as phrasing_strings
+from llamatron.engine.generators.progression import strings as progression_strings
+from llamatron.engine.generators.rush import strings as rush_strings
+from llamatron.engine.generators.shorten import strings as shorten_strings
+from llamatron.engine.generators.strum import strings as strum_strings
+from llamatron.engine.generators.voice_leading import strings as voice_leading_strings
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import GeneratorKind, Section, Shape
+from llamatron.model.schema.file_format import Section, Shape
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor
@@ -48,25 +65,25 @@ def _in_shown_order(listings):
 # Every kind of generator, in the order the Generators page offers them when adding one.
 GENERATOR_PAGES = {
     listing.section: listing for listing in _in_shown_order((
-        GeneratorListing(kind=GeneratorKind.ARP, section=Section.ARPS, label=labels.MSG_ARP_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=ArpEditor),
-        GeneratorListing(kind=GeneratorKind.AUTO_RATCHET, section=Section.AUTO_RATCHETS, label=labels.MSG_AUTO_RATCHET_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=AutoRatchetEditor),
-        GeneratorListing(kind=GeneratorKind.DRIFT, section=Section.DRIFTS, label=labels.MSG_DRIFT_LABEL, group=labels.GeneratorGroup.TRANSITIONS, EDITOR=DriftEditor),
-        GeneratorListing(kind=GeneratorKind.PROGRESSION, section=Section.PROGRESSIONS, label=labels.MSG_PROGRESSION_LABEL, group=labels.GeneratorGroup.HARMONY, EDITOR=ProgressionEditor),
-        GeneratorListing(kind=GeneratorKind.VOICE_LEADING, section=Section.VOICE_LEADINGS, label=labels.MSG_VOICE_LEADING_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=VoiceLeadingEditor),
-        GeneratorListing(kind=GeneratorKind.STRUM, section=Section.STRUMS, label=labels.MSG_STRUM_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=StrumEditor),
-        GeneratorListing(kind=GeneratorKind.EUCLID, section=Section.EUCLIDS, label=labels.MSG_EUCLID_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=EuclidEditor),
-        GeneratorListing(kind=GeneratorKind.DENSITY, section=Section.DENSITIES, label=labels.MSG_SHAPE_NAMES[Shape.DENSITY], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=DensityEditor),
-        GeneratorListing(kind=GeneratorKind.SWELL, section=Section.SWELLS, label=labels.MSG_SHAPE_NAMES[Shape.SWELL], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=SwellEditor),
-        GeneratorListing(kind=GeneratorKind.ARTICULATE, section=Section.ARTICULATES, label=labels.MSG_SHAPE_NAMES[Shape.ARTICULATE], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=ArticulateEditor),
-        GeneratorListing(kind=GeneratorKind.GLIDE, section=Section.GLIDES, label=labels.MSG_GLIDE_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=GlideEditor),
-        GeneratorListing(kind=GeneratorKind.SHORTEN, section=Section.SHORTENS, label=labels.MSG_SHORTEN_LABEL_NAME, group=labels.GeneratorGroup.ARTICULATION, EDITOR=ShortenEditor),
-        GeneratorListing(kind=GeneratorKind.RUSH, section=Section.RUSHES, label=labels.MSG_RUSH_LABEL, group=labels.GeneratorGroup.TIMING, EDITOR=RushEditor),
-        GeneratorListing(kind=GeneratorKind.DRAG, section=Section.DRAGS, label=labels.MSG_DRAG_LABEL, group=labels.GeneratorGroup.TIMING, EDITOR=DragEditor),
-        GeneratorListing(kind=GeneratorKind.HOCKET, section=Section.HOCKETS, label=labels.MSG_HOCKET_LABEL, group=labels.GeneratorGroup.ARRANGEMENT, EDITOR=HocketEditor),
-        GeneratorListing(kind=GeneratorKind.GUITARIFY, section=Section.GUITARIFIES, label=labels.MSG_GUITARIFY_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=GuitarifyEditor),
-        GeneratorListing(kind=GeneratorKind.FOLLOW_CHORDS, section=Section.FOLLOW_CHORDS, label=labels.MSG_FOLLOW_CHORDS_LABEL, group=labels.GeneratorGroup.HARMONY, EDITOR=FollowChordsEditor),
-        GeneratorListing(kind=GeneratorKind.PHRASING, section=Section.PHRASINGS, label=labels.MSG_PHRASING_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=PhrasingEditor),
-        GeneratorListing(kind=GeneratorKind.MUSICIAN, section=Section.MUSICIANS, label=labels.MSG_MUSICIAN_LABEL, group=labels.GeneratorGroup.BAND, EDITOR=MusicianEditor),
+        GeneratorListing(kind=arp_plugin.NAME, section=arp_plugin.SECTION, label=arp_strings.MSG_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=ArpEditor),
+        GeneratorListing(kind=auto_ratchet_plugin.NAME, section=auto_ratchet_plugin.SECTION, label=auto_ratchet_strings.MSG_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=AutoRatchetEditor),
+        GeneratorListing(kind=drift_plugin.NAME, section=drift_plugin.SECTION, label=drift_strings.MSG_LABEL, group=labels.GeneratorGroup.TRANSITIONS, EDITOR=DriftEditor),
+        GeneratorListing(kind=progression_plugin.NAME, section=progression_plugin.SECTION, label=progression_strings.MSG_LABEL, group=labels.GeneratorGroup.HARMONY, EDITOR=ProgressionEditor),
+        GeneratorListing(kind=voice_leading_plugin.NAME, section=voice_leading_plugin.SECTION, label=voice_leading_strings.MSG_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=VoiceLeadingEditor),
+        GeneratorListing(kind=strum_plugin.NAME, section=strum_plugin.SECTION, label=strum_strings.MSG_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=StrumEditor),
+        GeneratorListing(kind=euclid_plugin.NAME, section=euclid_plugin.SECTION, label=euclid_strings.MSG_LABEL, group=labels.GeneratorGroup.RHYTHM, EDITOR=EuclidEditor),
+        GeneratorListing(kind=density_plugin.NAME, section=density_plugin.SECTION, label=labels.MSG_SHAPE_NAMES[Shape.DENSITY], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=DensityEditor),
+        GeneratorListing(kind=swell_plugin.NAME, section=swell_plugin.SECTION, label=labels.MSG_SHAPE_NAMES[Shape.SWELL], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=SwellEditor),
+        GeneratorListing(kind=articulate_plugin.NAME, section=articulate_plugin.SECTION, label=labels.MSG_SHAPE_NAMES[Shape.ARTICULATE], group=labels.GeneratorGroup.TRANSITIONS, EDITOR=ArticulateEditor),
+        GeneratorListing(kind=glide_plugin.NAME, section=glide_plugin.SECTION, label=glide_strings.MSG_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=GlideEditor),
+        GeneratorListing(kind=shorten_plugin.NAME, section=shorten_plugin.SECTION, label=shorten_strings.MSG_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=ShortenEditor),
+        GeneratorListing(kind=rush_plugin.NAME, section=rush_plugin.SECTION, label=rush_strings.MSG_LABEL, group=labels.GeneratorGroup.TIMING, EDITOR=RushEditor),
+        GeneratorListing(kind=drag_plugin.NAME, section=drag_plugin.SECTION, label=drag_strings.MSG_LABEL, group=labels.GeneratorGroup.TIMING, EDITOR=DragEditor),
+        GeneratorListing(kind=hocket_plugin.NAME, section=hocket_plugin.SECTION, label=hocket_strings.MSG_LABEL, group=labels.GeneratorGroup.ARRANGEMENT, EDITOR=HocketEditor),
+        GeneratorListing(kind=guitarify_plugin.NAME, section=guitarify_plugin.SECTION, label=guitarify_strings.MSG_LABEL, group=labels.GeneratorGroup.VOICING, EDITOR=GuitarifyEditor),
+        GeneratorListing(kind=follow_chords_plugin.NAME, section=follow_chords_plugin.SECTION, label=follow_chords_strings.MSG_LABEL, group=labels.GeneratorGroup.HARMONY, EDITOR=FollowChordsEditor),
+        GeneratorListing(kind=phrasing_plugin.NAME, section=phrasing_plugin.SECTION, label=phrasing_strings.MSG_LABEL, group=labels.GeneratorGroup.ARTICULATION, EDITOR=PhrasingEditor),
+        GeneratorListing(kind=musician_plugin.NAME, section=musician_plugin.SECTION, label=musician_strings.MSG_LABEL, group=labels.GeneratorGroup.BAND, EDITOR=MusicianEditor),
     ))
 }
 

@@ -1,0 +1,15 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""The words the Drag generator plugin shows: what it is called beside a generator's name, the word its page's caption names it by, and the word a generator named for
+its kind takes, as in kick drag."""
+
+MSG_LABEL = 'Drag'
+MSG_KIND_WORD = 'drag'
+MSG_CAPTION_WORD = 'drag'
+# What an undo or a redo of a change to one of its generators names the generator's kind.
+MSG_CHANGED_WORD = 'Drag'
+# Its editor's row of steps: the row's name, and the line above it saying what a step that's on does.
+MSG_STEP_ROW_NAME = 'Drag'
+MSG_STEP_ROW_NOTE = 'a note starting on a step that is on plays late'

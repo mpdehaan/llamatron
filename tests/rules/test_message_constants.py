@@ -4,7 +4,8 @@
 
 """Every ERR_, MSG_ and HELP_ constant lives in the strings package, each in the module for how the text is used, and each is used.
 
-user_strings/errors.py holds every ERR_ constant, user_strings/help.py every HELP_ constant, user_strings/reprs.py the REPR_ text a class
+A generator plugin is the one exception: its own words live in its folder, in strings.py, so that a plugin written elsewhere
+touches no other file, and that module may hold constants of any prefix. user_strings/errors.py holds every ERR_ constant, user_strings/help.py every HELP_ constant, user_strings/reprs.py the REPR_ text a class
 prints itself with, and the package's other modules the MSG_ constants. The package holds all of the program's visible text, so that wording can be read in one place and
 a string in a test can't be mistaken for a data key. Nothing else may define a constant with either
 prefix outside the package, no module defines a name twice, since the second would quietly replace the first, and a constant
@@ -15,11 +16,13 @@ modules import only names from the file format, the keys and each other, so that
 import ast
 import collections
 import os
+import pathlib
 import re
 import unittest
 
 import llamatron
 from llamatron import user_strings
+from llamatron.engine import generators as generator_package
 from llamatron.model.schema import defaults, limits
 from llamatron.user_strings import errors, help, reprs
 
@@ -38,10 +41,13 @@ REPR_PREFIX = 'REPR_'
 PREFIXES = (ERROR_PREFIX, MESSAGE_PREFIX, HELP_PREFIX, REPR_PREFIX)
 STRINGS_FOLDER = os.path.dirname(user_strings.__file__)
 PACKAGE_FILE = '__init__.py'
+# Where the generator plugins are, and the module of each that holds its own words.
+PLUGINS_FOLDER = os.path.dirname(generator_package.__file__)
+PLUGIN_STRINGS = '*/strings.py'
 # The modules whose constants have a prefix other than MSG_.
 OTHER_PREFIXES = {errors.__file__: ERROR_PREFIX, help.__file__: HELP_PREFIX, reprs.__file__: REPR_PREFIX}
 # The modules a strings module may import from: the names the file format and the keys define, and the package's own modules.
-ALLOWED_IMPORTS = ('llamatron.model.schema.file_format', 'llamatron.tui.keys', 'llamatron.user_strings.')
+ALLOWED_IMPORTS = ('llamatron.model.schema.file_format', 'llamatron.tui.keys', 'llamatron.user_strings')
 # Names that are allowed to be used by a module's own code alone, since nothing else can see them.
 PRIVATE_PREFIX = '_'
 # Words a constant's name must not repeat after its prefix, like ERR_ERROR_LINE, MSG_MESSAGE or HELP_HELP_SONG. A message
@@ -89,9 +95,14 @@ def string_modules():
     return sorted(os.path.join(STRINGS_FOLDER, name) for name in os.listdir(STRINGS_FOLDER) if name.endswith(PYTHON_SUFFIX) and name != PACKAGE_FILE)
 
 
+def plugin_string_modules():
+    """Return the path of every generator plugin's strings module."""
+    return sorted(str(path) for path in pathlib.Path(PLUGINS_FOLDER).glob(PLUGIN_STRINGS))
+
+
 def own_prefixes():
-    """Return each strings module's path with the prefix its constants carry."""
-    return {path: OTHER_PREFIXES.get(path, MESSAGE_PREFIX) for path in string_modules()}
+    """Return each strings module's path with the prefix its constants carry, any prefix for a plugin's own words."""
+    return {**{path: OTHER_PREFIXES.get(path, MESSAGE_PREFIX) for path in string_modules()}, **{path: PREFIXES for path in plugin_string_modules()}}
 
 
 OWN_PREFIX = own_prefixes()
@@ -162,7 +173,7 @@ class TestMessageConstants(unittest.TestCase):
 
     def test_the_string_modules_import_only_names(self):
         """A strings module that imported a module with code of its own could no longer be imported by that module."""
-        for path in string_modules():
+        for path in string_modules() + plugin_string_modules():
             for module in imported_modules(path):
                 with self.subTest(file=os.path.basename(path), module=module):
                     self.assertTrue(module.startswith(ALLOWED_IMPORTS), module)

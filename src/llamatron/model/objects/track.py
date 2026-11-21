@@ -8,7 +8,6 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import is_whole_number_from, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import sections
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import statements_setting, with_statement
 from llamatron.model.objects.euclid import euclid_settings, euclid_values
@@ -82,7 +81,8 @@ class Track(RunsChains, HoldsSettings):
     CHAINS_SETTING = TrackSetting.CHAINS
 
     # A track names the groove it chooses.
-    REFERENCES = {Section.GROOVES: (TrackSetting.GROOVE,), Section.INSTRUMENTS: (TrackSetting.INSTRUMENT,), **{section: (TrackSetting.CHAINS,) for section in sections.GENERATOR_SECTIONS}}
+    REFERENCES = {Section.GROOVES: (TrackSetting.GROOVE,), Section.INSTRUMENTS: (TrackSetting.INSTRUMENT,)}
+    CHAINS_NAMED_BY = (TrackSetting.CHAINS,)
 
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,

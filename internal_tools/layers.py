@@ -52,8 +52,8 @@ REALTIME = 'realtime'
 PAGES_FOLDER = ('tui', 'screens')
 SHARED_PAGES = 'shared'
 MODEL = 'model'
-# What a page may import of the Model: its names, which are words and no behaviour, and the version every file records.
-PAGE_SCHEMA = (('schema', 'file_format'), ('file', 'version'))
+# What a page may import of the Model: its names, which are words and no behaviour, the generator plugins found, and the version every file records.
+PAGE_SCHEMA = (('schema', 'file_format'), ('schema', 'generator_plugins'), ('file', 'version'))
 # The Model's musical values, which every page may use, as it always could.
 PAGE_VALUES = 'values'
 # The rules' names, which the list of exceptions is kept under.

@@ -20,12 +20,13 @@ import os
 import random
 import zlib
 
+from llamatron.engine.generators import follow_chords as follow_chords_plugin, musician as musician_plugin, phrasing as phrasing_plugin
 from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
 from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.named_scale import scale_type_called
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
+from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row, SceneSetting, VelocitySetting
 from llamatron.user_strings import errors, labels, song_wizard as wizard_text
 from llamatron.wizards.create_song import band, breaks, characters, drum_solo, interplay, joins, loudness, melody, notation, riffs as riffs_values, shaping, song_plan
 from llamatron.wizards.create_song.breaks import cut_up
@@ -161,7 +162,7 @@ NOTES_OF_A_SCALE_WITH_TRIADS = 7
 THIRD_PLACE = 2
 FIFTH_PLACE = 4
 HOME_CHORDS = {(4, 7): ChordSymbol.MAJOR, (3, 7): ChordSymbol.MINOR, (3, 6): ChordSymbol.DIMINISHED, (4, 8): ChordSymbol.AUGMENTED}
-FOLLOWS_THE_CHORDS = {GeneratorKind.FOLLOW_CHORDS: wizard_text.MSG_FOLLOW_CHORDS_NAME}
+FOLLOWS_THE_CHORDS = {follow_chords_plugin.NAME: wizard_text.MSG_FOLLOW_CHORDS_NAME}
 # How the tune is delivered, where a song says: the settings of the one Phrasing its tune's clips then run.
 TUNE_PHRASING = 'tune_phrasing'
 # The song's own musicians, the settings of a Musician by the player whose clips it plays, in place of the one the player is given.
@@ -1413,11 +1414,11 @@ class Arrangement:
 
     def as_input(self):
         """Return the song as arranged, a song wizard input: its tracks, parts, generators, chains and the scenes of its form."""
-        generators = {Section.FOLLOW_CHORDS: {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}}, **self._extra}
+        generators = {follow_chords_plugin.SECTION: {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}}, **self._extra}
         if self._phrased:
             # The tune is delivered as a player would deliver it, by one Phrasing every clip of the tune runs after its timing.
-            generators[Section.PHRASINGS] = {wizard_text.MSG_TUNE_PHRASING_NAME: dict(self._song[TUNE_PHRASING])}
-            self._chains[wizard_text.MSG_TUNE_PHRASING_NAME] = [{GeneratorKind.PHRASING: wizard_text.MSG_TUNE_PHRASING_NAME}]
+            generators[phrasing_plugin.SECTION] = {wizard_text.MSG_TUNE_PHRASING_NAME: dict(self._song[TUNE_PHRASING])}
+            self._chains[wizard_text.MSG_TUNE_PHRASING_NAME] = [{phrasing_plugin.NAME: wizard_text.MSG_TUNE_PHRASING_NAME}]
         if self._style[GENRE] not in band.GENRES_WITHOUT_MUSICIANS:
             # Each player's clips are played by the player's Musician, first in their chains, and every piece of the kit by the drummer's.
             usual_tune = next((role[ROLE] for role, entry in self._pitched if FIGURE not in entry and not role.get(ANSWERS)), None)
@@ -1431,8 +1432,8 @@ class Arrangement:
                         clip = {PART: clip} if isinstance(clip, str) else clip
                         scene[PLAY][track] = {**clip, CHAINS: [musician_of[track], *clip.get(CHAINS, [])]}
                         heard.add(musician_of[track])
-            generators[Section.MUSICIANS] = {name: settings for name, settings in musicians.items() if name in heard}
-            self._chains.update({name: [{GeneratorKind.MUSICIAN: name}] for name in heard})
+            generators[musician_plugin.SECTION] = {name: settings for name, settings in musicians.items() if name in heard}
+            self._chains.update({name: [{musician_plugin.NAME: name}] for name in heard})
         if self._progressions:
             generators[PROGRESSIONS] = self._progressions
         if any(role.get(VOICE_LEADING) for role, _ in self._pitched):

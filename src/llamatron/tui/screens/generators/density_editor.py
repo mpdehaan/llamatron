@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Density editor page: one Density generator's settings."""
 
-from llamatron.model.schema.file_format import GeneratorKind, Section, Shape
+from llamatron.engine.generators import density as density_plugin
+from llamatron.model.schema.file_format import Shape
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.shape_editor import ShapeEditor
 from llamatron.user_strings import help as help_text, labels, messages
@@ -15,9 +16,9 @@ class DensityEditor(ShapeEditor):
 
     KEYS = keybindings.DensityEditor
     HELP = help_text.HELP_DENSITY_EDITOR
-    SECTION = Section.DENSITIES
+    SECTION = density_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    KIND = GeneratorKind.DENSITY
+    KIND = density_plugin.NAME
     SHAPE = Shape.DENSITY
     LABEL = labels.MSG_SHAPE_NAMES[Shape.DENSITY]
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_SHAPE_NAMES[Shape.DENSITY])

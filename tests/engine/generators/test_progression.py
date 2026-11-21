@@ -9,11 +9,12 @@ progression a chord a bar, so that each bar shows where one chord moved the figu
 
 import unittest
 
+from llamatron.engine.generators import progression as progression_plugin
 from llamatron.engine.generators.progression.settings import ProgressionSetting
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import NamedScale
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.progressions import named_progression_in, roman_numeral
 from tests.playback import test_registers
@@ -38,8 +39,8 @@ def through(progression, *, repeat=BARS, rows=None, drum=False, time_signature=N
     if drum:
         made.update({PatternSetting.DRUM: True, Row.DEGREE: [NoteName.C] * STEPS})
     data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]}}}])
-    data[Section.PROGRESSIONS] = {PROGRESSION: progression}
-    data[Section.CHAINS] = {CHAIN: [{GeneratorKind.PROGRESSION: PROGRESSION}]}
+    data[progression_plugin.SECTION] = {PROGRESSION: progression}
+    data[Section.CHAINS] = {CHAIN: [{progression_plugin.NAME: PROGRESSION}]}
     if time_signature:
         data[SongSetting.TIME_SIGNATURE] = time_signature
     return data

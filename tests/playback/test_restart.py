@@ -11,12 +11,13 @@ from typing import NamedTuple
 import unittest
 
 from llamatron.engine.clips.clip import Clip
+from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, euclid as euclid_plugin, progression as progression_plugin, swell as swell_plugin
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.generators.voice_leading.generator import VoiceLeading
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Restart, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Restart, Row, SceneSetting, Section
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
 from tests.playback import test_registers
@@ -73,7 +74,7 @@ def first_names(notes):
 
 
 def progression(*, restart=None, first_repeat=1):
-    return two_scenes(section=Section.PROGRESSIONS, kind=GeneratorKind.PROGRESSION, settings={'chords': [1, 5, 6, 4]}, restart=restart, first_repeat=first_repeat)
+    return two_scenes(section=progression_plugin.SECTION, kind=progression_plugin.NAME, settings={'chords': [1, 5, 6, 4]}, restart=restart, first_repeat=first_repeat)
 
 
 class TestTimeFollowingGenerators(unittest.TestCase):
@@ -93,14 +94,14 @@ class TestTimeFollowingGenerators(unittest.TestCase):
         self.assertEqual(first_names(scenes[2]), ['C', 'E', 'G', 'A'])
 
     def test_a_euclid_carries_its_rhythm_on(self):
-        data = two_scenes(section=Section.EUCLIDS, kind=GeneratorKind.EUCLID, settings={'hits': 1, 'steps': 3}, restart=Restart.WHOLE_SONG)
+        data = two_scenes(section=euclid_plugin.SECTION, kind=euclid_plugin.NAME, settings={'hits': 1, 'steps': 3}, restart=Restart.WHOLE_SONG)
         scenes = played(data)
         # Eight quarter notes, a hit every third: the second scene's first hit falls on its second step.
         self.assertEqual(len(scenes[0]), 3)
         self.assertEqual(scenes[1][0].start * STEPS, 1)
 
     def test_a_swells_ramp_runs_over_the_whole_song(self):
-        data = two_scenes(section=Section.SWELLS, kind=GeneratorKind.SWELL, settings={'start': 0, 'end': 100}, restart=Restart.WHOLE_SONG,
+        data = two_scenes(section=swell_plugin.SECTION, kind=swell_plugin.NAME, settings={'start': 0, 'end': 100}, restart=Restart.WHOLE_SONG,
                           rows={Row.VELOCITY: [100] * STEPS})
         scenes = played(data)
         self.assertLess(scenes[0][-1].velocity, scenes[1][0].velocity)
@@ -111,8 +112,8 @@ class TestStateKeepingGenerators(unittest.TestCase):
 
     def test_an_auto_ratchet_carries_its_count_on(self):
         settings = {'counts': [1, 2, 3]}
-        fresh = played(two_scenes(section=Section.AUTO_RATCHETS, kind=GeneratorKind.AUTO_RATCHET, settings=settings))
-        carried = played(two_scenes(section=Section.AUTO_RATCHETS, kind=GeneratorKind.AUTO_RATCHET, settings=settings, restart=Restart.WHOLE_SONG))
+        fresh = played(two_scenes(section=auto_ratchet_plugin.SECTION, kind=auto_ratchet_plugin.NAME, settings=settings))
+        carried = played(two_scenes(section=auto_ratchet_plugin.SECTION, kind=auto_ratchet_plugin.NAME, settings=settings, restart=Restart.WHOLE_SONG))
         self.assertEqual(fresh[1], fresh[0])
         # Eight notes used up counts 1 2 3 1 2 3 1 2, so the second scene starts on 3.
         self.assertEqual(carried[1][0].length * 3, fresh[0][0].length)

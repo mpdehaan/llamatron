@@ -39,7 +39,7 @@ from llamatron.model.objects.pattern import held_add, Pattern
 from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits as set_limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.model.values import note
 from llamatron.model.values.scale import ScaleType
@@ -94,8 +94,6 @@ def item_class(section):
     return ITEM_KINDS[section] if plugin is None else plugin.settings
 
 
-# The sections taken in from another set, in the order a set is read, so that each can name what the ones before it hold.
-SECTIONS_TAKEN_IN = [Section.SCALES, Section.PATTERNS, *file_format.NAMED_GENERATORS.values(), Section.CHAINS, Section.GROOVES, Section.INSTRUMENTS, Section.SONGS]
 # The sections whose items are read knowing the set, where the others take the set in place of a song, to look names up in.
 READ_WITH_THE_SET = (Section.CHAINS, Section.SONGS)
 # The scale a new set starts with, which can be deleted.
@@ -127,13 +125,11 @@ def new_setlist():
         SetlistSetting.STEP_SIZE: defaults.DEFAULT_STEP_SIZE,
         SetlistSetting.DEFAULT_OCTAVE: defaults.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: defaults.DEFAULT_DRUM_OCTAVE,
         SetlistSetting.OCTAVE_LABELS: defaults.DEFAULT_OCTAVE_LABELS,
-        Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}}, Section.ARPS: {}, Section.AUTO_RATCHETS: {}, Section.DRIFTS: {}, Section.PROGRESSIONS: {}, Section.VOICE_LEADINGS: {}, Section.STRUMS: {}, Section.GUITARIFIES: {}, Section.EUCLIDS: {}, Section.DENSITIES: {}, Section.SWELLS: {}, Section.ARTICULATES: {}, Section.GLIDES: {}, Section.SHORTENS: {}, Section.RUSHES: {}, Section.DRAGS: {}, Section.HOCKETS: {}, Section.FOLLOW_CHORDS: {}, Section.PHRASINGS: {}, Section.MUSICIANS: {}, Section.CHAINS: {},
+        Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}}, **{section: {} for section in generator_plugins.sections_by_name().values()}, Section.CHAINS: {},
         Section.SONGS: {names_text.MSG_DEFAULT_SONG_NAME: song},
     }
 
 
-# The kind of generator each generator section holds.
-GENERATOR_KINDS_OF_SECTIONS = {section: kind for kind, section in file_format.NAMED_GENERATORS.items()}
 
 
 class Setlist(HoldsSections, HoldsSettings):
@@ -144,12 +140,14 @@ class Setlist(HoldsSections, HoldsSettings):
     name, and the set looks the names up; each song does the same for what it shares.
     """
 
-    __slots__ = ('_sections', '_closed_groups', '_open_types', '_conversion')
+    __slots__ = ('_sections', '_closed_groups', '_open_types', '_conversion', '_generator_sections')
 
     SETTINGS = SETTINGS
 
     def __init__(self):
         self.note_change()
+        # The section of each generator plugin, by its name, held so that a render's every look up of a generator is one step.
+        self._generator_sections = generator_plugins.sections_by_name()
         # The pattern groups shown closed: no part of the set's data, so no undo or restore touches it (file_format.CLOSED_PATTERN_GROUPS).
         self._closed_groups = []
         # The types of generator shown open on the Generators page, kept the same way (file_format.OPEN_GENERATOR_TYPES).
@@ -157,7 +155,7 @@ class Setlist(HoldsSections, HoldsSettings):
         # What reading the set's file moved from an older layout, which the tracker says once the file is open.
         self._conversion = Conversion()
         self._settings = {name: None for name in SETTINGS}
-        self._sections = {name: NamedItems(label=sections.SECTION_LABELS[name]) for name in sections.SETLIST_SECTIONS}
+        self._sections = {name: NamedItems(label=sections.section_label(name)) for name in sections.setlist_sections()}
 
     @classmethod
     def read_file(cls, path):
@@ -267,7 +265,7 @@ class Setlist(HoldsSections, HoldsSettings):
         self._read_settings(data)
         self._read_scales(data)
         self._read_items(data=data, section=Section.PATTERNS)
-        for section in file_format.NAMED_GENERATORS.values():
+        for section in generator_plugins.sections_by_name().values():
             self._read_generators(data=data, section=section)
         self._read_items(data=data, section=Section.CHAINS)
         self._read_grooves(data)
@@ -301,7 +299,7 @@ class Setlist(HoldsSections, HoldsSettings):
         self._settings = {name: own_copy(data.get(name)) for name in SETTINGS}
         self._settings[SetlistSetting.VISUALIZER] = sensible_visualizer(self._settings[SetlistSetting.VISUALIZER])
         self._settings[SetlistSetting.HIDDEN_VISUALIZERS] = sensible_hidden_visualizers(self._settings[SetlistSetting.HIDDEN_VISUALIZERS])
-        self._settings[SetlistSetting.GENERATOR_ORDER] = sensible_generator_order(self._settings[SetlistSetting.GENERATOR_ORDER])
+        self._settings[SetlistSetting.GENERATOR_ORDER] = generator_plugins.sensible_generator_order(self._settings[SetlistSetting.GENERATOR_ORDER])
 
     def _read_scales(self, data):
         if not isinstance(data.get(Section.SCALES) or {}, dict):
@@ -356,7 +354,7 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def _where(self, *, section, name):
         """Return how a message places one item of a section, like pattern (tune)."""
-        return errors.ERR_WHERE_NAMED.format(label=sections.SECTION_LABELS[section], name=name)
+        return errors.ERR_WHERE_NAMED.format(label=sections.section_label(section), name=name)
 
     def to_data(self):
         return self._data_from(data_built_anew)
@@ -402,7 +400,7 @@ class Setlist(HoldsSections, HoldsSettings):
     def changes_registers(self):
         """Return whether any pattern sets a register, adds to one or uses a draw, any arpeggiator adds to one, or any scene or clip sets or adds to one, so that playing changes the registers' values; a draw's uses are counted with the registers' changes."""
         return any(pattern.changes_registers() or pattern.uses_draws() or pattern.reads_draws() for pattern in self._section(Section.PATTERNS).values()) or any(
-            generator.adds_to_registers() for section in (Section.ARPS, Section.DRIFTS) for generator in self._section(section).values()
+            generator.adds_to_registers() for section in generator_plugins.sections_adding_to_registers() for generator in self._section(section).values()
         ) or any(song.scenes_change_registers() for song in self._section(Section.SONGS).values())
 
     def get_default_octave(self):
@@ -551,28 +549,28 @@ class Setlist(HoldsSections, HoldsSettings):
         self._check_generator_name(section=section, name=new, old=old)
         self._section(section).rename(old=old, new=new)
         self.rename_references(section=section, old=old, new=new)
-        if section in GENERATOR_KINDS_OF_SECTIONS:
-            self._rename_in_generator_order(kind=GENERATOR_KINDS_OF_SECTIONS[section], old=old, new=new)
+        if section in generator_plugins.names_by_section():
+            self._rename_in_generator_order(kind=generator_plugins.names_by_section()[section], old=old, new=new)
 
     def every_generator_name(self):
         """Return the name of every generator of every kind and of every chain, which share one list in a set file and so may share no name."""
-        return [name for section in sections.GENERATOR_SECTIONS for name in self._section(section).names()]
+        return [name for section in sections.generator_sections() for name in self._section(section).names()]
 
     def _check_generator_name(self, *, section, name, old):
         """Refuse a name for a generator or a chain that a generator or chain of another kind has, old being the name it is renamed from."""
-        if section not in sections.GENERATOR_SECTIONS:
+        if section not in sections.generator_sections():
             return
-        others = [held for held in sections.GENERATOR_SECTIONS if held != section]
+        others = [held for held in sections.generator_sections() if held != section]
         taken = next((held for held in others if is_taken(name=name, taken=self._names_but(section=held, old=old))), None)
         if taken is not None:
-            raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.SECTION_LABELS[taken], name=name))
+            raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.section_label(taken), name=name))
 
     # The order of the Generators page: every generator on one list, kept in an order of its own.
 
     def ordered_generators(self):
         """Return every generator as (kind, name) in the Generators page's order: the order kept, leaving out any generator
         gone, then any it doesn't name, kind by kind in each kind's own order."""
-        existing = [(kind, name) for kind, section in file_format.LISTED_GENERATORS.items() for name in self._section(section).names()]
+        existing = [(kind, name) for kind, section in generator_plugins.listed_sections().items() for name in self._section(section).names()]
         kept = []
         for entry in self._settings[SetlistSetting.GENERATOR_ORDER] or []:
             pair = next(iter(entry.items()))
@@ -583,7 +581,7 @@ class Setlist(HoldsSections, HoldsSettings):
     @notes_change
     def set_generator_order(self, pairs):
         """Keep the Generators page's order, every generator as (kind, name)."""
-        self._settings[SetlistSetting.GENERATOR_ORDER] = sensible_generator_order([{kind: name} for kind, name in pairs])
+        self._settings[SetlistSetting.GENERATOR_ORDER] = generator_plugins.sensible_generator_order([{kind: name} for kind, name in pairs])
 
     def move_generator(self, *, place, offset):
         """Move a generator up or down the Generators page's list, and return whether it moved, which it can't past either end."""
@@ -609,9 +607,9 @@ class Setlist(HoldsSections, HoldsSettings):
         """Add a copy of an item under a new name, at the end of its section, and return the copy."""
         item = self._section(section).get(name).copy()
         self._section(section).add(name=new, item=item)
-        if section in GENERATOR_KINDS_OF_SECTIONS and self._settings[SetlistSetting.GENERATOR_ORDER]:
+        if section in generator_plugins.names_by_section() and self._settings[SetlistSetting.GENERATOR_ORDER]:
             # On the Generators page a copy comes straight after what it copies, as on every list.
-            kind = GENERATOR_KINDS_OF_SECTIONS[section]
+            kind = generator_plugins.names_by_section()[section]
             pairs = [pair for pair in self.ordered_generators() if pair != (kind, new)]
             pairs.insert(pairs.index((kind, name)) + 1, (kind, new))
             self.set_generator_order(pairs)
@@ -628,7 +626,7 @@ class Setlist(HoldsSections, HoldsSettings):
         is the same in both, such as an instrument both play, is shared and not added twice. A
         song always gets a name of its own.
         """
-        for section in SECTIONS_TAKEN_IN:
+        for section in sections.setlist_sections():
             for name in other.get_item_names(section):
                 if section != Section.SONGS and self.has_item(section=section, name=name) and self._same(section=section, name=name, other=other):
                     continue
@@ -638,7 +636,7 @@ class Setlist(HoldsSections, HoldsSettings):
         songs = other.get_song_names()
         added = other.to_data()
         data = dict(self.kept_data())
-        for section in SECTIONS_TAKEN_IN:
+        for section in sections.setlist_sections():
             new = {name: item for name, item in (added.get(section) or {}).items() if not self.has_item(section=section, name=name)}
             if new:
                 data[section] = {**(data.get(section) or {}), **new}
@@ -686,7 +684,7 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def named_by_songs(self):
         """Return every item a song could bring with it, as (section, name): the scales, patterns, generators, chains, grooves and instruments."""
-        return [(section, item) for section in SECTIONS_TAKEN_IN if section != Section.SONGS for item in self.get_item_names(section)]
+        return [(section, item) for section in sections.setlist_sections() if section != Section.SONGS for item in self.get_item_names(section)]
 
     def remove_unused(self):
         """Take out everything nothing in the set names, so that a set made for one song holds only what the song uses."""
@@ -981,7 +979,7 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def get_open_generator_types(self):
         """Return the kinds of generator the Generators page shows open, in the order kinds are listed, leaving out any the set has no generator of any more."""
-        return [kind for kind in file_format.NAMED_GENERATORS if kind in self._open_types and self._section(file_format.NAMED_GENERATORS[kind]).names()]
+        return [kind for kind, section in generator_plugins.sections_by_name().items() if kind in self._open_types and self._section(section).names()]
 
     def is_generator_type_open(self, kind):
         return kind in self._open_types
@@ -995,14 +993,14 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def has_generator(self, *, kind, name):
         """Return whether there's a generator of a kind, like arp, with this name."""
-        return self._section(file_format.NAMED_GENERATORS[kind]).has(name)
+        return self._section(self._generator_sections[kind]).has(name)
 
     def get_generator_settings(self, *, kind, name):
-        return self._section(file_format.NAMED_GENERATORS[kind]).get(name)
+        return self._section(self._generator_sections[kind]).get(name)
 
     def get_generator_names(self, kind):
         """Return the names of the generators of a kind, like arp, in the set's order."""
-        return self._section(file_format.NAMED_GENERATORS[kind]).names()
+        return self._section(self._generator_sections[kind]).names()
 
     def has_chain(self, name):
         return self._section(Section.CHAINS).has(name)
@@ -1064,7 +1062,7 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def generator_kind(self, name):
         """Return the kind of the generator of a name, chain for a chain, or None for a name no generator has."""
-        return next((kind for kind, section in file_format.LISTED_GENERATORS.items() if self._section(section).has(name)), None)
+        return next((kind for kind, section in generator_plugins.listed_sections().items() if self._section(section).has(name)), None)
 
     def has_generator_named(self, name):
         """Return whether a generator of any kind, a chain among them, has a name."""
@@ -1075,7 +1073,7 @@ class Setlist(HoldsSections, HoldsSettings):
         generator of another kind, a chain of that generator alone, made for the asking."""
         if self.has_chain(name):
             return self.get_chain(name)
-        kind = next(kind for kind, section in file_format.NAMED_GENERATORS.items() if self._section(section).has(name))
+        kind = next(kind for kind, section in generator_plugins.sections_by_name().items() if self._section(section).has(name))
         return Chain([(kind, name)])
 
     def get_chain_names(self):

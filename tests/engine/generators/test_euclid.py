@@ -8,11 +8,12 @@ Each test plays a bar of sixteen sixteenth notes, so that every step of a 16-ste
 
 import unittest
 
+from llamatron.engine.generators import euclid as euclid_plugin
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import euclid
 from llamatron.model.objects.euclid import rhythm
-from llamatron.model.schema.file_format import ClipSlotSetting, euclid_setting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, euclid_setting, EuclidPart, NamedRhythm, PatternSetting, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes
@@ -32,8 +33,8 @@ def sixteenths(*, track=None, generator=None, step_size='1/16', repeat=1):
     data = song(patterns={test_registers.X: dict(pattern(STEPS), **{PatternSetting.STEP_SIZE: step_size})}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip}}])
     data[Section.TRACKS][test_registers.LEAD] = {euclid_setting(part): value for part, value in (track or {}).items()}
     if generator is not None:
-        data[Section.EUCLIDS] = {MASKED: generator}
-        data[Section.CHAINS] = {MASKED_CHAIN: [{GeneratorKind.EUCLID: MASKED}]}
+        data[euclid_plugin.SECTION] = {MASKED: generator}
+        data[Section.CHAINS] = {MASKED_CHAIN: [{euclid_plugin.NAME: MASKED}]}
     return data
 
 

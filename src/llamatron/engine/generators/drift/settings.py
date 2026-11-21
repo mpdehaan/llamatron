@@ -108,6 +108,8 @@ class DriftSettings(GeneratorSettings):
 
     __slots__ = ()
 
+    MAY_ADD_TO_REGISTERS = True
+
     GENERATOR = None
     SETTINGS = _drift_settings()
 

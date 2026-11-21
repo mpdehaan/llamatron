@@ -9,9 +9,10 @@ chord a bar, and voice it.
 
 import unittest
 
+from llamatron.engine.generators import voice_leading as voice_leading_plugin
 from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSetting
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema.file_format import GeneratorKind, Row, Section
+from llamatron.model.schema.file_format import Row, Section
 from tests.engine.generators.test_progression import through
 from tests.playback.test_shapes import notes
 from tests.support.rendering import setlist_from_data
@@ -29,8 +30,8 @@ def voiced(*, voicing=None, chords=POP):
     """Return the pitches of each bar's chord, through a progression and, when given, a voice leading after it."""
     data = through({'chords': chords}, rows={Row.CHORD: [TRIAD, None, None, None]}, repeat=BARS)
     if voicing is not None:
-        data[Section.VOICE_LEADINGS] = {VOICING: voicing}
-        data[Section.CHAINS]['chords'].append({GeneratorKind.VOICE_LEADING: VOICING})
+        data[voice_leading_plugin.SECTION] = {VOICING: voicing}
+        data[Section.CHAINS]['chords'].append({voice_leading_plugin.NAME: VOICING})
     return [sorted(pitch for start, _, pitch, _ in notes(data) if start == bar) for bar in range(BARS)]
 
 
@@ -63,6 +64,6 @@ class TestVoiceLeading(unittest.TestCase):
 
     def test_a_lowest_octave_above_the_highest_is_refused(self):
         data = through({'chords': POP})
-        data[Section.VOICE_LEADINGS] = {VOICING: {VoiceLeadingSetting.LOWEST_OCTAVE: 6, VoiceLeadingSetting.HIGHEST_OCTAVE: 5}}
+        data[voice_leading_plugin.SECTION] = {VOICING: {VoiceLeadingSetting.LOWEST_OCTAVE: 6, VoiceLeadingSetting.HIGHEST_OCTAVE: 5}}
         with self.assertRaises(SongFileError):
             setlist_from_data(data)

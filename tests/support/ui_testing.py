@@ -15,6 +15,7 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
+from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
@@ -23,8 +24,8 @@ from llamatron.engine.generators.hocket.settings import HocketSetting
 from llamatron.engine.generators.progression.settings import ProgressionSetting
 from llamatron.engine.generators.step_row_settings import StepRowSetting
 from llamatron.model.objects.setlist import new_setlist, Setlist
-from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart
+from llamatron.model.schema import file_format, generator_plugins
+from llamatron.model.schema.file_format import ClipSlotSetting, EuclidPart, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.model.values.note import NoteName
 from llamatron.realtime.fluidsynth import FluidSynth
 from llamatron.tui import drawing, keybindings
@@ -121,25 +122,25 @@ def a_song(*, path=None):
     """Return a Document holding a set of one song with a few patterns, two tracks, a chain and two scenes."""
     data = new_setlist()
     song = data[Section.SONGS][names_text.MSG_DEFAULT_SONG_NAME]
-    data[Section.AUTO_RATCHETS] = {ROLLS: {AutoRatchetSetting.COUNTS: [1, 4]}}
-    data[Section.DRIFTS] = {SWAY: {DRIFT_SOFTER: -1}}
+    data[auto_ratchet_plugin.SECTION] = {ROLLS: {AutoRatchetSetting.COUNTS: [1, 4]}}
+    data[drift_plugin.SECTION] = {SWAY: {DRIFT_SOFTER: -1}}
     # A shape generator of each kind, which no chain names, so that their pages have something to show.
-    data[Section.PROGRESSIONS] = {POP: {ProgressionSetting.CHORDS: [1, 5, 6, 4]}}
-    data[Section.VOICE_LEADINGS] = {SMOOTH: {}}
-    data[Section.STRUMS] = {FOLK: {}}
-    data[Section.EUCLIDS] = {CLAVE: {EuclidPart.HITS: 3, EuclidPart.STEPS: 8}}
-    data[Section.GLIDES] = {SLIDES: {StepRowSetting.STEPS: [True, False, False]}}
-    data[Section.SHORTENS] = {CLIPS: {StepRowSetting.STEPS: [False, True]}}
-    data[Section.RUSHES] = {PUSH: {StepRowSetting.STEPS: [True, False, False, False]}}
-    data[Section.DRAGS] = {LAZY: {StepRowSetting.STEPS: [False, True]}}
-    data[Section.HOCKETS] = {TRADE: {HocketSetting.SOURCE: LEAD}}
-    data[Section.GUITARIFIES] = {PICKED: {}}
-    data[Section.FOLLOW_CHORDS] = {FOLLOWS: {FollowChordsSetting.CHORDS_FROM: LEAD}}
-    data[Section.PHRASINGS] = {BREATHES: {}}
-    data[Section.MUSICIANS] = {STRUMMER: {}}
-    data[Section.DENSITIES] = {THIN: {ShapePart.START: 50}}
-    data[Section.SWELLS] = {FADE: {ShapePart.START: 80}}
-    data[Section.ARTICULATES] = {CLIPPED: {ShapePart.START: 50}}
+    data[progression_plugin.SECTION] = {POP: {ProgressionSetting.CHORDS: [1, 5, 6, 4]}}
+    data[voice_leading_plugin.SECTION] = {SMOOTH: {}}
+    data[strum_plugin.SECTION] = {FOLK: {}}
+    data[euclid_plugin.SECTION] = {CLAVE: {EuclidPart.HITS: 3, EuclidPart.STEPS: 8}}
+    data[glide_plugin.SECTION] = {SLIDES: {StepRowSetting.STEPS: [True, False, False]}}
+    data[shorten_plugin.SECTION] = {CLIPS: {StepRowSetting.STEPS: [False, True]}}
+    data[rush_plugin.SECTION] = {PUSH: {StepRowSetting.STEPS: [True, False, False, False]}}
+    data[drag_plugin.SECTION] = {LAZY: {StepRowSetting.STEPS: [False, True]}}
+    data[hocket_plugin.SECTION] = {TRADE: {HocketSetting.SOURCE: LEAD}}
+    data[guitarify_plugin.SECTION] = {PICKED: {}}
+    data[follow_chords_plugin.SECTION] = {FOLLOWS: {FollowChordsSetting.CHORDS_FROM: LEAD}}
+    data[phrasing_plugin.SECTION] = {BREATHES: {}}
+    data[musician_plugin.SECTION] = {STRUMMER: {}}
+    data[density_plugin.SECTION] = {THIN: {ShapePart.START: 50}}
+    data[swell_plugin.SECTION] = {FADE: {ShapePart.START: 80}}
+    data[articulate_plugin.SECTION] = {CLIPPED: {ShapePart.START: 50}}
     data[Section.PATTERNS] = {
         TUNE: {
             PatternSetting.GROUP: MELODIES, PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: EIGHTH, Row.DEGREE: [1, 3, None, None], Row.GATE: [QUARTER, QUARTER, EIGHTH, None],
@@ -149,8 +150,8 @@ def a_song(*, path=None):
         OTHER: {PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: HALF, Row.DEGREE: [5]},
     }
     song[Section.TRACKS] = {LEAD: {}, DRUMS: {}}
-    data[Section.ARPS] = {UP_ARP: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP)}}
-    data[Section.CHAINS] = {NAMED: [{GeneratorKind.ARP: UP_ARP}, {GeneratorKind.AUTO_RATCHET: ROLLS}], EMPTY: []}
+    data[arp_plugin.SECTION] = {UP_ARP: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP)}}
+    data[Section.CHAINS] = {NAMED: [{arp_plugin.NAME: UP_ARP}, {auto_ratchet_plugin.NAME: ROLLS}], EMPTY: []}
     song[Section.SCENES] = [
         {SceneSetting.NAME: ONE, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: TUNE}, DRUMS: {ClipSlotSetting.PATTERN: BEAT, ClipSlotSetting.LOOP: True}}},
         {SceneSetting.NAME: TWO, SceneSetting.TRACKS: {}},
@@ -335,10 +336,10 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         return self.document.song().get_track(name)
 
     def arp(self, name):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.ARP, name=name)
+        return self.document.song().get_generator_settings(kind=arp_plugin.NAME, name=name)
 
     def auto_ratchet(self, name):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.AUTO_RATCHET, name=name)
+        return self.document.song().get_generator_settings(kind=auto_ratchet_plugin.NAME, name=name)
 
     def chain_steps(self, name):
         return self.document.song().get_chain(name).get_steps()
@@ -358,7 +359,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     def delete_every_generator(self):
         """Delete every arp and AutoRatchet, which the chains must have stopped using first."""
         song = self.document.song()
-        for kind, section in file_format.NAMED_GENERATORS.items():
+        for kind, section in generator_plugins.sections_by_name().items():
             for name in song.get_generator_names(kind):
                 self.document.delete_named(section=section, name=name)
 

@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Voice leading: its list page and its editor, with the range shown in the set's octave labels."""
 
+from llamatron.engine.generators import voice_leading as voice_leading_plugin
 from llamatron.engine.generators.voice_leading import settings as voice_leading_settings
-from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor
@@ -18,19 +18,19 @@ NEW_ONE = 'close'
 class TestVoiceLeadingAdded(UITest):
 
     async def test_a_new_one_sets_nothing(self):
-        name = await self.add_generator(Section.VOICE_LEADINGS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=name).to_data(), {})
+        name = await self.add_generator(voice_leading_plugin.SECTION)
+        self.assertEqual(self.document.song().get_generator_settings(kind=voice_leading_plugin.NAME, name=name).to_data(), {})
 
 
 class TestVoiceLeadingEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.VOICE_LEADINGS)
+        await self.open_generator(section=voice_leading_plugin.SECTION)
         self.assertIsInstance(self.app.screen, VoiceLeadingEditor)
 
     def voicing(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=ui_testing.SMOOTH)
+        return self.document.song().get_generator_settings(kind=voice_leading_plugin.NAME, name=ui_testing.SMOOTH)
 
     async def test_the_lowest_octave_never_passes_the_highest(self):
         await self.select_field(labels.MSG_LOWEST_OCTAVE_LABEL)

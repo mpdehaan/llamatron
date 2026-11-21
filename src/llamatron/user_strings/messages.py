@@ -131,8 +131,7 @@ MSG_CHANGED_IN_SONG = 'song ({song}): {what}'
 MSG_CHANGED_SCENE = 'scene {number}'
 MSG_CHANGED_THE_SET = 'the set'
 MSG_CHANGED_WORDS = {
-    Section.SCALES: 'scale', Section.PATTERNS: 'pattern', Section.ARPS: 'arp', Section.AUTO_RATCHETS: 'AutoRatchet', Section.DRIFTS: 'drift', Section.PROGRESSIONS: 'progression', Section.VOICE_LEADINGS: 'voice leading', Section.STRUMS: 'Strum', Section.GUITARIFIES: 'Guitarify', Section.EUCLIDS: 'Euclid', Section.GLIDES: 'Glide', Section.SHORTENS: 'Shorten', Section.RUSHES: 'Rush', Section.DRAGS: 'Drag', Section.HOCKETS: 'Hocket', Section.FOLLOW_CHORDS: 'Follow Chords', Section.PHRASINGS: 'Phrasing', Section.MUSICIANS: 'Musician', Section.DENSITIES: 'Density', Section.SWELLS: 'Swell',
-    Section.ARTICULATES: 'Articulate',
+    Section.SCALES: 'scale', Section.PATTERNS: 'pattern',
     Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.REGISTERS: 'register', Section.DRAWS: 'draw',
     SetlistSetting.TITLE: 'title', SetlistSetting.AUTHOR: 'author', SetlistSetting.DESCRIPTION: 'description', SetlistSetting.NOTES: 'notes',
     SetlistSetting.STEP_SIZE: 'step size', SetlistSetting.DEFAULT_OCTAVE: 'default octave', SetlistSetting.DEFAULT_DRUM_OCTAVE: 'default drum octave',
@@ -318,13 +317,6 @@ MSG_PROGRESSION_PICKER_TITLE = 'Progressions'
 # tui/screens/generators/euclid_fields.py: the title of the picker of named rhythms.
 MSG_RHYTHM_PICKER_TITLE = 'Rhythms'
 
-# tui/screens/generators/step_row_editor.py: the line above a row of steps, saying what a step that's on does.
-MSG_STEP_ROW_NOTES = {
-    Section.GLIDES: 'a note starting on a step that is on glides into the next note',
-    Section.SHORTENS: 'a note starting on a step that is on plays short',
-    Section.RUSHES: 'a note starting on a step that is on plays early',
-    Section.DRAGS: 'a note starting on a step that is on plays late',
-}
 
 # tui/screens/shared/list_page.py and tui/screens/arrange/arrange_page.py: Move mode.
 MSG_MOVING = 'moving {what}: the arrows carry it, ENTER drops it'

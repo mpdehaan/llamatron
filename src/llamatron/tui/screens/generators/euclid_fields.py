@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The fields of a Euclidean mask, which the track editor's + Euclid section and the Euclid editor share: hits, steps, rotation and step, and the picker of named rhythms that H opens on Hits."""
 
+from llamatron.engine.generators.euclid import strings as euclid_strings
 from llamatron.model.objects import euclid
 from llamatron.model.objects.euclid import rhythm
 from llamatron.model.schema import limits
@@ -39,7 +40,7 @@ def euclid_fields(*, page, value, store, prefixed=True):
 
 def euclid_section(*, page, value, store):
     """Return a + Euclid section, closed until opened and saying when its hits are set, and its four fields."""
-    heading = page.heading(label=labels.MSG_EUCLID_LABEL, is_set=lambda: value(EuclidPart.HITS) is not None)
+    heading = page.heading(label=euclid_strings.MSG_LABEL, is_set=lambda: value(EuclidPart.HITS) is not None)
     return [heading, *euclid_fields(page=page, value=value, store=store)]
 
 

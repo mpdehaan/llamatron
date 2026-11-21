@@ -39,12 +39,18 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     REQUIRED = []
     # What turns a setting as the file writes it into what the generator takes, for the settings where the two differ.
     TAKEN_AS = {}
+    # Whether its generators may add to the registers as they play, which a plugin whose settings answer adds_to_registers() says.
+    MAY_ADD_TO_REGISTERS = False
 
     def __init_subclass__(cls, **named):
         """Give every kind of settings the table of statements that bypasses its generator, as its last setting."""
         super().__init_subclass__(**named)
         settings = {name: description for name, description in cls.SETTINGS.items() if name != file_format.BYPASS_WHEN}
         cls.SETTINGS = {**settings, file_format.BYPASS_WHEN: BYPASS_STATEMENTS}
+
+    def adds_to_registers(self):
+        """Return whether its generator adds to the registers as it plays: no, unless a plugin's settings say otherwise."""
+        return False
 
     def __init__(self, settings):
         # Kept as given, as a copy, so that the object shares nothing with the data it was read from. Reading a file checks the data first.

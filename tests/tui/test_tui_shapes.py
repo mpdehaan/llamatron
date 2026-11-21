@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Density, Swell and Articulate: their list pages and editors, the sections on the Scene page and the clip page, and the settings pages' sections that hold them."""
 
+from llamatron.engine.generators import articulate as articulate_plugin, density as density_plugin, swell as swell_plugin
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import GeneratorKind, RampWay, Section, Shape, shape_setting, ShapePart
+from llamatron.model.schema.file_format import RampWay, Shape, shape_setting, ShapePart
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.clip_page import ClipPage
@@ -30,8 +31,8 @@ HALF = 50
 class TestDensityAdded(UITest):
 
     async def test_a_new_one_changes_nothing(self):
-        name = await self.add_generator(Section.DENSITIES)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DENSITY, name=name).to_data(), {})
+        name = await self.add_generator(density_plugin.SECTION)
+        self.assertEqual(self.document.song().get_generator_settings(kind=density_plugin.NAME, name=name).to_data(), {})
 
 
 class ShapeEditorTest(UITest):
@@ -54,9 +55,9 @@ class ShapeEditorTest(UITest):
 class TestDensityEditor(ShapeEditorTest):
     """A Density's editor: start and end step within 0 to 100, Bksp leaves one blank, and over and then are chosen."""
 
-    SECTION = Section.DENSITIES
+    SECTION = density_plugin.SECTION
     PAGE = DensityEditor
-    KIND = GeneratorKind.DENSITY
+    KIND = density_plugin.NAME
     NAME = ui_testing.THIN
 
     async def test_start_steps_and_clears(self):
@@ -90,9 +91,9 @@ class TestDensityEditor(ShapeEditorTest):
 class TestSwellEditor(ShapeEditorTest):
     """A Swell's editor has an accent besides, up to its most."""
 
-    SECTION = Section.SWELLS
+    SECTION = swell_plugin.SECTION
     PAGE = SwellEditor
-    KIND = GeneratorKind.SWELL
+    KIND = swell_plugin.NAME
     NAME = ui_testing.FADE
 
     async def test_the_accent_steps_up_to_its_most(self):
@@ -104,9 +105,9 @@ class TestSwellEditor(ShapeEditorTest):
 class TestArticulateEditor(ShapeEditorTest):
     """An Articulate's editor: start stops at its least."""
 
-    SECTION = Section.ARTICULATES
+    SECTION = articulate_plugin.SECTION
     PAGE = ArticulateEditor
-    KIND = GeneratorKind.ARTICULATE
+    KIND = articulate_plugin.NAME
     NAME = ui_testing.CLIPPED
 
     async def test_start_stops_at_its_least(self):

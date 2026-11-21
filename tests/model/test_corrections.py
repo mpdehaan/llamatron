@@ -15,6 +15,7 @@ import os
 import unittest
 import yaml
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp import generator as arp
 from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.model.file import corrections as corrections_values
@@ -96,7 +97,7 @@ def with_groove(settings):
 
 
 def with_arp(settings):
-    return {Section.ARPS: {UP: {ArpSetting.STEP: EIGHTH, **settings}}}
+    return {arp_plugin.SECTION: {UP: {ArpSetting.STEP: EIGHTH, **settings}}}
 
 
 def value_at(*, data, path):
@@ -115,7 +116,7 @@ SCENE = (*SONG, Section.SCENES, FIRST_SCENE)
 CLIP = (*SCENE, SceneSetting.TRACKS, LEAD)
 REGISTER = (*SONG, Section.REGISTERS, RegisterName.AX)
 GROOVE = (Section.GROOVES, SHUFFLE)
-ARP = (Section.ARPS, UP)
+ARP = (arp_plugin.SECTION, UP)
 AX_ADD = file_format.REGISTER_ADD_ROWS[RegisterName.AX]
 FIRST_CC = file_format.CC_ROWS[0]
 # Every value a file can hold that has an allowed value near it: the data that holds the wrong value, where the

@@ -6,9 +6,10 @@
 
 import unittest
 
+from llamatron.engine.generators import musician as musician_plugin
 from llamatron.engine.generators.musician import generator as musician
 from llamatron.engine.generators.musician.settings import MusicianSetting
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Section
+from llamatron.model.schema.file_format import ClipSlotSetting
 from llamatron.wizards.create_song import band, players
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
@@ -114,10 +115,10 @@ class TestWizardMusicians(unittest.TestCase):
                 chains = scene.get_clip_slot(track).to_data().get(ClipSlotSetting.CHAINS, [])
                 wanted = choices.player(THE_DRUMS if track in drum_tracks else track).musician_name()
                 first = song.get_setlist().get_chain(chains[0]).get_steps()[0]
-                self.assertEqual((first.kind, first.name), (GeneratorKind.MUSICIAN, wanted), (scene.get_name(), track))
+                self.assertEqual((first.kind, first.name), (musician_plugin.NAME, wanted), (scene.get_name(), track))
                 seen.add(wanted)
         for name in seen:
-            self.assertTrue(song.has_generator(kind=GeneratorKind.MUSICIAN, name=name))
+            self.assertTrue(song.has_generator(kind=musician_plugin.NAME, name=name))
         self.assertIn(choices.player(THE_BASS).musician_name(), seen)
         self.assertIn(choices.player(THE_DRUMS).musician_name(), seen)
 
@@ -125,23 +126,23 @@ class TestWizardMusicians(unittest.TestCase):
         choices = chosen(genre=A_GENRE_OF_MACHINES, subgenre=None)
         self.assertFalse(choices.get_band().has_musicians())
         setlist, _ = choices.made_for_listening()
-        self.assertFalse(setlist.to_data().get(Section.MUSICIANS))
+        self.assertFalse(setlist.to_data().get(musician_plugin.SECTION))
 
     def test_a_players_own_musician_is_kept_and_played_until_the_player_is_given_back_the_usual_one(self):
         choices = chosen()
         self.assertIsNone(choices.player(THE_BASS).get_musician())
-        usual = made_song(choices).get_generator_settings(kind=GeneratorKind.MUSICIAN, name=choices.player(THE_BASS).musician_name()).to_data()
+        usual = made_song(choices).get_generator_settings(kind=musician_plugin.NAME, name=choices.player(THE_BASS).musician_name()).to_data()
         own = {MusicianSetting.INSTRUMENT: musician.BASSIST, MusicianSetting.LOUDNESS: musician.LOUDEST}
         choices.player(THE_BASS).set_musician(settings={**own, MusicianSetting.TUNE_FROM: A_TRACK, MusicianSetting.CHORDS_FROM: A_TRACK})
         self.assertEqual(choices.player(THE_BASS).get_musician(), own)
         self.assertEqual(WizardChoices.from_data(choices.to_data()).player(THE_BASS).get_musician(), own)
-        made = made_song(choices).get_generator_settings(kind=GeneratorKind.MUSICIAN, name=choices.player(THE_BASS).musician_name())
+        made = made_song(choices).get_generator_settings(kind=musician_plugin.NAME, name=choices.player(THE_BASS).musician_name())
         self.assertEqual(made.get_own(MusicianSetting.LOUDNESS), musician.LOUDEST)
         self.assertEqual(made.get_tune_from(), usual.get(MusicianSetting.TUNE_FROM))
         self.assertIsNone(made.get_chords_from())
         choices.player(THE_BASS).set_musician(settings=None)
         self.assertIsNone(choices.player(THE_BASS).get_musician())
-        self.assertEqual(made_song(choices).get_generator_settings(kind=GeneratorKind.MUSICIAN, name=choices.player(THE_BASS).musician_name()).to_data(), usual)
+        self.assertEqual(made_song(choices).get_generator_settings(kind=musician_plugin.NAME, name=choices.player(THE_BASS).musician_name()).to_data(), usual)
 
     def test_settings_no_musician_has_are_refused_and_nothing_changes(self):
         choices = chosen()

@@ -16,11 +16,11 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 from rich.text import Text
 
 from llamatron.caching.kept import forget_kept, kept_while
+from llamatron.engine.generators import musician as musician_plugin, phrasing as phrasing_plugin
 from llamatron.model.file import version
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import new_name
-from llamatron.model.schema.file_format import GeneratorKind
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, place_of
@@ -275,7 +275,7 @@ class WizardPage(FieldPage):
 
         def phrasing_of(draft):
             song = draft.song()
-            return song.get_generator_settings(kind=GeneratorKind.PHRASING, name=name).to_data() if song.has_generator(kind=GeneratorKind.PHRASING, name=name) else None
+            return song.get_generator_settings(kind=phrasing_plugin.NAME, name=name).to_data() if song.has_generator(kind=phrasing_plugin.NAME, name=name) else None
         if phrasing_of(Document(setlist=setlist)) is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
@@ -293,7 +293,7 @@ class WizardPage(FieldPage):
 
         def musician_of(draft):
             song = draft.song()
-            return song.get_generator_settings(kind=GeneratorKind.MUSICIAN, name=name).to_data() if song.has_generator(kind=GeneratorKind.MUSICIAN, name=name) else None
+            return song.get_generator_settings(kind=musician_plugin.NAME, name=name).to_data() if song.has_generator(kind=musician_plugin.NAME, name=name) else None
         if musician_of(Document(setlist=setlist)) is None:
             # A player who plays in no section of the song has no clips, and so no Musician to open.
             self.refuse(errors.ERR_WIZARD_PLAYER_PLAYS_NOTHING)

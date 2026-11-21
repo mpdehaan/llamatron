@@ -4,9 +4,10 @@
 
 """The musician's editor: its fields, the instrument's own habits, and a heading for each kind of section the song has."""
 
-from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators import musician as musician_plugin
+from llamatron.engine.generators.musician import generator as musician, strings as musician_strings
 from llamatron.engine.generators.musician.settings import MusicianSetting
-from llamatron.model.schema.file_format import GeneratorKind, Section, SectionKind
+from llamatron.model.schema.file_format import SectionKind
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
@@ -24,12 +25,12 @@ CHORUS_HEADING = labels.MSG_MUSICIAN_SECTION_HEADING.format(section=SectionKind.
 class TestMusicianAdded(UITest):
 
     async def test_a_new_one_is_found_under_band_generators_and_starts_as_a_rhythm_guitarist(self):
-        name = await self.add_generator(Section.MUSICIANS)
-        settings = self.document.song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=name)
+        name = await self.add_generator(musician_plugin.SECTION)
+        settings = self.document.song().get_generator_settings(kind=musician_plugin.NAME, name=name)
         self.assertEqual(settings.to_data(), {})
         self.assertEqual(settings.get_own(MusicianSetting.INSTRUMENT), musician.RHYTHM_GUITARIST)
         self.assertIsInstance(self.app.screen, MusicianEditor)
-        self.assertIn(labels.MSG_MUSICIAN_LABEL.upper(), self.text().upper())
+        self.assertIn(musician_strings.MSG_LABEL.upper(), self.text().upper())
 
 
 class TestMusicianEditor(UITest):
@@ -37,11 +38,11 @@ class TestMusicianEditor(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.document.change(self.document.song().get_scene(FIRST_SCENE).set_section, SectionKind.VERSE)
-        await self.open_generator(section=Section.MUSICIANS)
+        await self.open_generator(section=musician_plugin.SECTION)
         self.assertIsInstance(self.app.screen, MusicianEditor)
 
     def musician(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=ui_testing.STRUMMER)
+        return self.document.song().get_generator_settings(kind=musician_plugin.NAME, name=ui_testing.STRUMMER)
 
     async def choose(self, *, label, choice):
         await self.select_field(label)

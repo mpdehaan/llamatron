@@ -9,10 +9,11 @@ note lasts two seconds, so 8 milliseconds between strings is 1/250 of a whole no
 
 import unittest
 
+from llamatron.engine.generators import strum as strum_plugin
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, strum_setting, StrumDirection, StrumPart, StrumSpread, TrackSetting, UpstrokeStrings
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, strum_setting, StrumDirection, StrumPart, StrumSpread, TrackSetting, UpstrokeStrings
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_song, setlist_from_data, song_from_data
@@ -42,8 +43,8 @@ def chords(*, track=None, clip=None, rows=None, chain=None, generator=None, step
     data[SongSetting.TEMPO] = TEMPO
     data[Section.TRACKS][test_registers.LEAD] = dict(track or {})
     if chain:
-        data[Section.STRUMS] = {STRUMMED: generator or {}}
-        data[Section.CHAINS] = {STRUMMED_CHAIN: [{GeneratorKind.STRUM: STRUMMED}]}
+        data[strum_plugin.SECTION] = {STRUMMED: generator or {}}
+        data[Section.CHAINS] = {STRUMMED_CHAIN: [{strum_plugin.NAME: STRUMMED}]}
     return data
 
 

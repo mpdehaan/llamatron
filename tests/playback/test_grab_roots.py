@@ -5,8 +5,9 @@
 
 import unittest
 
+from llamatron.engine.generators import progression as progression_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.timing.timing import timed_events
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from tests.playback.test_registers import song
 from tests.support.rendering import render_data
 
@@ -41,11 +42,11 @@ def grabbed(*, inversion=None, voiced=False, chords=(1, 5, 6, 4)):
         tracks=(CHORDS, BASS),
     )
     data[Section.TRACKS][CHORDS] = {TrackSetting.MUTE: True}
-    data[Section.PROGRESSIONS] = {PROGRESSION: {'chords': list(chords)}}
-    data[Section.CHAINS] = {PROGRESSION_CHAIN: [{GeneratorKind.PROGRESSION: PROGRESSION}]}
+    data[progression_plugin.SECTION] = {PROGRESSION: {'chords': list(chords)}}
+    data[Section.CHAINS] = {PROGRESSION_CHAIN: [{progression_plugin.NAME: PROGRESSION}]}
     if voiced:
-        data[Section.VOICE_LEADINGS] = {VOICED: {}}
-        data[Section.CHAINS][PROGRESSION_CHAIN].append({GeneratorKind.VOICE_LEADING: VOICED})
+        data[voice_leading_plugin.SECTION] = {VOICED: {}}
+        data[Section.CHAINS][PROGRESSION_CHAIN].append({voice_leading_plugin.NAME: VOICED})
     return [pitch for _, _, pitch, _ in notes_on(data, track=1)]
 
 

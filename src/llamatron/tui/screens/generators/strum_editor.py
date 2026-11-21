@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Strum editor page: one Strum generator's name and its strum, which wins over a clip's and its track's."""
 
-from llamatron.model.schema.file_format import Section
+from llamatron.engine.generators import strum as strum_plugin
+from llamatron.engine.generators.strum import strings as strum_strings
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.strum_fields import strum_fields
@@ -19,9 +20,9 @@ class StrumEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.StrumEditor
     HELP = help_text.HELP_STRUM_EDITOR
-    SECTION = Section.STRUMS
+    SECTION = strum_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_STRUM_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=strum_strings.MSG_LABEL)
 
     def fields(self):
         strum = self.settings()

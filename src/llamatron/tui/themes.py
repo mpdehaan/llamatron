@@ -9,7 +9,7 @@ the one it names; the main screen's is white, and Arrange has none and keeps the
 
 import functools
 
-from llamatron.model.schema import file_format
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import Section
 
 SONGS = (0, 90, 255)
@@ -30,13 +30,13 @@ WIZARD = (0, 255, 255)
 # The colour of each section's pages, every generator section's the generators' one.
 SECTION_THEMES = {
     Section.SONGS: SONGS, Section.PATTERNS: PATTERNS, Section.CHAINS: GENERATORS, Section.SCALES: SCALES, Section.GROOVES: GROOVES,
-    Section.INSTRUMENTS: INSTRUMENTS, Section.TRACKS: FROM_ARRANGE, **{section: GENERATORS for section in file_format.NAMED_GENERATORS.values()},
+    Section.INSTRUMENTS: INSTRUMENTS, Section.TRACKS: FROM_ARRANGE, **{section: GENERATORS for section in generator_plugins.sections_by_name().values()},
 }
 
 
 def target_theme(kind):
     """Return the colour of what a line of Arrange's details names, a section or a generator's kind, since a kind of thing has one colour everywhere, or None."""
-    if kind in file_format.NAMED_GENERATORS:
+    if kind in generator_plugins.sections_by_name():
         return GENERATORS
     return SECTION_THEMES.get(kind)
 

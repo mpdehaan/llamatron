@@ -4,8 +4,9 @@
 
 """The Auto ratchet editor page."""
 
+from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators.auto_ratchet import strings as auto_ratchet_strings
 from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField
@@ -24,9 +25,9 @@ class AutoRatchetEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.AutoRatchetEditor
     HELP = help_text.HELP_AUTO_RATCHET_EDITOR
-    SECTION = Section.AUTO_RATCHETS
+    SECTION = auto_ratchet_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_AUTO_RATCHET_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=auto_ratchet_strings.MSG_LABEL)
 
     def counts(self):
         return self.settings().get_counts()

@@ -6,9 +6,10 @@
 
 import unittest
 
+from llamatron.engine.generators import phrasing as phrasing_plugin
 from llamatron.engine.generators.phrasing import generator as phrasing, settings as phrasing_settings
 from llamatron.engine.generators.phrasing.settings import PhrasingSetting
-from llamatron.model.schema.file_format import GeneratorKind, PatternSetting, Row
+from llamatron.model.schema.file_format import PatternSetting, Row
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
@@ -271,7 +272,7 @@ class TestTunePhrasing(unittest.TestCase):
         self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: phrasing.DEEP_BREATH})
         self.assertEqual(WizardChoices.from_data(choices.to_data()).tune_phrasing(), {PhrasingSetting.BREATH: phrasing.DEEP_BREATH})
         setlist, name = choices.made_for_listening()
-        made = setlist.get_song(name).get_generator_settings(kind=GeneratorKind.PHRASING, name=wizard_text.MSG_TUNE_PHRASING_NAME)
+        made = setlist.get_song(name).get_generator_settings(kind=phrasing_plugin.NAME, name=wizard_text.MSG_TUNE_PHRASING_NAME)
         self.assertEqual(made.to_data(), {PhrasingSetting.BREATH: phrasing.DEEP_BREATH})
         choices.set_tune_phrasing(False)
         self.assertIsNone(choices.tune_phrasing())

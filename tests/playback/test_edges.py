@@ -17,13 +17,14 @@ import yaml
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.positions import cut_position
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.exports import ExportKind
 from llamatron.math.length import Length
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
 from llamatron.model.values.sound import Sound
@@ -132,13 +133,13 @@ class TestMalformedFiles(unittest.TestCase):
             PATTERN_IS_A_LIST: changed(patterns__a=[1, 2]),
             DRUM_IS_WORDS: changed(patterns__a={PatternSetting.STEPS: 1, PatternSetting.DRUM: YES}),
             TRACK_SETTINGS_ARE_A_LIST: changed(tracks={LEAD: [1], BASS: {}}),
-            CHAIN_IS_A_DICT: changed(chains={X: {GeneratorKind.ARP: UP}}),
-            'chain step has two generators': changed(chains={X: [{GeneratorKind.ARP: UP, GeneratorKind.AUTO_RATCHET: UP}]}),
+            CHAIN_IS_A_DICT: changed(chains={X: {arp_plugin.NAME: UP}}),
+            'chain step has two generators': changed(chains={X: [{arp_plugin.NAME: UP, auto_ratchet_plugin.NAME: UP}]}),
             SCENES_IS_A_DICT: changed(scenes={ONE: {}}),
             SCENE_IS_A_LIST: changed(scenes=[[LEAD]]),
             SCENE_REPEAT_IS_ZERO: changed(scenes__0__repeat=0),
             TEMPO_RAMP_BARS_ARE_ZERO: changed(scenes__0__tempo_in_over=0),
-            COUNTS_IS_NOT_A_LIST: changed(auto_ratchets={R: {AutoRatchetSetting.COUNTS: 4}}, chains={X: [{GeneratorKind.AUTO_RATCHET: R}]}),
+            COUNTS_IS_NOT_A_LIST: changed(auto_ratchets={R: {AutoRatchetSetting.COUNTS: 4}}, chains={X: [{auto_ratchet_plugin.NAME: R}]}),
         }
         for name, data in cases.items():
             if name == COUNTS_IS_NOT_A_LIST:
@@ -148,7 +149,7 @@ class TestMalformedFiles(unittest.TestCase):
 
     def test_a_chord_pushed_past_the_top_of_midi_says_which_clip(self):
         data = changed(patterns__a={PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: 1, Row.DEGREE: [1], Row.OCTAVE: [10], Row.CHORD: ['M']})
-        data[Section.ARPS][UP][ArpSetting.OCTAVE_RANGE] = 4
+        data[arp_plugin.SECTION][UP][ArpSetting.OCTAVE_RANGE] = 4
         data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.CHAINS] = [X]
         with self.assertRaises(SongFileError) as raised:
             render_data(data)
@@ -234,9 +235,9 @@ class TestDocumentEdges(unittest.TestCase):
     def test_copying_a_chain_copies_its_steps(self):
         document = Document(setlist=setlist_from_data(good()))
         new = document.copy_named(section=Section.CHAINS, name=X)
-        self.assertEqual(document.song().get_chain(new).get_steps(), [(GeneratorKind.ARP, UP)])
+        self.assertEqual(document.song().get_chain(new).get_steps(), [(arp_plugin.NAME, UP)])
         document.change(document.get_setlist().get_chain(new).remove_step, 0)
-        self.assertEqual(document.song().get_chain(X).get_steps(), [(GeneratorKind.ARP, UP)])
+        self.assertEqual(document.song().get_chain(X).get_steps(), [(arp_plugin.NAME, UP)])
 
 
 class TestWaysIn(unittest.TestCase):

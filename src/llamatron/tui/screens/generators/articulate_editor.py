@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Articulate editor page: one Articulate generator's settings."""
 
-from llamatron.model.schema.file_format import GeneratorKind, Section, Shape
+from llamatron.engine.generators import articulate as articulate_plugin
+from llamatron.model.schema.file_format import Shape
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.shape_editor import ShapeEditor
 from llamatron.user_strings import help as help_text, labels, messages
@@ -15,9 +16,9 @@ class ArticulateEditor(ShapeEditor):
 
     KEYS = keybindings.ArticulateEditor
     HELP = help_text.HELP_ARTICULATE_EDITOR
-    SECTION = Section.ARTICULATES
+    SECTION = articulate_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    KIND = GeneratorKind.ARTICULATE
+    KIND = articulate_plugin.NAME
     SHAPE = Shape.ARTICULATE
     LABEL = labels.MSG_SHAPE_NAMES[Shape.ARTICULATE]
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_SHAPE_NAMES[Shape.ARTICULATE])

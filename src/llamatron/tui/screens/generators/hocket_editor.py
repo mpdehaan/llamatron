@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Hocket editor: its name, the track whose notes it shares out, and its Restart."""
 
+from llamatron.engine.generators import hocket as hocket_plugin
+from llamatron.engine.generators.hocket import strings as hocket_strings
 from llamatron.engine.generators.hocket.settings import HocketSetting
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
@@ -20,9 +21,9 @@ class HocketEditor(GeneratorEditor, FieldPage):
 
     KEYS = keybindings.HocketEditor
     HELP = help_text.HELP_HOCKET_EDITOR
-    SECTION = Section.HOCKETS
+    SECTION = hocket_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
-    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=labels.MSG_HOCKET_LABEL)
+    RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=hocket_strings.MSG_LABEL)
 
     def store_source(self, source):
         self.store(setting=HocketSetting.SOURCE, value=source)

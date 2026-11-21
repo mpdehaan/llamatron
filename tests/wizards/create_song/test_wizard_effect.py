@@ -20,12 +20,13 @@ import datetime
 import json
 import unittest
 
+from llamatron.engine.generators import musician as musician_plugin
 from llamatron.engine.generators.musician import generator as musician
 from llamatron.engine.generators.musician.settings import MusicianSetting
 from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings
 from llamatron.engine.generators.phrasing.settings import PhrasingSetting
 from llamatron.model.file import version
-from llamatron.model.schema.file_format import GeneratorKind, Row, Section
+from llamatron.model.schema.file_format import Row, Section
 from llamatron.wizards.create_song import arranger, breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
 
@@ -422,7 +423,7 @@ def every_choice(choices):
         # A player's Musician of the person's own, for each player whose clips run one: the loudest.
         setlist, name = choices.made_for_listening()
         for role in choices.get_band().roles_in():
-            if setlist.get_song(name).has_generator(kind=GeneratorKind.MUSICIAN, name=choices.player(role).musician_name()):
+            if setlist.get_song(name).has_generator(kind=musician_plugin.NAME, name=choices.player(role).musician_name()):
                 yield PLAYER_MUSICIAN, role, lambda made, role=role: made.player(role).set_musician(settings={MusicianSetting.LOUDNESS: musician.LOUDEST}), [nothing_first]
     # A riff played by the player it was written for in the first kind of section that takes it: its notes written by hand, written
     # again, drawn each other way, and the riff deleted.

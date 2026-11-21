@@ -28,6 +28,7 @@ from llamatron.caching.memory import StaleAnswer
 from llamatron.model.file.ordered_data import same_in_order
 from llamatron.model.objects import sections
 from llamatron.model.objects.naming import is_default_scale_name
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.user_strings import errors, messages
 
@@ -152,18 +153,24 @@ def describe_change(*, leaving, arriving):
     The names come from the snapshot being left first, so that undoing an added track names the
     track that goes away, and undoing a deleted one names the track that comes back.
     """
-    for section in sections.SETLIST_SECTIONS:
+    for section in sections.setlist_sections():
         name = _differing_name(section=section, leaving=leaving.data, arriving=arriving.data)
         if name is None:
             continue
         if section == Section.SONGS:
             return messages.MSG_CHANGED_IN_SONG.format(song=name, what=_describe_song_change(leaving=leaving.data[Section.SONGS].get(name), arriving=arriving.data[Section.SONGS].get(name)))
-        return messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[section], name=name)
+        return messages.MSG_CHANGED_NAMED.format(kind=changed_word(section), name=name)
     for setting in SETTINGS_OF_THE_SET:
         if leaving.data.get(setting) != arriving.data.get(setting):
             return messages.MSG_CHANGED_WORDS[setting]
     return messages.MSG_CHANGED_THE_SET
 
+
+
+def changed_word(section):
+    """Return the word an undo names an item of a section by: a generator plugin's own word, or the section's."""
+    plugin = generator_plugins.plugins_by_section().get(section)
+    return messages.MSG_CHANGED_WORDS[section] if plugin is None else plugin.strings.MSG_CHANGED_WORD
 
 # The set's own settings, in the order a difference is looked for.
 SETTINGS_OF_THE_SET = [
@@ -181,7 +188,7 @@ def _describe_song_change(*, leaving, arriving):
     for section in sections.SONG_SECTIONS:
         name = _differing_name(section=section, leaving=leaving, arriving=arriving)
         if name is not None:
-            return messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[section], name=name)
+            return messages.MSG_CHANGED_NAMED.format(kind=changed_word(section), name=name)
     scenes_leaving = leaving.get(Section.SCENES) or []
     scenes_arriving = arriving.get(Section.SCENES) or []
     if scenes_leaving != scenes_arriving:
@@ -220,7 +227,7 @@ def renamed_items(*, leaving, arriving):
     changes with them. Tracks and scenes are looked at in the song that's current on arrival.
     """
     renames = {}
-    for section in sections.SETLIST_SECTIONS:
+    for section in sections.setlist_sections():
         _add_renames(renames, section=section, leaving=leaving.data, arriving=arriving.data)
     song_before = (leaving.data.get(Section.SONGS) or {}).get(arriving.song)
     song_after = (arriving.data.get(Section.SONGS) or {}).get(arriving.song)

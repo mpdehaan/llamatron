@@ -24,25 +24,6 @@ class Section:
     SCALES = 'scales'
     PATTERNS = 'patterns'
     TRACKS = 'tracks'
-    ARPS = 'arps'
-    AUTO_RATCHETS = 'auto_ratchets'
-    DRIFTS = 'drifts'
-    PROGRESSIONS = 'progressions'
-    VOICE_LEADINGS = 'voice_leadings'
-    STRUMS = 'strums'
-    EUCLIDS = 'euclids'
-    DENSITIES = 'densities'
-    SWELLS = 'swells'
-    ARTICULATES = 'articulates'
-    GLIDES = 'glides'
-    SHORTENS = 'shortens'
-    RUSHES = 'rushes'
-    DRAGS = 'drags'
-    HOCKETS = 'hockets'
-    GUITARIFIES = 'guitarifies'
-    FOLLOW_CHORDS = 'follow_chords'
-    PHRASINGS = 'phrasings'
-    MUSICIANS = 'musicians'
     CHAINS = 'chains'
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
@@ -595,30 +576,6 @@ PATTERN_ORDERS = [
 ]
 
 
-class GeneratorKind:
-    """The kinds of generator a chain step can name."""
-
-    ARP = 'arp'
-    AUTO_RATCHET = 'auto_ratchet'
-    DRIFT = 'drift'
-    PROGRESSION = 'progression'
-    VOICE_LEADING = 'voice_leading'
-    STRUM = 'strum'
-    EUCLID = 'euclid'
-    DENSITY = 'density'
-    SWELL = 'swell'
-    ARTICULATE = 'articulate'
-    GLIDE = 'glide'
-    SHORTEN = 'shorten'
-    RUSH = 'rush'
-    DRAG = 'drag'
-    HOCKET = 'hocket'
-    GUITARIFY = 'guitarify'
-    FOLLOW_CHORDS = 'follow_chords'
-    PHRASING = 'phrasing'
-    MUSICIAN = 'musician'
-
-
 # The step sizes the editor offers, shortest first. Any other length can be typed.
 STEP_SIZE_CHOICES = ['1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1']
 # A time setting written in bars, like 2 bars, which the song's time signature turns into a length.
@@ -933,21 +890,9 @@ TENSIONS = {
     Tension.FLAT_THIRTEENTH: 20, Tension.THIRTEENTH: 21,
 }
 
-# The generators that a chain step can use by name, and the section of a file that names them.
-NAMED_GENERATORS = {
-    GeneratorKind.ARP: Section.ARPS, GeneratorKind.AUTO_RATCHET: Section.AUTO_RATCHETS, GeneratorKind.DRIFT: Section.DRIFTS,
-    GeneratorKind.PROGRESSION: Section.PROGRESSIONS, GeneratorKind.VOICE_LEADING: Section.VOICE_LEADINGS,
-    GeneratorKind.STRUM: Section.STRUMS, GeneratorKind.EUCLID: Section.EUCLIDS,
-    GeneratorKind.DENSITY: Section.DENSITIES, GeneratorKind.SWELL: Section.SWELLS, GeneratorKind.ARTICULATE: Section.ARTICULATES,
-    GeneratorKind.GLIDE: Section.GLIDES, GeneratorKind.SHORTEN: Section.SHORTENS, GeneratorKind.RUSH: Section.RUSHES, GeneratorKind.DRAG: Section.DRAGS,
-    GeneratorKind.HOCKET: Section.HOCKETS, GeneratorKind.GUITARIFY: Section.GUITARIFIES, GeneratorKind.FOLLOW_CHORDS: Section.FOLLOW_CHORDS,
-    GeneratorKind.PHRASING: Section.PHRASINGS, GeneratorKind.MUSICIAN: Section.MUSICIANS,
-}
 # A chain's kind beside the generators' kinds: a clip, a scene and a track list chains and generators alike, and the Generators
 # page lists the chains as one more kind.
 CHAIN_KIND = 'chain'
-# Every kind a clip, a scene or a track may list, the chain among them, and the section that holds each.
-LISTED_GENERATORS = {**NAMED_GENERATORS, CHAIN_KIND: Section.CHAINS}
 
 
 class DriftDirection:
@@ -1359,17 +1304,3 @@ def shape_setting(*, shape, part):
     return SHAPE_SETTING.format(shape=shape, part=part)
 
 
-def sensible_generator_order(value):
-    """Return a generator order made sensible: each entry a one-key map of a generator's kind to its name, anything else left
-    out, never refused, since the order only says how the Generators page lists them; None for none."""
-    entries = value if isinstance(value, list) else []
-    kept = [dict(entry) for entry in entries if is_generator_entry(entry)]
-    return kept or None
-
-
-def is_generator_entry(entry):
-    """Return whether an entry of a generator order is a one-key map of a generator's kind to a name."""
-    if not isinstance(entry, dict) or len(entry) != 1:
-        return False
-    kind, name = next(iter(entry.items()))
-    return kind in LISTED_GENERATORS and isinstance(name, str)

@@ -9,9 +9,10 @@ Each test plays clips of four quarter-note steps, a bar of
 
 import unittest
 
+from llamatron.engine.generators import drift as drift_plugin
 from llamatron.engine.generators.drift.settings import DriftSetting, versioned
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, GeneratorKind, RegisterSetting, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, RegisterSetting, Row, SceneSetting, Section
 from llamatron.playback.drift import DriftPlay
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, pitches, scale_notes, song, velocities
@@ -46,8 +47,8 @@ def drifting(*, drift, rows=None, repeat=BARS, seed=None, tracks=(test_registers
         scenes=[{SceneSetting.TRACKS: {track: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]} for track in tracks}}],
         tracks=tracks,
     )
-    data[Section.DRIFTS] = {DRIFT: drift}
-    data[Section.CHAINS] = {CHAIN: [{GeneratorKind.DRIFT: DRIFT}]}
+    data[drift_plugin.SECTION] = {DRIFT: drift}
+    data[Section.CHAINS] = {CHAIN: [{drift_plugin.NAME: DRIFT}]}
     if seed is not None:
         data['seed'] = seed
     if more_scales:

@@ -5,9 +5,10 @@
 
 import unittest
 
+from llamatron.engine.generators import hocket as hocket_plugin
 from llamatron.engine.generators.hocket.settings import HocketSetting
 from llamatron.engine.timing.timing import timed_events
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Restart, Row, SceneSetting, Section, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, Restart, Row, SceneSetting, Section, TrackSetting
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 
@@ -41,8 +42,8 @@ def hocket_data(*, melody, own=None, restart=None, scenes=1, source=SOURCE, sour
     settings = {} if source is None else {HocketSetting.SOURCE: source}
     if restart is not None:
         settings[HocketSetting.RESTART] = restart
-    data[Section.HOCKETS] = {SHARE: settings}
-    data[Section.CHAINS] = {CHAIN: [{GeneratorKind.HOCKET: SHARE}]}
+    data[hocket_plugin.SECTION] = {SHARE: settings}
+    data[Section.CHAINS] = {CHAIN: [{hocket_plugin.NAME: SHARE}]}
     return data
 
 
@@ -121,4 +122,4 @@ class TestTheFile(unittest.TestCase):
         setlist = setlist_from_data(hocket_data(melody=[1, 2]))
         song = setlist.get_songs()[0]
         song.rename_item(section=Section.TRACKS, old=SOURCE, new=TUNE)
-        self.assertEqual(setlist.get_generator_settings(kind=GeneratorKind.HOCKET, name=SHARE).get_source(), TUNE)
+        self.assertEqual(setlist.get_generator_settings(kind=hocket_plugin.NAME, name=SHARE).get_source(), TUNE)

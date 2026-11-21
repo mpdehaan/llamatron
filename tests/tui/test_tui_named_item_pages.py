@@ -10,8 +10,8 @@ tested with the page, so these checks call the page's rename and answer its prom
 
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.settings import ArpSetting
-from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key
@@ -156,10 +156,10 @@ class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
     RENAMES = False
 
     def prepare(self):
-        self.document.change(self.document.generator(section=Section.ARPS, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
 
     async def test_the_arp_without_its_offsets_is_nothing_to_edit(self):
-        self.document.change(self.document.generator(section=Section.ARPS, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=None)
+        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=None)
         self.assertFalse(self.page.still_exists())
 
 

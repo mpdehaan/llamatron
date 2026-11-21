@@ -6,11 +6,12 @@
 
 import unittest
 
+from llamatron.engine.generators import follow_chords as follow_chords_plugin, progression as progression_plugin
 from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
 from llamatron.engine.generators.progression.settings import ProgressionSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import errors
 from tests.playback import test_registers
@@ -59,8 +60,8 @@ def following_data(*, chords=None, chord_rows=None, figure=None, figure_rows=Non
     patterns = {CHORDS_PATTERN: pattern(len(chords), **rows), FIGURE: pattern(len(figure), **{Row.DEGREE: figure, **(figure_rows or {})})}
     clips = {CHORDS: {ClipSlotSetting.PATTERN: CHORDS_PATTERN}, SYNTH: {ClipSlotSetting.PATTERN: FIGURE, ClipSlotSetting.CHAINS: [CHAIN]}}
     data = song(patterns=patterns, scenes=[{SceneSetting.TRACKS: {name: dict(clip) for name, clip in clips.items()}} for _ in range(scenes)], tracks=[CHORDS, SYNTH])
-    data[Section.FOLLOW_CHORDS] = {FOLLOW: {} if chords_from is None else {FollowChordsSetting.CHORDS_FROM: chords_from}}
-    data[Section.CHAINS] = {CHAIN: [{GeneratorKind.FOLLOW_CHORDS: FOLLOW}]}
+    data[follow_chords_plugin.SECTION] = {FOLLOW: {} if chords_from is None else {FollowChordsSetting.CHORDS_FROM: chords_from}}
+    data[Section.CHAINS] = {CHAIN: [{follow_chords_plugin.NAME: FOLLOW}]}
     return data
 
 
@@ -90,8 +91,8 @@ class TestFollowing(unittest.TestCase):
 
     def test_chords_made_by_a_progression_on_the_track_followed_are_followed_the_same(self):
         data = following_data(chords=[1, 1, 1, 1])
-        data[Section.PROGRESSIONS] = {MADE: {ProgressionSetting.CHORDS: CHORD_DEGREES, ProgressionSetting.EVERY: ONE_STEP_EACH}}
-        data[Section.CHAINS][MADE_CHAIN] = [{GeneratorKind.PROGRESSION: MADE}]
+        data[progression_plugin.SECTION] = {MADE: {ProgressionSetting.CHORDS: CHORD_DEGREES, ProgressionSetting.EVERY: ONE_STEP_EACH}}
+        data[Section.CHAINS][MADE_CHAIN] = [{progression_plugin.NAME: MADE}]
         data[Section.SCENES][0][SceneSetting.TRACKS][CHORDS][ClipSlotSetting.CHAINS] = [MADE_CHAIN]
         self.assertEqual(pitches(data)[SYNTH], FOLLOWED)
 
@@ -163,8 +164,8 @@ class TestFollowChordsSettings(unittest.TestCase):
 
     def test_tracks_that_follow_each_other_in_a_circle_are_refused(self):
         data = following_data()
-        data[Section.FOLLOW_CHORDS][PAD_FOLLOW] = {FollowChordsSetting.CHORDS_FROM: SYNTH}
-        data[Section.CHAINS][PAD_CHAIN] = [{GeneratorKind.FOLLOW_CHORDS: PAD_FOLLOW}]
+        data[follow_chords_plugin.SECTION][PAD_FOLLOW] = {FollowChordsSetting.CHORDS_FROM: SYNTH}
+        data[Section.CHAINS][PAD_CHAIN] = [{follow_chords_plugin.NAME: PAD_FOLLOW}]
         data[Section.SCENES][0][SceneSetting.TRACKS][CHORDS][ClipSlotSetting.CHAINS] = [PAD_CHAIN]
         with self.assertRaises(SongFileError) as refused:
             render_data(data)
@@ -173,15 +174,15 @@ class TestFollowChordsSettings(unittest.TestCase):
     def test_a_track_can_follow_a_track_that_follows_another(self):
         data = following_data()
         data[Section.TRACKS][PAD] = {}
-        data[Section.FOLLOW_CHORDS][PAD_FOLLOW] = {FollowChordsSetting.CHORDS_FROM: SYNTH}
-        data[Section.CHAINS][PAD_CHAIN] = [{GeneratorKind.FOLLOW_CHORDS: PAD_FOLLOW}]
+        data[follow_chords_plugin.SECTION][PAD_FOLLOW] = {FollowChordsSetting.CHORDS_FROM: SYNTH}
+        data[Section.CHAINS][PAD_CHAIN] = [{follow_chords_plugin.NAME: PAD_FOLLOW}]
         data[Section.SCENES][0][SceneSetting.TRACKS][PAD] = {ClipSlotSetting.PATTERN: FIGURE, ClipSlotSetting.CHAINS: [PAD_CHAIN]}
         self.assertEqual(len(pitches(data)[PAD]), len(FIGURE_DEGREES))
 
     def test_renaming_the_track_followed_renames_it_in_the_settings(self):
         setlist = setlist_from_data(following_data())
         setlist.get_songs()[0].rename_item(section=Section.TRACKS, old=CHORDS, new=RENAMED)
-        self.assertEqual(setlist.get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=FOLLOW).get_chords_from(), RENAMED)
+        self.assertEqual(setlist.get_generator_settings(kind=follow_chords_plugin.NAME, name=FOLLOW).get_chords_from(), RENAMED)
 
     def test_the_steps_here_are_a_quarter_each(self):
         self.assertEqual(test_registers.STEP_SIZE, ONE_STEP_EACH)

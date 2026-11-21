@@ -8,9 +8,10 @@ import os
 import tempfile
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import GeneratorKind, Section, SetlistSetting
+from llamatron.model.schema.file_format import SetlistSetting
 from tests.support.rendering import as_setlist
 
 ARP = 'up'
@@ -24,7 +25,7 @@ SAVED_FILE = 'saved.yml'
 
 
 def a_set(*, order=None):
-    data = as_setlist({Section.ARPS: {ARP: {}, OTHER_ARP: {}}, Section.AUTO_RATCHETS: {RATCHET: {'counts': [2]}}})
+    data = as_setlist({arp_plugin.SECTION: {ARP: {}, OTHER_ARP: {}}, auto_ratchet_plugin.SECTION: {RATCHET: {'counts': [2]}}})
     if order is not None:
         data[SetlistSetting.GENERATOR_ORDER] = order
     return Setlist.from_data(data=data)
@@ -33,26 +34,26 @@ def a_set(*, order=None):
 class TestGeneratorOrder(unittest.TestCase):
 
     def test_with_no_order_each_kind_comes_in_its_own_order(self):
-        self.assertEqual(a_set().ordered_generators(), [(GeneratorKind.ARP, ARP), (GeneratorKind.ARP, OTHER_ARP), (GeneratorKind.AUTO_RATCHET, RATCHET)])
+        self.assertEqual(a_set().ordered_generators(), [(arp_plugin.NAME, ARP), (arp_plugin.NAME, OTHER_ARP), (auto_ratchet_plugin.NAME, RATCHET)])
 
     def test_a_kept_order_comes_first_and_anything_it_leaves_out_follows_and_nonsense_is_dropped(self):
-        setlist = a_set(order=[{GeneratorKind.AUTO_RATCHET: RATCHET}, {GeneratorKind.ARP: UNKNOWN}, 'nonsense', {'nokind': ARP}])
-        self.assertEqual(setlist.ordered_generators(), [(GeneratorKind.AUTO_RATCHET, RATCHET), (GeneratorKind.ARP, ARP), (GeneratorKind.ARP, OTHER_ARP)])
+        setlist = a_set(order=[{auto_ratchet_plugin.NAME: RATCHET}, {arp_plugin.NAME: UNKNOWN}, 'nonsense', {'nokind': ARP}])
+        self.assertEqual(setlist.ordered_generators(), [(auto_ratchet_plugin.NAME, RATCHET), (arp_plugin.NAME, ARP), (arp_plugin.NAME, OTHER_ARP)])
 
     def test_moving_keeps_the_order_through_saving_and_stops_at_the_ends(self):
         setlist = a_set()
         self.assertTrue(setlist.move_generator(place=2, offset=-2))
         self.assertFalse(setlist.move_generator(place=0, offset=-1))
         again = Setlist.from_data(data=setlist.to_data())
-        self.assertEqual(again.ordered_generators()[0], (GeneratorKind.AUTO_RATCHET, RATCHET))
+        self.assertEqual(again.ordered_generators()[0], (auto_ratchet_plugin.NAME, RATCHET))
 
     def test_a_rename_keeps_its_place_and_a_copy_comes_straight_after_what_it_copies(self):
         setlist = a_set()
         setlist.move_generator(place=2, offset=-2)
-        setlist.rename_item(section=Section.ARPS, old=ARP, new=RENAMED)
-        self.assertEqual(setlist.ordered_generators()[1], (GeneratorKind.ARP, RENAMED))
-        setlist.copy_item(section=Section.AUTO_RATCHETS, name=RATCHET, new=COPIED)
-        self.assertEqual(setlist.ordered_generators()[1], (GeneratorKind.AUTO_RATCHET, COPIED))
+        setlist.rename_item(section=arp_plugin.SECTION, old=ARP, new=RENAMED)
+        self.assertEqual(setlist.ordered_generators()[1], (arp_plugin.NAME, RENAMED))
+        setlist.copy_item(section=auto_ratchet_plugin.SECTION, name=RATCHET, new=COPIED)
+        self.assertEqual(setlist.ordered_generators()[1], (auto_ratchet_plugin.NAME, COPIED))
 
 
 class TestOpenGeneratorTypes(unittest.TestCase):
@@ -61,35 +62,35 @@ class TestOpenGeneratorTypes(unittest.TestCase):
     def test_every_type_is_closed_until_opened_and_closes_again(self):
         setlist = a_set()
         self.assertEqual(setlist.get_open_generator_types(), [])
-        setlist.show_generator_type(kind=GeneratorKind.AUTO_RATCHET, opened=True)
-        setlist.show_generator_type(kind=GeneratorKind.ARP, opened=True)
-        self.assertEqual(setlist.get_open_generator_types(), [GeneratorKind.ARP, GeneratorKind.AUTO_RATCHET])
-        setlist.show_generator_type(kind=GeneratorKind.ARP, opened=False)
-        self.assertFalse(setlist.is_generator_type_open(GeneratorKind.ARP))
-        self.assertTrue(setlist.is_generator_type_open(GeneratorKind.AUTO_RATCHET))
+        setlist.show_generator_type(kind=auto_ratchet_plugin.NAME, opened=True)
+        setlist.show_generator_type(kind=arp_plugin.NAME, opened=True)
+        self.assertEqual(setlist.get_open_generator_types(), [arp_plugin.NAME, auto_ratchet_plugin.NAME])
+        setlist.show_generator_type(kind=arp_plugin.NAME, opened=False)
+        self.assertFalse(setlist.is_generator_type_open(arp_plugin.NAME))
+        self.assertTrue(setlist.is_generator_type_open(auto_ratchet_plugin.NAME))
 
     def test_the_open_types_are_no_part_of_the_sets_data(self):
         setlist = a_set()
         before = setlist.to_data()
-        setlist.show_generator_type(kind=GeneratorKind.ARP, opened=True)
+        setlist.show_generator_type(kind=arp_plugin.NAME, opened=True)
         self.assertEqual(setlist.to_data(), before)
         self.assertNotIn(file_format.OPEN_GENERATOR_TYPES, setlist.to_data())
 
     def test_a_file_keeps_the_open_types_and_forgets_a_type_with_no_generator(self):
         data = a_set().to_data()
-        data[file_format.OPEN_GENERATOR_TYPES] = [GeneratorKind.ARP, GeneratorKind.DRIFT, UNKNOWN]
-        self.assertEqual(Setlist.from_data(data=data).get_open_generator_types(), [GeneratorKind.ARP])
+        data[file_format.OPEN_GENERATOR_TYPES] = [arp_plugin.NAME, drift_plugin.NAME, UNKNOWN]
+        self.assertEqual(Setlist.from_data(data=data).get_open_generator_types(), [arp_plugin.NAME])
 
     def test_a_file_holding_anything_else_there_still_opens(self):
-        for held in (A_NUMBER, [A_NUMBER, GeneratorKind.ARP], {GeneratorKind.ARP: True}):
+        for held in (A_NUMBER, [A_NUMBER, arp_plugin.NAME], {arp_plugin.NAME: True}):
             data = a_set().to_data()
             data[file_format.OPEN_GENERATOR_TYPES] = held
-            self.assertIn(Setlist.from_data(data=data).get_open_generator_types(), ([], [GeneratorKind.ARP]))
+            self.assertIn(Setlist.from_data(data=data).get_open_generator_types(), ([], [arp_plugin.NAME]))
 
     def test_an_open_type_is_written_to_the_file_and_read_back(self):
         setlist = a_set()
-        setlist.show_generator_type(kind=GeneratorKind.AUTO_RATCHET, opened=True)
+        setlist.show_generator_type(kind=auto_ratchet_plugin.NAME, opened=True)
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, SAVED_FILE)
             setlist.write_file(path)
-            self.assertEqual(Setlist.read_file(path).get_open_generator_types(), [GeneratorKind.AUTO_RATCHET])
+            self.assertEqual(Setlist.read_file(path).get_open_generator_types(), [auto_ratchet_plugin.NAME])

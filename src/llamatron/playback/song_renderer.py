@@ -12,6 +12,7 @@ from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.row_clock import RowClock
+from llamatron.engine.generators import drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, rush as rush_plugin, strum as strum_plugin
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.generators.follow_chords.generator import FollowChords
 from llamatron.engine.generators.musician.generator import Surroundings
@@ -24,7 +25,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.strum import strums_at_all
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import GeneratorKind, RampWay, Restart, Section, StepStatement
+from llamatron.model.schema.file_format import RampWay, Restart, Section, StepStatement
 from llamatron.model.values import midi, sound as sound_values
 from llamatron.playback import registers as registers_values
 from llamatron.playback.chord_source import ChordSource
@@ -56,7 +57,7 @@ DRAWS_TAKE_SEED = '{seed}/{scene}/draws take {take}'
 # The registers' random values, for a Reset behavior that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
 REGISTER_SEED_OFFSET = 7
 # The generators that move notes early or late in the timing, rather than running on a clip's notes.
-MOVING_KINDS = (GeneratorKind.RUSH, GeneratorKind.DRAG)
+MOVING_KINDS = (rush_plugin.NAME, drag_plugin.NAME)
 # What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
 STRUM_SEED_OFFSET = 977
 STRUM_SEEDS = 1_000_000
@@ -67,7 +68,7 @@ MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240_000
 SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 # The generators that follow another track's chords or tune, so that an edit reaching that track reaches theirs.
-FOLLOWING_KINDS = (GeneratorKind.FOLLOW_CHORDS, GeneratorKind.MUSICIAN)
+FOLLOWING_KINDS = (follow_chords_plugin.NAME, musician_plugin.NAME)
 # A drift's register adds come before every track's at the same moment, from a place before the first track's.
 DRIFT_PLACE = -1
 # The seed of the random values a register draws while a scene's first guess is played, which the plays after it replace.
@@ -404,7 +405,7 @@ class SongRenderer:
 
     def _deals_out(self, scene):
         """Return whether a clip of a written scene runs a hocket, which deals a track's notes out among the clips naming it."""
-        return any(step.kind == GeneratorKind.HOCKET for track in scene.get_track_names() for step in self._chain_steps(scene=scene, track=track))
+        return any(step.kind == hocket_plugin.NAME for track in scene.get_track_names() for step in self._chain_steps(scene=scene, track=track))
 
     def _tracks_followed(self, *, scene, track):
         """Return the tracks whose notes a track's clip in a written scene plays from: the one it grabs from, and those whose chords or tune its generators follow."""
@@ -423,7 +424,7 @@ class SongRenderer:
         """Return whether each track's clips play apart from the other tracks' but where a scene joins them, or where the
         registers they read come out otherwise (_hold_kept_clips_to_registers): no drift draws random numbers in the order the
         clips first ask for its triggers."""
-        drifts = self._song.get_setlist().get_generator_names(GeneratorKind.DRIFT)
+        drifts = self._song.get_setlist().get_generator_names(drift_plugin.NAME)
         return not any(self._drifts.draws_in_order(name) for name in drifts)
 
     def kept_tracks(self, scenes):
@@ -497,8 +498,8 @@ class SongRenderer:
         restart = Restart.EVERY_CLIP
         for chain in self.chains_of(scene=scene, track=track):
             for step in self._song.chain_run(chain).get_steps():
-                if step.kind == GeneratorKind.STRUM:
-                    settings = self._song.get_generator_settings(kind=GeneratorKind.STRUM, name=step.name)
+                if step.kind == strum_plugin.NAME:
+                    settings = self._song.get_generator_settings(kind=strum_plugin.NAME, name=step.name)
                     strum = settings.get_strum()
                     restart = settings.get_restart()
         if strum is None:
@@ -525,7 +526,7 @@ class SongRenderer:
                     settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
                     rows.append(MovingRow(
                         steps=settings.get_steps(), step=settings.step_length(default_step=pattern_step, bar=bar),
-                        amount=amount_moved(percent=settings.get_amount(), later=step.kind == GeneratorKind.DRAG),
+                        amount=amount_moved(percent=settings.get_amount(), later=step.kind == drag_plugin.NAME),
                         offset=self.run_offset(scene=scene, restart=settings.get_restart()),
                     ))
         return NudgePlan(rows=rows) if rows else None
@@ -537,18 +538,18 @@ class SongRenderer:
         """
         handed = []
         for name in self.hockets_of(scene=scene, track=track):
-            if self._song.get_generator_settings(kind=GeneratorKind.HOCKET, name=name).get_source() != track:
+            if self._song.get_generator_settings(kind=hocket_plugin.NAME, name=name).get_source() != track:
                 handed += self.hocket_turns(scene=scene, name=name).get(track, [])
         return sorted(handed)
 
     def hockets_of(self, *, scene, track):
         """Return the names of the Hockets a track's clip names in its chains in a written-out scene, each once, in order."""
-        names = [step.name for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps() if step.kind == GeneratorKind.HOCKET]
+        names = [step.name for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps() if step.kind == hocket_plugin.NAME]
         return list(dict.fromkeys(names))
 
     def hocket_pool(self, *, scene, name):
         """Return the tracks that take turns at a Hocket's notes in a written-out scene: every track but the source whose clip names it, in the song's track order."""
-        source = self._song.get_generator_settings(kind=GeneratorKind.HOCKET, name=name).get_source()
+        source = self._song.get_generator_settings(kind=hocket_plugin.NAME, name=name).get_source()
         return [track for track in self._song.get_track_names() if track != source and name in self.hockets_of(scene=scene, track=track)]
 
     def hocket_turns(self, *, scene, name):
@@ -560,7 +561,7 @@ class SongRenderer:
         """
         key = (scene.get_number(), name)
         if key not in self._hocket_turns:
-            settings = self._song.get_generator_settings(kind=GeneratorKind.HOCKET, name=name)
+            settings = self._song.get_generator_settings(kind=hocket_plugin.NAME, name=name)
             pool = self.hocket_pool(scene=scene, name=name)
             dealt = {}
             if pool and self.plays_source(scene=scene, source=settings.get_source()):
@@ -1029,7 +1030,7 @@ class SongRenderer:
 
     def drift_origin(self, *, scene, name):
         """Return where a drift's clock starts for a written-out scene, from the song's top, as its Restart says."""
-        settings = self._song.get_generator_settings(kind=GeneratorKind.DRIFT, name=name)
+        settings = self._song.get_generator_settings(kind=drift_plugin.NAME, name=name)
         return self.scene_start(self.run_start(scene=scene, restart=settings.get_restart()))
 
     def chords_followed(self, *, scene, track, source, counting):
@@ -1087,13 +1088,13 @@ class SongRenderer:
         at all, the arp draws its own random numbers.
         """
         settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
-        if step.kind == GeneratorKind.FOLLOW_CHORDS:
+        if step.kind == follow_chords_plugin.NAME:
             return FollowChords(chords=self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting))
-        if step.kind == GeneratorKind.PHRASING:
+        if step.kind == phrasing_plugin.NAME:
             return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=self._song.get_time_signature().bar_length())
         place = self._song.get_track_names().index(track)
         seed = None if self._seed is None else self.taken_seed(seed=self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index, scene=scene, track=track)
-        if step.kind == GeneratorKind.MUSICIAN:
+        if step.kind == musician_plugin.NAME:
             signature = self._song.get_time_signature()
             surroundings = Surroundings(
                 section=scene.get_scene().get_section(),

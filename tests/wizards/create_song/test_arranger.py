@@ -9,12 +9,13 @@ import os
 import unittest
 import unittest.mock
 
+from llamatron.engine.generators import follow_chords as follow_chords_plugin, musician as musician_plugin
 from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
 from llamatron.model.file import version
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, Section
+from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row
 from llamatron.user_strings import song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, band, characters, composer, loudness, melody, notation, players
 
@@ -345,9 +346,9 @@ class TestArranged(unittest.TestCase):
         played = given[composer.FORM][1][composer.PLAY]
         # The bass player's Musician plays the clip first, and the clip's own chain then follows the chords.
         musician_chain, chain = played[BASS][composer.CHAINS]
-        self.assertEqual(given[composer.CHAINS][musician_chain], [{GeneratorKind.MUSICIAN: band.musician_name(BASS)}])
-        self.assertEqual(given[composer.CHAINS][chain][0], {GeneratorKind.FOLLOW_CHORDS: wizard_text.MSG_FOLLOW_CHORDS_NAME})
-        self.assertEqual(given[composer.GENERATORS][Section.FOLLOW_CHORDS], {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}})
+        self.assertEqual(given[composer.CHAINS][musician_chain], [{musician_plugin.NAME: band.musician_name(BASS)}])
+        self.assertEqual(given[composer.CHAINS][chain][0], {follow_chords_plugin.NAME: wizard_text.MSG_FOLLOW_CHORDS_NAME})
+        self.assertEqual(given[composer.GENERATORS][follow_chords_plugin.SECTION], {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}})
         self.assertNotIn(arranger.PROGRESSIONS, given[composer.GENERATORS])
         pattern = arranger.values_of(style=self.style, trait=arranger.CHORD_TRAIT)[self.style[arranger.TEMPLATES][SHUFFLE][arranger.CHORD_TRAIT]][arranger.PATTERN]
         made = given[composer.PARTS][played[wizard_text.MSG_CHORDS_TRACK]][composer.RAW]

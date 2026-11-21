@@ -8,6 +8,7 @@ import tempfile
 import unittest
 import yaml
 
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
@@ -23,7 +24,7 @@ from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import copy_name, unique_name
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import defaults, limits
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, GeneratorKind, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, FileLayout, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
 from llamatron.model.values.note import Note, NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.tui.document import Document
@@ -142,10 +143,10 @@ def song_with_things():
         UNUSED: {PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: QUARTER},
     }
     song[Section.TRACKS] = {LEAD: {}, BASS: {}}
-    data[Section.ARPS] = {UP: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP)}}
-    data[Section.AUTO_RATCHETS] = {ROLLS: {AutoRatchetSetting.COUNTS: [2]}}
+    data[arp_plugin.SECTION] = {UP: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP)}}
+    data[auto_ratchet_plugin.SECTION] = {ROLLS: {AutoRatchetSetting.COUNTS: [2]}}
     data[Section.CHAINS] = {
-        NAMED: [{GeneratorKind.ARP: UP}, {GeneratorKind.AUTO_RATCHET: ROLLS}],
+        NAMED: [{arp_plugin.NAME: UP}, {auto_ratchet_plugin.NAME: ROLLS}],
     }
     song[Section.SCENES] = [
         {SceneSetting.NAME: ONE, SceneSetting.REPEAT: 2, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NAMED]}}},
@@ -576,7 +577,7 @@ class TestRenaming(unittest.TestCase):
     keeps the song playable, and owns what a scale's default name does."""
 
     def test_a_rename_in_any_section_leaves_a_song_that_plays(self):
-        for section, old in ((Section.PATTERNS, B), (Section.TRACKS, LEAD), (Section.CHAINS, NAMED), (Section.ARPS, UP), (Section.AUTO_RATCHETS, ROLLS)):
+        for section, old in ((Section.PATTERNS, B), (Section.TRACKS, LEAD), (Section.CHAINS, NAMED), (arp_plugin.SECTION, UP), (auto_ratchet_plugin.SECTION, ROLLS)):
             with self.subTest(section=section):
                 document = song_with_things()
                 document.rename_named(section=section, old=old, new=NEW)
@@ -967,7 +968,16 @@ def check_saves_and_loads(*, test, path):
         with open(path) as first, open(target) as second:
             original = yaml.safe_load(first)
             saved = yaml.safe_load(second)
-    test.assertEqual(without_version({key: saved[key] for key in original}), without_version(original))
+    test.assertEqual(definitions_by_name(without_version({key: saved[key] for key in original})), definitions_by_name(without_version(original)))
+
+
+def definitions_by_name(data):
+    """Return a set file's data with its generator definitions keyed by name, since a generator is found by its name and the
+    order the definitions are written in means nothing."""
+    generators = data.get(FileLayout.GENERATORS)
+    if generators is None:
+        return data
+    return {**data, FileLayout.GENERATORS: {item[FileLayout.NAME]: item for item in generators}}
 
 
 if __name__ == '__main__':

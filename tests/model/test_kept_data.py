@@ -17,6 +17,7 @@ makes, and the items whose data is the same are the very objects they were.
 import copy
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.arp.settings import ArpSetting
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.setlist_reader import set_file_data
@@ -161,7 +162,7 @@ class TestKeptData(unittest.TestCase):
         self.assertEqual(after, self.setlist.to_data())
         self.assertIsNot(after[Section.PATTERNS][ui_testing.TUNE], before[Section.PATTERNS][ui_testing.TUNE])
         self.assertIs(after[Section.PATTERNS][ui_testing.OTHER], before[Section.PATTERNS][ui_testing.OTHER])
-        self.assertIs(after[Section.AUTO_RATCHETS][ui_testing.ROLLS], before[Section.AUTO_RATCHETS][ui_testing.ROLLS])
+        self.assertIs(after[auto_ratchet_plugin.SECTION][ui_testing.ROLLS], before[auto_ratchet_plugin.SECTION][ui_testing.ROLLS])
         name = self.document.get_current_song_name()
         scenes_before = before[Section.SONGS][name][Section.SCENES]
         scenes_after = after[Section.SONGS][name][Section.SCENES]
@@ -189,7 +190,7 @@ class TestKeptData(unittest.TestCase):
             lambda: self.document.change(self.document.song().get_track(ui_testing.LEAD).set_cc_number, lane=FIRST_LANE + 1, number=A_CC_NUMBER),
             lambda: self.document.change(self.document.song().get_scene(FIRST_SCENE).set_reset, register=file_format.REGISTER_NAMES[0], on=True),
             lambda: self.document.change(self.document.song().get_scene(FIRST_SCENE).set_reset, register=file_format.REGISTER_NAMES[1], on=True),
-            lambda: self.document.change(self.document.generator(section=Section.ARPS, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=list(SOME_OFFSETS)),
+            lambda: self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=list(SOME_OFFSETS)),
             lambda: self.document.set_arp_offset(name=ui_testing.UP_ARP, step=0, offset=AN_OFFSET),
             lambda: self.document.insert_arp_offset(name=ui_testing.UP_ARP, step=0),
             lambda: self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=3),

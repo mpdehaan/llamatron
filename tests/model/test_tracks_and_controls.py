@@ -18,6 +18,7 @@ import yaml
 
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.generator import along_scale, Arp, ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.settings import ArpSetting, written_name
 from llamatron.engine.generators.blend import BlendMode
@@ -30,7 +31,7 @@ from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, Section, TrackSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
@@ -231,7 +232,7 @@ class TestArpOffsets(unittest.TestCase):
         return Sound.position(along_scale(note=Sound.of(note), steps=steps, scale=scale))
 
     def test_the_file_settings(self):
-        data = song_data(arps={UP: {ArpSetting.STEP: EIGHTH, ArpSetting.OCTAVE_RANGE: 2, ArpSetting.OCTAVE_JUMP: written_name(OctaveJump.AFTER_EACH_NOTE), ArpSetting.OFFSETS: [0, None, 2]}}, chains={X: [{GeneratorKind.ARP: UP}]})
+        data = song_data(arps={UP: {ArpSetting.STEP: EIGHTH, ArpSetting.OCTAVE_RANGE: 2, ArpSetting.OCTAVE_JUMP: written_name(OctaveJump.AFTER_EACH_NOTE), ArpSetting.OFFSETS: [0, None, 2]}}, chains={X: [{arp_plugin.NAME: UP}]})
         data[Section.SCENES][0][Section.TRACKS][LEAD] = {ClipSlotSetting.PATTERN: Row.CHORD, ClipSlotSetting.CHAINS: [X]}
         # C3 C4 E3 E4 G3 G4, with a silent second step, and the third two notes up the scale.
         self.assertEqual(pitches(lead_clip(data))[:4], [60, 76, 64, 79])
@@ -241,7 +242,7 @@ class TestArpOffsets(unittest.TestCase):
             {ArpSetting.OCTAVE_RANGE: 5}, {ArpSetting.OCTAVE_RANGE: 0}, {ArpSetting.OCTAVE_JUMP: 2}, {ArpSetting.OCTAVE_JUMP: SIDEWAYS},
             {ArpSetting.OFFSETS: []}, {ArpSetting.OFFSETS: [0] * 17}, {ArpSetting.OFFSETS: [25]}, {ArpSetting.OFFSETS: UP},
         ]:
-            data = song_data(arps={UP: {ArpSetting.STEP: EIGHTH, **settings}}, chains={X: [{GeneratorKind.ARP: UP}]})
+            data = song_data(arps={UP: {ArpSetting.STEP: EIGHTH, **settings}}, chains={X: [{arp_plugin.NAME: UP}]})
             data[Section.SCENES][0][Section.TRACKS][LEAD] = {ClipSlotSetting.PATTERN: Row.CHORD, ClipSlotSetting.CHAINS: [X]}
             with self.subTest(settings=settings), self.assertRaises(SongFileError):
                 lead_clip(data)

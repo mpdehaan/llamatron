@@ -5,7 +5,7 @@
 """The Chain editor page: a chain's steps, each an arpeggiator or AutoRatchet chosen by name."""
 
 from llamatron.model.objects.naming import suggested_word
-from llamatron.model.schema import file_format
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -81,7 +81,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
     def pick_generator(self, *, title, then):
         """Ask for a generator: a new one first, then every one the set has, each with its kind; then(kind=, name=) takes the one chosen."""
         song = self.document().song()
-        options = [(kind, name) for kind in file_format.NAMED_GENERATORS for name in sorted_names(song.get_generator_names(kind))]
+        options = [(kind, name) for kind in generator_plugins.sections_by_name() for name in sorted_names(song.get_generator_names(kind))]
         labels = [messages.MSG_NEW_GENERATOR_CHOICE, *[step_shown(kind=kind, name=name) for kind, name in options]]
 
         def picked(place):

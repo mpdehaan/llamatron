@@ -14,6 +14,7 @@ import random
 import re
 import unittest
 
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.arp import generator as arp_values
 from llamatron.engine.generators.arp.generator import Arp, ChordOrder
 from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings, written_name
@@ -32,7 +33,7 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Accidental, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ClipSlotSetting, Direction, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.model.values.time_signature import TimeSignature
@@ -102,8 +103,8 @@ def a_song():
         Section.SCALES: {MAIN: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
         Section.PATTERNS: {A: {PatternSetting.STEPS: 1, Row.DEGREE: [1]}, B: {PatternSetting.STEPS: 1, Row.DEGREE: [5]}},
         Section.TRACKS: {LEAD: {}, BASS: {}},
-        Section.ARPS: {UP: {ArpSetting.STEP: EIGHTH}},
-        Section.CHAINS: {X: [{GeneratorKind.ARP: UP}]},
+        arp_plugin.SECTION: {UP: {ArpSetting.STEP: EIGHTH}},
+        Section.CHAINS: {X: [{arp_plugin.NAME: UP}]},
     })
 
 
@@ -460,17 +461,17 @@ class TestGeneratorSettings(RoundTrip):
 class TestChain(RoundTrip):
 
     def test_round_trip(self):
-        self.assert_round_trip(Chain, [{GeneratorKind.ARP: UP}, {GeneratorKind.ARP: UP}], setlist=a_song().get_setlist())
+        self.assert_round_trip(Chain, [{arp_plugin.NAME: UP}, {arp_plugin.NAME: UP}], setlist=a_song().get_setlist())
 
     def test_steps(self):
-        self.assertEqual(Chain.from_data(data=[{GeneratorKind.ARP: UP}], where=HERE, setlist=a_song().get_setlist()).get_steps(), [(GeneratorKind.ARP, UP)])
+        self.assertEqual(Chain.from_data(data=[{arp_plugin.NAME: UP}], where=HERE, setlist=a_song().get_setlist()).get_steps(), [(arp_plugin.NAME, UP)])
 
     def test_refusals(self):
         setlist = a_song().get_setlist()
         self.assert_refused('expected a list of generators', Chain, {}, setlist=setlist)
-        self.assert_refused('each step must be one generator', Chain, [{GeneratorKind.ARP: UP, GeneratorKind.AUTO_RATCHET: R}], setlist=setlist)
+        self.assert_refused('each step must be one generator', Chain, [{arp_plugin.NAME: UP, auto_ratchet_plugin.NAME: R}], setlist=setlist)
         self.assert_refused('unknown generator (wobble)', Chain, [{WOBBLE: UP}], setlist=setlist)
-        self.assert_refused('no arp called (down)', Chain, [{GeneratorKind.ARP: NOT_AN_ARP}], setlist=setlist)
+        self.assert_refused('no arp called (down)', Chain, [{arp_plugin.NAME: NOT_AN_ARP}], setlist=setlist)
 
 
 class TestClipSlot(RoundTrip):
@@ -633,8 +634,8 @@ class TestSetlistAndSong(RoundTrip):
     def test_it_looks_up_its_named_objects(self):
         song = a_song()
         self.assertTrue(song.has_pattern(A) and song.has_track(LEAD) and song.has_chain(X) and song.has_scale(MAIN))
-        self.assertTrue(song.has_generator(kind=GeneratorKind.ARP, name=UP))
-        self.assertFalse(song.has_generator(kind=GeneratorKind.AUTO_RATCHET, name=UP))
+        self.assertTrue(song.has_generator(kind=arp_plugin.NAME, name=UP))
+        self.assertFalse(song.has_generator(kind=auto_ratchet_plugin.NAME, name=UP))
         self.assertEqual(song.get_track_names(), [LEAD, BASS])
         self.assertEqual(song.get_pattern(B).get_value(row=Row.DEGREE, step=0), 5)
 
@@ -644,7 +645,7 @@ class TestSetlistAndSong(RoundTrip):
         self.assert_refused('step_size: expected an integer or a fraction', Setlist, {PatternSetting.STEP_SIZE: '0.25'})
         self.assert_refused('step_size: a length can be at most 4', Setlist, {PatternSetting.STEP_SIZE: 8})
         self.assert_refused('pattern (a): steps must be', Setlist, {Section.PATTERNS: {A: {PatternSetting.STEPS: 0}}})
-        self.assert_refused('arps: expected settings by name', Setlist, {Section.ARPS: [UP]})
+        self.assert_refused('arps: expected settings by name', Setlist, {arp_plugin.SECTION: [UP]})
         self.assert_refused('songs: expected songs by name', Setlist, {Section.SONGS: [VERSE]})
 
     def test_song_refusals_name_the_song(self):

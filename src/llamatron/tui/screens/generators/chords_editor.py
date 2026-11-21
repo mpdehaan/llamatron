@@ -15,10 +15,10 @@ notes added on top. On those rows [ and ] and Space step through the choices and
 pattern editor opens, on that row's list. The Name row and the status line say what the cursor's chord comes to.
 """
 
+from llamatron.engine.generators import progression as progression_plugin
 from llamatron.engine.generators.progression import settings as progression_settings
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Section
 from llamatron.model.values import progressions
 from llamatron.model.values.chords import borrowed, chord_half_steps
 from llamatron.model.values.progressions import named_progression_in, shown_numerals
@@ -76,7 +76,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
 
     KEYS = keybindings.ChordsEditor
     HELP = help_text.HELP_CHORDS_EDITOR
-    SECTION = Section.PROGRESSIONS
+    SECTION = progression_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     CRUMBS_AFTER = (labels.Crumb.CHORDS,)
     # A cell is wide enough for a numeral like ♭vii° or a name like Bb°.

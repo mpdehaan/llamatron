@@ -11,13 +11,13 @@ video, as in the offsets editor, and the line above the grid says what a step th
 
 from rich.text import Text
 
-from llamatron.model.schema import limits
+from llamatron.model.schema import generator_plugins, limits
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor
 from llamatron.tui.screens.shared.step_editor import StepEditor
 from llamatron.tui.screens.shared.step_grid import StepGrid
-from llamatron.user_strings import help as help_text, labels, marks, messages
+from llamatron.user_strings import help as help_text, labels, marks
 
 class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
     """A row of on-or-off steps. A page of this kind names its SECTION, KIND and CRUMBS_BEFORE."""
@@ -60,17 +60,21 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
         self.document().change(self.settings().remove_cell, self.step)
         self.keep_step()
 
+    def plugin_strings(self):
+        """Return the strings module of the generator plugin whose generators the page edits."""
+        return generator_plugins.plugins_by_section()[self.SECTION].strings
+
     def body(self, *, width, height):
         self.keep_step()
         first, last = self.scroll_to_cursor(width)
         places = range(first, last)
         values = self.values()
         return [
-            self.with_steps_shown(text=messages.MSG_STEP_ROW_NOTES[self.SECTION], style=Style.DIM, width=width, first=first, last=last),
+            self.with_steps_shown(text=self.plugin_strings().MSG_STEP_ROW_NOTE, style=Style.DIM, width=width, first=first, last=last),
             Text(drawing.NOTHING),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
             self.grid_line(label=labels.MSG_STEP_NUMBER_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
             self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)),
-            self.grid_line(label=labels.MSG_STEP_ROW_NAMES[self.SECTION], cells=[(place, marks.MSG_TOGGLE_ON if values[place] else marks.MSG_TOGGLE_OFF) for place in places], selected=self.step),
+            self.grid_line(label=self.plugin_strings().MSG_STEP_ROW_NAME, cells=[(place, marks.MSG_TOGGLE_ON if values[place] else marks.MSG_TOGGLE_OFF) for place in places], selected=self.step),
             self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),
         ]

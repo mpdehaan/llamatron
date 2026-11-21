@@ -16,7 +16,6 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed, number, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import sections
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.conditions import register_values_setting, statements_setting
@@ -119,7 +118,8 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
     ADD_REGISTERS_SETTING = SceneSetting.ADD_REGISTERS
 
     # A scene names the scale and the groove it chooses. Its clips name things too, and are its referring parts.
-    REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,), **{section: (SceneSetting.CHAINS,) for section in sections.GENERATOR_SECTIONS}}
+    REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,)}
+    CHAINS_NAMED_BY = (SceneSetting.CHAINS,)
 
     def __init__(self, *, clip_slots=None, **settings):
         self.note_change()

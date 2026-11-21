@@ -4,7 +4,10 @@
 
 """The base class for everything a set file stores."""
 
+import functools
+
 from llamatron.caching.revised import notes_change, Revised
+from llamatron.model.objects import sections
 from llamatron.user_strings import errors
 
 
@@ -42,6 +45,15 @@ def or_default(*, value, default):
     return default if value is None else value
 
 
+
+@functools.cache
+def references_of(kind):
+    """Return which settings of a class of stored object name an item of which section: its REFERENCES, with the settings that
+    list generators and chains naming an item of every generator section, whichever plugins there are."""
+    if not kind.CHAINS_NAMED_BY:
+        return kind.REFERENCES
+    return {**kind.REFERENCES, **{section: kind.CHAINS_NAMED_BY for section in sections.generator_sections()}}
+
 class LlamaData(Revised):
     """Something stored in a set file, which can turn itself into file data and back.
 
@@ -77,6 +89,8 @@ class LlamaData(Revised):
 
     # Which of its settings hold the name of an item of which section, like a clip's pattern, as {section: (setting, ...)}.
     REFERENCES = {}
+    # The settings that list the generators and chains it runs, which name an item of every generator section, as (setting, ...).
+    CHAINS_NAMED_BY = ()
 
     def note_change(self):
         """Take a new revision, and drop the data kept, which the change may have made wrong."""
@@ -95,13 +109,13 @@ class LlamaData(Revised):
 
     def names_item(self, *, section, name):
         """Return whether one of its own settings names an item of a section, as a clip names its pattern."""
-        return any(_names(value=self._settings.get(setting), name=name) for setting in self.REFERENCES.get(section, ()))
+        return any(_names(value=self._settings.get(setting), name=name) for setting in references_of(type(self)).get(section, ()))
 
     def named_items(self):
         """Return everything its own settings name, as a set of (section, name): what names_item() answers one item at a time,
         gathered in one go for a search of everything a set uses."""
         named = set()
-        for section, settings in self.REFERENCES.items():
+        for section, settings in references_of(type(self)).items():
             for setting in settings:
                 # A setting the file leaves out names nothing.
                 value = self._settings.get(setting)
@@ -134,7 +148,7 @@ class LlamaData(Revised):
 
     @notes_change
     def _rename_own_references(self, *, section, old, new):
-        for setting in self.REFERENCES[section]:
+        for setting in references_of(type(self))[section]:
             value = self._settings[setting]
             if isinstance(value, list):
                 self._settings[setting] = [new if item == old else item for item in value]

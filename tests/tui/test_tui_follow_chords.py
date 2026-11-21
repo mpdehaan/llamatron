@@ -4,8 +4,9 @@
 
 """The tracker's Follow Chords pages: the list of them and the editor, whose Chords from picks a track of the current song."""
 
+from llamatron.engine.generators import follow_chords as follow_chords_plugin
 from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
-from llamatron.model.schema.file_format import GeneratorKind, Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
@@ -21,20 +22,20 @@ GONE = 'nobody'
 class TestFollowChordsAdded(UITest):
 
     async def test_a_new_one_follows_no_track(self):
-        name = await self.add_generator(Section.FOLLOW_CHORDS)
-        self.assertIsNone(self.document.song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=name).get_chords_from())
+        name = await self.add_generator(follow_chords_plugin.SECTION)
+        self.assertIsNone(self.document.song().get_generator_settings(kind=follow_chords_plugin.NAME, name=name).get_chords_from())
 
 
 class TestFollowChordsEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=Section.FOLLOW_CHORDS)
+        await self.open_generator(section=follow_chords_plugin.SECTION)
         self.assertIsInstance(self.app.screen, FollowChordsEditor)
         await self.select_field(labels.MSG_CHORDS_FROM_LABEL)
 
     def followed(self):
-        return self.document.song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=ui_testing.FOLLOWS).get_chords_from()
+        return self.document.song().get_generator_settings(kind=follow_chords_plugin.NAME, name=ui_testing.FOLLOWS).get_chords_from()
 
     async def test_the_track_is_picked_from_the_songs_tracks_with_none_first(self):
         await self.press(Key.ENTER)
@@ -50,7 +51,7 @@ class TestFollowChordsEditor(UITest):
         self.assertEqual(self.followed(), NEW_ONE)
 
     async def test_a_track_the_song_lacks_is_still_offered_so_that_it_is_kept(self):
-        self.document.change(self.document.generator(section=Section.FOLLOW_CHORDS, name=ui_testing.FOLLOWS).set_setting, name=FollowChordsSetting.CHORDS_FROM, value=GONE)
+        self.document.change(self.document.generator(section=follow_chords_plugin.SECTION, name=ui_testing.FOLLOWS).set_setting, name=FollowChordsSetting.CHORDS_FROM, value=GONE)
         self.app.screen.draw()
         await self.press(Key.ENTER)
         self.assertIn(GONE, self.app.screen.options)

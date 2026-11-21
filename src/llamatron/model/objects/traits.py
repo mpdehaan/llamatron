@@ -110,7 +110,7 @@ class HoldsSections:
     @notes_change
     def _set_section(self, *, section, items):
         """Give a section its items as read from the file, or None for a section the file leaves out."""
-        self._sections[section] = NamedItems(label=sections.SECTION_LABELS[section], items=items)
+        self._sections[section] = NamedItems(label=sections.section_label(section), items=items)
 
     def _section(self, section):
         return self._sections[section]
