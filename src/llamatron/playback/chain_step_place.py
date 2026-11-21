@@ -76,6 +76,10 @@ class ChainStepPlace:
         """Return whether the clip plays a drum pattern."""
         return self._realizer.plays_drums(scene=self._scene, track=self._track)
 
+    def run_offset(self, restart):
+        """Return how far into its run, which a Restart says, the clip starts."""
+        return self._realizer.run_offset(scene=self._scene, restart=restart)
+
     def continuation(self, settings):
         """Return where a generator with these settings carries on from in the clip, or None where its end state isn't kept."""
         if self._key is None:

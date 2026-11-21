@@ -11,3 +11,6 @@ class StrumController(GeneratorController):
     """What a Strum does."""
 
     __slots__ = ()
+
+    def strum(self, settings):
+        return settings.get_strum(), settings.get_restart()

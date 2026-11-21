@@ -12,10 +12,10 @@ from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.row_clock import RowClock
-from llamatron.engine.generators import drag as drag_plugin, drift as drift_plugin, hocket as hocket_plugin, registry, rush as rush_plugin, strum as strum_plugin
+from llamatron.engine.generators import drift as drift_plugin, hocket as hocket_plugin, registry
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.timing.handed_note import HandedNote
-from llamatron.engine.timing.nudge_plan import amount_moved, MovingRow, NudgePlan
+from llamatron.engine.timing.nudge_plan import NudgePlan
 from llamatron.engine.timing.strum_plan import StrumPlan
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.random_source import random_source
@@ -55,8 +55,9 @@ FIRST_TAKE = 0
 DRAWS_TAKE_SEED = '{seed}/{scene}/draws take {take}'
 # The registers' random values, for a Reset behavior that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
 REGISTER_SEED_OFFSET = 7
-# The generators that move notes early or late in the timing, rather than running on a clip's notes.
-MOVING_KINDS = (rush_plugin.NAME, drag_plugin.NAME)
+# The controller's methods that strum a clip's chords and move its notes early or late.
+STRUMS = 'strum'
+MOVES_NOTES = 'moving_row'
 # What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
 STRUM_SEED_OFFSET = 977
 STRUM_SEEDS = 1_000_000
@@ -498,10 +499,8 @@ class SongRenderer:
         restart = Restart.EVERY_CLIP
         for chain in self.chains_of(scene=scene, track=track):
             for step in self._song.chain_run(chain).get_steps():
-                if step.kind == strum_plugin.NAME:
-                    settings = self._song.get_generator_settings(kind=strum_plugin.NAME, name=step.name)
-                    strum = settings.get_strum()
-                    restart = settings.get_restart()
+                if registry.fills(name=step.kind, method=STRUMS):
+                    strum, restart = registry.controller_of(step.kind).strum(self._song.get_generator_settings(kind=step.kind, name=step.name))
         if strum is None:
             strum = scene.get_scene().get_clip_slot(track).get_strum() or self._song.get_track(track).get_strum()
         if not strums_at_all(strum):
@@ -517,18 +516,13 @@ class SongRenderer:
 
     def nudge_plan(self, *, scene, track):
         """Return how a clip's notes are rushed and dragged, from every Rush and Drag its chains name, or None when they name neither."""
-        pattern_step = self._song.get_pattern_step_size(self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name()))
-        bar = self._song.get_time_signature().bar_length()
         rows = []
+        clip = ClipBeingMade(scene=scene, track=track, counting=False)
         for chain in self.chains_of(scene=scene, track=track):
             for step in self._song.chain_run(chain).get_steps():
-                if step.kind in MOVING_KINDS:
-                    settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
-                    rows.append(MovingRow(
-                        steps=settings.get_steps(), step=settings.step_length(default_step=pattern_step, bar=bar),
-                        amount=amount_moved(percent=settings.get_amount(), later=step.kind == drag_plugin.NAME),
-                        offset=self.run_offset(scene=scene, restart=settings.get_restart()),
-                    ))
+                if registry.fills(name=step.kind, method=MOVES_NOTES):
+                    place = ChainStepPlace(realizer=self, clip=clip, step=StepInChains(step=step, chain=chain, index=None, key=None))
+                    rows.append(registry.controller_of(step.kind).moving_row(settings=self._song.get_generator_settings(kind=step.kind, name=step.name), place=place))
         return NudgePlan(rows=rows) if rows else None
 
     def handed_notes(self, *, scene, track):

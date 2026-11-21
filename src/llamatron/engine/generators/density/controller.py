@@ -5,9 +5,12 @@
 """The logic of the Density generator plugin: the controller's methods it fills in."""
 
 from llamatron.engine.generators.controller import GeneratorController
+from llamatron.model.schema.file_format import Shape
 
 
 class DensityController(GeneratorController):
     """What a Density does."""
 
     __slots__ = ()
+
+    SHAPE = Shape.DENSITY

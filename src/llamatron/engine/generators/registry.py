@@ -32,3 +32,9 @@ def moves_pitches(name):
 def follows_tracks(name):
     """Return whether the generators of the plugin of a name play from what the tracks their settings name play."""
     return controller_of(name).FOLLOWS_TRACKS
+
+
+@functools.cache
+def shape_of(name):
+    """Return the shape the generators of the plugin of a name lay over a finished clip, or None."""
+    return controller_of(name).SHAPE

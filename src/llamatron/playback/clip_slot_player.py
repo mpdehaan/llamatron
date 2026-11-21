@@ -7,7 +7,7 @@
 from math import ceil
 
 from llamatron.engine.clips.clip import Clip
-from llamatron.engine.generators import articulate as articulate_plugin, density as density_plugin, registry, swell as swell_plugin
+from llamatron.engine.generators import registry
 from llamatron.engine.generators.blend import Blend
 from llamatron.engine.generators.euclid.generator import EuclidMask
 from llamatron.engine.timing.keyswitch import SwitchNote
@@ -52,7 +52,8 @@ MAKES_GENERATORS = 'make_generator'
 # The generator kind of each shape, which the render reads for each clip rather than running on its notes.
 # Where a clip's or a scene's own shape starts: with the clip.
 NO_OFFSET = 0
-SHAPE_KINDS = {density_plugin.NAME: Shape.DENSITY, swell_plugin.NAME: Shape.SWELL, articulate_plugin.NAME: Shape.ARTICULATE}
+# The shapes laid over a finished clip, by a generator its chains name or by the clip's or its scene's own settings.
+SHAPES = (Shape.DENSITY, Shape.SWELL, Shape.ARTICULATE)
 NO_SETS = {}
 # The pass a clip launches on, when it sets registers, and the pass whose statements speak for a shape, which works on the whole clip.
 FIRST_PASS = 0
@@ -224,15 +225,16 @@ class ClipSlotPlayer:
         named = {}
         for chain in self._renderer.chains_of(scene=self._scene, track=self._track_name):
             for step in self._song.chain_run(chain).get_steps():
-                if step.kind in SHAPE_KINDS and not self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
-                    named[SHAPE_KINDS[step.kind]] = step.name
+                shape = registry.shape_of(step.kind)
+                if shape is not None and not self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
+                    named[shape] = step
         clip_length = clip.total_length()
         scene_length = self._renderer.get_scene_length(self._scene)
         shapes = {}
-        for kind, shape in SHAPE_KINDS.items():
+        for shape in SHAPES:
             if shape in named:
                 # A generator's ramp runs over its whole run, which its Restart says: the clip, every play of the scene in a row, or the song.
-                settings = self._song.get_generator_settings(kind=kind, name=named[shape])
+                settings = self._song.get_generator_settings(kind=named[shape].kind, name=named[shape].name)
                 restart = settings.get_restart()
                 span = self._renderer.run_span(scene=self._scene, restart=restart, clip_length=clip_length)
                 shapes[shape] = (settings.get_shape(), span, self._renderer.run_offset(scene=self._scene, restart=restart))
