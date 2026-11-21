@@ -17,6 +17,7 @@
 """The ports the engine sends through: a real one over python-rtmidi, and one that records what it was given and when, for the tests and the timing report."""
 
 import importlib.util
+import threading
 import time
 
 from llamatron.strings import errors
@@ -86,8 +87,36 @@ def midi_library():
     return rtmidi
 
 
+class PortLister:
+    """Lists the computer's MIDI output ports through one client, made once: the first client of a process starts CoreMIDI, about
+    80 ms, which a launch used to pay, and a new client for every listing cost more than the listing. The lock lets the client be
+    made in the background while the tracker starts."""
+
+    __slots__ = ('_client', '_lock')
+
+    def __init__(self):
+        self._client = None
+        self._lock = threading.Lock()
+
+    def names(self):
+        """Return the names of the MIDI output ports the computer has now, and an empty list when there are none or no library."""
+        if not has_midi_library():
+            return []
+        with self._lock:
+            if self._client is None:
+                self._client = midi_library().MidiOut()
+            return list(self._client.get_ports())
+
+
+# The one lister of the process's MIDI ports, whose client every listing shares.
+PORTS = PortLister()
+
+
 def output_port_names():
     """Return the names of the computer's MIDI output ports, and an empty list when there are none or no library."""
-    if not has_midi_library():
-        return []
-    return list(midi_library().MidiOut().get_ports())
+    return PORTS.names()
+
+
+def warm_port_list():
+    """Make the client that lists the MIDI ports in the background, so that no launch waits for CoreMIDI to start."""
+    threading.Thread(target=PORTS.names, daemon=True).start()
