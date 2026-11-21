@@ -6,13 +6,14 @@
 from rich.text import Text
 import unittest
 
+from llamatron.engine.realizer.as_written import as_written
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.components import inset_window, scene_view
 from llamatron.interface.tracker.components.inset_window import drawn_over, inside_size
 from llamatron.interface.tracker.components.scene_view import coloured, SceneView, track_label
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.scene_notes import beat_chords, chord_of, chord_texts, effective_values, marked_tracks, scene_notes, written_song
+from llamatron.interface.tracker.scene_notes import beat_chords, chord_of, chord_texts, effective_values, marked_tracks, scene_notes
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
@@ -82,7 +83,7 @@ class TestSceneNotes(unittest.TestCase):
     def test_the_written_copy_leaves_the_song_as_it_was(self):
         song = example(DENSITY).get_songs()[0]
         before = song.to_data()
-        copy = written_song(song)
+        copy = as_written(song)
         self.assertEqual(song.to_data(), before)
         self.assertTrue(all(not scene.get_chain_names() for scene in copy.get_scenes()))
         self.assertTrue(all(not slot.get_chain_names() for scene in copy.get_scenes() for slot in (scene.get_clip_slot(name) for name in copy.get_track_names()) if slot))

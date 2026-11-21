@@ -67,7 +67,7 @@ NOT_KEEPING = Keeping(None, None)
 class Score:
     """What the player knows about a song: each scene's length and launch settings, and each clip's events from its scene's start."""
 
-    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_realizer', '_routes', '_taken_tracks')
+    __slots__ = ('_realization', '_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_realizer', '_routes', '_taken_tracks')
 
     def __init__(self, *, song, routes, seed=None, keeping=None, takes=None):
         """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through.
@@ -82,8 +82,10 @@ class Score:
             earlier = None
         realizer = SongRealizer(song, seed=seed, looping_scenes_go_round=True, data=data, takes=takes)
         grid = realizer.render(after=None if earlier is None else earlier._realizer)
-        reused = realizer.get_reused_scene_count()
+        realization = realizer.realization()
+        reused = realization.get_reused_scene_count()
         self._realizer = realizer
+        self._realization = realization
         # The tracks of each scene whose events were taken from the earlier score, clip by clip.
         self._taken_tracks = []
         self._routes = dict(routes)
@@ -92,7 +94,6 @@ class Score:
         # How long a bar is in whole notes, by the song's time signature, which a launch by hand waits for.
         self._bar = float(song.get_time_signature().bar_length())
         rows = grid.get_rows()
-        written = realizer.get_scenes()
         self._scene_seconds = []
         self._scene_starts = []
         self._rows = []
@@ -108,7 +109,7 @@ class Score:
         self._draw_lights = []
         song_start = START_OF_SCENE
         for index, scene in enumerate(song.get_scenes()):
-            scene_rows = [place for place, written_scene in enumerate(written) if written_scene.get_scene() is scene]
+            scene_rows = realization.rows_of_scene(index)
             self._launches_together.append(scene.launches_together())
             self._scene_starts.append(song_start)
             scene_start = START_OF_SCENE
@@ -118,7 +119,7 @@ class Score:
                 self._events[(index, track)] = []
                 clip_slot = scene.get_clip_slot(track) if scene.has_clip_slot(track) else None
                 # A looping clip that a step of its pattern can stop is a clip that ends, as an export has it.
-                self._loops[(index, track)] = clip_slot is not None and realizer.fills_its_scene(scene=scene, track=track)
+                self._loops[(index, track)] = clip_slot is not None and realization.loops_through(scene=scene, track=track)
                 # An empty slot is done when its scene is done and counts as "With Scene", so the track below starts as the export has it start.
                 self._follow_actions[(index, track)] = FollowAction.WITH_SCENE if clip_slot is None else setlist.follow_action_of(clip_slot)
                 self._repeats[(index, track)] = None if clip_slot is None or clip_slot.loops() else clip_slot.get_repeat()
@@ -128,7 +129,7 @@ class Score:
                 song_start += self._scene_seconds[-1]
                 continue
             # The tracks whose clips the render took from the earlier score's in every repeat of the scene, whose events are taken too.
-            kept = set() if earlier is None else realizer.kept_tracks([written[place] for place in scene_rows])
+            kept = set() if earlier is None else realization.kept_tracks(scene_rows)
             self._taken_tracks.append(kept)
             for place in scene_rows:
                 row = rows[place]
@@ -136,7 +137,7 @@ class Score:
                 row_seconds = clock.seconds_at(grid.row_length(row))
                 self._rows[index].append(ScoreRow(scene_start, row_seconds, clock))
                 if song.uses_draws():
-                    self._draw_lights[index] += [(scene_start + clock.seconds_at(time), places) for time, places in realizer.get_timeline(written[place]).get_draw_moments()]
+                    self._draw_lights[index] += [(scene_start + clock.seconds_at(time), places) for time, places in realization.draw_moments(place)]
                 for track in grid.get_columns():
                     name = track.get_name()
                     clip = grid.get_clip(row=row, column=track)
@@ -155,12 +156,12 @@ class Score:
                 self._events[(index, track)] = earlier._events[(index, track)]
             self._scene_seconds.append(scene_start)
             song_start += scene_start
-        if realizer.has_taken_anything() and memory.Memory.checks_by_default():
+        if realization.has_taken_anything() and memory.Memory.checks_by_default():
             score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed, takes=takes)._records())
 
     def get_reused_scene_count(self):
         """Return how many written scenes, from the first, the score took from an earlier one rather than rendering them."""
-        return self._realizer.get_reused_scene_count()
+        return self._realization.get_reused_scene_count()
 
     def get_taken_tracks(self, scene):
         """Return the tracks whose events in a scene were taken from the earlier score, their clips kept in every repeat; empty for a scene taken whole."""
@@ -168,7 +169,7 @@ class Score:
 
     def get_kept_clip_count(self):
         """Return how many clips after the scenes taken whole the score took from an earlier one, track by track."""
-        return self._realizer.get_kept_clip_count()
+        return self._realization.get_kept_clip_count()
 
     def _records(self):
         return score_records.Records(events=self._events, scene_seconds=self._scene_seconds, clip_seconds=self._clip_seconds, draw_lights=self._draw_lights, rows=self._rows)

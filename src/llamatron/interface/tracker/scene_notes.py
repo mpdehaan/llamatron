@@ -19,14 +19,11 @@ numbered in the scene's scale, with the bass after a slash when it isn't the roo
 
 from typing import NamedTuple
 
+from llamatron.engine.realizer.as_written import as_written
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
-from llamatron.model.objects.euclid import euclid_settings
-from llamatron.model.objects.setlist import Setlist
-from llamatron.model.objects.shapes import shape_settings
-from llamatron.model.objects.strum import strum_settings
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, Quality
 from llamatron.model.values import note as note_values
 from llamatron.user_strings import marks
 
@@ -39,8 +36,6 @@ HELD_SHARE = 0.25
 LETTERS = 'CDEFGAB'
 ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 # The pattern rows a written view takes out: the steps' probability and every row that reads a register.
-PROBABILITY_ROW = 'probability'
-READING_ROWS = [*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.STATEMENT_OF_ROW]
 # A chord's root, its third and its fifth, as half steps, which say its quality.
 MINOR_THIRD = 3
 MAJOR_THIRD = 4
@@ -88,31 +83,6 @@ class BeatChord(NamedTuple):
     numeral: str
 
 
-def written_song(song):
-    """Return a copy of a song, in a copy of its set, with everything that works after the patterns taken out, so that it renders the notes as written."""
-    setlist = song.get_setlist()
-    song_name = next(each for each in setlist.get_song_names() if setlist.get_song(each) is song)
-    data = setlist.to_data()
-    for pattern in data.get(Section.PATTERNS, {}).values():
-        for row in [PROBABILITY_ROW, *READING_ROWS]:
-            pattern.pop(row, None)
-    shaped = [setting.get_name() for setting in shape_settings()]
-    strummed = [setting.get_name() for setting in strum_settings()]
-    masked = [setting.get_name() for setting in euclid_settings()]
-    for song_data in data[Section.SONGS].values():
-        song_data.pop(SongSetting.GROOVE, None)
-        for track in (song_data.get(Section.TRACKS) or {}).values():
-            for name in [TrackSetting.CHAINS, TrackSetting.GROOVE, *strummed, *masked]:
-                track.pop(name, None)
-        for scene in song_data.get(Section.SCENES) or []:
-            for name in [SceneSetting.CHAINS, SceneSetting.GROOVE, *shaped]:
-                scene.pop(name, None)
-            for clip in (scene.get(SceneSetting.TRACKS) or {}).values():
-                for name in [ClipSlotSetting.CHAINS, *shaped, *strummed]:
-                    clip.pop(name, None)
-    return Setlist.from_data(data=data).get_song(song_name)
-
-
 def marked_tracks(*, song, index):
     """Return the names of the tracks whose clip in a scene plays a pattern that reads the registers."""
     scene = song.get_scenes()[index]
@@ -126,13 +96,12 @@ def marked_tracks(*, song, index):
 
 def scene_notes(*, song, index, written):
     """Return a scene's notes as played, the song's render, or as written, its patterns alone, with its rows laid end to end from the scene's start."""
-    rendered = written_song(song) if written else song
+    rendered = as_written(song) if written else song
     realizer = SongRealizer(rendered, looping_scenes_go_round=True)
     grid = realizer.render()
     rows = grid.get_rows()
     starts = grid.row_starts()
-    scene = rendered.get_scenes()[index]
-    places = [place for place, written_scene in enumerate(realizer.get_scenes()) if written_scene.get_scene() is scene]
+    places = realizer.realization().rows_of_scene(index)
     names = tuple(song.get_track_names())
     marked = marked_tracks(song=song, index=index)
     origin = starts[places[0]] if places else 0

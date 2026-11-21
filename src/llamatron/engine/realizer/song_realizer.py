@@ -21,6 +21,7 @@ from llamatron.engine.realizer.draws import DrawPlay
 from llamatron.engine.realizer.modulations import modulates
 from llamatron.engine.realizer.pass_memory import PassMemory
 from llamatron.engine.realizer.pattern_player import check_pattern_has_a_scale
+from llamatron.engine.realizer.realization import Realization
 from llamatron.engine.realizer.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
 from llamatron.engine.realizer.scene_reuse import changed_clips, first_changed_scene
 from llamatron.engine.realizer.song_state import SongState
@@ -185,6 +186,11 @@ class SongRealizer:
             # A render keeps no earlier render alive, so that a run of edits holds only the last.
             self._earlier = None
         return grid
+
+    def realization(self):
+        """Return what the render made of the song, as those who play or show it ask after it: the Realizer's front door
+        beside render and estimate, the rest of whose methods are for its own clip players."""
+        return Realization(realizer=self, song=self._song)
 
     def get_passes(self):
         """Return the PassMemory of the passes the render has played that a key decides."""
