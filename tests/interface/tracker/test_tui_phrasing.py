@@ -21,7 +21,7 @@ class TestPhrasingAdded(UITest):
 
     async def test_a_new_one_is_found_under_articulation_and_starts_with_its_usual_values(self):
         name = await self.add_generator(phrasing_plugin.SECTION)
-        settings = self.document.song().get_generator_settings(kind=phrasing_plugin.NAME, name=name)
+        settings = self.document.song().get_setlist().get_generator_settings(kind=phrasing_plugin.NAME, name=name)
         self.assertEqual(settings.to_data(), {})
         self.assertIsInstance(self.app.screen, PhrasingEditor)
         self.assertIn(phrasing_strings.MSG_LABEL.upper(), self.text().upper())
@@ -35,7 +35,7 @@ class TestPhrasingEditor(UITest):
         self.assertIsInstance(self.app.screen, PhrasingEditor)
 
     def phrasing(self):
-        return self.document.song().get_generator_settings(kind=phrasing_plugin.NAME, name=ui_testing.BREATHES)
+        return self.document.song().get_setlist().get_generator_settings(kind=phrasing_plugin.NAME, name=ui_testing.BREATHES)
 
     async def test_the_page_shows_its_four_fields_each_with_its_value_in_words(self):
         shown = self.text()

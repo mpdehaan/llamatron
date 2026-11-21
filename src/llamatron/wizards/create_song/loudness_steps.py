@@ -116,21 +116,21 @@ def strummed(*, symbols, lasts, settings, bar_length):
 def clip_count(*, song, slot, bar_length):
     """About how many notes a bar a clip sounds, and how loud a note of its pattern is written, from the pattern and the clip's
     chains alone: (notes a bar, loudness of a note), or None for a clip that sounds nothing."""
-    pattern = song.get_pattern(slot.get_pattern_name())
+    pattern = song.get_setlist().get_pattern(slot.get_pattern_name())
     steps = pattern.get_note_steps()
     if not steps:
         return None
     symbols = [pattern.get_value(row=Row.CHORD, step=step) for step in steps]
     written = [pattern.get_value(row=Row.VELOCITY, step=step) for step in steps]
     loudness = sum(defaults.DEFAULT_VELOCITY if velocity is None else velocity for velocity in written) / len(written)
-    bars = float(pattern.get_steps() * (pattern.get_step_size() or song.get_step_size()) / bar_length)
+    bars = float(pattern.get_steps() * (pattern.get_step_size() or song.get_setlist().get_step_size()) / bar_length)
     notes = sum(chord_notes(symbol) for symbol in symbols) / bars
     for name in slot.get_chain_names():
-        for step in song.chain_run(name).get_steps():
+        for step in song.get_setlist().chain_run(name).get_steps():
             if step.kind == guitarify_plugin.NAME:
-                notes = strummed(symbols=symbols, lasts=lasting(steps=steps, count=pattern.get_steps()), settings=song.get_generator_settings(kind=step.kind, name=step.name), bar_length=bar_length)
+                notes = strummed(symbols=symbols, lasts=lasting(steps=steps, count=pattern.get_steps()), settings=song.get_setlist().get_generator_settings(kind=step.kind, name=step.name), bar_length=bar_length)
             elif step.kind == arp_plugin.NAME:
-                notes = float(bar_length / time_length(song.get_generator_settings(kind=step.kind, name=step.name).get_step()))
+                notes = float(bar_length / time_length(song.get_setlist().get_generator_settings(kind=step.kind, name=step.name).get_step()))
     return notes, loudness
 
 
@@ -157,8 +157,8 @@ def counted(*, song):
 
 def pattern_length(*, song, slot):
     """How long a clip's pattern lasts played through as often as the clip repeats it, in whole notes."""
-    pattern = song.get_pattern(slot.get_pattern_name())
-    return pattern.get_steps() * (pattern.get_step_size() or song.get_step_size()) * (slot.get_repeat() or 1)
+    pattern = song.get_setlist().get_pattern(slot.get_pattern_name())
+    return pattern.get_steps() * (pattern.get_step_size() or song.get_setlist().get_step_size()) * (slot.get_repeat() or 1)
 
 
 def lasting_share(*, song, scene, slot):

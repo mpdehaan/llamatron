@@ -254,7 +254,7 @@ class TestFilePage(UITest):
         await self.press(keybindings.FilePage.NEW)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.app.get_document().song().get_pattern_names(), [names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)])
+        self.assertEqual(self.app.get_document().get_setlist().get_pattern_names(), [names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)])
         self.assertEqual(self.app.get_document().song().get_scale_name(), setlist_values.DEFAULT_SCALE)
         self.assertEqual(self.app.get_document().song_names(), [names.MSG_DEFAULT_SONG_NAME])
 
@@ -299,7 +299,7 @@ class TestFilePageEdges(UITest):
 
     async def test_choosing_a_scale_needs_one_first(self):
         self.document.change_set(self.document.song().set_scale_name, None)
-        for name in self.document.song().get_scale_names():
+        for name in self.document.song().get_setlist().get_scale_names():
             self.document.delete_named(section=Section.SCALES, name=name)
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         await self.select_field(labels_text.MSG_SCALE_LABEL)

@@ -16,6 +16,7 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed, number, pass_over_unknown, reading, time_signature, written_length
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import sections
+from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.draw import Draw
 from llamatron.model.objects.genres import sensible_style, style_name
 from llamatron.model.objects.groove import groove_for
@@ -36,19 +37,19 @@ from llamatron.user_strings import errors, names
 
 def _check_scale_name(*, value, song):
     """Refuse a scale the set doesn't have. None is no scale."""
-    if value is not None and not song.has_scale(value):
+    if value is not None and not song.get_setlist().has_scale(value):
         raise InvalidValue(errors.ERR_SONG_NO_SUCH_SCALE.format(scale=value))
 
 
 def _check_groove_name(*, value, song):
     """Refuse a groove that is neither a factory groove nor one of the set's."""
-    if not isinstance(value, str) or not song.has_groove(value):
+    if not isinstance(value, str) or not song.get_setlist().has_groove(value):
         raise InvalidValue(errors.ERR_SONG_NO_SUCH_GROOVE.format(name=value))
 
 
 def _check_preview_instrument(*, value, song):
     """Refuse an instrument the set doesn't have. None is none."""
-    if value is not None and not (isinstance(value, str) and song.has_instrument(value)):
+    if value is not None and not (isinstance(value, str) and song.get_setlist().has_instrument(value)):
         raise InvalidValue(errors.ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT.format(name=value))
 
 
@@ -295,7 +296,7 @@ class Song(HoldsSections, HoldsSettings):
 
     def entry_size_for(self, pattern):
         """Return how long a note placed on a pattern's piano roll lasts: the pattern's own entry size, else the song's, else one of its steps."""
-        return pattern.get_entry_size() or self.get_entry_size() or self.get_pattern_step_size(pattern)
+        return pattern.get_entry_size() or self.get_entry_size() or self._setlist.get_pattern_step_size(pattern)
 
     def get_scale_name(self):
         """Return the name of the song's scale, or None if it has none."""
@@ -413,6 +414,32 @@ class Song(HoldsSections, HoldsSettings):
         self._settings[SongSetting.WIZARD] = own_copy(choices)
 
     # Changing the tracks and registers, the same way the set changes its sections.
+
+    def add_new_track(self, *, name, drum=False, place=None):
+        """Add a new track with no clips, a drum track if drum, at the end or before the track at a place, and return it."""
+        track = Track(drum=True) if drum else Track()
+        if place is None:
+            self.add_item(section=Section.TRACKS, name=name, item=track)
+        else:
+            self.insert_item(section=Section.TRACKS, name=name, item=track, place=place)
+        return track
+
+    def add_new_scene(self, *, index, name=None):
+        """Add a new scene with no clips at a place in the order, and return it."""
+        scene = Scene(clip_slots={}, name=name)
+        self.add_scene(index=index, scene=scene)
+        return scene
+
+    def add_clip(self, *, index, track, pattern, repeat=None, scale=None):
+        """Give a track a clip in a scene, playing a pattern, repeat times unless once, under a scale of the set unless its own, and return it."""
+        clip_slot = ClipSlot()
+        clip_slot.set_pattern_name(name=pattern, song=self)
+        if repeat is not None:
+            clip_slot.set_repeat(repeat)
+        if scale is not None:
+            clip_slot.set_scale_name(name=scale, song=self)
+        self.get_scene(index).set_clip_slot(track=track, clip_slot=clip_slot, song=self)
+        return clip_slot
 
     def insert_item(self, *, section, name, item, place):
         """Add a named item at a place in a section, before the item that was there."""
@@ -582,7 +609,7 @@ class Song(HoldsSections, HoldsSettings):
         if not scene.every_clip_loops():
             return False
         patterns = [name for track in scene.get_track_names() for name in scene.get_clip_slot(track).get_pattern_names()]
-        return not any(self.has_pattern(name) and self.get_pattern(name).has_statements(StepStatement.STOP) for name in patterns)
+        return not any(self._setlist.has_pattern(name) and self._setlist.get_pattern(name).has_statements(StepStatement.STOP) for name in patterns)
 
     def track_clip_count(self, name):
         """Return how many scenes a track plays in."""
@@ -603,52 +630,6 @@ class Song(HoldsSections, HoldsSettings):
     # What the song shares with the rest of its set, read through the setlist, so that playing and
     # editing a song only ever ask the song.
 
-    def has_scale(self, name):
-        return self._setlist.has_scale(name)
-
-    def has_groove(self, name):
-        return self._setlist.has_groove(name)
-
-    def get_groove(self, name):
-        return self._setlist.get_groove(name)
-
-    def get_groove_names(self):
-        """Return every groove the song can choose: the factory grooves, then the set's own."""
-        return self._setlist.get_groove_names()
-
-    def get_scale_names(self):
-        return self._setlist.get_scale_names()
-
-    def get_named_scale(self, name):
-        return self._setlist.get_named_scale(name)
-
-    def has_pattern(self, name):
-        return self._setlist.has_pattern(name)
-
-    def get_pattern(self, name):
-        return self._setlist.get_pattern(name)
-
-    def get_pattern_names(self):
-        return self._setlist.get_pattern_names()
-
-    def has_generator(self, *, kind, name):
-        return self._setlist.has_generator(kind=kind, name=name)
-
-    def get_generator_settings(self, *, kind, name):
-        return self._setlist.get_generator_settings(kind=kind, name=name)
-
-    def get_generator_names(self, kind):
-        return self._setlist.get_generator_names(kind)
-
-    def has_chain(self, name):
-        return self._setlist.has_chain(name)
-
-    def has_instrument(self, name):
-        return self._setlist.has_instrument(name)
-
-    def get_instrument(self, name):
-        return self._setlist.get_instrument(name)
-
     def default_velocity_of(self, track):
         """Return the velocity a step with none typed plays at on a track: the track's own, else its instrument's, else the loudest."""
         own = track.get_default_velocity()
@@ -666,10 +647,7 @@ class Song(HoldsSections, HoldsSettings):
     def instrument_of(self, track):
         """Return a track's instrument, or None when it names none or the set has none of that name."""
         name = track.get_instrument_name()
-        return self.get_instrument(name) if name is not None and self.has_instrument(name) else None
-
-    def get_chain(self, name):
-        return self._setlist.get_chain(name)
+        return self._setlist.get_instrument(name) if name is not None and self._setlist.has_instrument(name) else None
 
     def forget_generator(self, name):
         """Take a generator out of every list of generators of the song: its tracks', its scenes' and its clips'."""
@@ -680,31 +658,6 @@ class Song(HoldsSections, HoldsSettings):
             if name in holder.get_chain_names():
                 holder.set_chain_names(names=[each for each in holder.get_chain_names() if each != name], song=self)
 
-    def chain_run(self, name):
-        """Return the chain a name in a list of generators runs (Setlist.chain_run)."""
-        return self._setlist.chain_run(name)
-
-    def has_generator_named(self, name):
-        return self._setlist.has_generator_named(name)
-
-    def get_chain_names(self):
-        return self._setlist.get_chain_names()
-
-    def get_step_size(self):
-        return self._setlist.get_step_size()
-
-    def get_written_step_size(self):
-        return self._setlist.get_written_step_size()
-
-    def get_pattern_step_size(self, pattern):
-        return self._setlist.get_pattern_step_size(pattern)
-
-    def get_pattern_length(self, pattern):
-        return self._setlist.get_pattern_length(pattern)
-
-    def changes_registers(self):
-        return self._setlist.changes_registers()
-
     def scenes_change_registers(self):
         """Return whether any of its scenes, or any clip of one, sets a register or adds to one, or whether a draw that holds a
         value redraws in conditions, which a statement of a scene, a clip, a track, a chain or a generator can draw from."""
@@ -712,22 +665,10 @@ class Song(HoldsSections, HoldsSettings):
             draw.redraws_in_conditions() and draw.filled_places() for draw in self._written_draws()
         )
 
-    def get_default_octave(self):
-        return self._setlist.get_default_octave()
 
-    def get_default_drum_octave(self):
-        return self._setlist.get_default_drum_octave()
 
-    def get_octave_labels(self):
-        return self._setlist.get_octave_labels()
 
-    def octave_label_offset(self):
-        return self._setlist.octave_label_offset()
 
-    def shown_octave(self, octave):
-        return self._setlist.shown_octave(octave)
 
-    def stored_octave(self, shown):
-        return self._setlist.stored_octave(shown)
 
 

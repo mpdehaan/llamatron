@@ -25,11 +25,12 @@ class TrackOutput:
     """What every track of one render played, as the clips that read another track's notes find it, each answer worked out
     once for a written-out scene and kept, and the tracks waiting on one another, which finds a circle of them."""
 
-    __slots__ = ('_realizer', '_song', '_grabbing', '_following', '_chord_sources', '_tune_sources', '_dealt', '_source_turns')
+    __slots__ = ('_realizer', '_song', '_setlist', '_grabbing', '_following', '_chord_sources', '_tune_sources', '_dealt', '_source_turns')
 
     def __init__(self, *, realizer, song):
         self._realizer = realizer
         self._song = song
+        self._setlist = self._song.get_setlist()
         # The tracks whose clips are waiting on a grab, to catch clips that grab in a circle.
         self._grabbing = []
         # The clips waiting on the chords or tune of a track they follow, as (scene, track), to catch tracks following each other in a circle.
@@ -92,7 +93,7 @@ class TrackOutput:
         """Return the notes a generator that deals notes out hands each track in a written-out scene, by the track, worked out once for the scene."""
         key = (scene.get_number(), step.name)
         if key not in self._dealt:
-            settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
+            settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
             self._dealt[key] = registry.controller_of(step.kind).notes_dealt(settings=settings, place=DealingPlace(realizer=self._realizer, output=self, scene=scene, name=step.name))
         return self._dealt[key]
 

@@ -423,7 +423,7 @@ def every_choice(choices):
         # A player's Musician of the person's own, for each player whose clips run one: the loudest.
         setlist, name = choices.made_for_listening()
         for role in choices.get_band().roles_in():
-            if setlist.get_song(name).has_generator(kind=musician_plugin.NAME, name=choices.player(role).musician_name()):
+            if setlist.has_generator(kind=musician_plugin.NAME, name=choices.player(role).musician_name()):
                 yield PLAYER_MUSICIAN, role, lambda made, role=role: made.player(role).set_musician(settings={MusicianSetting.LOUDNESS: schema_values.LOUDEST}), [nothing_first]
     # A riff played by the player it was written for in the first kind of section that takes it: its notes written by hand, written
     # again, drawn each other way, and the riff deleted.

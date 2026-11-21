@@ -247,7 +247,7 @@ class TestMusicianRoundTheBand(unittest.TestCase):
         setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.CHORDS_FROM: CHORDS}), tune=True, chords=True))
         made = setlist.get_songs()[0]
         made.rename_item(section=Section.TRACKS, old=test_registers.LEAD, new=RENAMED)
-        settings = made.get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
+        settings = made.get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
         self.assertEqual(settings.get_tune_from(), RENAMED)
         self.assertEqual(settings.get_chords_from(), CHORDS)
 
@@ -267,7 +267,7 @@ class TestMusicianSettings(unittest.TestCase):
         # As a file saved before one was taken away, or by a later version, may hold them: the set opens and what is known stays.
         by_section = {SectionKind.VERSE: {schema.PLAYED: schema.SOFTER, NOT_A_SETTING: 1}, NOT_A_SECTION: {schema.PLAYED: schema.MUTED}}
         setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.BY_SECTION: by_section})))
-        settings = setlist.get_songs()[0].get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
+        settings = setlist.get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
         self.assertEqual(settings.to_data()[MusicianSetting.BY_SECTION], {SectionKind.VERSE: {schema.PLAYED: schema.SOFTER}})
 
     def test_a_section_setting_back_to_what_a_section_does_unasked_is_left_out(self):

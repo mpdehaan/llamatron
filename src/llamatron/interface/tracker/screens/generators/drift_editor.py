@@ -109,7 +109,7 @@ class DriftEditor(GeneratorEditor, FieldPage):
 
     def choices_of(self, value):
         """Return what a scale or root override can be: the song's scales by name, or the roots."""
-        return sorted_names(self.document().song().get_scale_names()) if value == DriftValue.SCALE else list(note.ROOT_NAMES)
+        return sorted_names(self.document().song().get_setlist().get_scale_names()) if value == DriftValue.SCALE else list(note.ROOT_NAMES)
 
     def pick_choice(self, *, setting, value, current):
         choices = self.choices_of(value)

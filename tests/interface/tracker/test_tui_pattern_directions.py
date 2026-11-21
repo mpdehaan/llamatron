@@ -36,7 +36,7 @@ class TestDirectionsAndGrab(UITest):
         self.assertEqual(self.app.screen.options[1], 'reverse a  step 1, then backward from the last')
         self.app.screen.cursor.set_place(4)
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_pattern(TUNE).get_direction(), Direction.PENDULUM)
+        self.assertEqual(self.document.song().get_setlist().get_pattern(TUNE).get_direction(), Direction.PENDULUM)
         self.assertIn(DIRECTION_PENDULUM, self.text())
         render_song(self.document.song())
 
@@ -96,7 +96,7 @@ class TestDirectionsAndGrab(UITest):
         await self.press(Key.SPACE)
         self.assertTrue(self.document.step_value(name=TUNE, row=Row.GRAB, step=EMPTY_STEP))
         self.assertEqual(self.document.step_value(name=TUNE, row=Row.DEGREE, step=EMPTY_STEP), limits.MIN_DEGREE)
-        self.assertEqual(self.document.step_value(name=TUNE, row=Row.OCTAVE, step=EMPTY_STEP), self.document.song().get_default_octave())
+        self.assertEqual(self.document.step_value(name=TUNE, row=Row.OCTAVE, step=EMPTY_STEP), self.document.song().get_setlist().get_default_octave())
         self.assertTrue(editor.is_note())
         # The description names no note, since what a grab step plays is whatever the other track played.
         self.assertIn(messages.MSG_GRABBED_SOUND, self.text())

@@ -19,7 +19,7 @@ class TestVoiceLeadingAdded(UITest):
 
     async def test_a_new_one_sets_nothing(self):
         name = await self.add_generator(voice_leading_plugin.SECTION)
-        self.assertEqual(self.document.song().get_generator_settings(kind=voice_leading_plugin.NAME, name=name).to_data(), {})
+        self.assertEqual(self.document.song().get_setlist().get_generator_settings(kind=voice_leading_plugin.NAME, name=name).to_data(), {})
 
 
 class TestVoiceLeadingEditor(UITest):
@@ -30,7 +30,7 @@ class TestVoiceLeadingEditor(UITest):
         self.assertIsInstance(self.app.screen, VoiceLeadingEditor)
 
     def voicing(self):
-        return self.document.song().get_generator_settings(kind=voice_leading_plugin.NAME, name=ui_testing.SMOOTH)
+        return self.document.song().get_setlist().get_generator_settings(kind=voice_leading_plugin.NAME, name=ui_testing.SMOOTH)
 
     async def test_the_lowest_octave_never_passes_the_highest(self):
         await self.select_field(labels.MSG_LOWEST_OCTAVE_LABEL)

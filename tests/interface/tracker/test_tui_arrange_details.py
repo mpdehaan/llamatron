@@ -418,7 +418,7 @@ class TestPickingDetails(UITest):
         self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).get_chain_names(), [ui_testing.NAMED, ui_testing.NAMED])
         await self.press(Key.UP, keybindings.ArrangePage.REMOVE_CHAIN)
         self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).get_chain_names(), [ui_testing.NAMED])
-        self.assertIn(ui_testing.NAMED, self.document.song().get_chain_names())
+        self.assertIn(ui_testing.NAMED, self.document.song().get_setlist().get_chain_names())
 
 if __name__ == '__main__':
     unittest.main()

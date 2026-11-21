@@ -23,7 +23,7 @@ class TestFollowChordsAdded(UITest):
 
     async def test_a_new_one_follows_no_track(self):
         name = await self.add_generator(follow_chords_plugin.SECTION)
-        self.assertIsNone(self.document.song().get_generator_settings(kind=follow_chords_plugin.NAME, name=name).get_chords_from())
+        self.assertIsNone(self.document.song().get_setlist().get_generator_settings(kind=follow_chords_plugin.NAME, name=name).get_chords_from())
 
 
 class TestFollowChordsEditor(UITest):
@@ -35,7 +35,7 @@ class TestFollowChordsEditor(UITest):
         await self.select_field(labels.MSG_CHORDS_FROM_LABEL)
 
     def followed(self):
-        return self.document.song().get_generator_settings(kind=follow_chords_plugin.NAME, name=ui_testing.FOLLOWS).get_chords_from()
+        return self.document.song().get_setlist().get_generator_settings(kind=follow_chords_plugin.NAME, name=ui_testing.FOLLOWS).get_chords_from()
 
     async def test_the_track_is_picked_from_the_songs_tracks_with_none_first(self):
         await self.press(Key.ENTER)

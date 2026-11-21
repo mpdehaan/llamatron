@@ -141,8 +141,8 @@ def heavy_report(path):
     events = song_timeline(grid=grid, routes=routes_for(grid))
     built = time.perf_counter()
     # A pass is the first pattern's length at the song's tempo, which is what an edit has to be rendered within.
-    pattern = song.get_pattern(song.get_pattern_names()[0])
-    pass_seconds = float(pattern.get_steps() * song.get_pattern_step_size(pattern)) * seconds_per_whole(song.get_tempo())
+    pattern = song.get_setlist().get_pattern(song.get_setlist().get_pattern_names()[0])
+    pass_seconds = float(pattern.get_steps() * song.get_setlist().get_pattern_step_size(pattern)) * seconds_per_whole(song.get_tempo())
     stage = built - before
     print(HEAVY_HEADING.format(path=path))
     print(HEAVY_LINE.format(render=(rendered - before) * MILLISECONDS, timeline=(built - rendered) * MILLISECONDS, events=len(events),

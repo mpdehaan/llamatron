@@ -170,7 +170,7 @@ class TestRenamesFollowEveryReference(unittest.TestCase):
         self.assertEqual(lead.get_morph_target(), self.renamed[Section.PATTERNS, ANSWER])
         self.assertEqual(bass.get_grab_track(), self.renamed[Section.TRACKS, LEAD])
         self.assertEqual(bass.get_chain_names(), [self.renamed[Section.CHAINS, NAMED]])
-        chain = song.get_chain(self.renamed[Section.CHAINS, NAMED])
+        chain = song.get_setlist().get_chain(self.renamed[Section.CHAINS, NAMED])
         self.assertEqual(
             [step.name for step in chain.get_steps()],
             [self.renamed[arp_plugin.SECTION, CLIMBER], self.renamed[auto_ratchet_plugin.SECTION, ROLLS]],

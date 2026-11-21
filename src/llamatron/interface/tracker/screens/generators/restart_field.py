@@ -14,7 +14,7 @@ KINDS_BY_SECTION = {section: kind for kind, section in generator_plugins.section
 
 def restart_field(page):
     """Return the Restart field of the generator a page of one named generator shows, by its SECTION and its item."""
-    settings = page.document().song().get_generator_settings(kind=KINDS_BY_SECTION[page.SECTION], name=page.item)
+    settings = page.document().get_setlist().get_generator_settings(kind=KINDS_BY_SECTION[page.SECTION], name=page.item)
     current = settings.get_restart()
     return ChoiceField(
         page=page, label=labels.MSG_RESTART_LABEL, choices=file_format.RESTARTS, current=current, names=[labels.MSG_RESTART_NAMES[choice] for choice in file_format.RESTARTS],

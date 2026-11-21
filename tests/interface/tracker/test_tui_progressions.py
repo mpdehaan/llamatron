@@ -47,7 +47,7 @@ class TestProgressionAdded(UITest):
 
     async def test_a_new_one_has_one_chord_that_moves_nothing(self):
         name = await self.add_generator(progression_plugin.SECTION)
-        self.assertEqual(self.document.song().get_generator_settings(kind=progression_plugin.NAME, name=name).get_chords(), [limits.MIN_PROGRESSION_DEGREE])
+        self.assertEqual(self.document.song().get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=name).get_chords(), [limits.MIN_PROGRESSION_DEGREE])
 
 
 class TestProgressionEditor(UITest):
@@ -59,7 +59,7 @@ class TestProgressionEditor(UITest):
         self.assertIsInstance(self.app.screen, ProgressionEditor)
 
     def progression(self):
-        return self.document.song().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
+        return self.document.song().get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
 
     async def test_every_starts_at_a_bar_and_steps_through_the_list(self):
         self.assertIn(file_format.ONE_BAR_WRITTEN, self.text())
@@ -84,7 +84,7 @@ class TestChordsEditor(UITest):
         self.page = self.app.screen
 
     def progression(self):
-        return self.document.song().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
+        return self.document.song().get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
 
     async def test_it_shows_each_chords_numeral_and_name_in_the_songs_scale(self):
         for name in POP_NAMES:
@@ -233,11 +233,11 @@ class TestRestartField(UITest):
 
     async def test_restart_steps_through_its_choices(self):
         await self.open_generator(section=progression_plugin.SECTION)
-        progression = self.document.song().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
+        progression = self.document.song().get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
         self.assertEqual(progression.get_restart(), Restart.EVERY_CLIP)
         self.assertIn(labels.MSG_RESTART_NAMES[Restart.EVERY_CLIP], self.text())
         await self.select_field(labels.MSG_RESTART_LABEL)
         await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.ON_NEW_SCENE)
+        self.assertEqual(self.document.song().get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.ON_NEW_SCENE)
         await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.WHOLE_SONG)
+        self.assertEqual(self.document.song().get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.WHOLE_SONG)

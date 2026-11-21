@@ -102,7 +102,7 @@ class PatternsPage(NamedListPage):
         rows = [(Listed(HEADING, group), self.one_cell(heading))]
         if closed:
             return rows
-        rows += [(Listed(PATTERN, name), self.row_of(name=name, pattern=document.song().get_pattern(name), document=document)) for name in names]
+        rows += [(Listed(PATTERN, name), self.row_of(name=name, pattern=document.song().get_setlist().get_pattern(name), document=document)) for name in names]
         if group is not UNGROUPED:
             rows.append((Listed(NEW_PATTERN, group), self.one_cell(INDENT + labels.MSG_NEW_PATTERN_BUTTON)))
         return rows

@@ -32,12 +32,13 @@ class ChainStepPlace:
     """One step of a chain, run by a track's clip in a written-out scene: the answers a plugin's controller may ask for, each
     worked out only when asked, so that a generator that needs none of them costs nothing for them."""
 
-    __slots__ = ('_realizer', '_song', '_step', '_scene', '_track', '_chain', '_index', '_key', '_counting')
+    __slots__ = ('_realizer', '_song', '_setlist', '_step', '_scene', '_track', '_chain', '_index', '_key', '_counting')
 
     def __init__(self, *, realizer, clip, step):
         """clip is the ClipBeingMade the step runs in, and step the StepInChains."""
         self._realizer = realizer
         self._song = realizer.get_song()
+        self._setlist = self._song.get_setlist()
         self._step = step.step
         self._scene = clip.scene
         self._track = clip.track
@@ -56,7 +57,7 @@ class ChainStepPlace:
 
     def pattern_step(self):
         """Return the step size of the pattern the clip plays."""
-        return self._song.get_pattern_step_size(self._song.get_pattern(self._scene.get_clip_slot(self._track).get_pattern_name()))
+        return self._setlist.get_pattern_step_size(self._setlist.get_pattern(self._scene.get_clip_slot(self._track).get_pattern_name()))
 
     def bar(self):
         return self._song.get_time_signature().bar_length()

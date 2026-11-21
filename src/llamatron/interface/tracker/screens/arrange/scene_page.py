@@ -70,7 +70,7 @@ class ScenePage(FieldPage):
         self.ask_text(title=messages.MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or drawing.NOTHING, then=named, is_name=True)
 
     def pick_scale(self):
-        scales = sorted_names(self.document().song().get_scale_names())
+        scales = sorted_names(self.document().song().get_setlist().get_scale_names())
 
         def chosen(name):
             self.document().change_set(self.document().song().get_scene(self.index).set_scale_name, name=name, song=self.document().song())

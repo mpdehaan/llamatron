@@ -150,5 +150,5 @@ def check_chain_names(*, value, song):
     if not isinstance(value, list) or not all(isinstance(name, str) for name in value):
         raise InvalidValue(errors.ERR_NOT_CHAIN_NAMES.format(value=value))
     for name in value:
-        if not song.has_generator_named(name):
+        if not song.get_setlist().has_generator_named(name):
             raise InvalidValue(errors.ERR_NO_GENERATOR_CALLED.format(name=name))

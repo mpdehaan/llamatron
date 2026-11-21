@@ -71,11 +71,12 @@ class ClipSlotPlayer:
     for the notes of a track it grabs from.
     """
 
-    __slots__ = ('_realizer', '_song', '_scene', '_track_name', '_clip_slot', '_track')
+    __slots__ = ('_realizer', '_song', '_setlist', '_scene', '_track_name', '_clip_slot', '_track')
 
     def __init__(self, *, realizer, song, scene, track_name):
         self._realizer = realizer
         self._song = song
+        self._setlist = self._song.get_setlist()
         self._scene = scene
         self._track_name = track_name
         self._clip_slot = scene.get_clip_slot(track_name)
@@ -115,7 +116,7 @@ class ClipSlotPlayer:
             controls = self._sent_controls(controls=controls, end=end)
             # A clip is named after the pattern it plays unless it has a name of its own, while its scene keeps
             # the scene's name, and it carries the pattern's own time signature, if it has one, for the bars a DAW draws.
-            signature = self._song.get_pattern(clip_slot.get_pattern_name()).get_time_signature()
+            signature = self._setlist.get_pattern(clip_slot.get_pattern_name()).get_time_signature()
             finished = Clip(name=clip_slot.get_display_name(), sounds=sounds, scale=scale, loop=loop, controls=controls, time_signature=signature)
             if switched:
                 finished.set_keyswitches(self._switch_notes(switched=switched, end=end))
@@ -132,7 +133,7 @@ class ClipSlotPlayer:
         scale_name = self._scale_name()
         if scale_name is None:
             return None
-        return self._song.get_named_scale(scale_name).scale_at(self._clip_octave())
+        return self._setlist.get_named_scale(scale_name).scale_at(self._clip_octave())
 
     def _through_chain(self, clip, *, counting, passes):
         """Return the clip after each generator of its chains, in order, and what the generators add to the registers, as (time, adds) in time order.
@@ -160,7 +161,7 @@ class ClipSlotPlayer:
         untouched = clip
         for chain in chains:
             entering = clip
-            written = self._song.chain_run(chain)
+            written = self._setlist.chain_run(chain)
             for step in written.get_steps():
                 # A modulation works on the steps as the pattern plays, and a shape on the finished clip after the chains (engine/realizer/modulations.py, engine/realizer/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
@@ -171,7 +172,7 @@ class ClipSlotPlayer:
                     generated = generator.generate(clip)
                     self._realizer.keep_end_state(scene=self._scene, track=self._track_name, key=key, counting=counting, state=generator.end_state())
                     adds += generator.register_adds()
-                    own = self._song.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when()
+                    own = self._setlist.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when()
                     clip = _kept_where(tripped=_tripped(passes=passes, tables=[own]), before=clip, after=generated, passes=passes)
                 index += 1
             clip = _kept_where(tripped=_tripped(passes=passes, tables=[written.get_bypass_when()]), before=entering, after=clip, passes=passes)
@@ -203,9 +204,9 @@ class ClipSlotPlayer:
         generators, that redraw in conditions: the pass's first step takes them, so that the pass starts from one value of each."""
         statements = [*self._skip_tables(), *self._bypass_tables()]
         for chain in self._realizer.chains_of(scene=self._scene, track=self._track_name):
-            written = self._song.chain_run(chain)
+            written = self._setlist.chain_run(chain)
             statements.append(written.get_bypass_when())
-            statements += [self._song.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when() for step in written.get_steps()]
+            statements += [self._setlist.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when() for step in written.get_steps()]
         read = _draws_read_by(statements)
         return frozenset(name for name in read if self._song.get_draw(name).redraws_in_conditions())
 
@@ -215,7 +216,7 @@ class ClipSlotPlayer:
 
     def _shape_is_bypassed(self, *, chain, name, kind, passes):
         """Return whether a shape a chain names is left out of the clip. A shape works on the whole clip at once, so the registers as the clip's first pass starts speak for all of it."""
-        tables = [*self._bypass_tables(), self._song.chain_run(chain).get_bypass_when(), self._song.get_generator_settings(kind=kind, name=name).get_bypass_when()]
+        tables = [*self._bypass_tables(), self._setlist.chain_run(chain).get_bypass_when(), self._setlist.get_generator_settings(kind=kind, name=name).get_bypass_when()]
         return any(_tripped(passes=passes[:FIRST_PASS + 1], tables=tables))
 
     def _masked(self, clip):
@@ -225,18 +226,18 @@ class ClipSlotPlayer:
         if mask is None:
             return clip
         bar = self._song.get_time_signature().bar_length()
-        step = self._song.get_pattern_step_size(self._song.get_pattern(self._clip_slot.get_pattern_name())) if mask.step is None else in_whole_notes(time=mask.step, bar=bar)
+        step = self._setlist.get_pattern_step_size(self._setlist.get_pattern(self._clip_slot.get_pattern_name())) if mask.step is None else in_whole_notes(time=mask.step, bar=bar)
         return EuclidMask(hits=mask.hits, steps=mask.steps, rotate=mask.rotate, step=step).generate(clip)
 
     def _plays_drums(self):
         """Return whether the clip slot's own pattern is a drum pattern."""
-        return self._song.get_pattern(self._clip_slot.get_pattern_name()).is_drum()
+        return self._setlist.get_pattern(self._clip_slot.get_pattern_name()).is_drum()
 
     def _shaped(self, clip, *, passes):
         """Return the clip with its Density, Swell and Articulate applied: the last generator of each kind its chains name, else the clip's own Density or Articulate, else its scene's, and with the velocity of the clip and its scene. A generator its statements bypass is not named."""
         named = {}
         for chain in self._realizer.chains_of(scene=self._scene, track=self._track_name):
-            for step in self._song.chain_run(chain).get_steps():
+            for step in self._setlist.chain_run(chain).get_steps():
                 shape = registry.shape_of(step.kind)
                 if shape is not None and not self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
                     named[shape] = step
@@ -246,7 +247,7 @@ class ClipSlotPlayer:
         for shape in SHAPES:
             if shape in named:
                 # A generator's ramp runs over its whole run, which its Restart says: the clip, every play of the scene in a row, or the song.
-                settings = self._song.get_generator_settings(kind=named[shape].kind, name=named[shape].name)
+                settings = self._setlist.get_generator_settings(kind=named[shape].kind, name=named[shape].name)
                 restart = settings.get_restart()
                 span = self._realizer.run_span(scene=self._scene, restart=restart, clip_length=clip_length)
                 shapes[shape] = (settings.get_shape(), span, self._realizer.run_offset(scene=self._scene, restart=restart))
@@ -319,8 +320,8 @@ class ClipSlotPlayer:
 
     def _clip_octave(self):
         """Return the octave for the root of this clip's scale: the octave of the first note the clip plays."""
-        octave = self._song.get_pattern(self._clip_slot.get_pattern_name()).get_first_octave()
-        return self._song.get_default_octave() if octave is None else octave
+        octave = self._setlist.get_pattern(self._clip_slot.get_pattern_name()).get_first_octave()
+        return self._setlist.get_default_octave() if octave is None else octave
 
     def _play_passes(self, *, player, grab, scale, where, fill, registers):
         """Return what the clip plays before any chains, its repeats or enough passes to fill a length, the keyswitch slots played, and its passes.
@@ -404,7 +405,7 @@ class ClipSlotPlayer:
         clip = played.clip
         morph_to = clip_slot.get_morph_target()
         # A pass a step's statement cut short is left as it played, with no morph over the part it never reached.
-        if morph_to is None or played.length != sum(player.pattern_length(self._song.get_pattern(name)) for name in names) or not clip.has_positions():
+        if morph_to is None or played.length != sum(player.pattern_length(self._setlist.get_pattern(name)) for name in names) or not clip.has_positions():
             return played
         target = player.play_pass(pattern_name=morph_to, grab=None, direction=clip_slot.get_direction(), where=where, rolls=rolls, order=target_order, registers=registers, start=start, changes_registers=False).clip
         amount = Rational(place, repeat - 1) * FULL_MORPH
@@ -444,7 +445,7 @@ class ClipSlotPlayer:
             controls += _moved_later(controls=played.clip.get_controls(), time=total)
             switched += [slots.moved_by(total) for slots in played.keyswitches]
             total += played.length
-            if played.done or played.length != player.pattern_length(self._song.get_pattern(name)):
+            if played.done or played.length != player.pattern_length(self._setlist.get_pattern(name)):
                 done = played.done
                 break
         return Pass(clip=Clip(sounds=sounds, scale=scale, controls=controls), tied_from_before=tied_from_before, length=total, keyswitches=switched, done=done)

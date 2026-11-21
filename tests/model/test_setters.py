@@ -344,7 +344,7 @@ class TestChain(SetterTestCase):
 
     def setUp(self):
         self.song = song_with_everything()
-        self.chain = self.song.get_chain(NAMED)
+        self.chain = self.song.get_setlist().get_chain(NAMED)
 
     def test_steps_name_generators_the_song_has(self):
         self.assertRefused(self.chain, self.chain.add_step, kind=arp_plugin.NAME, name=NOT_A_NAME, setlist=self.song.get_setlist())
@@ -448,10 +448,10 @@ class TestSong(SetterTestCase):
     def test_items_move_within_their_section_and_sort(self):
         setlist = self.song.get_setlist()
         self.assertTrue(setlist.move_item(section=Section.PATTERNS, place=FIRST, offset=ONE_DOWN))
-        self.assertEqual(self.song.get_pattern_names(), [ANSWER, TUNE])
+        self.assertEqual(self.song.get_setlist().get_pattern_names(), [ANSWER, TUNE])
         self.assertFalse(setlist.move_item(section=Section.PATTERNS, place=FIRST, offset=ONE_UP))
         setlist.sort_items(Section.PATTERNS)
-        self.assertEqual(self.song.get_pattern_names(), sorted([ANSWER, TUNE]))
+        self.assertEqual(self.song.get_setlist().get_pattern_names(), sorted([ANSWER, TUNE]))
         self.assertTrue(self.song.move_item(section=Section.TRACKS, place=FIRST, offset=ONE_DOWN))
         self.assertEqual(self.song.get_track_names(), [BASS, LEAD])
 
@@ -460,7 +460,7 @@ class TestSong(SetterTestCase):
         self.assertEqual(self.song.get_track_names(), [LEAD, NAMED, BASS])
         self.assertEqual(self.song.get_scene(FIRST).get_clip_slot(NAMED).get_pattern_name(), TUNE)
         self.song.get_setlist().copy_item(section=Section.PATTERNS, name=TUNE, new=NOT_A_NAME)
-        self.assertEqual(self.song.get_pattern_names()[-1], NOT_A_NAME)
+        self.assertEqual(self.song.get_setlist().get_pattern_names()[-1], NOT_A_NAME)
 
     def test_registers_are_written_in_order_and_only_when_changed(self):
         self.song.set_register_setting(name=RegisterName.DX, setting=RegisterSetting.MAXIMUM, value=HIGH)

@@ -11,8 +11,6 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import clip_slot as clip_slot_values
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.naming import copy_name
-from llamatron.model.objects.scene import Scene
-from llamatron.model.objects.track import Track
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, RegisterSetting, Section
 from llamatron.user_strings import names as names_text
@@ -57,11 +55,11 @@ class SongEdits:
         return self.song().get_track(name)
 
     def add_track(self, name):
-        self.change_set(self.song().add_item, section=Section.TRACKS, name=name, item=Track())
+        self.change_set(self.song().add_new_track, name=name)
 
     def insert_track(self, *, name, place):
         """Add a new track with no clips before the track at a place, which the Arrange page's I does."""
-        self.change_set(self.song().insert_item, section=Section.TRACKS, name=name, item=Track(), place=place)
+        self.change_set(self.song().add_new_track, name=name, place=place)
 
     def track_names(self):
         return self.song().get_track_names()
@@ -83,7 +81,7 @@ class SongEdits:
         return self.song().get_scene(index)
 
     def add_scene(self, *, index, name):
-        self.change_set(self.song().add_scene, index=index, scene=Scene(clip_slots={}, name=name))
+        self.change_set(self.song().add_new_scene, index=index, name=name)
 
     def copy_scene(self, index):
         """Put a copy of a scene right after it, named after it."""
@@ -164,9 +162,7 @@ class SongEdits:
 
     def add_clip_slot(self, *, index, track, pattern):
         """Give a track a clip in a scene, playing a pattern once."""
-        clip_slot = ClipSlot()
-        clip_slot.set_pattern_name(name=pattern, song=self.song())
-        self.change_set(self._scene(index).set_clip_slot, track=track, clip_slot=clip_slot, song=self.song())
+        self.change_set(self.song().add_clip, index=index, track=track, pattern=pattern)
 
     def paste_clip_slot(self, *, index, track, copied):
         """Put a copy of a clip slot on a track in a scene, and return the track a grab was dropped from, or None.

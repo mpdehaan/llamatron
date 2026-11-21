@@ -272,7 +272,7 @@ class TestTunePhrasing(unittest.TestCase):
         self.assertEqual(choices.tune_phrasing(), {PhrasingSetting.BREATH: schema.DEEP_BREATH})
         self.assertEqual(WizardChoices.from_data(choices.to_data()).tune_phrasing(), {PhrasingSetting.BREATH: schema.DEEP_BREATH})
         setlist, name = choices.made_for_listening()
-        made = setlist.get_song(name).get_generator_settings(kind=phrasing_plugin.NAME, name=wizard_text.MSG_TUNE_PHRASING_NAME)
+        made = setlist.get_generator_settings(kind=phrasing_plugin.NAME, name=wizard_text.MSG_TUNE_PHRASING_NAME)
         self.assertEqual(made.to_data(), {PhrasingSetting.BREATH: schema.DEEP_BREATH})
         choices.set_tune_phrasing(False)
         self.assertIsNone(choices.tune_phrasing())

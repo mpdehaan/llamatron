@@ -119,7 +119,7 @@ def marked_tracks(*, song, index):
     marked = set()
     for name in song.get_track_names():
         clip_slot = scene.get_clip_slot(name)
-        if clip_slot is not None and song.get_pattern(clip_slot.get_pattern_name()).uses_registers():
+        if clip_slot is not None and song.get_setlist().get_pattern(clip_slot.get_pattern_name()).uses_registers():
             marked.add(name)
     return marked
 

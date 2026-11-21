@@ -57,7 +57,7 @@ class DriftPlay:
         self._choosers = {}
 
     def settings(self, name):
-        return self._song.get_generator_settings(kind=drift.NAME, name=name)
+        return self._song.get_setlist().get_generator_settings(kind=drift.NAME, name=name)
 
     def every(self, name):
         """Return how long one of a drift's triggers lasts, in whole notes."""

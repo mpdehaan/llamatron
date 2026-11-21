@@ -26,12 +26,9 @@ from llamatron.engine.realizer.step_order import walk_order
 from llamatron.engine.timing import general_midi
 from llamatron.interface.tracker import transport
 from llamatron.interface.tracker.transport import Transport
-from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.naming import unique_name
 from llamatron.model.objects.pattern import Pattern
-from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.objects.track import Track
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
 from llamatron.model.values import note
@@ -138,18 +135,12 @@ class PreviewSet:
         if self._trial is not None:
             self._copy_trial(setlist=setlist, song=song)
             return
-        pattern = song.get_pattern(self._pattern)
+        pattern = song.get_setlist().get_pattern(self._pattern)
         track = unique_name(base=names_text.MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
-        song.add_item(section=Section.TRACKS, name=track, item=Track(drum=True) if pattern.is_drum() else Track())
+        song.add_new_track(name=track, drum=pattern.is_drum())
         scales = [] if pattern.is_drum() else real.scales_of_pattern(self._pattern)
-        clip_slot = ClipSlot()
-        clip_slot.set_pattern_name(name=self._pattern, song=song)
-        clip_slot.set_repeat(passes_to_come_round(steps=pattern.get_steps(), direction=pattern.get_direction()))
-        if scales:
-            clip_slot.set_scale_name(name=scales[0], song=song)
-        scene = Scene(clip_slots={})
-        song.add_scene(index=PREVIEW_SCENE, scene=scene)
-        scene.set_clip_slot(track=track, clip_slot=clip_slot, song=song)
+        song.add_new_scene(index=PREVIEW_SCENE)
+        song.add_clip(index=PREVIEW_SCENE, track=track, pattern=self._pattern, repeat=passes_to_come_round(steps=pattern.get_steps(), direction=pattern.get_direction()), scale=scales[0] if scales else None)
         self._setlist = setlist
         self._track = track
         self._scale = scales[0] if scales else None
@@ -158,16 +149,12 @@ class PreviewSet:
 
     def _copy_trial(self, *, setlist, song):
         """Finish a copy that plays the pattern written to try a sound with, once, on a drum track made for it, under no scale."""
-        name = unique_name(base=names_text.MSG_PREVIEW_PATTERN_NAME, taken=song.get_pattern_names())
+        name = unique_name(base=names_text.MSG_PREVIEW_PATTERN_NAME, taken=song.get_setlist().get_pattern_names())
         setlist.add_item(section=Section.PATTERNS, name=name, item=Pattern.from_data(data=self._trial, where=name, song=song))
         track = unique_name(base=names_text.MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
-        song.add_item(section=Section.TRACKS, name=track, item=Track(drum=True))
-        clip_slot = ClipSlot()
-        clip_slot.set_pattern_name(name=name, song=song)
-        clip_slot.set_repeat(TRIAL_PASSES)
-        scene = Scene(clip_slots={})
-        song.add_scene(index=PREVIEW_SCENE, scene=scene)
-        scene.set_clip_slot(track=track, clip_slot=clip_slot, song=song)
+        song.add_new_track(name=track, drum=True)
+        song.add_new_scene(index=PREVIEW_SCENE)
+        song.add_clip(index=PREVIEW_SCENE, track=track, pattern=name, repeat=TRIAL_PASSES)
         self._setlist = setlist
         self._track = track
         self._scale = None
@@ -201,7 +188,7 @@ class PatternPreview(Transport):
     def instrument_of(self, pattern):
         """Return the name of the instrument a pattern previews through, or None for General MIDI through FluidSynth: the song's Preview instrument, but for a drum pattern, which always plays General MIDI's drum kit."""
         real = self.real()
-        if real.song().get_pattern(pattern).is_drum():
+        if real.song().get_setlist().get_pattern(pattern).is_drum():
             return None
         return real.song().get_preview_instrument_name()
 
@@ -226,7 +213,7 @@ class PatternPreview(Transport):
     def shares_a_channel_with(self, *, pattern, routes):
         """Return whether a pattern's preview would choose its sound on a port and channel that one of a song's routes uses, which only a song with
         fifteen tracks through FluidSynth comes to. A drum pattern chooses no sound, so it shares the drum channel freely."""
-        if self.real().song().get_pattern(pattern).is_drum():
+        if self.real().song().get_setlist().get_pattern(pattern).is_drum():
             return False
         name = self.instrument_of(pattern)
         if name is not None and not self.real().get_setlist().get_instrument(name).uses_fluidsynth():
@@ -248,7 +235,7 @@ class PatternPreview(Transport):
         song = self.real().song()
         index, track = self._clip
         clip_slot = song.get_scenes()[index].get_clip_slot(track)
-        return song.get_track(track).is_drum() or song.get_pattern(clip_slot.get_pattern_name()).is_drum()
+        return song.get_track(track).is_drum() or song.get_setlist().get_pattern(clip_slot.get_pattern_name()).is_drum()
 
     def _route(self):
         real = self.real()
@@ -261,7 +248,7 @@ class PatternPreview(Transport):
             return Route(fluidsynth.FLUIDSYNTH_PORT, general_midi.DRUM_CHANNEL_BYTE, None, keyswitches=False) if program is None else Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, program, keyswitches=False)
         if self._clip is not None:
             return Route(fluidsynth.FLUIDSYNTH_PORT, general_midi.DRUM_CHANNEL_BYTE, None, keyswitches=False) if self._clip_is_drums() else Route(fluidsynth.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
-        if real.song().get_pattern(self._pattern).is_drum():
+        if real.song().get_setlist().get_pattern(self._pattern).is_drum():
             return Route(fluidsynth.FLUIDSYNTH_PORT, general_midi.DRUM_CHANNEL_BYTE, None, keyswitches=False)
         name = self.instrument_of(self._pattern)
         if name is None:
@@ -378,7 +365,7 @@ class PatternPreview(Transport):
             index, track = self._clip
             return index >= len(song.get_scenes()) or not song.has_item(section=Section.TRACKS, name=track) or song.get_scenes()[index].get_clip_slot(track) is None
         name = song.get_preview_instrument_name()
-        return not song.has_pattern(self._pattern) or (name is not None and not real.get_setlist().has_instrument(name))
+        return not song.get_setlist().has_pattern(self._pattern) or (name is not None and not real.get_setlist().has_instrument(name))
 
     # What is playing.
 

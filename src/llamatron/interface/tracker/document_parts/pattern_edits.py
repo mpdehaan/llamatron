@@ -251,8 +251,8 @@ class PatternEdits:
         """Return the name of a step's note, like F#3, in the scale the pattern plays under, or the current song's when that isn't known, or None."""
         song = self.song()
         scale_name = self.pattern_scale(name) or song.get_scale_name()
-        scale = None if scale_name is None else song.get_named_scale(scale_name)
+        scale = None if scale_name is None else song.get_setlist().get_named_scale(scale_name)
         return self.pattern(name).get_note_name(
-            step=step, scale=scale, default_octave=song.get_default_octave(), default_drum_octave=song.get_default_drum_octave(),
-            octave_label_offset=song.octave_label_offset(),
+            step=step, scale=scale, default_octave=song.get_setlist().get_default_octave(), default_drum_octave=song.get_setlist().get_default_drum_octave(),
+            octave_label_offset=song.get_setlist().octave_label_offset(),
         )

@@ -303,7 +303,7 @@ class TestPatternEditorChords(UITest):
         self.assertIsNone(self.value(Row.TENSION))
 
     async def test_the_whole_choice_is_one_step_of_undo(self):
-        before = self.document.song().get_pattern(ui_testing.TUNE).to_data()
+        before = self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data()
         await self.go_to_row(Row.CHORD)
         await self.press(keybindings.ChordRow.CHOOSE)
         dialog = self.app.screen
@@ -311,9 +311,9 @@ class TestPatternEditorChords(UITest):
         dialog.picked = set(ALTERED)
         dialog.set_kind(MINOR)
         await self.press(keybindings.ChordDialog.CHOOSE)
-        self.assertNotEqual(self.document.song().get_pattern(ui_testing.TUNE).to_data(), before)
+        self.assertNotEqual(self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data(), before)
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.song().get_pattern(ui_testing.TUNE).to_data(), before)
+        self.assertEqual(self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data(), before)
 
 
     async def open_on_the_chord(self):

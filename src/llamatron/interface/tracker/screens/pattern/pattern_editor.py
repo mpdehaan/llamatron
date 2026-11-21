@@ -231,7 +231,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
     # What's under the cursor.
 
     def pattern(self):
-        return self.document().song().get_pattern(self.item)
+        return self.document().song().get_setlist().get_pattern(self.item)
 
     def is_drum(self):
         return self.pattern().is_drum()
@@ -239,7 +239,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
     def default_octave(self):
         """Return the octave a step of this pattern starts on when it has none: the song's drum or note default."""
         song = self.document().song()
-        return song.get_default_drum_octave() if self.is_drum() else song.get_default_octave()
+        return song.get_setlist().get_default_drum_octave() if self.is_drum() else song.get_setlist().get_default_octave()
 
     def row_for(self, name):
         """Return the row object for a row name, which the rows keep: the rows ask each other through the editor, as the gate asks the dot."""
@@ -306,7 +306,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         if self.is_drum():
             return None
         names = self.document().scales_of_pattern(self.item)
-        return self.document().song().get_named_scale(names[0]) if names else None
+        return self.document().song().get_setlist().get_named_scale(names[0]) if names else None
 
     def resting_status(self):
         """Say the chord under the cursor, in the scale the pattern is known to play under, while the cursor rests on a step that holds one."""
@@ -530,13 +530,13 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def pick_other_pattern(self, choice):
         """Choose another pattern and take its steps into this one, leaving the other as it is: spliced after the last step, before the first or before the cursor's step, or interleaved, one after each step, which makes this one twice as long. The cursor stays on its note."""
-        others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)
+        others = sorted_names(name for name in self.document().song().get_setlist().get_pattern_names() if name != self.item)
         if not others:
             self.refuse(errors.ERR_NO_OTHER_PATTERNS)
             return
 
         def chosen(place):
-            other = self.document().song().get_pattern(others[place])
+            other = self.document().song().get_setlist().get_pattern(others[place])
             added = self.step_count() if choice == Munge.INTERLEAVE else other.get_steps()
             if other.is_drum() != self.is_drum():
                 self.refuse(errors.ERR_INTERLEAVE_DRUM_MISMATCH)
@@ -636,7 +636,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         self.ask_text(title=messages.MSG_ROLL_LEFT_PROMPT if left else messages.MSG_ROLL_RIGHT_PROMPT, value=drawing.NOTHING, then=answered)
 
     def load_over(self):
-        others = sorted_names(name for name in self.document().song().get_pattern_names() if name != self.item)
+        others = sorted_names(name for name in self.document().song().get_setlist().get_pattern_names() if name != self.item)
         if not others:
             self.refuse(errors.ERR_NO_OTHER_PATTERNS)
             return

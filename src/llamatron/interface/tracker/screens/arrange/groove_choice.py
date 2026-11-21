@@ -20,7 +20,7 @@ OFF = False
 
 def groove_choice_field(*, page, title, choice, inherited_option, inherited_shown, choose, clear_what):
     """Return the Groove field for a scene or a track, whose current choice is None, False or a name."""
-    names = sorted_names(page.document().song().get_groove_names())
+    names = sorted_names(page.document().get_setlist().get_groove_names())
     choices = [TAKE_FROM_ABOVE, OFF, *names]
 
     def shown():

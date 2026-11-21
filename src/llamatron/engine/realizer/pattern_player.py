@@ -120,7 +120,7 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
+    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
 
     def __init__(self, *, song, scene, scale, track, scale_name=None, modulations=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
@@ -132,6 +132,7 @@ class PatternPlayer:
         """
         self._modulations = modulations
         self._song = song
+        self._setlist = self._song.get_setlist()
         self._scene = scene
         self._scale = scale
         self._scale_name = scale_name or scene.get_scale_name()
@@ -192,9 +193,9 @@ class PatternPlayer:
     def pass_context(self):
         """Return everything of this player's a plain pass's notes follow from besides its pattern: the clip's scale, the named
         scale its degrees take their notes from, the track's transpose, default velocity and accent, and the song's default octaves."""
-        named = None if self._scale_name is None else self._song.get_named_scale(self._scale_name)
+        named = None if self._scale_name is None else self._setlist.get_named_scale(self._scale_name)
         scale_of_name = None if named is None else (named.get_root(), named.get_kind())
-        return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._song.get_default_octave(), self._song.get_default_drum_octave())
+        return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._setlist.get_default_octave(), self._setlist.get_default_drum_octave())
 
     def _pass_key(self, *, pattern_name, pattern, played, steps, pass_draws):
         """Return the key a pass is remembered by, or None for a pass that reads what carries between passes or a player that
@@ -203,7 +204,7 @@ class PatternPlayer:
             return None
         if self._context is None:
             self._context = self.pass_context()
-        return (self._context, pattern_name, pattern.get_revision(), self._song.get_pattern_step_size(pattern), self.pattern_length(pattern), tuple(steps))
+        return (self._context, pattern_name, pattern.get_revision(), self._setlist.get_pattern_step_size(pattern), self.pattern_length(pattern), tuple(steps))
 
     def _remembered(self, *, key, result, remembered):
         """Keep a pass played under its key, if it has one, and return it."""
@@ -220,7 +221,7 @@ class PatternPlayer:
         root = None if effects is None else effects.root
         key = (octave, scale_name, root, kind)
         if key not in self._scales_by_octave:
-            named = self._song.get_named_scale(scale_name)
+            named = self._setlist.get_named_scale(scale_name)
             if root is not None or kind is not None:
                 named = NamedScale(root=named.get_root() if root is None else root, kind=named.get_kind() if kind is None else kind)
             self._scales_by_octave[key] = named.scale_at(octave)
@@ -247,10 +248,10 @@ class PatternPlayer:
         the track's velocity is bound to, if any. Last, its conditions and its probability decide
         whether its note sounds, which never undoes its sets and adds.
         """
-        if not self._song.has_pattern(pattern_name):
+        if not self._setlist.has_pattern(pattern_name):
             raise SongFileError(errors.ERR_PATTERN_PLAYER_NO_SUCH_PATTERN.format(where=where, name=pattern_name))
-        pattern = self._song.get_pattern(pattern_name)
-        step_size = self._song.get_pattern_step_size(pattern)
+        pattern = self._setlist.get_pattern(pattern_name)
+        step_size = self._setlist.get_pattern_step_size(pattern)
         length = self.pattern_length(pattern)
         # What each step plays is worked out in pairs of whole numbers, which make no object for a sum (math/length.py).
         # The times the registers, the grabs and the CC values are asked for stay Rationals, and are only made for a step that asks.
@@ -371,7 +372,7 @@ class PatternPlayer:
 
     def pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes."""
-        return self._song.get_pattern_length(pattern)
+        return self._setlist.get_pattern_length(pattern)
 
     def _step(self, *, values, grabbed, length, drum, where, rolls, note_moved, velocity, velocity_added, heard, counting=False, effects=None):
         """Return what one step plays, lasting length, its gate, as more than one sound if it ratchets.
@@ -389,7 +390,7 @@ class PatternPlayer:
         with the glide of the last slice. They are sounds, the tuples of model/values/sound.py, and
         the length is a pair.
         """
-        default = self._song.get_default_drum_octave() if drum else self._song.get_default_octave()
+        default = self._setlist.get_default_drum_octave() if drum else self._setlist.get_default_octave()
         octave = _value_or(value=values[Row.OCTAVE], default=default)
         velocity = _clamped_velocity(_value_or(value=velocity, default=self._default_velocity) + velocity_added)
         ratchet = values[Row.RATCHET] or defaults.DEFAULT_RATCHET
@@ -542,7 +543,7 @@ def check_pattern_has_a_scale(*, song, scene, pattern_name, clip_scale=None):
     This is the check the estimate makes without playing, so it has to agree with _degree_sound:
     a drum pattern's notes are letters, not degrees, so it needs no scale.
     """
-    pattern = song.get_pattern(pattern_name)
+    pattern = song.get_setlist().get_pattern(pattern_name)
     if (clip_scale or scene.get_scale_name()) is None and not pattern.is_drum() and pattern.get_note_steps():
         raise no_scale_error(where=errors.ERR_WHERE_PATTERN.format(name=pattern_name), scene=scene)
 

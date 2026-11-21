@@ -25,7 +25,7 @@ class TestEuclidAdded(UITest):
 
     async def test_a_new_one_is_the_tresillo(self):
         name = await self.add_generator(euclid_plugin.SECTION)
-        mask = self.document.song().get_generator_settings(kind=euclid_plugin.NAME, name=name).get_euclid()
+        mask = self.document.song().get_setlist().get_generator_settings(kind=euclid_plugin.NAME, name=name).get_euclid()
         self.assertEqual((mask.hits, mask.steps), (TRESILLO_HITS, TRESILLO_STEPS))
 
 
@@ -37,7 +37,7 @@ class TestEuclidEditor(UITest):
         self.assertIsInstance(self.app.screen, EuclidEditor)
 
     def mask(self):
-        return self.document.song().get_generator_settings(kind=euclid_plugin.NAME, name=ui_testing.CLAVE).get_euclid()
+        return self.document.song().get_setlist().get_generator_settings(kind=euclid_plugin.NAME, name=ui_testing.CLAVE).get_euclid()
 
     async def test_rotate_steps_and_the_drawing_follows(self):
         await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.ROTATE])

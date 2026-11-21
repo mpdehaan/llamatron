@@ -27,7 +27,7 @@ def numerals_text(*, progression, scale):
 def song_scale(song):
     """Return a song's scale, or None when it has none."""
     name = song.get_scale_name()
-    return None if name is None else song.get_named_scale(name)
+    return None if name is None else song.get_setlist().get_named_scale(name)
 
 
 class ProgressionEditor(GeneratorEditor, FieldPage):

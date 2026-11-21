@@ -115,7 +115,7 @@ class TestChords(unittest.TestCase):
 
     def test_the_verse_of_not_werewolves_hears_its_chords(self):
         song = example(NOT_WEREWOLVES).get_songs()[0]
-        names = [chord.name for chord in beat_chords(notes=scene_notes(song=song, index=VERSE, written=False), scale=song.get_named_scale(G_MAJOR))]
+        names = [chord.name for chord in beat_chords(notes=scene_notes(song=song, index=VERSE, written=False), scale=song.get_setlist().get_named_scale(G_MAJOR))]
         for name in ('Em', 'G', 'D', 'C'):
             self.assertIn(name, names)
 

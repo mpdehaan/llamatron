@@ -113,7 +113,7 @@ class ScalePage(ShowsNamedItem, FieldPage):
     RENAME_PROMPT = messages.MSG_RENAME_SCALE_PROMPT
 
     def scale(self):
-        return self.document().song().get_named_scale(self.item)
+        return self.document().song().get_setlist().get_named_scale(self.item)
 
     def root(self):
         return self.scale().get_root()

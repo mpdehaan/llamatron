@@ -42,7 +42,7 @@ def _check_cc_numbers(numbers):
 
 
 def _check_instrument_name(*, value, song):
-    if not song.has_instrument(value):
+    if not song.get_setlist().has_instrument(value):
         raise InvalidValue(errors.ERR_NO_SUCH_INSTRUMENT.format(name=value))
 
 

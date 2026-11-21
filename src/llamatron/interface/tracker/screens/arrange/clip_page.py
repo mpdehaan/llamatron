@@ -163,10 +163,10 @@ class ClipPage(FieldPage):
         document = self.document()
         if not name:
             return
-        if document.song().has_pattern(name):
+        if document.song().get_setlist().has_pattern(name):
             self.refuse(errors.ERR_NAME_TAKEN.format(label=names_text.MSG_PATTERN_WORD, name=name))
             return
-        first = document.song().get_pattern(self.clip_slot().get_pattern_name())
+        first = document.song().get_setlist().get_pattern(self.clip_slot().get_pattern_name())
         document.add_pattern(name=name, group=self.track, drum=first.is_drum(), scale_length=first.get_scale_length())
         document.continue_edit()
         self.add_named(name)
@@ -216,10 +216,10 @@ class ClipPage(FieldPage):
     def pick_pattern(self, *, title, current, then, same_kind=False):
         """Ask for one of the song's patterns, starting on the current one, and pass its name to then. same_kind leaves out the patterns that cannot share the clip's list: drum patterns for a clip of notes, and the other way round."""
         song = self.document().song()
-        patterns = sorted_names(song.get_pattern_names())
+        patterns = sorted_names(song.get_setlist().get_pattern_names())
         if same_kind:
-            drum = song.get_pattern(self.clip_slot().get_pattern_name()).is_drum()
-            patterns = [name for name in patterns if song.get_pattern(name).is_drum() == drum]
+            drum = song.get_setlist().get_pattern(self.clip_slot().get_pattern_name()).is_drum()
+            patterns = [name for name in patterns if song.get_setlist().get_pattern(name).is_drum() == drum]
         place = patterns.index(current) if current in patterns else 0
         self.ask(dialog=ChoiceDialog(title=title, options=patterns, current=place), then=lambda item: then(patterns[item]))
 
@@ -256,7 +256,7 @@ class ClipPage(FieldPage):
 
     def pick_scale(self):
         """Ask for one of the song's scales for the clip alone, or the scene's."""
-        scales = sorted_names(self.document().song().get_scale_names())
+        scales = sorted_names(self.document().song().get_setlist().get_scale_names())
         self.pick(
             title=messages.MSG_CLIP_SCALE_TITLE, values=[None, *scales], shown=[labels_text.MSG_SCENE_OPTION, *scales], current=self.clip_slot().get_scale_name(),
             then=lambda name: self.set_value(setting=ClipSlotSetting.SCALE, value=name),
@@ -288,7 +288,7 @@ class ClipPage(FieldPage):
             return words(direction)
         if len(self.clip_slot().get_pattern_names()) > ONE_PATTERN:
             return marks.MSG_EACH_PATTERN_DIRECTION_SHOWN
-        pattern = self.document().song().get_pattern(self.clip_slot().get_pattern_name())
+        pattern = self.document().song().get_setlist().get_pattern(self.clip_slot().get_pattern_name())
         return marks.MSG_PATTERN_DIRECTION_SHOWN.format(direction=words(pattern.get_direction()))
 
     def set_loop(self, loops):

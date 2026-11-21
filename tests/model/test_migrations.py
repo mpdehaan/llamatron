@@ -133,7 +133,7 @@ class TestOlderLayouts(unittest.TestCase):
         data.update({SetlistSetting.DEFAULT_OCTAVE: OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: DRUM_OCTAVE, SetlistSetting.VERSION: BEFORE_LIVE_OCTAVES})
         setlist, _ = read_migrated(data)
         song = setlist.get_song(UNTITLED)
-        self.assertEqual((song.get_default_octave(), song.get_default_drum_octave()), (OCTAVE + file_format.LIVE_OCTAVE_OFFSET, DRUM_OCTAVE + file_format.LIVE_OCTAVE_OFFSET))
+        self.assertEqual((song.get_setlist().get_default_octave(), song.get_setlist().get_default_drum_octave()), (OCTAVE + file_format.LIVE_OCTAVE_OFFSET, DRUM_OCTAVE + file_format.LIVE_OCTAVE_OFFSET))
         self.assertEqual(pitches(clip(song=render_data(setlist.to_data()), scene=1, track=song_testing.LEAD)), [MIDDLE_C])
 
     def test_a_file_saved_since_the_numbering_changed_or_without_a_version_keeps_its_octaves(self):

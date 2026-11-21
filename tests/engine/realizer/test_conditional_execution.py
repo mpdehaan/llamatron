@@ -197,9 +197,9 @@ class TestRegistersSetAndAdded(unittest.TestCase):
         self.assertEqual(heard(data), notes_at([1, 2, 3, 0, 1]))
 
     def test_a_song_with_only_a_scene_or_a_clip_changing_registers_counts_as_changing_them(self):
-        self.assertFalse(song_from_data(song()).changes_registers())
-        self.assertTrue(song_from_data(song(scene={SceneSetting.ADD_REGISTERS: {AX: 1}})).changes_registers())
-        self.assertTrue(song_from_data(song(clip={ClipSlotSetting.SET_REGISTERS: {AX: 1}})).changes_registers())
+        self.assertFalse(song_from_data(song()).get_setlist().changes_registers())
+        self.assertTrue(song_from_data(song(scene={SceneSetting.ADD_REGISTERS: {AX: 1}})).get_setlist().changes_registers())
+        self.assertTrue(song_from_data(song(clip={ClipSlotSetting.SET_REGISTERS: {AX: 1}})).get_setlist().changes_registers())
 
     def test_what_a_file_refuses(self):
         for wrong in ({LEAD: 1}, {AX: limits.MAX_REGISTER_VALUE + 1}, {AX: None}, [AX]):

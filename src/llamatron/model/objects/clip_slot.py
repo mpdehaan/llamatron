@@ -44,7 +44,7 @@ MIN_MORPH_REPEAT = 2
 
 
 def _check_pattern_name(*, value, song):
-    if not song.has_pattern(value):
+    if not song.get_setlist().has_pattern(value):
         raise InvalidValue(errors.ERR_CLIP_SLOT_NO_SUCH_PATTERN.format(name=value))
 
 
@@ -54,12 +54,12 @@ def _check_pattern_names(*, value, song):
         raise InvalidValue(errors.ERR_NOT_PATTERN_NAMES.format(value=value))
     for name in value:
         _check_pattern_name(value=name, song=song)
-    if len({song.get_pattern(name).is_drum() for name in value}) > 1:
+    if len({song.get_setlist().get_pattern(name).is_drum() for name in value}) > 1:
         raise InvalidValue(errors.ERR_PATTERNS_DRUMS_AND_NOTES)
 
 
 def _check_scale_name(*, value, song):
-    if not song.has_scale(value):
+    if not song.get_setlist().has_scale(value):
         raise InvalidValue(errors.ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
 
 

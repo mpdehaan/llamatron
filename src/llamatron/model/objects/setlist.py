@@ -746,6 +746,23 @@ class Setlist(HoldsSections, HoldsSettings):
         """Return the songs, in the set's order."""
         return self._section(Section.SONGS).values()
 
+    def get_setlist(self):
+        """Return the set names are looked up in, which for the set is itself: whatever looks a name up in a song or in the set
+        asks it for its set, and the set alone answers for what it holds."""
+        return self
+
+    def add_new_chain(self, name):
+        """Add an empty chain at the end of the set's chains, and return it."""
+        chain = Chain([])
+        self.add_item(section=Section.CHAINS, name=name, item=chain)
+        return chain
+
+    def add_new_instrument(self, name):
+        """Add an instrument with no device yet at the end of the set's instruments, and return it."""
+        instrument = Instrument()
+        self.add_item(section=Section.INSTRUMENTS, name=name, item=instrument)
+        return instrument
+
     def add_new_song(self, name):
         """Add an empty song at the end, in the set's first scale if it has one, and return it."""
         song = Song.new(setlist=self)

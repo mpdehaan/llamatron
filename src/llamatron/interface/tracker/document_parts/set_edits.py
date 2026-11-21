@@ -12,9 +12,7 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 from llamatron.engine.generators import arp as arp_plugin, musician as musician_plugin, progression as progression_plugin
 from llamatron.engine.generators.progression.model import ProgressionSetting
 from llamatron.importers.writing import add_imported
-from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.groove import new_groove
-from llamatron.model.objects.instrument import Instrument
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
 from llamatron.model.schema import generator_plugins
@@ -189,7 +187,7 @@ class SetEdits:
         return self._setlist.get_chain(name)
 
     def add_chain(self, name):
-        self.change_set(self._setlist.add_item, section=Section.CHAINS, name=name, item=Chain([]))
+        self.change_set(self._setlist.add_new_chain, name)
 
     def move_chain_step(self, *, chain, place, offset):
         """Move a chain's step up or down, and return whether it moved."""
@@ -203,7 +201,7 @@ class SetEdits:
     def add_instrument(self, name):
         """Add an instrument with no device yet under a name. The first instrument turns real-time playback on."""
         first = not self._setlist.get_instrument_names()
-        self.change_set(self._setlist.add_item, section=Section.INSTRUMENTS, name=name, item=Instrument())
+        self.change_set(self._setlist.add_new_instrument, name)
         if first:
             self.change_set(self._setlist.set_real_time, True)
 

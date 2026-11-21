@@ -99,7 +99,7 @@ class TestArrangeTracks(UITest):
         copied = self.document.clip_slot(index=0, track=LEAD_COPY).get_pattern_names()
         self.assertNotEqual(copied, original)
         song = self.document.song()
-        self.assertEqual([song.get_pattern(name).to_data() for name in copied], [song.get_pattern(name).to_data() for name in original])
+        self.assertEqual([song.get_setlist().get_pattern(name).to_data() for name in copied], [song.get_setlist().get_pattern(name).to_data() for name in original])
         self.assertEqual(self.document.clip_slot(index=0, track=LEAD).get_pattern_names(), original)
 
     async def test_insert_puts_a_blank_track_before_this_one(self):
@@ -256,7 +256,7 @@ class TestTrackEditor(UITest):
     async def test_a_tracks_octave_range_in_the_sets_octave_labels(self):
         song = self.document.song()
         await self.select_field(LOWEST_OCTAVE)
-        self.assertIn(str(song.shown_octave(limits.MIN_OCTAVE)), self.text())
+        self.assertIn(str(song.get_setlist().shown_octave(limits.MIN_OCTAVE)), self.text())
         await self.press(key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.track(LEAD).get_lowest_octave(), limits.MIN_OCTAVE + 1)
         await self.select_field(HIGHEST_OCTAVE)
@@ -264,7 +264,7 @@ class TestTrackEditor(UITest):
         self.assertEqual(self.track(LEAD).get_highest_octave(), limits.MAX_OCTAVE - 1)
         # Typed in the set's octave labels, and stored in the file's numbering.
         await self.press(Key.ENTER)
-        self.app.screen.value = str(song.shown_octave(TYPED_OCTAVE))
+        self.app.screen.value = str(song.get_setlist().shown_octave(TYPED_OCTAVE))
         await self.press(Key.ENTER)
         self.assertEqual(self.track(LEAD).get_highest_octave(), TYPED_OCTAVE)
         # The lowest can't be nudged past the highest.

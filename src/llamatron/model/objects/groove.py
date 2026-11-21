@@ -245,7 +245,7 @@ def check_groove_choice(*, value, song):
         return
     if not isinstance(value, str):
         raise InvalidValue(errors.ERR_GROOVE_NOT_NAME_OR_FALSE.format(value=value))
-    if not song.has_groove(value):
+    if not song.get_setlist().has_groove(value):
         raise InvalidValue(errors.ERR_NO_SUCH_GROOVE.format(name=value))
 
 
@@ -262,6 +262,6 @@ def groove_for(*, choices, song):
         return None
     for choice in choices:
         if choice is not None:
-            groove = song.get_groove(choice)
+            groove = song.get_setlist().get_groove(choice)
             return None if groove.is_straight() else groove
     return None

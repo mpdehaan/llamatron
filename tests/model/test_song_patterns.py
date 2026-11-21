@@ -61,10 +61,10 @@ class TestPatterns(unittest.TestCase):
         self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [60])
 
     def test_octave_labels_are_a_song_setting_with_lives_as_the_default(self):
-        self.assertEqual(song_from_data(with_parts()).get_octave_labels(), OctaveLabels.LIVE)
+        self.assertEqual(song_from_data(with_parts()).get_setlist().get_octave_labels(), OctaveLabels.LIVE)
         song = song_from_data(with_parts(octave_labels=OctaveLabels.LLAMATRON))
-        self.assertEqual(song.get_octave_labels(), OctaveLabels.LLAMATRON)
-        self.assertEqual((song.shown_octave(limits.MAX_OCTAVE), song.stored_octave(limits.MAX_OCTAVE)), (limits.MAX_OCTAVE, limits.MAX_OCTAVE))
+        self.assertEqual(song.get_setlist().get_octave_labels(), OctaveLabels.LLAMATRON)
+        self.assertEqual((song.get_setlist().shown_octave(limits.MAX_OCTAVE), song.get_setlist().stored_octave(limits.MAX_OCTAVE)), (limits.MAX_OCTAVE, limits.MAX_OCTAVE))
         with self.assertRaises(SongFileError):
             song_from_data(with_parts(octave_labels=song_testing.X))
 

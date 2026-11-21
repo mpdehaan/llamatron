@@ -48,7 +48,7 @@ class TestPlusRow(UITest):
 
     async def test_an_empty_list_starts_on_it(self):
         self.empty_the_arrangement()
-        for name in self.document.song().get_pattern_names():
+        for name in self.document.song().get_setlist().get_pattern_names():
             self.document.delete_named(section=Section.PATTERNS, name=name)
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         self.assertIsInstance(self.app.screen, PromptDialog)
@@ -98,18 +98,18 @@ class TestSettingArrows(UITest):
         await self.press(keybindings.MainPage.FILE)
         await self.select_field(STEP_SIZE)
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_step_size(), Fraction(1, 8))
+        self.assertEqual(self.document.song().get_setlist().get_step_size(), Fraction(1, 8))
         await self.select_field(labels.MSG_DEFAULT_OCTAVE_LABEL)
         await self.press(Key.LEFT)
-        self.assertEqual(self.document.song().get_default_octave(), defaults.DEFAULT_OCTAVE - 1)
+        self.assertEqual(self.document.song().get_setlist().get_default_octave(), defaults.DEFAULT_OCTAVE - 1)
         await self.select_field(labels.MSG_DEFAULT_DRUM_OCTAVE_LABEL)
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_default_drum_octave(), defaults.DEFAULT_DRUM_OCTAVE + 1)
+        self.assertEqual(self.document.song().get_setlist().get_default_drum_octave(), defaults.DEFAULT_DRUM_OCTAVE + 1)
         await self.select_field(labels.MSG_OCTAVE_LABELS_LABEL)
         await self.press(Key.RIGHT)
-        self.assertEqual(self.document.song().get_octave_labels(), OctaveLabels.LLAMATRON)
+        self.assertEqual(self.document.song().get_setlist().get_octave_labels(), OctaveLabels.LLAMATRON)
         await self.press(Key.LEFT)
-        self.assertEqual(self.document.song().get_octave_labels(), OctaveLabels.LIVE)
+        self.assertEqual(self.document.song().get_setlist().get_octave_labels(), OctaveLabels.LIVE)
 
     async def test_default_follow_action_is_chosen_from_a_list_and_written_only_when_set(self):
         # Real-time playback alone reads it, and a set that never sets it writes nothing, so the demos stay as they are.
@@ -131,7 +131,7 @@ class TestSettingArrows(UITest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.press(Key.DOWN, Key.ENTER)
-        self.assertEqual(self.document.song().get_octave_labels(), OctaveLabels.LLAMATRON)
+        self.assertEqual(self.document.song().get_setlist().get_octave_labels(), OctaveLabels.LLAMATRON)
 
 
 class TestPickerMark(UITest):

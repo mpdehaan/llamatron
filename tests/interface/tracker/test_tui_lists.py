@@ -114,22 +114,22 @@ class TestScalesPage(UITest):
         await self.press(Key.ENTER, Key.ESCAPE, keybindings.MainPage.SONGS, Key.ENTER)
         await self.select_field(labels.MSG_SCALE_LABEL)
         await self.press(Key.BACKSPACE, Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SCALES, Key.BACKSPACE, keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.document.song().get_scale_names(), [])
+        self.assertEqual(self.document.song().get_setlist().get_scale_names(), [])
 
     async def test_a_is_the_add_key_and_plus_adds_only_from_its_row(self):
         """A adds on every list page, since + needs Shift; the + row at the bottom still adds with Enter."""
         await self.press(keybindings.MainPage.SCALES, OLD_ADD_KEY)
         self.assertIsInstance(self.app.screen, ScalesPage)
-        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE])
+        self.assertEqual(self.document.song().get_setlist().get_scale_names(), [setlist.DEFAULT_SCALE])
         self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.ScalesPage.ADD)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.ADD), self.text())
         await self.press(Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
-        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE, SCALE_2])
+        self.assertEqual(self.document.song().get_setlist().get_scale_names(), [setlist.DEFAULT_SCALE, SCALE_2])
 
     async def test_adding_a_scale_makes_c_major_named_by_its_number_and_opens_its_page(self):
         await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.ADD)
         self.assertIsInstance(self.app.screen, ScalePage)
-        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE, SCALE_2])
+        self.assertEqual(self.document.song().get_setlist().get_scale_names(), [setlist.DEFAULT_SCALE, SCALE_2])
         self.assertEqual(self.root_and_kind(SCALE_2), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
         self.assertIn(SCALE_2, self.crumbs_line())
         await self.press(Key.ESCAPE)
@@ -163,7 +163,7 @@ class TestScalePage(UITest):
         await self.select_field(labels.MSG_ROOT_LABEL)
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertEqual(self.root_and_kind(setlist.DEFAULT_SCALE), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
-        self.assertEqual(self.document.song().get_scale_names(), [setlist.DEFAULT_SCALE])
+        self.assertEqual(self.document.song().get_setlist().get_scale_names(), [setlist.DEFAULT_SCALE])
 
     async def test_the_scale_page_steps_the_root_and_kind_and_shows_the_notes(self):
         self.name_the_scale_after_its_notes()
@@ -179,7 +179,7 @@ class TestScalePage(UITest):
         self.assertEqual(self.root_and_kind(D_DORIAN), (NoteName.D, scale_type_name(ScaleType.DORIAN)))
         self.assertIn(D_DORIAN_NOTES, self.text())
         self.assertIn(messages.MSG_SCALE_USES_NOTE.format(count=1), self.text())
-        self.assertEqual(self.document.song().get_scale_names(), [D_DORIAN])
+        self.assertEqual(self.document.song().get_setlist().get_scale_names(), [D_DORIAN])
         self.assertEqual(self.document.song().get_scale_name(), D_DORIAN)
         render_song(self.document.song())
 
@@ -422,13 +422,13 @@ class TestGeneratorsPage(UITest):
         self.assertIn(messages.MSG_TAKEN_OUT_OF, self.text())
         self.assertIn(CHAIN_NAMED, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertIn(UP, self.document.song().get_generator_names(arp_plugin.NAME))
+        self.assertIn(UP, self.document.song().get_setlist().get_generator_names(arp_plugin.NAME))
         steps = self.chain_steps(NAMED)
         await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
-        self.assertNotIn(UP, self.document.song().get_generator_names(arp_plugin.NAME))
+        self.assertNotIn(UP, self.document.song().get_setlist().get_generator_names(arp_plugin.NAME))
         self.assertNotIn((arp_plugin.NAME, UP), self.chain_steps(NAMED))
         await self.press(keybindings.Page.UNDO)
-        self.assertIn(UP, self.document.song().get_generator_names(arp_plugin.NAME))
+        self.assertIn(UP, self.document.song().get_setlist().get_generator_names(arp_plugin.NAME))
         self.assertEqual(self.chain_steps(NAMED), steps)
 
     async def test_a_chain_is_made_on_the_generators_page_and_opens_in_the_chain_editor(self):
@@ -443,7 +443,7 @@ class TestGeneratorsPage(UITest):
         await self.press(Key.ESCAPE, Key.BACKSPACE)
         self.assertNotIn(messages.MSG_TAKEN_OUT_OF, self.text())
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertNotIn(name, self.document.song().get_generator_names(arp_plugin.NAME))
+        self.assertNotIn(name, self.document.song().get_setlist().get_generator_names(arp_plugin.NAME))
 
     async def test_renaming_updates_its_chains_and_keeps_the_cursor_on_it(self):
         await self.open_page_on_the_arp()
@@ -528,7 +528,7 @@ class TestArpEditorFields(UITest):
         await self.press(Key.ENTER)
         self.app.screen.value = RISE
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_generator_names(arp_plugin.NAME), [RISE])
+        self.assertEqual(self.document.song().get_setlist().get_generator_names(arp_plugin.NAME), [RISE])
         self.assertEqual(self.chain_steps(NAMED)[0], (arp_plugin.NAME, RISE))
         self.assertIn(RISE, self.crumbs_line())
         await self.select_field(labels.MSG_ORDER_LABEL)
@@ -589,7 +589,7 @@ class TestDriftAdded(UITest):
 
     async def test_a_new_one_does_nothing_until_given_values(self):
         name = await self.add_generator(drift_plugin.SECTION)
-        self.assertEqual(self.document.song().get_generator_settings(kind=drift_plugin.NAME, name=name).to_data(), {})
+        self.assertEqual(self.document.song().get_setlist().get_generator_settings(kind=drift_plugin.NAME, name=name).to_data(), {})
 
 
 class TestListSearchErases(UITest):
@@ -613,7 +613,7 @@ class TestDriftEditor(UITest):
         self.assertIsInstance(self.app.screen, DriftEditor)
 
     def drift(self):
-        return self.document.song().get_generator_settings(kind=drift_plugin.NAME, name=ui_testing.SWAY)
+        return self.document.song().get_setlist().get_generator_settings(kind=drift_plugin.NAME, name=ui_testing.SWAY)
 
     async def test_left_and_right_pick_a_version_and_the_brackets_change_only_that_one(self):
         await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.DEGREE])
@@ -628,14 +628,14 @@ class TestDriftEditor(UITest):
     async def test_a_scale_override_is_picked_from_the_songs_scales(self):
         await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.SCALE])
         await self.press(keybindings.DriftEditor.MORE)
-        self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE), sorted(self.document.song().get_scale_names())[0])
+        self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE), sorted(self.document.song().get_setlist().get_scale_names())[0])
 
     async def test_enter_on_a_scale_override_picks_from_a_list_whose_first_entry_clears_it(self):
         await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.SCALE])
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.press(Key.DOWN, keybindings.ChoiceDialog.CHOOSE)
-        self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE), sorted(self.document.song().get_scale_names())[0])
+        self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE), sorted(self.document.song().get_setlist().get_scale_names())[0])
         await self.press(Key.ENTER, Key.UP, keybindings.ChoiceDialog.CHOOSE)
         self.assertIsNone(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE))
 
@@ -768,7 +768,7 @@ class TestAutoRatchetEditor(UITest):
         await self.press(Key.ENTER)
         self.app.screen.value = FAST
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_generator_names(auto_ratchet_plugin.NAME), [FAST])
+        self.assertEqual(self.document.song().get_setlist().get_generator_names(auto_ratchet_plugin.NAME), [FAST])
         self.assertEqual(self.chain_steps(NAMED)[1], (auto_ratchet_plugin.NAME, FAST))
         self.assertIn(FAST, self.crumbs_line())
 
@@ -824,7 +824,7 @@ class TestChainEditor(UITest):
         await self.press(keybindings.ChainEditor.RENAME)
         self.app.screen.value = BRIGHT
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.song().get_chain_names(), [BRIGHT, EMPTY])
+        self.assertEqual(self.document.song().get_setlist().get_chain_names(), [BRIGHT, EMPTY])
         self.assertEqual(self.document.clip_slot(index=0, track=LEAD).get_chain_names(), [BRIGHT])
         self.assertIn(BRIGHT, self.crumbs_line())
         render_song(self.document.song())

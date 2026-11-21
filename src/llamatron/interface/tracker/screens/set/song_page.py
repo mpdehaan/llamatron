@@ -109,7 +109,7 @@ class SongPage(FieldPage):
 
     def step_scale(self, offset):
         """Move to the next or previous of the set's scales, with no scale before the first."""
-        names = [None, *sorted_names(self.song().get_scale_names())]
+        names = [None, *sorted_names(self.song().get_setlist().get_scale_names())]
         place = names.index(self.song().get_scale_name())
         self.document().change_set(self.document().song().set_scale_name, names[max(min(place + offset, len(names) - 1), 0)])
 
@@ -141,15 +141,15 @@ class SongPage(FieldPage):
 
     def step_groove(self, offset):
         """Move to the next or previous groove, in the order the picker shows them."""
-        names = sorted_names(self.song().get_groove_names())
+        names = sorted_names(self.song().get_setlist().get_groove_names())
         self.document().change_set(self.document().song().set_groove_name, stepped(values=names, current=self.song().get_groove_name(), offset=offset))
 
     def pick_groove(self):
-        names = sorted_names(self.song().get_groove_names())
+        names = sorted_names(self.song().get_setlist().get_groove_names())
         self.pick(title=messages.MSG_SONG_GROOVE_TITLE, values=names, current=self.song().get_groove_name(), then=lambda name: self.document().change_set(self.document().song().set_groove_name, name))
 
     def pick_scale(self):
-        scales = sorted_names(self.song().get_scale_names())
+        scales = sorted_names(self.song().get_setlist().get_scale_names())
         if not scales:
             self.refuse(errors.ERR_ADD_A_SCALE_FIRST)
             return

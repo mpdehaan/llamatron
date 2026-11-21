@@ -832,7 +832,7 @@ class ArrangePage(Page):
     # Clips.
 
     def add_clip(self):
-        patterns = sorted_names(self.document().song().get_pattern_names())
+        patterns = sorted_names(self.document().song().get_setlist().get_pattern_names())
         if not patterns:
             self.tell(errors.ERR_NO_PATTERNS_TITLE, errors.ERR_ADD_A_PATTERN_FIRST)
             return

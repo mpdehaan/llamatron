@@ -50,7 +50,7 @@ class TestRearrangingAPattern(UITest):
         self.editor = self.app.screen
 
     def rows(self, *, row=Row.DEGREE):
-        return self.document.song().get_pattern(LONG_PATTERN).get_row(row)
+        return self.document.song().get_setlist().get_pattern(LONG_PATTERN).get_row(row)
 
     async def test_reverse_after_reverses_everything_after_the_cursor(self):
         await self.press(Key.RIGHT)
@@ -129,7 +129,7 @@ class TestRearrangingAPattern(UITest):
         self.app.screen.cursor.set_place(self.app.screen.options.index(BEAT))
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         song = self.document.song()
-        self.assertEqual(song.get_pattern(LONG_PATTERN).to_data(), song.get_pattern(BEAT).to_data())
+        self.assertEqual(song.get_setlist().get_pattern(LONG_PATTERN).to_data(), song.get_setlist().get_pattern(BEAT).to_data())
         self.assertEqual(self.editor.step_count(), 2)
         self.assertIn('│ Note', self.text())
 

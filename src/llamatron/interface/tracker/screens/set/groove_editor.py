@@ -40,7 +40,7 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
     STEPS_SHOWN = marks.MSG_CELLS_SHOWN
 
     def groove(self):
-        return self.document().song().get_groove(self.item)
+        return self.document().song().get_setlist().get_groove(self.item)
 
     def cells(self):
         return self.groove().get_cells()

@@ -327,7 +327,7 @@ class TestArrangePage(UITest):
         await self.press(keybindings.ArrangePage.COPY_SCENE, Key.DOWN, Key.ENTER)
         copied = self.document.clip_slot(index=1, track=LEAD).get_pattern_names()
         self.assertNotEqual(copied, original)
-        self.assertTrue(all(self.document.song().has_pattern(name) for name in copied))
+        self.assertTrue(all(self.document.song().get_setlist().has_pattern(name) for name in copied))
 
     async def test_copy_and_delete_on_the_scene_name_act_on_the_scene(self):
         await self.press(keybindings.ArrangePage.COPY_SCENE, Key.ENTER)
@@ -373,7 +373,7 @@ class TestArrangePage(UITest):
         for index, scene in enumerate(self.document.song().get_scenes()):
             for track in scene.get_track_names():
                 self.document.change_set(self.document.song().get_scene(index).remove_clip_slot, track)
-        for name in self.document.song().get_pattern_names():
+        for name in self.document.song().get_setlist().get_pattern_names():
             self.document.delete_named(section=Section.PATTERNS, name=name)
         await self.press(Key.RIGHT, Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
@@ -490,7 +490,7 @@ class TestClipPage(UITest):
         await self.select_field(labels_text.MSG_PATTERNS_LABEL)
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertEqual(self.patterns(), [OTHER])
-        self.assertTrue(self.document.song().has_pattern(first[0]))
+        self.assertTrue(self.document.song().get_setlist().has_pattern(first[0]))
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertEqual(self.patterns(), [OTHER])
         self.assertIn(errors.ERR_CLIP_NEEDS_A_PATTERN, self.text())
@@ -504,7 +504,7 @@ class TestClipPage(UITest):
         self.assertEqual(self.document.get_setlist().get_pattern(LEAD_1).get_group(), LEAD)
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.patterns(), first)
-        self.assertFalse(self.document.song().has_pattern(LEAD_1))
+        self.assertFalse(self.document.song().get_setlist().has_pattern(LEAD_1))
 
     async def test_move_carries_a_pattern_along_the_list_as_one_undo_step(self):
         first = self.patterns()[0]
@@ -548,7 +548,7 @@ class TestClipPage(UITest):
         await self.press(Key.ENTER)
         self.assertEqual(self.clip_slot().get_scale_name(), CLIP_SCALE)
         await self.press(Key.ENTER)
-        for _ in self.document.song().get_scale_names():
+        for _ in self.document.song().get_setlist().get_scale_names():
             await self.press(Key.UP)
         await self.press(Key.ENTER)
         self.assertIsNone(self.clip_slot().get_scale_name())

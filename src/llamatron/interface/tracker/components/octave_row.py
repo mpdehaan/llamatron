@@ -39,14 +39,14 @@ class OctaveRow(PatternRow):
 
     def digits_label(self):
         """Return the digits label, which runs up to the top octave in the song's octave labels."""
-        return legends.MSG_DIGITS_RANGE_LABEL.format(low=keys_values.DIGITS[0], high=self.song().shown_octave(self.highest()))
+        return legends.MSG_DIGITS_RANGE_LABEL.format(low=keys_values.DIGITS[0], high=self.song().get_setlist().shown_octave(self.highest()))
 
     def type_octave(self, digit):
         """Take a typed octave, which is typed in the song's octave labels, and store it as the file numbers it."""
         song = self.song()
-        number = self.editor.typed_number(digit=digit, low=song.shown_octave(self.lowest()), high=song.shown_octave(self.highest()))
+        number = self.editor.typed_number(digit=digit, low=song.get_setlist().shown_octave(self.lowest()), high=song.get_setlist().shown_octave(self.highest()))
         if number is not None:
-            self.set_value(song.stored_octave(number))
+            self.set_value(song.get_setlist().stored_octave(number))
 
     def octave_now(self, *, step=None):
         current = self.value(step=step)
@@ -60,4 +60,4 @@ class OctaveRow(PatternRow):
         if not self.is_note(step=step):
             return drawing.NOTHING
         shift = self.editor.row_for(Row.DEGREE).octave_shift(step=step)
-        return str(self.song().shown_octave(self.octave_now(step=step) + shift))
+        return str(self.song().get_setlist().shown_octave(self.octave_now(step=step) + shift))

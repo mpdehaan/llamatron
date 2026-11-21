@@ -24,7 +24,7 @@ class TestStrumAdded(UITest):
     async def test_a_new_one_strums_by_the_beat(self):
         name = await self.add_generator(strum_plugin.SECTION)
         self.assertIsInstance(self.app.screen, StrumEditor)
-        strum = self.document.song().get_generator_settings(kind=strum_plugin.NAME, name=name)
+        strum = self.document.song().get_setlist().get_generator_settings(kind=strum_plugin.NAME, name=name)
         self.assertEqual(strum.get_strum().direction, StrumDirection.BY_THE_BEAT)
 
 
@@ -36,7 +36,7 @@ class TestStrumEditor(UITest):
         self.assertIsInstance(self.app.screen, StrumEditor)
 
     def strum(self):
-        return self.document.song().get_generator_settings(kind=strum_plugin.NAME, name=ui_testing.FOLK)
+        return self.document.song().get_setlist().get_generator_settings(kind=strum_plugin.NAME, name=ui_testing.FOLK)
 
     async def test_the_spread_steps_through_its_choices_and_shows_milliseconds(self):
         self.assertIn(spread_name(StrumSpread.NORMAL), self.text())

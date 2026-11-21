@@ -63,7 +63,7 @@ class TestScaleLength(unittest.TestCase):
     def test_it_is_read_back_from_a_file_and_kept_by_a_copy(self):
         data = lead_data(A_STEP)
         data[Section.PATTERNS][A_PATTERN][PatternSetting.SCALE_LENGTH] = PENTATONIC
-        pattern = song_from_data(data).get_pattern(A_PATTERN)
+        pattern = song_from_data(data).get_setlist().get_pattern(A_PATTERN)
         self.assertEqual(pattern.get_scale_length(), PENTATONIC)
         self.assertEqual(pattern.copy().get_scale_length(), PENTATONIC)
 

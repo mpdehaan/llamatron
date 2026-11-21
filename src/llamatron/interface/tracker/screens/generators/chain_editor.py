@@ -57,7 +57,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
 
     def steps(self):
         """Return the chain's steps, each (kind of generator, its name)."""
-        return self.document().song().get_chain(self.item).get_steps()
+        return self.document().song().get_setlist().get_chain(self.item).get_steps()
 
     def rows_depend_on(self):
         """Return the chain the rows are of, since one editor's kept rows are another chain's otherwise."""
@@ -81,7 +81,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
     def pick_generator(self, *, title, then):
         """Ask for a generator: a new one first, then every one the set has, each with its kind; then(kind=, name=) takes the one chosen."""
         song = self.document().song()
-        options = [(kind, name) for kind in generator_plugins.sections_by_name() for name in sorted_names(song.get_generator_names(kind))]
+        options = [(kind, name) for kind in generator_plugins.sections_by_name() for name in sorted_names(song.get_setlist().get_generator_names(kind))]
         labels = [messages.MSG_NEW_GENERATOR_CHOICE, *[step_shown(kind=kind, name=name) for kind, name in options]]
 
         def picked(place):

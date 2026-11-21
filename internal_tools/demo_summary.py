@@ -485,7 +485,7 @@ def starting_key_and_tempo(path):
     tempo = (first.get_tempo() if first else None) or song.get_tempo()
     if scale_name is None:
         return NO_KEY, tempo
-    scale = song.get_named_scale(scale_name)
+    scale = song.get_setlist().get_named_scale(scale_name)
     return KEY_TEXT.format(root=scale.get_root(), kind=scale.get_kind().replace(KIND_WORD_JOIN, KIND_WORD_SPACE)), tempo
 
 

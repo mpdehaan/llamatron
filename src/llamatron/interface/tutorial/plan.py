@@ -659,7 +659,7 @@ class TutorialPlan:
             if octave is None:
                 yield from self.press(keybindings.OctaveRow.DEFAULT)
                 continue
-            shown = self.document().song().shown_octave(octave)
+            shown = self.document().song().get_setlist().shown_octave(octave)
             if shown >= 0:
                 yield from self.type_text(str(shown))
             else:

@@ -26,7 +26,7 @@ class TestMusicianAdded(UITest):
 
     async def test_a_new_one_is_found_under_band_generators_and_starts_as_a_rhythm_guitarist(self):
         name = await self.add_generator(musician_plugin.SECTION)
-        settings = self.document.song().get_generator_settings(kind=musician_plugin.NAME, name=name)
+        settings = self.document.song().get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=name)
         self.assertEqual(settings.to_data(), {})
         self.assertEqual(settings.get_own(MusicianSetting.INSTRUMENT), schema.RHYTHM_GUITARIST)
         self.assertIsInstance(self.app.screen, MusicianEditor)
@@ -42,7 +42,7 @@ class TestMusicianEditor(UITest):
         self.assertIsInstance(self.app.screen, MusicianEditor)
 
     def musician(self):
-        return self.document.song().get_generator_settings(kind=musician_plugin.NAME, name=ui_testing.STRUMMER)
+        return self.document.song().get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=ui_testing.STRUMMER)
 
     async def choose(self, *, label, choice):
         await self.select_field(label)

@@ -133,11 +133,11 @@ class Lengths:
 
     def pattern_length(self, name):
         """Return how long one play of a pattern lasts, in fractions of a whole note."""
-        return self._song.get_pattern_length(self._song.get_pattern(name))
+        return self._song.get_setlist().get_pattern_length(self._song.get_setlist().get_pattern(name))
 
     def step_size(self, name):
         """Return how long each step of a pattern is: its own step size, or else the song's."""
-        return self._song.get_pattern_step_size(self._song.get_pattern(name))
+        return self._song.get_setlist().get_pattern_step_size(self._song.get_setlist().get_pattern(name))
 
 
 def seconds_of_plays(*, plays, places):

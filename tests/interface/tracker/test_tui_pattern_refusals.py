@@ -36,7 +36,7 @@ class TestPatternEditorRefusals(UITest):
         """Open a pattern on its rows, which a drum pattern opens on and a note pattern reaches past its piano roll."""
         await self.open_patterns_on(name)
         await self.press(Key.ENTER)
-        if not self.document.song().get_pattern(name).is_drum():
+        if not self.document.song().get_setlist().get_pattern(name).is_drum():
             await self.press(keybindings.PatternEditor.TO_EDITOR)
         self.editor = self.app.screen
         self.assertIsInstance(self.editor, PatternEditor)
@@ -62,7 +62,7 @@ class TestPatternEditorRefusals(UITest):
         # Only one pattern can stay, so the scenes that play the others go first, as a person would have to delete them.
         for index in reversed(range(len(self.document.song().get_scenes()))):
             self.document.change_set(self.document.song().remove_scene, index)
-        for name in self.document.song().get_pattern_names():
+        for name in self.document.song().get_setlist().get_pattern_names():
             if name != TUNE:
                 self.document.delete_named(section=Section.PATTERNS, name=name)
         await self.open(TUNE)
@@ -76,7 +76,7 @@ class TestPatternEditorRefusals(UITest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.document.song().get_pattern(TUNE).get_row(Row.DEGREE), [5])
+        self.assertEqual(self.document.song().get_setlist().get_pattern(TUNE).get_row(Row.DEGREE), [5])
 
     async def test_the_step_count_must_be_a_sensible_number(self):
         await self.open(TUNE)
@@ -85,7 +85,7 @@ class TestPatternEditorRefusals(UITest):
             self.app.screen.value = text
             await self.press(Key.ENTER)
             self.assertIn(message, self.text())
-        self.assertEqual(self.document.song().get_pattern(TUNE).get_steps(), 4)
+        self.assertEqual(self.document.song().get_setlist().get_pattern(TUNE).get_steps(), 4)
 
     async def test_shortening_past_steps_that_hold_something_asks_first(self):
         await self.open(TUNE)
@@ -94,7 +94,7 @@ class TestPatternEditorRefusals(UITest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertEqual(self.document.song().get_pattern(TUNE).get_steps(), 1)
+        self.assertEqual(self.document.song().get_setlist().get_pattern(TUNE).get_steps(), 1)
 
     async def test_a_typed_velocity_must_be_in_range(self):
         await self.open(TUNE)
@@ -114,7 +114,7 @@ class TestPatternEditorRefusals(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(fixed_text(messages.MSG_CHANGE_TYPE_EMPTY_QUESTION), self.text())
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertTrue(self.document.song().get_pattern(NEW_PATTERN).is_drum())
+        self.assertTrue(self.document.song().get_setlist().get_pattern(NEW_PATTERN).is_drum())
 
     async def test_turning_a_pattern_with_notes_into_drums_asks_first(self):
         await self.open(TUNE)
@@ -122,8 +122,8 @@ class TestPatternEditorRefusals(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(LETTERS, self.text())
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertTrue(self.document.song().get_pattern(TUNE).is_drum())
-        self.assertIsNone(self.document.song().get_pattern(TUNE).get_row(Row.DEGREE))
+        self.assertTrue(self.document.song().get_setlist().get_pattern(TUNE).is_drum())
+        self.assertIsNone(self.document.song().get_setlist().get_pattern(TUNE).get_row(Row.DEGREE))
 
     async def test_renaming_to_a_name_in_use_is_refused(self):
         await self.open(TUNE)
@@ -131,7 +131,7 @@ class TestPatternEditorRefusals(UITest):
         self.app.screen.value = BEAT
         await self.press(Key.ENTER)
         self.assertIn(ALREADY_IN_USE, self.text())
-        self.assertTrue(self.document.song().has_pattern(TUNE))
+        self.assertTrue(self.document.song().get_setlist().has_pattern(TUNE))
 
     async def test_backspace_on_a_gate_makes_it_one_step(self):
         await self.open(TUNE)
@@ -143,7 +143,7 @@ class TestPatternEditorRefusals(UITest):
         await self.open(OTHER)
         await self.go_to_row(Row.OCTAVE)
         await self.press(keybindings.OctaveRow.MORE)
-        self.assertEqual(self.document.step_value(name=OTHER, row=Row.OCTAVE, step=0), self.document.song().get_default_octave() + 1)
+        self.assertEqual(self.document.step_value(name=OTHER, row=Row.OCTAVE, step=0), self.document.song().get_setlist().get_default_octave() + 1)
 
     async def test_a_long_pattern_draws_one_grid_and_says_which_steps_show(self):
         self.document.change_pattern(self.document.pattern(TUNE).set_steps, LONG)

@@ -232,7 +232,7 @@ class TestFindingRenames(unittest.TestCase):
 
     def test_a_scale_named_after_its_root_is_the_same_scale_when_the_root_moves(self):
         name = default_scale_name(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))
-        self.document.rename_named(section=Section.SCALES, old=self.document.song().get_scale_names()[0], new=name)
+        self.document.rename_named(section=Section.SCALES, old=self.document.song().get_setlist().get_scale_names()[0], new=name)
         self.before = Snapshot(data=self.document.get_setlist().to_data(), song=self.document.get_current_song_name())
         renamed = self.document.set_scale_root(name=name, root=NoteName.D)
         self.assertNotEqual(renamed, name)

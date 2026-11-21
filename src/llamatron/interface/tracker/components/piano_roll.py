@@ -200,13 +200,13 @@ class PianoRoll(BindsKeys):
         song = self.document().song()
         scale = self.scale_name()
         if scale is None:
-            return labels.MSG_ROLL_ROW_LABEL.format(note=marks.MSG_ROLL_OCTAVE_ONLY.format(octave=song.shown_octave(octave)), degree=degree)
+            return labels.MSG_ROLL_ROW_LABEL.format(note=marks.MSG_ROLL_OCTAVE_ONLY.format(octave=song.get_setlist().shown_octave(octave)), degree=degree)
         if accidental is not NO_ACCIDENTAL:
             name, sounding = self.document().scale_note_at(name=scale, octave=octave, half_steps=pitch % self.per_octave())
-            return labels.MSG_ROLL_ROW_LABEL.format(note=name + str(song.shown_octave(sounding)), degree=drawing_values.NOTHING).rstrip()
+            return labels.MSG_ROLL_ROW_LABEL.format(note=name + str(song.get_setlist().shown_octave(sounding)), degree=drawing_values.NOTHING).rstrip()
         place = degree - limits.MIN_DEGREE
         sounding = self.document().scale_degree_octave(name=scale, octave=octave, place=place)
-        return labels.MSG_ROLL_ROW_LABEL.format(note=self.document().scale_note_names(scale)[place] + str(song.shown_octave(sounding)), degree=degree)
+        return labels.MSG_ROLL_ROW_LABEL.format(note=self.document().scale_note_names(scale)[place] + str(song.get_setlist().shown_octave(sounding)), degree=degree)
 
     def widest_row_label(self):
         """Return how wide a row's label can be, from the label's parts at their widest: the widest note name with the widest octave label, or the octave alone, and the largest degree.
@@ -214,7 +214,7 @@ class PianoRoll(BindsKeys):
         The width is worked out from the parts rather than from a row because a row's label needs a note that exists, and the top row's may not while a degree past the scale's top is being typed.
         """
         song = self.document().song()
-        octave = max((str(song.shown_octave(number)) for number in (limits.MIN_OCTAVE, limits.MAX_OCTAVE)), key=len)
+        octave = max((str(song.get_setlist().shown_octave(number)) for number in (limits.MIN_OCTAVE, limits.MAX_OCTAVE)), key=len)
         notes = [marks.MSG_ROLL_OCTAVE_ONLY.format(octave=octave), *[name + octave for name in note_values.ROOT_NAMES]]
         return max(len(labels.MSG_ROLL_ROW_LABEL.format(note=note, degree=self.size())) for note in notes)
 

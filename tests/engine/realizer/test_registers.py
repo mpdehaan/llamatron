@@ -123,12 +123,12 @@ class TestWhetherASongAddsToRegisters(unittest.TestCase):
     DEFAULT = 2
 
     def test_a_song_adds_when_a_step_has_a_non_zero_change(self):
-        self.assertTrue(song_from_data(one_clip(rows={ADDS: [self.ADD]})).changes_registers())
+        self.assertTrue(song_from_data(one_clip(rows={ADDS: [self.ADD]})).get_setlist().changes_registers())
 
     def test_a_song_does_not_add_with_no_change_rows_or_only_zeros(self):
-        self.assertFalse(song_from_data(one_clip(rows={})).changes_registers())
-        self.assertFalse(song_from_data(one_clip(rows={ADDS: [self.NO_ADD]})).changes_registers())
-        self.assertFalse(song_from_data(one_clip(rows={USES_NOTE: [ADDS_IT], USES_VELOCITY: [ADDS_IT]})).changes_registers())
+        self.assertFalse(song_from_data(one_clip(rows={})).get_setlist().changes_registers())
+        self.assertFalse(song_from_data(one_clip(rows={ADDS: [self.NO_ADD]})).get_setlist().changes_registers())
+        self.assertFalse(song_from_data(one_clip(rows={USES_NOTE: [ADDS_IT], USES_VELOCITY: [ADDS_IT]})).get_setlist().changes_registers())
 
     def test_a_change_row_of_zeros_plays_the_same_as_no_change_row(self):
         registers = {AX: {RegisterSetting.DEFAULT: self.DEFAULT}}

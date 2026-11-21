@@ -275,7 +275,7 @@ class WizardPage(FieldPage):
 
         def phrasing_of(draft):
             song = draft.song()
-            return song.get_generator_settings(kind=phrasing_plugin.NAME, name=name).to_data() if song.has_generator(kind=phrasing_plugin.NAME, name=name) else None
+            return song.get_setlist().get_generator_settings(kind=phrasing_plugin.NAME, name=name).to_data() if song.get_setlist().has_generator(kind=phrasing_plugin.NAME, name=name) else None
         if phrasing_of(Document(setlist=setlist)) is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
@@ -293,7 +293,7 @@ class WizardPage(FieldPage):
 
         def musician_of(draft):
             song = draft.song()
-            return song.get_generator_settings(kind=musician_plugin.NAME, name=name).to_data() if song.has_generator(kind=musician_plugin.NAME, name=name) else None
+            return song.get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=name).to_data() if song.get_setlist().has_generator(kind=musician_plugin.NAME, name=name) else None
         if musician_of(Document(setlist=setlist)) is None:
             # A player who plays in no section of the song has no clips, and so no Musician to open.
             self.refuse(errors.ERR_WIZARD_PLAYER_PLAYS_NOTHING)

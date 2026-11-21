@@ -49,7 +49,7 @@ def _check_scene_name(name):
 
 def _check_scale_name(*, value, song):
     """Refuse a scale the song doesn't have. None is no scale of the scene's own."""
-    if value is not None and not song.has_scale(value):
+    if value is not None and not song.get_setlist().has_scale(value):
         raise InvalidValue(errors.ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
 
 

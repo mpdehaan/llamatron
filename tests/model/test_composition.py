@@ -579,9 +579,9 @@ class TestSetlistAndSong(RoundTrip):
     def test_an_empty_song_has_the_defaults(self):
         song = song_from_data({})
         self.assertEqual(song.to_data(), {})
-        self.assertEqual((song.get_tempo(), song.get_step_size()), (120, Fraction(1, 16)))
+        self.assertEqual((song.get_tempo(), song.get_setlist().get_step_size()), (120, Fraction(1, 16)))
         self.assertEqual(song.get_time_signature().to_text(), defaults.DEFAULT_TIME_SIGNATURE)
-        self.assertEqual((song.get_default_octave(), song.get_default_drum_octave(), song.get_scale_name()), (5, 3, None))
+        self.assertEqual((song.get_setlist().get_default_octave(), song.get_setlist().get_default_drum_octave(), song.get_scale_name()), (5, 3, None))
         self.assertEqual((song.get_track_names(), song.get_scenes()), ([], []))
 
     def test_a_song_time_signature_is_read_and_written_and_a_pattern_can_have_its_own(self):
@@ -613,7 +613,7 @@ class TestSetlistAndSong(RoundTrip):
         self.assertEqual(own.to_data()[PatternSetting.ENTRY_SIZE], QUARTER)
         self.assertEqual(own.copy().get_written_entry_size(), QUARTER)
         song.set_entry_size(None)
-        self.assertEqual(song.entry_size_for(plain), song.get_step_size())
+        self.assertEqual(song.entry_size_for(plain), song.get_setlist().get_step_size())
         self.assertNotIn(SongSetting.ENTRY_SIZE, song.to_data())
         own.set_entry_size(None)
         self.assertNotIn(PatternSetting.ENTRY_SIZE, own.to_data())
@@ -633,11 +633,11 @@ class TestSetlistAndSong(RoundTrip):
 
     def test_it_looks_up_its_named_objects(self):
         song = a_song()
-        self.assertTrue(song.has_pattern(A) and song.has_track(LEAD) and song.has_chain(X) and song.has_scale(MAIN))
-        self.assertTrue(song.has_generator(kind=arp_plugin.NAME, name=UP))
-        self.assertFalse(song.has_generator(kind=auto_ratchet_plugin.NAME, name=UP))
+        self.assertTrue(song.get_setlist().has_pattern(A) and song.has_track(LEAD) and song.get_setlist().has_chain(X) and song.get_setlist().has_scale(MAIN))
+        self.assertTrue(song.get_setlist().has_generator(kind=arp_plugin.NAME, name=UP))
+        self.assertFalse(song.get_setlist().has_generator(kind=auto_ratchet_plugin.NAME, name=UP))
         self.assertEqual(song.get_track_names(), [LEAD, BASS])
-        self.assertEqual(song.get_pattern(B).get_value(row=Row.DEGREE, step=0), 5)
+        self.assertEqual(song.get_setlist().get_pattern(B).get_value(row=Row.DEGREE, step=0), 5)
 
     def test_setlist_refusals(self):
         self.assert_refused(errors.ERR_NOT_A_SETLIST, Setlist, [1])

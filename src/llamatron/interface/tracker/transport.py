@@ -471,10 +471,10 @@ class Transport:
     def playing_step(self, pattern):
         """Return the step of a pattern that sounds now, for the piano roll's read head: the step of the first playing clip that plays the pattern, in the clip's
         direction, or None when no playing clip plays the pattern or the direction chooses its steps as it goes. What a generator or a morph does to the clip is not followed."""
-        if not self.is_playing() or self._song is None or not self._song.has_pattern(pattern):
+        if not self.is_playing() or self._song is None or not self._song.get_setlist().has_pattern(pattern):
             return None
         song = self._song
-        played = song.get_pattern(pattern)
+        played = song.get_setlist().get_pattern(pattern)
         quarter = self._playback.seconds_per_quarter()
         scenes = song.get_scenes()
         for index in self.playing_scenes():
@@ -488,7 +488,7 @@ class Transport:
                 if elapsed is None:
                     continue
                 return step_sounding(
-                    elapsed=elapsed, quarter=quarter, step_size=song.get_pattern_step_size(played), steps=played.get_steps(),
+                    elapsed=elapsed, quarter=quarter, step_size=song.get_setlist().get_pattern_step_size(played), steps=played.get_steps(),
                     direction=clip_slot.get_direction() or played.get_direction(),
                 )
         return None

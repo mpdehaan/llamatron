@@ -267,7 +267,7 @@ class SceneView:
         sixteenths = max((body_width - LABEL_COLUMNS) // self._zoom, 1)
         roll_height = max(body_height - CHORD_LINES, 1)
         self.scroll(sixteenths=sixteenths, roll_height=roll_height)
-        scale = song.get_named_scale(effective.scale) if effective.scale else None
+        scale = song.get_setlist().get_named_scale(effective.scale) if effective.scale else None
         body = self.chord_lines(notes=notes, scale=scale, sixteenths=sixteenths) + self.roll_lines(notes=notes, sixteenths=sixteenths, roll_height=roll_height)
         sidebar = self.sidebar(height=len(body))
         for line, side in zip(body, sidebar):

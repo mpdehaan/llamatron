@@ -493,7 +493,7 @@ class TestPlayerFollowActions(PlayerTest):
     def test_next_sends_its_start_the_moment_the_clips_own_repeats_end_cutting_the_rest_of_the_scene(self):
         # The bass's pattern is half as long as the lead's, so with Advance "Next" on the bass the second scene launches half way through the first, whole, cutting the lead.
         song = player_song(follow_actions={(FIRST, BASS): FollowAction.NEXT})
-        song.get_pattern(LOW).set_steps(2)
+        song.get_setlist().get_pattern(LOW).set_steps(2)
         player = self.start(song)
         player.play_song()
         self.run_until(HALF_A_SCENE + STEP)
@@ -505,7 +505,7 @@ class TestPlayerFollowActions(PlayerTest):
         self.assertFalse(player.is_playing())
         # With the second scene launching apart, "Next" starts the bass below alone, and the lead plays its first scene out.
         song = player_song(follow_actions={(FIRST, BASS): FollowAction.NEXT}, launch_apart=(SECOND,))
-        song.get_pattern(LOW).set_steps(2)
+        song.get_setlist().get_pattern(LOW).set_steps(2)
         player = self.start(song)
         player.play_song()
         self.run_until(HALF_A_SCENE + STEP)

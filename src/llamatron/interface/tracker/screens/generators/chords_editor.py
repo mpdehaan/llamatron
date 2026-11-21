@@ -90,7 +90,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
         """Return the current song's scale, which names the chords, or None when it has none."""
         song = self.document().song()
         name = song.get_scale_name()
-        return None if name is None else song.get_named_scale(name)
+        return None if name is None else song.get_setlist().get_named_scale(name)
 
     def step_count(self):
         return len(self.settings().get_chords())

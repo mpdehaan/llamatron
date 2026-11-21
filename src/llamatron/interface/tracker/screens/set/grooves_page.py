@@ -29,8 +29,8 @@ class GroovesPage(NamedListPage):
         song = document.song()
         return [
             (name, [
-                name, marks.MSG_FACTORY_GROOVE_SHOWN if is_factory_groove(name) else marks.MSG_OWN_GROOVE_SHOWN, numbers_text(song.get_groove(name).get_cells()),
-                song.get_groove(name).get_cell_length_text(), len(self.uses(name)),
+                name, marks.MSG_FACTORY_GROOVE_SHOWN if is_factory_groove(name) else marks.MSG_OWN_GROOVE_SHOWN, numbers_text(song.get_setlist().get_groove(name).get_cells()),
+                song.get_setlist().get_groove(name).get_cell_length_text(), len(self.uses(name)),
             ])
             for name in self.names()
         ]
