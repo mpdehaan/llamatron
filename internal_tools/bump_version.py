@@ -15,14 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Bump llamatron's version for a commit that changes the program's Python, or check that a commit carries its bump.
+"""Bump llamatron's version, once before a push that changes the program's Python.
 
 Run from the top folder:
 
     .venv/bin/python internal_tools/bump_version.py           # 1.0.115 becomes 1.0.116, with today's date and the time now
-    .venv/bin/python internal_tools/bump_version.py --check   # fail if Python under src/ is staged for a commit without a bump
+    .venv/bin/python internal_tools/bump_version.py --before-push   # the same, where Python under src/ changed since the last push and the version did not
 
-`internal_tools/bump.sh` runs the first, and internal_tools/check_before_commit.sh runs the second before the tests. The bump
+`internal_tools/bump.sh` runs the first, and internal_tools/push_all.sh the second, committing the bump before it runs every
+test: the version and the build date and time are raised once a push rather than with every commit. The bump
 goes through this script, never a hand edit or a text replacement, because a replacement that
 matches nothing changes nothing and says nothing: two commits once went in without their
 bump that way. Each line this script rewrites has to be found exactly once, or it stops.
@@ -36,7 +37,7 @@ import sys
 VERSION_FILE = 'src/llamatron/support/version.py'
 SOURCE_FOLDER = 'src/'
 PYTHON_SUFFIX = '.py'
-CHECK_FLAG = '--check'
+BEFORE_PUSH_FLAG = '--before-push'
 VERSION_PATTERN = re.compile(r"^VERSION = '(\d+)\.(\d+)\.(\d+)'$", re.MULTILINE)
 BUILD_DATE_PATTERN = re.compile(r"^BUILD_DATE = '[^']*'$", re.MULTILINE)
 BUILD_TIME_PATTERN = re.compile(r"^BUILD_TIME = '[^']*'$", re.MULTILINE)
@@ -45,10 +46,12 @@ BUILD_DATE_LINE = "BUILD_DATE = '{date}'"
 BUILD_TIME_LINE = "BUILD_TIME = '{time}'"
 DATE_FORMAT = '%Y-%m-%d'
 TIME_FORMAT = '%H:%M'
-# How a staged diff marks the line that sets a new version.
+# How a diff marks the line that sets a new version.
 BUMPED_LINE = '+VERSION = '
-STAGED_PATHS_COMMAND = ('git', 'diff', '--cached', '--name-only')
-STAGED_VERSION_DIFF_COMMAND = ('git', 'diff', '--cached', '--unified=0', '--', VERSION_FILE)
+# What changed since the last push: the files, and the version module.
+PUSHED = 'origin/main'
+CHANGED_PATHS_COMMAND = ('git', 'diff', '--name-only', PUSHED, 'HEAD')
+VERSION_DIFF_COMMAND = ('git', 'diff', '--unified=0', PUSHED, 'HEAD', '--', VERSION_FILE)
 READ_TEXT = 'r'
 WRITE_TEXT = 'w'
 FAILED = 1
@@ -56,7 +59,6 @@ VERSION_SEPARATOR = '.'
 NOT_FOUND = 0
 BUMPED_REPORT = 'version {version}, built {date} {time}'
 LINE_NOT_FOUND_ONCE = 'expected one line matching {pattern} in {path}, found {count}'
-NO_BUMP = "Python under src/ is staged without a version bump: run 'internal_tools/bump.sh' and add {path}"
 
 
 def replaced_once(*, pattern, line, text):
@@ -87,25 +89,23 @@ def version_in(text):
 
 
 def changes_the_program(path):
-    """Return whether a staged path is Python under src/, the code a bump is for."""
+    """Return whether a changed path is Python under src/, the code a bump is for."""
     return path.startswith(SOURCE_FOLDER) and path.endswith(PYTHON_SUFFIX)
 
 
-def is_missing_a_bump(*, staged_paths, version_diff):
-    """Return whether a commit would change the program's Python without setting a new version."""
-    return any(changes_the_program(path) for path in staged_paths) and BUMPED_LINE not in version_diff
+def is_missing_a_bump(*, changed_paths, version_diff):
+    """Return whether what is to be pushed changes the program's Python without setting a new version."""
+    return any(changes_the_program(path) for path in changed_paths) and BUMPED_LINE not in version_diff
 
 
 def output_of(command):
     return subprocess.run(command, capture_output=True, text=True, check=True).stdout
 
 
-def check():
-    """Stop a commit that changes the program without its bump, by exiting with a failure and the reason."""
-    staged_paths = output_of(STAGED_PATHS_COMMAND).splitlines()
-    if is_missing_a_bump(staged_paths=staged_paths, version_diff=output_of(STAGED_VERSION_DIFF_COMMAND)):
-        print(NO_BUMP.format(path=VERSION_FILE))
-        sys.exit(FAILED)
+def bump_before_push():
+    """Bump the version where what is to be pushed changes the program's Python and does not raise the version already."""
+    if is_missing_a_bump(changed_paths=output_of(CHANGED_PATHS_COMMAND).splitlines(), version_diff=output_of(VERSION_DIFF_COMMAND)):
+        bump()
 
 
 def bump():
@@ -119,8 +119,8 @@ def bump():
 
 
 def main():
-    if CHECK_FLAG in sys.argv[1:]:
-        check()
+    if BEFORE_PUSH_FLAG in sys.argv[1:]:
+        bump_before_push()
     else:
         bump()
 

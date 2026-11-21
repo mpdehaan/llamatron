@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""internal_tools/bump_version.py raises the version for a commit that changes the program, and tells internal_tools/check_before_commit.sh when a commit lacks its bump."""
+"""internal_tools/bump_version.py raises the version, and once before a push that changes the program and does not raise it already (internal_tools/push_all.sh)."""
 
 import datetime
 import importlib.util
@@ -75,13 +75,13 @@ class TestBumpVersion(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tool.bumped(text=twice, now=NOW)
 
-    def test_a_commit_that_changes_the_programs_python_needs_a_bump(self):
-        self.assertTrue(self.tool.is_missing_a_bump(staged_paths=[A_SOURCE_FILE], version_diff=NO_DIFF))
-        self.assertTrue(self.tool.is_missing_a_bump(staged_paths=[A_DOCUMENT, A_SOURCE_FILE], version_diff=TIME_ONLY_DIFF))
-        self.assertFalse(self.tool.is_missing_a_bump(staged_paths=[A_SOURCE_FILE], version_diff=BUMP_DIFF))
+    def test_a_push_that_changes_the_programs_python_needs_a_bump(self):
+        self.assertTrue(self.tool.is_missing_a_bump(changed_paths=[A_SOURCE_FILE], version_diff=NO_DIFF))
+        self.assertTrue(self.tool.is_missing_a_bump(changed_paths=[A_DOCUMENT, A_SOURCE_FILE], version_diff=TIME_ONLY_DIFF))
+        self.assertFalse(self.tool.is_missing_a_bump(changed_paths=[A_SOURCE_FILE], version_diff=BUMP_DIFF))
 
-    def test_a_commit_of_tests_documents_or_other_files_needs_none(self):
+    def test_a_push_of_tests_documents_or_other_files_needs_none(self):
         for path in (A_TEST_FILE, A_DOCUMENT, A_TEMPLATE_IN_SOURCE):
             with self.subTest(path=path):
-                self.assertFalse(self.tool.is_missing_a_bump(staged_paths=[path], version_diff=NO_DIFF))
-        self.assertFalse(self.tool.is_missing_a_bump(staged_paths=[], version_diff=NO_DIFF))
+                self.assertFalse(self.tool.is_missing_a_bump(changed_paths=[path], version_diff=NO_DIFF))
+        self.assertFalse(self.tool.is_missing_a_bump(changed_paths=[], version_diff=NO_DIFF))
