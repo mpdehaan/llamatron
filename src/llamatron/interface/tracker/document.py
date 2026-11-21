@@ -35,7 +35,6 @@ from llamatron.interface.tracker.document_parts.undo import DocumentUndo
 from llamatron.interface.tracker.history import History
 from llamatron.interface.tracker.lengths import Lengths, measured
 from llamatron.interface.tracker.uses import uses_of
-from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.setlist import Setlist
 from llamatron.user_strings import names
 
@@ -155,10 +154,17 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
         """Return the current song's estimate, taken when first asked for and kept until the set changes."""
         return self.remembered(key=MEASURED_KEY, on=(self,), compute=lambda: measured(self.song()))
 
-    def change(self, method, *arguments, **named):
-        """Make one change through an object's method, note the change, and return what the method returned."""
+    def change_pattern(self, method, *arguments, **named):
+        """Make one change to a pattern through one of its methods, a pattern found by pattern(name), note it as a change inside
+        that pattern, which what is known of everything else outlives, and return what the method returned."""
         result = method(*arguments, **named)
-        self.changed(inside_a_pattern=isinstance(method.__self__, Pattern))
+        self.changed(inside_a_pattern=True)
+        return result
+
+    def change_set(self, method, *arguments, **named):
+        """Make one change to anything of the set but a pattern's own contents through its method, note it, and return what the method returned."""
+        result = method(*arguments, **named)
+        self.changed(inside_a_pattern=False)
         return result
 
     def set_setting(self, *, holder, name, value):
@@ -166,4 +172,4 @@ class Document(Revised, DocumentFiles, DocumentUndo, NamedEdits, SetEdits, SongE
 
         The holder checks the value as reading a file does, against the current song where the setting names something of it.
         """
-        self.change(holder.set_written, name=name, value=value, song=self.song())
+        self.change_set(holder.set_written, name=name, value=value, song=self.song())

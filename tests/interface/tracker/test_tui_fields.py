@@ -309,10 +309,10 @@ class TestFieldsOnThePages(FieldPagesTest):
     async def test_the_songs_tempo_stops_at_both_ends_and_a_typed_one_past_an_end_is_refused(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         await self.select_field(labels.MSG_TEMPO_LABEL)
-        self.document.change(self.document.song().set_tempo, limits.MAX_TEMPO)
+        self.document.change_set(self.document.song().set_tempo, limits.MAX_TEMPO)
         await self.press(Key.RIGHT)
         self.assertEqual(self.document.song().get_tempo(), limits.MAX_TEMPO)
-        self.document.change(self.document.song().set_tempo, limits.MIN_TEMPO)
+        self.document.change_set(self.document.song().set_tempo, limits.MIN_TEMPO)
         await self.press(Key.LEFT)
         self.assertEqual(self.document.song().get_tempo(), limits.MIN_TEMPO)
         await self.press(Key.ENTER)
@@ -325,7 +325,7 @@ class TestFieldsOnThePages(FieldPagesTest):
     async def test_a_scenes_and_a_clips_repeat_stop_where_typing_stops(self):
         await self.show(ScenePage(holder=self.app.screen.holder, index=FIRST_SCENE))
         await self.select_field(labels.MSG_REPEAT_LABEL)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_repeat, limits.MAX_SCENE_REPEAT)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_repeat, limits.MAX_SCENE_REPEAT)
         await self.press(Key.RIGHT)
         self.assertEqual(self.document.song().get_scene(FIRST_SCENE).get_repeat(), limits.MAX_SCENE_REPEAT)
         await self.press(Key.ESCAPE)

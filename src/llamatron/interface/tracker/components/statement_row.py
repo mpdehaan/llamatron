@@ -76,7 +76,7 @@ class StatementRow(PatternRow):
         ]
 
     def store(self, statement):
-        self.editor.document().change(self.editor.document().get_setlist().get_pattern(self.editor.item).set_statement, kind=self.kind, step=self.editor.step, statement=statement)
+        self.editor.document().change_pattern(self.editor.document().pattern(self.editor.item).set_statement, kind=self.kind, step=self.editor.step, statement=statement)
 
     def with_part(self, value):
         """Give the cursor's step this row's part, starting a statement where the step has none and taking the statement away for no register."""

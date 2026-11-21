@@ -37,7 +37,7 @@ class TestMusicianEditor(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_section, SectionKind.VERSE)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_section, SectionKind.VERSE)
         await self.open_generator(section=musician_plugin.SECTION)
         self.assertIsInstance(self.app.screen, MusicianEditor)
 

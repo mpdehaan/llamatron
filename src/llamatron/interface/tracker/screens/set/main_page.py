@@ -195,7 +195,7 @@ class MainPage(Page):
             self.tell(errors.ERR_NO_INSTRUMENTS_TITLE, errors.ERR_ADD_INSTRUMENT_FIRST)
             return
         on = not document.get_setlist().is_real_time()
-        document.change(document.get_setlist().set_real_time, on)
+        document.change_set(document.get_setlist().set_real_time, on)
         if not on and self.app.transport.is_playing():
             # Arrange shows no stop with Real Time off, so turning it off stops what plays, which was once a bug.
             self.app.transport.stop_all()

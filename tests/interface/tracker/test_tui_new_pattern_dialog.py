@@ -118,11 +118,11 @@ class TestScaleLengthInTheTracker(UITest):
         await self.open_patterns_on(ui_testing.TUNE)
         await self.press(Key.ENTER)
         size = self.document.scale_size(self.document.pattern_scale(ui_testing.TUNE))
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_scale_length, size)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_scale_length, size)
         await self.press(Key.RIGHT)
         self.assertNotIn(fixed_text(labels.MSG_WRITTEN_FOR).strip(), self.text())
         other = PENTATONIC if size != PENTATONIC else limits.MAX_SCALE_LENGTH
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_scale_length, other)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_scale_length, other)
         await self.press(Key.RIGHT)
         self.assertIn(labels.MSG_WRITTEN_FOR.format(scale=WARNING_ALONE, length=other).strip(), self.text())
         self.assertEqual(self.document.scales_unsuited_to_pattern(ui_testing.TUNE), self.document.scales_of_pattern(ui_testing.TUNE))

@@ -109,6 +109,6 @@ STARTER_SCENE = 0
 def bare_document():
     """Return a new Document with the starter pattern and the clip that plays it removed, for a test that builds a song from nothing."""
     document = Document()
-    document.change(document.song().get_scene(STARTER_SCENE).remove_clip_slot, names.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER))
+    document.change_set(document.song().get_scene(STARTER_SCENE).remove_clip_slot, names.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER))
     document.delete_named(section=Section.PATTERNS, name=names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER))
     return document

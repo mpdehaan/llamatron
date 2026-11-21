@@ -38,7 +38,7 @@ class AutoRatchetEditor(GeneratorEditor, FieldPage):
             if not parts or not all(part.isdigit() and int(part) >= 1 for part in parts):
                 self.refuse(errors.ERR_BAD_COUNTS)
                 return
-            self.document().change(self.settings().set_setting, name=AutoRatchetSetting.COUNTS, value=[int(part) for part in parts])
+            self.document().change_set(self.settings().set_setting, name=AutoRatchetSetting.COUNTS, value=[int(part) for part in parts])
         self.ask_text(title=labels.MSG_COUNTS_LABEL, value=counts_text(self.counts()), then=answered)
 
     def fields(self):

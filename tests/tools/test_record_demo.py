@@ -146,5 +146,5 @@ class TestRecordDemo(unittest.TestCase):
 
     def give_lead_fluidsynth(self):
         self.document.add_instrument(FLUID)
-        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)

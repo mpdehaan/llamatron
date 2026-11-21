@@ -19,5 +19,5 @@ def restart_field(page):
     return ChoiceField(
         page=page, label=labels.MSG_RESTART_LABEL, choices=file_format.RESTARTS, current=current, names=[labels.MSG_RESTART_NAMES[choice] for choice in file_format.RESTARTS],
         shown=labels.MSG_RESTART_NAMES[current],
-        set=lambda chosen: page.document().change(page.document().generator(section=page.SECTION, name=page.item).set_setting, name=file_format.GENERATOR_RESTART, value=None if chosen == Restart.EVERY_CLIP else chosen),
+        set=lambda chosen: page.document().change_set(page.document().generator(section=page.SECTION, name=page.item).set_setting, name=file_format.GENERATOR_RESTART, value=None if chosen == Restart.EVERY_CLIP else chosen),
     )

@@ -67,7 +67,7 @@ class TestVelocityOnTheScenePage(VelocityTest):
         self.assertIsNone(self.scene().get_velocity_settings()[VelocitySetting.LEVEL])
 
     async def test_the_velocity_stops_at_its_limits(self):
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=limits.MAX_VELOCITY_PERCENT)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=limits.MAX_VELOCITY_PERCENT)
         await self.show(ScenePage(holder=self.app.screen.holder, index=FIRST_SCENE))
         await self.select_field(labels_text.MSG_VELOCITY_PERCENT_LABEL)
         await self.press(keybindings.FieldPage.MORE)
@@ -76,7 +76,7 @@ class TestVelocityOnTheScenePage(VelocityTest):
     async def test_a_ramps_fields_show_only_while_its_section_is_open_and_a_blank_end_shows_the_velocity(self):
         labels = [field.label for field in self.page.shown_fields()]
         self.assertNotIn(IN_START, labels)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
         await self.open_section(RampWay.IN)
         self.assertIn(IN_START, [field.label for field in self.page.shown_fields()])
         self.assertEqual(self.shown(IN_START), marks.MSG_FROM_VELOCITY_SHOWN.format(value=percent(SCENE_LEVEL)))
@@ -114,9 +114,9 @@ class TestVelocityOnTheClipPage(VelocityTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.IN_START, value=RAMP_START)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.IN_OVER, value=RAMP_BARS)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.IN_START, value=RAMP_START)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.IN_OVER, value=RAMP_BARS)
         await self.show(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=ui_testing.LEAD))
 
     async def test_a_blank_field_shows_its_scenes_value_and_says_so(self):
@@ -152,9 +152,9 @@ class TestVelocityInTheDetailsView(VelocityTest):
         setlist = self.document.get_setlist()
         song = self.document.song()
         self.assertEqual(self.lines(scene_details(song=song, scene=self.scene())), [])
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
         self.assertEqual(self.lines(scene_details(song=song, scene=self.scene())), [marks.MSG_DETAILS_VELOCITY.format(percent=SCENE_LEVEL)])
         self.assertEqual(self.lines(clip_details(setlist=setlist, song=song, clip_slot=self.clip_slot())), [])
-        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=VelocitySetting.LEVEL, value=CLIP_LEVEL)
-        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=VelocitySetting.OUT_END, value=RAMP_START)
+        self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=VelocitySetting.LEVEL, value=CLIP_LEVEL)
+        self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=VelocitySetting.OUT_END, value=RAMP_START)
         self.assertEqual(self.lines(clip_details(setlist=setlist, song=song, clip_slot=self.clip_slot())), [marks.MSG_DETAILS_VELOCITY_RAMPS.format(percent=CLIP_LEVEL)])

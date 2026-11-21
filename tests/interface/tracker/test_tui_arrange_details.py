@@ -91,16 +91,16 @@ class TestDetails(unittest.TestCase):
         lines = clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot())
         self.assertEqual(lines[0].style, themes.text_style(themes.GENERATORS))
         self.assertEqual(lines[1].target.kind, arrange_details.ADD_CHAIN)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_chain_names, names=[ui_testing.NAMED, ui_testing.NAMED], song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_chain_names, names=[ui_testing.NAMED, ui_testing.NAMED], song=self.document.song())
         self.assertEqual(self.scene_lines().count(marks.MSG_DETAILS_CHAIN.format(name=ui_testing.NAMED)), 2)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_chain_names, names=[ui_testing.NAMED], song=self.document.song())
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_chain_names, names=[ui_testing.NAMED], song=self.document.song())
         self.assertEqual(self.track_lines()[0], marks.MSG_DETAILS_CHAIN.format(name=ui_testing.NAMED))
 
     def test_a_scale_shows_only_where_it_differs_from_the_songs(self):
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_scale_name, name=self.song.get_scale_name(), song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_scale_name, name=self.song.get_scale_name(), song=self.document.song())
         self.assertEqual(self.scene_lines(), [])
         self.document.add_scale(name=OWN_SCALE, root=OWN_SCALE_ROOT, kind=OWN_SCALE_KIND)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_scale_name, name=OWN_SCALE, song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_scale_name, name=OWN_SCALE, song=self.document.song())
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.SCALE, value=OWN_SCALE)
         self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
         self.assertEqual(self.clip_lines(), [marks.MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
@@ -110,9 +110,9 @@ class TestDetails(unittest.TestCase):
         self.assertEqual(self.clip_lines(), [])
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=ui_testing.DRUMS)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.FOLLOW_ACTION, value=FollowAction.NEXT)
-        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.DOWN)
-        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_START, value=DENSITY_START)
-        self.document.change(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_END, value=DENSITY_END)
+        self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.DOWN)
+        self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_START, value=DENSITY_START)
+        self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_END, value=DENSITY_END)
         self.assertEqual(self.clip_lines(), [
             marks.MSG_DETAILS_GRAB.format(track=ui_testing.DRUMS), marks.MSG_DETAILS_ADVANCE.format(action=labels.MSG_FOLLOW_ACTION_NAMES[FollowAction.NEXT]),
             marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.DOWN),
@@ -120,29 +120,29 @@ class TestDetails(unittest.TestCase):
         ])
 
     def test_a_scene_shows_its_tempo_or_its_ramp_its_groove_and_its_resets(self):
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_tempo, SCENE_TEMPO)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo, SCENE_TEMPO)
         self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO)])
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.END, value=RAMP_END)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.OVER, value=RAMP_BARS)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=False, song=self.document.song())
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_reset, register=RegisterName.AX, on=True)
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_reset, register=RegisterName.DX, on=True)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.END, value=RAMP_END)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.OVER, value=RAMP_BARS)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=False, song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_reset, register=RegisterName.AX, on=True)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_reset, register=RegisterName.DX, on=True)
         self.assertEqual(self.scene_lines(), [
             marks.MSG_DETAILS_TEMPO_RAMPS.format(tempo=SCENE_TEMPO),
             marks.MSG_DETAILS_NO_GROOVE,
             marks.MSG_DETAILS_RESET.format(registers=RegisterName.AX + ', ' + RegisterName.DX),
         ])
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=SONG_GROOVE, song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=SONG_GROOVE, song=self.document.song())
         self.assertIn(marks.MSG_DETAILS_GROOVE.format(name=SONG_GROOVE), self.scene_lines())
 
     def test_a_track_shows_its_instrument_transpose_euclid_strum_and_mute(self):
         self.document.add_instrument(INSTRUMENT)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=INSTRUMENT)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_transpose, TRANSPOSE)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_euclid_setting, part=EuclidPart.HITS, value=EUCLID_HITS)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_euclid_setting, part=EuclidPart.STEPS, value=EUCLID_STEPS)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.UP)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_mute, True)
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_transpose, TRANSPOSE)
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_euclid_setting, part=EuclidPart.HITS, value=EUCLID_HITS)
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_euclid_setting, part=EuclidPart.STEPS, value=EUCLID_STEPS)
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.UP)
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_mute, True)
         self.assertEqual(self.track_lines(), [
             marks.MSG_DETAILS_INSTRUMENT.format(name=INSTRUMENT), marks.MSG_DETAILS_TRANSPOSE.format(amount=TRANSPOSE),
             marks.MSG_DETAILS_EUCLID.format(hits=EUCLID_HITS, steps=EUCLID_STEPS), marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.UP), marks.MSG_DETAILS_MUTED,
@@ -381,7 +381,7 @@ class TestPickingDetails(UITest):
     async def test_on_a_tracks_name_enter_opens_its_instruments_and_its_grooves_page(self):
         self.document.add_instrument(INSTRUMENT)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=INSTRUMENT)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_groove_choice, choice=SONG_GROOVE, song=self.document.song())
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_groove_choice, choice=SONG_GROOVE, song=self.document.song())
         self.document.record_edit()
         self.page.row = arrange_page.HEADER_ROW
         await self.press(Key.RIGHT, Key.LEFT)

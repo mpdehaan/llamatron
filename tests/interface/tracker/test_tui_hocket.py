@@ -50,7 +50,7 @@ class TestHocketEditor(UITest):
         self.assertEqual(self.source(), NEW_ONE)
 
     async def test_a_source_the_song_lacks_is_still_offered_so_that_it_is_kept(self):
-        self.document.change(self.document.generator(section=hocket_plugin.SECTION, name=ui_testing.TRADE).set_setting, name=HocketSetting.SOURCE, value=GONE)
+        self.document.change_set(self.document.generator(section=hocket_plugin.SECTION, name=ui_testing.TRADE).set_setting, name=HocketSetting.SOURCE, value=GONE)
         self.app.screen.draw()
         await self.press(Key.ENTER)
         self.assertIn(GONE, self.app.screen.options)

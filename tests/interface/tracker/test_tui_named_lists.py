@@ -225,7 +225,7 @@ class TestGroovesPageAsANamedList(NamedListChecks, UITest):
         self.document.add_groove(A_GROOVE)
 
     def make_used(self):
-        self.document.change(self.document.song().set_groove_name, A_GROOVE)
+        self.document.change_set(self.document.song().set_groove_name, A_GROOVE)
         return True
 
     async def test_the_factory_grooves_come_first_and_only_the_sets_own_move(self):

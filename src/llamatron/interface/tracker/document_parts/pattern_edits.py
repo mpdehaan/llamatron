@@ -21,7 +21,7 @@ class PatternEdits:
     """The changes the pattern editor makes, each through the pattern's own setters, and what the editor asks about a pattern on every row and cell.
 
     It holds no data of its own: it works on what Document keeps, through `self._setlist`,
-    `self.song()` and `self.change(method, ...)`, which makes one change through an object's own
+    `self.song()` and `self.change_pattern(method, ...)` or `self.change_set(method, ...)`, which make one change through an object's own
     method and notes it.
     Answers are kept through `self.remembered(key=, on=, compute=)` until what they came from changes.
     """
@@ -30,7 +30,8 @@ class PatternEdits:
 
     # Patterns.
 
-    def _pattern(self, name):
+    def pattern(self, name):
+        """Return the set's pattern of a name, which an edit of it reaches through change_pattern."""
         return self._setlist.get_pattern(name)
 
     def add_pattern(self, *, name, steps=None, group=None, drum=None, scale_length=None):
@@ -39,10 +40,10 @@ class PatternEdits:
         if steps is None:
             steps = self.song().steps_in_a_bar() or NEW_PATTERN_STEPS
         made = Pattern(steps=steps, rows={}, group=group, drum=True if drum else None, scale_length=None if drum else scale_length)
-        self.change(self._setlist.add_item, section=Section.PATTERNS, name=name, item=made)
+        self.change_set(self._setlist.add_item, section=Section.PATTERNS, name=name, item=made)
 
     def pattern_scale_length(self, name):
-        return self._pattern(name).get_scale_length()
+        return self.pattern(name).get_scale_length()
 
     def scale_length_for_pattern(self, name):
         """Return the scale length a pattern would take from the one scale it plays under, or None where it plays under several or the scale is of a size no scale length says."""
@@ -52,7 +53,7 @@ class PatternEdits:
 
     def scales_unsuited_to_pattern(self, name):
         """Return the scales a pattern plays under that have another number of notes than the pattern was written for, in order: none for a pattern written for any scale."""
-        pattern = self._pattern(name)
+        pattern = self.pattern(name)
         if pattern.get_scale_length() is None:
             return []
         return [scale for scale in self.scales_of_pattern(name) if not pattern.suits_scale_of(self.scale_size(scale))]
@@ -60,14 +61,14 @@ class PatternEdits:
     # Pattern groups, which the Patterns page lists the patterns under.
 
     def pattern_group(self, name):
-        return self._pattern(name).get_group()
+        return self.pattern(name).get_group()
 
     def show_pattern_group(self, *, group, closed):
         """Show a group closed or open on the Patterns page, which is no change to the set: nothing to undo and nothing to save."""
         self._setlist.show_pattern_group(group=group, closed=closed)
 
     def step_value(self, *, name, row, step):
-        return self._pattern(name).get_value(row=row, step=step)
+        return self.pattern(name).get_value(row=row, step=step)
 
     # Notes as the piano roll handles them: by the steps they cover, through ties or a gate. The pattern knows how
     # (model/objects/pattern_notes.py); the document adds the pattern's step size and entry size, which the set may give it.
@@ -85,13 +86,13 @@ class PatternEdits:
 
     def note_span(self, *, name, step):
         """Return how many steps the note on a step covers on the piano roll: its ties, or its gate rounded up to whole steps, and any ties right after that."""
-        return self._pattern(name).note_span(step=step, step_size=self._step_size(name))
+        return self.pattern(name).note_span(step=step, step_size=self._step_size(name))
 
     def covering_notes(self, name):
         """Return the step of the note sounding through each step on the piano roll, by step, leaving out steps nothing covers, kept until the pattern or the set's step size changes."""
         return self.remembered(
-            key=(PatternEdits.covering_notes.__name__, name), on=(self._pattern(name), self._setlist),
-            compute=lambda: self._pattern(name).covering_notes(step_size=self._step_size(name)),
+            key=(PatternEdits.covering_notes.__name__, name), on=(self.pattern(name), self._setlist),
+            compute=lambda: self.pattern(name).covering_notes(step_size=self._step_size(name)),
         )
 
     def _note_start(self, *, name, step):
@@ -102,43 +103,43 @@ class PatternEdits:
         """Return the notes a step's chord adds above its own note, each as a degree, an octave and an accidental, for the piano roll's ghosts, placed in the one scale the pattern plays under."""
         scale_name = self.pattern_scale(name)
         scale = None if scale_name is None else self._scale(scale_name)
-        return self._pattern(name).chord_tones(step=step, octave=octave, scale=scale)
+        return self.pattern(name).chord_tones(step=step, octave=octave, scale=scale)
 
     def partial_cell(self, *, name, step):
         """Return what part of a note's last cell its gate fills, when the gate ends inside a step, or None when the cell is full, so that the roll's bar ends where the sound does."""
-        return self._pattern(name).partial_cell(step=step, step_size=self._step_size(name))
+        return self.pattern(name).partial_cell(step=step, step_size=self._step_size(name))
 
     def place_note(self, *, name, step, degree, octave, accidental=None):
         """Draw a note of the pattern's entry size on a step, cutting the note it lands in."""
-        self.change(
-            self._pattern(name).draw_note, step=step, degree=degree, octave=octave, accidental=accidental,
+        self.change_pattern(
+            self.pattern(name).draw_note, step=step, degree=degree, octave=octave, accidental=accidental,
             length=self.entry_size(name), step_size=self._step_size(name),
         )
 
     def split_note(self, *, name, step):
         """Split the note held through a step there, so that the rest of it is a note of its own, and return whether there was one to split."""
-        return self._reshape(self._pattern(name).split_note, step=step)
+        return self._reshape(self.pattern(name).split_note, step=step)
 
     def lengthen_note(self, *, name, step):
         """Drag the end of the note covering a step one step later, and return whether there was a note with room after it."""
         start = self._note_start(name=name, step=step)
         if start is None:
             return False
-        return self._reshape(self._pattern(name).lengthen_note, start=start, step_size=self._step_size(name))
+        return self._reshape(self.pattern(name).lengthen_note, start=start, step_size=self._step_size(name))
 
     def shorten_note(self, *, name, step):
         """Drag the end of the note covering a step one step earlier, and return whether there was a note longer than one step."""
         start = self._note_start(name=name, step=step)
         if start is None:
             return False
-        return self._reshape(self._pattern(name).shorten_note, start=start, step_size=self._step_size(name))
+        return self._reshape(self.pattern(name).shorten_note, start=start, step_size=self._step_size(name))
 
     def cycle_accidental(self, *, name, step):
         """Move the note covering a step on to the next of natural, sharp and flat, and return whether there was a note."""
         start = self._note_start(name=name, step=step)
         if start is None:
             return False
-        self.change(self._pattern(name).cycle_accidental, start)
+        self.change_pattern(self.pattern(name).cycle_accidental, start)
         return True
 
     def pattern_octave_range(self, name):
@@ -171,35 +172,35 @@ class PatternEdits:
 
     def steps_with_anything_past(self, *, name, steps):
         """Return how many steps from a position onward hold a note or a CC value."""
-        return self._pattern(name).steps_with_anything_from(steps)
+        return self.pattern(name).steps_with_anything_from(steps)
 
     def entry_size(self, name):
         """Return how long a note placed on a pattern's piano roll lasts, in whole notes."""
-        return self.song().entry_size_for(self._pattern(name))
+        return self.song().entry_size_for(self.pattern(name))
 
     def written_entry_size(self, name):
         """Return a pattern's own entry size as the file writes it, like 1/8, or None when it uses the song's."""
-        entry_size = self._pattern(name).get_written_entry_size()
+        entry_size = self.pattern(name).get_written_entry_size()
         return None if entry_size is None else str(entry_size)
 
     def divide_long_notes(self, name):
         """Make a note of every step a pattern's long notes cover, by the step size the pattern plays at."""
-        self.change(self._pattern(name).divide_long_notes, step_size=self._step_size(name))
+        self.change_pattern(self.pattern(name).divide_long_notes, step_size=self._step_size(name))
 
     def munge_pattern(self, *, name, way, **named):
         """Change a pattern as one of the Munge dialog's choices does: way is the method of Pattern that makes the edit, called with what is named, and what it returns is returned."""
-        return self.change(MethodType(way, self._pattern(name)), **named)
+        return self.change_pattern(MethodType(way, self.pattern(name)), **named)
 
     def load_over(self, *, name, other):
         """Replace a pattern's contents with a copy of another's, keeping its name."""
-        self.change(self._setlist.replace_item, section=Section.PATTERNS, name=name, item=self._pattern(other).copy())
+        self.change_set(self._setlist.replace_item, section=Section.PATTERNS, name=name, item=self.pattern(other).copy())
 
     def has_grab_steps(self, name):
         """Return whether a pattern has any steps marked to grab."""
-        return self._pattern(name).has_grab_steps()
+        return self.pattern(name).has_grab_steps()
 
     def has_notes(self, name):
-        return self._pattern(name).has_notes()
+        return self.pattern(name).has_notes()
 
     def degree_limit(self, name):
         """Return the highest degree to allow, from every scale that this pattern can play in.
@@ -246,7 +247,7 @@ class PatternEdits:
         song = self.song()
         scale_name = self.pattern_scale(name) or song.get_scale_name()
         scale = None if scale_name is None else song.get_named_scale(scale_name)
-        return self._pattern(name).get_note_name(
+        return self.pattern(name).get_note_name(
             step=step, scale=scale, default_octave=song.get_default_octave(), default_drum_octave=song.get_default_drum_octave(),
             octave_label_offset=song.octave_label_offset(),
         )

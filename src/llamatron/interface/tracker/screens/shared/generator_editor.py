@@ -22,7 +22,7 @@ class GeneratorEditor(ShowsNamedItem):
 
     def store(self, *, setting, value):
         """Keep one setting by its file name, checked as reading a file checks it, or None to leave it out of the file."""
-        self.document().change(self.settings().set_setting, name=setting, value=value)
+        self.document().change_set(self.settings().set_setting, name=setting, value=value)
 
     def number_field(self, *, label, setting, current, default, shown=None):
         """Return a field for a whole number of the generator, by the setting's file name.

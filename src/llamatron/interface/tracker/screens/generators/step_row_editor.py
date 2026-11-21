@@ -51,13 +51,13 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
 
     def toggle(self):
         """Turn the cursor's step on or off."""
-        self.document().change(self.settings().step_row().set_cell, step=self.step, value=not self.values()[self.step])
+        self.document().change_set(self.settings().step_row().set_cell, step=self.step, value=not self.values()[self.step])
 
     def insert(self):
-        self.document().change(self.settings().step_row().insert_cell, self.step)
+        self.document().change_set(self.settings().step_row().insert_cell, self.step)
 
     def remove_step(self):
-        self.document().change(self.settings().step_row().remove_cell, self.step)
+        self.document().change_set(self.settings().step_row().remove_cell, self.step)
         self.keep_step()
 
     def plugin_strings(self):

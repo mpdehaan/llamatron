@@ -156,10 +156,10 @@ class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
     RENAMES = False
 
     def prepare(self):
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
 
     async def test_the_arp_without_its_offsets_is_nothing_to_edit(self):
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=None)
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=None)
         self.assertFalse(self.page.still_exists())
 
 

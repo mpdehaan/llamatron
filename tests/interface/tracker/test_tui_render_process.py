@@ -79,10 +79,10 @@ class TestRenderProcessPlayback(PlaybackTest):
 
     async def test_an_edit_made_while_it_plays_is_heard(self):
         self.document.set_clip_slot_setting(index=test_tui_playback.FIRST_INDEX, track=ui_testing.LEAD, setting=ClipSlotSetting.REPEAT, value=PASSES)
-        self.document.change(self.document.song().set_live_responsiveness, LiveResponsiveness.ASAP)
+        self.document.change_set(self.document.song().set_live_responsiveness, LiveResponsiveness.ASAP)
         await self.press(*test_tui_playback.CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.pilot.pause(EDIT_AT_SECONDS)
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=test_tui_playback.EDITED_DEGREE)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=test_tui_playback.EDITED_DEGREE)
         await self.wait_for(self.is_quiet)
         self.assertIn(test_tui_playback.FIFTH, self.note_ons_sent())
 

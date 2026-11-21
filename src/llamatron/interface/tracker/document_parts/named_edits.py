@@ -27,7 +27,7 @@ class NamedEdits:
     """Renaming, copying, deleting, moving and sorting the named items of any section, each through the set's or the song's own methods.
 
     It holds no data of its own: it works on what Document keeps, through `self._setlist`,
-    `self.song()` and `self.change(method, ...)`, which makes one change through an object's own
+    `self.song()` and `self.change_set(method, ...)` or `self.change_pattern(method, ...)`, which make one change through an object's own
     method and notes it.
     """
 
@@ -60,7 +60,7 @@ class NamedEdits:
 
     def rename_named(self, *, section, old, new):
         """Rename an item of a section, which changes every reference to it by name. A renamed song stays current."""
-        self.change(self.owner_of(section).rename_item, section=section, old=old, new=new)
+        self.change_set(self.owner_of(section).rename_item, section=section, old=old, new=new)
         if section == Section.SONGS and old == self._current:
             self._current = new
 
@@ -77,22 +77,22 @@ class NamedEdits:
             return self._copy_track(name)
         owner = self.owner_of(section)
         new = copy_name(name=name, taken=self.names_taken(section))
-        self.change(owner.copy_item, section=section, name=name, new=new)
+        self.change_set(owner.copy_item, section=section, name=name, new=new)
         return new
 
     def _copy_groove(self, name):
         new = copy_name(name=name, taken=self._setlist.get_groove_names())
-        self.change(self._setlist.add_item, section=Section.GROOVES, name=new, item=self._setlist.get_groove(name).copy())
+        self.change_set(self._setlist.add_item, section=Section.GROOVES, name=new, item=self._setlist.get_groove(name).copy())
         return new
 
     def _copy_track(self, name):
         new = copy_name(name=name, taken=self.song().get_track_names())
-        self.change(self.song().copy_track, name=name, new=new)
+        self.change_set(self.song().copy_track, name=name, new=new)
         return new
 
     def delete_generator(self, *, section, name):
         """Delete a generator, a chain among them, taking it out of every chain, clip, scene and track that lists it, in one edit."""
-        self.change(self._setlist.delete_generator, section=section, name=name)
+        self.change_set(self._setlist.delete_generator, section=section, name=name)
 
     def delete_named(self, *, section, name):
         """Delete an item of a section. Whoever asks has checked that nothing uses it.
@@ -104,16 +104,16 @@ class NamedEdits:
         if section == Section.SONGS:
             self._delete_song(name)
         else:
-            self.change(self.owner_of(section).remove_item, section=section, name=name)
+            self.change_set(self.owner_of(section).remove_item, section=section, name=name)
         # The last instrument leaves nothing to play through, so deleting it turns real-time playback off.
         if section == Section.INSTRUMENTS and not self._setlist.get_instrument_names() and self._setlist.is_real_time():
-            self.change(self._setlist.set_real_time, False)
+            self.change_set(self._setlist.set_real_time, False)
 
     def _delete_song(self, name):
         names = self.song_names()
         if len(names) <= 1:
             raise InvalidValue(errors.ERR_LAST_SONG)
-        self.change(self._setlist.remove_item, section=Section.SONGS, name=name)
+        self.change_set(self._setlist.remove_item, section=Section.SONGS, name=name)
         if name == self._current:
             self.select_song(self.song_names()[max(names.index(name) - ONE_BEFORE, FIRST_PLACE)])
 

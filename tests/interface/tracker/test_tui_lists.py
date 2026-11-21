@@ -141,7 +141,7 @@ class TestScalesPage(UITest):
         self.assertEqual(self.root_and_kind(SCALE_2), (NoteName.C, scale_type_name(ScaleType.MAJOR)))
 
     async def test_renaming_a_scale_updates_what_uses_it(self):
-        self.document.change(self.document.song().get_scene(0).set_scale_name, name=setlist.DEFAULT_SCALE, song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(0).set_scale_name, name=setlist.DEFAULT_SCALE, song=self.document.song())
         await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.RENAME)
         self.app.screen.value = MAIN
         await self.press(Key.ENTER)
@@ -205,7 +205,7 @@ class TestScalePage(UITest):
         self.assertIn(note.SHARP_NAMES[4].center(keyboard.KEY_WIDTH), lines[2])
 
     async def test_the_scale_page_renames_the_scale_and_what_uses_it(self):
-        self.document.change(self.document.song().get_scene(0).set_scale_name, name=setlist.DEFAULT_SCALE, song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(0).set_scale_name, name=setlist.DEFAULT_SCALE, song=self.document.song())
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         await self.select_field(labels.MSG_NAME_LABEL)
         await self.press(Key.ENTER)
@@ -571,7 +571,7 @@ class TestArpEditorFields(UITest):
         self.assertNotIn(SEED_LABEL, self.text())
 
     async def test_typing_an_offset_too_big_starts_a_new_number(self):
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0, -3])
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0, -3])
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, OffsetsEditor)
@@ -652,7 +652,7 @@ class TestOffsetsEditor(UITest):
     """The editor of an arpeggiator's offsets: a gauge of bars either side of a zero line."""
 
     async def open_offsets(self, offsets):
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=offsets)
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=offsets)
         await self.open_generator(section=arp_plugin.SECTION)
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
@@ -708,12 +708,12 @@ class TestOffsetsEditor(UITest):
         self.assertNotIn(marks.MSG_CURSOR_STEP_MARKS.format(text=1), text)
 
     async def test_offsets_have_one_to_sixteen_steps(self):
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0] * 16)
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[0] * 16)
         await self.open_generator(section=arp_plugin.SECTION)
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         self.assertNotIn('« I »', self.text())
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[3])
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[3])
         await self.press(Key.RIGHT)
         self.assertNotIn('« D »', self.text())
 
@@ -721,7 +721,7 @@ class TestOffsetsEditorOnAUsualConsole(UITest):
     SIZE = (80, 24)
 
     async def test_five_levels_fit_with_the_keys_and_the_row_scrolls_sideways(self):
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[7] + [0] * 15)
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=UP).set_setting, name=ArpSetting.OFFSETS, value=[7] + [0] * 15)
         await self.open_generator(section=arp_plugin.SECTION)
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
@@ -834,7 +834,7 @@ class TestChainEditor(UITest):
         self.assertEqual(self.steps(), [(arp_plugin.NAME, UP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS)])
 
     async def test_each_step_shows_its_generators_name_then_its_kind_and_a_repeat_is_numbered_on_screen_only(self):
-        self.document.change(self.document.get_setlist().get_chain(NAMED).add_step, kind=arp_plugin.NAME, name=UP, setlist=self.document.get_setlist())
+        self.document.change_set(self.document.get_setlist().get_chain(NAMED).add_step, kind=arp_plugin.NAME, name=UP, setlist=self.document.get_setlist())
         self.document.record_edit()
         await self.press(Key.DOWN)
         texts = [row[1][0] for row in self.app.screen.rows()]

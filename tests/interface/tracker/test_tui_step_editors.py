@@ -204,7 +204,7 @@ class TestOffsetsEditorIsOneRow(OneRowChecks, UITest):
     SHOWN = marks.MSG_STEPS_SHOWN
 
     def prepare(self):
-        self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
+        self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=SOME_OFFSETS)
 
     async def test_a_silent_step_is_stepped_and_typed_from_nothing(self):
         await self.press(OffsetsEditor.KEYS.SILENT)

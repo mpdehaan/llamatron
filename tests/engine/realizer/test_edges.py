@@ -236,7 +236,7 @@ class TestDocumentEdges(unittest.TestCase):
         document = Document(setlist=setlist_from_data(good()))
         new = document.copy_named(section=Section.CHAINS, name=X)
         self.assertEqual(document.song().get_chain(new).get_steps(), [(arp_plugin.NAME, UP)])
-        document.change(document.get_setlist().get_chain(new).remove_step, 0)
+        document.change_set(document.get_setlist().get_chain(new).remove_step, 0)
         self.assertEqual(document.song().get_chain(X).get_steps(), [(arp_plugin.NAME, UP)])
 
 

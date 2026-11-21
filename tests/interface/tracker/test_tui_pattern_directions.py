@@ -50,7 +50,7 @@ class TestDirectionsAndGrab(UITest):
         await self.pilot.pause()
 
     async def test_a_clip_shows_the_patterns_direction_until_it_overrides_it(self):
-        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_direction, Direction.ALTERNATE)
+        self.document.change_pattern(self.document.pattern(TUNE).set_direction, Direction.ALTERNATE)
         page = await self.clip_page()
         self.assertIn(marks.MSG_PATTERN_DIRECTION_SHOWN.format(direction=words(Direction.ALTERNATE)), self.text())
         await self.go_to(page, DIRECTION)
@@ -112,7 +112,7 @@ class TestDirectionsAndGrab(UITest):
     async def test_a_grab_step_takes_a_chord_and_the_description_names_the_chord_and_no_note(self):
         # A grab step holds a chord, built on the grabbed note.
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER, keybindings.PatternEditor.TO_EDITOR)
-        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.GRAB, step=0, value=True)
+        self.document.change_pattern(self.document.pattern(TUNE).set_value, row=Row.GRAB, step=0, value=True)
         self.document.changed()
         editor = self.app.screen
         await open_section(test=self, section=RowSection.CHORD)

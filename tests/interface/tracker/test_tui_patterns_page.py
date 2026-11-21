@@ -242,7 +242,7 @@ class TestPatternGroups(PatternsPageTest):
         self.assertEqual(rows[1:1 + len(NUMBERED)], [Listed(patterns_page.PATTERN, name) for name in NUMBERED])
 
     async def test_the_ungrouped_heading_shows_only_while_a_pattern_is_in_no_group(self):
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.OTHER).set_group, ui_testing.RHYTHMS)
+        self.document.change_pattern(self.document.pattern(ui_testing.OTHER).set_group, ui_testing.RHYTHMS)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(Listed(patterns_page.HEADING, patterns_page.UNGROUPED), self.rows())
         self.assertNotIn(labels.MSG_UNGROUPED, self.text())
@@ -427,8 +427,8 @@ class TestPatternGroups(PatternsPageTest):
 
     async def test_the_closed_groups_in_a_file_are_only_groups_that_exist(self):
         self.document.show_pattern_group(group=ui_testing.RHYTHMS, closed=True)
-        self.document.change(self.document.get_setlist().rename_pattern_group, old=ui_testing.RHYTHMS, new=BASSES)
+        self.document.change_set(self.document.get_setlist().rename_pattern_group, old=ui_testing.RHYTHMS, new=BASSES)
         self.assertEqual(self.document.get_setlist().get_closed_pattern_groups(), [BASSES])
-        self.document.change(self.document.get_setlist().ungroup_patterns, BASSES)
+        self.document.change_set(self.document.get_setlist().ungroup_patterns, BASSES)
         self.assertNotIn(BASSES, self.document.get_setlist().get_closed_pattern_groups())
         self.assertNotIn(file_format.CLOSED_PATTERN_GROUPS, self.document.get_setlist().to_data())

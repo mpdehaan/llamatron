@@ -227,7 +227,7 @@ class ClipPage(FieldPage):
         self.document().set_clip_slot_morph_target(index=self.index, track=self.track, pattern=pattern)
 
     def clear_morph(self):
-        self.document().change(self.document().clip_slot(index=self.index, track=self.track).clear_morph)
+        self.document().change_set(self.document().clip_slot(index=self.index, track=self.track).clear_morph)
 
     def pick_grab_track(self):
         tracks = sorted_names(name for name in self.document().track_names() if name != self.track)
@@ -352,14 +352,14 @@ class ClipPage(FieldPage):
         return strum_section(
             page=self, value=lambda part: clip_slot.get_written(strum_setting(part)), first=labels_text.MSG_TRACK_STRUM_CHOICE,
             inherited=marks.MSG_FROM_TRACK_SHOWN.format(value=taken),
-            store=lambda part, value: self.document().change(self.document().clip_slot(index=self.index, track=self.track).set_strum_setting, part=part, value=value),
+            store=lambda part, value: self.document().change_set(self.document().clip_slot(index=self.index, track=self.track).set_strum_setting, part=part, value=value),
         )
 
     def velocity_values(self):
         """Return what the velocity fields read the clip's own velocity settings with, what gives a blank one from its scene, and what keeps one."""
         clip_slot = self.clip_slot()
         scene = self.document().song().get_scenes()[self.index]
-        return clip_slot.get_written, scene.get_written, lambda name, value: self.document().change(self.document().clip_slot(index=self.index, track=self.track).set_written, name=name, value=value)
+        return clip_slot.get_written, scene.get_written, lambda name, value: self.document().change_set(self.document().clip_slot(index=self.index, track=self.track).set_written, name=name, value=value)
 
     def register_sections(self):
         """Return the clip's sections about the registers: what it sets them to as it launches, what it adds every time its pattern starts over, and the statements that bypass its generators, and that make it sit out."""
@@ -369,15 +369,15 @@ class ClipPage(FieldPage):
         return [
             *register_fields(
                 page=self, label=labels_text.MSG_SET_REGISTERS_LABEL, name_label=labels_text.MSG_SET_REGISTER_LABEL, values=clip_slot.get_register_sets,
-                store=lambda register, value: document.change(document.clip_slot(index=self.index, track=self.track).set_register_set, register=register, value=value),
+                store=lambda register, value: document.change_set(document.clip_slot(index=self.index, track=self.track).set_register_set, register=register, value=value),
             ),
             *register_fields(
                 page=self, label=labels_text.MSG_ADD_REGISTERS_LABEL, name_label=labels_text.MSG_ADD_REGISTER_LABEL, values=clip_slot.get_register_adds,
-                store=lambda register, value: document.change(document.clip_slot(index=self.index, track=self.track).set_register_add, register=register, value=value),
+                store=lambda register, value: document.change_set(document.clip_slot(index=self.index, track=self.track).set_register_add, register=register, value=value),
             ),
             *[field for label, table, name in tables for field in statement_section(
                 page=self, label=label, table=table, statements=functools.partial(clip_slot.get_statements, name),
-                store=lambda place, statement, name=name: document.change(document.clip_slot(index=self.index, track=self.track).set_statement, name=name, place=place, statement=statement),
+                store=lambda place, statement, name=name: document.change_set(document.clip_slot(index=self.index, track=self.track).set_statement, name=name, place=place, statement=statement),
             )],
         ]
 
@@ -386,7 +386,7 @@ class ClipPage(FieldPage):
         clip_slot = self.clip_slot()
         return shape_section(
             page=self, shape=shape, value=lambda part: clip_slot.get_written(shape_setting(shape=shape, part=part)),
-            store=lambda part, value: self.document().change(self.document().clip_slot(index=self.index, track=self.track).set_written, name=shape_setting(shape=shape, part=part), value=value),
+            store=lambda part, value: self.document().change_set(self.document().clip_slot(index=self.index, track=self.track).set_written, name=shape_setting(shape=shape, part=part), value=value),
         )
 
     def follow_action_field(self):

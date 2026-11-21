@@ -66,8 +66,8 @@ def song_with_instruments():
     document = a_song()
     for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, OTHER_PORT)):
         document.add_instrument(name)
-        document.change(document.get_setlist().get_instrument(name).set_device, device)
-    document.change(document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
+        document.change_set(document.get_setlist().get_instrument(name).set_device, device)
+    document.change_set(document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
     document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
     document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)
     return document
@@ -145,7 +145,7 @@ class TestWaveFluidSynth(unittest.TestCase):
         self.assertEqual(os.listdir(self.folder), [])
 
     def test_a_muted_track_is_left_out_as_every_arrangement_export_leaves_it(self):
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_mute, True)
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_mute, True)
         with self.assertRaises(ValueError):
             self.exporter().export(render=StandInFluidSynth())
 

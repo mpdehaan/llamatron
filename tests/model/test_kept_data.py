@@ -157,7 +157,7 @@ class TestKeptData(unittest.TestCase):
     def test_the_sets_data_is_put_together_from_the_pieces_its_items_keep(self):
         before = self.setlist.kept_data()
         self.assertEqual(before, self.setlist.to_data())
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         after = self.setlist.kept_data()
         self.assertEqual(after, self.setlist.to_data())
         self.assertIsNot(after[Section.PATTERNS][ui_testing.TUNE], before[Section.PATTERNS][ui_testing.TUNE])
@@ -174,7 +174,7 @@ class TestKeptData(unittest.TestCase):
         name = self.document.get_current_song_name()
         before = self.setlist.kept_data()
         self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=3)
-        self.document.change(self.document.song().get_track(ui_testing.LEAD).set_cc_number, lane=FIRST_LANE, number=A_CC_NUMBER)
+        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_cc_number, lane=FIRST_LANE, number=A_CC_NUMBER)
         after = self.setlist.kept_data()
         self.assertEqual(after, self.setlist.to_data())
         self.assertNotEqual(after[Section.SONGS][name], before[Section.SONGS][name])
@@ -183,18 +183,18 @@ class TestKeptData(unittest.TestCase):
     def test_no_later_edit_changes_data_kept_earlier(self):
         # Every kind of object is edited in turn, and what the set kept before each edit is compared with a copy made then.
         edits = [
-            lambda: self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY),
-            lambda: self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=ANOTHER_VELOCITY),
-            lambda: self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).insert_step, 0),
-            lambda: self.document.change(self.document.song().get_track(ui_testing.LEAD).set_cc_number, lane=FIRST_LANE, number=A_CC_NUMBER),
-            lambda: self.document.change(self.document.song().get_track(ui_testing.LEAD).set_cc_number, lane=FIRST_LANE + 1, number=A_CC_NUMBER),
-            lambda: self.document.change(self.document.song().get_scene(FIRST_SCENE).set_reset, register=file_format.REGISTER_NAMES[0], on=True),
-            lambda: self.document.change(self.document.song().get_scene(FIRST_SCENE).set_reset, register=file_format.REGISTER_NAMES[1], on=True),
-            lambda: self.document.change(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=list(SOME_OFFSETS)),
+            lambda: self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY),
+            lambda: self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=ANOTHER_VELOCITY),
+            lambda: self.document.change_pattern(self.document.pattern(ui_testing.TUNE).insert_step, 0),
+            lambda: self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_cc_number, lane=FIRST_LANE, number=A_CC_NUMBER),
+            lambda: self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_cc_number, lane=FIRST_LANE + 1, number=A_CC_NUMBER),
+            lambda: self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_reset, register=file_format.REGISTER_NAMES[0], on=True),
+            lambda: self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_reset, register=file_format.REGISTER_NAMES[1], on=True),
+            lambda: self.document.change_set(self.document.generator(section=arp_plugin.SECTION, name=ui_testing.UP_ARP).set_setting, name=ArpSetting.OFFSETS, value=list(SOME_OFFSETS)),
             lambda: self.document.set_arp_offset(name=ui_testing.UP_ARP, step=0, offset=AN_OFFSET),
             lambda: self.document.insert_arp_offset(name=ui_testing.UP_ARP, step=0),
             lambda: self.document.set_clip_slot_repeat(index=FIRST_SCENE, track=ui_testing.LEAD, repeat=3),
-            lambda: self.document.change(self.document.get_setlist().set_title, A_TITLE),
+            lambda: self.document.change_set(self.document.get_setlist().set_title, A_TITLE),
             lambda: self.document.rename_named(section=Section.PATTERNS, old=ui_testing.OTHER, new=NO_SUCH_ITEM),
         ]
         kept = []
@@ -217,7 +217,7 @@ class TestASetGoingBackToDataItKept(unittest.TestCase):
         tune = setlist.get_pattern(ui_testing.TUNE)
         other = setlist.get_pattern(ui_testing.OTHER)
         song = document.song()
-        document.change(document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        document.change_pattern(document.pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         later = setlist.kept_data()
         setlist.restore(earlier)
         self.assertEqual(setlist.to_data(), earlier)
@@ -252,7 +252,7 @@ class TestASetGoingBackToDataItKept(unittest.TestCase):
         document.delete_named(section=Section.PATTERNS, name=ui_testing.ONE)
         document.add_pattern(name=ui_testing.LEAD)
         document.move_named(section=Section.PATTERNS, place=len(setlist.get_pattern_names()) - 1, offset=-1)
-        document.change(document.get_setlist().set_title, A_TITLE)
+        document.change_set(document.get_setlist().set_title, A_TITLE)
         document.add_track(NO_SUCH_ITEM)
         changed = setlist.kept_data()
         setlist.restore(earlier)
@@ -292,7 +292,7 @@ class TestASetGoingBackToDataItKept(unittest.TestCase):
         document = a_song()
         setlist = document.get_setlist()
         earlier = setlist.kept_data()
-        document.change(document.get_setlist().get_pattern(ui_testing.TUNE).set_step_size, earlier[Section.PATTERNS][ui_testing.OTHER][PatternSetting.STEP_SIZE])
+        document.change_pattern(document.pattern(ui_testing.TUNE).set_step_size, earlier[Section.PATTERNS][ui_testing.OTHER][PatternSetting.STEP_SIZE])
         self.assertEqual(setlist.kept_data(), setlist.to_data())
         self.assertNotEqual(setlist.kept_data(), earlier)
 

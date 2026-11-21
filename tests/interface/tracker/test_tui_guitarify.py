@@ -60,7 +60,7 @@ class TestGuitarifyEditor(GuitarifyTest):
 
     async def test_a_closed_section_says_when_something_inside_is_set(self):
         self.assertNotIn(marks.MSG_SECTION_SET, self.text())
-        self.document.change(self.document.generator(section=guitarify_plugin.SECTION, name=ui_testing.PICKED).set_setting, name=GuitarifySetting.CAPO, value=2)
+        self.document.change_set(self.document.generator(section=guitarify_plugin.SECTION, name=ui_testing.PICKED).set_setting, name=GuitarifySetting.CAPO, value=2)
         await self.press(Key.DOWN)
         self.assertIn(marks.MSG_SECTION_SET, self.text())
 

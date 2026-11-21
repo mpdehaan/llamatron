@@ -66,7 +66,7 @@ class TestPatternEditorChords(UITest):
         return self.document.step_value(name=ui_testing.TUNE, row=row, step=FIRST_STEP)
 
     def set(self, *, row, value):
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=row, step=FIRST_STEP, value=value)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=row, step=FIRST_STEP, value=value)
 
     def dialog_text(self):
         self.app.screen.draw()

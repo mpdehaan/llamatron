@@ -54,7 +54,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
 
     def store(self, *, strokes, accents, cell=None):
         """Keep the bar, its accents and, where given, its cell's length, as one change."""
-        self.document().change(self.settings().set_bar, strokes=strokes, accents=accents, cell=cell)
+        self.document().change_set(self.settings().set_bar, strokes=strokes, accents=accents, cell=cell)
 
     def keys(self):
         self.keep_step()
@@ -74,7 +74,7 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
 
     def nudge(self, direction):
         """Step the cursor's stroke to the one before or after, stopping at both ends."""
-        self.document().change(self.settings().set_cell, step=self.step, value=stepped(values=list(file_format.STROKES), current=self.strokes()[self.step], offset=direction))
+        self.document().change_set(self.settings().set_cell, step=self.step, value=stepped(values=list(file_format.STROKES), current=self.strokes()[self.step], offset=direction))
 
     def accent(self):
         accents = self.accents()
@@ -82,10 +82,10 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
         self.store(strokes=self.strokes(), accents=accents)
 
     def insert(self):
-        self.document().change(self.settings().insert_cell, self.step)
+        self.document().change_set(self.settings().insert_cell, self.step)
 
     def remove_cell(self):
-        self.document().change(self.settings().remove_cell, self.step)
+        self.document().change_set(self.settings().remove_cell, self.step)
         self.keep_step()
 
     def next_cell_length(self):

@@ -25,7 +25,7 @@ class PhrasingEditor(GeneratorEditor, FieldPage):
 
     def store(self, *, setting, value):
         """Keep a setting, left out of the file where it is what a Phrasing starts with."""
-        self.document().change(self.settings().set_setting, name=setting, value=None if value == phrasing_settings.PHRASING_DEFAULTS[setting] else value)
+        self.document().change_set(self.settings().set_setting, name=setting, value=None if value == phrasing_settings.PHRASING_DEFAULTS[setting] else value)
 
     def choice(self, *, label, setting, choices, names=None):
         """Return a field that chooses one of a setting's values from a list, shown by its name where its value is not a word."""

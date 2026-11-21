@@ -257,7 +257,7 @@ class PatternsPage(NamedListPage):
         current = self.document().pattern_group(name)
 
         def moved(group):
-            self.document().change(self.document().get_setlist().get_pattern(name).set_group, group)
+            self.document().change_pattern(self.document().pattern(name).set_group, group)
             self.new_groups = [made for made in self.new_groups if made != group]
             self.put_cursor_on(name)
 
@@ -300,7 +300,7 @@ class PatternsPage(NamedListPage):
         def renamed(new):
             if group in self.new_groups:
                 self.new_groups = [new if made == group else made for made in self.new_groups]
-            self.document().change(self.document().get_setlist().rename_pattern_group, old=group, new=new)
+            self.document().change_set(self.document().get_setlist().rename_pattern_group, old=group, new=new)
             self.put_cursor_on_row(Listed(HEADING, new))
         self.ask_name(title=messages.MSG_RENAME_GROUP_PROMPT, value=group, taken=self.groups(), then=renamed)
 
@@ -310,7 +310,7 @@ class PatternsPage(NamedListPage):
 
         def confirmed(_):
             self.new_groups = [made for made in self.new_groups if made != group]
-            self.document().change(self.document().get_setlist().ungroup_patterns, group)
+            self.document().change_set(self.document().get_setlist().ungroup_patterns, group)
             self.put_cursor_on_row(Listed(HEADING, UNGROUPED))
         self.ask(dialog=ConfirmDialog(title=messages.MSG_UNGROUP_TITLE, messages=[messages.MSG_UNGROUP_QUESTION.format(name=group)]), then=confirmed)
 
@@ -325,7 +325,7 @@ class PatternsPage(NamedListPage):
                 self.refuse(errors.ERR_NAME_EMPTY_OR_IN_USE)
                 return
             try:
-                copies = self.document().change(self.document().get_setlist().copy_pattern_group, group=group, new=text)
+                copies = self.document().change_set(self.document().get_setlist().copy_pattern_group, group=group, new=text)
             except ValueError as problem:
                 self.refuse(str(problem))
                 return

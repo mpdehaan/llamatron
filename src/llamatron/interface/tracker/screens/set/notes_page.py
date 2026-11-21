@@ -81,7 +81,7 @@ class NotesPage(Page):
             self.draft = lines
             return
         # The notes end with a newline, so that it reads as plain text in the file.
-        self.document().change(self.document().get_setlist().set_notes, drawing.LINE_BREAK.join(lines) + drawing.LINE_BREAK)
+        self.document().change_set(self.document().get_setlist().set_notes, drawing.LINE_BREAK.join(lines) + drawing.LINE_BREAK)
 
     def keys(self):
         if self.editing and self.on_buttons:

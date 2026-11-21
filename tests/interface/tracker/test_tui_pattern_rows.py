@@ -191,7 +191,7 @@ class TestStatementRows(PatternEditorTest):
         register_row, _, value_row = file_format.STATEMENT_ROWS[StepStatement.MUTE][:3]
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.NEXT)
-        self.document.change(self.document.get_setlist().get_pattern(self.editor.item).set_statement, kind=StepStatement.MUTE, step=self.editor.step, statement=conditions.with_operator(statement=self.statement(StepStatement.MUTE), operator=Operator.REMAINDER))
+        self.document.change_pattern(self.document.pattern(self.editor.item).set_statement, kind=StepStatement.MUTE, step=self.editor.step, statement=conditions.with_operator(statement=self.statement(StepStatement.MUTE), operator=Operator.REMAINDER))
         await self.go_to_row(value_row)
         await self.press(keybindings.StatementRow.LESS)
         self.assertNotEqual(self.statement(StepStatement.MUTE)[StatementPart.VALUE], 0)
@@ -207,7 +207,7 @@ class TestStatementRows(PatternEditorTest):
         self.assertFalse(self.editor.row_for(register_row).blocked(step=EMPTY_STEP))
         await self.go_to_row(register_row)
         await self.press(keybindings.StatementRow.NEXT)
-        self.document.change(self.document.get_setlist().get_pattern(self.editor.item).clear_sound, self.editor.step)
+        self.document.change_pattern(self.document.pattern(self.editor.item).clear_sound, self.editor.step)
         self.assertIsNotNone(self.statement(StepStatement.MUTE))
 
     def statement(self, kind):
@@ -232,7 +232,7 @@ class TestDrumPatterns(UITest):
         self.assertEqual(self.value(Row.DEGREE), NoteName.G)
 
     async def test_a_new_hit_gets_the_drum_octave(self):
-        self.document.change(self.document.get_setlist().set_default_drum_octave, 2)
+        self.document.change_set(self.document.get_setlist().set_default_drum_octave, 2)
         await self.press(keybindings.PatternRows.INSERT_STEP, NoteName.C.lower())
         self.assertEqual(self.value(Row.OCTAVE), 2)
 

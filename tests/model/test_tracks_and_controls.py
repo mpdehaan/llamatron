@@ -178,7 +178,7 @@ class TestToggles(unittest.TestCase):
 
     def test_saving_writes_off_as_false(self):
         document = Document(setlist=setlist_from_data(song_data()))
-        document.change(document.get_setlist().get_pattern(RIFF).set_value, row=Row.GLIDE, step=0, value=True)
+        document.change_pattern(document.pattern(RIFF).set_value, row=Row.GLIDE, step=0, value=True)
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, 'song.yml')
             document.save(path=path)

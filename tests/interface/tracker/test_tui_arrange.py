@@ -372,7 +372,7 @@ class TestArrangePage(UITest):
         # The clips go first, since a pattern a clip plays can't be deleted.
         for index, scene in enumerate(self.document.song().get_scenes()):
             for track in scene.get_track_names():
-                self.document.change(self.document.song().get_scene(index).remove_clip_slot, track)
+                self.document.change_set(self.document.song().get_scene(index).remove_clip_slot, track)
         for name in self.document.song().get_pattern_names():
             self.document.delete_named(section=Section.PATTERNS, name=name)
         await self.press(Key.RIGHT, Key.DOWN, Key.ENTER)
@@ -557,9 +557,9 @@ class TestClipPage(UITest):
         # No (default) choice; a clip that sets nothing shows the File page's Default follow action, saying it comes from the set.
         self.assertIsNone(self.clip_slot().get_written_follow_action())
         self.assertEqual(self.follow_action_text(), marks.MSG_FROM_SET_SHOWN.format(value=labels_text.MSG_FOLLOW_ACTION_NAMES[FollowAction.WITH_SCENE]))
-        self.document.change(self.document.get_setlist().set_default_follow_action, FollowAction.OFF)
+        self.document.change_set(self.document.get_setlist().set_default_follow_action, FollowAction.OFF)
         self.assertEqual(self.follow_action_text(), marks.MSG_FROM_SET_SHOWN.format(value=labels_text.MSG_FOLLOW_ACTION_NAMES[FollowAction.OFF]))
-        self.document.change(self.document.get_setlist().set_default_follow_action, FollowAction.WITH_SCENE)
+        self.document.change_set(self.document.get_setlist().set_default_follow_action, FollowAction.WITH_SCENE)
         self.assertIsNone(self.clip_slot().get_written_follow_action())
         await self.select_field(labels_text.MSG_FOLLOW_ACTION_LABEL)
         await self.press(Key.ENTER)
@@ -737,7 +737,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         await self.pilot.pause()
         # The notes stand under the settings, below what a small console shows until the cursor goes down the page.
         self.assertIn(THIS_PATTERN_HAS_NONE_YET, self.notes_text())
-        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=Row.GRAB, step=0, value=True)
+        self.document.change_pattern(self.document.pattern(TUNE).set_value, row=Row.GRAB, step=0, value=True)
         self.page.draw()
         await self.pilot.pause()
         self.assertNotIn(THIS_PATTERN_HAS_NONE_YET, self.notes_text())
@@ -890,9 +890,9 @@ class TestScenesAndClipsEdges(UITest):
         return self.document.song().get_scenes()[0]
 
     async def test_a_scenes_tempo_and_its_ramp_are_set_and_cleared_apart(self):
-        self.document.change(self.document.song().get_scene(0).set_tempo, 100)
-        self.document.change(self.document.song().get_scene(0).set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.END, value=120)
-        self.document.change(self.document.song().get_scene(0).set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.OVER, value=limits.MIN_RAMP_BARS)
+        self.document.change_set(self.document.song().get_scene(0).set_tempo, 100)
+        self.document.change_set(self.document.song().get_scene(0).set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.END, value=120)
+        self.document.change_set(self.document.song().get_scene(0).set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.OVER, value=limits.MIN_RAMP_BARS)
         page = await self.scene_page()
         await self.go_to(page, TEMPO)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
@@ -901,7 +901,7 @@ class TestScenesAndClipsEdges(UITest):
         self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(RampWay.OUT)), (None, TempoRamp(None, 120, limits.MIN_RAMP_BARS)))
 
     async def test_choosing_the_songs_scale_clears_the_scenes(self):
-        self.document.change(self.document.song().get_scene(0).set_scale_name, name=setlist.DEFAULT_SCALE, song=self.document.song())
+        self.document.change_set(self.document.song().get_scene(0).set_scale_name, name=setlist.DEFAULT_SCALE, song=self.document.song())
         page = await self.scene_page()
         await self.go_to(page, SCALE)
         await self.press(Key.ENTER)
@@ -1014,8 +1014,8 @@ class TestRegistersPage(UITest):
 
     async def test_a_lower_allowed_inc_max_brings_the_adds_within_it_and_undo_brings_them_back(self):
         add_row = file_format.REGISTER_ADD_ROWS[RegisterName.AX]
-        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=add_row, step=0, value=BIG_ADD)
-        self.document.change(self.document.get_setlist().get_pattern(TUNE).set_value, row=add_row, step=1, value=-BIG_ADD)
+        self.document.change_pattern(self.document.pattern(TUNE).set_value, row=add_row, step=0, value=BIG_ADD)
+        self.document.change_pattern(self.document.pattern(TUNE).set_value, row=add_row, step=1, value=-BIG_ADD)
         self.document.record_edit()
         await self.select_field(self.label(name=RegisterName.AX, what=labels_text.MSG_REGISTER_ALLOWED_INC_MAX_FIELD))
         await self.press(Key.ENTER)

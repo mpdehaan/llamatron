@@ -278,7 +278,7 @@ class ArrangePage(Page):
         self.confirm(title=messages.MSG_FRACTURE_TITLE, lines=[messages.MSG_FRACTURE_QUESTION], then=self.fracture)
 
     def fracture(self):
-        copies = self.document().change(self.document().get_setlist().fracture, self.document().song())
+        copies = self.document().change_set(self.document().get_setlist().fracture, self.document().song())
         self.say(messages.MSG_FRACTURED.format(count=len(copies)) if copies else messages.MSG_NOTHING_TO_FRACTURE)
 
     def toggle_details(self):
@@ -382,9 +382,9 @@ class ArrangePage(Page):
         """Set the chains the cursor's cell runs, through the setter of a clip, a scene or a track."""
         cell = self.cursor_cell()
         if cell[0] == arrange_details.TRACK_CELL:
-            self.document().change(self.document().song().get_track(cell[1]).set_chain_names, names=names, song=self.document().song())
+            self.document().change_set(self.document().song().get_track(cell[1]).set_chain_names, names=names, song=self.document().song())
         elif cell[0] == arrange_details.SCENE_CELL:
-            self.document().change(self.document().song().get_scene(cell[1]).set_chain_names, names=names, song=self.document().song())
+            self.document().change_set(self.document().song().get_scene(cell[1]).set_chain_names, names=names, song=self.document().song())
         else:
             self.document().set_clip_slot_setting(index=cell[1], track=cell[2], setting=ClipSlotSetting.CHAINS, value=names)
 
@@ -705,7 +705,7 @@ class ArrangePage(Page):
         message = [messages.MSG_DELETE_SCENE_QUESTION.format(name=scene_name(scene=scene, index=self.row))]
         if count:
             message.append(messages.MSG_ALSO_DELETES_CLIPS.format(count=count))
-        self.confirm_delete(lines=message, then=lambda: self.document().change(self.document().song().remove_scene, self.row))
+        self.confirm_delete(lines=message, then=lambda: self.document().change_set(self.document().song().remove_scene, self.row))
 
     # Move mode: M on a scene's name, a track's name or a clip picks it up, the arrows carry it, a clip only into an
     # empty cell, and Enter, Esc or M drops it where it is. The box around it is green while it's carried.
@@ -854,7 +854,7 @@ class ArrangePage(Page):
         self.document().add_clip_slot(index=self.row, track=track, pattern=name)
         if not drum:
             # The pattern is written for a scale as large as the one its clip plays under.
-            self.document().change(self.document().get_setlist().get_pattern(name).set_scale_length, self.document().scale_length_for_pattern(name))
+            self.document().change_pattern(self.document().pattern(name).set_scale_length, self.document().scale_length_for_pattern(name))
         self.open_pattern(self.document().clip_slot(index=self.row, track=track))
 
     def open_pattern(self, clip_slot):
@@ -873,4 +873,4 @@ class ArrangePage(Page):
     def delete_clip(self):
         track = self.track()
         row = self.row
-        self.confirm_delete(lines=[messages.MSG_DELETE_CLIP_QUESTION.format(track=track)], then=lambda: self.document().change(self.document().song().get_scene(row).remove_clip_slot, track))
+        self.confirm_delete(lines=[messages.MSG_DELETE_CLIP_QUESTION.format(track=track)], then=lambda: self.document().change_set(self.document().song().get_scene(row).remove_clip_slot, track))

@@ -180,7 +180,7 @@ class TestDescribingAChange(unittest.TestCase):
         return describe_change(leaving=Snapshot(data=self.document.get_setlist().to_data(), song=ui_testing.ONE), arriving=Snapshot(data=self.before, song=ui_testing.ONE))
 
     def test_names_a_shared_item(self):
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
         self.assertEqual(self.described(), messages.MSG_CHANGED_NAMED.format(kind=messages.MSG_CHANGED_WORDS[Section.PATTERNS], name=ui_testing.TUNE))
 
     def test_names_a_track_in_its_song(self):
@@ -193,11 +193,11 @@ class TestDescribingAChange(unittest.TestCase):
         self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.get_current_song_name(), what=messages.MSG_CHANGED_SCENE.format(number=SECOND_SCENE)))
 
     def test_names_a_song_setting(self):
-        self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
+        self.document.change_set(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
         self.assertEqual(self.described(), messages.MSG_CHANGED_IN_SONG.format(song=self.document.get_current_song_name(), what=messages.MSG_CHANGED_WORDS[SongSetting.TEMPO]))
 
     def test_names_a_setting_of_the_set(self):
-        self.document.change(self.document.get_setlist().set_title, NEW_TRACK)
+        self.document.change_set(self.document.get_setlist().set_title, NEW_TRACK)
         self.assertEqual(self.described(), messages.MSG_CHANGED_WORDS[SetlistSetting.TITLE])
 
     def test_names_a_song_that_came_or_went(self):
@@ -227,7 +227,7 @@ class TestFindingRenames(unittest.TestCase):
         self.assertEqual(self.renames(), {Section.TRACKS: {ui_testing.LEAD: RENAMED}})
 
     def test_a_renamed_scene_is_found_by_its_place(self):
-        self.document.change(self.document.song().get_scene(FIRST_SCENE).set_name, RENAMED)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_name, RENAMED)
         self.assertEqual(self.renames(), {Section.SCENES: {FIRST_SCENE: RENAMED}})
 
     def test_a_scale_named_after_its_root_is_the_same_scale_when_the_root_moves(self):
@@ -243,8 +243,8 @@ class TestFindingRenames(unittest.TestCase):
         self.assertEqual(self.renames(), {})
 
     def test_an_edit_is_not_a_rename(self):
-        self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
+        self.document.change_set(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=0, value=2)
         self.assertEqual(self.renames(), {})
 
     def test_the_undo_returns_its_renames_the_other_way_round(self):
@@ -266,7 +266,7 @@ class TestDocumentHistory(unittest.TestCase):
     def test_edits_are_recorded_when_asked_and_undone_as_one_step(self):
         before = self.data()
         self.document.add_track(NEW_TRACK)
-        self.document.change(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
+        self.document.change_set(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
         self.assertTrue(self.document.record_edit())
         self.assertFalse(self.document.record_edit())
         self.assertIsNotNone(self.document.undo())
@@ -280,7 +280,7 @@ class TestDocumentHistory(unittest.TestCase):
         tune = setlist.get_pattern(ui_testing.TUNE)
         other = setlist.get_pattern(ui_testing.OTHER)
         song = self.document.song()
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         self.document.record_edit()
         edited = self.data()
         self.document.undo()
@@ -309,7 +309,7 @@ class TestDocumentHistory(unittest.TestCase):
 
     def test_snapshots_share_every_piece_that_no_edit_between_them_changed(self):
         first = self.document.get_setlist().kept_data()
-        self.document.change(self.document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         self.document.record_edit()
         second = self.document.get_setlist().kept_data()
         self.assertIsNot(second[Section.PATTERNS][ui_testing.TUNE], first[Section.PATTERNS][ui_testing.TUNE])
@@ -342,7 +342,7 @@ class TestDocumentHistory(unittest.TestCase):
 
     def test_a_document_that_checks_refuses_an_undo_that_differs_from_loading_the_snapshot(self):
         document = a_song()
-        document.change(document.get_setlist().get_pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
+        document.change_pattern(document.pattern(ui_testing.TUNE).set_value, row=Row.VELOCITY, step=0, value=A_VELOCITY)
         document.record_edit()
         # The set is told that the pattern it has is the one the snapshot holds, so the undo keeps the edited pattern: the mistake the check is there for.
         with mock.patch.object(NamedItems, NamedItems.same_item.__name__, lambda self, *, name, data: self.find(name)):
@@ -352,10 +352,10 @@ class TestDocumentHistory(unittest.TestCase):
 
     def test_a_continued_edit_joins_the_one_before(self):
         before = self.data()
-        self.document.change(self.document.song().set_tempo, 1)
+        self.document.change_set(self.document.song().set_tempo, 1)
         self.document.record_edit()
         self.document.continue_edit()
-        self.document.change(self.document.song().set_tempo, 12)
+        self.document.change_set(self.document.song().set_tempo, 12)
         self.document.record_edit()
         self.document.undo()
         self.assertEqual(self.data(), before)
@@ -363,9 +363,9 @@ class TestDocumentHistory(unittest.TestCase):
     def test_the_continuation_is_forgotten_if_nothing_changed(self):
         self.document.continue_edit()
         self.assertFalse(self.document.record_edit())
-        self.document.change(self.document.song().set_tempo, 1)
+        self.document.change_set(self.document.song().set_tempo, 1)
         self.document.record_edit()
-        self.document.change(self.document.song().set_tempo, 2)
+        self.document.change_set(self.document.song().set_tempo, 2)
         self.document.record_edit()
         self.document.undo()
         self.assertEqual(self.document.song().get_tempo(), 1)
@@ -374,7 +374,7 @@ class TestDocumentHistory(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, 'set.yml')
             self.document.save(path=path)
-            self.document.change(self.document.song().set_tempo, 1)
+            self.document.change_set(self.document.song().set_tempo, 1)
             self.document.record_edit()
             self.assertTrue(self.document.is_dirty())
             self.document.undo()
@@ -384,7 +384,7 @@ class TestDocumentHistory(unittest.TestCase):
 
     def test_saving_keeps_the_history(self):
         with tempfile.TemporaryDirectory() as folder:
-            self.document.change(self.document.song().set_tempo, 1)
+            self.document.change_set(self.document.song().set_tempo, 1)
             self.document.record_edit()
             self.document.save(path=os.path.join(folder, 'set.yml'))
             self.assertTrue(self.document.can_undo())
@@ -392,7 +392,7 @@ class TestDocumentHistory(unittest.TestCase):
     def test_a_loaded_set_has_nothing_to_undo_because_nothing_about_the_history_is_saved(self):
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, 'set.yml')
-            self.document.change(self.document.song().set_tempo, 1)
+            self.document.change_set(self.document.song().set_tempo, 1)
             self.document.record_edit()
             self.document.save(path=path)
             loaded = Document.load(path)
@@ -403,7 +403,7 @@ class TestDocumentHistory(unittest.TestCase):
         self.document.add_song(SECOND_SONG)
         self.document.record_edit()
         self.document.select_song(SECOND_SONG)
-        self.document.change(self.document.song().set_tempo, 1)
+        self.document.change_set(self.document.song().set_tempo, 1)
         self.document.record_edit()
         self.document.select_song(self.document.song_names()[0])
         self.document.undo()
@@ -430,7 +430,7 @@ class TestDocumentHistory(unittest.TestCase):
         self.assertEqual(self.document.lengths().song_seconds(), seconds)
 
     def test_forgetting_the_history_starts_again_from_now(self):
-        self.document.change(self.document.song().set_tempo, 1)
+        self.document.change_set(self.document.song().set_tempo, 1)
         self.document.record_edit()
         self.document.forget_history()
         self.assertFalse(self.document.can_undo())

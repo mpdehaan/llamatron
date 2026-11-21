@@ -80,8 +80,8 @@ class TestNotesPage(UITest):
 
     async def test_a_protected_sets_notes_can_only_be_read(self):
         await self.press(Key.ESCAPE, Key.ESCAPE)
-        self.document.change(self.document.get_setlist().set_protected, True)
-        self.document.change(self.document.get_setlist().set_notes, ONE)
+        self.document.change_set(self.document.get_setlist().set_protected, True)
+        self.document.change_set(self.document.get_setlist().set_notes, ONE)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, NotesPage)
         self.assertFalse(self.app.screen.editing)
@@ -122,7 +122,7 @@ class TestNotesPage(UITest):
 
     async def test_erasing_at_the_start_of_a_line_joins_it_to_the_one_before(self):
         await self.press(Key.ESCAPE)
-        self.document.change(self.document.get_setlist().set_notes, 'one\ntwo\n')
+        self.document.change_set(self.document.get_setlist().set_notes, 'one\ntwo\n')
         await self.press(keybindings.NotesPage.EDIT, Key.UP, Key.DOWN)
         self.app.screen.column = 0
         await self.press(Key.BACKSPACE)
@@ -131,7 +131,7 @@ class TestNotesPage(UITest):
 
     async def test_clearing_asks_first_while_reading(self):
         await self.press(Key.ESCAPE)
-        self.document.change(self.document.get_setlist().set_notes, ONE)
+        self.document.change_set(self.document.get_setlist().set_notes, ONE)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
@@ -139,7 +139,7 @@ class TestNotesPage(UITest):
 
     async def test_long_notes_scroll(self):
         await self.press(Key.ESCAPE)
-        self.document.change(self.document.get_setlist().set_notes, ''.join((f'line {n}\n' for n in range(100))))
+        self.document.change_set(self.document.get_setlist().set_notes, ''.join((f'line {n}\n' for n in range(100))))
         await self.press(Key.DOWN, Key.DOWN)
         self.assertNotIn(LINE_0, self.text().replace(' ', ''))
         self.assertIn(LINE_2, self.text())

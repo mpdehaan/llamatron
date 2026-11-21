@@ -176,7 +176,7 @@ class TestLookAndNewKeys(UITest):
 
     async def test_a_scale_with_more_than_nine_notes_takes_two_digits(self):
         self.document.add_scale(name=ui_testing.CHROMATIC_SCALE, root=NoteName.C, kind=scale_type_name(ScaleType.CHROMATIC))
-        self.document.change(self.document.song().set_scale_name, ui_testing.CHROMATIC_SCALE)
+        self.document.change_set(self.document.song().set_scale_name, ui_testing.CHROMATIC_SCALE)
         self.document.changed()
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, '1', '2')
         self.assertEqual(self.value(Row.DEGREE), 12)

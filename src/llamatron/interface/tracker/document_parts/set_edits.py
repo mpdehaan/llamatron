@@ -28,7 +28,7 @@ class SetEdits:
     """The changes the File, Songs, Scales, Generators, Chains and Grooves pages make, each through the set's own setters.
 
     It holds no data of its own: it works on what Document keeps, through `self._setlist`,
-    `self.song()` and `self.change(method, ...)`, which makes one change through an object's own
+    `self.song()` and `self.change_set(method, ...)` or `self.change_pattern(method, ...)`, which make one change through an object's own
     method and notes it.
     """
 
@@ -43,7 +43,7 @@ class SetEdits:
 
     def add_song(self, name):
         """Add a song with its first track and scene at the end of the set, and make it current."""
-        self.change(self._setlist.add_started_song, name)
+        self.change_set(self._setlist.add_started_song, name)
         self.select_song(name)
 
     def import_song(self, imported):
@@ -54,7 +54,7 @@ class SetEdits:
 
     def add_made_song(self, made):
         """Take in the one song of a set the song wizard made, with all the song uses, as one change, make the song current and return its name here."""
-        name = self.change(self._setlist.take_in, made)[0]
+        name = self.change_set(self._setlist.take_in, made)[0]
         self._play_made_song_in_real_time()
         self.select_song(name)
         return name
@@ -62,7 +62,7 @@ class SetEdits:
     def replace_with_made_song(self, made, *, new=None):
         """Replace the current song, in its place, with the one song of a set the song wizard made, as one change, and return its name:
         the replaced song's, or a new name when one is given, as when an untouched song is filled."""
-        name = self.change(self._setlist.replace_song, name=self._current, other=made, new=new)
+        name = self.change_set(self._setlist.replace_song, name=self._current, other=made, new=new)
         self._play_made_song_in_real_time()
         self.select_song(name)
         return name
@@ -70,7 +70,7 @@ class SetEdits:
     def _play_made_song_in_real_time(self):
         """Turn real-time playback on, as the first instrument added does, since a made song brings instruments and is there to be heard."""
         if self._setlist.get_instrument_names() and not self._setlist.is_real_time():
-            self.change(self._setlist.set_real_time, True)
+            self.change_set(self._setlist.set_real_time, True)
 
     def current_song_is_untouched(self):
         return self._setlist.song_is_untouched(self._current)
@@ -110,20 +110,20 @@ class SetEdits:
         return is_default_scale_name(name=name, root=scale.get_root(), kind=scale.get_kind())
 
     def add_scale(self, *, name, root, kind):
-        self.change(self._setlist.add_item, section=Section.SCALES, name=name, item=NamedScale(root=root, kind=kind))
+        self.change_set(self._setlist.add_item, section=Section.SCALES, name=name, item=NamedScale(root=root, kind=kind))
 
     def set_scale_root(self, *, name, root):
         """Change a named scale's root, which moves everything that uses it, and return the scale's name, which may have followed."""
         scale = self._scale(name)
         was_default = is_default_scale_name(name=name, root=scale.get_root(), kind=scale.get_kind())
-        self.change(scale.set_root, root)
+        self.change_set(scale.set_root, root)
         return self._scale_name_following_its_notes(name=name, was_default=was_default)
 
     def set_scale_kind(self, *, name, kind):
         """Change a named scale's kind, which changes everything that uses it, and return the scale's name, which may have followed."""
         scale = self._scale(name)
         was_default = is_default_scale_name(name=name, root=scale.get_root(), kind=scale.get_kind())
-        self.change(scale.set_kind, kind)
+        self.change_set(scale.set_kind, kind)
         return self._scale_name_following_its_notes(name=name, was_default=was_default)
 
     def _scale_name_following_its_notes(self, *, name, was_default):
@@ -152,11 +152,11 @@ class SetEdits:
             return
         kind = generator_plugins.names_by_section()[section]
         settings = generator_plugins.settings_of(kind).new()
-        self.change(self._setlist.add_item, section=section, name=name, item=settings)
+        self.change_set(self._setlist.add_item, section=section, name=name, item=settings)
 
     def set_musician_section(self, *, name, section, setting, value):
         """Set what a kind of section has of its own for a musician, whether the musician plays there or how the part is played, or None for what a section does unasked."""
-        self.change(self.generator(section=musician_plugin.SECTION, name=name).set_section_own, section=section, name=setting, value=value)
+        self.change_set(self.generator(section=musician_plugin.SECTION, name=name).set_section_own, section=section, name=setting, value=value)
 
     def set_progression(self, *, name, chords, accidentals, inversions, scales=None, qualities=None, tensions=None):
         """Set a progression's chords, with a sharp or flat, an inversion, a borrowed scale type, a quality and tensions for each, a row of nothing left out."""
@@ -168,28 +168,28 @@ class SetEdits:
             ProgressionSetting.TENSIONS: [None if value is None else list(value) for value in tensions or nothing],
         }
         for setting, values in rows.items():
-            self.change(progression.set_setting, name=setting, value=list(values) if any(value is not None for value in values) else None)
+            self.change_set(progression.set_setting, name=setting, value=list(values) if any(value is not None for value in values) else None)
 
     def set_arp_offset(self, *, name, step, offset):
         """Set one step of an arp's offsets, where None is a silent step."""
-        self.change(self.generator(section=arp_plugin.SECTION, name=name).set_cell, step=step, value=offset)
+        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).set_cell, step=step, value=offset)
 
     def insert_arp_offset(self, *, name, step):
         """Add a step of 0 before a step of an arp's offsets."""
-        self.change(self.generator(section=arp_plugin.SECTION, name=name).insert_cell, step)
+        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).insert_cell, step)
 
     def set_arp_step_add(self, *, name, register, step, add):
         """Set what one step of an arp's offsets adds to a register, where None or 0 adds nothing."""
-        self.change(self.generator(section=arp_plugin.SECTION, name=name).set_step_add, register=register, step=step, add=add)
+        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).set_step_add, register=register, step=step, add=add)
 
     def remove_arp_offset(self, *, name, step):
-        self.change(self.generator(section=arp_plugin.SECTION, name=name).remove_cell, step)
+        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).remove_cell, step)
 
     def _chain(self, name):
         return self._setlist.get_chain(name)
 
     def add_chain(self, name):
-        self.change(self._setlist.add_item, section=Section.CHAINS, name=name, item=Chain([]))
+        self.change_set(self._setlist.add_item, section=Section.CHAINS, name=name, item=Chain([]))
 
     def move_chain_step(self, *, chain, place, offset):
         """Move a chain's step up or down, and return whether it moved."""
@@ -203,10 +203,10 @@ class SetEdits:
     def add_instrument(self, name):
         """Add an instrument with no device yet under a name. The first instrument turns real-time playback on."""
         first = not self._setlist.get_instrument_names()
-        self.change(self._setlist.add_item, section=Section.INSTRUMENTS, name=name, item=Instrument())
+        self.change_set(self._setlist.add_item, section=Section.INSTRUMENTS, name=name, item=Instrument())
         if first:
-            self.change(self._setlist.set_real_time, True)
+            self.change_set(self._setlist.set_real_time, True)
 
     def add_groove(self, name):
         """Add a straight groove of one bar of 16ths under a name, which can't be a factory groove's."""
-        self.change(self._setlist.add_item, section=Section.GROOVES, name=name, item=new_groove())
+        self.change_set(self._setlist.add_item, section=Section.GROOVES, name=name, item=new_groove())

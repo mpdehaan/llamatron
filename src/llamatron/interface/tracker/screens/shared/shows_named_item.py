@@ -62,7 +62,7 @@ class ShowsNamedItem:
         return statement_section(
             page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE,
             statements=lambda: document.song().get_generator_settings(kind=generator_plugins.names_by_section()[self.SECTION], name=self.item).get_bypass_when(),
-            store=lambda place, statement: document.change(document.generator(section=self.SECTION, name=self.item).set_bypass_statement, place=place, statement=statement),
+            store=lambda place, statement: document.change_set(document.generator(section=self.SECTION, name=self.item).set_bypass_statement, place=place, statement=statement),
         )
 
     def caption(self):

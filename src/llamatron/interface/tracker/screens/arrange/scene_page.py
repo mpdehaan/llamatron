@@ -64,7 +64,7 @@ class ScenePage(FieldPage):
         def named(text):
             text = text.strip()
             if text:
-                self.document().change(self.document().song().get_scene(self.index).set_name, text)
+                self.document().change_set(self.document().song().get_scene(self.index).set_name, text)
                 self.shown_name = text
                 self.crumbs = (labels.Crumb.ARRANGE, labels.MSG_SCENE_CRUMB.format(name=text))
         self.ask_text(title=messages.MSG_SCENE_NAME_PROMPT, value=self.scene().get_name() or drawing.NOTHING, then=named, is_name=True)
@@ -73,7 +73,7 @@ class ScenePage(FieldPage):
         scales = sorted_names(self.document().song().get_scale_names())
 
         def chosen(name):
-            self.document().change(self.document().song().get_scene(self.index).set_scale_name, name=name, song=self.document().song())
+            self.document().change_set(self.document().song().get_scene(self.index).set_scale_name, name=name, song=self.document().song())
         self.pick(title=messages.MSG_SCENE_SCALE_TITLE, values=[None, *scales], shown=[labels.MSG_SONG_OPTION, *scales], current=self.scene().get_scale_name(), then=chosen)
 
     def section_field(self):
@@ -81,7 +81,7 @@ class ScenePage(FieldPage):
         section = self.scene().get_section()
         choices = [marks.MSG_NONE_SHOWN, *file_format.SECTION_KINDS]
         return ChoiceField(page=self, label=labels.MSG_SCENE_SECTION_LABEL, choices=choices, current=section or marks.MSG_NONE_SHOWN,
-                           set=lambda choice: self.document().change(self.document().song().get_scene(self.index).set_section, None if choice == marks.MSG_NONE_SHOWN else choice))
+                           set=lambda choice: self.document().change_set(self.document().song().get_scene(self.index).set_section, None if choice == marks.MSG_NONE_SHOWN else choice))
 
     def groove_field(self):
         """Return the Groove field: the song's by default, off to play straight, or one by name."""
@@ -89,21 +89,21 @@ class ScenePage(FieldPage):
         return groove_choice_field(
             page=self, title=messages.MSG_SCENE_GROOVE_TITLE, choice=self.scene().get_groove_choice(),
             inherited_option=labels.MSG_SONG_OPTION, inherited_shown=marks.MSG_SONG_GROOVE_SHOWN.format(groove=song_groove),
-            choose=lambda choice: self.document().change(self.document().song().get_scene(self.index).set_groove_choice, choice=choice, song=self.document().song()), clear_what=legends.MSG_USE_SONG_GROOVE_WHAT,
+            choose=lambda choice: self.document().change_set(self.document().song().get_scene(self.index).set_groove_choice, choice=choice, song=self.document().song()), clear_what=legends.MSG_USE_SONG_GROOVE_WHAT,
         )
 
     def clear_scale(self):
-        self.document().change(self.document().song().get_scene(self.index).set_scale_name, name=None, song=self.document().song())
+        self.document().change_set(self.document().song().get_scene(self.index).set_scale_name, name=None, song=self.document().song())
 
     def tempo(self):
         """Return the tempo the scene sets, or None if it uses the song's."""
         return self.scene().get_tempo_setting()
 
     def set_tempo(self, value):
-        self.document().change(self.document().song().get_scene(self.index).set_tempo, value)
+        self.document().change_set(self.document().song().get_scene(self.index).set_tempo, value)
 
     def clear_tempo(self):
-        self.document().change(self.document().song().get_scene(self.index).clear_tempo)
+        self.document().change_set(self.document().song().get_scene(self.index).clear_tempo)
 
     def tempo_ramp_section(self, way):
         """Return a tempo ramp's section, closed until opened: the tempo it starts from, the tempo it reaches, each the scene's tempo until given, and the bars it takes, with no ramp until they are given."""
@@ -114,7 +114,7 @@ class ScenePage(FieldPage):
             return scene.get_tempo_ramp_setting(way=way, part=part)
 
         def store(part, number):
-            document.change(document.song().get_scene(self.index).set_tempo_ramp_setting, way=way, part=part, value=number)
+            document.change_set(document.song().get_scene(self.index).set_tempo_ramp_setting, way=way, part=part, value=number)
         here = self.tempo()
         base = plain_number(document.song().get_tempo()) if here is None else here
         blank = marks.MSG_SONG_TEMPO_SHOWN.format(tempo=base) if here is None else marks.MSG_SCENE_TEMPO_SHOWN.format(tempo=base)
@@ -162,13 +162,13 @@ class ScenePage(FieldPage):
             velocity_field(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
             NumberField(
                 page=self, label=labels.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT,
-                set=lambda number: self.document().change(self.document().song().get_scene(self.index).set_repeat, number),
+                set=lambda number: self.document().change_set(self.document().song().get_scene(self.index).set_repeat, number),
             ),
             *[self.reset_field(name) for name in file_format.REGISTER_NAMES],
             *[self.reset_draw_field(name) for name in file_format.DRAW_NAMES],
             # Real-time playback alone reads it, so it comes last, after everything the export reads.
-            Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().change(self.document().song().get_scene(self.index).set_launch_together, on)),
-            generators_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().change(self.document().song().get_scene(self.index).set_chain_names, names=names, song=self.document().song())),
+            Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=lambda on: self.document().change_set(self.document().song().get_scene(self.index).set_launch_together, on)),
+            generators_field(page=self, names=lambda: self.scene().get_chain_names(), store=lambda names: self.document().change_set(self.document().song().get_scene(self.index).set_chain_names, names=names, song=self.document().song())),
             *[field for way in file_format.RAMP_WAYS for field in self.tempo_ramp_section(way)],
             *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
             *[field for shape in file_format.PLACED_SHAPES for field in self.shape_section(shape)],
@@ -178,7 +178,7 @@ class ScenePage(FieldPage):
     def velocity_values(self):
         """Return what the velocity fields read the scene's own velocity settings with, what gives a blank one from above, which nothing does for a scene, and what keeps one."""
         scene = self.scene()
-        return scene.get_written, lambda name: None, lambda name, value: self.document().change(self.document().song().get_scene(self.index).set_written, name=name, value=value)
+        return scene.get_written, lambda name: None, lambda name, value: self.document().change_set(self.document().song().get_scene(self.index).set_written, name=name, value=value)
 
     def register_sections(self):
         """Return the scene's sections about the registers: what it sets them to as it first starts, what it adds every time it plays, and the statements that bypass the generators of its clips."""
@@ -187,15 +187,15 @@ class ScenePage(FieldPage):
         return [
             *register_fields(
                 page=self, label=labels.MSG_SET_REGISTERS_LABEL, name_label=labels.MSG_SET_REGISTER_LABEL, values=scene.get_register_sets,
-                store=lambda register, value: document.change(document.song().get_scene(self.index).set_register_set, register=register, value=value),
+                store=lambda register, value: document.change_set(document.song().get_scene(self.index).set_register_set, register=register, value=value),
             ),
             *register_fields(
                 page=self, label=labels.MSG_ADD_REGISTERS_LABEL, name_label=labels.MSG_ADD_REGISTER_LABEL, values=scene.get_register_adds,
-                store=lambda register, value: document.change(document.song().get_scene(self.index).set_register_add, register=register, value=value),
+                store=lambda register, value: document.change_set(document.song().get_scene(self.index).set_register_add, register=register, value=value),
             ),
             *statement_section(
                 page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE, statements=scene.get_bypass_when,
-                store=lambda place, statement: document.change(document.song().get_scene(self.index).set_bypass_statement, place=place, statement=statement),
+                store=lambda place, statement: document.change_set(document.song().get_scene(self.index).set_bypass_statement, place=place, statement=statement),
             ),
         ]
 
@@ -204,19 +204,19 @@ class ScenePage(FieldPage):
         scene = self.scene()
         return shape_section(
             page=self, shape=shape, value=lambda part: scene.get_written(shape_setting(shape=shape, part=part)),
-            store=lambda part, value: self.document().change(self.document().song().get_scene(self.index).set_written, name=shape_setting(shape=shape, part=part), value=value),
+            store=lambda part, value: self.document().change_set(self.document().song().get_scene(self.index).set_written, name=shape_setting(shape=shape, part=part), value=value),
         )
 
     def reset_draw_field(self, draw):
         """Return the field that makes the scene reset a draw as it first starts: back to its first slot, or a serial draw to a new round."""
         scene = self.document().song().get_scene(self.index)
         return Toggle(label=labels.MSG_RESET_LABEL.format(name=draw), on=draw in scene.get_reset_draw_names(),
-                      set=lambda on: self.document().change(self.document().song().get_scene(self.index).set_reset_draw, draw=draw, on=on))
+                      set=lambda on: self.document().change_set(self.document().song().get_scene(self.index).set_reset_draw, draw=draw, on=on))
 
     def reset_field(self, register):
         """Return the field that makes the scene reset a register as it starts."""
         on = self.document().resets(index=self.index, register=register)
-        return Toggle(label=labels.MSG_RESET_LABEL.format(name=register), on=on, set=lambda on: self.document().change(self.document().song().get_scene(self.index).set_reset, register=register, on=on))
+        return Toggle(label=labels.MSG_RESET_LABEL.format(name=register), on=on, set=lambda on: self.document().change_set(self.document().song().get_scene(self.index).set_reset, register=register, on=on))
 
     def remarks(self, width):
         document = self.document()
