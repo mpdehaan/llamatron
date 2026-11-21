@@ -721,12 +721,7 @@ class SongRenderer:
                     draws = self._with_draw_resets(draws=draws, written=written)
                     start = {**start, **draws.values()}
                 try:
-                    if self._is_settled_by_playing(written):
-                        self._timelines[number] = self._decide(scene=written, start=start, turned=turned, draws=draws)
-                    else:
-                        self._timelines[number] = RegisterTimeline(
-                            registers=self._registers, start=start, changes=self._scene_changes(written), chooser=self._register_chooser, turned=turned, draws=draws,
-                        )
+                    self._timelines[number] = self._timeline_of(scene=written, start=start, turned=turned, draws=draws)
                 except SongFileError:
                     if written is scene:
                         raise
@@ -735,6 +730,13 @@ class SongRenderer:
             turned = self._timelines[number].get_end_turned()
             draws = self._timelines[number].get_end_draws()
         return self._timelines[scene.get_number()]
+
+    def _timeline_of(self, *, scene, start, turned, draws):
+        """Return a written-out scene's register values from where they start: found by playing the scene where a register can cut
+        a clip of it short, and from the changes its clips make otherwise."""
+        if self._is_settled_by_playing(scene):
+            return self._decide(scene=scene, start=start, turned=turned, draws=draws)
+        return RegisterTimeline(registers=self._registers, start=start, changes=self._scene_changes(scene), chooser=self._register_chooser, turned=turned, draws=draws)
 
     def _draw_afresh_for_a_take(self, written):
         """As a retaken scene first starts, before its repeats, start the song's random draws afresh from the seed, the scene and its

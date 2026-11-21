@@ -22,7 +22,6 @@ from llamatron.strings import errors, legends
 from llamatron.tui import keybindings, keys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.key_table import first_key
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.pattern.pattern_editor import Munge, Reconfigure
@@ -161,25 +160,17 @@ class TestRearrangingAPattern(UITest):
         self.assertEqual(self.document.song().get_scenes()[0].get_clip_slot(LEAD).get_pattern_name(), LONG_PATTERN)
         render_song(self.document.song())
 
-    async def test_the_old_keys_moved(self):
-        await self.press(keybindings.PatternEditor.RESIZE)
-        self.assertIsInstance(self.app.screen, PromptDialog)
-        self.assertEqual(self.app.screen.value, '5')
 
 
 class TestTheEditorsTwoViews(UITest):
     """The piano roll and the rows are two views of one shape, each with its cursor, its keys and its drawing, and the editor asks whichever is showing."""
 
-    async def test_the_editor_asks_the_view_that_is_showing_and_tab_changes_which(self):
+    async def test_tab_switches_between_the_piano_roll_and_the_rows(self):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
-        editor = self.app.screen
-        self.assertIs(editor.view(), editor.roll)
-        self.assertIs(editor.view().drawing, editor.roll_drawing)
-        await self.press(keybindings.PatternEditor.TO_EDITOR)
-        self.assertIs(editor.view(), editor.rows_view)
-        self.assertIs(editor.view().drawing, editor.drawing)
-        await self.press(keybindings.PatternEditor.TO_ROLL)
-        self.assertIs(editor.view(), editor.roll)
+        self.assertTrue(self.app.screen.on_roll())
+        for binding, on_roll in ((keybindings.PatternEditor.TO_EDITOR, False), (keybindings.PatternEditor.TO_ROLL, True)):
+            await self.press(binding)
+            self.assertEqual(self.app.screen.on_roll(), on_roll)
 
     async def test_each_view_says_what_tab_does_and_whether_its_legend_lists_the_step_keys(self):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)

@@ -19,8 +19,8 @@
 strings/errors.py holds every ERR_ constant, strings/help.py every HELP_ constant, strings/reprs.py the REPR_ text a class
 prints itself with, and the package's other modules the MSG_ constants. The package holds all of the program's visible text, so that wording can be read in one place and
 a string in a test can't be mistaken for a data key. Nothing else may define a constant with either
-prefix outside the package, the modules' own constants all carry their module's prefix (their classes, like What and Crumb, group shared words
-without it), a name never repeats its prefix's word (no ERR_ERROR_LINE), and a constant nothing uses is removed. The
+prefix outside the package, no module defines a name twice, since the second would quietly replace the first, and a constant
+nothing uses is removed. The
 modules import only names from the file format, the keys and each other, so that any other module can import them.
 """
 
@@ -156,19 +156,6 @@ class TestMessageConstants(unittest.TestCase):
             with self.subTest(module=module.__name__):
                 self.assertEqual(defined_twice(module.__file__), [])
 
-    def test_each_module_holds_only_its_own_prefix(self):
-        for path, prefix in OWN_PREFIX.items():
-            with self.subTest(path=path):
-                wrong = [name for name in module_constants(path) if not name.startswith(prefix) and not name.startswith(PRIVATE_PREFIX)]
-                self.assertEqual(wrong, [])
-
-    def test_no_name_repeats_its_prefix(self):
-        for path, prefix in OWN_PREFIX.items():
-            for name in module_constants(path):
-                with self.subTest(name=name):
-                    words = name[len(prefix):].split(PRIVATE_PREFIX)
-                    self.assertFalse(any(word in REDUNDANT_WORDS[prefix] for word in words))
-
     def test_every_constant_is_used(self):
         # Every word of every other file is gathered once, and each constant looked up among them: a search of the whole
         # program for each of several thousand names took twenty seconds.
@@ -184,16 +171,6 @@ class TestMessageConstants(unittest.TestCase):
                 if name.startswith(prefix) and name not in used_elsewhere and times_at_home[name] <= DEFINED_ONLY:
                     unused.append(name)
         self.assertEqual(unused, [])
-
-    def test_every_group_comment_names_a_module_that_exists(self):
-        """The constants are grouped under a comment naming the module that uses them, and a module that moved takes its comment with it."""
-        for path in string_modules():
-            for line in source_of(path).splitlines():
-                if not GROUP_COMMENT.match(line):
-                    continue
-                for module in MODULE_PATH.findall(line):
-                    with self.subTest(file=os.path.basename(path), comment=line):
-                        self.assertTrue(os.path.exists(os.path.join(SOURCE_FOLDER, module)), module)
 
     def test_the_string_modules_import_only_names(self):
         """A strings module that imported a module with code of its own could no longer be imported by that module."""

@@ -45,11 +45,11 @@ from llamatron.composition.file_format import Section
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import midi_arrangement
 from llamatron.playback.step_order import walk_order
-from llamatron.realtime import fluidsynth as fluidsynth_values, player as player_values
+from llamatron.realtime import fluidsynth as fluidsynth_values, playback as playback_values, player as player_values
 from llamatron.realtime.engine import MonotonicClock
 from llamatron.realtime.fluidsynth import FluidSynth, installed
 from llamatron.realtime.outputs import output_port_names
-from llamatron.realtime.playback import Launch, LAUNCH_CLIP, LAUNCH_CLIPS, LAUNCH_SCENE, LocalPlayback, Wanted
+from llamatron.realtime.playback import Launch, LocalPlayback, Wanted
 from llamatron.realtime.playback_process import PlaybackProcess
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Route
@@ -293,7 +293,7 @@ class Transport:
     def play_scene(self, *, index):
         """Play the current song from a scene, every clip of it, the follow actions taking it on. Return whether it waits for the next bar of what plays."""
         self._previewing = False
-        return self._launch(launch=Launch(LAUNCH_SCENE, index), instead=None)
+        return self._launch(launch=Launch(playback_values.LAUNCH_SCENE, index), instead=None)
 
     def play_clip(self, *, index, track, instead=None, forever=False):
         """Play one clip on its own, through its track's instrument or the one instead names, once as its scene would or again and again. Return whether it waits for the next bar.
@@ -303,14 +303,14 @@ class Transport:
         if forever and self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = forever
-        return self._launch(launch=Launch(LAUNCH_CLIP, index, (track,), forever), instead=instead)
+        return self._launch(launch=Launch(playback_values.LAUNCH_CLIP, index, (track,), forever), instead=instead)
 
     def play_clips(self, *, index, tracks):
         """Play several clips of one scene together, again and again, as a preview of a few players, which stops when its page is left."""
         if self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = True
-        self._launch(launch=Launch(LAUNCH_CLIPS, index, tuple(tracks), True), instead=None)
+        self._launch(launch=Launch(playback_values.LAUNCH_CLIPS, index, tuple(tracks), True), instead=None)
 
     def stop_clip(self, track):
         self._playback.stop_clip(track)

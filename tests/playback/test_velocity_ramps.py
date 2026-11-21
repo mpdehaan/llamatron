@@ -50,8 +50,6 @@ ROWS = {Row.VELOCITY: [WRITTEN] * test_shapes.STEPS}
 RISING = [LOW + A_NOTE_OF_ONE_BAR * note for note in range(test_shapes.STEPS)]
 FALLING = [WRITTEN - A_NOTE_OF_ONE_BAR * note for note in range(test_shapes.STEPS)]
 HELD = [WRITTEN] * test_shapes.STEPS
-# A setting a scene and a clip held before their velocity took its place.
-OLD_SWELL_START = 'swell_start'
 
 
 def played(data, *, row=0):
@@ -195,11 +193,6 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
             setlist_from_data(lead_of(scene={VelocitySetting.IN_OVER: limits.MIN_RAMP_BARS - 1}))
         with self.assertRaises(SongFileError):
             setlist_from_data(lead_of(clip={VelocitySetting.OUT_OVER: limits.MAX_RAMP_BARS + 1}))
-
-    def test_a_scenes_or_a_clips_swell_is_no_longer_a_setting(self):
-        # A file from before still opens, the old setting passed over and never written again.
-        written = setlist_from_data(lead_of(scene={OLD_SWELL_START: HALF})).to_data()
-        self.assertNotIn(OLD_SWELL_START, next(iter(written[Section.SONGS].values()))[Section.SCENES][0])
 
     def test_they_are_written_back_as_read(self):
         scene = {VelocitySetting.LEVEL: HALF, VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}

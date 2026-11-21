@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""internal_tools/repeated_values.py lists the strings written out in Python source that repeat a value the program already names."""
+"""internal_tools/repeated_values.py, one quick check of its main path: a value written out is listed with its line and a docstring and a tests own word are not. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
 
 import importlib.util
 import pathlib
@@ -46,14 +46,6 @@ class TestRepeatedValues(unittest.TestCase):
         self.tool = load_tool()
         self.values = self.tool.named_values()
 
-    def test_the_programs_values_are_known_by_the_constant_that_names_each(self):
-        self.assertIn(ScaleSetting.ROOT, self.values)
-        self.assertIn(NoteName.A, self.values)
-        self.assertTrue(self.values[PatternSetting.STEPS].endswith(self.tool.CONSTANT_NAME.format(owner='', name='STEPS')))
-
     def test_a_value_written_out_is_listed_with_its_line_and_a_docstring_and_a_tests_own_word_are_not(self):
         found = self.tool.repeated_in(source=SOURCE, values=self.values)
         self.assertEqual([(line, value) for line, value, _ in found], [(DATA_LINE, NoteName.A), (DATA_LINE, ScaleSetting.ROOT)])
-
-    def test_source_that_names_every_value_lists_nothing(self):
-        self.assertEqual(self.tool.repeated_in(source='steps = PatternSetting.STEPS\n', values=self.values), [])

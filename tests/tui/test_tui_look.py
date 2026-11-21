@@ -35,38 +35,14 @@ from llamatron.tui.dialogs import chord_dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.chord_dialog import ChordDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.tui.dialogs.dialog import Dialog
-from llamatron.tui.dialogs.message_dialog import MessageDialog
-from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.document import Document
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.screens.arrange.clip_page import ClipPage
-from llamatron.tui.screens.arrange.scene_page import ScenePage
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui.screens.generators.arp_editor import ArpEditor
-from llamatron.tui.screens.generators.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
-from llamatron.tui.screens.generators.generators_page import GeneratorsPage
-from llamatron.tui.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.tui.screens.pattern.patterns_page import PatternsPage
+from llamatron.tui.screens.pattern.pattern_editor import Reconfigure
 from llamatron.tui.screens.set import main_page
 from llamatron.tui.screens.set.file_page import FilePage
-from llamatron.tui.screens.set.groove_editor import GrooveEditor
-from llamatron.tui.screens.set.grooves_page import GroovesPage
-from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
-from llamatron.tui.screens.set.instruments_page import InstrumentsPage
-from llamatron.tui.screens.set.main_page import MainPage
-from llamatron.tui.screens.set.open_page import OpenPage
-from llamatron.tui.screens.set.scale_page import ScalePage
-from llamatron.tui.screens.set.scales_page import ScalesPage
-from llamatron.tui.screens.set.song_page import SongPage
 from llamatron.tui.screens.set.songs_page import SongsPage
 from llamatron.tui.screens.shared import page as page_values
-from llamatron.tui.screens.shared.field_page import FieldPage
-from llamatron.tui.screens.shared.list_page import ListPage
-from llamatron.tui.screens.shared.page import Page
 from tests.support import ui_testing
 from tests.support.page_testing import boxed_line
 from tests.support.rendering import render_song
@@ -102,6 +78,8 @@ BLOCK_LETTER = '█'
 YES_BUTTON = 0
 NO_BUTTON = 1
 
+# Where every class of llamatron's lives.
+OUR_PACKAGE = 'llamatron.'
 
 class TestLookAndNewKeys(UITest):
 
@@ -370,13 +348,7 @@ class TestDesign(unittest.TestCase):
     def test_no_screen_replaces_a_method_that_textual_needs(self):
         # Naming a method remove or render here stops screens from closing or drawing.
         ours = {COMPOSE, ON_MOUNT, ON_KEY, ON_RESIZE, ON_SCREEN_RESUME}
-        pages = [
-            Page, ListPage, FieldPage, MainPage, FilePage, OpenPage, SongsPage, SongPage, PatternsPage, TrackEditor,
-            ChainEditor, GeneratorsPage, ArpEditor, AutoRatchetEditor,
-            ScalesPage, ScalePage, GroovesPage, GrooveEditor, InstrumentsPage, InstrumentEditor, ArrangePage, ScenePage,
-            ClipPage, PatternEditor, Dialog, MessageDialog, ConfirmDialog, PromptDialog, ChoiceDialog,
-        ]
-        for page in pages:
+        for page in screens_of_ours():
             for name, value in vars(page).items():
                 if callable(value) and not name.startswith('_') and name not in ours:
                     with self.subTest(page=page.__name__, name=name):
@@ -429,3 +401,16 @@ class TestCaptionsAndNames(UITest):
         lines = [line.plain for line in self.app.screen.body(width=self.SIZE[0], height=self.SIZE[1])]
         name_line = next(place for place, line in enumerate(lines) if labels.MSG_NAME_LABEL in line)
         self.assertEqual(lines[name_line + 1].strip(), drawing.NOTHING)
+
+
+def screens_of_ours():
+    """Return every screen class of llamatron's, every page and dialog, found from Textual's Screen once every page is imported."""
+    ui_testing.leaf_pages()
+    found = []
+    waiting = [Screen]
+    while waiting:
+        for kind in waiting.pop().__subclasses__():
+            waiting.append(kind)
+            if kind.__module__.startswith(OUR_PACKAGE):
+                found.append(kind)
+    return found

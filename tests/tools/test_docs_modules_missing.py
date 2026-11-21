@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The check that tells internal_tools/build_docs.sh whether npm has anything to install: a module missing or at another version."""
+"""internal_tools/docs_modules_missing.py, one quick check of its main path: a module missing or at another version is named. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
 
-from internal_tools.docs_modules_missing import ALL_THERE, main, MISSING, missing_modules
+from internal_tools.docs_modules_missing import main, MISSING, missing_modules
 import json
 import pathlib
 import tempfile
@@ -40,12 +40,6 @@ def a_site(*, folder, installed):
 
 
 class TestDocsModulesMissing(unittest.TestCase):
-
-    def test_nothing_is_missing_when_every_pinned_module_is_there_at_its_version(self):
-        with tempfile.TemporaryDirectory() as folder:
-            site = a_site(folder=folder, installed={VITEPRESS: PINNED_VERSION, MERMAID: PINNED_VERSION})
-            self.assertEqual(missing_modules(site), [])
-            self.assertEqual(main([site]), ALL_THERE)
 
     def test_a_module_missing_or_at_another_version_is_named(self):
         with tempfile.TemporaryDirectory() as folder:

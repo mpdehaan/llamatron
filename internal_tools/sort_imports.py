@@ -27,7 +27,7 @@ order too, and two lines that import from one module become one.
 Only the run of imports a file opens with is sorted: an import that stands after other code, or
 inside a function, stands there for a reason, such as avoiding a circular import or waiting for
 a path to be set, and is left where it is. A file with a comment on a line of its own among its
-opening imports is left alone and named. tests/rules/test_import_order.py holds the rule.
+opening imports is left alone and named. internal_tools/check_before_commit.sh runs it with --write to keep the rule.
 """
 
 import argparse

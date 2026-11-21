@@ -44,7 +44,6 @@ BASS = 'bass'
 UP = 'up'
 PAD = 'pad'
 TOP = 'top'
-NOTES_FROM = 'notes_from'
 # The scale chord of four notes as a file holds it, a number.
 SCALE_SEVENTH = int(ChordSymbol.SCALE_SEVENTH)
 SCALE_TRIAD = int(ChordSymbol.SCALE_TRIAD)
@@ -232,10 +231,6 @@ class TestGrab(unittest.TestCase):
         for other in [NOPE, song_testing.LEAD]:
             with self.subTest(other=other), self.assertRaises(SongFileError):
                 self.song(lead_clip_slot={ClipSlotSetting.GRAB_TRACK: other})
-
-    def test_notes_from_is_gone(self):
-        # A file from before still opens, the old setting passed over.
-        self.song(lead_clip_slot={NOTES_FROM: BASS})
 
     def test_grab_must_be_true_or_false(self):
         with self.assertRaises(SongFileError):

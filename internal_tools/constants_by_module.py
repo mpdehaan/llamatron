@@ -28,7 +28,7 @@ name of the file, or a built-in, the module is imported as `<module>_values`.
     internal_tools/constants_by_module.sh --write --from llamatron.music llamatron.support   # only constants those packages define
 
 Nothing is rewritten by matching text: each file's syntax tree says where every import and
-every use is. tests/rules/test_constants_by_module.py holds the rule with find_names_imported.
+every use is. internal_tools/check_before_commit.sh runs it with --write to keep the rule.
 """
 
 import argparse

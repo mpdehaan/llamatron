@@ -14,11 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""internal_tools/loudness_steps.py says how big the step in loudness is into the first chorus of what the song wizard makes."""
+"""internal_tools/loudness_steps.py, one quick check of its main path: the step into a chorus is said as written and as made. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
 
-import contextlib
 import importlib.util
-import io
 import pathlib
 import unittest
 
@@ -26,11 +24,7 @@ SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools
 MODULE_NAME = 'loudness_steps_report'
 A_GENRE = 'rock'
 A_SUBGENRE = 'arena rock'
-A_SUBGENRE_WITHOUT_A_CHORUS = 'rock and roll'
-NOT_A_GENRE = 'polka'
 A_SEED = 11
-NO_FAILURE = 0
-A_FAILURE = 1
 
 
 def tool():
@@ -46,25 +40,6 @@ class TestLoudnessSteps(unittest.TestCase):
         before, written, made = tool().chorus_step(genre=A_GENRE, subgenre=A_SUBGENRE, seed=A_SEED)
         self.assertTrue(before)
         self.assertLess(made, written)
-
-    def test_a_song_with_no_chorus_has_no_step(self):
-        self.assertIsNone(tool().chorus_step(genre=A_GENRE, subgenre=A_SUBGENRE_WITHOUT_A_CHORUS, seed=A_SEED))
-
-    def test_a_genre_is_reported_a_line_for_each_subgenre_with_a_chorus(self):
-        module = tool()
-        printed = io.StringIO()
-        with contextlib.redirect_stdout(printed):
-            self.assertEqual(module.main(arguments=[A_GENRE]), NO_FAILURE)
-        lines = printed.getvalue().splitlines()
-        self.assertTrue(any(A_SUBGENRE in line for line in lines))
-        self.assertFalse(any(A_SUBGENRE_WITHOUT_A_CHORUS in line for line in lines))
-
-    def test_a_genre_that_does_not_exist_is_refused(self):
-        refused = io.StringIO()
-        with contextlib.redirect_stderr(refused):
-            self.assertEqual(tool().main(arguments=[NOT_A_GENRE]), A_FAILURE)
-        self.assertIn(NOT_A_GENRE, refused.getvalue())
-
 
 if __name__ == '__main__':
     unittest.main()

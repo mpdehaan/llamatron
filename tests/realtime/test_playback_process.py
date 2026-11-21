@@ -29,7 +29,8 @@ import unittest
 
 from llamatron.composition.file_format import ClipSlotSetting, Row, Section
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.realtime.playback import Launch, LAUNCH_SCENE, Wanted
+from llamatron.realtime import playback
+from llamatron.realtime.playback import Launch, Wanted
 from llamatron.realtime.playback_process import PlaybackProcess
 from llamatron.realtime.set_changes import changed_items, with_changes
 from llamatron.realtime.timeline import Route
@@ -150,7 +151,7 @@ class TestPlaybackProcess(unittest.TestCase):
     def test_a_launch_plays_every_note_and_its_status_says_what_plays(self):
         setlist = a_set()
         self.playback.take_set(setlist.kept_data())
-        waits = self.playback.launch(wanted=wanted_of(setlist), launch=Launch(LAUNCH_SCENE, 0), ports=[PORT])
+        waits = self.playback.launch(wanted=wanted_of(setlist), launch=Launch(playback.LAUNCH_SCENE, 0), ports=[PORT])
         self.assertFalse(waits)
         self.assertTrue(self.playback.is_playing())
         self.assertEqual(self.playback.playing_scenes(), [0])
@@ -170,17 +171,17 @@ class TestPlaybackProcess(unittest.TestCase):
                 break
             done.wait(STEP_SECONDS)
         self.assertIsNone(self.playback.built(wanted).problem)
-        self.assertFalse(self.playback.launch(wanted=wanted, launch=Launch(LAUNCH_SCENE, 0), ports=[PORT]))
+        self.assertFalse(self.playback.launch(wanted=wanted, launch=Launch(playback.LAUNCH_SCENE, 0), ports=[PORT]))
         self.assertTrue(self.playback.has_score(wanted))
 
     def test_a_song_that_cannot_be_played_is_refused_and_the_process_plays_on(self):
         broken = a_set(grabs_in_a_circle=True)
         self.playback.take_set(broken.kept_data())
         with self.assertRaises(SongFileError):
-            self.playback.launch(wanted=wanted_of(broken), launch=Launch(LAUNCH_SCENE, 0), ports=[PORT])
+            self.playback.launch(wanted=wanted_of(broken), launch=Launch(playback.LAUNCH_SCENE, 0), ports=[PORT])
         setlist = a_set()
         self.playback.take_set(setlist.kept_data())
-        self.playback.launch(wanted=wanted_of(setlist, revision=FIRST_REVISION + 1), launch=Launch(LAUNCH_SCENE, 0), ports=[PORT])
+        self.playback.launch(wanted=wanted_of(setlist, revision=FIRST_REVISION + 1), launch=Launch(playback.LAUNCH_SCENE, 0), ports=[PORT])
         self.wait_until_quiet()
         self.assertEqual(len(note_ons(self.playback.close())), NOTES)
         self.assertFalse(self.playback.has_ended())
@@ -188,7 +189,7 @@ class TestPlaybackProcess(unittest.TestCase):
     def test_a_stuck_render_process_and_its_sender_are_ended_by_closing_and_quickly(self):
         setlist = a_set()
         self.playback.take_set(setlist.kept_data())
-        self.playback.launch(wanted=wanted_of(setlist), launch=Launch(LAUNCH_SCENE, 0), ports=[PORT])
+        self.playback.launch(wanted=wanted_of(setlist), launch=Launch(playback.LAUNCH_SCENE, 0), ports=[PORT])
         group = self.playback.get_process_id()
         os.kill(group, signal.SIGSTOP)
         began = time.monotonic()

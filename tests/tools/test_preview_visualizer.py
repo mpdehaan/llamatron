@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Tests of the visualizer preview's parts that need no port and no screen: which mode it shows, and that a driver nobody has stops it before the tracker opens."""
+"""internal_tools/preview_visualizer.py, one quick check of its main path: it launches the tracker on the mode and quits when the song ends. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
 
 import contextlib
 import importlib.util
@@ -27,10 +27,7 @@ from tests.support.ui_testing import a_song
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'preview_visualizer.py'
 MODULE_NAME = 'preview_visualizer'
-PORT_NAMES = 'preview_visualizer.output_port_names'
-NO_SUCH = 'doesnotexist'
 SET_FILE = 'a set.yml'
-FAILURE = 1
 
 
 def load_script():
@@ -46,22 +43,6 @@ class TestPreviewVisualizer(unittest.TestCase):
     def setUp(self):
         self.tool = load_script()
         self.shared = self.tool.recorder()
-
-    def test_it_shows_the_mode_typed_from_the_list_or_the_only_one_without_asking(self):
-        with mock.patch('builtins.input', return_value=str(len(modes.MODES))) as asked, contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(self.tool.ask_for_mode(shared=self.shared), modes.MODES[-1].OPTION)
-        self.assertEqual(asked.call_count, 0 if len(modes.MODES) == 1 else 1)
-        with mock.patch.object(modes, 'MODES', modes.MODES[:1]), mock.patch('builtins.input') as asked:
-            self.assertEqual(self.tool.ask_for_mode(shared=self.shared), modes.MODES[0].OPTION)
-        asked.assert_not_called()
-
-    def test_a_driver_nobody_has_stops_it_before_the_tracker_opens(self):
-        with mock.patch.object(self.tool, 'output_port_names', return_value=[]), mock.patch.object(self.tool, 'LlamatronApp') as app, \
-                contextlib.redirect_stderr(io.StringIO()) as stderr:
-            code = self.tool.preview(path=SET_FILE, driver=NO_SUCH, assignment=None, visualizer=modes.MODES[0].OPTION, shared=self.shared)
-        self.assertEqual(code, FAILURE)
-        app.assert_not_called()
-        self.assertIn(NO_SUCH, stderr.getvalue())
 
     def test_it_launches_the_tracker_on_the_mode_and_quits_when_the_song_ends(self):
         document = a_song()

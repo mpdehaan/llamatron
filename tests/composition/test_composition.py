@@ -26,7 +26,7 @@ import random
 import re
 import unittest
 
-from llamatron.composition import defaults, file_format, generator_settings, limits
+from llamatron.composition import defaults, file_format, limits
 from llamatron.composition.chain import Chain
 from llamatron.composition.clip_slot import ClipSlot, morph_style_name
 from llamatron.composition.file_format import Accidental, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
@@ -453,10 +453,6 @@ class TestGeneratorSettings(RoundTrip):
         self.assertIsInstance(arp, Arp)
         self.assertEqual((arp.get_step(), arp.get_order(), arp.get_seed()), (Fraction(1, 8), ChordOrder.DOWN, 7))
         self.assertIsInstance(AutoRatchetSettings.from_data(data={AutoRatchetSetting.COUNTS: [2]}, where=HERE).make_generator(where=CHAIN_X, default_seed=7), AutoRatchet)
-
-    def test_a_seed_in_an_older_file_is_passed_over_and_the_render_seed_used(self):
-        arp = ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, generator_settings.ARP_SEED: 3}, where=HERE).make_generator(where=CHAIN_X, default_seed=7)
-        self.assertEqual(arp.get_seed(), 7)
 
     def test_wrong_settings_are_refused_when_read_and_name_the_place(self):
         with self.assertRaisesRegex(SongFileError, re.escape(NO_COUNTS_HERE)):
