@@ -82,9 +82,27 @@ class HookChoices(ChoicesPart):
     def can_have_hook(self):
         """Return whether a hook can be made at all: a section of the song's form marks a line as its hook, and, in a form of
         the subgenre's own, a player carries a tune there."""
-        if not self._choices.is_ready() or not any(entry.get(melody_writer.HOOK) for place in range(len(self._choices.get_song_form().section_entries())) for entry in self._choices.section(place).as_played().get(wizard_limits.PLAN, [])):
+        if not self._choices.is_ready() or not self._form_marks_hook():
             return False
         return self._choices.hook_changes_song()
+
+    def _form_marks_hook(self):
+        """Return whether a section of the song's form, as played, marks a line of its plan as the hook."""
+        form = self._choices.get_song_form()
+        for place in range(len(form.section_entries())):
+            section = self._choices.section(place)
+            if says_hook(section.as_played()):
+                return True
+        return False
+
+    def _hooks_chosen(self):
+        """Return what was chosen of the song's hooks, as the song's extras hold it."""
+        return self._choices.get_extra(wizard_limits.HOOKS_CHOSEN) or {}
+
+    def _writing_gauges(self, part):
+        """Return the gauges of the way the hook or the chorus's body is written that were moved, by name."""
+        written = self._writing.get(part, {})
+        return written.get(hook_writing.GAUGES, {})
 
     def hook_line_place(self):
         """Return where the song's hook line is while the song can have one: the kind of section that says it first and which of
@@ -98,15 +116,25 @@ class HookChoices(ChoicesPart):
         return None
 
     def _hook_plan(self, kind):
-        """A kind of section's plan of lines as the genre has it, the hook placed among them where the song chose its place."""
-        plan = self._choices.style()[arranger.SECTIONS].get(kind, {}).get(wizard_limits.PLAN, [])
-        placement = (self._choices.get_extra(wizard_limits.HOOKS_CHOSEN) or {}).get(melody_writer.PLACEMENT)
-        return plan_with_hook_placed(plan=plan, placement=placement) if placement and kind == self._main_hook_kind() else plan
+        """Return a kind of section's plan of lines as the genre has it, the hook placed among them where the song chose its place."""
+        style = self._choices.style()
+        sections = style[arranger.SECTIONS]
+        section = sections.get(kind, {})
+        plan = section.get(wizard_limits.PLAN, [])
+        placement = self._hooks_chosen().get(melody_writer.PLACEMENT)
+        if placement and kind == self._main_hook_kind():
+            return plan_with_hook_placed(plan=plan, placement=placement)
+        return plan
 
     def _main_hook_kind(self):
-        """The kind of section that says the main hook: the first in the form whose plan marks a line as one, or None."""
-        sections = self._choices.style()[arranger.SECTIONS]
-        return next((kind for kind in self._choices.get_song_form().section_kinds_in_form() if says_hook(sections[kind])), None)
+        """Return the kind of section that says the main hook: the first in the form whose plan marks a line as one, or None."""
+        style = self._choices.style()
+        sections = style[arranger.SECTIONS]
+        form = self._choices.get_song_form()
+        for kind in form.section_kinds_in_form():
+            if says_hook(sections[kind]):
+                return kind
+        return None
 
     # Where the main hook sits among the lines of its section, which the genre says until a person chooses.
 
@@ -130,7 +158,10 @@ class HookChoices(ChoicesPart):
         """Choose where the main hook sits among its chorus's lines; the genre's own place is asked for by its name."""
         if placement not in self.hook_placements_offered():
             raise ValueError(errors.ERR_WIZARD_HOOK_PLACEMENT.format(value=placement))
-        self._keep_hook_chosen(field=melody_writer.PLACEMENT, value=None if placement == self.genre_hook_placement() else placement)
+        chosen = placement
+        if placement == self.genre_hook_placement():
+            chosen = None
+        self._keep_hook_chosen(field=melody_writer.PLACEMENT, value=chosen)
 
     def _keep_hook_chosen(self, *, field, value):
         chosen = dict(self._choices.get_extra(wizard_limits.HOOKS_CHOSEN) or {})
@@ -170,33 +201,65 @@ class HookChoices(ChoicesPart):
         """Give the song a second hook sung in a kind of section, or take the second hook away with None."""
         if kind is not None and kind not in self.second_hook_kinds():
             raise ValueError(errors.ERR_WIZARD_SECOND_HOOK.format(value=kind))
-        self._keep_hook_chosen(field=melody_writer.SECOND_HOOK, value=None if kind is None else {melody_writer.SUNG_IN: kind, melody_writer.TAG_TAKE: self.get_second_hook_take()})
+        second = None
+        if kind is not None:
+            second = {melody_writer.SUNG_IN: kind, melody_writer.TAG_TAKE: self.get_second_hook_take()}
+        self._keep_hook_chosen(field=melody_writer.SECOND_HOOK, value=second)
 
     def new_second_hook(self):
         """Have another second hook made, every other line of the song left as it was."""
         if not self.has_second_hook():
             raise ValueError(errors.ERR_WIZARD_SECOND_HOOK.format(value=None))
-        self._keep_hook_chosen(field=melody_writer.SECOND_HOOK, value={melody_writer.SUNG_IN: self.get_second_hook_kind(), melody_writer.TAG_TAKE: self.get_second_hook_take() + 1})
+        take = self.get_second_hook_take() + 1
+        second = {melody_writer.SUNG_IN: self.get_second_hook_kind(), melody_writer.TAG_TAKE: take}
+        self._keep_hook_chosen(field=melody_writer.SECOND_HOOK, value=second)
 
     def second_hook_scene(self):
         """Return the place in the form of the first section that sings the second hook, or None."""
         kind = self.get_second_hook_kind()
-        return None if kind is None else next((place for place, of_place in enumerate(self._choices.get_song_form().section_kinds_in_form()) if of_place == kind), None)
+        if kind is None:
+            return None
+        form = self._choices.get_song_form()
+        for place, kind_of_place in enumerate(form.section_kinds_in_form()):
+            if kind_of_place == kind:
+                return place
+        return None
 
     def hooks_of_song(self):
-        """What the arranger is handed of the song's hooks: the main hook's kind of section and its place among the lines, and the
-        second hook with its singer."""
+        """Return what the arranger is handed of the song's hooks: the main hook's kind of section and its place among the
+        lines, and the second hook with its singer."""
         chosen = self._choices.get_extra(wizard_limits.HOOKS_CHOSEN)
         if not self._choices.is_ready() or not chosen:
             return {}
         hooks = {}
+        main = self._main_hook_said(chosen)
+        if main is not None:
+            hooks[melody_writer.MAIN_HOOK] = main
+        second = self._second_hook_said(chosen)
+        if second is not None:
+            hooks[melody_writer.SECOND_HOOK] = second
+        if not hooks:
+            return {}
+        return {melody_writer.HOOKS: hooks}
+
+    def _main_hook_said(self, chosen):
+        """Return the main hook as the arranger reads it, its kind of section and its place among the lines, or None where its
+        place was not chosen."""
         placement = chosen.get(melody_writer.PLACEMENT)
-        if placement in melody_writer.PLACEMENTS and self._main_hook_kind() is not None:
-            hooks[melody_writer.MAIN_HOOK] = {melody_writer.SUNG_IN: self._main_hook_kind(), melody_writer.PLACEMENT: placement}
+        kind = self._main_hook_kind()
+        if placement not in melody_writer.PLACEMENTS or kind is None:
+            return None
+        return {melody_writer.SUNG_IN: kind, melody_writer.PLACEMENT: placement}
+
+    def _second_hook_said(self, chosen):
+        """Return the second hook as the arranger reads it, with its kind of section, its singer and its take, or None."""
         second = chosen.get(melody_writer.SECOND_HOOK)
-        if isinstance(second, dict) and second.get(melody_writer.SUNG_IN) in wizard_limits.SECOND_HOOK_KINDS and self._choices.get_band().tune_player() is not None:
-            hooks[melody_writer.SECOND_HOOK] = {melody_writer.SUNG_IN: second[melody_writer.SUNG_IN], melody_writer.SUNG_BY: self._choices.get_band().tune_player(), melody_writer.TAG_TAKE: second.get(melody_writer.TAG_TAKE, melody_writer.FIRST_HOOK_TAKE)}
-        return {melody_writer.HOOKS: hooks} if hooks else {}
+        band = self._choices.get_band()
+        singer = band.tune_player()
+        if not isinstance(second, dict) or second.get(melody_writer.SUNG_IN) not in wizard_limits.SECOND_HOOK_KINDS or singer is None:
+            return None
+        take = second.get(melody_writer.TAG_TAKE, melody_writer.FIRST_HOOK_TAKE)
+        return {melody_writer.SUNG_IN: second[melody_writer.SUNG_IN], melody_writer.SUNG_BY: singer, melody_writer.TAG_TAKE: take}
 
     def usual_hook(self):
         """Return whether the genre's songs have a hook unless a person says otherwise."""
@@ -213,14 +276,27 @@ class HookChoices(ChoicesPart):
 
     @cached_until_choices_change
     def _hook_part(self):
-        """The part of the tune's player in the first kind of section that says the hook, and which of its lines is the hook; nothing where nobody says one."""
-        player = self._choices.get_band().tune_player()
+        """Return the part of the tune's player in the first kind of section that says the hook, and which of its lines is the
+        hook; nothing where nobody says one."""
+        band = self._choices.get_band()
+        player = band.tune_player()
         if not self.can_have_hook() or not self.has_hook() or player is None:
             return None, None
         kind = self._main_hook_kind()
-        line = next(place for place, entry in enumerate(self._hook_plan(kind)) if entry.get(melody_writer.HOOK))
-        part = arranged(style=self._choices.style(), song=self._choices.song_picks(kind))[arranger.PARTS].get(wizard_text.MSG_PART_OF_SECTION.format(kind, player))
-        return (None, None) if part is None or tune_notation.LINES not in part else (part, line)
+        line = self._hook_line_in(kind)
+        song = self._choices.song_picks(kind)
+        made = arranged(style=self._choices.style(), song=song)
+        part = made[arranger.PARTS].get(wizard_text.MSG_PART_OF_SECTION.format(kind, player))
+        if part is None or tune_notation.LINES not in part:
+            return None, None
+        return part, line
+
+    def _hook_line_in(self, kind):
+        """Return which line of a kind of section's plan is the hook."""
+        for place, entry in enumerate(self._hook_plan(kind)):
+            if entry.get(melody_writer.HOOK):
+                return place
+        return None
 
     @cached_until_choices_change
     def _found_hook_notes(self):
@@ -231,8 +307,8 @@ class HookChoices(ChoicesPart):
         return at, self._choices.melody().habits()[melody_writer.GRID], notes
 
     def _sounded(self, *, lines, octave):
-        """Lines of a tune as how many steps they last and each note as where it starts, how many steps it lasts and its MIDI
-        note, in the song's key, octave being the octave the lines are written against."""
+        """Return lines of a tune as how many steps they last and each note as where it starts, how many steps it lasts and its
+        MIDI note, in the song's key, octave being the octave the lines are written against."""
         scale = self._choices.scale_half_steps()
         lowest = octave * melody_writer.NOTES_IN_OCTAVE + self._choices.root_half_steps()
         notes = []
@@ -241,8 +317,7 @@ class HookChoices(ChoicesPart):
             for note in line:
                 length = note.get(tune_notation.STEPS, note.get(tune_notation.REST))
                 if tune_notation.REST not in note:
-                    octaves, place = divmod(note[tune_notation.DEGREE] - 1, len(scale))
-                    notes.append((at, length, lowest + scale[place] + (octaves + note.get(tune_notation.OCTAVE, 0)) * melody_writer.NOTES_IN_OCTAVE + wizard_limits.HALF_STEPS_OF_ACCIDENTAL.get(note.get(tune_notation.ACCIDENTAL), 0)))
+                    notes.append((at, length, _pitch_of(note=note, scale=scale, lowest=lowest)))
                 at += length
         return at, notes
 
@@ -294,7 +369,11 @@ class HookChoices(ChoicesPart):
 
     def writes_hook(self):
         """Return whether the song's hook is written by a behavior and gauges: a song with a hook whose bar is counted in eighths."""
-        return self._choices.is_ready() and self.can_have_hook() and self.has_hook() and not self._choices.melody().habits()[melody_writer.GRID] % hook_writing.UNITS
+        if not self._choices.is_ready() or not self.can_have_hook() or not self.has_hook():
+            return False
+        melody = self._choices.melody()
+        habits = melody.habits()
+        return not habits[melody_writer.GRID] % hook_writing.UNITS
 
     def genre_hook_behavior(self):
         return hook_writing.hook_ways(self._choices.melody().habits())[0]
@@ -306,7 +385,10 @@ class HookChoices(ChoicesPart):
         """Choose the way the hook is written; the genre's own way gives the choice back to the genre."""
         if behavior not in wizard_names.BEHAVIORS:
             raise ValueError(errors.ERR_WIZARD_HOOK_BEHAVIOR.format(value=behavior, choices=', '.join(wizard_names.BEHAVIORS)))
-        self._keep_writing(part=wizard_names.HOOK_WRITING, field=hook_writing.BEHAVIOR, value=None if behavior == self.genre_hook_behavior() else behavior)
+        chosen = behavior
+        if behavior == self.genre_hook_behavior():
+            chosen = None
+        self._keep_writing(part=wizard_names.HOOK_WRITING, field=hook_writing.BEHAVIOR, value=chosen)
 
     def hook_gauges(self):
         """Return the hook's gauges that change a hook written the way the song's is."""
@@ -316,7 +398,9 @@ class HookChoices(ChoicesPart):
         return hook_writing.hook_ways(self._choices.melody().habits())[1][name]
 
     def get_hook_gauge(self, name):
-        return self._writing.get(wizard_names.HOOK_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_hook_gauge(name))
+        """Return where a gauge of the way the hook is written stands: where it was moved, or the genre's place."""
+        gauges = self._writing_gauges(wizard_names.HOOK_WRITING)
+        return gauges.get(name, self.genre_hook_gauge(name))
 
     def set_hook_gauge(self, *, name, position):
         """Move one of the hook's gauges, or give the gauge back to the genre with None."""
@@ -332,21 +416,35 @@ class HookChoices(ChoicesPart):
         return self.writes_body() and kind == self._main_hook_kind()
 
     def _body_entries(self):
-        """The lines of the hook's section that are no hook, each with whether a hook follows it and whether it closes the section."""
+        """Return the lines of the hook's section that are no hook, each with whether a hook follows it and whether it closes the section."""
         kind = self._main_hook_kind()
-        plan = [] if kind is None else self._hook_plan(kind)
-        return [(entry, place + 1 < len(plan) and bool(plan[place + 1].get(melody_writer.HOOK)), place + 1 == len(plan)) for place, entry in enumerate(plan) if not entry.get(melody_writer.HOOK) and not entry.get(melody_writer.ANSWER)]
+        if kind is None:
+            return []
+        plan = self._hook_plan(kind)
+        entries = []
+        for place, entry in enumerate(plan):
+            if entry.get(melody_writer.HOOK) or entry.get(melody_writer.ANSWER):
+                continue
+            leads = place + 1 < len(plan) and bool(plan[place + 1].get(melody_writer.HOOK))
+            closes = place + 1 == len(plan)
+            entries.append((entry, leads, closes))
+        return entries
 
     def body_gauges(self):
         """Return the gauges of the chorus's body that change the song as it stands: Call and answer only where a line of the body
         returns, and Resolve only where a line's ending is not already decided by its place or by its answering."""
         if not self.writes_body():
             return []
-        entries = self._body_entries()
-        returns = any(entry.get(wizard_limits.VARIED) for entry, _, _ in entries)
-        # A line that leads to a hook ends open and the section's last line ends on the home note, whatever Resolve says.
         answers = self.get_body_gauge(hook_writing.CALL_AND_ANSWER) >= hook_writing.ANSWERS_FROM
-        free = any(not leads and not closes and not (answers and entry.get(wizard_limits.VARIED)) for entry, leads, closes in entries)
+        returns = False
+        free = False
+        for entry, leads, closes in self._body_entries():
+            varied = bool(entry.get(wizard_limits.VARIED))
+            if varied:
+                returns = True
+            # A line that leads to a hook ends open and the section's last line ends on the home note, whatever Resolve says.
+            if not leads and not closes and not (answers and varied):
+                free = True
         needed = {hook_writing.CALL_AND_ANSWER: returns, hook_writing.RESOLVE: free}
         return [name for name in hook_writing.BODY_GAUGES if needed.get(name, True)]
 
@@ -354,7 +452,9 @@ class HookChoices(ChoicesPart):
         return hook_writing.body_ways(self._choices.melody().habits())[name]
 
     def get_body_gauge(self, name):
-        return self._writing.get(wizard_names.BODY_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_body_gauge(name))
+        """Return where a gauge of the way the chorus's body is written stands: where it was moved, or the genre's place."""
+        gauges = self._writing_gauges(wizard_names.BODY_WRITING)
+        return gauges.get(name, self.genre_body_gauge(name))
 
     def set_body_gauge(self, *, name, position):
         """Move one of the gauges of the chorus's body, or give the gauge back to the genre with None."""
@@ -365,9 +465,10 @@ class HookChoices(ChoicesPart):
         return name in self._writing.get(part, {}).get(hook_writing.GAUGES, {})
 
     def _set_writing_gauge(self, *, part, names, name, position, usual):
+        """Move a gauge of the way the hook or the chorus's body is written, or give it back to the genre with None or its place."""
         if name not in names or (position is not None and not hook_writing.is_position(position)):
             raise ValueError(errors.ERR_WIZARD_WRITING_GAUGE.format(name=name, low=wizard_names.HOOK_WRITING_LOWEST, high=wizard_names.HOOK_WRITING_HIGHEST, value=position))
-        gauges = dict(self._writing.get(part, {}).get(hook_writing.GAUGES, {}))
+        gauges = dict(self._writing_gauges(part))
         gauges.pop(name, None)
         if position is not None and position != usual(name):
             gauges[name] = position
@@ -424,7 +525,9 @@ class HookChoices(ChoicesPart):
         """Return the MIDI note at a place of the song's scale as the tune's player plays it (line_edits.place_of), for a picture of a line."""
         scale = self._choices.scale_half_steps()
         octaves, degree = divmod(place, len(scale))
-        return self._hook_part()[0][tune_notation.OCTAVE] * melody_writer.NOTES_IN_OCTAVE + self._choices.root_half_steps() + scale[degree] + octaves * melody_writer.NOTES_IN_OCTAVE
+        part, _ = self._hook_part()
+        lowest = part[tune_notation.OCTAVE] * melody_writer.NOTES_IN_OCTAVE + self._choices.root_half_steps()
+        return lowest + scale[degree] + octaves * melody_writer.NOTES_IN_OCTAVE
 
     def set_hook_line(self, line):
         """Write the hook's notes by hand, or give the hook back to the wizard with None. A line that is not as long as the hook's, or that the
@@ -450,8 +553,13 @@ class HookChoices(ChoicesPart):
 
     def hook_scene(self):
         """Return the place in the form of the first section that says the hook, or None."""
-        sections = self._choices.style()[arranger.SECTIONS]
-        return next((place for place, kind in enumerate(self._choices.get_song_form().section_kinds_in_form()) if says_hook(sections[kind])), None)
+        style = self._choices.style()
+        sections = style[arranger.SECTIONS]
+        form = self._choices.get_song_form()
+        for place, kind in enumerate(form.section_kinds_in_form()):
+            if says_hook(sections[kind]):
+                return place
+        return None
 
     def sayers(self):
         """Return the players who can say the hook: the player who answers the tune and the tune's player, where the song has a hook."""
@@ -468,4 +576,15 @@ class HookChoices(ChoicesPart):
 
 def says_hook(section):
     """Return whether a kind of section's plan marks a line as the hook."""
-    return any(entry.get(melody_writer.HOOK) for entry in section.get(wizard_limits.PLAN, []))
+    for entry in section.get(wizard_limits.PLAN, []):
+        if entry.get(melody_writer.HOOK):
+            return True
+    return False
+
+
+def _pitch_of(*, note, scale, lowest):
+    """Return the MIDI note of a note of a line, from the lowest note of the octave the lines are written against."""
+    octaves, place = divmod(note[tune_notation.DEGREE] - 1, len(scale))
+    octaves += note.get(tune_notation.OCTAVE, 0)
+    accidental = wizard_limits.HALF_STEPS_OF_ACCIDENTAL.get(note.get(tune_notation.ACCIDENTAL), 0)
+    return lowest + scale[place] + octaves * melody_writer.NOTES_IN_OCTAVE + accidental
