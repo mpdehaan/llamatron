@@ -18,8 +18,8 @@ its songs, in a folder named after the song:
 - live.xml: the Live set, unzipped, so that it compares as text
 - estimate.txt: how long the tracker estimates the song and each scene lasts
 
-saved.yml is compared without its version line, since saving records the version, and line by line in any order, since
-the order a set's generator definitions are written in means nothing. Every song
+saved.yml is compared as data without its version, since saving records the version: a mapping's keys in any order and
+every list in its order, but the generator definitions, found by name, which compare by name. Every song
 is exported with the same seed, since a song without one would play differently every time.
 
 Run it from the top folder of the project:
@@ -47,9 +47,10 @@ from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exports import export_name
 from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
+from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.schema.file_format import SetlistSetting
+from llamatron.model.schema.file_format import FileLayout, SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 
@@ -62,7 +63,6 @@ MARKER = '.llamatron_renders'
 COMPARISON_SEED = 1
 LIVE_XML_SUFFIX = '.xml'
 SAVED_SONG = 'saved.yml'
-VERSION_LINE_START = SetlistSetting.VERSION + ':'
 FILE_ENCODING = 'utf-8'
 ESTIMATE = '{name}_estimate.txt'
 FRESH_FOLDER = 'now'
@@ -141,18 +141,23 @@ def files_in(folder):
 
 
 def same_file(*, captured, fresh, path):
-    """Return whether a captured file and its fresh counterpart match, ignoring the version line of a re-saved set and the order
-    its generator definitions are written in, which means nothing."""
+    """Return whether a captured file and its fresh counterpart match: a re-saved set as data, without its version, and every
+    other file byte for byte."""
     if os.path.basename(path) == SAVED_SONG:
-        return without_version_line(os.path.join(captured, path)) == without_version_line(os.path.join(fresh, path))
+        return saved_set_data(os.path.join(captured, path)) == saved_set_data(os.path.join(fresh, path))
     return filecmp.cmp(os.path.join(captured, path), os.path.join(fresh, path), shallow=False)
 
 
-def without_version_line(path):
-    """Return a saved set's lines without the line that records the version that saved it, sorted, so that definitions written
-    in another order compare the same: each generator is one line of the saved set's list, found by its name."""
+def saved_set_data(path):
+    """Return a saved set as data, without the version that saved it: a mapping's keys compare in any order and every list in
+    its order, but the generator definitions, each found by its name, which compare by name in any order."""
     with open(path, encoding=FILE_ENCODING) as file:
-        return sorted(line for line in file if not line.startswith(VERSION_LINE_START))
+        data = load_safely(file.read())
+    data.pop(SetlistSetting.VERSION, None)
+    generators = data.get(FileLayout.GENERATORS)
+    if generators is not None:
+        data[FileLayout.GENERATORS] = {item[FileLayout.NAME]: item for item in generators}
+    return data
 
 
 def differences(*, captured, fresh):
