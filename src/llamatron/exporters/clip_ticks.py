@@ -26,7 +26,7 @@ from llamatron.exporters import sounding
 from llamatron.exporters.sounding import degree_to_note, NoteEvent, sounding_notes, velocity_of
 from llamatron.music import sound
 from llamatron.support.length import Length
-from llamatron.support.rational import Rational
+from llamatron.support.rational import reduced
 
 UNMOVED = 0
 
@@ -66,14 +66,14 @@ class ClipTicks:
             onset = self._moved(slot_start)
             following = slots[place + 1][1] if place + 1 < len(slots) else {}
             start = min(onset, self._length)
-            start_whole = Rational(start, ticks)
+            start_whole = reduced(numerator=start, denominator=ticks)
             for midi_number, note in notes.items():
                 end = onset + Length.ticks_of(note[sound.LENGTH], ticks)
                 if note[sound.GLIDE] and following and midi_number not in following:
                     end += self._glide
                 end = min(end, self._length)
                 if end > start:
-                    timed.append(NoteEvent(start_whole, Rational(end, ticks), midi_number, velocity_of(note)))
+                    timed.append(NoteEvent(start_whole, reduced(numerator=end, denominator=ticks), midi_number, velocity_of(note)))
         return timed
 
     def _moved(self, start):

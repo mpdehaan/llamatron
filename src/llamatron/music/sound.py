@@ -70,18 +70,18 @@ HALF_STEPS = 5
 class Sound:
     """Builds, reads and copies sounds held as tuples. Nothing here makes an object but Sound.position, which is for whoever wants the classes."""
 
+    # Plain functions held in the class rather than static methods, called as before through the class, which is never made into an
+    # object: on CPython 3.15 a static method called through its class costs about 15 ns more than a plain
+    # function, and a run of the examples makes hundreds of thousands of such calls.
     __slots__ = ()
 
-    @staticmethod
     def rest(length):
         return (REST, length)
 
-    @staticmethod
     def note(*, length, midi, velocity, glide, name):
         """Return a note from values that are already checked: a MIDI number in range and the name that spells it."""
         return (NOTE, length, midi, velocity, glide, name)
 
-    @staticmethod
     def named_note(*, name, octave, length, velocity, glide):
         """Return the note a name and an octave spell, or raise what a Note would for one outside the octaves or the MIDI range."""
         midi = octave * midi_numbers.HALF_STEPS_PER_OCTAVE + note_values.SEMITONES_ABOVE_C[name]
@@ -90,7 +90,6 @@ class Sound:
         # The class says what is wrong with the note, in the words it always has.
         return Sound.of(Note(name=name, octave_number=octave, length=_as_number(length), velocity=velocity, glide=glide))
 
-    @staticmethod
     def chord(notes):
         """Return a chord of notes, which lasts as long as its longest note, or has no length yet if any note has none."""
         notes = tuple(notes)
@@ -104,19 +103,16 @@ class Sound:
                 length = own
         return (CHORD, length, notes)
 
-    @staticmethod
     def held(sound, length):
         """Return a note, chord or degree held past its place: the next position starts after length while the sound lasts its own."""
         if sound[KIND] not in HOLDABLE:
             raise ValueError(errors.ERR_BAD_SOUND.format(value=Sound.position(sound)))
         return (HELD, length, sound)
 
-    @staticmethod
     def phrase(parts, length):
         """Return sounds played one after another from a held place, while the next position starts after length."""
         return (PHRASE, length, tuple(parts))
 
-    @staticmethod
     def of(position):
         """Return the sound a Note, Chord, Rest, Degree or Held says, with every length as a pair."""
         kind = type(position)
@@ -139,7 +135,6 @@ class Sound:
             return (HELD, length, Sound.of(held))
         raise ValueError(errors.ERR_NOT_A_POSITION.format(value=position))
 
-    @staticmethod
     def position(sound):
         """Return a sound as the Note, Chord, Rest, Degree or Held that says the same, with every length as a Rational."""
         kind = sound[KIND]
@@ -160,17 +155,14 @@ class Sound:
             return Held(sound=phrase(Sound.position(part) for part in sound[PARTS]), length=Length.rational(sound[LENGTH]))
         return Held(sound=Sound.position(sound[HELD_SOUND]), length=Length.rational(sound[LENGTH]))
 
-    @staticmethod
     def kind(sound):
         """Return which kind of sound a tuple is: REST, NOTE, CHORD, DEGREE, HELD or PHRASE."""
         return sound[KIND]
 
-    @staticmethod
     def length(sound):
         """Return how long until the next position starts, as a pair, or None for one that takes the clip's note_length."""
         return sound[LENGTH]
 
-    @staticmethod
     def with_length(sound, length):
         """Return a rest, note, degree, held sound or phrase with another length, keeping everything else.
 
@@ -186,14 +178,12 @@ class Sound:
         # A held sound and a phrase keep what they hold, which is in the same place in both.
         return (kind, length, sound[HELD_SOUND])
 
-    @staticmethod
     def lasting(played, length):
         """Return a note or chord with every note in it lasting length."""
         if played[KIND] == CHORD:
             return (CHORD, length, tuple([Sound.with_length(note, length) for note in played[NOTES]]))
         return Sound.with_length(played, length)
 
-    @staticmethod
     def half_step(note, steps):
         """Return a note moved a number of half steps, spelled with flats if its name has a flat and with sharps otherwise.
 
@@ -205,7 +195,6 @@ class Sound:
             return (NOTE, note[LENGTH], midi, note[VELOCITY], note[GLIDE], names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
         return Sound.of(Sound.position(note).half_step(steps))
 
-    @staticmethod
     def inverted(chord, inversion):
         """Return a chord with its lowest notes, as many as its inversion says but never all of them, moved up an octave; anything but a chord, or no inversion, as it is.
 
@@ -222,12 +211,10 @@ class Sound:
                 pass
         return Sound.chord(notes)
 
-    @staticmethod
     def chord_above(root, half_steps):
         """Return the chord a root note makes with the notes some half steps above it, each spelled as half_step spells it."""
         return Sound.chord([root, *[Sound.half_step(root, above) for above in half_steps]])
 
-    @staticmethod
     def settled(sound, scale):
         """Return the note a degree plays in a scale, which is the note the Degree class would give."""
         return scale.sound_at(

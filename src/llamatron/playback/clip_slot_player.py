@@ -37,7 +37,7 @@ from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, reshaped
 from llamatron.playback.step_order import StepOrder
 from llamatron.strings import errors
 from llamatron.support.length import Length
-from llamatron.support.random_source import random_source
+from llamatron.support.random_source import drawn_from_when_asked
 from llamatron.support.rational import Rational
 
 # The seeds for a clip slot's random choices: which steps play, by probability, and the order of steps
@@ -332,11 +332,12 @@ class ClipSlotPlayer:
         skips = [table for table in self._skip_tables() if table]
         pass_draws = self._pass_draws()
         passes = []
-        rolls = random_source(self._seed_for(PROBABILITY_SEED))
-        order = StepOrder(random_source(self._seed_for(DIRECTION_SEED)))
-        target_order = StepOrder(random_source(self._seed_for(MORPH_DIRECTION_SEED)))
+        # Each random choice has a stream of its own, seeded only when it is first drawn from, which most clips never do.
+        rolls = drawn_from_when_asked(self._seed_for(PROBABILITY_SEED))
+        order = StepOrder(drawn_from_when_asked(self._seed_for(DIRECTION_SEED)))
+        target_order = StepOrder(drawn_from_when_asked(self._seed_for(MORPH_DIRECTION_SEED)))
         # A clip of one pattern draws no order of patterns, so its other random choices are what they were before a clip held a list.
-        pattern_rolls = random_source(self._seed_for(PATTERN_ORDER_SEED))
+        pattern_rolls = drawn_from_when_asked(self._seed_for(PATTERN_ORDER_SEED))
         repeat = self._clip_slot.get_repeat()
         # A looping clip that a step of its pattern can stop plays until the step's statement holds, giving up after the most passes a clip can repeat.
         most = limits.MAX_CLIP_REPEAT if fill is None and self._clip_slot.loops() else repeat

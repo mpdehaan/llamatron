@@ -61,6 +61,8 @@ class Tag(NamedTuple):
     track: str
     play: int = 0
 
+# An event that is no keyswitch's, the last field of a Playing, given where events are made with _make.
+NOT_A_SWITCH = False
 
 class Playing(NamedTuple):
     """One event of the timeline: when, in whole notes from the song's start and in seconds, where, what, and whose."""
@@ -117,7 +119,8 @@ def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock)
     starts_at_zero = not scene_start
 
     def at(time, kind, number, value):
-        return Playing(time if starts_at_zero else scene_start + time, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag)
+        # Made with _make, which costs about half what the NamedTuple's constructor does by name, every field given: a score makes about 600,000 events.
+        return Playing._make((time if starts_at_zero else scene_start + time, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag, NOT_A_SWITCH))
     if route.program is not None:
         events.append(at(Rational(0), PROGRAM_CHANGE, route.program, NO_VELOCITY))
     notes, clip_length = timed_events(clip=clip, scale=scale)

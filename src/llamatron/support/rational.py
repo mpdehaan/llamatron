@@ -48,16 +48,17 @@ _gcd = math.gcd
 _new = object.__new__
 
 
-def _reduced(*, numerator, denominator):
+def reduced(*, numerator, denominator):
     """Return a Rational in lowest terms from a numerator and a positive denominator.
 
-    Every operation ends here, so it stays as short as it can: one gcd, and the two fields set.
+    Every operation ends here, so it stays as short as it can: one gcd, and the two fields set. The timing stage calls it for a note's
+    start and end in ticks, about 580,000 times across the examples, where Rational(count, ticks) would go through __new__ first.
     """
-    divisor = math.gcd(numerator, denominator)
+    divisor = _gcd(numerator, denominator)
     if divisor != 1:
         numerator //= divisor
         denominator //= divisor
-    rational = object.__new__(Rational)
+    rational = _new(Rational)
     rational.numerator = numerator
     rational.denominator = denominator
     return rational
@@ -88,7 +89,7 @@ class Rational:
             raise ZeroDivisionError(errors.ERR_DIVIDE_BY_ZERO)
         if denominator < 0:
             value, denominator = -value, -denominator
-        return _reduced(numerator=value, denominator=denominator)
+        return reduced(numerator=value, denominator=denominator)
 
     def limit_denominator(self, most):
         """Return the closest Rational whose denominator is at most most, which tidies a float's rounding error."""
@@ -129,7 +130,7 @@ class Rational:
                 rational.denominator = denominator // divisor
             return rational
         if kind is int:
-            return _reduced(numerator=self.numerator + other * self.denominator, denominator=self.denominator)
+            return reduced(numerator=self.numerator + other * self.denominator, denominator=self.denominator)
         if kind is Fraction:
             return self + _from_fraction(other)
         if kind is float:
@@ -157,7 +158,7 @@ class Rational:
                 rational.denominator = denominator // divisor
             return rational
         if kind is int:
-            return _reduced(numerator=self.numerator - other * self.denominator, denominator=self.denominator)
+            return reduced(numerator=self.numerator - other * self.denominator, denominator=self.denominator)
         if kind is Fraction:
             return self - _from_fraction(other)
         if kind is float:
@@ -169,7 +170,7 @@ class Rational:
         if kind is Fraction:
             return _from_fraction(other) - self
         if kind is int:
-            return _reduced(numerator=other * self.denominator - self.numerator, denominator=self.denominator)
+            return reduced(numerator=other * self.denominator - self.numerator, denominator=self.denominator)
         if kind is float:
             return other - float(self)
         return NotImplemented
@@ -244,13 +245,13 @@ class Rational:
         return NotImplemented
 
     def __neg__(self):
-        return _reduced(numerator=-self.numerator, denominator=self.denominator)
+        return reduced(numerator=-self.numerator, denominator=self.denominator)
 
     def __pos__(self):
         return self
 
     def __abs__(self):
-        return _reduced(numerator=abs(self.numerator), denominator=self.denominator)
+        return reduced(numerator=abs(self.numerator), denominator=self.denominator)
 
     def __bool__(self):
         return self.numerator != 0
@@ -379,19 +380,19 @@ def _from_one_value(value):
     if kind is Rational:
         return value
     if kind is int:
-        return _reduced(numerator=value, denominator=WHOLE)
+        return reduced(numerator=value, denominator=WHOLE)
     if kind is Fraction:
         return _from_fraction(value)
     if kind is float:
         numerator, denominator = value.as_integer_ratio()
-        return _reduced(numerator=numerator, denominator=denominator)
+        return reduced(numerator=numerator, denominator=denominator)
     if kind is str:
         return _from_fraction(Fraction(value))
     raise TypeError(errors.ERR_CANT_MAKE.format(value=value))
 
 
 def _from_fraction(fraction):
-    return _reduced(numerator=fraction.numerator, denominator=fraction.denominator)
+    return reduced(numerator=fraction.numerator, denominator=fraction.denominator)
 
 
 def _divided(*, numerator, denominator):
@@ -400,4 +401,4 @@ def _divided(*, numerator, denominator):
         raise ZeroDivisionError(errors.ERR_DIVIDE_BY_ZERO)
     if denominator < 0:
         numerator, denominator = -numerator, -denominator
-    return _reduced(numerator=numerator, denominator=denominator)
+    return reduced(numerator=numerator, denominator=denominator)

@@ -30,6 +30,7 @@ from llamatron.music.held import Held
 from llamatron.music.note import Degree, Note, Rest
 from llamatron.music.sound import Sound
 from llamatron.strings import errors, reprs
+from llamatron.support.kept import as_is, kept_while
 from llamatron.support.length import Length
 
 # The shorthand a clip's list accepts: each dash is a quarter note of rest, and a note is its name and octave.
@@ -95,7 +96,7 @@ class Clip:
     and the exporters work on. get_notes() and get_sounds() give either clip either way.
     """
 
-    __slots__ = ('_id', '_name', '_notes', '_sounds', '_scale', '_length', '_note_length', '_loop', '_controls', '_time_signature', '_groove', '_strum', '_nudge', '_handed', '_keyswitches', '_keyswitch_lead')
+    __slots__ = ('_id', '_name', '_notes', '_sounds', '_scale', '_length', '_note_length', '_loop', '_controls', '_time_signature', '_groove', '_strum', '_nudge', '_handed', '_keyswitches', '_keyswitch_lead', '_kept')
 
     def __init__(self, *, name=None, notes=None, sounds=None, scale=None, length=None, note_length=None, loop=True, controls=None, time_signature=None):
         check_loop(loop)
@@ -118,6 +119,7 @@ class Clip:
         self._handed = ()
         self._keyswitches = ()
         self._keyswitch_lead = None
+        self._kept = {}
 
     def get_id(self):
         return self._id
@@ -314,6 +316,16 @@ class Clip:
         sounds = self.resolved_sounds()
         return sounds if self._length is None else fit_to_length(positions=sounds, length=Length.exact(self._length))
 
+    def length_key(self):
+        """Return what the clip's total length is worked out from, for kept_while, or None for a clip that holds objects, whose list
+        can be appended to: its list of sounds, as the same list, its count, its own length and its note length."""
+        if self._sounds is None:
+            return None
+        return (id(self._sounds), len(self._sounds), self._length, self._note_length)
+
+    # Kept, since a render asks each finished clip its length three times over (the grid's row, the shapes and the score), and each
+    # asking walked every sound.
+    @kept_while(lambda clip: clip.length_key(), said=as_is)
     def total_length(self):
         """Return how long the clip lasts, as an exact fraction of a whole note."""
         if self._length is not None:

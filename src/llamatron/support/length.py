@@ -45,9 +45,11 @@ _gcd = math.gcd
 class Length:
     """Arithmetic on lengths held as pairs. Nothing here makes an object: each answer is a pair, a whole number or true or false."""
 
+    # Plain functions held in the class rather than static methods, called as before through the class, which is never made into an
+    # object: on CPython 3.15 a static method called through its class costs about 15 ns more than a plain
+    # function, and a run of the examples makes about 8 million such calls.
     __slots__ = ()
 
-    @staticmethod
     def exact(value):
         """Return a number as a pair: a Rational or a whole number as it is, and a float as the nearest length no finer than FINEST_LENGTH.
 
@@ -62,29 +64,24 @@ class Length:
         tidied = Rational(value).limit_denominator(FINEST_LENGTH)
         return (tidied.numerator, tidied.denominator)
 
-    @staticmethod
     def of(rational):
         """Return a Rational as a pair, exactly as it is."""
         return (rational.numerator, rational.denominator)
 
-    @staticmethod
     def of_ticks(count, ticks):
         """Return the length of a count of ticks, a tick being a whole note shared into ticks, as a pair in lowest terms."""
         divisor = _gcd(count, ticks)
         return (count // divisor, ticks // divisor)
 
-    @staticmethod
     def ticks_of(pair, ticks):
         """Return how many ticks a length lasts, a tick being a whole note shared into ticks, which the pair's denominator divides."""
         return pair[0] * (ticks // pair[1])
 
-    @staticmethod
     def rational(pair):
         """Return a pair as a Rational, for whoever wants a number: a clip's own length, an exporter's times and the tests. A pair
         is always in lowest terms, so its divisor is not worked out again."""
         return in_lowest_terms(numerator=pair[0], denominator=pair[1])
 
-    @staticmethod
     def add(first, second):
         """Return the sum of two lengths."""
         denominator = first[1]
@@ -98,7 +95,6 @@ class Length:
             return (numerator, denominator)
         return (numerator // divisor, denominator // divisor)
 
-    @staticmethod
     def subtract(first, second):
         """Return the first length less the second, which is below zero when the second is the longer."""
         denominator = first[1]
@@ -112,7 +108,6 @@ class Length:
             return (numerator, denominator)
         return (numerator // divisor, denominator // divisor)
 
-    @staticmethod
     def times(pair, count):
         """Return a length a whole number of times over."""
         numerator = pair[0] * count
@@ -122,7 +117,6 @@ class Length:
             return (numerator, denominator)
         return (numerator // divisor, denominator // divisor)
 
-    @staticmethod
     def shared(pair, count):
         """Return a length shared equally among a whole number above zero, as a ratchet shares a gate among its notes."""
         numerator = pair[0]
@@ -132,7 +126,6 @@ class Length:
             return (numerator, denominator)
         return (numerator // divisor, denominator // divisor)
 
-    @staticmethod
     def multiplied(first, second):
         """Return one length multiplied by another, as a gate is by what its dot makes of it."""
         numerator = first[0] * second[0]
@@ -142,32 +135,26 @@ class Length:
             return (numerator, denominator)
         return (numerator // divisor, denominator // divisor)
 
-    @staticmethod
     def whole_times(first, second):
         """Return how many whole times the second length goes into the first, rounding down, as a time is counted in steps."""
         return (first[0] * second[1]) // (second[0] * first[1])
 
-    @staticmethod
     def less(first, second):
         """Return whether the first length is shorter than the second."""
         return first[0] * second[1] < second[0] * first[1]
 
-    @staticmethod
     def at_most(first, second):
         """Return whether the first length is no longer than the second."""
         return first[0] * second[1] <= second[0] * first[1]
 
-    @staticmethod
     def shorter(first, second):
         """Return the shorter of two lengths, and the first when they are the same."""
         return second if second[0] * first[1] < first[0] * second[1] else first
 
-    @staticmethod
     def longer(first, second):
         """Return the longer of two lengths, and the first when they are the same."""
         return second if first[0] * second[1] < second[0] * first[1] else first
 
-    @staticmethod
     def longest(pairs):
         """Return the longest of some lengths, of which there is at least one."""
         best = None
@@ -176,7 +163,6 @@ class Length:
                 best = pair
         return best
 
-    @staticmethod
     def total(pairs):
         """Return the sum of any number of lengths, which is no time at all for none."""
         numerator = 0
@@ -196,12 +182,10 @@ class Length:
             return (numerator, denominator)
         return (numerator // divisor, denominator // divisor)
 
-    @staticmethod
     def is_positive(pair):
         """Return whether a length is longer than nothing."""
         return pair[0] > 0
 
-    @staticmethod
     def distance(first, second):
         """Return how far apart two times are, whichever comes first."""
         apart = Length.subtract(first, second)

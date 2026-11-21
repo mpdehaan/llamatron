@@ -22,6 +22,8 @@ holds a tempo for each beat of the ramp, and a moment is found among them.
 
 from bisect import bisect_right
 
+from llamatron.support.rational import Rational
+
 # What a tempo counts, quarter notes per minute, and the seconds in a minute.
 QUARTERS_PER_WHOLE = 4
 SECONDS_PER_MINUTE = 60
@@ -58,6 +60,10 @@ class RowClock:
     def seconds_at(self, time):
         """Return how many seconds into the row a time in whole notes falls."""
         if len(self._starts) == 1:
+            # A Rational's parts are divided here, as float() of it does, without the call: a score asks this about 600,000 times. The
+            # player asks with a float too.
+            if type(time) is Rational:
+                return time.numerator / time.denominator * self._wholes[0]
             return float(time) * self._wholes[0]
         time = float(time)
         place = max(bisect_right(self._starts, time) - 1, 0)
