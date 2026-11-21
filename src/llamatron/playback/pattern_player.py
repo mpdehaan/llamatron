@@ -7,6 +7,7 @@
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
+from llamatron.engine import step_effects
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
 from llamatron.engine.generators.arp.generator import along_scale
@@ -22,7 +23,6 @@ from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import Row, StepStatement
 from llamatron.model.values import midi, note as note_values, sound as sound_values
 from llamatron.model.values.sound import Sound
-from llamatron.playback import drift
 from llamatron.user_strings import errors
 
 # How many octaves away a moved note can go to find one that fits the MIDI range. A move of
@@ -120,16 +120,17 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_drifts', '_passes', '_context')
+    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
 
-    def __init__(self, *, song, scene, scale, track, scale_name=None, drifts=None, passes=None):
+    def __init__(self, *, song, scene, scale, track, scale_name=None, modulations=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
         passes is the render's PassMemory, or None to remember no pass and gather each pattern's steps for this player alone.
 
-        drifts is what the clip hears of the song's drifts, (DriftPlay, the names its chain names,
-        where the scene starts from the song's top), or None for a clip that names none.
+        modulations is what the clip hears of the song's modulations, (each modulating plugin's play with the names of its
+        generators the clip's chains name and where each one's clock starts, where the scene starts from the song's top),
+        or None for a clip that names none.
         """
-        self._drifts = drifts
+        self._modulations = modulations
         self._song = song
         self._scene = scene
         self._scale = scale
@@ -146,7 +147,7 @@ class PatternPlayer:
         # pattern changes while a render plays.
         self._played_patterns = {} if passes is None else passes.get_played_patterns()
         # A clip that hears a drift or binds a register to its velocity reads what carries between passes in every pass.
-        self._passes = passes if drifts is None and self._velocity_register is None else None
+        self._passes = passes if modulations is None and self._velocity_register is None else None
         # What the player's passes are remembered by besides their patterns, worked out the first time a pass is remembered.
         self._context = None
 
@@ -294,7 +295,7 @@ class PatternPlayer:
             stops is not None or restarts is not None or mutes is not None,  # a step's statement reads the registers
             changes or reads_registers,  # a step changes or reads the registers
             grab is not None,  # a step grabs
-            self._drifts is not None,  # the clip hears a drift
+            self._modulations is not None,  # the clip hears a modulation
         ))
         moment = None
         for slot, step in enumerate(steps):
@@ -346,10 +347,10 @@ class PatternPlayer:
                 velocity_added += added
             if velocity is None and self._velocity_register is not None:
                 velocity = current[self._velocity_register]
-            effects = drift.NO_EFFECTS
-            if self._drifts is not None:
-                play, names, scene_start, origins = self._drifts
-                effects = play.effects(names=names, time=scene_start + moment, origins=origins)
+            effects = step_effects.NO_EFFECTS
+            if self._modulations is not None:
+                heard, scene_start = self._modulations
+                effects = step_effects.heard_at(heard=heard, time=scene_start + moment)
                 velocity_added += effects.velocity
                 if not drum:
                     note_moved += effects.degree
@@ -382,7 +383,7 @@ class PatternPlayer:
         is velocity, the step's own or the bound register's, or the track's default velocity when that's None; an accent is part of what is added. A
         step whose conditions don't hold isn't heard, and every slice is a rest, so a ratchet
         sounds all its slices or none.
-        effects, what the clip's drifts do to the step, add to its probability, held from 0 to
+        effects, what the clip's modulations do to the step, add to its probability, held from 0 to
         100, and may change the scale and root its degrees play in.
         Each slice's notes are made once, already as long as a slice, at the step's velocity and
         with the glide of the last slice. They are sounds, the tuples of model/values/sound.py, and

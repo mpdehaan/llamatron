@@ -90,10 +90,9 @@ class ClipSlotPlayer:
         scene = self._scene
         where = errors.ERR_CLIP_SLOT_PLAYER_WHERE.format(scene=scene.get_number(), track=self._track_name)
         scale = self._clip_scale()
-        drifts = self._renderer.drifts_of(scene=scene, track=self._track_name)
-        origins = {name: self._renderer.drift_origin(scene=scene, name=name) for name in drifts}
-        hearing = None if not drifts or registers.is_counting() else (self._renderer.get_drifts(), drifts, self._renderer.scene_start(scene), origins)
-        player = PatternPlayer(song=self._song, scene=scene, scale=scale, track=self._track, scale_name=self._scale_name(), drifts=hearing, passes=self._renderer.get_passes())
+        modulators = self._renderer.modulators_of(scene=scene, track=self._track_name)
+        hearing = None if not modulators or registers.is_counting() else (self._heard(modulators), self._renderer.scene_start(scene))
+        player = PatternPlayer(song=self._song, scene=scene, scale=scale, track=self._track, scale_name=self._scale_name(), modulations=hearing, passes=self._renderer.get_passes())
         grab = self._renderer.get_grab_source(scene=scene, track=self._track_name) if grabbing else None
         # A looping clip that a step of its pattern can stop is never cut to its scene nor made to fill it: it lasts until the step's statement holds.
         loop = self._renderer.fills_its_scene(scene=scene, track=self._track_name)
@@ -163,7 +162,7 @@ class ClipSlotPlayer:
             entering = clip
             written = self._song.chain_run(chain)
             for step in written.get_steps():
-                # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
+                # A modulation works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/modulations.py, playback/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
                 if registry.fills(name=step.kind, method=MAKES_GENERATORS) and not (registry.moves_pitches(step.kind) and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
@@ -178,6 +177,19 @@ class ClipSlotPlayer:
             clip = _kept_where(tripped=_tripped(passes=passes, tables=[written.get_bypass_when()]), before=entering, after=clip, passes=passes)
         clip = _kept_where(tripped=_tripped(passes=passes, tables=self._bypass_tables()), before=untouched, after=clip, passes=passes)
         return clip, sorted(adds, key=_time_of)
+
+    def _heard(self, modulators):
+        """Return what the clip hears of the song's modulations: for each plugin its chains name a generator of, in the order
+        first named, the plugin's play, the names of its generators the chains name, and where each one's clock starts."""
+        by_kind = {}
+        for step in modulators:
+            by_kind.setdefault(step.kind, []).append(step)
+        modulations = self._renderer.get_modulations()
+        return tuple((modulations.play_of(kind), _names_of(steps), self._origins(steps)) for kind, steps in by_kind.items())
+
+    def _origins(self, steps):
+        """Return where each modulating generator's clock starts for the clip's scene, by its name."""
+        return {step.name: self._renderer.modulation_origin(scene=self._scene, step=step) for step in steps}
 
     def _bypass_tables(self):
         """Return the tables of statements that bypass every generator of the clip: its scene's, its own and its track's."""
@@ -519,3 +531,8 @@ def _draws_read_by(tables):
         for statement in table or ():
             read.update(draws_read(statement))
     return read
+
+
+def _names_of(steps):
+    """Return the names of the generators of chain steps, in order."""
+    return [step.name for step in steps]

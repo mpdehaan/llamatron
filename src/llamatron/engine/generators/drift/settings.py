@@ -102,7 +102,7 @@ class DriftSettings(GeneratorSettings):
     """A drift's settings: how often it triggers, how many triggers it takes from A to B, which way it moves, and what each version sets.
 
     A drift is not a generator a chain runs on a clip's notes: the render reads these settings
-    as one process for the whole song (playback/drift.py), and every clip whose chain names the
+    as one process for the whole song (engine/generators/drift/play.py), and every clip whose chain names the
     drift hears it, so GENERATOR is None and a chain step naming a drift changes nothing itself.
     """
 

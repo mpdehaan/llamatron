@@ -18,8 +18,9 @@ cd "$(git rev-parse --show-toplevel)"
 before=$(git diff --stat)
 changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep '\.py$' | sort -u | while read -r file; do [ -f "$file" ] && echo "$file"; done)
 if [ -n "$changed" ]; then
-    internal_tools/sort_imports.sh --write --only $changed > /dev/null
+    # The constants fixer may add an import, which the sorter then puts in its place.
     internal_tools/constants_by_module.sh --write --only $changed > /dev/null
+    internal_tools/sort_imports.sh --write --only $changed > /dev/null
 fi
 if [ "$(git diff --stat)" != "$before" ]; then
     echo 'check before commit: the fixers changed files, which are to be looked at and staged again:'

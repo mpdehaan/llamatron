@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Drifts as the song plays: one process for each drift, for the whole song, which every clip naming it in its chain hears.
+"""The Drift plugin's play: drifts as the song plays, one process for each drift, for the whole song, which every clip naming it in its chain hears.
 
 A drift's clock runs from the top of the song, the scenes laid
 end to end, and triggers every so often (its every, or a bar of the song's time signature). At
@@ -13,36 +13,25 @@ once and kept, so every clip and both plays of a render hear the same drift.
 
 The render reads it two ways: what the drifts a clip names add to the registers at their
 triggers, which join the register timeline, and what they do to each step the clip plays, its
-velocity, probability, degree and scale (DriftEffects).
+velocity, probability, degree and scale (StepEffects).
 """
 
 import math
 from typing import NamedTuple
 
-from llamatron.engine.generators import drift as drift_plugin
+from llamatron.engine import step_effects
+from llamatron.engine.generators import drift
 from llamatron.engine.generators.drift import settings as drift_settings
+from llamatron.engine.step_effects import StepEffects
 from llamatron.math.random_source import random_source
 from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.schema.file_format import DriftDirection, DriftValue, DriftVersion
 
 # How a drift's own random numbers are seeded from the render's seed and its name, so that each drift draws its own.
 DRIFT_SEED = '{seed}/drift/{name}'
-NOTHING_ADDED = 0
 FULL_CHANCE = 100
 A_PLACE = 0
 
-
-class DriftEffects(NamedTuple):
-    """What the drifts a clip names do to one step: added to its velocity, its probability and its degree, and the scale and root that override the clip's, or None."""
-
-    velocity: int
-    probability: int
-    degree: int
-    scale: object
-    root: object
-
-
-NO_EFFECTS = DriftEffects(NOTHING_ADDED, NOTHING_ADDED, NOTHING_ADDED, None, None)
 
 
 class Trigger(NamedTuple):
@@ -68,7 +57,7 @@ class DriftPlay:
         self._choosers = {}
 
     def settings(self, name):
-        return self._song.get_generator_settings(kind=drift_plugin.NAME, name=name)
+        return self._song.get_generator_settings(kind=drift.NAME, name=name)
 
     def every(self, name):
         """Return how long one of a drift's triggers lasts, in whole notes."""
@@ -109,8 +98,8 @@ class DriftPlay:
         a drift missing from it runs from the top.
         """
         if not names:
-            return NO_EFFECTS
-        velocity = probability = degree = NOTHING_ADDED
+            return step_effects.NO_EFFECTS
+        velocity = probability = degree = step_effects.NOTHING_ADDED
         scale = root = None
         for name in names:
             picked = self.picked(name=name, trigger=self.trigger_at(name=name, time=time - (origins or {}).get(name, 0)))
@@ -119,7 +108,17 @@ class DriftPlay:
             degree += picked.numbers[DriftValue.DEGREE] + picked.random_degree
             scale = picked.scale or scale
             root = picked.root or root
-        return DriftEffects(velocity, probability, degree, scale, root)
+        return StepEffects(velocity, probability, degree, scale, root)
+
+    def adds_between(self, *, name, start, end, origin):
+        """Return what a drift adds to the registers at each of its triggers from start to before end, song times, its clock
+        starting at origin: (time, adds by register) for each trigger that adds anything."""
+        found = []
+        for time in self.trigger_times(name=name, start=start, end=end, origin=origin):
+            adds = self.adds_at(name=name, trigger=self.trigger_at(name=name, time=time - origin))
+            if adds:
+                found.append((time, adds))
+        return found
 
     def draws_in_order(self, name):
         """Return whether a drift draws a random number as a trigger is first picked, a degree's random part or a scale or root
@@ -180,11 +179,11 @@ class DriftPlay:
         numbers = {}
         for value in (*drift_settings.DRIFT_ADDS.values(), DriftValue.VELOCITY, DriftValue.PROBABILITY, DriftValue.DEGREE, DriftValue.DEGREE_RANDOM,
                       DriftValue.SCALE_PROBABILITY, DriftValue.ROOT_PROBABILITY):
-            first = settings.get_value(version=DriftVersion.A, value=value) or NOTHING_ADDED
-            second = settings.get_value(version=DriftVersion.B, value=value) or NOTHING_ADDED
+            first = settings.get_value(version=DriftVersion.A, value=value) or step_effects.NOTHING_ADDED
+            second = settings.get_value(version=DriftVersion.B, value=value) or step_effects.NOTHING_ADDED
             numbers[value] = round(first + (second - first) * position)
         spread = numbers[DriftValue.DEGREE_RANDOM]
-        random_degree = chooser.randint(-spread, spread) if spread else NOTHING_ADDED
+        random_degree = chooser.randint(-spread, spread) if spread else step_effects.NOTHING_ADDED
         scale = self._override(settings=settings, value=DriftValue.SCALE, chance=numbers[DriftValue.SCALE_PROBABILITY], position=position, chooser=chooser)
         root = self._override(settings=settings, value=DriftValue.ROOT, chance=numbers[DriftValue.ROOT_PROBABILITY], position=position, chooser=chooser)
         return Trigger(numbers, random_degree, scale, root)
@@ -199,13 +198,3 @@ class DriftPlay:
         if choice is None or chooser.random() * FULL_CHANCE >= chance:
             return None
         return choice
-
-
-def drifts_named(*, song, chain_names):
-    """Return the names of the drifts the chains name, in order, from their steps."""
-    names = []
-    for chain in chain_names:
-        for step in song.chain_run(chain).get_steps():
-            if step.kind == drift_plugin.NAME:
-                names.append(step.name)
-    return names

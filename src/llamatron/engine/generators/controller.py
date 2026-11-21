@@ -44,6 +44,14 @@ class GeneratorController:
         return {}
 
 
+    def modulation(self, *, song, seed):
+        """Return how its generators change values as a song plays, one play for the whole song which every clip naming one of
+        them hears, or None for none. The play answers effects(names=, time=, origins=), a StepEffects for a step at a song time;
+        adds_between(name=, start=, end=, origin=), what one adds to the registers at its triggers; draws_in_order(name), whether
+        what it picks depends on the order clips ask; and snapshot() and restore(snapshot), for a render that starts later."""
+        return None
+
+
 def generator_from_settings(*, settings, place):
     """Return the generator a kind's settings make on their own, given the seed, the pattern's step, the bar, where it
     carries on from and the tempo of its place: what most plugins' make_generator does."""

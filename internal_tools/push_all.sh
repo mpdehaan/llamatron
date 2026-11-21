@@ -26,8 +26,8 @@ fi
 # The commit check rewrites only the files each commit changed, so once a push both fixers go over every file, and the push stops
 # where they change one, since a change to one module can rarely leave another file breaking a rule.
 before=$(git diff --stat)
-internal_tools/sort_imports.sh --write > /dev/null
 internal_tools/constants_by_module.sh --write > /dev/null
+internal_tools/sort_imports.sh --write > /dev/null
 if [ "$(git diff --stat)" != "$before" ]; then
     echo 'before the push: the fixers changed files, which are to be looked at and committed first:'
     git diff --stat

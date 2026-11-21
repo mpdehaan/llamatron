@@ -12,7 +12,7 @@ from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.row_clock import RowClock
-from llamatron.engine.generators import drift as drift_plugin, registry
+from llamatron.engine.generators import registry
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.timing.handed_note import HandedNote
 from llamatron.engine.timing.nudge_plan import NudgePlan
@@ -22,7 +22,7 @@ from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.strum import strums_at_all
-from llamatron.model.schema import file_format
+from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import RampWay, Restart, Section, StepStatement
 from llamatron.model.values import midi, sound as sound_values
 from llamatron.playback import registers as registers_values
@@ -31,8 +31,8 @@ from llamatron.playback.chord_source import ChordSource
 from llamatron.playback.clip_slot_player import ClipSlotPlayer
 from llamatron.playback.dealing_place import DealingPlace
 from llamatron.playback.draws import DrawPlay
-from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.grab_source import GrabSource
+from llamatron.playback.modulations import modulates, Modulations
 from llamatron.playback.pass_memory import PassMemory
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
@@ -70,8 +70,8 @@ MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240_000
 # Turning a length in whole notes into seconds, at a tempo in quarter notes a minute.
 SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
-# A drift's register adds come before every track's at the same moment, from a place before the first track's.
-DRIFT_PLACE = -1
+# A modulation's register adds come before every track's at the same moment, from a place before the first track's.
+MODULATION_PLACE = -1
 # The seed of the random values a register draws while a scene's first guess is played, which the plays after it replace.
 GUESS_SEED = 0
 # Where a pattern's two answers about cutting stand: whether a step can cut a pass short, and whether one can stop the clip.
@@ -117,7 +117,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_dealt', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes', '_takes', '_song_places')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_modulations', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_dealt', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes', '_takes', '_song_places')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None, takes=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -152,7 +152,7 @@ class SongRenderer:
         # The tracks whose clips are waiting on a grab, to catch clips that grab in a circle.
         self._grabbing = []
         self._register_chooser = random_source(None if self._seed is None else self._seed * SEED_SONG_FACTOR + REGISTER_SEED_OFFSET)
-        self._drifts = DriftPlay(song=song, seed=self._seed)
+        self._modulations = Modulations(song=song, seed=self._seed)
         # What every strum's loose timing draws from, fixed for the render so that every export of it and its playing agree.
         # The state each generator left each track's clip in, by pass, written scene, track and the generator's place, for a Restart that carries on.
         self._end_states = {}
@@ -232,7 +232,7 @@ class SongRenderer:
         """Add a written-out scene's row to the grid with its finished clips, played or kept."""
         if place >= self._reused:
             if self._checkpoints is not None:
-                self._checkpoints.append(SceneCheckpoint(self._register_chooser.getstate(), self._drifts.snapshot()))
+                self._checkpoints.append(SceneCheckpoint(self._register_chooser.getstate(), self._modulations.snapshot()))
             if self._earlier is not None:
                 self._hold_kept_clips_to_registers(scene)
         tempo = None if scene.get_tempo() is None else float(scene.get_tempo())
@@ -356,7 +356,7 @@ class SongRenderer:
         if count < len(after._checkpoints):
             checkpoint = after._checkpoints[count]
             self._register_chooser.setstate(checkpoint.register_state)
-            self._drifts.restore(checkpoint.drifts)
+            self._modulations.restore(checkpoint.modulations)
 
     def _take_clips(self, *, after, changed):
         """Take from an earlier render every clip after the scenes taken whole that plays as it did, with the states its
@@ -428,8 +428,9 @@ class SongRenderer:
         """Return whether each track's clips play apart from the other tracks' but where a scene joins them, or where the
         registers they read come out otherwise (_hold_kept_clips_to_registers): no drift draws random numbers in the order the
         clips first ask for its triggers."""
-        drifts = self._song.get_setlist().get_generator_names(drift_plugin.NAME)
-        return not any(self._drifts.draws_in_order(name) for name in drifts)
+        setlist = self._song.get_setlist()
+        kinds = [kind for kind in generator_plugins.plugins() if modulates(kind)]
+        return not any(self._modulations.draws_in_order(kind=kind, name=name) for kind in kinds for name in setlist.get_generator_names(kind))
 
     def kept_tracks(self, scenes):
         """Return the tracks whose clips were taken from an earlier render in every written-out scene given."""
@@ -842,7 +843,7 @@ class SongRenderer:
     def _scene_changes(self, scene):
         """Return every change a scene's clips make to the registers before the scene ends, and the adds at the triggers of the drifts its clips name.
 
-        A drift is one process for the song, so it adds once a trigger however many clips name
+        A modulation is one process for the song, so it adds once a trigger however many clips name
         it, before every track's change at that moment.
         """
         if not self._changes_registers:
@@ -856,12 +857,10 @@ class SongRenderer:
         for track in scene.get_track_names():
             changes += _before(changes=self._counted_clip(scene=scene, track=track)[1], end=length)
         start = self.scene_start(scene)
-        for name in dict.fromkeys(name for track in scene.get_track_names() for name in self.drifts_of(scene=scene, track=track)):
-            origin = self.drift_origin(scene=scene, name=name)
-            for time in self._drifts.trigger_times(name=name, start=start, end=start + length, origin=origin):
-                adds = self._drifts.adds_at(name=name, trigger=self._drifts.trigger_at(name=name, time=time - origin))
-                if adds:
-                    changes.append(RegisterChange(time - start, DRIFT_PLACE, {}, adds))
+        for step in dict.fromkeys(step for track in scene.get_track_names() for step in self.modulators_of(scene=scene, track=track)):
+            origin = self.modulation_origin(scene=scene, step=step)
+            for time, adds in self._modulations.play_of(step.kind).adds_between(name=step.name, start=start, end=start + length, origin=origin):
+                changes.append(RegisterChange(time - start, MODULATION_PLACE, {}, adds))
         return changes
 
     def chains_of(self, *, scene, track):
@@ -871,13 +870,13 @@ class SongRenderer:
             return []
         return [*clip_slot.get_chain_names(), *scene.get_scene().get_chain_names(), *self._song.get_track(track).get_chain_names()]
 
-    def drifts_of(self, *, scene, track):
-        """Return the names of the drifts a track's clip in a scene names in its chains, or none when it plays nothing."""
-        return drifts_named(song=self._song, chain_names=self.chains_of(scene=scene, track=track))
+    def modulators_of(self, *, scene, track):
+        """Return the steps of a track's clip's chains in a scene whose generators change values as the song plays, in order, or none when it plays nothing."""
+        return [step for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps() if modulates(step.kind)]
 
-    def get_drifts(self):
-        """Return the song's drifts as they play, which every clip naming one reads."""
-        return self._drifts
+    def get_modulations(self):
+        """Return the song's modulations as they play, which every clip naming a modulating generator hears."""
+        return self._modulations
 
     def scene_start(self, scene):
         """Return where a written-out scene starts from the song's top, in whole notes: the scenes before it laid end to end."""
@@ -1010,9 +1009,9 @@ class SongRenderer:
         """Keep the state a generator left a track's clip in, for the same track's next clip in its run."""
         self._end_states[(counting, scene.get_number(), track, key)] = state
 
-    def drift_origin(self, *, scene, name):
-        """Return where a drift's clock starts for a written-out scene, from the song's top, as its Restart says."""
-        settings = self._song.get_generator_settings(kind=drift_plugin.NAME, name=name)
+    def modulation_origin(self, *, scene, step):
+        """Return where a modulating generator's clock starts for a written-out scene, from the song's top, as its Restart says."""
+        settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
         return self.scene_start(self.run_start(scene=scene, restart=settings.get_restart()))
 
     def chords_followed(self, *, scene, track, source, counting):

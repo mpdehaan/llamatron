@@ -6,7 +6,7 @@
 """Which scenes of a song an edit cannot change, so that a render after the edit takes them from the render before it.
 
 A render plays the scenes in order, and what a scene plays depends on its own clips, the patterns they name and what the
-scenes before it left: the registers, the draws, the drifts' walks and the random numbers drawn so far. So when nothing but
+scenes before it left: the registers, the draws, the modulations' walks and the random numbers drawn so far. So when nothing but
 scenes and patterns changed, every scene before the first one that changed, or that names a changed pattern, plays as it
 did. The render keeps, at each scene's start, the state of its random streams (a SceneCheckpoint), and the next render
 starts from there.
@@ -24,10 +24,10 @@ FIRST_SCENE = 0
 
 
 class SceneCheckpoint(NamedTuple):
-    """Where a render's random streams stood as a written-out scene started: the registers' chooser and every drift."""
+    """Where a render's random streams stood as a written-out scene started: the registers' chooser and every modulation's play."""
 
     register_state: tuple
-    drifts: object
+    modulations: object
 
 
 def first_changed_scene(*, before, after, song_name, scenes):

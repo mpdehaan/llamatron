@@ -5,9 +5,13 @@
 """The logic of the Drift generator plugin: the controller's methods it fills in."""
 
 from llamatron.engine.generators.controller import GeneratorController
+from llamatron.engine.generators.drift.play import DriftPlay
 
 
 class DriftController(GeneratorController):
     """What a Drift does."""
 
     __slots__ = ()
+
+    def modulation(self, *, song, seed):
+        return DriftPlay(song=song, seed=seed)
