@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """Find what breaks the rules of a function's shape in the program: a body too long, blocks too deep, too many parameters, a reach
-into another object's private names, a catch of every error, and type checks that choose what to do.
+into another object's private names, a catch of every error, type checks that choose what to do, and a file or a class too big.
 
 tests/rules/shape_exceptions.py lists what broke a rule when the rule was made, a list that only shrinks, and the few places a rule
 allows with a reason; tests/rules/test_code_shape.py fails for anything else, and for a listed place that no longer breaks its
@@ -45,7 +45,9 @@ PARAMETERS = 'parameters'
 PRIVATE = 'private'
 CATCHES = 'catches'
 TYPE_CHECKS = 'type checks'
-RULES = (LONG, DEEP, DEEPEST, PARAMETERS, PRIVATE, CATCHES, TYPE_CHECKS)
+BIG_FILES = 'big files'
+BIG_CLASSES = 'big classes'
+RULES = (LONG, DEEP, DEEPEST, PARAMETERS, PRIVATE, CATCHES, TYPE_CHECKS, BIG_FILES, BIG_CLASSES)
 # The limits: a body's lines without its docstring, blocks inside blocks, and parameters but self or cls.
 MOST_LINES = 30
 MOST_DEPTH = 3
@@ -53,6 +55,12 @@ MOST_DEPTH = 3
 DEEPEST_ALLOWED = 4
 MOST_PARAMETERS = 5
 MOST_TYPE_CHECKS = 1
+# The most lines of code a file or a class may hold, blank lines and comments left out.
+MOST_CODE_LINES = 300
+# The files that are lists by nature, the set file's names, the program's text and the key bindings, which no split would make clearer.
+LIST_FILES = ('composition/file_format.py', 'tui/keybindings.py')
+LIST_FOLDERS = ('strings',)
+COMMENT = '#'
 BLOCKS = (ast.If, ast.For, ast.AsyncFor, ast.While, ast.With, ast.AsyncWith, ast.Try)
 FUNCTIONS = (ast.FunctionDef, ast.AsyncFunctionDef)
 SCOPES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
@@ -78,6 +86,16 @@ def is_elif(*, parent, child):
     """Return whether an if is its parent's elif, which stands level with the if rather than inside it: an elif starts where its
     if does, and an if inside an else is indented."""
     return isinstance(parent, ast.If) and isinstance(child, ast.If) and parent.orelse == [child] and child.col_offset == parent.col_offset
+
+
+def code_lines(lines):
+    """Return how many of some lines are code: not blank and not a comment."""
+    return sum(1 for line in lines if line.strip() and not line.strip().startswith(COMMENT))
+
+
+def is_a_list_file(path):
+    """Return whether a file of the program is a list by nature, which the rule of a file's size leaves alone."""
+    return path in LIST_FILES or path.split('/')[0] in LIST_FOLDERS
 
 
 def own_depth(node, *, depth=0):
@@ -138,8 +156,9 @@ def catches_every_error(handler):
 class ShapeFinder(ast.NodeVisitor):
     """Walks one file, noting each function by its qualified name, and what of it breaks a rule."""
 
-    def __init__(self, path):
+    def __init__(self, *, path, lines):
         self.path = path
+        self.lines = lines
         self.names = []
         self.found = {rule: [] for rule in RULES}
 
@@ -148,6 +167,8 @@ class ShapeFinder(ast.NodeVisitor):
 
     def visit_ClassDef(self, node):
         self.names.append(node.name)
+        if not is_a_list_file(self.path) and code_lines(self.lines[node.lineno - 1:node.end_lineno]) > MOST_CODE_LINES:
+            self.found[BIG_CLASSES].append(self.place())
         self.generic_visit(node)
         self.names.pop()
 
@@ -187,8 +208,12 @@ def breaks():
     """Return, for each rule, every place in the program that breaks it, in file order."""
     found = {rule: [] for rule in RULES}
     for path in sorted(SOURCE.rglob(PYTHON_FILES)):
-        finder = ShapeFinder(str(path.relative_to(SOURCE)))
-        finder.visit(ast.parse(path.read_text(encoding=FILE_ENCODING), filename=str(path)))
+        text = path.read_text(encoding=FILE_ENCODING)
+        name = str(path.relative_to(SOURCE))
+        finder = ShapeFinder(path=name, lines=text.splitlines())
+        finder.visit(ast.parse(text, filename=str(path)))
+        if not is_a_list_file(name) and code_lines(finder.lines) > MOST_CODE_LINES:
+            finder.found[BIG_FILES].append(name)
         for rule in RULES:
             found[rule] += [place for place in finder.found[rule] if place not in found[rule]]
     return found
