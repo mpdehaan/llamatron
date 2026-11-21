@@ -12,7 +12,7 @@ from llamatron.model.schema.file_format import PatternSetting
 from llamatron.user_strings import errors, names as names_text, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, notation as tune_notation, riffs as riffs_values, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, in_octaves_of
-from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change
+from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart
 from llamatron.wizards.create_song.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
 
 
@@ -27,7 +27,7 @@ class RiffChoices(ChoicesPart):
 
     def reset(self):
         """Go back to a song with no riff."""
-        # The riffs, who knows each and who plays which where, each under its name of RIFFS_KEPT once the song has any.
+        # The riffs, who knows each and who plays which where, each under its name of RIFFS_SAVED once the song has any.
         self._held = {}
 
     # What a song keeps of the riffs.
@@ -38,7 +38,7 @@ class RiffChoices(ChoicesPart):
 
     def read(self, data):
         """Take the riffs out of what a song kept, in place of the riffs held."""
-        self._held = {kept: data[kept] for kept in wizard_limits.RIFFS_KEPT if kept in data}
+        self._held = {kept: data[kept] for kept in wizard_limits.RIFFS_SAVED if kept in data}
 
     def written_count(self, *, by_hand):
         """Return how many riffs have notes written by hand, or how many have not."""
@@ -65,7 +65,7 @@ class RiffChoices(ChoicesPart):
     # the band, in that player's octave, and exists whether or not anybody plays it yet; each player knows some of the song's
     # riffs; and in each kind of section a player plays the accompaniment, the melody or one of the riffs the player knows.
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _riff_able(self):
         """The players who can play a riff: those whose part in the song is a figure, found by asking for a riff from everybody everywhere."""
         trial = self._choices.trial_for_riffs()
@@ -82,7 +82,7 @@ class RiffChoices(ChoicesPart):
         """Return the players of the band a riff can be written for, by name: those whose part in the song is a figure, never the drummer."""
         return list(self._riff_able()) if self._choices.is_ready() else []
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _riff_able_in(self, kind):
         """The players a riff would be heard from in a kind of section, found by asking for one there from every player of a figure
         with no other riff in the song: a player who sits the kind out, or whose sections there a riff's bars do not fill, has none."""
@@ -259,7 +259,7 @@ class RiffChoices(ChoicesPart):
             self._choices.clear_answers()
             raise ValueError(errors.ERR_WIZARD_RIFF_UNMADE.format(value=riff, problem=problem)) from None
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def riff_heard(self, riff):
         """Return where a riff is heard alone, played or not, as the set a song is made in, the song's name, the place of a
         section in its form, the player's track and the name of the pattern that holds the riff's notes: the song the choices

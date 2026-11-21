@@ -50,10 +50,10 @@ class MelodyChoices(ChoicesPart):
         style = saved.value(wizard_limits.MELODY_STYLE)
         if style:
             saved.apply(self._restore_melody, style=style)
-        gauges = saved.mapping(wizard_limits.GAUGES_KEPT)
+        gauges = saved.mapping(wizard_limits.GAUGES_SAVED)
         for name, position in gauges.items():
             saved.apply(self.set_melody_gauge, name=name, position=position)
-        settings = saved.mapping(wizard_limits.MELODY_SETTINGS_KEPT)
+        settings = saved.mapping(wizard_limits.MELODY_SETTINGS_SAVED)
         for name, value in settings.items():
             saved.apply(self._restore_melody_setting, name=name, value=value)
 
@@ -61,8 +61,8 @@ class MelodyChoices(ChoicesPart):
         """Return what a song keeps of the melody, as plain data a song file saves: only what was chosen."""
         held = {
             wizard_limits.MELODY_STYLE: self._melody,
-            wizard_limits.GAUGES_KEPT: dict(self._gauges) or None,
-            wizard_limits.MELODY_SETTINGS_KEPT: dict(self._melody_settings) or None,
+            wizard_limits.GAUGES_SAVED: dict(self._gauges) or None,
+            wizard_limits.MELODY_SETTINGS_SAVED: dict(self._melody_settings) or None,
         }
         return chosen_only(held)
 

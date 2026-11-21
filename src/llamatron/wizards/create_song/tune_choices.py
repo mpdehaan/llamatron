@@ -11,7 +11,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, players as players_values, tune_fit, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import bar_length
-from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change
+from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart
 
 
 class TuneChoices(ChoicesPart):
@@ -50,7 +50,7 @@ class TuneChoices(ChoicesPart):
         own = (self._choices.get_extra(arranger.OWN_TUNES) or {}).get(kind)
         return copy.deepcopy(own if own is not None else self._tune_in_made(kind)[1])
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _tune_in_made(self, kind):
         """The name and the data of the pattern the tune's player plays in the first section of a kind, in the set the choices make,
         found once for the choices as they stand, since a page asks at every key and the answer means making the song."""
@@ -170,7 +170,7 @@ class TuneChoices(ChoicesPart):
                     taken[kind] = pattern
         return taken
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _tune_taken(self, *, kind, take):
         """The tune another take draws for a kind of section: the kind's tune in the song these choices would make from a seed of
         the take's own, with the same chords and no tune of another take or written by hand, or None where that song has none."""

@@ -6,7 +6,7 @@ song starts and ends."""
 
 import copy
 
-from llamatron.caching.kept import as_is, kept_while
+from llamatron.caching.cached import as_is, cached_while
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
@@ -22,11 +22,11 @@ class FormChoices(ChoicesPart):
     """What was chosen of the song's form: the form suggested by the subgenre, or the song's own sections once a person has
     changed them, and how the song starts and ends, as ways, the first player and the setup's bars."""
 
-    __slots__ = ('_form', '_sections', '_stages', '_kept')
+    __slots__ = ('_form', '_sections', '_stages', '_cached')
 
     def __init__(self, *, choices):
         ChoicesPart.__init__(self, choices=choices)
-        self._kept = {}
+        self._cached = {}
         self.reset()
 
     def reset(self):
@@ -57,7 +57,7 @@ class FormChoices(ChoicesPart):
         held = {
             arranger.FORM: self._form,
             wizard_limits.OWN_SECTIONS: self._saved_own_sections(),
-            wizard_limits.STAGES_KEPT: dict(self._stages) or None,
+            wizard_limits.STAGES_SAVED: dict(self._stages) or None,
         }
         return chosen_only(held)
 
@@ -72,7 +72,7 @@ class FormChoices(ChoicesPart):
         sections = saved.value(wizard_limits.OWN_SECTIONS)
         if sections:
             saved.apply(self.set_own_sections, sections=sections)
-        stages = saved.mapping(wizard_limits.STAGES_KEPT)
+        stages = saved.mapping(wizard_limits.STAGES_SAVED)
         if stages:
             saved.apply(self.restore_stages, stages=stages)
 
@@ -121,9 +121,9 @@ class FormChoices(ChoicesPart):
         chosen to start and to end is kept, with who starts alone and how long a stage lasts, where the new form can start and end so."""
         if form not in self.forms():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_FORM.format(value=form))
-        start = self.get_start() if wizard_limits.START_KEPT in self._stages else None
-        end = self.get_end() if wizard_limits.END_KEPT in self._stages else None
-        kept = {field: value for field, value in self._stages.items() if field not in (wizard_limits.START_KEPT, wizard_limits.END_KEPT)}
+        start = self.get_start() if wizard_limits.START_SAVED in self._stages else None
+        end = self.get_end() if wizard_limits.END_SAVED in self._stages else None
+        kept = {field: value for field, value in self._stages.items() if field not in (wizard_limits.START_SAVED, wizard_limits.END_SAVED)}
         self._form = form
         self._sections = None
         self._stages = {}
@@ -136,7 +136,7 @@ class FormChoices(ChoicesPart):
                 except ValueError:
                     # A way the new form cannot be made with is given up, and the form starts or ends as it usually does.
                     pass
-        if wizard_limits.START_KEPT not in self._stages and wizard_limits.END_KEPT not in self._stages:
+        if wizard_limits.START_SAVED not in self._stages and wizard_limits.END_SAVED not in self._stages:
             self._stages = {}
 
     def has_own_form(self):
@@ -160,7 +160,7 @@ class FormChoices(ChoicesPart):
             return self._entries_key()
         return tuple(entry[arranger.KIND] for entry in self._sections)
 
-    @kept_while(_entries_key, said=as_is)
+    @cached_while(_entries_key, said=as_is)
     def form_section_entries(self):
         """Return the sections of the form chosen, each its kind, worked out once for a form, since a page asks for the sections
         many times a key. A caller that changes a section changes its own copy (own_section_entries)."""
@@ -194,7 +194,7 @@ class FormChoices(ChoicesPart):
             names.append(entry[arranger.KIND] if not place else marks_text.MSG_WIZARD_SECTION_VARIANT.format(kind=entry[arranger.KIND], letter=chr(ord(wizard_limits.FIRST_VARIANT_LETTER) + place)))
         return names
 
-    @kept_while(_labels_key, said=as_is)
+    @cached_while(_labels_key, said=as_is)
     def section_labels(self):
         """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
         a dash and the section's count among them, as the tracker numbers every name it makes."""
@@ -265,11 +265,11 @@ class FormChoices(ChoicesPart):
                 for role in self._choices.get_band().roles():
                     if arranger.PLAYS in entry and role not in entry[arranger.PLAYS] and role in self._choices.section(place).plays():
                         self._choices.section(place).set_plays(role=role, on=False)
-                if wizard_limits.BESIDE_KEPT in entry:
+                if wizard_limits.BESIDE_SAVED in entry:
                     # What the answering player does in the section is kept as chosen, and is used wherever somebody answers there.
-                    if entry[wizard_limits.BESIDE_KEPT] not in interplay_values.WAYS:
-                        raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[wizard_limits.BESIDE_KEPT]))
-                    self._sections[place][wizard_limits.BESIDE_KEPT] = entry[wizard_limits.BESIDE_KEPT]
+                    if entry[wizard_limits.BESIDE_SAVED] not in interplay_values.WAYS:
+                        raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[wizard_limits.BESIDE_SAVED]))
+                    self._sections[place][wizard_limits.BESIDE_SAVED] = entry[wizard_limits.BESIDE_SAVED]
                 if entry.get(wizard_limits.OWN_OF_SECTION):
                     self._sections[place][wizard_limits.OWN_OF_SECTION] = {field: self._choices.checked_own(field=field, value=value) for field, value in entry[wizard_limits.OWN_OF_SECTION].items()}
             if not self._sections:
@@ -312,8 +312,8 @@ class FormChoices(ChoicesPart):
     def get_first_player(self):
         """Return who starts the song alone and is left alone at its end: the one chosen, or the first of the opening's players who is not the drummer."""
         offered = self.first_players()
-        if self._stages.get(wizard_limits.FIRST_PLAYER_KEPT) in offered:
-            return self._stages[wizard_limits.FIRST_PLAYER_KEPT]
+        if self._stages.get(wizard_limits.FIRST_PLAYER_SAVED) in offered:
+            return self._stages[wizard_limits.FIRST_PLAYER_SAVED]
         return next((role for role in offered if role != self._choices.drums_role()), offered[0] if offered else None)
 
     def _setup_bars_possible(self):
@@ -332,14 +332,14 @@ class FormChoices(ChoicesPart):
         trial = self._choices.copied_for_trial()
         try:
             form = trial.get_song_form()
-            form._restaged(change=lambda: form._stages.update({wizard_limits.SETUP_BARS_KEPT: bars}))
+            form._restaged(change=lambda: form._stages.update({wizard_limits.SETUP_BARS_SAVED: bars}))
         except ValueError:
             return False
         return True
 
     def get_setup_bars(self):
         possible = self._setup_bars_possible()
-        kept = self._stages.get(wizard_limits.SETUP_BARS_KEPT)
+        kept = self._stages.get(wizard_limits.SETUP_BARS_SAVED)
         return kept if kept in possible else (self._choices.style()[arranger.SECTIONS][self.intro_kind()][arranger.BARS] if possible else None)
 
     def _stage(self, *, kind, plays=None, own=None):
@@ -410,7 +410,7 @@ class FormChoices(ChoicesPart):
 
     def head_count(self):
         """How many sections open the song before its first tune: those the way of starting kept made, while they stand as made, else the sections of the opening kind."""
-        kept = self._start_stages(self._stages.get(wizard_limits.START_KEPT)) if wizard_limits.START_KEPT in self._stages else None
+        kept = self._start_stages(self._stages.get(wizard_limits.START_SAVED)) if wizard_limits.START_SAVED in self._stages else None
         entries = self.section_entries()
         if kept is not None and entries[:len(kept)] == kept:
             return len(kept)
@@ -421,7 +421,7 @@ class FormChoices(ChoicesPart):
 
     def tail_count(self):
         """How many sections close the song after its last tune: those the way of ending kept made, while they stand as made, else the held chord and the outro before it."""
-        kept = self._end_stages(self._stages.get(wizard_limits.END_KEPT)) if wizard_limits.END_KEPT in self._stages else None
+        kept = self._end_stages(self._stages.get(wizard_limits.END_SAVED)) if wizard_limits.END_SAVED in self._stages else None
         entries = self.section_entries()
         if kept is not None and (not kept or entries[-len(kept):] == kept):
             return len(kept)
@@ -435,7 +435,7 @@ class FormChoices(ChoicesPart):
         """Return the way the song starts, or None where its opening sections are a person's own."""
         entries = self.section_entries()
         head = entries[:self.head_count()]
-        kept = self._stages.get(wizard_limits.START_KEPT)
+        kept = self._stages.get(wizard_limits.START_SAVED)
         if kept in self.starts() and self._start_stages(kept) == head:
             return kept
         return next((way for way in self.starts() if self._start_stages(way) == head), None)
@@ -444,7 +444,7 @@ class FormChoices(ChoicesPart):
         """Return the way the song ends, or None where its closing sections are a person's own."""
         entries = self.section_entries()
         tail = entries[len(entries) - self.tail_count():]
-        kept = self._stages.get(wizard_limits.END_KEPT)
+        kept = self._stages.get(wizard_limits.END_SAVED)
         if kept in self.ends() and self._end_stages(kept) == tail:
             return kept
         return next((way for way in self.ends() if self._end_stages(way) == tail), None)
@@ -465,9 +465,9 @@ class FormChoices(ChoicesPart):
                 raise ValueError(errors.ERR_WIZARD_START_UNMADE.format(problem=start if opening is None else end))
             self._sections = [*(own_copy_of(entry) for entry in opening), *body, *(own_copy_of(entry) for entry in closing)]
             if start is not None:
-                self._stages[wizard_limits.START_KEPT] = start
+                self._stages[wizard_limits.START_SAVED] = start
             if end is not None:
-                self._stages[wizard_limits.END_KEPT] = end
+                self._stages[wizard_limits.END_SAVED] = end
             self._choices.clear_answers()
             self._choices.written_setlist(name=wizard_limits.PREVIEW_NAME, version=version_values.VERSION)
         except (ValueError, KeyError, IndexError, SongFileError) as problem:
@@ -488,12 +488,12 @@ class FormChoices(ChoicesPart):
     def set_first_player(self, role):
         if role not in self.first_players():
             raise ValueError(errors.ERR_WIZARD_FIRST_PLAYER.format(value=role))
-        self._restaged(change=lambda: self._stages.update({wizard_limits.FIRST_PLAYER_KEPT: role}))
+        self._restaged(change=lambda: self._stages.update({wizard_limits.FIRST_PLAYER_SAVED: role}))
 
     def set_setup_bars(self, bars):
         if isinstance(bars, bool) or bars not in self.setup_bars_offered():
             raise ValueError(errors.ERR_WIZARD_SETUP_BARS.format(value=bars))
-        self._restaged(change=lambda: self._stages.update({wizard_limits.SETUP_BARS_KEPT: bars}))
+        self._restaged(change=lambda: self._stages.update({wizard_limits.SETUP_BARS_SAVED: bars}))
 
     def form_questions(self):
         """Return the questions a form is made from, in order, each its name, the answers offered and the usual answer."""
@@ -566,9 +566,9 @@ class FormChoices(ChoicesPart):
         """Forget what single sections were given of what the answering player does, which a plan for every section takes the place of."""
         if self._sections is not None:
             for entry in self._sections:
-                entry.pop(wizard_limits.BESIDE_KEPT, None)
+                entry.pop(wizard_limits.BESIDE_SAVED, None)
 
     def restore_stages(self, *, stages):
         """Take how a song starts and ends as a song kept it: the sections are the song's already, so only what was chosen is kept, where it is still offered."""
-        kept = {field: value for field, value in stages.items() if field in (wizard_limits.START_KEPT, wizard_limits.END_KEPT, wizard_limits.FIRST_PLAYER_KEPT, wizard_limits.SETUP_BARS_KEPT)}
+        kept = {field: value for field, value in stages.items() if field in (wizard_limits.START_SAVED, wizard_limits.END_SAVED, wizard_limits.FIRST_PLAYER_SAVED, wizard_limits.SETUP_BARS_SAVED)}
         self._stages = {field: value for field, value in kept.items() if isinstance(value, (str, int)) and not isinstance(value, bool)}

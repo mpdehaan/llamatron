@@ -16,7 +16,7 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 import functools
 from rich.text import Text
 
-from llamatron.caching.kept import forget_kept, kept_while
+from llamatron.caching.cached import cached_while, forget_cached
 from llamatron.engine.generators import musician as musician_plugin, phrasing as phrasing_plugin
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.cursor import key_between, place_of
@@ -109,8 +109,8 @@ class WizardPage(FieldPage):
         # The tune whose notes the pattern editor has open over the wizard: its kind of section, its pattern's name in the draft set and
         # the pattern as it was when opened. None when no tune is being edited.
         self._tune_open = None
-        # The tree's rows and each branch's fields as last worked out, by what they were worked out from (caching/kept.py).
-        self._kept = {}
+        # The tree's rows and each branch's fields as last worked out, by what they were worked out from (caching/cached.py).
+        self._cached = {}
         # The cell whose change holds what the panel offers (cursor_place), or None while nothing is held.
         self._held_at = None
         if start is not None:
@@ -424,7 +424,7 @@ class WizardPage(FieldPage):
             # so the cursor stays on the field by its label.
             label = self.label_under_cursor()
             self._choices.release_offers()
-            forget_kept(self)
+            forget_cached(self)
             if self.in_fields:
                 self.stay_on(label)
 
@@ -436,7 +436,7 @@ class WizardPage(FieldPage):
         self.release_offers_once_left()
         return (repr(self._choices.to_data()), self._song_name, tuple(sorted(self._open)), self.moving, self._start, tuple(sorted(self.app.open_field_sections)))
 
-    @kept_while(shown_state, said=said_of)
+    @cached_while(shown_state, said=said_of)
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one, however deep."""
         rows = []
@@ -500,7 +500,7 @@ class WizardPage(FieldPage):
     def fields(self):
         return self.fields_at(place=self.tree_place)
 
-    @kept_while(shown_state, said=said_of)
+    @cached_while(shown_state, said=said_of)
     def fields_at(self, *, place):
         """Return the fields of the branch at a place of the tree, the branch under the cursor."""
         return self.branch().fields()

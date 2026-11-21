@@ -10,7 +10,7 @@ from llamatron.model.schema.file_format import SectionKind
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged
-from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only, kept_until_choices_change
+from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart, chosen_only
 from llamatron.wizards.create_song.melody import placement_of, plan_with_hook_placed
 
 
@@ -37,27 +37,27 @@ class HookChoices(ChoicesPart):
     def to_data(self):
         """Return what a song keeps of the hook, as plain data a song file saves: only what was chosen."""
         held = {
-            wizard_limits.HOOK_KEPT: self._hook,
-            wizard_limits.HOOK_TAKE_KEPT: self._hook_take or None,
-            wizard_limits.WRITING_KEPT: copy.deepcopy(self._writing) or None,
+            wizard_limits.HOOK_SAVED: self._hook,
+            wizard_limits.HOOK_TAKE_SAVED: self._hook_take or None,
+            wizard_limits.WRITING_SAVED: copy.deepcopy(self._writing) or None,
         }
         return chosen_only(held)
 
     def restore(self, saved):
         """Restore what a song saved of the hook, leaving out whatever is no longer allowed."""
-        has_hook = saved.value(wizard_limits.HOOK_KEPT)
+        has_hook = saved.value(wizard_limits.HOOK_SAVED)
         if isinstance(has_hook, bool):
             saved.apply(self._restore_hook, on=has_hook)
-        take = saved.value(wizard_limits.HOOK_TAKE_KEPT)
+        take = saved.value(wizard_limits.HOOK_TAKE_SAVED)
         if take:
             saved.apply(self._restore_hook_take, take=take)
-        writing = saved.value(wizard_limits.WRITING_KEPT)
+        writing = saved.value(wizard_limits.WRITING_SAVED)
         if isinstance(writing, dict):
             saved.apply(self._restore_writing, writing=writing)
 
     def counted(self):
         """Return the hook's setting another genre forgets, under a name of its own, so that two songs can be compared setting by setting."""
-        return {(wizard_limits.GENRE_SETTING, wizard_limits.HOOK_KEPT): self._hook}
+        return {(wizard_limits.GENRE_SETTING, wizard_limits.HOOK_SAVED): self._hook}
 
     def add_picks(self, picks):
         """Add the hook's picks to the song's: whether the song has one, where that was chosen, and which take."""
@@ -210,7 +210,7 @@ class HookChoices(ChoicesPart):
         Found by arranging the song, and kept until a choice changes."""
         return self._found_hook_notes()
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _hook_part(self):
         """The part of the tune's player in the first kind of section that says the hook, and which of its lines is the hook; nothing where nobody says one."""
         player = self._choices.get_band().tune_player()
@@ -221,7 +221,7 @@ class HookChoices(ChoicesPart):
         part = arranged(style=self._choices.style(), song=self._choices.song_picks(kind))[arranger.PARTS].get(wizard_text.MSG_PART_OF_SECTION.format(kind, player))
         return (None, None) if part is None or tune_notation.LINES not in part else (part, line)
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _found_hook_notes(self):
         part, line = self._hook_part()
         if part is None:
@@ -410,7 +410,7 @@ class HookChoices(ChoicesPart):
             return None
         return self._found_hook_line()
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _found_hook_line(self):
         part, line = self._hook_part()
         return copy.deepcopy(part[tune_notation.LINES][line])

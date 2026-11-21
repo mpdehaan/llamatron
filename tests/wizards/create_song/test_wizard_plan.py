@@ -183,7 +183,7 @@ class TestWizardHookKind(unittest.TestCase):
         choices.get_hook().set_hook_behavior(other)
         self.assertEqual(choices.get_hook().get_hook_behavior(), other)
         choices.get_hook().set_hook_behavior(usual)
-        self.assertEqual(choices.to_data().get(wizard_limits.WRITING_KEPT), None)
+        self.assertEqual(choices.to_data().get(wizard_limits.WRITING_SAVED), None)
         for name in choices.get_hook().hook_gauges():
             position = choices.get_hook().genre_hook_gauge(name)
             moved = wizard_names.HOOK_WRITING_LOWEST if position != wizard_names.HOOK_WRITING_LOWEST else wizard_names.HOOK_WRITING_HIGHEST
@@ -193,7 +193,7 @@ class TestWizardHookKind(unittest.TestCase):
             self.assertEqual(choices.get_hook().get_hook_gauge(name), moved)
             choices.get_hook().set_hook_gauge(name=name, position=None)
             self.assertEqual(choices.get_hook().get_hook_gauge(name), position)
-        self.assertEqual(choices.to_data().get(wizard_limits.WRITING_KEPT), None)
+        self.assertEqual(choices.to_data().get(wizard_limits.WRITING_SAVED), None)
 
     def test_a_behavior_and_a_gauge_chosen_stay_through_a_new_hook_and_are_kept_with_the_song(self):
         choices = chosen()

@@ -9,7 +9,7 @@ from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, player_of
 from llamatron.wizards.create_song.breaks import break_names
-from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only, kept_until_choices_change
+from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart, chosen_only
 
 
 class KitChoices(ChoicesPart):
@@ -41,41 +41,41 @@ class KitChoices(ChoicesPart):
         if not self._quiet_notes:
             quiet_notes = False
         held = {
-            wizard_limits.PIECES_OFF_KEPT: list(self._pieces_off) or None,
-            wizard_limits.FILLS_KEPT: self._fills,
-            wizard_limits.QUIET_NOTES_KEPT: quiet_notes,
-            wizard_limits.BREAK_KEPT: self._break,
-            wizard_limits.BREAK_CUT_KEPT: self._break_cut,
-            wizard_limits.PIECE_SOUNDS_KEPT: self._piece_sounds_copied() or None,
+            wizard_limits.PIECES_OFF_SAVED: list(self._pieces_off) or None,
+            wizard_limits.FILLS_SAVED: self._fills,
+            wizard_limits.QUIET_NOTES_SAVED: quiet_notes,
+            wizard_limits.BREAK_SAVED: self._break,
+            wizard_limits.BREAK_CUT_SAVED: self._break_cut,
+            wizard_limits.PIECE_SOUNDS_SAVED: self._piece_sounds_copied() or None,
         }
         return chosen_only(held)
 
     def restore(self, saved):
         """Restore what a song saved of the kit, leaving out whatever is no longer allowed."""
-        for piece in saved.listing(wizard_limits.PIECES_OFF_KEPT):
+        for piece in saved.listing(wizard_limits.PIECES_OFF_SAVED):
             saved.apply(self.set_piece_on, piece=piece, on=False)
-        fills = saved.value(wizard_limits.FILLS_KEPT)
+        fills = saved.value(wizard_limits.FILLS_SAVED)
         if fills is not None:
             saved.apply(self.set_fills, position=fills)
-        if saved.value(wizard_limits.QUIET_NOTES_KEPT) is False:
+        if saved.value(wizard_limits.QUIET_NOTES_SAVED) is False:
             saved.apply(self.set_quiet_notes, on=False)
-        break_name = saved.value(wizard_limits.BREAK_KEPT)
+        break_name = saved.value(wizard_limits.BREAK_SAVED)
         if break_name:
             saved.apply(self._restore_break, name=break_name)
-        piece_sounds = saved.mapping(wizard_limits.PIECE_SOUNDS_KEPT)
+        piece_sounds = saved.mapping(wizard_limits.PIECE_SOUNDS_SAVED)
         for piece, sounds_as in piece_sounds.items():
             saved.apply(self._restore_piece_sound, piece=piece, sounds_as=sounds_as)
-        break_cut = saved.value(wizard_limits.BREAK_CUT_KEPT)
+        break_cut = saved.value(wizard_limits.BREAK_CUT_SAVED)
         if break_cut is not None:
             saved.apply(self.set_break_cut, position=break_cut)
 
     def counted(self):
         """Return every setting of the kit, each under a name of its own, so that two kits can be compared setting by setting."""
         by_name = {(wizard_limits.GENRE_SETTING, name): value for name, value in (
-            (wizard_limits.PIECES_OFF_KEPT, sorted(self._pieces_off)), (wizard_limits.FILLS_KEPT, self._fills), (wizard_limits.QUIET_NOTES_KEPT, self._quiet_notes),
-            (wizard_limits.BREAK_KEPT, self._break), (wizard_limits.BREAK_CUT_KEPT, self._break_cut))}
+            (wizard_limits.PIECES_OFF_SAVED, sorted(self._pieces_off)), (wizard_limits.FILLS_SAVED, self._fills), (wizard_limits.QUIET_NOTES_SAVED, self._quiet_notes),
+            (wizard_limits.BREAK_SAVED, self._break), (wizard_limits.BREAK_CUT_SAVED, self._break_cut))}
         for piece, sounds_as in self._piece_sounds.items():
-            by_name.update({(wizard_limits.PIECE_SOUNDS_KEPT, piece, inner): each for inner, each in sounds_as.items()})
+            by_name.update({(wizard_limits.PIECE_SOUNDS_SAVED, piece, inner): each for inner, each in sounds_as.items()})
         return by_name
 
     def add_picks(self, picks):
@@ -102,7 +102,7 @@ class KitChoices(ChoicesPart):
         """Return the pieces of the kit the drums play in the song as chosen, in the order the song has them, on or off."""
         return list(self._pieces())
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _pieces(self):
         choices = self._choices
         if not choices.is_ready():

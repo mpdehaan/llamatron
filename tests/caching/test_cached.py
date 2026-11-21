@@ -1,12 +1,12 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests of kept_while: an answer worked out once and kept while its key stays the same."""
+"""Tests of cached_while: an answer worked out once and cached while its key stays the same."""
 
 import unittest
 
-from llamatron.caching import kept
-from llamatron.caching.kept import forget_kept, kept_for_life, kept_while
+from llamatron.caching import cached
+from llamatron.caching.cached import cached_for_life, cached_while, forget_cached
 from llamatron.caching.memory import Memory, StaleAnswer
 
 A_KEY = 'first'
@@ -16,20 +16,20 @@ ANOTHER_KEY = 'second'
 class Counting:
     """An object whose answer counts how many times it was worked out, kept while its key is the same."""
 
-    __slots__ = ('_kept', 'key', 'worked_out')
+    __slots__ = ('_cached', 'key', 'worked_out')
 
     def __init__(self):
-        self._kept = {}
+        self._cached = {}
         self.key = A_KEY
         self.worked_out = 0
 
-    @kept_while(lambda counting: counting.key)
+    @cached_while(lambda counting: counting.key)
     def answer(self):
         """Return the key and how many times the answer has been worked out."""
         self.worked_out += 1
         return (self.key, self.worked_out)
 
-    @kept_while(lambda counting: counting.key)
+    @cached_while(lambda counting: counting.key)
     def doubled(self, *, number):
         """Return a number doubled, counting how many times it was worked out."""
         self.worked_out += 1
@@ -39,18 +39,18 @@ class Counting:
 class Checked:
     """An object whose kept answer leaves out what it depends on, which the tests' check finds: its key never changes."""
 
-    __slots__ = ('_kept', 'value')
+    __slots__ = ('_cached', 'value')
 
     def __init__(self):
-        self._kept = {}
+        self._cached = {}
         self.value = 1
 
-    @kept_while(lambda checked: A_KEY, said=list)
+    @cached_while(lambda checked: A_KEY, said=list)
     def values(self):
         """Return a list of the value, kept by a key that leaves the value out."""
         return [self.value]
 
-    @kept_for_life
+    @cached_for_life
     def tripled(self, *, number):
         """Return a number tripled."""
         return number * 3
@@ -88,13 +88,13 @@ class TestKeptWhile(unittest.TestCase):
         one.answer()
         other.answer()
         self.assertEqual((one.worked_out, other.worked_out), (1, 1))
-        self.assertEqual(list(getattr(one, kept.KEPT)), [Counting.answer.__name__])
+        self.assertEqual(list(getattr(one, cached.CACHED)), [Counting.answer.__name__])
 
 
     def test_forget_kept_drops_every_answer(self):
         counting = Counting()
         counting.answer()
-        forget_kept(counting)
+        forget_cached(counting)
         counting.answer()
         self.assertEqual(counting.worked_out, 2)
 
@@ -126,7 +126,7 @@ class TestKeptChecked(unittest.TestCase):
     def test_an_answer_kept_for_life_is_kept_by_its_arguments_alone(self):
         checked = Checked()
         self.assertEqual([checked.tripled(number=2), checked.tripled(number=3)], [6, 9])
-        self.assertEqual(len(getattr(checked, kept.KEPT)[Checked.tripled.__name__][1]), 2)
+        self.assertEqual(len(getattr(checked, cached.CACHED)[Checked.tripled.__name__][1]), 2)
 
 
 if __name__ == '__main__':

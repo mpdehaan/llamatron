@@ -27,17 +27,17 @@ from llamatron.caching.memory import Memory, stale_answer
 class PassMemory:
     """The passes the renders of a song have played, by key, and what this render has gathered of each pattern's steps."""
 
-    __slots__ = ('_kept', '_played_patterns', '_checking')
+    __slots__ = ('_cached', '_played_patterns', '_checking')
 
     def __init__(self, *, earlier=None):
         """earlier is the PassMemory of the render before, of the same song, whose passes this one goes on keeping, or None."""
-        self._kept = {} if earlier is None else earlier.get_kept()
+        self._cached = {} if earlier is None else earlier.get_kept()
         self._played_patterns = {}
         self._checking = Memory.checks_by_default()
 
     def get_kept(self):
         """Return the passes kept, by key, for the next render to take from."""
-        return self._kept
+        return self._cached
 
     def get_played_patterns(self):
         """Return what this render's players have gathered of each pattern's steps, by the pattern's name, for them to share."""
@@ -48,15 +48,15 @@ class PassMemory:
 
     def recall(self, key):
         """Return a copy of the pass kept under a key, or None; the caller may change the copy."""
-        kept = self._kept.get(key)
+        kept = self._cached.get(key)
         return None if kept is None else kept.copied()
 
     def keep(self, *, key, played, remembered):
         """Keep a pass played under its key, a copy, so that what the caller changes of it is not kept; remembered is the pass the
         memory gave for the key while checking, held to the pass worked out again."""
         if remembered is not None and fingerprint(remembered) != fingerprint(played):
-            raise stale_answer(key=key, kept=fingerprint(remembered), again=fingerprint(played))
-        self._kept[key] = played.copied()
+            raise stale_answer(key=key, cached=fingerprint(remembered), again=fingerprint(played))
+        self._cached[key] = played.copied()
 
 
 def fingerprint(played):

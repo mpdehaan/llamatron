@@ -85,7 +85,7 @@ class LlamaData(Revised):
     through it.
     """
 
-    __slots__ = ('_kept',)
+    __slots__ = ('_cached',)
 
     # Which of its settings hold the name of an item of which section, like a clip's pattern, as {section: (setting, ...)}.
     REFERENCES = {}
@@ -95,7 +95,7 @@ class LlamaData(Revised):
     def note_change(self):
         """Take a new revision, and drop the data kept, which the change may have made wrong."""
         Revised.note_change(self)
-        self._kept = None
+        self._cached = None
 
     def kept_data(self):
         """Return what to_data() returns, built once and kept until this object changes.
@@ -103,9 +103,9 @@ class LlamaData(Revised):
         What comes back is shared with the undo history and with every earlier asker, so it is
         never changed: a caller that wants data to change asks to_data().
         """
-        if self._kept is None:
-            self._kept = self.to_data()
-        return self._kept
+        if self._cached is None:
+            self._cached = self.to_data()
+        return self._cached
 
     def names_item(self, *, section, name):
         """Return whether one of its own settings names an item of a section, as a clip names its pattern."""

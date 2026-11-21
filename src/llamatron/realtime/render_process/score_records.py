@@ -49,16 +49,16 @@ def check(*, kept, again):
              (CHECKED_ROWS, _row_times(kept.rows), _row_times(again.rows)))
     for name, ours, theirs in pairs:
         if ours != theirs:
-            place = _first_difference(kept=ours, again=theirs)
+            place = _first_difference(cached=ours, again=theirs)
             ours = _entry(record=ours, place=place)
             theirs = _entry(record=theirs, place=place)
             if isinstance(ours, list) and isinstance(theirs, list):
                 # Of a clip's events, only the first that differs, which says enough to find what went wrong.
-                event = _first_difference(kept=ours, again=theirs)
+                event = _first_difference(cached=ours, again=theirs)
                 place = (place, event)
                 ours = _entry(record=ours, place=event)
                 theirs = _entry(record=theirs, place=event)
-            raise memory.stale_answer(key=(name, place), kept=ours, again=theirs)
+            raise memory.stale_answer(key=(name, place), cached=ours, again=theirs)
 
 
 def _row_times(rows):

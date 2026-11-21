@@ -13,7 +13,7 @@ from llamatron.model.schema import limits
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, interplay as interplay_values, joins as joins_values, line_edits, melody as melody_writer, notation as tune_notation, phrasing, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import chord_of, fits_by_halves, picked, section_of, shares_a_bar, values_of
-from llamatron.wizards.create_song.choices_part import kept_until_choices_change
+from llamatron.wizards.create_song.choices_part import cached_until_choices_change
 
 
 def own_copy_of(entry):
@@ -289,7 +289,7 @@ class SectionChoices:
         self.entry()
         return self._lines()
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _lines(self):
         made = self._choices.made_form()
         scene = made[arranger.FORM][self._place]
@@ -359,7 +359,7 @@ class SectionChoices:
 
     def has_own_role(self):
         """Return whether the section gives the answering player a role of its own, apart from the plan."""
-        return wizard_limits.BESIDE_KEPT in self.entry()
+        return wizard_limits.BESIDE_SAVED in self.entry()
 
     def has_role(self):
         """Return whether the answering player has something to choose in the section: somebody answers, and the tune's player
@@ -375,7 +375,7 @@ class SectionChoices:
         if not self.has_role():
             raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=self._place))
         if self.has_own_role():
-            return self.entry()[wizard_limits.BESIDE_KEPT]
+            return self.entry()[wizard_limits.BESIDE_SAVED]
         interplay = self._choices.interplay()
         return interplay.planned_role(self._place)
 
@@ -390,6 +390,6 @@ class SectionChoices:
         form = self._choices.get_song_form()
         entries = form.own_section_entries()
         entry = entries[self._place]
-        entry.pop(wizard_limits.BESIDE_KEPT, None)
+        entry.pop(wizard_limits.BESIDE_SAVED, None)
         if way is not None:
-            entry[wizard_limits.BESIDE_KEPT] = way
+            entry[wizard_limits.BESIDE_SAVED] = way

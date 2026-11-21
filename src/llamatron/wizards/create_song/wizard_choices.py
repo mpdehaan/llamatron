@@ -14,7 +14,7 @@ import copy
 import functools
 import random
 
-from llamatron.caching.kept import kept_while
+from llamatron.caching.cached import cached_while
 from llamatron.engine.generators.phrasing import model as phrasing_settings
 from llamatron.engine.generators.phrasing.model import PhrasingSettings
 from llamatron.engine.realizer.song_realizer import SongRealizer
@@ -28,7 +28,7 @@ from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, composer as set_writer, line_edits, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, chord_of, form_of, picked, share_in, style_in, style_named, style_names, values_of, variant_named, variants_of
 from llamatron.wizards.create_song.band_choices import BandChoices
-from llamatron.wizards.create_song.choices_part import chosen_only, kept_until_choices_change, SavedChoices
+from llamatron.wizards.create_song.choices_part import cached_until_choices_change, chosen_only, SavedChoices
 from llamatron.wizards.create_song.composer import composed
 from llamatron.wizards.create_song.form_choices import FormChoices
 from llamatron.wizards.create_song.hook_choices import HookChoices
@@ -133,14 +133,14 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
 def style_key(choices):
     """What the style is worked out from: the genre, the subgenre and the kind of song chosen. The answers kept by it, and the
     picks kept by it with the ways chosen, are made from their keys and nothing else, so they cannot go stale and the tests
-    need not work them out again (caching/kept.py)."""
+    need not work them out again (caching/cached.py)."""
     return (choices.get_genre(), choices.get_subgenre(), choices.get_variant())
 
 
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form_part', '_seed', '_melodies', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_interplay', '_kit', '_riffs_part', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_kept', '_variant')
+    __slots__ = ('_extras', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form_part', '_seed', '_melodies', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_interplay', '_kit', '_riffs_part', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_cached', '_variant')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -153,8 +153,8 @@ class WizardChoices:
         self._offers_of = None
         self._offers_held = False
         self._offers_mixed = False
-        # The answers of the methods written under kept_while, each with the key it was worked out for.
-        self._kept = {}
+        # The answers of the methods written under cached_while, each with the key it was worked out for.
+        self._cached = {}
         self._genre = None
         self._subgenre = None
         # The kind of song the subgenre makes, where the subgenre holds several.
@@ -224,7 +224,7 @@ class WizardChoices:
         # A player's own rows are allowed only under a melody style that deals them, so they come after the melody.
         self._band.restore_rows(saved)
         self._hook.restore(saved)
-        extras = saved.value(wizard_limits.EXTRAS_KEPT)
+        extras = saved.value(wizard_limits.EXTRAS_SAVED)
         if extras:
             saved.apply(self._restore_extras, extras=extras)
 
@@ -238,7 +238,7 @@ class WizardChoices:
             arranger.TYPE: self._scale_type,
             arranger.TEMPO: self._tempo,
             arranger.SEED: self._seed,
-            wizard_limits.EXTRAS_KEPT: self.get_song_extras() or None,
+            wizard_limits.EXTRAS_SAVED: self.get_song_extras() or None,
         }
         held.update(self._band.to_data())
         held.update(self._interplay.to_data())
@@ -364,7 +364,7 @@ class WizardChoices:
         setting by setting."""
         by_name = {(wizard_limits.GENRE_SETTING, name): value for name, value in (
             (wizard_limits.MELODY_STYLE, self._melodies.get_style()),)}
-        for kept_as, held in ((wizard_limits.GAUGES_KEPT, self._melodies.get_gauges()), (wizard_limits.MELODY_SETTINGS_KEPT, self._melodies.get_settings()), (wizard_limits.STAGES_KEPT, self._form_part.get_stages())):
+        for kept_as, held in ((wizard_limits.GAUGES_SAVED, self._melodies.get_gauges()), (wizard_limits.MELODY_SETTINGS_SAVED, self._melodies.get_settings()), (wizard_limits.STAGES_SAVED, self._form_part.get_stages())):
             for name, value in held.items():
                 if isinstance(value, dict):
                     by_name.update({(kept_as, name, inner): each for inner, each in value.items()})
@@ -437,7 +437,7 @@ class WizardChoices:
 
     # What the subgenre usually has.
 
-    @kept_while(lambda choices: (choices._genre, choices._subgenre, choices._variant, repr(choices._band.get_ways())))
+    @cached_while(lambda choices: (choices._genre, choices._subgenre, choices._variant, repr(choices._band.get_ways())))
     def picks(self):
         """Return every trait's pick: the ways of playing chosen, and the subgenre's for the rest. The picks are worked out once
         for a genre, a subgenre and the ways chosen, and a caller never changes what is returned."""
@@ -541,17 +541,17 @@ class WizardChoices:
         self._kit.reset()
         self._melodies.forget_gauges_and_settings()
 
-    @kept_while(style_key)
+    @cached_while(style_key)
     def style(self):
         """Return the genre's style template as the subgenre chosen has it, worked out once for a genre, a subgenre and a kind, and
         never changed by a caller."""
         return style_in(style=style_of(self._genre), template=self._subgenre, variant=self._variant)
 
-    @kept_while(style_key)
+    @cached_while(style_key)
     def trait_has_sound(self, *, trait, value):
         return arranger.SOUND in values_of(style=self.style(), trait=trait)[value]
 
-    @kept_while(style_key)
+    @cached_while(style_key)
     def roles_by_name(self):
         """Return each player the genre's band may have, by name, as the style says of the player, or nothing before a subgenre is
         chosen; worked out once for a style, since a page asks after the players many times a key."""
@@ -560,12 +560,12 @@ class WizardChoices:
     def copied_for_trial(self):
         """A copy of the choices to try something on, which remembers nothing and holds nothing: the answers kept are large,
         and copying them only to throw them away took as long as writing a song."""
-        answers, offers, kept = self._answers, self._offers, self._kept
-        self._answers, self._offers, self._kept = {}, {}, {}
+        answers, offers, kept = self._answers, self._offers, self._cached
+        self._answers, self._offers, self._cached = {}, {}, {}
         try:
             trial = copy.deepcopy(self)
         finally:
-            self._answers, self._offers, self._kept = answers, offers, kept
+            self._answers, self._offers, self._cached = answers, offers, kept
         trial._offers_held = False
         trial._offers_mixed = False
         return trial
@@ -933,7 +933,7 @@ class WizardChoices:
         """Return the melody of a part of the intro as a pattern's data, the person's own or the hook as the choices write it, or None where nobody plays one."""
         return copy.deepcopy(self._intro_in_made(self._melody_place_or(place))[1])
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _intro_in_made(self, place):
         role = None if place is None else self.intro_melody_player(place)
         if role is None:
@@ -1068,7 +1068,7 @@ class WizardChoices:
 
     # A section's lines, one by one: who plays each, its notes as the song has them, and what the line is given of its own.
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def made_form(self):
         """The song arranged as the choices stand: its parts and its form, kept until a choice changes."""
         return arranged(style=self.style(), song=self.song_picks(wizard_limits.PREVIEW_NAME))
@@ -1108,7 +1108,7 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_EXTRAS.format(value=extras))
         self._extras = copy.deepcopy(extras)
         self._riffs_part.read(self._extras)
-        for kept in wizard_limits.RIFFS_KEPT:
+        for kept in wizard_limits.RIFFS_SAVED:
             self._extras.pop(kept, None)
         self.clear_answers()
 
@@ -1361,21 +1361,21 @@ class WizardChoices:
         self.plan_extras()
         return self._plan_energies()
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _plan_energies(self):
         return self.made_song_plan().energies()
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def plan_joins(self):
         """Return how each section of the form leaves for the next, as the plan works them out, None for a section that does not."""
         return self.made_song_plan().joins()
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def plan_shapes(self):
         """Return the shape of each section of the form as the plan gives it, None for a section with none."""
         return self.made_song_plan().shapes()
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _said_of_sections(self):
         planned = self.made_song_plan().planned()
         return [planned[arranger.SECTIONS][name][song_plan.SAID_OF_SECTION] for name in planned[arranger.FORM]]

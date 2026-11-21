@@ -38,31 +38,31 @@ FEWEST_FILLS = 1
 EACH_SECTION_FILLS = 2
 MOST_FILLS = 4
 FILLS_EVERY = {1: 0, 4: 2, 3: 4, 2: arranger.EACH_SECTION}
-FILLS_KEPT = 'fills'
-QUIET_NOTES_KEPT = 'quiet_notes'
+FILLS_SAVED = 'fills'
+QUIET_NOTES_SAVED = 'quiet_notes'
 # The drum break chosen, kept as its name or as NO_BREAK where a subgenre built on a break plays none, how far it is cut up,
 # and the smart melody style's gauges that were moved.
-BREAK_KEPT = 'break'
-BREAK_CUT_KEPT = 'break_cut'
-GAUGES_KEPT = 'melody_gauges'
-MELODY_SETTINGS_KEPT = 'melody_settings'
-HOOK_KEPT = 'hook'
-HOOK_TAKE_KEPT = 'hook_take'
+BREAK_SAVED = 'break'
+BREAK_CUT_SAVED = 'break_cut'
+GAUGES_SAVED = 'melody_gauges'
+MELODY_SETTINGS_SAVED = 'melody_settings'
+HOOK_SAVED = 'hook'
+HOOK_TAKE_SAVED = 'hook_take'
 # The melody styles whose lines are their own throughout, a chorus's body included.
 ENGINES_OF_THEIR_OWN = (melody_writer.SERIAL, melody_writer.EVOLVING)
 # What a song chose of how its hook and its chorus's body are written, over its genre's: a behavior and gauges.
-WRITING_KEPT = 'melody_writing'
+WRITING_SAVED = 'melody_writing'
 # What pieces of the kit sound as, kept as the song's picks hold them, and the note a piece first plays in a General MIDI sound.
-PIECE_SOUNDS_KEPT = 'piece_sounds'
-PLAYER_GAUGES_KEPT = 'player_gauges'
-PLAYER_ROWS_KEPT = 'player_rows'
+PIECE_SOUNDS_SAVED = 'piece_sounds'
+PLAYER_GAUGES_SAVED = 'player_gauges'
+PLAYER_ROWS_SAVED = 'player_rows'
 # The answers remembered until a choice changes.
 QUIET_NOTES_ANSWER = 'quiet notes'
 BARS_ANSWER = 'bars offered'
 # How far a sharp or a flat moves a note, in half steps.
 HALF_STEPS_OF_ACCIDENTAL = {tune_notation.SHARP: 1, tune_notation.FLAT: -1}
 # What is kept of the player beside the tune: who answers, the one thing done in every section or None for the genre's plan, and how busy; and a section's own choice.
-BESIDE_KEPT = 'beside'
+BESIDE_SAVED = 'beside'
 BY = 'by'
 WAY = 'way'
 BUSY_BESIDE = 'busy'
@@ -72,12 +72,12 @@ PLAN = 'plan'
 BY_SUBGENRE = 'by_subgenre'
 USUAL_PIECE_NOTE = 48
 # The key a song keeps the kit's pieces that are switched off under.
-PIECES_OFF_KEPT = 'pieces_off'
+PIECES_OFF_SAVED = 'pieces_off'
 # One guitarist or two, and the key a template describes its one guitarist under, with the players and the way it names.
 TWO_GUITARISTS = 2
 ONE_GUITARIST_COUNT = 1
 GUITARIST_COUNTS = (ONE_GUITARIST_COUNT, TWO_GUITARISTS)
-GUITARISTS_KEPT = 'guitarists'
+GUITARISTS_SAVED = 'guitarists'
 ONE_GUITARIST = 'one_guitarist'
 CHORDS_PLAYER = 'chords'
 SOLO_PLAYER = 'solo'
@@ -88,8 +88,8 @@ ACOUSTIC = 'acoustic'
 ELECTRIC = 'electric'
 SYNTH = 'synth'
 BAND_SOUNDS = (USUAL_SOUNDS, ACOUSTIC, ELECTRIC, SYNTH)
-SOUNDS_KEPT = 'sounds'
-BAND_SOUNDS_KEPT = 'band_sounds'
+SOUNDS_SAVED = 'sounds'
+BAND_SOUNDS_SAVED = 'band_sounds'
 # The key a template keeps the sounds that stand in for a player under, by player and subgenre.
 STAND_INS = 'stand_ins'
 # General MIDI's families, eight sounds each, by their place; the last two, percussive sounds and sound effects, play no notes a part can use.
@@ -183,7 +183,7 @@ RIFF_OF_GENRE = 'of_genre'
 RIFFS_KNOWN = 'riffs_known'
 RIFFS_PLAYED = 'riffs_played'
 # The three together, which the riffs' part of the choices holds.
-RIFFS_KEPT = (RIFF_BOOK, RIFFS_KNOWN, RIFFS_PLAYED)
+RIFFS_SAVED = (RIFF_BOOK, RIFFS_KNOWN, RIFFS_PLAYED)
 # What a song says of its melodies, on the Melody panel for the whole song and on a kind of section's panel for the kind: how
 # busy the melodies are, how wide they range, how much they repeat and their character; and by kind of section, how high the
 # kind's melody sits and how busy it is, kept as MELODY_CHOSEN.
@@ -299,10 +299,10 @@ WAYS_WITH_SETUP_BARS = (DRUMS_FIRST, DRUM_FILL_IN, ONE_PLAYER_FIRST, LAYERS, OUT
 SLOWED_TO = (2, 3)
 OUTRO_KIND = 'outro'
 SECOND_HOOK_KINDS = (SectionKind.PRE_CHORUS, SectionKind.POST_CHORUS, OUTRO_KIND)
-START_KEPT = 'starts'
-END_KEPT = 'ends'
-FIRST_PLAYER_KEPT = 'first_player'
-SETUP_BARS_KEPT = 'setup_bars'
+START_SAVED = 'starts'
+END_SAVED = 'ends'
+FIRST_PLAYER_SAVED = 'first_player'
+SETUP_BARS_SAVED = 'setup_bars'
 # What each respect of the lines' breathing may be.
 PHRASING_OFFERED = {phrasing.BREATH: tuple(phrasing.BREATHS), phrasing.LINE_LENGTHS: phrasing.LINE_LENGTH_WAYS, phrasing.EARLY_NOTES: tuple(range(phrasing.FEWEST_EARLY, phrasing.MOST_EARLY + 1))}
 # What a section of the form is given of its own, kept with the section so that it moves, copies and goes with it.
@@ -354,8 +354,8 @@ FIRST_DEGREE_OF_SCALE = 1
 LAST_DEGREE_OF_SCALE = 7
 # The parts of a hook's kind and what each may be.
 # What a song file lays over the song's picks, as a song keeps it.
-EXTRAS_KEPT = 'song'
-STAGES_KEPT = 'stages'
+EXTRAS_SAVED = 'song'
+STAGES_SAVED = 'stages'
 FIRST_VARIANT_LETTER = 'a'
 # How near a made section's length must be to the length asked, in seconds: far less than any bar lasts.
 PART_OF_A_BAR = 0.01

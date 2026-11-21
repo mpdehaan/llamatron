@@ -10,7 +10,7 @@ import zlib
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, wizard_limits
-from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change
+from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart
 
 
 class SoloChoices(ChoicesPart):
@@ -54,7 +54,7 @@ class SoloChoices(ChoicesPart):
         """Return the solo at a place of the form as a pattern's data, the person's own or the solo the choices write, or None where nobody plays one."""
         return copy.deepcopy(self._solo_in_made(place)[1])
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _solo_in_made(self, place):
         if place not in self.solo_places():
             return None, None
@@ -105,7 +105,7 @@ class SoloChoices(ChoicesPart):
                     taken[number] = {role: copy.deepcopy(pattern)}
         return taken
 
-    @kept_until_choices_change
+    @cached_until_choices_change
     def _solo_taken(self, *, number, take):
         """The solo another take draws: that solo in the song these choices would make from a seed of the take's own, with the same
         chords and no solo of another take or written by hand, or None where that song has none."""

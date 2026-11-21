@@ -38,7 +38,7 @@ NOTE_CHANGE_CALL = 'self.note_change()'
 SELF = 'self'
 # The members that are no part of an object: the data it keeps of itself, worked out from it, and the record of how the pages
 # show a set, which its file holds and nothing undoes or remembers an answer from (interface/tracker/page_memory.py).
-NOT_PART_OF_IT = ('_kept', '_page_record')
+NOT_PART_OF_IT = ('_cached', '_page_record')
 # The methods that change a list, a dictionary or a set in place.
 IN_PLACE_METHODS = frozenset({'append', 'insert', 'pop', 'remove', 'clear', 'update', 'sort', 'reverse', 'extend', 'setdefault', 'popitem', 'add', 'discard'})
 MSG_UNMARKED = '{kind}.{method} changes the object and is not written under @notes_change'
@@ -69,7 +69,7 @@ class Sample:
     def calls_another(self, value):
         self.assigns(value)
     def keeps_its_data(self):
-        self._kept = self.reads()
+        self._cached = self.reads()
 '''
 SAMPLE_CHANGERS = ['assigns', 'assigns_inside', 'adds_to', 'deletes', 'appends', 'sorts_inside']
 SAMPLE_NOT_CHANGERS = ['reads', 'changes_a_copy', 'calls_another', 'keeps_its_data']

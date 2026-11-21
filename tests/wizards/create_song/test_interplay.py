@@ -270,8 +270,8 @@ class TestWizardInterplayChoices(unittest.TestCase):
         choices.interplay().set_answered_by(None)
         again = WizardChoices.from_data(choices.to_data())
         self.assertIsNone(again.interplay().answered_by())
-        self.assertEqual(again.to_data()[wizard_limits.BESIDE_KEPT][wizard_limits.BY], None)
-        before = {field: value for field, value in choices.to_data().items() if field != wizard_limits.BESIDE_KEPT}
+        self.assertEqual(again.to_data()[wizard_limits.BESIDE_SAVED][wizard_limits.BY], None)
+        before = {field: value for field, value in choices.to_data().items() if field != wizard_limits.BESIDE_SAVED}
         old = WizardChoices.from_data(before)
         self.assertEqual((old.interplay().answerers(), old.interplay().answered_by()), ([], None))
         self.assertNotIn(arranger.BESIDE, old.song_picks(SONG_NAME))

@@ -1168,7 +1168,7 @@ class TestWizardPlayerRows(WizardTest):
         await self.press(keybindings.RowDialog.MORE, keybindings.RowDialog.DONE, keybindings.WizardPage.TO_TREE)
         row = choices.player(role).get_row(name=melody.LENGTHS)
         await self.create()
-        self.assertEqual(self.document.song().get_wizard_choices()[wizard_limits.PLAYER_ROWS_KEPT], {role: {melody.LENGTHS: row}})
+        self.assertEqual(self.document.song().get_wizard_choices()[wizard_limits.PLAYER_ROWS_SAVED], {role: {melody.LENGTHS: row}})
 
 
 class TestRowDialog(UITest):

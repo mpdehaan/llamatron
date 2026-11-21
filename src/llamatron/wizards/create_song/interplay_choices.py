@@ -46,11 +46,11 @@ class InterplayChoices(ChoicesPart):
         if not self._offered:
             return {}
         beside = {wizard_limits.BY: self._answerer, wizard_limits.WAY: self._way, wizard_limits.BUSY_BESIDE: self._busy}
-        return {wizard_limits.BESIDE_KEPT: beside}
+        return {wizard_limits.BESIDE_SAVED: beside}
 
     def restore(self, saved):
         """Restore the player beside the tune a song saved, leaving it out where it no longer fits."""
-        beside = saved.value(wizard_limits.BESIDE_KEPT)
+        beside = saved.value(wizard_limits.BESIDE_SAVED)
         if isinstance(beside, dict):
             saved.apply(self._restore_beside, beside=beside)
 
@@ -70,8 +70,8 @@ class InterplayChoices(ChoicesPart):
 
     def counted(self):
         """Return the setting another genre forgets, under a name of its own, so that two songs can be compared setting by setting."""
-        beside = self.to_data().get(wizard_limits.BESIDE_KEPT)
-        return {(wizard_limits.GENRE_SETTING, wizard_limits.BESIDE_KEPT): beside}
+        beside = self.to_data().get(wizard_limits.BESIDE_SAVED)
+        return {(wizard_limits.GENRE_SETTING, wizard_limits.BESIDE_SAVED): beside}
 
     def add_picks(self, picks):
         """Add the song's player beside the tune to its picks, with what the player does in each section of the form in order:

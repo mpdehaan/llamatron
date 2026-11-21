@@ -31,7 +31,7 @@ from tests.support.ui_testing import a_song
 
 EXAMPLES = example_sets()
 # The members that aren't part of what an object stores: a song's way back to its set, and the data an object keeps of itself.
-NOT_STORED = ('_setlist', '_kept')
+NOT_STORED = ('_setlist', '_cached')
 SLOTS = '__slots__'
 FILE_ENCODING = 'utf-8'
 A_VELOCITY = 90

@@ -52,9 +52,9 @@ class BandChoices(ChoicesPart):
             arranger.PICKS: dict(self._ways) or None,
             arranger.PLAYERS: dict(self._levels) or None,
             arranger.WITHOUT: list(self._without) or None,
-            wizard_limits.PLAYER_GAUGES_KEPT: self._saved_gauges() or None,
-            wizard_limits.PLAYER_ROWS_KEPT: self._saved_rows() or None,
-            wizard_limits.GUITARISTS_KEPT: guitarists,
+            wizard_limits.PLAYER_GAUGES_SAVED: self._saved_gauges() or None,
+            wizard_limits.PLAYER_ROWS_SAVED: self._saved_rows() or None,
+            wizard_limits.GUITARISTS_SAVED: guitarists,
         }
         return chosen_only(held)
 
@@ -86,13 +86,13 @@ class BandChoices(ChoicesPart):
         self._restore_gauges(saved)
         for role in saved.listing(arranger.WITHOUT):
             saved.apply(self.restore_without, role=role)
-        guitarists = saved.value(wizard_limits.GUITARISTS_KEPT)
+        guitarists = saved.value(wizard_limits.GUITARISTS_SAVED)
         if guitarists:
             saved.apply(self.restore_guitarists, count=guitarists)
 
     def _restore_gauges(self, saved):
         """Restore the gauges each player had moved."""
-        gauges = saved.mapping(wizard_limits.PLAYER_GAUGES_KEPT)
+        gauges = saved.mapping(wizard_limits.PLAYER_GAUGES_SAVED)
         for player, places in gauges.items():
             places_kept = saved.as_mapping(places)
             for gauge, place in places_kept.items():
@@ -100,7 +100,7 @@ class BandChoices(ChoicesPart):
 
     def restore_rows(self, saved):
         """Restore the rows each player had of its own, which only a melody style that deals rows allows."""
-        rows_by_role = saved.mapping(wizard_limits.PLAYER_ROWS_KEPT)
+        rows_by_role = saved.mapping(wizard_limits.PLAYER_ROWS_SAVED)
         for role, rows in rows_by_role.items():
             rows_kept = saved.as_mapping(rows)
             for name, values in rows_kept.items():
@@ -120,8 +120,8 @@ class BandChoices(ChoicesPart):
     def counted(self):
         """Return every setting of the band, each under a name of its own, so that two bands can be compared setting by setting."""
         by_name = {(wizard_limits.GENRE_SETTING, name): value for name, value in (
-            (arranger.WITHOUT, sorted(self._without)), (wizard_limits.GUITARISTS_KEPT, self._guitarists))}
-        for kept_as, held in ((arranger.PICKS, self._ways), (arranger.PLAYERS, self._levels), (wizard_limits.PLAYER_GAUGES_KEPT, self._own_gauges), (wizard_limits.PLAYER_ROWS_KEPT, self._rows)):
+            (arranger.WITHOUT, sorted(self._without)), (wizard_limits.GUITARISTS_SAVED, self._guitarists))}
+        for kept_as, held in ((arranger.PICKS, self._ways), (arranger.PLAYERS, self._levels), (wizard_limits.PLAYER_GAUGES_SAVED, self._own_gauges), (wizard_limits.PLAYER_ROWS_SAVED, self._rows)):
             for name, value in held.items():
                 if isinstance(value, dict):
                     by_name.update({(kept_as, name, inner): each for inner, each in value.items()})

@@ -45,7 +45,7 @@ class Kept(NamedTuple):
 class Memory:
     """Answers by key, each kept until one of the things it was worked out from has a new revision."""
 
-    __slots__ = ('_kept', '_checks', '_checked')
+    __slots__ = ('_cached', '_checks', '_checked')
 
     # Whether a new memory checks every answer unless told otherwise, which the tests turn on.
     _checks_by_default = False
@@ -64,7 +64,7 @@ class Memory:
         return cls._checks_by_default
 
     def __init__(self, *, checks=None):
-        self._kept = {}
+        self._cached = {}
         self._checks = Memory._checks_by_default if checks is None else checks
         # For each key, the latest revision anywhere when its answer was last worked out, so that a check is made once per change and not on every ask.
         self._checked = {}
@@ -77,15 +77,15 @@ class Memory:
         """
         # This is asked hundreds of times for every key press, so the revisions are gathered here rather than through a function.
         revisions = tuple([thing.get_revision() for thing in on])
-        kept = self._kept.get(key)
+        kept = self._cached.get(key)
         if kept is not None and kept.revisions == revisions:
             if self._checks:
                 self._check(key=key, kept=kept, compute=compute)
             return kept.answer
         answer = compute()
-        if len(self._kept) >= MAX_ANSWERS:
+        if len(self._cached) >= MAX_ANSWERS:
             self.forget()
-        self._kept[key] = Kept(revisions=revisions, answer=answer)
+        self._cached[key] = Kept(revisions=revisions, answer=answer)
         if self._checks:
             self._checked[key] = latest_revision()
         return answer
@@ -96,12 +96,12 @@ class Memory:
 
     def forget(self):
         """Drop every answer, as opening another set does."""
-        self._kept.clear()
+        self._cached.clear()
         self._checked.clear()
 
     def count(self):
         """Return how many answers are kept."""
-        return len(self._kept)
+        return len(self._cached)
 
     def _check(self, *, key, kept, compute):
         """Work a kept answer out again if anything anywhere has changed since it was last worked out, and raise StaleAnswer if it differs."""
@@ -110,9 +110,9 @@ class Memory:
         again = compute()
         self._checked[key] = latest_revision()
         if again != kept.answer:
-            raise stale_answer(key=key, kept=kept.answer, again=again)
+            raise stale_answer(key=key, cached=kept.answer, again=again)
 
 
-def stale_answer(*, key, kept, again):
-    """Return the StaleAnswer that says a kept answer differs from the same answer worked out again."""
-    return StaleAnswer(errors.ERR_STALE_ANSWER.format(key=key, kept=kept, again=again))
+def stale_answer(*, key, cached, again):
+    """Return the StaleAnswer that says a cached answer differs from the same answer worked out again."""
+    return StaleAnswer(errors.ERR_STALE_ANSWER.format(key=key, kept=cached, again=again))

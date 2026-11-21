@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 from math import ceil
 from typing import NamedTuple
 
-from llamatron.caching.kept import kept_for_life
+from llamatron.caching.cached import cached_for_life
 from llamatron.importers.midi_reading import MidiPart, PartNote, value_at
 from llamatron.importers.steps import control_error, controls_between_steps, NoteStep, repeated_pattern, scene_steps
 from llamatron.math.rational import Rational
@@ -185,7 +185,7 @@ def bar_lines(*, time_signatures, end, holding=None):
 class Cutter:
     """What cuts one song: its voices on a grid of steps, the step sizes its patterns may take, the bar lines, its keys and tempos, and the longest pattern asked for."""
 
-    __slots__ = ('_voices', '_step_size', '_clip_step_sizes', '_bars', '_keys', '_tempos', '_longest', '_end', '_blocked', '_kept')
+    __slots__ = ('_voices', '_step_size', '_clip_step_sizes', '_bars', '_keys', '_tempos', '_longest', '_end', '_blocked', '_cached')
 
     def __init__(self, *, voices, step_size, clip_step_sizes, bars, keys, tempos, longest):
         self._voices = voices
@@ -199,7 +199,7 @@ class Cutter:
         self._end = self.step_of(bars[-1])
         self._blocked = self.held_across()
         # Each voice's clip in a scene, worked out once whichever cuts ask for that scene.
-        self._kept = {}
+        self._cached = {}
 
     def step_of(self, time):
         """Return a time on the grid as its step."""
@@ -268,7 +268,7 @@ class Cutter:
         cuts.append(self._end)
         return cuts, off
 
-    @kept_for_life
+    @cached_for_life
     def voice_clip(self, *, voice, start, end, key):
         """Return a voice's clip across the scene from grid step start to grid step end, as a VoiceClip, worked out once whichever cuts ask for it.
 

@@ -48,7 +48,7 @@ def choices_of(*, data, path, seed=None):
     """The wizard's choices a song file's data describes, with a seed in place of the file's where one is given."""
     if not isinstance(data, dict):
         raise ValueError(errors.ERR_SONG_FILE_NOT_A_MAPPING.format(path=path))
-    kept = {field: value for field, value in data.items() if field not in (NAME, song_plan.PLAN_OF_SONG, wizard_limits.EXTRAS_KEPT)}
+    kept = {field: value for field, value in data.items() if field not in (NAME, song_plan.PLAN_OF_SONG, wizard_limits.EXTRAS_SAVED)}
     plan = data.get(song_plan.PLAN_OF_SONG, True)
     plan = dict(plan) if isinstance(plan, dict) else ({} if plan else None)
     written = isinstance(data.get(arranger.FORM), list)
@@ -65,7 +65,7 @@ def choices_of(*, data, path, seed=None):
         raise ValueError(errors.ERR_SONG_FILE_NOT_READY.format(path=path))
     if written and not choices.get_song_form().has_own_form():
         raise ValueError(errors.ERR_SONG_FILE_FORM.format(path=path))
-    extras = data_laid_over(under={song_plan.PLAN_OF_SONG: plan} if plan is not None else {}, over=data.get(wizard_limits.EXTRAS_KEPT) or {})
+    extras = data_laid_over(under={song_plan.PLAN_OF_SONG: plan} if plan is not None else {}, over=data.get(wizard_limits.EXTRAS_SAVED) or {})
     if extras:
         choices.set_song_extras(extras)
     return choices

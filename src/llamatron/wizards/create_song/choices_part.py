@@ -7,7 +7,7 @@
 import functools
 
 
-def kept_until_choices_change(method):
+def cached_until_choices_change(method):
     """Decorate a method of the song wizard's choices, or of a part of them, whose answer is found by making the song, so that the
     answer is worked out once while the choices stand as they are and worked out again once anything a song keeps of them
     changes: a page asks the same thing at every key, and making a song each time made the keys slow. The answer is kept by the

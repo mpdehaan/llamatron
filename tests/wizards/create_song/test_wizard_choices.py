@@ -697,7 +697,7 @@ class TestWizardSounds(unittest.TestCase):
 
     def test_the_sounds_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
         choices = self.rock()
-        self.assertNotIn(wizard_limits.SOUNDS_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.SOUNDS_SAVED, choices.to_data())
         choices.get_sounds().set_band_sounds(wizard_limits.BAND_SOUNDS[-1])
         choices.get_sounds().set_sound(role=A_BASS, sound=limits.MAX_GM_SOUND)
         again = WizardChoices.from_data(choices.to_data())
@@ -773,7 +773,7 @@ class TestWizardGuitarists(unittest.TestCase):
 
     def test_one_guitarist_is_kept_with_the_choices_and_another_subgenre_has_two_again(self):
         choices = self.rock()
-        self.assertNotIn(wizard_limits.GUITARISTS_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.GUITARISTS_SAVED, choices.to_data())
         choices.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
         again = WizardChoices.from_data(choices.to_data())
         self.assertTrue(again.get_band().has_one_guitarist())
@@ -845,7 +845,7 @@ class TestWizardKit(unittest.TestCase):
 
     def test_the_pieces_switched_off_are_kept_with_the_choices_and_another_subgenre_has_them_all(self):
         choices = self.rock()
-        self.assertNotIn(wizard_limits.PIECES_OFF_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.PIECES_OFF_SAVED, choices.to_data())
         piece = choices.get_kit().pieces()[-1]
         choices.get_kit().set_piece_on(piece=piece, on=False)
         again = WizardChoices.from_data(choices.to_data())
@@ -883,7 +883,7 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
     def test_the_drummer_decides_how_often_until_a_position_is_chosen_and_the_song_is_then_the_same(self):
         choices = self.rock()
         self.assertIn(choices.get_kit().get_fills(), range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1))
-        self.assertNotIn(wizard_limits.FILLS_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.FILLS_SAVED, choices.to_data())
 
     def test_every_position_makes_a_song_that_plays_in_every_subgenre_and_the_positions_differ(self):
         for place in range(len(genre_names())):
@@ -926,7 +926,7 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
 
     def test_both_are_kept_with_the_choices_and_another_subgenre_starts_afresh(self):
         choices = self.with_quiet_notes()
-        self.assertNotIn(wizard_limits.QUIET_NOTES_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.QUIET_NOTES_SAVED, choices.to_data())
         choices.get_kit().set_quiet_notes(False)
         choices.get_kit().set_fills(wizard_limits.MOST_FILLS)
         again = WizardChoices.from_data(choices.to_data())
@@ -973,7 +973,7 @@ class TestWizardMelodySettings(unittest.TestCase):
             for name in self.rock(style=style).melodies().melody_settings():
                 choices = self.rock(style=style)
                 before = self.patterns(choices)
-                self.assertNotIn(wizard_limits.MELODY_SETTINGS_KEPT, choices.to_data())
+                self.assertNotIn(wizard_limits.MELODY_SETTINGS_SAVED, choices.to_data())
                 value = self.another_value(choices=choices, name=name)
                 choices.melodies().set_melody_setting(name=name, value=value)
                 self.assertEqual(choices.melodies().get_melody_setting(name), value)
@@ -1010,7 +1010,7 @@ class TestWizardMelodySettings(unittest.TestCase):
         choices = self.rock(style=melody.EVOLVING)
         choices.melodies().set_melody_setting(name=melody.MOVE, value=self.another_value(choices=choices, name=melody.MOVE))
         choices.set_genre(ANOTHER_GENRE)
-        self.assertNotIn(wizard_limits.MELODY_SETTINGS_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.MELODY_SETTINGS_SAVED, choices.to_data())
 
 
 class TestWizardPlayerRows(unittest.TestCase):
@@ -1064,7 +1064,7 @@ class TestWizardPlayerRows(unittest.TestCase):
             choices.player(role).set_row(name=name, values=usual)
             self.assertFalse(choices.player(role).row_is_own(name=name))
             self.assertEqual(self.parts(choices), before)
-            self.assertNotIn(wizard_limits.PLAYER_ROWS_KEPT, choices.to_data())
+            self.assertNotIn(wizard_limits.PLAYER_ROWS_SAVED, choices.to_data())
 
     def test_a_row_changes_only_its_players_parts(self):
         choices = self.serial()
@@ -1102,7 +1102,7 @@ class TestWizardPlayerRows(unittest.TestCase):
         plain.melodies().set_melody(None)
         self.assertEqual(self.parts(choices), self.parts(plain))
         choices.set_genre(ANOTHER_GENRE)
-        self.assertNotIn(wizard_limits.PLAYER_ROWS_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.PLAYER_ROWS_SAVED, choices.to_data())
 
     def test_the_genres_own_rows_are_those_its_players_are_written_with(self):
         choices = chosen(genre=genre_names().index(A_SERIAL_GENRE))
@@ -1136,7 +1136,7 @@ class TestWizardMelodyGauges(unittest.TestCase):
         self.assertEqual(self.patterns(again), self.patterns(choices))
         choices.get_hook().set_hook(True)
         self.assertEqual(self.patterns(choices), with_hook)
-        self.assertNotIn(wizard_limits.HOOK_KEPT, choices.to_data())
+        self.assertNotIn(wizard_limits.HOOK_SAVED, choices.to_data())
 
     def test_the_hooks_notes_are_read_from_the_song_as_chosen_and_follow_every_choice(self):
         choices = self.rock()
@@ -1182,7 +1182,7 @@ class TestWizardMelodyGauges(unittest.TestCase):
         self.assertEqual(choices.get_hook().get_hook_take(), 0)
         # A take kept that is no take is left out, as any kept choice that no longer holds is.
         for take in (-1, True, NOT_A_NUMBER):
-            self.assertEqual(WizardChoices.from_data({**self.rock().to_data(), wizard_limits.HOOK_TAKE_KEPT: take}).get_hook().get_hook_take(), 0)
+            self.assertEqual(WizardChoices.from_data({**self.rock().to_data(), wizard_limits.HOOK_TAKE_SAVED: take}).get_hook().get_hook_take(), 0)
 
     def test_a_song_with_no_hook_has_no_hook_notes(self):
         choices = self.rock()

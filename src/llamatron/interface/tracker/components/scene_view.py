@@ -21,7 +21,7 @@ shown.
 from rich.style import Style as RichStyle
 from rich.text import Text
 
-from llamatron.caching.kept import kept_for_life
+from llamatron.caching.cached import cached_for_life
 from llamatron.interface.tracker.components import title_card
 from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
@@ -113,13 +113,13 @@ def track_label(*, name, place):
 class SceneView:
     """One scene's notes in a read-only roll inside an Inset Window, as written or as played, with a cursor the arrows move, a zoom and a sidebar of each track's details."""
 
-    __slots__ = ('_document', '_index', '_written', '_kept', '_problem', '_column', '_row', '_left', '_top', '_zoom', '_side_top')
+    __slots__ = ('_document', '_index', '_written', '_cached', '_problem', '_column', '_row', '_left', '_top', '_zoom', '_side_top')
 
     def __init__(self, *, document, index):
         self._document = document
         self._index = index
         self._written = True
-        self._kept = {}
+        self._cached = {}
         self._problem = None
         self._column = 0
         self._row = 0
@@ -191,7 +191,7 @@ class SceneView:
             self._problem = str(problem)
             return None
 
-    @kept_for_life
+    @cached_for_life
     def notes_of(self, *, written):
         """Return the scene's notes as written or as played, worked out the first time each view is shown, since nothing
         changes while the window is open."""

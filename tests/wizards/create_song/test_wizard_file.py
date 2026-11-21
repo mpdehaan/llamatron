@@ -50,7 +50,7 @@ class TestSongFile(unittest.TestCase):
         names = [scene.get_name() for scene in song.get_scenes()]
         self.assertIn(DRUM_SOLO, names)
         self.assertEqual(len(names), len(set(names)))
-        self.assertIn(song_plan.PLAN_OF_SONG, song.get_wizard_choices()[wizard_limits.EXTRAS_KEPT])
+        self.assertIn(song_plan.PLAN_OF_SONG, song.get_wizard_choices()[wizard_limits.EXTRAS_SAVED])
 
     def test_the_same_file_makes_the_same_song_and_a_seed_given_makes_another(self):
         one = wizard_file.made_of_file(path=EVERYTHING, version=version.VERSION).to_data()
@@ -74,7 +74,7 @@ class TestSongFile(unittest.TestCase):
         self.assertEqual(made.get_song_extras()[song_plan.PLAN_OF_SONG][song_plan.BY_PLACE], [{}, {wizard_names.SONG_PLAN_ENERGY: AN_ENERGY}, {}])
 
     def test_what_the_file_lays_over_the_song_reaches_the_song(self):
-        made = choices({**BASIC, wizard_limits.EXTRAS_KEPT: {TEMPO: A_TEMPO}})
+        made = choices({**BASIC, wizard_limits.EXTRAS_SAVED: {TEMPO: A_TEMPO}})
         self.assertEqual(made.song_picks(FILE_NAME)[TEMPO], A_TEMPO)
         kept = WizardChoices.from_data(made.to_data())
         self.assertEqual(kept.get_song_extras(), made.get_song_extras())

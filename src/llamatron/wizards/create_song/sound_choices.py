@@ -38,23 +38,23 @@ class SoundChoices(ChoicesPart):
         if band_sounds == wizard_limits.USUAL_SOUNDS:
             band_sounds = None
         held = {
-            wizard_limits.SOUNDS_KEPT: dict(self._sounds) or None,
-            wizard_limits.BAND_SOUNDS_KEPT: band_sounds,
+            wizard_limits.SOUNDS_SAVED: dict(self._sounds) or None,
+            wizard_limits.BAND_SOUNDS_SAVED: band_sounds,
         }
         return chosen_only(held)
 
     def restore(self, saved):
         """Restore what a song saved of the sounds, leaving out whatever is no longer allowed."""
-        band_sounds = saved.value(wizard_limits.BAND_SOUNDS_KEPT)
+        band_sounds = saved.value(wizard_limits.BAND_SOUNDS_SAVED)
         if band_sounds:
             saved.apply(self._restore_band_sounds, sounds=band_sounds)
-        sounds = saved.mapping(wizard_limits.SOUNDS_KEPT)
+        sounds = saved.mapping(wizard_limits.SOUNDS_SAVED)
         for role, sound in sounds.items():
             saved.apply(self.set_sound, role=role, sound=sound)
 
     def counted(self):
         """Return every setting of the sounds, each under a name of its own, so that two bands can be compared setting by setting."""
-        return {(wizard_limits.GENRE_SETTING, wizard_limits.BAND_SOUNDS_KEPT): self._band_sounds, **{(wizard_limits.SOUNDS_KEPT, role): sound for role, sound in self._sounds.items()}}
+        return {(wizard_limits.GENRE_SETTING, wizard_limits.BAND_SOUNDS_SAVED): self._band_sounds, **{(wizard_limits.SOUNDS_SAVED, role): sound for role, sound in self._sounds.items()}}
 
     # A player's sound: the one the player's way of playing has, moved by the band's Sounds, unless the player has a sound of its own.
 

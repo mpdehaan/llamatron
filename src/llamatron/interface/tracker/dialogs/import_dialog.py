@@ -13,7 +13,7 @@ is added to the set until Import, which dismisses the dialog with what the impor
 
 from rich.text import Text
 
-from llamatron.caching.kept import kept_for_life
+from llamatron.caching.cached import cached_for_life
 from llamatron.importers import midi_import as midi_import_values
 from llamatron.importers.midi_import import ImportChoices
 from llamatron.interface.tracker import drawing, key_table, keybindings
@@ -70,7 +70,7 @@ class ImportDialog(Dialog):
         self.row = SONG_NAME
         self.button = IMPORT_BUTTON
         # What the import makes for each set of choices tried, worked out once each.
-        self._kept = {}
+        self._cached = {}
 
     def keys(self):
         bound = [self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)), self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True)]
@@ -90,7 +90,7 @@ class ImportDialog(Dialog):
         choices = self.choices
         return self.made_from(key=(choices.song_name, choices.longest_pattern, choices.unique_names, choices.chords, choices.controls, choices.step_size))
 
-    @kept_for_life
+    @cached_for_life
     def made_from(self, *, key):
         """Return what the import makes with the choices, kept by key, everything of the choices the import is made from, so that
         going back to choices made before needs no import again."""
