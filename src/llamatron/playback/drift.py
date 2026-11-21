@@ -132,6 +132,14 @@ class DriftPlay:
             root = picked.root or root
         return DriftEffects(velocity, probability, degree, scale, root)
 
+    def draws_in_order(self, name):
+        """Return whether a drift draws a random number as a trigger is first picked, a degree's random part or a scale or root
+        override, so that what it picks depends on the order in which the clips first ask for each trigger; a brownian walk alone
+        steps trigger by trigger whoever asks."""
+        settings = self.settings(name)
+        values = (DriftValue.DEGREE_RANDOM, DriftValue.SCALE, DriftValue.ROOT)
+        return any(settings.get_value(version=version, value=value) for version in (DriftVersion.A, DriftVersion.B) for value in values)
+
     def snapshot(self):
         """Return where every drift stands now, what each trigger picked, each brownian walk and each chooser's state, for a
         render after an edit that starts at a later scene (scene_reuse.SceneCheckpoint)."""

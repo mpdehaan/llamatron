@@ -44,7 +44,7 @@ from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.grab_source import GrabSource
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
-from llamatron.playback.scene_reuse import first_changed_scene, SceneCheckpoint
+from llamatron.playback.scene_reuse import changed_clips, first_changed_scene, SceneCheckpoint
 from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
 from llamatron.playback.tune_source import TuneSource
 from llamatron.playback.written_scene import WrittenScene
@@ -72,6 +72,8 @@ MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240_000
 # Turning a length in whole notes into seconds, at a tempo in quarter notes a minute.
 SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
+# The generators that follow another track's chords or tune, so that an edit reaching that track reaches theirs.
+FOLLOWING_KINDS = (GeneratorKind.FOLLOW_CHORDS, GeneratorKind.MUSICIAN)
 # A drift's register adds come before every track's at the same moment, from a place before the first track's.
 DRIFT_PLACE = -1
 # The seed of the random values a register draws while a scene's first guess is played, which the plays after it replace.
@@ -119,7 +121,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -174,6 +176,7 @@ class SongRenderer:
         self._data = data
         self._checkpoints = None if data is None else []
         self._reused = 0
+        self._kept_clips = set()
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it has none."""
@@ -208,7 +211,7 @@ class SongRenderer:
             tempo = None if scene.get_tempo() is None else float(scene.get_tempo())
             grid_scene = grid.add_row(ClipRow(name=scene.get_name(), tempo=tempo))
             for name in self._song.get_track_names():
-                clip = self._finished_clip(scene=scene, track=name, tempo=tempo, kept=place < self._reused)
+                clip = self._finished_clip(scene=scene, track=name, tempo=tempo, kept=self.is_clip_kept(scene=scene, track=name))
                 if clip is not None:
                     grid.set_clip(row=grid_scene, column=tracks[name], clip=clip)
             tempos = self.tempos_of(scene)
@@ -241,12 +244,36 @@ class SongRenderer:
         return self._reused
 
     def _take_over(self, after):
-        """Take from an earlier render everything it worked out about the written scenes an edit since cannot change, and its
-        random streams as they stood at the first scene that can change, so that the render goes on from there as if it had
-        played every scene before."""
-        count = self._unchanged_scene_count(after)
-        if count == 0:
+        """Take from an earlier render what an edit since cannot change: every written scene before the first that can change,
+        with the random streams as they stood there, so that the render goes on as if it had played every scene before; and,
+        where each track's clips play apart from the others', every later clip of a track the edit does not reach."""
+        if not self._can_take_from(after):
             return
+        name = _song_name_of(self._song)
+        first = first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
+        count = min(sum(scene.get_repeat() for scene in self._song.get_scenes()[:first]), len(after._checkpoints))
+        self._take_scenes(after=after, count=count)
+        if self._clips_stand_apart():
+            changed = changed_clips(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
+            if changed is not None:
+                self._take_clips(after=after, changed=changed)
+
+    def _can_take_from(self, after):
+        """Return whether this render can take anything from an earlier one: both made with data from the same seed, the song's
+        flags alike, every scene lasting as long in both, since a generator's run and a drift's clock reach across scenes by
+        their lengths, and no scene played to find how long it lasts, as one is where a register can cut a clip short."""
+        if after is None or after._checkpoints is None or self._checkpoints is None or self._seed is None or after._seed != self._seed:
+            return False
+        if after._looping_scenes_go_round != self._looping_scenes_go_round or after._song_flags() != self._song_flags():
+            return False
+        try:
+            return not (after._settles_any() or self._settles_any()) and after._every_length() == self._every_length()
+        except SongFileError:
+            return False
+
+    def _take_scenes(self, *, after, count):
+        """Take everything an earlier render worked out about its first count written scenes, and its random streams as they
+        stood as the next one started."""
         self._reused = count
         self._checkpoints = after._checkpoints[:count]
         self._clips = _through_scene(entries=after._clips, count=count, number_of=_first_part)
@@ -266,26 +293,92 @@ class SongRenderer:
             self._register_chooser.setstate(checkpoint.register_state)
             self._drifts.restore(checkpoint.drifts)
 
-    def _unchanged_scene_count(self, after):
-        """Return how many written scenes, from the first, play in this render as they did in an earlier one: none unless both
-        were made with data from the same seed and every scene lasts as long in both, since a generator's run and a drift's clock
-        reach across scenes by their lengths; none either where a register can cut a clip short, since such a scene is played
-        to find how long it lasts."""
-        if after is None or after._checkpoints is None or self._checkpoints is None or self._seed is None or after._seed != self._seed:
-            return 0
-        if after._looping_scenes_go_round != self._looping_scenes_go_round or after._song_flags() != self._song_flags():
-            return 0
-        name = _song_name_of(self._song)
-        first = first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
-        if first == 0:
-            return 0
-        try:
-            if after._settles_any() or self._settles_any() or after._every_length() != self._every_length():
-                return 0
-        except SongFileError:
-            return 0
-        scenes = self._song.get_scenes()[:first]
-        return min(sum(scene.get_repeat() for scene in scenes), len(after._checkpoints))
+    def _take_clips(self, *, after, changed):
+        """Take from an earlier render every clip after the scenes taken whole that plays as it did, with the states its
+        generators left it in and its count of chords, which the same track's later clips carry on from."""
+        for key in self._unchanged_clips(changed):
+            if key in after._clips:
+                self._kept_clips.add(key)
+                self._clips[key] = after._clips[key]
+                if key in after._chord_counts:
+                    self._chord_counts[key] = after._chord_counts[key]
+        for key, state in after._end_states.items():
+            if (key[1], key[2]) in self._kept_clips:
+                self._end_states[key] = state
+
+    def _unchanged_clips(self, changed):
+        """Return (written scene number, track) for every clip after the scenes taken whole that plays as before: each track's
+        clips before its first that the edit reaches, since what a generator carries on from goes down a track from clip to clip,
+        and a track that plays from a reached track's notes is reached too (_reach_through)."""
+        song_places = {id(scene): place for place, scene in enumerate(self._song.get_scenes())}
+        every_track = self._song.get_track_names()
+        reached = set()
+        unchanged = []
+        for written in self._scenes[self._reused:]:
+            here = changed[song_places[id(written.get_scene())]]
+            reached.update(every_track if here is None else here)
+            self._reach_through(scene=written, reached=reached)
+            unchanged += [(written.get_number(), track) for track in written.get_track_names() if track not in reached]
+        return unchanged
+
+    def _reach_through(self, *, scene, reached):
+        """Add to the reached tracks every track of a written scene whose clip plays from a reached track's notes, by a grab or
+        by chords or a tune it follows, and through those, the tracks that play from theirs; where a hocket deals notes out
+        among tracks, every track of the scene once any is reached."""
+        names = scene.get_track_names()
+        if not reached.intersection(names):
+            return
+        if self._deals_out(scene):
+            reached.update(names)
+            return
+        grown = True
+        while grown:
+            followed = {track: self._tracks_followed(scene=scene, track=track) for track in names if track not in reached}
+            grown = [track for track, others in followed.items() if reached.intersection(others)]
+            reached.update(grown)
+
+    def _deals_out(self, scene):
+        """Return whether a clip of a written scene runs a hocket, which deals a track's notes out among the clips naming it."""
+        return any(step.kind == GeneratorKind.HOCKET for track in scene.get_track_names() for step in self._chain_steps(scene=scene, track=track))
+
+    def _tracks_followed(self, *, scene, track):
+        """Return the tracks whose notes a track's clip in a written scene plays from: the one it grabs from, and those whose chords or tune its generators follow."""
+        followed = {scene.get_clip_slot(track).get_grab_track()}
+        for step in self._chain_steps(scene=scene, track=track):
+            if step.kind in FOLLOWING_KINDS:
+                settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
+                followed.update(name for section, name in settings.named_items() if section == Section.TRACKS)
+        return followed
+
+    def _chain_steps(self, *, scene, track):
+        """Return every step of every chain a track's clip in a written scene runs."""
+        return [step for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps()]
+
+    def _clips_stand_apart(self):
+        """Return whether each track's clips play apart from the other tracks' but where a scene joins them: nothing changes a
+        register and no draw holds a value, so no clip reads what another changes, and no drift draws random numbers in the
+        order the clips first ask for its triggers."""
+        drifts = self._song.get_setlist().get_generator_names(GeneratorKind.DRIFT)
+        return not any(self._song_flags()) and not any(self._drifts.draws_in_order(name) for name in drifts)
+
+    def kept_tracks(self, scenes):
+        """Return the tracks whose clips were taken from an earlier render in every written-out scene given."""
+        return {track for track in self._song.get_track_names() if self._kept_in_all(scenes=scenes, track=track)}
+
+    def _kept_in_all(self, *, scenes, track):
+        return all(self.is_clip_kept(scene=scene, track=track) for scene in scenes)
+
+    def get_kept_clip_count(self):
+        """Return how many clips after the scenes taken whole the render took from an earlier one, track by track."""
+        return len(self._kept_clips)
+
+    def has_taken_anything(self):
+        """Return whether the render took any clip from an earlier one."""
+        return bool(self._reused or self._kept_clips)
+
+    def is_clip_kept(self, *, scene, track):
+        """Return whether a track's clip in a written-out scene was taken from an earlier render, in a scene taken whole or alone."""
+        return scene.get_number() <= self._reused or (scene.get_number(), track) in self._kept_clips
 
     def _song_flags(self):
         """Return what the song as a whole says about how every scene renders: whether anything changes a register, whether a draw holds a value, and whether a scene changes registers."""

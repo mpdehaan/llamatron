@@ -26,6 +26,7 @@ import os
 import random
 import unittest
 
+from llamatron.composition import file_format
 from llamatron.composition.file_format import Row, Section
 from llamatron.composition.setlist import Setlist
 from llamatron.music import midi
@@ -50,6 +51,18 @@ EXAMPLES = os.path.join(os.path.dirname(__file__), '..', '..', 'examples')
 LATE_PATTERN_DEMO = os.path.join(EXAMPLES, 'learning', '30_draws.yml')
 # A set whose every scene plays a brownian drift with random degrees, from the song's top, and a pattern of its own.
 DRIFTING_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_sets', 'scene_reuse_drift.yml')
+# A demo with no register and no draw, so that each track's clips play apart, whose bass grabs from its pad in some scenes.
+GRABBING_DEMO = os.path.join(EXAMPLES, 'learning', '20_arrangement_shanty.yml')
+GRABBING_TRACK = 'bass'
+GRABBED_TRACK = 'pad'
+# A set whose lead runs an AutoRatchet that carries its count from clip to clip from the song's top, beside a bass in the first
+# scene, with a pattern of its own in each scene.
+CARRYING_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_sets', 'scene_reuse_carry.yml')
+CARRYING_BASS = 'bass_line'
+CARRYING_LAST = 'lead_three'
+CARRYING_MIDDLE = 'lead_two'
+# A degree the grabbed track's pattern is changed to, which a grab takes.
+CHANGED_DEGREE = 7
 # A demo whose registers can cut a clip short, so that a scene is played to find how long it lasts.
 CUT_SHORT_DEMO = os.path.join(EXAMPLES, 'learning', '27_advanced_conditionals.yml')
 # Demos that use what carries from scene to scene: registers, draws, drifts, a hocket, grabs, morphs and generators whose run reaches across scenes.
@@ -156,6 +169,64 @@ class TestScoreTakesScenes(unittest.TestCase):
         self.assertEqual(reused(edited.score(earlier=first)), 0)
 
 
+class TestScoreTakesClips(unittest.TestCase):
+    """Where nothing changes a register, no draw holds a value and no drift draws in the order it is asked, each track's clips
+    play apart, so an edit to a pattern the first scene plays still leaves the other tracks' clips as they were."""
+
+    def edit_first_pattern(self, edited):
+        """Edit the first pattern the song's first scene plays, so that no scene is taken whole, and return its track."""
+        scene = edited.song().get_scenes()[0]
+        track = scene.get_track_names()[0]
+        edited.setlist.get_pattern(scene.get_clip_slot(track).get_pattern_name()).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
+        return track
+
+    def test_an_edit_to_one_tracks_pattern_keeps_the_other_tracks_clips(self):
+        edited = Edited(GRABBING_DEMO)
+        first = edited.score()
+        self.edit_first_pattern(edited)
+        after = edited.score(earlier=first)
+        self.assertEqual(reused(after), 0)
+        self.assertGreater(after.get_kept_clip_count(), 0)
+
+    def test_a_track_that_grabs_from_an_edited_track_plays_again(self):
+        edited = Edited(GRABBING_DEMO)
+        first = edited.score()
+        scene = next(scene for scene in edited.song().get_scenes() if scene.has_clip_slot(GRABBING_TRACK) and scene.get_clip_slot(GRABBING_TRACK).get_grab_track() == GRABBED_TRACK)
+        edited.setlist.get_pattern(scene.get_clip_slot(GRABBED_TRACK).get_pattern_name()).set_value(row=Row.DEGREE, step=0, value=CHANGED_DEGREE)
+        after = edited.score(earlier=first)
+        self.assertGreater(after.get_kept_clip_count(), 0)
+        self.assertNotIn(GRABBING_TRACK, after.get_taken_tracks(edited.song().get_scenes().index(scene)))
+
+    def test_a_reached_clip_carries_on_from_the_state_a_kept_clip_left(self):
+        edited = Edited(CARRYING_SET)
+        first = edited.score()
+        # The bass's pattern in the first scene, so that no scene is taken whole, and the lead's in the last, so that the lead's
+        # last clip plays again from the count its kept clip before left.
+        edited.setlist.get_pattern(CARRYING_BASS).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
+        edited.setlist.get_pattern(CARRYING_LAST).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
+        self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 2)
+
+    def test_a_track_reached_in_one_scene_plays_again_in_the_scenes_after_since_its_generators_carry_on(self):
+        edited = Edited(CARRYING_SET)
+        first = edited.score()
+        # A rest in the lead's second clip moves the count its last clip starts from, though the last clip's pattern is untouched.
+        edited.setlist.get_pattern(CARRYING_BASS).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
+        edited.setlist.get_pattern(CARRYING_MIDDLE).set_value(row=Row.DEGREE, step=0, value=None)
+        self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 1)
+
+    def test_a_song_whose_registers_change_keeps_no_clip_apart(self):
+        edited = Edited(LATE_PATTERN_DEMO)
+        first = edited.score()
+        self.edit_first_pattern(edited)
+        self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 0)
+
+    def test_a_drift_that_draws_in_the_order_it_is_asked_keeps_no_clip_apart(self):
+        edited = Edited(DRIFTING_SET)
+        first = edited.score()
+        self.edit_first_pattern(edited)
+        self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 0)
+
+
 class FuzzedDemo:
     """A run of edits chosen at random on a demo, each score made from the one before and held to a whole render as it is made."""
 
@@ -169,10 +240,10 @@ class FuzzedDemo:
         score = edited.score()
         taken = 0
         for _ in range(EDITS):
-            edit = chooser.choice((edit_a_step, edit_a_step, edit_a_scene_tempo, edit_a_scene_repeat))
+            edit = chooser.choice((edit_a_step, edit_a_step, edit_a_clip_direction, edit_a_scene_tempo, edit_a_scene_repeat))
             edit(edited=edited, chooser=chooser)
             score = edited.score(earlier=score)
-            taken += reused(score)
+            taken += reused(score) + score.get_kept_clip_count()
         self.assertGreater(taken, 0)
 
 
@@ -182,6 +253,12 @@ def edit_a_step(*, edited, chooser):
     names = sorted({name for scene in song.get_scenes() for track in scene.get_track_names() for name in scene.get_clip_slot(track).get_pattern_names()})
     pattern = edited.setlist.get_pattern(chooser.choice(names))
     pattern.set_value(row=Row.VELOCITY, step=chooser.randrange(pattern.get_steps()), value=chooser.randint(midi.MIN_VELOCITY, midi.MAX_VELOCITY))
+
+
+def edit_a_clip_direction(*, edited, chooser):
+    """Change the direction one of the song's clips plays its steps in, which leaves how long it lasts alone."""
+    scene = chooser.choice([scene for scene in edited.song().get_scenes() if scene.get_track_names()])
+    scene.get_clip_slot(chooser.choice(scene.get_track_names())).set_direction(chooser.choice(file_format.DIRECTIONS))
 
 
 def edit_a_scene_tempo(*, edited, chooser):

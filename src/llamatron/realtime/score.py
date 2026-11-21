@@ -67,7 +67,7 @@ class Row(NamedTuple):
 class Score:
     """What the player knows about a song: each scene's length and launch settings, and each clip's events from its scene's start."""
 
-    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_renderer', '_routes')
+    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_renderer', '_routes', '_taken_tracks')
 
     def __init__(self, *, song, routes, seed=None, data=None, earlier=None):
         """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through.
@@ -81,6 +81,8 @@ class Score:
         grid = renderer.render(after=None if earlier is None else earlier._renderer)
         reused = renderer.get_reused_scene_count()
         self._renderer = renderer
+        # The tracks of each scene whose events were taken from the earlier score, clip by clip.
+        self._taken_tracks = []
         self._routes = dict(routes)
         setlist = song.get_setlist()
         self._tracks = list(song.get_track_names())
@@ -119,8 +121,12 @@ class Score:
                 self._repeats[(index, track)] = None if clip_slot is None or clip_slot.loops() else clip_slot.get_repeat()
             if scene_rows and scene_rows[-1] < reused:
                 self._scene_seconds.append(score_records.take_scene(into=self._records(), earlier=earlier._records(), index=index, tracks=self._tracks))
+                self._taken_tracks.append(set())
                 song_start += self._scene_seconds[-1]
                 continue
+            # The tracks whose clips the render took from the earlier score's in every repeat of the scene, whose events are taken too.
+            kept = set() if earlier is None else renderer.kept_tracks([written[place] for place in scene_rows])
+            self._taken_tracks.append(kept)
             for place in scene_rows:
                 row = rows[place]
                 clock = grid.clock_of(row)
@@ -135,21 +141,31 @@ class Score:
                     if clip is None:
                         continue
                     self._clip_seconds[(index, len(self._rows[index]) - 1, name)] = clock.seconds_at(clip.total_length())
-                    if route is None or track.get_mute():
+                    if route is None or track.get_mute() or name in kept:
                         continue
                     self._events[(index, name)].extend(clip_timeline(clip=clip, scale=grid.scale_at(row=row, column=track), route=route, tag=Tag(index, name),
                                                                      scene_start=Rational(0), scene_seconds=scene_start, clock=clock))
                 scene_start += row_seconds
             for track in self._tracks:
                 self._events[(index, track)].sort(key=sort_key)
+            for track in kept:
+                self._events[(index, track)] = earlier._events[(index, track)]
             self._scene_seconds.append(scene_start)
             song_start += scene_start
-        if reused and memory.Memory.checks_by_default():
+        if renderer.has_taken_anything() and memory.Memory.checks_by_default():
             score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed)._records())
 
     def get_reused_scene_count(self):
         """Return how many written scenes, from the first, the score took from an earlier one rather than rendering them."""
         return self._renderer.get_reused_scene_count()
+
+    def get_taken_tracks(self, scene):
+        """Return the tracks whose events in a scene were taken from the earlier score, their clips kept in every repeat; empty for a scene taken whole."""
+        return self._taken_tracks[scene]
+
+    def get_kept_clip_count(self):
+        """Return how many clips after the scenes taken whole the score took from an earlier one, track by track."""
+        return self._renderer.get_kept_clip_count()
 
     def _records(self):
         return score_records.Records(events=self._events, scene_seconds=self._scene_seconds, clip_seconds=self._clip_seconds, draw_lights=self._draw_lights, rows=self._rows)
