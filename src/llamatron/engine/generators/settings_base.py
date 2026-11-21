@@ -140,7 +140,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
             self.check_data(self._settings)
             values = self._with_defaults(values=self._taken_values(), default_seed=default_seed, default_step=default_step, bar=bar)
             values = self._with_tempo(values=values, tempo=tempo)
-            # Restart is the renderer's to read; the generator is handed where it carries on from instead.
+            # Restart is the Realizer's to read; the generator is handed where it carries on from instead.
             values.pop(file_format.GENERATOR_RESTART, None)
             return self.GENERATOR(**values, continuation=continuation)
 

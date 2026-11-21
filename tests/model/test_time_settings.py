@@ -18,9 +18,9 @@ from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, 
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.user_strings import labels
 from tests.engine.generators.test_drift import drifting
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
-from tests.playback.test_shapes import notes, one_scene
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
+from tests.engine.realizer.test_shapes import notes, one_scene
 from tests.support.rendering import setlist_from_data, song_from_data
 
 TWO_BARS = '2 bars'

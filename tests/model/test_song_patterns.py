@@ -10,6 +10,7 @@ import os
 import tempfile
 import unittest
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing import sounding
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters import midi_messages
@@ -19,7 +20,6 @@ from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
-from llamatron.playback.song_renderer import SongRenderer
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import build, clip, lead, lead_data, lead_song, pat, pitches, with_parts
@@ -316,7 +316,7 @@ class TestStepRows(unittest.TestCase):
 
     def test_a_seed_given_to_the_renderer_repeats_a_take(self):
         data = lead_data(*[[1, SIXTEENTH]] * 200, rows={Row.PROBABILITY: [50] * 200})
-        rendered = SongRenderer(song_from_data(data), seed=5).render()
+        rendered = SongRealizer(song_from_data(data), seed=5).render()
         self.assertEqual(clip(song=rendered, scene=1, track=song_testing.LEAD).get_notes(), self.many(seed=5).get_notes())
 
     def test_each_repeat_rolls_again(self):

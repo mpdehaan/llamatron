@@ -4,15 +4,15 @@
 
 
 """Which scenes of a song an edit cannot change: the first scene that differs or names a changed pattern, and the first scene
-when anything else changed (playback/scene_reuse.py). tests/realtime/test_scene_reuse.py holds the scores made from it to a
+when anything else changed (engine/realizer/scene_reuse.py). tests/realtime/test_scene_reuse.py holds the scores made from it to a
 whole render."""
 
 import unittest
 
+from llamatron.engine.realizer import scene_reuse
+from llamatron.engine.realizer.scene_reuse import first_changed_scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
-from llamatron.playback import scene_reuse
-from llamatron.playback.scene_reuse import first_changed_scene
 from tests.support import song_testing
 
 SONG = 'song'

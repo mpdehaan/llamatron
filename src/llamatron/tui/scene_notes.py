@@ -19,6 +19,7 @@ numbered in the scene's scale, with the bass after a slash when it isn't the roo
 
 from typing import NamedTuple
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.objects.euclid import euclid_settings
 from llamatron.model.objects.setlist import Setlist
@@ -27,7 +28,6 @@ from llamatron.model.objects.strum import strum_settings
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values import note as note_values
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import marks
 
 HALF_STEPS_PER_OCTAVE = 12
@@ -127,12 +127,12 @@ def marked_tracks(*, song, index):
 def scene_notes(*, song, index, written):
     """Return a scene's notes as played, the song's render, or as written, its patterns alone, with its rows laid end to end from the scene's start."""
     rendered = written_song(song) if written else song
-    renderer = SongRenderer(rendered, looping_scenes_go_round=True)
-    grid = renderer.render()
+    realizer = SongRealizer(rendered, looping_scenes_go_round=True)
+    grid = realizer.render()
     rows = grid.get_rows()
     starts = grid.row_starts()
     scene = rendered.get_scenes()[index]
-    places = [place for place, written_scene in enumerate(renderer.get_scenes()) if written_scene.get_scene() is scene]
+    places = [place for place, written_scene in enumerate(realizer.get_scenes()) if written_scene.get_scene() is scene]
     names = tuple(song.get_track_names())
     marked = marked_tracks(song=song, index=index)
     origin = starts[places[0]] if places else 0

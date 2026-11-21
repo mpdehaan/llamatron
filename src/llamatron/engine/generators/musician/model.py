@@ -61,7 +61,7 @@ def check_musician_by_section(value):
 class MusicianSettings(GeneratorSettings):
     """A musician's settings: the instrument, the tracks the chords and the tune are read from, the player's touch, and what each kind of section has of its own.
 
-    The renderer hands the generator what is round its clip, the scene's kind of section and the
+    The Realizer hands the generator what is round its clip, the scene's kind of section and the
     chords and the tune of the tracks named, so the settings hold only the tracks' names, which a
     rename of either track follows, and are asked for the generator of one clip (generator_for).
     """

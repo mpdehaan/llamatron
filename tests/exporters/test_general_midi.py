@@ -6,14 +6,14 @@
 import mido
 import unittest
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters import midi_arrangement, midi_messages
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, InstrumentSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
-from llamatron.playback.song_renderer import SongRenderer
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import setlist_from_data, song_from_data
 
 TUNE = 'tune'
@@ -48,7 +48,7 @@ def data_with(*, tracks, instruments):
 
 def exported(data):
     """Return the General MIDI file a song's data exports, as mido reads it, without its tempo track."""
-    grid = SongRenderer(song_from_data(data)).render()
+    grid = SongRealizer(song_from_data(data)).render()
     return MidiGeneralMidi(directory='.', grid=grid, name=NAME).midi_file().tracks[1:]
 
 
@@ -87,7 +87,7 @@ class TestGeneralMidi(unittest.TestCase):
         self.assertNotIn({midi_arrangement.DRUM_CHANNEL_BYTE}, [channels(track) for track in tracks])
 
     def test_the_file_reads_back_as_a_multi_track_file(self):
-        grid = SongRenderer(song_from_data(data_with(tracks=[('lead', False, False, None)], instruments={}))).render()
+        grid = SongRealizer(song_from_data(data_with(tracks=[('lead', False, False, None)], instruments={}))).render()
         self.assertIsInstance(MidiGeneralMidi(directory='.', grid=grid, name=NAME).midi_file(), mido.MidiFile)
 
 

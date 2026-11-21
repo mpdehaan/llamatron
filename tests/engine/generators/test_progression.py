@@ -17,9 +17,9 @@ from llamatron.model.objects.named_scale import NamedScale
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.progressions import named_progression_in, roman_numeral
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
-from tests.playback.test_shapes import notes
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
+from tests.engine.realizer.test_shapes import notes
 from tests.support.rendering import setlist_from_data
 
 PROGRESSION = 'changes'

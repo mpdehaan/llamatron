@@ -36,7 +36,7 @@ EVERYTHING = 'ALL'
 # The long sweeps the commit check leaves out, each with the folders of the program whose change brings it back, since a sweep
 # tries every example, every subgenre or every page and the map finds that nearly every change ran it: they run before every
 # push, and for a change to the sweep's own test file.
-MUSIC = ('src/llamatron/model/', 'src/llamatron/engine/', 'src/llamatron/playback/', 'src/llamatron/exporters/')
+MUSIC = ('src/llamatron/model/', 'src/llamatron/engine/', 'src/llamatron/engine/realizer/', 'src/llamatron/exporters/')
 SWEEPS = {
     'tests.app.test_every_example.': MUSIC,
     'tests.wizards.create_song.test_wizard_effect.': (*MUSIC, 'src/llamatron/wizards/create_song/'),

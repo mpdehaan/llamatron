@@ -24,7 +24,7 @@ class HocketSetting:
 class HocketSettings(GeneratorSettings):
     """A Hocket's settings: the source track whose notes the hocketing tracks take turns at, and its Restart.
 
-    Like a drift, it runs on no clip's notes itself: the renderer works out each scene's turns
+    Like a drift, it runs on no clip's notes itself: the Realizer works out each scene's turns
     once from the source track's clip, and hands each hocketing clip its notes, which the
     exporters' timing adds to the clip's own (engine/timing/timing.py), so GENERATOR is None. The
     source names a track of the song it plays in, and a rename of that track follows.

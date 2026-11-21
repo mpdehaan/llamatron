@@ -35,12 +35,13 @@ FILE_ENCODING = 'utf-8'
 DOT = '.'
 TOP = '(top)'
 # The packages from the bottom up: each imports only those before it. The strings package is text every layer may name.
-LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'exporters', 'playback', 'importers', 'realtime',
+LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'exporters', 'importers', 'realtime',
           'wizards', 'visualizers', 'tui', 'tutorial', TOP)
 VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.
 FRONT_DOORS = {
-    'playback': ('song_renderer',),
+    # Of the Engine, the Realizer is reached only through the song's realizer; its clips, timing, parts and plugins are open.
+    'engine': ('clips', 'timing', 'parts', 'generators', 'step_effects', 'realizer.song_realizer'),
     'exporters': ('exports',),
     'importers': ('midi_import',),
     'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits'),
@@ -87,7 +88,7 @@ def package_of(parts):
 
 
 def imported_modules(tree):
-    """Return the modules of the program a file imports, each as its parts under the program: ('playback', 'song_renderer')."""
+    """Return the modules of the program a file imports, each as its parts under the program: ('engine', 'realizer', 'song_realizer')."""
     found = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom) and node.module and not node.level and node.module.split(DOT)[0] == PROGRAM:

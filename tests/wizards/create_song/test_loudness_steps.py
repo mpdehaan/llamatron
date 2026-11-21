@@ -186,7 +186,7 @@ class TestTheWizardsSong(unittest.TestCase):
                 self.assertAlmostEqual(counted[player][loudness_steps.NOTES] / sums[loudness_steps.NOTES], WHOLE, delta=NEAR, msg=player)
 
     def test_no_song_is_played_to_make_a_song(self):
-        with unittest.mock.patch.object(loudness_steps, 'SongRenderer', side_effect=AssertionError):
+        with unittest.mock.patch.object(loudness_steps, 'SongRealizer', side_effect=AssertionError):
             arena_rock().made_setlist(name=A_NAME, version=version.VERSION)
 
     def test_the_same_choices_make_the_same_trades(self):

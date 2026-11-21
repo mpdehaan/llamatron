@@ -8,11 +8,11 @@ from fractions import Fraction
 import random
 import unittest
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file import version
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values.note import NoteName
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, melody, notation, wizard_limits
 from llamatron.wizards.create_song.arranger import arranged, share_in, style_named, style_names, values_of
@@ -230,7 +230,7 @@ class TestWizardChoices(unittest.TestCase):
                 for form in choices.get_song_form().forms():
                     choices.get_song_form().set_form(form)
                     song = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)
-                    made = sum(float(scene.seconds) for scene in SongRenderer(song).estimate())
+                    made = sum(float(scene.seconds) for scene in SongRealizer(song).estimate())
                     self.assertAlmostEqual(choices.get_song_form().form_seconds(), made, delta=A_SECOND, msg=(choices.get_subgenre(), form))
 
 
@@ -238,7 +238,7 @@ def scene_bars_of(choices):
     """How long each scene of the song made lasts, in bars."""
     song = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)
     seconds_in_a_bar = float(Fraction(choices.meter()) * wizard_limits.QUARTERS_IN_WHOLE * wizard_limits.SECONDS_IN_MINUTE / choices.get_tempo())
-    return [round(float(scene.seconds) / seconds_in_a_bar) for scene in SongRenderer(song).estimate()]
+    return [round(float(scene.seconds) / seconds_in_a_bar) for scene in SongRealizer(song).estimate()]
 
 
 class FormLengthsOfAGenre:
@@ -667,7 +667,7 @@ class TestWizardSounds(unittest.TestCase):
                 for sounds in wizard_limits.BAND_SOUNDS[1:]:
                     choices.get_sounds().set_band_sounds(sounds)
                     with self.subTest(subgenre=choices.get_subgenre(), sounds=sounds):
-                        SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
+                        SongRealizer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
 
     def test_a_players_own_sound_overrides_the_bands_and_none_follows_the_band_again(self):
         choices = self.rock()
@@ -722,7 +722,7 @@ class TestWizardGuitarists(unittest.TestCase):
     def players_by_scene(self, choices):
         """Which tracks play in each scene of the song made, by the scene's name."""
         song = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)
-        SongRenderer(song).render()
+        SongRealizer(song).render()
         return {scene.get_name(): [track for track in song.get_track_names() if scene.get_clip_slot(track) is not None] for scene in song.get_scenes()}
 
     def test_a_band_has_two_guitarists_until_one_is_chosen_and_a_genre_with_no_guitar_solo_offers_only_two(self):
@@ -801,7 +801,7 @@ class TestWizardKit(unittest.TestCase):
 
     def tracks(self, choices):
         song = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)
-        SongRenderer(song).render()
+        SongRealizer(song).render()
         return song.get_track_names()
 
     def test_the_pieces_are_the_drum_tracks_of_the_song_and_all_are_on(self):
@@ -893,7 +893,7 @@ class TestWizardFillsAndQuietNotes(unittest.TestCase):
                 for position in range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1):
                     choices.get_kit().set_fills(position)
                     with self.subTest(subgenre=choices.get_subgenre(), position=position):
-                        SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
+                        SongRealizer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
         choices = self.rock()
         made = []
         for position in range(wizard_limits.FEWEST_FILLS, wizard_limits.MOST_FILLS + 1):
@@ -1376,7 +1376,7 @@ class TestWizardProgressionByChance(unittest.TestCase):
                 for seed in range(A_SEED, A_SEED + A_FEW_RUNS):
                     choices.set_seed(seed)
                     with self.subTest(subgenre=choices.get_subgenre(), seed=seed):
-                        SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
+                        SongRealizer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
 
 
 class EveryPlayerOfAGenre:
@@ -1434,7 +1434,7 @@ class EverySongWayOfAGenre:
                     with self.subTest(subgenre=choices.get_subgenre(), trait=trait, way=way):
                         choices.get_band().set_way(trait=trait, value=way)
                         self.assertEqual(choices.get_band().get_way(trait), way)
-                        SongRenderer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
+                        SongRealizer(choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)).render()
 
 
 class TestEverySongWayOfBlues(EverySongWayOfAGenre, unittest.TestCase):

@@ -271,7 +271,7 @@ class RegisterTrial(RegisterRecorder):
     Such a clip's changes depend on the registers, since a step it never reaches changes
     nothing. So it notes its changes as a RegisterRecorder does, and decides whether it goes
     on from a guess at the scene's timeline. The scene is played again with the timeline its
-    changes make until that timeline is the guess (SongRenderer), which it comes to because a
+    changes make until that timeline is the guess (SongRealizer), which it comes to because a
     value at any moment depends only on the changes before it.
     """
 

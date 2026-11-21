@@ -11,7 +11,7 @@ from llamatron.user_strings import errors, reprs
 class ClipColumn:
     """A column of the grid a song renders into, which is one track's clips. Its id is None unless it's in a grid.
 
-    A muted column still has its clips, so a renderer writes them, but Live starts with the
+    A muted column still has its clips, so a Realizer writes them, but Live starts with the
     track switched off. It's for tracks that other tracks grab notes from. Whether the track is a
     drum track and the General MIDI sound of its instrument are for the General MIDI export, which
     puts drums on channel 10 and gives every other track its sound, and whether its instrument plays

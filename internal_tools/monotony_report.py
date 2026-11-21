@@ -18,12 +18,12 @@ import argparse
 import re
 import sys
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.math.rational import Rational
 from llamatron.model.file import version
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held
 from llamatron.model.values.note import Note, Rest
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
 
 A_NAME = 'song'
@@ -104,7 +104,7 @@ def repeats(bars):
 def counted_song(*, choices, seed, loudness):
     """Each player's repeats in each kind of section of one song: {(player, kind): [same, played]}."""
     setlist = choices.made_setlist(name=A_NAME, version=version.VERSION)
-    grid = SongRenderer(setlist.get_song(A_NAME), seed=seed).render()
+    grid = SongRealizer(setlist.get_song(A_NAME), seed=seed).render()
     bar_length = grid.get_time_signature().bar_length()
     counts = {}
     for row in grid.get_rows():

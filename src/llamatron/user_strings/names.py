@@ -64,7 +64,7 @@ MSG_REGISTER_WORD = 'register'
 MSG_DRAW_WORD = 'draw'
 MSG_SONG_WORD = 'song'
 
-# playback/written_scene.py
+# engine/realizer/written_scene.py
 # A scene with no name of its own is named by its number, and a repeat adds its number to the name.
 MSG_UNNAMED_SCENE = 'Scene {number}'
 # How error messages name a scene.

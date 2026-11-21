@@ -275,7 +275,7 @@ class PatternPlayer:
         counting = registers.is_counting()
         drum = pattern.is_drum()
         steps = order.next_steps(key=(PATTERN_STEPS, pattern_name), count=pattern.get_steps(), direction=direction or pattern.get_direction())
-        # A pass of a pattern that reads and changes nothing carrying between passes is remembered by its key (playback/pass_memory.py).
+        # A pass of a pattern that reads and changes nothing carrying between passes is remembered by its key (engine/realizer/pass_memory.py).
         key = self._pass_key(pattern_name=pattern_name, pattern=pattern, played=played, steps=steps, pass_draws=pass_draws)
         remembered = None if key is None else self._passes.recall(key)
         if remembered is not None and not self._passes.is_checking():

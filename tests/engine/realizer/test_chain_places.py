@@ -7,10 +7,10 @@ import unittest
 
 from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.schema.file_format import ClipSlotSetting, SceneSetting, Section, TrackSetting
-from llamatron.playback.song_renderer import SongRenderer
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, pitches, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, pitches, song
 from tests.support.rendering import song_from_data
 
 TWICE = 'twice'
@@ -67,9 +67,9 @@ class TestChainPlaces(unittest.TestCase):
 
     def test_the_clips_chains_run_first_then_the_scenes_then_the_tracks(self):
         data = chained(clip_chains=[OTHER_CHAIN], scene_chains=[TWICE], track_chains=[OTHER_CHAIN, TWICE])
-        renderer = SongRenderer(song_from_data(data))
-        scene = renderer.get_scenes()[0]
-        self.assertEqual(renderer.chains_of(scene=scene, track=test_registers.LEAD), [OTHER_CHAIN, TWICE, OTHER_CHAIN, TWICE])
+        realizer = SongRealizer(song_from_data(data))
+        scene = realizer.get_scenes()[0]
+        self.assertEqual(realizer.chains_of(scene=scene, track=test_registers.LEAD), [OTHER_CHAIN, TWICE, OTHER_CHAIN, TWICE])
 
     def test_deleting_a_generator_takes_it_out_of_every_chain_and_every_list(self):
         built = song_from_data(chained(clip_chains=[CHOP, TWICE], scene_chains=[CHOP], track_chains=[CHOP]))

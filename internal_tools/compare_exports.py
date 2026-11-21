@@ -43,6 +43,7 @@ import shutil
 import sys
 import tempfile
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exports import export_name
@@ -51,7 +52,6 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import FileLayout, SetlistSetting
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 
 EXAMPLES = 'examples/**/*.yml'
@@ -88,7 +88,7 @@ def render_examples(folder):
 
 def plain_estimates(song):
     """Return a song's scene estimates as plain tuples, which is how the estimate file has always been written."""
-    return [tuple(estimate) for estimate in SongRenderer(song, seed=COMPARISON_SEED).estimate()]
+    return [tuple(estimate) for estimate in SongRealizer(song, seed=COMPARISON_SEED).estimate()]
 
 
 def render_example_job(job):
@@ -110,7 +110,7 @@ def render_example(*, path, folder):
 
 def export_song(*, song, out, name):
     """Export one song every way into a folder, as files named after name, and note how long the tracker estimates it lasts."""
-    grid = SongRenderer(song, seed=COMPARISON_SEED).render()
+    grid = SongRealizer(song, seed=COMPARISON_SEED).render()
     # The exporters print what they write, which isn't needed here.
     with contextlib.redirect_stdout(io.StringIO()):
         ClipTree(directory=out, grid=grid, name=name).export()

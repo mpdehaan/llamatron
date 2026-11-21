@@ -17,13 +17,13 @@ import random
 from llamatron.caching.kept import kept_while
 from llamatron.engine.generators.phrasing import model as phrasing_settings
 from llamatron.engine.generators.phrasing.model import PhrasingSettings
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note as note_values
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, composer as set_writer, hook_writing, joins as joins_values, line_edits, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits
 from llamatron.wizards.create_song.arranger import arranged, bar_length, chord_of, form_of, picked, share_in, style_in, style_named, style_names, values_of, variant_named, variants_of
@@ -121,7 +121,7 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
     try:
         given = arranged(style=style, song=song)
         made = Setlist.from_data(data=composed(given=given, version=version_values.VERSION)).get_song(kind)
-        seconds = sum(float(scene.seconds) for scene in SongRenderer(made).estimate())
+        seconds = sum(float(scene.seconds) for scene in SongRealizer(made).estimate())
     except (ValueError, SongFileError):
         return False
     wanted = float(bars * bar_length(str(picked(style=style, song=song).get(arranger.METER, arranger.COMMON_TIME))) * wizard_limits.QUARTERS_IN_WHOLE * wizard_limits.SECONDS_IN_MINUTE / made.get_tempo())

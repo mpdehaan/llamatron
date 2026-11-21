@@ -4,7 +4,7 @@
 
 
 
-"""A clip's take (SongRenderer's takes): a take after the first gives that clip new random choices and leaves every other clip's
+"""A clip's take (SongRealizer's takes): a take after the first gives that clip new random choices and leaves every other clip's
 as they were, a render after an earlier one with another take keeps every scene before and every clip the take cannot reach,
 playing as a whole render with the same takes plays, and a draw of any value or of each value once draws anew on every repeat
 and every take of a scene."""
@@ -12,9 +12,9 @@ and every take of a scene."""
 import unittest
 
 from llamatron.caching.memory import Memory
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.schema.file_format import ClipSlotSetting, DrawDirection, DrawName, Row, SceneSetting, Section
-from llamatron.playback.song_renderer import SongRenderer
-from tests.playback import test_draws
+from tests.engine.realizer import test_draws
 from tests.support import song_testing
 from tests.support.rendering import setlist_from_data, song_from_data
 
@@ -62,8 +62,8 @@ class TestTakes(unittest.TestCase):
         self.song = self.setlist.get_song(self.setlist.first_song_name())
 
     def render(self, *, takes=None, after=None):
-        renderer = SongRenderer(self.song, seed=SEED, data=self.setlist.kept_data(), takes=takes)
-        return renderer, renderer.render(after=after)
+        realizer = SongRealizer(self.song, seed=SEED, data=self.setlist.kept_data(), takes=takes)
+        return realizer, realizer.render(after=after)
 
     def test_another_take_gives_that_clip_new_random_choices_and_leaves_every_other_clip_alone(self):
         _first, before = self.render()
@@ -99,7 +99,7 @@ class TestDrawsOnEveryTake(unittest.TestCase):
     def draws_heard(self, *, direction, takes=None, repeat=1):
         """Return the values a draw of twelve tones gave the lead's steps, a list a repeat of the scene."""
         song = song_from_data(test_draws.song_data(draws={DrawName.AD: test_draws.a_draw(slots=test_draws.TWELVE_TONES, direction=direction)}, rows={Row.AD_NOTE: test_draws.every_step()}, repeat=repeat))
-        grid = SongRenderer(song, seed=SEED, takes=takes).render()
+        grid = SongRealizer(song, seed=SEED, takes=takes).render()
         return [[pitch - test_draws.MIDDLE_C for pitch in pitches] for pitches in test_draws.pitches_of(song=grid, scenes=len(grid.get_rows()))]
 
     def test_every_repeat_of_a_scene_draws_anew(self):

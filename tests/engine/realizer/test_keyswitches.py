@@ -9,6 +9,7 @@ import unittest
 import xml.etree.ElementTree as ET
 
 from llamatron.engine.generators import arp as arp_plugin
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import keyswitch_events, timed_events
 from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
@@ -22,12 +23,11 @@ from llamatron.model.objects.pattern import Pattern
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline as timeline_values
 from llamatron.realtime.clip_notes import ClipNotes
 from llamatron.realtime.timeline import Route, song_timeline
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import song_from_data
 
 TUNE = 'tune'
@@ -91,7 +91,7 @@ def switched(*, keyswitch, rows=None, repeat=1, instrument=None, track=None, cli
 
 
 def rendered(data):
-    grid = SongRenderer(song_from_data(data)).render()
+    grid = SongRealizer(song_from_data(data)).render()
     row = grid.get_rows()[0]
     column = grid.get_columns()[0]
     return grid, grid.get_clip(row=row, column=column), grid.scale_at(row=row, column=column)

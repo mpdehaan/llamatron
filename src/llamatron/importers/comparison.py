@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 import os
 from typing import NamedTuple
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.midi_messages import ticks
 from llamatron.importers.midi_import import MidiImport
@@ -28,7 +29,6 @@ from llamatron.importers.midi_reading import read_midi
 from llamatron.importers.writing import add_imported
 from llamatron.math.rational import Rational
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 
 class ComparedNote(NamedTuple):
     """A note as compared: its start and end in llamatron's ticks, its MIDI number and its velocity."""
@@ -148,7 +148,7 @@ def round_trip(*, midi_file, choices):
     setlist = Setlist.new()
     imported = MidiImport(midi_file=midi_file).imported(setlist=setlist, choices=choices)
     song = add_imported(setlist=setlist, imported=imported.song)
-    again = MidiSong(directory=os.curdir, grid=SongRenderer(song).render(), name=imported.song.name).midi_file()
+    again = MidiSong(directory=os.curdir, grid=SongRealizer(song).render(), name=imported.song.name).midi_file()
     comparison = compared(first=midi_file, second=again)
     comparison.controls = controls_compared(first=midi_file, second=again, control_tracks=imported.control_tracks)
     return RoundTrip(imported=imported, comparison=comparison)

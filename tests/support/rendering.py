@@ -11,11 +11,11 @@ song, so that the same data builds a Setlist, a Song or a Document.
 import os
 
 from llamatron.caching.memory import Memory
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults
 from llamatron.model.schema.file_format import Section, SongSetting
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 from llamatron.user_strings import names
 
@@ -78,22 +78,22 @@ def without_seed(data):
 
 def render_data(data):
     """Return the ClipGrid of finished clips that a song's data renders into, drawn from the seed the data gives, if any."""
-    return SongRenderer(song_from_data(without_seed(data)), seed=seed_of(data)).render()
+    return SongRealizer(song_from_data(without_seed(data)), seed=seed_of(data)).render()
 
 
 def render_song(song, *, seed=None):
     """Return the ClipGrid of finished clips that a Song renders into, its random parts drawn from a seed where one is given."""
-    return SongRenderer(song, seed=seed).render()
+    return SongRealizer(song, seed=seed).render()
 
 
 def render_file(path):
     """Return the ClipGrid of finished clips that a set file's first song renders into."""
-    return SongRenderer(song_from_file(path)).render()
+    return SongRealizer(song_from_file(path)).render()
 
 
 def estimate_data(data):
-    """Return how long each scene of a song's data lasts, as SongRenderer.estimate() gives it."""
-    return SongRenderer(song_from_data(without_seed(data)), seed=seed_of(data)).estimate()
+    """Return how long each scene of a song's data lasts, as SongRealizer.estimate() gives it."""
+    return SongRealizer(song_from_data(without_seed(data)), seed=seed_of(data)).estimate()
 
 
 def is_demo(path):

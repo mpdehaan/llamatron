@@ -14,7 +14,7 @@ from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import Row, Section
 from tests.engine.generators.test_progression import through
-from tests.playback.test_shapes import notes
+from tests.engine.realizer.test_shapes import notes
 from tests.support.rendering import setlist_from_data
 
 VOICING = 'smooth'

@@ -9,7 +9,7 @@ from llamatron.engine.generators import hocket as hocket_plugin
 from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.schema.file_format import ClipSlotSetting, Restart, Row, SceneSetting, Section, TrackSetting
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 
 TUNE = 'tune'

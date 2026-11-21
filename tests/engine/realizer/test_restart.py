@@ -20,8 +20,8 @@ from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Restart, Row, SceneSetting, Section
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import render_data
 
 CHAIN = 'chain'

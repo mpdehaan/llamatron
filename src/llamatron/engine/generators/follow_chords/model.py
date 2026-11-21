@@ -20,7 +20,7 @@ class FollowChordsSetting:
 class FollowChordsSettings(GeneratorSettings):
     """A Follow Chords' settings: the track whose chords a clip's notes are moved to.
 
-    The renderer hands the generator the chords that track plays in the clip's scene, after that
+    The Realizer hands the generator the chords that track plays in the clip's scene, after that
     track's own chains, so the settings hold only the track's name, and a rename of that track follows.
     """
 

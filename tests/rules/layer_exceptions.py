@@ -26,7 +26,7 @@ ALLOWED = {
         'tui/dialogs/new_riff_dialog.py imports wizards.create_song.riffs',
         'tui/document_parts/set_edits.py imports importers.writing',
         'tui/pattern_preview.py imports exporters.midi_arrangement',
-        'tui/pattern_preview.py imports playback.step_order',
+        'tui/pattern_preview.py imports engine.realizer.step_order',
         'tui/screens/wizard/branch.py imports wizards.create_song.hook_writing',
         'tui/screens/wizard/form_branch.py imports wizards.create_song.song_plan',
         'tui/screens/wizard/player_branch.py imports wizards.create_song.breaks',
@@ -43,7 +43,7 @@ ALLOWED = {
         'tui/screens/wizard/wizard_page.py imports wizards.create_song.notation',
         'tui/screens/wizard/wizard_page.py imports realtime.sender_process',
         'tui/transport.py imports exporters.midi_arrangement',
-        'tui/transport.py imports playback.step_order',
+        'tui/transport.py imports engine.realizer.step_order',
     ),
     'pages': (
         'tui/screens/arrange/arrange_details.py imports model.schema.defaults',

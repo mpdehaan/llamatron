@@ -13,7 +13,7 @@ from llamatron.model.schema.setting import described
 class StrumSettings(GeneratorSettings):
     """A Strum generator's settings, which win over a clip's and its track's: its direction, spread, fade, loose timing and upstroke strings.
 
-    Like a drift, it runs on no clip's notes: the renderer reads it for each clip that names it,
+    Like a drift, it runs on no clip's notes: the Realizer reads it for each clip that names it,
     and the exporters' timing strums the notes (engine/timing/timing.py), so GENERATOR is None.
     """
 

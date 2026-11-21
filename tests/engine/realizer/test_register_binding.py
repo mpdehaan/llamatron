@@ -23,8 +23,8 @@ from llamatron.model.objects.track import Track
 from llamatron.model.schema import defaults as set_defaults, file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values import midi
-from tests.playback import test_registers
-from tests.playback.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
 from tests.support.rendering import as_setlist, render_data
 
 # The other track the tests use, which changes the registers the lead or the pad reads.

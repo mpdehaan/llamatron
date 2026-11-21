@@ -14,8 +14,8 @@ from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, strum_setting, StrumDirection, StrumPart, StrumSpread, TrackSetting, UpstrokeStrings
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import render_song, setlist_from_data, song_from_data
 
 TRIAD = '3'

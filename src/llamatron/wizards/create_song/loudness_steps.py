@@ -20,6 +20,7 @@ drummer moves from one to another. The trade is written as each clip's own veloc
 """
 
 from llamatron.engine.generators import arp as arp_plugin, guitarify as guitarify_plugin
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.checks import time_length
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import defaults, file_format
@@ -27,7 +28,6 @@ from llamatron.model.schema.file_format import ChordSymbol, Row, Stroke, Velocit
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held
 from llamatron.model.values.note import Note
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.wizards.create_song import breaks
 
 # The drummer's cymbals that keep time, one player between them.
@@ -170,7 +170,7 @@ def lasting_share(*, song, scene, slot):
 def measured(*, song, seed=A_SEED):
     """What each player adds up to in each scene of a song, as played: the sums counted() gives, taken from every note sounded.
     Playing takes several times as long as writing the song, so this is for a report and a test to hold the count against."""
-    grid = SongRenderer(song, seed=seed).render()
+    grid = SongRealizer(song, seed=seed).render()
     bar_length = grid.get_time_signature().bar_length()
     scenes = []
     for row in grid.get_rows():

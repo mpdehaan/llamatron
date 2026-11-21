@@ -19,12 +19,12 @@ import unittest
 from unittest import mock
 import wave
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters import exports, wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
 from llamatron.model.schema import file_format
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -108,10 +108,10 @@ class TestWaveFluidSynth(unittest.TestCase):
         self.addCleanup(patcher.stop)
 
     def exporter(self):
-        return WaveFluidSynth(directory=self.folder, grid=SongRenderer(self.document.song()).render(), name=NAME)
+        return WaveFluidSynth(directory=self.folder, grid=SongRealizer(self.document.song()).render(), name=NAME)
 
     def test_the_grid_says_which_tracks_play_through_fluidsynth(self):
-        columns = {column.get_name(): column for column in SongRenderer(self.document.song()).render().get_columns()}
+        columns = {column.get_name(): column for column in SongRealizer(self.document.song()).render().get_columns()}
         self.assertTrue(columns[ui_testing.LEAD].plays_through_fluidsynth())
         self.assertFalse(columns[ui_testing.DRUMS].plays_through_fluidsynth())
 

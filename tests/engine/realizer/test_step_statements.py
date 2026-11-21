@@ -7,7 +7,7 @@
 Stop When ends the clip as if every repeat were played, Restart When starts the pattern over and
 uses a repeat, and Mute When silences the step, which still changes the registers. A scene that
 holds a clip the registers can cut short is played until its registers settle, so these tests
-cover that path, and tests/playback/test_registers.py the path every other scene takes.
+cover that path, and tests/engine/realizer/test_registers.py the path every other scene takes.
 """
 
 import unittest
@@ -17,8 +17,8 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting, StatementPart, StepStatement
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, pitches, scale_notes, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, pitches, scale_notes, song
 
 DRIVER = 'driver'
 STEPS = 4

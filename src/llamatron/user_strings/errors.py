@@ -330,18 +330,18 @@ ERR_NOTE_BAD_OCTAVE = 'an octave must be an integer from {lowest} to {highest}, 
 ERR_OUTSIDE_MIDI = '{name}{octave} is outside the MIDI range: its number would be {number}'
 ERR_NOT_A_CHORD_TYPE = 'expected a ChordType, got {value!r}'
 
-# playback/clip_slot_player.py
+# engine/realizer/clip_slot_player.py
 # How messages name a cell: by its scene's number and its track.
 ERR_CLIP_SLOT_PLAYER_WHERE = 'scene {scene}, track ({track})'
 ERR_CANT_PLAY = '{where}: {problem}'
 
-# playback/pattern_player.py
+# engine/realizer/pattern_player.py
 # How messages name a pattern, and what goes wrong while playing one.
 ERR_WHERE_PATTERN = 'pattern ({name})'
 ERR_PATTERN_PLAYER_NO_SUCH_PATTERN = '{where}: no pattern called ({name})'
 ERR_NO_SCALE = '{where}: it uses scale degrees, but scene {scene} and the song have no scale'
 
-# playback/song_renderer.py
+# engine/realizer/song_realizer.py
 ERR_RENDERER_EVERY_CLIP_LOOPS = '{scene}: every clip loops, so the scene needs at least one non-looping clip'
 ERR_CIRCULAR_FOLLOW = '{scene}: the tracks follow each other\'s chords in a circle ({loop}), so take FollowChords off one of these clips'
 ERR_CIRCULAR_GRAB = '{scene}: the grabs go round in a circle ({loop}), so remove the grab track from one of these clips'

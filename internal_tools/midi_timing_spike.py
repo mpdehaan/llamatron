@@ -31,9 +31,9 @@ import sys
 import threading
 import time
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 
 DEFAULT_EXAMPLE = 'examples/by_genre/electronic/minimal_techno.yml'
 DEFAULT_SECONDS = 20.0
@@ -96,7 +96,7 @@ def song_events(*, path, seconds):
     """Return the first song's notes as events with absolute times, the scenes laid end to end as the MIDI export lays them, up to a number of seconds."""
     setlist = Setlist.read_file(path)
     song = setlist.get_song(setlist.first_song_name())
-    grid = SongRenderer(song, seed=SEED).render()
+    grid = SongRealizer(song, seed=SEED).render()
     events = []
     scene_start = 0.0
     for scene in grid.get_rows():
@@ -127,7 +127,7 @@ def keep_busy(*, path, stop):
     setlist = Setlist.read_file(path)
     song = setlist.get_song(setlist.first_song_name())
     while not stop.is_set():
-        SongRenderer(song, seed=SEED).render()
+        SongRealizer(song, seed=SEED).render()
 
 
 def silence(*, channels):

@@ -33,7 +33,7 @@ from llamatron.tui.document import Document
 from llamatron.user_strings import names
 from tests.support.rendering import render_data, setlist_from_data
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 GOOD = """
 tempo: 120

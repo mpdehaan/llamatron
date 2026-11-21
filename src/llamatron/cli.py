@@ -28,12 +28,12 @@ import argparse
 import os
 import sys
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters import exports
 from llamatron.exporters.exports import export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.launch import Launch
 from llamatron.user_strings import cli, errors
 from llamatron.visualizers.modes import mode_options
@@ -181,7 +181,7 @@ def read_set(*, path, force):
 def export_song(*, setlist, name, directory, arguments):
     """Write one song of a set into a directory as files named <set>_<song>, as the kind of export --to asks for."""
     files = export_name(setlist=file_stem(arguments.set), song=name)
-    grid = SongRenderer(setlist.get_song(name)).render()
+    grid = SongRealizer(setlist.get_song(name)).render()
     if arguments.replace:
         remove_earlier_export(kind=arguments.to, directory=directory, name=files)
     make_exporter(kind=arguments.to, directory=directory, name=files, grid=grid, template=arguments.template).export()

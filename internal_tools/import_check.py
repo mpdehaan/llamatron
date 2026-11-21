@@ -25,12 +25,12 @@ import mido
 import os
 import sys
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.importers import midi_import
 from llamatron.importers.comparison import round_trip
 from llamatron.importers.midi_import import ImportChoices
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 
 MIDI_FILES = os.path.join('examples', 'midi', '*.mid')
 EXAMPLE_SETS = os.path.join('examples', '*.yml')
@@ -87,7 +87,7 @@ def exported(path):
     """Return an example set's first song exported as one MIDI file in memory, with the fixed seed."""
     setlist = Setlist.read_file(path)
     name = setlist.first_song_name()
-    return MidiSong(directory=os.curdir, grid=SongRenderer(setlist.get_song(name), seed=SEED).render(), name=name).midi_file()
+    return MidiSong(directory=os.curdir, grid=SongRealizer(setlist.get_song(name), seed=SEED).render(), name=name).midi_file()
 
 
 def main():

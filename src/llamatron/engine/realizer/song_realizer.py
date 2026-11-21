@@ -14,6 +14,21 @@ from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.row_clock import RowClock
 from llamatron.engine.generators import registry
 from llamatron.engine.generators.base import Continuation
+from llamatron.engine.realizer import registers as registers_values
+from llamatron.engine.realizer.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
+from llamatron.engine.realizer.chord_source import ChordSource
+from llamatron.engine.realizer.clip_slot_player import ClipSlotPlayer
+from llamatron.engine.realizer.dealing_place import DealingPlace
+from llamatron.engine.realizer.draws import DrawPlay
+from llamatron.engine.realizer.grab_source import GrabSource
+from llamatron.engine.realizer.modulations import modulates, Modulations
+from llamatron.engine.realizer.pass_memory import PassMemory
+from llamatron.engine.realizer.pattern_player import check_pattern_has_a_scale
+from llamatron.engine.realizer.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
+from llamatron.engine.realizer.scene_reuse import changed_clips, first_changed_scene, SceneCheckpoint
+from llamatron.engine.realizer.tempo_ramps import ramped_tempos, tempos_within
+from llamatron.engine.realizer.tune_source import TuneSource
+from llamatron.engine.realizer.written_scene import WrittenScene
 from llamatron.engine.timing.handed_note import HandedNote
 from llamatron.engine.timing.nudge_plan import NudgePlan
 from llamatron.engine.timing.strum_plan import StrumPlan
@@ -25,21 +40,6 @@ from llamatron.model.objects.strum import strums_at_all
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import RampWay, Restart, Section, StepStatement
 from llamatron.model.values import midi, sound as sound_values
-from llamatron.playback import registers as registers_values
-from llamatron.playback.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
-from llamatron.playback.chord_source import ChordSource
-from llamatron.playback.clip_slot_player import ClipSlotPlayer
-from llamatron.playback.dealing_place import DealingPlace
-from llamatron.playback.draws import DrawPlay
-from llamatron.playback.grab_source import GrabSource
-from llamatron.playback.modulations import modulates, Modulations
-from llamatron.playback.pass_memory import PassMemory
-from llamatron.playback.pattern_player import check_pattern_has_a_scale
-from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
-from llamatron.playback.scene_reuse import changed_clips, first_changed_scene, SceneCheckpoint
-from llamatron.playback.tempo_ramps import ramped_tempos, tempos_within
-from llamatron.playback.tune_source import TuneSource
-from llamatron.playback.written_scene import WrittenScene
 from llamatron.user_strings import errors
 
 # How a circular grab's tracks are joined in its message, like a → b → a.
@@ -94,7 +94,7 @@ class SceneEstimate(NamedTuple):
     problem: object
 
 
-class SongRenderer:
+class SongRealizer:
     """Plays every scene of a song into finished clips, remembering each clip once it's played.
 
     Clips are played when they're first asked for, so that a clip that grabs from another track
@@ -184,7 +184,7 @@ class SongRenderer:
         self._kept_clips = set()
         # The render clips are kept from while this one plays, in a song whose registers a kept clip reads, and None after.
         self._earlier = None
-        # The passes the render has played that a key decides (playback/pass_memory.py), handed on from the render before.
+        # The passes the render has played that a key decides (engine/realizer/pass_memory.py), handed on from the render before.
         self._passes = PassMemory()
 
     def instrument_of(self, track):
@@ -639,7 +639,7 @@ class SongRenderer:
         key = (scene.get_number(), track)
         if key not in self._clips:
             registers = RegisterReader(timeline=self.get_timeline(scene), place=self._track_place(track))
-            clip = ClipSlotPlayer(renderer=self, song=self._song, scene=scene, track_name=track).play(grabbing=clip_slot.get_grab_track() is not None, registers=registers)
+            clip = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track).play(grabbing=clip_slot.get_grab_track() is not None, registers=registers)
             settings = self._song.get_track(track)
             bound = [(number, name) for number, name in zip(settings.get_cc_numbers(), settings.get_cc_registers()) if number is not None and name is not None]
             if bound:
@@ -660,7 +660,7 @@ class SongRenderer:
             return self._decided_clip(scene=scene, track=track)
         if key not in self._counted:
             recorder = RegisterRecorder(self._track_place(track))
-            clip = ClipSlotPlayer(renderer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=recorder)
+            clip = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=recorder)
             self._counted[key] = (clip, recorder.get_changes())
         return self._counted[key]
 
@@ -805,7 +805,7 @@ class SongRenderer:
     def _tried(self, *, scene, track):
         """Return a clip the registers can cut short, played to count its changes against the scene's registers as they are guessed so far, and those changes."""
         registers = self._guesses[scene.get_number()](track)
-        clip = ClipSlotPlayer(renderer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=registers)
+        clip = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=registers)
         return clip, registers.get_changes()
 
     def _decided_clip(self, *, scene, track):

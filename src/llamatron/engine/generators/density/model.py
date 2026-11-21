@@ -16,7 +16,7 @@ class DensitySettings(GeneratorSettings):
     """A Density generator's settings: the share of notes that play, from its start to its end.
 
     It runs on no clip's notes itself: its controller names the shape, which the Realizer lays over each finished clip that
-    names it (playback/shapes.py), so GENERATOR is None.
+    names it (engine/realizer/shapes.py), so GENERATOR is None.
     """
 
     __slots__ = ()

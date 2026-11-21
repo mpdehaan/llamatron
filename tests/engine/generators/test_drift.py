@@ -14,8 +14,8 @@ from llamatron.engine.generators.drift.model import DriftSetting, versioned
 from llamatron.engine.generators.drift.play import DriftPlay
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, RegisterSetting, Row, SceneSetting, Section
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, pitches, scale_notes, song, velocities
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, pitches, scale_notes, song, velocities
 from tests.support.rendering import song_from_data
 
 DRIFT = 'sway'

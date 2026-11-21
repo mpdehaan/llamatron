@@ -35,10 +35,10 @@ import sys
 import threading
 import time
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import Row
 from llamatron.model.values import midi, note
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import engine, timeline
 from llamatron.realtime.outputs import midi_library, output_port_names
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess
@@ -163,7 +163,7 @@ def first_song_events(*, path, seconds):
     """Return the first seconds of the timeline of a set's first song, or of the scale run with no set named, every track on the one channel of the one port."""
     setlist = scale_run_setlist() if path is None else Setlist.read_file(path)
     song = setlist.get_song(setlist.first_song_name())
-    grid = SongRenderer(song, seed=SEED).render()
+    grid = SongRealizer(song, seed=SEED).render()
     routes = {track.get_name(): Route(iac_port(), CHANNEL) for track in grid.get_columns()}
     return [event for event in song_timeline(grid=grid, routes=routes) if event.seconds < seconds]
 

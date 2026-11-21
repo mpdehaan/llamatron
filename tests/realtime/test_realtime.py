@@ -19,6 +19,7 @@ import tempfile
 import time
 import unittest
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.midi_messages import ticks
 from llamatron.model.file.example_sets import example_sets
@@ -28,7 +29,6 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import ClipSlotSetting, FollowAction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.scale import ScaleType
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import engine as engine_values, sender_process, timeline as timeline_values
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
@@ -117,7 +117,7 @@ class TestTimeline(unittest.TestCase):
 
     def test_a_track_with_no_route_and_a_muted_track_are_left_out(self):
         song = song_from_file(LAG_SONG)
-        grid = SongRenderer(song, seed=SEED).render()
+        grid = SongRealizer(song, seed=SEED).render()
         routes = routes_on_one_channel(grid)
         left_out = next(iter(routes))
         del routes[left_out]
@@ -252,7 +252,7 @@ class TestRealtimeSenderProcess(unittest.TestCase):
 
     def check_a_song_arrives(self, driver):
         song = song_from_file(LAG_SONG)
-        grid = SongRenderer(song, seed=SEED).render()
+        grid = SongRealizer(song, seed=SEED).render()
         routes = {track.get_name(): Route(PORT, place) for place, track in enumerate(grid.get_columns())}
         events = [event for event in song_timeline(grid=grid, routes=routes) if event.seconds < LAG_SECONDS]
         sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True, driver=driver)

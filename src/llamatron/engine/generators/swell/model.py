@@ -18,7 +18,7 @@ class SwellSettings(GeneratorSettings):
     """A Swell generator's settings: how loud the notes play, from its start to its end, and how much louder the strong beats are.
 
     It runs on no clip's notes itself: its controller names the shape, which the Realizer lays over each finished clip that
-    names it (playback/shapes.py), so GENERATOR is None.
+    names it (engine/realizer/shapes.py), so GENERATOR is None.
     """
 
     __slots__ = ()

@@ -20,10 +20,10 @@ import os
 import unittest
 from unittest import mock
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.objects.naming import new_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import PatternSetting, Row, Section, SetlistSetting
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput
@@ -110,7 +110,7 @@ def comparable_music(setlist):
     for name in setlist.get_song_names():
         song = setlist.get_song(name)
         routes = {track: Route(PORT, EXPORT_CHANNEL) for track in song.get_track_names()}
-        events = song_timeline(grid=SongRenderer(song, seed=SEED).render(), routes=routes)
+        events = song_timeline(grid=SongRealizer(song, seed=SEED).render(), routes=routes)
         music[name] = sorted((round(event.seconds, 6), event.kind, event.number, event.value) for event in events)
     return music
 

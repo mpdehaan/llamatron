@@ -8,7 +8,7 @@ import unittest
 from llamatron.engine.generators import progression as progression_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
-from tests.playback.test_registers import song
+from tests.engine.realizer.test_registers import song
 from tests.support.rendering import render_data
 
 CHORDS = 'chords'

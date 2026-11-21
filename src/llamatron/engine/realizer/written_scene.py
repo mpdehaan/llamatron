@@ -64,7 +64,7 @@ class WrittenScene:
         return self._scale_name
 
     def get_groove_choice(self):
-        """Return the groove the scene chose by name, False for none, or None to take the song's, which the renderer passes to Song.groove_at."""
+        """Return the groove the scene chose by name, False for none, or None to take the song's, which the Realizer passes to Song.groove_at."""
         return self._scene.get_groove_choice()
 
     def get_tempo(self):

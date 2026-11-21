@@ -4,7 +4,7 @@
 
 
 
-"""The passes a render remembers (playback/pass_memory.py): a pass of a plain pattern remembered once however often and wherever it
+"""The passes a render remembers (engine/realizer/pass_memory.py): a pass of a plain pattern remembered once however often and wherever it
 plays, a pattern that plays by chance never remembered, a copy handed out each time, the memory handed on to the next render of the
 song across an edit, and a remembered pass that differs from the pass worked out again failing as a stale answer."""
 
@@ -12,13 +12,13 @@ import unittest
 
 from llamatron.caching.memory import Memory, StaleAnswer
 from llamatron.engine.clips.clip import Clip
+from llamatron.engine.realizer.pass_memory import PassMemory
+from llamatron.engine.realizer.pattern_player import Pass
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
 from llamatron.model.values.sound import Sound
-from llamatron.playback.pass_memory import PassMemory
-from llamatron.playback.pattern_player import Pass
-from llamatron.playback.song_renderer import SongRenderer
 from tests.support import song_testing
 from tests.support.rendering import setlist_from_data
 
@@ -57,9 +57,9 @@ def a_set():
     ))
 
 
-def names_kept(renderer):
+def names_kept(realizer):
     """Return the name of the pattern of each pass a render's memory keeps."""
-    return [key[NAME] for key in renderer.get_passes().get_kept()]
+    return [key[NAME] for key in realizer.get_passes().get_kept()]
 
 
 def a_pass():
@@ -82,21 +82,21 @@ class TestRenderRemembersPasses(CheckingTest):
         super().setUp()
         self.setlist = a_set()
         self.song = self.setlist.get_song(self.setlist.first_song_name())
-        self.renderer = SongRenderer(self.song, seed=1)
-        self.renderer.render()
+        self.realizer = SongRealizer(self.song, seed=1)
+        self.realizer.render()
 
     def test_a_plain_pattern_is_remembered_once_however_often_and_wherever_it_plays(self):
-        self.assertEqual(names_kept(self.renderer).count(TUNE), 1)
+        self.assertEqual(names_kept(self.realizer).count(TUNE), 1)
 
     def test_a_pattern_that_plays_by_chance_is_never_remembered(self):
-        self.assertNotIn(CHANCE, names_kept(self.renderer))
+        self.assertNotIn(CHANCE, names_kept(self.realizer))
 
     def test_the_next_render_goes_on_with_the_memory_and_an_edited_pattern_is_kept_again_under_its_new_revision(self):
-        before = [key for key in self.renderer.get_passes().get_kept() if key[NAME] == EDITED]
+        before = [key for key in self.realizer.get_passes().get_kept() if key[NAME] == EDITED]
         self.setlist.get_pattern(EDITED).set_value(row=Row.DEGREE, step=0, value=EDITED_DEGREE)
-        after = SongRenderer(self.song, seed=1)
-        after.render(after=self.renderer)
-        self.assertIs(after.get_passes().get_kept(), self.renderer.get_passes().get_kept())
+        after = SongRealizer(self.song, seed=1)
+        after.render(after=self.realizer)
+        self.assertIs(after.get_passes().get_kept(), self.realizer.get_passes().get_kept())
         edited = [key for key in after.get_passes().get_kept() if key[NAME] == EDITED]
         self.assertEqual(len(edited), len(before) + 1)
         self.assertNotEqual(edited[-1][REVISION], before[0][REVISION])

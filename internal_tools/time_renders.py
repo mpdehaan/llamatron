@@ -22,9 +22,9 @@ import pstats
 import sys
 import timeit
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 
 PROFILE_FLAG = '--profile'
 # The seed every timed render uses, so that probability rolls the same way each time.
@@ -59,7 +59,7 @@ def songs_of(path):
 
 def render_all(songs):
     for song in songs:
-        SongRenderer(song, seed=SEED).render()
+        SongRealizer(song, seed=SEED).render()
 
 
 def profiled(songs):

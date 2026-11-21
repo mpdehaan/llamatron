@@ -30,8 +30,8 @@ import sys
 import time
 
 from llamatron.engine.clips.row_clock import seconds_per_whole
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import sender_process
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
@@ -63,7 +63,7 @@ HEAVY_LINE = '  render {render:.0f} ms, timeline {timeline:.0f} ms, {events} eve
 def first_song_grid(path):
     setlist = Setlist.read_file(path)
     song = setlist.get_song(setlist.first_song_name())
-    return song, SongRenderer(song, seed=SEED).render()
+    return song, SongRealizer(song, seed=SEED).render()
 
 
 def routes_for(grid):
@@ -136,7 +136,7 @@ def heavy_report(path):
     setlist = Setlist.read_file(path)
     song = setlist.get_song(setlist.first_song_name())
     before = time.perf_counter()
-    grid = SongRenderer(song, seed=SEED).render()
+    grid = SongRealizer(song, seed=SEED).render()
     rendered = time.perf_counter()
     events = song_timeline(grid=grid, routes=routes_for(grid))
     built = time.perf_counter()

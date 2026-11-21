@@ -15,10 +15,10 @@ import unittest
 from unittest import mock
 
 from llamatron.engine.generators import arp as arp_plugin
+from llamatron.engine.realizer import song_realizer
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.schema.file_format import ClipSlotSetting, Row
-from llamatron.playback import song_renderer
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.lengths import measured
 from llamatron.user_strings import errors
 from tests.support.rendering import bare_document, song_from_file
@@ -63,7 +63,7 @@ NO_LENGTH = Fraction(0)
 
 def seconds(*, whole_notes, tempo=TEMPO):
     """Return how long a length in whole notes lasts at a tempo, as the program works it out."""
-    return Fraction(whole_notes) * song_renderer.SECONDS_PER_MINUTE * song_renderer.QUARTER_NOTES_PER_WHOLE_NOTE / tempo
+    return Fraction(whole_notes) * song_realizer.SECONDS_PER_MINUTE * song_realizer.QUARTER_NOTES_PER_WHOLE_NOTE / tempo
 
 
 def small_song():
@@ -193,24 +193,24 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
     def test_grabs_in_a_circle_are_a_problem_without_playing(self):
         self.document.set_clip_slot_setting(index=FIRST, track=LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=BASS)
         self.document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.GRAB_TRACK, value=LEAD)
-        self.assertIn(song_renderer.GRAB_ARROW.join([LEAD, BASS, LEAD]), self.document.lengths().scene_problem(FIRST))
+        self.assertIn(song_realizer.GRAB_ARROW.join([LEAD, BASS, LEAD]), self.document.lengths().scene_problem(FIRST))
         self.assertIsNone(self.document.lengths().scene_problem(SECOND))
 
 
-def longest_without_looping(*, renderer, scene, played):
+def longest_without_looping(*, realizer, scene, played):
     """Return the longest of a scene's played clips that doesn't loop for as long as its scene lasts, or no length if none."""
-    lengths = [length for track, length in played.items() if not renderer.fills_its_scene(scene=scene, track=track)]
+    lengths = [length for track, length in played.items() if not realizer.fills_its_scene(scene=scene, track=track)]
     return max(lengths, default=NO_LENGTH)
 
 
 def check_lengths_agree(*, test, path):
     """An example, played in full, is exactly as long as the arithmetic says, clip by clip and scene by scene."""
-    renderer = SongRenderer(song_from_file(path))
-    for scene in renderer.get_scenes():
-        played = {track: renderer.get_clip(scene=scene, track=track).total_length() for track in scene.get_track_names()}
+    realizer = SongRealizer(song_from_file(path))
+    for scene in realizer.get_scenes():
+        played = {track: realizer.get_clip(scene=scene, track=track).total_length() for track in scene.get_track_names()}
         for track, length in played.items():
             with test.subTest(scene=scene.describe(), track=track):
-                test.assertEqual(renderer.get_clip_length(scene=scene, track=track), length)
+                test.assertEqual(realizer.get_clip_length(scene=scene, track=track), length)
         with test.subTest(scene=scene.describe()):
-            test.assertEqual(renderer.get_scene_length(scene), longest_without_looping(renderer=renderer, scene=scene, played=played))
+            test.assertEqual(realizer.get_scene_length(scene), longest_without_looping(realizer=realizer, scene=scene, played=played))
 

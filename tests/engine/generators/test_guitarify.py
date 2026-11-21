@@ -14,15 +14,15 @@ from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import bars as guitar_bars, generator as guitarify, model as guitarify_settings
 from llamatron.engine.generators.guitarify.bars import ready_bar_matching
 from llamatron.engine.generators.guitarify.model import GuitarifySettings
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Approach, ChordColor, ClipSlotSetting, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
 from llamatron.model.values import midi
-from llamatron.playback.song_renderer import SongRenderer
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data, song_from_data
 
 TRIAD = '3'
@@ -94,7 +94,7 @@ def bar(strokes, *, accents=None, cell=QUARTER, **more):
 
 
 def events(data, *, seed=None):
-    grid = render_data(data) if seed is None else SongRenderer(song_from_data(data), seed=seed).render()
+    grid = render_data(data) if seed is None else SongRealizer(song_from_data(data), seed=seed).render()
     clip = grid.get_clip(row=grid.get_rows()[0], column=grid.get_columns()[0])
     return sorted(timed_events(clip=clip, scale=clip.get_scale())[0])
 

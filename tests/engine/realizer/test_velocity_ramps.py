@@ -12,6 +12,7 @@ import unittest
 
 from llamatron.engine.generators import swell as swell_plugin
 from llamatron.engine.generators.shape_part import ShapeSetting
+from llamatron.engine.realizer.shapes import PlacedRamp, PlacedVelocity, velocity_percent_at
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
@@ -20,9 +21,8 @@ from llamatron.model.objects.velocity_ramps import Velocity, velocity_of, Veloci
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.model.values import midi
-from llamatron.playback.shapes import PlacedRamp, PlacedVelocity, velocity_percent_at
-from tests.playback import test_registers, test_shapes
-from tests.playback.test_shapes import bar_of_sixteenths, one_scene
+from tests.engine.realizer import test_registers, test_shapes
+from tests.engine.realizer.test_shapes import bar_of_sixteenths, one_scene
 from tests.support.rendering import render_data, setlist_from_data
 
 WRITTEN = 100

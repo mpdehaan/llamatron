@@ -14,9 +14,9 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import euclid
 from llamatron.model.objects.euclid import rhythm
 from llamatron.model.schema.file_format import ClipSlotSetting, euclid_setting, EuclidPart, NamedRhythm, PatternSetting, SceneSetting, Section
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
-from tests.playback.test_shapes import notes
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
+from tests.engine.realizer.test_shapes import notes
 from tests.support.rendering import setlist_from_data
 
 STEPS = 16

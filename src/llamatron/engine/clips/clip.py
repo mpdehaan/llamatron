@@ -160,7 +160,7 @@ class Clip:
         return self._groove
 
     def set_groove(self, groove):
-        """Give the clip a Groove, or None, which the renderer does once the clip is finished, so generators never see one."""
+        """Give the clip a Groove, or None, which the Realizer does once the clip is finished, so generators never see one."""
         if groove is not None and not isinstance(groove, Groove):
             raise ValueError(errors.ERR_NOT_A_GROOVE.format(value=groove))
         self._groove = groove
@@ -174,19 +174,19 @@ class Clip:
         return self._nudge
 
     def set_nudge(self, nudge):
-        """Give the clip a NudgePlan, or None, which the renderer does once the clip is finished, as it gives its groove."""
+        """Give the clip a NudgePlan, or None, which the Realizer does once the clip is finished, as it gives its groove."""
         self._nudge = nudge
 
     def get_handed(self):
-        """Return the notes a Hocket hands the clip, HandedNotes in time order, which the exporters' timing adds to the clip's own; none unless the renderer gave some."""
+        """Return the notes a Hocket hands the clip, HandedNotes in time order, which the exporters' timing adds to the clip's own; none unless the Realizer gave some."""
         return self._handed
 
     def get_keyswitches(self):
-        """Return the keyswitch notes the clip sends, SwitchNotes in time order, which only the exporters' timing reads; none unless the renderer gave it some."""
+        """Return the keyswitch notes the clip sends, SwitchNotes in time order, which only the exporters' timing reads; none unless the Realizer gave it some."""
         return self._keyswitches
 
     def set_keyswitches(self, notes):
-        """Give the clip its keyswitch notes, which the renderer does once the clip is finished, since nothing that changes notes may touch them."""
+        """Give the clip its keyswitch notes, which the Realizer does once the clip is finished, since nothing that changes notes may touch them."""
         self._keyswitches = tuple(notes)
 
     def get_keyswitch_lead(self):
@@ -194,15 +194,15 @@ class Clip:
         return self._keyswitch_lead
 
     def set_keyswitch_lead(self, lead):
-        """Say how much earlier than its note each keyswitch is sent, in whole notes, which the renderer works out from the instrument's milliseconds at the scene's tempo."""
+        """Say how much earlier than its note each keyswitch is sent, in whole notes, which the Realizer works out from the instrument's milliseconds at the scene's tempo."""
         self._keyswitch_lead = lead
 
     def set_handed(self, notes):
-        """Give the clip the notes its Hocket hands it, which the renderer does once the clip is finished, as it gives its groove."""
+        """Give the clip the notes its Hocket hands it, which the Realizer does once the clip is finished, as it gives its groove."""
         self._handed = tuple(notes)
 
     def set_strum(self, strum):
-        """Give the clip a StrumPlan, or None, which the renderer does once the clip is finished, as it gives its groove."""
+        """Give the clip a StrumPlan, or None, which the Realizer does once the clip is finished, as it gives its groove."""
         self._strum = strum
 
     def set_scale(self, scale):

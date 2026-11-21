@@ -110,9 +110,9 @@ class Surroundings:
 
     def __init__(self, *, section=None, chords=None, tune=None):
         self.section = section
-        # What says the chord at a time (playback/chord_source.py), or None for none to follow.
+        # What says the chord at a time (engine/realizer/chord_source.py), or None for none to follow.
         self.chords = chords
-        # What says whether the tune sounds at a time (playback/tune_source.py), or None for no tune to hear.
+        # What says whether the tune sounds at a time (engine/realizer/tune_source.py), or None for no tune to hear.
         self.tune = tune
 
 

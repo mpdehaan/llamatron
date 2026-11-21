@@ -8,12 +8,12 @@ from fractions import Fraction
 import unittest
 
 from llamatron.engine.generators.blend import BlendMode
+from llamatron.engine.realizer.step_order import StepOrder
 from llamatron.math.random_source import random_source
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, PatternSetting, Row, Section
 from llamatron.model.values.note import Note, NoteName, Rest
-from llamatron.playback.step_order import StepOrder
 from tests.support import song_testing
 from tests.support.rendering import render_data
 from tests.support.song_testing import clip, pat, pitches, with_parts

@@ -72,7 +72,7 @@ or a track can choose another or switch grooving off, the track's choice winning
    where the problem is, down to the song. Every object can also turn itself back into file data,
    which is how saving works. A file saved by an older version is first moved to the layout written now by the migrations
    (`src/llamatron/model/file/migrations/`), so the rest of llamatron only knows one layout.
-2. **The song is played.** `playback` walks each scene and plays each clip slot's pattern as many
+2. **The song is played.** `engine/realizer` walks each scene and plays each clip slot's pattern as many
    times as it repeats, applying everything that changes the notes on the way: the scale, the
    track's transpose, probability, ratchets, ties, glide, play directions, grabs from other
    tracks, registers, morphs and the clip's chain of generators. The result is a `Clip` of
@@ -128,7 +128,6 @@ flowchart LR
     tui["tui"]
     llamatron["llamatron"]
     model["model"]
-    playback["playback"]
     engine["engine"]
     exporters["exporters"]
     importers["importers"]
@@ -148,24 +147,19 @@ flowchart LR
     importers --> engine
     importers --> exporters
     importers --> model
-    importers --> playback
+    llamatron --> engine
     llamatron --> exporters
     llamatron --> model
-    llamatron --> playback
     llamatron --> tui
     llamatron --> visualizers
     llamatron --> wizards
     model --> engine
-    playback --> engine
-    playback --> model
     realtime --> engine
     realtime --> model
-    realtime --> playback
     tui --> engine
     tui --> exporters
     tui --> importers
     tui --> model
-    tui --> playback
     tui --> realtime
     tui --> visualizers
     tui --> wizards
@@ -174,7 +168,6 @@ flowchart LR
     visualizers --> model
     wizards --> engine
     wizards --> model
-    wizards --> playback
 ```
 
 | Package | What it holds |
@@ -182,7 +175,6 @@ flowchart LR
 | `tui` | The tracker: the text UI that people compose in, which holds a set of songs and edits it a page at a time. |
 | `llamatron` | llamatron composes music in MIDI for DAWs, from a text UI. This top level holds the command line and the text every part shows. |
 | `model` | The Model: the set as it is stored, in four parts. values/ holds the musical values every part of llamatron works with; |
-| `playback` | Playing a song's composition objects into finished clips, which the exporters then write. |
 | `engine` | The Engine: what makes a song into music. clips/ holds the finished clips a song is realized into and the grid that maps |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
@@ -201,7 +193,7 @@ A few things the picture doesn't say:
   file format. Everything else works with its objects. The set owns the shared sections and the
   songs, and a song owns its tracks, scenes and registers, so a rename in either updates every
   reference, wherever it is.
-- `playback` is where the musical rules live. If you want to know what a tie or a ratchet
+- `engine/realizer` is where the musical rules live. If you want to know what a tie or a ratchet
   does, this is the place, in `PatternPlayer` for one pass through a pattern and `ClipSlotPlayer`
   for one clip.
 - `generators` work on finished clips rather than patterns, so an arpeggiator doesn't care
@@ -246,7 +238,7 @@ These are the things a reader will notice everywhere, and they're deliberate:
 - **Names can change.** Everything that refers to something else by name is updated when it's
   renamed, and a test checks every kind of rename.
 - **Randomness is random.** Every play and every export is a new take. The tests and tools repeat a
-  take by giving the renderer a seed of their own, which no person or command-line option reaches.
+  take by giving the Realizer a seed of their own, which no person or command-line option reaches.
 - **Nothing is worked out twice.** Everything a set file stores carries a revision, a number
   that moves whenever the object changes. What the tracker works out from some objects is kept
   in one memory with their revisions (`src/llamatron/caching/memory.py`) and used again until one

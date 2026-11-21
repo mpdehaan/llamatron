@@ -10,8 +10,8 @@ What these return is shared, so a check never changes it: a check that changes a
 
 import functools
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 
 
 @functools.lru_cache(maxsize=None)
@@ -24,7 +24,7 @@ def example_setlist(path):
 def rendered_example(*, path, seed=None):
     """Return each song of a set file with its grid, (name, grid) in the set's order, rendered once for a seed, or with each song's own."""
     setlist = example_setlist(path)
-    return tuple((name, SongRenderer(setlist.get_song(name), seed=seed).render()) for name in setlist.get_song_names())
+    return tuple((name, SongRealizer(setlist.get_song(name), seed=seed).render()) for name in setlist.get_song_names())
 
 
 def first_song_grid(path, *, seed=None):

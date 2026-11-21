@@ -10,7 +10,7 @@ relative to the scene they belong to, and it needs what the song says about laun
 each scene lasts, which clips loop, each clip's follow action and whether each scene launches
 together. The score is all of that, read once from the song as it is when something is launched,
 so that the player never asks the composition objects anything while it runs. A scene that
-repeats is written out once per repeat by the renderer, as the export writes it, and the score
+repeats is written out once per repeat by the Realizer, as the export writes it, and the score
 keeps those rows together as one scene, so that launching a scene plays all of its repeats.
 """
 
@@ -19,9 +19,9 @@ import math
 from typing import NamedTuple
 
 from llamatron.caching import memory
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import FollowAction
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import score_records, timeline
 from llamatron.realtime.clip_notes import ClipNotes
 from llamatron.realtime.timeline import clip_timeline, sort_key, Tag
@@ -67,7 +67,7 @@ NOT_KEEPING = Keeping(None, None)
 class Score:
     """What the player knows about a song: each scene's length and launch settings, and each clip's events from its scene's start."""
 
-    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_renderer', '_routes', '_taken_tracks')
+    __slots__ = ('_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_realizer', '_routes', '_taken_tracks')
 
     def __init__(self, *, song, routes, seed=None, keeping=None, takes=None):
         """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through.
@@ -75,15 +75,15 @@ class Score:
         keeping, a Keeping, holds the set's data the song was copied from (Setlist.kept_data), which lets a later score take from
         this one the scenes an edit cannot change, and the earlier score, of the same seed and routes, that gives this one those
         scenes (score_records.py).
-        takes gives clips new random choices, by (the scene's place in the song, the track), as SongRenderer's does.
+        takes gives clips new random choices, by (the scene's place in the song, the track), as SongRealizer's does.
         """
         data, earlier = keeping or NOT_KEEPING
         if earlier is not None and earlier._routes != routes:
             earlier = None
-        renderer = SongRenderer(song, seed=seed, looping_scenes_go_round=True, data=data, takes=takes)
-        grid = renderer.render(after=None if earlier is None else earlier._renderer)
-        reused = renderer.get_reused_scene_count()
-        self._renderer = renderer
+        realizer = SongRealizer(song, seed=seed, looping_scenes_go_round=True, data=data, takes=takes)
+        grid = realizer.render(after=None if earlier is None else earlier._realizer)
+        reused = realizer.get_reused_scene_count()
+        self._realizer = realizer
         # The tracks of each scene whose events were taken from the earlier score, clip by clip.
         self._taken_tracks = []
         self._routes = dict(routes)
@@ -92,7 +92,7 @@ class Score:
         # How long a bar is in whole notes, by the song's time signature, which a launch by hand waits for.
         self._bar = float(song.get_time_signature().bar_length())
         rows = grid.get_rows()
-        written = renderer.get_scenes()
+        written = realizer.get_scenes()
         self._scene_seconds = []
         self._scene_starts = []
         self._rows = []
@@ -118,7 +118,7 @@ class Score:
                 self._events[(index, track)] = []
                 clip_slot = scene.get_clip_slot(track) if scene.has_clip_slot(track) else None
                 # A looping clip that a step of its pattern can stop is a clip that ends, as an export has it.
-                self._loops[(index, track)] = clip_slot is not None and renderer.fills_its_scene(scene=scene, track=track)
+                self._loops[(index, track)] = clip_slot is not None and realizer.fills_its_scene(scene=scene, track=track)
                 # An empty slot is done when its scene is done and counts as "With Scene", so the track below starts as the export has it start.
                 self._follow_actions[(index, track)] = FollowAction.WITH_SCENE if clip_slot is None else setlist.follow_action_of(clip_slot)
                 self._repeats[(index, track)] = None if clip_slot is None or clip_slot.loops() else clip_slot.get_repeat()
@@ -128,7 +128,7 @@ class Score:
                 song_start += self._scene_seconds[-1]
                 continue
             # The tracks whose clips the render took from the earlier score's in every repeat of the scene, whose events are taken too.
-            kept = set() if earlier is None else renderer.kept_tracks([written[place] for place in scene_rows])
+            kept = set() if earlier is None else realizer.kept_tracks([written[place] for place in scene_rows])
             self._taken_tracks.append(kept)
             for place in scene_rows:
                 row = rows[place]
@@ -136,7 +136,7 @@ class Score:
                 row_seconds = clock.seconds_at(grid.row_length(row))
                 self._rows[index].append(Row(scene_start, row_seconds, clock))
                 if song.uses_draws():
-                    self._draw_lights[index] += [(scene_start + clock.seconds_at(time), places) for time, places in renderer.get_timeline(written[place]).get_draw_moments()]
+                    self._draw_lights[index] += [(scene_start + clock.seconds_at(time), places) for time, places in realizer.get_timeline(written[place]).get_draw_moments()]
                 for track in grid.get_columns():
                     name = track.get_name()
                     clip = grid.get_clip(row=row, column=track)
@@ -155,12 +155,12 @@ class Score:
                 self._events[(index, track)] = earlier._events[(index, track)]
             self._scene_seconds.append(scene_start)
             song_start += scene_start
-        if renderer.has_taken_anything() and memory.Memory.checks_by_default():
+        if realizer.has_taken_anything() and memory.Memory.checks_by_default():
             score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed, takes=takes)._records())
 
     def get_reused_scene_count(self):
         """Return how many written scenes, from the first, the score took from an earlier one rather than rendering them."""
-        return self._renderer.get_reused_scene_count()
+        return self._realizer.get_reused_scene_count()
 
     def get_taken_tracks(self, scene):
         """Return the tracks whose events in a scene were taken from the earlier score, their clips kept in every repeat; empty for a scene taken whole."""
@@ -168,7 +168,7 @@ class Score:
 
     def get_kept_clip_count(self):
         """Return how many clips after the scenes taken whole the score took from an earlier one, track by track."""
-        return self._renderer.get_kept_clip_count()
+        return self._realizer.get_kept_clip_count()
 
     def _records(self):
         return score_records.Records(events=self._events, scene_seconds=self._scene_seconds, clip_seconds=self._clip_seconds, draw_lights=self._draw_lights, rows=self._rows)

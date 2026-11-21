@@ -7,7 +7,7 @@ import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import Row, Section
-from tests.playback.test_registers import one_clip, pitches
+from tests.engine.realizer.test_registers import one_clip, pitches
 from tests.support.rendering import setlist_from_data
 
 TRIAD = '3'

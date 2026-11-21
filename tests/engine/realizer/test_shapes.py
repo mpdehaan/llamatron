@@ -12,6 +12,8 @@ import unittest
 
 from llamatron.engine.generators import density as density_plugin, swell as swell_plugin
 from llamatron.engine.generators.shape_part import ShapeSetting
+from llamatron.engine.realizer import shapes
+from llamatron.engine.realizer.shapes import percent_at, plays_at, strength
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
@@ -19,10 +21,8 @@ from llamatron.model.objects.shapes import ShapeValues
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen
 from llamatron.model.values import midi
-from llamatron.playback import shapes
-from llamatron.playback.shapes import percent_at, plays_at, strength
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 
 SIXTEENTH = '1/16'

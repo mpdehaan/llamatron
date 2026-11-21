@@ -17,9 +17,9 @@ from llamatron.model.values.chords import chord_half_steps, replaced_places, spe
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from tests.engine.generators import test_progression
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
-from tests.playback.test_shapes import notes
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
+from tests.engine.realizer.test_shapes import notes
 from tests.support.rendering import setlist_from_data
 
 MINOR = scale_type_name(ScaleType.MINOR)

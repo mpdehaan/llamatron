@@ -5,9 +5,9 @@
 
 from typing import NamedTuple
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui import text
 
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
@@ -59,7 +59,7 @@ def measured(song):
     """
     scene_plays = plays_of_each_scene(song)
     try:
-        plays = SongRenderer(song).estimate()
+        plays = SongRealizer(song).estimate()
     except SongFileError as error:
         unknown = [None for _ in scene_plays]
         return Measured(plays=[], problem=str(error), scene_plays=scene_plays, scene_seconds=unknown, longest_scene_seconds=None, song_seconds=None)

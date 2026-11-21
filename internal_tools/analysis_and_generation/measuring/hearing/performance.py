@@ -8,8 +8,8 @@ exporters place them; nothing else about the set is kept, so the measures can't 
 
 from dataclasses import dataclass
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
-from llamatron.playback.song_renderer import SongRenderer
 
 # A whole note's beats when the beat is a quarter note, which every measure counts in.
 QUARTERS_IN_A_WHOLE = 4
@@ -78,7 +78,7 @@ class Performance:
 
 def performance_of(song, *, seed=None):
     """Return how a song plays, rendered through its objects: each unmuted track's notes, placed at their scenes' starts."""
-    grid = SongRenderer(song, seed=seed).render()
+    grid = SongRealizer(song, seed=seed).render()
     starts = grid.row_starts()
     tracks = []
     for column in grid.get_columns():

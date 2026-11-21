@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""How a finished clip's notes are rushed early or dragged late, worked out by the renderer from the Rush and Drag generators its chains name and played by the exporters' timing (engine/timing/timing.py), on top of the groove."""
+"""How a finished clip's notes are rushed early or dragged late, worked out by the Realizer from the Rush and Drag generators its chains name and played by the exporters' timing (engine/timing/timing.py), on top of the groove."""
 
 import math
 from typing import NamedTuple

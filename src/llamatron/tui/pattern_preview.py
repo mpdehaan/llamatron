@@ -22,6 +22,7 @@ General MIDI in FluidSynth, in a sound chosen or on the drum kit, which a picker
 
 from math import lcm
 
+from llamatron.engine.realizer.step_order import walk_order
 from llamatron.exporters import midi_arrangement
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.naming import unique_name
@@ -32,7 +33,6 @@ from llamatron.model.objects.track import Track
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
 from llamatron.model.values import note
-from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.timeline import Route
 from llamatron.tui import transport

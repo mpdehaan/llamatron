@@ -14,8 +14,8 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import errors
-from tests.playback import test_registers
-from tests.playback.test_registers import pattern, song
+from tests.engine.realizer import test_registers
+from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 from tests.support.ui_testing import fixed_text
 

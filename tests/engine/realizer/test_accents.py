@@ -16,8 +16,8 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import InstrumentSetting, Row, Section, TrackSetting, VelocitySetting
 from llamatron.model.values import midi
-from tests.playback import test_registers, test_shapes
-from tests.playback.test_shapes import one_scene
+from tests.engine.realizer import test_registers, test_shapes
+from tests.engine.realizer.test_shapes import one_scene
 from tests.support import song_testing
 from tests.support.rendering import as_setlist, render_data, setlist_from_data
 

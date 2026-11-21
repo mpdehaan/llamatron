@@ -12,13 +12,13 @@ import pathlib
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.migrations import migrated
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, Section, SetlistSetting
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import names
 from tests.support import song_testing
 from tests.support.rendering import as_setlist, render_data
@@ -71,7 +71,7 @@ def played(path):
     """Return what every clip of a set file's first song plays, scene by scene and track by track, with a fixed seed."""
     setlist = Setlist.read_file(str(path))
     song = setlist.get_song(setlist.get_song_names()[0])
-    grid = SongRenderer(song, seed=SEED).render()
+    grid = SongRealizer(song, seed=SEED).render()
     return [sorted(map(repr, grid.get_clip(row=row, column=column).get_sounds())) if grid.get_clip(row=row, column=column) else None
             for row in grid.get_rows() for column in grid.get_columns()]
 

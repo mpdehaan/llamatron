@@ -27,10 +27,10 @@ import os
 import sys
 import tempfile
 
+from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.midi_messages import safe_file_name
 from llamatron.model.objects.setlist import Setlist
-from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 from llamatron.tui.text import clock
 
@@ -76,7 +76,7 @@ def preview(*, path, folder):
     for name in setlist.get_song_names():
         named = preview_name(stem=stem, song=name)
         with tempfile.TemporaryDirectory() as scratch:
-            exporter = MidiGeneralMidi(directory=scratch, grid=SongRenderer(setlist.get_song(name)).render(), name=named)
+            exporter = MidiGeneralMidi(directory=scratch, grid=SongRealizer(setlist.get_song(name)).render(), name=named)
             exporter.export()
             target = os.path.join(folder, PREVIEW_FILE.format(name=named))
             os.replace(exporter.path(), target)

@@ -10,11 +10,11 @@ import os
 import unittest
 
 from llamatron.engine.clips.row_clock import RowClock, seconds_per_whole
+from llamatron.engine.realizer.song_realizer import SongRealizer
+from llamatron.engine.realizer.tempo_ramps import ramped_tempos
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.model.objects.scene import TempoRamp
 from llamatron.model.schema.file_format import ClipSlotSetting, SceneSetting, SongSetting
-from llamatron.playback.song_renderer import SongRenderer
-from llamatron.playback.tempo_ramps import ramped_tempos
 from llamatron.realtime import timeline
 from llamatron.realtime.timeline import Route, song_timeline
 from tests.support import song_testing
@@ -174,9 +174,9 @@ class TestLengthsAgree(unittest.TestCase):
 
     def test_the_estimate_the_timeline_and_the_midi_file_last_the_same(self):
         song = song_from_data(self.scenes())
-        estimates = SongRenderer(song).estimate()
+        estimates = SongRealizer(song).estimate()
         estimated = sum(float(estimate.seconds) for estimate in estimates)
-        grid = SongRenderer(song).render()
+        grid = SongRealizer(song).render()
         by_clock = sum(grid.clock_of(row).seconds_at(grid.row_length(row)) for row in grid.get_rows())
         self.assertAlmostEqual(estimated, by_clock)
         midi = MidiSong(directory=os.curdir, grid=grid, name=SONG_NAME).midi_file()
@@ -187,7 +187,7 @@ class TestLengthsAgree(unittest.TestCase):
 
     def test_a_clips_seconds_are_measured_by_its_scenes_ramp(self):
         song = song_from_data(self.scenes())
-        first = SongRenderer(song).estimate()[0]
+        first = SongRealizer(song).estimate()[0]
         self.assertAlmostEqual(float(first.clip_seconds[song_testing.LEAD]), float(first.seconds))
         # Two bars from 100 to 120, a sixteenth at a time, then two bars at 120.
         steps = TWO_BARS * SIXTEENTHS_IN_A_BAR
@@ -196,7 +196,7 @@ class TestLengthsAgree(unittest.TestCase):
 
     def test_every_note_of_the_timeline_is_where_the_midi_file_has_it(self):
         song = song_from_data(self.scenes())
-        grid = SongRenderer(song).render()
+        grid = SongRealizer(song).render()
         events = song_timeline(grid=grid, routes={song_testing.LEAD: Route(PORT, FIRST_CHANNEL, None)})
         midi = MidiSong(directory=os.curdir, grid=grid, name=SONG_NAME).midi_file()
         seconds = 0.0

@@ -88,7 +88,7 @@ class LocalPlayback:
         # What the player's score was made from.
         self._playing = None
         # The play's takes, by (scene, track): a clip launched by hand, and a looping clip's next lap, plays another take, new
-        # random choices of its own, for as long as the play lasts (SongRenderer's takes).
+        # random choices of its own, for as long as the play lasts (SongRealizer's takes).
         self._takes = {}
         # The last score asked to be built, which a looping clip's next take is built as, so that an edit waiting to be heard is
         # built with it rather than replaced by it.
