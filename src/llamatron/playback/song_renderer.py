@@ -63,6 +63,8 @@ SEED_TRACK_FACTOR = 31
 # How far a clip's seeds move for each take after the first, a prime far past what a song's places reach.
 SEED_TAKE_FACTOR = 1_000_000_007
 FIRST_TAKE = 0
+# The seed the song's random draws start afresh from as a retaken scene first starts.
+DRAWS_TAKE_SEED = '{seed}/{scene}/draws take {take}'
 # The registers' random values, for a Reset behavior that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
 REGISTER_SEED_OFFSET = 7
 # The generators that move notes early or late in the timing, rather than running on a clip's notes.
@@ -710,6 +712,7 @@ class SongRenderer:
         for written in self._scenes[:self._scenes.index(scene) + 1]:
             number = written.get_number()
             if number not in self._timelines:
+                self._draw_afresh_for_a_take(written)
                 resets = self._resets_of(written)
                 start = with_resets(values=values, registers=self._registers, names=resets)
                 if turned:
@@ -732,6 +735,19 @@ class SongRenderer:
             turned = self._timelines[number].get_end_turned()
             draws = self._timelines[number].get_end_draws()
         return self._timelines[scene.get_number()]
+
+    def _draw_afresh_for_a_take(self, written):
+        """As a retaken scene first starts, before its repeats, start the song's random draws afresh from the seed, the scene and its
+        take, so that a draw that takes any value, or each value once, draws anew on every take, as a looping scene's laps and a
+        scene launched again do, rather than as the take before drew; its repeats then draw on from one another as ever."""
+        place = self._song_places[id(written.get_scene())]
+        take = max((self._takes.get((place, track), FIRST_TAKE) for track in written.get_track_names()), default=FIRST_TAKE)
+        if take == FIRST_TAKE or self._seed is None:
+            return
+        before = self._scenes.index(written) - 1
+        if before >= 0 and self._scenes[before].get_scene() is written.get_scene():
+            return
+        self._register_chooser.seed(DRAWS_TAKE_SEED.format(seed=self._seed, scene=place, take=take))
 
     def _cutting_of(self, name):
         """Return whether a step of a pattern can cut a pass short, and whether one can stop its clip, asked of the pattern once for the render."""

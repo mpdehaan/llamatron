@@ -17,16 +17,18 @@
 
 
 """A clip's take (SongRenderer's takes): a take after the first gives that clip new random choices and leaves every other clip's
-as they were, and a render after an earlier one with another take keeps every scene before and every clip the take cannot
-reach, playing as a whole render with the same takes plays."""
+as they were, a render after an earlier one with another take keeps every scene before and every clip the take cannot reach,
+playing as a whole render with the same takes plays, and a draw of any value or of each value once draws anew on every repeat
+and every take of a scene."""
 
 import unittest
 
-from llamatron.composition.file_format import ClipSlotSetting, Row, SceneSetting, Section
+from llamatron.composition.file_format import ClipSlotSetting, DrawDirection, DrawName, Row, SceneSetting, Section
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.support.memory import Memory
+from tests.playback import test_draws
 from tests.support import song_testing
-from tests.support.rendering import setlist_from_data
+from tests.support.rendering import setlist_from_data, song_from_data
 
 LEAD = 'lead'
 BASS = 'bass'
@@ -39,6 +41,10 @@ HALF_THE_TIME = 50
 SEED = 1
 SECOND_SCENE = 1
 ANOTHER_TAKE = 1
+FIRST_SCENE = 0
+REPEATS = 4
+# The draws that choose by chance, which must draw anew on every repeat and take of a scene.
+DRAWING_AFRESH = (DrawDirection.ANY, DrawDirection.SERIAL)
 
 
 def a_set():
@@ -96,3 +102,26 @@ class TestTakes(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestDrawsOnEveryTake(unittest.TestCase):
+    """A draw that takes any value, or each value once a round, draws anew on every repeat of a scene and on every take of it, so
+    that a scene repeated, launched again or looping never plays one draw's values over and over."""
+
+    def draws_heard(self, *, direction, takes=None, repeat=1):
+        """Return the values a draw of twelve tones gave the lead's steps, a list a repeat of the scene."""
+        song = song_from_data(test_draws.song_data(draws={DrawName.AD: test_draws.a_draw(slots=test_draws.TWELVE_TONES, direction=direction)}, rows={Row.AD_NOTE: test_draws.every_step()}, repeat=repeat))
+        grid = SongRenderer(song, seed=SEED, takes=takes).render()
+        return [[pitch - test_draws.MIDDLE_C for pitch in pitches] for pitches in test_draws.pitches_of(song=grid, scenes=len(grid.get_rows()))]
+
+    def test_every_repeat_of_a_scene_draws_anew(self):
+        for direction in DRAWING_AFRESH:
+            with self.subTest(direction=direction):
+                repeats = self.draws_heard(direction=direction, repeat=REPEATS)
+                self.assertEqual(len({tuple(values) for values in repeats}), REPEATS)
+
+    def test_every_take_of_a_scene_draws_anew(self):
+        for direction in DRAWING_AFRESH:
+            with self.subTest(direction=direction):
+                takes = [self.draws_heard(direction=direction, takes={(FIRST_SCENE, test_draws.LEAD): take}) for take in range(REPEATS)]
+                self.assertEqual(len({tuple(values[0]) for values in takes}), REPEATS)
