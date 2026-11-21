@@ -23,7 +23,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from llamatron.exporters import midi_messages, timing
+from llamatron.exporters import midi_messages, sounding
 from llamatron.exporters.clip_tree import clip_file_name, ClipTree
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
@@ -304,7 +304,7 @@ class TestFileContents(ExportTestCase):
     def test_notes_use_a_fixed_velocity(self):
         path = self.export_clip(Clip(notes=[C4]))
         message = next(m for m in mido.MidiFile(path).tracks[0] if m.type == midi_messages.NOTE_ON_MESSAGE)
-        self.assertEqual(message.velocity, timing.VELOCITY)
+        self.assertEqual(message.velocity, sounding.VELOCITY)
 
     def test_each_note_uses_its_own_length(self):
         path = self.export_clip(Clip(notes=[Note(name=NoteName.C, octave_number=4, length=0.5), Note(name=NoteName.D, octave_number=4, length=0.125)]))

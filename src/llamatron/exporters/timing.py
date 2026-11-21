@@ -20,9 +20,10 @@ from typing import NamedTuple
 
 from llamatron.composition import defaults
 from llamatron.composition.file_format import StrumDirection
-from llamatron.music import midi, sound
-from llamatron.music.sound import Sound
-from llamatron.strings import errors
+from llamatron.exporters import sounding
+from llamatron.exporters.clip_ticks import ClipTicks
+from llamatron.exporters.sounding import degree_to_note, NoteEvent, sounding_notes, velocity_of
+from llamatron.music import sound
 from llamatron.support import length as length_values
 from llamatron.support.length import Length
 from llamatron.support.random_source import random_source
@@ -30,25 +31,11 @@ from llamatron.support.rational import Rational
 
 # A beat is a quarter note, which matches how MIDI and Live measure both time and tempo.
 BEATS_PER_WHOLE_NOTE = 4
-# A note with no velocity of its own plays as loud as MIDI allows.
-VELOCITY = midi.MAX_VELOCITY
-
-# How far a note with glide runs into the next one, in fractions of a whole note.
-GLIDE_OVERLAP = Rational(1, 128)
 # A note that starts with its chord, and one a strum leaves as loud as it was.
 ZERO_DELAY = Rational(0)
 NO_FADING = Rational(0)
 PERCENT = 100
 MIN_FADED_VELOCITY = 1
-
-
-class NoteEvent(NamedTuple):
-    """One note as it plays: when it starts and ends, in whole notes from the clip's start, its MIDI number and velocity."""
-
-    start: Rational
-    end: Rational
-    midi_number: int
-    velocity: int
 
 
 class ControlPoint(NamedTuple):
@@ -67,35 +54,10 @@ class ControlEvent(NamedTuple):
     value: int
 
 
-def _degree_to_note(*, position, scale):
-    """Return the note a degree plays in a scale, leaving anything else as it is."""
-    if position[sound.KIND] != sound.DEGREE:
-        return position
-    if scale is None:
-        raise ValueError(errors.ERR_DEGREE_NEEDS_SCALE.format(degree=Sound.position(position)))
-    return Sound.settled(position, scale)
-
-
-def _sounding_notes(position):
-    """Return {MIDI number: note} for one position in a clip, keeping the longest of any pitch."""
-    kind = position[sound.KIND]
-    if kind == sound.REST:
-        return {}
-    if kind == sound.NOTE:
-        return {position[sound.MIDI]: position}
-    if kind == sound.CHORD:
-        notes = {}
-        for note in position[sound.NOTES]:
-            if note[sound.MIDI] not in notes or Length.less(notes[note[sound.MIDI]][sound.LENGTH], note[sound.LENGTH]):
-                notes[note[sound.MIDI]] = note
-        return notes
-    raise ValueError(errors.ERR_TIMING_NOT_A_POSITION.format(value=Sound.position(position)))
-
-
 def _glide_end(*, note, end, following):
     """Return when a note ends, running into what follows if it glides to a different pitch."""
     if note[sound.GLIDE] and following and note[sound.MIDI] not in following:
-        return end + GLIDE_OVERLAP
+        return end + sounding.GLIDE_OVERLAP
     return end
 
 
@@ -109,31 +71,16 @@ def timed_events(*, clip, scale, grooved=True):
     which is what a grab wants, since grooves only change timing.
     """
     positions = clip.resolved_sounds()
-    slots = _slots(positions=positions, scale=scale)
     clip_length = _clip_length(clip=clip, positions=positions)
     groove = clip.get_groove() if grooved else None
     # A strum, like a groove, only changes timing, so a grab reads the notes without it too.
     strum = clip.get_strum() if grooved else None
     nudge = clip.get_nudge() if grooved else None
-    strummed = 0
-
-    timed = []
-    for place, (slot_start, sounding_notes) in enumerate(slots):
-        onset = _grooved_time(time=slot_start, groove=groove)
-        if nudge is not None:
-            onset = max(onset + nudge.moved(slot_start), ZERO_DELAY)
-        following = _what_follows(slots=slots, place=place)
-        if strum is not None and len(sounding_notes) > 1:
-            for midi_number, note, delay, fading in _strummed(notes=sounding_notes, strum=strum, time=slot_start, count=strummed, place=place):
-                _add_note(timed=timed, start=min(onset + delay, clip_length), onset=onset, note=note, midi_number=midi_number, fading=fading, following=following, clip_length=clip_length)
-            strummed += 1
-            continue
-        # The plain case, most notes of most songs: nothing is delayed or faded, so nothing is added or worked out for it.
-        start = min(onset, clip_length)
-        for midi_number, note in sounding_notes.items():
-            end = min(_glide_end(note=note, end=onset + Length.rational(note[sound.LENGTH]), following=following), clip_length)
-            if end > start:
-                timed.append(NoteEvent(start, end, midi_number, VELOCITY if note[sound.VELOCITY] is None else note[sound.VELOCITY]))
+    if strum is None and nudge is None:
+        # Most clips of most songs: placed on whole-number ticks, many times faster than fractions, with the same result.
+        timed = ClipTicks(positions=positions, scale=scale, length=clip_length, groove=groove).timed()
+    else:
+        timed = _timed_by_fractions(positions=positions, scale=scale, clip_length=clip_length, groove=groove, timing=(strum, nudge))
     handed = clip.get_handed()
     if handed:
         timed.extend(_handed_events(notes=handed, groove=groove, nudge=nudge, clip_length=clip_length))
@@ -141,12 +88,37 @@ def timed_events(*, clip, scale, grooved=True):
     return timed, clip_length
 
 
-def _add_note(*, timed, start, onset, note, midi_number, fading, following, clip_length):
-    """Add a note that sounds from a start as a NoteEvent, ending its length after the slot's onset, gliding into what follows, cut at the clip's end, and faded by a share of its velocity; a note left with no length is passed over."""
-    end = min(_glide_end(note=note, end=onset + Length.rational(note[sound.LENGTH]), following=following), clip_length)
+def _timed_by_fractions(*, positions, scale, clip_length, groove, timing):
+    """Return a clip's notes as NoteEvents in fractions of a whole note, for a clip that a strum or its rushes and drags move: timing
+    is the strum and the nudge, either of which may be None."""
+    strum, nudge = timing
+    slots = _slots(positions=positions, scale=scale)
+    strummed = 0
+    timed = []
+    for place, (slot_start, notes) in enumerate(slots):
+        onset = _grooved_time(time=slot_start, groove=groove)
+        if nudge is not None:
+            onset = max(onset + nudge.moved(slot_start), ZERO_DELAY)
+        following = _what_follows(slots=slots, place=place)
+        if strum is not None and len(notes) > 1:
+            for _midi_number, note, delay, fading in _strummed(notes=notes, strum=strum, time=slot_start, count=strummed, place=place):
+                _add_note(timed=timed, start=min(onset + delay, clip_length), end=_note_end(onset=onset, note=note, following=following, clip_length=clip_length), note=note, fading=fading)
+            strummed += 1
+            continue
+        for note in notes.values():
+            _add_note(timed=timed, start=min(onset, clip_length), end=_note_end(onset=onset, note=note, following=following, clip_length=clip_length), note=note, fading=NO_FADING)
+    return timed
+
+
+def _note_end(*, onset, note, following, clip_length):
+    """Return when a note of a slot starting at an onset ends: its length on, running into what follows if it glides, cut at the clip's end."""
+    return min(_glide_end(note=note, end=onset + Length.rational(note[sound.LENGTH]), following=following), clip_length)
+
+
+def _add_note(*, timed, start, end, note, fading):
+    """Add a note as a NoteEvent from a start to an end, faded by a share of its velocity; a note left with no length is passed over."""
     if end > start:
-        velocity = VELOCITY if note[sound.VELOCITY] is None else note[sound.VELOCITY]
-        timed.append(NoteEvent(start, end, midi_number, _faded(velocity=velocity, fading=fading)))
+        timed.append(NoteEvent(start, end, note[sound.MIDI], _faded(velocity=velocity_of(note), fading=fading)))
 
 
 def _handed_events(*, notes, groove, nudge, clip_length):
@@ -275,7 +247,7 @@ def _place(*, position, start, scale, slots):
             _place(position=part, start=start, scale=scale, slots=slots)
             start = Length.add(start, part[sound.LENGTH])
     else:
-        slots.append((Length.rational(start), _sounding_notes(_degree_to_note(position=position, scale=scale))))
+        slots.append((Length.rational(start), sounding_notes(degree_to_note(position=position, scale=scale))))
 
 
 def _clip_length(*, clip, positions):
@@ -351,7 +323,7 @@ def value_on_the_way(*, start, value, end, target, now):
 
 def as_note(*, position, scale):
     """Return a note, or a degree settled into the note it plays in a scale, which a grab reads."""
-    return _degree_to_note(position=position, scale=scale)
+    return degree_to_note(position=position, scale=scale)
 
 
 def clip_end(*, clip, positions):

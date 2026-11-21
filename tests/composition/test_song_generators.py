@@ -22,7 +22,7 @@ import unittest
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section
 from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.exporters import timing
+from llamatron.exporters import sounding
 from llamatron.exporters.timing import timed_events
 from llamatron.generators.arp import ChordOrder
 from llamatron.music.note import Note, NoteName
@@ -113,7 +113,7 @@ class TestRatchetOffset(unittest.TestCase):
         found = lead([1, QUARTER], [5, QUARTER], rows={Row.RATCHET: [2, None], Row.RATCHET_OFFSET: [1, None], Row.VELOCITY: [40, None], Row.GLIDE: [True, False]})
         events, _ = timed_events(clip=found, scale=None)
         self.assertEqual([event.velocity for event in sorted(events)[:2]], [40, 40])
-        self.assertEqual(sorted(events)[1].end, Fraction(1, 4) + timing.GLIDE_OVERLAP)
+        self.assertEqual(sorted(events)[1].end, Fraction(1, 4) + sounding.GLIDE_OVERLAP)
 
     def test_is_a_whole_number(self):
         with self.assertRaises(SongFileError):

@@ -26,7 +26,6 @@ deeper than four.
 
 ALLOWED = {'long': ('cli.py:_arguments',
           'exporters/ableton_project.py:AbletonProject._build_clip',
-          'exporters/timing.py:timed_events',
           'importers/midi_import.py:MidiImport.imported',
           'importers/midi_reading.py:read_midi',
           'macro_composer/arranger.py:drum_parts',

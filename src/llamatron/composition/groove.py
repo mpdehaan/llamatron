@@ -132,6 +132,12 @@ class Groove(HasCells, LlamaData):
         cell = int(time / cell_length) % len(self._cells)
         return cell_length * Rational(self._cells[cell], PERCENT)
 
+    def moves(self):
+        """Return how long a cell is, in whole notes, and how far a note in each cell is moved, in order, for the timing code that
+        moves many notes by the groove at once."""
+        cell_length = self.get_cell_length()
+        return cell_length, [cell_length * Rational(amount, PERCENT) for amount in self._cells]
+
     def moved(self, time):
         """Return when a note at a time plays once the groove has moved it, never before the clip's start."""
         return max(time + self.offset_at(time), Rational(0))

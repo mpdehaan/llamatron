@@ -25,7 +25,7 @@ import unittest
 from llamatron.composition import file_format, limits
 from llamatron.composition.file_format import ChordSymbol, ClipSlotSetting, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.exporters import midi_messages, timing
+from llamatron.exporters import midi_messages, sounding
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.timing import timed_events
 from llamatron.music.chord import Chord
@@ -341,7 +341,7 @@ class TestStepRows(unittest.TestCase):
 
     def test_glide_runs_into_the_next_note(self):
         events, _ = timed_events(clip=lead([1, QUARTER], [3, QUARTER], rows={Row.GLIDE: [True, False]}), scale=None)
-        self.assertEqual(events[0].end, Fraction(1, 4) + timing.GLIDE_OVERLAP)
+        self.assertEqual(events[0].end, Fraction(1, 4) + sounding.GLIDE_OVERLAP)
         self.assertEqual(events[1].end, Fraction(1, 2))
 
     def test_glide_to_a_rest_or_the_same_pitch_or_the_end_does_nothing(self):
@@ -357,4 +357,4 @@ class TestStepRows(unittest.TestCase):
     def test_only_the_last_ratchet_slice_glides(self):
         events, _ = timed_events(clip=lead([1, QUARTER], [3, QUARTER], rows={Row.RATCHET: [2, None], Row.GLIDE: [True, False]}), scale=None)
         self.assertEqual(events[0].end, Fraction(1, 8))
-        self.assertEqual(events[1].end, Fraction(1, 4) + timing.GLIDE_OVERLAP)
+        self.assertEqual(events[1].end, Fraction(1, 4) + sounding.GLIDE_OVERLAP)
