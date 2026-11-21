@@ -167,16 +167,23 @@ def run_sender(*, connection, ports, recording):
                 engine.send_due()
                 continue
             wait = min(left - SPIN_SECONDS, SLEEP_SLICE_SECONDS)
-        if connection.poll(wait):
+        try:
+            if not connection.poll(wait):
+                continue
             message = connection.recv()
-            kind = message[0]
-            if kind == START:
-                engine.start(at=message[1])
-                started = time.perf_counter() if message[1] is None else message[1]
-            elif kind in FORWARDED:
-                FORWARDED[kind](engine=engine, message=message)
-            elif kind == CLOSE:
-                engine.close()
-                sent = {name: output.sent for name, output in outputs.items()} if recording else None
-                connection.send((started, sent))
-                return
+        except (EOFError, OSError):
+            # The tracker's end of the pipe is gone, as when the tracker dies: every note still sounding is stopped before the
+            # process ends, so that nothing is left stuck on a synthesizer.
+            engine.close()
+            return
+        kind = message[0]
+        if kind == START:
+            engine.start(at=message[1])
+            started = time.perf_counter() if message[1] is None else message[1]
+        elif kind in FORWARDED:
+            FORWARDED[kind](engine=engine, message=message)
+        elif kind == CLOSE:
+            engine.close()
+            sent = {name: output.sent for name, output in outputs.items()} if recording else None
+            connection.send((started, sent))
+            return
