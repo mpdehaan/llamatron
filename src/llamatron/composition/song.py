@@ -490,6 +490,10 @@ class Song(HoldsSections, HoldsSettings):
         """Return a draw by its name, AD to DD, with its default settings if the file leaves it out."""
         return self._section(Section.DRAWS).find(name) or Draw()
 
+    def _written_draws(self):
+        """Return the draws the file writes, the only ones that can hold a value: a draw left out is its default, which holds none."""
+        return self._section(Section.DRAWS).values()
+
     def set_draw_setting(self, *, name, setting, value):
         """Change one setting of a draw, AD to DD, by its file name, or None for its default."""
         self._change_draw(name=name, change=lambda draw: draw.set_setting(name=setting, value=value))
@@ -514,7 +518,7 @@ class Song(HoldsSections, HoldsSettings):
 
     def uses_draws(self):
         """Return whether any draw holds a value, so that a render need only follow the draws when one does."""
-        return any(self.get_draw(name).filled_places() for name in file_format.DRAW_NAMES)
+        return any(draw.filled_places() for draw in self._written_draws())
 
     # The scenes, in the order they play.
 
@@ -716,7 +720,7 @@ class Song(HoldsSections, HoldsSettings):
         """Return whether any of its scenes, or any clip of one, sets a register or adds to one, or whether a draw that holds a
         value redraws in conditions, which a statement of a scene, a clip, a track, a chain or a generator can draw from."""
         return any(scene.changes_registers() for scene in self.get_scenes()) or any(
-            self.get_draw(name).redraws_in_conditions() and self.get_draw(name).filled_places() for name in file_format.DRAW_NAMES
+            draw.redraws_in_conditions() and draw.filled_places() for draw in self._written_draws()
         )
 
     def get_default_octave(self):
