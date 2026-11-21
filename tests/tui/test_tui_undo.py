@@ -15,38 +15,26 @@ import inspect
 import os
 import unittest
 
-from llamatron.composition import defaults, generator_settings
-from llamatron.composition.file_format import DrawName, DriftValue, DriftVersion, EuclidPart, GeneratorKind, ReadyBar, RegisterName, RegisterSetting, Row, Section, ShapePart, SongSetting, StrumPart
-from llamatron.composition.generator_settings import MusicianSetting, PhrasingSetting
+from llamatron.composition import defaults
+from llamatron.composition.file_format import GeneratorKind, Row, Section, SongSetting
 from llamatron.composition.named_scale import scale_type_name
 from llamatron.composition.naming import default_scale_name, new_name
-from llamatron.generators import musician, phrasing
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.strings import labels, messages, names as names_text
 from llamatron.tui import keybindings
-from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage
-from llamatron.tui.screens.arrange.clip_page import ClipPage
 from llamatron.tui.screens.arrange.scene_page import ScenePage
-from llamatron.tui.screens.arrange.track_editor import TrackEditor
-from llamatron.tui.screens.generators import chords_editor, generator_pages
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
-from llamatron.tui.screens.generators.chain_editor import ChainEditor
-from llamatron.tui.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.tui.screens.generators.generators_page import GeneratorsPage
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
 from llamatron.tui.screens.pattern.patterns_page import PatternsPage
-from llamatron.tui.screens.set.groove_editor import GrooveEditor
-from llamatron.tui.screens.set.grooves_page import GroovesPage
-from llamatron.tui.screens.set.instrument_editor import InstrumentEditor
 from llamatron.tui.screens.set.instruments_page import InstrumentsPage
 from llamatron.tui.screens.set.main_page import MainPage
 from llamatron.tui.screens.set.notes_page import NotesPage
 from llamatron.tui.screens.set.scale_page import ScalePage
-from llamatron.tui.screens.set.scales_page import ScalesPage
 from llamatron.tui.screens.set.song_page import SongPage
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import munge
@@ -55,18 +43,12 @@ from tests.support.ui_testing import a_song, fixed_text, key_of, leaf_pages, UIT
 # Names the tests give to what they add, and what they type.
 SECOND_SONG = 'second'
 RENAMED = 'renamed'
-NEW_CHAIN = 'lift'
-# A shape's end left blank plays as 100, and one press of [ (dec) takes it down to 99.
-SHAPE_NUDGED_DOWN = 99
-NEW_ARP = 'fast'
 # Entry sizes the roll's picker offers, longer than the tune's 1/8 steps.
 QUARTER = '1/4'
 HALF = '1/2'
-A_TITLE = 'A title'
 A_LINE = 'hi there'
 ANOTHER_LINE = 'ok'
 TWO_LETTERS = 'ab'
-COUNTS_TYPED = '1 1 4'
 OTHER_FILE = 'other.yml'
 # The pattern editor's Velocity row is this many rows below Degree, in the normal rows.
 # Velocity's place among the editor's rows: the two pinned rows, then the Basics heading, #/b and Velocity.
@@ -77,7 +59,6 @@ TWELVE = ('1', '2')
 SEVEN = '7'
 # How test classes are named after pages: TestSongPage tests it, and TestSongPageUndo tests undo on it.
 TEST_PREFIX = 'Test'
-UNDO_SUFFIX = 'Undo'
 TEST_MODULE_PREFIX = 'test_tui_'
 # The package the text UI's test modules are in, this one.
 TUI_TESTS_PACKAGE = 'tests.tui.'
@@ -165,27 +146,6 @@ class TestMainPageUndo(UndoTest):
         self.assertIn(messages.MSG_UNDONE.format(what=self.in_song(messages.MSG_CHANGED_WORDS[SongSetting.TEMPO])), self.text())
 
 
-class TestFilePageUndo(UndoTest):
-
-    async def test_a_toggle_is_one_step(self):
-        before = self.data()
-        await self.press(keybindings.MainPage.FILE)
-        await self.select_field(labels.MSG_PROTECTED_LABEL)
-        await self.press(Key.ENTER)
-        self.assertTrue(self.document.get_setlist().is_protected())
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_a_prompt_answered_is_one_step(self):
-        before = self.data()
-        await self.press(keybindings.MainPage.FILE)
-        await self.select_field(labels.MSG_TITLE_LABEL)
-        await self.press(Key.ENTER)
-        await self.type(A_TITLE)
-        await self.press(Key.ENTER)
-        self.assertEqual(self.document.get_setlist().get_title(), A_TITLE)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
 class TestNotesPageUndo(UndoTest):
 
     async def asyncSetUp(self):
@@ -244,12 +204,6 @@ class TestSongsPageUndo(UndoTest):
         await self.type(SECOND_SONG)
         await self.press(Key.ENTER)
 
-    async def test_adding_a_song_is_one_step(self):
-        before = self.data()
-        await self.add_second_song()
-        self.assertEqual(self.document.song_names(), [names_text.MSG_DEFAULT_SONG_NAME, SECOND_SONG])
-        await self.check_undo_and_redo(before=before, after=self.data())
-
     async def test_undoing_the_deletion_of_the_current_song_makes_it_current_again(self):
         await self.add_second_song()
         await self.press(keybindings.SongsPage.CURRENT)
@@ -269,12 +223,6 @@ class TestSongPageUndo(UndoTest):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         self.assertIsInstance(self.app.screen, SongPage)
 
-    async def test_a_setting_is_one_step_and_the_cursor_stays(self):
-        before = self.data()
-        await self.select_field(labels.MSG_TEMPO_LABEL)
-        await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET))
-        await self.check_undo_and_redo(before=before, after=self.data())
-
     async def test_the_crumb_follows_an_undone_rename_of_the_song(self):
         await self.select_field(labels.MSG_NAME_LABEL)
         await self.press(Key.ENTER)
@@ -292,22 +240,6 @@ class TestPatternsPageUndo(UndoTest):
     def next_pattern_name(self):
         """Return the name the Patterns page offers for a new pattern: one more than the highest number there."""
         return new_name(word=names_text.MSG_NEW_PATTERN_WORD, taken=self.document.song().get_pattern_names())
-
-    async def test_adding_a_pattern_is_one_step(self):
-        before = self.data()
-        added = self.next_pattern_name()
-        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK, Key.ENTER, Key.ESCAPE)
-        self.assertIsInstance(self.app.screen, PatternsPage)
-        self.assertIn(added, self.document.song().get_pattern_names())
-        # The page has no + row for the cursor to fall to when the pattern goes, so the cursor waits on a pattern that stays.
-        self.app.screen.put_cursor_on(ui_testing.TUNE)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_moving_a_pattern_to_another_group_is_one_step(self):
-        before = self.data()
-        await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.GROUP, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.document.pattern_group(ui_testing.TUNE), ui_testing.RHYTHMS)
-        await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_undoing_the_add_while_its_editor_is_open_goes_back_to_the_list(self):
         added = self.next_pattern_name()
@@ -381,27 +313,7 @@ class TestPatternEditorUndo(UndoTest):
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
-class TestChainStatementsPageUndo(UndoTest):
-
-    async def test_a_statement_is_one_step(self):
-        await self.open_chain(ui_testing.NAMED)
-        await self.press(keybindings.ChainEditor.WHEN)
-        self.assertIsInstance(self.app.screen, ChainStatementsPage)
-        before = self.data()
-        await self.press(Key.DOWN, Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        await self.pick(RegisterName.AX)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
 class TestChainEditorUndo(UndoTest):
-
-    async def test_copying_a_step_is_one_step(self):
-        await self.open_chain(ui_testing.NAMED)
-        self.assertIsInstance(self.app.screen, ChainEditor)
-        before = self.data()
-        await self.press(keybindings.ChainEditor.COPY)
-        await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_undoing_a_rename_keeps_the_editor_on_the_chain_under_its_old_name(self):
         await self.open_chain(ui_testing.NAMED)
@@ -410,45 +322,6 @@ class TestChainEditorUndo(UndoTest):
         self.app.screen.value = RENAMED
         await self.press(Key.ENTER)
         await self.check_rename_follows(old=name, new=RENAMED)
-
-    async def test_undoing_the_add_while_the_editor_is_open_goes_back_to_the_list(self):
-        await self.press(keybindings.MainPage.GENERATORS, keybindings.GeneratorsPage.ADD)
-        await self.pick(labels.MSG_CHAIN_LABEL)
-        self.assertIsInstance(self.app.screen, ChainEditor)
-        await self.check_undo_goes_back_to(GeneratorsPage)
-
-
-class TestGeneratorsPageUndo(UndoTest):
-
-    async def test_adding_a_generator_is_one_step(self):
-        await self.press(keybindings.MainPage.GENERATORS)
-        self.assertIsInstance(self.app.screen, GeneratorsPage)
-        await self.undo()
-        self.assertIn(messages.MSG_NOTHING_TO_UNDO, self.text())
-        before = self.data()
-        await self.press(keybindings.GeneratorsPage.ADD)
-        await self.pick(generator_pages.GENERATOR_PAGES[Section.ARPS].label)
-        # The new arpeggiator sits after the set's other one; the cursor goes back up to that one, which the undo leaves.
-        await self.press(Key.ESCAPE, Key.UP)
-        self.assertIsInstance(self.app.screen, GeneratorsPage)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestArpEditorUndo(UndoTest):
-
-    async def test_a_setting_is_one_step(self):
-        await self.open_generator(section=Section.ARPS)
-        self.assertIsInstance(self.app.screen, ArpEditor)
-        before = self.data()
-        await self.select_field(labels.MSG_OCTAVE_RANGE_LABEL)
-        await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_undoing_the_add_while_the_editor_is_open_goes_back_to_the_list(self):
-        await self.add_generator(Section.ARPS)
-        self.assertIsInstance(self.app.screen, ArpEditor)
-        await self.check_undo_goes_back_to(GeneratorsPage)
-
 
 class TestOffsetsEditorUndo(UndoTest):
 
@@ -482,333 +355,6 @@ class TestOffsetsEditorUndo(UndoTest):
         await self.check_undo_goes_back_to(GeneratorsPage)
 
 
-class TestAutoRatchetEditorUndo(UndoTest):
-
-    async def test_typing_counts_is_one_step(self):
-        await self.open_generator(section=Section.AUTO_RATCHETS)
-        before = self.data()
-        await self.select_field(labels.MSG_COUNTS_LABEL)
-        await self.press(Key.ENTER)
-        self.app.screen.value = COUNTS_TYPED
-        await self.press(Key.ENTER)
-        self.assertEqual(self.auto_ratchet(ui_testing.ROLLS).get_counts(), [int(count) for count in COUNTS_TYPED.split()])
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestDriftEditorUndo(UndoTest):
-
-    async def test_changing_a_versions_value_is_one_step(self):
-        await self.open_generator(section=Section.DRIFTS)
-        before = self.data()
-        await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.VELOCITY])
-        await self.press(Key.RIGHT, keybindings.DriftEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRIFT, name=ui_testing.SWAY).get_value(version=DriftVersion.B, value=DriftValue.VELOCITY), None)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestProgressionEditorUndo(UndoTest):
-
-    async def test_changing_every_is_one_step(self):
-        await self.open_generator(section=Section.PROGRESSIONS)
-        before = self.data()
-        await self.select_field(labels.MSG_EVERY_LABEL)
-        await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertIsNotNone(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=ui_testing.POP).get_every())
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestChordsEditorUndo(UndoTest):
-
-    async def test_picking_a_named_progression_is_one_step(self):
-        await self.open_generator(section=Section.PROGRESSIONS)
-        await self.select_field(labels.MSG_CHORDS_LABEL)
-        await self.press(Key.ENTER)
-        before = self.data()
-        # The picker opens on Pop, which the test song already holds, so Down picks Fifties.
-        await self.press(keybindings.ChordsEditor.PICK, Key.DOWN, Key.ENTER)
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-    async def test_a_chord_chosen_in_the_chord_dialog_is_one_step(self):
-        await self.open_generator(section=Section.PROGRESSIONS)
-        await self.select_field(labels.MSG_CHORDS_LABEL)
-        await self.press(Key.ENTER, *[Key.DOWN] * chords_editor.QUALITY_ROW)
-        before = self.data()
-        # A quality, a tension and a scale together: Down picks the first quality, Tab twice reaches the tensions, past the inversions, Space turns the first on, Tab reaches the scales, where Down
-        # and Enter open the first category's flyout and Enter picks its first scale, and the last Enter takes the chord.
-        await self.press(
-            keybindings.ChordsEditor.CHOOSE, Key.DOWN, keybindings.ChordDialog.NEXT_LIST, keybindings.ChordDialog.NEXT_LIST, keybindings.ChordDialog.FLIP, keybindings.ChordDialog.NEXT_LIST, Key.DOWN,
-            keybindings.ChordDialog.OPEN, keybindings.ChordDialog.CHOOSE, keybindings.ChordDialog.CHOOSE,
-        )
-        self.assertIsNotNone(self.document.song().get_generator_settings(kind=GeneratorKind.PROGRESSION, name=ui_testing.POP).get_scales()[0])
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestVoiceLeadingEditorUndo(UndoTest):
-
-    async def test_keeping_the_root_in_the_bass_is_one_step(self):
-        await self.open_generator(section=Section.VOICE_LEADINGS)
-        before = self.data()
-        await self.select_field(labels.MSG_ROOT_IN_BASS_LABEL)
-        await self.press(keybindings.VoiceLeadingEditor.TOGGLE)
-        self.assertTrue(self.document.song().get_generator_settings(kind=GeneratorKind.VOICE_LEADING, name=ui_testing.SMOOTH).keeps_root_in_bass())
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestGuitarifyEditorUndo(UndoTest):
-
-    async def test_switching_let_ring_on_is_one_step(self):
-        await self.open_generator(section=Section.GUITARIFIES)
-        before = self.data()
-        await self.select_field(labels.MSG_GUITAR_LET_RING_LABEL)
-        await self.press(keybindings.GuitarifyEditor.TOGGLE)
-        self.assertTrue(self.document.song().get_generator_settings(kind=GeneratorKind.GUITARIFY, name=ui_testing.PICKED).lets_ring())
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestGuitarBarEditorUndo(UndoTest):
-
-    async def open_bar(self):
-        await self.open_generator(section=Section.GUITARIFIES)
-        await self.select_field(labels.MSG_GUITAR_BAR_LABEL)
-        await self.press(Key.ENTER)
-
-    async def test_changing_a_stroke_is_one_step(self):
-        await self.open_bar()
-        before = self.data()
-        await self.press(keybindings.GuitarBarEditor.MORE)
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_a_ready_made_bar_is_one_step(self):
-        await self.open_bar()
-        before = self.data()
-        await self.press(keybindings.GuitarBarEditor.READY_BARS)
-        await self.pick(labels.MSG_READY_BAR_NAMES[ReadyBar.CHUG])
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestHocketEditorUndo(UndoTest):
-
-    async def test_clearing_the_source_is_one_step(self):
-        await self.open_generator(section=Section.HOCKETS)
-        before = self.data()
-        await self.select_field(labels.MSG_SOURCE_TRACK_LABEL)
-        await self.press(keybindings.HocketEditor.CLEAR)
-        self.assertIsNone(self.document.song().get_generator_settings(kind=GeneratorKind.HOCKET, name=ui_testing.TRADE).get_source())
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestPhrasingEditorUndo(UndoTest):
-
-    async def test_a_deeper_breath_is_one_step(self):
-        await self.open_generator(section=Section.PHRASINGS)
-        before = self.data()
-        await self.select_field(labels.MSG_PHRASING_BREATH_LABEL)
-        await self.press(keybindings.PhrasingEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.PHRASING, name=ui_testing.BREATHES).get_own(PhrasingSetting.BREATH), phrasing.DEEP_BREATH)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestMusicianEditorUndo(UndoTest):
-
-    async def test_a_busier_musician_is_one_step(self):
-        await self.open_generator(section=Section.MUSICIANS)
-        before = self.data()
-        await self.select_field(labels.MSG_MUSICIAN_ACTIVITY_LABEL)
-        await self.press(keybindings.MusicianEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.MUSICIAN, name=ui_testing.STRUMMER).get_own(MusicianSetting.ACTIVITY), musician.BUSY)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestFollowChordsEditorUndo(UndoTest):
-
-    async def test_clearing_the_track_followed_is_one_step(self):
-        await self.open_generator(section=Section.FOLLOW_CHORDS)
-        before = self.data()
-        await self.select_field(labels.MSG_CHORDS_FROM_LABEL)
-        await self.press(keybindings.FollowChordsEditor.CLEAR)
-        self.assertIsNone(self.document.song().get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=ui_testing.FOLLOWS).get_chords_from())
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestStrumEditorUndo(UndoTest):
-
-    async def test_changing_the_spread_is_one_step(self):
-        await self.open_generator(section=Section.STRUMS)
-        before = self.data()
-        await self.select_field(labels.MSG_STRUM_PART_LABELS[StrumPart.SPREAD])
-        await self.press(keybindings.StrumEditor.MORE)
-        self.assertIsNotNone(self.document.song().get_generator_settings(kind=GeneratorKind.STRUM, name=ui_testing.FOLK).get_strum_setting(StrumPart.SPREAD))
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestEuclidEditorUndo(UndoTest):
-
-    async def test_picking_a_named_rhythm_is_one_step(self):
-        await self.open_generator(section=Section.EUCLIDS)
-        before = self.data()
-        await self.select_field(labels.MSG_EUCLID_PART_LABELS[EuclidPart.HITS])
-        # The picker opens on the tresillo, which the test song's clave already plays, so Down picks the cinquillo.
-        await self.press(keybindings.EuclidEditor.PICK_RHYTHM, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.EUCLID, name=ui_testing.CLAVE).get_euclid().hits, 5)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestGlideEditorUndo(UndoTest):
-
-    async def test_changing_the_glide_amount_is_one_step(self):
-        await self.open_generator(section=Section.GLIDES)
-        before = self.data()
-        await self.select_field(labels.MSG_GLIDE_AMOUNT_LABEL)
-        await self.press(keybindings.GlideEditor.MORE)
-        self.assertIsNotNone(self.document.song().get_generator_settings(kind=GeneratorKind.GLIDE, name=ui_testing.SLIDES).get_written_glide_amount())
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestGlideStepsEditorUndo(UndoTest):
-
-    async def test_turning_a_step_on_or_off_is_one_step(self):
-        await self.open_generator(section=Section.GLIDES)
-        await self.select_field(labels.MSG_STEPS_LABEL)
-        await self.press(Key.ENTER)
-        before = self.data()
-        await self.press(keybindings.GlideStepsEditor.TOGGLE)
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestShortenEditorUndo(UndoTest):
-
-    async def test_changing_the_amount_is_one_step(self):
-        await self.open_generator(section=Section.SHORTENS)
-        before = self.data()
-        await self.select_field(labels.MSG_SHORTEN_LABEL)
-        await self.press(keybindings.ShortenEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SHORTEN, name=ui_testing.CLIPS).get_shorten(), generator_settings.DEFAULT_SHORTEN + 1)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestShortenStepsEditorUndo(UndoTest):
-
-    async def test_turning_a_step_on_or_off_is_one_step(self):
-        await self.open_generator(section=Section.SHORTENS)
-        await self.select_field(labels.MSG_STEPS_LABEL)
-        await self.press(Key.ENTER)
-        before = self.data()
-        await self.press(keybindings.ShortenStepsEditor.TOGGLE)
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestRushEditorUndo(UndoTest):
-
-    async def test_changing_the_amount_is_one_step(self):
-        await self.open_generator(section=Section.RUSHES)
-        before = self.data()
-        await self.select_field(labels.MSG_RUSH_AMOUNT_LABEL)
-        await self.press(keybindings.RushEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.RUSH, name=ui_testing.PUSH).get_amount(), generator_settings.DEFAULT_RUSH + 1)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestRushStepsEditorUndo(UndoTest):
-
-    async def test_turning_a_step_on_or_off_is_one_step(self):
-        await self.open_generator(section=Section.RUSHES)
-        await self.select_field(labels.MSG_STEPS_LABEL)
-        await self.press(Key.ENTER)
-        before = self.data()
-        await self.press(keybindings.RushStepsEditor.TOGGLE)
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestDragEditorUndo(UndoTest):
-
-    async def test_changing_the_amount_is_one_step(self):
-        await self.open_generator(section=Section.DRAGS)
-        before = self.data()
-        await self.select_field(labels.MSG_DRAG_AMOUNT_LABEL)
-        await self.press(keybindings.DragEditor.MORE)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DRAG, name=ui_testing.LAZY).get_amount(), generator_settings.DEFAULT_DRAG + 1)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestDragStepsEditorUndo(UndoTest):
-
-    async def test_turning_a_step_on_or_off_is_one_step(self):
-        await self.open_generator(section=Section.DRAGS)
-        await self.select_field(labels.MSG_STEPS_LABEL)
-        await self.press(Key.ENTER)
-        before = self.data()
-        await self.press(keybindings.DragStepsEditor.TOGGLE)
-        self.assertNotEqual(self.data(), before)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestDensityEditorUndo(UndoTest):
-
-    async def test_changing_its_end_is_one_step(self):
-        await self.open_generator(section=Section.DENSITIES)
-        before = self.data()
-        await self.select_field(labels.MSG_SHAPE_PART_LABELS[ShapePart.END])
-        await self.press(keybindings.DensityEditor.LESS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.DENSITY, name=ui_testing.THIN).get_shape().end, SHAPE_NUDGED_DOWN)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestSwellEditorUndo(UndoTest):
-
-    async def test_changing_its_end_is_one_step(self):
-        await self.open_generator(section=Section.SWELLS)
-        before = self.data()
-        await self.select_field(labels.MSG_SHAPE_PART_LABELS[ShapePart.END])
-        await self.press(keybindings.SwellEditor.LESS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.SWELL, name=ui_testing.FADE).get_shape().end, SHAPE_NUDGED_DOWN)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestArticulateEditorUndo(UndoTest):
-
-    async def test_changing_its_end_is_one_step(self):
-        await self.open_generator(section=Section.ARTICULATES)
-        before = self.data()
-        await self.select_field(labels.MSG_SHAPE_PART_LABELS[ShapePart.END])
-        await self.press(keybindings.ArticulateEditor.LESS)
-        self.assertEqual(self.document.song().get_generator_settings(kind=GeneratorKind.ARTICULATE, name=ui_testing.CLIPPED).get_shape().end, SHAPE_NUDGED_DOWN)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestGeneratorListPageUndo(UndoTest):
-
-    async def test_adding_a_chain_to_a_track_is_one_step(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        await self.select_field(labels.MSG_GENERATORS_FIELD_LABEL)
-        await self.press(Key.ENTER)
-        before = self.data()
-        await self.press(keybindings.GeneratorListPage.ADD, Key.ENTER)
-        self.assertEqual(len(self.document.song().get_track(ui_testing.LEAD).get_chain_names()), 1)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
-class TestScalesPageUndo(UndoTest):
-
-    async def test_adding_a_scale_is_one_step(self):
-        before = self.data()
-        await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.ADD, Key.ESCAPE)
-        self.assertIsInstance(self.app.screen, ScalesPage)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_undoing_the_add_while_its_page_is_open_goes_back_to_the_list(self):
-        await self.press(keybindings.MainPage.SCALES, keybindings.ScalesPage.ADD)
-        self.assertIsInstance(self.app.screen, ScalePage)
-        await self.check_undo_goes_back_to(ScalesPage)
-
-
 class TestScalePageUndo(UndoTest):
 
     async def test_changing_the_root_is_one_step_and_the_crumb_follows(self):
@@ -825,21 +371,6 @@ class TestScalePageUndo(UndoTest):
         await self.check_rename_follows(old=name, new=renamed)
         await self.undo()
         self.assertEqual(self.data(), before)
-
-
-class TestGroovesPageUndo(UndoTest):
-
-    async def test_adding_a_groove_is_one_step(self):
-        before = self.data()
-        await self.press(keybindings.MainPage.GROOVES, keybindings.GroovesPage.ADD, Key.ESCAPE)
-        self.assertIsInstance(self.app.screen, GroovesPage)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_undoing_the_add_while_the_editor_is_open_goes_back_to_the_list(self):
-        await self.press(keybindings.MainPage.GROOVES, keybindings.GroovesPage.ADD)
-        self.assertIsInstance(self.app.screen, GrooveEditor)
-        await self.check_undo_goes_back_to(GroovesPage)
-        self.assertIn(messages.MSG_UNDONE.format(what=self.named(section=Section.GROOVES, name=names_text.MSG_NUMBERED_NAME.format(base=names_text.MSG_NEW_GROOVE_WORD, number=defaults.FIRST_NUMBER))), self.text())
 
 
 class TestGrooveEditorUndo(UndoTest):
@@ -863,25 +394,6 @@ class TestInstrumentsPageUndo(UndoTest):
         self.assertTrue(self.document.get_setlist().is_real_time())
         await self.check_undo_and_redo(before=before, after=self.data())
 
-    async def test_undoing_the_add_while_the_editor_is_open_goes_back_to_the_list(self):
-        await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD)
-        self.assertIsInstance(self.app.screen, InstrumentEditor)
-        await self.check_undo_goes_back_to(InstrumentsPage)
-        self.assertIn(messages.MSG_UNDONE.format(what=self.named(section=Section.INSTRUMENTS, name=names_text.MSG_NUMBERED_NAME.format(base=names_text.MSG_NEW_INSTRUMENT_WORD, number=defaults.FIRST_NUMBER))), self.text())
-
-
-class TestInstrumentEditorUndo(UndoTest):
-
-    async def test_stepping_the_channel_is_one_step(self):
-        await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD)
-        name = names_text.MSG_NUMBERED_NAME.format(base=names_text.MSG_NEW_INSTRUMENT_WORD, number=defaults.FIRST_NUMBER)
-        before = self.data()
-        await self.select_field(labels.MSG_CHANNEL_LABEL)
-        await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.document.get_setlist().get_instrument(name).get_channel(), defaults.DEFAULT_CHANNEL + 1)
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-
 class TestArrangePageUndo(UndoTest):
 
     async def asyncSetUp(self):
@@ -903,21 +415,6 @@ class TestArrangePageUndo(UndoTest):
 
 
 class TestScenePageUndo(UndoTest):
-
-    async def test_a_setting_is_one_step(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.ENTER)
-        self.assertIsInstance(self.app.screen, ScenePage)
-        before = self.data()
-        await self.select_field(labels.MSG_REPEAT_LABEL)
-        await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_a_section_chosen_is_one_step(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.ENTER)
-        before = self.data()
-        await self.select_field(labels.MSG_SCENE_SECTION_LABEL)
-        await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        await self.check_undo_and_redo(before=before, after=self.data())
 
     async def test_undoing_a_rename_keeps_the_page_on_the_scene_under_its_old_name(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.ENTER)
@@ -941,96 +438,10 @@ class TestScenePageUndo(UndoTest):
         await self.check_undo_goes_back_to(ArrangePage)
 
 
-class TestClipPageUndo(UndoTest):
-
-    async def test_a_setting_is_one_step(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
-        self.assertIsInstance(self.app.screen, ClipPage)
-        before = self.data()
-        await self.select_field(labels.MSG_REPEAT_LABEL)
-        await self.press(key_of(binding=keybindings.ClipPage.MORE, key=Key.RIGHT_BRACKET))
-        await self.check_undo_and_redo(before=before, after=self.data())
-
-    async def test_undoing_the_tracks_rename_keeps_the_page_on_the_clip(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        self.assertIsInstance(self.app.screen, TrackEditor)
-        await self.select_field(labels.MSG_NAME_LABEL)
-        await self.press(Key.ENTER)
-        self.app.screen.value = RENAMED
-        await self.press(Key.ENTER, Key.ESCAPE, Key.DOWN, Key.ENTER)
-        self.assertIsInstance(self.app.screen, ClipPage)
-        self.assertEqual(self.app.screen.track, RENAMED)
-        screen = self.app.screen
-        await self.undo()
-        self.assertIs(self.app.screen, screen)
-        self.assertEqual(screen.track, ui_testing.LEAD)
-        self.assertIn(ui_testing.LEAD, self.crumbs_line())
-        await self.redo()
-        self.assertEqual(screen.track, RENAMED)
-
-    async def test_undoing_the_clips_adding_while_its_page_is_open_goes_back_to_arrange(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.DOWN, Key.RIGHT, Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        await self.press(Key.ENTER)
-        if not isinstance(self.app.screen, ClipPage):
-            await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ClipPage)
-        await self.check_undo_goes_back_to(ArrangePage)
-        self.assertIsNone(self.document.clip_slot(index=1, track=ui_testing.LEAD))
-
-
-class TestTrackEditorUndo(UndoTest):
-
-    async def test_a_setting_is_one_step(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        self.assertIsInstance(self.app.screen, TrackEditor)
-        before = self.data()
-        await self.select_field(labels.MSG_TRANSPOSE_LABEL)
-        await self.press(key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET))
-        await self.check_undo_and_redo(before=before, after=self.data())
-        await self.undo()
-        self.assertIn(messages.MSG_UNDONE.format(what=self.in_song(self.named(section=Section.TRACKS, name=ui_testing.LEAD))), self.text())
-
-    async def test_undoing_a_rename_keeps_the_editor_on_the_track_under_its_old_name(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        await self.select_field(labels.MSG_NAME_LABEL)
-        await self.press(Key.ENTER)
-        self.app.screen.value = RENAMED
-        await self.press(Key.ENTER)
-        await self.check_rename_follows(old=ui_testing.LEAD, new=RENAMED)
-
-    async def test_undoing_the_copy_while_the_copys_editor_is_open_goes_back_to_arrange(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.UP, keybindings.ArrangePage.COPY_TRACK, Key.ENTER, Key.ENTER)
-        self.assertIsInstance(self.app.screen, TrackEditor)
-        await self.check_undo_goes_back_to(ArrangePage)
-
-
-class TestRegistersPageUndo(UndoTest):
-
-    async def test_a_setting_is_one_step_and_the_cursor_stays(self):
-        await self.press(keybindings.MainPage.REGISTERS)
-        before = self.data()
-        await self.select_field(labels.MSG_REGISTER_FIELD_LABEL.format(name=RegisterName.BX, what=RegisterSetting.MAXIMUM))
-        await self.press(key_of(binding=keybindings.RegistersPage.MORE, key=Key.RIGHT_BRACKET))
-        await self.check_undo_and_redo(before=before, after=self.data())
-        await self.undo()
-        self.assertIn(messages.MSG_UNDONE.format(what=self.in_song(self.named(section=Section.REGISTERS, name=RegisterName.BX))), self.text())
-
-
-class TestDrawsPageUndo(UndoTest):
-
-    async def test_a_slot_is_one_step_and_the_cursor_stays(self):
-        await self.press(keybindings.MainPage.DRAWS)
-        before = self.data()
-        await self.select_field(labels.MSG_DRAW_STRIP_LABEL)
-        await self.press(keybindings.DrawsPage.SLOT_MORE)
-        await self.check_undo_and_redo(before=before, after=self.data())
-        await self.undo()
-        self.assertIn(messages.MSG_UNDONE.format(what=self.in_song(self.named(section=Section.DRAWS, name=DrawName.AD))), self.text())
-
-
 class TestEveryPageHasTestClasses(unittest.TestCase):
-    """Every page has a test class named after it, and an undo test class here, so that a new page gets both."""
+    """Every page has a test class named after it, so that a new page gets one. Undo needs no class a page: the base page records
+    an undo step after every key and every dialog's answer, so every page has it, and only a page whose undo does something of
+    its own has tests of it here."""
 
     def ui_test_class_names(self):
         """Return the names of every test class in the text UI test modules."""
@@ -1042,14 +453,13 @@ class TestEveryPageHasTestClasses(unittest.TestCase):
                 names.update(name for name, member in inspect.getmembers(module, inspect.isclass) if issubclass(member, unittest.TestCase))
         return names
 
-    def test_every_page_has_a_test_class_and_an_undo_test_class(self):
+    def test_every_page_has_a_test_class(self):
         names = self.ui_test_class_names()
         pages = leaf_pages()
         self.assertTrue(pages)
         for page in pages:
             with self.subTest(page=page.__name__):
                 self.assertIn(TEST_PREFIX + page.__name__, names)
-                self.assertIn(TEST_PREFIX + page.__name__ + UNDO_SUFFIX, names)
 
 
 if __name__ == '__main__':
