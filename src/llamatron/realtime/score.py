@@ -143,11 +143,11 @@ class Score:
                     self._clip_seconds[(index, len(self._rows[index]) - 1, name)] = clock.seconds_at(clip.total_length())
                     if route is None or track.get_mute() or name in kept:
                         continue
-                    self._events[(index, name)].extend(clip_timeline(clip=clip, scale=grid.scale_at(row=row, column=track), route=route, tag=Tag(index, name),
-                                                                     scene_start=Rational(0), scene_seconds=scene_start, clock=clock))
+                    # Each row's events are put in time order by where they fall in the row, and the rows follow one another, so
+                    # that a clip's events are in time order across every repeat of its scene, as the player reads them.
+                    self._events[(index, name)].extend(sorted(clip_timeline(clip=clip, scale=grid.scale_at(row=row, column=track), route=route, tag=Tag(index, name),
+                                                                            scene_start=Rational(0), scene_seconds=scene_start, clock=clock), key=sort_key))
                 scene_start += row_seconds
-            for track in self._tracks:
-                self._events[(index, track)].sort(key=sort_key)
             for track in kept:
                 self._events[(index, track)] = earlier._events[(index, track)]
             self._scene_seconds.append(scene_start)

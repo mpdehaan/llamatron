@@ -286,6 +286,8 @@ BASS = 'bass'
 HIGH = 'high'
 LOW = 'low'
 SCENE_SECONDS = 2.0
+# How many times a scene plays when a test makes it repeat, written out as as many rows.
+REPEATS = 2
 QUARTER = '1/4'
 FAR_AHEAD = 1000.0
 HALF_A_SCENE = 1.0
@@ -377,6 +379,15 @@ class TestScore(unittest.TestCase):
         starts = [event.seconds for event in score.get_events(scene=SECOND, track=LEAD) if event.kind == timeline_values.NOTE_ON]
         self.assertEqual(starts, [0.0, 0.5, 1.0, 1.5])
         self.assertEqual(score.get_events(scene=SECOND, track=BASS)[0].port, OTHER_PORT)
+
+    def test_a_scene_that_repeats_keeps_each_clips_events_in_time_order_across_its_rows(self):
+        song = player_song()
+        song.get_scene(SECOND).set_repeat(REPEATS)
+        score = Score(song=song, routes=two_routes(), seed=SEED)
+        starts = [event.seconds for event in score.get_events(scene=SECOND, track=LEAD) if event.kind == timeline_values.NOTE_ON]
+        self.assertEqual(starts, [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5])
+        seconds = [event.seconds for event in score.clip_events(scene=SECOND, track=LEAD)]
+        self.assertEqual(seconds, sorted(seconds))
 
     def test_a_track_with_no_route_has_no_events_and_an_empty_slot_counts_as_with_scene(self):
         song = player_song()
