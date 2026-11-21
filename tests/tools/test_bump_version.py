@@ -9,7 +9,7 @@ import importlib.util
 import pathlib
 import unittest
 
-from llamatron.support import version
+from llamatron.model.file import version
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'bump_version.py'
 MODULE_NAME = 'bump_version'
@@ -18,7 +18,7 @@ NOW = datetime.datetime(2031, 2, 3, 4, 5)
 NOW_DATE = '2031-02-03'
 NOW_TIME = '04:05'
 A_SOURCE_FILE = 'src/llamatron/tui/keys.py'
-A_TEST_FILE = 'tests/music/test_note.py'
+A_TEST_FILE = 'tests/model/test_note.py'
 A_DOCUMENT = 'GUIDE.md'
 A_TEMPLATE_IN_SOURCE = 'src/llamatron/templates/live12.als'
 # What `git diff --cached --unified=0` shows of the version module when a commit bumps it, and when it only moves the build time.

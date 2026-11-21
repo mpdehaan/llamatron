@@ -8,9 +8,9 @@ import os
 import tempfile
 import unittest
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import GeneratorKind, Section, SetlistSetting
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import GeneratorKind, Section, SetlistSetting
 from tests.support.rendering import as_setlist
 
 ARP = 'up'

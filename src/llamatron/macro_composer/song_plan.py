@@ -18,8 +18,8 @@ section itself is kept over what the plan would say.
 
 import random
 
-from llamatron.composition.file_format import VelocitySetting
 from llamatron.macro_composer import hook_writing, joins as joins_values, melody as melody_values
+from llamatron.model.vocabulary.file_format import VelocitySetting
 from llamatron.user_strings import macro_composer as composer_text
 
 # The fields of a song's plan, and of the plan a style gives.

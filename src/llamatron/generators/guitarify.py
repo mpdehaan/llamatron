@@ -13,7 +13,7 @@ strum down or up, a muted strum, the bass string, the alternate bass, or one str
 the highest. A strum's strings start a few milliseconds apart, fading, each gap a little loose,
 and with Let ring a string sounds until it is struck again or its chord ends.
 
-Everything is a sound of music/sound.py: a struck string is a held note, which sounds for its
+Everything is a sound of model/values/sound.py: a struck string is a held note, which sounds for its
 own length while the next position starts when the next string does, so the strings of a strum
 and the notes of a picked chord overlap as they do on a guitar.
 """
@@ -21,13 +21,13 @@ and the notes of a picked chord overlap as they do on a guitar.
 from fractions import Fraction
 import functools
 
-from llamatron.composition.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.generators.base import ClipGenerator
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
-from llamatron.music import midi as midi_numbers, sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.values import midi as midi_numbers, sound as sound_values
+from llamatron.model.values.sound import Sound
+from llamatron.model.vocabulary.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 
 
 # Each tuning's open strings as MIDI numbers, the lowest string first.

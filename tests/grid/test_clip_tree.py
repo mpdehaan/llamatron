@@ -17,9 +17,9 @@ from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.music.chord import Chord, ChordType
-from llamatron.music.note import Note, NoteName, Rest
-from llamatron.music.time_signature import TimeSignature
+from llamatron.model.values.chord import Chord, ChordType
+from llamatron.model.values.note import Note, NoteName, Rest
+from llamatron.model.values.time_signature import TimeSignature
 
 C4 = Note(name='C', octave_number=4, length=0.25)
 D4 = Note(name='D', octave_number=4, length=0.25)

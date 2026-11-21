@@ -6,23 +6,23 @@
 Each constant starts with REPR_ and is named after its class. None of this text is shown by the tracker.
 """
 
-# music/time_signature.py
+# model/values/time_signature.py
 # How a time signature prints, as the expression that would build it.
 REPR_TIME_SIGNATURE = 'TimeSignature(beats={beats!r}, unit={unit!r})'
 
-# music/held.py
+# model/values/held.py
 # How a held sound prints, as the expression that would build it.
 REPR_HELD = 'Held(sound={sound!r}, length={length!r})'
 
-# music/chord.py
+# model/values/chord.py
 # How a chord prints, as the expression that would build it.
 REPR_CHORD = 'Chord(notes={notes!r})'
 
-# music/scale.py
+# model/values/scale.py
 # How a scale prints, as the expression that would build it.
 REPR_SCALE = 'Scale(root={root!r}, typ={typ!r})'
 
-# music/note.py
+# model/values/note.py
 # How a rest, a degree and a note print, as the expressions that would build them.
 REPR_REST = 'Rest(length={length!r})'
 REPR_DEGREE = 'Degree(number={number!r}, length={length!r}, octave={octave!r}, scale_notes={scale_notes!r}, half_steps={half_steps!r})'

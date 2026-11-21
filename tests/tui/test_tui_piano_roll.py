@@ -10,14 +10,15 @@ alone under C Major, so the roll knows its scale and its track.
 
 import re
 
-from llamatron.composition import defaults, file_format, limits, row_descriptions, setlist
-from llamatron.composition.file_format import Accidental, ChordSymbol, Direction, Row
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.naming import words
 from llamatron.math.rational import Rational
-from llamatron.music import midi
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects import setlist
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.objects.naming import words
+from llamatron.model.values import midi
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import defaults, file_format, limits, row_descriptions
+from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, Direction, Row
 from llamatron.tui import drawing, keys
 from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.dialogs import chord_dialog

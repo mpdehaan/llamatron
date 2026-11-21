@@ -5,12 +5,12 @@
 
 import unittest
 
-from llamatron.composition import generator_settings
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
-from llamatron.composition.generator_settings import PhrasingSetting, PhrasingSettings
 from llamatron.exporters.timing import timed_events
 from llamatron.generators import phrasing
 from llamatron.math.rational import Rational
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import PhrasingSetting, PhrasingSettings
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data

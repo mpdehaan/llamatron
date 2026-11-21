@@ -9,18 +9,20 @@ and Inv. rows, [ and ] and Space or Enter step through their choices. I inserts 
 the cursor's, D removes the cursor's, and H fills the chords with a named progression, matched to
 the song's scale.
 
-A chord leaves the song's scale three ways (composition/chords.py): its Scale, a scale type on the same
+A chord leaves the song's scale three ways (model/values/chords.py): its Scale, a scale type on the same
 root that the chord borrows; its Quality, a named chord symbol in place of the chord the scale builds; and its Tensions, the
 notes added on top. On those rows [ and ] and Space step through the choices and Enter opens the Chord dialog, the one the
 pattern editor opens, on that row's list. The Name row and the status line say what the cursor's chord comes to.
 """
 
 
-from llamatron.composition import file_format, generator_settings, limits, progressions
-from llamatron.composition.chords import borrowed, chord_half_steps
-from llamatron.composition.file_format import Section
-from llamatron.composition.naming import words
-from llamatron.composition.progressions import named_progression_in, shown_numerals
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.naming import words
+from llamatron.model.values import progressions
+from llamatron.model.values.chords import borrowed, chord_half_steps
+from llamatron.model.values.progressions import named_progression_in, shown_numerals
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, key_table, keybindings, keys as keys_values, scale_categories
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.chord_row import quality_names

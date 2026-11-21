@@ -21,10 +21,10 @@ from pathlib import Path
 import re
 import sys
 
-from llamatron.composition import file_format, row_descriptions
-from llamatron.composition.setlist_writer import dump_setlist
-from llamatron.music import note as note_values
-from llamatron.music.scale import ScaleType
+from llamatron.model.file.setlist_writer import dump_setlist
+from llamatron.model.values import note as note_values
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import file_format, row_descriptions
 from llamatron.tui.screens.set import scale_page
 from llamatron.user_strings import labels, names as names_text
 from tests.support.rendering import as_setlist
@@ -187,7 +187,7 @@ EDITING = {
 
 # Where write() puts the demos. main() sets it, so that a test can write them somewhere else.
 OUTPUT = 'examples'
-# The folder of examples/ each demo goes in (src/llamatron/support/example_sets.py): learning unless named here.
+# The folder of examples/ each demo goes in (src/llamatron/model/file/example_sets.py): learning unless named here.
 LEARNING_FOLDER = 'learning'
 # The number in front of a learning demo's file name, which orders the demos as a newcomer learns them.
 LEARNING_NUMBER = r'^\d+_'

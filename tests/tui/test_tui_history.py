@@ -12,14 +12,14 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory, StaleAnswer
-from llamatron.composition import limits
-from llamatron.composition.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
-from llamatron.composition.named_items import NamedItems
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.naming import default_scale_name
-from llamatron.composition.pattern import Pattern
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects.named_items import NamedItems
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.objects.naming import default_scale_name
+from llamatron.model.objects.pattern import Pattern
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
 from llamatron.tui import history as history_values
 from llamatron.tui.document import Document
 from llamatron.tui.history import describe_change, History, renamed_items, Snapshot

@@ -9,12 +9,12 @@ import itertools
 import random
 import unittest
 
-from llamatron.composition import limits
-from llamatron.composition.file_format import Row, SceneSetting, Section, VelocitySetting
 from llamatron.macro_composer import arranger, hook_writing, joins, notation, phrasing, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
 from llamatron.macro_composer.wizard_choices import chords_as_text, chords_from_text, WizardChoices
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Row, SceneSetting, Section, VelocitySetting
 from llamatron.user_strings import errors, macro_composer as composer_text
 
 A_NAME = 'made'

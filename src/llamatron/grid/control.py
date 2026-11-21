@@ -5,7 +5,7 @@
 """A MIDI CC value sent at a time in a clip."""
 
 from llamatron.grid.positions import exact_length
-from llamatron.music import midi
+from llamatron.model.values import midi
 from llamatron.user_strings import errors, reprs
 
 # What the two CC numbers are called when one is out of range.

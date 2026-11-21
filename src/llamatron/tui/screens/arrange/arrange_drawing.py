@@ -13,7 +13,7 @@ from the editor.
 
 from rich.text import Text
 
-from llamatron.composition import defaults
+from llamatron.model.vocabulary import defaults
 from llamatron.tui import drawing
 from llamatron.tui.components.frame import Frame
 from llamatron.tui.components.length_bar import LengthBar

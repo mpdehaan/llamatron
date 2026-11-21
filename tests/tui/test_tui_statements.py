@@ -4,8 +4,9 @@
 
 """Conditional Execution on the pages: the table of statements about the registers on a chain's, a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
 
-from llamatron.composition import conditions, limits
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Operator, RegisterName, Section, StatementPart, TrackSetting
+from llamatron.model.objects import conditions
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, Operator, RegisterName, Section, StatementPart, TrackSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key

@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Restart field every generator's editor ends its own settings with: when the generator starts over, every clip, on new scene or whole song."""
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Restart
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Restart
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.user_strings import labels
 

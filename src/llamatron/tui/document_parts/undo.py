@@ -7,8 +7,8 @@
 import copy
 
 from llamatron.caching.memory import StaleAnswer
-from llamatron.composition.setlist import Setlist
-from llamatron.support.ordered_data import same_in_order
+from llamatron.model.file.ordered_data import same_in_order
+from llamatron.model.objects.setlist import Setlist
 from llamatron.tui.history import Change, describe_change, renamed_items, Snapshot
 from llamatron.user_strings import errors
 

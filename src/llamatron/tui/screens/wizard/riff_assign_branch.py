@@ -11,7 +11,7 @@ Players offers the player in each kind of section.
 
 import functools
 
-from llamatron.composition.checks import listed
+from llamatron.model.file.checks import listed
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

@@ -4,7 +4,7 @@
 
 """Every key of every page is shown in its legend or in the F1 dialog, on a large console and a usual one."""
 
-from llamatron.composition.file_format import ClipSlotSetting, Direction, GeneratorKind, Section, SetlistSetting
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, GeneratorKind, Section, SetlistSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.help_dialog import HelpDialog

@@ -4,16 +4,17 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from llamatron.composition import file_format, setlist
-from llamatron.composition.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section
-from llamatron.composition.generator_settings import ArpSetting, written_name
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.naming import new_name, suggested_word
 from llamatron.generators import arp
 from llamatron.generators.arp import ChordOrder, OctaveJump
-from llamatron.music import note
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects import setlist
+from llamatron.model.objects.generator_settings import ArpSetting, written_name
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.objects.naming import new_name, suggested_word
+from llamatron.model.values import note
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, DriftValue, DriftVersion, GeneratorKind, Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import keyboard
 from llamatron.tui.components.keyboard import Keyboard

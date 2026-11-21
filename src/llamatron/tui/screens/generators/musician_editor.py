@@ -4,10 +4,11 @@
 
 """The musician's editor: the instrument, the tracks the chords and the tune are read from, the player's touch, and a heading for each kind of section the song has."""
 
-from llamatron.composition import file_format, generator_settings
-from llamatron.composition.file_format import Section
-from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import MusicianSetting
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, gauge_shown, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage

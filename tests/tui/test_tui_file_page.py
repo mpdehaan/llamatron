@@ -8,9 +8,10 @@ from fractions import Fraction
 import os
 from unittest import mock
 
-from llamatron.composition import defaults, file_format, setlist as setlist_values
-from llamatron.composition.file_format import Section
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.objects import setlist as setlist_values
+from llamatron.model.vocabulary import defaults, file_format
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

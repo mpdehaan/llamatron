@@ -22,9 +22,9 @@ import pstats
 import sys
 import timeit
 
-from llamatron.composition.setlist import Setlist
+from llamatron.model.file.example_sets import example_sets
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.example_sets import example_sets
 
 PROFILE_FLAG = '--profile'
 # The seed every timed render uses, so that probability rolls the same way each time.

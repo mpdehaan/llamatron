@@ -19,10 +19,10 @@ velocity, probability, degree and scale (DriftEffects).
 import math
 from typing import NamedTuple
 
-from llamatron.composition import generator_settings
-from llamatron.composition.checks import in_whole_notes
-from llamatron.composition.file_format import DriftDirection, DriftValue, DriftVersion, GeneratorKind
 from llamatron.math.random_source import random_source
+from llamatron.model.file.checks import in_whole_notes
+from llamatron.model.objects import generator_settings
+from llamatron.model.vocabulary.file_format import DriftDirection, DriftValue, DriftVersion, GeneratorKind
 
 # How a drift's own random numbers are seeded from the render's seed and its name, so that each drift draws its own.
 DRIFT_SEED = '{seed}/drift/{name}'

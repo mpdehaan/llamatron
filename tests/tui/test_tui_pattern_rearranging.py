@@ -4,8 +4,8 @@
 
 """Rearranging a pattern: Reconfigure and Munge, and the editor's two views."""
 
-from llamatron.composition.file_format import ClipSlotSetting, Row
-from llamatron.music.note import NoteName
+from llamatron.model.values.note import NoteName
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Row
 from llamatron.tui import keybindings, keys
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

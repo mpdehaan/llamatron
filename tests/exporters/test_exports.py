@@ -17,7 +17,7 @@ from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.music.note import Note
+from llamatron.model.values.note import Note
 
 QUARTER = 0.25
 C4 = Note(name='C', octave_number=4, length=QUARTER)

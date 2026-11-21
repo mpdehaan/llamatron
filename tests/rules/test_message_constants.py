@@ -20,7 +20,7 @@ import unittest
 
 import llamatron
 from llamatron import user_strings
-from llamatron.composition import defaults, limits
+from llamatron.model.vocabulary import defaults, limits
 from llamatron.user_strings import errors, help, reprs
 
 SOURCE_FOLDER = os.path.dirname(llamatron.__file__)
@@ -41,7 +41,7 @@ PACKAGE_FILE = '__init__.py'
 # The modules whose constants have a prefix other than MSG_.
 OTHER_PREFIXES = {errors.__file__: ERROR_PREFIX, help.__file__: HELP_PREFIX, reprs.__file__: REPR_PREFIX}
 # The modules a strings module may import from: the names the file format and the keys define, and the package's own modules.
-ALLOWED_IMPORTS = ('llamatron.composition.file_format', 'llamatron.tui.keys', 'llamatron.user_strings.')
+ALLOWED_IMPORTS = ('llamatron.model.vocabulary.file_format', 'llamatron.tui.keys', 'llamatron.user_strings.')
 # Names that are allowed to be used by a module's own code alone, since nothing else can see them.
 PRIVATE_PREFIX = '_'
 # Words a constant's name must not repeat after its prefix, like ERR_ERROR_LINE, MSG_MESSAGE or HELP_HELP_SONG. A message

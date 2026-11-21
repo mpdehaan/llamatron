@@ -31,8 +31,8 @@ import sys
 import threading
 import time
 
-from llamatron.composition.setlist import Setlist
 from llamatron.exporters.timing import timed_events
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 
 DEFAULT_EXAMPLE = 'examples/by_genre/electronic/minimal_techno.yml'

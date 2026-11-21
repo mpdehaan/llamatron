@@ -23,8 +23,8 @@ from fractions import Fraction
 import mido
 import sys
 
-from llamatron.composition import file_format
-from llamatron.music import midi as midi_numbers, note
+from llamatron.model.values import midi as midi_numbers, note
+from llamatron.model.vocabulary import file_format
 
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 # Lengths are shown as fractions no finer than this, so rounding in the file doesn't show.

@@ -5,9 +5,9 @@
 
 import unittest
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import sensible_hidden_visualizers, sensible_visualizer, SetlistSetting, SongSetting
-from llamatron.composition.setlist import new_setlist, Setlist
+from llamatron.model.objects.setlist import new_setlist, Setlist
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import sensible_hidden_visualizers, sensible_visualizer, SetlistSetting, SongSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.tui.keys import Key

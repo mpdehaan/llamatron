@@ -6,7 +6,7 @@
 import os
 from rich.text import Text
 
-from llamatron.composition import file_format
+from llamatron.model.vocabulary import file_format
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.document import Document
 from llamatron.tui.drawing import Style

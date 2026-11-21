@@ -6,13 +6,13 @@
 from unittest import mock
 
 from llamatron.caching.memory import StaleAnswer
-from llamatron.composition import limits
-from llamatron.composition.file_format import Section
-from llamatron.composition.naming import new_name
 from llamatron.macro_composer import arranger, breaks, melody, wizard_limits
 from llamatron.macro_composer.breaks import break_names
 from llamatron.macro_composer.wizard_choices import genre_names, genre_title, WizardChoices
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.objects.naming import new_name
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import dialog as dialog_values, row_dialog

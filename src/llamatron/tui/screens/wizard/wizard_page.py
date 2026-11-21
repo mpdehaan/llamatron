@@ -16,14 +16,14 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 from rich.text import Text
 
 from llamatron.caching.kept import forget_kept, kept_while
-from llamatron.composition.checks import listed
-from llamatron.composition.file_format import GeneratorKind
-from llamatron.composition.naming import new_name
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import notation, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
+from llamatron.model.file import version
+from llamatron.model.file.checks import listed
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.naming import new_name
+from llamatron.model.vocabulary.file_format import GeneratorKind
 from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.support import version
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

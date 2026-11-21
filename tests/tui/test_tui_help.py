@@ -6,8 +6,8 @@
 
 from unittest import mock
 
-from llamatron.support import version
-from llamatron.support.version import build_year
+from llamatron.model.file import version
+from llamatron.model.file.version import build_year
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs import about_dialog, dialog as dialog_values
 from llamatron.tui.dialogs.about_dialog import AboutDialog

@@ -6,8 +6,8 @@
 
 from unittest import mock
 
-from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import DrawDirection, DrawName, DrawSetting
+from llamatron.model.vocabulary import defaults, limits
+from llamatron.model.vocabulary.file_format import DrawDirection, DrawName, DrawSetting
 from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key

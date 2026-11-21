@@ -29,8 +29,8 @@ import sys
 import time
 import wave
 
-from llamatron.composition.setlist import Setlist
-from llamatron.support.example_sets import example_sets
+from llamatron.model.file.example_sets import example_sets
+from llamatron.model.objects.setlist import Setlist
 
 PREVIEWS = 'previews'
 WAVE_SUFFIX = '.wav'

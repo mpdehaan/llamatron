@@ -7,11 +7,11 @@
 import random
 import unittest
 
-from llamatron.composition import limits
-from llamatron.composition.file_format import InstrumentSetting, Section
 from llamatron.macro_composer import arranger, breaks, characters, notation, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import InstrumentSetting, Section
 from llamatron.user_strings import errors, macro_composer as composer_text
 
 ROCK = 'rock'

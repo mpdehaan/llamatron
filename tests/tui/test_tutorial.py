@@ -20,9 +20,9 @@ import os
 import unittest
 from unittest import mock
 
-from llamatron.composition.file_format import PatternSetting, Row, Section, SetlistSetting
-from llamatron.composition.naming import new_name
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.naming import new_name
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary.file_format import PatternSetting, Row, Section, SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock

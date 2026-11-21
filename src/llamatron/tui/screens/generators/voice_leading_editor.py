@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Voice leading editor page: one voice leading's name, the octaves its chords stay within, and whether the root stays in the bass."""
 
-from llamatron.composition import generator_settings
-from llamatron.composition.file_format import Section
-from llamatron.composition.generator_settings import VoiceLeadingSetting
-from llamatron.music import note
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import VoiceLeadingSetting
+from llamatron.model.values import note
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import NameField, Toggle

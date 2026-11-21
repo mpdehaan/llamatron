@@ -6,10 +6,10 @@
 
 import unittest
 
-from llamatron.composition.file_format import Section
 from llamatron.macro_composer import riffs, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.user_strings import macro_composer as composer_text, names
 
 A_NAME = 'made'

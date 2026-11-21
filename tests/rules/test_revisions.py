@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Revisions: every stored object's revision moves with every change, and no two revisions are the same.
 
-The rule here is about the code's shape: in every class of composition/ that carries a revision,
+The rule here is about the code's shape: in every class of model/ that carries a revision,
 a method that changes the object is written under @notes_change, and the constructor calls
 note_change(). A method changes the object when it assigns to one of the object's members, or to
 a place inside one, or calls a method that changes a list, dictionary or set in place on one. A
@@ -23,14 +23,14 @@ import textwrap
 import unittest
 
 from llamatron.caching.revised import ChangeMark, latest_revision, notes_change, Revised
-import llamatron.composition
-from llamatron.composition.file_format import Row
-from llamatron.composition.groove import Groove
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.named_scale import NamedScale, scale_type_name
-from llamatron.composition.pattern import Pattern
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+import llamatron.model
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.objects.groove import Groove
+from llamatron.model.objects.named_scale import NamedScale, scale_type_name
+from llamatron.model.objects.pattern import Pattern
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary.file_format import Row
 
 CONSTRUCTOR = '__init__'
 DECORATOR = notes_change.__name__
@@ -128,9 +128,9 @@ def notes_its_making(function):
 
 
 def revised_classes():
-    """Return every class of composition/ that carries a revision."""
+    """Return every class of the Model that carries a revision."""
     found = []
-    for module_info in pkgutil.iter_modules(llamatron.composition.__path__, llamatron.composition.__name__ + '.'):
+    for module_info in pkgutil.walk_packages(llamatron.model.__path__, llamatron.model.__name__ + '.'):
         module = importlib.import_module(module_info.name)
         for _, kind in inspect.getmembers(module, inspect.isclass):
             if issubclass(kind, Revised) and kind.__module__ == module.__name__:

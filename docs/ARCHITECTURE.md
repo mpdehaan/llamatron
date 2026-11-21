@@ -65,13 +65,13 @@ or a track can choose another or switch grooving off, the track's choice winning
 
 ## Song Data Flow
 
-1. **The file is read.** `composition` turns the YAML into objects, one class for each kind of
+1. **The file is read.** `model` turns the YAML into objects, one class for each kind of
    thing the file can hold: `Setlist` for the set, `Song`, `Track`, `Scene`, `ClipSlot` (one track's
    part in one scene), `Pattern`, `NamedScale`, `Chain`, `Groove` and the settings of each generator. Every
    object checks its own values as it loads, so a bad file is refused with a message that says
    where the problem is, down to the song. Every object can also turn itself back into file data,
    which is how saving works. A file saved by an older version is first moved to the layout written now by the migrations
-   (`src/llamatron/composition/migrations/`), so the rest of llamatron only knows one layout.
+   (`src/llamatron/model/file/migrations/`), so the rest of llamatron only knows one layout.
 2. **The song is played.** `playback` walks each scene and plays each clip slot's pattern as many
    times as it repeats, applying everything that changes the notes on the way: the scale, the
    track's transpose, probability, ratchets, ties, glide, play directions, grabs from other
@@ -127,102 +127,82 @@ so they can't go out of date without a test noticing.
 flowchart LR
     tui["tui"]
     llamatron["llamatron"]
-    composition["composition"]
+    model["model"]
     playback["playback"]
     generators["generators"]
     grid["grid"]
     exporters["exporters"]
-    caching["caching"]
     importers["importers"]
     macro_composer["macro_composer"]
-    math["math"]
     realtime["realtime"]
     tutorial["tutorial"]
     visualizers["visualizers"]
     subgraph everywhere ["used by every other part"]
-    music["music"]
-    support["support"]
+    math["math"]
+    caching["caching"]
     user_strings["user_strings"]
     end
-    composition --> caching
-    composition --> generators
-    composition --> math
-    exporters --> composition
     exporters --> grid
-    exporters --> math
+    exporters --> model
     exporters --> realtime
-    generators --> composition
     generators --> grid
-    generators --> math
-    grid --> caching
-    grid --> composition
-    grid --> math
-    importers --> caching
-    importers --> composition
+    generators --> model
+    grid --> model
     importers --> exporters
-    importers --> math
+    importers --> model
     importers --> playback
-    llamatron --> composition
     llamatron --> exporters
     llamatron --> macro_composer
+    llamatron --> model
     llamatron --> playback
     llamatron --> tui
     llamatron --> visualizers
-    macro_composer --> caching
-    macro_composer --> composition
     macro_composer --> generators
+    macro_composer --> model
     macro_composer --> playback
-    music --> math
-    playback --> caching
-    playback --> composition
+    model --> generators
     playback --> exporters
     playback --> generators
     playback --> grid
-    playback --> math
-    realtime --> caching
-    realtime --> composition
+    playback --> model
     realtime --> exporters
-    realtime --> math
+    realtime --> model
     realtime --> playback
-    tui --> caching
-    tui --> composition
     tui --> exporters
     tui --> generators
     tui --> importers
     tui --> macro_composer
-    tui --> math
+    tui --> model
     tui --> playback
     tui --> realtime
     tui --> visualizers
-    tutorial --> composition
+    tutorial --> model
     tutorial --> tui
-    visualizers --> composition
+    visualizers --> model
 ```
 
 | Package | What it holds |
 | --- | --- |
 | `tui` | The tracker: the text UI that people compose in, which holds a set of songs and edits it a page at a time. |
 | `llamatron` | llamatron composes music in MIDI for DAWs, from a text UI. This top level holds the command line and the text every part shows. |
-| `composition` | The objects a set file stores: the set, its songs, their tracks, scenes and clips, and the shared patterns, scales, generators, chains and grooves. |
+| `model` | The Model: the set as it is stored, in four parts. values/ holds the musical values every part of llamatron works with; |
 | `playback` | Playing a song's composition objects into finished clips, which the exporters then write. |
 | `generators` | The generators that change a clip's notes as it exports: arpeggiators, AutoRatchets and blending for morphs. |
 | `grid` | The finished clips a song exports into, and the grid that maps them to tracks and scenes. |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
-| `caching` | Caching: revisions, how anything that changes says so, and the answers kept until something they came from changes, which |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
 | `macro_composer` | The MacroComposer: a set made from structured data that says what to play. composer.py turns a |
-| `math` | Math: exact arithmetic for lengths and times, Rationals and the pairs a realization uses, and where random numbers come |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
 | `tutorial` | The video tutorial: a plan that rebuilds a set from nothing in the running tracker, key by key, and the runner that presses its keys at a human pace, saying a sentence at each part worth one (internal_tools/make_video_tutorial.py). |
 | `visualizers` | The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time. |
-| `music` | The musical values every part of llamatron works with: notes, chords, scales, time signatures, held notes and MIDI numbers. |
-| `support` | File names, safe YAML loading, the examples' folders and the version, which move into the Model's File part with the Model. |
+| `math` | Math: exact arithmetic for lengths and times, Rationals and the pairs a realization uses, and where random numbers come |
+| `caching` | Caching: revisions, how anything that changes says so, and the answers kept until something they came from changes, which |
 | `user_strings` | User strings: every piece of text llamatron shows people, one module for each way the text is used. |
 <!-- end of the generated diagram -->
 
 A few things the picture doesn't say:
 
-- `composition` is the model of what a set file holds, and it's the only part that knows the
+- `model` is the model of what a set file holds, and it's the only part that knows the
   file format. Everything else works with its objects. The set owns the shared sections and the
   songs, and a song owns its tracks, scenes and registers, so a rename in either updates every
   reference, wherever it is.

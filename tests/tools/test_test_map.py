@@ -7,11 +7,11 @@
 from internal_tools import test_map
 import unittest
 
-SOURCE_FILE = 'src/llamatron/composition/naming.py'
+SOURCE_FILE = 'src/llamatron/model/objects/naming.py'
 ANOTHER_SOURCE_FILE = 'src/llamatron/generators/arp.py'
 NEW_SOURCE_FILE = 'src/llamatron/composition/brand_new.py'
 RULE_CLASS = 'tests.rules.test_slots.TestSlots'
-NAMING_CLASS = 'tests.composition.test_naming.TestNaming'
+NAMING_CLASS = 'tests.model.test_naming.TestNaming'
 ARP_CLASS = 'tests.generators.test_arp.TestArp'
 EXAMPLES_CLASS = 'tests.app.test_examples.TestExamples'
 SWEEP_CLASS = 'tests.app.test_every_example.TestEveryExampleMinimalTechno'

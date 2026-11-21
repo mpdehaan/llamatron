@@ -46,7 +46,7 @@ MOST_TYPE_CHECKS = 1
 # The most lines of code a file or a class may hold, blank lines and comments left out.
 MOST_CODE_LINES = 300
 # The files that are lists by nature, the set file's names, the program's text and the key bindings, which no split would make clearer.
-LIST_FILES = ('composition/file_format.py', 'tui/keybindings.py')
+LIST_FILES = ('model/vocabulary/file_format.py', 'tui/keybindings.py')
 LIST_FOLDERS = ('user_strings',)
 COMMENT = '#'
 BLOCKS = (ast.If, ast.For, ast.AsyncFor, ast.While, ast.With, ast.AsyncWith, ast.Try)

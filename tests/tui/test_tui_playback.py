@@ -14,10 +14,10 @@ from rich.text import Text
 import unittest
 from unittest import mock
 
-from llamatron.composition import file_format
-from llamatron.composition.checks import listed
-from llamatron.composition.file_format import ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
 from llamatron.exporters import midi_arrangement
+from llamatron.model.file.checks import listed
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
 from llamatron.realtime import fluidsynth, playback as playback_values, timeline
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.outputs import RecordingOutput

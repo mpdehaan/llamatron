@@ -28,11 +28,11 @@ import argparse
 import os
 import sys
 
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_reader import file_stem
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import exports
 from llamatron.exporters.exports import export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.model.file.setlist_reader import file_stem
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.launch import Launch
 from llamatron.user_strings import cli, errors
@@ -145,7 +145,7 @@ def make_wizard_song(arguments):
     names, or one beside the song file, named after it."""
     # Imported here so that opening a set or exporting doesn't load the MacroComposer.
     from llamatron.macro_composer.wizard_file import made_of_file
-    from llamatron.support import version
+    from llamatron.model.file import version
     path = arguments.out or os.path.join(os.path.dirname(arguments.wizard), MADE_SET_NAME.format(file_stem(arguments.wizard)))
     made_of_file(path=arguments.wizard, version=version.VERSION, seed=arguments.seed).write_file(path)
     print(cli.MSG_CLI_MADE_SONG.format(path=path))

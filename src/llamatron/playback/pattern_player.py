@@ -7,12 +7,6 @@
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from llamatron.composition import defaults, file_format, limits
-from llamatron.composition.checks import written_length
-from llamatron.composition.conditions import draws_read, is_true
-from llamatron.composition.file_format import Row, StepStatement
-from llamatron.composition.named_scale import NamedScale
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.arp import along_scale
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
@@ -20,8 +14,14 @@ from llamatron.grid.keyswitch import SwitchedSlots
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
-from llamatron.music import midi, note as note_values, sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.file.checks import written_length
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.conditions import draws_read, is_true
+from llamatron.model.objects.named_scale import NamedScale
+from llamatron.model.values import midi, note as note_values, sound as sound_values
+from llamatron.model.values.sound import Sound
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import Row, StepStatement
 from llamatron.playback import drift
 from llamatron.user_strings import errors
 
@@ -385,7 +385,7 @@ class PatternPlayer:
         effects, what the clip's drifts do to the step, add to its probability, held from 0 to
         100, and may change the scale and root its degrees play in.
         Each slice's notes are made once, already as long as a slice, at the step's velocity and
-        with the glide of the last slice. They are sounds, the tuples of music/sound.py, and
+        with the glide of the last slice. They are sounds, the tuples of model/values/sound.py, and
         the length is a pair.
         """
         default = self._song.get_default_drum_octave() if drum else self._song.get_default_octave()

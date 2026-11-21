@@ -12,7 +12,7 @@ import sys
 from textual.app import App
 import time
 
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.model.file.song_file_error import SongFileError
 from llamatron.tui import keys, launch as launch_values
 from llamatron.tui.batch_stage import BatchStage
 from llamatron.tui.components.scroll_text import scroll_seconds

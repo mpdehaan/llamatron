@@ -5,10 +5,10 @@
 
 import unittest
 
-from llamatron.composition.groove import FactoryGroove
 from llamatron.macro_composer import arranger, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.objects.groove import FactoryGroove
 from llamatron.user_strings import errors
 from tests.support.ui_testing import fixed_text
 

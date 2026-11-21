@@ -18,9 +18,9 @@ from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.music.chord import Chord, ChordType
-from llamatron.music.note import Degree, Note, NoteName, Rest
-from llamatron.music.scale import Scale, ScaleType
+from llamatron.model.values.chord import Chord, ChordType
+from llamatron.model.values.note import Degree, Note, NoteName, Rest
+from llamatron.model.values.scale import Scale, ScaleType
 
 QUARTER = 0.25
 # What the clip files are named under, and the one clip's file.

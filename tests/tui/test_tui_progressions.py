@@ -3,11 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Progression: the Progressions page, the progression editor and the chord editor, with the picker of named progressions."""
 
-from llamatron.composition import file_format, generator_settings, limits
-from llamatron.composition.file_format import Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Section, Tension
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.progressions import named_progression
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.values.progressions import named_progression
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Section, Tension
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import chord_dialog
 from llamatron.tui.dialogs.chord_dialog import ChordDialog

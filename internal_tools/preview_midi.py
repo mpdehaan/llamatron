@@ -27,9 +27,9 @@ import os
 import sys
 import tempfile
 
-from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.midi_messages import safe_file_name
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 from llamatron.tui.text import clock

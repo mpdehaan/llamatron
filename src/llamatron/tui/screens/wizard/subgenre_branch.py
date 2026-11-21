@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The song wizard's Subgenre branch, under Genre: the subgenre and the settings that are the subgenre's own."""
 
-from llamatron.composition import limits
+from llamatron.model.vocabulary import limits
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.user_strings import errors, labels, legends, marks

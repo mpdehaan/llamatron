@@ -15,7 +15,7 @@ at once, in the request, so that what they press is heard at the moment it would
 import functools
 import threading
 
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.model.file.song_file_error import SongFileError
 
 
 class Built:

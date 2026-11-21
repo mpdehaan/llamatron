@@ -7,7 +7,7 @@
 import unittest
 from unittest import mock
 
-from llamatron.composition import file_format
+from llamatron.model.vocabulary import file_format
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.message_dialog import MessageDialog
 from llamatron.tui.keys import Key

@@ -14,7 +14,7 @@ from llamatron.exporters import timing
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
 from llamatron.exporters.timing import control_points, keyswitch_events, timed_events
 from llamatron.math.rational import Rational
-from llamatron.support import files
+from llamatron.model.file import files
 from llamatron.user_strings import errors, names
 
 # Installed along with the code, so that a set can be written from anywhere.

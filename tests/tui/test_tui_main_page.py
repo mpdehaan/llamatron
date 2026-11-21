@@ -6,7 +6,7 @@
 
 from unittest import mock
 
-from llamatron.support import version
+from llamatron.model.file import version
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

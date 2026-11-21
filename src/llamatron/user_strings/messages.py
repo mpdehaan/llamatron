@@ -6,7 +6,7 @@
 Each constant starts with MSG_. A message that says what went wrong is an error, in errors.py.
 """
 
-from llamatron.composition.file_format import Section, SetlistSetting, SongSetting
+from llamatron.model.vocabulary.file_format import Section, SetlistSetting, SongSetting
 from llamatron.user_strings.labels import PageName
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
@@ -95,7 +95,7 @@ MSG_PROTECTED_TITLE = 'Protected set'
 MSG_PROTECTED_EXPLAINED = '{path} is protected, so it is not written over. Protected on the File/Global page turns that off.'
 MSG_PROTECTED_SAVE_COPY_QUESTION = 'Save a copy under another name?'
 MSG_PROTECTED_CHOOSE_ANOTHER_NAME = 'Choose another name for the copy.'
-# composition/corrections.py and tui/dialogs/corrections_dialog.py: a set file that holds values that cannot be
+# model/file/corrections.py and tui/dialogs/corrections_dialog.py: a set file that holds values that cannot be
 # used, each with an allowed value near it. One line for each, with its place in the file, then the question.
 MSG_CORRECTED = '{where}: {name} {found} becomes {used}'
 MSG_CORRECTED_TO_DEFAULT = '{where}: {name} {found} becomes the default'

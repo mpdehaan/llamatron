@@ -4,8 +4,8 @@
 """The row of track names at the top of the Arrange page, where tracks are added, duplicated, inserted, moved,
 renamed and deleted since the Tracks page went, and the track editor it opens."""
 
-from llamatron.composition import defaults, file_format, limits
-from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, TrackSetting
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, TrackSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog

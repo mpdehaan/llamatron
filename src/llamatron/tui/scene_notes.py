@@ -19,14 +19,14 @@ numbered in the scene's scale, with the bass after a slash when it isn't the roo
 
 from typing import NamedTuple
 
-from llamatron.composition import file_format
-from llamatron.composition.euclid import euclid_settings
-from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.shapes import shape_settings
-from llamatron.composition.strum import strum_settings
 from llamatron.exporters.timing import timed_events
-from llamatron.music import note as note_values
+from llamatron.model.objects.euclid import euclid_settings
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.objects.shapes import shape_settings
+from llamatron.model.objects.strum import strum_settings
+from llamatron.model.values import note as note_values
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import marks
 

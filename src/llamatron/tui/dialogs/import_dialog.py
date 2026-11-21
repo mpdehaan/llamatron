@@ -14,12 +14,12 @@ is added to the set until Import, which dismisses the dialog with what the impor
 from rich.text import Text
 
 from llamatron.caching.kept import kept_for_life
-from llamatron.composition import limits
-from llamatron.composition.checks import fraction_text
-from llamatron.composition.naming import copy_name, default_scale_name
 from llamatron.importers import midi_import as midi_import_values
 from llamatron.importers.midi_import import ImportChoices
 from llamatron.math.rational import Rational
+from llamatron.model.file.checks import fraction_text
+from llamatron.model.objects.naming import copy_name, default_scale_name
+from llamatron.model.vocabulary import limits
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog

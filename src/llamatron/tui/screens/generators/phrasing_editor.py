@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Phrasing editor: how long a line is, how the lines breathe, and a table of what each kind of section does of its own."""
 
-from llamatron.composition import generator_settings
-from llamatron.composition.file_format import Section
-from llamatron.composition.generator_settings import PhrasingSetting
 from llamatron.generators import phrasing as phrasing_values
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import PhrasingSetting
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage

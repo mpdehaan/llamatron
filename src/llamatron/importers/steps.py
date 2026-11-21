@@ -23,12 +23,12 @@ A value that comes and goes between two steps is not heard, which the comparison
 from bisect import bisect_right
 from typing import NamedTuple
 
-from llamatron.composition import limits
-from llamatron.composition.checks import fraction_text
 from llamatron.exporters import timing
 from llamatron.exporters.timing import value_on_the_way
 from llamatron.importers.keys import degree_of, drum_note_of
 from llamatron.math.rational import Rational
+from llamatron.model.file.checks import fraction_text
+from llamatron.model.vocabulary import limits
 
 # What a step holds when it ties the note before it on.
 TIED = 'tied'

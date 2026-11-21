@@ -9,16 +9,17 @@ import os
 import tempfile
 import unittest
 
-from llamatron.composition import defaults, groove as groove_values, limits
-from llamatron.composition.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition.groove import FactoryGroove, Groove, new_groove
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import clip_tree
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.timing import control_events, timed_events
 from llamatron.math.rational import Rational
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import groove as groove_values
+from llamatron.model.objects.groove import FactoryGroove, Groove, new_groove
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary import defaults, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, with_parts

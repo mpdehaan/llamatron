@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Density, Swell and Articulate: their list pages and editors, the sections on the Scene page and the clip page, and the settings pages' sections that hold them."""
 
-from llamatron.composition import file_format, limits
-from llamatron.composition.file_format import GeneratorKind, RampWay, Section, Shape, shape_setting, ShapePart
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import GeneratorKind, RampWay, Section, Shape, shape_setting, ShapePart
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.clip_page import ClipPage

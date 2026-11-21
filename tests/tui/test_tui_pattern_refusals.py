@@ -4,8 +4,8 @@
 
 """What the pattern editor refuses, and says."""
 
-from llamatron.composition import limits
-from llamatron.composition.file_format import Row, Section
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Row, Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.keys import Key

@@ -13,8 +13,9 @@ width, so nothing moves as a line changes. Left and Right move between the cells
 changes the one under the cursor, and Bksp sets the line back to ignored.
 """
 
-from llamatron.composition import conditions, file_format, limits
-from llamatron.composition.file_format import StatementPart
+from llamatron.model.objects import conditions
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import StatementPart
 from llamatron.tui import drawing
 from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.grouped_choices import number_or_names, value_groups

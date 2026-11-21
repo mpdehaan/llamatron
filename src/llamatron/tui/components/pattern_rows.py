@@ -13,8 +13,8 @@ each is headed by a row (SectionRow) that Space or Enter opens or closes, PgUp a
 PgDn jump between the headings, and which sections are open is kept on the app for the session.
 """
 
-from llamatron.composition import file_format, row_descriptions
-from llamatron.composition.file_format import Row, StepStatement
+from llamatron.model.vocabulary import file_format, row_descriptions
+from llamatron.model.vocabulary.file_format import Row, StepStatement
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.components import degree_row
 from llamatron.tui.components.accent_row import AccentRow

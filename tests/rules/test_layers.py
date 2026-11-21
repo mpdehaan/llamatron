@@ -22,14 +22,14 @@ GONE_CROSSINGS = 'crossings on the allowed list are gone: run internal_tools/lay
 A_PAGE = ('tui', 'screens', 'set', 'a_page.py')
 ANOTHER_PAGE = ('tui', 'screens', 'set', 'another_page')
 A_SHARED_PAGE = ('tui', 'screens', 'shared', 'field_page')
-A_MODEL_FILE = ('composition', 'a_model.py')
+A_MODEL_FILE = ('model', 'objects', 'a_model.py')
 A_GENERATOR = ('generators', 'arp')
 THE_RENDERER = ('playback', 'song_renderer')
 A_PLAYER = ('playback', 'pattern_player')
 A_SENDER = ('realtime', 'engine')
 THE_TRANSPORT = ('tui', 'transport.py')
-THE_FILE_FORMAT = ('composition', 'file_format')
-THE_LIMITS = ('composition', 'limits')
+THE_FILE_FORMAT = ('model', 'vocabulary', 'file_format')
+THE_LIMITS = ('model', 'vocabulary', 'limits')
 SOME_TEXT = ('user_strings', 'labels')
 
 

@@ -13,9 +13,9 @@ player who plays lines, the tune or a voice beside it, is told to give way to no
 play its notes as written, since the lines were written to sound together.
 """
 
-from llamatron.composition.generator_settings import MusicianSetting
 from llamatron.generators import musician
 from llamatron.macro_composer import players
+from llamatron.model.objects.generator_settings import MusicianSetting
 from llamatron.user_strings import macro_composer as composer_text
 
 # The genres whose songs are given no musicians: their players are machines, played another way.

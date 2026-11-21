@@ -28,10 +28,10 @@ import random
 import threading
 from typing import NamedTuple
 
-from llamatron.composition import limits
-from llamatron.composition.file_format import Section
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import midi_arrangement
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth as fluidsynth_values, playback as playback_values, player as player_values
 from llamatron.realtime.engine import MonotonicClock

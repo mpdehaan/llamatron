@@ -10,7 +10,7 @@ import io
 import pathlib
 import unittest
 
-from llamatron.composition.setlist_reader import file_stem
+from llamatron.model.file.setlist_reader import file_stem
 from llamatron.tui import drawing
 from llamatron.tui.document import Document
 from llamatron.tui.text import clock

@@ -6,11 +6,11 @@
 
 import unittest
 
-from llamatron.composition.file_format import Section
 from llamatron.macro_composer import melody, wizard_limits
 from llamatron.macro_composer.melody import plan_as_asked
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.vocabulary.file_format import Section
 
 A_NAME = 'made'
 A_SEED = 11

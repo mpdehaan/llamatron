@@ -4,12 +4,13 @@
 
 """The Arp editor page."""
 
-from llamatron.composition import file_format, generator_settings
-from llamatron.composition.file_format import Section
-from llamatron.composition.generator_settings import ArpSetting, written_name
-from llamatron.composition.naming import words
 from llamatron.generators import arp as arp_values
 from llamatron.generators.arp import OctaveJump
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import ArpSetting, written_name
+from llamatron.model.objects.naming import words
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.generators.restart_field import restart_field

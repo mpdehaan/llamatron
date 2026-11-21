@@ -9,13 +9,13 @@ import os
 import unittest
 import unittest.mock
 
-from llamatron.composition import limits
-from llamatron.composition.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, Section
-from llamatron.composition.generator_settings import FollowChordsSetting
-from llamatron.composition.setlist import Setlist
 from llamatron.macro_composer import arranger, band, characters, composer, loudness, melody, notation, players
-from llamatron.support import version
-from llamatron.support.safe_yaml import load_safely
+from llamatron.model.file import version
+from llamatron.model.file.safe_yaml import load_safely
+from llamatron.model.objects.generator_settings import FollowChordsSetting
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, Section
 from llamatron.user_strings import macro_composer as composer_text
 
 FILE_ENCODING = 'utf-8'

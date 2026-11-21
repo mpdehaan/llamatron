@@ -13,9 +13,9 @@ is.
 """
 
 from llamatron.generators.base import ClipGenerator
-from llamatron.music import midi, sound as sound_values
-from llamatron.music.chord import movement
-from llamatron.music.sound import Sound
+from llamatron.model.values import midi, sound as sound_values
+from llamatron.model.values.chord import movement
+from llamatron.model.values.sound import Sound
 
 HALF_STEPS_PER_OCTAVE = 12
 # How many octaves either way a voicing is tried from where its chord was written.

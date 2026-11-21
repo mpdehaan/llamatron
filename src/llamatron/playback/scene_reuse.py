@@ -17,7 +17,7 @@ dictionaries from one edit to the next, so comparing two of them costs little mo
 
 from typing import NamedTuple
 
-from llamatron.composition.file_format import Section
+from llamatron.model.vocabulary.file_format import Section
 
 # The first scene of a song, from which a render after an edit that could change anything starts.
 FIRST_SCENE = 0

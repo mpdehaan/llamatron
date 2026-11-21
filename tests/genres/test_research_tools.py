@@ -20,7 +20,7 @@ import sys
 import tempfile
 import unittest
 
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.setlist import Setlist
 
 C = 0
 G = 7

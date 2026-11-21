@@ -5,8 +5,9 @@
 
 import functools
 
-from llamatron.composition import file_format, shapes
-from llamatron.composition.file_format import ShapePart
+from llamatron.model.objects import shapes
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import ShapePart
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.user_strings import labels, marks

@@ -25,8 +25,8 @@ until it does.
 
 from llamatron.caching.memory import Memory
 from llamatron.caching.revised import ChangeMark, Revised
-from llamatron.composition.pattern import Pattern
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.pattern import Pattern
+from llamatron.model.objects.setlist import Setlist
 from llamatron.tui.document_parts import files
 from llamatron.tui.document_parts.files import DocumentFiles, file_data
 from llamatron.tui.document_parts.named_edits import NamedEdits

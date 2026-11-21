@@ -9,8 +9,9 @@ its result and what the result is compared with. A row writes its part through t
 one setter of a whole statement, so that no step is left holding half of one.
 """
 
-from llamatron.composition import conditions, file_format, limits
-from llamatron.composition.file_format import StatementPart, StepStatement
+from llamatron.model.objects import conditions
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import StatementPart, StepStatement
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs import grouped_choices

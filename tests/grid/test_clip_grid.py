@@ -5,15 +5,15 @@
 from fractions import Fraction
 import unittest
 
-from llamatron.composition.file_format import SongSetting
 from llamatron.grid.clip import Clip
 from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
-from llamatron.music.chord import Chord, ChordType
-from llamatron.music.note import Note, NoteName, Rest
-from llamatron.music.scale import Scale, ScaleType
-from llamatron.music.time_signature import TimeSignature
+from llamatron.model.values.chord import Chord, ChordType
+from llamatron.model.values.note import Note, NoteName, Rest
+from llamatron.model.values.scale import Scale, ScaleType
+from llamatron.model.values.time_signature import TimeSignature
+from llamatron.model.vocabulary.file_format import SongSetting
 
 C_MAJOR = Scale(root=Note(name='C', octave_number=0, length=0.25), typ=ScaleType.MAJOR)
 A_MINOR = Scale(root=Note(name='A', octave_number=0, length=0.25), typ=ScaleType.MINOR)

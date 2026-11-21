@@ -8,7 +8,7 @@ line of text for each thing that uses the item, naming the song it's in, since e
 the set's patterns, chains, generators and scales.
 """
 
-from llamatron.composition.file_format import Section
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.user_strings import errors, messages, names
 
 # How many scenes the loop errors dialog lists before saying how many more there are.

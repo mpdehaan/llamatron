@@ -10,7 +10,7 @@ What these return is shared, so a check never changes it: a check that changes a
 
 import functools
 
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 
 

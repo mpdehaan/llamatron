@@ -6,9 +6,9 @@ from fractions import Fraction
 import unittest
 
 from llamatron.grid.clip import Clip
-from llamatron.music.chord import Chord
-from llamatron.music.note import Degree, Note, NoteName, Rest
-from llamatron.music.scale import Scale, ScaleType
+from llamatron.model.values.chord import Chord
+from llamatron.model.values.note import Degree, Note, NoteName, Rest
+from llamatron.model.values.scale import Scale, ScaleType
 
 QUARTER = 0.25
 C4 = Note(name='C', octave_number=4, length=QUARTER)

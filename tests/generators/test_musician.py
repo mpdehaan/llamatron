@@ -6,13 +6,13 @@
 
 import unittest
 
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SectionKind, TrackSetting
-from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.generators import musician
 from llamatron.math.rational import Rational
-from llamatron.music import midi
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.generator_settings import MusicianSetting, MusicianSettings
+from llamatron.model.values import midi
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SectionKind, TrackSetting
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_song, setlist_from_data, song_from_data

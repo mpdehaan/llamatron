@@ -4,10 +4,10 @@
 
 """The sections of the pattern editor's rows view, which open and close."""
 
-from llamatron.composition import file_format, limits
-from llamatron.composition.file_format import RegisterName, RegisterUse, Row
-from llamatron.music import midi
-from llamatron.music.note import NoteName
+from llamatron.model.values import midi
+from llamatron.model.values.note import NoteName
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import RegisterName, RegisterUse, Row
 from llamatron.tui import drawing, keybindings, keys
 from llamatron.tui.components import pattern_rows
 from llamatron.tui.drawing import Box, fit

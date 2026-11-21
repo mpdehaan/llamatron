@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Song page: one song's name, tempo, scale and seed, reached from the Songs page, which makes it current first."""
 
-from llamatron.composition import defaults, file_format, genres, limits
-from llamatron.composition.file_format import Section
-from llamatron.composition.genres import subgenres_of, variants_of
+from llamatron.model.objects import genres
+from llamatron.model.objects.genres import subgenres_of, variants_of
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings, themes
 from llamatron.tui.screens.set.visualizer_fields import visualizer_field
 from llamatron.tui.screens.shared.everywhere import export

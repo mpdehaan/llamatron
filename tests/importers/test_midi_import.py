@@ -15,11 +15,6 @@ import mido
 import os
 import unittest
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition.named_scale import NamedScale, scale_type_name
-from llamatron.composition.naming import default_scale_name
-from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.importers import cutting, voices as voices_values
 from llamatron.importers.comparison import round_trip
@@ -29,7 +24,12 @@ from llamatron.importers.midi_reading import HeardNote, MidiPart, read_midi
 from llamatron.importers.voices import Played, Voice, voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.math.rational import Rational
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects.named_scale import NamedScale, scale_type_name
+from llamatron.model.objects.naming import default_scale_name
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.user_strings import errors, importing
 from tests.support.example_renders import example_setlist, first_song_grid
 

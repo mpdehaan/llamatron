@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Rush editor: a Rush's name, step, amount, row of steps and Restart."""
 
-from llamatron.composition import generator_settings
-from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition.generator_settings import StepRowSetting
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import StepRowSetting
+from llamatron.model.vocabulary.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.rush_steps_editor import RushStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor

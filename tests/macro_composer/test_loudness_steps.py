@@ -7,13 +7,13 @@
 import unittest
 import unittest.mock
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
-from llamatron.composition.generator_settings import GuitarifySettings
 from llamatron.macro_composer import breaks, loudness_steps, song_plan
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.math.rational import Rational
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.objects.generator_settings import GuitarifySettings
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
 
 A_NAME = 'a_song'
 A_SEED = 11

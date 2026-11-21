@@ -6,9 +6,9 @@
 
 import os
 
-from llamatron.composition.file_format import ClipSlotSetting
 from llamatron.exporters import exports
 from llamatron.exporters.exports import earlier_export, ExportKind, shown_export_path
+from llamatron.model.vocabulary.file_format import ClipSlotSetting
 from llamatron.tui import keybindings, uses
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

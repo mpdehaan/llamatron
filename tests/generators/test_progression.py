@@ -9,13 +9,13 @@ progression a chord a bar, so that each bar shows where one chord moved the figu
 
 import unittest
 
-from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension
-from llamatron.composition.generator_settings import ProgressionSetting
-from llamatron.composition.named_scale import NamedScale
-from llamatron.composition.progressions import named_progression_in, roman_numeral
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.math.rational import Rational
-from llamatron.music.note import NoteName
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.generator_settings import ProgressionSetting
+from llamatron.model.objects.named_scale import NamedScale
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.progressions import named_progression_in, roman_numeral
+from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes

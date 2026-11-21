@@ -7,9 +7,9 @@
 import functools
 from rich.text import Text
 
-from llamatron.composition import defaults, file_format, limits
-from llamatron.composition.file_format import EuclidPart, Section, TrackSetting
-from llamatron.music import midi
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import EuclidPart, Section, TrackSetting
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.generators_field import generators_field

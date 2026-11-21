@@ -98,12 +98,12 @@ NO_DESCRIPTION = ''
 # of a song rather than a web. The strings package holds only words,
 # so it sits in that box too, and the names it imports to build its tables aren't drawn as arrows.
 TOP_LEVEL = 'llamatron'
-USED_EVERYWHERE = ['music', 'support', 'user_strings']
+USED_EVERYWHERE = ['math', 'caching', 'user_strings']
 USED_EVERYWHERE_ID = 'everywhere'
 USED_EVERYWHERE_LABEL = 'used by every other part'
 TEXT_PACKAGE = 'user_strings'
 # Packages in the order a reader meets them, following a song from the tracker to the files.
-PACKAGE_ORDER = ['tui', 'llamatron', 'composition', 'playback', 'generators', 'grid', 'exporters']
+PACKAGE_ORDER = ['tui', 'llamatron', 'model', 'playback', 'generators', 'grid', 'exporters']
 
 MSG_NO_MARKER = 'no marker ({marker}) in {path}'
 MSG_OUT_OF_DATE = 'out of date: the {name} diagram in {path}'

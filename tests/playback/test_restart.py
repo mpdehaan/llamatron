@@ -10,15 +10,15 @@ two bars, so that where a generator's run carries on shows in the second scene.
 from typing import NamedTuple
 import unittest
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Restart, Row, SceneSetting, Section
 from llamatron.exporters.timing import timed_events
 from llamatron.generators.base import Continuation
 from llamatron.generators.voice_leading import VoiceLeading
 from llamatron.grid.clip import Clip
 from llamatron.math.rational import Rational
-from llamatron.music.chord import Chord
-from llamatron.music.note import Note, NoteName
+from llamatron.model.values.chord import Chord
+from llamatron.model.values.note import Note, NoteName
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Restart, Row, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data

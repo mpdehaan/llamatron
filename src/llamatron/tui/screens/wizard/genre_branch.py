@@ -5,7 +5,7 @@
 
 from llamatron.macro_composer import wizard_limits
 from llamatron.macro_composer.wizard_choices import genre_names, genre_title
-from llamatron.music import note
+from llamatron.model.values import note
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field

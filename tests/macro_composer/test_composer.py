@@ -8,10 +8,10 @@ rhythm, a form laid out as scenes, and existing demos written as inputs that com
 import unittest
 import unittest.mock
 
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_reader import set_file_data
 from llamatron.macro_composer import composer, decomposer, notation, shaping
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.file.setlist_reader import set_file_data
+from llamatron.model.objects.setlist import Setlist
 
 FILE_ENCODING = 'utf-8'
 # Demos of three feels: dance music with a sung lead, a shanty in a minor key, and swung jazz.

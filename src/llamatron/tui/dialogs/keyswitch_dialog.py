@@ -13,7 +13,7 @@ nothing until the instrument gives it one."""
 
 from rich.text import Text
 
-from llamatron.composition import file_format
+from llamatron.model.vocabulary import file_format
 from llamatron.tui import drawing, keybindings, keys as keys_values, keyswitch_text
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.pick_many_dialog import PickManyDialog

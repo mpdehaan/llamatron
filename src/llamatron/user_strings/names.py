@@ -12,7 +12,7 @@ Each constant starts with MSG_.
 # listing every generator in one list where no two share a name; each kind's word is in labels.py.
 MSG_NAMED_FOR_KIND = '{name} {word}'
 
-# composition/naming.py
+# model/objects/naming.py
 # How a copy or a new thing is numbered, like bass-2, what joins the number, and a new scale's name, like F_harmonic_minor,
 # with the name older files gave one, like F Harmonic Minor.
 MSG_NUMBER_JOINT = '-'
@@ -27,7 +27,7 @@ MSG_LEGACY_SCALE_NAME = '{root} {kind}'
 MSG_DOCUMENT_UNNAMED_SCENE = 'unnamed'
 MSG_SCENE_WITHOUT_A_NAME = 'scene'
 
-# composition/defaults.py: the names given to a new set's song and to each new thing, numbered from 1
+# model/vocabulary/defaults.py: the names given to a new set's song and to each new thing, numbered from 1
 # What a song is called until it's renamed: the one a new set starts with, and the one an older
 # file's single song gets when the file's name can't be used.
 MSG_DEFAULT_SONG_NAME = 'untitled'
@@ -39,7 +39,7 @@ MSG_NEW_TRACK_NAME = 'track-{number}'
 MSG_PREVIEW_TRACK_NAME = '(preview)'
 MSG_PREVIEW_PATTERN_NAME = '(sound)'
 MSG_NEW_PATTERN_NAME = 'pattern-{number}'
-# The word each kind of new thing is named with, before its dash and number (composition/naming.py's new_name); a blank pattern
+# The word each kind of new thing is named with, before its dash and number (model/objects/naming.py's new_name); a blank pattern
 # made on an empty cell of Arrange takes its track's name for its word.
 MSG_NEW_PATTERN_WORD = 'pattern'
 MSG_NEW_GROUP_WORD = 'group'
@@ -51,7 +51,7 @@ MSG_NEW_INSTRUMENT_WORD = 'instrument'
 MSG_NEW_SCALE_WORD = 'scale'
 MSG_NEW_SONG_WORD = 'song'
 
-# composition/sections.py
+# model/objects/sections.py
 # How error messages name the file as a whole, and one object in each section of named objects.
 MSG_THE_FILE = 'the file'
 MSG_PATTERN_WORD = 'pattern'

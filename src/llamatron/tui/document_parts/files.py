@@ -8,14 +8,14 @@ import contextlib
 import io
 import os
 
-from llamatron.composition.checks import listed
-from llamatron.composition.file_format import SetlistSetting
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_reader import file_stem
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.exports import earlier_export, export_name, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.model.file.checks import listed
+from llamatron.model.file.ordered_data import same_in_order
+from llamatron.model.file.setlist_reader import file_stem
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary.file_format import SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.ordered_data import same_in_order
 from llamatron.user_strings import errors, messages
 
 # What the set is called in the title until it's saved.

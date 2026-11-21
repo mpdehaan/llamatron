@@ -8,22 +8,23 @@ import tempfile
 import unittest
 import yaml
 
-from llamatron.composition import defaults, limits, setlist
-from llamatron.composition.clip_slot import morph_style_name
-from llamatron.composition.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, GeneratorKind, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
-from llamatron.composition.file_layout import as_object_layout
-from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, written_name
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.naming import copy_name, unique_name
-from llamatron.composition.setlist import new_setlist, Setlist
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.exports import export_name, ExportKind
 from llamatron.generators.arp import ChordOrder
 from llamatron.generators.blend import BlendMode
-from llamatron.music.note import Note, NoteName
-from llamatron.music.scale import ScaleType
-from llamatron.support.example_sets import example_sets
+from llamatron.model.file.example_sets import example_sets
+from llamatron.model.file.file_layout import as_object_layout
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import setlist
+from llamatron.model.objects.clip_slot import morph_style_name
+from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, written_name
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.objects.naming import copy_name, unique_name
+from llamatron.model.objects.setlist import new_setlist, Setlist
+from llamatron.model.values.note import Note, NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import defaults, limits
+from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, GeneratorKind, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
 from llamatron.tui.document import Document
 from llamatron.tui.document_parts import pattern_edits
 from llamatron.tui.text import clock
@@ -570,7 +571,7 @@ class TestStepSizes(unittest.TestCase):
 
 
 class TestRenaming(unittest.TestCase):
-    """What follows a rename is held by tests/composition/test_renames.py, on every example; the document passes a rename on and
+    """What follows a rename is held by tests/model/test_renames.py, on every example; the document passes a rename on and
     keeps the song playable, and owns what a scale's default name does."""
 
     def test_a_rename_in_any_section_leaves_a_song_that_plays(self):
@@ -924,12 +925,12 @@ class TestPickerLayouts(unittest.TestCase):
     """Every chord, scale and root has exactly one place in its picker."""
 
     def test_every_chord_has_a_name_and_every_named_chord_a_short_name(self):
-        from llamatron.composition import file_format
+        from llamatron.model.vocabulary import file_format
         self.assertEqual(set(labels_text.MSG_CHORD_NAMES), set(file_format.CHORD_SYMBOLS))
         self.assertEqual(set(marks_text.MSG_CHORD_SUFFIXES), set(file_format.FIXED_CHORDS))
 
     def test_scale_pages_hold_every_kind_once_except_melodic_minor(self):
-        from llamatron.composition import named_scale
+        from llamatron.model.objects import named_scale
         from llamatron.tui.screens.set import scale_page
         flat = [kind for _, columns in scale_page.SCALE_PAGES for groups in columns for _, kinds in groups for kind in kinds]
         flat.remove(scale_type_name(ScaleType.MELODIC_MINOR))
@@ -943,7 +944,7 @@ class TestPickerLayouts(unittest.TestCase):
         self.assertEqual(GridChoiceDialog(title=PICK, options=[A, B, C], grid=None, current=1, pages=[(ONE_2, [[0, 1]]), (TWO_2, [[1, 2]])]).page, 0)
 
     def test_the_keyboard_holds_every_root_once(self):
-        from llamatron.music import note as note_values
+        from llamatron.model.values import note as note_values
         from llamatron.tui.screens.set import scale_page
         flat = [name for row in scale_page.ROOT_KEYBOARD for name in row if name]
         self.assertEqual(sorted(flat), sorted(note_values.ROOT_NAMES))

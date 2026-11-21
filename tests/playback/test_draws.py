@@ -7,12 +7,12 @@ a step's and a scene's resets, and every track drawing from one draw in track or
 
 import unittest
 
-from llamatron.composition.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, Operator, PatternSetting, RegisterName, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, Operator, PatternSetting, RegisterName, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
 from llamatron.realtime.score import Score
 from llamatron.user_strings import errors
 from tests.support import song_testing

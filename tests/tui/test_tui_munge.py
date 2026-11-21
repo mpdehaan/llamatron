@@ -5,12 +5,12 @@
 """Tests of the Munge dialog in the pattern editor: its key, its sorted list, and what its newer choices ask and do with the cursor.
 
 The pattern has five steps whose degrees count from 1 to 5. What each choice does to a pattern is
-tested on Pattern alone, in tests/composition/test_pattern_munges.py.
+tested on Pattern alone, in tests/model/test_pattern_munges.py.
 """
 
-from llamatron.composition import limits
-from llamatron.composition.checks import listed
-from llamatron.composition.file_format import ChordSymbol, Row
+from llamatron.model.file.checks import listed
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import ChordSymbol, Row
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog

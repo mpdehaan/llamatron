@@ -10,15 +10,16 @@ seconds, so 8 milliseconds between strings is 1/250 of a whole note.
 
 import unittest
 
-from llamatron.composition import file_format, generator_settings, guitar_bars
-from llamatron.composition.file_format import Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
-from llamatron.composition.generator_settings import GuitarifySettings
-from llamatron.composition.guitar_bars import ready_bar_matching
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.generators import guitarify
 from llamatron.math.rational import Rational
-from llamatron.music import midi
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import generator_settings, guitar_bars
+from llamatron.model.objects.generator_settings import GuitarifySettings
+from llamatron.model.objects.guitar_bars import ready_bar_matching
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
 from llamatron.playback.song_renderer import SongRenderer
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song

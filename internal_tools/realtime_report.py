@@ -29,8 +29,8 @@ import statistics
 import sys
 import time
 
-from llamatron.composition.setlist import Setlist
 from llamatron.grid.row_clock import seconds_per_whole
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import sender_process
 from llamatron.realtime.player import Player

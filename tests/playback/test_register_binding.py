@@ -11,17 +11,18 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 
 import unittest
 
-from llamatron.composition import defaults as set_defaults, file_format, generator_settings, limits
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
-from llamatron.composition.generator_settings import ArpSetting, ArpSettings
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.register import Register
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition.track import Track
 from llamatron.generators import arp as arp_values
 from llamatron.math.rational import Rational
-from llamatron.music import midi
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import ArpSetting, ArpSettings
+from llamatron.model.objects.register import Register
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.objects.track import Track
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import defaults as set_defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
 from tests.playback import test_registers
 from tests.playback.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
 from tests.support.rendering import as_setlist, render_data

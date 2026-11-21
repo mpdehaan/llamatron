@@ -4,10 +4,11 @@
 
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
-from llamatron.composition import defaults, file_format, limits, setlist
-from llamatron.composition.file_format import ClipSlotSetting, Direction, DrawName, FollowAction, PatternOrder, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
-from llamatron.composition.scene import TempoRamp
 from llamatron.generators.blend import BlendMode
+from llamatron.model.objects import setlist
+from llamatron.model.objects.scene import TempoRamp
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, DrawName, FollowAction, PatternOrder, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
 from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.cursor import NoSuchPlace
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

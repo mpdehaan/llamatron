@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """What the Glide, Shorten, Rush and Drag editors share: a generator's name, its step, its own amounts, its row of steps, which Enter opens in the step row editor, and its Restart."""
 
-from llamatron.composition.generator_settings import StepRowSetting
+from llamatron.model.objects.generator_settings import StepRowSetting
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field

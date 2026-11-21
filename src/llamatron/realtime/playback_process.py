@@ -27,7 +27,7 @@ import signal
 import threading
 import time
 
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.model.file.song_file_error import SongFileError
 from llamatron.realtime import render_process, sender_process
 from llamatron.realtime.playback import Status
 from llamatron.realtime.render_process import run_playback

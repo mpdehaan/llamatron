@@ -5,10 +5,10 @@
 
 import unittest
 
-from llamatron.composition import file_format, limits
-from llamatron.composition.file_format import PatternSetting, Row
 from llamatron.exporters import midi_arrangement
-from llamatron.music.note import NoteName
+from llamatron.model.values.note import NoteName
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import PatternSetting, Row
 from llamatron.realtime import fluidsynth, timeline
 from llamatron.tui import drawing, keybindings, note_names, pattern_preview
 from llamatron.tui.dialogs.sound_dialog import SoundDialog

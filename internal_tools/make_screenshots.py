@@ -19,8 +19,8 @@ from dataclasses import dataclass
 import pathlib
 import re
 
-from llamatron.composition.file_format import Section
-from llamatron.support import version
+from llamatron.model.file import version
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document

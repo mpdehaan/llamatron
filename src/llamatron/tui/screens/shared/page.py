@@ -16,8 +16,8 @@ from rich.text import Text
 from textual.screen import Screen
 from textual.widgets import Static
 
-from llamatron.composition import limits
-from llamatron.composition.naming import is_taken
+from llamatron.model.objects.naming import is_taken
+from llamatron.model.vocabulary import limits
 from llamatron.tui import caption_strip, drawing, keybindings
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

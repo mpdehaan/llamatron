@@ -19,13 +19,14 @@ stay quick. The drummer's timekeeping cymbals, the closed hat, the open hat and 
 drummer moves from one to another. The trade is written as each clip's own velocity, the scene's velocity lowered.
 """
 
-from llamatron.composition import defaults, file_format, velocity_ramps
-from llamatron.composition.checks import time_length
-from llamatron.composition.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
 from llamatron.macro_composer import breaks
-from llamatron.music.chord import Chord
-from llamatron.music.held import Held
-from llamatron.music.note import Note
+from llamatron.model.file.checks import time_length
+from llamatron.model.objects import velocity_ramps
+from llamatron.model.values.chord import Chord
+from llamatron.model.values.held import Held
+from llamatron.model.values.note import Note
+from llamatron.model.vocabulary import defaults, file_format
+from llamatron.model.vocabulary.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
 from llamatron.playback.song_renderer import SongRenderer
 
 # The drummer's cymbals that keep time, one player between them.

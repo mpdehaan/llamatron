@@ -12,7 +12,7 @@ import pathlib
 import tempfile
 import unittest
 
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.setlist import Setlist
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'preview_midi.py'
 MODULE_NAME = 'preview_midi'

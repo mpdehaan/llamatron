@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The pattern editor's Inversion row, in Basics under Chord: blocked on a step with no chord, cycling blank, 1, 2 and 3 on one with a chord."""
 
-from llamatron.composition.file_format import Row
+from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key, RowSection
 from llamatron.tui.screens.pattern import grid_drawing

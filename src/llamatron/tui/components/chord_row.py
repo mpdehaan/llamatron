@@ -5,8 +5,8 @@
 
 from rich.text import Text
 
-from llamatron.composition import file_format, limits
-from llamatron.composition.file_format import Row
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import drawing, key_table, keybindings, scale_categories
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.keyboard import chord_keys, Keyboard, KeyKind

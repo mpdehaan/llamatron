@@ -6,11 +6,6 @@
 
 from math import ceil
 
-from llamatron.composition import file_format, generator_settings, limits
-from llamatron.composition.checks import in_whole_notes
-from llamatron.composition.conditions import any_true, draws_read
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.generators.blend import Blend
 from llamatron.generators.euclid import EuclidMask
 from llamatron.grid.clip import Clip
@@ -18,8 +13,14 @@ from llamatron.grid.keyswitch import SwitchNote
 from llamatron.math.length import Length
 from llamatron.math.random_source import drawn_from_when_asked
 from llamatron.math.rational import Rational
-from llamatron.music import sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.file.checks import in_whole_notes
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.conditions import any_true, draws_read
+from llamatron.model.values import sound as sound_values
+from llamatron.model.values.sound import Sound
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
 from llamatron.playback import pattern_player as pattern_values
 from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_order import ordered_patterns

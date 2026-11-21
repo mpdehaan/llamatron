@@ -42,13 +42,13 @@ import shutil
 import sys
 import tempfile
 
-from llamatron.composition.file_format import SetlistSetting
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_reader import file_stem
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exports import export_name
 from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
+from llamatron.model.file.setlist_reader import file_stem
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary.file_format import SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 

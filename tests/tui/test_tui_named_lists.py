@@ -9,9 +9,10 @@ and AutoRatchets pages. What a page alone does, like adding, is tested with the 
 
 import unittest
 
-from llamatron.composition import file_format, groove, limits
-from llamatron.composition.file_format import Section
-from llamatron.composition.groove import FactoryGroove
+from llamatron.model.objects import groove
+from llamatron.model.objects.groove import FactoryGroove
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog

@@ -23,7 +23,7 @@ class ClipGenerator(ABC):
     To write a generator, implement _generate. The new clip keeps the original's
     name, scale and note_length, and gets its own id. Degrees stay as degrees, so the
     new clip still follows whichever scale applies when it's rendered. A generator works on
-    the clip's sounds, the tuples of music/sound.py, and clip.resolved_sounds() gives them
+    the clip's sounds, the tuples of model/values/sound.py, and clip.resolved_sounds() gives them
     with every length filled in, for one that needs to know how long each position is.
     """
 

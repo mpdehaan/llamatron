@@ -15,7 +15,7 @@ import signal
 import threading
 import time
 
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.model.file.song_file_error import SongFileError
 from llamatron.realtime import sender_process
 from llamatron.realtime.engine import MonotonicClock
 from llamatron.realtime.playback import LocalPlayback

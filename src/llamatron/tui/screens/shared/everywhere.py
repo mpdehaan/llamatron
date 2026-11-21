@@ -11,9 +11,9 @@ itself in. Quit is Q on the main screen alone, and lives here because it asks th
 
 import os
 
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import exports
 from llamatron.exporters.exports import ExportKind
+from llamatron.model.file.song_file_error import SongFileError
 from llamatron.tui.dialogs import quit_dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

@@ -4,7 +4,7 @@
 
 """A column of the grid a song renders into: one track's clips."""
 
-from llamatron.composition.checks import check_drum, check_fluidsynth, check_gm_sound, check_mute, check_name
+from llamatron.model.file.checks import check_drum, check_fluidsynth, check_gm_sound, check_mute, check_name
 from llamatron.user_strings import errors, reprs
 
 

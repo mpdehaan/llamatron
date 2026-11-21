@@ -13,9 +13,10 @@ which replaces the strokes, the accents and the cell's length together.
 
 from rich.text import Text
 
-from llamatron.composition import file_format, generator_settings, guitar_bars
-from llamatron.composition.file_format import Section
-from llamatron.composition.guitar_bars import ready_bar_matching
+from llamatron.model.objects import generator_settings, guitar_bars
+from llamatron.model.objects.guitar_bars import ready_bar_matching
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style

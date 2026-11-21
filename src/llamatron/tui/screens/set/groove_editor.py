@@ -10,9 +10,10 @@ that the one-row editors could share OneRowEditor (one_row_editor.py).
 
 from rich.text import Text
 
-from llamatron.composition import groove as groove_values, limits
-from llamatron.composition.file_format import Section
-from llamatron.composition.groove import is_factory_groove
+from llamatron.model.objects import groove as groove_values
+from llamatron.model.objects.groove import is_factory_groove
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.one_row_editor import OneRowEditor

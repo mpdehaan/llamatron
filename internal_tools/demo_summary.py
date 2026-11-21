@@ -34,9 +34,9 @@ import pathlib
 import re
 import sys
 
-from llamatron.composition.setlist_reader import file_stem
-from llamatron.support.example_sets import example_sets
-from llamatron.support.safe_yaml import load_safely
+from llamatron.model.file.example_sets import example_sets
+from llamatron.model.file.safe_yaml import load_safely
+from llamatron.model.file.setlist_reader import file_stem
 from llamatron.tui.document import Document
 from llamatron.tui.text import clock
 

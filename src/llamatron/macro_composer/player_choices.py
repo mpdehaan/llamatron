@@ -4,12 +4,12 @@
 
 """One player of the band, as the song wizard's choices hold the player: how the player plays, how busy, how loud, the player's gauges, rows and Musician."""
 
-from llamatron.composition.generator_settings import MusicianSetting, MusicianSettings
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, band, loudness, melody as melody_writer, notation as tune_notation, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import fits, share_of, values_of
 from llamatron.macro_composer.characters import gauges_of
 from llamatron.macro_composer.loudness import drum_levels, note_levels, with_own
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.generator_settings import MusicianSetting, MusicianSettings
 from llamatron.user_strings import errors
 
 

@@ -13,7 +13,7 @@ an edit while playing replaces the passes that have not started, or stopped, wit
 import heapq
 import time
 
-from llamatron.music import midi
+from llamatron.model.values import midi
 from llamatron.realtime import timeline
 from llamatron.realtime.timeline import sort_key
 

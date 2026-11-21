@@ -9,16 +9,16 @@ import math
 import re
 
 from llamatron.caching.kept import as_is, kept_while
-from llamatron.composition.checks import check_clip_length, check_loop, check_name, check_scale, check_time_signature_override
-from llamatron.composition.groove import Groove
 from llamatron.grid.control import Control
 from llamatron.grid.positions import exact_length, fit_to_length, piece_of
 from llamatron.math.length import Length
-from llamatron.music import sound as sound_values
-from llamatron.music.chord import Chord
-from llamatron.music.held import Held
-from llamatron.music.note import Degree, Note, Rest
-from llamatron.music.sound import Sound
+from llamatron.model.file.checks import check_clip_length, check_loop, check_name, check_scale, check_time_signature_override
+from llamatron.model.objects.groove import Groove
+from llamatron.model.values import sound as sound_values
+from llamatron.model.values.chord import Chord
+from llamatron.model.values.held import Held
+from llamatron.model.values.note import Degree, Note, Rest
+from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors, reprs
 
 # The shorthand a clip's list accepts: each dash is a quarter note of rest, and a note is its name and octave.
@@ -80,7 +80,7 @@ class Clip:
 
     A clip holds its positions one of two ways. Given notes, it keeps the Notes, Chords, Rests,
     Degrees and Held it was given, which is how a test or a tool builds one. Given sounds, it
-    keeps the tuples a render makes (music/sound.py), which is what playing, the generators
+    keeps the tuples a render makes (model/values/sound.py), which is what playing, the generators
     and the exporters work on. get_notes() and get_sounds() give either clip either way.
     """
 
@@ -139,7 +139,7 @@ class Clip:
         self._sounds = None
 
     def get_sounds(self):
-        """The clip's positions as sounds, the tuples of music/sound.py, which is what a render makes and reads.
+        """The clip's positions as sounds, the tuples of model/values/sound.py, which is what a render makes and reads.
 
         A clip that keeps objects says them as sounds each time it's asked, since its list can
         be appended to, and anything in the list that is no position raises ValueError.

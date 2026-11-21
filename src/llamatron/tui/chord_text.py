@@ -6,8 +6,8 @@
 name in the clip's own scale when it borrows another. The pattern editor's status line, a progression's chord editor and the
 Chord dialog all say it through here, so that a chord reads the same wherever it is edited."""
 
-from llamatron.composition.chords import borrowed, root_name, spelled_chord
-from llamatron.composition.naming import words
+from llamatron.model.objects.naming import words
+from llamatron.model.values.chords import borrowed, root_name, spelled_chord
 from llamatron.tui import drawing
 from llamatron.user_strings import marks, messages
 

@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Voice leading: its list page and its editor, with the range shown in the set's octave labels."""
 
-from llamatron.composition import generator_settings
-from llamatron.composition.file_format import GeneratorKind, Section
+from llamatron.model.objects import generator_settings
+from llamatron.model.vocabulary.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor

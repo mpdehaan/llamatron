@@ -17,8 +17,8 @@ and the entry size.
 from rich.text import Text
 from typing import NamedTuple
 
-from llamatron.composition.checks import fraction_text
-from llamatron.composition.file_format import Row
+from llamatron.model.file.checks import fraction_text
+from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Box, fit, Style
 from llamatron.tui.screens.pattern import grid_drawing

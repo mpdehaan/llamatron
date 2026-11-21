@@ -11,7 +11,7 @@ the half steps from the root to that scale degree and one more or less, keeping 
 sound, so bVII from a C major figure is B flat major. A chord's inversion moves its lowest one or
 two notes up an octave. Rests, rhythm, velocity and gates stay as written.
 
-A chord may also leave the clip's scale three ways (composition/chords.py). Its scale, a scale type on the
+A chord may also leave the clip's scale three ways (model/values/chords.py). Its scale, a scale type on the
 clip's root, takes the clip's scale's place while the chord plays, each note of the figure carried to the same place in it, so
 a chord is borrowed from the parallel minor with its passing notes. Its quality, a named chord symbol, sets the figure's notes
 that are the chord's third, fifth and seventh. Its tensions set the notes between, and are added on top of a chord of the figure.
@@ -19,16 +19,16 @@ that are the chord's third, fifth and seventh. Its tensions set the notes betwee
 
 import math
 
-from llamatron.composition import chords as chords_values, file_format
-from llamatron.composition.chords import replaced_places
-from llamatron.composition.named_scale import scale_type_called
 from llamatron.generators.arp import along_scale
 from llamatron.generators.base import ClipGenerator
 from llamatron.math import length
 from llamatron.math.length import Length
-from llamatron.music import sound as sound_values
-from llamatron.music.scale import Scale, ScaleType
-from llamatron.music.sound import Sound
+from llamatron.model.objects.named_scale import scale_type_called
+from llamatron.model.values import chords as chords_values, sound as sound_values
+from llamatron.model.values.chords import replaced_places
+from llamatron.model.values.scale import Scale, ScaleType
+from llamatron.model.values.sound import Sound
+from llamatron.model.vocabulary import file_format
 
 HALF_STEPS_PER_OCTAVE = 12
 ZERO_OFFSET = 0

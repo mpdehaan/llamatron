@@ -12,7 +12,7 @@ it yet: who knows it is chosen on Riff Assign, and where it is played on Section
 
 import functools
 
-from llamatron.composition.checks import listed
+from llamatron.model.file.checks import listed
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

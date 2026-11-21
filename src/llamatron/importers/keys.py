@@ -12,11 +12,11 @@ key's signature has flats, so every note keeps its pitch whatever the key.
 
 from typing import NamedTuple
 
-from llamatron.composition import limits
-from llamatron.composition.file_format import Accidental
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.music import midi, note as note_values
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.values import midi, note as note_values
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Accidental
 
 # A key signature as mido writes it ends in m for a minor key.
 MINOR_MARK = 'm'

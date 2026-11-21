@@ -14,10 +14,10 @@ from fractions import Fraction
 import unittest
 from unittest import mock
 
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Row, Section
+from llamatron.model.file.example_sets import example_sets
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, Row, Section
 from llamatron.playback import song_renderer
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support.example_sets import example_sets
 from llamatron.tui.lengths import measured
 from llamatron.user_strings import errors
 from tests.support.rendering import bare_document, song_from_file

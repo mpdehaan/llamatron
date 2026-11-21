@@ -22,7 +22,7 @@ import re
 import subprocess
 import sys
 
-VERSION_FILE = 'src/llamatron/support/version.py'
+VERSION_FILE = 'src/llamatron/model/file/version.py'
 SOURCE_FOLDER = 'src/'
 PYTHON_SUFFIX = '.py'
 BEFORE_PUSH_FLAG = '--before-push'

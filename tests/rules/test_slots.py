@@ -126,7 +126,7 @@ class TestSlots(unittest.TestCase):
         self.assertTrue(needs_slots(EmptyOnMethod))
 
     def test_an_object_cannot_be_given_a_new_member(self):
-        from llamatron.composition.track import Track
+        from llamatron.model.objects.track import Track
         track = Track()
         with self.assertRaises(AttributeError):
             track._drumm = True

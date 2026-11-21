@@ -8,11 +8,11 @@ Each test plays a bar of sixteen sixteenth notes, so that every step of a 16-ste
 
 import unittest
 
-from llamatron.composition import euclid
-from llamatron.composition.euclid import rhythm
-from llamatron.composition.file_format import ClipSlotSetting, euclid_setting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.math.rational import Rational
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import euclid
+from llamatron.model.objects.euclid import rhythm
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, euclid_setting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes

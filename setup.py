@@ -16,7 +16,7 @@ from setuptools import find_packages, setup
 
 HERE = Path(__file__).resolve().parent
 # The version is read from the code's own version.py, as text, so that installing doesn't run it.
-VERSION_FILE = HERE / 'src' / 'llamatron' / 'support' / 'version.py'
+VERSION_FILE = HERE / 'src' / 'llamatron' / 'model' / 'file' / 'version.py'
 VERSION_LINE = re.compile(r"^VERSION = '([^']+)'$", re.MULTILINE)
 VERSION = VERSION_LINE.search(VERSION_FILE.read_text(encoding='utf-8')).group(1)
 

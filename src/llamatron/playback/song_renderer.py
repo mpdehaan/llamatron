@@ -7,10 +7,6 @@
 from fractions import Fraction
 from typing import NamedTuple
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import GeneratorKind, RampWay, Restart, Section, StepStatement
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.composition.strum import strums_at_all
 from llamatron.exporters.timing import timed_events
 from llamatron.generators.base import Continuation
 from llamatron.generators.follow_chords import FollowChords
@@ -25,7 +21,11 @@ from llamatron.grid.row_clock import RowClock
 from llamatron.grid.strum_plan import StrumPlan
 from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
-from llamatron.music import midi, sound as sound_values
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.strum import strums_at_all
+from llamatron.model.values import midi, sound as sound_values
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import GeneratorKind, RampWay, Restart, Section, StepStatement
 from llamatron.playback import registers as registers_values
 from llamatron.playback.chord_source import ChordSource
 from llamatron.playback.clip_slot_player import ClipSlotPlayer

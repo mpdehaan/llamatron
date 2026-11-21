@@ -13,11 +13,11 @@ import unittest
 from llamatron.exporters.timing import timed_events
 from llamatron.grid.clip import Clip
 from llamatron.grid.control import Control
-from llamatron.music.chord import Chord
-from llamatron.music.held import Held, phrase
-from llamatron.music.note import Degree, Note, NoteName, Rest
-from llamatron.music.scale import Scale, ScaleType
-from llamatron.music.sound import Sound
+from llamatron.model.values.chord import Chord
+from llamatron.model.values.held import Held, phrase
+from llamatron.model.values.note import Degree, Note, NoteName, Rest
+from llamatron.model.values.scale import Scale, ScaleType
+from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors
 from tests.support.example_renders import first_song_grid
 

@@ -21,10 +21,10 @@ parts the input lists by the song's feel, lays the form out as scenes and writes
 
 from fractions import Fraction
 
-from llamatron.composition import naming, sections
 from llamatron.macro_composer import loudness, notation
 from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.shaping import is_compound, role_of, shaped
+from llamatron.model.objects import naming, sections
 from llamatron.user_strings import errors, labels, names
 
 # The fields of an input.

@@ -25,11 +25,11 @@ import mido
 import os
 import sys
 
-from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.importers import midi_import
 from llamatron.importers.comparison import round_trip
 from llamatron.importers.midi_import import ImportChoices
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 
 MIDI_FILES = os.path.join('examples', 'midi', '*.mid')

@@ -11,8 +11,8 @@ from llamatron.grid.clip import Clip
 from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
-from llamatron.music import sound
-from llamatron.music.sound import Sound
+from llamatron.model.values import sound
+from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors
 
 # How far a blend has moved to its target, as a percentage.

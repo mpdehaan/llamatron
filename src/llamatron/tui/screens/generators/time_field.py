@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The field of a time setting, Step, Every or Over, which every page with one shares: the one list of times, after the setting's own first choice."""
 
-from llamatron.composition import file_format
+from llamatron.model.vocabulary import file_format
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.user_strings import labels
 

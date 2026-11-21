@@ -15,7 +15,7 @@ them in the tracker's own process, the player ticking on the tracker's timer, as
 import functools
 from typing import NamedTuple
 
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.setlist import Setlist
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Keeping, Score
 from llamatron.realtime.score_builder import ScoreBuilder

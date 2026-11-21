@@ -16,8 +16,9 @@ cursor costs nothing.
 
 from typing import NamedTuple
 
-from llamatron.composition import defaults, file_format, velocity_ramps
-from llamatron.composition.file_format import Section, VelocitySetting
+from llamatron.model.objects import velocity_ramps
+from llamatron.model.vocabulary import defaults, file_format
+from llamatron.model.vocabulary.file_format import Section, VelocitySetting
 from llamatron.tui import themes
 from llamatron.tui.drawing import fit, Style
 from llamatron.tui.text import plain_number

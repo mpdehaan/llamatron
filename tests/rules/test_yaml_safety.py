@@ -6,7 +6,7 @@
 
 yaml.load with the wrong loader, yaml.unsafe_load and yaml.full_load can build arbitrary Python
 objects from a file, which lets a song file run code. yaml.safe_load only makes plain data, and
-so does llamatron.support.safe_yaml.load_safely, which is the one place that names a loader: SafeLoader,
+so does llamatron.model.file.safe_yaml.load_safely, which is the one place that names a loader: SafeLoader,
 or CSafeLoader when PyYAML has libyaml, which is the same safe loader on a faster parser.
 """
 
@@ -18,10 +18,10 @@ import tempfile
 import unittest
 import yaml
 
-from llamatron.composition.song_file_error import SongFileError
-from llamatron.support import safe_yaml
-from llamatron.support.example_sets import example_sets
-from llamatron.support.safe_yaml import load_safely, uses_c_parser
+from llamatron.model.file import safe_yaml
+from llamatron.model.file.example_sets import example_sets
+from llamatron.model.file.safe_yaml import load_safely, uses_c_parser
+from llamatron.model.file.song_file_error import SongFileError
 from llamatron.tui.document import Document
 from tests.support.rendering import render_file
 
@@ -39,7 +39,7 @@ WRITE_TEXT = 'w'
 # The program's modules that may import yaml: reading a file, writing one, and the loader. In
 # memory the set is objects, and nothing between key presses parses or dumps YAML
 # (.claude/STYLE.md, "Performance matters"), so no other module under src/ gets to import it.
-YAML_MODULES = ('composition/setlist_reader.py', 'composition/setlist_writer.py', 'support/safe_yaml.py')
+YAML_MODULES = ('model/file/setlist_reader.py', 'model/file/setlist_writer.py', 'model/file/safe_yaml.py')
 IMPORTS_YAML = re.compile(r'^\s*(import yaml\b|from yaml\b)')
 FILE_ENCODING = 'utf-8'
 

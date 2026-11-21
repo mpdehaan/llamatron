@@ -12,8 +12,8 @@ the sounds that fill the same place when the generator is done.
 
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
-from llamatron.music import midi, sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.values import midi, sound as sound_values
+from llamatron.model.values.sound import Sound
 
 # What stands for the pitch of a sound that has none of its own to compare.
 NO_PITCH = -1

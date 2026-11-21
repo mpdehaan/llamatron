@@ -13,7 +13,7 @@ parentheses and only the value after "got" keeps its repr; lists are joined with
 """
 
 
-# music/chord.py
+# model/values/chord.py
 ERR_CHORD_NOT_A_LIST = 'expected a list of notes, got {value!r}'
 ERR_NO_NOTES = 'a chord needs at least one note'
 ERR_NOT_A_NOTE = 'expected a Note, got {value!r}'
@@ -51,7 +51,7 @@ ERR_NOT_A_CLIP = 'expected a Clip, got {value!r}'
 ERR_COLUMN_NOT_IN_GRID = 'column is not in this grid: {column!r}'
 ERR_ROW_NOT_IN_GRID = 'row is not in this grid: {row!r}'
 
-# composition/clip_slot.py
+# model/objects/clip_slot.py
 ERR_CLIP_SLOT_EXPECTED_SETTINGS = 'expected clip settings, got {data!r}'
 # How a cell is named in its messages: by its scene and its track.
 ERR_CLIP_SLOT_WHERE = '{where}, track ({track})'
@@ -75,14 +75,14 @@ ERR_BAD_SECTION = 'section must be one of: {choices}, got {value!r}'
 ERR_BAD_LIVE_RESPONSIVENESS = 'live_responsiveness must be one of: {choices}, got {value!r}'
 ERR_MORPH_STYLE_WITHOUT_MORPH = 'morph_style needs a morph_to, since it only says how a morph goes'
 
-# composition/chain.py
+# model/objects/chain.py
 ERR_EXPECTED_LIST = 'expected a list of generators'
 ERR_ONE_GENERATOR_PER_STEP = 'each step must be one generator, got {step!r}'
 ERR_UNKNOWN_GENERATOR = 'unknown generator ({kind}), expected one of: {kinds}'
 ERR_NO_SUCH_GENERATOR = 'no {kind} called ({name})'
 ERR_CHAIN_NO_SUCH_STEP = 'no step {place} in a chain of {steps} steps'
 
-# composition/file_layout.py
+# model/file/file_layout.py
 ERR_EXPECTED_ITEMS = 'expected a list, each item with a name, got {value!r}'
 ERR_ITEM_NEEDS_NAME = 'each item needs a name, got {value!r}'
 ERR_NAMED_TWICE = 'two items are called ({name})'
@@ -91,7 +91,7 @@ ERR_NO_GENERATOR_CALLED = 'no generator called ({name})'
 ERR_CHAIN_IN_CHAIN = 'chain ({name}): a chain runs generators, and ({step}) is a chain'
 ERR_EXPECTED_NAMES = 'expected a list of generators, each as {{ name: x }}, got {value!r}'
 
-# composition/checks.py
+# model/file/checks.py
 ERR_AT = '{where}: {problem}'
 ERR_BAD_WRITTEN_LENGTH = 'expected an integer or a fraction such as 1/8, got {value!r}'
 ERR_LENGTH_TOO_LONG = 'a length can be at most {most}, got {value!r}'
@@ -102,7 +102,7 @@ ERR_BAD_TIME = 'expected a length such as 1/8 or a count of bars such as 2 bars,
 ERR_LENGTH_NOT_POSITIVE = 'a length must be more than zero, got {value!r}'
 ERR_CHECKS_BAD_OCTAVE = 'an octave must be an integer from {lowest} to {highest}, got {value!r}'
 
-# composition/generator_settings.py
+# model/objects/generator_settings.py
 ERR_NEEDS_SETTING = 'needs {name}'
 ERR_NOT_A_CHOICE = '{name} must be one of: {choices}, got {value!r}'
 ERR_GENERATOR_BAD_OCTAVE_RANGE = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
@@ -138,22 +138,22 @@ ERR_NOT_SETTINGS = 'expected settings by name, got {value!r}'
 ERR_NO_OFFSETS = 'has no offsets to change'
 ERR_NO_SUCH_OFFSET = 'no offset step {step} in {count} steps of offsets'
 
-# composition/setting.py
+# model/vocabulary/setting.py
 ERR_NEEDS_CHECK = '{kind} needs a check() method'
 
-# composition/llama_data.py
+# model/objects/llama_data.py
 ERR_NEEDS_TO_DATA = '{kind} needs a to_data() method'
 ERR_NEEDS_FROM_DATA = '{kind} needs a from_data() class method'
 ERR_NEEDS_COPY = '{kind} needs a copy() method'
 # What a screen says when asked the way to something its cursor cannot reach, which a test or the tutorial asked for by name.
 ERR_NO_SUCH_PLACE = '{screen} has no place for its cursor called ({target})'
 
-# composition/named_scale.py
+# model/objects/named_scale.py
 ERR_EXPECTED_ROOT_AND_TYPE = 'expected a root and a type, got {data!r}'
 ERR_EXPECTED_ROOT_NOTE = 'expected a root note such as F or Bb, got {root!r}'
 ERR_UNKNOWN_SCALE_TYPE = 'unknown scale type ({kind}), expected one of: {names}'
 
-# composition/pattern.py
+# model/objects/pattern.py
 ERR_PATTERN_EXPECTED_SETTINGS = 'expected pattern settings'
 ERR_BAD_SCALE_LENGTH = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
 ERR_BAD_STEPS = 'steps must be an integer of {lowest} or more, got {value!r}'
@@ -185,7 +185,7 @@ ERR_PATTERN_NOT_TRUE_OR_FALSE = 'must be true or false'
 # How the places of a gate, an octave or a step size in a pattern are named in messages.
 ERR_WHERE_IN_ROW = '{where}, {row}'
 
-# composition/register.py
+# model/objects/register.py
 ERR_REGISTER_EXPECTED_SETTINGS = 'expected register settings, got {data!r}'
 ERR_BAD_VALUE = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
 ERR_BAD_BOUND_REGISTER = '{name} must be one of: {choices}, got {value!r}'
@@ -194,7 +194,7 @@ ERR_RESET_EACH_SCENE_NOT_TRUE_OR_FALSE = 'reset_each_scene must be true or false
 ERR_OUT_OF_ORDER = 'needs minimum ({minimum}) <= default ({default}) <= maximum ({maximum})'
 ERR_REGISTER_NO_SUCH_SETTING = 'unknown register setting ({name}), expected one of: {names}'
 
-# composition/scene.py
+# model/objects/scene.py
 ERR_SCENE_EXPECTED_SETTINGS = 'expected scene settings'
 ERR_NO_SUCH_TRACK = 'no track called ({track})'
 ERR_SCENE_NO_SUCH_SCALE = 'no scale called ({scale})'
@@ -215,7 +215,7 @@ ERR_NO_SUCH_REGISTER = 'unknown register ({name}), expected one of: {names}'
 ERR_NO_CLIP_SLOT = 'no clip on track ({track})'
 ERR_SCENE_NAME_NOT_TEXT = 'name must be text, got {value!r}'
 
-# composition/setlist.py
+# model/objects/setlist.py
 ERR_CANT_READ = 'cannot read {path}: {reason}'
 ERR_NOT_YAML = '{path} is not valid YAML: {problem}'
 ERR_NOT_A_SETLIST = "expected the set's settings at the top of the file"
@@ -223,7 +223,7 @@ ERR_SONGS_NOT_NAMED = 'songs: expected songs by name, each with its settings'
 # How a part of a song is placed in a message: the song, then the part, like song (one), scene entry 2.
 ERR_WHERE_WITHIN = '{where}, {part}'
 
-# composition/song.py
+# model/objects/song.py
 ERR_NOT_A_SONG = "expected a song's settings, got {value!r}"
 ERR_NOT_TEXT = '{name} must be text, got {value!r}'
 ERR_SONG_BAD_VERSION = 'version must be three integers separated by dots, such as 1.0.2, got {value!r}'
@@ -238,7 +238,7 @@ ERR_TRACKS_NOT_NAMED = 'tracks: expected tracks by name, each with its settings'
 ERR_GENERATORS_NOT_NAMED = '{section}: expected settings by name'
 ERR_SCENES_NOT_A_LIST = 'scenes: expected a list of scenes'
 ERR_REGISTERS_NOT_NAMED = 'registers: expected registers from: {names}, each with its settings'
-# composition/draw.py
+# model/objects/draw.py
 ERR_DRAWS_NOT_NAMED = 'draws: expected draws from: {names}, each with its settings'
 ERR_DRAW_EXPECTED_SETTINGS = 'expected draw settings, got {data!r}'
 ERR_NO_SUCH_DRAW = 'unknown draw ({name}), expected one of: {names}'
@@ -257,9 +257,9 @@ ERR_NO_SUCH_ITEM = 'no {label} called ({name})'
 ERR_NO_SUCH_SCENE = 'no scene at place {index} in {count} scenes'
 ERR_SONG_BAD_WIZARD = 'wizard must be a mapping of settings, got {value!r}'
 
-# composition/track.py
+# model/objects/track.py
 ERR_TRACK_EXPECTED_SETTINGS = 'expected track settings, got {data!r}'
-# composition/groove.py
+# model/objects/groove.py
 ERR_GROOVE_EXPECTED_SETTINGS = 'expected groove settings, got {data!r}'
 ERR_BAD_GROOVE_CELLS = 'cells must be a list of {fewest} to {most} integers from {lowest} to {highest}, got {value!r}'
 ERR_BAD_GROOVE_AMOUNT = 'a groove amount must be an integer from {lowest} to {highest}, got {value!r}'
@@ -269,7 +269,7 @@ ERR_GROOVE_NOT_NAME_OR_FALSE = 'groove must be the name of a groove or false, go
 ERR_NO_SUCH_GROOVE = 'no groove called ({name})'
 ERR_GROOVES_NOT_NAMED = 'grooves: expected grooves by name, each with its cells'
 
-# composition/instrument.py
+# model/objects/instrument.py
 ERR_INSTRUMENT_EXPECTED_SETTINGS = 'expected instrument settings, got {data!r}'
 ERR_DEVICE_NOT_TEXT = 'device must be the name of a MIDI output port, got {value!r}'
 ERR_BAD_CHANNEL = 'channel must be an integer from {lowest} to {highest}, got {value!r}'
@@ -311,14 +311,14 @@ ERR_BAD_AMOUNT = 'amount must be from {lowest} to {highest}, got {value!r}'
 ERR_DEGREE_NEEDS_SCALE = '{degree!r} needs a scale, and none is set'
 ERR_LENGTHS_DIFFER = 'the clips must be the same length, but they last {first} and {second}'
 
-# music/sound.py
+# model/values/sound.py
 ERR_NOT_A_POSITION = 'expected a Note, Chord, Rest, Degree or Held, got {value!r}'
 
-# music/held.py
+# model/values/held.py
 ERR_BAD_SOUND = 'expected a Note, Chord or a phrase of them, got {value!r}'
 ERR_BAD_PHRASE_PART = 'a held phrase holds Notes, Chords, Rests, Degrees and Held, got {value!r}'
 
-# music/note.py
+# model/values/note.py
 ERR_NOT_AN_INTEGER = 'expected an integer, got {value!r}'
 ERR_BAD_LENGTH = 'a length must be a positive fraction of a whole note, got {value!r}'
 ERR_BAD_DEGREE = 'a degree must be an integer of {lowest} or more, got {value!r}'
@@ -371,10 +371,10 @@ ERR_NEEDS_FILES = '{kind} needs to say which files it writes, as WritesOneFile o
 # exporters/timing.py
 ERR_TIMING_NOT_A_POSITION = 'expected a Note, Chord or Rest, got {value!r}'
 
-# music/scale.py
+# model/values/scale.py
 ERR_NOT_A_SCALE_TYPE = 'expected a ScaleType, got {value!r}'
 
-# music/time_signature.py
+# model/values/time_signature.py
 ERR_BAD_TIME_SIGNATURE = 'time signature must be beats over a note value such as 6/8, with {lowest} to {highest} beats over one of: {units}, got {value!r}'
 ERR_NOT_A_TIME_SIGNATURE = 'expected a TimeSignature, got {value!r}'
 
@@ -495,7 +495,7 @@ ERR_CHANGED_SNAPSHOT = 'a snapshot the undo history shares was changed after the
 ERR_STALE_DATA = 'the data the set keeps is stale: kept {kept!r}, and built again {again!r}'
 ERR_WRONG_RESTORE = 'the set restored from a snapshot differs from the set read afresh from it: restored {restored!r}, and read afresh {afresh!r}'
 
-# support/version.py
+# model/file/version.py
 ERR_BAD_VERSION_TEXT = 'a version must be three integers separated by dots, such as 1.0.2, got {value!r}'
 # realtime/outputs.py
 ERR_NO_MIDI_LIBRARY = 'python-rtmidi is not installed, so no MIDI port can be opened'

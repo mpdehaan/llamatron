@@ -15,11 +15,6 @@ import functools
 import random
 
 from llamatron.caching.kept import kept_while
-from llamatron.composition import generator_settings, limits
-from llamatron.composition.file_format import Section
-from llamatron.composition.generator_settings import PhrasingSettings
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, composer as set_writer, hook_writing, joins as joins_values, line_edits, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import arranged, bar_length, chord_of, form_of, picked, share_in, style_in, style_named, style_names, values_of, variant_named, variants_of
 from llamatron.macro_composer.band_choices import BandChoices
@@ -36,9 +31,15 @@ from llamatron.macro_composer.solo_choices import SoloChoices
 from llamatron.macro_composer.song_plan import SongPlan
 from llamatron.macro_composer.sound_choices import SoundChoices
 from llamatron.macro_composer.tune_choices import TuneChoices
-from llamatron.music import note as note_values
+from llamatron.model.file import version as version_values
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import PhrasingSettings
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.values import note as note_values
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.playback.song_renderer import SongRenderer
-from llamatron.support import version as version_values
 from llamatron.user_strings import errors, macro_composer as composer_text
 
 

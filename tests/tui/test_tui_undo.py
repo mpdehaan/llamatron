@@ -15,12 +15,12 @@ import inspect
 import os
 import unittest
 
-from llamatron.composition import defaults
-from llamatron.composition.file_format import GeneratorKind, Row, Section, SongSetting
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.naming import default_scale_name, new_name
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.objects.naming import default_scale_name, new_name
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import defaults
+from llamatron.model.vocabulary.file_format import GeneratorKind, Row, Section, SongSetting
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage

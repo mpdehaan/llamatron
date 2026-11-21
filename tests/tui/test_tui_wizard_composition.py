@@ -4,8 +4,8 @@
 
 """The song wizard's Composition panels: Melody, a kind of section's melody, Riffs, Riff Assign and Section Players."""
 
-from llamatron.composition.file_format import Row
 from llamatron.macro_composer import hook_writing, melody, riffs, song_plan, wizard_limits
+from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import button_row
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

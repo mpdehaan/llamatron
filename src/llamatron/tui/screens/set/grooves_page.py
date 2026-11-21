@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Grooves page: the factory grooves every set has, then the set's own, which songs, scenes and tracks choose by name."""
 
-from llamatron.composition import groove
-from llamatron.composition.file_format import Section
-from llamatron.composition.groove import is_factory_groove
+from llamatron.model.objects import groove
+from llamatron.model.objects.groove import is_factory_groove
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.named_list_page import NamedListPage

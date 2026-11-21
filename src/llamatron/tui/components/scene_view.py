@@ -22,8 +22,8 @@ from rich.style import Style as RichStyle
 from rich.text import Text
 
 from llamatron.caching.kept import kept_for_life
-from llamatron.composition.checks import fraction_text
-from llamatron.music import note as note_values
+from llamatron.model.file.checks import fraction_text
+from llamatron.model.values import note as note_values
 from llamatron.tui.components import title_card
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key

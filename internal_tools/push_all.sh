@@ -19,8 +19,8 @@ if [ "$branch" != "main" ]; then
 fi
 # The version and the build date and time are raised once a push, where the program's Python changed since the last one.
 .venv/bin/python internal_tools/bump_version.py --before-push
-if ! git diff --quiet -- src/llamatron/support/version.py; then
-    git add src/llamatron/support/version.py
+if ! git diff --quiet -- src/llamatron/model/file/version.py; then
+    git add src/llamatron/model/file/version.py
     git commit -q -m 'The version is raised for the push.'
 fi
 echo 'before the push: running every test'

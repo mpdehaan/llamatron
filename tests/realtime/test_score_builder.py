@@ -7,7 +7,7 @@ in place of a score, and a newer request replacing one not yet started."""
 import threading
 import unittest
 
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.model.file.song_file_error import SongFileError
 from llamatron.realtime.score_builder import ScoreBuilder
 
 A_KEY = 'first'

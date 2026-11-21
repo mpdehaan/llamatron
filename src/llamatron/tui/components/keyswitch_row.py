@@ -8,8 +8,8 @@ A cell is blank for none and otherwise says how many are on. Enter opens the dia
 them, the same one the piano roll opens, and Bksp clears them. A step with no note takes none.
 """
 
-from llamatron.composition import instrument as instrument_values
-from llamatron.composition.file_format import Row
+from llamatron.model.objects import instrument as instrument_values
+from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.toggle_row import ToggleRow
 from llamatron.tui.dialogs.keyswitch_dialog import KeyswitchDialog

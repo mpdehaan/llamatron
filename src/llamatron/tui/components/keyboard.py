@@ -14,9 +14,9 @@ key outside it, so that the dialog draws the chord's keys filled and the scale's
 colour. chord_keys() says which keys a chord's notes are, from its root up.
 """
 
-from llamatron.composition import named_scale
-from llamatron.music import midi, note
-from llamatron.music.note import Note
+from llamatron.model.objects import named_scale
+from llamatron.model.values import midi, note
+from llamatron.model.values.note import Note
 from llamatron.tui import drawing
 from llamatron.user_strings import marks
 

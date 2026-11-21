@@ -7,13 +7,13 @@
 
 import unittest
 
-from llamatron.composition import file_format
-from llamatron.composition.chords import spelled_chord
-from llamatron.composition.file_format import ChordSymbol
-from llamatron.composition.named_scale import NamedScale, scale_type_name
-from llamatron.music import note
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects.named_scale import NamedScale, scale_type_name
+from llamatron.model.values import note
+from llamatron.model.values.chords import spelled_chord
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import ChordSymbol
 from llamatron.tui import drawing
 from llamatron.tui.components import keyboard as keyboard_values
 from llamatron.tui.components.keyboard import chord_keys, Keyboard, KeyKind, pitch_class_of

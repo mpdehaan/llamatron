@@ -21,10 +21,10 @@ import io
 import os
 import sys
 
-from llamatron.composition import defaults, file_format, limits
-from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, shape_setting, SongSetting, StepStatement, TrackSetting
-from llamatron.composition.setlist import Setlist
-from llamatron.support.example_sets import example_sets
+from llamatron.model.file.example_sets import example_sets
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, shape_setting, SongSetting, StepStatement, TrackSetting
 
 SET_SUFFIX = '.yml'
 USED = '●'

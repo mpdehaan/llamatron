@@ -18,8 +18,8 @@ from llamatron.grid.clip_column import ClipColumn
 from llamatron.grid.clip_grid import ClipGrid
 from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.control import Control
-from llamatron.music.note import Note
-from llamatron.music.time_signature import TimeSignature
+from llamatron.model.values.note import Note
+from llamatron.model.values.time_signature import TimeSignature
 from llamatron.user_strings import errors
 
 QUARTER = 0.25

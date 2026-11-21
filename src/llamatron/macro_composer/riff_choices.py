@@ -6,13 +6,13 @@
 
 import copy
 
-from llamatron.composition import naming
-from llamatron.composition.file_format import PatternSetting
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.macro_composer import arranger, notation as tune_notation, riffs as riffs_values, wizard_limits
 from llamatron.macro_composer.arranger import arranged, bar_length, in_octaves_of
 from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change
 from llamatron.macro_composer.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import naming
+from llamatron.model.vocabulary.file_format import PatternSetting
 from llamatron.user_strings import errors, macro_composer as composer_text, names as names_text
 
 

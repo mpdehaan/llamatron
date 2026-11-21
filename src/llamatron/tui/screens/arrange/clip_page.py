@@ -8,9 +8,10 @@ from dataclasses import dataclass
 import functools
 from rich.text import Text
 
-from llamatron.composition import clip_slot as clip_slot_values, defaults, file_format, limits
-from llamatron.composition.file_format import ClipSlotSetting, Section, shape_setting, strum_setting
-from llamatron.composition.naming import words
+from llamatron.model.objects import clip_slot as clip_slot_values
+from llamatron.model.objects.naming import words
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Section, shape_setting, strum_setting
 from llamatron.playback import song_renderer
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

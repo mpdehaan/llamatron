@@ -13,9 +13,10 @@ note, or on the lowest C for an empty map. Nothing changes in the set until OK.
 
 from rich.text import Text
 
-from llamatron.composition import file_format, instrument, limits
-from llamatron.composition.instrument import Keyswitch
-from llamatron.music import midi
+from llamatron.model.objects import instrument
+from llamatron.model.objects.instrument import Keyswitch
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import file_format, limits
 from llamatron.tui import drawing, key_table, keybindings, keyswitch_text
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.components.keyboard import KeyKind, one_octave_rows

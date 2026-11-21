@@ -6,8 +6,8 @@
 from llamatron.generators.glide import StepRow
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
-from llamatron.music import sound
-from llamatron.music.sound import Sound
+from llamatron.model.values import sound
+from llamatron.model.values.sound import Sound
 
 PERCENT = 100
 

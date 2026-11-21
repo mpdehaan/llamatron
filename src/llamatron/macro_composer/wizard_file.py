@@ -22,8 +22,8 @@ import os
 
 from llamatron.macro_composer import arranger, notation as tune_notation, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import data_laid_over, WizardChoices
-from llamatron.support import files
-from llamatron.support.safe_yaml import load_safely
+from llamatron.model.file import files
+from llamatron.model.file.safe_yaml import load_safely
 from llamatron.user_strings import errors
 
 NAME = 'name'

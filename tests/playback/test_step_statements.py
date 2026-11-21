@@ -12,11 +12,11 @@ cover that path, and tests/playback/test_registers.py the path every other scene
 
 import unittest
 
-from llamatron.composition import file_format, limits
-from llamatron.composition.file_format import ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting, StatementPart, StepStatement
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.pattern import Pattern
-from llamatron.composition.song_file_error import SongFileError
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects.pattern import Pattern
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting, StatementPart, StepStatement
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, pitches, scale_notes, song
 

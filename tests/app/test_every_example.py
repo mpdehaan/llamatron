@@ -13,14 +13,14 @@ import os
 import re
 import unittest
 
-from llamatron.support.example_sets import example_sets
+from llamatron.model.file.example_sets import example_sets
 from tests.app.test_examples import check_clips_fit, check_exports, check_homage_folder, check_sounds
-from tests.composition.test_kept_data import check_kept_data
-from tests.composition.test_renames import check_renames
-from tests.composition.test_taking_in import check_walk
 from tests.grid.test_clip_lengths import check_lengths_agree
 from tests.grid.test_clip_sounds import BothWays, check_both_ways
 from tests.importers.test_midi_import import check_round_trip
+from tests.model.test_kept_data import check_kept_data
+from tests.model.test_renames import check_renames
+from tests.model.test_taking_in import check_walk
 from tests.realtime.test_realtime import check_player_follows, check_timeline
 from tests.tui.test_tui_document import check_saves_and_loads
 

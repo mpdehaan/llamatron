@@ -11,10 +11,10 @@ song, so that the same data builds a Setlist, a Song or a Document.
 import os
 
 from llamatron.caching.memory import Memory
-from llamatron.composition import defaults
-from llamatron.composition.file_format import Section, SongSetting
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_writer import dump_setlist
+from llamatron.model.file.setlist_writer import dump_setlist
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary import defaults
+from llamatron.model.vocabulary.file_format import Section, SongSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 from llamatron.user_strings import names

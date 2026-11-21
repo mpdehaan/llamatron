@@ -15,10 +15,10 @@ import random
 import unittest
 
 from llamatron.caching.memory import Memory
-from llamatron.composition import file_format
-from llamatron.composition.file_format import RegisterName, Row, Section
-from llamatron.composition.setlist import Setlist
-from llamatron.music import midi
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import RegisterName, Row, Section
 from llamatron.realtime.score import Keeping, Score
 from llamatron.realtime.timeline import Route
 

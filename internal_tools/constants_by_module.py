@@ -4,8 +4,8 @@
 
 """Name every constant through the module that defines it: `from package import module`, then `module.NAME`.
 
-A file that reads `from llamatron.music.sound import KIND, Sound` and then `sound[KIND]` is
-rewritten to read `from llamatron.music import sound` beside `from llamatron.music.sound import
+A file that reads `from llamatron.model.values.sound import KIND, Sound` and then `sound[KIND]` is
+rewritten to read `from llamatron.music import sound` beside `from llamatron.model.values.sound import
 Sound`, and `sound.KIND`. A constant is a name in capitals that its module assigns; a class or a
 function keeps its import, whatever its name. A constant one module imports and another takes
 from there is named through the module that defines it. Where the module's name is already a

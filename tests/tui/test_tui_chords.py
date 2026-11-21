@@ -9,11 +9,12 @@ status line naming the chord under the cursor, and the whole choice as one step 
 import unittest
 from unittest import mock
 
-from llamatron.composition import limits, setlist
-from llamatron.composition.file_format import ChordSymbol, Row, ScaleKind, Tension
-from llamatron.composition.named_scale import scale_type_name, scale_type_names
-from llamatron.composition.naming import words
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects import setlist
+from llamatron.model.objects.named_scale import scale_type_name, scale_type_names
+from llamatron.model.objects.naming import words
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import ChordSymbol, Row, ScaleKind, Tension
 from llamatron.tui import drawing, keybindings, scale_categories
 from llamatron.tui.dialogs import chord_dialog, dialog as dialog_values
 from llamatron.tui.dialogs.chord_dialog import ChordDialog

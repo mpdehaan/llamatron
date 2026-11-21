@@ -9,11 +9,11 @@ then the little that differs by kind: the current song, a factory groove's copy 
 
 import unittest
 
-from llamatron.composition import sections
-from llamatron.composition.file_format import Section
-from llamatron.composition.groove import FactoryGroove
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.naming import copy_name
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.objects import sections
+from llamatron.model.objects.groove import FactoryGroove
+from llamatron.model.objects.naming import copy_name
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.user_strings import errors, names as names_text
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song

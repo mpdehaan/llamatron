@@ -6,7 +6,7 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
-from llamatron.composition.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.model.vocabulary.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
 from llamatron.tui.keys import RowSection
 
 
@@ -470,7 +470,7 @@ MSG_INVERSION_ROW_LABEL = 'Inv.'
 MSG_PROGRESSION_SCALE_ROW_LABEL = 'Scale'
 MSG_PROGRESSION_QUALITY_ROW_LABEL = 'Quality'
 MSG_PROGRESSION_TENSIONS_ROW_LABEL = 'Tens.'
-# The named progressions H offers, by the key composition/progressions.py names each with, in two groups.
+# The named progressions H offers, by the key model/values/progressions.py names each with, in two groups.
 MSG_PROGRESSION_GROUPS = ['Pop and rock', 'Blues, jazz, folk and more']
 MSG_PROGRESSION_NAMES = {
     NamedProgression.POP: 'Pop', NamedProgression.FIFTIES: 'Fifties', NamedProgression.SAD_POP: 'Sad pop', NamedProgression.EPIC: 'Epic', NamedProgression.HOPEFUL: 'Hopeful', NamedProgression.ROCK: 'Rock',

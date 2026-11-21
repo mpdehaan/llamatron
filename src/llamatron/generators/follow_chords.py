@@ -19,8 +19,8 @@ from llamatron.generators.arp import along_scale
 from llamatron.generators.base import ClipGenerator
 from llamatron.math import length
 from llamatron.math.length import Length
-from llamatron.music import sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.values import sound as sound_values
+from llamatron.model.values.sound import Sound
 
 HALF_STEPS_PER_OCTAVE = 12
 # The half steps above a chord's root that its third, its fifth and its seventh can be, by the place above a figure's root, counted in notes of the scale from 0, that is the figure's.

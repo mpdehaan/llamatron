@@ -19,17 +19,17 @@ Names follow these rules:
 from dataclasses import dataclass
 import mido
 
-from llamatron.composition import defaults, file_format
-from llamatron.composition.checks import fraction_text
-from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition.named_scale import NamedScale
-from llamatron.composition.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
-from llamatron.composition.pattern import Pattern
-from llamatron.composition.song import Song
 from llamatron.importers import steps as steps_values
 from llamatron.importers.steps import has_a_value
 from llamatron.math.rational import Rational
-from llamatron.music.time_signature import TimeSignature
+from llamatron.model.file.checks import fraction_text
+from llamatron.model.objects.named_scale import NamedScale
+from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
+from llamatron.model.objects.pattern import Pattern
+from llamatron.model.objects.song import Song
+from llamatron.model.values.time_signature import TimeSignature
+from llamatron.model.vocabulary import defaults, file_format
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.user_strings import importing
 
 FIRST_BAR_NUMBER = 1

@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Drift editor page: a drift's own settings, then each of its values for version A and version B side by side."""
 
-from llamatron.composition import file_format, generator_settings
-from llamatron.composition.file_format import DriftValue, Section
-from llamatron.composition.generator_settings import DriftSetting, versioned
-from llamatron.music import note
+from llamatron.model.objects import generator_settings
+from llamatron.model.objects.generator_settings import DriftSetting, versioned
+from llamatron.model.values import note
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import DriftValue, Section
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.generators.restart_field import restart_field

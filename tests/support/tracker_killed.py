@@ -13,7 +13,7 @@ the tracker's closing, and then checks that the render process and its sender ar
 import sys
 import threading
 
-from llamatron.composition.file_format import ClipSlotSetting, Section
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Section
 from llamatron.realtime import playback as playback_values
 from llamatron.realtime.playback import Launch, Wanted
 from llamatron.realtime.playback_process import PlaybackProcess

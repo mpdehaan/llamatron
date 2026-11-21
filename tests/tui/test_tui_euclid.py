@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Euclidean mask: the Euclids page and editor, the track editor's + Euclid section, and the picker of named rhythms that H opens on Hits."""
 
-from llamatron.composition import euclid
-from llamatron.composition.file_format import EuclidPart, GeneratorKind, NamedRhythm, Section
+from llamatron.model.objects import euclid
+from llamatron.model.vocabulary.file_format import EuclidPart, GeneratorKind, NamedRhythm, Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key

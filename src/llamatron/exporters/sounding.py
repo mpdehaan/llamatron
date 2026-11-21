@@ -9,8 +9,8 @@ from typing import NamedTuple
 
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
-from llamatron.music import midi, sound
-from llamatron.music.sound import Sound
+from llamatron.model.values import midi, sound
+from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors
 
 # A note with no velocity of its own plays as loud as MIDI allows.

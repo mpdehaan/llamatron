@@ -6,8 +6,8 @@
 
 import os
 
-from llamatron.composition import file_format, limits
-from llamatron.composition.setlist import Setlist
+from llamatron.model.objects.setlist import Setlist
+from llamatron.model.vocabulary import file_format, limits
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

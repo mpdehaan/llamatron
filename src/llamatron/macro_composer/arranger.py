@@ -20,11 +20,6 @@ import os
 import random
 import zlib
 
-from llamatron.composition import file_format, limits
-from llamatron.composition.checks import in_whole_notes
-from llamatron.composition.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
-from llamatron.composition.generator_settings import FollowChordsSetting
-from llamatron.composition.named_scale import scale_type_called
 from llamatron.macro_composer import band, breaks, characters, drum_solo, interplay, joins, loudness, melody, notation, riffs as riffs_values, shaping, song_plan
 from llamatron.macro_composer.breaks import cut_up
 from llamatron.macro_composer.characters import character_of, held_to, label_of, level_of
@@ -37,7 +32,12 @@ from llamatron.macro_composer.players import player_name
 from llamatron.macro_composer.riffs import accent_bars, bars_of as riff_bars_of, bars_played, flattened_in, held_bar, line_of as riff_line_of, single, split_bars
 from llamatron.macro_composer.shaping import is_compound
 from llamatron.macro_composer.song_plan import SongPlan
-from llamatron.support.safe_yaml import load_safely
+from llamatron.model.file.checks import in_whole_notes
+from llamatron.model.file.safe_yaml import load_safely
+from llamatron.model.objects.generator_settings import FollowChordsSetting
+from llamatron.model.objects.named_scale import scale_type_called
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.user_strings import errors, labels, macro_composer as composer_text
 
 # The fields of a style template.

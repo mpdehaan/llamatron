@@ -11,7 +11,7 @@ say what an import may do, and tests/rules/test_layers.py holds them:
 - Front doors. Outside a package of FRONT_DOORS, only its front-door modules are imported, and
   the real-time package is imported only by the files of REALTIME_USERS.
 - Pages. A page, a file under tui/screens/ outside shared/, imports no other page, and of the
-  model in composition/ only the vocabulary of PAGE_VOCABULARY.
+  model in model/ only the vocabulary of PAGE_VOCABULARY.
 
 The imports that broke a rule when it was made are listed in tests/rules/layer_exceptions.py,
 and the list may only shrink: a new crossing fails the test, and so does a listed crossing that
@@ -35,7 +35,7 @@ FILE_ENCODING = 'utf-8'
 DOT = '.'
 TOP = '(top)'
 # The packages from the bottom up: each imports only those before it. The strings package is text every layer may name.
-LAYERS = ('math', 'caching', 'support', 'user_strings', 'music', 'composition', 'grid', 'generators', 'exporters', 'playback', 'importers', 'realtime',
+LAYERS = ('math', 'caching', 'user_strings', 'model', 'grid', 'generators', 'exporters', 'playback', 'importers', 'realtime',
           'macro_composer', 'visualizers', 'tui', 'tutorial', TOP)
 VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.
@@ -51,9 +51,11 @@ REALTIME_USERS = ('tui/transport.py', 'tui/pattern_preview.py', 'cli.py')
 REALTIME = 'realtime'
 PAGES_FOLDER = ('tui', 'screens')
 SHARED_PAGES = 'shared'
-MODEL = 'composition'
-# What a page may import of the model: its names, which are words and no behaviour.
-PAGE_VOCABULARY = ('file_format',)
+MODEL = 'model'
+# What a page may import of the Model: its names, which are words and no behaviour, and the version every file records.
+PAGE_VOCABULARY = (('vocabulary', 'file_format'), ('file', 'version'))
+# The Model's musical values, which every page may use, as it always could.
+PAGE_VALUES = 'values'
 # The rules' names, which the list of exceptions is kept under.
 ORDER = 'order'
 DOORS = 'front doors'
@@ -112,7 +114,7 @@ def breaks(*, file, module):
         allowed_module = other == REALTIME or (len(module) > 1 and module[1] in FRONT_DOORS[other])
         if not (allowed_file and allowed_module):
             broken.append(DOORS)
-    if is_page(file) and other == MODEL and not (len(module) > 1 and module[1] in PAGE_VOCABULARY):
+    if is_page(file) and other == MODEL and tuple(module[1:3]) not in PAGE_VOCABULARY and tuple(module[1:2]) != (PAGE_VALUES,):
         broken.append(PAGES)
     return broken
 

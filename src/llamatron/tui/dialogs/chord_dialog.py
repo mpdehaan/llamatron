@@ -18,8 +18,8 @@ dialog. After a pick the cursor goes on to the qualities, so that the next Enter
 
 from rich.text import Text
 
-from llamatron.composition import file_format
-from llamatron.composition.naming import words
+from llamatron.model.objects.naming import words
+from llamatron.model.vocabulary import file_format
 from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.dialog import Dialog

@@ -4,8 +4,8 @@
 
 """The Auto ratchet editor page."""
 
-from llamatron.composition.file_format import Section
-from llamatron.composition.generator_settings import AutoRatchetSetting
+from llamatron.model.objects.generator_settings import AutoRatchetSetting
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField

@@ -9,7 +9,7 @@ The program holds this registry and answers a page that asks (LlamatronApp.edito
 page opens one with Page.open_editor(section=, name=).
 """
 
-from llamatron.composition.file_format import Section
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui.screens.arrange.track_editor import TrackEditor
 from llamatron.tui.screens.generators import generator_pages
 from llamatron.tui.screens.generators.chain_editor import ChainEditor

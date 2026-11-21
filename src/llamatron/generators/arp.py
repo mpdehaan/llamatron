@@ -9,9 +9,9 @@ from llamatron.grid.positions import fit_to_length
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source
-from llamatron.music import midi, sound
-from llamatron.music.note import _check_length
-from llamatron.music.sound import Sound
+from llamatron.model.values import midi, sound
+from llamatron.model.values.note import _check_length
+from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors
 
 # How many steps an arpeggiator's offsets can have, as on a groovebox.
@@ -21,7 +21,7 @@ MAX_OFFSETS = 16
 MIN_OCTAVE_RANGE = 1
 MAX_OCTAVE_RANGE = 4
 MAX_OFFSET = 24
-# The registers, in order, as the arp's settings name their adds (composition/file_format.py's REGISTER_NAMES, which the generators don't import).
+# The registers, in order, as the arp's settings name their adds (model/vocabulary/file_format.py's REGISTER_NAMES, which the generators don't import).
 REGISTERS = ('AX', 'BX', 'CX', 'DX')
 # An offset of nothing leaves a note where it is, and so does a step with no offsets at all.
 NO_OFFSET = 0

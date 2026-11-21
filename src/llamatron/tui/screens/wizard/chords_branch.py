@@ -5,9 +5,9 @@
 
 from rich.text import Text
 
-from llamatron.composition.chords import root_name
-from llamatron.composition.named_scale import NamedScale
-from llamatron.composition.progressions import quality_of, roman_numeral
+from llamatron.model.objects.named_scale import NamedScale
+from llamatron.model.values.chords import root_name
+from llamatron.model.values.progressions import quality_of, roman_numeral
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import ChoiceField

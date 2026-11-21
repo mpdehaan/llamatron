@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Every source, test, tool, example and screenshot path the documents name exists.
 
-The documents for Claude and for people name files in backticks, like `src/llamatron/music/note.py`
+The documents for Claude and for people name files in backticks, like `src/llamatron/model/values/note.py`
 or `internal_tools/compare_exports.py`. When a module moves, those names go stale unless something notices,
 so this test reads every document and checks that each such path is a real file, so that a rename
 has to carry its documentation with it.

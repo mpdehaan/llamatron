@@ -24,7 +24,7 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
 
-from llamatron.composition.sections import Section
+from llamatron.model.objects.sections import Section
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.drawing import Box, Canvas, padded, Style
 from llamatron.tui.keys import Key

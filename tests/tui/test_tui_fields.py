@@ -10,8 +10,9 @@ to Space and Enter alike.
 
 import unittest
 
-from llamatron.composition import limits, setlist
 from llamatron.macro_composer.wizard_choices import genre_names
+from llamatron.model.objects import setlist
+from llamatron.model.vocabulary import limits
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog

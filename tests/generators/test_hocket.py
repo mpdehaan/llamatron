@@ -5,9 +5,9 @@
 
 import unittest
 
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Restart, Row, SceneSetting, Section, TrackSetting
-from llamatron.composition.generator_settings import HocketSetting
 from llamatron.exporters.timing import timed_events
+from llamatron.model.objects.generator_settings import HocketSetting
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, Restart, Row, SceneSetting, Section, TrackSetting
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 

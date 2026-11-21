@@ -4,7 +4,7 @@
 
 """The Scale row of the pattern editor: the scale type a step's degree and chord are drawn from, on the clip's root, which is how a chord is borrowed."""
 
-from llamatron.composition.naming import words
+from llamatron.model.objects.naming import words
 from llamatron.tui import drawing, keybindings, scale_categories
 from llamatron.tui.components.chord_row import ChordRow
 from llamatron.user_strings import marks

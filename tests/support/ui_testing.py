@@ -15,12 +15,12 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
-from llamatron.composition import file_format
-from llamatron.composition.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart
-from llamatron.composition.generator_settings import ArpSetting, AutoRatchetSetting, FollowChordsSetting, HocketSetting, ProgressionSetting, StepRowSetting, written_name
-from llamatron.composition.setlist import new_setlist, Setlist
 from llamatron.generators.arp import ChordOrder
-from llamatron.music.note import NoteName
+from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, FollowChordsSetting, HocketSetting, ProgressionSetting, StepRowSetting, written_name
+from llamatron.model.objects.setlist import new_setlist, Setlist
+from llamatron.model.values.note import NoteName
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, EuclidPart, GeneratorKind, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.realtime.fluidsynth import FluidSynth
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.app import LlamatronApp

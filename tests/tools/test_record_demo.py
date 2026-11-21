@@ -13,7 +13,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from llamatron.composition import file_format
+from llamatron.model.vocabulary import file_format
 from llamatron.realtime import fluidsynth
 from llamatron.tui import launch as launch_values
 from llamatron.visualizers import modes

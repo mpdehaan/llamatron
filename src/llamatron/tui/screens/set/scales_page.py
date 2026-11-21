@@ -4,10 +4,10 @@
 
 """The Scales page: the set's named scales, each opened on its own page."""
 
-from llamatron.composition.file_format import Section
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.named_list_page import NamedListPage

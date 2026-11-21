@@ -11,7 +11,7 @@ import pathlib
 import tempfile
 import unittest
 
-from llamatron.support.safe_yaml import load_safely
+from llamatron.model.file.safe_yaml import load_safely
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'sort_ideas.py'
 MODULE_NAME = 'sort_ideas'

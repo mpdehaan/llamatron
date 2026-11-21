@@ -11,16 +11,17 @@ pass with two notes is one the generator ran on.
 
 import unittest
 
-from llamatron.composition import conditions, file_format, limits
-from llamatron.composition.file_format import ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
-from llamatron.composition.generator_settings import AutoRatchetSetting
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.named_scale import scale_type_name
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from llamatron.music import midi
-from llamatron.music.note import NoteName
-from llamatron.music.scale import ScaleType
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import conditions
+from llamatron.model.objects.generator_settings import AutoRatchetSetting
+from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.values import midi
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import ChainSetting, ClipSlotSetting, GeneratorKind, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
 from tests.support.rendering import render_data, setlist_from_data, song_from_data
 
 AX = RegisterName.AX

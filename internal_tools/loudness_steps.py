@@ -20,7 +20,7 @@ import sys
 
 from llamatron.macro_composer import loudness_steps, song_plan
 from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
-from llamatron.support import version
+from llamatron.model.file import version
 
 A_NAME = 'song'
 USUAL_SEED = 11

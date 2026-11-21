@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """A register's += row: how much a step adds to the register, or takes from it, within the register's Allowed Inc Max."""
 
-from llamatron.composition import file_format
+from llamatron.model.vocabulary import file_format
 from llamatron.tui import keybindings
 from llamatron.tui.components.control_row import ControlRow
 from llamatron.user_strings import errors

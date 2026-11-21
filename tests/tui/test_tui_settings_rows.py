@@ -6,8 +6,9 @@
 
 from fractions import Fraction
 
-from llamatron.composition import defaults, setlist
-from llamatron.composition.file_format import FollowAction, OctaveLabels, Section, SetlistSetting
+from llamatron.model.objects import setlist
+from llamatron.model.vocabulary import defaults
+from llamatron.model.vocabulary.file_format import FollowAction, OctaveLabels, Section, SetlistSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog

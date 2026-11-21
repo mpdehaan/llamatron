@@ -19,7 +19,7 @@ import json
 from pathlib import Path
 import sys
 
-from llamatron.support.safe_yaml import load_safely
+from llamatron.model.file.safe_yaml import load_safely
 
 ROOT = Path(__file__).resolve().parent.parent
 IDEAS_FILES = (ROOT / '.claude' / 'IDEAS.yml',)

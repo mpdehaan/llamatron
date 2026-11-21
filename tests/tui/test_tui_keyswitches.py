@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Keyswitches in the tracker: an instrument's Keyswitch Map and its note picker, the pattern editor's Keyswitch row, the dialog that picks a step's keyswitches from both views, and the piano roll's lights."""
 
-from llamatron.composition import file_format, instrument as instrument_values, limits
-from llamatron.composition.file_format import Row
-from llamatron.composition.instrument import Keyswitch
-from llamatron.music import midi
+from llamatron.model.objects import instrument as instrument_values
+from llamatron.model.objects.instrument import Keyswitch
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import file_format, limits
+from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import keybindings, keys
 from llamatron.tui.components.keyswitch_row import slot_row_name
 from llamatron.tui.dialogs import keyswitch_map_dialog

@@ -8,18 +8,19 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
-from llamatron.composition import defaults, file_format, instrument as instrument_values, limits
-from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
-from llamatron.composition.instrument import Instrument, Keyswitch
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.pattern import Pattern
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import midi_messages
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
 from llamatron.exporters.timing import keyswitch_events, timed_events
 from llamatron.math.rational import Rational
-from llamatron.music import midi
+from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.objects import instrument as instrument_values
+from llamatron.model.objects.instrument import Instrument, Keyswitch
+from llamatron.model.objects.pattern import Pattern
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import defaults, file_format, limits
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline as timeline_values
 from llamatron.realtime.clip_notes import ClipNotes

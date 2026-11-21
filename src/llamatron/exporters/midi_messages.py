@@ -15,7 +15,7 @@ from typing import NamedTuple
 
 from llamatron.exporters import timing
 from llamatron.exporters.timing import control_events, keyswitch_events
-from llamatron.music.time_signature import TimeSignature
+from llamatron.model.values.time_signature import TimeSignature
 
 TICKS_PER_BEAT = 480
 # MIDI file types: type 0 holds a single track, and type 1 several that play together.

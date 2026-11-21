@@ -8,8 +8,8 @@ import math
 from llamatron.generators.base import ClipGenerator
 from llamatron.math import length
 from llamatron.math.length import Length
-from llamatron.music import sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.values import sound as sound_values
+from llamatron.model.values.sound import Sound
 
 
 class StepRow(ClipGenerator):

@@ -1,10 +1,10 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""How the tracker shows a value as text, shared by its pages. How a new thing is named is in composition/naming.py."""
+"""How the tracker shows a value as text, shared by its pages. How a new thing is named is in model/objects/naming.py."""
 
-from llamatron.composition.naming import name_order
 from llamatron.math.rational import Rational
+from llamatron.model.objects.naming import name_order
 from llamatron.user_strings import marks
 
 SECONDS_PER_MINUTE = 60

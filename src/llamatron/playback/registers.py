@@ -18,7 +18,7 @@ through exactly the same changes.
 from bisect import bisect_right
 from typing import NamedTuple
 
-from llamatron.composition import file_format
+from llamatron.model.vocabulary import file_format
 
 # What a step sees while a clip is only played to find its changes.
 NO_VALUE = 0

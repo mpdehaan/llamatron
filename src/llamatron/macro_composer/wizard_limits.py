@@ -8,9 +8,9 @@ The wizard's choices and each part of them read these, and so do the wizard's pa
 field's choices by the same names the choices check a value against. The module holds no behaviour.
 """
 
-from llamatron.composition.file_format import SectionKind
-from llamatron.composition.groove import FactoryGroove
 from llamatron.macro_composer import arranger, joins as joins_values, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan
+from llamatron.model.objects.groove import FactoryGroove
+from llamatron.model.vocabulary.file_format import SectionKind
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'

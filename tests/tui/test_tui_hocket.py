@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Hocket pages: the list of hockets and the editor, whose Source track picks a track of the current song."""
 
-from llamatron.composition.file_format import GeneratorKind, Section
-from llamatron.composition.generator_settings import HocketSetting
+from llamatron.model.objects.generator_settings import HocketSetting
+from llamatron.model.vocabulary.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key

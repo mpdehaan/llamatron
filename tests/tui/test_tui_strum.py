@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The tracker's Strum: the Strums page and editor, and the + Strum sections of the track editor and the clip page."""
 
-from llamatron.composition.file_format import GeneratorKind, Section, StrumDirection, StrumPart, StrumSpread
+from llamatron.model.vocabulary.file_format import GeneratorKind, Section, StrumDirection, StrumPart, StrumSpread
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.arrange.clip_page import ClipPage

@@ -7,9 +7,9 @@
 
 from types import MethodType
 
-from llamatron.composition import limits
-from llamatron.composition.file_format import Section
-from llamatron.composition.pattern import Pattern
+from llamatron.model.objects.pattern import Pattern
+from llamatron.model.vocabulary import limits
+from llamatron.model.vocabulary.file_format import Section
 
 # How many steps a new pattern has.
 NEW_PATTERN_STEPS = 16
@@ -70,7 +70,7 @@ class PatternEdits:
         return self._pattern(name).get_value(row=row, step=step)
 
     # Notes as the piano roll handles them: by the steps they cover, through ties or a gate. The pattern knows how
-    # (composition/pattern_notes.py); the document adds the pattern's step size and entry size, which the set may give it.
+    # (model/objects/pattern_notes.py); the document adds the pattern's step size and entry size, which the set may give it.
 
     def _step_size(self, name):
         """Return how long each step of a pattern is, which the pattern needs to read a gate as steps: its own step size, or else the set's."""

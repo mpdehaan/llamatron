@@ -4,7 +4,7 @@
 
 """The Instruments page: every MIDI device and channel that a track can play through in real time."""
 
-from llamatron.composition.file_format import Section
+from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.named_list_page import NamedListPage

@@ -19,8 +19,8 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.generators.follow_chords import FollowChords
 from llamatron.generators.parts import parts_of
 from llamatron.math.rational import Rational
-from llamatron.music import midi, sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.values import midi, sound as sound_values
+from llamatron.model.values.sound import Sound
 
 EIGHTH = Rational(1, 8)
 SIXTEENTH = Rational(1, 16)

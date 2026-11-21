@@ -8,8 +8,8 @@ A draw is one process for the whole song, shared by every track, so its uses are
 then draws in time order, and at one moment in track order, carrying each draw on from scene to scene.
 """
 
-from llamatron.composition import file_format
-from llamatron.composition.file_format import Direction, DrawDirection
+from llamatron.model.vocabulary import file_format
+from llamatron.model.vocabulary.file_format import Direction, DrawDirection
 from llamatron.playback.step_order import chosen_move, walk_order
 
 # What a draw adds before it has drawn anything, and what a draw with no value in any slot always adds.

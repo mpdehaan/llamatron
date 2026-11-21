@@ -8,7 +8,7 @@ from bisect import bisect_right
 
 from llamatron.math import length
 from llamatron.math.length import Length
-from llamatron.music import sound as sound_values
+from llamatron.model.values import sound as sound_values
 
 
 class TuneSource:

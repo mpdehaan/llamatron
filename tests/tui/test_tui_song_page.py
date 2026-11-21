@@ -4,10 +4,11 @@
 
 """The Song page and the Songs page."""
 
-from llamatron.composition import defaults, file_format, genres
-from llamatron.composition.file_format import LiveResponsiveness, Section, SongSetting
-from llamatron.composition.genres import subgenres_of, variants_of
-from llamatron.music import time_signature
+from llamatron.model.objects import genres
+from llamatron.model.objects.genres import subgenres_of, variants_of
+from llamatron.model.values import time_signature
+from llamatron.model.vocabulary import defaults, file_format
+from llamatron.model.vocabulary.file_format import LiveResponsiveness, Section, SongSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

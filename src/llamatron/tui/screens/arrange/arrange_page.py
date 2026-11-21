@@ -23,8 +23,8 @@ from rich.text import Text
 import time
 from typing import NamedTuple
 
-from llamatron.composition.file_format import ClipSlotSetting, Section
-from llamatron.composition.naming import new_name
+from llamatron.model.objects.naming import new_name
+from llamatron.model.vocabulary.file_format import ClipSlotSetting, Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.inset_window import drawn_over, inside_size
 from llamatron.tui.components.scene_view import SceneView

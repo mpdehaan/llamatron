@@ -5,12 +5,12 @@
 
 import math
 
-from llamatron.composition.euclid import rhythm
 from llamatron.generators.base import ClipGenerator
 from llamatron.math import length
 from llamatron.math.length import Length
-from llamatron.music import sound as sound_values
-from llamatron.music.sound import Sound
+from llamatron.model.objects.euclid import rhythm
+from llamatron.model.values import sound as sound_values
+from llamatron.model.values.sound import Sound
 
 
 class EuclidMask(ClipGenerator):

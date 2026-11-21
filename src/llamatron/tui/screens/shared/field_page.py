@@ -6,7 +6,7 @@
 
 from rich.text import Text
 
-from llamatron.composition import setlist
+from llamatron.model.objects import setlist
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.cursor import Cursor, key_between, NoSuchPlace

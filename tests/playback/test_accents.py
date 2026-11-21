@@ -11,11 +11,11 @@ adds the track's accent on top of its instrument's, stopping at MIDI's loudest.
 
 import unittest
 
-from llamatron.composition import defaults, limits
-from llamatron.composition.file_format import InstrumentSetting, Row, Section, TrackSetting, VelocitySetting
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from llamatron.music import midi
+from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.values import midi
+from llamatron.model.vocabulary import defaults, limits
+from llamatron.model.vocabulary.file_format import InstrumentSetting, Row, Section, TrackSetting, VelocitySetting
 from tests.playback import test_registers, test_shapes
 from tests.playback.test_shapes import one_scene
 from tests.support import song_testing

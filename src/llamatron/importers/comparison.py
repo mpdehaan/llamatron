@@ -21,13 +21,13 @@ from dataclasses import dataclass, field
 import os
 from typing import NamedTuple
 
-from llamatron.composition.setlist import Setlist
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.exporters.midi_messages import ticks
 from llamatron.importers.midi_import import MidiImport
 from llamatron.importers.midi_reading import read_midi
 from llamatron.importers.writing import add_imported
 from llamatron.math.rational import Rational
+from llamatron.model.objects.setlist import Setlist
 from llamatron.playback.song_renderer import SongRenderer
 
 class ComparedNote(NamedTuple):
