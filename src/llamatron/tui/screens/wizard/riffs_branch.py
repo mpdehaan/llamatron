@@ -22,6 +22,8 @@ player's riffs under it and a row that adds one. A riff exists here whether or n
 it yet: who knows it is chosen on Riff Assign, and where it is played on Section Players.
 """
 
+import functools
+
 from llamatron.composition.checks import listed
 from llamatron.strings import labels, legends, marks, messages
 from llamatron.tui import drawing
@@ -56,7 +58,7 @@ class RiffsBranch(Branch):
             riffs = choices.get_riffs().riffs_for(role)
             fields.append(self.player_heading(role=role, count=len(riffs), columns=labels.MSG_WIZARD_RIFF_COLUMNS))
             fields += [self.riff_field(riff) for riff in riffs]
-            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: drawing.NOTHING, enter=lambda role=role: self.add_riff(role), enter_what=legends.What.ADD))
+            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: drawing.NOTHING, enter=functools.partial(self.add_riff, role), enter_what=legends.What.ADD))
         return fields
 
     def player_heading(self, *, role, count, columns):

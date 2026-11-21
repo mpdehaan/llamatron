@@ -17,6 +17,7 @@
 """The Clip page: one clip: what it plays, how many times, and whether it morphs into another pattern."""
 
 from dataclasses import dataclass
+import functools
 from rich.text import Text
 
 from llamatron.composition import clip_slot as clip_slot_values, defaults, file_format, limits
@@ -198,8 +199,8 @@ class ClipPage(FieldPage):
             PatternRow(
                 label=labels_text.MSG_PATTERNS_LABEL if place == 0 else drawing.NOTHING, place=place, adjust=None,
                 value=lambda name=name, place=place: marks.MSG_MOVING_OPEN + name + marks.MSG_MOVING_CLOSE if self.is_carrying(place) else name,
-                enter=lambda place=place: self.open_pattern_at(place), enter_what=legends.What.EDIT,
-                clear=lambda place=place: self.remove_pattern(place), clear_what=legends.What.REMOVE,
+                enter=functools.partial(self.open_pattern_at, place), enter_what=legends.What.EDIT,
+                clear=functools.partial(self.remove_pattern, place), clear_what=legends.What.REMOVE,
             ) for place, name in enumerate(names)
         ]
         return [*rows, AddRow(label=drawing.NOTHING, value=lambda: marks.MSG_ADD_ROW, adjust=None, enter=self.add_pattern, enter_what=legends.What.ADD)]
@@ -387,7 +388,7 @@ class ClipPage(FieldPage):
                 store=lambda register, value: document.change(document.clip_slot(index=self.index, track=self.track).set_register_add, register=register, value=value),
             ),
             *[field for label, table, name in tables for field in statement_section(
-                page=self, label=label, table=table, statements=lambda name=name: clip_slot.get_statements(name),
+                page=self, label=label, table=table, statements=functools.partial(clip_slot.get_statements, name),
                 store=lambda place, statement, name=name: document.change(document.clip_slot(index=self.index, track=self.track).set_statement, name=name, place=place, statement=statement),
             )],
         ]

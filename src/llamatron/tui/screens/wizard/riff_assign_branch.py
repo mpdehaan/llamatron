@@ -21,6 +21,8 @@ which the player then plays in the player's own octave. What a player knows is w
 Players offers the player in each kind of section.
 """
 
+import functools
+
 from llamatron.composition.checks import listed
 from llamatron.strings import errors, labels, legends, marks, messages
 from llamatron.tui import drawing
@@ -58,7 +60,7 @@ class RiffAssignBranch(RiffsBranch):
             columns = marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=labels.MSG_WIZARD_RIFF_FOR_COLUMN, width=self.for_width(), used=labels.MSG_WIZARD_RIFF_PLAYED_IN_COLUMN)
             fields.append(self.player_heading(role=role, count=len(known), columns=columns))
             fields += [self.known_field(role=role, riff=riff) for riff in known]
-            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: drawing.NOTHING, enter=lambda role=role: self.give(role), enter_what=legends.What.ADD))
+            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: drawing.NOTHING, enter=functools.partial(self.give, role), enter_what=legends.What.ADD))
         return fields
 
     def for_width(self):

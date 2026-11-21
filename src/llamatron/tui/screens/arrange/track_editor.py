@@ -16,6 +16,7 @@
 
 """The Track editor page: one track's settings, which apply to every clip on it."""
 
+import functools
 from rich.text import Text
 
 from llamatron.composition import defaults, file_format, limits
@@ -162,7 +163,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         for label, table, name in tables:
             # The statements about the registers that bypass the generators of the track's clips, and that make its clips sit out.
             result += statement_section(
-                page=self, label=label, table=table, statements=lambda name=name: track.get_statements(name),
+                page=self, label=label, table=table, statements=functools.partial(track.get_statements, name),
                 store=lambda place, statement, name=name: self.document().change(self.document().song().get_track(self.item).set_statement, name=name, place=place, statement=statement),
             )
         return result

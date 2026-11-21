@@ -15,6 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """The fields of a shape, Density, Swell or Articulate, which the Scene page, the clip page and the shape generators' editors share: a section heading and its start, end, over and then."""
 
+import functools
+
 from llamatron.composition import file_format, shapes
 from llamatron.composition.file_format import ShapePart
 from llamatron.strings import labels, marks
@@ -41,7 +43,7 @@ def shape_fields(*, page, shape, value, store, prefixed=True):
     then = value(ShapePart.THEN)
     return [
         *[NumberField(page=page, label=label(part), number=value(part), start=UNCHANGED, shown=marks.MSG_NONE_SHOWN if value(part) is None else None,
-                      lowest=lowest, highest=highest, set=lambda number, part=part: store(part, number), clear=lambda part=part: store(part, None))
+                      lowest=lowest, highest=highest, set=lambda number, part=part: store(part, number), clear=functools.partial(store, part, None))
           for part in (ShapePart.START, ShapePart.END)],
         time_field(page=page, label=label(ShapePart.OVER), written=over, first=labels.MSG_WHOLE_SPAN, store=lambda choice: store(ShapePart.OVER, choice)),
         ChoiceField(page=page, label=label(ShapePart.THEN), choices=file_format.SHAPE_THENS, current=then or file_format.SHAPE_THENS[0],

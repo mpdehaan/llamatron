@@ -16,6 +16,7 @@
 
 """The Scene page: a scene's settings, and how long it lasts."""
 
+import functools
 from rich.text import Text
 
 from llamatron.composition import file_format, limits
@@ -135,7 +136,7 @@ class ScenePage(FieldPage):
             self.heading(label=labels.MSG_TEMPO_RAMP_SECTIONS[way], is_set=lambda: scene.get_tempo_ramp(way) is not None),
             *[NumberField(
                 page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, part)], number=value(part), start=base, shown=blank if value(part) is None else marks.MSG_TEMPO_SHOWN.format(tempo=value(part)),
-                lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=lambda number, part=part: store(part, number), clear=lambda part=part: store(part, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+                lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=lambda number, part=part: store(part, number), clear=functools.partial(store, part, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
             ) for part in (RampPart.START, RampPart.END)],
             NumberField(
                 page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, RampPart.OVER)], number=over, start=limits.MIN_RAMP_BARS, shown=bars, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS,

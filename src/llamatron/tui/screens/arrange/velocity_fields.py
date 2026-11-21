@@ -20,6 +20,8 @@ where that comes from: on the clip page the scene's value, and at an end of a ra
 field's, which the ramps start from and return to.
 """
 
+import functools
+
 from llamatron.composition import file_format, limits, velocity_ramps
 from llamatron.composition.file_format import RampPart, VelocitySetting
 from llamatron.strings import labels, legends, marks
@@ -80,7 +82,7 @@ def velocity_ramp_section(*, page, way, own, above, store):
         page.heading(label=labels.MSG_VELOCITY_RAMP_SECTIONS[way], is_set=lambda: any(own(name) is not None for name in names.values())),
         *[NumberField(
             page=page, label=labels.MSG_VELOCITY_RAMP_LABELS[(way, part)], number=own(names[part]), start=level if above(names[part]) is None else above(names[part]), shown=end_shown(names[part]),
-            lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, set=lambda number, part=part: store(names[part], number), clear=lambda part=part: store(names[part], None),
+            lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, set=lambda number, part=part: store(names[part], number), clear=functools.partial(store, names[part], None),
             clear_what=legends.MSG_RAMP_BLANK_WHAT,
         ) for part in (RampPart.START, RampPart.END)],
         NumberField(

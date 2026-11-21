@@ -16,6 +16,8 @@
 
 """A player of the wizard's band: how the player plays, and how busy the player is."""
 
+import functools
+
 from llamatron.composition import limits
 from llamatron.macro_composer import breaks as breaks_values, characters, interplay, loudness, notation, song_plan, wizard_limits
 from llamatron.strings import labels, legends, marks, messages
@@ -117,7 +119,7 @@ class PlayerBranch(Branch):
                 page.choosing(lambda wanted: choices.player(role).set_loudness_level(level=level, number=wanted))(number)
             fields.append(NumberField(page=page, label=labels.MSG_WIZARD_LEVEL_LABELS[level], number=levels[level], lowest=notation.LOWEST_VELOCITY, highest=notation.HIGHEST_VELOCITY,
                                       shown=None if own else marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=levels[level]), set=set_level,
-                                      clear=(lambda set_level=set_level: set_level(None)) if own else None, clear_what=legends.MSG_FROM_GENRE_WHAT))
+                                      clear=functools.partial(set_level, None) if own else None, clear_what=legends.MSG_FROM_GENRE_WHAT))
         return fields
 
     def person_fields(self):

@@ -21,6 +21,8 @@ something to choose there: the accompaniment the genre writes for the player, th
 riff the player knows. The player the genre gives the melody to rests where another has it.
 """
 
+import functools
+
 from llamatron.macro_composer import wizard_limits
 from llamatron.strings import labels
 from llamatron.tui.screens.shared.field import ChoiceField
@@ -65,7 +67,7 @@ class SectionPlayersBranch(Branch):
         for kind in choices.section_player_kinds():
             players = choices.section_players(kind)
             if players:
-                fields.append(self.get_page().heading(label=kind.capitalize(), is_set=lambda kind=kind: self.kind_is_set(kind)))
+                fields.append(self.get_page().heading(label=kind.capitalize(), is_set=functools.partial(self.kind_is_set, kind)))
                 fields += [self.part_field(kind=kind, role=role) for role in players]
         return fields
 
