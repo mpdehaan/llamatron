@@ -4,14 +4,14 @@
 """The wizard's Genre branch: the genre and the subgenre, which must be chosen, then the key, the tempo and the song's name, which arrive filled in."""
 
 from llamatron.model.values import note
-from llamatron.song_wizard import wizard_limits
-from llamatron.song_wizard.wizard_choices import genre_names, genre_title
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.text import clock
 from llamatron.user_strings import labels, legends, marks, messages
+from llamatron.wizards.create_song import wizard_limits
+from llamatron.wizards.create_song.wizard_choices import genre_names, genre_title
 
 # How the Change Genre question words each kind of thing lost and kept.
 LOST_SHOWN = {

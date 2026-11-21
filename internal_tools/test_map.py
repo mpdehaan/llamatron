@@ -39,8 +39,8 @@ EVERYTHING = 'ALL'
 MUSIC = ('src/llamatron/model/', 'src/llamatron/engine/', 'src/llamatron/generators/', 'src/llamatron/playback/', 'src/llamatron/exporters/')
 SWEEPS = {
     'tests.app.test_every_example.': MUSIC,
-    'tests.song_wizard.test_wizard_effect.': (*MUSIC, 'src/llamatron/song_wizard/'),
-    'tests.song_wizard.test_wizard_choices.TestWizardFormLengthsOf': (*MUSIC, 'src/llamatron/song_wizard/'),
+    'tests.wizards.create_song.test_wizard_effect.': (*MUSIC, 'src/llamatron/wizards/create_song/'),
+    'tests.wizards.create_song.test_wizard_choices.TestWizardFormLengthsOf': (*MUSIC, 'src/llamatron/wizards/create_song/'),
     'tests.tui.test_tui_help_keys.': ('src/llamatron/tui/', '.claude/'),
 }
 BUILD = 'build'

@@ -12,13 +12,13 @@ section under Form.
 
 from rich.text import Text
 
-from llamatron.song_wizard import wizard_limits
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, Field
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
+from llamatron.wizards.create_song import wizard_limits
 
 # What a solo's panel is remembered by, apart from a section of the form called solo.
 SOLO_MELODY_KEY = 'notes of solo {number}'

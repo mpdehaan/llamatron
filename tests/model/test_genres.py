@@ -11,9 +11,9 @@ from llamatron.model.file import version
 from llamatron.model.objects import genres
 from llamatron.model.objects.genres import sensible_style, style_name, subgenres_of, variants_of
 from llamatron.model.schema.file_format import Section, SongSetting
-from llamatron.song_wizard import arranger
-from llamatron.song_wizard.arranger import variants_of as variants_of_template
-from llamatron.song_wizard.wizard_choices import genre_names, style_of, WizardChoices
+from llamatron.wizards.create_song import arranger
+from llamatron.wizards.create_song.arranger import variants_of as variants_of_template
+from llamatron.wizards.create_song.wizard_choices import genre_names, style_of, WizardChoices
 from tests.support.rendering import as_setlist, setlist_from_data, song_from_data
 from tests.support.song_testing import lead_data
 

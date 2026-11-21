@@ -11,10 +11,10 @@ riff the player knows. The player the genre gives the melody to rests where anot
 
 import functools
 
-from llamatron.song_wizard import wizard_limits
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.user_strings import labels
+from llamatron.wizards.create_song import wizard_limits
 
 # What a player plays where nothing was chosen for the player.
 UNCHOSEN_PARTS = (wizard_limits.ACCOMPANIMENT, wizard_limits.RESTS_PART)

@@ -10,9 +10,6 @@ from llamatron.model.file import version
 from llamatron.model.objects.naming import new_name
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
-from llamatron.song_wizard import arranger, breaks, melody, wizard_limits
-from llamatron.song_wizard.breaks import break_names
-from llamatron.song_wizard.wizard_choices import genre_names, genre_title, WizardChoices
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import dialog as dialog_values, row_dialog
@@ -31,6 +28,9 @@ from llamatron.tui.screens.wizard.hook_picture import picture_of
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.tui.text import clock
 from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages, names, song_wizard as wizard_text
+from llamatron.wizards.create_song import arranger, breaks, melody, wizard_limits
+from llamatron.wizards.create_song.breaks import break_names
+from llamatron.wizards.create_song.wizard_choices import genre_names, genre_title, WizardChoices
 from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_of, UITest
 
 # The tree's first branch, by its place from the top.

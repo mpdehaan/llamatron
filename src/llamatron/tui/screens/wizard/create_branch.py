@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The wizard's Create branch: what will be made, to read, and the button that makes it."""
 
-from llamatron.song_wizard.wizard_choices import genre_title
 from llamatron.tui import drawing
 from llamatron.tui.screens.shared.field import Button, Field
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.text import clock
 from llamatron.user_strings import errors, labels, legends, marks
+from llamatron.wizards.create_song.wizard_choices import genre_title
 
 
 class CreateBranch(Branch):

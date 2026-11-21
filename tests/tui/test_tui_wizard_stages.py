@@ -4,11 +4,11 @@
 
 """Tests of the song wizard's Form panel fields for how a song starts and ends, and a section's Fades."""
 
-from llamatron.song_wizard import song_plan, wizard_limits
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
 from llamatron.user_strings import labels
+from llamatron.wizards.create_song import song_plan, wizard_limits
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 

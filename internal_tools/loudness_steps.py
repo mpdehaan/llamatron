@@ -11,7 +11,7 @@
 For each subgenre the wizard makes one song and plays it. What the band adds up to in a section is the loudness of every
 note sounded, for each bar. A line names the section before the first chorus and says how many times that section the chorus
 adds up to: as the song is written, and as made, after each player has traded loudness for a much denser part
-(src/llamatron/song_wizard/loudness_steps.py). It is run before and after a change to a style template's Energy or to the
+(src/llamatron/wizards/create_song/loudness_steps.py). It is run before and after a change to a style template's Energy or to the
 trade's numbers. It makes its songs in memory and writes nothing.
 """
 
@@ -19,8 +19,8 @@ import argparse
 import sys
 
 from llamatron.model.file import version
-from llamatron.song_wizard import loudness_steps, song_plan
-from llamatron.song_wizard.wizard_choices import genre_names, WizardChoices
+from llamatron.wizards.create_song import loudness_steps, song_plan
+from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
 
 A_NAME = 'song'
 USUAL_SEED = 11

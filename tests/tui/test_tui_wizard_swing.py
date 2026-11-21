@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests of the Swing field on the song wizard's Subgenre panel."""
 
-from llamatron.song_wizard import arranger
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.user_strings import labels as labels_text, legends
+from llamatron.wizards.create_song import arranger
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 

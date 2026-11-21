@@ -8,7 +8,7 @@ and the imaginary players' names, which people see for a complexity from 1 to 4.
 Each constant starts with MSG_.
 """
 
-# song_wizard/arranger.py
+# wizards/create_song/arranger.py
 MSG_PART_AT_LEVEL = '{} at {}'
 MSG_PART_BESIDE = '{} {}: {}'
 MSG_SECTION_START_PART = '{} start'
@@ -32,7 +32,7 @@ MSG_TUNE_PHRASING_NAME = 'tune phrasing'
 MSG_MUSICIAN_NAME = '{} player'
 MSG_REPEATED_SCENE = '{} {}'
 
-# song_wizard/song_plan.py: what a planned section says of itself in the song's notes.
+# wizards/create_song/song_plan.py: what a planned section says of itself in the song's notes.
 MSG_PLAN_ENERGY = 'Energy {}.'
 MSG_PLAN_LEAVES_TAIL = 'Leaves with: {}.'
 MSG_PLAN_LEAVES_FILL = 'Leaves with a fill, {}.'
@@ -40,7 +40,7 @@ MSG_PLAN_SET_UP = 'Last bar on chord {}.'
 MSG_PLAN_HOOK = 'The hook: {}.'
 MSG_PLAN_STAGE = 'Its shape: {}.'
 
-# song_wizard/players.py
+# wizards/create_song/players.py
 # A player's name, the first name and the family's, and each list from complexity 1 to 4.
 MSG_PLAYER = '{} {}'
 MSG_PLAYER_FAMILIES = ('Llama', 'Alpaca', 'Vicuna', 'Guanaco')

@@ -15,7 +15,6 @@ the intro's melody is made from the hook and the hook from the chorus.
 from rich.text import Text
 
 from llamatron.model.file.checks import listed
-from llamatron.song_wizard import wizard_limits
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style
@@ -23,6 +22,7 @@ from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, Headi
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import fade_field
 from llamatron.user_strings import errors, labels, legends, marks, messages
+from llamatron.wizards.create_song import wizard_limits
 
 # What the panel is remembered by, apart from a section of the form called intro.
 INTRO_MELODY_KEY = 'melody of the intro'

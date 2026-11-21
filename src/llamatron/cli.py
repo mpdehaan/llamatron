@@ -144,7 +144,7 @@ def make_wizard_song(arguments):
     """Make the song a song file describes, as the song wizard would, write its set and return the set's path: the one --out
     names, or one beside the song file, named after it."""
     # Imported here so that opening a set or exporting doesn't load the song wizard.
-    from llamatron.song_wizard.wizard_file import made_of_file
+    from llamatron.wizards.create_song.wizard_file import made_of_file
     from llamatron.model.file import version
     path = arguments.out or os.path.join(os.path.dirname(arguments.wizard), MADE_SET_NAME.format(file_stem(arguments.wizard)))
     made_of_file(path=arguments.wizard, version=version.VERSION, seed=arguments.seed).write_file(path)

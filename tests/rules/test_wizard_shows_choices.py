@@ -13,18 +13,18 @@ import pathlib
 import re
 import unittest
 
-from llamatron.song_wizard.band_choices import BandChoices
-from llamatron.song_wizard.form_choices import FormChoices
-from llamatron.song_wizard.hook_choices import HookChoices
-from llamatron.song_wizard.kit_choices import KitChoices
-from llamatron.song_wizard.player_choices import PlayerChoices
-from llamatron.song_wizard.riff_choices import RiffChoices
-from llamatron.song_wizard.section_choices import SectionChoices
-from llamatron.song_wizard.solo_choices import SoloChoices
-from llamatron.song_wizard.sound_choices import SoundChoices
-from llamatron.song_wizard.tune_choices import TuneChoices
-from llamatron.song_wizard.wizard_choices import WizardChoices
 from llamatron.tui.screens import wizard
+from llamatron.wizards.create_song.band_choices import BandChoices
+from llamatron.wizards.create_song.form_choices import FormChoices
+from llamatron.wizards.create_song.hook_choices import HookChoices
+from llamatron.wizards.create_song.kit_choices import KitChoices
+from llamatron.wizards.create_song.player_choices import PlayerChoices
+from llamatron.wizards.create_song.riff_choices import RiffChoices
+from llamatron.wizards.create_song.section_choices import SectionChoices
+from llamatron.wizards.create_song.solo_choices import SoloChoices
+from llamatron.wizards.create_song.sound_choices import SoundChoices
+from llamatron.wizards.create_song.tune_choices import TuneChoices
+from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 SETTER_START = 'set_'
 # The choices and every part of them.

@@ -134,9 +134,9 @@ flowchart LR
     exporters["exporters"]
     importers["importers"]
     realtime["realtime"]
-    song_wizard["song_wizard"]
     tutorial["tutorial"]
     visualizers["visualizers"]
+    wizards["wizards"]
     subgraph everywhere ["used by every other part"]
     math["math"]
     caching["caching"]
@@ -155,9 +155,9 @@ flowchart LR
     llamatron --> exporters
     llamatron --> model
     llamatron --> playback
-    llamatron --> song_wizard
     llamatron --> tui
     llamatron --> visualizers
+    llamatron --> wizards
     model --> generators
     playback --> engine
     playback --> generators
@@ -165,9 +165,6 @@ flowchart LR
     realtime --> engine
     realtime --> model
     realtime --> playback
-    song_wizard --> generators
-    song_wizard --> model
-    song_wizard --> playback
     tui --> engine
     tui --> exporters
     tui --> generators
@@ -175,11 +172,14 @@ flowchart LR
     tui --> model
     tui --> playback
     tui --> realtime
-    tui --> song_wizard
     tui --> visualizers
+    tui --> wizards
     tutorial --> model
     tutorial --> tui
     visualizers --> model
+    wizards --> generators
+    wizards --> model
+    wizards --> playback
 ```
 
 | Package | What it holds |
@@ -193,9 +193,9 @@ flowchart LR
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
-| `song_wizard` | The song wizard: a set made from structured data that says what to play. composer.py turns a |
 | `tutorial` | The video tutorial: a plan that rebuilds a set from nothing in the running tracker, key by key, and the runner that presses its keys at a human pace, saying a sentence at each part worth one (internal_tools/make_video_tutorial.py). |
 | `visualizers` | The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time. |
+| `wizards` | Wizards: whole pieces of work made from a few choices. create_song/ is the song wizard, which creates a new song from a |
 | `math` | Math: exact arithmetic for lengths and times, Rationals and the pairs a realization uses, and where random numbers come |
 | `caching` | Caching: revisions, how anything that changes says so, and the answers kept until something they came from changes, which |
 | `user_strings` | User strings: every piece of text llamatron shows people, one module for each way the text is used. |

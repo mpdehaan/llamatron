@@ -36,14 +36,14 @@ DOT = '.'
 TOP = '(top)'
 # The packages from the bottom up: each imports only those before it. The strings package is text every layer may name.
 LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'generators', 'exporters', 'playback', 'importers', 'realtime',
-          'song_wizard', 'visualizers', 'tui', 'tutorial', TOP)
+          'wizards', 'visualizers', 'tui', 'tutorial', TOP)
 VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.
 FRONT_DOORS = {
     'playback': ('song_renderer',),
     'exporters': ('exports',),
     'importers': ('midi_import',),
-    'song_wizard': ('wizard_choices', 'wizard_limits'),
+    'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits'),
     'realtime': (),
 }
 # The only files outside the real-time package that import it.
@@ -73,6 +73,12 @@ EXCEPTIONS_RULE = "    {rule!r}: (\n"
 EXCEPTIONS_ROW = "        {crossing!r},\n"
 EXCEPTIONS_RULE_END = "    ),\n"
 EXCEPTIONS_END = "}\n"
+
+
+def is_front_door(*, module, doors):
+    """Return whether a module of the program, as parts under the program, is one of a package's front doors, named below the package."""
+    below = DOT.join(module[1:])
+    return any(below == door or below.startswith(door + DOT) for door in doors)
 
 
 def package_of(parts):
@@ -111,7 +117,7 @@ def breaks(*, file, module):
         broken.append(ORDER)
     if other in FRONT_DOORS:
         allowed_file = other != REALTIME or '/'.join(file) in REALTIME_USERS
-        allowed_module = other == REALTIME or (len(module) > 1 and module[1] in FRONT_DOORS[other])
+        allowed_module = other == REALTIME or is_front_door(module=module, doors=FRONT_DOORS[other])
         if not (allowed_file and allowed_module):
             broken.append(DOORS)
     if is_page(file) and other == MODEL and tuple(module[1:3]) not in PAGE_SCHEMA and tuple(module[1:2]) != (PAGE_VALUES,):

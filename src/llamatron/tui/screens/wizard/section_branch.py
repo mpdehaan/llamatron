@@ -6,11 +6,11 @@
 
 from llamatron.model.schema import limits
 from llamatron.model.values import note
-from llamatron.song_wizard import arranger, joins, song_plan, wizard_limits
-from llamatron.song_wizard.wizard_choices import chords_as_text
 from llamatron.tui.screens.shared.field import ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, marks, messages
+from llamatron.wizards.create_song import arranger, joins, song_plan, wizard_limits
+from llamatron.wizards.create_song.wizard_choices import chords_as_text
 
 # What two sections of one name are told apart by: the section's number in the form and its name.
 SECTION_KEY = '{number} {name}'

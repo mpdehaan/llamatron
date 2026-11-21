@@ -22,8 +22,6 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import new_name
 from llamatron.model.schema.file_format import GeneratorKind
 from llamatron.realtime.sender_process import SenderNotStarted
-from llamatron.song_wizard import notation, wizard_limits
-from llamatron.song_wizard.wizard_choices import WizardChoices
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -49,6 +47,8 @@ from llamatron.tui.screens.wizard.genre_branch import GenreBranch
 from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
 from llamatron.tui.text import clock
 from llamatron.user_strings import errors, help as help_text, labels, marks, messages, names, song_wizard as wizard_text
+from llamatron.wizards.create_song import notation, wizard_limits
+from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
 TREE_WIDTH = 24

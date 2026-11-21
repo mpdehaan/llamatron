@@ -5,13 +5,13 @@
 
 from rich.text import Text
 
-from llamatron.song_wizard import song_plan, wizard_limits
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.section_branch import SectionBranch
 from llamatron.user_strings import errors, labels, legends, marks, messages
+from llamatron.wizards.create_song import song_plan, wizard_limits
 
 # Sections are counted from 1, as they are shown.
 FIRST_SECTION_NUMBER = 1

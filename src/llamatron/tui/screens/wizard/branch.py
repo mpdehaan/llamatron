@@ -9,11 +9,11 @@ branch is added, moved or split by changing the branches alone (who expects to
 revise how the wizard is organized).
 """
 
-from llamatron.song_wizard import hook_writing
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field, NumberField
 from llamatron.user_strings import labels, legends, marks
+from llamatron.wizards.create_song import hook_writing
 
 # Where a picker opens, and what stepping picks, before anything is chosen.
 FIRST_CHOICE = 0

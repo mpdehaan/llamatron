@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The song wizard: a set composed from a song's input, structured data that says what to play (src/llamatron/song_wizard/).
+"""The song wizard: a set composed from a song's input, structured data that says what to play (src/llamatron/wizards/create_song/).
 
     .venv/bin/python internal_tools/song_wizard_compose.py INPUT --out SET          # compose the input into a set file
     .venv/bin/python internal_tools/song_wizard_compose.py --decompose SET --out INPUT   # write an existing set as an input
@@ -20,10 +20,10 @@ import yaml
 from llamatron.model.file import version
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.setlist import Setlist
-from llamatron.song_wizard import arranger
-from llamatron.song_wizard.arranger import arranged, style_named
-from llamatron.song_wizard.composer import composed
-from llamatron.song_wizard.decomposer import decomposed, same_music
+from llamatron.wizards.create_song import arranger
+from llamatron.wizards.create_song.arranger import arranged, style_named
+from llamatron.wizards.create_song.composer import composed
+from llamatron.wizards.create_song.decomposer import decomposed, same_music
 
 FILE_ENCODING = 'utf-8'
 WRITE_TEXT = 'w'

@@ -12,13 +12,13 @@ chords, the one kind that has gaps between its accents.
 
 from rich.text import Text
 
-from llamatron.song_wizard import riffs, wizard_limits
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.drawing import cursor_mark, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.user_strings import labels, marks
+from llamatron.wizards.create_song import riffs, wizard_limits
 
 # The rows in the order drawn; the last is asked only of a riff of notes and chords.
 ROWS = (riffs.RIFF_BAR_COUNT, riffs.RIFF_NOTES, riffs.RIFF_WITH_CHORDS, riffs.RIFF_BETWEEN)

@@ -5,11 +5,11 @@
 """The song wizard's page on a planned song: the plan's fields on the Form panel and the hook's kind on the Hooks panel."""
 
 from llamatron.model.schema import limits
-from llamatron.song_wizard import arranger, hook_writing, joins, song_plan, wizard_limits
-from llamatron.song_wizard.wizard_choices import chords_as_text
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.user_strings import errors, labels, marks
+from llamatron.wizards.create_song import arranger, hook_writing, joins, song_plan, wizard_limits
+from llamatron.wizards.create_song.wizard_choices import chords_as_text
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 

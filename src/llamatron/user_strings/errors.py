@@ -530,7 +530,7 @@ ERR_MIDI_NO_NOTES = 'the MIDI file plays no notes'
 ERR_CANT_IMPORT_TITLE = 'Cannot import'
 ERR_CANT_READ_MIDI = 'The file {file} cannot be read as MIDI: {problem}.'
 
-# song_wizard/arranger.py
+# wizards/create_song/arranger.py
 ERR_NO_STYLE_KIND = 'the style ({}) has no template called ({}); it has: {}'
 ERR_NO_TRAIT_VALUE = 'the trait ({}) has no value called ({}); it has: {}'
 ERR_PICK_NEEDS = 'the pick {} = {} needs {} = {}, and the song picks {}'
@@ -543,17 +543,17 @@ ERR_BREAK_CUT = 'break_cut must be an integer from {} to {}, got {!r}'
 ERR_NO_STYLE_FORMS = 'the song gives no form and the style ({}) suggests none'
 ERR_NO_SUCH_SECTION = 'the form names the section ({}), which neither the song nor the style describes'
 
-# song_wizard/composer.py
+# wizards/create_song/composer.py
 ERR_NO_CLIP_FITS = 'scene ({}) lasts {} bars, which no part it plays divides evenly'
 
-# song_wizard/decomposer.py
+# wizards/create_song/decomposer.py
 ERR_ONE_SONG = 'a song wizard input holds one song, and the set holds {}'
 
-# song_wizard/notation.py
+# wizards/create_song/notation.py
 ERR_NOT_A_TUNE = 'the pattern cannot be written as a tune'
 ERR_NOT_A_BAR = 'the pattern cannot be written as a drum bar'
 
-# The song wizard's choices (song_wizard/wizard_choices.py).
+# The song wizard's choices (wizards/create_song/wizard_choices.py).
 ERR_WIZARD_NO_SUCH_GENRE = 'genre must be one of the genres, got {value!r}'
 ERR_WIZARD_NO_SUCH_SUBGENRE = 'subgenre must be one of the genre, got {value!r}'
 ERR_WIZARD_NO_SUCH_VARIANT = 'variant must be one of: {choices}, got {value!r}'
@@ -613,7 +613,7 @@ ERR_WIZARD_NO_SUCH_TUNE_PLAYER = 'no player of the band who can play the tune is
 ERR_WIZARD_NO_TUNE_IN = 'no section of the kind {value!r} has a tune'
 ERR_WIZARD_TUNE_PATTERN = 'the tune cannot be this pattern: {problem}'
 ERR_WIZARD_EXTRAS = 'the picks of a song file must be a mapping, got {value!r}'
-# song_wizard/wizard_file.py
+# wizards/create_song/wizard_file.py
 ERR_SONG_FILE_NOT_A_MAPPING = '{path}: a song file must be a mapping of choices'
 ERR_SONG_FILE_NOT_READY = '{path}: a song file needs a genre and a subgenre that exist'
 ERR_SONG_FILE_FORM_ENTRY = '{path}: form entry {place} must be a kind of section or a mapping with a kind, got {value!r}'

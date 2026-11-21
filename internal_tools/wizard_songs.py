@@ -11,7 +11,7 @@ wizard makes, each choice once, on the first subgenre of each genre, each song a
 It is run before and after a change that should leave the wizard's songs alone, such as a refactoring of the arranger or
 of the wizard's choices, and the two outputs are compared: a line that differs names the genre, the subgenre and the
 choice whose song changed. The choices are the ones the suite goes through (every_choice in
-tests/song_wizard/test_wizard_effect.py), each made on a subgenre's usual song with one seed, so that a new choice of
+tests/wizards/create_song/test_wizard_effect.py), each made on a subgenre's usual song with one seed, so that a new choice of
 the wizard is covered once the suite covers it. A choice runs the same code whatever the subgenre, so each is made once, on
 the first subgenre of its genre, and every subgenre's own style is covered by its usual song. A song is made under one
 version, whatever the program's is, so that a version bump changes no line. The subgenres are made side by side on every core,
@@ -24,9 +24,9 @@ import json
 import multiprocessing
 import sys
 
-from llamatron.song_wizard import arranger
-from llamatron.song_wizard.wizard_choices import genre_names, WizardChoices
-from tests.song_wizard.test_wizard_effect import every_choice, fresh
+from llamatron.wizards.create_song import arranger
+from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
+from tests.wizards.create_song.test_wizard_effect import every_choice, fresh
 
 A_NAME = 'song'
 # The version every song is made under, so that the lines are the same from one version of the program to the next.

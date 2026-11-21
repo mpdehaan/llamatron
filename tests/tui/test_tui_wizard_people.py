@@ -8,12 +8,12 @@ from llamatron.generators import musician
 from llamatron.model.file import version
 from llamatron.model.objects.generator_settings import MusicianSetting
 from llamatron.model.schema.file_format import Section
-from llamatron.song_wizard import song_plan, wizard_limits
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.musician_editor import MusicianEditor
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.user_strings import labels, messages
+from llamatron.wizards.create_song import song_plan, wizard_limits
 from tests.support.ui_testing import key_of
 from tests.tui.test_tui_wizard import WizardTest
 
