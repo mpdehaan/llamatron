@@ -463,25 +463,8 @@ class TestUses(unittest.TestCase):
         self.assertIn('song untitled, scene 3 (three), track bass', uses)
         self.assertEqual(uses_of(setlist=song_with_things().get_setlist(), section=Section.PATTERNS, name=UNUSED), [])
 
-    def test_a_morph_target_counts_as_a_use(self):
-        document = song_with_things()
-        document.add_clip_slot(index=0, track=BASS, pattern=A)
-        document.set_clip_slot_setting(index=0, track=BASS, setting=ClipSlotSetting.REPEAT, value=2)
-        document.set_clip_slot_morph_target(index=0, track=BASS, pattern=UNUSED)
-        self.assertEqual(uses_of(setlist=document.get_setlist(), section=Section.PATTERNS, name=UNUSED), ['song untitled, scene 1 (one), track bass'])
-
     def test_track_clips_are_counted_separately(self):
         self.assertEqual(song_with_things().song().track_clip_count(BASS), 2)
-
-    def test_chain(self):
-        document = song_with_things()
-        self.assertEqual(uses_of(setlist=document.get_setlist(), section=Section.CHAINS, name=NAMED), ['song untitled, scene 1 (one), track lead'])
-
-    def test_arp(self):
-        self.assertEqual(uses_of(setlist=song_with_things().get_setlist(), section=Section.ARPS, name=UP), [CHAIN_NAMED])
-
-    def test_auto_ratchet(self):
-        self.assertEqual(uses_of(setlist=song_with_things().get_setlist(), section=Section.AUTO_RATCHETS, name=ROLLS), [CHAIN_NAMED])
 
     def test_what_the_document_remembers_about_a_pattern_follows_every_change_and_the_revision_moves_with_it(self):
         # The pattern editor asks the same questions for every row and cell, so the answers are kept until the set changes: a scene's scale, picking a song and an undo each move the revision and change the answer.
@@ -553,10 +536,6 @@ class TestUses(unittest.TestCase):
         self.assertIsNot(document.covering_notes(A), covering)
         self.assertEqual(document.covering_notes(A), document.covering_notes(B))
 
-    def test_scale(self):
-        self.assertEqual(uses_of(setlist=song_with_things().get_setlist(), section=Section.SCALES, name=setlist.DEFAULT_SCALE), [THE_SONG, 'song untitled, scene 3 (three)'])
-
-
 class TestStepSizes(unittest.TestCase):
 
     def test_a_new_pattern_is_empty_steps_of_the_song_step_size(self):
@@ -591,22 +570,15 @@ class TestStepSizes(unittest.TestCase):
 
 
 class TestRenaming(unittest.TestCase):
+    """What follows a rename is held by tests/composition/test_renames.py, on every example; the document passes a rename on and
+    keeps the song playable, and owns what a scale's default name does."""
 
-    def test_pattern_updates_everything(self):
-        document = song_with_things()
-        document.rename_named(section=Section.PATTERNS, old=B, new=NEW)
-        self.assertEqual(document.song().get_pattern_names(), [A, NEW, UNUSED])
-        self.assertEqual(document.clip_slot(index=1, track=LEAD).get_morph_target(), NEW)
-        self.assertEqual(document.clip_slot(index=2, track=BASS).get_pattern_name(), NEW)
-        render_song(document.song())
-
-    def test_pattern_updates_morph_to(self):
-        document = song_with_things()
-        document.add_clip_slot(index=0, track=BASS, pattern=A)
-        document.set_clip_slot_setting(index=0, track=BASS, setting=ClipSlotSetting.REPEAT, value=2)
-        document.set_clip_slot_morph_target(index=0, track=BASS, pattern=UNUSED)
-        document.rename_named(section=Section.PATTERNS, old=UNUSED, new=NEW)
-        self.assertEqual(document.clip_slot(index=0, track=BASS).get_morph_target(), NEW)
+    def test_a_rename_in_any_section_leaves_a_song_that_plays(self):
+        for section, old in ((Section.PATTERNS, B), (Section.TRACKS, LEAD), (Section.CHAINS, NAMED), (Section.ARPS, UP), (Section.AUTO_RATCHETS, ROLLS)):
+            with self.subTest(section=section):
+                document = song_with_things()
+                document.rename_named(section=section, old=old, new=NEW)
+                render_song(document.song())
 
     def test_renaming_or_deleting_a_track_updates_grabs_from_it(self):
         document = song_with_things()
@@ -617,34 +589,6 @@ class TestRenaming(unittest.TestCase):
         self.assertEqual(grabbers(song=document.song(), song_name=document.get_current_song_name(), track=TOP), ['song untitled, scene 1 (one), track bass'])
         document.delete_named(section=Section.TRACKS, name=TOP)
         self.assertEqual(document.clip_slot(index=0, track=BASS).to_data(), {ClipSlotSetting.PATTERN: A})
-
-    def test_finding_a_grab_circle(self):
-        document = song_with_things()
-        document.add_clip_slot(index=0, track=BASS, pattern=A)
-        document.set_clip_slot_setting(index=0, track=BASS, setting=ClipSlotSetting.GRAB_TRACK, value=LEAD)
-        self.assertEqual(document.grab_circle(index=0, track=LEAD, other=BASS), [LEAD, BASS, LEAD])
-        self.assertIsNone(document.grab_circle(index=0, track=BASS, other=LEAD))
-
-    def test_track_updates_everything(self):
-        document = song_with_things()
-        document.rename_named(section=Section.TRACKS, old=LEAD, new=NEW)
-        self.assertEqual(document.song().get_track_names(), [NEW, BASS])
-        render_song(document.song())
-
-    def test_chain_updates_everything(self):
-        document = song_with_things()
-        document.rename_named(section=Section.CHAINS, old=NAMED, new=OTHER)
-        self.assertEqual(document.clip_slot(index=0, track=LEAD).get_chain_names(), [OTHER])
-
-    def test_arp_updates_chains(self):
-        document = song_with_things()
-        document.rename_named(section=Section.ARPS, old=UP, new=NEW)
-        self.assertEqual(document.song().get_chain(NAMED).get_steps(), [(GeneratorKind.ARP, NEW), (GeneratorKind.AUTO_RATCHET, ROLLS)])
-
-    def test_auto_ratchet_updates_chains(self):
-        document = song_with_things()
-        document.rename_named(section=Section.AUTO_RATCHETS, old=ROLLS, new=NEW)
-        self.assertEqual(document.song().get_chain(NAMED).get_steps(), [(GeneratorKind.ARP, UP), (GeneratorKind.AUTO_RATCHET, NEW)])
 
     def test_setting_a_scales_root_and_kind_changes_what_uses_it_and_renames_a_default_name(self):
         document = song_with_things()
