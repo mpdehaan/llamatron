@@ -21,7 +21,6 @@ ALLOWED = {
         'importers/comparison.py imports exporters.midi_arrangement',
         'importers/comparison.py imports exporters.midi_messages',
         'interface/tracker/dialogs/new_riff_dialog.py imports wizards.create_song.riffs',
-        'interface/tracker/document_parts/set_edits.py imports importers.writing',
         'interface/tracker/pattern_preview.py imports engine.realizer.step_order',
         'interface/tracker/screens/wizard/branch.py imports wizards.create_song.hook_writing',
         'interface/tracker/screens/wizard/form_branch.py imports wizards.create_song.song_plan',

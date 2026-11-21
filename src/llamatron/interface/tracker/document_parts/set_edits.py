@@ -11,7 +11,6 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 
 from llamatron.engine.generators import arp as arp_plugin, musician as musician_plugin, progression as progression_plugin
 from llamatron.engine.generators.progression.model import ProgressionSetting
-from llamatron.importers.writing import add_imported
 from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
@@ -46,8 +45,7 @@ class SetEdits:
 
     def import_song(self, imported):
         """Add a song the MIDI import made, with its patterns and scales, as one change, and make it current."""
-        add_imported(setlist=self._setlist, imported=imported)
-        self.changed()
+        self.change_set(imported.add_to, self._setlist)
         self.select_song(imported.name)
 
     def add_made_song(self, made):

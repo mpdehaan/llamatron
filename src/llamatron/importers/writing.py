@@ -50,6 +50,10 @@ class ImportedSong:
     # How many of the song's patterns the set already had, which the song uses rather than making them again.
     shared: int
 
+    def add_to(self, setlist):
+        """Add the imported song to the set it was made for, with its scales and patterns, sharing what the set already had, and return the song."""
+        return add_imported(setlist=setlist, imported=self)
+
 
 def pattern_data(*, pattern, set_step_size):
     """Return a pattern's data from whether it is a drum's, its step size, its steps and its CC steps: the rows that hold anything, its own step size where the set's differs, and whether it is a drum's."""
