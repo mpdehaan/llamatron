@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import drag
 from llamatron.engine.generators.drag import strings
+from llamatron.engine.generators.drag.controller import DragController
 from llamatron.engine.generators.drag.settings import DragSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=drag.NAME, section=drag.SECTION, settings=DragSettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=drag.NAME, section=drag.SECTION, settings=DragSettings, strings=strings, controller=DragController())

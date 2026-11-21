@@ -28,12 +28,14 @@ class GeneratorPlugin(NamedTuple):
     """What a generator plugin declares: its name, the section of a set that holds its generators, its settings' class, and
     its strings module, which holds every word it shows: MSG_LABEL, what it is called beside a generator's name, MSG_KIND_WORD,
     the word a generator named for its kind takes, MSG_CAPTION_WORD, the word its page's caption names it by, and
-    MSG_CHANGED_WORD, the word an undo of a change to one of its generators says."""
+    MSG_CHANGED_WORD, the word an undo of a change to one of its generators says, and its controller, which holds all its
+    logic (engine/generators/controller.py)."""
 
     name: str
     section: str
     settings: type
     strings: object
+    controller: object
 
 
 @functools.cache

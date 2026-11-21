@@ -12,10 +12,8 @@ from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.row_clock import RowClock
-from llamatron.engine.generators import drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, rush as rush_plugin, strum as strum_plugin
+from llamatron.engine.generators import drag as drag_plugin, drift as drift_plugin, hocket as hocket_plugin, registry, rush as rush_plugin, strum as strum_plugin
 from llamatron.engine.generators.base import Continuation
-from llamatron.engine.generators.follow_chords.generator import FollowChords
-from llamatron.engine.generators.musician.generator import Surroundings
 from llamatron.engine.timing.handed_note import HandedNote
 from llamatron.engine.timing.nudge_plan import amount_moved, MovingRow, NudgePlan
 from llamatron.engine.timing.strum_plan import StrumPlan
@@ -28,6 +26,7 @@ from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import RampWay, Restart, Section, StepStatement
 from llamatron.model.values import midi, sound as sound_values
 from llamatron.playback import registers as registers_values
+from llamatron.playback.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
 from llamatron.playback.chord_source import ChordSource
 from llamatron.playback.clip_slot_player import ClipSlotPlayer
 from llamatron.playback.draws import DrawPlay
@@ -67,8 +66,6 @@ MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240_000
 # Turning a length in whole notes into seconds, at a tempo in quarter notes a minute.
 SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
-# The generators that follow another track's chords or tune, so that an edit reaching that track reaches theirs.
-FOLLOWING_KINDS = (follow_chords_plugin.NAME, musician_plugin.NAME)
 # A drift's register adds come before every track's at the same moment, from a place before the first track's.
 DRIFT_PLACE = -1
 # The seed of the random values a register draws while a scene's first guess is played, which the plays after it replace.
@@ -285,6 +282,9 @@ class SongRenderer:
         """Return a whole-number seed made from a clip's place moved on by the clip's take, the same seed for take 0."""
         return seed + self.take_of(scene=scene, track=track) * SEED_TAKE_FACTOR
 
+    def get_song(self):
+        return self._song
+
     def get_reused_scene_count(self):
         """Return how many written scenes, from the first, the render took from an earlier render rather than playing them."""
         return self._reused
@@ -411,7 +411,7 @@ class SongRenderer:
         """Return the tracks whose notes a track's clip in a written scene plays from: the one it grabs from, and those whose chords or tune its generators follow."""
         followed = {scene.get_clip_slot(track).get_grab_track()}
         for step in self._chain_steps(scene=scene, track=track):
-            if step.kind in FOLLOWING_KINDS:
+            if registry.follows_tracks(step.kind):
                 settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
                 followed.update(name for section, name in settings.named_items() if section == Section.TRACKS)
         return followed
@@ -1055,7 +1055,7 @@ class SongRenderer:
             self._chord_sources[key] = ChordSource(clip)
         return self._chord_sources[key]
 
-    def _plays_drums(self, *, scene, track):
+    def plays_drums(self, *, scene, track):
         """Return whether a track's clip in a written-out scene plays a drum pattern."""
         return self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name()).is_drum()
 
@@ -1081,34 +1081,20 @@ class SongRenderer:
         return self._tune_sources[key]
 
     def make_generator(self, *, step, scene, track, chain, index, key=None, counting=False):
-        """Return the generator for one step of a chain, as a clip slot on a track in a scene uses it.
-
-        An arp with no seed of its own gets one from the render's, which differs for every scene,
-        track and place in the chain, so that a seeded render is always the same. With no seed
-        at all, the arp draws its own random numbers.
-        """
+        """Return the generator for one step of a chain, as a clip slot on a track in a scene uses it: what the step's plugin's
+        controller makes of its settings at the step's place."""
         settings = self._song.get_generator_settings(kind=step.kind, name=step.name)
-        if step.kind == follow_chords_plugin.NAME:
-            return FollowChords(chords=self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting))
-        if step.kind == phrasing_plugin.NAME:
-            return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=self._song.get_time_signature().bar_length())
+        place = ChainStepPlace(realizer=self, clip=ClipBeingMade(scene=scene, track=track, counting=counting), step=StepInChains(step=step, chain=chain, index=index, key=key))
+        return registry.controller_of(step.kind).make_generator(settings=settings, place=place)
+
+    def chain_step_seed(self, *, scene, track, index):
+        """Return the seed a generator that chooses at random takes at a place in a clip's chains when its settings give none:
+        one made from the render's, which differs for every scene, track and place in the chain, so that a seeded render is
+        always the same; None for a render with no seed, so that the generator draws its own random numbers."""
+        if self._seed is None:
+            return None
         place = self._song.get_track_names().index(track)
-        seed = None if self._seed is None else self.taken_seed(seed=self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index, scene=scene, track=track)
-        if step.kind == musician_plugin.NAME:
-            signature = self._song.get_time_signature()
-            surroundings = Surroundings(
-                section=scene.get_scene().get_section(),
-                # A drum pattern's notes are drums, which no chord moves, whoever is said to play them.
-                chords=None if self._plays_drums(scene=scene, track=track) else self.chords_followed(scene=scene, track=track, source=settings.get_chords_from(), counting=counting),
-                tune=self.tune_heard(scene=scene, track=track, source=settings.get_tune_from(), counting=counting),
-            )
-            return settings.generator_for(where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), bar=signature.bar_length(), beat=signature.beat_length(), surroundings=surroundings, seed=seed)
-        pattern_step = self._song.get_pattern_step_size(self._song.get_pattern(scene.get_clip_slot(track).get_pattern_name()))
-        continuation = None if key is None else self.continuation(settings=settings, scene=scene, track=track, key=key, counting=counting)
-        return settings.make_generator(
-            where=errors.ERR_WHERE_CHAIN.format(chain=chain, kind=step.kind), default_seed=seed, default_step=pattern_step, bar=self._song.get_time_signature().bar_length(),
-            continuation=continuation, tempo=self._song.get_tempo() if scene.get_tempo() is None else scene.get_tempo(),
-        )
+        return self.taken_seed(seed=self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index, scene=scene, track=track)
 
 
 def _through_scene(*, entries, count, number_of):

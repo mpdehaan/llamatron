@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import auto_ratchet
 from llamatron.engine.generators.auto_ratchet import strings
+from llamatron.engine.generators.auto_ratchet.controller import AutoRatchetController
 from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=auto_ratchet.NAME, section=auto_ratchet.SECTION, settings=AutoRatchetSettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=auto_ratchet.NAME, section=auto_ratchet.SECTION, settings=AutoRatchetSettings, strings=strings, controller=AutoRatchetController())

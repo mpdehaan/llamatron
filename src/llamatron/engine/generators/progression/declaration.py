@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import progression
 from llamatron.engine.generators.progression import strings
+from llamatron.engine.generators.progression.controller import ProgressionController
 from llamatron.engine.generators.progression.settings import ProgressionSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=progression.NAME, section=progression.SECTION, settings=ProgressionSettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=progression.NAME, section=progression.SECTION, settings=ProgressionSettings, strings=strings, controller=ProgressionController())

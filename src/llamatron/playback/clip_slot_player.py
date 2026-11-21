@@ -7,7 +7,7 @@
 from math import ceil
 
 from llamatron.engine.clips.clip import Clip
-from llamatron.engine.generators import articulate as articulate_plugin, density as density_plugin, follow_chords as follow_chords_plugin, progression as progression_plugin, swell as swell_plugin
+from llamatron.engine.generators import articulate as articulate_plugin, density as density_plugin, registry, swell as swell_plugin
 from llamatron.engine.generators.blend import Blend
 from llamatron.engine.generators.euclid.generator import EuclidMask
 from llamatron.engine.timing.keyswitch import SwitchNote
@@ -17,7 +17,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.conditions import any_true, draws_read
-from llamatron.model.schema import file_format, generator_plugins, limits
+from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, Restart, Shape, TrackSetting
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
@@ -44,8 +44,8 @@ TAKE_SEED = '{seed}/take {take}'
 FULL_MORPH = 100
 # A clip with nothing in it ends straight away.
 NO_LENGTH = 0
-# The kinds of generator that move a clip's notes to a chord, which a drum pattern is spared.
-KINDS_MOVING_PITCHES = (progression_plugin.NAME, follow_chords_plugin.NAME)
+# The controller's method that makes the generator a chain's step runs on a clip's notes.
+MAKES_GENERATORS = 'make_generator'
 
 
 # What a chain's generator sets in the registers: nothing, since only the pattern's = rows set.
@@ -164,7 +164,7 @@ class ClipSlotPlayer:
             for step in written.get_steps():
                 # A drift works on the steps as the pattern plays, and a shape on the finished clip after the chains (playback/drift.py, playback/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
-                if generator_plugins.settings_of(step.kind).GENERATOR is not None and not (step.kind in KINDS_MOVING_PITCHES and self._plays_drums()):
+                if registry.fills(name=step.kind, method=MAKES_GENERATORS) and not (registry.moves_pitches(step.kind) and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
                     times[(step.kind, step.name)] = key[-1] + 1
                     generator = self._renderer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=chain, index=index, key=key, counting=counting)

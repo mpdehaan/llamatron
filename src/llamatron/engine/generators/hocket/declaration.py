@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import hocket
 from llamatron.engine.generators.hocket import strings
+from llamatron.engine.generators.hocket.controller import HocketController
 from llamatron.engine.generators.hocket.settings import HocketSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=hocket.NAME, section=hocket.SECTION, settings=HocketSettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=hocket.NAME, section=hocket.SECTION, settings=HocketSettings, strings=strings, controller=HocketController())

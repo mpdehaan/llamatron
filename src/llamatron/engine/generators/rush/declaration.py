@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import rush
 from llamatron.engine.generators.rush import strings
+from llamatron.engine.generators.rush.controller import RushController
 from llamatron.engine.generators.rush.settings import RushSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=rush.NAME, section=rush.SECTION, settings=RushSettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=rush.NAME, section=rush.SECTION, settings=RushSettings, strings=strings, controller=RushController())

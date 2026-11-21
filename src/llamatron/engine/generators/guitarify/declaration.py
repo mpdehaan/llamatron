@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import guitarify
 from llamatron.engine.generators.guitarify import strings
+from llamatron.engine.generators.guitarify.controller import GuitarifyController
 from llamatron.engine.generators.guitarify.settings import GuitarifySettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=guitarify.NAME, section=guitarify.SECTION, settings=GuitarifySettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=guitarify.NAME, section=guitarify.SECTION, settings=GuitarifySettings, strings=strings, controller=GuitarifyController())

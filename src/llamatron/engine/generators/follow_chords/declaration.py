@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import follow_chords
 from llamatron.engine.generators.follow_chords import strings
+from llamatron.engine.generators.follow_chords.controller import FollowChordsController
 from llamatron.engine.generators.follow_chords.settings import FollowChordsSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=follow_chords.NAME, section=follow_chords.SECTION, settings=FollowChordsSettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=follow_chords.NAME, section=follow_chords.SECTION, settings=FollowChordsSettings, strings=strings, controller=FollowChordsController())

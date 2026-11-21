@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import shorten
 from llamatron.engine.generators.shorten import strings
+from llamatron.engine.generators.shorten.controller import ShortenController
 from llamatron.engine.generators.shorten.settings import ShortenSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=shorten.NAME, section=shorten.SECTION, settings=ShortenSettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=shorten.NAME, section=shorten.SECTION, settings=ShortenSettings, strings=strings, controller=ShortenController())

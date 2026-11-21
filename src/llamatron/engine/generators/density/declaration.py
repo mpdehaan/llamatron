@@ -7,7 +7,8 @@ generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import density
 from llamatron.engine.generators.density import strings
+from llamatron.engine.generators.density.controller import DensityController
 from llamatron.engine.generators.density.settings import DensitySettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=density.NAME, section=density.SECTION, settings=DensitySettings, strings=strings)
+PLUGIN = GeneratorPlugin(name=density.NAME, section=density.SECTION, settings=DensitySettings, strings=strings, controller=DensityController())
