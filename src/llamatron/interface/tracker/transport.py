@@ -36,15 +36,8 @@ from llamatron.interface.visualizers.heard import FrameHearing, HeardNote
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
-from llamatron.realtime.devices import fluidsynth as fluidsynth_values
-from llamatron.realtime.devices.fluidsynth import FluidSynth, installed
-from llamatron.realtime.devices.ports import output_port_names
-from llamatron.realtime.render_process import playback as playback_values, player as player_values
-from llamatron.realtime.render_process.playback import LocalPlayback, PlayRequest, Wanted
-from llamatron.realtime.render_process.playback_process import PlaybackProcess
-from llamatron.realtime.render_process.timeline import Route
-from llamatron.realtime.sender_process.engine import MonotonicClock
-from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess, SenderNotStarted
+from llamatron.realtime import realtime_names
+from llamatron.realtime.playback_service import FluidSynth, installation, installed, LocalPlayback, MonotonicClock, output_port_names, PlaybackProcess, PlayRequest, RealtimeMIDISenderProcess, Route, SenderNotStarted, Wanted
 from llamatron.user_strings import errors, messages
 
 # How often the player plans ahead and the page redraws while something plays.
@@ -67,7 +60,7 @@ def step_sounding(*, elapsed, quarter, step_size, steps, direction):
     order = walk_order(count=steps, direction=direction)
     if order is None:
         return None
-    step_seconds = float(step_size) * player_values.QUARTERS_PER_WHOLE * quarter
+    step_seconds = float(step_size) * realtime_names.QUARTERS_PER_WHOLE * quarter
     return order[int(elapsed / step_seconds) % len(order)]
 
 
@@ -84,7 +77,7 @@ def process_sender(ports):
 
 def fluidsynth_installation():
     """Return where FluidSynth and its SoundFont are installed, which a WAV export plays through, or None where they aren't."""
-    return fluidsynth_values.installation()
+    return installation()
 
 class Problem:
     """Why nothing can play: a dialog's title and its lines."""
@@ -180,7 +173,7 @@ class Transport:
 
     def device_port_names(self):
         """Return the names of the MIDI ports an instrument can be sent to: every port this computer lists now but FluidSynth's own, which an instrument reaches by choosing FluidSynth."""
-        return [name for name in output_port_names() if not name.startswith(fluidsynth_values.FLUIDSYNTH_PORT_PREFIX)]
+        return [name for name in output_port_names() if not name.startswith(realtime_names.FLUIDSYNTH_PORT_PREFIX)]
 
     def fluidsynth_installed(self):
         """Return whether FluidSynth is installed on this computer."""
@@ -247,7 +240,7 @@ class Transport:
 
     def uses_fluidsynth(self, *, instead=None):
         """Return whether some track of the current song plays through FluidSynth."""
-        return any(route.port == fluidsynth_values.FLUIDSYNTH_PORT for route in self.routes(instead=instead).values())
+        return any(route.port == realtime_names.FLUIDSYNTH_PORT for route in self.routes(instead=instead).values())
 
     def routes(self, *, instead=None):
         """Return each track's Route, by the track's name, for the tracks whose instrument has a device. instead maps a track to an instrument to play through for one preview.
@@ -272,7 +265,7 @@ class Transport:
                 routes[track] = Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
             elif track in channels:
                 sound = None if song.get_track(track).is_drum() or instrument.get_gm_sound() is None else instrument.get_gm_sound() - limits.MIN_GM_SOUND
-                routes[track] = Route(fluidsynth_values.FLUIDSYNTH_PORT, channels[track], sound, keyswitches=False)
+                routes[track] = Route(realtime_names.FLUIDSYNTH_PORT, channels[track], sound, keyswitches=False)
         return routes
 
     def channels_in_use(self):
@@ -285,7 +278,7 @@ class Transport:
             if instrument.has_device() and not instrument.uses_fluidsynth() and instrument.get_device() in connected:
                 pairs.add((instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET))
         if self._fluidsynth.is_running():
-            pairs |= {(route.port, route.channel) for route in self.routes().values() if route.port == fluidsynth_values.FLUIDSYNTH_PORT}
+            pairs |= {(route.port, route.channel) for route in self.routes().values() if route.port == realtime_names.FLUIDSYNTH_PORT}
         return sorted(pairs)
 
     # Playing.
@@ -296,7 +289,7 @@ class Transport:
     def play_scene(self, *, index):
         """Play the current song from a scene, every clip of it, the follow actions taking it on. Return whether it waits for the next bar of what plays."""
         self._previewing = False
-        return self._launch(launch=PlayRequest(playback_values.LAUNCH_SCENE, index), instead=None)
+        return self._launch(launch=PlayRequest(realtime_names.LAUNCH_SCENE, index), instead=None)
 
     def play_clip(self, *, index, track, instead=None, forever=False):
         """Play one clip on its own, through its track's instrument or the one instead names, once as its scene would or again and again. Return whether it waits for the next bar.
@@ -306,14 +299,14 @@ class Transport:
         if forever and self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = forever
-        return self._launch(launch=PlayRequest(playback_values.LAUNCH_CLIP, index, (track,), forever), instead=instead)
+        return self._launch(launch=PlayRequest(realtime_names.LAUNCH_CLIP, index, (track,), forever), instead=instead)
 
     def play_clips(self, *, index, tracks):
         """Play several clips of one scene together, again and again, as a preview of a few players, which stops when its page is left."""
         if self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = True
-        self._launch(launch=PlayRequest(playback_values.LAUNCH_CLIPS, index, tuple(tracks), True), instead=None)
+        self._launch(launch=PlayRequest(realtime_names.LAUNCH_CLIPS, index, tuple(tracks), True), instead=None)
 
     def stop_clip(self, track):
         self._playback.stop_clip(track)
@@ -625,8 +618,8 @@ class Transport:
     def _ports_ready(self, ports):
         """Return the ports, FluidSynth started first where it is one of them, and tell the player's side when FluidSynth started
         again, since its port is then new though named the same."""
-        if fluidsynth_values.FLUIDSYNTH_PORT in ports and self._fluidsynth.ensure_running():
-            self._playback.use_ports(ports, renewed=[fluidsynth_values.FLUIDSYNTH_PORT])
+        if realtime_names.FLUIDSYNTH_PORT in ports and self._fluidsynth.ensure_running():
+            self._playback.use_ports(ports, renewed=[realtime_names.FLUIDSYNTH_PORT])
         self._ports = list(ports)
         return ports
 

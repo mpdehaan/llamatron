@@ -7,7 +7,7 @@
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.wizard import section_melody_branch
-from llamatron.realtime.devices import fluidsynth
+from llamatron.realtime import realtime_names
 from llamatron.user_strings import errors, labels, messages
 from tests.interface.tracker.test_tui_playback import PlaybackTest
 
@@ -69,7 +69,7 @@ class TestWizardListening(PlaybackTest):
         await self.pilot.pause()
 
     def channels_heard(self):
-        return {data[0] & CHANNEL_MASK for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)}
+        return {data[0] & CHANNEL_MASK for data in self.note_ons(realtime_names.FLUIDSYNTH_PORT)}
 
     async def test_a_melody_is_heard_alone_with_no_drums_under_it_again_and_again_and_stops(self):
         await self.go_to_hook()
@@ -77,7 +77,7 @@ class TestWizardListening(PlaybackTest):
         self.assertIn(messages.MSG_WIZARD_LISTENING.format(what=self.hook_heard()), self.text())
         self.assertEqual(self.preview().playing(), self.hook_heard())
         await self.let_the_preview_play(A_WHILE)
-        self.assertTrue(self.note_ons(fluidsynth.FLUIDSYNTH_PORT))
+        self.assertTrue(self.note_ons(realtime_names.FLUIDSYNTH_PORT))
         # The melody's player and nobody else: the drums are heard with Listen With Band.
         self.assertEqual(len(self.channels_heard()), THE_MELODY_ALONE)
         self.assertNotIn(DRUM_CHANNEL_BYTE, self.channels_heard())

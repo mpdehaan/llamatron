@@ -13,6 +13,7 @@ import subprocess
 import unittest
 from unittest import mock
 
+from llamatron.realtime import realtime_names
 from llamatron.realtime.devices import fluidsynth
 from llamatron.realtime.devices.fluidsynth import command, FluidSynth, FluidSynthNotStarted
 from llamatron.user_strings import errors
@@ -74,7 +75,7 @@ class Ports:
         if not self.started:
             return [OTHER_PORT]
         self.looks += 1
-        return [OTHER_PORT, fluidsynth.FLUIDSYNTH_PORT] if self.appears_after is not None and self.looks > self.appears_after else [OTHER_PORT]
+        return [OTHER_PORT, realtime_names.FLUIDSYNTH_PORT] if self.appears_after is not None and self.looks > self.appears_after else [OTHER_PORT]
 
 
 class TestFluidSynth(unittest.TestCase):
@@ -152,7 +153,7 @@ class TestFluidSynth(unittest.TestCase):
             to_blackhole = command(audio_device=BLACKHOLE)
         self.assertEqual(plain[0], FAKE_PATH)
         self.assertEqual(plain[-1], FAKE_SOUNDFONT)
-        self.assertIn(fluidsynth.PORT_NAME.format(name=fluidsynth.FLUIDSYNTH_PORT), plain)
+        self.assertIn(fluidsynth.PORT_NAME.format(name=realtime_names.FLUIDSYNTH_PORT), plain)
         self.assertEqual(plain[plain.index(fluidsynth.GAIN_OPTION) + 1], fluidsynth.GAIN)
         self.assertNotIn(fluidsynth.AUDIO_DEVICE_SETTING.format(device=BLACKHOLE), plain)
         self.assertIn(fluidsynth.AUDIO_DEVICE_SETTING.format(device=BLACKHOLE), to_blackhole)
@@ -166,8 +167,8 @@ class TestFluidSynth(unittest.TestCase):
         self.assertIn(fluidsynth.AUDIO_DEVICE_SETTING.format(device=BLACKHOLE), self.processes[0][0])
 
     def test_its_port_is_this_trackers_own(self):
-        self.assertTrue(fluidsynth.FLUIDSYNTH_PORT.startswith(fluidsynth.FLUIDSYNTH_PORT_PREFIX))
-        self.assertIn(str(os.getpid()), fluidsynth.FLUIDSYNTH_PORT)
+        self.assertTrue(realtime_names.FLUIDSYNTH_PORT.startswith(realtime_names.FLUIDSYNTH_PORT_PREFIX))
+        self.assertIn(str(os.getpid()), realtime_names.FLUIDSYNTH_PORT)
 
     def test_installed_means_fluidsynth_and_the_soundfont_are_both_there(self):
         with mock.patch.object(fluidsynth, 'fluidsynth_path', return_value=FAKE_PATH), mock.patch.object(fluidsynth.os.path, 'isfile', return_value=True):

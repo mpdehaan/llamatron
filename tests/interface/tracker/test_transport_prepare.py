@@ -11,9 +11,9 @@ from unittest import mock
 
 from llamatron.interface.tracker import transport as transport_values
 from llamatron.interface.tracker.transport import Transport
-from llamatron.realtime.devices import fluidsynth as fluidsynth_values
+from llamatron.realtime import realtime_names
 
-PORTS = ['IAC Driver Bus 1', fluidsynth_values.FLUIDSYNTH_PORT]
+PORTS = ['IAC Driver Bus 1', realtime_names.FLUIDSYNTH_PORT]
 WAIT_SECONDS = 5
 # The transport's listing of the ports, by name, taken before any test stands in for it.
 PORT_LISTING = transport_values.output_port_names.__name__

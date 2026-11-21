@@ -36,7 +36,7 @@ from llamatron.interface.visualizers.modes import mode_options
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
-from llamatron.realtime.devices import fluidsynth
+from llamatron.realtime.playback_service import installation
 from llamatron.user_strings import cli, errors
 
 PROGRAM = 'llamatron'
@@ -185,7 +185,7 @@ def export_song(*, setlist, name, directory, arguments):
     grid = SongRealizer(setlist.get_song(name)).render()
     if arguments.replace:
         remove_earlier_export(kind=arguments.to, directory=directory, name=files)
-    make_exporter(kind=arguments.to, directory=directory, name=files, grid=grid, resources=ExportResources(template=arguments.template, synth=fluidsynth.installation())).export()
+    make_exporter(kind=arguments.to, directory=directory, name=files, grid=grid, resources=ExportResources(template=arguments.template, synth=installation())).export()
     print(cli.MSG_CLI_WROTE.format(target=arguments.to, song=name, path=shown_export_path(kind=arguments.to, directory=directory, name=files)))
 
 

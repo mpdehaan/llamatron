@@ -16,14 +16,11 @@ import functools
 from typing import NamedTuple
 
 from llamatron.model.objects.setlist import Setlist
+from llamatron.realtime import realtime_names
 from llamatron.realtime.render_process.player import Player
 from llamatron.realtime.render_process.score import Keeping, Score
 from llamatron.realtime.render_process.score_builder import ScoreBuilder
 
-# What a launch plays: a scene and every clip of it, one clip, or several clips of one scene together.
-LAUNCH_SCENE = 'scene'
-LAUNCH_CLIP = 'clip'
-LAUNCH_CLIPS = 'clips'
 
 
 class Wanted(NamedTuple):
@@ -155,9 +152,9 @@ class LocalPlayback:
             else:
                 self._player.set_score(score)
             self._playing = wanted
-        if launch.kind == LAUNCH_SCENE:
+        if launch.kind == realtime_names.LAUNCH_SCENE:
             at = self._player.play_scene(launch.scene)
-        elif launch.kind == LAUNCH_CLIP:
+        elif launch.kind == realtime_names.LAUNCH_CLIP:
             at = self._player.play_clip(scene=launch.scene, track=launch.tracks[0], forever=launch.forever)
         else:
             at = self._player.play_clips(scene=launch.scene, tracks=list(launch.tracks), forever=launch.forever)
@@ -165,7 +162,7 @@ class LocalPlayback:
 
     def _launched(self, launch):
         """Return the (scene, track) of every clip a launch plays: every track of a scene, or the tracks named."""
-        if launch.kind == LAUNCH_SCENE:
+        if launch.kind == realtime_names.LAUNCH_SCENE:
             return [(launch.scene, track) for track in self._player.get_score().get_tracks()]
         return [(launch.scene, track) for track in launch.tracks]
 

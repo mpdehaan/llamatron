@@ -26,7 +26,8 @@ A_MODEL_FILE = ('model', 'objects', 'a_model.py')
 A_GENERATOR = ('engine', 'generators', 'arp', 'model')
 THE_REALIZER = ('engine', 'realizer', 'song_realizer')
 A_PLAYER = ('engine', 'realizer', 'pattern_player')
-A_SENDER = ('realtime', 'engine')
+A_SENDER = ('realtime', 'sender_process', 'engine')
+THE_REALTIME_DOOR = ('realtime', 'playback_service')
 THE_TRANSPORT = ('interface', 'tracker', 'transport.py')
 THE_FILE_FORMAT = ('model', 'schema', 'file_format')
 THE_LIMITS = ('model', 'schema', 'limits')
@@ -61,8 +62,9 @@ class TestLayers(unittest.TestCase):
     def test_only_a_packages_front_door_is_imported_from_outside_and_real_time_only_by_its_users(self):
         self.assertEqual(self.tool.breaks(file=THE_TRANSPORT, module=THE_REALIZER), [])
         self.assertEqual(self.tool.breaks(file=THE_TRANSPORT, module=A_PLAYER), [self.tool.DOORS])
-        self.assertEqual(self.tool.breaks(file=THE_TRANSPORT, module=A_SENDER), [])
-        self.assertEqual(self.tool.breaks(file=A_PAGE, module=A_SENDER), [self.tool.DOORS])
+        self.assertEqual(self.tool.breaks(file=THE_TRANSPORT, module=THE_REALTIME_DOOR), [])
+        self.assertEqual(self.tool.breaks(file=THE_TRANSPORT, module=A_SENDER), [self.tool.DOORS])
+        self.assertEqual(self.tool.breaks(file=A_PAGE, module=THE_REALTIME_DOOR), [self.tool.DOORS])
 
     def test_a_page_imports_the_models_names_alone_and_no_other_page_but_the_shared_ones(self):
         self.assertEqual(self.tool.breaks(file=A_PAGE, module=THE_FILE_FORMAT), [])

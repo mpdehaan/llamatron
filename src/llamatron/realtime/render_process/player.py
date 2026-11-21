@@ -42,6 +42,7 @@ from typing import NamedTuple
 
 from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import FollowAction, LiveResponsiveness
+from llamatron.realtime import realtime_names
 from llamatron.realtime.render_process import timeline
 from llamatron.realtime.render_process.timeline import ClipTag, Playing
 from llamatron.realtime.sender_process import engine
@@ -63,8 +64,6 @@ CLIP_BY_HAND = 5
 FIRST_SCENE = 0
 NO_BARS = 0
 ONE_BAR = 1
-# A whole note is four quarter notes, the beat the visualizer follows.
-QUARTERS_PER_WHOLE = 4
 # How soon after now an edit made while playing is heard at its quickest, so that its notes are queued before they're due.
 LIVE_LATENCY_SECONDS = 0.05
 # How far apart two moments may be and still count as one, against rounding in the seconds.
@@ -395,7 +394,7 @@ class Player:
         scenes = self.playing_scenes()
         if not scenes:
             return None
-        return self._score.seconds_per_whole(scene=scenes[0], elapsed=self.scene_elapsed(scenes[0])) / QUARTERS_PER_WHOLE
+        return self._score.seconds_per_whole(scene=scenes[0], elapsed=self.scene_elapsed(scenes[0])) / realtime_names.QUARTERS_PER_WHOLE
 
     def playing_scenes(self):
         """Return the scenes with a clip playing now, in order."""

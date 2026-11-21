@@ -50,7 +50,8 @@ FRONT_DOORS = {
     'exporters': ('exports',),
     'importers': ('midi_import',),
     'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits'),
-    'realtime': (),
+    # Real-time playback is reached through its door: what the tracker uses, and the words they share.
+    'realtime': ('playback_service', 'realtime_names'),
 }
 # The only files outside the real-time package that import it.
 REALTIME_USERS = ('interface/tracker/transport.py', 'interface/tracker/pattern_preview.py', 'cli.py')
@@ -131,7 +132,7 @@ def breaks(*, file, module):
         broken.append(ORDER)
     if other in FRONT_DOORS:
         allowed_file = other != REALTIME or '/'.join(file) in REALTIME_USERS
-        allowed_module = other == REALTIME or is_front_door(module=module, doors=FRONT_DOORS[other])
+        allowed_module = is_front_door(module=module, doors=FRONT_DOORS[other])
         if not (allowed_file and allowed_module):
             broken.append(DOORS)
     if is_page(file) and other == MODEL and tuple(module[1:3]) not in PAGE_SCHEMA and tuple(module[1:2]) != (PAGE_VALUES,):

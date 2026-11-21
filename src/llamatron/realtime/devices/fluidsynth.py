@@ -10,7 +10,7 @@ set at once. user_scripts/install_fluidsynth.sh puts FluidSynth in the Mac's own
 SoundFont in ~/soundfonts, and this module looks for them there.
 
 The tracker starts FluidSynth only when something is played through it, with the SoundFont, the Mac's
-audio and a MIDI port of its own (FLUIDSYNTH_PORT), and waits until that port is listed before anything
+audio and a MIDI port of its own (realtime_names.FLUIDSYNTH_PORT), and waits until that port is listed before anything
 is sent to it, so that no note is lost while the SoundFont loads. FluidSynth reads its commands from a
 pipe the tracker holds and quits when the pipe closes, so it ends with the tracker, even when the
 tracker doesn't end cleanly. Its sound goes to the Mac's default output, or to the audio device that
@@ -24,6 +24,7 @@ import subprocess
 import time
 from typing import NamedTuple
 
+from llamatron.realtime import realtime_names
 from llamatron.realtime.devices.ports import output_port_names_now
 from llamatron.realtime.sender_process.process import SenderNotStarted
 from llamatron.user_strings import errors
@@ -33,10 +34,6 @@ from llamatron.user_strings import errors
 HOMEBREW_FLUIDSYNTHS = ('/opt/homebrew/bin/fluidsynth', '/usr/local/bin/fluidsynth')
 FLUIDSYNTH_COMMAND = 'fluidsynth'
 SOUNDFONT = os.path.join('~', 'soundfonts', 'GeneralUser-GS.sf2')
-# The MIDI port FluidSynth opens, named for this tracker alone, so that two trackers each find their own, and how
-# every tracker's FluidSynth port starts, which the instrument editor leaves out of the ports it offers.
-FLUIDSYNTH_PORT_PREFIX = 'llamatron FluidSynth'
-FLUIDSYNTH_PORT = '{prefix} {pid}'.format(prefix=FLUIDSYNTH_PORT_PREFIX, pid=os.getpid())
 # The audio device FluidSynth plays to, when something other than the Mac's default output should hear it.
 AUDIO_DEVICE_VARIABLE = 'LLAMATRON_FLUIDSYNTH_AUDIO_DEVICE'
 # How loud FluidSynth plays: its default of 0.2 left the loudest example at under a third of full scale,
@@ -98,7 +95,7 @@ def installed():
 
 def command(*, audio_device=None):
     """Return the command that starts FluidSynth as a MIDI port with the SoundFont, playing to the audio device given or the default."""
-    words = [fluidsynth_path(), *AUDIO_DRIVER, *MIDI_DRIVER, SETTING, PORT_NAME.format(name=FLUIDSYNTH_PORT), GAIN_OPTION, GAIN]
+    words = [fluidsynth_path(), *AUDIO_DRIVER, *MIDI_DRIVER, SETTING, PORT_NAME.format(name=realtime_names.FLUIDSYNTH_PORT), GAIN_OPTION, GAIN]
     if audio_device:
         words += [SETTING, AUDIO_DEVICE_SETTING.format(device=audio_device)]
     return [*words, soundfont_path()]
@@ -130,7 +127,7 @@ class FluidSynth:
         self.stop()
         self._process = self._start_process(command(audio_device=os.environ.get(AUDIO_DEVICE_VARIABLE)))
         started = self._now()
-        while FLUIDSYNTH_PORT not in self._port_names():
+        while realtime_names.FLUIDSYNTH_PORT not in self._port_names():
             code = self._process.poll()
             if code is not None:
                 self._process = None
