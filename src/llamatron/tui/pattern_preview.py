@@ -358,7 +358,7 @@ class PatternPreview(Transport):
         self._clip = None
         self._trial = None
         self._set = None
-        self._player = None
+        self._drop_score()
 
     def forget(self):
         self.stop()
@@ -366,9 +366,7 @@ class PatternPreview(Transport):
     def close(self):
         """Stop the pattern and end the preview's process, as the tracker quits; FluidSynth is the song's transport's to end."""
         self.stop()
-        if self._sender is not None:
-            self._sender.close()
-            self._sender = None
+        self._end_playback()
 
     def tick(self):
         """Stop when the pattern has gone, by a rename or a delete, or its Preview instrument has, and otherwise tick as the song's transport does."""

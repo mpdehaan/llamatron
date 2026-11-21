@@ -1,0 +1,224 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+"""The player's side of real-time playback: the scores, the player and the sender, apart from the tracker's pages.
+
+The transport (tui/transport.py) knows the document: the set, the routes, what stops a song from playing, the seeds and how
+to find a scene or a track again after an edit. What it asks of the player's side goes through a few commands, each naming
+what a score is made from (Wanted): take the set's data, build a score ahead, launch, hand an edit's score to the player,
+stop, silence; and a few questions, what plays and what is heard, for the lights and the visualizer. LocalPlayback answers
+them in the tracker's own process, the player ticking on the tracker's timer, as the tests run it on a stepped clock.
+"""
+
+import functools
+from typing import NamedTuple
+
+from llamatron.composition.setlist import Setlist
+from llamatron.realtime.player import Player
+from llamatron.realtime.score import Score
+from llamatron.realtime.score_builder import ScoreBuilder
+
+# What a launch plays: a scene and every clip of it, one clip, or several clips of one scene together.
+LAUNCH_SCENE = 'scene'
+LAUNCH_CLIP = 'clip'
+LAUNCH_CLIPS = 'clips'
+
+
+class Wanted(NamedTuple):
+    """What a score is made from: the set's revision, the song's name, each track's Route as (track, Route) in order, and the seed of the play's random parts."""
+
+    revision: int
+    song_name: str
+    routes: tuple
+    seed: int
+
+
+class Launch(NamedTuple):
+    """What a page asks to play: what kind of launch, the scene, the tracks of a launch of clips, and whether it plays again and again."""
+
+    kind: str
+    scene: int
+    tracks: tuple = ()
+    forever: bool = False
+
+
+class LocalPlayback:
+    """The scores, the player and the sender in the tracker's own process."""
+
+    __slots__ = ('_make_sender', '_clock', '_lead', '_builder', '_data', '_sender', '_ports', '_zero', '_player', '_playing')
+
+    def __init__(self, *, make_sender, clock, lead, at_once):
+        """make_sender(ports) makes the sender, clock tells the time, lead is how far ahead of now a launch from silence starts,
+        and at_once builds every score in its request, as the tests want, rather than off the screen's thread."""
+        self._make_sender = make_sender
+        self._clock = clock
+        self._lead = lead
+        self._builder = ScoreBuilder(at_once=at_once)
+        self._data = None
+        self._sender = None
+        self._ports = None
+        self._zero = None
+        self._player = None
+        # What the player's score was made from.
+        self._playing = None
+
+    # The set and its scores.
+
+    def take_set(self, data):
+        """Take the set's data as its objects keep it (Setlist.kept_data), which every score after is made from."""
+        self._data = data
+
+    def build(self, wanted):
+        """Ask for a score to be built ahead, off the screen's thread, from the set's data as it is now."""
+        self._builder.request(key=wanted, build=functools.partial(score_of, wanted=wanted, data=self._data))
+
+    def built(self, wanted):
+        """Return what building a score came to, a Built, or None while it is not done or was never asked."""
+        return self._builder.built(wanted)
+
+    def has_score(self, wanted):
+        """Return whether the player's score was made from what is wanted."""
+        return self._player is not None and self._playing == wanted
+
+    # Playing.
+
+    def launch(self, *, wanted, launch, ports):
+        """Play what a launch names, through a sender on the ports, on a score made from what is wanted: the one built ahead
+        when there is one, else rendered now, raising SongFileError for a song that cannot be played. Return whether it waits
+        for the next bar of what plays, rather than starting at once."""
+        sender = self.use_ports(ports)
+        if not self.has_score(wanted):
+            built = self._builder.built(wanted)
+            score = built.score if built is not None and built.score is not None else score_of(wanted=wanted, data=self._data, earlier=None)
+            if self._player is None or self._player.get_sender() is not sender:
+                self._player = Player(score=score, sender=sender, now=self._now, lead=self._lead)
+            else:
+                self._player.set_score(score)
+            self._playing = wanted
+        if launch.kind == LAUNCH_SCENE:
+            at = self._player.play_scene(launch.scene)
+        elif launch.kind == LAUNCH_CLIP:
+            at = self._player.play_clip(scene=launch.scene, track=launch.tracks[0], forever=launch.forever)
+        else:
+            at = self._player.play_clips(scene=launch.scene, tracks=list(launch.tracks), forever=launch.forever)
+        return at > self._now() + self._lead
+
+    def apply(self, *, wanted, responsiveness, scene_map, track_map):
+        """Hand the score built for an edit to the player, which takes it from the moment the song's Live response says."""
+        self._player.update_score(score=self._builder.built(wanted).score, responsiveness=responsiveness, scene_map=scene_map, track_map=track_map)
+        self._playing = wanted
+
+    def use_ports(self, ports, *, renewed=()):
+        """Return the sender, started on the ports, starting another when the ports it opened aren't these, or when a port
+        among renewed, FluidSynth's after FluidSynth started again, is new though named the same."""
+        if self._sender is not None and set(renewed) & set(self._ports):
+            self._ports = [port for port in self._ports if port not in renewed]
+        if self._sender is not None and set(ports) - set(self._ports):
+            self.stop_all()
+            self._sender.close()
+            self._sender = None
+            self._player = None
+        if self._sender is None:
+            self._ports = list(ports)
+            self._zero = self._clock.now()
+            self._sender = self._make_sender(self._ports)
+            self._sender.start(at=self._zero)
+        return self._sender
+
+    def silence(self, *, ports, channels):
+        """Send note offs, all notes off and all sound off on the channels, through a sender on the ports."""
+        self.use_ports(ports).silence(channels=channels)
+
+    def stop_clip(self, track):
+        if self._player is not None:
+            self._player.stop_clip(track)
+
+    def stop_all(self):
+        if self._player is not None:
+            self._player.stop_all()
+
+    def forget(self):
+        """Stop everything and forget the score, as another set is opened; the sender stays for the next play."""
+        self.stop_all()
+        self._player = None
+
+    def close(self):
+        """Stop everything and end the sender, as the tracker quits."""
+        self.stop_all()
+        if self._sender is not None:
+            self._sender.close()
+            self._sender = None
+        self._player = None
+
+    def tick(self):
+        """Plan ahead and send what falls due."""
+        if self._player is not None:
+            self._player.tick()
+
+    # What plays, for the lights and the visualizer.
+
+    def is_playing(self):
+        return self._player is not None and self._player.is_playing()
+
+    def playing_scenes(self):
+        return [] if self._player is None else self._player.playing_scenes()
+
+    def is_clip_playing(self, *, index, track):
+        return self._player is not None and self._player.is_clip_playing(scene=index, track=track)
+
+    def is_track_sounding(self, track):
+        return self._player is not None and self._player.is_track_sounding(track)
+
+    def scene_elapsed(self, index):
+        return None if self._player is None else self._player.scene_elapsed(index)
+
+    def clip_elapsed(self, *, index, track):
+        return None if self._player is None else self._player.clip_elapsed(scene=index, track=track)
+
+    def repeats_left(self, *, index, track):
+        return None if self._player is None else self._player.repeats_left(scene=index, track=track)
+
+    def song_position(self):
+        return None if self._player is None else self._player.song_position()
+
+    def song_seconds(self):
+        return None if self._player is None else self._player.get_score().song_seconds()
+
+    def seconds_per_quarter(self):
+        return None if self._player is None else self._player.seconds_per_quarter()
+
+    def heard(self, *, since):
+        """Return the clock's time now and, for each track with a clip running, the notes heard since an earlier time (Player.heard)."""
+        return self._player.heard(since=since)
+
+    def draw_places(self, *, scene, seconds):
+        """Return where every draw stands a time into a scene of what plays, by name."""
+        return self._player.get_score().draw_places_at(scene=scene, seconds=seconds)
+
+    def get_player(self):
+        """Return the player, for the tests."""
+        return self._player
+
+    def _now(self):
+        return self._clock.now() - self._zero
+
+
+def score_of(*, wanted, data, earlier):
+    """Return the score of a song made from the set's data: from a copy of the set, so that nothing the render reads changes
+    while it renders, and from the earlier score where an edit leaves scenes or clips of it as they were."""
+    song = Setlist.from_data(data=data).get_song(wanted.song_name)
+    return Score(song=song, routes=dict(wanted.routes), seed=wanted.seed, data=data, earlier=earlier)

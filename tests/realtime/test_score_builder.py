@@ -13,14 +13,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Scores built off the screen's thread (tui/score_builder.py): at once for the tests, in a thread otherwise, a song's problem kept
+"""Scores built off the screen's thread (realtime/score_builder.py): at once for the tests, in a thread otherwise, a song's problem kept
 in place of a score, and a newer request replacing one not yet started."""
 
 import threading
 import unittest
 
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.tui.score_builder import ScoreBuilder
+from llamatron.realtime.score_builder import ScoreBuilder
 
 A_KEY = 'first'
 ANOTHER_KEY = 'second'

@@ -37,7 +37,7 @@ GONE_PORT = 'IAC Driver Bus 9'
 CONNECTED_PORT = 'Analog Four'
 SAVED = 'instruments.yml'
 PORT_NAMES = 'llamatron.tui.transport.output_port_names'
-INSTALLED = 'llamatron.tui.transport.is_installed'
+INSTALLED = 'llamatron.tui.transport.installed'
 # Long enough that a launch with a time limit never quits while the test runs.
 A_LONG_TIME = 600
 

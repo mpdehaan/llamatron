@@ -17,12 +17,13 @@
 """The transport: the tracker's side of real-time playback, between the pages and the player.
 
 The pages ask it to play the song, a scene or a clip of the current song, or to stop, and ask it
-what is playing for their lights. It renders the song into a Score when something is launched,
-again only when the set has changed since, works out each track's Route from the set's instruments,
-starts the Realtime Sender Process on the devices those instruments name, and keeps the Player that
-launches the score's clips into the process. It ticks on a timer while anything plays, so that the
-player plans ahead and the page on top redraws its lights, and it stops the timer when the last
-clip ends. The emergency stop, Ctrl+T, goes through it too, silencing every channel the instruments
+what is playing for their lights. It works out each track's Route from the set's instruments, the
+seed of each play and what stops a song from playing, and hands the rest to the player's side
+(realtime/playback.py): the set's data, what each score is made from (Wanted), the launches, the
+edits made while playing and the ports of the devices those instruments name, where the scores are
+built, the Player launches their clips and the Realtime Sender Process sends them. It ticks on a
+timer while anything plays, so that the player plans ahead and the page on top redraws its lights,
+and it stops the timer when the last clip ends. The emergency stop, Ctrl+T, goes through it too, silencing every channel the instruments
 use on every connected device.
 
 What stops anything from playing is answered before anything is rendered: the set's Real Time
@@ -41,20 +42,17 @@ from typing import NamedTuple
 
 from llamatron.composition import limits
 from llamatron.composition.file_format import Section
-from llamatron.composition.setlist import Setlist
 from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters import midi_arrangement
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth as fluidsynth_values, player as player_values
 from llamatron.realtime.engine import MonotonicClock
-from llamatron.realtime.fluidsynth import FluidSynth, is_installed
+from llamatron.realtime.fluidsynth import FluidSynth, installed
 from llamatron.realtime.outputs import output_port_names
-from llamatron.realtime.player import Player
-from llamatron.realtime.score import Score
+from llamatron.realtime.playback import Launch, LAUNCH_CLIP, LAUNCH_CLIPS, LAUNCH_SCENE, LocalPlayback, Wanted
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
 from llamatron.realtime.timeline import Route
 from llamatron.strings import errors, messages
-from llamatron.tui.score_builder import made, ScoreBuilder
 from llamatron.tui.uses import loop_error_lines
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.heard import Heard, HeardNote
@@ -84,8 +82,13 @@ def step_sounding(*, elapsed, quarter, step_size, steps, direction):
 
 
 def fluidsynth_is_installed():
-    """Return whether FluidSynth is installed, asked each time, so that the tests can answer for a computer that has none."""
-    return is_installed()
+    """Return whether FluidSynth is installed, as looked for once a run, through a name of this module, so that the tests can answer for a computer that has none."""
+    return installed()
+
+
+def process_sender(ports):
+    """Return the Realtime Sender Process for the ports, the sender every real play uses."""
+    return RealtimeMIDISenderProcess(ports=ports)
 
 
 class Problem:
@@ -107,29 +110,27 @@ class Tried(NamedTuple):
 class Transport:
     """Plays the current song through the Realtime Sender Process, and answers what is playing."""
 
-    __slots__ = ('_builder', '_next_seed', '_pending', '_requested', '_closing', '_lead', '_document_holder', '_clock', '_make_sender', '_set_timer', '_sender', '_ports', '_zero', '_player', '_score_revision', '_score_key', '_timer',
-                 '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_song_is_copy', '_instead', '_seed', '_seen_revision', '_changed_at',
+    __slots__ = ('_playback', '_next_seed', '_pending', '_requested', '_closing', '_document_holder', '_clock', '_make_sender', '_set_timer', '_wanted', '_ports', '_timer',
+                 '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_instead', '_seed', '_seen_revision', '_changed_at',
                  '_scenes', '_tracks', '_previewing', '_live_message')
 
     def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=None, lead=LAUNCH_LEAD_SECONDS):
         """document_holder answers get_document(). clock and make_sender(ports) are for the tests, which give a stepped clock and an engine; set_timer(seconds, callback) starts a repeating timer and returns something with stop(). fluidsynth and fluidsynth_installed() are for the tests too, which start no real FluidSynth."""
         self._document_holder = document_holder
-        # How far ahead of now a launch from silence starts; a test on a clock that never moves asks for none.
-        self._lead = lead
         # Whether the tracker is quitting, so that a sender started under the start screen meanwhile is closed rather than left behind.
         self._closing = False
-        self._build_ahead(at_once=make_sender is not None)
         self._fluidsynth = FluidSynth() if fluidsynth is None else fluidsynth
         self._fluidsynth_installed = fluidsynth_is_installed if fluidsynth_installed is None else fluidsynth_installed
         self._clock = MonotonicClock() if clock is None else clock
-        self._make_sender = self._process_sender if make_sender is None else make_sender
+        self._make_sender = process_sender if make_sender is None else make_sender
+        # The scores, the player and the sender; lead is how far ahead of now a launch from silence starts, and a test on a clock that
+        # never moves asks for none. A transport given its own sender, a test's or a preview's, builds every score in its request.
+        self._playback = LocalPlayback(make_sender=self._make_sender, clock=self._clock, lead=lead, at_once=make_sender is not None)
+        self._build_ahead()
         self._set_timer = set_timer
-        self._sender = None
-        self._ports = None
-        self._zero = None
-        self._player = None
-        self._score_revision = None
-        self._score_key = None
+        # What the player's score was made from (Wanted), and the ports the sender was last asked to open.
+        self._wanted = None
+        self._ports = []
         self._timer = None
         self._know_nothing_plays()
         # Whether what plays is a listening page's preview, which stops when its page is left, where a song played from Arrange plays on.
@@ -142,7 +143,6 @@ class Transport:
         song's scenes and tracks as they were, to find them again after an edit."""
         self._song = None
         self._song_name = None
-        self._song_is_copy = False
         self._instead = None
         self._seed = None
         self._seen_revision = None
@@ -150,10 +150,8 @@ class Transport:
         self._scenes = []
         self._tracks = {}
 
-    def _build_ahead(self, *, at_once):
-        """Make ready to build scores ahead: off the screen's thread, or at once for the tests, which give their own sender
-        (tui/score_builder.py)."""
-        self._builder = ScoreBuilder(at_once=at_once)
+    def _build_ahead(self):
+        """Make ready to build scores ahead (realtime/score_builder.py)."""
         # The seed the next play from silence draws its random parts from, chosen ahead so that its score can be built ahead.
         self._next_seed = random.randrange(SEED_RANGE)
         # The key of the score last asked for ahead of a play, and of the score an edit made while playing waits for, if any.
@@ -281,17 +279,15 @@ class Transport:
 
     # Playing.
 
-    def play_song(self, *, song=None):
-        return self.play_scene(index=0, song=song)
+    def play_song(self):
+        return self.play_scene(index=0)
 
-    def play_scene(self, *, index, song=None):
-        """Play the current song, or the one given, from a scene, every clip of it, the follow actions taking it on. Return whether it waits for the next bar of what plays."""
+    def play_scene(self, *, index):
+        """Play the current song from a scene, every clip of it, the follow actions taking it on. Return whether it waits for the next bar of what plays."""
         self._previewing = False
-        at = self._ready(song=song, instead=None).play_scene(index)
-        self._run()
-        return self._waits_for_bar(at)
+        return self._launch(launch=Launch(LAUNCH_SCENE, index), instead=None)
 
-    def play_clip(self, *, index, track, song=None, instead=None, forever=False):
+    def play_clip(self, *, index, track, instead=None, forever=False):
         """Play one clip on its own, through its track's instrument or the one instead names, once as its scene would or again and again. Return whether it waits for the next bar.
 
         Played again and again (forever), it is a listening page's preview, which stops when its page is left; a preview while a song plays from Arrange stops the song first.
@@ -299,31 +295,21 @@ class Transport:
         if forever and self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = forever
-        at = self._ready(song=song, instead=instead).play_clip(scene=index, track=track, forever=forever)
-        self._run()
-        return self._waits_for_bar(at)
-
-    def _waits_for_bar(self, at):
-        """Return whether a launch starting at a moment waits for the next bar of what plays, rather than starting at once, a launch
-        from silence starting only its lead ahead."""
-        return at > self._now() + self._lead
+        return self._launch(launch=Launch(LAUNCH_CLIP, index, (track,), forever), instead=instead)
 
     def play_clips(self, *, index, tracks):
         """Play several clips of one scene together, again and again, as a preview of a few players, which stops when its page is left."""
         if self.is_playing() and not self._previewing:
             self.stop_all()
         self._previewing = True
-        self._ready(song=None, instead=None).play_clips(scene=index, tracks=tracks, forever=True)
-        self._run()
+        self._launch(launch=Launch(LAUNCH_CLIPS, index, tuple(tracks), True), instead=None)
 
     def stop_clip(self, track):
-        if self._player is not None:
-            self._player.stop_clip(track)
+        self._playback.stop_clip(track)
 
     def stop_all(self):
         """Stop everything playing, silencing what sounded, which a page does as it closes."""
-        if self._player is not None:
-            self._player.stop_all()
+        self._playback.stop_all()
         self._stop_timer()
 
     def silence_everything(self):
@@ -332,7 +318,7 @@ class Transport:
         if not channels:
             return messages.MSG_NOTHING_TO_SILENCE
         self.stop_all()
-        self._sender_for(sorted({port for port, _ in channels})).silence(channels=channels)
+        self._playback.silence(ports=self._ports_ready(sorted({port for port, _ in channels})), channels=channels)
         return messages.MSG_SILENCED.format(channels=len(channels), devices=len({port for port, _ in channels}))
 
     def prepare(self):
@@ -348,7 +334,7 @@ class Transport:
                     self._fluidsynth.ensure_running()
                 ports = output_port_names()
                 if ports:
-                    self._sender_for(sorted(set(ports)))
+                    self._playback.use_ports(self._ports_ready(sorted(set(ports))))
             except SenderNotStarted:
                 pass
             finally:
@@ -363,17 +349,24 @@ class Transport:
     def close(self):
         """Stop everything and end the process and FluidSynth, as the tracker quits."""
         self._closing = True
-        self.stop_all()
-        if self._sender is not None:
-            self._sender.close()
-            self._sender = None
-        self._player = None
+        self._end_playback()
         self._fluidsynth.stop()
 
     def forget(self):
         """Stop everything and forget the song, as another set is opened; the process stays for the next play."""
-        self.stop_all()
-        self._player = None
+        self._drop_score()
+
+    def _drop_score(self):
+        """Stop everything and forget the score, keeping the sender for the next play."""
+        self._stop_timer()
+        self._playback.forget()
+        self._wanted = None
+
+    def _end_playback(self):
+        """Stop everything and end the sender, leaving FluidSynth, which a preview's transport shares with the song's."""
+        self._stop_timer()
+        self._playback.close()
+        self._wanted = None
 
     def may_play(self):
         """Return whether anything may go on playing: the set's Real Time switch is on."""
@@ -391,7 +384,7 @@ class Transport:
 
     def tick(self):
         """Plan ahead, follow any edit made while playing, and stop the timer once the last clip has ended."""
-        if self._player is None:
+        if self._wanted is None:
             return
         # Real Time turned off while something plays, on the main screen or by deleting the last instrument, stops it, since the
         # pages then show no stop for it, which was once a bug.
@@ -399,46 +392,46 @@ class Transport:
             self.stop_all()
             return
         self._follow_edits()
-        if self._player is None:
+        if self._wanted is None:
             return
-        self._player.tick()
-        if not self._player.is_playing():
+        self._playback.tick()
+        if not self._playback.is_playing():
             self._stop_timer()
 
     # What is playing, for the lights.
 
     def is_playing(self):
-        return self._player is not None and self._player.is_playing()
+        return self._playback.is_playing()
 
     def playing_scenes(self):
-        return [] if self._player is None else self._player.playing_scenes()
+        return self._playback.playing_scenes()
 
     def is_clip_playing(self, *, index, track):
-        return self._player is not None and self._player.is_clip_playing(scene=index, track=track)
+        return self._playback.is_clip_playing(index=index, track=track)
 
     def is_track_sounding(self, track):
-        return self._player is not None and self._player.is_track_sounding(track)
+        return self._playback.is_track_sounding(track)
 
     def scene_elapsed(self, index):
-        return None if self._player is None else self._player.scene_elapsed(index)
+        return self._playback.scene_elapsed(index)
 
     def clip_elapsed(self, *, index, track):
-        return None if self._player is None else self._player.clip_elapsed(scene=index, track=track)
+        return self._playback.clip_elapsed(index=index, track=track)
 
     def repeats_left(self, *, index, track):
-        return None if self._player is None else self._player.repeats_left(scene=index, track=track)
+        return self._playback.repeats_left(index=index, track=track)
 
     def song_position(self):
-        return None if self._player is None else self._player.song_position()
+        return self._playback.song_position()
 
     def song_seconds(self):
-        return None if self._player is None else self._player.get_score().song_seconds()
+        return self._playback.song_seconds()
 
     def heard(self, *, since):
         """Return the clock's time now and what the visualizer hears since an earlier time, or None for now alone (visualizers/heard.py): each note that started since then or still sounds, by its track's place in the song, and the beat. Nothing plays, and it is silence at no time."""
-        if self._player is None or not self._player.is_playing():
+        if not self._playback.is_playing():
             return None, heard_values.SILENCE
-        now, heard = self._player.heard(since=since)
+        now, heard = self._playback.heard(since=since)
         song = self.document().song()
         places = {name: place for place, name in enumerate(song.get_track_names())}
         notes = []
@@ -448,8 +441,8 @@ class Transport:
             drum = song.get_track(track).is_drum()
             notes += [HeardNote(places[track], note.number, note.velocity, True, drum) for note in started]
             notes += [HeardNote(places[track], note.number, note.velocity, False, drum) for note in held]
-        seconds_per_beat = self._player.seconds_per_quarter() or heard_values.REFERENCE_SECONDS_PER_BEAT
-        position = self._player.song_position() or 0.0
+        seconds_per_beat = self._playback.seconds_per_quarter() or heard_values.REFERENCE_SECONDS_PER_BEAT
+        position = self._playback.song_position() or 0.0
         return now, Heard(notes=tuple(notes), seconds_per_beat=seconds_per_beat, beats=position / seconds_per_beat, names=tuple(song.get_track_names()))
 
     def playing_step(self, pattern):
@@ -459,7 +452,7 @@ class Transport:
             return None
         song = self._song
         played = song.get_pattern(pattern)
-        quarter = self._player.seconds_per_quarter()
+        quarter = self._playback.seconds_per_quarter()
         scenes = song.get_scenes()
         for index in self.playing_scenes():
             if not quarter or index >= len(scenes):
@@ -484,41 +477,36 @@ class Transport:
         if not scenes:
             return {}
         elapsed = self.scene_elapsed(scenes[0])
-        return {} if elapsed is None else self._player.get_score().draw_places_at(scene=scenes[0], seconds=elapsed)
+        return {} if elapsed is None else self._playback.draw_places(scene=scenes[0], seconds=elapsed)
 
     def get_player(self):
         """Return the player, for the tests."""
-        return self._player
+        return self._playback.get_player()
 
     # Underneath.
 
-    def _ready(self, *, song, instead):
-        """Return the player, on a score of the song as it is now, through the sender for the routes' ports. A play started from silence draws a seed of its own for the song's random parts, which it keeps while it plays."""
-        document = self.document()
-        self._song_is_copy = song is not None and song is not document.song()
-        song = document.song() if song is None else song
+    def _launch(self, *, launch, instead):
+        """Play what a launch names on a score of the current song as it is now, through the sender for the routes' ports, and run
+        the timer. A play started from silence draws a seed of its own for the song's random parts, which it keeps while it plays.
+        Return whether it waits for the next bar of what plays."""
+        song = self.document().song()
         if not self.is_playing() or self._seed is None:
             self._seed = self._next_seed
             self._next_seed = random.randrange(SEED_RANGE)
         routes = self.routes(instead=instead)
-        key = (id(song), tuple(sorted(routes.items())))
         self._remember_song(song=song, instead=instead)
-        if self._player is None or self._score_revision != document.get_revision() or self._score_key != key:
-            built = None if self._song_is_copy or instead is not None else self._builder.built(self._build_key(routes=routes, seed=self._seed))
-            score = built.score if built is not None and built.score is not None else Score(song=song, routes=routes, seed=self._seed)
-            sender = self._sender_for(sorted({route.port for route in routes.values()}))
-            if self._player is None or self._player.get_sender() is not sender:
-                self._player = Player(score=score, sender=sender, now=self._now, lead=self._lead)
-            else:
-                self._player.set_score(score)
-            self._score_revision = document.get_revision()
-            self._score_key = key
-        return self._player
+        wanted = self._wanted_now(routes=routes, seed=self._seed)
+        if not self._playback.has_score(wanted):
+            self._playback.take_set(self.document().get_setlist().kept_data())
+        waits = self._playback.launch(wanted=wanted, launch=launch, ports=self._ports_ready(sorted({route.port for route in routes.values()})))
+        self._wanted = wanted
+        self._run()
+        return waits
 
     def _remember_song(self, *, song, instead):
         """Remember what plays, and its scenes and tracks as they are, to find them again after an edit."""
         self._song = song
-        self._song_name = None if self._song_is_copy else self.document().get_current_song_name()
+        self._song_name = self.document().get_current_song_name()
         self._instead = instead
         self._scenes = list(song.get_scenes())
         self._tracks = {name: song.get_track(name) for name in song.get_track_names()}
@@ -526,23 +514,21 @@ class Transport:
         self._changed_at = None
 
     def _playing_song(self):
-        """Return the song that plays, after an edit: the copy a listening page made, or the current song while it is the one launched, or None when another song was made current."""
-        if self._song_is_copy:
-            return self._song
+        """Return the song that plays, after an edit: the current song while it is the one launched, or None when another song was made current."""
         if self.document().get_current_song_name() != self._song_name:
             return None
         return self.document().song()
 
     def _follow_edits(self):
         """Hear an edit made while playing, once the edits have settled for LIVE_SETTLE_SECONDS: render the song again with this play's seed and hand the score to the player, which takes it from the moment the song's Live response says."""
-        if not self._player.is_playing():
+        if not self._playback.is_playing():
             return
         if self._playing_song() is None:
             # Another song was made current, so what plays stops at once, since nothing on screen could show or stop it any more.
             self.stop_all()
             return
         revision = self.document().get_revision()
-        if revision == self._score_revision:
+        if revision == self._wanted.revision:
             return
         now = self._clock.now()
         if revision != self._seen_revision:
@@ -554,30 +540,25 @@ class Transport:
         song = self._playing_song()
         routes = self.routes(instead=self._instead)
         if set(route.port for route in routes.values()) - set(self._ports):
-            self._score_revision = revision
+            self._wanted = self._wanted._replace(revision=revision)
             self._live_message = messages.MSG_LIVE_EDIT_NEEDS_A_DEVICE
             return
-        # The edit is rendered off the screen's thread, from a copy of the set; a later tick hands the score over once it is made.
-        key = self._build_key(routes=routes, seed=self._seed)
-        if self._song_is_copy:
-            # A song a listening page made is not in the set, so it renders here, as it always has.
-            built = made(lambda: Score(song=song, routes=routes, seed=self._seed))
-        else:
-            if self._pending != key:
-                self._pending = key
-                self._request(song=song, routes=routes, seed=self._seed, key=key)
-            built = self._builder.built(key)
+        # The edit is rendered off the screen's thread, from the set's data as kept; a later tick hands the score over once it is made.
+        wanted = self._wanted_now(routes=routes, seed=self._seed)
+        if self._pending != wanted:
+            self._pending = wanted
+            self._request(wanted)
+        built = self._playback.built(wanted)
         if built is None:
             return
-        self._score_revision = revision
         self._pending = None
         if built.problem is not None:
+            self._wanted = self._wanted._replace(revision=revision)
             self._live_message = messages.MSG_LIVE_EDIT_NOT_HEARD.format(problem=built.problem)
             return
-        score = built.score
         scene_map, track_map = self._places_after_the_edit(song)
-        self._player.update_score(score=score, responsiveness=song.get_live_responsiveness(), scene_map=scene_map, track_map=track_map)
-        self._score_key = (id(song), tuple(sorted(routes.items())))
+        self._playback.apply(wanted=wanted, responsiveness=song.get_live_responsiveness(), scene_map=scene_map, track_map=track_map)
+        self._wanted = wanted
         self._remember_song(song=song, instead=self._instead)
 
     def keep_ready(self):
@@ -586,24 +567,21 @@ class Transport:
         the tracker runs (prepare)."""
         if self.is_playing() or not self.may_play():
             return
-        routes = self.routes(instead=None)
-        key = self._build_key(routes=routes, seed=self._next_seed)
-        if key != self._requested:
-            self._requested = key
-            self._request(song=self.document().song(), routes=routes, seed=self._next_seed, key=key)
+        wanted = self._wanted_now(routes=self.routes(instead=None), seed=self._next_seed)
+        if wanted != self._requested:
+            self._requested = wanted
+            self._request(wanted)
 
-    def _build_key(self, *, routes, seed):
-        """Return what a score of the current song is built from: the set's revision, the song, the routes and the seed."""
+    def _wanted_now(self, *, routes, seed):
+        """Return what a score of the current song as it is now is made from: the set's revision, the song, the routes and the seed."""
         document = self.document()
-        return (document.get_revision(), document.get_current_song_name(), tuple(sorted(routes.items())), seed)
+        return Wanted(document.get_revision(), document.get_current_song_name(), tuple(sorted(routes.items())), seed)
 
-    def _request(self, *, song, routes, seed, key):
-        """Ask the builder for a song's score, from a copy of its set made now, on the screen's thread, so that nothing the render
-        reads changes while it renders."""
-        name = self.document().get_current_song_name()
-        data = song.get_setlist().kept_data()
-        copied = Setlist.from_data(data=data).get_song(name)
-        self._builder.request(key=key, build=lambda earlier: Score(song=copied, routes=routes, seed=seed, data=data, earlier=earlier))
+    def _request(self, wanted):
+        """Ask for a score of the current song to be built off the screen's thread, from the set's data as its objects keep it now,
+        whose parts never change, so that nothing the render reads changes while it renders."""
+        self._playback.take_set(self.document().get_setlist().kept_data())
+        self._playback.build(wanted)
 
     def _places_after_the_edit(self, song):
         """Return each scene's new place by its old one and each track's new name by its old one, found by the objects themselves, else by place or name when an undo read the song again, None for one that has gone."""
@@ -621,27 +599,13 @@ class Transport:
             track_map[name] = names.get(id(track), name if song.has_item(section=Section.TRACKS, name=name) else None)
         return scene_map, track_map
 
-    def _sender_for(self, ports):
-        """Return the sender, started on the ports, starting another when the ports it opened aren't these, or when FluidSynth was started again and its port is new."""
-        if fluidsynth_values.FLUIDSYNTH_PORT in ports and self._fluidsynth.ensure_running() and self._sender is not None and fluidsynth_values.FLUIDSYNTH_PORT in self._ports:
-            self._ports = [port for port in self._ports if port != fluidsynth_values.FLUIDSYNTH_PORT]
-        if self._sender is not None and set(ports) - set(self._ports):
-            self.stop_all()
-            self._sender.close()
-            self._sender = None
-            self._player = None
-        if self._sender is None:
-            self._ports = list(ports)
-            self._zero = self._clock.now()
-            self._sender = self._make_sender(self._ports)
-            self._sender.start(at=self._zero)
-        return self._sender
-
-    def _process_sender(self, ports):
-        return RealtimeMIDISenderProcess(ports=ports)
-
-    def _now(self):
-        return self._clock.now() - self._zero
+    def _ports_ready(self, ports):
+        """Return the ports, FluidSynth started first where it is one of them, and tell the player's side when FluidSynth started
+        again, since its port is then new though named the same."""
+        if fluidsynth_values.FLUIDSYNTH_PORT in ports and self._fluidsynth.ensure_running():
+            self._playback.use_ports(ports, renewed=[fluidsynth_values.FLUIDSYNTH_PORT])
+        self._ports = list(ports)
+        return ports
 
     def _run(self):
         if self._timer is None and self._set_timer is not None:

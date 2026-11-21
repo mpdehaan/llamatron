@@ -29,12 +29,12 @@ from llamatron.tui.screens.shared.shared import play_through
 from llamatron.tui.text import sorted_names
 
 
-def listen(*, page, index, track, song=None, name):
-    """Play one clip of a song, the current one or the one given, on its own and again and again, asking for an instrument when its track has none."""
+def listen(*, page, index, track, name):
+    """Play one clip of the current song on its own and again and again, asking for an instrument when its track has none."""
     transport = page.app.transport
     preview = page.app.pattern_preview()
     # With the set's Real Time switch off, the clip plays through General MIDI in FluidSynth, where FluidSynth is installed.
-    if song is None and not page.document().get_setlist().is_real_time() and preview.general_midi_is_installed():
+    if not page.document().get_setlist().is_real_time() and preview.general_midi_is_installed():
         refusal = transport.try_play(lambda: preview.play_clip_of_song(index=index, track=track)).refusal
         if refusal is not None:
             page.tell(errors.ERR_CANT_PLAY_TITLE, refusal)
@@ -50,12 +50,12 @@ def listen(*, page, index, track, song=None, name):
     said = messages.MSG_LISTENING.format(name=name, track=track)
     what = messages.MSG_CLIP_ON_TRACK.format(name=name, track=track)
     if instrument and setlist.get_instrument(instrument).has_device():
-        play_through(page=page, play=lambda: transport.play_clip(index=index, track=track, song=song, forever=True), what=what, said=said)
+        play_through(page=page, play=lambda: transport.play_clip(index=index, track=track, forever=True), what=what, said=said)
         return
     choices = sorted_names(setlist.get_instrument_names())
 
     def chosen(place):
-        play_through(page=page, play=lambda: transport.play_clip(index=index, track=track, song=song, instead={track: choices[place]}, forever=True), what=what, said=said)
+        play_through(page=page, play=lambda: transport.play_clip(index=index, track=track, instead={track: choices[place]}, forever=True), what=what, said=said)
     page.ask(dialog=ChoiceDialog(title=messages.MSG_LISTEN_INSTRUMENT_TITLE, options=choices), then=chosen)
 
 

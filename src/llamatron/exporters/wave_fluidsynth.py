@@ -30,7 +30,7 @@ import tempfile
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.wave_level import normalize_wave
-from llamatron.realtime.fluidsynth import fluidsynth_path, is_installed, soundfont_path
+from llamatron.realtime.fluidsynth import fluidsynth_path, installed, soundfont_path
 from llamatron.strings import errors, names
 
 WAV_FILE = '{name}.wav'
@@ -56,7 +56,7 @@ class WaveFluidSynth(MidiGeneralMidi):
 
     def export(self, *, render=subprocess.run):
         """Write the WAV file, unless it already exists, in which case this prints a warning and writes nothing. render runs FluidSynth, which the tests replace."""
-        if not is_installed():
+        if not installed():
             raise ValueError(errors.ERR_WAV_NEEDS_FLUIDSYNTH)
         if not self.sounding_tracks():
             raise ValueError(errors.ERR_NO_FLUIDSYNTH_TRACKS)

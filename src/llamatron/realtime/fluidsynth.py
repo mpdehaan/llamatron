@@ -29,6 +29,7 @@ tracker doesn't end cleanly. Its sound goes to the Mac's default output, or to t
 LLAMATRON_FLUIDSYNTH_AUDIO_DEVICE names, which only the demo recorder sets, to send it to BlackHole.
 """
 
+import functools
 import os
 import shutil
 import subprocess
@@ -85,6 +86,13 @@ def soundfont_path():
 def is_installed():
     """Return whether FluidSynth and the SoundFont it plays are both where user_scripts/install_fluidsynth.sh puts them."""
     return fluidsynth_path() is not None and os.path.isfile(soundfont_path())
+
+
+@functools.cache
+def installed():
+    """Return whether FluidSynth and its SoundFont are installed, looked for once a run (is_installed), since every launch,
+    listening page and WAV export asks, and the files do not come and go while the tracker runs."""
+    return is_installed()
 
 
 def command(*, audio_device=None):

@@ -112,7 +112,7 @@ class MadePreview(Transport):
             self.stop_all()
         self._made = None
         self._what = None
-        self._player = None
+        self._drop_score()
 
     def forget(self):
         self.stop()
@@ -120,9 +120,7 @@ class MadePreview(Transport):
     def close(self):
         """Stop and end the preview's process, as the tracker quits; FluidSynth is the song's transport's to end."""
         self.stop()
-        if self._sender is not None:
-            self._sender.close()
-            self._sender = None
+        self._end_playback()
 
     def tick(self):
         if self._made is None:
