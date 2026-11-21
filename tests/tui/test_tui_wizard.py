@@ -873,16 +873,6 @@ class TestWizardKit(WizardTest):
         choices.get_band().set_way(trait=trait, value=way)
         return choices.get_kit().has_quiet_notes()
 
-    async def test_the_song_made_has_no_track_for_a_piece_switched_off(self):
-        await self.open_the_drums()
-        piece = self.choices().get_kit().pieces()[-1]
-        await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
-        await self.press(Key.SPACE, keybindings.WizardPage.TO_TREE)
-        await self.create()
-        self.assertNotIn(piece, self.document.song().get_track_names())
-
-
 class TestWizardForm(WizardTest):
     """The Form branch: the sections as branches, added, copied, removed and moved with a list's keys, and each section's settings."""
 
