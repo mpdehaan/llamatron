@@ -197,7 +197,7 @@ class InterplayChoices(ChoicesPart):
 
     def _usual_answerer(self):
         """Return the player the genre has answer the tune, where the player can play in the subgenre, or None."""
-        role = self._genre_answerer()
+        role = self.genre_answerer()
         band = self._choices.get_band()
         if role is None or role not in band.roles_shown():
             return None
@@ -206,7 +206,7 @@ class InterplayChoices(ChoicesPart):
             return None
         return role
 
-    def _genre_answerer(self):
+    def genre_answerer(self):
         """Return the player the genre's roles mark as the one who answers the tune, or None."""
         if not self._choices.is_ready():
             return None

@@ -13,6 +13,7 @@ dice is kept with them and never shown.
 import copy
 import functools
 import random
+import zlib
 
 from llamatron.caching.cached import cached_while
 from llamatron.engine.generators.phrasing import model as phrasing_settings
@@ -1089,14 +1090,7 @@ class WizardChoices:
 
     def _intro_places(self):
         """Return the places in the form of the parts of the intro the band plays, leaving out a part held as one chord."""
-        places = []
-        for place, entry in enumerate(self._form_part.section_entries()):
-            if entry[arranger.KIND] != wizard_limits.INTRO:
-                continue
-            section = self.section(place)
-            if not section.is_held():
-                places.append(place)
-        return places
+        return self.places_of(kind=wizard_limits.INTRO)
 
     def get_intro_hook(self):
         """Return who says the hook in the intro, or None for nobody."""
@@ -1143,7 +1137,7 @@ class WizardChoices:
         """Take a part out of the intro. The notes written by hand for the part go with it, and those of the parts after it stay theirs."""
         if place not in self._intro_places():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_SECTION.format(value=place))
-        number = self._intro_number_at(place)
+        number = self.number_of_kind_at(place=place, kind=wizard_limits.INTRO)
         self.section(place).remove()
         own = self._extras.get(arranger.OWN_INTROS, {})
         moved = {(kept if kept < number else kept - 1): players for kept, players in own.items() if kept != number}
@@ -1182,14 +1176,54 @@ class WizardChoices:
                 return place
         return None
 
-    def _intro_number_at(self, place):
-        """Return a part's number among the form's sections of the kind intro, counted from 1, which its own notes are saved under."""
+    def number_of_kind_at(self, *, place, kind):
+        """Return a section's number among the form's sections of a kind, counted from 1, which its own notes are saved under."""
         count = 0
         for other in range(place + 1):
             section = self.section(other)
-            if section.kind() == wizard_limits.INTRO:
+            if section.kind() == kind:
                 count += 1
         return count
+
+    def places_of(self, *, kind, player=None):
+        """Return the places in the form of the sections of a kind that are played, not held as one chord, and played by a player
+        where one is named."""
+        places = []
+        for place in range(self.section_count()):
+            section = self.section(place)
+            if section.kind() != kind or section.is_held():
+                continue
+            if player is None or player in section.plays():
+                places.append(place)
+        return places
+
+    def pattern_played_at(self, *, place, role):
+        """Return the name and the data of the pattern a player plays in the section at a place of the form, in the song the
+        choices make, or two Nones where the player plays nothing there."""
+        setlist, name = self.written_for_trial()
+        song = setlist.get_song(name)
+        scenes = song.get_scenes()
+        if place >= len(scenes) or not scenes[place].has_clip_slot(role):
+            return None, None
+        slot = scenes[place].get_clip_slot(role)
+        pattern_name = slot.get_pattern_name()
+        pattern = setlist.get_pattern(pattern_name)
+        return pattern_name, pattern.to_data()
+
+    def again_for_take(self, *, cleared, seed_text):
+        """Return choices that make the song again from a seed of a take's own, with the same chords and none of what the
+        cleared extras held, as the takes and the notes written by hand of a tune or a solo."""
+        other = self.made_again()
+        for field in cleared:
+            other.set_extra(name=field, value=None)
+        trait = self.progression_trait()
+        drawn = self.progressions_by_chance()
+        if trait is not None and drawn:
+            band = other.get_band()
+            band.set_way(trait=trait, value=drawn[0])
+        seed = zlib.crc32(seed_text.encode()) % (wizard_limits.LAST_SEED + 1)
+        other.set_seed(seed)
+        return other
 
     def _melody_place_or(self, place):
         return self.intro_melody_place() if place is None else place
@@ -1204,7 +1238,7 @@ class WizardChoices:
         if role is None:
             return False
         own_intros = self._extras.get(arranger.OWN_INTROS, {})
-        own_of_part = own_intros.get(self._intro_number_at(place), {})
+        own_of_part = own_intros.get(self.number_of_kind_at(place=place, kind=wizard_limits.INTRO), {})
         # Notes for every part of the intro at once, as an older song saved them.
         own_of_every_part = self._extras.get(arranger.OWN_INTRO, {})
         return role in own_of_part or role in own_of_every_part
@@ -1226,15 +1260,7 @@ class WizardChoices:
         role = self.intro_melody_player(place)
         if role is None:
             return None, None
-        setlist, name = self.written_for_trial()
-        song = setlist.get_song(name)
-        scenes = song.get_scenes()
-        if place >= len(scenes) or not scenes[place].has_clip_slot(role):
-            return None, None
-        slot = scenes[place].get_clip_slot(role)
-        pattern_name = slot.get_pattern_name()
-        pattern = setlist.get_pattern(pattern_name)
-        return pattern_name, pattern.to_data()
+        return self.pattern_played_at(place=place, role=role)
 
     def set_intro_pattern(self, *, pattern, place=None):
         """Keep a pattern's data as the own melody of a part of the intro, the first with a melody where none is named, for the
@@ -1248,7 +1274,7 @@ class WizardChoices:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=wizard_limits.INTRO))
         snapshot = self._own_intros_snapshot()
         own = self._extras.setdefault(arranger.OWN_INTROS, {})
-        number = self._intro_number_at(place)
+        number = self.number_of_kind_at(place=place, kind=wizard_limits.INTRO)
         if pattern is None:
             part = own.get(number, {})
             part.pop(role, None)

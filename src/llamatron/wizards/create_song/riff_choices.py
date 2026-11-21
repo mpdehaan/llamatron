@@ -157,11 +157,9 @@ class RiffChoices(ChoicesPart):
     def riff_place(self, kind):
         """Return the place in the form of the first section of a kind that is played and not one held chord, where a riff of the
         kind is heard, or None."""
-        form = self._choices.get_song_form()
-        for place in range(len(form.section_labels())):
-            section = self._choices.section(place)
-            if section.kind() == kind and not section.is_held():
-                return place
+        places = self._choices.places_of(kind=kind)
+        if places:
+            return places[0]
         return None
 
     def _riffs(self):
