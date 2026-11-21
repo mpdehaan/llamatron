@@ -68,6 +68,17 @@ class Length:
         return (rational.numerator, rational.denominator)
 
     @staticmethod
+    def of_ticks(count, ticks):
+        """Return the length of a count of ticks, a tick being a whole note shared into ticks, as a pair in lowest terms."""
+        divisor = _gcd(count, ticks)
+        return (count // divisor, ticks // divisor)
+
+    @staticmethod
+    def ticks_of(pair, ticks):
+        """Return how many ticks a length lasts, a tick being a whole note shared into ticks, which the pair's denominator divides."""
+        return pair[0] * (ticks // pair[1])
+
+    @staticmethod
     def rational(pair):
         """Return a pair as a Rational, for whoever wants a number: a clip's own length, an exporter's times and the tests. A pair
         is always in lowest terms, so its divisor is not worked out again."""

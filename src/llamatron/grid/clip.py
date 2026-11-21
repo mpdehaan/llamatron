@@ -17,6 +17,7 @@
 """One cell of the grid a song renders into: a list of positions played in order."""
 
 from itertools import count
+import math
 import re
 
 from llamatron.composition.checks import check_clip_length, check_loop, check_name, check_scale, check_time_signature_override
@@ -29,7 +30,6 @@ from llamatron.music.held import Held
 from llamatron.music.note import Degree, Note, Rest
 from llamatron.music.sound import Sound
 from llamatron.strings import errors, reprs
-from llamatron.support import length as length_values
 from llamatron.support.length import Length
 
 # The shorthand a clip's list accepts: each dash is a quarter note of rest, and a note is its name and octave.
@@ -42,6 +42,11 @@ POSITION_TYPES = (Note, Chord, Rest, Degree, Held)
 POSITION_KINDS = frozenset(POSITION_TYPES)
 # Every clip gets the next number when it's made, whichever grid it ends up in.
 _next_clip_id = count(0)
+
+
+def denominators_of(sounds):
+    """Return the denominators of the lengths of some positions, each once."""
+    return {sound[sound_values.LENGTH][1] for sound in sounds}
 
 
 def _to_position(value):
@@ -326,27 +331,30 @@ class Clip:
         end = exact_length(end)
         if start < 0 or end <= start:
             raise ValueError(errors.ERR_INVALID_SECTION.format(start=start, end=end))
-        # Every note is asked where it lies between the two ends, so the ends are pairs from here on.
-        first = Length.of(start)
-        last = Length.of(end)
+        played = self.played_sounds()
+        # Every position is placed on one count of ticks, fine enough for each of them and for the two ends, since whole numbers
+        # add and compare many times faster than pairs, and every note is asked where it lies between the ends.
+        ticks = math.lcm(start.denominator, end.denominator, *denominators_of(played))
+        first = start.numerator * (ticks // start.denominator)
+        last = end.numerator * (ticks // end.denominator)
         sounds = []
-        sound_start = length_values.ZERO
-        for sound in self.played_sounds():
-            if not Length.less(sound_start, last):
+        sound_start = 0
+        for sound in played:
+            if sound_start >= last:
                 # Everything from here on starts after the section ends.
                 break
-            sound_end = Length.add(sound_start, sound[sound_values.LENGTH])
-            if Length.at_most(first, sound_start) and Length.at_most(sound_end, last):
+            sound_end = sound_start + Length.ticks_of(sound[sound_values.LENGTH], ticks)
+            if first <= sound_start and sound_end <= last:
                 # A position that lies wholly inside the section is kept as it is.
                 sounds.append(sound)
             else:
-                piece_start = Length.longer(first, sound_start)
-                piece_end = Length.shorter(last, sound_end)
-                if Length.less(piece_start, piece_end):
-                    sounds.append(piece_of(position=sound, offset=Length.subtract(piece_start, sound_start), length=Length.subtract(piece_end, piece_start)))
+                piece_start = max(first, sound_start)
+                piece_end = min(last, sound_end)
+                if piece_start < piece_end:
+                    sounds.append(piece_of(position=sound, offset=Length.of_ticks(piece_start - sound_start, ticks), length=Length.of_ticks(piece_end - piece_start, ticks)))
             sound_start = sound_end
-        if Length.less(sound_start, last):
-            sounds.append((sound_values.REST, Length.subtract(last, Length.longer(sound_start, first))))
+        if sound_start < last:
+            sounds.append((sound_values.REST, Length.of_ticks(last - max(sound_start, first), ticks)))
         controls = [item.moved_by(-start) for item in self._controls if start <= item.get_time() < end]
         return Clip(name=self._name, sounds=sounds, scale=self._scale, note_length=self._note_length, controls=controls)
 
