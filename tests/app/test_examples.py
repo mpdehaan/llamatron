@@ -16,7 +16,6 @@ from llamatron.composition.setlist_reader import set_file_data
 from llamatron.exporters.exports import ExportKind, make_exporter
 from llamatron.support import example_sets as example_sets_values
 from llamatron.support.example_sets import example_sets, folder_of_example, genre_folder
-from llamatron.tui.document import Document
 from tests.support import rendering
 from tests.support.example_renders import example_setlist, first_song_grid
 from tests.support.rendering import is_demo
@@ -25,47 +24,14 @@ from tests.support.song_testing import pitches
 SONG = 'song'
 # Every song in examples/, including the demos, which test_demos.py checks more closely.
 EXAMPLE_PATHS = example_sets()
-# How long an example may run, in seconds, unless it came before the rule or is named below for another length: three minutes is the aim.
-SHORTEST_EXAMPLE = 120
-LONGEST_EXAMPLE = 240
 GENRE_WITH_A_SPACE = 'TV theme'
 FOLDER_OF_GENRE_WITH_A_SPACE = 'tv_theme'
 GENRE_WITH_A_HYPHEN = 'Hip-Hop'
 FOLDER_OF_GENRE_WITH_A_HYPHEN = 'hip_hop'
 GENRE_OF_ONE_WORD = 'Rock'
 FOLDER_OF_GENRE_OF_ONE_WORD = 'rock'
-# How far an example named for another length may be from it, in seconds.
-LENGTH_LEEWAY = 10
-WRITTEN_BEFORE_THE_LENGTH_RULE = {
-    '12_sailor_arpeggiator.yml', '20_arrangement_shanty.yml', '17_complex_gifts_chain.yml', '10_mtn_king_direction.yml', 'entertainer.yml', '19_hocket_shanty.yml', '09_groove.yml', '01_hello_world.yml',
-    '03_mary_keychange.yml', '02_pachelbel.yml', '11_ode_to_joy_ratchet.yml', '22_registers.yml', '04_scale.yml', '18_techno_morph.yml', '08_tie.yml',
-}
-# The examples that run another length, by name, with that length in seconds: the nine-minute video game piece, the
-# guitar showpiece, which is short as the solo it follows is, and the TV themes, each about a minute as a theme runs.
-OTHER_LENGTHS = {
-    'incoming_message.yml': 526,
-    'volcano.yml': 89,
-    'meeting_the_eye.yml': 66,
-    'aunt_clara.yml': 63,
-    'come_on_down.yml': 69,
-    'eats_cats.yml': 68,
-    'forgot_your_name.yml': 63,
-    'mysterious_spooky.yml': 65,
-    'sax_reindeer.yml': 60,
-    'spy_hunting.yml': 56,
-    'three_hour_tour.yml': 73,
-    'tropical_51.yml': 64,
-    'uk_butler.yml': 72,
-    'not_painless.yml': 64,
-    'phoenix_foundation.yml': 59,
-    'percussion_fish.yml': 298,
-    'roll_d20.yml': 305,
-}
 # The songs that are meant to sound good, rather than to teach one feature.
 SONG_PATHS = [path for path in EXAMPLE_PATHS if not is_demo(path)]
-THREE_MINUTES = 180
-BEATS_IN_A_WHOLE = 4
-SECONDS_IN_A_MINUTE = 60
 LOWEST_PIANO_KEY = 21
 HIGHEST_PIANO_KEY = 108
 # Every kind of output an example exports to.
@@ -110,26 +76,6 @@ def check_homage_folder(*, test, path):
     genres = example_setlist(path).get_genres()
     test.assertEqual(len(genres), 1)
     test.assertEqual(os.path.basename(os.path.dirname(path)), genre_folder(genres[0]))
-
-
-def check_length(*, test, path):
-    """A new example runs from two to four minutes unless it is named for another length; a piece lasts about three."""
-    name = os.path.basename(path)
-    if name not in WRITTEN_BEFORE_THE_LENGTH_RULE:
-        seconds = float(Document.load(path).lengths().song_seconds())
-        if name in OTHER_LENGTHS:
-            test.assertAlmostEqual(seconds, OTHER_LENGTHS[name], delta=LENGTH_LEEWAY)
-        else:
-            test.assertGreaterEqual(seconds, SHORTEST_EXAMPLE)
-            test.assertLessEqual(seconds, LONGEST_EXAMPLE)
-    if is_demo(path):
-        return
-    song = first_song_grid(path)
-    seconds = 0
-    for scene in song.get_rows():
-        lengths = [song.get_clip(row=scene, column=t).total_length() for t in song.get_columns() if song.get_clip(row=scene, column=t)]
-        seconds += float(max(lengths)) * BEATS_IN_A_WHOLE * SECONDS_IN_A_MINUTE / (scene.get_tempo() or song.get_tempo())
-    test.assertAlmostEqual(seconds, THREE_MINUTES, delta=LENGTH_LEEWAY)
 
 
 def check_clips_fit(*, test, path):

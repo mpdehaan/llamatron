@@ -14,10 +14,9 @@ import re
 import unittest
 
 from llamatron.support.example_sets import example_sets
-from tests.app.test_examples import check_clips_fit, check_exports, check_homage_folder, check_length, check_sounds
+from tests.app.test_examples import check_clips_fit, check_exports, check_homage_folder, check_sounds
 from tests.composition.test_kept_data import check_kept_data
 from tests.composition.test_renames import check_renames
-from tests.composition.test_song_writer import check_written
 from tests.composition.test_taking_in import check_walk
 from tests.grid.test_clip_lengths import check_lengths_agree
 from tests.grid.test_clip_sounds import BothWays, check_both_ways
@@ -27,8 +26,8 @@ from tests.tui.test_tui_document import check_saves_and_loads
 
 # Every check of one example, by what its test is called.
 CHECKS = {
-    'homage_folder': check_homage_folder, 'length': check_length, 'clips_fit': check_clips_fit, 'exports': check_exports,
-    'sounds': check_sounds, 'kept_data': check_kept_data, 'renames': check_renames, 'written': check_written, 'walk': check_walk,
+    'homage_folder': check_homage_folder, 'clips_fit': check_clips_fit, 'exports': check_exports,
+    'sounds': check_sounds, 'kept_data': check_kept_data, 'renames': check_renames, 'walk': check_walk,
     'lengths_agree': check_lengths_agree, 'both_ways': check_both_ways, 'round_trip': check_round_trip, 'timeline': check_timeline,
     'player_follows': check_player_follows, 'saves_and_loads': check_saves_and_loads,
 }

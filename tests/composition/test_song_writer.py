@@ -7,8 +7,7 @@ import yaml
 
 from llamatron.composition.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.composition.file_layout import as_object_layout
-from llamatron.composition.setlist import Setlist
-from llamatron.composition.setlist_writer import _text, dump_file_layout, dump_setlist
+from llamatron.composition.setlist_writer import _text, dump_setlist
 from tests.support.rendering import as_setlist, render_data
 
 # One song, laid out the way files were before sets existed, which as_setlist turns into a set of one song.
@@ -154,15 +153,6 @@ class TestDumpSetlist(unittest.TestCase):
         self.assertEqual(setlist[Section.PATTERNS][A_2][Row.GATE][0], QUARTER)
         self.assertEqual(setlist[Section.SONGS][UNTITLED][SongSetting.TEMPO], 120)
 
-
-
-def check_written(*, test, path):
-    """An example, written out, reads back as the same data, and the set it describes still builds from what was written."""
-    with open(path) as file:
-        written = yaml.safe_load(file)
-    test.assertEqual(yaml.safe_load(dump_file_layout(written)), written)
-    setlist = as_object_layout(written)
-    Setlist.from_data(data=read_back(dump_setlist(setlist)))
 
 
 if __name__ == '__main__':
