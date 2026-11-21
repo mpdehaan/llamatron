@@ -6,8 +6,8 @@
 
 from rich.text import Text
 
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import RegisterSetting
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import RegisterSetting
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, NoSuchPlace
 from llamatron.tui.drawing import cursor_mark, padded, Style

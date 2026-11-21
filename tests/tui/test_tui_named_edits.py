@@ -13,7 +13,7 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import sections
 from llamatron.model.objects.groove import FactoryGroove
 from llamatron.model.objects.naming import copy_name
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors, names as names_text
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song

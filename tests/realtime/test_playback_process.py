@@ -16,7 +16,7 @@ import time
 import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Row, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Row, Section
 from llamatron.realtime import playback
 from llamatron.realtime.playback import Launch, Wanted
 from llamatron.realtime.playback_process import PlaybackProcess

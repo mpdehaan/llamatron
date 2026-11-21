@@ -24,9 +24,9 @@ from llamatron.model.objects.euclid import euclid_settings
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.shapes import shape_settings
 from llamatron.model.objects.strum import strum_settings
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values import note as note_values
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, Quality, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import marks
 

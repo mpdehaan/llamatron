@@ -12,7 +12,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import euclid
 from llamatron.model.objects.euclid import rhythm
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, euclid_setting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, euclid_setting, EuclidPart, GeneratorKind, NamedRhythm, PatternSetting, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes

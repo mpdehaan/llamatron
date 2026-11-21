@@ -8,7 +8,7 @@ from llamatron.macro_composer import arranger, breaks as breaks_values, characte
 from llamatron.macro_composer.arranger import arranged, player_of
 from llamatron.macro_composer.breaks import break_names
 from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.user_strings import errors
 
 

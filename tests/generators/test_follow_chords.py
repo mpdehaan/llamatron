@@ -9,8 +9,8 @@ import unittest
 from llamatron.exporters.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import FollowChordsSetting, ProgressionSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.user_strings import errors
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song

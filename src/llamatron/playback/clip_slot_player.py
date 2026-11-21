@@ -17,10 +17,10 @@ from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.conditions import any_true, draws_read
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, Restart, Shape, TrackSetting
 from llamatron.playback import pattern_player as pattern_values
 from llamatron.playback.morph_controls import morph_controls
 from llamatron.playback.pattern_order import ordered_patterns

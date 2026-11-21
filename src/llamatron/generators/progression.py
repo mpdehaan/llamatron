@@ -24,11 +24,11 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.model.objects.named_scale import scale_type_called
+from llamatron.model.schema import file_format
 from llamatron.model.values import chords as chords_values, sound as sound_values
 from llamatron.model.values.chords import replaced_places
 from llamatron.model.values.scale import Scale, ScaleType
 from llamatron.model.values.sound import Sound
-from llamatron.model.vocabulary import file_format
 
 HALF_STEPS_PER_OCTAVE = 12
 ZERO_OFFSET = 0

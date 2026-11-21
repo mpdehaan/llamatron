@@ -25,9 +25,9 @@ from llamatron.model.objects.shapes import shape_settings, shape_values
 from llamatron.model.objects.strum import strum_settings, strum_values
 from llamatron.model.objects.traits import RunsChains, SetsRegisters
 from llamatron.model.objects.velocity_ramps import velocity_of, velocity_setting_descriptions
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternOrder, Section, strum_setting
-from llamatron.model.vocabulary.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternOrder, Section, strum_setting
+from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors, marks
 
 

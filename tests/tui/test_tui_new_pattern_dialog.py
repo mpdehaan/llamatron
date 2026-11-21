@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The New Pattern dialog and a pattern's scale length in the tracker: the dialog's rows and buttons, the Patterns page's new pattern, Arrange's blank pattern, the Reconfigure choice and the header's warning."""
 
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.new_pattern_dialog import NewPatternDialog

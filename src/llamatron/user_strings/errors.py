@@ -138,7 +138,7 @@ ERR_NOT_SETTINGS = 'expected settings by name, got {value!r}'
 ERR_NO_OFFSETS = 'has no offsets to change'
 ERR_NO_SUCH_OFFSET = 'no offset step {step} in {count} steps of offsets'
 
-# model/vocabulary/setting.py
+# model/schema/setting.py
 ERR_NEEDS_CHECK = '{kind} needs a check() method'
 
 # model/objects/llama_data.py

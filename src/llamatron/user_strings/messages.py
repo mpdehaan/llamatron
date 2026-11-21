@@ -6,7 +6,7 @@
 Each constant starts with MSG_. A message that says what went wrong is an error, in errors.py.
 """
 
-from llamatron.model.vocabulary.file_format import Section, SetlistSetting, SongSetting
+from llamatron.model.schema.file_format import Section, SetlistSetting, SongSetting
 from llamatron.user_strings.labels import PageName
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.

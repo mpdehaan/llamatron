@@ -4,8 +4,8 @@
 """The Velocity field and the velocity ramp sections on the Scene page and the clip page, and their line in Arrange's details view."""
 
 from llamatron.model.objects import velocity_ramps
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import RampPart, RampWay, VelocitySetting
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import RampPart, RampWay, VelocitySetting
 from llamatron.tui import keybindings
 from llamatron.tui.screens.arrange.arrange_details import clip_details, scene_details
 from llamatron.tui.screens.arrange.clip_page import ClipPage

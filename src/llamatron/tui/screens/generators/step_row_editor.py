@@ -11,7 +11,7 @@ video, as in the offsets editor, and the line above the grid says what a step th
 
 from rich.text import Text
 
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box, Style
 from llamatron.tui.screens.shared.generator_editor import GeneratorEditor

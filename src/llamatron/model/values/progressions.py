@@ -11,9 +11,9 @@ scale becomes that plain degree, any other the degree a half step above it with 
 it with a sharp, and plain degrees then follow later edits of the scale, as a pattern's do.
 """
 
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Accidental, NamedProgression, Quality
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Accidental, NamedProgression, Quality
 from llamatron.user_strings import marks
 
 HALF_STEPS_PER_OCTAVE = 12

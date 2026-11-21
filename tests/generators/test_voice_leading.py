@@ -11,7 +11,7 @@ import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import VoiceLeadingSetting
-from llamatron.model.vocabulary.file_format import GeneratorKind, Row, Section
+from llamatron.model.schema.file_format import GeneratorKind, Row, Section
 from tests.generators.test_progression import through
 from tests.playback.test_shapes import notes
 from tests.support.rendering import setlist_from_data

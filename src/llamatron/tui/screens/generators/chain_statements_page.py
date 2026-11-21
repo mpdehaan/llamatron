@@ -4,7 +4,7 @@
 
 """The page of a chain's statements about the registers, which say when a clip's pass goes by the whole chain."""
 
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.field_page import FieldPage

@@ -10,7 +10,7 @@ it, and the dialog shown when the render process ends as a crash would end it.""
 import os
 import signal
 
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, LiveResponsiveness, Row
+from llamatron.model.schema.file_format import ClipSlotSetting, LiveResponsiveness, Row
 from llamatron.realtime import timeline
 from llamatron.realtime.playback_process import PlaybackProcess
 from llamatron.tui import keybindings, transport as transport_values

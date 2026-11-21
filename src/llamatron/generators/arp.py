@@ -21,7 +21,7 @@ MAX_OFFSETS = 16
 MIN_OCTAVE_RANGE = 1
 MAX_OCTAVE_RANGE = 4
 MAX_OFFSET = 24
-# The registers, in order, as the arp's settings name their adds (model/vocabulary/file_format.py's REGISTER_NAMES, which the generators don't import).
+# The registers, in order, as the arp's settings name their adds (model/schema/file_format.py's REGISTER_NAMES, which the generators don't import).
 REGISTERS = ('AX', 'BX', 'CX', 'DX')
 # An offset of nothing leaves a note where it is, and so does a step with no offsets at all.
 NO_OFFSET = 0

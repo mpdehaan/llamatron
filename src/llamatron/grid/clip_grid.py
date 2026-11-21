@@ -12,7 +12,7 @@ from llamatron.grid.clip_row import ClipRow
 from llamatron.grid.row_clock import RowClock
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import check_scale, check_tempo, check_time_signature, time_signature as time_signature_object
-from llamatron.model.vocabulary import defaults
+from llamatron.model.schema import defaults
 from llamatron.user_strings import errors
 
 # How long a row with no clips lasts.

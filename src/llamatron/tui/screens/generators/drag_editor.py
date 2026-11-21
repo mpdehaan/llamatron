@@ -5,7 +5,7 @@
 
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.generator_settings import StepRowSetting
-from llamatron.model.vocabulary.file_format import GeneratorKind, Section
+from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor

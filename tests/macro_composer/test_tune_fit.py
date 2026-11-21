@@ -10,7 +10,7 @@ import unittest
 from llamatron.macro_composer import arranger, tune_fit
 from llamatron.macro_composer.tune_fit import chord_at, fitted, move_to_chord, steps_held
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.model.vocabulary.file_format import PatternSetting, Row
+from llamatron.model.schema.file_format import PatternSetting, Row
 
 A_GENRE = 'rock'
 A_SUBGENRE = 'folk rock'

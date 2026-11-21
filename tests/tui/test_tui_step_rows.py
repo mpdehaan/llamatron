@@ -4,8 +4,8 @@
 """The tracker's Glide, Shorten, Rush and Drag: their list pages, their editors and their steps pages."""
 
 from llamatron.model.objects import generator_settings
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import GeneratorKind, Section
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import glide_editor

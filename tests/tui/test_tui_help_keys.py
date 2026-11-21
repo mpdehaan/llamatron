@@ -22,7 +22,7 @@ import inspect
 import re
 import unittest
 
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.components import pattern_rows
 from llamatron.tui.key_table import first_key

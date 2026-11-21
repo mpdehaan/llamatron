@@ -22,10 +22,10 @@ values and move the pattern's revision, so nothing here is written under @notes_
 
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text, written_length
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Row
 from llamatron.model.values import midi
 from llamatron.model.values.chords import borrowed, chord_half_steps
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Row
 
 # What a note's second half keeps of it when the piano roll's knife splits it: its pitch, chord and velocity.
 SPLIT_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY)

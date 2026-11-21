@@ -20,8 +20,8 @@ from llamatron.exporters.exports import ExportKind
 from llamatron.generators.arp import ChordOrder
 from llamatron.model.objects.generator_settings import ArpSetting, written_name
 from llamatron.model.objects.setlist import new_setlist, Setlist
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting
 from llamatron.tui import keybindings
 from llamatron.tui.document import Document
 from llamatron.tui.keys import Key

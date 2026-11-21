@@ -9,8 +9,8 @@ import unittest
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.draw import Draw
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import DrawDirection, DrawName, DrawSetting, SceneSetting, Section
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import DrawDirection, DrawName, DrawSetting, SceneSetting, Section
 from llamatron.user_strings import errors
 from tests.support.rendering import as_setlist, setlist_from_data
 from tests.support.song_testing import with_parts

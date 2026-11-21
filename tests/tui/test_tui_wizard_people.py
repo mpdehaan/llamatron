@@ -8,7 +8,7 @@ from llamatron.generators import musician
 from llamatron.macro_composer import song_plan, wizard_limits
 from llamatron.model.file import version
 from llamatron.model.objects.generator_settings import MusicianSetting
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.musician_editor import MusicianEditor

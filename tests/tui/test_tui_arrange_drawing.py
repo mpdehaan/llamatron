@@ -10,8 +10,8 @@ shows what the drawing drew.
 
 import unittest
 
-from llamatron.model.vocabulary import defaults
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction
+from llamatron.model.schema import defaults
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components import length_bar
 from llamatron.tui.keys import Key

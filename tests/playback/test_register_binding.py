@@ -20,9 +20,9 @@ from llamatron.model.objects.generator_settings import ArpSetting, ArpSettings
 from llamatron.model.objects.register import Register
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
+from llamatron.model.schema import defaults as set_defaults, file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import defaults as set_defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
 from tests.playback import test_registers
 from tests.playback.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
 from tests.support.rendering import as_setlist, render_data

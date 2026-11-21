@@ -10,8 +10,8 @@ one setter of a whole statement, so that no step is left holding half of one.
 """
 
 from llamatron.model.objects import conditions
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import StatementPart, StepStatement
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import StatementPart, StepStatement
 from llamatron.tui import key_table, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.dialogs import grouped_choices

@@ -5,8 +5,8 @@
 """Tests for the Guitarify editor, its two sections, and the editor of its bar of strokes."""
 
 from llamatron.model.objects import generator_settings, guitar_bars
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import GeneratorKind, GuitarifySetting, ReadyBar, Section, SingleNotes, Stroke, Tuning
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators import guitar_bar_editor

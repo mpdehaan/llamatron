@@ -14,7 +14,7 @@ import unittest
 
 from llamatron.model.objects.generator_settings import ArpSetting
 from llamatron.model.objects.groove import FactoryGroove
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Box
 from llamatron.tui.keys import Key

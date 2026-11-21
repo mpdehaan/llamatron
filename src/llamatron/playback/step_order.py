@@ -4,7 +4,7 @@
 
 """The order a pattern's steps play in, for each of a step sequencer's directions."""
 
-from llamatron.model.vocabulary.file_format import Direction
+from llamatron.model.schema.file_format import Direction
 
 # Every list of steps starts at its first step.
 FIRST_STEP = 0

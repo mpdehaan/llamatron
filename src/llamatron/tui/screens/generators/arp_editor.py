@@ -9,8 +9,8 @@ from llamatron.generators.arp import OctaveJump
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.generator_settings import ArpSetting, written_name
 from llamatron.model.objects.naming import words
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.tui.screens.generators.restart_field import restart_field

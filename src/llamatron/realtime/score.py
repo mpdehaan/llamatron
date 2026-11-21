@@ -20,7 +20,7 @@ from typing import NamedTuple
 
 from llamatron.caching import memory
 from llamatron.math.rational import Rational
-from llamatron.model.vocabulary.file_format import FollowAction
+from llamatron.model.schema.file_format import FollowAction
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import score_records, timeline
 from llamatron.realtime.clip_notes import ClipNotes

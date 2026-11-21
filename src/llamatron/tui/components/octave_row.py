@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Octave row, typed and shown in the set's octave labels and stored as the file numbers octaves."""
 
-from llamatron.model.vocabulary.file_format import Row
+from llamatron.model.schema.file_format import Row
 from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.user_strings import legends

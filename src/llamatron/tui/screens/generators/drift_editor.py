@@ -5,9 +5,9 @@
 
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.generator_settings import DriftSetting, versioned
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import DriftValue, Section
 from llamatron.model.values import note
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import DriftValue, Section
 from llamatron.tui import keybindings
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.screens.generators.restart_field import restart_field

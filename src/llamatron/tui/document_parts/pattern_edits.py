@@ -8,8 +8,8 @@
 from types import MethodType
 
 from llamatron.model.objects.pattern import Pattern
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Section
 
 # How many steps a new pattern has.
 NEW_PATTERN_STEPS = 16

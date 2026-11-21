@@ -5,7 +5,7 @@
 
 import unittest
 
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, EuclidPart, FollowAction, GeneratorKind, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, EuclidPart, FollowAction, GeneratorKind, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
 from llamatron.tui import keybindings, themes
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style

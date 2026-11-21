@@ -28,13 +28,13 @@ from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.objects.generator_settings import ArpSetting, written_name
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, TrackSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType
 from llamatron.model.values.sound import Sound
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, TrackSetting
 from llamatron.tui.document import Document
 from tests.support.rendering import as_setlist, dump_song_data, render_data, setlist_from_data, song_from_data
 

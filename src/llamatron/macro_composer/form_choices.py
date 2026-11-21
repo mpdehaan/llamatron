@@ -14,7 +14,7 @@ from llamatron.macro_composer.section_choices import own_copy_of
 from llamatron.macro_composer.song_plan import faded
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.user_strings import errors, marks as marks_text
 
 

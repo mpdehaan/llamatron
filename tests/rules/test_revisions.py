@@ -28,9 +28,9 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.groove import Groove
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
+from llamatron.model.schema.file_format import Row
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import Row
 
 CONSTRUCTOR = '__init__'
 DECORATOR = notes_change.__name__

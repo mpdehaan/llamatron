@@ -4,9 +4,9 @@
 
 """The instrument editor: one instrument's name, MIDI device or FluidSynth, channel and General MIDI sound."""
 
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import InstrumentSetting, Section
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import InstrumentSetting, Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.tui.dialogs.sound_dialog import SoundDialog

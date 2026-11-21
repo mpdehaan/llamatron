@@ -22,7 +22,7 @@ from llamatron.model.file import version
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import new_name
-from llamatron.model.vocabulary.file_format import GeneratorKind
+from llamatron.model.schema.file_format import GeneratorKind
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, place_of

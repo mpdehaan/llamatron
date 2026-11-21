@@ -13,8 +13,8 @@ from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.naming import copy_name
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.track import Track
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, RegisterSetting, Section
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import ClipSlotSetting, RegisterSetting, Section
 from llamatron.user_strings import names as names_text
 
 

@@ -9,7 +9,7 @@ whatever the order: only which pattern comes next changes. The names are a patte
 each meaning for whole patterns what the direction means for steps.
 """
 
-from llamatron.model.vocabulary.file_format import PatternOrder
+from llamatron.model.schema.file_format import PatternOrder
 
 
 def ordered_patterns(*, names, order, place, rolls):

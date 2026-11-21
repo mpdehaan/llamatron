@@ -14,7 +14,7 @@ from rich.text import Text
 
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.naming import words
-from llamatron.model.vocabulary.file_format import Row
+from llamatron.model.schema.file_format import Row
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Align, Box, fit, Style
 from llamatron.tui.keyswitch_text import keyswitches_of, slots_in_words

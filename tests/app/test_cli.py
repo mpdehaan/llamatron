@@ -25,7 +25,7 @@ from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary.file_format import Row
+from llamatron.model.schema.file_format import Row
 from llamatron.user_strings import cli, errors
 from llamatron.visualizers import modes
 from tests.support import song_testing

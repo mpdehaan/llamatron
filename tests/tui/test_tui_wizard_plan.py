@@ -6,7 +6,7 @@
 
 from llamatron.macro_composer import arranger, hook_writing, joins, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import chords_as_text
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.user_strings import errors, labels, marks

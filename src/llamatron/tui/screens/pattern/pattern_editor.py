@@ -31,9 +31,9 @@ from llamatron.model.file.checks import fraction_text, is_written_length, listed
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.naming import words
 from llamatron.model.objects.pattern import Pattern
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Row, Section
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Row, Section
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.chord_row import step_chord_in_words
 from llamatron.tui.components.pattern_rows import PatternRows

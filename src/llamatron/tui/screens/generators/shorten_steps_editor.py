@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Shorten steps page: a Shorten's row of steps, each on or off."""
 
-from llamatron.model.vocabulary.file_format import GeneratorKind, Section
+from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.step_row_editor import StepRowEditor
 from llamatron.user_strings import labels

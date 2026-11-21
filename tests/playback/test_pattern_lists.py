@@ -11,8 +11,8 @@ import unittest
 
 from llamatron.math.random_source import random_source
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, Operator, PatternOrder, PatternSetting, RegisterName, Section, StatementPart, StepStatement
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, Operator, PatternOrder, PatternSetting, RegisterName, Section, StatementPart, StepStatement
 from llamatron.playback.pattern_order import ordered_patterns
 from tests.support import song_testing
 from tests.support.rendering import render_data

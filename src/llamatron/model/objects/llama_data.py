@@ -163,7 +163,7 @@ class LlamaData(Revised):
 class HoldsSettings(LlamaData):
     """A stored object that holds settings: each a name of its class's SETTINGS with the value the file writes for it, or None where the file leaves it out.
 
-    SETTINGS describes every setting once (model/vocabulary/setting.py), and set_written() is the one
+    SETTINGS describes every setting once (model/schema/setting.py), and set_written() is the one
     place a value is checked against its description and stored, so that a setter of a subclass
     says only what is its own: `set_tempo(tempo)` is the readable name, and one line. A subclass
     whose file data is its settings alone needs no to_data() of its own.

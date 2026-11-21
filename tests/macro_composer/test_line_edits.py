@@ -10,7 +10,7 @@ from llamatron.macro_composer import line_edits, notation
 from llamatron.macro_composer.line_edits import found, moved, place_of, steps_of, stretched, tidied, toggled
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.model.file import version
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 
 A_NAME = 'made'
 A_SEED = 11

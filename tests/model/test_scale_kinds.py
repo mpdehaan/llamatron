@@ -6,8 +6,8 @@
 
 import unittest
 
+from llamatron.model.schema.file_format import ScaleKind
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import ScaleKind
 
 
 def scale_kind_names():

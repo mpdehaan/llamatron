@@ -15,8 +15,8 @@ from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.migrations import migrated
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, FileLayout, GeneratorKind, Section, SetlistSetting
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, GeneratorKind, Section, SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import names
 from tests.support import song_testing

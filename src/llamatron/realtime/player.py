@@ -41,7 +41,7 @@ import heapq
 from typing import NamedTuple
 
 from llamatron.math.rational import Rational
-from llamatron.model.vocabulary.file_format import FollowAction, LiveResponsiveness
+from llamatron.model.schema.file_format import FollowAction, LiveResponsiveness
 from llamatron.realtime import engine, timeline
 from llamatron.realtime.timeline import Playing, Tag
 

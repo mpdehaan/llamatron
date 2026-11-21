@@ -16,8 +16,8 @@ uses it to write the demos.
 from fractions import Fraction as F
 import math
 
-from llamatron.model.vocabulary import file_format, row_descriptions
-from llamatron.model.vocabulary.file_format import GateModifier, PatternSetting, Row
+from llamatron.model.schema import file_format, row_descriptions
+from llamatron.model.schema.file_format import GateModifier, PatternSetting, Row
 
 OLD_DURATION = 'duration'
 OLD_DEFAULT_LENGTH = 'default_length'

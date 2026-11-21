@@ -13,8 +13,8 @@ from llamatron.model.objects import generator_settings, sections
 from llamatron.model.objects.conditions import statements_setting
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy
 from llamatron.model.objects.traits import BypassedWhen
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import ChainSetting
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import ChainSetting
 from llamatron.user_strings import errors
 
 # Each step of a chain names exactly one generator.

@@ -15,7 +15,7 @@ import unittest
 from unittest import mock
 
 from llamatron.model.file.example_sets import example_sets
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, Row, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Row, Section
 from llamatron.playback import song_renderer
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.lengths import measured

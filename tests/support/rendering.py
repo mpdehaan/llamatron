@@ -13,8 +13,8 @@ import os
 from llamatron.caching.memory import Memory
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary import defaults
-from llamatron.model.vocabulary.file_format import Section, SongSetting
+from llamatron.model.schema import defaults
+from llamatron.model.schema.file_format import Section, SongSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 from llamatron.user_strings import names

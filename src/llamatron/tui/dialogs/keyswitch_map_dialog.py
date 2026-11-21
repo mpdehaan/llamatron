@@ -15,8 +15,8 @@ from rich.text import Text
 
 from llamatron.model.objects import instrument
 from llamatron.model.objects.instrument import Keyswitch
+from llamatron.model.schema import file_format, limits
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import file_format, limits
 from llamatron.tui import drawing, key_table, keybindings, keyswitch_text
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.components.keyboard import KeyKind, one_octave_rows

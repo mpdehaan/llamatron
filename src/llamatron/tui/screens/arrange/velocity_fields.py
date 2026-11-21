@@ -11,8 +11,8 @@ field's, which the ramps start from and return to.
 import functools
 
 from llamatron.model.objects import velocity_ramps
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import RampPart, VelocitySetting
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import RampPart, VelocitySetting
 from llamatron.tui.screens.shared.field import NumberField
 from llamatron.user_strings import labels, legends, marks
 

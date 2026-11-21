@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Strum editor page: one Strum generator's name and its strum, which wins over a clip's and its track's."""
 
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.strum_fields import strum_fields

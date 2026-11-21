@@ -25,9 +25,9 @@ from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects import setlist as setlist_values
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema.file_format import ClipSlotSetting, FollowAction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, FollowAction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import engine as engine_values, sender_process, timeline as timeline_values
 from llamatron.realtime.engine import PlaybackEngine, SteppedClock

@@ -21,10 +21,10 @@ from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSe
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import copy_name, unique_name
 from llamatron.model.objects.setlist import new_setlist, Setlist
+from llamatron.model.schema import defaults, limits
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, GeneratorKind, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
 from llamatron.model.values.note import Note, NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import defaults, limits
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, GeneratorKind, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
 from llamatron.tui.document import Document
 from llamatron.tui.document_parts import pattern_edits
 from llamatron.tui.text import clock
@@ -925,7 +925,7 @@ class TestPickerLayouts(unittest.TestCase):
     """Every chord, scale and root has exactly one place in its picker."""
 
     def test_every_chord_has_a_name_and_every_named_chord_a_short_name(self):
-        from llamatron.model.vocabulary import file_format
+        from llamatron.model.schema import file_format
         self.assertEqual(set(labels_text.MSG_CHORD_NAMES), set(file_format.CHORD_SYMBOLS))
         self.assertEqual(set(marks_text.MSG_CHORD_SUFFIXES), set(file_format.FIXED_CHORDS))
 

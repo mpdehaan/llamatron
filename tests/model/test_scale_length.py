@@ -7,8 +7,8 @@ import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.pattern import Pattern
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import PatternSetting, Section
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import PatternSetting, Section
 from llamatron.user_strings import errors
 from tests.support.rendering import song_from_data
 from tests.support.song_testing import lead_data

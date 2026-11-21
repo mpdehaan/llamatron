@@ -8,8 +8,8 @@ grooves, and the songs themselves. A song holds its own tracks and registers. Bo
 same way, through a NamedItems each, and these lists say which is which.
 """
 
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import names
 
 # How error messages name one object in each section of named objects.

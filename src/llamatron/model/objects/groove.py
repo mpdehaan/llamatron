@@ -25,9 +25,9 @@ from llamatron.model.file.checks import is_whole_number, is_whole_number_from, l
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.llama_data import LlamaData, or_default
 from llamatron.model.objects.traits import HasCells
-from llamatron.model.vocabulary import defaults, limits
-from llamatron.model.vocabulary.file_format import GrooveSetting
-from llamatron.model.vocabulary.setting import Checked, described, Length
+from llamatron.model.schema import defaults, limits
+from llamatron.model.schema.file_format import GrooveSetting
+from llamatron.model.schema.setting import Checked, described, Length
 from llamatron.user_strings import errors
 
 # A groove's amounts are percentages of a cell.

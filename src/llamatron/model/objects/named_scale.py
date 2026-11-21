@@ -8,12 +8,12 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file.checks import reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.llama_data import LlamaData
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Accidental, ScaleSetting
+from llamatron.model.schema.setting import check_settings, Checked, described
 from llamatron.model.values import midi, note
 from llamatron.model.values.note import Note
 from llamatron.model.values.scale import Scale, ScaleType
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Accidental, ScaleSetting
-from llamatron.model.vocabulary.setting import check_settings, Checked, described
 from llamatron.user_strings import errors
 
 # Scale type names, as error messages list them.

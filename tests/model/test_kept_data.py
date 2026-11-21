@@ -23,8 +23,8 @@ from llamatron.model.objects.generator_settings import ArpSetting
 from llamatron.model.objects.llama_data import LlamaData, own_copy
 from llamatron.model.objects.named_items import NamedItems
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song
 

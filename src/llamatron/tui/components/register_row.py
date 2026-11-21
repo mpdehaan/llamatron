@@ -10,7 +10,7 @@ render has nothing to move and ignores them. They are three-way, where
 they had been toggles: a cell shows + for add, - for subtract and nothing for off.
 """
 
-from llamatron.model.vocabulary.file_format import RegisterUse
+from llamatron.model.schema.file_format import RegisterUse
 from llamatron.tui import keybindings
 from llamatron.tui.components.cycle_row import CycleRow
 from llamatron.user_strings import marks

@@ -25,9 +25,9 @@ from llamatron.generators.base import ClipGenerator
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
+from llamatron.model.schema.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.model.values import midi as midi_numbers, sound as sound_values
 from llamatron.model.values.sound import Sound
-from llamatron.model.vocabulary.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 
 
 # Each tuning's open strings as MIDI numbers, the lowest string first.

@@ -20,9 +20,9 @@ the statements are usually written against.
 
 from llamatron.model.file.checks import is_whole_number, listed
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Operator, StatementPart
-from llamatron.model.vocabulary.setting import Checked
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Operator, StatementPart
+from llamatron.model.schema.setting import Checked
 from llamatron.user_strings import errors
 
 # What a number is divided by to learn whether it is odd.

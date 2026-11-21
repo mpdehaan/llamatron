@@ -13,9 +13,9 @@ from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
+from llamatron.model.schema import defaults
+from llamatron.model.schema.file_format import StrumDirection
 from llamatron.model.values import sound
-from llamatron.model.vocabulary import defaults
-from llamatron.model.vocabulary.file_format import StrumDirection
 
 # A beat is a quarter note, which matches how MIDI and Live measure both time and tempo.
 BEATS_PER_WHOLE_NOTE = 4

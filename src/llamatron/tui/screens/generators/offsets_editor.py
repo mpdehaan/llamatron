@@ -14,8 +14,8 @@ the screen scrolls sideways like the pattern editor rather than wrapping onto mo
 from rich.text import Text
 
 from llamatron.generators import arp as arp_values
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.signed_gauge import SignedGauge
 from llamatron.tui.drawing import Box, Style

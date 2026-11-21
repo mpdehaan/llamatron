@@ -5,8 +5,8 @@
 
 from llamatron.model.objects import genres
 from llamatron.model.objects.genres import subgenres_of, variants_of
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings, themes
 from llamatron.tui.screens.set.visualizer_fields import visualizer_field
 from llamatron.tui.screens.shared.everywhere import export

@@ -23,7 +23,7 @@ from llamatron.exporters import exports, wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

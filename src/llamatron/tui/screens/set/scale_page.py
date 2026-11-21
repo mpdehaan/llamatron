@@ -12,10 +12,10 @@ from rich.text import Text
 from llamatron.model.objects import named_scale
 from llamatron.model.objects.named_scale import note_names
 from llamatron.model.objects.naming import words
+from llamatron.model.schema.file_format import ScaleKind, Section
 from llamatron.model.values import note
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import ScaleKind, Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.keyboard import Keyboard
 from llamatron.tui.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid

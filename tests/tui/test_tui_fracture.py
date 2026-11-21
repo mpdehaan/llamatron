@@ -8,7 +8,7 @@ The song has two scenes and two tracks. The lead plays the tune in both scenes a
 play the tune in the second, so the tune is shared by three clips, and the beat by one.
 """
 
-from llamatron.model.vocabulary.file_format import ClipSlotSetting
+from llamatron.model.schema.file_format import ClipSlotSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.arrange.arrange_page import ArrangePage

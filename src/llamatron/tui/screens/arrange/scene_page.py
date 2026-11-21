@@ -7,8 +7,8 @@
 import functools
 from rich.text import Text
 
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import RampPart, Section, shape_setting
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import RampPart, Section, shape_setting
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.arrange.generators_field import generators_field

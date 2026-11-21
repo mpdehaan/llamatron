@@ -15,8 +15,8 @@ import unittest
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.pattern import Pattern
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting, StatementPart, StepStatement
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, Operator, RegisterSetting, RegisterUse, SceneSetting, StatementPart, StepStatement
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, pitches, scale_notes, song
 

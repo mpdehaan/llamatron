@@ -17,9 +17,9 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import generator_settings, guitar_bars
 from llamatron.model.objects.generator_settings import GuitarifySettings
 from llamatron.model.objects.guitar_bars import ready_bar_matching
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Approach, ChordColor, ClipSlotSetting, GeneratorKind, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
 from llamatron.playback.song_renderer import SongRenderer
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song

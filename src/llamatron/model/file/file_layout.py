@@ -13,8 +13,8 @@ keep their fixed names, AX to DX, as keys, since they are settings of the song a
 
 from llamatron.model.file.checks import listed as listed_text, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import FileLayout, Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import FileLayout, Section
 from llamatron.user_strings import errors
 
 # What the objects call the generators a clip, a scene and a track run, and a scene's clips by track.

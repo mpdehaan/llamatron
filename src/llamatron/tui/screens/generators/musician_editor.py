@@ -7,8 +7,8 @@
 from llamatron.generators import musician
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.generator_settings import MusicianSetting
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, gauge_shown, NameField, NumberField, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage

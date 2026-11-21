@@ -4,8 +4,8 @@
 """The fields of a strum, which the track editor's and the clip page's + Strum sections and the Strum editor share: direction, spread, fade, loose timing and upstroke strings."""
 
 from llamatron.model.objects import strum
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import StrumPart
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import StrumPart
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField
 from llamatron.user_strings import labels, marks
 

@@ -12,10 +12,10 @@ from llamatron.generators.blend import BlendMode
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.objects.generator_settings import ArpSetting
+from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi, note as note_values
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary.file_format import ChordSymbol, ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.user_strings import errors
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data

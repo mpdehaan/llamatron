@@ -23,7 +23,7 @@ import yaml
 from llamatron.exporters.timing import timed_events
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.setlist_reader import set_file_data
-from llamatron.model.vocabulary.file_format import Section, SetlistSetting, TrackSetting
+from llamatron.model.schema.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.tui import drawing
 from tests.support.rendering import is_demo, render_file
 

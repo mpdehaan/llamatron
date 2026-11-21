@@ -6,9 +6,9 @@
 
 from llamatron.generators.arp import ChordOrder
 from llamatron.model.objects.generator_settings import written_name
+from llamatron.model.schema import limits
 from llamatron.model.values import time_signature
 from llamatron.model.values.time_signature import is_time_signature
-from llamatron.model.vocabulary import limits
 from llamatron.tui import drawing
 from llamatron.user_strings import errors, marks, messages, names
 

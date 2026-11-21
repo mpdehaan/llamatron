@@ -13,9 +13,9 @@ from unittest import mock
 
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.setlist import new_setlist
+from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row, Section
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import ChordSymbol, PatternSetting, Row, Section
 from llamatron.tui import app as tui_app, drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import chord_dialog

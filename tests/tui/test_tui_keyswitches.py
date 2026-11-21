@@ -5,9 +5,9 @@
 
 from llamatron.model.objects import instrument as instrument_values
 from llamatron.model.objects.instrument import Keyswitch
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Row
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import keybindings, keys
 from llamatron.tui.components.keyswitch_row import slot_row_name
 from llamatron.tui.dialogs import keyswitch_map_dialog

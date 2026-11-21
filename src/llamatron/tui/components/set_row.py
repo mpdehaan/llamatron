@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """A register's = row: the value a step sets the register to before anything adds to it, or blank to leave the register as it is."""
 
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.tui import keybindings
 from llamatron.tui.components.control_row import ControlRow
 

@@ -7,7 +7,7 @@
 from llamatron.macro_composer import arranger, wizard_limits
 from llamatron.macro_composer.arranger import values_of
 from llamatron.macro_composer.choices_part import ChoicesPart, set_each_kept
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.user_strings import errors, labels as labels_text
 
 

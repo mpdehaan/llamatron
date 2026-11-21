@@ -38,11 +38,11 @@ from llamatron.model.objects.naming import copy_name, is_taken, name_in_copied_g
 from llamatron.model.objects.pattern import held_add, Pattern
 from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
+from llamatron.model.schema import defaults, file_format, limits as set_limits
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
+from llamatron.model.schema.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.model.values import note
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import defaults, file_format, limits as set_limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_generator_order, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
-from llamatron.model.vocabulary.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.user_strings import errors, names as names_text
 
 

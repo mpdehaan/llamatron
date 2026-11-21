@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Draws page: the song's four draws, AD to DD, each a section of settings over its strip of slots."""
 
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import DrawSetting
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import DrawSetting
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.screens.shared.field import ChoiceField, NumberField, Strip, Toggle
 from llamatron.tui.screens.shared.field_page import FieldPage

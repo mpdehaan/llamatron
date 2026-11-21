@@ -30,11 +30,11 @@ from llamatron.model.objects.scene import Scene, TempoRamp
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import Accidental, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.model.values.time_signature import TimeSignature
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import Accidental, ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.user_strings import errors
 from tests.support.rendering import as_setlist, song_from_data
 

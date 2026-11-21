@@ -11,7 +11,7 @@ say what an import may do, and tests/rules/test_layers.py holds them:
 - Front doors. Outside a package of FRONT_DOORS, only its front-door modules are imported, and
   the real-time package is imported only by the files of REALTIME_USERS.
 - Pages. A page, a file under tui/screens/ outside shared/, imports no other page, and of the
-  model in model/ only the vocabulary of PAGE_VOCABULARY.
+  model in model/ only the schema's names and the version of PAGE_SCHEMA, and the values.
 
 The imports that broke a rule when it was made are listed in tests/rules/layer_exceptions.py,
 and the list may only shrink: a new crossing fails the test, and so does a listed crossing that
@@ -53,7 +53,7 @@ PAGES_FOLDER = ('tui', 'screens')
 SHARED_PAGES = 'shared'
 MODEL = 'model'
 # What a page may import of the Model: its names, which are words and no behaviour, and the version every file records.
-PAGE_VOCABULARY = (('vocabulary', 'file_format'), ('file', 'version'))
+PAGE_SCHEMA = (('schema', 'file_format'), ('file', 'version'))
 # The Model's musical values, which every page may use, as it always could.
 PAGE_VALUES = 'values'
 # The rules' names, which the list of exceptions is kept under.
@@ -114,7 +114,7 @@ def breaks(*, file, module):
         allowed_module = other == REALTIME or (len(module) > 1 and module[1] in FRONT_DOORS[other])
         if not (allowed_file and allowed_module):
             broken.append(DOORS)
-    if is_page(file) and other == MODEL and tuple(module[1:3]) not in PAGE_VOCABULARY and tuple(module[1:2]) != (PAGE_VALUES,):
+    if is_page(file) and other == MODEL and tuple(module[1:3]) not in PAGE_SCHEMA and tuple(module[1:2]) != (PAGE_VALUES,):
         broken.append(PAGES)
     return broken
 

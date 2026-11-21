@@ -10,8 +10,8 @@ from llamatron.exporters import midi_arrangement, midi_messages
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.instrument import Instrument
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, InstrumentSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import ClipSlotSetting, InstrumentSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.playback.song_renderer import SongRenderer
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import setlist_from_data, song_from_data

@@ -14,7 +14,7 @@ import unittest
 from unittest import mock
 
 from llamatron.importers import midi_import
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import import_dialog
 from llamatron.tui.dialogs.import_dialog import ImportDialog

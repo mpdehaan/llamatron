@@ -5,8 +5,8 @@
 
 from llamatron.model.objects import groove as groove_values
 from llamatron.model.objects.groove import FactoryGroove
-from llamatron.model.vocabulary import defaults, limits
-from llamatron.model.vocabulary.file_format import GrooveSetting
+from llamatron.model.schema import defaults, limits
+from llamatron.model.schema.file_format import GrooveSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

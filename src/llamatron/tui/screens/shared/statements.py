@@ -14,8 +14,8 @@ changes the one under the cursor, and Bksp sets the line back to ignored.
 """
 
 from llamatron.model.objects import conditions
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import StatementPart
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import StatementPart
 from llamatron.tui import drawing
 from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.grouped_choices import number_or_names, value_groups

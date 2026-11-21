@@ -10,7 +10,7 @@ whole render."""
 import unittest
 
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
 from llamatron.playback import scene_reuse
 from llamatron.playback.scene_reuse import first_changed_scene
 from tests.support import song_testing

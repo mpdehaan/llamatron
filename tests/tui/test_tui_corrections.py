@@ -21,9 +21,9 @@ from unittest import mock
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import PatternSetting, Row, Section, SetlistSetting
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import PatternSetting, Row, Section, SetlistSetting
 from llamatron.tui import app as tui_app, drawing, keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import corrections_dialog, dialog

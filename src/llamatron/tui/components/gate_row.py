@@ -4,7 +4,7 @@
 """The Gate row: how long a note sounds, one step when blank, as a whole number or fraction of whole notes."""
 
 from llamatron.model.file.checks import fraction_text
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.tui.text import fraction

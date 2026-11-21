@@ -28,8 +28,8 @@ THE_RENDERER = ('playback', 'song_renderer')
 A_PLAYER = ('playback', 'pattern_player')
 A_SENDER = ('realtime', 'engine')
 THE_TRANSPORT = ('tui', 'transport.py')
-THE_FILE_FORMAT = ('model', 'vocabulary', 'file_format')
-THE_LIMITS = ('model', 'vocabulary', 'limits')
+THE_FILE_FORMAT = ('model', 'schema', 'file_format')
+THE_LIMITS = ('model', 'schema', 'limits')
 SOME_TEXT = ('user_strings', 'labels')
 
 
@@ -64,7 +64,7 @@ class TestLayers(unittest.TestCase):
         self.assertEqual(self.tool.breaks(file=THE_TRANSPORT, module=A_SENDER), [])
         self.assertEqual(self.tool.breaks(file=A_PAGE, module=A_SENDER), [self.tool.DOORS])
 
-    def test_a_page_imports_the_models_vocabulary_alone_and_no_other_page_but_the_shared_ones(self):
+    def test_a_page_imports_the_models_names_alone_and_no_other_page_but_the_shared_ones(self):
         self.assertEqual(self.tool.breaks(file=A_PAGE, module=THE_FILE_FORMAT), [])
         self.assertEqual(self.tool.breaks(file=A_PAGE, module=THE_LIMITS), [self.tool.PAGES])
         self.assertTrue(self.tool.page_breaks(file=A_PAGE, module=ANOTHER_PAGE))

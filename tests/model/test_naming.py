@@ -9,7 +9,7 @@ import unittest
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, is_taken, name_order, new_name, same_name, split_trailing_number, suggested_word, unique_name
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import names
 
 # Names of the tests' own.

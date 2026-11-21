@@ -16,10 +16,10 @@ from llamatron.model.objects.groove import check_groove_choice
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy
 from llamatron.model.objects.strum import strum_settings, strum_values
 from llamatron.model.objects.traits import RunsChains
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import euclid_setting, Section, strum_setting, TrackSetting
+from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import euclid_setting, Section, strum_setting, TrackSetting
-from llamatron.model.vocabulary.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
 # A track's settings, in the order they're written to a file.

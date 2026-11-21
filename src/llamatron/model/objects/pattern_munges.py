@@ -12,11 +12,11 @@ on Pattern itself.
 from llamatron.caching.revised import notes_change
 from llamatron.math.random_source import random_source
 from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Row
+from llamatron.model.schema.row_descriptions import row_described, rows_where
 from llamatron.model.values import midi
 from llamatron.model.values.chord import movement
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Row
-from llamatron.model.vocabulary.row_descriptions import row_described, rows_where
 from llamatron.user_strings import errors
 
 # What makes a step's note, which a rest holds none of: every row but the ones a rest keeps.

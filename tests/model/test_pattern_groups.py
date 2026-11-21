@@ -11,8 +11,8 @@ import unittest
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import name_in_copied_group
 from llamatron.model.objects.setlist import new_setlist, Setlist
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, SceneSetting, Section
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, SceneSetting, Section
 from llamatron.user_strings import errors, names as names_text
 
 # The tests' own names.

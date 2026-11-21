@@ -10,7 +10,7 @@ from llamatron.generators import musician
 from llamatron.macro_composer import band, players
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.model.objects.generator_settings import MusicianSetting
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, Section
 
 A_GENRE = 'rock'
 A_SUBGENRE = 'arena rock'

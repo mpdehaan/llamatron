@@ -10,7 +10,7 @@ from llamatron.macro_composer import arranger, melody, notation, wizard_limits
 from llamatron.macro_composer.arranger import arranged
 from llamatron.macro_composer.melody import placement_of, plan_with_hook_placed, plan_with_tag
 from llamatron.macro_composer.wizard_choices import WizardChoices
-from llamatron.model.vocabulary.file_format import SectionKind
+from llamatron.model.schema.file_format import SectionKind
 from llamatron.user_strings import macro_composer as composer_text
 
 A_NAME = 'made'

@@ -10,7 +10,7 @@ from llamatron.macro_composer import arranger, loudness, notation
 from llamatron.macro_composer.notation import drum_rows, tune_rows
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.model.file import version
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors
 from tests.support.ui_testing import fixed_text
 

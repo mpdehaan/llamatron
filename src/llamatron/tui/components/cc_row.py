@@ -9,7 +9,7 @@ CC 1 (74), or (off) for a lane that sends nothing on them, or (?) when the track
 plain CC 1 when no track plays the pattern yet.
 """
 
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.tui import keybindings
 from llamatron.tui.components.control_row import ControlRow
 from llamatron.user_strings import labels, marks

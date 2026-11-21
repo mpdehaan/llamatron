@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The one description of each row of a pattern (model/vocabulary/row_descriptions.py).
+"""The one description of each row of a pattern (model/schema/row_descriptions.py).
 
 Each kind of row is tested on its own, then the rules: every row a file writes is described
 once, the tracker draws and labels every described row, and a file, a pattern's setter and the
@@ -16,11 +16,11 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import pattern as pattern_values
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema import defaults, file_format, limits, row_descriptions
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension
+from llamatron.model.schema.row_descriptions import is_note_letter, row_described, RowOfChoices, RowOfChords, RowOfDegrees, RowOfKeyswitches, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfStatementValues, RowOfTensions, RowOfToggles, rows_where
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary import defaults, file_format, limits, row_descriptions
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension
-from llamatron.model.vocabulary.row_descriptions import is_note_letter, row_described, RowOfChoices, RowOfChords, RowOfDegrees, RowOfKeyswitches, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfStatementValues, RowOfTensions, RowOfToggles, rows_where
 from llamatron.tui.components import pattern_rows
 from llamatron.tui.components.number_row import NumberRow
 from llamatron.user_strings import errors, labels

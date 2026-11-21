@@ -33,10 +33,10 @@ from llamatron.model.objects.named_scale import scale_type_names
 from llamatron.model.objects.shapes import shape_part_settings, shape_values, ShapeValues
 from llamatron.model.objects.strum import strum_part_settings, strum_values
 from llamatron.model.objects.traits import BypassedWhen, HasCells
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Accidental, Approach, ChordColor, DriftValue, EuclidPart, GeneratorKind, GuitarifySetting, NamedRhythm, RegisterName, Restart, Section, Shape, shape_setting, ShapePart, SingleNotes, Stroke, StrumDirection, StrumPart, Tuning
+from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, Text, WholeNumber
 from llamatron.model.values import note
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Accidental, Approach, ChordColor, DriftValue, EuclidPart, GeneratorKind, GuitarifySetting, NamedRhythm, RegisterName, Restart, Section, Shape, shape_setting, ShapePart, SingleNotes, Stroke, StrumDirection, StrumPart, Tuning
-from llamatron.model.vocabulary.setting import check_settings, Checked, Choice, described, Flag, Text, WholeNumber
 from llamatron.user_strings import errors
 
 MIN_OCTAVE_RANGE = 1
@@ -196,7 +196,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     """The settings of one named generator, kept as the file writes them until a chain uses them.
 
     Each subclass says which generator it makes, describes each setting it allows once
-    (model/vocabulary/setting.py), and says which are required and which the generator takes as
+    (model/schema/setting.py), and says which are required and which the generator takes as
     something other than what the file writes.
     """
 

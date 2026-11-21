@@ -12,9 +12,9 @@ steps later, and its step is the clip's pattern's step size unless set.
 from typing import NamedTuple
 
 from llamatron.model.file.checks import time_length
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import euclid_setting, EuclidPart, NamedRhythm
-from llamatron.model.vocabulary.setting import Checked, WholeNumber
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import euclid_setting, EuclidPart, NamedRhythm
+from llamatron.model.schema.setting import Checked, WholeNumber
 from llamatron.user_strings import errors
 
 # The named rhythms, each its hits and steps, in the order the picker offers them.

@@ -12,7 +12,7 @@ from llamatron.macro_composer.wizard_choices import genre_names, WizardChoices
 from llamatron.model.file import version
 from llamatron.model.objects import setlist as setlist_values
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import names
 from tests.support.rendering import render_song
 

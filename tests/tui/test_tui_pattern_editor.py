@@ -8,10 +8,10 @@ from fractions import Fraction
 
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, GateModifier, OctaveLabels, Row
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, GateModifier, OctaveLabels, Row
 from llamatron.tui import drawing as drawing_values, keybindings, keys
 from llamatron.tui.components import degree_row, pattern_rows
 from llamatron.tui.components.chord_row import chord_value

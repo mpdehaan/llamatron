@@ -6,9 +6,9 @@
 
 from llamatron.model.objects import genres
 from llamatron.model.objects.genres import subgenres_of, variants_of
+from llamatron.model.schema import defaults, file_format
+from llamatron.model.schema.file_format import LiveResponsiveness, Section, SongSetting
 from llamatron.model.values import time_signature
-from llamatron.model.vocabulary import defaults, file_format
-from llamatron.model.vocabulary.file_format import LiveResponsiveness, Section, SongSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import dialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

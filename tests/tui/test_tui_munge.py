@@ -9,8 +9,8 @@ tested on Pattern alone, in tests/model/test_pattern_munges.py.
 """
 
 from llamatron.model.file.checks import listed
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import ChordSymbol, Row
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import ChordSymbol, Row
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog

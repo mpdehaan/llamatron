@@ -22,10 +22,10 @@ from llamatron.grid.positions import cut_position
 from llamatron.math.length import Length
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
 from llamatron.model.values.sound import Sound
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.tui import app as tui_app
 from llamatron.tui.document import Document
 from llamatron.user_strings import names

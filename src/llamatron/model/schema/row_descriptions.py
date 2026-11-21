@@ -18,10 +18,10 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import is_true_or_false, is_whole_number, is_whole_number_from, listed
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.named_scale import scale_type_names
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import RegisterUse, Row, StatementPart
+from llamatron.model.schema.setting import Length
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import RegisterUse, Row, StatementPart
-from llamatron.model.vocabulary.setting import Length
 from llamatron.user_strings import errors
 
 # A drum pattern's degree row holds one note letter per step.

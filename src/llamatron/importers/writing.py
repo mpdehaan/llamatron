@@ -27,9 +27,9 @@ from llamatron.model.objects.named_scale import NamedScale
 from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.song import Song
+from llamatron.model.schema import defaults, file_format
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.time_signature import TimeSignature
-from llamatron.model.vocabulary import defaults, file_format
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.user_strings import importing
 
 FIRST_BAR_NUMBER = 1

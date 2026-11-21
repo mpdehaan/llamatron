@@ -20,7 +20,7 @@ import pathlib
 import re
 
 from llamatron.model.file import version
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.document import Document

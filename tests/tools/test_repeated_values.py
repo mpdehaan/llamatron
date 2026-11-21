@@ -7,8 +7,8 @@ import importlib.util
 import pathlib
 import unittest
 
+from llamatron.model.schema.file_format import PatternSetting, ScaleSetting
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary.file_format import PatternSetting, ScaleSetting
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'repeated_values.py'
 MODULE_NAME = 'repeated_values'

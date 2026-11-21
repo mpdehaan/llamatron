@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Choices offered in groups, each under a heading: a picker's list with its headings, and what each place in it stands for."""
 
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.user_strings import labels

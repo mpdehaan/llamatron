@@ -10,12 +10,12 @@ import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Tension
 from llamatron.model.values import chords
 from llamatron.model.values.chords import chord_half_steps, replaced_places, spelled_chord
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Tension
 from tests.generators import test_progression
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song

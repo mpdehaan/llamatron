@@ -10,9 +10,9 @@ import unittest
 from llamatron.exporters.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from tests.support.rendering import render_data, setlist_from_data, song_from_data
 
 # Every pattern plays in C major from middle C, MIDI note 60, with a quarter note a step.

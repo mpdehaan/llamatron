@@ -6,7 +6,7 @@
 Each constant starts with MSG_.
 """
 
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, Direction, Quality, Shape, Stroke
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, Direction, Quality, Shape, Stroke
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NONE_SHOWN = '(none)'

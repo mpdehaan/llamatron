@@ -22,7 +22,7 @@ from typing import NamedTuple
 from llamatron.math.random_source import random_source
 from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.objects import generator_settings
-from llamatron.model.vocabulary.file_format import DriftDirection, DriftValue, DriftVersion, GeneratorKind
+from llamatron.model.schema.file_format import DriftDirection, DriftValue, DriftVersion, GeneratorKind
 
 # How a drift's own random numbers are seeded from the render's seed and its name, so that each drift draws its own.
 DRIFT_SEED = '{seed}/drift/{name}'

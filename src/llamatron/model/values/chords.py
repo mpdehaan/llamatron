@@ -14,9 +14,9 @@ what that comes to, in a scale that is known, as a name, a longer name and the n
 from dataclasses import dataclass
 
 from llamatron.model.objects.named_scale import NamedScale
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, Tension
 from llamatron.model.values import midi, note
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, Tension
 from llamatron.user_strings import labels, marks
 
 # The place of each of a chord's notes among the notes of a scale of seven, counted up from the chord's root at 0: the notes a

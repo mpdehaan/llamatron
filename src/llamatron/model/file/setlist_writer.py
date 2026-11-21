@@ -17,8 +17,8 @@ import yaml
 
 from llamatron.model.file.file_layout import as_file_layout
 from llamatron.model.file.safe_yaml import load_safely
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import FileLayout, PatternSetting, Section, SetlistSetting, SongSetting
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import FileLayout, PatternSetting, Section, SetlistSetting, SongSetting
 
 # Text that can be written without quotes: it starts with a letter, digit or underscore, and
 # holds only those, #, ., /, spaces and hyphens.

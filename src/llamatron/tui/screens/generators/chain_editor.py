@@ -5,8 +5,8 @@
 """The Chain editor page: a chain's steps, each an arpeggiator or AutoRatchet chosen by name."""
 
 from llamatron.model.objects.naming import suggested_word
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Align

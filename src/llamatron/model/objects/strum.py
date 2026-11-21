@@ -12,9 +12,9 @@ the normal spread, no fade, no loose timing, and every string on an upstroke.
 from typing import NamedTuple
 
 from llamatron.model.file import corrections
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import strum_setting, StrumDirection, StrumPart, StrumSpread, UpstrokeStrings
-from llamatron.model.vocabulary.setting import Choice, WholeNumber
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import strum_setting, StrumDirection, StrumPart, StrumSpread, UpstrokeStrings
+from llamatron.model.schema.setting import Choice, WholeNumber
 from llamatron.user_strings import errors
 
 # How many milliseconds apart each spread sounds two strings: a hand's speed, whatever the tempo.

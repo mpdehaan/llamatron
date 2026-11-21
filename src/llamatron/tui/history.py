@@ -28,7 +28,7 @@ from llamatron.caching.memory import StaleAnswer
 from llamatron.model.file.ordered_data import same_in_order
 from llamatron.model.objects import sections
 from llamatron.model.objects.naming import is_default_scale_name
-from llamatron.model.vocabulary.file_format import ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.model.schema.file_format import ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.user_strings import errors, messages
 
 # How many edits can be undone. A snapshot holds only the data of what its edit changed and shares

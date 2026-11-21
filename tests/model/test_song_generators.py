@@ -12,8 +12,8 @@ from llamatron.exporters.timing import timed_events
 from llamatron.generators.arp import ChordOrder
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import ArpSetting, AutoRatchetSetting, written_name
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section
 from llamatron.model.values.note import Note, NoteName
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, Section
 from tests.support import song_testing
 from tests.support.rendering import render_data
 from tests.support.song_testing import clip, lead, pat, pitches, with_parts

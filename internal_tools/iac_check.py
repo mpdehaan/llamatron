@@ -36,8 +36,8 @@ import threading
 import time
 
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema.file_format import Row
 from llamatron.model.values import midi, note
-from llamatron.model.vocabulary.file_format import Row
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import engine, timeline
 from llamatron.realtime.outputs import midi_library, output_port_names

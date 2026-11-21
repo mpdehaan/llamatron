@@ -14,7 +14,7 @@ kick, snare, hats, toms, cymbal and the rest, where each hit is a short mark. Th
 The amounts are named constants here, to tune by eye.
 """
 
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.user_strings import visualizers
 from llamatron.visualizers import heard as heard_values
 from llamatron.visualizers.cells import styled_line

@@ -8,7 +8,7 @@ Run from the top folder, naming files or folders:
     .venv/bin/python internal_tools/repeated_values.py tests internal_tools      # a count per file, most first
     .venv/bin/python internal_tools/repeated_values.py -v tests/tui/test_x.py    # each string, its line and the constant that names it
 
-The values are those of the classes of constants in model/vocabulary/file_format.py and of NoteName
+The values are those of the classes of constants in model/schema/file_format.py and of NoteName
 in model/values/note.py. Docstrings are left out. Not everything it lists is wrong: a test's own name
 for a thing, a track it calls bass, may happen to be a value of the program's too, so it is a
 list to read. What it finds in a line of data, a key or a value the program reads, should be
@@ -20,8 +20,8 @@ import inspect
 import os
 import sys
 
+from llamatron.model.schema import file_format
 from llamatron.model.values import note
-from llamatron.model.vocabulary import file_format
 
 VERBOSE_FLAG = '-v'
 PYTHON_SUFFIX = '.py'

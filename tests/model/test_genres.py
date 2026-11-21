@@ -13,7 +13,7 @@ from llamatron.macro_composer.wizard_choices import genre_names, style_of, Wizar
 from llamatron.model.file import version
 from llamatron.model.objects import genres
 from llamatron.model.objects.genres import sensible_style, style_name, subgenres_of, variants_of
-from llamatron.model.vocabulary.file_format import Section, SongSetting
+from llamatron.model.schema.file_format import Section, SongSetting
 from tests.support.rendering import as_setlist, setlist_from_data, song_from_data
 from tests.support.song_testing import lead_data
 

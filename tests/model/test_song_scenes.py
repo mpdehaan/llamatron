@@ -9,9 +9,9 @@ import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.schema.file_format import ClipSlotSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from tests.support import song_testing
 from tests.support.rendering import estimate_data, render_data, song_from_data
 from tests.support.song_testing import build, clip, pitches, with_parts

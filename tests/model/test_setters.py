@@ -19,11 +19,11 @@ from llamatron.model.objects.scene import Scene, TempoRamp
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampPart, RampWay, RegisterName, RegisterSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, GeneratorKind, PatternSetting, RampPart, RampWay, RegisterName, RegisterSetting, Row, SceneSetting, Section, TrackSetting
 
 # The song the tests build: two patterns, two tracks, a scale, an arp, an AutoRatchet and a chain.
 TUNE = 'tune'

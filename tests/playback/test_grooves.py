@@ -18,8 +18,8 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import groove as groove_values
 from llamatron.model.objects.groove import FactoryGroove, Groove, new_groove
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary import defaults, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema import defaults, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, with_parts

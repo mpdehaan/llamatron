@@ -7,8 +7,8 @@
 from typing import NamedTuple
 
 from llamatron.model.objects.naming import copy_name, is_taken, name_order, new_name
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.cursor import Cursor, key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

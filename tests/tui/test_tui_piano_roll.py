@@ -14,11 +14,11 @@ from llamatron.math.rational import Rational
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import words
+from llamatron.model.schema import defaults, file_format, limits, row_descriptions
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, Direction, Row
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import defaults, file_format, limits, row_descriptions
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, Direction, Row
 from llamatron.tui import drawing, keys
 from llamatron.tui.components.chord_row import chord_value
 from llamatron.tui.dialogs import chord_dialog

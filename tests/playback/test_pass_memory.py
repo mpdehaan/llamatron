@@ -14,8 +14,8 @@ from llamatron.caching.memory import Memory, StaleAnswer
 from llamatron.grid.clip import Clip
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
+from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
 from llamatron.model.values.sound import Sound
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Row, SceneSetting, Section
 from llamatron.playback.pass_memory import PassMemory
 from llamatron.playback.pattern_player import Pass
 from llamatron.playback.song_renderer import SongRenderer

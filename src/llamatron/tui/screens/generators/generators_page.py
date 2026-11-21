@@ -9,7 +9,7 @@ A adds one of a type asked for, N renames, C copies and Bksp deletes once nothin
 from typing import NamedTuple
 
 from llamatron.model.objects.naming import name_order, suggested_word
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.tui import drawing, key_table, keybindings, themes
 from llamatron.tui.cursor import Cursor
 from llamatron.tui.drawing import Align, Style

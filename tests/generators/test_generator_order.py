@@ -9,8 +9,8 @@ import tempfile
 import unittest
 
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import GeneratorKind, Section, SetlistSetting
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import GeneratorKind, Section, SetlistSetting
 from tests.support.rendering import as_setlist
 
 ARP = 'up'

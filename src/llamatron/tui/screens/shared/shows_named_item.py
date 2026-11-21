@@ -11,7 +11,7 @@ they share is a mixin beside whichever of those a page is.
 """
 
 from llamatron.model.objects import sections
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui.screens.shared import statements
 from llamatron.tui.screens.shared.statements import statement_section
 from llamatron.user_strings import labels

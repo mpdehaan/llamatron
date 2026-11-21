@@ -13,8 +13,8 @@ from llamatron.macro_composer import arranger, hook_writing, joins, notation, ph
 from llamatron.macro_composer.arranger import shares_a_bar as arranger_shares_a_bar
 from llamatron.macro_composer.wizard_choices import chords_as_text, chords_from_text, WizardChoices
 from llamatron.model.file import version
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Row, SceneSetting, Section, VelocitySetting
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Row, SceneSetting, Section, VelocitySetting
 from llamatron.user_strings import errors, macro_composer as composer_text
 
 A_NAME = 'made'

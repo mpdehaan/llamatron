@@ -16,10 +16,10 @@ from llamatron.model.objects.named_items import NamedItems
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import default_scale_name
 from llamatron.model.objects.pattern import Pattern
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Row, Section, SetlistSetting, SongSetting
 from llamatron.tui import history as history_values
 from llamatron.tui.document import Document
 from llamatron.tui.history import describe_change, History, renamed_items, Snapshot

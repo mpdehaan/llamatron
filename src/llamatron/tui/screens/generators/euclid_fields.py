@@ -5,8 +5,8 @@
 
 from llamatron.model.objects import euclid
 from llamatron.model.objects.euclid import rhythm
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import EuclidPart
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import EuclidPart
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.screens.generators.time_field import time_field
 from llamatron.tui.screens.shared.field import NumberField

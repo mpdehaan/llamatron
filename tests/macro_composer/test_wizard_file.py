@@ -10,7 +10,7 @@ import unittest
 from llamatron.macro_composer import arranger, song_plan, wizard_file, wizard_limits
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.model.file import version
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors
 
 SONG_FILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'wizard_songs')

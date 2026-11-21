@@ -12,7 +12,7 @@ import unittest
 from llamatron.exporters.midi_arrangement import MidiSong
 from llamatron.grid.row_clock import RowClock, seconds_per_whole
 from llamatron.model.objects.scene import TempoRamp
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, SceneSetting, SongSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, SceneSetting, SongSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.playback.tempo_ramps import ramped_tempos
 from llamatron.realtime import timeline

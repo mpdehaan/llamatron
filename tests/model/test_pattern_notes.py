@@ -16,9 +16,9 @@ from llamatron.model.objects import pattern_notes
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.pattern_notes import whole_steps_down, whole_steps_up
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, Row, Tension
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, Row, Tension
 
 HERE = 'here'
 WHOLE = Rational(1, 1)

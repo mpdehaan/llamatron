@@ -5,7 +5,7 @@
 """The tracker's Follow Chords pages: the list of them and the editor, whose Chords from picks a track of the current song."""
 
 from llamatron.model.objects.generator_settings import FollowChordsSetting
-from llamatron.model.vocabulary.file_format import GeneratorKind, Section
+from llamatron.model.schema.file_format import GeneratorKind, Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key

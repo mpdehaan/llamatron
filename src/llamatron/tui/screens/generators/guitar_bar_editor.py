@@ -15,8 +15,8 @@ from rich.text import Text
 
 from llamatron.model.objects import generator_settings, guitar_bars
 from llamatron.model.objects.guitar_bars import ready_bar_matching
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.drawing import Box, Style

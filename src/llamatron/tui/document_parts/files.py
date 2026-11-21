@@ -14,7 +14,7 @@ from llamatron.model.file.ordered_data import same_in_order
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary.file_format import SetlistSetting
+from llamatron.model.schema.file_format import SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import errors, messages
 

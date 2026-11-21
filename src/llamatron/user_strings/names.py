@@ -27,7 +27,7 @@ MSG_LEGACY_SCALE_NAME = '{root} {kind}'
 MSG_DOCUMENT_UNNAMED_SCENE = 'unnamed'
 MSG_SCENE_WITHOUT_A_NAME = 'scene'
 
-# model/vocabulary/defaults.py: the names given to a new set's song and to each new thing, numbered from 1
+# model/schema/defaults.py: the names given to a new set's song and to each new thing, numbered from 1
 # What a song is called until it's renamed: the one a new set starts with, and the one an older
 # file's single song gets when the file's name can't be used.
 MSG_DEFAULT_SONG_NAME = 'untitled'

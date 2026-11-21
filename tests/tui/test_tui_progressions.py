@@ -5,10 +5,10 @@
 
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Section, Tension
 from llamatron.model.values.progressions import named_progression
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, GeneratorKind, NamedProgression, Restart, Section, Tension
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import chord_dialog
 from llamatron.tui.dialogs.chord_dialog import ChordDialog

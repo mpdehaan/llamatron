@@ -27,10 +27,10 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import InstrumentSetting, KeyswitchSetting
+from llamatron.model.schema.setting import check_settings, Checked, described, Text, WholeNumber
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import InstrumentSetting, KeyswitchSetting
-from llamatron.model.vocabulary.setting import check_settings, Checked, described, Text, WholeNumber
 from llamatron.user_strings import errors
 
 class Keyswitch(NamedTuple):

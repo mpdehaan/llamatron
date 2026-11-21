@@ -11,7 +11,7 @@ A bar may run longer than one bar of the song: its cells are counted, not its ba
 
 from typing import NamedTuple
 
-from llamatron.model.vocabulary.file_format import ReadyBar, Stroke
+from llamatron.model.schema.file_format import ReadyBar, Stroke
 
 EIGHTH = '1/8'
 SIXTEENTH = '1/16'

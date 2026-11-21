@@ -22,9 +22,9 @@ import re
 import sys
 
 from llamatron.model.file.setlist_writer import dump_setlist
+from llamatron.model.schema import file_format, row_descriptions
 from llamatron.model.values import note as note_values
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import file_format, row_descriptions
 from llamatron.tui.screens.set import scale_page
 from llamatron.user_strings import labels, names as names_text
 from tests.support.rendering import as_setlist

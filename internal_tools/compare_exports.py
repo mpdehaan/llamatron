@@ -48,7 +48,7 @@ from llamatron.exporters.exports import export_name
 from llamatron.exporters.midi_arrangement import MidiSong, MidiStems
 from llamatron.model.file.setlist_reader import file_stem
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary.file_format import SetlistSetting
+from llamatron.model.schema.file_format import SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.tui.document import Document
 

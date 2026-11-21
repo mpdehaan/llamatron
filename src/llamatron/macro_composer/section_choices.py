@@ -12,7 +12,7 @@ from llamatron.macro_composer.arranger import chord_of, fits_by_halves, picked, 
 from llamatron.macro_composer.choices_part import kept_until_choices_change
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.user_strings import errors
 
 

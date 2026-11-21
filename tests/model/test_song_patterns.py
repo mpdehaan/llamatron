@@ -14,10 +14,10 @@ from llamatron.exporters import midi_messages, sounding
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import ChordSymbol, ClipSlotSetting, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
 from llamatron.playback.song_renderer import SongRenderer
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data

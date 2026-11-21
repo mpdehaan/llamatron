@@ -4,7 +4,7 @@
 """The Hocket editor: its name, the track whose notes it shares out, and its Restart."""
 
 from llamatron.model.objects.generator_settings import HocketSetting
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import ChoiceField, NameField

@@ -7,7 +7,7 @@
 import yaml
 
 from llamatron.exporters.timing import timed_events
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, Row, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, Section
 from tests.support.gate_conversion import to_gates
 from tests.support.rendering import render_data
 

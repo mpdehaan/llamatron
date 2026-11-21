@@ -28,7 +28,7 @@ from llamatron.exporters.timing import value_on_the_way
 from llamatron.importers.keys import degree_of, drum_note_of
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 
 # What a step holds when it ties the note before it on.
 TIED = 'tied'

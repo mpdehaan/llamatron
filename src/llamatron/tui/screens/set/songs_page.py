@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Songs page: the set's songs, which one is current, and each one's settings."""
 
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.set.song_page import SongPage

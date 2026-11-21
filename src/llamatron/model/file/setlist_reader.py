@@ -21,7 +21,7 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import sections
 from llamatron.model.objects.naming import is_taken
-from llamatron.model.vocabulary import file_format
+from llamatron.model.schema import file_format
 from llamatron.user_strings import errors
 
 # The most corrections one file is opened with, so that a correction that fails to put its value right cannot go on for ever.

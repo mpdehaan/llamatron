@@ -8,7 +8,7 @@ import unittest
 
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.vocabulary.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
+from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
 from llamatron.tui import keybindings
 from llamatron.tui.components import inset_window, scene_view
 from llamatron.tui.components.inset_window import drawn_over, inside_size

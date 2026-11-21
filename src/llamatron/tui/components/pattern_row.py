@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """One row of the pattern editor: what each of its cells shows, and what its keys do when the cursor is on it."""
 
-from llamatron.model.vocabulary import row_descriptions
+from llamatron.model.schema import row_descriptions
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.key_table import BindsKeys
 from llamatron.user_strings import labels as labels_text, marks
@@ -22,7 +22,7 @@ class PatternRow(BindsKeys):
     __slots__ = ('editor', 'name')
 
     def described(self):
-        """Return the row's one description, which says what a step may hold on the row: its limits, its choices and what a blank step plays as (model/vocabulary/row_descriptions.py)."""
+        """Return the row's one description, which says what a step may hold on the row: its limits, its choices and what a blank step plays as (model/schema/row_descriptions.py)."""
         return row_descriptions.ROW_DESCRIPTIONS[self.name]
 
     def __init__(self, *, editor, name):

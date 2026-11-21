@@ -29,9 +29,9 @@ from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
 from llamatron.model.values import note
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
 from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth
 from llamatron.realtime.timeline import Route

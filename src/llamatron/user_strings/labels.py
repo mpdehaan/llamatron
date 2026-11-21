@@ -6,7 +6,7 @@
 Each constant starts with MSG_, and the classes Crumb and Column group the words many pages share.
 """
 
-from llamatron.model.vocabulary.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.model.schema.file_format import Approach, CHAIN_KIND, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, GeneratorKind, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
 from llamatron.tui.keys import RowSection
 
 

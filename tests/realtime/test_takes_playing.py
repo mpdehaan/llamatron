@@ -9,7 +9,7 @@ its clips, new random choices, and a looping clip plays another take each time r
 
 import unittest
 
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section
 from llamatron.realtime import playback as playback_values, timeline
 from llamatron.realtime.engine import SteppedClock
 from llamatron.realtime.playback import Launch, LocalPlayback, Wanted

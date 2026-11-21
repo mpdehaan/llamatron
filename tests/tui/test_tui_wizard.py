@@ -11,8 +11,8 @@ from llamatron.macro_composer.breaks import break_names
 from llamatron.macro_composer.wizard_choices import genre_names, genre_title, WizardChoices
 from llamatron.model.file import version
 from llamatron.model.objects.naming import new_name
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import dialog as dialog_values, row_dialog

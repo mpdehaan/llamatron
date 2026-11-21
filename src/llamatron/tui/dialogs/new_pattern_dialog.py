@@ -12,7 +12,7 @@ the buttons Left and Right choose and Enter presses. Esc cancels.
 from rich.text import Text
 from typing import NamedTuple
 
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog

@@ -5,7 +5,7 @@
 
 from llamatron.model.objects import groove
 from llamatron.model.objects.groove import is_factory_groove
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Align
 from llamatron.tui.screens.shared.named_list_page import NamedListPage

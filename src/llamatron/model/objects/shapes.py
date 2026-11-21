@@ -14,9 +14,9 @@ from typing import NamedTuple
 
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import time_length
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Shape, shape_setting, ShapePart
-from llamatron.model.vocabulary.setting import Checked, Choice, WholeNumber
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Shape, shape_setting, ShapePart
+from llamatron.model.schema.setting import Checked, Choice, WholeNumber
 from llamatron.user_strings import errors
 
 # The lowest and highest percentage of each shape.

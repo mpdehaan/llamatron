@@ -18,9 +18,9 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import instrument as instrument_values
 from llamatron.model.objects.instrument import Instrument, Keyswitch
 from llamatron.model.objects.pattern import Pattern
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, GrooveSetting, InstrumentSetting, KeyswitchSetting, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.realtime import timeline as timeline_values
 from llamatron.realtime.clip_notes import ClipNotes

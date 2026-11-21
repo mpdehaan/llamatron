@@ -5,10 +5,10 @@
 """Kinds of row in the pattern editor: the limits a file holds a row to, the register rows, the Tie row, and a drum pattern's rows."""
 
 from llamatron.model.objects import conditions
+from llamatron.model.schema import file_format, limits, row_descriptions
+from llamatron.model.schema.file_format import Operator, RegisterName, RegisterSetting, Row, StatementPart, StepStatement
+from llamatron.model.schema.row_descriptions import RowOfNumbers
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary import file_format, limits, row_descriptions
-from llamatron.model.vocabulary.file_format import Operator, RegisterName, RegisterSetting, Row, StatementPart, StepStatement
-from llamatron.model.vocabulary.row_descriptions import RowOfNumbers
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs import grouped_choices
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
@@ -35,7 +35,7 @@ TYPED_NUMBER = 12
 
 
 class TestTheRowsLimitsAreTheFiles(PatternEditorTest):
-    """A row of numbers stops where the row's one description says, which is what a file's values are checked against (model/vocabulary/row_descriptions.py)."""
+    """A row of numbers stops where the row's one description says, which is what a file's values are checked against (model/schema/row_descriptions.py)."""
 
     async def test_every_row_of_numbers_stops_at_the_limits_a_file_is_checked_against(self):
         for name, described in row_descriptions.ROW_DESCRIPTIONS.items():

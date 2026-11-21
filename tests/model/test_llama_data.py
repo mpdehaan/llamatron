@@ -16,8 +16,8 @@ from llamatron.model.objects.llama_data import HoldsSettings, LlamaData
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
-from llamatron.model.vocabulary import defaults, limits
-from llamatron.model.vocabulary.file_format import Section, TrackSetting
+from llamatron.model.schema import defaults, limits
+from llamatron.model.schema.file_format import Section, TrackSetting
 from llamatron.user_strings import errors
 
 

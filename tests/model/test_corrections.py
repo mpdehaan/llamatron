@@ -25,9 +25,9 @@ from llamatron.model.objects import clip_slot
 from llamatron.model.objects.generator_settings import ArpSetting
 from llamatron.model.objects.pattern import nearest_step_value
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, RegisterName, RegisterSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, RegisterName, RegisterSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.user_strings import errors, messages, names
 from tests.support.rendering import as_setlist
 

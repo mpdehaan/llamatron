@@ -19,9 +19,9 @@ Textual.
 
 import functools
 
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Accidental, Row
 from llamatron.model.values import midi, note as note_values
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Accidental, Row
 from llamatron.tui import drawing as drawing_values, key_table, keybindings
 from llamatron.tui.components import degree_row
 from llamatron.tui.components.chord_row import pick_chord

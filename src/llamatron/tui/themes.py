@@ -9,8 +9,8 @@ the one it names; the main screen's is white, and Arrange has none and keeps the
 
 import functools
 
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Section
 
 SONGS = (0, 90, 255)
 PATTERNS = (0, 200, 0)

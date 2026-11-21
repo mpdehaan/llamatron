@@ -12,8 +12,8 @@ from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.math.rational import Rational
 from llamatron.model.file import version
 from llamatron.model.objects.generator_settings import GuitarifySettings
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import ChordSymbol, GuitarifySetting, Stroke, VelocitySetting
 
 A_NAME = 'a_song'
 A_SEED = 11

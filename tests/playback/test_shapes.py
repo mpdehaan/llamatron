@@ -15,9 +15,9 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.generator_settings import ShapeSetting
 from llamatron.model.objects.shapes import ShapeValues
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen
 from llamatron.model.values import midi
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen
 from llamatron.playback import shapes
 from llamatron.playback.shapes import percent_at, plays_at, strength
 from tests.playback import test_registers

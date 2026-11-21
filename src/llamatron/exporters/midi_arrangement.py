@@ -22,7 +22,7 @@ from llamatron.exporters import midi_messages
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles, WritesOneFile
 from llamatron.exporters.midi_messages import clip_events, midi_track, safe_file_name, tempo_event, ticks, time_signature_event
 from llamatron.exporters.timing import timed_events
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.user_strings import names as names_text
 
 # The song's files are named after the song, like the Live set: <directory>/<name>.mid for the

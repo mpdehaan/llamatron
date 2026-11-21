@@ -36,9 +36,9 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.generator_settings import PhrasingSettings
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note as note_values
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Section
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import errors, macro_composer as composer_text
 

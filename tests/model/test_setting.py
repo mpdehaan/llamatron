@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The descriptions of settings (model/vocabulary/setting.py): each kind's check, the allowed value
+"""The descriptions of settings (model/schema/setting.py): each kind's check, the allowed value
 nearest a wrong one, and the rules that every setting a file can hold is described once and that
 reading a file and calling a setter refuse a value in the same words."""
 
@@ -24,12 +24,12 @@ from llamatron.model.objects.register import Register
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
+from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, Setting, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
-from llamatron.model.vocabulary.setting import check_settings, Checked, Choice, described, Flag, Setting, Text, WholeNumber
 from llamatron.user_strings import names as names_text
 from tests.model.test_llama_data import every_subclass
 

@@ -9,8 +9,8 @@ import unittest
 from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.model.file import version
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import SceneSetting, Section, SectionKind
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import SceneSetting, Section, SectionKind
 from llamatron.user_strings import errors
 from tests.support import song_testing
 from tests.support.rendering import render_song, song_from_data

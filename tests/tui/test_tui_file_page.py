@@ -10,8 +10,8 @@ from unittest import mock
 
 from llamatron.model.file import version
 from llamatron.model.objects import setlist as setlist_values
-from llamatron.model.vocabulary import defaults, file_format
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import defaults, file_format
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

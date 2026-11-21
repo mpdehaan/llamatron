@@ -11,8 +11,8 @@ import unittest
 
 from llamatron.model.objects import groove
 from llamatron.model.objects.groove import FactoryGroove
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Section
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.dialogs.message_dialog import MessageDialog

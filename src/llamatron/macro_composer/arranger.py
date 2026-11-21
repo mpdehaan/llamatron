@@ -36,8 +36,8 @@ from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.generator_settings import FollowChordsSetting
 from llamatron.model.objects.named_scale import scale_type_called
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import ChordSymbol, GeneratorKind, PatternSetting, Row, SceneSetting, Section, VelocitySetting
 from llamatron.user_strings import errors, labels, macro_composer as composer_text
 
 # The fields of a style template.

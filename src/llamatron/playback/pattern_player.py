@@ -18,10 +18,10 @@ from llamatron.model.file.checks import written_length
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.conditions import draws_read, is_true
 from llamatron.model.objects.named_scale import NamedScale
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import Row, StepStatement
 from llamatron.model.values import midi, note as note_values, sound as sound_values
 from llamatron.model.values.sound import Sound
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import Row, StepStatement
 from llamatron.playback import drift
 from llamatron.user_strings import errors
 

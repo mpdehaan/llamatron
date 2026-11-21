@@ -13,9 +13,9 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import is_whole_number, listed, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import DrawSetting
-from llamatron.model.vocabulary.setting import Checked, Choice, described, Flag, WholeNumber
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import DrawSetting
+from llamatron.model.schema.setting import Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
 

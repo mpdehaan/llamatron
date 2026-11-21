@@ -12,9 +12,9 @@ scene's, one field at a time. Everything left blank, the notes play as written.
 
 from typing import NamedTuple
 
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import RampPart, RampWay, VelocitySetting
-from llamatron.model.vocabulary.setting import WholeNumber
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import RampPart, RampWay, VelocitySetting
+from llamatron.model.schema.setting import WholeNumber
 from llamatron.user_strings import errors
 
 # What a velocity left blank everywhere plays as: every note as loud as written.

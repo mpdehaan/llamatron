@@ -20,8 +20,8 @@ the plan knows still builds the rest.
 """
 
 from llamatron.model.objects.naming import new_name
-from llamatron.model.vocabulary import file_format, limits, row_descriptions
-from llamatron.model.vocabulary.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema import file_format, limits, row_descriptions
+from llamatron.model.schema.file_format import Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.tui import keybindings, keys as keys_values
 from llamatron.tui.components.chord_row import chord_text, ChordRow
 from llamatron.tui.components.cycle_row import CycleRow

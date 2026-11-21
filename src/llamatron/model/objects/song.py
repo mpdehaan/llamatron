@@ -25,9 +25,9 @@ from llamatron.model.objects.register import Register
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.track import Track
 from llamatron.model.objects.traits import HoldsSections
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import GeneratorKind, SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
-from llamatron.model.vocabulary.setting import Checked, Choice, described, Length, settings_held
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import GeneratorKind, SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
+from llamatron.model.schema.setting import Checked, Choice, described, Length, settings_held
 from llamatron.user_strings import errors, names
 
 

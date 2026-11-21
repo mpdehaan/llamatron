@@ -17,8 +17,8 @@ from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
+from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note
-from llamatron.model.vocabulary.file_format import Section
 from llamatron.user_strings import marks
 
 

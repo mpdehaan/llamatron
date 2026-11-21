@@ -9,9 +9,9 @@ that the step has a velocity, a gate and the rest like any note and the note row
 step that grabs can hold a chord, which is built on the grabbed note.
 """
 
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Row
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Row
 from llamatron.tui import keybindings
 from llamatron.tui.components.toggle_row import ToggleRow
 

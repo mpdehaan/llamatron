@@ -22,11 +22,11 @@ drummer moves from one to another. The trade is written as each clip's own veloc
 from llamatron.macro_composer import breaks
 from llamatron.model.file.checks import time_length
 from llamatron.model.objects import velocity_ramps
+from llamatron.model.schema import defaults, file_format
+from llamatron.model.schema.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held
 from llamatron.model.values.note import Note
-from llamatron.model.vocabulary import defaults, file_format
-from llamatron.model.vocabulary.file_format import ChordSymbol, GeneratorKind, Row, Stroke, VelocitySetting
 from llamatron.playback.song_renderer import SongRenderer
 
 # The drummer's cymbals that keep time, one player between them.

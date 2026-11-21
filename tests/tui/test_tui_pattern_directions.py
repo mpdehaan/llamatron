@@ -5,8 +5,8 @@
 """A pattern's direction and its Grab row, in the pattern editor."""
 
 from llamatron.model.objects.naming import words
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, Direction, Row
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, Row
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key, RowSection

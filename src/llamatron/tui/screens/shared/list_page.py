@@ -6,7 +6,7 @@
 
 from rich.text import Text
 
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.cursor import Cursor, key_between, place_of, Search, shown_around
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog

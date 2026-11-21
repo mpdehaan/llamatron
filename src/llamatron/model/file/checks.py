@@ -19,10 +19,10 @@ from typing import NamedTuple
 from llamatron.math.rational import Rational
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.schema import file_format, limits
 from llamatron.model.values.note import _check_length
 from llamatron.model.values.scale import Scale
 from llamatron.model.values.time_signature import TimeSignature
-from llamatron.model.vocabulary import file_format, limits
 from llamatron.user_strings import errors
 
 # A length has to be longer than nothing.

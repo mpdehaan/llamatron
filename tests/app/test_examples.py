@@ -15,7 +15,7 @@ from llamatron.model.file import example_sets as example_sets_values
 from llamatron.model.file.example_sets import example_sets, folder_of_example, genre_folder
 from llamatron.model.file.setlist_reader import set_file_data
 from llamatron.model.objects import generator_settings
-from llamatron.model.vocabulary.file_format import Section
+from llamatron.model.schema.file_format import Section
 from tests.support import rendering
 from tests.support.example_renders import example_setlist, first_song_grid
 from tests.support.rendering import is_demo

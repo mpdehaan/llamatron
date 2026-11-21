@@ -7,7 +7,7 @@ import yaml
 
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.setlist_writer import _text, dump_setlist
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting
 from tests.support.rendering import as_setlist, render_data
 
 # One song, laid out the way files were before sets existed, which as_setlist turns into a set of one song.

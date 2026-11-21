@@ -18,11 +18,11 @@ pattern editor opens, on that row's list. The Name row and the status line say w
 
 from llamatron.model.objects import generator_settings
 from llamatron.model.objects.naming import words
+from llamatron.model.schema import file_format, limits
+from llamatron.model.schema.file_format import Section
 from llamatron.model.values import progressions
 from llamatron.model.values.chords import borrowed, chord_half_steps
 from llamatron.model.values.progressions import named_progression_in, shown_numerals
-from llamatron.model.vocabulary import file_format, limits
-from llamatron.model.vocabulary.file_format import Section
 from llamatron.tui import drawing, key_table, keybindings, keys as keys_values, scale_categories
 from llamatron.tui.chord_text import ChordInWords
 from llamatron.tui.components.chord_row import quality_names

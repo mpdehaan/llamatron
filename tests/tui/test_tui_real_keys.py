@@ -4,7 +4,7 @@
 
 """Keys as a terminal sends them, and the function keys."""
 
-from llamatron.model.vocabulary.file_format import Row
+from llamatron.model.schema.file_format import Row
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.about_dialog import AboutDialog
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

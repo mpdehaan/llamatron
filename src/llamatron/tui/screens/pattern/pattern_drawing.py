@@ -11,7 +11,7 @@ and under each section's heading, two neighbouring rules drawn as one.
 
 from rich.text import Text
 
-from llamatron.model.vocabulary.file_format import Row
+from llamatron.model.schema.file_format import Row
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Align, Box, fit, Style
 from llamatron.tui.screens.pattern import grid_drawing

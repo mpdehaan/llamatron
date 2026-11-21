@@ -22,10 +22,10 @@ from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
+from llamatron.model.schema import defaults
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import defaults
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.tui.document import Document
 from llamatron.tui.uses import grabbers, uses_of
 from tests.model.test_llama_data import every_subclass

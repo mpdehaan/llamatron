@@ -19,7 +19,7 @@ from llamatron.importers.midi_import import ImportChoices
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.naming import copy_name, default_scale_name
-from llamatron.model.vocabulary import limits
+from llamatron.model.schema import limits
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.dialogs.dialog import Dialog
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog

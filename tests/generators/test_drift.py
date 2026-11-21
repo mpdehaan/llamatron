@@ -10,8 +10,8 @@ Each test plays clips of four quarter-note steps, a bar of
 import unittest
 
 from llamatron.model.objects.generator_settings import DriftSetting, versioned
-from llamatron.model.vocabulary import defaults, file_format, limits
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, GeneratorKind, RegisterSetting, Row, SceneSetting, Section
+from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, GeneratorKind, RegisterSetting, Row, SceneSetting, Section
 from llamatron.playback.drift import DriftPlay
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, pitches, scale_notes, song, velocities

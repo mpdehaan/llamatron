@@ -8,7 +8,7 @@ import unittest
 from llamatron.exporters import sounding
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.vocabulary.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.playback.test_shapes import notes

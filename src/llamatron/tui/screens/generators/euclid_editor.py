@@ -5,7 +5,7 @@
 
 from rich.text import Text
 
-from llamatron.model.vocabulary.file_format import EuclidPart, Section
+from llamatron.model.schema.file_format import EuclidPart, Section
 from llamatron.tui import keybindings
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.generators.euclid_fields import drawn_rhythm, euclid_fields, pick_rhythm

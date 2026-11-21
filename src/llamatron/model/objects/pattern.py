@@ -20,12 +20,12 @@ from llamatron.model.objects.conditions import check_statement, draws_read, stat
 from llamatron.model.objects.llama_data import HoldsSettings, written_settings
 from llamatron.model.objects.pattern_munges import PatternMunges
 from llamatron.model.objects.pattern_notes import PatternNotes
+from llamatron.model.schema import file_format, limits, row_descriptions
+from llamatron.model.schema.file_format import Direction, PatternSetting, Row, StepStatement
+from llamatron.model.schema.row_descriptions import row_described, rows_where
+from llamatron.model.schema.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.model.values.note import Note
-from llamatron.model.vocabulary import file_format, limits, row_descriptions
-from llamatron.model.vocabulary.file_format import Direction, PatternSetting, Row, StepStatement
-from llamatron.model.vocabulary.row_descriptions import row_described, rows_where
-from llamatron.model.vocabulary.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.user_strings import errors
 
 # Steps are counted from 1 in messages, as the editor shows them.
@@ -48,7 +48,7 @@ SETTINGS = described(
 # The settings a file's problem with is placed by the setting's name, like "pattern (tune), step_size: ...". The messages of the others name the setting themselves.
 PLACED_BY_NAME = (PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE)
 # What a rest keeps when a note is cleared from a step: its time, the CC values it sends, and what
-# it adds to the registers. Each row's one description says whether it is such a row (model/vocabulary/row_descriptions.py).
+# it adds to the registers. Each row's one description says whether it is such a row (model/schema/row_descriptions.py).
 REST_ROWS = rows_where(lambda row: row.is_kept_by_a_rest())
 # The rows that mean something else in a drum pattern, so they're cleared when a pattern changes kind.
 NOTE_ROWS = rows_where(lambda row: row.changes_with_drums())

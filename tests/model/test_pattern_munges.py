@@ -14,11 +14,11 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import ChordSymbol, Operator, PatternSetting, RegisterName, Row, StatementPart, StepStatement
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import ChordSymbol, Operator, PatternSetting, RegisterName, Row, StatementPart, StepStatement
 
 SIXTEENTH = Rational(1, 16)
 C_MAJOR = NamedScale(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))

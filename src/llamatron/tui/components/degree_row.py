@@ -14,8 +14,8 @@ a degree above the rows that fit fills the bar and marks the number. A drum patt
 note letters and has no gauge.
 """
 
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Row
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Row
 from llamatron.tui import drawing, keybindings, keys as keys_values
 from llamatron.tui.components.pattern_row import PatternRow
 from llamatron.user_strings import errors, labels as labels_text, legends, marks

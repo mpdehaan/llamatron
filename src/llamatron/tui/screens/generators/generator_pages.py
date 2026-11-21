@@ -5,8 +5,8 @@
 
 from typing import NamedTuple
 
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import GeneratorKind, Section, Shape
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import GeneratorKind, Section, Shape
 from llamatron.tui.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.tui.screens.generators.arp_editor import ArpEditor
 from llamatron.tui.screens.generators.articulate_editor import ArticulateEditor

@@ -27,9 +27,9 @@ from llamatron.math.rational import Rational
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.scale import ScaleType
-from llamatron.model.vocabulary import file_format
-from llamatron.model.vocabulary.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.user_strings import errors, importing
 from tests.support.example_renders import example_setlist, first_song_grid
 

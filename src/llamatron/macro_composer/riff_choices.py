@@ -12,7 +12,7 @@ from llamatron.macro_composer.choices_part import ChoicesPart, kept_until_choice
 from llamatron.macro_composer.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import naming
-from llamatron.model.vocabulary.file_format import PatternSetting
+from llamatron.model.schema.file_format import PatternSetting
 from llamatron.user_strings import errors, macro_composer as composer_text, names as names_text
 
 

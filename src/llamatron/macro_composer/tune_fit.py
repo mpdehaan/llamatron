@@ -13,7 +13,7 @@ shape of the tune.
 
 from fractions import Fraction
 
-from llamatron.model.vocabulary.file_format import PatternSetting, Row
+from llamatron.model.schema.file_format import PatternSetting, Row
 
 DEGREE = 'degree'
 # How many notes a scale has, and the notes of a chord counted up its scale from its root: the root, the third and the fifth.

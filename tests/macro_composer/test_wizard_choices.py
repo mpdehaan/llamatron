@@ -12,9 +12,9 @@ from llamatron.macro_composer import arranger, melody, notation, wizard_limits
 from llamatron.macro_composer.arranger import arranged, share_in, style_named, style_names, values_of
 from llamatron.macro_composer.wizard_choices import genre_names, genre_title, style_of, WizardChoices
 from llamatron.model.file import version
+from llamatron.model.schema import limits
+from llamatron.model.schema.file_format import Section
 from llamatron.model.values.note import NoteName
-from llamatron.model.vocabulary import limits
-from llamatron.model.vocabulary.file_format import Section
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.user_strings import errors, macro_composer as composer_text
 from tests.macro_composer.test_wizard_effect import subgenre_of_the_day
