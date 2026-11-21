@@ -26,6 +26,7 @@ from llamatron.composition.file_format import Row
 from llamatron.composition.invalid_value import InvalidValue
 from llamatron.composition.row_descriptions import row_described, rows_where
 from llamatron.music import midi
+from llamatron.music.chord import movement
 from llamatron.strings import errors
 from llamatron.support.random_source import random_source
 from llamatron.support.revised import notes_change
@@ -242,16 +243,3 @@ def inverted(*, pitches, inversion):
 def voiced(*, pitches, inversion, shift):
     """Return a chord's pitches in an inversion, moved so many octaves."""
     return [pitch + shift * midi.HALF_STEPS_PER_OCTAVE for pitch in inverted(pitches=pitches, inversion=inversion)]
-
-
-def movement(*, pitches, before):
-    """Return how far a voicing's notes are from the chord before: lowest to lowest when both have as many notes, and otherwise each note to the nearest of the chord before."""
-    now = sorted(pitches)
-    if len(now) == len(before):
-        return sum(abs(pitch - other) for pitch, other in zip(now, before))
-    return sum(_distance_to_nearest(pitch=pitch, others=before) for pitch in now)
-
-
-def _distance_to_nearest(*, pitch, others):
-    """Return how far a pitch is from the nearest of other pitches."""
-    return min(abs(pitch - other) for other in others)

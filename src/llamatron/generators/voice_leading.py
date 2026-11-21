@@ -26,6 +26,7 @@ is.
 
 from llamatron.generators.base import ClipGenerator
 from llamatron.music import midi, sound as sound_values
+from llamatron.music.chord import movement
 from llamatron.music.sound import Sound
 
 HALF_STEPS_PER_OCTAVE = 12
@@ -83,7 +84,7 @@ class VoiceLeading(ClipGenerator):
                 pitches = [pitch + octaves * HALF_STEPS_PER_OCTAVE for pitch in shape]
                 if not self._fits(pitches) or (floor is not None and min(pitches) <= floor):
                     continue
-                score = (_distance(pitches=pitches, target=target), abs(octaves))
+                score = (movement(pitches=pitches, before=target), abs(octaves))
                 if best is None or score < best[0]:
                     best = (score, pitches)
         if best is None:
@@ -95,12 +96,9 @@ class VoiceLeading(ClipGenerator):
 
 def _inversions(pitches):
     """Return each inversion of pitches given lowest first, each lining up with the pitches as given: root position, then the lowest one, two and more moved up an octave."""
-    return [[pitch + HALF_STEPS_PER_OCTAVE if place < moved else pitch for place, pitch in enumerate(pitches)] for moved in range(len(pitches))]
+    return [_lowest_moved_up(pitches=pitches, moved=moved) for moved in range(len(pitches))]
 
 
-def _distance(*, pitches, target):
-    """Return how far a voicing's notes move from the chord before: note by note, lowest to lowest, when both have as many notes, and otherwise each note to the nearest before."""
-    voiced = sorted(pitches)
-    if len(voiced) == len(target):
-        return sum(abs(pitch - other) for pitch, other in zip(voiced, target))
-    return sum(min(abs(pitch - other) for other in target) for pitch in voiced)
+def _lowest_moved_up(*, pitches, moved):
+    """Return pitches given lowest first with the lowest so many of them moved up an octave."""
+    return [pitch + HALF_STEPS_PER_OCTAVE if place < moved else pitch for place, pitch in enumerate(pitches)]

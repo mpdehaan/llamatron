@@ -107,7 +107,11 @@ class Life(Visualizer):
 
     def seeded(self, *, rows, columns):
         """Return a fresh grid with FRESH_SHARE of its cells alive, at random."""
-        return numpy.array([[self._chooser.random() < FRESH_SHARE for _ in range(columns)] for _ in range(rows)], dtype=bool)
+        return numpy.array([self.seeded_row(columns) for _ in range(rows)], dtype=bool)
+
+    def seeded_row(self, columns):
+        """Return a row of so many cells with FRESH_SHARE of them alive, at random."""
+        return [self._chooser.random() < FRESH_SHARE for _ in range(columns)]
 
     def frame_of(self, *, width, height, now, heard):
         rows = height // CELL_ROWS

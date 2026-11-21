@@ -75,9 +75,15 @@ MEAN_FALL_PER_SECOND = 40.0
 MOST_GAIN = 1.2
 
 
+def hue_of(colour):
+    """Return a colour's hue, from 0 to 1 round the wheel."""
+    red, green, blue = (channel / WHOLE for channel in colour)
+    return colorsys.rgb_to_hsv(red, green, blue)[0]
+
+
 def palette_of(colours):
     """Return a palette of PALETTE_SIZE colours going round the hues of the colours given and back to the first, each at full saturation and brightness, so that it stays vivid rather than passing through pastels, as an array of rows by three."""
-    hues = [colorsys.rgb_to_hsv(*(channel / WHOLE for channel in colour))[0] for colour in colours]
+    hues = [hue_of(colour) for colour in colours]
     hues = hues + [hues[0] + 1.0]
     for place in range(1, len(hues)):
         while hues[place] < hues[place - 1]:

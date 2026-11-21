@@ -202,7 +202,7 @@ class ClipSlotPlayer:
             written = self._song.chain_run(chain)
             statements.append(written.get_bypass_when())
             statements += [self._song.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when() for step in written.get_steps()]
-        read = {name for table in statements if table for statement in table for name in draws_read(statement)}
+        read = _draws_read_by(statements)
         return frozenset(name for name in read if self._song.get_draw(name).redraws_in_conditions())
 
     def _skip_tables(self):
@@ -447,7 +447,7 @@ def _tripped(*, passes, tables):
     tables = [table for table in tables if table]
     if not tables:
         return []
-    return [values is not None and any(any_true(statements=table, values=values) for table in tables) for _, _, values in passes]
+    return [values is not None and _any_holds(tables=tables, values=values) for _, _, values in passes]
 
 
 def _kept_where(*, tripped, before, after, passes):
@@ -509,3 +509,17 @@ def _moved_later(*, controls, time):
 def _in_whole_notes(*, values, bar):
     """Return a shape's values with its over, which may be written in bars, as a length in whole notes."""
     return values if values.over is None else values._replace(over=in_whole_notes(time=values.over, bar=bar))
+
+
+def _any_holds(*, tables, values):
+    """Return whether any statement of any of the tables holds for the registers' values."""
+    return any(any_true(statements=table, values=values) for table in tables)
+
+
+def _draws_read_by(tables):
+    """Return the names of the draws any statement of the tables reads."""
+    read = set()
+    for table in tables:
+        for statement in table or ():
+            read.update(draws_read(statement))
+    return read

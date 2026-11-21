@@ -90,8 +90,12 @@ class DigitalRain(Visualizer):
         """Start again at a size: every cell a one or a zero, and no streams."""
         self._rows = rows
         self._columns = columns
-        self._glyphs = [[self._chooser.choice(visualizers.MSG_RAIN_DIGITS) for _ in range(columns)] for _ in range(rows)]
+        self._glyphs = [self.random_glyphs(columns) for _ in range(rows)]
         self._streams = numpy.zeros((0, 5))
+
+    def random_glyphs(self, columns):
+        """Return a row of so many ones and zeroes, at random."""
+        return [self._chooser.choice(visualizers.MSG_RAIN_DIGITS) for _ in range(columns)]
 
     def stream_count(self):
         """Return how many streams are falling, for the tests."""

@@ -125,7 +125,8 @@ class Mystify(Visualizer):
         place = track % MOST_POLYGONS
         if place not in self._polygons:
             corners = numpy.array([[self._chooser.uniform(0, 1), self._chooser.uniform(0, 1)] for _ in range(MOST_CORNERS)])
-            headings = numpy.array([[math.sin(angle), math.cos(angle)] for angle in (self._chooser.uniform(0, math.tau) for _ in range(MOST_CORNERS))])
+            angles = [self._chooser.uniform(0, math.tau) for _ in range(MOST_CORNERS)]
+            headings = numpy.array([[math.sin(angle), math.cos(angle)] for angle in angles])
             self._polygons[place] = Polygon(corners=corners, headings=headings, colour=vivid(track_colour(track)))
         return self._polygons[place]
 

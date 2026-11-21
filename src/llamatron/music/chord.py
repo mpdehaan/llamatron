@@ -113,3 +113,18 @@ class Chord:
 
     def __repr__(self):
         return reprs.REPR_CHORD.format(notes=self._notes)
+
+
+def movement(*, pitches, before):
+    """Return how far a voicing's notes move from the chord before, as MIDI numbers: lowest to lowest when both have as many
+    notes, and otherwise each note to the nearest of the chord before. Voice leading and the munge that voices chords nearest
+    both choose the voicing that moves least."""
+    now = sorted(pitches)
+    if len(now) == len(before):
+        return sum(abs(pitch - other) for pitch, other in zip(now, before))
+    return sum(distance_to_nearest(pitch=pitch, others=before) for pitch in now)
+
+
+def distance_to_nearest(*, pitch, others):
+    """Return how far a pitch is from the nearest of other pitches."""
+    return min(abs(pitch - other) for other in others)

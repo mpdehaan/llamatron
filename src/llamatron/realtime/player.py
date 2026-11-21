@@ -190,8 +190,7 @@ class Player:
             if not play.cut:
                 play.end = start + score.get_scene_seconds(new_scene)
             self._sender.add(score.events_from(scene=new_scene, track=new_track, start=start, tag=play.tag, after=max(at, start)))
-        self._moments = [moment._replace(scene=scene_map[moment.scene], tracks=tuple(track_map[track] for track in moment.tracks if track_map.get(track) is not None))
-                         for moment in self._moments if scene_map.get(moment.scene) is not None]
+        self._moments = [_renumbered(moment=moment, scene_map=scene_map, track_map=track_map) for moment in self._moments if scene_map.get(moment.scene) is not None]
         heapq.heapify(self._moments)
         self._plan_ends_again(now)
 
@@ -503,3 +502,8 @@ class Player:
             self._sender.add([Playing(Rational(0), at, port, channel, timeline.NOTE_OFF, number, timeline.NO_VELOCITY, play.tag) for port, channel, number in notes])
         play.end = min(play.end, at)
         play.cut = True
+
+
+def _renumbered(*, moment, scene_map, track_map):
+    """Return a moment of the lights with its scene and tracks renumbered after an edit, leaving out a track that is gone."""
+    return moment._replace(scene=scene_map[moment.scene], tracks=tuple(track_map[track] for track in moment.tracks if track_map.get(track) is not None))
