@@ -52,7 +52,7 @@ class ChainStepPlace:
 
     def seed(self):
         """Return the seed a generator that chooses at random takes when its settings give none, or None for an unseeded render."""
-        return self._realizer.chain_step_seed(scene=self._scene, track=self._track, index=self._index)
+        return self._realizer.get_state().chain_step_seed(scene=self._scene, track=self._track, index=self._index)
 
     def pattern_step(self):
         """Return the step size of the pattern the clip plays."""

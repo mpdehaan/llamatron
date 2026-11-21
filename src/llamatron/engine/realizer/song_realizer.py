@@ -18,11 +18,12 @@ from llamatron.engine.realizer import registers as registers_values
 from llamatron.engine.realizer.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
 from llamatron.engine.realizer.clip_slot_player import ClipSlotPlayer
 from llamatron.engine.realizer.draws import DrawPlay
-from llamatron.engine.realizer.modulations import modulates, Modulations
+from llamatron.engine.realizer.modulations import modulates
 from llamatron.engine.realizer.pass_memory import PassMemory
 from llamatron.engine.realizer.pattern_player import check_pattern_has_a_scale
 from llamatron.engine.realizer.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
-from llamatron.engine.realizer.scene_reuse import changed_clips, first_changed_scene, SceneCheckpoint
+from llamatron.engine.realizer.scene_reuse import changed_clips, first_changed_scene
+from llamatron.engine.realizer.song_state import SongState
 from llamatron.engine.realizer.tempo_ramps import ramped_tempos, tempos_within
 from llamatron.engine.realizer.track_output import TrackOutput
 from llamatron.engine.realizer.written_scene import WrittenScene
@@ -32,29 +33,14 @@ from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.strum import strums_at_all
-from llamatron.model.schema import file_format, generator_plugins
+from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import RampWay, Restart, Section, StepStatement
 from llamatron.model.values import midi, sound as sound_values
 from llamatron.user_strings import errors, marks
 
-# An arp with no seed of its own gets one made from the render's seed, its scene, its track and
-# its place in the chain, multiplied by these so that each comes out different.
-SEED_SONG_FACTOR = 1_000_003
-SEED_SCENE_FACTOR = 1_009
-SEED_TRACK_FACTOR = 31
-# How far a clip's seeds move for each take after the first, a prime far past what a song's places reach.
-SEED_TAKE_FACTOR = 1_000_000_007
-FIRST_TAKE = 0
-# The seed the song's random draws start afresh from as a retaken scene first starts.
-DRAWS_TAKE_SEED = '{seed}/{scene}/draws take {take}'
-# The registers' random values, for a Reset behavior that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
-REGISTER_SEED_OFFSET = 7
 # The controller's methods that strum a clip's chords and move its notes early or late.
 STRUMS = 'strum'
 MOVES_NOTES = 'moving_row'
-# What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
-STRUM_SEED_OFFSET = 977
-STRUM_SEEDS = 1_000_000
 # A tempo is held to this denominator, and a whole note lasts this many milliseconds at one beat a minute.
 TEMPO_DENOMINATOR = 1000
 MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240_000
@@ -108,7 +94,7 @@ class SongRealizer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_register_chooser', '_modulations', '_output', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_looping_scenes_go_round', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes', '_takes', '_song_places')
+    __slots__ = ('_song', '_state', '_scenes', '_clips', '_counted', '_lengths', '_timelines', '_output', '_starts', '_end_states', '_chord_counts', '_looping_scenes_go_round', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None, takes=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -126,15 +112,11 @@ class SongRealizer:
         """
         self._looping_scenes_go_round = looping_scenes_go_round
         self._song = song
-        self._seed = seed
-        self._takes = {} if takes is None else dict(takes)
-        self._song_places = {id(scene): place for place, scene in enumerate(song.get_scenes())}
+        self._state = SongState(song=song, seed=seed, takes=takes, keeps_checkpoints=data is not None)
         self._scenes = WrittenScene.write_out(song)
-        self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
         # Whether playing changes the registers, which every scene asks and which looks through every pattern of the set, asked
         # once, since nothing changes the song while it renders.
         self._changes_registers = song.changes_registers()
-        self._draws = {name: song.get_draw(name) for name in file_format.DRAW_NAMES}
         self._clips = {}
         # Clips played only to record their register changes, with those changes.
         self._counted = {}
@@ -142,16 +124,12 @@ class SongRealizer:
         self._timelines = {}
         # What every track played, as the clips that read another track's notes find it.
         self._output = TrackOutput(realizer=self, song=song)
-        self._register_chooser = random_source(None if self._seed is None else self._seed * SEED_SONG_FACTOR + REGISTER_SEED_OFFSET)
-        self._modulations = Modulations(song=song, seed=self._seed)
-        # What every strum's loose timing draws from, fixed for the render so that every export of it and its playing agree.
         # The state each generator left each track's clip in, by pass, written scene, track and the generator's place, for a Restart that carries on.
         self._end_states = {}
         # How many chords each track's finished clip in each written scene holds, for a Strum's down up that carries on.
         self._chord_counts = {}
         # Each ramping scene's tempos, repeat by repeat, worked out once.
         self._ramped = {}
-        self._strum_seed = random_source(None if self._seed is None else self._seed * SEED_SONG_FACTOR + STRUM_SEED_OFFSET).randrange(STRUM_SEEDS)
         # Where each written-out scene starts from the song's top, in whole notes, for the drifts' clocks.
         self._starts = {}
         # How long each clip that the registers can cut short lasts, by written scene and track, found by playing, and the registers each such scene's clips read while it is still being found.
@@ -163,7 +141,6 @@ class SongRealizer:
         # The set's data the song was copied from, where its threads were kept at each written scene's start, and how many
         # written scenes the render took from an earlier one.
         self._data = data
-        self._checkpoints = None if data is None else []
         self._reused = 0
         self._kept_clips = set()
         # The render clips are kept from while this one plays, in a song whose registers a kept clip reads, and None after.
@@ -215,8 +192,7 @@ class SongRealizer:
     def _render_scene(self, *, grid, tracks, scene, place):
         """Add a written-out scene's row to the grid with its finished clips, played or kept."""
         if place >= self._reused:
-            if self._checkpoints is not None:
-                self._checkpoints.append(SceneCheckpoint(self._register_chooser.getstate(), self._modulations.snapshot()))
+            self._state.note_scene_start()
             if self._earlier is not None:
                 self._hold_kept_clips_to_registers(scene)
         tempo = None if scene.get_tempo() is None else float(scene.get_tempo())
@@ -262,16 +238,11 @@ class SongRealizer:
             clip.set_keyswitch_lead(self.keyswitch_lead(track=track, tempo=tempo))
         return clip
 
-    def take_of(self, *, scene, track):
-        """Return which take a written-out scene's clip on a track plays, 0 unless the render was given another."""
-        return self._takes.get((self._song_places[id(scene.get_scene())], track), FIRST_TAKE)
-
-    def taken_seed(self, *, seed, scene, track):
-        """Return a whole-number seed made from a clip's place moved on by the clip's take, the same seed for take 0."""
-        return seed + self.take_of(scene=scene, track=track) * SEED_TAKE_FACTOR
-
     def get_song(self):
         return self._song
+
+    def get_state(self):
+        return self._state
 
     def get_track_output(self):
         return self._output
@@ -288,7 +259,7 @@ class SongRealizer:
             return
         name = _song_name_of(self._song)
         first = min(first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes()), self._first_retaken(after))
-        count = min(sum(scene.get_repeat() for scene in self._song.get_scenes()[:first]), len(after._checkpoints))
+        count = min(sum(scene.get_repeat() for scene in self._song.get_scenes()[:first]), len(after.get_state().get_checkpoints()))
         self._take_scenes(after=after, count=count)
         if self._clips_stand_apart():
             changed = changed_clips(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
@@ -296,25 +267,21 @@ class SongRealizer:
                 changed = self._with_retaken(changed=changed, after=after)
                 self._take_clips(after=after, changed=changed)
 
-    def _retaken(self, after):
-        """Return the (scene's place in the song, track) of every clip whose take differs from an earlier render's."""
-        return {key for key in set(self._takes) | set(after._takes) if self._takes.get(key, FIRST_TAKE) != after._takes.get(key, FIRST_TAKE)}
-
     def _first_retaken(self, after):
         """Return the place in the song of the first scene a clip of which has another take than in an earlier render, or the
         number of scenes when none has."""
-        return min((place for place, _track in self._retaken(after)), default=len(self._song.get_scenes()))
+        return min((place for place, _track in self._state.retaken(after.get_state())), default=len(self._song.get_scenes()))
 
     def _with_retaken(self, *, changed, after):
         """Return each scene's changed tracks with the tracks whose take differs from an earlier render's added."""
-        retaken = self._retaken(after)
+        retaken = self._state.retaken(after.get_state())
         return [here if here is None else here | _tracks_retaken_in(place=index, retaken=retaken) for index, here in enumerate(changed)]
 
     def _can_take_from(self, after):
         """Return whether this render can take anything from an earlier one: both made with data from the same seed, the song's
         flags alike, every scene lasting as long in both, since a generator's run and a drift's clock reach across scenes by
         their lengths, and no scene played to find how long it lasts, as one is where a register can cut a clip short."""
-        if after is None or after._checkpoints is None or self._checkpoints is None or self._seed is None or after._seed != self._seed:
+        if after is None or not self._state.can_carry_on_from(after.get_state()):
             return False
         if after._looping_scenes_go_round != self._looping_scenes_go_round or after._song_flags() != self._song_flags():
             return False
@@ -327,7 +294,6 @@ class SongRealizer:
         """Take everything an earlier render worked out about its first count written scenes, and its random streams as they
         stood as the next one started."""
         self._reused = count
-        self._checkpoints = after._checkpoints[:count]
         self._clips = _through_scene(entries=after._clips, count=count, number_of=_first_part)
         self._counted = _through_scene(entries=after._counted, count=count, number_of=_first_part)
         self._decided = _through_scene(entries=after._decided, count=count, number_of=_first_part)
@@ -337,10 +303,7 @@ class SongRealizer:
         self._lengths = _through_scene(entries=after._lengths, count=count, number_of=_whole_key)
         self._timelines = _through_scene(entries=after._timelines, count=count, number_of=_whole_key)
         self._starts = _through_scene(entries=after._starts, count=count, number_of=_whole_key)
-        if count < len(after._checkpoints):
-            checkpoint = after._checkpoints[count]
-            self._register_chooser.setstate(checkpoint.register_state)
-            self._modulations.restore(checkpoint.modulations)
+        self._state.take_scenes(earlier=after.get_state(), count=count)
 
     def _take_clips(self, *, after, changed):
         """Take from an earlier render every clip after the scenes taken whole that plays as it did, with the states its
@@ -410,7 +373,7 @@ class SongRealizer:
         clips first ask for its triggers."""
         setlist = self._song.get_setlist()
         kinds = [kind for kind in generator_plugins.plugins() if modulates(kind)]
-        return not any(self._modulations.draws_in_order(kind=kind, name=name) for kind in kinds for name in setlist.get_generator_names(kind))
+        return not any(self._state.get_modulations().draws_in_order(kind=kind, name=name) for kind in kinds for name in setlist.get_generator_names(kind))
 
     def kept_tracks(self, scenes):
         """Return the tracks whose clips were taken from an earlier render in every written-out scene given."""
@@ -491,10 +454,9 @@ class SongRealizer:
             return None
         # A gap in milliseconds is that share of a whole note, which lasts four beats at the tempo.
         gap = Fraction(strum.milliseconds) * Fraction(tempo).limit_denominator(TEMPO_DENOMINATOR) / MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE
-        place = self._song.get_track_names().index(track)
         return StrumPlan(
             direction=strum.direction, gap=Rational(gap.numerator, gap.denominator), fade=strum.fade, loose_timing=strum.loose_timing,
-            upstroke_count=strum.upstroke_count, beat=self._song.get_time_signature().beat_length(), seed=self.taken_seed(seed=self._strum_seed + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR, scene=scene, track=track),
+            upstroke_count=strum.upstroke_count, beat=self._song.get_time_signature().beat_length(), seed=self._state.strum_seed(scene=scene, track=track),
             offset=self.run_offset(scene=scene, restart=restart), chords_before=self._chords_before(scene=scene, track=track, restart=restart),
         )
 
@@ -613,17 +575,18 @@ class SongRealizer:
         it first starts, not on its repeats, every register that resets each scene. A scene
         before it that can't be played changes nothing, so that estimates can still show this one.
         """
-        values = starting_values(self._registers)
+        values = starting_values(self._state.get_registers())
         # The registers that reverse and are counting the other way, which a reset puts back to counting forward.
         turned = registers_values.NOT_TURNED
         # Where the song's draws stand, carried from scene to scene, or None in a song whose draws hold no value.
-        draws = DrawPlay(self._draws) if self._song.uses_draws() else None
+        draws = DrawPlay(self._state.get_draws()) if self._song.uses_draws() else None
         for written in self._scenes[:self._scenes.index(scene) + 1]:
             number = written.get_number()
             if number not in self._timelines:
-                self._draw_afresh_for_a_take(written)
+                before = self._scenes.index(written) - 1
+                self._state.draw_afresh_for_a_take(written=written, scene_before=self._scenes[before] if before >= 0 else None)
                 resets = self._resets_of(written)
-                start = with_resets(values=values, registers=self._registers, names=resets)
+                start = with_resets(values=values, registers=self._state.get_registers(), names=resets)
                 if turned:
                     turned = turned.difference(resets)
                 if draws is not None:
@@ -645,20 +608,7 @@ class SongRealizer:
         a clip of it short, and from the changes its clips make otherwise."""
         if self._is_settled_by_playing(scene):
             return self._decide(scene=scene, start=start, turned=turned, draws=draws)
-        return RegisterTimeline(registers=self._registers, start=start, changes=self._scene_changes(scene), chooser=self._register_chooser, turned=turned, draws=draws)
-
-    def _draw_afresh_for_a_take(self, written):
-        """As a retaken scene first starts, before its repeats, start the song's random draws afresh from the seed, the scene and its
-        take, so that a draw that takes any value, or each value once, draws anew on every take, as a looping scene's laps and a
-        scene launched again do, rather than as the take before drew; its repeats then draw on from one another as ever."""
-        place = self._song_places[id(written.get_scene())]
-        take = max((self._takes.get((place, track), FIRST_TAKE) for track in written.get_track_names()), default=FIRST_TAKE)
-        if take == FIRST_TAKE or self._seed is None:
-            return
-        before = self._scenes.index(written) - 1
-        if before >= 0 and self._scenes[before].get_scene() is written.get_scene():
-            return
-        self._register_chooser.seed(DRAWS_TAKE_SEED.format(seed=self._seed, scene=place, take=take))
+        return RegisterTimeline(registers=self._state.get_registers(), start=start, changes=self._scene_changes(scene), chooser=self._state.get_register_chooser(), turned=turned, draws=draws)
 
     def _cutting_of(self, name):
         """Return whether a step of a pattern can cut a pass short, and whether one can stop its clip, asked of the pattern once for the render."""
@@ -709,13 +659,13 @@ class SongRealizer:
             fixed = [self._played_once(scene=scene, track=track) for track in every]
         own = scene_change(sets=scene.get_scene().get_register_sets() if scene.is_first_play() else {}, adds=scene.get_scene().get_register_adds())
         guess = random_source(GUESS_SEED)
-        alone = RegisterTimeline(registers=self._registers, start=start, changes=[own] if own else [], chooser=guess, turned=turned)
+        alone = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=[own] if own else [], chooser=guess, turned=turned)
         self._guesses[number] = lambda track: RegisterSolo(
-            place=self._track_place(track), registers=self._registers, start=alone.end_values(), chooser=guess, turned=alone.get_end_turned(),
+            place=self._track_place(track), registers=self._state.get_registers(), start=alone.end_values(), chooser=guess, turned=alone.get_end_turned(),
         )
         # Until the first play is in, the scene is taken to last as long as the clips nothing can cut.
         self._lengths[number] = max(fixed, default=NO_LENGTH)
-        drawn = self._register_chooser.getstate()
+        drawn = self._state.get_register_chooser().getstate()
         settled = None
         try:
             while True:
@@ -730,8 +680,8 @@ class SongRealizer:
                 changes = self._scene_changes(scene)
                 found = (changes, [self._decided[(number, track)] for track in ending])
                 # Every round draws a register's random values from the same place, so that the same changes always make the same timeline.
-                self._register_chooser.setstate(drawn)
-                timeline = RegisterTimeline(registers=self._registers, start=start, changes=changes, chooser=self._register_chooser, turned=turned, draws=draws)
+                self._state.get_register_chooser().setstate(drawn)
+                timeline = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=changes, chooser=self._state.get_register_chooser(), turned=turned, draws=draws)
                 if found == settled:
                     return timeline
                 settled = found
@@ -774,7 +724,7 @@ class SongRealizer:
         """Return the registers a written-out scene sets back to their defaults as it starts: its own resets, and on its first play every register that resets each scene."""
         names = written.get_reset_names()
         if written.is_first_play():
-            names += [name for name, register in self._registers.items() if register.resets_each_scene() and name not in names]
+            names += [name for name, register in self._state.get_registers().items() if register.resets_each_scene() and name not in names]
         return names
 
     def _scene_changes(self, scene):
@@ -796,7 +746,7 @@ class SongRealizer:
         start = self.scene_start(scene)
         for step in dict.fromkeys(step for track in scene.get_track_names() for step in self.modulators_of(scene=scene, track=track)):
             origin = self.modulation_origin(scene=scene, step=step)
-            for time, adds in self._modulations.play_of(step.kind).adds_between(name=step.name, start=start, end=start + length, origin=origin):
+            for time, adds in self._state.get_modulations().play_of(step.kind).adds_between(name=step.name, start=start, end=start + length, origin=origin):
                 changes.append(RegisterChange(time - start, MODULATION_PLACE, {}, adds))
         return changes
 
@@ -810,10 +760,6 @@ class SongRealizer:
     def modulators_of(self, *, scene, track):
         """Return the steps of a track's clip's chains in a scene whose generators change values as the song plays, in order, or none when it plays nothing."""
         return [step for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps() if modulates(step.kind)]
-
-    def get_modulations(self):
-        """Return the song's modulations as they play, which every clip naming a modulating generator hears."""
-        return self._modulations
 
     def scene_start(self, scene):
         """Return where a written-out scene starts from the song's top, in whole notes: the scenes before it laid end to end."""
@@ -872,7 +818,7 @@ class SongRealizer:
 
     def get_seed(self):
         """Return the seed this render makes every random choice from, or None for a new take."""
-        return self._seed
+        return self._state.get_seed()
 
     def run_start(self, *, scene, restart):
         """Return the written-out scene a generator's run starts in, as its Restart says: this one, the first play of this scene, or the song's first."""
@@ -946,14 +892,6 @@ class SongRealizer:
         place = ChainStepPlace(realizer=self, clip=ClipBeingMade(scene=scene, track=track, counting=counting), step=StepInChains(step=step, chain=chain, index=index, key=key))
         return registry.controller_of(step.kind).make_generator(settings=settings, place=place)
 
-    def chain_step_seed(self, *, scene, track, index):
-        """Return the seed a generator that chooses at random takes at a place in a clip's chains when its settings give none:
-        one made from the render's, which differs for every scene, track and place in the chain, so that a seeded render is
-        always the same; None for a render with no seed, so that the generator draws its own random numbers."""
-        if self._seed is None:
-            return None
-        place = self._song.get_track_names().index(track)
-        return self.taken_seed(seed=self._seed * SEED_SONG_FACTOR + scene.get_number() * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index, scene=scene, track=track)
 
 
 def _through_scene(*, entries, count, number_of):

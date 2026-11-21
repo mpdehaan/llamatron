@@ -184,7 +184,7 @@ class ClipSlotPlayer:
         by_kind = {}
         for step in modulators:
             by_kind.setdefault(step.kind, []).append(step)
-        modulations = self._realizer.get_modulations()
+        modulations = self._realizer.get_state().get_modulations()
         return tuple((modulations.play_of(kind), _names_of(steps), self._origins(steps)) for kind, steps in by_kind.items())
 
     def _origins(self, steps):
@@ -380,11 +380,11 @@ class ClipSlotPlayer:
 
     def _seed_for(self, template):
         """Return the seed for one of this clip's random choices, or None when the render has no seed."""
-        seed = self._realizer.get_seed()
+        seed = self._realizer.get_state().get_seed()
         if seed is None:
             return None
         made = template.format(seed=seed, scene=self._scene.get_number(), track=self._track_name)
-        take = self._realizer.take_of(scene=self._scene, track=self._track_name)
+        take = self._realizer.get_state().take_of(scene=self._scene, track=self._track_name)
         return TAKE_SEED.format(seed=made, take=take) if take else made
 
     def _play_pass(self, *, player, grab, scale, place, repeat, where, rolls, order, target_order, registers, start, turn, pattern_rolls, pass_draws):
