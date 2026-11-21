@@ -8,7 +8,6 @@ from dataclasses import dataclass
 import functools
 from rich.text import Text
 
-from llamatron.engine.realizer import song_realizer
 from llamatron.model.objects import clip_slot as clip_slot_values
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import defaults, file_format, limits
@@ -242,7 +241,7 @@ class ClipPage(FieldPage):
                 return
             circle = self.document().grab_circle(index=self.index, track=self.track, other=other)
             if circle:
-                self.tell(errors.ERR_CIRCULAR_GRAB_TITLE, errors.ERR_GRAB_CIRCLE.format(track=other, circle=song_realizer.GRAB_ARROW.join(circle)), errors.ERR_REMOVE_OTHER_GRAB)
+                self.tell(errors.ERR_CIRCULAR_GRAB_TITLE, errors.ERR_GRAB_CIRCLE.format(track=other, circle=marks.MSG_CIRCLE_ARROW.join(circle)), errors.ERR_REMOVE_OTHER_GRAB)
                 return
             self.set_value(setting=ClipSlotSetting.GRAB_TRACK, value=other)
         self.pick(title=labels_text.MSG_GRAB_TRACK_LABEL, values=[None, *tracks], shown=[marks.MSG_NONE_SHOWN, *tracks], current=self.clip_slot().get_grab_track(), then=chosen)

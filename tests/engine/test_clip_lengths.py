@@ -20,7 +20,7 @@ from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.schema.file_format import ClipSlotSetting, Row
 from llamatron.tui.lengths import measured
-from llamatron.user_strings import errors
+from llamatron.user_strings import errors, marks
 from tests.support.rendering import bare_document, song_from_file
 
 EXAMPLES = example_sets()
@@ -193,7 +193,7 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
     def test_grabs_in_a_circle_are_a_problem_without_playing(self):
         self.document.set_clip_slot_setting(index=FIRST, track=LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=BASS)
         self.document.set_clip_slot_setting(index=FIRST, track=BASS, setting=ClipSlotSetting.GRAB_TRACK, value=LEAD)
-        self.assertIn(song_realizer.GRAB_ARROW.join([LEAD, BASS, LEAD]), self.document.lengths().scene_problem(FIRST))
+        self.assertIn(marks.MSG_CIRCLE_ARROW.join([LEAD, BASS, LEAD]), self.document.lengths().scene_problem(FIRST))
         self.assertIsNone(self.document.lengths().scene_problem(SECOND))
 
 

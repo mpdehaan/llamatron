@@ -88,8 +88,8 @@ class ChainStepPlace:
 
     def chords_followed(self, source):
         """Return the chords a track of the song plays in the scene, after its own chains, or None."""
-        return self._realizer.chords_followed(scene=self._scene, track=self._track, source=source, counting=self._counting)
+        return self._realizer.get_track_output().chords_followed(scene=self._scene, track=self._track, source=source, counting=self._counting)
 
     def tune_heard(self, source):
         """Return when the tune sounds on a track of the song in the scene, after its own chains, or None."""
-        return self._realizer.tune_heard(scene=self._scene, track=self._track, source=source, counting=self._counting)
+        return self._realizer.get_track_output().tune_heard(scene=self._scene, track=self._track, source=source, counting=self._counting)

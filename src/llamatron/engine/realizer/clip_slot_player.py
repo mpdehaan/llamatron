@@ -93,7 +93,7 @@ class ClipSlotPlayer:
         modulators = self._realizer.modulators_of(scene=scene, track=self._track_name)
         hearing = None if not modulators or registers.is_counting() else (self._heard(modulators), self._realizer.scene_start(scene))
         player = PatternPlayer(song=self._song, scene=scene, scale=scale, track=self._track, scale_name=self._scale_name(), modulations=hearing, passes=self._realizer.get_passes())
-        grab = self._realizer.get_grab_source(scene=scene, track=self._track_name) if grabbing else None
+        grab = self._realizer.get_track_output().get_grab_source(scene=scene, track=self._track_name) if grabbing else None
         # A looping clip that a step of its pattern can stop is never cut to its scene nor made to fill it: it lasts until the step's statement holds.
         loop = self._realizer.fills_its_scene(scene=scene, track=self._track_name)
         fill = self._realizer.get_scene_length(scene) if loop else None

@@ -8,6 +8,10 @@ Each constant starts with MSG_.
 
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, Direction, Quality, Shape, Stroke
 
+# engine/realizer/track_output.py, engine/realizer/song_realizer.py and tui/screens/arrange/clip_page.py: how a circle of tracks reading
+# each other is joined in its message, like a → b → a.
+MSG_CIRCLE_ARROW = ' → '
+
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NONE_SHOWN = '(none)'
 # What a field shows for a genre, subgenre or variant a song doesn't say.
