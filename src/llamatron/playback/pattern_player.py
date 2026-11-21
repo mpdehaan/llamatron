@@ -93,6 +93,15 @@ class PlayedPattern(NamedTuple):
     mutes: object
     # What each step does to the song's draws, a StepDraws a step, or None where no step uses, resets or redraws one.
     step_draws: object
+    # Whether any step plays by chance, with a probability under 100, and whether any step grabs: with the registers, the draws and
+    # the statements above, each kind of thing that carries between passes is known apart, for whatever can skip the work of one.
+    rolls: bool
+    grabs: bool
+
+    def is_plain(self):
+        """Return whether no step reads or changes anything that carries from pass to pass, so that a pass is decided by its
+        pattern and the order its steps play in alone."""
+        return not (self.changes_registers or self.uses_registers or self.uses_draws or self.rolls or self.grabs) and self.stops is None and self.restarts is None and self.mutes is None
 
 
 class StepDraws(NamedTuple):
@@ -119,10 +128,11 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_drifts')
+    __slots__ = ('_song', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_drifts', '_passes')
 
-    def __init__(self, *, song, scene, scale, track, scale_name=None, drifts=None):
+    def __init__(self, *, song, scene, scale, track, scale_name=None, drifts=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
+        passes is the render's PassMemory, or None to remember no pass.
 
         drifts is what the clip hears of the song's drifts, (DriftPlay, the names its chain names,
         where the scene starts from the song's top), or None for a clip that names none.
@@ -142,6 +152,8 @@ class PatternPlayer:
         self._scale_size = None
         # Each pattern's step values, gathered the first pass it plays rather than for every pass, since no pattern changes while a clip plays.
         self._played_patterns = {}
+        # A clip that hears a drift or binds a register to its velocity reads what carries between passes in every pass.
+        self._passes = passes if drifts is None and self._velocity_register is None else None
 
     def _played(self, *, pattern_name, pattern):
         """Return a pattern's PlayedPattern, gathered the first time the pattern plays."""
@@ -152,7 +164,7 @@ class PatternPlayer:
                 values, pattern.sends_controls(), pattern.sends_keyswitches(),
                 pattern.changes_registers(), pattern.uses_registers(), step_draws is not None,
                 pattern.get_statements(StepStatement.STOP), pattern.get_statements(StepStatement.RESTART), pattern.get_statements(StepStatement.MUTE),
-                step_draws,
+                step_draws, any(_plays_by_chance(step_values) for step_values in values), any(step_values[Row.GRAB] for step_values in values),
             )
         return self._played_patterns[pattern_name]
 
@@ -180,6 +192,26 @@ class PatternPlayer:
                 if statement is not None:
                     found[step].update(name for name in draws_read(statement) if name in redrawing)
         return found if any(found) else None
+
+    def pass_context(self):
+        """Return everything of this player's a plain pass's notes follow from besides its pattern: the clip's scale, the named
+        scale its degrees take their notes from, the track's transpose, default velocity and accent, and the song's default octaves."""
+        named = None if self._scale_name is None else self._song.get_named_scale(self._scale_name)
+        scale_of_name = None if named is None else (named.get_root(), named.get_kind())
+        return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._song.get_default_octave(), self._song.get_default_drum_octave())
+
+    def _pass_key(self, *, pattern_name, pattern, played, steps, pass_draws):
+        """Return the key a pass is remembered by, or None for a pass that reads what carries between passes or a player that
+        remembers none."""
+        if self._passes is None or pass_draws or not played.is_plain():
+            return None
+        return (self.pass_context(), pattern_name, pattern.get_revision(), self._song.get_pattern_step_size(pattern), self.pattern_length(pattern), tuple(steps))
+
+    def _remembered(self, *, key, result, remembered):
+        """Keep a pass played under its key, if it has one, and return it."""
+        if key is not None:
+            self._passes.keep(key=key, played=result, remembered=remembered)
+        return result
 
     def _scene_scale_at(self, octave, *, effects=None, kind=None):
         """Return the clip's scale rooted at an octave, or the scale and root a drift overrides it with, built the first time each is asked for.
@@ -245,6 +277,11 @@ class PatternPlayer:
         counting = registers.is_counting()
         drum = pattern.is_drum()
         steps = order.next_steps(key=(PATTERN_STEPS, pattern_name), count=pattern.get_steps(), direction=direction or pattern.get_direction())
+        # A pass of a pattern that reads and changes nothing carrying between passes is remembered by its key (playback/pass_memory.py).
+        key = self._pass_key(pattern_name=pattern_name, pattern=pattern, played=played, steps=steps, pass_draws=pass_draws)
+        remembered = None if key is None else self._passes.recall(key)
+        if remembered is not None and not self._passes.is_checking():
+            return remembered
         # A morph's target neither changes the registers nor is cut short by them: only the clip's own pattern decides.
         stops = played.stops if changes_registers else None
         restarts = played.restarts if changes_registers else None
@@ -331,8 +368,8 @@ class PatternPlayer:
             )))
         clip = Clip(sounds=_in_sequence(sounding=sounding, length=pass_length, step_length=step_length), scale=self._scale, controls=controls)
         if cut_at is not None:
-            return _cut_short(clip=clip, end=cut_at * step_size, tied_from_before=leading_ties * step_size, keyswitches=keyswitches, done=done)
-        return Pass(clip=clip, tied_from_before=leading_ties * step_size, length=length, keyswitches=keyswitches)
+            return self._remembered(key=key, result=_cut_short(clip=clip, end=cut_at * step_size, tied_from_before=leading_ties * step_size, keyswitches=keyswitches, done=done), remembered=remembered)
+        return self._remembered(key=key, result=Pass(clip=clip, tied_from_before=leading_ties * step_size, length=length, keyswitches=keyswitches), remembered=remembered)
 
     def pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes."""
@@ -668,6 +705,12 @@ def _value_or(*, value, default):
 def _clamped_velocity(velocity):
     """Return a velocity moved into the range MIDI allows, if registers pushed it out."""
     return max(min(velocity, midi.MAX_VELOCITY), midi.MIN_VELOCITY)
+
+
+def _plays_by_chance(values):
+    """Return whether a step's probability is under 100, so that whether it plays takes a roll."""
+    probability = values[Row.PROBABILITY]
+    return probability is not None and probability < limits.MAX_PROBABILITY
 
 
 def _rolls_under(*, rolls, probability):

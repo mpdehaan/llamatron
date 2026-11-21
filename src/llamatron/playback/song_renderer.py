@@ -42,6 +42,7 @@ from llamatron.playback.clip_slot_player import ClipSlotPlayer
 from llamatron.playback.draws import DrawPlay
 from llamatron.playback.drift import DriftPlay, drifts_named
 from llamatron.playback.grab_source import GrabSource
+from llamatron.playback.pass_memory import PassMemory
 from llamatron.playback.pattern_player import check_pattern_has_a_scale
 from llamatron.playback.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
 from llamatron.playback.scene_reuse import changed_clips, first_changed_scene, SceneCheckpoint
@@ -121,7 +122,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -182,6 +183,8 @@ class SongRenderer:
         self._kept_clips = set()
         # The render clips are kept from while this one plays, in a song whose registers a kept clip reads, and None after.
         self._earlier = None
+        # The passes the render has played that a key decides (playback/pass_memory.py), handed on from the render before.
+        self._passes = PassMemory()
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it has none."""
@@ -209,6 +212,8 @@ class SongRenderer:
         """
         grid = ClipGrid(tempo=_whole_if_possible(float(self._song.get_tempo())), time_signature=self._song.get_time_signature())
         tracks = self._add_tracks(grid)
+        if after is not None:
+            self._passes = PassMemory(earlier=after.get_passes())
         self._take_over(after)
         try:
             for place, scene in enumerate(self._scenes):
@@ -217,6 +222,10 @@ class SongRenderer:
             # A render keeps no earlier render alive, so that a run of edits holds only the last.
             self._earlier = None
         return grid
+
+    def get_passes(self):
+        """Return the PassMemory of the passes the render has played that a key decides."""
+        return self._passes
 
     def _render_scene(self, *, grid, tracks, scene, place):
         """Add a written-out scene's row to the grid with its finished clips, played or kept."""

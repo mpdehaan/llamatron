@@ -101,7 +101,7 @@ class ClipSlotPlayer:
         drifts = self._renderer.drifts_of(scene=scene, track=self._track_name)
         origins = {name: self._renderer.drift_origin(scene=scene, name=name) for name in drifts}
         hearing = None if not drifts or registers.is_counting() else (self._renderer.get_drifts(), drifts, self._renderer.scene_start(scene), origins)
-        player = PatternPlayer(song=self._song, scene=scene, scale=scale, track=self._track, scale_name=self._scale_name(), drifts=hearing)
+        player = PatternPlayer(song=self._song, scene=scene, scale=scale, track=self._track, scale_name=self._scale_name(), drifts=hearing, passes=self._renderer.get_passes())
         grab = self._renderer.get_grab_source(scene=scene, track=self._track_name) if grabbing else None
         # A looping clip that a step of its pattern can stop is never cut to its scene nor made to fill it: it lasts until the step's statement holds.
         loop = self._renderer.fills_its_scene(scene=scene, track=self._track_name)
