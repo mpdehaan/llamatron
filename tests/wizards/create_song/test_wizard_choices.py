@@ -537,7 +537,7 @@ class TestWizardOffers(unittest.TestCase):
         self.choices.hold_offers()
         self.offer()
         role = self.choices.get_band().roles_in()[0]
-        self.choices.player(role).has_dynamics()
+        self.choices.player(role).loudness().has_dynamics()
         self.assertTrue(self.choices.holds_offers())
         self.assertEqual(self.offer(), 1)
 

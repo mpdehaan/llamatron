@@ -2,8 +2,8 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""What a section of the song wizard's form may be given of its own, checked: each field's value, a line written by hand,
-and chords typed as degrees, read from text and written back as text."""
+"""Values a person gives the song wizard, checked: what a section of the form may be given of its own, field by field, a
+line written by hand, a number in a range, and chords typed as degrees, read from text and written back as text."""
 
 import copy
 
@@ -107,6 +107,11 @@ def checked_own(*, field, value):
 def _is_integer(value):
     """Return whether a value is an integer, true and false aside."""
     return isinstance(value, int) and not isinstance(value, bool)
+
+
+def is_integer_between(value, *, low, high):
+    """Return whether a value is an integer from low to high, true and false aside."""
+    return _is_integer(value) and low <= value <= high
 
 
 def _is_energy(value):

@@ -7,10 +7,25 @@
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, band, loudness, melody as melody_writer, notation as tune_notation, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, band, melody as melody_writer, notation as tune_notation, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import fits, share_of, values_of
 from llamatron.wizards.create_song.characters import gauges_of
-from llamatron.wizards.create_song.loudness import drum_levels, note_levels, with_own
+from llamatron.wizards.create_song.own_values import is_integer_between
+from llamatron.wizards.create_song.player_loudness import PlayerLoudness
+from llamatron.wizards.create_song.player_sections import PlayerSections
+
+
+
+def _is_row(*, values, low, high):
+    """Return whether values are a row a player can be given: a list of as many cells as a row holds, each an integer from low to high."""
+    if not isinstance(values, (list, tuple)):
+        return False
+    if not wizard_limits.FEWEST_ROW_CELLS <= len(values) <= wizard_limits.MOST_ROW_CELLS:
+        return False
+    for value in values:
+        if not is_integer_between(value, low=low, high=high):
+            return False
+    return True
 
 
 class PlayerChoices:
@@ -40,8 +55,24 @@ class PlayerChoices:
 
     def is_in(self):
         """Return whether a player is in the band: not left out, and, for a player of notes, playing in a way that sounds."""
-        entry = self._band().role_named(self._role)
-        return not self._band().is_left_out(self._role) and (bool(entry.get(arranger.DRUMS)) or self._choices.trait_has_sound(trait=entry[arranger.TRAIT], value=self._band().get_way(entry[arranger.TRAIT])))
+        band = self._band()
+        if band.is_left_out(self._role):
+            return False
+        entry = self._role_entry()
+        if entry.get(arranger.DRUMS):
+            return True
+        trait = entry[arranger.TRAIT]
+        return self._choices.trait_has_sound(trait=trait, value=band.get_way(trait))
+
+    def _role_entry(self):
+        """Return what the genre writes of the player."""
+        band = self._band()
+        return band.role_named(self._role)
+
+    def _instrument(self):
+        """Return the instrument the player plays, as the genre names it."""
+        entry = self._role_entry()
+        return entry.get(arranger.PLAYER)
 
     def can_play(self):
         """Return whether a player can be in the band at all: the drums always, and a player of notes where a way of playing that sounds fits the subgenre."""
@@ -77,115 +108,34 @@ class PlayerChoices:
     def ways(self, trait):
         """Return the ways a player may play a trait beside the other picks, the commonest first; for a player of notes, only ways that sound."""
         style = self._choices.style()
-        drums = bool(self._band().role_named(self._role).get(arranger.DRUMS))
+        entry = self._role_entry()
+        drums = bool(entry.get(arranger.DRUMS))
         picks = self._choices.picks()
-        entries = [entry for entry in sorted(values_of(style=style, trait=trait).values(), key=share_of, reverse=True) if (drums or arranger.SOUND in entry) and fits(entry=entry, picks=picks)]
-        return [entry[arranger.VALUE] for entry in entries if self._band().works(trait=trait, value=entry[arranger.VALUE])]
+        band = self._band()
+        by_share = sorted(values_of(style=style, trait=trait).values(), key=share_of, reverse=True)
+        ways = []
+        for way in by_share:
+            value = way[arranger.VALUE]
+            sounds = drums or arranger.SOUND in way
+            if sounds and fits(entry=way, picks=picks) and band.works(trait=trait, value=value):
+                ways.append(value)
+        return ways
 
     def has_busy(self):
         """Return whether a player's busyness can be chosen: the genre says how the player's instrument is played at each level."""
-        return self._band().role_named(self._role).get(arranger.PLAYER) in self._choices.style().get(arranger.PLAYERS, {})
+        style = self._choices.style()
+        return self._instrument() in style.get(arranger.PLAYERS, {})
 
     def get_busy(self):
         """Return how busy a player is, from LEAST_BUSY to MOST_BUSY, or None where the song names no level."""
-        return self._band().instrument_level(self._band().role_named(self._role).get(arranger.PLAYER))
+        band = self._band()
+        return band.instrument_level(self._instrument())
 
     def set_busy(self, level):
         """Choose how busy a player is. Players of one instrument, as a lead and a solo, share the level."""
         if not self.has_busy():
             raise ValueError(errors.ERR_WIZARD_BUSY.format(low=wizard_limits.LEAST_BUSY, high=wizard_limits.MOST_BUSY, value=level))
         self._band().take_level(player=self._band().role_named(self._role)[arranger.PLAYER], level=level)
-
-    def _levels_of_style(self):
-        """The four levels the genre gives a player: the whole kit's for the drummer, and a player of notes' from the player's velocity."""
-        entry = self._band().role_named(self._role)
-        if entry.get(arranger.DRUMS):
-            return drum_levels(self._choices.style()[arranger.LOUDNESS][arranger.DRUMS])
-        return note_levels(entry[tune_notation.VELOCITY])
-
-    def has_loudness(self):
-        """Return whether a player has levels to choose: a player in the band who drums or plays notes at a velocity."""
-        return self._choices.is_ready() and self._role in self._band().roles() and self.is_in() and (bool(self._band().role_named(self._role).get(arranger.DRUMS)) or tune_notation.VELOCITY in self._band().role_named(self._role))
-
-    def loudness_levels(self):
-        """Return a player's four levels by name, the genre's with the song's own in their places; the drummer's are the whole kit's,
-        which every piece of the kit follows in proportion."""
-        return with_own(levels=self._levels_of_style(), own=(self._choices.get_extra(arranger.LOUDNESS) or {}).get(self._role))
-
-    def loudness_level_is_own(self, level):
-        return level in (self._choices.get_extra(arranger.LOUDNESS) or {}).get(self._role, {})
-
-    def loudness_levels_offered(self):
-        """Return the levels of a player that the song plays, from the quietest up: a level no note of the player's is played at is
-        not offered. Found by making the song with each level moved, and kept until a choice changes."""
-        if not self.has_loudness():
-            return []
-        return self._choices.offered(key=(wizard_limits.LEVELS_ANSWER, self._role), compute=lambda: self._levels_heard())
-
-    def _levels_heard(self):
-        plain = self._parts_as_written()
-        heard = []
-        for level in wizard_names.LOUDNESS_LEVELS:
-            trial = self._choices.copied_for_trial()
-            now = trial.player(self._role).loudness_levels()[level]
-            tried = now - wizard_limits.LEVEL_TRIAL if now > wizard_limits.MIDDLE_VELOCITY else now + wizard_limits.LEVEL_TRIAL
-            of_players = dict(trial.get_extra(arranger.LOUDNESS) or {})
-            trial.set_extra(name=arranger.LOUDNESS, value={**of_players, self._role: {**of_players.get(self._role, {}), level: tried}})
-            # The player's dynamics as written, so that a level is heard apart from the normal one.
-            trial.set_extra(name=arranger.DYNAMICS, value={player: dynamics for player, dynamics in (trial.get_extra(arranger.DYNAMICS) or {}).items() if player != self._role} or None)
-            if trial.patterns_of_song() != plain:
-                heard.append(level)
-        return heard
-
-    def _parts_as_written(self):
-        """The song's parts with a player's dynamics as the genre writes them."""
-        trial = self._choices.copied_for_trial()
-        trial.set_extra(name=arranger.DYNAMICS, value={player: dynamics for player, dynamics in (trial.get_extra(arranger.DYNAMICS) or {}).items() if player != self._role} or None)
-        return trial.patterns_of_song()
-
-    def set_loudness_level(self, *, level, number):
-        """Give a player a level of the song's own, a velocity, or give the level back to the genre with None."""
-        is_number = number is None or (isinstance(number, int) and not isinstance(number, bool) and wizard_names.LOWEST_VELOCITY <= number <= wizard_names.HIGHEST_VELOCITY)
-        if not self.has_loudness() or level not in wizard_names.LOUDNESS_LEVELS or not is_number:
-            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=wizard_names.LOWEST_VELOCITY, high=wizard_names.HIGHEST_VELOCITY, value=(self._role, level, number)))
-        of_players = {player: dict(levels) for player, levels in (self._choices.get_extra(arranger.LOUDNESS) or {}).items()}
-        own = of_players.setdefault(self._role, {})
-        own.pop(level, None)
-        if number is not None and number != self._levels_of_style()[level]:
-            own[level] = number
-        of_players = {player: levels for player, levels in of_players.items() if levels}
-        self._choices.set_extra(name=arranger.LOUDNESS, value=of_players or None)
-        self._choices.clear_answers()
-
-    def has_dynamics(self):
-        """Return whether a player's dynamics are heard: whether the song differs with the player's notes all alike and at their widest,
-        found by making the song both ways and kept until a choice changes."""
-        if not self.has_loudness():
-            return False
-        return self._choices.offered(key=(wizard_limits.DYNAMICS_ANSWER, self._role), compute=lambda: self._dynamics_are_heard())
-
-    def _dynamics_are_heard(self):
-        made = []
-        for dynamics in (wizard_names.LEAST_DYNAMICS, wizard_names.MOST_DYNAMICS):
-            trial = self._choices.copied_for_trial()
-            trial.set_extra(name=arranger.DYNAMICS, value={**(trial.get_extra(arranger.DYNAMICS) or {}), self._role: dynamics})
-            made.append(trial.patterns_of_song())
-        return made[0] != made[1]
-
-    def get_dynamics(self):
-        return (self._choices.get_extra(arranger.DYNAMICS) or {}).get(self._role, loudness.USUAL_DYNAMICS)
-
-    def set_dynamics(self, dynamics):
-        """Say how far a player's loud and soft notes lie from the player's normal ones: not at all at the least, as the genre writes them
-        in the middle, and twice as far at the most."""
-        if not self.has_loudness() or isinstance(dynamics, bool) or not isinstance(dynamics, int) or not wizard_names.LEAST_DYNAMICS <= dynamics <= wizard_names.MOST_DYNAMICS:
-            raise ValueError(errors.ERR_WIZARD_DYNAMICS.format(low=wizard_names.LEAST_DYNAMICS, high=wizard_names.MOST_DYNAMICS, value=dynamics))
-        of_players = dict(self._choices.get_extra(arranger.DYNAMICS) or {})
-        of_players.pop(self._role, None)
-        if dynamics != loudness.USUAL_DYNAMICS:
-            of_players[self._role] = dynamics
-        self._choices.set_extra(name=arranger.DYNAMICS, value=of_players or None)
-        self._choices.clear_answers()
 
     def plays_lines(self):
         entry = self._band().role_named(self._role)
@@ -211,22 +161,40 @@ class PlayerChoices:
 
     def preset(self):
         """Return the level of the preset a player is, or None for a player whose gauges were moved from it."""
-        return self._band().instrument_preset(self._band().role_named(self._role).get(arranger.PLAYER))
+        band = self._band()
+        return band.instrument_preset(self._instrument())
 
     def rows(self):
         """Return the rows of numbers a player's notes are dealt, by name, while the song's tunes are written in the serial style
         and the player plays lines of the tune in some section of the form; none otherwise."""
-        if not self._choices.is_ready() or self._choices.melody().engine() != melody_writer.SERIAL or not self._choices.get_sounds().has_sound(self._role) or not self.plays_lines():
+        if not self._choices.is_ready():
+            return []
+        melody = self._choices.melody()
+        sounds = self._choices.get_sounds()
+        if melody.engine() != melody_writer.SERIAL or not sounds.has_sound(self._role) or not self.plays_lines():
             return []
         # A player who plays in no section of the song's form is dealt nothing, so has no row to change.
-        if not any(self._role in self._choices.section(place).plays() for place in range(len(self._choices.get_song_form().section_entries()))):
+        if not self._plays_somewhere():
             return []
         return list(wizard_limits.PLAYER_ROWS)
 
+    def _plays_somewhere(self):
+        """Return whether the player plays in any section of the song's form."""
+        form = self._choices.get_song_form()
+        for place in range(len(form.section_entries())):
+            section = self._choices.section(place)
+            if self._role in section.plays():
+                return True
+        return False
+
     def genre_row(self, name):
         """Return a player's row as the genre gives it, or the row that plays as none would."""
-        habits = {**self._choices.melody().habits(), **self._band().role_named(self._role).get(arranger.HABITS, {})}
-        return list(habits.get(name) or wizard_limits.ROWS_UNASKED[name])
+        melody = self._choices.melody()
+        entry = self._role_entry()
+        habits = dict(melody.habits())
+        habits.update(entry.get(arranger.HABITS, {}))
+        row = habits.get(name) or wizard_limits.ROWS_UNASKED[name]
+        return list(row)
 
     def get_row(self, name):
         """Return a player's row as the song will deal it: the player's own, or the genre's for the player."""
@@ -243,13 +211,13 @@ class PlayerChoices:
         if name not in self.rows():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_ROW.format(value=name))
         low, high = wizard_limits.ROW_LIMITS[name]
-        if not isinstance(values, (list, tuple)) or not wizard_limits.FEWEST_ROW_CELLS <= len(values) <= wizard_limits.MOST_ROW_CELLS or any(
-                isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high for value in values):
+        if not _is_row(values=values, low=low, high=high):
             raise ValueError(errors.ERR_WIZARD_ROW.format(name=name, low=low, high=high, fewest=wizard_limits.FEWEST_ROW_CELLS, most=wizard_limits.MOST_ROW_CELLS, value=values))
         if list(values) == self.genre_row(name=name):
             self.clear_row(name=name)
         else:
-            self._band().keep_row(role=self._role, name=name, values=list(values))
+            band = self._band()
+            band.keep_row(role=self._role, name=name, values=list(values))
 
     def clear_row(self, name):
         """Give a player's row back to the genre."""
@@ -265,23 +233,32 @@ class PlayerChoices:
         return None if own is None else dict(own)
 
     def set_musician(self, settings):
-        """Give a player a Musician of the person's own, its settings by name, or None for the one players are given. The tracks the
-        Musician reads are the song's to say and are not kept. Settings no Musician has, or values a setting cannot take, are refused."""
-        kept = dict(self._choices.get_extra(arranger.MUSICIANS) or {})
+        """Give a player a Musician of the person's own, its settings by name, or None for the one players are given. The tracks
+        the Musician reads are the song's to say and are not saved. Settings no Musician has, or values a setting cannot take, are refused."""
+        musicians = dict(self._choices.get_extra(arranger.MUSICIANS) or {})
         if settings is None:
-            kept.pop(self._role, None)
+            musicians.pop(self._role, None)
         else:
-            try:
-                given = {name: value for name, value in dict(settings).items() if name not in (MusicianSetting.TUNE_FROM, MusicianSetting.CHORDS_FROM)}
-                kept[self._role] = MusicianSettings.handed_over(data=given, where=band.musician_name(self._role)).to_data()
-            except (SongFileError, TypeError, ValueError) as problem:
-                raise ValueError(errors.ERR_WIZARD_MUSICIAN.format(value=settings, problem=problem)) from None
-        self._choices.set_extra(name=arranger.MUSICIANS, value=kept or None)
+            musicians[self._role] = self._musician_saved(settings)
+        self._choices.set_extra(name=arranger.MUSICIANS, value=musicians or None)
         self._choices.clear_answers()
+
+    def _musician_saved(self, settings):
+        """Return a Musician's settings as the song saves them, leaving out the tracks it reads, or refuse them."""
+        try:
+            given = {}
+            for name, value in dict(settings).items():
+                if name not in (MusicianSetting.TUNE_FROM, MusicianSetting.CHORDS_FROM):
+                    given[name] = value
+            musician = MusicianSettings.handed_over(data=given, where=band.musician_name(self._role))
+            return musician.to_data()
+        except (SongFileError, TypeError, ValueError) as problem:
+            raise ValueError(errors.ERR_WIZARD_MUSICIAN.format(value=settings, problem=problem)) from None
 
     def get_octave(self):
         """Return the octave the player plays in."""
-        return self._band().role_named(self._role).get(tune_notation.OCTAVE, wizard_limits.USUAL_OCTAVE)
+        entry = self._role_entry()
+        return entry.get(tune_notation.OCTAVE, wizard_limits.USUAL_OCTAVE)
 
     # The player as a person in the band: how strongly the player answers to Energy, where the player comes in and where the player lays out.
 
@@ -297,10 +274,14 @@ class PlayerChoices:
         return self._choices.offered(key=(wizard_limits.REACTS_ANSWER, self._person()), compute=self._reacts_is_heard)
 
     def _reacts_is_heard(self):
+        """Return whether how the player answers to Energy changes the song, found by making it at the evenest and the most dramatic."""
         made = []
         for reacts in (wizard_names.LOWEST_ENERGY, wizard_names.HIGHEST_ENERGY):
             trial = self._choices.copied_for_trial()
-            trial.plan_extras()[song_plan.REACTS] = {**(trial.plan_extras().get(song_plan.REACTS) or {}), self._person(): reacts}
+            extras = trial.plan_extras()
+            given = dict(extras.get(song_plan.REACTS) or {})
+            given[self._person()] = reacts
+            extras[song_plan.REACTS] = given
             made.append(trial.patterns_of_song())
         return made[0] != made[1]
 
@@ -309,7 +290,7 @@ class PlayerChoices:
 
     def set_reacts(self, reacts):
         """Have the player answer to Energy evenly, at the lowest, or dramatically, at the highest. Two players who are one person answer alike."""
-        if not self.reacts() or isinstance(reacts, bool) or not isinstance(reacts, int) or not wizard_names.LOWEST_ENERGY <= reacts <= wizard_names.HIGHEST_ENERGY:
+        if not self.reacts() or not is_integer_between(reacts, low=wizard_names.LOWEST_ENERGY, high=wizard_names.HIGHEST_ENERGY):
             raise ValueError(errors.ERR_WIZARD_REACTS.format(low=wizard_names.LOWEST_ENERGY, high=wizard_names.HIGHEST_ENERGY, value=reacts))
         extras = self._choices.plan_extras()
         kept = dict(extras.get(song_plan.REACTS) or {})
@@ -321,52 +302,10 @@ class PlayerChoices:
             extras[song_plan.REACTS] = kept
         self._choices.clear_answers()
 
-    def comes_in_offered(self):
-        """Return the ways the player may come in, where the song has sections and the player is in the band."""
-        return list(self._choices.comes_in_places()) if self._choices.is_ready() and self.is_in() else []
+    def loudness(self):
+        """Return how loud the player is: the player's levels and dynamics."""
+        return PlayerLoudness(choices=self._choices, role=self._role)
 
-    def _plays_at(self):
-        """The places of the form's sections the player plays in."""
-        return [place for place in range(self._choices.section_count()) if self._role in self._choices.section(place).plays()]
-
-    def _first_place(self):
-        return next(iter(self._plays_at()), None)
-
-    def get_comes_in(self):
-        """Return the way the player comes in, or None where the player's first section is none of the ways' or the player plays nowhere."""
-        first = self._first_place()
-        return next((way for way, place in self._choices.comes_in_places().items() if place == first), None)
-
-    def _laid_out(self, *, way, first):
-        """Which sections the player plays under a way of laying out, from the player's first section on: never is every section the genre gives the player any part in."""
-        out = {wizard_limits.NEVER_LAYS_OUT: [], wizard_limits.IN_BREAKDOWNS: self._choices.breakdown_places(), wizard_limits.WHEN_QUIET: self._choices.quiet_places()}[way]
-        return [place for place in range(first, self._choices.section_count()) if place == first or (place not in out and (not self._choices.section(place).is_held() or self._usually_plays(place)))]
-
-    def _usually_plays(self, place):
-        return self._role in self._choices.section(place).usual().get(arranger.PLAYS, [])
-
-    def lays_out_offered(self):
-        """Return the ways the player may lay out: never, only in the breakdowns where the form has one, and whenever it is quiet in a planned song with a quiet section."""
-        if not self.comes_in_offered() or self._first_place() is None:
-            return []
-        return [wizard_limits.NEVER_LAYS_OUT, *([wizard_limits.IN_BREAKDOWNS] if self._choices.breakdown_places() else []), *([wizard_limits.WHEN_QUIET] if self._choices.quiet_places() else [])]
-
-    def get_lays_out(self):
-        """Return the way the player lays out, or None where the sections the player plays are none of the ways'."""
-        first = self._first_place()
-        plays = self._plays_at()
-        return next((way for way in self.lays_out_offered() if self._laid_out(way=way, first=first) == plays), None)
-
-    def set_comes_in(self, way):
-        """Have the player come in at a place of the form and sit out every section before it; the sections after are left as they are."""
-        if way not in self.comes_in_offered():
-            raise ValueError(errors.ERR_WIZARD_COMES_IN.format(value=way))
-        first = self._choices.comes_in_places()[way]
-        plays = [place for place in range(first, self._choices.section_count()) if place == first or self._role in self._choices.section(place).plays()]
-        self._choices.set_plays_of(role=self._role, plays=plays)
-
-    def set_lays_out(self, way):
-        """Have the player lay out never, only in the breakdowns, or whenever it is quiet, from the player's first section on."""
-        if way not in self.lays_out_offered():
-            raise ValueError(errors.ERR_WIZARD_LAYS_OUT.format(value=way))
-        self._choices.set_plays_of(role=self._role, plays=self._laid_out(way=way, first=self._first_place()))
+    def sections(self):
+        """Return where the player plays in the form: where the player comes in and when the player lays out."""
+        return PlayerSections(choices=self._choices, role=self._role)

@@ -80,12 +80,12 @@ class PlayerBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         role = self._role
-        if not choices.player(role).has_dynamics():
+        if not choices.player(role).loudness().has_dynamics():
             return []
-        dynamics = choices.player(role).get_dynamics()
+        dynamics = choices.player(role).loudness().get_dynamics()
         return [NumberField(page=page, label=labels.MSG_WIZARD_DYNAMICS_LABEL, number=dynamics, lowest=wizard_names.LEAST_DYNAMICS, highest=wizard_names.MOST_DYNAMICS,
                             shown=gauge_shown(place=dynamics, lowest=wizard_names.LEAST_DYNAMICS + 1, highest=wizard_names.MOST_DYNAMICS, said=labels.MSG_WIZARD_DYNAMICS_SAID[dynamics]),
-                            set=page.choosing(lambda number: choices.player(role).set_dynamics(dynamics=number)))]
+                            set=page.choosing(lambda number: choices.player(role).loudness().set_dynamics(dynamics=number)))]
 
     def loudness_fields(self):
         """Return the player's levels under the Loudness heading, a velocity for each level the song plays, the genre's until the song
@@ -93,18 +93,18 @@ class PlayerBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         role = self._role
-        if not choices.player(role).has_loudness():
+        if not choices.player(role).loudness().has_levels():
             return []
-        heading = page.heading(label=labels.MSG_WIZARD_GROUP_LOUDNESS, is_set=lambda: any(choices.player(role).loudness_level_is_own(level=level) for level in wizard_names.LOUDNESS_LEVELS))
+        heading = page.heading(label=labels.MSG_WIZARD_GROUP_LOUDNESS, is_set=lambda: any(choices.player(role).loudness().level_is_own(level=level) for level in wizard_names.LOUDNESS_LEVELS))
         if not page.is_open(heading):
             return [heading]
-        levels = choices.player(role).loudness_levels()
+        levels = choices.player(role).loudness().levels()
         fields = [heading]
-        for level in choices.player(role).loudness_levels_offered():
-            own = choices.player(role).loudness_level_is_own(level=level)
+        for level in choices.player(role).loudness().levels_offered():
+            own = choices.player(role).loudness().level_is_own(level=level)
 
             def set_level(number, level=level):
-                page.choosing(lambda wanted: choices.player(role).set_loudness_level(level=level, number=wanted))(number)
+                page.choosing(lambda wanted: choices.player(role).loudness().set_level(level=level, number=wanted))(number)
             fields.append(NumberField(page=page, label=labels.MSG_WIZARD_LEVEL_LABELS[level], number=levels[level], lowest=wizard_names.LOWEST_VELOCITY, highest=wizard_names.HIGHEST_VELOCITY,
                                       shown=None if own else marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=levels[level]), set=set_level,
                                       clear=functools.partial(set_level, None) if own else None, clear_what=legends.MSG_FROM_GENRE_WHAT))
@@ -125,15 +125,15 @@ class PlayerBranch(Branch):
                     page.refuse(str(problem))
             return set_way
         fields = []
-        comes, lays = choices.player(role).comes_in_offered(), choices.player(role).lays_out_offered()
+        comes, lays = choices.player(role).sections().comes_in_offered(), choices.player(role).sections().lays_out_offered()
         if comes:
-            now = choices.player(role).get_comes_in()
+            now = choices.player(role).sections().get_comes_in()
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_COMES_IN_LABEL, choices=comes, current=now or comes[0], shown=None if now is not None else labels.MSG_WIZARD_OWN_START,
-                                      set=refusing(lambda way: choices.player(role).set_comes_in(way))))
+                                      set=refusing(lambda way: choices.player(role).sections().set_comes_in(way))))
         if lays:
-            now = choices.player(role).get_lays_out()
+            now = choices.player(role).sections().get_lays_out()
             fields.append(ChoiceField(page=page, label=labels.MSG_WIZARD_LAYS_OUT_LABEL, choices=lays, current=now or lays[0], shown=None if now is not None else labels.MSG_WIZARD_OWN_START,
-                                      set=refusing(lambda way: choices.player(role).set_lays_out(way))))
+                                      set=refusing(lambda way: choices.player(role).sections().set_lays_out(way))))
         if choices.player(role).reacts():
             reacts = choices.player(role).get_reacts()
             fields.append(NumberField(page=page, label=labels.MSG_WIZARD_REACTS_LABEL, number=reacts, shown=gauge_shown(place=reacts, lowest=wizard_names.LOWEST_ENERGY, highest=wizard_names.HIGHEST_ENERGY, said=labels.MSG_WIZARD_REACTS_SAID[reacts]),

@@ -457,18 +457,18 @@ def every_choice(choices):
         break
     # A player as a person: each other way of coming in and of laying out, and Reacts at either end.
     for role in choices.get_band().roles_in():
-        for way in choices.player(role).comes_in_offered():
-            if way != choices.player(role).get_comes_in() and comes_in_works(choices=choices, role=role, way=way):
-                yield COMES_IN, (role, way), lambda made, role=role, way=way: made.player(role).set_comes_in(way), [nothing_first]
+        for way in choices.player(role).sections().comes_in_offered():
+            if way != choices.player(role).sections().get_comes_in() and comes_in_works(choices=choices, role=role, way=way):
+                yield COMES_IN, (role, way), lambda made, role=role, way=way: made.player(role).sections().set_comes_in(way), [nothing_first]
         if choices.player(role).reacts():
             # A player who reacts is heard to at one end of the gauge at least: an even player may play as the band does where the band is never held back.
             yield REACTS_TO_ENERGY, role, lambda made, role=role: set_reacts_where_heard(made=made, role=role), [nothing_first]
         # How loud a player is: the player's dynamics at either end, and each level the song plays, moved.
-        if choices.player(role).has_dynamics():
+        if choices.player(role).loudness().has_dynamics():
             for dynamics in (wizard_names.LEAST_DYNAMICS, wizard_names.MOST_DYNAMICS):
-                yield DYNAMICS_OF_PLAYER, (role, dynamics), lambda made, role=role, dynamics=dynamics: made.player(role).set_dynamics(dynamics=dynamics), [nothing_first]
-        for level in choices.player(role).loudness_levels_offered():
-            yield A_LEVEL, (role, level), lambda made, role=role, level=level: made.player(role).set_loudness_level(level=level, number=another_velocity(made.player(role).loudness_levels()[level])), [nothing_first]
+                yield DYNAMICS_OF_PLAYER, (role, dynamics), lambda made, role=role, dynamics=dynamics: made.player(role).loudness().set_dynamics(dynamics=dynamics), [nothing_first]
+        for level in choices.player(role).loudness().levels_offered():
+            yield A_LEVEL, (role, level), lambda made, role=role, level=level: made.player(role).loudness().set_level(level=level, number=another_velocity(made.player(role).loudness().levels()[level])), [nothing_first]
     # How the song starts and ends: each way but the one the song has, another first player under layers, and another length of a stage.
     for way in choices.get_song_form().starts():
         if way != choices.get_song_form().get_start():
@@ -523,7 +523,7 @@ def comes_in_works(*, choices, role, way):
     """Whether a player can come in a way: a way that would leave a section with nobody is refused, and is no choice to try."""
     trial = WizardChoices.from_data(choices.to_data())
     try:
-        trial.player(role).set_comes_in(way)
+        trial.player(role).sections().set_comes_in(way)
     except ValueError:
         return False
     return True
