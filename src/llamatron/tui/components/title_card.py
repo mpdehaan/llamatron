@@ -115,7 +115,7 @@ def scale_for(*, word, width):
 
 def letter_rows(*, word, scale):
     """Return, for each letter of a word, its rows drawn scale columns to a block."""
-    return [[row.replace(about.MSG_BLOCK, about.MSG_BLOCK * scale).replace(drawing.SPACE, drawing.SPACE * scale) for row in about.MSG_BLOCK_LETTERS[letter]] for letter in word]
+    return [scaled_letter(letter=letter, scale=scale) for letter in word]
 
 
 def words_width(*, word, scale):
@@ -255,3 +255,7 @@ def drawn_line(*, cells, width):
         line.append(drawing.NOTHING.join(run), style=style)
     return line if width else Text()
 
+
+def scaled_letter(*, letter, scale):
+    """Return a letter's rows drawn scale columns to a block."""
+    return [row.replace(about.MSG_BLOCK, about.MSG_BLOCK * scale).replace(drawing.SPACE, drawing.SPACE * scale) for row in about.MSG_BLOCK_LETTERS[letter]]

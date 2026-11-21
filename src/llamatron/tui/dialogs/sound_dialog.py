@@ -78,7 +78,7 @@ class SoundDialog(Dialog):
 
     def group_of(self, value):
         """Return the place of the group that holds a value, or None."""
-        return next((place for place, (_, sounds) in enumerate(self.groups) if any(value == held for _, held in sounds)), None)
+        return next((place for place, (_, sounds) in enumerate(self.groups) if holds_sound(sounds=sounds, value=value)), None)
 
     def row_of(self, value):
         """Return the row a value is found on: its own row at the top, its group's row, or the first row."""
@@ -94,7 +94,8 @@ class SoundDialog(Dialog):
     def found(self):
         """Return the sounds that contain what was typed, ignoring case, each as (group, place in the group, label)."""
         every = self.every_sound()
-        return [every[place] for place in places_matching(options=[label for _, _, label in every], text=self.typed)]
+        shown = [label for _, _, label in every]
+        return [every[place] for place in places_matching(options=shown, text=self.typed)]
 
     def under_cursor(self):
         """Return the value of the sound under the cursor, or None on a group's row and while searching."""
@@ -332,3 +333,8 @@ class SoundDialog(Dialog):
         shown = [Text(fit(text=cursor_mark(place == self.flyout_place) + row, width=width), style=Style.BOLD if place == self.flyout_place else drawing.NOTHING)
                  for place, row in self.windowed(rows=rows, at=self.flyout_place)]
         return [Text(name, style=Style.BOLD), Text(drawing.NOTHING), *self.padded(shown), Text(drawing.NOTHING), *legend(keys=self.keys(), width=width)]
+
+
+def holds_sound(*, sounds, value):
+    """Return whether a group's sounds, each (label, value), hold a value."""
+    return any(value == held for _, held in sounds)

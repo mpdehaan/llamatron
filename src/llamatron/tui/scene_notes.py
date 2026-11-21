@@ -169,7 +169,7 @@ def scene_notes(*, song, index, written):
 
 def chord_shapes():
     """Return each fixed chord symbol with its notes as half steps above the root, within one octave, the root among them."""
-    return {symbol: frozenset({0, *[step % HALF_STEPS_PER_OCTAVE for step in kind.value]}) for symbol, kind in file_format.FIXED_CHORDS.items()}
+    return {symbol: chord_shape(kind) for symbol, kind in file_format.FIXED_CHORDS.items()}
 
 
 def chord_of(*, weights, bass):
@@ -338,3 +338,8 @@ def effective_values(*, song, index):
             clip_scales[name] = clip_slot.get_scale_name()
     return Effective(tempo=tempo, tempo_source=tempo_source, scale=scale_name, scale_source=scale_source, groove=groove, groove_source=groove_source,
                      clip_scales=clip_scales)
+
+
+def chord_shape(kind):
+    """Return a kind of chord's notes as half steps above the root, within one octave, the root among them."""
+    return frozenset({0, *[step % HALF_STEPS_PER_OCTAVE for step in kind.value]})

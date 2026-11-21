@@ -127,7 +127,7 @@ class RegistersPage(FieldPage):
         video as in the other grids, and under it the cursor's setting in full."""
         fields = self.fields()
         self.field()
-        cells = [[fields[row * GRID_COLUMNS + column].value() for column in range(GRID_COLUMNS)] for row in range(len(file_format.REGISTER_NAMES))]
+        cells = [row_values(fields=fields, row=row) for row in range(len(file_format.REGISTER_NAMES))]
         widths = [len(widest) + CELL_PADDING for widest in self.widest_values()]
         heading = Text(drawing.SPACE * NAME_WIDTH, style=Style.BOLD, no_wrap=True)
         for column, name in enumerate(labels.MSG_REGISTER_COLUMNS):
@@ -157,3 +157,8 @@ class RegistersPage(FieldPage):
         problem = self.document().set_register_setting(name=name, setting=setting, value=value)
         if problem:
             self.refuse(problem)
+
+
+def row_values(*, fields, row):
+    """Return the values of one register's row of the grid."""
+    return [fields[row * GRID_COLUMNS + column].value() for column in range(GRID_COLUMNS)]

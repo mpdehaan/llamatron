@@ -271,7 +271,10 @@ def header_cells(*, lines):
     for cells in lines:
         for column, cell in enumerate(cells[:-1]):
             widths[column] = max(widths.get(column, 0), len(cell))
-    return [
-        marks.MSG_HEADER_INDENT + marks.MSG_HEADER_CELL_GAP.join([*[cell.ljust(widths[column]) for column, cell in enumerate(cells[:-1])], cells[-1]])
-        for cells in lines
-    ]
+    return [header_line(cells=cells, widths=widths) for cells in lines]
+
+
+def header_line(*, cells, widths):
+    """Return one line of the header, each cell but the last padded to its column's width, the last as it is."""
+    padded_cells = [cell.ljust(widths[column]) for column, cell in enumerate(cells[:-1])]
+    return marks.MSG_HEADER_INDENT + marks.MSG_HEADER_CELL_GAP.join([*padded_cells, cells[-1]])

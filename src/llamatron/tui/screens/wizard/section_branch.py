@@ -101,7 +101,7 @@ class SectionBranch(Branch):
         players = [Toggle(label=choices.player(role).title(), on=role in plays, set=self.plays_setter(role)) for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
         # The rest in groups, the same on every section and in the order a section is shaped; a group with nothing to offer in this section is left out.
         groups = [(labels.MSG_WIZARD_GROUP_TUNE, [*self.own_lines_fields(), *([self.role_field()] if choices.get_band().section_has_role(place) else [])], lambda: self.has_own_lines() or self.has_own_role()),
-                  *[(label, [self.own_field(field) for field in own if field in of_group], self.own_checker(of_group)) for label, of_group in OWN_GROUPS],
+                  *[(label, self.own_fields_in(own=own, of_group=of_group), self.own_checker(of_group)) for label, of_group in OWN_GROUPS],
                   (labels.MSG_WIZARD_GROUP_PLAYERS, players, lambda: sorted(plays) != sorted(usual))]
         for label, inside, is_set in groups:
             if inside:
@@ -131,6 +131,10 @@ class SectionBranch(Branch):
     def has_own_role(self):
         choices = self.get_choices()
         return choices.get_band().section_has_role(self._place) and choices.get_band().section_role_is_own(self._place)
+
+    def own_fields_in(self, *, own, of_group):
+        """Return the fields of a group of a section's own settings that the section offers."""
+        return [self.own_field(field) for field in own if field in of_group]
 
     def own_checker(self, of_group):
         """Return what says whether the section was given anything of its own for a group's fields."""

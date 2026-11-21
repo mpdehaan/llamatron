@@ -39,8 +39,9 @@ def sound_families(*, numbered=False):
     def label(sound):
         name = labels.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND]
         return labels.MSG_GM_SOUND_SHOWN.format(number=sound, name=name) if numbered else name
-    return [(family, [(label(sound), sound) for sound in range(place * limits.GM_FAMILY_SIZE + limits.MIN_GM_SOUND, (place + 1) * limits.GM_FAMILY_SIZE + limits.MIN_GM_SOUND)])
-            for place, family in enumerate(labels.MSG_GM_FAMILIES)]
+    def family_sounds(place):
+        return [(label(sound), sound) for sound in sounds_of_family(place)]
+    return [(family, family_sounds(place)) for place, family in enumerate(labels.MSG_GM_FAMILIES)]
 
 
 def sound_text(sound):
@@ -143,3 +144,8 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
             self.lead_field(),
             Button(label=labels.MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP.name, enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
         ]
+
+
+def sounds_of_family(place):
+    """Return the General MIDI numbers of the sounds of a family, by the family's place."""
+    return range(place * limits.GM_FAMILY_SIZE + limits.MIN_GM_SOUND, (place + 1) * limits.GM_FAMILY_SIZE + limits.MIN_GM_SOUND)

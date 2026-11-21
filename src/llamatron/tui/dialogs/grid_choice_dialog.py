@@ -42,7 +42,7 @@ def grouped_grid(columns):
             cells += [Heading(heading), *items]
         built.append(cells)
     height = max((len(cells) for cells in built), default=0)
-    return [[cells[row] if row < len(cells) else None for cells in built] for row in range(height)]
+    return [row_across(columns=built, row=row) for row in range(height)]
 
 
 class GridChoiceDialog(ChoiceDialog):
@@ -246,3 +246,8 @@ class GridChoiceDialog(ChoiceDialog):
         if self.details is not None:
             result += [Text(drawing.NOTHING), Text(fit(text=self.details(self.cursor.get_place()), width=width))]
         return result
+
+
+def row_across(*, columns, row):
+    """Return one row of the grid across its columns, None where a column is shorter."""
+    return [cells[row] if row < len(cells) else None for cells in columns]

@@ -78,7 +78,7 @@ def letter_lines(character):
 def banner(text):
     """Return the words as BANNER_ROWS rows of blocks and spaces, every row as wide as the words."""
     letters = [letter_lines(character) for character in text]
-    return [(drawing.SPACE * LETTER_GAP).join(letter[row] for letter in letters) for row in range(BANNER_ROWS)]
+    return [banner_row(letters=letters, row=row) for row in range(BANNER_ROWS)]
 
 
 def scroll_seconds(*, text, width):
@@ -106,3 +106,8 @@ def drawn_row(*, shown, style):
     for run in re.findall(r' +|[^ ]+', shown):
         line.append(run, style=title_card.BLACK_STYLE if run[0] == drawing.SPACE else style)
     return line
+
+
+def banner_row(*, letters, row):
+    """Return one row of the banner: that row of every letter, with a gap between letters."""
+    return (drawing.SPACE * LETTER_GAP).join(letter[row] for letter in letters)

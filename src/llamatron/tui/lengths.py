@@ -60,7 +60,7 @@ def plays_of_each_scene(song):
 
 def seconds_of_each_scene(*, plays, scene_plays):
     """Return, for each scene, how long all of its repeats last, or None where one can't be worked out."""
-    return [all_or_none([plays[place].seconds for place in places]) for places in scene_plays]
+    return [all_or_none(seconds_of_plays(plays=plays, places=places)) for places in scene_plays]
 
 
 def measured(song):
@@ -150,3 +150,8 @@ class Lengths:
     def step_size(self, name):
         """Return how long each step of a pattern is: its own step size, or else the song's."""
         return self._song.get_pattern_step_size(self._song.get_pattern(name))
+
+
+def seconds_of_plays(*, plays, places):
+    """Return how long each of the plays at some places lasts."""
+    return [plays[place].seconds for place in places]

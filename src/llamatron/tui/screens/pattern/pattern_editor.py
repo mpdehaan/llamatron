@@ -437,7 +437,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def munge(self):
         """Offer the ways of rearranging, copying and clearing the steps, under headings that open and close, and do the chosen one."""
-        groups = [(heading, [munge_name(choice) for choice in choices]) for heading, choices in munge_groups()]
+        groups = [(heading, munge_names(choices)) for heading, choices in munge_groups()]
         order = munges_in_order()
         self.ask(dialog=GroupedChoiceDialog(title=messages.MSG_MUNGE_TITLE, groups=groups, opened=self.holder.open_munge_groups), then=lambda place: self.munge_as(order[place]))
 
@@ -707,3 +707,8 @@ class PatternEditor(ShowsNamedItem, StepEditor):
 
     def body(self, *, width, height):
         return self.view().drawing.body(width=width, height=height)
+
+
+def munge_names(choices):
+    """Return what each munge of a group is called."""
+    return [munge_name(choice) for choice in choices]

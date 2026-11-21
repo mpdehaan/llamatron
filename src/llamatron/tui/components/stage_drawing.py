@@ -148,9 +148,9 @@ def track_cells(rect):
     left = rect.left + 1
     right = rect.right - 1
     places = [[(top, column)] for column in range(left, right + 1)]
-    places += [[(row, right - offset) for offset in range(SIDE_TRACK)] for row in range(top + 1, bottom)]
+    places += [side_places(row=row, edge=right, inward=-1) for row in range(top + 1, bottom)]
     places += [[(bottom, column)] for column in range(right, left - 1, -1)]
-    places += [[(row, left + offset) for offset in range(SIDE_TRACK)] for row in range(bottom - 1, top, -1)]
+    places += [side_places(row=row, edge=left, inward=1) for row in range(bottom - 1, top, -1)]
     return places
 
 
@@ -268,3 +268,9 @@ def visualizer_laid_in(*, lines, frame_lines, area, inside, level):
         if end > start:
             result[row] = laid_over(line=result[row], start=area.left + start, piece=faded(line=piece[start:end], level=level))
     return result
+
+
+def side_places(*, row, edge, inward):
+    """Return the cells of a side of the frame on one row, SIDE_TRACK of them from the edge inward, inward being 1 from the left
+    edge and -1 from the right."""
+    return [(row, edge + inward * offset) for offset in range(SIDE_TRACK)]

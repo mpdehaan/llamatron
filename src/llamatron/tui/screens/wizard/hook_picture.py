@@ -53,7 +53,7 @@ def picture_of(*, hook, width, lit=None):
         if lit is not None:
             drawn.append(frame[0] if frame else '')
         # A picture of several keeps only the rows whose note sounds among its bars.
-        sounding = [pitch for pitch in pitches if fit == bars or any(marks.MSG_WIZARD_HOOK_CELL in bar for bar in rows[pitch][first:first + count])]
+        sounding = [pitch for pitch in pitches if fit == bars or sounds_in(rows[pitch][first:first + count])]
         drawn += [marks.MSG_WIZARD_HOOK_ROW.format(name=names[pitch], width=longest, cells=between_bar_lines(rows[pitch][first:first + count])) for pitch in sounding]
         floor = marks.MSG_WIZARD_HOOK_FLOOR_BAR.join([marks.MSG_WIZARD_HOOK_FLOOR * bar_cells] * count)
         drawn.append(marks.MSG_WIZARD_HOOK_ROW.format(name=marks.MSG_WIZARD_HOOK_GAP, width=longest, cells=marks.MSG_WIZARD_HOOK_FLOOR_BAR + floor + marks.MSG_WIZARD_HOOK_FLOOR_BAR))
@@ -98,3 +98,8 @@ def between_bar_lines(bars):
 def row_cells(*, notes, pitch, steps, steps_in_bar, step):
     """Return one note's row of the picture: its cells filled where the hook plays the note, between bar lines."""
     return between_bar_lines(row_bars(notes=notes, pitch=pitch, steps=steps, steps_in_bar=steps_in_bar, step=step))
+
+
+def sounds_in(bars):
+    """Return whether a note's row sounds in any of the bars drawn."""
+    return any(marks.MSG_WIZARD_HOOK_CELL in bar for bar in bars)

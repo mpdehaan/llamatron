@@ -466,7 +466,8 @@ class ArrangeDrawing:
         first, last = self.visible_tracks(width)
         shown = self.visible_scenes(height)
         header = self.header_lines()
-        lines = [Canvas(width) for _ in range(header + sum(self.scene_lines(index) for index in shown) + FOOTER_LINES)]
+        count = header + sum(self.scene_lines(index) for index in shown) + FOOTER_LINES
+        lines = [Canvas(width) for _ in range(count)]
         self.draw_header(lines[:header], first=first, last=last)
         start = header
         for index in shown:

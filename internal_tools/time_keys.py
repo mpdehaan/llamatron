@@ -80,20 +80,10 @@ class Place:
     back: str
 
 
-def forward_key(binding):
-    """Return the first key that steps a binding forward, the one the legend names."""
-    return binding.keys.forward[0]
-
-
-def back_key(binding):
-    """Return the first key that steps a binding back."""
-    return binding.keys.back[0]
-
-
-MORE = forward_key(keybindings.PatternRow.ADJUST)
-LESS = back_key(keybindings.PatternRow.ADJUST)
-LONGER = forward_key(keybindings.PianoRoll.LENGTH)
-SHORTER = back_key(keybindings.PianoRoll.LENGTH)
+MORE = first_key(keybindings.PatternRow.MORE)
+LESS = first_key(keybindings.PatternRow.LESS)
+LONGER = first_key(keybindings.PianoRoll.LONGER)
+SHORTER = first_key(keybindings.PianoRoll.SHORTER)
 
 PLACES = [
     Place(name='main screen: move the cursor', reach=[], there=Key.RIGHT, back=Key.LEFT),

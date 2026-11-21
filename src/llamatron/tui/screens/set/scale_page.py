@@ -91,15 +91,27 @@ def scale_notes(*, root, kind):
 
 def kind_pages():
     """Return the picker's pages of kinds, each a grid of places in SCALE_TYPE_NAMES under its headings."""
-    return [
-        (page, grouped_grid([[(heading, [named_scale.SCALE_TYPE_NAMES.index(name) for name in names]) for heading, names in groups] for groups in columns]))
-        for page, columns in SCALE_PAGES
-    ]
+    return [(page, kinds_grid(columns)) for page, columns in SCALE_PAGES]
+
+
+def kinds_grid(columns):
+    """Return a page of the picker as a grid of places in SCALE_TYPE_NAMES under its headings, from its columns of groups."""
+    return grouped_grid([headed_places(groups) for groups in columns])
+
+
+def headed_places(groups):
+    """Return a column of the picker as its headings, each with the places of its scale types in SCALE_TYPE_NAMES."""
+    return [(heading, scale_type_places(names)) for heading, names in groups]
+
+
+def scale_type_places(names):
+    """Return where each scale type named is in SCALE_TYPE_NAMES."""
+    return [named_scale.SCALE_TYPE_NAMES.index(name) for name in names]
 
 
 def root_grid():
     """Return the keyboard as a grid of places in ROOT_NAMES, with None where a key has no flat."""
-    return [[None if name is None else note.ROOT_NAMES.index(name) for name in row] for row in ROOT_KEYBOARD]
+    return [root_places(row) for row in ROOT_KEYBOARD]
 
 
 class ScalePage(ShowsNamedItem, FieldPage):
@@ -169,3 +181,8 @@ class ScalePage(ShowsNamedItem, FieldPage):
             Text(drawing.NOTHING),
             *[Text(line, no_wrap=True) for line in keyboard.lines()],
         ]
+
+
+def root_places(row):
+    """Return where each key of a row of the keyboard is in ROOT_NAMES, None where a key has no flat."""
+    return [None if name is None else note.ROOT_NAMES.index(name) for name in row]

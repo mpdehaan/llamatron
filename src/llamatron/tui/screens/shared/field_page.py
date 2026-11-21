@@ -195,7 +195,8 @@ class FieldPage(Page):
     def row_of_buttons(self, *, buttons, selected, width):
         """Return the lines of the page's buttons: boxed in one row where the row fits the width, and otherwise one a line, each
         in brackets, the selected one marked and bold."""
-        row = [Text(drawing.INDENT) + line for line in button_row(buttons=[(button.key_name, button.label) for button in buttons], selected=selected)]
+        keys_and_names = [(button.key_name, button.label) for button in buttons]
+        row = [Text(drawing.INDENT) + line for line in button_row(buttons=keys_and_names, selected=selected)]
         self.stacked_buttons = width is not None and max(line.cell_len for line in row) > width
         if not self.stacked_buttons:
             return row
