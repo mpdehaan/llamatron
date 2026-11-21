@@ -13,36 +13,22 @@ another tune. No note is left out, no pitch changes and nothing is drawn by chan
 
 from llamatron.engine.generators.base import ClipGenerator
 from llamatron.engine.generators.parts import parts_of
+from llamatron.engine.generators.phrasing import schema
 from llamatron.math.rational import Rational
 
 EIGHTH = Rational(1, 8)
 QUARTER = Rational(1, 4)
-# How long the breath after a line is.
-NO_BREATH = 'none'
-QUICK_BREATH = 'quick'
-DEEP_BREATH = 'deep'
-BREATHS = (NO_BREATH, QUICK_BREATH, DEEP_BREATH)
-BREATH_LENGTHS = {NO_BREATH: Rational(0), QUICK_BREATH: EIGHTH, DEEP_BREATH: QUARTER}
+BREATH_LENGTHS = {schema.NO_BREATH: Rational(0), schema.QUICK_BREATH: EIGHTH, schema.DEEP_BREATH: QUARTER}
 # A breath never takes more than this part of the note it shortens.
 MOST_OF_A_NOTE_BREATHED = Rational(1, 2)
-# How far a line's loudness rises to its main note and falls away.
-NO_RISE = 'none'
-LITTLE_RISE = 'a little'
-BIG_RISE = 'a lot'
-RISES = (NO_RISE, LITTLE_RISE, BIG_RISE)
 # How far a line's loudness rises to its main note, in steps of velocity. The main note is as loud as written and the rest of the
 # line softer, since a note written at full loudness has nowhere to rise to.
-RISE_DEPTHS = {NO_RISE: 0, LITTLE_RISE: 10, BIG_RISE: 22}
+RISE_DEPTHS = {schema.NO_RISE: 0, schema.LITTLE_RISE: 10, schema.BIG_RISE: 22}
 # Where a line's first note and its last note sit on the rise, whose top is the main note at 1: the last note lowest.
 FIRST_NOTE_PART = Rational(-2, 5)
 LAST_NOTE_PART = Rational(-4, 5)
 # A note that starts a bar is a little louder still, by this part of the rise.
 BAR_START_PART = Rational(1, 5)
-# How the notes inside a line are joined.
-CHOPPY_NOTES = 'choppy'
-NOTES_AS_WRITTEN = 'as written'
-FLOWING_NOTES = 'flowing'
-JOINS = (CHOPPY_NOTES, NOTES_AS_WRITTEN, FLOWING_NOTES)
 # Choppy: a note up to this long sounds for half of itself, and a longer note gives up an eighth.
 LONGEST_HALVED_NOTE = QUARTER
 # Flowing: a note held up to a note of its own pitch stops this far short, so that the second is heard to start.
@@ -85,10 +71,10 @@ class Phrasing(ClipGenerator):
 
     def _join_notes(self, line):
         """Make a line's notes choppy or flowing: all but its last note when flowing, which the breath follows."""
-        if self._join == CHOPPY_NOTES:
+        if self._join == schema.CHOPPY_NOTES:
             for part in line:
                 part.heard = part.heard / 2 if part.heard <= LONGEST_HALVED_NOTE else part.heard - EIGHTH
-        elif self._join == FLOWING_NOTES:
+        elif self._join == schema.FLOWING_NOTES:
             for part, after in zip(line, line[1:]):
                 reach = after.start - part.start
                 if reach > part.heard:

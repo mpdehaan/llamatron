@@ -17,6 +17,7 @@ import random
 
 from llamatron.engine.generators.base import ClipGenerator
 from llamatron.engine.generators.follow_chords.generator import FollowChords
+from llamatron.engine.generators.musician import schema
 from llamatron.engine.generators.parts import parts_of
 from llamatron.math.rational import Rational
 from llamatron.model.values import midi, sound as sound_values
@@ -26,81 +27,21 @@ EIGHTH = Rational(1, 8)
 SIXTEENTH = Rational(1, 16)
 QUARTER = Rational(1, 4)
 
-# The musicians, by the instrument each plays.
-RHYTHM_GUITARIST = 'rhythm guitarist'
-BASSIST = 'bassist'
-DRUMMER = 'drummer'
-BACKING_PIANO = 'backing piano'
-BACKING_ORGAN = 'backing organ'
-BACKING_SYNTH = 'backing synth'
-LEAD_GUITARIST = 'lead guitarist'
-LEAD_ORGAN = 'lead organ'
-LEAD_PIANO = 'lead piano'
-LEAD_SYNTH = 'lead synth'
-ANSWERING_PLAYER = 'answering player'
-BACKUP_SINGERS = 'backup singers'
-HORN_SECTION = 'horn section'
-STRING_SECTION = 'string section'
-PERCUSSIONIST = 'percussionist'
 
-# How much of a part a musician plays: fewer of its notes, all of them, or its long notes struck again.
-SPARSE = 'sparse'
-LIGHT = 'light'
-AS_WRITTEN = 'as written'
-BUSY = 'busy'
-VERY_BUSY = 'very busy'
-ACTIVITIES = (SPARSE, LIGHT, AS_WRITTEN, BUSY, VERY_BUSY)
-# How loud a musician plays against the part as written, in steps, and what one step is in velocity.
-QUIETEST = -3
-LOUDEST = 3
 USUAL_LOUDNESS = 0
 LOUDNESS_STEP = 7
-# How far a loose musician's loudness wanders from note to note, in steps, and what one step is in velocity.
-TIGHT = 0
-LOOSEST = 3
 LOOSENESS_STEP = 4
-# What a musician does while the tune sounds on another track.
-NO_GIVING_WAY = 'none'
-GIVES_WAY_SOME = 'some'
-GIVES_WAY_OFTEN = 'often'
-IN_THE_GAPS = 'plays in the gaps'
-GIVES_WAY = (NO_GIVING_WAY, GIVES_WAY_SOME, GIVES_WAY_OFTEN, IN_THE_GAPS)
 # How much softer a note under the tune is, by how far the musician gives way.
-SOFTER_UNDER_TUNE = {GIVES_WAY_SOME: 12, GIVES_WAY_OFTEN: 22}
-# Which notes of a bar a musician leans on.
-NO_ACCENTS = 'none'
-DOWNBEAT = 'downbeat'
-BACKBEAT = 'backbeat'
-OFFBEATS = 'offbeats'
-ACCENTS = (NO_ACCENTS, DOWNBEAT, BACKBEAT, OFFBEATS)
+SOFTER_UNDER_TUNE = {schema.GIVES_WAY_SOME: 12, schema.GIVES_WAY_OFTEN: 22}
 ACCENT_DEPTH = 12
-# How a musician's notes are held: as the part writes them, each until the next, or short.
-HELD_NOTES = 'held'
-SHORT_NOTES = 'short'
-NOTE_LENGTHS = (AS_WRITTEN, HELD_NOTES, SHORT_NOTES)
 # The longest a short note sounds.
 SHORT_NOTE = EIGHTH
-# Where on the instrument a musician plays: as written, or an octave lower or higher, always inside what the instrument can play.
-LOW = 'low'
-HIGH = 'high'
-RANGES = (LOW, AS_WRITTEN, HIGH)
 OCTAVE = midi.HALF_STEPS_PER_OCTAVE
-RANGE_SHIFTS = {LOW: -OCTAVE, AS_WRITTEN: 0, HIGH: OCTAVE}
-# What a musician does with its part in a kind of section.
-WHOLE = 'whole'
-SOFTER = 'softer'
-THINNED = 'thinned'
-HEAD_ONLY = 'head only'
-MUTED = 'muted'
-HITS = 'hits'
-FORMS = (WHOLE, SOFTER, THINNED, HEAD_ONLY, MUTED, HITS)
+RANGE_SHIFTS = {schema.LOW: -OCTAVE, schema.AS_WRITTEN: 0, schema.HIGH: OCTAVE}
 SOFTER_DEPTH = 18
 MUTED_DEPTH = 10
 # The head of a part is the first bar of every so many.
 BARS_TO_A_HEAD = 2
-# The settings a kind of section has of its own.
-PLAYS = 'plays'
-PLAYED = 'played'
 
 
 class Surroundings:
@@ -129,11 +70,11 @@ class Musician(ClipGenerator):
     LOWEST = None
     HIGHEST = None
     # What the musician does with a setting left out.
-    USUAL_GIVES_WAY = NO_GIVING_WAY
-    USUAL_NOTES = AS_WRITTEN
+    USUAL_GIVES_WAY = schema.NO_GIVING_WAY
+    USUAL_NOTES = schema.AS_WRITTEN
 
-    def __init__(self, *, bar, beat, surroundings=None, activity=AS_WRITTEN, loudness=USUAL_LOUDNESS, looseness=TIGHT, gives_way=None, accents=NO_ACCENTS, notes=None,
-                 range=AS_WRITTEN, by_section=None, seed=None, continuation=None):
+    def __init__(self, *, bar, beat, surroundings=None, activity=schema.AS_WRITTEN, loudness=USUAL_LOUDNESS, looseness=schema.TIGHT, gives_way=None, accents=schema.NO_ACCENTS, notes=None,
+                 range=schema.AS_WRITTEN, by_section=None, seed=None, continuation=None):
         # How long a bar and a beat last, in whole notes.
         self._bar = bar
         self._beat = beat
@@ -154,12 +95,12 @@ class Musician(ClipGenerator):
 
     def _generate(self, clip):
         own = self._by_section.get(self._surroundings.section, {})
-        if not own.get(PLAYS, True):
+        if not own.get(schema.PLAYS, True):
             return self._resting(clip), clip.get_length()
         if self.moves_pitches() and self._surroundings.chords is not None:
             clip = FollowChords(chords=self._surroundings.chords).generate(clip)
         parts = parts_of(_settled(sounds=clip.resolved_sounds(), scale=clip.get_scale()))
-        self._play_form(parts=parts, form=own.get(PLAYED, WHOLE))
+        self._play_form(parts=parts, form=own.get(schema.PLAYED, schema.WHOLE))
         self._play_activity(parts)
         self._give_way(parts)
         self._hold_notes(parts)
@@ -191,16 +132,16 @@ class Musician(ClipGenerator):
     def _play_form(self, *, parts, form):
         """Play the part as a kind of section asks: softer, thinned to the notes on the beats, its head alone, muted, or as hits on each bar's first beat."""
         for part in _notes_of(parts):
-            if form == SOFTER:
+            if form == schema.SOFTER:
                 part.louder_by(-SOFTER_DEPTH)
-            elif form == THINNED and not self._on_grid(part=part, grid=self._beat):
+            elif form == schema.THINNED and not self._on_grid(part=part, grid=self._beat):
                 part.silence()
-            elif form == HEAD_ONLY and int(part.start // self._bar) % BARS_TO_A_HEAD:
+            elif form == schema.HEAD_ONLY and int(part.start // self._bar) % BARS_TO_A_HEAD:
                 part.silence()
-            elif form == MUTED:
+            elif form == schema.MUTED:
                 part.heard = min(part.heard, SIXTEENTH)
                 part.louder_by(-MUTED_DEPTH)
-            elif form == HITS:
+            elif form == schema.HITS:
                 if self._on_grid(part=part, grid=self._bar):
                     part.heard = min(part.heard, QUARTER)
                 else:
@@ -209,54 +150,54 @@ class Musician(ClipGenerator):
     def _play_activity(self, parts):
         """Play fewer of the part's notes or strike its long notes again: a sparse player keeps the notes on the bar's halves and a light one the notes on the beats, each with every note a beat long or longer; a busy player strikes a note of a quarter or longer twice and a very busy one a note of an eighth or longer twice."""
         for part in _notes_of(parts):
-            if self._activity in (SPARSE, LIGHT):
-                grid = self._bar / 2 if self._activity == SPARSE and (self._bar / 2 / self._beat).is_whole() else self._beat
+            if self._activity in (schema.SPARSE, schema.LIGHT):
+                grid = self._bar / 2 if self._activity == schema.SPARSE and (self._bar / 2 / self._beat).is_whole() else self._beat
                 if part.heard < self._beat and not self._on_grid(part=part, grid=grid):
                     part.silence()
-            elif self._activity in (BUSY, VERY_BUSY):
-                if part.heard >= (QUARTER if self._activity == BUSY else EIGHTH):
+            elif self._activity in (schema.BUSY, schema.VERY_BUSY):
+                if part.heard >= (QUARTER if self._activity == schema.BUSY else EIGHTH):
                     part.strikes = 2
 
     def _give_way(self, parts):
         """Make room for the tune while it sounds on another track: softer, softer and only on the beats, or silent until the tune rests."""
         tune = self._surroundings.tune
-        if tune is None or self._gives_way == NO_GIVING_WAY:
+        if tune is None or self._gives_way == schema.NO_GIVING_WAY:
             return
         for part in _notes_of(parts):
             if not tune.sounds_at(part.start):
                 continue
-            if self._gives_way == IN_THE_GAPS:
+            if self._gives_way == schema.IN_THE_GAPS:
                 part.silence()
                 continue
             part.louder_by(-SOFTER_UNDER_TUNE[self._gives_way])
-            if self._gives_way == GIVES_WAY_OFTEN and part.heard < self._beat and not self._on_grid(part=part, grid=self._beat):
+            if self._gives_way == schema.GIVES_WAY_OFTEN and part.heard < self._beat and not self._on_grid(part=part, grid=self._beat):
                 part.silence()
 
     def _hold_notes(self, parts):
         """Hold each note until the next one starts, or cut each short, where the musician plays its notes so."""
         notes = _notes_of(parts)
-        if self._notes == HELD_NOTES:
+        if self._notes == schema.HELD_NOTES:
             for part, after in zip(notes, notes[1:]):
                 if part.strikes == 1:
                     part.heard = max(part.heard, after.start - part.start)
-        elif self._notes == SHORT_NOTES:
+        elif self._notes == schema.SHORT_NOTES:
             for part in notes:
                 part.heard = min(part.heard, SHORT_NOTE * part.strikes)
 
     def _lean_on(self, parts):
         """Play the notes the musician leans on louder: each bar's first, the notes on the second beat of every two, or the notes between the beats."""
-        if self._accents == NO_ACCENTS:
+        if self._accents == schema.NO_ACCENTS:
             return
         for part in _notes_of(parts):
             in_bar = self._in_bar(part)
             on_beat = (in_bar / self._beat).is_whole()
-            leaned = {DOWNBEAT: in_bar == 0, BACKBEAT: on_beat and int(in_bar / self._beat) % 2 == 1, OFFBEATS: not on_beat}[self._accents]
+            leaned = {schema.DOWNBEAT: in_bar == 0, schema.BACKBEAT: on_beat and int(in_bar / self._beat) % 2 == 1, schema.OFFBEATS: not on_beat}[self._accents]
             if leaned:
                 part.louder_by(ACCENT_DEPTH)
 
     def _play_in_range(self, parts):
         """Move the part an octave lower or higher where the musician plays there, each note then brought by octaves inside what the instrument can play."""
-        if not self.moves_pitches() or self._range == AS_WRITTEN:
+        if not self.moves_pitches() or self._range == schema.AS_WRITTEN:
             return
         for part in _notes_of(parts):
             part.moved_by(RANGE_SHIFTS[self._range])
@@ -281,7 +222,7 @@ class RhythmGuitarist(Musician):
     __slots__ = ()
     LOWEST = 40
     HIGHEST = 76
-    USUAL_GIVES_WAY = GIVES_WAY_SOME
+    USUAL_GIVES_WAY = schema.GIVES_WAY_SOME
 
 
 class Bassist(Musician):
@@ -304,7 +245,7 @@ class BackingPiano(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 96
-    USUAL_GIVES_WAY = GIVES_WAY_SOME
+    USUAL_GIVES_WAY = schema.GIVES_WAY_SOME
 
 
 class BackingOrgan(Musician):
@@ -313,8 +254,8 @@ class BackingOrgan(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 84
-    USUAL_GIVES_WAY = GIVES_WAY_SOME
-    USUAL_NOTES = HELD_NOTES
+    USUAL_GIVES_WAY = schema.GIVES_WAY_SOME
+    USUAL_NOTES = schema.HELD_NOTES
 
 
 class BackingSynth(Musician):
@@ -323,8 +264,8 @@ class BackingSynth(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 96
-    USUAL_GIVES_WAY = GIVES_WAY_SOME
-    USUAL_NOTES = HELD_NOTES
+    USUAL_GIVES_WAY = schema.GIVES_WAY_SOME
+    USUAL_NOTES = schema.HELD_NOTES
 
 
 class LeadGuitarist(Musician):
@@ -333,7 +274,7 @@ class LeadGuitarist(Musician):
     __slots__ = ()
     LOWEST = 52
     HIGHEST = 88
-    USUAL_GIVES_WAY = IN_THE_GAPS
+    USUAL_GIVES_WAY = schema.IN_THE_GAPS
 
 
 class LeadOrgan(Musician):
@@ -342,8 +283,8 @@ class LeadOrgan(Musician):
     __slots__ = ()
     LOWEST = 48
     HIGHEST = 91
-    USUAL_GIVES_WAY = IN_THE_GAPS
-    USUAL_NOTES = HELD_NOTES
+    USUAL_GIVES_WAY = schema.IN_THE_GAPS
+    USUAL_NOTES = schema.HELD_NOTES
 
 
 class LeadPiano(Musician):
@@ -352,7 +293,7 @@ class LeadPiano(Musician):
     __slots__ = ()
     LOWEST = 48
     HIGHEST = 100
-    USUAL_GIVES_WAY = IN_THE_GAPS
+    USUAL_GIVES_WAY = schema.IN_THE_GAPS
 
 
 class LeadSynth(Musician):
@@ -361,7 +302,7 @@ class LeadSynth(Musician):
     __slots__ = ()
     LOWEST = 48
     HIGHEST = 100
-    USUAL_GIVES_WAY = IN_THE_GAPS
+    USUAL_GIVES_WAY = schema.IN_THE_GAPS
 
 
 class AnsweringPlayer(Musician):
@@ -370,7 +311,7 @@ class AnsweringPlayer(Musician):
     __slots__ = ()
     LOWEST = 48
     HIGHEST = 88
-    USUAL_GIVES_WAY = IN_THE_GAPS
+    USUAL_GIVES_WAY = schema.IN_THE_GAPS
 
 
 class BackupSingers(Musician):
@@ -379,8 +320,8 @@ class BackupSingers(Musician):
     __slots__ = ()
     LOWEST = 48
     HIGHEST = 79
-    USUAL_GIVES_WAY = GIVES_WAY_SOME
-    USUAL_NOTES = HELD_NOTES
+    USUAL_GIVES_WAY = schema.GIVES_WAY_SOME
+    USUAL_NOTES = schema.HELD_NOTES
 
 
 class HornSection(Musician):
@@ -389,8 +330,8 @@ class HornSection(Musician):
     __slots__ = ()
     LOWEST = 46
     HIGHEST = 82
-    USUAL_GIVES_WAY = GIVES_WAY_SOME
-    USUAL_NOTES = SHORT_NOTES
+    USUAL_GIVES_WAY = schema.GIVES_WAY_SOME
+    USUAL_NOTES = schema.SHORT_NOTES
 
 
 class StringSection(Musician):
@@ -399,23 +340,14 @@ class StringSection(Musician):
     __slots__ = ()
     LOWEST = 36
     HIGHEST = 96
-    USUAL_GIVES_WAY = GIVES_WAY_SOME
-    USUAL_NOTES = HELD_NOTES
+    USUAL_GIVES_WAY = schema.GIVES_WAY_SOME
+    USUAL_NOTES = schema.HELD_NOTES
 
 
 class Percussionist(Musician):
     """Plays hand percussion: its notes are drums, so no chord moves them."""
 
     __slots__ = ()
-
-
-# The musician of each instrument, in the order they are offered.
-MUSICIANS = {
-    RHYTHM_GUITARIST: RhythmGuitarist, BASSIST: Bassist, DRUMMER: Drummer, BACKING_PIANO: BackingPiano, BACKING_ORGAN: BackingOrgan, BACKING_SYNTH: BackingSynth,
-    LEAD_GUITARIST: LeadGuitarist, LEAD_ORGAN: LeadOrgan, LEAD_PIANO: LeadPiano, LEAD_SYNTH: LeadSynth, ANSWERING_PLAYER: AnsweringPlayer,
-    BACKUP_SINGERS: BackupSingers, HORN_SECTION: HornSection, STRING_SECTION: StringSection, PERCUSSIONIST: Percussionist,
-}
-INSTRUMENTS = tuple(MUSICIANS)
 
 
 def _notes_of(parts):
@@ -428,3 +360,11 @@ def _settled(*, sounds, scale):
     if scale is None:
         return list(sounds)
     return [Sound.settled(sound, scale) if sound[sound_values.KIND] == sound_values.DEGREE else sound for sound in sounds]
+
+
+# The musician of each instrument, in the order they are offered.
+MUSICIANS = {
+    schema.RHYTHM_GUITARIST: RhythmGuitarist, schema.BASSIST: Bassist, schema.DRUMMER: Drummer, schema.BACKING_PIANO: BackingPiano, schema.BACKING_ORGAN: BackingOrgan, schema.BACKING_SYNTH: BackingSynth,
+    schema.LEAD_GUITARIST: LeadGuitarist, schema.LEAD_ORGAN: LeadOrgan, schema.LEAD_PIANO: LeadPiano, schema.LEAD_SYNTH: LeadSynth, schema.ANSWERING_PLAYER: AnsweringPlayer,
+    schema.BACKUP_SINGERS: BackupSingers, schema.HORN_SECTION: HornSection, schema.STRING_SECTION: StringSection, schema.PERCUSSIONIST: Percussionist,
+}

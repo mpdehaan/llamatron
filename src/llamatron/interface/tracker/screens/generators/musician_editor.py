@@ -5,7 +5,7 @@
 """The musician's editor: the instrument, the tracks the chords and the tune are read from, the player's touch, and a heading for each kind of section the song has."""
 
 from llamatron.engine.generators import musician as musician_plugin
-from llamatron.engine.generators.musician import generator as musician, model as musician_settings, strings as musician_strings
+from llamatron.engine.generators.musician import model as musician_settings, schema, strings as musician_strings
 from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, gauge_shown, NameField, NumberField, Toggle
@@ -81,14 +81,14 @@ class MusicianEditor(GeneratorEditor, FieldPage):
 
     def section_fields(self, section):
         own = self.settings()
-        plays = own.get_for(section=section, name=musician.PLAYS)
+        plays = own.get_for(section=section, name=schema.PLAYS)
         fields = [
             self.heading(label=labels.MSG_MUSICIAN_SECTION_HEADING.format(section=section), is_set=lambda: self.section_is_set(section)),
-            Toggle(label=labels.MSG_MUSICIAN_PLAYS_LABEL, on=plays, set=lambda on: self.store_section(section=section, name=musician.PLAYS, value=on)),
+            Toggle(label=labels.MSG_MUSICIAN_PLAYS_LABEL, on=plays, set=lambda on: self.store_section(section=section, name=schema.PLAYS, value=on)),
         ]
         if plays:
-            fields.append(ChoiceField(page=self, label=labels.MSG_MUSICIAN_PLAYED_LABEL, choices=list(musician.FORMS), current=own.get_for(section=section, name=musician.PLAYED),
-                                      set=lambda chosen: self.store_section(section=section, name=musician.PLAYED, value=chosen)))
+            fields.append(ChoiceField(page=self, label=labels.MSG_MUSICIAN_PLAYED_LABEL, choices=list(schema.FORMS), current=own.get_for(section=section, name=schema.PLAYED),
+                                      set=lambda chosen: self.store_section(section=section, name=schema.PLAYED, value=chosen)))
         return fields
 
     def fields(self):
@@ -96,17 +96,17 @@ class MusicianEditor(GeneratorEditor, FieldPage):
         pitched = own.musician_class().LOWEST is not None
         fields = [
             NameField(value=lambda: self.item, rename=self.rename),
-            self.choice(label=labels.MSG_MUSICIAN_INSTRUMENT_LABEL, setting=MusicianSetting.INSTRUMENT, choices=musician.INSTRUMENTS),
+            self.choice(label=labels.MSG_MUSICIAN_INSTRUMENT_LABEL, setting=MusicianSetting.INSTRUMENT, choices=schema.INSTRUMENTS),
             *([self.track_field(label=labels.MSG_CHORDS_FROM_LABEL, setting=MusicianSetting.CHORDS_FROM, named=own.get_chords_from())] if pitched else []),
             self.track_field(label=labels.MSG_TUNE_FROM_LABEL, setting=MusicianSetting.TUNE_FROM, named=own.get_tune_from()),
-            self.choice(label=labels.MSG_MUSICIAN_ACTIVITY_LABEL, setting=MusicianSetting.ACTIVITY, choices=musician.ACTIVITIES),
-            self.gauge(label=labels.MSG_MUSICIAN_LOUDNESS_LABEL, setting=MusicianSetting.LOUDNESS, lowest=musician.QUIETEST, highest=musician.LOUDEST),
-            self.gauge(label=labels.MSG_MUSICIAN_LOOSENESS_LABEL, setting=MusicianSetting.LOOSENESS, lowest=musician.TIGHT, highest=musician.LOOSEST),
+            self.choice(label=labels.MSG_MUSICIAN_ACTIVITY_LABEL, setting=MusicianSetting.ACTIVITY, choices=schema.ACTIVITIES),
+            self.gauge(label=labels.MSG_MUSICIAN_LOUDNESS_LABEL, setting=MusicianSetting.LOUDNESS, lowest=schema.QUIETEST, highest=schema.LOUDEST),
+            self.gauge(label=labels.MSG_MUSICIAN_LOOSENESS_LABEL, setting=MusicianSetting.LOOSENESS, lowest=schema.TIGHT, highest=schema.LOOSEST),
             # Giving way is to the melody's track, so the field shows only once a track is named.
-            *([self.habit(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, setting=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY)] if own.get_tune_from() is not None else []),
-            self.choice(label=labels.MSG_MUSICIAN_ACCENTS_LABEL, setting=MusicianSetting.ACCENTS, choices=musician.ACCENTS),
-            self.habit(label=labels.MSG_MUSICIAN_NOTES_LABEL, setting=MusicianSetting.NOTES, choices=musician.NOTE_LENGTHS),
-            *([self.choice(label=labels.MSG_MUSICIAN_RANGE_LABEL, setting=MusicianSetting.RANGE, choices=musician.RANGES)] if pitched else []),
+            *([self.habit(label=labels.MSG_MUSICIAN_GIVES_WAY_LABEL, setting=MusicianSetting.GIVES_WAY, choices=schema.GIVES_WAY)] if own.get_tune_from() is not None else []),
+            self.choice(label=labels.MSG_MUSICIAN_ACCENTS_LABEL, setting=MusicianSetting.ACCENTS, choices=schema.ACCENTS),
+            self.habit(label=labels.MSG_MUSICIAN_NOTES_LABEL, setting=MusicianSetting.NOTES, choices=schema.NOTE_LENGTHS),
+            *([self.choice(label=labels.MSG_MUSICIAN_RANGE_LABEL, setting=MusicianSetting.RANGE, choices=schema.RANGES)] if pitched else []),
         ]
         for section in self.sections():
             fields += self.section_fields(section)

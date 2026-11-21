@@ -13,3 +13,5 @@ MSG_KIND_WORD = 'density'
 MSG_CAPTION_WORD = 'density'
 # What an undo or a redo of a change to one of its generators names the generator's kind.
 MSG_CHANGED_WORD = 'Density'
+# The heading the Generators page offers it under.
+MSG_GROUP = labels.GeneratorGroup.TRANSITIONS

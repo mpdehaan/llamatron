@@ -37,7 +37,6 @@ ALLOWED = {
         'interface/tracker/screens/wizard/section_melody_branch.py imports wizards.create_song.hook_writing',
         'interface/tracker/screens/wizard/section_melody_branch.py imports wizards.create_song.melody',
         'interface/tracker/screens/wizard/wizard_page.py imports wizards.create_song.notation',
-        'interface/tracker/screens/wizard/wizard_page.py imports realtime.sender_process.process',
         'interface/tracker/transport.py imports engine.realizer.step_order',
     ),
     'pages': (

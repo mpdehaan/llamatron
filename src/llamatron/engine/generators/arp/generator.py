@@ -5,6 +5,7 @@
 from enum import auto, Enum
 
 from llamatron.engine.clips.positions import fit_to_length
+from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.base import ClipGenerator
 from llamatron.engine.parts.scale_moves import along_scale
 from llamatron.math import length as length_values
@@ -17,11 +18,6 @@ from llamatron.user_strings import errors
 
 # How many steps an arpeggiator's offsets can have, as on a groovebox.
 MIN_OFFSETS = 1
-MAX_OFFSETS = 16
-# How many octaves it can play a chord across, and how far one offset can move a note.
-MIN_OCTAVE_RANGE = 1
-MAX_OCTAVE_RANGE = 4
-MAX_OFFSET = 24
 # The registers, in order, as the arp's settings name their adds (model/schema/file_format.py's REGISTER_NAMES, which the generators don't import).
 REGISTERS = ('AX', 'BX', 'CX', 'DX')
 # An offset of nothing leaves a note where it is, and so does a step with no offsets at all.
@@ -66,23 +62,23 @@ def _check_jump(jump):
 
 
 def _check_octave_range(octaves):
-    if type(octaves) is not int or not MIN_OCTAVE_RANGE <= octaves <= MAX_OCTAVE_RANGE:
-        raise ValueError(errors.ERR_ARP_BAD_OCTAVE_RANGE.format(value=octaves, lowest=MIN_OCTAVE_RANGE, highest=MAX_OCTAVE_RANGE))
+    if type(octaves) is not int or not schema.MIN_OCTAVE_RANGE <= octaves <= schema.MAX_OCTAVE_RANGE:
+        raise ValueError(errors.ERR_ARP_BAD_OCTAVE_RANGE.format(value=octaves, lowest=schema.MIN_OCTAVE_RANGE, highest=schema.MAX_OCTAVE_RANGE))
 
 
 def _check_offsets(offsets):
     if offsets is None:
         return
-    if not isinstance(offsets, (list, tuple)) or not MIN_OFFSETS <= len(offsets) <= MAX_OFFSETS:
-        raise ValueError(errors.ERR_ARP_BAD_OFFSETS.format(value=offsets, lowest=MIN_OFFSETS, highest=MAX_OFFSETS))
+    if not isinstance(offsets, (list, tuple)) or not MIN_OFFSETS <= len(offsets) <= schema.MAX_OFFSETS:
+        raise ValueError(errors.ERR_ARP_BAD_OFFSETS.format(value=offsets, lowest=MIN_OFFSETS, highest=schema.MAX_OFFSETS))
     for offset in offsets:
         if offset is not None and not _is_offset(offset):
-            raise ValueError(errors.ERR_BAD_OFFSET.format(value=offset, most=MAX_OFFSET))
+            raise ValueError(errors.ERR_BAD_OFFSET.format(value=offset, most=schema.MAX_OFFSET))
 
 
 def _is_offset(offset):
     """Return whether an offset is a whole number of scale notes no further than MAX_OFFSET either way."""
-    return type(offset) is int and -MAX_OFFSET <= offset <= MAX_OFFSET
+    return type(offset) is int and -schema.MAX_OFFSET <= offset <= schema.MAX_OFFSET
 
 
 def _lowest_to_highest(chord):
@@ -186,7 +182,7 @@ class Arp(ClipGenerator):
         return fit_to_length(positions=positions, length=wanted), clip.get_length()
 
     def _plays_single_notes(self):
-        return self._offsets is not None or self._octave_range > MIN_OCTAVE_RANGE
+        return self._offsets is not None or self._octave_range > schema.MIN_OCTAVE_RANGE
 
     def _arpeggiate(self, *, positions, generator, scale, start):
         """Return the positions arpeggiated, the first starting at start, a length as a pair, which the register adds are timed from."""

@@ -5,7 +5,7 @@
 """The settings of the musician generator: their names, their checks and their defaults, as a set file holds them."""
 
 from llamatron.caching.revised import notes_change
-from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician import generator as musician, schema
 from llamatron.engine.generators.settings_base import GeneratorSettings
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed, pass_over_unknown, reading, refuse_unknown
@@ -15,6 +15,16 @@ from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, Text, WholeNumber
 from llamatron.user_strings import errors
+
+
+def usual_notes(instrument):
+    """Return how long an instrument's musician plays its notes unless set: as written or short."""
+    return musician.MUSICIANS[instrument].USUAL_NOTES
+
+
+def usual_gives_way(instrument):
+    """Return how far an instrument's musician gives way to the others unless set."""
+    return musician.MUSICIANS[instrument].USUAL_GIVES_WAY
 
 class MusicianSetting:
     """A musician's settings, as a file names them."""
@@ -34,19 +44,19 @@ class MusicianSetting:
 
 # What a kind of section has of its own for a musician: whether the musician plays there, and how the part is played.
 MUSICIAN_BY_SECTION = described(
-    Flag(name=musician.PLAYS, error=errors.ERR_MUSICIAN_PLAYS_NOT_TRUE_OR_FALSE),
-    Choice(name=musician.PLAYED, choices=musician.FORMS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+    Flag(name=schema.PLAYS, error=errors.ERR_MUSICIAN_PLAYS_NOT_TRUE_OR_FALSE),
+    Choice(name=schema.PLAYED, choices=schema.FORMS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
 )
 
 
 # What a musician does with each setting left out, but for how it gives way and holds its notes, which its instrument says.
 MUSICIAN_DEFAULTS = {
-    MusicianSetting.INSTRUMENT: musician.RHYTHM_GUITARIST, MusicianSetting.ACTIVITY: musician.AS_WRITTEN, MusicianSetting.LOUDNESS: musician.USUAL_LOUDNESS,
-    MusicianSetting.LOOSENESS: musician.TIGHT, MusicianSetting.ACCENTS: musician.NO_ACCENTS, MusicianSetting.RANGE: musician.AS_WRITTEN,
+    MusicianSetting.INSTRUMENT: schema.RHYTHM_GUITARIST, MusicianSetting.ACTIVITY: schema.AS_WRITTEN, MusicianSetting.LOUDNESS: musician.USUAL_LOUDNESS,
+    MusicianSetting.LOOSENESS: schema.TIGHT, MusicianSetting.ACCENTS: schema.NO_ACCENTS, MusicianSetting.RANGE: schema.AS_WRITTEN,
 }
 
 
-MUSICIAN_SECTION_DEFAULTS = {musician.PLAYS: True, musician.PLAYED: musician.WHOLE}
+MUSICIAN_SECTION_DEFAULTS = {schema.PLAYS: True, schema.PLAYED: schema.WHOLE}
 
 
 def check_musician_by_section(value):
@@ -70,16 +80,16 @@ class MusicianSettings(GeneratorSettings):
 
     GENERATOR = musician.Musician
     SETTINGS = described(
-        Choice(name=MusicianSetting.INSTRUMENT, choices=musician.INSTRUMENTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.INSTRUMENT, choices=schema.INSTRUMENTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Text(name=MusicianSetting.CHORDS_FROM, error=errors.ERR_NOT_TEXT),
         Text(name=MusicianSetting.TUNE_FROM, error=errors.ERR_NOT_TEXT),
-        Choice(name=MusicianSetting.ACTIVITY, choices=musician.ACTIVITIES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        WholeNumber(name=MusicianSetting.LOUDNESS, lowest=musician.QUIETEST, highest=musician.LOUDEST, error=errors.ERR_BAD_SHAPE_PERCENT),
-        WholeNumber(name=MusicianSetting.LOOSENESS, lowest=musician.TIGHT, highest=musician.LOOSEST, error=errors.ERR_BAD_SHAPE_PERCENT),
-        Choice(name=MusicianSetting.GIVES_WAY, choices=musician.GIVES_WAY, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=MusicianSetting.ACCENTS, choices=musician.ACCENTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=MusicianSetting.NOTES, choices=musician.NOTE_LENGTHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=MusicianSetting.RANGE, choices=musician.RANGES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.ACTIVITY, choices=schema.ACTIVITIES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        WholeNumber(name=MusicianSetting.LOUDNESS, lowest=schema.QUIETEST, highest=schema.LOUDEST, error=errors.ERR_BAD_SHAPE_PERCENT),
+        WholeNumber(name=MusicianSetting.LOOSENESS, lowest=schema.TIGHT, highest=schema.LOOSEST, error=errors.ERR_BAD_SHAPE_PERCENT),
+        Choice(name=MusicianSetting.GIVES_WAY, choices=schema.GIVES_WAY, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.ACCENTS, choices=schema.ACCENTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.NOTES, choices=schema.NOTE_LENGTHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=MusicianSetting.RANGE, choices=schema.RANGES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Checked(name=MusicianSetting.BY_SECTION, check=check_musician_by_section),
     )
     REFERENCES = {Section.TRACKS: (MusicianSetting.CHORDS_FROM, MusicianSetting.TUNE_FROM)}

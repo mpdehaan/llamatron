@@ -24,6 +24,7 @@ is gone, until this tool takes it off the list.
 import argparse
 import ast
 import pathlib
+import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -33,6 +34,8 @@ PROGRAM = 'llamatron'
 PYTHON_FILES = '*.py'
 FILE_ENCODING = 'utf-8'
 DOT = '.'
+# What stands for any one module's name in a front door.
+WILDCARD = '*'
 TOP = '(top)'
 # The packages from the bottom up: each imports only those before it. The strings package is text every layer may name.
 LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'exporters', 'importers', 'realtime',
@@ -41,7 +44,9 @@ VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.
 FRONT_DOORS = {
     # Of the Engine, the Realizer is reached only through the song's realizer; its clips, timing, parts and plugins are open.
-    'engine': ('clips', 'timing', 'generators', 'realizer.song_realizer'),
+    # Of the generator plugins, a plugin's package, declaration, model, schema and strings, and the registry and the parts their models own.
+    'engine': ('clips', 'timing', 'realizer.song_realizer', 'generators.registry', 'generators.step_row', 'generators.shape_part',
+               'generators.*', 'generators.*.model', 'generators.*.schema', 'generators.*.strings', 'generators.*.declaration'),
     'exporters': ('exports',),
     'importers': ('midi_import',),
     'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits'),
@@ -79,7 +84,15 @@ EXCEPTIONS_END = "}\n"
 def is_front_door(*, module, doors):
     """Return whether a module of the program, as parts under the program, is one of a package's front doors, named below the package."""
     below = DOT.join(module[1:])
-    return any(below == door or below.startswith(door + DOT) for door in doors)
+    return any(door_pattern(door).fullmatch(below) for door in doors)
+
+
+def door_pattern(door):
+    """Return what a front door matches: the module it names and every module inside it, or, where * stands for one module's
+    name, as for each generator plugin, that module alone."""
+    if WILDCARD in door:
+        return re.compile(re.escape(door).replace(re.escape(WILDCARD), '[^.]+'))
+    return re.compile(re.escape(door) + r'(\..+)?')
 
 
 def package_of(parts):

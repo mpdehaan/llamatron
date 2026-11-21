@@ -13,3 +13,5 @@ MSG_KIND_WORD = 'articulation'
 MSG_CAPTION_WORD = 'articulate'
 # What an undo or a redo of a change to one of its generators names the generator's kind.
 MSG_CHANGED_WORD = 'Articulate'
+# The heading the Generators page offers it under.
+MSG_GROUP = labels.GeneratorGroup.TRANSITIONS

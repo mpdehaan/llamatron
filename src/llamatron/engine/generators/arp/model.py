@@ -5,7 +5,7 @@
 """The settings of the arp generator: their names, their checks and their defaults, as a set file holds them."""
 
 from llamatron.engine.generators import settings_base
-from llamatron.engine.generators.arp import generator as arp
+from llamatron.engine.generators.arp import generator as arp, schema
 from llamatron.engine.generators.arp.generator import _check_offsets, Arp, ChordOrder, OctaveJump
 from llamatron.engine.generators.settings_base import GeneratorSettings
 from llamatron.model.file import corrections
@@ -89,11 +89,11 @@ def _check_arp_offsets(value):
 
 def _nearest_offsets(offsets):
     """Return offsets with each one further than the arp allows at the furthest it does, or NO_NEAREST_VALUE unless they're the right number of whole numbers and silent steps."""
-    if not isinstance(offsets, list) or not arp.MIN_OFFSETS <= len(offsets) <= arp.MAX_OFFSETS:
+    if not isinstance(offsets, list) or not arp.MIN_OFFSETS <= len(offsets) <= schema.MAX_OFFSETS:
         return corrections.NO_NEAREST_VALUE
     if not all(offset is None or is_whole_number(offset) for offset in offsets):
         return corrections.NO_NEAREST_VALUE
-    return [offset if offset is None else min(max(offset, -arp.MAX_OFFSET), arp.MAX_OFFSET) for offset in offsets]
+    return [offset if offset is None else min(max(offset, -schema.MAX_OFFSET), schema.MAX_OFFSET) for offset in offsets]
 
 
 def _is_step_add(value):
@@ -102,8 +102,8 @@ def _is_step_add(value):
 
 def _check_step_adds(value):
     """Refuse a row of adds under the offsets unless it is a list of 1 to 16 adds or blanks."""
-    if not isinstance(value, list) or not arp.MIN_OFFSETS <= len(value) <= arp.MAX_OFFSETS or not all(_is_step_add(add) for add in value):
-        raise InvalidValue(errors.ERR_GENERATOR_BAD_STEP_ADDS.format(most=arp.MAX_OFFSETS, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
+    if not isinstance(value, list) or not arp.MIN_OFFSETS <= len(value) <= schema.MAX_OFFSETS or not all(_is_step_add(add) for add in value):
+        raise InvalidValue(errors.ERR_GENERATOR_BAD_STEP_ADDS.format(most=schema.MAX_OFFSETS, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
 
 
 class ArpSettings(HasCells, GeneratorSettings):
@@ -117,7 +117,7 @@ class ArpSettings(HasCells, GeneratorSettings):
     SETTINGS = described(
         Checked(name=ArpSetting.STEP, check=time_length),
         Choice(name=ArpSetting.ORDER, choices=sorted(ORDERS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=arp.MAX_OCTAVE_RANGE, error=errors.ERR_GENERATOR_BAD_OCTAVE_RANGE),
+        WholeNumber(name=ArpSetting.OCTAVE_RANGE, lowest=MIN_OCTAVE_RANGE, highest=schema.MAX_OCTAVE_RANGE, error=errors.ERR_GENERATOR_BAD_OCTAVE_RANGE),
         Choice(name=ArpSetting.OCTAVE_JUMP, choices=sorted(OCTAVE_JUMPS), default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         Checked(name=ArpSetting.OFFSETS, check=_check_arp_offsets, nearest=_nearest_offsets),
         *[WholeNumber(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, error=errors.ERR_GENERATOR_BAD_ADD) for name in ARP_NOTE_ADDS.values()],

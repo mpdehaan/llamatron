@@ -13,7 +13,7 @@ player who plays lines, the tune or a voice beside it, is told to give way to no
 play its notes as written, since the lines were written to sound together.
 """
 
-from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician import model as musician_model, schema
 from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.user_strings import song_wizard as wizard_text
 from llamatron.wizards.create_song import players
@@ -37,13 +37,13 @@ FAMILIES = (
 )
 # The musician who plays a family of sounds under the band, and the one who plays its lines.
 BACKING = {
-    PIANO: musician.BACKING_PIANO, ORGAN: musician.BACKING_ORGAN, GUITAR: musician.RHYTHM_GUITARIST, BASS: musician.BASSIST, STRINGS: musician.STRING_SECTION,
-    VOICES: musician.BACKUP_SINGERS, HORNS: musician.HORN_SECTION, SYNTH: musician.BACKING_SYNTH,
+    PIANO: schema.BACKING_PIANO, ORGAN: schema.BACKING_ORGAN, GUITAR: schema.RHYTHM_GUITARIST, BASS: schema.BASSIST, STRINGS: schema.STRING_SECTION,
+    VOICES: schema.BACKUP_SINGERS, HORNS: schema.HORN_SECTION, SYNTH: schema.BACKING_SYNTH,
 }
-LEADING = {PIANO: musician.LEAD_PIANO, ORGAN: musician.LEAD_ORGAN, GUITAR: musician.LEAD_GUITARIST, BASS: musician.BASSIST, SYNTH: musician.LEAD_SYNTH}
+LEADING = {PIANO: schema.LEAD_PIANO, ORGAN: schema.LEAD_ORGAN, GUITAR: schema.LEAD_GUITARIST, BASS: schema.BASSIST, SYNTH: schema.LEAD_SYNTH}
 # The musician a player is where the sound says nothing, by the player's instrument in the band.
-BACKING_PLAYERS = {players.BASS: musician.BASSIST, players.RHYTHM: musician.RHYTHM_GUITARIST, players.KEYS: musician.BACKING_PIANO}
-LEADING_PLAYERS = {players.BASS: musician.BASSIST, players.LEAD: musician.LEAD_GUITARIST}
+BACKING_PLAYERS = {players.BASS: schema.BASSIST, players.RHYTHM: schema.RHYTHM_GUITARIST, players.KEYS: schema.BACKING_PIANO}
+LEADING_PLAYERS = {players.BASS: schema.BASSIST, players.LEAD: schema.LEAD_GUITARIST}
 
 
 class BandMember:
@@ -70,30 +70,29 @@ def family_of(sound):
 def instrument_of(member):
     """Return the musician a player of the band is: by the sound, and where the sound says nothing by the player's instrument in the band."""
     if member.player == players.BASS:
-        return musician.BASSIST
+        return schema.BASSIST
     family = family_of(member.sound)
     if member.answers:
-        return musician.ANSWERING_PLAYER
+        return schema.ANSWERING_PLAYER
     if member.backing:
-        return BACKING.get(family) or BACKING_PLAYERS.get(member.player, musician.BACKING_SYNTH)
-    return LEADING.get(family) or LEADING_PLAYERS.get(member.player, musician.LEAD_SYNTH)
+        return BACKING.get(family) or BACKING_PLAYERS.get(member.player, schema.BACKING_SYNTH)
+    return LEADING.get(family) or LEADING_PLAYERS.get(member.player, schema.LEAD_SYNTH)
 
 
 def usual_musician(member):
     """Return the settings of the musician a player is given: the instrument, for a player of lines giving way to nobody and the notes as written, and for a player of short notes the notes as written."""
     instrument = instrument_of(member)
     settings = {MusicianSetting.INSTRUMENT: instrument}
-    of_instrument = musician.MUSICIANS[instrument]
     if member.backing:
-        if of_instrument.USUAL_NOTES == musician.SHORT_NOTES:
+        if musician_model.usual_notes(instrument) == schema.SHORT_NOTES:
             # A figure written for the horns already says how long each stab is.
-            settings[MusicianSetting.NOTES] = musician.AS_WRITTEN
+            settings[MusicianSetting.NOTES] = schema.AS_WRITTEN
         return settings
-    gives_way = musician.GIVES_WAY_SOME if member.answers else musician.NO_GIVING_WAY
-    if of_instrument.USUAL_GIVES_WAY != gives_way:
+    gives_way = schema.GIVES_WAY_SOME if member.answers else schema.NO_GIVING_WAY
+    if musician_model.usual_gives_way(instrument) != gives_way:
         settings[MusicianSetting.GIVES_WAY] = gives_way
-    if of_instrument.USUAL_NOTES != musician.AS_WRITTEN:
-        settings[MusicianSetting.NOTES] = musician.AS_WRITTEN
+    if musician_model.usual_notes(instrument) != schema.AS_WRITTEN:
+        settings[MusicianSetting.NOTES] = schema.AS_WRITTEN
     return settings
 
 
@@ -119,7 +118,7 @@ def band_of(*, members, drummer, drum_tracks, tune_track, own):
         musicians[musician_name(member.track)] = settings
         of_track[member.track] = musician_name(member.track)
     if drummer is not None and drum_tracks:
-        settings = dict(own[drummer]) if drummer in own else {MusicianSetting.INSTRUMENT: musician.DRUMMER}
+        settings = dict(own[drummer]) if drummer in own else {MusicianSetting.INSTRUMENT: schema.DRUMMER}
         settings.pop(MusicianSetting.TUNE_FROM, None)
         if tune_track is not None:
             settings[MusicianSetting.TUNE_FROM] = tune_track

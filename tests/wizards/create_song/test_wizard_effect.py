@@ -21,9 +21,9 @@ import json
 import unittest
 
 from llamatron.engine.generators import musician as musician_plugin
-from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician import schema as schema_values
 from llamatron.engine.generators.musician.model import MusicianSetting
-from llamatron.engine.generators.phrasing import generator as phrasing_values, model as phrasing_settings
+from llamatron.engine.generators.phrasing import model as phrasing_settings, schema
 from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Row, Section
@@ -156,7 +156,7 @@ def fresh(*, genre, subgenre):
         choices.get_band().set_way(trait=trait, value=choices.get_band().get_way(trait))
     return choices
 # Every value each setting of a Phrasing takes.
-PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: phrasing_settings.LINES_IN_BARS, PhrasingSetting.BREATH: phrasing_values.BREATHS, PhrasingSetting.RISE_AND_FALL: phrasing_values.RISES, PhrasingSetting.NOTES: phrasing_values.JOINS}
+PHRASING_OFFERED_VALUES = {PhrasingSetting.LINE_BARS: phrasing_settings.LINES_IN_BARS, PhrasingSetting.BREATH: schema.BREATHS, PhrasingSetting.RISE_AND_FALL: schema.RISES, PhrasingSetting.NOTES: schema.JOINS}
 
 
 def song_of(choices):
@@ -424,7 +424,7 @@ def every_choice(choices):
         setlist, name = choices.made_for_listening()
         for role in choices.get_band().roles_in():
             if setlist.get_song(name).has_generator(kind=musician_plugin.NAME, name=choices.player(role).musician_name()):
-                yield PLAYER_MUSICIAN, role, lambda made, role=role: made.player(role).set_musician(settings={MusicianSetting.LOUDNESS: musician.LOUDEST}), [nothing_first]
+                yield PLAYER_MUSICIAN, role, lambda made, role=role: made.player(role).set_musician(settings={MusicianSetting.LOUDNESS: schema_values.LOUDEST}), [nothing_first]
     # A riff played by the player it was written for in the first kind of section that takes it: its notes written by hand, written
     # again, drawn each other way, and the riff deleted.
     for role in choices.get_riffs().riff_instruments()[:1]:

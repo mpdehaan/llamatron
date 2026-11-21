@@ -6,7 +6,7 @@
 
 from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import model as guitarify_settings, strings as guitarify_strings
-from llamatron.engine.generators.guitarify.bars import ready_bar_matching
+from llamatron.engine.generators.guitarify.schema import ready_bar_matching
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.interface.tracker.screens.generators.restart_field import restart_field

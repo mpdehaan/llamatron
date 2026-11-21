@@ -4,7 +4,7 @@
 """The Phrasing editor: how long a line is, how the lines breathe, and a table of what each kind of section does of its own."""
 
 from llamatron.engine.generators import phrasing as phrasing_plugin
-from llamatron.engine.generators.phrasing import generator as phrasing_values, model as phrasing_settings, strings as phrasing_strings
+from llamatron.engine.generators.phrasing import model as phrasing_settings, schema, strings as phrasing_strings
 from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, NameField
@@ -39,7 +39,7 @@ class PhrasingEditor(GeneratorEditor, FieldPage):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             self.choice(label=labels.MSG_PHRASING_LINE_LABEL, setting=PhrasingSetting.LINE_BARS, choices=phrasing_settings.LINES_IN_BARS, names=[labels.MSG_PHRASING_LINE_NAMES[bars] for bars in phrasing_settings.LINES_IN_BARS]),
-            self.choice(label=labels.MSG_PHRASING_BREATH_LABEL, setting=PhrasingSetting.BREATH, choices=phrasing_values.BREATHS),
-            self.choice(label=labels.MSG_PHRASING_RISE_LABEL, setting=PhrasingSetting.RISE_AND_FALL, choices=phrasing_values.RISES),
-            self.choice(label=labels.MSG_PHRASING_NOTES_LABEL, setting=PhrasingSetting.NOTES, choices=phrasing_values.JOINS),
+            self.choice(label=labels.MSG_PHRASING_BREATH_LABEL, setting=PhrasingSetting.BREATH, choices=schema.BREATHS),
+            self.choice(label=labels.MSG_PHRASING_RISE_LABEL, setting=PhrasingSetting.RISE_AND_FALL, choices=schema.RISES),
+            self.choice(label=labels.MSG_PHRASING_NOTES_LABEL, setting=PhrasingSetting.NOTES, choices=schema.JOINS),
         ]

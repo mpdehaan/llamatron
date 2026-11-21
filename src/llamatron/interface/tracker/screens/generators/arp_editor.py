@@ -5,9 +5,8 @@
 """The Arp editor page."""
 
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp import generator as arp_values, model as arp_settings, strings as arp_strings
-from llamatron.engine.generators.arp.generator import OctaveJump
-from llamatron.engine.generators.arp.model import ArpSetting, written_name
+from llamatron.engine.generators.arp import model as arp_model, model as arp_settings, schema, strings as arp_strings
+from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.generators.restart_field import restart_field
@@ -22,7 +21,7 @@ from llamatron.model.schema import file_format
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
-JUMPS = [written_name(jump) for jump in OctaveJump]
+JUMPS = list(arp_model.OCTAVE_JUMPS)
 # How many offsets a new set has, as on a groovebox.
 DEFAULT_OFFSET_STEPS = 8
 # What a note adds to a register when the arp sets nothing.
@@ -46,7 +45,7 @@ class ArpEditor(GeneratorEditor, FieldPage):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=arp_strings.MSG_LABEL)
 
     def set_range(self, octaves):
-        self.store(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == arp_values.MIN_OCTAVE_RANGE else octaves)
+        self.store(setting=ArpSetting.OCTAVE_RANGE, value=None if octaves == schema.MIN_OCTAVE_RANGE else octaves)
 
     def set_jump(self, jump):
         self.store(setting=ArpSetting.OCTAVE_JUMP, value=None if jump == JUMPS[0] else jump)
@@ -60,13 +59,13 @@ class ArpEditor(GeneratorEditor, FieldPage):
         arp = self.settings()
         step = arp.get_step()
         order = arp.get_order() or shared.DEFAULT_ORDER
-        octaves = arp.get_octave_range() or arp_values.MIN_OCTAVE_RANGE
+        octaves = arp.get_octave_range() or schema.MIN_OCTAVE_RANGE
         jump = arp.get_octave_jump() or JUMPS[0]
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             time_field(page=self, label=labels.MSG_STEP_LABEL, written=step, first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=ArpSetting.STEP, value=value)),
             ChoiceField(page=self, label=labels.MSG_ORDER_LABEL, choices=shared.ORDERS, current=order, set=lambda value: self.store(setting=ArpSetting.ORDER, value=value)),
-            NumberField(page=self, label=labels.MSG_OCTAVE_RANGE_LABEL, number=octaves, lowest=arp_values.MIN_OCTAVE_RANGE, highest=arp_values.MAX_OCTAVE_RANGE, set=self.set_range),
+            NumberField(page=self, label=labels.MSG_OCTAVE_RANGE_LABEL, number=octaves, lowest=schema.MIN_OCTAVE_RANGE, highest=schema.MAX_OCTAVE_RANGE, set=self.set_range),
             ChoiceField(page=self, label=labels.MSG_OCTAVE_JUMP_LABEL, choices=JUMPS, current=jump, names=[words(name) for name in JUMPS], shown=words(jump), set=self.set_jump),
             Field(label=labels.MSG_OFFSETS_LABEL, value=lambda: offsets_text(arp.get_offsets()), adjust=None, enter=self.edit_offsets, enter_what=legends.What.EDIT,
                   clear=lambda: self.store(setting=ArpSetting.OFFSETS, value=None), clear_what=legends.What.REMOVE),

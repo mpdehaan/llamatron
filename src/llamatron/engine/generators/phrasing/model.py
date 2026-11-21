@@ -4,7 +4,7 @@
 
 """The settings of the phrasing generator: their names, their checks and their defaults, as a set file holds them."""
 
-from llamatron.engine.generators.phrasing import generator as phrasing
+from llamatron.engine.generators.phrasing import schema
 from llamatron.engine.generators.phrasing.generator import Phrasing
 from llamatron.engine.generators.settings_base import GeneratorSettings
 from llamatron.model.file import corrections
@@ -30,8 +30,8 @@ DEFAULT_LINE_BARS = 2
 
 
 PHRASING_DEFAULTS = {
-    PhrasingSetting.LINE_BARS: DEFAULT_LINE_BARS, PhrasingSetting.BREATH: phrasing.QUICK_BREATH, PhrasingSetting.RISE_AND_FALL: phrasing.LITTLE_RISE,
-    PhrasingSetting.NOTES: phrasing.NOTES_AS_WRITTEN,
+    PhrasingSetting.LINE_BARS: DEFAULT_LINE_BARS, PhrasingSetting.BREATH: schema.QUICK_BREATH, PhrasingSetting.RISE_AND_FALL: schema.LITTLE_RISE,
+    PhrasingSetting.NOTES: schema.NOTES_AS_WRITTEN,
 }
 
 
@@ -46,9 +46,9 @@ class PhrasingSettings(GeneratorSettings):
     GENERATOR = Phrasing
     SETTINGS = described(
         Choice(name=PhrasingSetting.LINE_BARS, choices=LINES_IN_BARS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.BREATH, choices=phrasing.BREATHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=phrasing.RISES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
-        Choice(name=PhrasingSetting.NOTES, choices=phrasing.JOINS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.BREATH, choices=schema.BREATHS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.RISE_AND_FALL, choices=schema.RISES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=PhrasingSetting.NOTES, choices=schema.JOINS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
     )
 
     @classmethod

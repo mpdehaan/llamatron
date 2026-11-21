@@ -13,6 +13,7 @@ that one undo takes it away again, and shows Arrange on it.
 The page knows nothing of any one branch (branch.py): it draws what the branches say.
 """
 
+import functools
 from rich.text import Text
 
 from llamatron.caching.kept import forget_kept, kept_while
@@ -45,7 +46,6 @@ from llamatron.model.file import version
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import new_name
-from llamatron.realtime.sender_process.process import SenderNotStarted
 from llamatron.user_strings import errors, help as help_text, labels, marks, messages, names, song_wizard as wizard_text
 from llamatron.wizards.create_song import notation, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
@@ -361,12 +361,10 @@ class WizardPage(FieldPage):
             if index >= len(setlist.get_song(name).get_scenes()):
                 raise ValueError(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             if track is None:
-                preview.play_section(setlist=setlist, name=name, index=index, what=what)
-            else:
-                preview.play_line(setlist=setlist, name=name, index=index, track=track, what=what, with_drums=not alone)
-        except (ValueError, SongFileError, SenderNotStarted) as problem:
-            return str(problem) if isinstance(problem, SenderNotStarted) else errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO
-        return None
+                return preview.sender_refusal(functools.partial(preview.play_section, setlist=setlist, name=name, index=index, what=what))
+            return preview.sender_refusal(functools.partial(preview.play_line, setlist=setlist, name=name, index=index, track=track, what=what, with_drums=not alone))
+        except (ValueError, SongFileError):
+            return errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO
 
     def stop_listening(self):
         self.app.made_preview().stop()

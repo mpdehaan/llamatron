@@ -4,7 +4,7 @@
 
 """Tests of a player as a person on the song wizard's player panels, and in the choices underneath: where the player comes in, where the player lays out, and how strongly the player answers to Energy."""
 
-from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician import schema
 from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
@@ -148,11 +148,11 @@ class TestWizardEditPlayer(WizardTest):
         self.assertIsInstance(self.app.screen, MusicianEditor)
         self.assertTrue(self.app.is_drafting())
         self.assertEqual(self.app.screen.item, choices.player(THE_BASS).musician_name())
-        self.app.screen.store(setting=MusicianSetting.LOUDNESS, value=musician.LOUDEST)
+        self.app.screen.store(setting=MusicianSetting.LOUDNESS, value=schema.LOUDEST)
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
         self.assertFalse(self.app.is_drafting())
-        self.assertEqual(choices.player(THE_BASS).get_musician()[MusicianSetting.LOUDNESS], musician.LOUDEST)
+        self.assertEqual(choices.player(THE_BASS).get_musician()[MusicianSetting.LOUDNESS], schema.LOUDEST)
         self.assertNotIn(MusicianSetting.TUNE_FROM, choices.player(THE_BASS).get_musician())
         self.assertIn(messages.MSG_WIZARD_PLAYER_KEPT, self.text())
         self.assertIn(labels.MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON, self.text())
@@ -166,7 +166,7 @@ class TestWizardEditPlayer(WizardTest):
 
     async def test_clearing_gives_the_player_back_the_usual_musician(self):
         choices = await self.to_player(THE_BASS)
-        choices.player(THE_BASS).set_musician(settings={MusicianSetting.LOUDNESS: musician.LOUDEST})
+        choices.player(THE_BASS).set_musician(settings={MusicianSetting.LOUDNESS: schema.LOUDEST})
         await self.press(Key.DOWN, Key.UP)
         await self.select_field(labels.MSG_WIZARD_EDIT_OWN_PLAYER_BUTTON)
         await self.press(keybindings.WizardPage.CLEAR)

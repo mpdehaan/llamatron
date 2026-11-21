@@ -10,7 +10,7 @@ import sys
 import unittest
 
 from llamatron.engine.generators import settings_base, shape_part, step_row
-from llamatron.engine.generators.arp import generator as arp
+from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
 from llamatron.engine.generators.drift.model import DriftSetting, DriftSettings, versioned
@@ -525,7 +525,7 @@ class TestAChoiceKeepsItsFileNames(unittest.TestCase):
         self.assertEqual(scene.SETTINGS[SceneSetting.REPEAT].nearest(limits.MIN_REPEAT - 1), limits.MIN_REPEAT)
         self.assertEqual(setlist.SETTINGS[SetlistSetting.DEFAULT_OCTAVE].nearest(limits.MAX_OCTAVE + 1), limits.MAX_OCTAVE)
         self.assertEqual(register.SETTINGS[RegisterSetting.MAXIMUM].nearest(limits.MAX_REGISTER_VALUE + 1), limits.MAX_REGISTER_VALUE)
-        self.assertEqual(ArpSettings.SETTINGS[ArpSetting.OCTAVE_RANGE].nearest(arp.MAX_OCTAVE_RANGE + 1), arp.MAX_OCTAVE_RANGE)
+        self.assertEqual(ArpSettings.SETTINGS[ArpSetting.OCTAVE_RANGE].nearest(schema.MAX_OCTAVE_RANGE + 1), schema.MAX_OCTAVE_RANGE)
 
 
 

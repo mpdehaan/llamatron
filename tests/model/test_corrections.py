@@ -16,7 +16,7 @@ import unittest
 import yaml
 
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp import generator as arp
+from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.model.file import corrections as corrections_values
 from llamatron.model.file.corrections import changed_count, Correction, place_without
@@ -195,10 +195,10 @@ CORRECTED = [
     ),
     (with_groove({GrooveSetting.CELL_LENGTH: limits.MAX_GROOVE_CELL_LENGTH + 1}), (*GROOVE, GrooveSetting.CELL_LENGTH), limits.MAX_GROOVE_CELL_LENGTH),
     # An arpeggiator.
-    (with_arp({ArpSetting.OCTAVE_RANGE: arp.MAX_OCTAVE_RANGE + 1}), (*ARP, ArpSetting.OCTAVE_RANGE), arp.MAX_OCTAVE_RANGE),
+    (with_arp({ArpSetting.OCTAVE_RANGE: schema.MAX_OCTAVE_RANGE + 1}), (*ARP, ArpSetting.OCTAVE_RANGE), schema.MAX_OCTAVE_RANGE),
     (with_arp({ArpSetting.ORDER: NOT_A_CHOICE}), (*ARP, ArpSetting.ORDER), corrections_values.LEFT_OUT),
     (with_arp({ArpSetting.OCTAVE_JUMP: NOT_A_CHOICE}), (*ARP, ArpSetting.OCTAVE_JUMP), corrections_values.LEFT_OUT),
-    (with_arp({ArpSetting.OFFSETS: [arp.MAX_OFFSET + 1, None, -arp.MAX_OFFSET - 1]}), (*ARP, ArpSetting.OFFSETS), [arp.MAX_OFFSET, None, -arp.MAX_OFFSET]),
+    (with_arp({ArpSetting.OFFSETS: [schema.MAX_OFFSET + 1, None, -schema.MAX_OFFSET - 1]}), (*ARP, ArpSetting.OFFSETS), [schema.MAX_OFFSET, None, -schema.MAX_OFFSET]),
 ]
 # Data with something wrong that no allowed value is near, which is refused as it always was.
 REFUSED = [

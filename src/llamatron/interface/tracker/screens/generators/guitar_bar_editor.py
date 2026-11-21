@@ -14,8 +14,8 @@ which replaces the strokes, the accents and the cell's length together.
 from rich.text import Text
 
 from llamatron.engine.generators import guitarify as guitarify_plugin
-from llamatron.engine.generators.guitarify import bars as guitar_bars, model as guitarify_settings
-from llamatron.engine.generators.guitarify.bars import ready_bar_matching
+from llamatron.engine.generators.guitarify import model as guitarify_settings, schema as guitar_bars
+from llamatron.engine.generators.guitarify.schema import ready_bar_matching
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, Style

@@ -15,7 +15,7 @@ import re
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.arp import generator as arp_values
+from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.generator import Arp, ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings, written_name
 from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
@@ -79,7 +79,7 @@ UNKNOWN_COUNT_IN_CHAIN = 'chain (x), auto_ratchet: unknown setting (count)'
 # Settings of an arp that reading a file refuses, each wrong in one setting.
 WRONG_ARP_SETTINGS = [
     {ArpSetting.ORDER: 'sideways'},
-    {ArpSetting.OCTAVE_RANGE: arp_values.MAX_OCTAVE_RANGE + 1},
+    {ArpSetting.OCTAVE_RANGE: schema.MAX_OCTAVE_RANGE + 1},
     {ArpSetting.OCTAVE_JUMP: 'never'},
     {ArpSetting.OFFSETS: 'up'},
     {ArpSetting.STEP: 'long'},

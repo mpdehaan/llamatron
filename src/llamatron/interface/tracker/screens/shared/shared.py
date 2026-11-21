@@ -4,8 +4,7 @@
 
 """What several screens share: the scale and root pickers, the note lengths, the file suffixes and the key lists that list pages build from."""
 
-from llamatron.engine.generators.arp.generator import ChordOrder
-from llamatron.engine.generators.arp.model import written_name
+from llamatron.engine.generators.arp import model as arp_model
 from llamatron.interface.tracker import drawing
 from llamatron.model.schema import limits
 from llamatron.model.values import time_signature
@@ -17,7 +16,7 @@ SONG_SUFFIX = '.yml'
 SONG_SUFFIXES = (SONG_SUFFIX, '.yaml')
 # The MIDI files the import's picker shows.
 MIDI_SUFFIXES = ('.mid', '.midi')
-ORDERS = [written_name(order) for order in ChordOrder]
+ORDERS = list(arp_model.ORDERS)
 DEFAULT_ORDER = ORDERS[0]
 
 

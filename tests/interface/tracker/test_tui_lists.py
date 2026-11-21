@@ -5,7 +5,7 @@
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
 from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
-from llamatron.engine.generators.arp import generator as arp, strings as arp_strings
+from llamatron.engine.generators.arp import schema, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.interface.tracker import drawing, keybindings
@@ -734,7 +734,7 @@ class TestOffsetsEditorOnAUsualConsole(UITest):
         # Left on the first step stays there, since no cursor goes round, and Right to the last step scrolls the row.
         await self.press(Key.LEFT)
         self.assertIn(marks.MSG_CURSOR_STEP_MARKS.format(text=1), self.text())
-        await self.press(*[Key.RIGHT] * (arp.MAX_OFFSETS - 1))
+        await self.press(*[Key.RIGHT] * (schema.MAX_OFFSETS - 1))
         self.assertIn(marks.MSG_MORE_BEFORE + fixed_text(marks.MSG_STEPS_SHOWN) + '8-16', self.text())
         self.assertIn(marks.MSG_CURSOR_STEP_MARKS.format(text=16), self.text())
 

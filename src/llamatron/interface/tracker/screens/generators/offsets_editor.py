@@ -14,7 +14,7 @@ the screen scrolls sideways like the pattern editor rather than wrapping onto mo
 from rich.text import Text
 
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp import generator as arp_values
+from llamatron.engine.generators.arp import schema
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.signed_gauge import SignedGauge
 from llamatron.interface.tracker.drawing import Box, Style
@@ -49,8 +49,8 @@ class OffsetsEditor(GeneratorEditor, OneRowEditor):
     CRUMBS_AFTER = (labels.Crumb.OFFSETS,)
     # A cell is wide enough for the cursor's marks around the largest value, like <+24▲> or <<16>>.
     CELL_WIDTH = 6
-    MOST = arp_values.MAX_OFFSET
-    MOST_STEPS = arp_values.MAX_OFFSETS
+    MOST = schema.MAX_OFFSET
+    MOST_STEPS = schema.MAX_OFFSETS
     INSERT = KEYS.INSERT_STEP
     REMOVE = KEYS.REMOVE_STEP
 

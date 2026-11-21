@@ -5,6 +5,8 @@
 """The words the Drag generator plugin shows: what it is called beside a generator's name, the word its page's caption names it by, and the word a generator named for
 its kind takes, as in kick drag."""
 
+from llamatron.user_strings import labels
+
 MSG_LABEL = 'Drag'
 MSG_KIND_WORD = 'drag'
 MSG_CAPTION_WORD = 'drag'
@@ -13,3 +15,5 @@ MSG_CHANGED_WORD = 'Drag'
 # Its editor's row of steps: the row's name, and the line above it saying what a step that's on does.
 MSG_STEP_ROW_NAME = 'Drag'
 MSG_STEP_ROW_NOTE = 'a note starting on a step that is on plays late'
+# The heading the Generators page offers it under.
+MSG_GROUP = labels.GeneratorGroup.TIMING

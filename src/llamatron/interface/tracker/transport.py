@@ -197,6 +197,15 @@ class Transport:
         except (SongFileError, SenderNotStarted) as problem:
             return Tried(answer=None, refusal=str(problem))
 
+    def sender_refusal(self, play):
+        """Run something that plays, and return why it could not, in words to show, where the Realtime Sender Process did not
+        start, or None when it played; so that no page names the sender process's error."""
+        try:
+            play()
+        except SenderNotStarted as problem:
+            return str(problem)
+        return None
+
     # What stops anything from playing.
 
     def problem(self, *, track=None):

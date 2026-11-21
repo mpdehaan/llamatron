@@ -5,7 +5,7 @@
 """The settings of the guitarify generator: their names, their checks and their defaults, as a set file holds them."""
 
 from llamatron.engine.generators import settings_base
-from llamatron.engine.generators.guitarify import bars as guitar_bars
+from llamatron.engine.generators.guitarify import schema as guitar_bars
 from llamatron.engine.generators.guitarify.generator import Guitarify
 from llamatron.engine.generators.settings_base import GeneratorSettings
 from llamatron.model.file import corrections

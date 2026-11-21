@@ -7,7 +7,7 @@
 import unittest
 
 from llamatron.engine.generators import musician as musician_plugin
-from llamatron.engine.generators.musician import generator as musician
+from llamatron.engine.generators.musician import generator as musician, schema
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
@@ -95,15 +95,15 @@ def starts(notes):
 
 def plain(**settings):
     """Return the settings of a bassist, who gives way to nobody and plays its notes as written, with the settings given."""
-    return {MusicianSetting.INSTRUMENT: musician.BASSIST, **settings}
+    return {MusicianSetting.INSTRUMENT: schema.BASSIST, **settings}
 
 
 def in_section(*, played=None, plays=None):
     own = {}
     if played is not None:
-        own[musician.PLAYED] = played
+        own[schema.PLAYED] = played
     if plays is not None:
-        own[musician.PLAYS] = plays
+        own[schema.PLAYS] = plays
     return plain(**{MusicianSetting.BY_SECTION: {SectionKind.VERSE: own}})
 
 
@@ -121,50 +121,50 @@ class TestMusicianBySection(unittest.TestCase):
         self.assertEqual(len(heard(band_data(settings=in_section(plays=False)))), STEPS)
 
     def test_softer_plays_every_note_softer(self):
-        notes = heard(band_data(settings=in_section(played=musician.SOFTER), section=SectionKind.VERSE))
+        notes = heard(band_data(settings=in_section(played=schema.SOFTER), section=SectionKind.VERSE))
         self.assertEqual(len(notes), STEPS)
         self.assertEqual({note[VELOCITY] for note in notes}, {WRITTEN_VELOCITY - musician.SOFTER_DEPTH})
 
     def test_thinned_keeps_the_notes_on_the_beats(self):
-        notes = heard(band_data(settings=in_section(played=musician.THINNED), section=SectionKind.VERSE))
+        notes = heard(band_data(settings=in_section(played=schema.THINNED), section=SectionKind.VERSE))
         self.assertEqual(starts(notes), [beat * QUARTER for beat in range(8)])
 
     def test_head_only_plays_the_first_bar_of_every_two(self):
-        notes = heard(band_data(settings=in_section(played=musician.HEAD_ONLY), section=SectionKind.VERSE))
+        notes = heard(band_data(settings=in_section(played=schema.HEAD_ONLY), section=SectionKind.VERSE))
         self.assertEqual(starts(notes), [step * EIGHTH for step in range(8)])
 
     def test_muted_plays_every_note_short_and_softer(self):
-        notes = heard(band_data(settings=in_section(played=musician.MUTED), section=SectionKind.VERSE))
+        notes = heard(band_data(settings=in_section(played=schema.MUTED), section=SectionKind.VERSE))
         self.assertEqual(len(notes), STEPS)
         self.assertEqual({note[LENGTH] for note in notes}, {SIXTEENTH})
         self.assertEqual({note[VELOCITY] for note in notes}, {WRITTEN_VELOCITY - musician.MUTED_DEPTH})
 
     def test_hits_plays_the_first_note_of_each_bar(self):
-        notes = heard(band_data(settings=in_section(played=musician.HITS), section=SectionKind.VERSE))
+        notes = heard(band_data(settings=in_section(played=schema.HITS), section=SectionKind.VERSE))
         self.assertEqual(starts(notes), [0, BAR])
 
 
 class TestMusicianTouch(unittest.TestCase):
 
     def test_a_sparse_player_keeps_the_halves_of_the_bar_and_a_light_one_the_beats(self):
-        self.assertEqual(starts(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.SPARSE})))), [half * HALF for half in range(4)])
-        self.assertEqual(starts(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.LIGHT})))), [beat * QUARTER for beat in range(8)])
+        self.assertEqual(starts(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: schema.SPARSE})))), [half * HALF for half in range(4)])
+        self.assertEqual(starts(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: schema.LIGHT})))), [beat * QUARTER for beat in range(8)])
 
     def test_a_busy_player_leaves_eighths_alone_and_a_very_busy_one_strikes_each_twice(self):
-        self.assertEqual(len(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.BUSY})))), STEPS)
-        notes = heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: musician.VERY_BUSY})))
+        self.assertEqual(len(heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: schema.BUSY})))), STEPS)
+        notes = heard(band_data(settings=plain(**{MusicianSetting.ACTIVITY: schema.VERY_BUSY})))
         self.assertEqual(starts(notes), [step * SIXTEENTH for step in range(STEPS * 2)])
 
     def test_loudness_moves_every_note_by_steps(self):
         notes = heard(band_data(settings=plain(**{MusicianSetting.LOUDNESS: 2})))
         self.assertEqual({note[VELOCITY] for note in notes}, {WRITTEN_VELOCITY + 2 * musician.LOUDNESS_STEP})
-        notes = heard(band_data(settings=plain(**{MusicianSetting.LOUDNESS: musician.QUIETEST})))
-        self.assertEqual({note[VELOCITY] for note in notes}, {WRITTEN_VELOCITY + musician.QUIETEST * musician.LOUDNESS_STEP})
+        notes = heard(band_data(settings=plain(**{MusicianSetting.LOUDNESS: schema.QUIETEST})))
+        self.assertEqual({note[VELOCITY] for note in notes}, {WRITTEN_VELOCITY + schema.QUIETEST * musician.LOUDNESS_STEP})
 
     def test_a_loose_player_wanders_within_reach_and_the_same_seed_plays_the_same(self):
-        data = band_data(settings=plain(**{MusicianSetting.LOOSENESS: musician.LOOSEST}))
+        data = band_data(settings=plain(**{MusicianSetting.LOOSENESS: schema.LOOSEST}))
         notes = heard(data, seed=A_SEED)
-        reach = musician.LOOSEST * musician.LOOSENESS_STEP
+        reach = schema.LOOSEST * musician.LOOSENESS_STEP
         self.assertGreater(len({note[VELOCITY] for note in notes}), 1)
         self.assertTrue(all(abs(note[VELOCITY] - WRITTEN_VELOCITY) <= reach for note in notes))
         self.assertEqual(notes, heard(data, seed=A_SEED))
@@ -173,61 +173,61 @@ class TestMusicianTouch(unittest.TestCase):
     def test_accents_lean_on_the_downbeat_the_backbeat_or_the_offbeats(self):
         def leaned(accents):
             return [note[START] for note in heard(band_data(settings=plain(**{MusicianSetting.ACCENTS: accents}))) if note[VELOCITY] == WRITTEN_VELOCITY + musician.ACCENT_DEPTH]
-        self.assertEqual(leaned(musician.DOWNBEAT), [0, BAR])
-        self.assertEqual(leaned(musician.BACKBEAT), [QUARTER, 3 * QUARTER, BAR + QUARTER, BAR + 3 * QUARTER])
-        self.assertEqual(leaned(musician.OFFBEATS), [EIGHTH + beat * QUARTER for beat in range(8)])
+        self.assertEqual(leaned(schema.DOWNBEAT), [0, BAR])
+        self.assertEqual(leaned(schema.BACKBEAT), [QUARTER, 3 * QUARTER, BAR + QUARTER, BAR + 3 * QUARTER])
+        self.assertEqual(leaned(schema.OFFBEATS), [EIGHTH + beat * QUARTER for beat in range(8)])
 
     def test_short_notes_stay_short_and_held_notes_reach_the_next(self):
         on_beats = {Row.DEGREE: [1, None] * (STEPS // 2)}
         self.assertEqual({note[LENGTH] for note in heard(band_data(settings=plain(), rows=on_beats))}, {EIGHTH})
-        held = heard(band_data(settings=plain(**{MusicianSetting.NOTES: musician.HELD_NOTES}), rows=on_beats))
+        held = heard(band_data(settings=plain(**{MusicianSetting.NOTES: schema.HELD_NOTES}), rows=on_beats))
         self.assertEqual({note[LENGTH] for note in held[:-1]}, {QUARTER})
         quarters = {Row.DEGREE: [1, None] * (STEPS // 2), Row.TIE: [False, True] * (STEPS // 2)}
-        short = heard(band_data(settings=plain(**{MusicianSetting.NOTES: musician.SHORT_NOTES}), rows=quarters))
+        short = heard(band_data(settings=plain(**{MusicianSetting.NOTES: schema.SHORT_NOTES}), rows=quarters))
         self.assertEqual({note[LENGTH] for note in short}, {musician.SHORT_NOTE})
 
     def test_an_organ_holds_its_notes_unasked_and_a_horn_section_plays_them_short(self):
         on_beats = {Row.DEGREE: [1, None] * (STEPS // 2), Row.OCTAVE: [4, None] * (STEPS // 2)}
-        organ = heard(band_data(settings={MusicianSetting.INSTRUMENT: musician.BACKING_ORGAN}, rows=on_beats))
+        organ = heard(band_data(settings={MusicianSetting.INSTRUMENT: schema.BACKING_ORGAN}, rows=on_beats))
         self.assertEqual({note[LENGTH] for note in organ[:-1]}, {QUARTER})
-        as_written = heard(band_data(settings={MusicianSetting.INSTRUMENT: musician.BACKING_ORGAN, MusicianSetting.NOTES: musician.AS_WRITTEN}, rows=on_beats))
+        as_written = heard(band_data(settings={MusicianSetting.INSTRUMENT: schema.BACKING_ORGAN, MusicianSetting.NOTES: schema.AS_WRITTEN}, rows=on_beats))
         self.assertEqual({note[LENGTH] for note in as_written}, {EIGHTH})
 
     def test_range_moves_the_part_an_octave_inside_the_instrument(self):
-        piano = {MusicianSetting.INSTRUMENT: musician.BACKING_PIANO}
+        piano = {MusicianSetting.INSTRUMENT: schema.BACKING_PIANO}
         written = heard(band_data(settings=piano))
-        high = heard(band_data(settings={**piano, MusicianSetting.RANGE: musician.HIGH}))
-        low = heard(band_data(settings={**piano, MusicianSetting.RANGE: musician.LOW}))
+        high = heard(band_data(settings={**piano, MusicianSetting.RANGE: schema.HIGH}))
+        low = heard(band_data(settings={**piano, MusicianSetting.RANGE: schema.LOW}))
         self.assertEqual([note[MIDI] for note in high], [note[MIDI] + midi.HALF_STEPS_PER_OCTAVE for note in written])
         self.assertEqual([note[MIDI] for note in low], [note[MIDI] - midi.HALF_STEPS_PER_OCTAVE for note in written])
-        lowest = musician.MUSICIANS[musician.LEAD_GUITARIST].LOWEST
-        guitar = heard(band_data(settings={MusicianSetting.INSTRUMENT: musician.LEAD_GUITARIST, MusicianSetting.RANGE: musician.LOW}))
+        lowest = musician.MUSICIANS[schema.LEAD_GUITARIST].LOWEST
+        guitar = heard(band_data(settings={MusicianSetting.INSTRUMENT: schema.LEAD_GUITARIST, MusicianSetting.RANGE: schema.LOW}))
         self.assertTrue(all(note[MIDI] >= lowest for note in guitar))
 
 
 class TestMusicianRoundTheBand(unittest.TestCase):
 
     def test_a_player_in_the_gaps_is_silent_while_the_tune_sounds(self):
-        notes = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: musician.IN_THE_GAPS}), tune=True))
+        notes = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: schema.IN_THE_GAPS}), tune=True))
         self.assertEqual(starts(notes), [bar * BAR + HALF + step * EIGHTH for bar in range(2) for step in range(4)])
 
     def test_a_lead_guitarist_plays_in_the_gaps_unasked_and_a_bassist_gives_way_to_nobody(self):
-        guitar = heard(band_data(settings={MusicianSetting.INSTRUMENT: musician.LEAD_GUITARIST, MusicianSetting.TUNE_FROM: test_registers.LEAD}, rows={Row.OCTAVE: [5] * STEPS}, tune=True))
+        guitar = heard(band_data(settings={MusicianSetting.INSTRUMENT: schema.LEAD_GUITARIST, MusicianSetting.TUNE_FROM: test_registers.LEAD}, rows={Row.OCTAVE: [5] * STEPS}, tune=True))
         self.assertEqual(len(guitar), STEPS // 2)
         self.assertEqual(len(heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD}), tune=True))), STEPS)
 
     def test_giving_way_a_little_is_softer_under_the_tune_and_a_lot_also_leaves_the_beats_alone(self):
-        little = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: musician.GIVES_WAY_SOME}), tune=True))
+        little = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: schema.GIVES_WAY_SOME}), tune=True))
         self.assertEqual(len(little), STEPS)
         under = [note[VELOCITY] for note in little if note[START] - (note[START] // BAR) * BAR < HALF]
         clear = [note[VELOCITY] for note in little if note[START] - (note[START] // BAR) * BAR >= HALF]
-        self.assertEqual(set(under), {WRITTEN_VELOCITY - musician.SOFTER_UNDER_TUNE[musician.GIVES_WAY_SOME]})
+        self.assertEqual(set(under), {WRITTEN_VELOCITY - musician.SOFTER_UNDER_TUNE[schema.GIVES_WAY_SOME]})
         self.assertEqual(set(clear), {WRITTEN_VELOCITY})
-        lot = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: musician.GIVES_WAY_OFTEN}), tune=True))
+        lot = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: schema.GIVES_WAY_OFTEN}), tune=True))
         self.assertEqual(starts(lot)[:6], [0, QUARTER, HALF, HALF + EIGHTH, HALF + QUARTER, HALF + QUARTER + EIGHTH])
 
     def test_with_no_tune_track_named_nobody_gives_way(self):
-        notes = heard(band_data(settings=plain(**{MusicianSetting.GIVES_WAY: musician.IN_THE_GAPS}), tune=True))
+        notes = heard(band_data(settings=plain(**{MusicianSetting.GIVES_WAY: schema.IN_THE_GAPS}), tune=True))
         self.assertEqual(len(notes), STEPS)
 
     def test_the_notes_follow_the_chords_of_the_track_named(self):
@@ -238,7 +238,7 @@ class TestMusicianRoundTheBand(unittest.TestCase):
         self.assertNotEqual(followed[8][MIDI], alone[8][MIDI])
 
     def test_a_drummers_notes_follow_no_chords(self):
-        settings = {MusicianSetting.INSTRUMENT: musician.DRUMMER, MusicianSetting.CHORDS_FROM: CHORDS}
+        settings = {MusicianSetting.INSTRUMENT: schema.DRUMMER, MusicianSetting.CHORDS_FROM: CHORDS}
         notes = heard(band_data(settings=settings, chords=True, drum=True, rows={Row.DEGREE: ['C'] * STEPS}))
         self.assertEqual(len({note[MIDI] for note in notes}), 1)
         self.assertEqual(len(notes), STEPS)
@@ -257,28 +257,28 @@ class TestMusicianSettings(unittest.TestCase):
     def test_a_file_refuses_an_instrument_or_a_form_nobody_knows(self):
         for settings in (
             {MusicianSetting.INSTRUMENT: NOT_AN_INSTRUMENT},
-            plain(**{MusicianSetting.BY_SECTION: {SectionKind.VERSE: {musician.PLAYED: NOT_A_FORM}}}), plain(**{MusicianSetting.BY_SECTION: {SectionKind.VERSE: {musician.PLAYS: NOT_A_FORM}}}),
-            plain(**{MusicianSetting.LOUDNESS: musician.LOUDEST + 1}), plain(**{MusicianSetting.LOOSENESS: musician.TIGHT - 1}),
+            plain(**{MusicianSetting.BY_SECTION: {SectionKind.VERSE: {schema.PLAYED: NOT_A_FORM}}}), plain(**{MusicianSetting.BY_SECTION: {SectionKind.VERSE: {schema.PLAYS: NOT_A_FORM}}}),
+            plain(**{MusicianSetting.LOUDNESS: schema.LOUDEST + 1}), plain(**{MusicianSetting.LOOSENESS: schema.TIGHT - 1}),
         ):
             with self.subTest(settings=settings), self.assertRaises(SongFileError):
                 setlist_from_data(band_data(settings=settings))
 
     def test_a_kind_of_section_or_a_setting_of_one_nobody_knows_is_passed_over_and_never_written_again(self):
         # As a file saved before one was taken away, or by a later version, may hold them: the set opens and what is known stays.
-        by_section = {SectionKind.VERSE: {musician.PLAYED: musician.SOFTER, NOT_A_SETTING: 1}, NOT_A_SECTION: {musician.PLAYED: musician.MUTED}}
+        by_section = {SectionKind.VERSE: {schema.PLAYED: schema.SOFTER, NOT_A_SETTING: 1}, NOT_A_SECTION: {schema.PLAYED: schema.MUTED}}
         setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.BY_SECTION: by_section})))
         settings = setlist.get_songs()[0].get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
-        self.assertEqual(settings.to_data()[MusicianSetting.BY_SECTION], {SectionKind.VERSE: {musician.PLAYED: musician.SOFTER}})
+        self.assertEqual(settings.to_data()[MusicianSetting.BY_SECTION], {SectionKind.VERSE: {schema.PLAYED: schema.SOFTER}})
 
     def test_a_section_setting_back_to_what_a_section_does_unasked_is_left_out(self):
         settings = MusicianSettings.new()
-        settings.set_section_own(section=SectionKind.VERSE, name=musician.PLAYED, value=musician.HITS)
-        self.assertEqual(settings.get_for(section=SectionKind.VERSE, name=musician.PLAYED), musician.HITS)
-        self.assertEqual(settings.get_for(section=SectionKind.CHORUS, name=musician.PLAYED), musician.WHOLE)
-        settings.set_section_own(section=SectionKind.VERSE, name=musician.PLAYED, value=None)
+        settings.set_section_own(section=SectionKind.VERSE, name=schema.PLAYED, value=schema.HITS)
+        self.assertEqual(settings.get_for(section=SectionKind.VERSE, name=schema.PLAYED), schema.HITS)
+        self.assertEqual(settings.get_for(section=SectionKind.CHORUS, name=schema.PLAYED), schema.WHOLE)
+        settings.set_section_own(section=SectionKind.VERSE, name=schema.PLAYED, value=None)
         self.assertEqual(settings.to_data(), {})
 
     def test_every_instrument_has_a_musician_who_plays_a_part(self):
-        for instrument in musician.INSTRUMENTS:
+        for instrument in schema.INSTRUMENTS:
             with self.subTest(instrument=instrument):
                 self.assertTrue(heard(band_data(settings={MusicianSetting.INSTRUMENT: instrument}, rows={Row.OCTAVE: [4] * STEPS})))

@@ -5,8 +5,12 @@
 """The words the Follow Chords generator plugin shows: what it is called beside a generator's name, the word its page's caption names it by, and the word a generator named for
 its kind takes, as in kick chords followed."""
 
+from llamatron.user_strings import labels
+
 MSG_LABEL = 'FollowChords'
 MSG_KIND_WORD = 'chords followed'
 MSG_CAPTION_WORD = 'follow chords'
 # What an undo or a redo of a change to one of its generators names the generator's kind.
 MSG_CHANGED_WORD = 'Follow Chords'
+# The heading the Generators page offers it under.
+MSG_GROUP = labels.GeneratorGroup.HARMONY
