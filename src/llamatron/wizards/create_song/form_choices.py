@@ -14,6 +14,7 @@ from llamatron.user_strings import errors, marks as marks_text
 from llamatron.wizards.create_song import arranger, interplay as interplay_values, notation as tune_notation, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import bar_length, forms_of, share_of
 from llamatron.wizards.create_song.choices_part import add_counted, ChoicesPart, chosen_only
+from llamatron.wizards.create_song.own_values import checked_own
 from llamatron.wizards.create_song.section_choices import own_copy_of
 from llamatron.wizards.create_song.song_plan import faded
 
@@ -271,7 +272,7 @@ class FormChoices(ChoicesPart):
                         raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=entry[wizard_limits.BESIDE_SAVED]))
                     self._sections[place][wizard_limits.BESIDE_SAVED] = entry[wizard_limits.BESIDE_SAVED]
                 if entry.get(wizard_limits.OWN_OF_SECTION):
-                    self._sections[place][wizard_limits.OWN_OF_SECTION] = {field: self._choices.checked_own(field=field, value=value) for field, value in entry[wizard_limits.OWN_OF_SECTION].items()}
+                    self._sections[place][wizard_limits.OWN_OF_SECTION] = {field: checked_own(field=field, value=value) for field, value in entry[wizard_limits.OWN_OF_SECTION].items()}
             if not self._sections:
                 raise ValueError(errors.ERR_WIZARD_LAST_SECTION)
         except (KeyError, TypeError, ValueError):

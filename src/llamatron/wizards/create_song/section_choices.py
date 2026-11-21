@@ -9,11 +9,11 @@ import copy
 
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema import limits
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, interplay as interplay_values, joins as joins_values, line_edits, melody as melody_writer, notation as tune_notation, phrasing, song_plan, wizard_limits, wizard_names
-from llamatron.wizards.create_song.arranger import chord_of, fits_by_halves, picked, section_of, shares_a_bar, values_of
+from llamatron.wizards.create_song.arranger import chord_of, picked, section_of, values_of
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change
+from llamatron.wizards.create_song.own_values import checked_line, checked_own, chords_as_text
 
 
 def own_copy_of(entry):
@@ -21,37 +21,6 @@ def own_copy_of(entry):
     return copy.deepcopy(entry)
 
 
-def chords_from_text(text):
-    """Return chords typed as degrees with a space between, a flat or a sharp before a degree, such as 6 4 1 b7, two chords that share a bar joined by a dash, such as 1-5, as the arranger reads them."""
-    def chord_typed(word):
-        mark = word[0] if word and word[0] in wizard_limits.MARKS_TYPED else None
-        number = word[1:] if mark else word
-        if not number.isdigit() or not wizard_limits.FIRST_DEGREE_OF_SCALE <= int(number) <= wizard_limits.LAST_DEGREE_OF_SCALE:
-            raise ValueError(errors.ERR_WIZARD_CHORDS.format(value=text))
-        return {tune_notation.DEGREE: int(number), tune_notation.ACCIDENTAL: wizard_limits.MARKS_TYPED[mark]} if mark else int(number)
-    chords = []
-    for word in str(text).split():
-        # Two chords joined by a dash share a bar, each half of it.
-        halves = word.split(wizard_limits.SHARES_A_BAR)
-        if len(halves) > wizard_limits.CHORDS_IN_A_SHARED_BAR:
-            raise ValueError(errors.ERR_WIZARD_CHORDS.format(value=text))
-        chords.append(chord_typed(word) if len(halves) == 1 else [chord_typed(half) for half in halves])
-    if not chords:
-        raise ValueError(errors.ERR_WIZARD_CHORDS.format(value=text))
-    if any(shares_a_bar(chord) for chord in chords) and not fits_by_halves(chords):
-        raise ValueError(errors.ERR_WIZARD_CHORDS_SHARED.format(most=limits.MAX_PROGRESSION_CHORDS // wizard_limits.CHORDS_IN_A_SHARED_BAR, value=text))
-    return chords
-
-
-def chords_as_text(chords):
-    """Return chords as they are typed."""
-    marks = {accidental: mark for mark, accidental in wizard_limits.MARKS_TYPED.items()}
-
-    def typed(chord):
-        return marks.get(chord_of(chord).get(tune_notation.ACCIDENTAL), '') + str(chord_of(chord)[tune_notation.DEGREE])
-    def bar_typed(chord):
-        return wizard_limits.SHARES_A_BAR.join(typed(half) for half in chord) if shares_a_bar(chord) else typed(chord)
-    return ' '.join(bar_typed(chord) for chord in chords)
 
 
 class SectionChoices:
@@ -312,7 +281,7 @@ class SectionChoices:
         lines = self.lines()
         if isinstance(line, bool) or not isinstance(line, int) or not 0 <= line < len(lines) or field not in (melody_writer.LINE_NOTES, phrasing.LINE_BREATH, phrasing.LINE_EARLY):
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=line))
-        if field == melody_writer.LINE_NOTES and value is not None and (lines[line][melody_writer.LINE_NOTES] is None or not isinstance(value, list) or line_edits.steps_of(self._choices.checked_line(line=value, steps=line_edits.steps_of(lines[line][melody_writer.LINE_NOTES]))) == 0):
+        if field == melody_writer.LINE_NOTES and value is not None and (lines[line][melody_writer.LINE_NOTES] is None or not isinstance(value, list) or line_edits.steps_of(checked_line(line=value, steps=line_edits.steps_of(lines[line][melody_writer.LINE_NOTES]))) == 0):
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
         own = {count: dict(given) for count, given in (self.entry().get(wizard_limits.OWN_OF_SECTION, {}).get(wizard_limits.LINES_OF_SECTION) or {}).items()}
         given = own.setdefault(line, {})
@@ -330,7 +299,7 @@ class SectionChoices:
 
     def store_own(self, *, field, value):
         self.entry()
-        checked = None if value is None else self._choices.checked_own(field=field, value=value)
+        checked = None if value is None else checked_own(field=field, value=value)
         if field == wizard_limits.SHAPE_OF_SECTION and checked is not None and checked not in self.shapes():
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
         if field in (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER) and checked is not None and (field not in (wizard_names.SONG_PLAN_FADES, *self.fade_fields()) or self.fade_way() is None or (field == wizard_names.FADE_OVER and checked > self.bars())):
@@ -393,3 +362,10 @@ class SectionChoices:
         entry.pop(wizard_limits.BESIDE_SAVED, None)
         if way is not None:
             entry[wizard_limits.BESIDE_SAVED] = way
+
+    def own_chords_typed(self):
+        """Return the chords the section was given of its own as they are typed, or None where it was given none."""
+        own = self.own(field=wizard_names.ARRANGER_CHORDS)
+        if own is None:
+            return None
+        return chords_as_text(own)

@@ -9,7 +9,7 @@ from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import limits
 from llamatron.user_strings import errors, labels, marks
 from llamatron.wizards.create_song import hook_writing, song_plan, wizard_limits, wizard_names
-from llamatron.wizards.create_song.wizard_choices import chords_as_text
+from llamatron.wizards.create_song.own_values import chords_as_text
 from tests.interface.tracker.test_tui_wizard import WizardTest
 from tests.support.ui_testing import key_of
 

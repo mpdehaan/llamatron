@@ -12,6 +12,7 @@ from llamatron.wizards.create_song import arranger, hook_writing, line_edits, me
 from llamatron.wizards.create_song.arranger import arranged
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart, chosen_only
 from llamatron.wizards.create_song.melody import placement_of, plan_with_hook_placed
+from llamatron.wizards.create_song.own_values import checked_line
 
 
 class HookChoices(ChoicesPart):
@@ -435,7 +436,7 @@ class HookChoices(ChoicesPart):
         if line is None:
             melody.pop(melody_writer.HOOK_NOTES, None)
         else:
-            melody[melody_writer.HOOK_NOTES] = self._choices.checked_line(line=line, steps=line_edits.steps_of(self.hook_line()))
+            melody[melody_writer.HOOK_NOTES] = checked_line(line=line, steps=line_edits.steps_of(self.hook_line()))
         self._choices.set_extra(name=arranger.MELODY, value=melody or None)
         self._choices.clear_answers()
         try:

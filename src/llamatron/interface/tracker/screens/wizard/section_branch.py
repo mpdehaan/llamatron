@@ -4,13 +4,14 @@
 
 """A section of the wizard's form: its kind, how long it lasts and who plays in it; it can be copied, removed and moved."""
 
+import functools
+
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.schema import limits
 from llamatron.model.values import note
 from llamatron.user_strings import labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits, wizard_names
-from llamatron.wizards.create_song.wizard_choices import chords_as_text
 
 # What two sections of one name are told apart by: the section's number in the form and its name.
 SECTION_KEY = '{number} {name}'
@@ -147,34 +148,104 @@ class SectionBranch(Branch):
         return set_own
 
     def own_field(self, field):
-        choices = self.get_choices()
-        page = self.get_page()
-        place = self._place
+        """Return the field of something the section may be given of its own, of the kind that thing is."""
         if field in (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER):
             return self.fade_field(field)
-        own = choices.section(place).own(field=field)
-        usual = choices.section(place).from_plan(field=field)
-        origin = labels.MSG_WIZARD_SECTION_ORIGINS[field]
-        shown = labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=origin) if own is None else None
-        label = labels.MSG_WIZARD_SECTION_OWN_LABELS[field]
-        set_own = self.own_setter(field)
-        clear = dict(clear=lambda: set_own(None), clear_what=origin) if own is not None else {}
         if field in NUMBERS_OF_SECTION:
-            lowest, highest = NUMBERS_OF_SECTION[field]
-            if field == wizard_names.SONG_PLAN_ENERGY:
-                # Energy is a gauge, as Contrast and the players' gauges are, the plan's saying so after the number.
-                shown = gauge_shown(place=usual if own is None else own, lowest=lowest, highest=highest, said=shown)
-            return NumberField(page=page, label=label, number=own, start=usual, shown=shown, lowest=lowest, highest=highest, set=set_own, **clear)
+            return self._own_number_field(field)
         if field == wizard_names.ARRANGER_CHORDS:
-            def ask():
-                page.ask_text(title=messages.MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, then=set_own, is_name=True)
-            return Field(label=label, value=lambda: shown if own is None else chords_as_text(own), enter=ask, **clear)
-        if field in (wizard_names.SONG_PLAN_RISES, wizard_names.SONG_PLAN_FADES):
-            return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
-        from_above = labels.MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
-        offered = choices.section(place).shapes() if field == wizard_limits.SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]
-        return ChoiceField(page=page, label=label, choices=[from_above, *offered], current=from_above if own is None else own, shown=shown,
-                           set=lambda picked: set_own(None if picked == from_above else picked), **clear)
+            return self._own_chords_field()
+        if field == wizard_names.SONG_PLAN_RISES:
+            return self._own_toggle_field(field)
+        return self._own_choice_field(field)
+
+    def _section(self):
+        """Return the section of the form this panel shows."""
+        choices = self.get_choices()
+        return choices.section(self._place)
+
+    def _shown_from_above(self, *, field, own, usual):
+        """Return what a field shows while the section was given nothing of its own: the value from above and where from."""
+        if own is not None:
+            return None
+        origin = labels.MSG_WIZARD_SECTION_ORIGINS[field]
+        return labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=origin)
+
+    def _cleared_by(self, *, field, own):
+        """Return what lets a field the section was given a value of its own for be cleared back to the value from above."""
+        if own is None:
+            return {}
+        set_own = self.own_setter(field)
+        return dict(clear=functools.partial(set_own, None), clear_what=labels.MSG_WIZARD_SECTION_ORIGINS[field])
+
+    def _own_number_field(self, field):
+        """Return the field of a number the section may be given of its own: its Energy, shown as a gauge, or a tempo."""
+        section = self._section()
+        own = section.own(field=field)
+        usual = section.from_plan(field=field)
+        shown = self._shown_from_above(field=field, own=own, usual=usual)
+        lowest, highest = NUMBERS_OF_SECTION[field]
+        if field == wizard_names.SONG_PLAN_ENERGY:
+            # Energy is a gauge, as Contrast and the players' gauges are, the plan's saying so after the number.
+            place = own
+            if own is None:
+                place = usual
+            shown = gauge_shown(place=place, lowest=lowest, highest=highest, said=shown)
+        clear = self._cleared_by(field=field, own=own)
+        return NumberField(page=self.get_page(), label=labels.MSG_WIZARD_SECTION_OWN_LABELS[field], number=own, start=usual, shown=shown,
+                           lowest=lowest, highest=highest, set=self.own_setter(field), **clear)
+
+    def _own_chords_field(self):
+        """Return the field of the chords the section may be given of its own, typed as degrees."""
+        field = wizard_names.ARRANGER_CHORDS
+        section = self._section()
+        own = section.own(field=field)
+        usual = section.from_plan(field=field)
+        text = self._shown_from_above(field=field, own=own, usual=usual)
+        typed = usual
+        if own is not None:
+            text = section.own_chords_typed()
+            typed = text
+        page = self.get_page()
+        ask = functools.partial(page.ask_text, title=messages.MSG_WIZARD_SECTION_CHORDS_PROMPT, value=typed, then=self.own_setter(field), is_name=True)
+        clear = self._cleared_by(field=field, own=own)
+        return Field(label=labels.MSG_WIZARD_SECTION_OWN_LABELS[field], value=lambda: text, enter=ask, **clear)
+
+    def _own_toggle_field(self, field):
+        """Return the field of something the section may switch on or off of its own, such as whether it rises."""
+        section = self._section()
+        own = section.own(field=field)
+        on = own
+        if own is None:
+            on = section.from_plan(field=field)
+        clear = self._cleared_by(field=field, own=own)
+        return Toggle(label=labels.MSG_WIZARD_SECTION_OWN_LABELS[field], on=on, set=self.own_setter(field), **clear)
+
+    def _own_choice_field(self, field):
+        """Return the field of something the section may be given of its own from a list, the value from above first."""
+        section = self._section()
+        own = section.own(field=field)
+        usual = section.from_plan(field=field)
+        from_above = labels.MSG_WIZARD_FROM_ORIGIN.format(origin=labels.MSG_WIZARD_SECTION_ORIGINS[field])
+        if field == wizard_limits.SHAPE_OF_SECTION:
+            offered = section.shapes()
+        else:
+            offered = CHOICES_OF_SECTION[field]
+        current = own
+        if own is None:
+            current = from_above
+        pick = functools.partial(self._pick_own, field=field, from_above=from_above)
+        clear = self._cleared_by(field=field, own=own)
+        return ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_SECTION_OWN_LABELS[field], choices=[from_above, *offered], current=current,
+                           shown=self._shown_from_above(field=field, own=own, usual=usual), set=pick, **clear)
+
+    def _pick_own(self, picked, *, field, from_above):
+        """Give the section the value picked of its own, or give the field back to the value from above."""
+        set_own = self.own_setter(field)
+        if picked == from_above:
+            set_own(None)
+        else:
+            set_own(picked)
 
     def fade_field(self, field):
         return fade_field(branch=self, place=self._place, field=field)
