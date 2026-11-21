@@ -47,6 +47,11 @@ FRONT_DOORS = {
     # Of the generator plugins, a plugin's package, declaration, model, schema and strings, and the registry and the parts their models own.
     'engine': ('clips', 'timing', 'realizer.song_realizer', 'realizer.as_written', 'generators.registry', 'generators.step_row', 'generators.shape_part',
                'generators.*', 'generators.*.model', 'generators.*.schema', 'generators.*.strings', 'generators.*.declaration'),
+    # Of the Model, its values and schema, the set and the song, the names it makes, and the toolkit that settings and the generator
+    # plugins' models are written with; the rest of its objects and its file are its own.
+    'model': ('values', 'schema', 'objects.setlist', 'objects.song', 'objects.naming', 'objects.llama_data', 'objects.traits',
+              'objects.conditions', 'objects.shapes', 'objects.strum', 'objects.euclid', 'objects.velocity_ramps', 'file.song_file_error',
+              'file.checks', 'file.invalid_value', 'file.corrections', 'file.version', 'file.files'),
     'exporters': ('exports',),
     'importers': ('midi_import',),
     'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits', 'create_song.wizard_names', 'create_song.wizard_file'),
