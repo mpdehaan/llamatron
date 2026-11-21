@@ -22,12 +22,22 @@ import threading
 import unittest
 from unittest import mock
 
-from llamatron.realtime import sender_process
+from llamatron.realtime import sender_process, timeline
 from llamatron.realtime.engine import PlaybackEngine
+from llamatron.realtime.timeline import Playing, Tag
+from llamatron.support.rational import Rational
 
 A_PORT = 'a port'
 WAIT_SECONDS = 5
 ANOTHER_SYSTEM = 'linux'
+ANOTHER_PORT = 'another port'
+A_TAG = Tag(0, 'lead', 1)
+ANOTHER_TAG = Tag(0, 'bass', 2)
+TAG_NUMBER = 7
+A_TIME = 1.25
+CHANNEL = 2
+NUMBER = 60
+VELOCITY = 100
 
 
 class TestSenderEnds(unittest.TestCase):
@@ -64,6 +74,29 @@ class TestSenderStarts(unittest.TestCase):
         with mock.patch.object(sender_process.sys, 'platform', ANOTHER_SYSTEM), mock.patch.object(sender_process.ctypes, 'CDLL') as library:
             sender_process.ask_to_be_urgent()
         library.assert_not_called()
+
+
+
+class TestRecords(unittest.TestCase):
+    """Events cross the pipe as slim records, version first, every field the engine needs carried exactly."""
+
+    def test_records_carry_each_events_time_place_bytes_and_tag(self):
+        ports = [A_PORT, ANOTHER_PORT]
+        places = {name: place for place, name in enumerate(ports)}
+        tags = {A_TAG: TAG_NUMBER}
+        events = [Playing(Rational(0), A_TIME, ANOTHER_PORT, CHANNEL, timeline.NOTE_ON, NUMBER, VELOCITY, A_TAG),
+                  Playing(Rational(0), A_TIME, A_PORT, CHANNEL, timeline.PROGRAM_CHANGE, NUMBER, None, A_TAG)]
+        records = sender_process.records_of(events=events, place_of_port=places.__getitem__, number_of_tag=tags.__getitem__)
+        self.assertEqual(records[0], sender_process.RECORDS_VERSION)
+        read = sender_process.events_of(records=records, ports=ports)
+        self.assertEqual([(event.seconds, event.port, event.tag) for event in read], [(A_TIME, ANOTHER_PORT, TAG_NUMBER), (A_TIME, A_PORT, TAG_NUMBER)])
+        self.assertEqual([event.data() for event in read], [event.data() for event in events])
+
+    def test_a_plays_tag_keeps_its_number_from_sending_to_forgetting(self):
+        sender = sender_process.RealtimeMIDISenderProcess(ports=[A_PORT])
+        first = sender.tag_number(A_TAG)
+        self.assertEqual(sender.tag_number(ANOTHER_TAG), first + 1)
+        self.assertEqual(sender.tag_number(A_TAG), first)
 
 
 if __name__ == '__main__':

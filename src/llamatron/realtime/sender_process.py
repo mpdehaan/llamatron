@@ -27,9 +27,12 @@ import contextlib
 import ctypes
 import gc
 import multiprocessing
+import struct
 import sys
 import time
+from typing import NamedTuple
 
+from llamatron.realtime import timeline
 from llamatron.realtime.engine import MonotonicClock, PlaybackEngine
 from llamatron.realtime.outputs import RecordingOutput, RtMidiOutput
 from llamatron.strings import errors
@@ -41,7 +44,13 @@ SLEEP_SLICE_SECONDS = 0.0005
 # The messages the tracker sends the process.
 READY = 'ready'
 START = 'start'
-ADD = 'add'
+# Events crossing the pipe as slim records, which the process reads many times faster than whole events, each holding a Rational and
+# a Tag, and at about a third of the size: a record's seconds, its play's tag as a number, and its port's place among the ports, its
+# channel, kind, number and value. The version comes first, so that a sender of another make can tell what it is sent.
+ADD_RECORDS = 'add_records'
+RECORDS_VERSION = 1
+RECORD = struct.Struct('<dIBBBBB')
+NO_VALUE = 0
 FORGET = 'forget'
 STOP_TAG = 'stop_tag'
 STOP_ALL = 'stop_all'
@@ -62,6 +71,39 @@ SYSTEM_LIBRARY = 'libSystem.dylib'
 QOS_CLASS_USER_INTERACTIVE = 0x21
 
 
+class Sent(NamedTuple):
+    """One event as the process holds it once read from a record: what the engine asks of an event, and no more."""
+
+    seconds: float
+    port: str
+    channel: int
+    kind: int
+    number: int
+    value: int
+    tag: int
+    # What the timeline orders an event by within an instant needs only its kind, so the whole notes are not carried.
+    whole: object = None
+
+    def data(self):
+        """Return the event's bytes: two for a program change, which has no value, and three for the rest."""
+        if self.kind == timeline.PROGRAM_CHANGE:
+            return [self.kind | self.channel, self.number]
+        return [self.kind | self.channel, self.number, self.value]
+
+
+def records_of(*, events, place_of_port, number_of_tag):
+    """Return events as slim records, the version first, each tag and port given as numbers by the two functions."""
+    records = bytearray((RECORDS_VERSION,))
+    for event in events:
+        records += RECORD.pack(event.seconds, number_of_tag(event.tag), place_of_port(event.port), event.channel, event.kind, event.number, event.value or NO_VALUE)
+    return bytes(records)
+
+
+def events_of(*, records, ports):
+    """Return the events slim records hold, each port named again by its place among the ports."""
+    return [Sent(seconds, ports[port], channel, kind, number, value, tag) for seconds, tag, port, channel, kind, number, value in RECORD.iter_unpack(records[1:])]
+
+
 class SenderNotStarted(RuntimeError):
     """The process ended before it had opened its ports, which it does when a port cannot be opened."""
 
@@ -69,7 +111,7 @@ class SenderNotStarted(RuntimeError):
 class RealtimeMIDISenderProcess:
     """The tracker's side of the sender: starts the process on the ports named, and sends it the messages above."""
 
-    __slots__ = ('_ports', '_recording', '_connection', '_process')
+    __slots__ = ('_ports', '_recording', '_connection', '_process', '_port_places', '_tag_numbers')
 
     def __init__(self, *, ports, recording=False):
         """ports are the names of the output ports to open. With recording, the process opens RecordingOutputs in their place and hands back what it sent on close."""
@@ -77,6 +119,9 @@ class RealtimeMIDISenderProcess:
         self._recording = recording
         self._connection = None
         self._process = None
+        self._port_places = {name: place for place, name in enumerate(self._ports)}
+        # Each play's tag as the number its records carry, given the first time the tag is sent.
+        self._tag_numbers = {}
 
     def start(self, *, at=None):
         """Start the process, which opens the ports, and take this moment, or a reading of the clock given, as the timeline's zero."""
@@ -92,13 +137,21 @@ class RealtimeMIDISenderProcess:
         self._connection.send((START, at))
 
     def add(self, events):
-        self._connection.send((ADD, list(events)))
+        self._connection.send((ADD_RECORDS, records_of(events=events, place_of_port=self._port_places.__getitem__, number_of_tag=self.tag_number)))
 
     def forget(self, *, tag, after):
-        self._connection.send((FORGET, tag, after))
+        self._connection.send((FORGET, self.tag_number(tag), after))
 
     def stop_tag(self, tag):
-        self._connection.send((STOP_TAG, tag))
+        self._connection.send((STOP_TAG, self.tag_number(tag)))
+
+    def tag_number(self, tag):
+        """Return the number a play's tag crosses the pipe as."""
+        number = self._tag_numbers.get(tag)
+        if number is None:
+            number = len(self._tag_numbers)
+            self._tag_numbers[tag] = number
+        return number
 
     def stop_all(self):
         self._connection.send((STOP_ALL,))
@@ -133,8 +186,8 @@ def real_standard_error():
         sys.stderr = captured
 
 
-def _add(*, engine, message):
-    engine.add(message[1])
+def _add_records(*, engine, message, ports):
+    engine.add(events_of(records=message[1], ports=ports))
 
 
 def _forget(*, engine, message):
@@ -154,7 +207,7 @@ def _silence(*, engine, message):
 
 
 # The messages that only hand the engine something: each kind, and what passes it on.
-FORWARDED = {ADD: _add, FORGET: _forget, STOP_TAG: _stop_tag, STOP_ALL: _stop_all, SILENCE: _silence}
+FORWARDED = {FORGET: _forget, STOP_TAG: _stop_tag, STOP_ALL: _stop_all, SILENCE: _silence}
 
 
 def hold_garbage_back():
@@ -214,6 +267,8 @@ def run_sender(*, connection, ports, recording):
         if kind == START:
             engine.start(at=message[1])
             started = time.perf_counter() if message[1] is None else message[1]
+        elif kind == ADD_RECORDS:
+            _add_records(engine=engine, message=message, ports=ports)
         elif kind in FORWARDED:
             FORWARDED[kind](engine=engine, message=message)
         elif kind == CLOSE:
