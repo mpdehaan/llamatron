@@ -6,6 +6,7 @@ from enum import auto, Enum
 
 from llamatron.engine.clips.positions import fit_to_length
 from llamatron.engine.generators.base import ClipGenerator
+from llamatron.engine.parts.scale_moves import along_scale
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source
@@ -82,29 +83,6 @@ def _check_offsets(offsets):
 def _is_offset(offset):
     """Return whether an offset is a whole number of scale notes no further than MAX_OFFSET either way."""
     return type(offset) is int and -MAX_OFFSET <= offset <= MAX_OFFSET
-
-
-def along_scale(*, note, steps, scale):
-    """Return a note, as a sound, moved a number of notes along a scale, or by half steps without one.
-
-    A note that isn't in the scale keeps its distance from the scale note below it.
-    """
-    if not steps:
-        return note
-    if scale is None:
-        return Sound.half_step(note, steps)
-    shape = scale.get_type().value
-    above_root = note[sound.MIDI] - scale.get_root().get_midi_number()
-    octaves, within = divmod(above_root, midi.HALF_STEPS_PER_OCTAVE)
-    place = _scale_note_at_or_below(shape=shape, half_steps=within)
-    extra = within - shape[place]
-    more, place = divmod(place + steps, len(shape))
-    return Sound.half_step(note, (octaves + more) * midi.HALF_STEPS_PER_OCTAVE + shape[place] + extra - above_root)
-
-
-def _scale_note_at_or_below(*, shape, half_steps):
-    """Return which note of a scale's octave, counted from 0, is at or just below some half steps above its root."""
-    return max(index for index, step in enumerate(shape) if step <= half_steps)
 
 
 def _lowest_to_highest(chord):

@@ -21,7 +21,7 @@ import random
 import zlib
 
 from llamatron.engine.generators import follow_chords as follow_chords_plugin, musician as musician_plugin, phrasing as phrasing_plugin
-from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
+from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
 from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.named_scale import scale_type_called

@@ -9,7 +9,7 @@ from math import ceil
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.generators import registry
 from llamatron.engine.generators.blend import Blend
-from llamatron.engine.generators.euclid.generator import EuclidMask
+from llamatron.engine.parts.euclidean_mask import EuclidMask
 from llamatron.engine.timing.keyswitch import SwitchNote
 from llamatron.math.length import Length
 from llamatron.math.random_source import drawn_from_when_asked

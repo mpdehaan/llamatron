@@ -15,8 +15,8 @@ import functools
 import random
 
 from llamatron.caching.kept import kept_while
-from llamatron.engine.generators.phrasing import settings as phrasing_settings
-from llamatron.engine.generators.phrasing.settings import PhrasingSettings
+from llamatron.engine.generators.phrasing import model as phrasing_settings
+from llamatron.engine.generators.phrasing.model import PhrasingSettings
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.setlist import Setlist

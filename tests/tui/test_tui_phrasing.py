@@ -4,8 +4,8 @@
 """The tracker's Phrasing pages: a new one, the editor's fields, and the By Section table of what each kind of section does of its own."""
 
 from llamatron.engine.generators import phrasing as phrasing_plugin
-from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings, strings as phrasing_strings
-from llamatron.engine.generators.phrasing.settings import PhrasingSetting
+from llamatron.engine.generators.phrasing import generator as phrasing_values, model as phrasing_settings, strings as phrasing_strings
+from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
 from llamatron.tui.keys import Key

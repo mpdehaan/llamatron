@@ -12,7 +12,7 @@ pass with two notes is one the generator ran on.
 import unittest
 
 from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError

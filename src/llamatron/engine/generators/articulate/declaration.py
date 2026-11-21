@@ -8,7 +8,7 @@ generators, the class of its settings, and its words."""
 from llamatron.engine.generators import articulate
 from llamatron.engine.generators.articulate import strings
 from llamatron.engine.generators.articulate.controller import ArticulateController
-from llamatron.engine.generators.articulate.settings import ArticulateSettings
+from llamatron.engine.generators.articulate.model import ArticulateSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
 PLUGIN = GeneratorPlugin(name=articulate.NAME, section=articulate.SECTION, settings=ArticulateSettings, strings=strings, controller=ArticulateController())

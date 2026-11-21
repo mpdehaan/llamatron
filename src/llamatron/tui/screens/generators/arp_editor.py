@@ -5,9 +5,9 @@
 """The Arp editor page."""
 
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp import generator as arp_values, settings as arp_settings, strings as arp_strings
+from llamatron.engine.generators.arp import generator as arp_values, model as arp_settings, strings as arp_strings
 from llamatron.engine.generators.arp.generator import OctaveJump
-from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format
 from llamatron.tui import keybindings

@@ -5,7 +5,7 @@
 """The Guitarify editor: Shape, the fretting hand, and Strokes, the other hand, each a section with a switch of its own."""
 
 from llamatron.engine.generators import guitarify as guitarify_plugin
-from llamatron.engine.generators.guitarify import settings as guitarify_settings, strings as guitarify_strings
+from llamatron.engine.generators.guitarify import model as guitarify_settings, strings as guitarify_strings
 from llamatron.engine.generators.guitarify.bars import ready_bar_matching
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Approach, ChordColor, GuitarifySetting, SingleNotes, Tuning

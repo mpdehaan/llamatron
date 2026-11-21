@@ -12,8 +12,8 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp import generator as arp_values, settings as arp_settings
-from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings
+from llamatron.engine.generators.arp import generator as arp_values, model as arp_settings
+from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
 from llamatron.math.rational import Rational
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError

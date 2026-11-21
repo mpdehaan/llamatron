@@ -5,7 +5,7 @@
 
 from llamatron.engine.generators import hocket as hocket_plugin
 from llamatron.engine.generators.hocket import strings as hocket_strings
-from llamatron.engine.generators.hocket.settings import HocketSetting
+from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import ChoiceField, NameField

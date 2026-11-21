@@ -21,7 +21,7 @@ from typing import NamedTuple
 
 from llamatron.engine import step_effects
 from llamatron.engine.generators import drift
-from llamatron.engine.generators.drift import settings as drift_settings
+from llamatron.engine.generators.drift import model as drift_settings
 from llamatron.engine.step_effects import StepEffects
 from llamatron.math.random_source import random_source
 from llamatron.model.file.checks import in_whole_notes

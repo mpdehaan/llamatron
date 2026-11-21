@@ -8,7 +8,7 @@ import unittest
 
 from llamatron.engine.generators import musician as musician_plugin
 from llamatron.engine.generators.musician import generator as musician
-from llamatron.engine.generators.musician.settings import MusicianSetting, MusicianSettings
+from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError

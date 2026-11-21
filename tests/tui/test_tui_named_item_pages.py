@@ -11,7 +11,7 @@ tested with the page, so these checks call the page's rename and answer its prom
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.prompt_dialog import PromptDialog
 from llamatron.tui.keys import Key

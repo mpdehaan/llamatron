@@ -5,7 +5,7 @@
 """Tests of a player as a person on the song wizard's player panels, and in the choices underneath: where the player comes in, where the player lays out, and how strongly the player answers to Energy."""
 
 from llamatron.engine.generators.musician import generator as musician
-from llamatron.engine.generators.musician.settings import MusicianSetting
+from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings

@@ -5,7 +5,7 @@
 """The tracker's Follow Chords pages: the list of them and the editor, whose Chords from picks a track of the current song."""
 
 from llamatron.engine.generators import follow_chords as follow_chords_plugin
-from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
+from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

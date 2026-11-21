@@ -22,9 +22,9 @@ import unittest
 
 from llamatron.engine.generators import musician as musician_plugin
 from llamatron.engine.generators.musician import generator as musician
-from llamatron.engine.generators.musician.settings import MusicianSetting
-from llamatron.engine.generators.phrasing import generator as phrasing_values, settings as phrasing_settings
-from llamatron.engine.generators.phrasing.settings import PhrasingSetting
+from llamatron.engine.generators.musician.model import MusicianSetting
+from llamatron.engine.generators.phrasing import generator as phrasing_values, model as phrasing_settings
+from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Row, Section
 from llamatron.wizards.create_song import arranger, breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_limits

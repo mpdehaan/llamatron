@@ -9,24 +9,24 @@ import inspect
 import sys
 import unittest
 
-from llamatron.engine.generators import settings_base, shape_settings, step_row_settings
+from llamatron.engine.generators import settings_base, shape_part, step_row
 from llamatron.engine.generators.arp import generator as arp
-from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting, AutoRatchetSettings
-from llamatron.engine.generators.drift.settings import DriftSetting, DriftSettings, versioned
-from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting, FollowChordsSettings
-from llamatron.engine.generators.glide.settings import GlideSettings
-from llamatron.engine.generators.guitarify.settings import GuitarifySettings
-from llamatron.engine.generators.hocket.settings import HocketSetting, HocketSettings
-from llamatron.engine.generators.musician.settings import MusicianSetting, MusicianSettings
-from llamatron.engine.generators.phrasing.settings import PhrasingSetting, PhrasingSettings
-from llamatron.engine.generators.progression.settings import ProgressionSetting, ProgressionSettings
-from llamatron.engine.generators.rush.settings import RushSettings
-from llamatron.engine.generators.shape_settings import ShapeSetting
-from llamatron.engine.generators.shorten.settings import ShortenSettings
-from llamatron.engine.generators.step_row_settings import StepRowSetting
-from llamatron.engine.generators.swell.settings import SwellSettings
-from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSetting, VoiceLeadingSettings
+from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
+from llamatron.engine.generators.drift.model import DriftSetting, DriftSettings, versioned
+from llamatron.engine.generators.follow_chords.model import FollowChordsSetting, FollowChordsSettings
+from llamatron.engine.generators.glide.model import GlideSettings
+from llamatron.engine.generators.guitarify.model import GuitarifySettings
+from llamatron.engine.generators.hocket.model import HocketSetting, HocketSettings
+from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
+from llamatron.engine.generators.phrasing.model import PhrasingSetting, PhrasingSettings
+from llamatron.engine.generators.progression.model import ProgressionSetting, ProgressionSettings
+from llamatron.engine.generators.rush.model import RushSettings
+from llamatron.engine.generators.shape_part import ShapeSetting
+from llamatron.engine.generators.shorten.model import ShortenSettings
+from llamatron.engine.generators.step_row import StepRowSetting
+from llamatron.engine.generators.swell.model import SwellSettings
+from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
 from llamatron.model.file.invalid_value import InvalidValue
@@ -94,7 +94,7 @@ FIRST = 1
 PATTERN_ONE = names_text.MSG_NEW_PATTERN_NAME.format(number=FIRST)
 TRACK_ONE = names_text.MSG_NEW_TRACK_NAME.format(number=FIRST)
 # The modules that hold classes of setting names.
-NAMING_MODULES = [file_format, step_row_settings, shape_settings, *(sys.modules[plugin.settings.__module__] for plugin in generator_plugins.plugins().values())]
+NAMING_MODULES = [file_format, step_row, shape_part, *(sys.modules[plugin.settings.__module__] for plugin in generator_plugins.plugins().values())]
 SETTING_CLASS_ENDING = 'Setting'
 # Each class of setting names, the descriptions of those settings, and the names that aren't settings with a
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.

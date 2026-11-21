@@ -5,7 +5,7 @@
 
 from llamatron.engine.generators import progression as progression_plugin
 from llamatron.engine.generators.progression import strings as progression_strings
-from llamatron.engine.generators.progression.settings import ProgressionSetting
+from llamatron.engine.generators.progression.model import ProgressionSetting
 from llamatron.model.schema import file_format
 from llamatron.model.values.progressions import roman_numeral
 from llamatron.tui import keybindings

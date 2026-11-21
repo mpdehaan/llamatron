@@ -8,9 +8,9 @@ InvalidValue when it's wrong, and leaves the object as it was."""
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.arp import settings as arp_settings
-from llamatron.engine.generators.arp.settings import ArpSetting, ArpSettings
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting, AutoRatchetSettings
+from llamatron.engine.generators.arp import model as arp_settings
+from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import clip_slot, setlist as setlist_values
 from llamatron.model.objects.chain import Chain

@@ -18,7 +18,7 @@ import copy
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.setlist_reader import set_file_data
 from llamatron.model.objects.llama_data import LlamaData, own_copy

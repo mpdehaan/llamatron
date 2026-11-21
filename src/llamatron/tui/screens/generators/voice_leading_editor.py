@@ -4,8 +4,8 @@
 """The Voice leading editor page: one voice leading's name, the octaves its chords stay within, and whether the root stays in the bass."""
 
 from llamatron.engine.generators import voice_leading as voice_leading_plugin
-from llamatron.engine.generators.voice_leading import settings as voice_leading_settings, strings as voice_leading_strings
-from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSetting
+from llamatron.engine.generators.voice_leading import model as voice_leading_settings, strings as voice_leading_strings
+from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting
 from llamatron.model.values import note
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field

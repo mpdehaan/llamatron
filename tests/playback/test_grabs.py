@@ -8,7 +8,7 @@ from fractions import Fraction
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError

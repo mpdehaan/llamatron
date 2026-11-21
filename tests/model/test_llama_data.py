@@ -9,7 +9,7 @@ import importlib
 import pkgutil
 import unittest
 
-from llamatron.engine.generators.musician.settings import MusicianSettings
+from llamatron.engine.generators.musician.model import MusicianSettings
 import llamatron.model
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.llama_data import HoldsSettings, LlamaData

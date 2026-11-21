@@ -17,7 +17,7 @@ import yaml
 
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp import generator as arp
-from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.model.file import corrections as corrections_values
 from llamatron.model.file.corrections import changed_count, Correction, place_without
 from llamatron.model.file.file_layout import as_object_layout

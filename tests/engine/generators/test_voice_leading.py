@@ -10,7 +10,7 @@ chord a bar, and voice it.
 import unittest
 
 from llamatron.engine.generators import voice_leading as voice_leading_plugin
-from llamatron.engine.generators.voice_leading.settings import VoiceLeadingSetting
+from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import Row, Section
 from tests.engine.generators.test_progression import through

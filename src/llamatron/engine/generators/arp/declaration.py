@@ -8,7 +8,7 @@ generators, the class of its settings, and its words."""
 from llamatron.engine.generators import arp
 from llamatron.engine.generators.arp import strings
 from llamatron.engine.generators.arp.controller import ArpController
-from llamatron.engine.generators.arp.settings import ArpSettings
+from llamatron.engine.generators.arp.model import ArpSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
 PLUGIN = GeneratorPlugin(name=arp.NAME, section=arp.SECTION, settings=ArpSettings, strings=strings, controller=ArpController())

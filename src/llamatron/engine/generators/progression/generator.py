@@ -19,8 +19,8 @@ that are the chord's third, fifth and seventh. Its tensions set the notes betwee
 
 import math
 
-from llamatron.engine.generators.arp.generator import along_scale
 from llamatron.engine.generators.base import ClipGenerator
+from llamatron.engine.parts.scale_moves import along_scale
 from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.model.objects.named_scale import scale_type_called

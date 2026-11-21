@@ -15,8 +15,8 @@ major chord in a minor key, is followed too. Rests, rhythm, velocity and gates s
 and before the first chord, or with no track to follow, nothing moves.
 """
 
-from llamatron.engine.generators.arp.generator import along_scale
 from llamatron.engine.generators.base import ClipGenerator
+from llamatron.engine.parts.scale_moves import along_scale
 from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.model.values import sound as sound_values

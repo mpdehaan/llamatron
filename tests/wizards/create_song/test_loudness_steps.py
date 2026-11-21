@@ -7,7 +7,7 @@
 import unittest
 import unittest.mock
 
-from llamatron.engine.generators.guitarify.settings import GuitarifySettings
+from llamatron.engine.generators.guitarify.model import GuitarifySettings
 from llamatron.math.rational import Rational
 from llamatron.model.file import version
 from llamatron.model.schema import file_format

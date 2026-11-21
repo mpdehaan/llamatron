@@ -9,8 +9,8 @@ import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
-from llamatron.engine.generators.arp.settings import ArpSetting, written_name
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.arp.model import ArpSetting, written_name
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.engine.timing import sounding
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError

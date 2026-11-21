@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """What the Glide, Shorten, Rush and Drag editors share: a generator's name, its step, its own amounts, its row of steps, which Enter opens in the step row editor, and its Restart."""
 
-from llamatron.engine.generators.step_row_settings import StepRowSetting
+from llamatron.engine.generators.step_row import StepRowSetting
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.generators.time_field import time_field
@@ -34,9 +34,9 @@ class StepRowGeneratorEditor(GeneratorEditor, FieldPage):
         generator = self.settings()
         return [
             NameField(value=lambda: self.item, rename=self.rename),
-            time_field(page=self, label=labels.MSG_STEP_LABEL, written=generator.get_step(), first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=StepRowSetting.STEP, value=value)),
+            time_field(page=self, label=labels.MSG_STEP_LABEL, written=generator.step_row().get_step(), first=marks.MSG_PATTERN_STEP_SHOWN, store=lambda value: self.store(setting=StepRowSetting.STEP, value=value)),
             *self.amount_fields(),
-            Field(label=labels.MSG_STEPS_LABEL, value=lambda: steps_text(self.settings().get_steps()), adjust=None,
+            Field(label=labels.MSG_STEPS_LABEL, value=lambda: steps_text(self.settings().step_row().get_steps()), adjust=None,
                   enter=lambda: self.show_page(self.STEPS_EDITOR(holder=self.holder, name=self.item)), enter_what=legends.What.EDIT),
             restart_field(self),
         ]

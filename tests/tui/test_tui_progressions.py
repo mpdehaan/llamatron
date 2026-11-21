@@ -4,7 +4,7 @@
 """The tracker's Progression: the Progressions page, the progression editor and the chord editor, with the picker of named progressions."""
 
 from llamatron.engine.generators import progression as progression_plugin
-from llamatron.engine.generators.progression import settings as progression_settings
+from llamatron.engine.generators.progression import model as progression_settings
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, NamedProgression, Restart, Tension

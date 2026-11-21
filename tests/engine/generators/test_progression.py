@@ -10,7 +10,7 @@ progression a chord a bar, so that each bar shows where one chord moved the figu
 import unittest
 
 from llamatron.engine.generators import progression as progression_plugin
-from llamatron.engine.generators.progression.settings import ProgressionSetting
+from llamatron.engine.generators.progression.model import ProgressionSetting
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import NamedScale

@@ -10,8 +10,8 @@ import yaml
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
-from llamatron.engine.generators.arp.settings import ArpSetting, written_name
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.arp.model import ArpSetting, written_name
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.engine.generators.blend import BlendMode
 from llamatron.exporters.exports import export_name, ExportKind
 from llamatron.model.file.example_sets import example_sets

@@ -6,7 +6,7 @@
 
 from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.auto_ratchet import strings as auto_ratchet_strings
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.tui import drawing, keybindings
 from llamatron.tui.screens.generators.restart_field import restart_field
 from llamatron.tui.screens.shared.field import Field, NameField

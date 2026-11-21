@@ -6,7 +6,7 @@
 import unittest
 
 from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.model.schema.file_format import ClipSlotSetting, SceneSetting, Section, TrackSetting
 from llamatron.playback.song_renderer import SongRenderer
 from tests.playback import test_registers

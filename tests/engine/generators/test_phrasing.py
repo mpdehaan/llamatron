@@ -6,8 +6,8 @@
 import unittest
 
 from llamatron.engine.generators import phrasing as phrasing_plugin
-from llamatron.engine.generators.phrasing import generator as phrasing, settings as phrasing_settings
-from llamatron.engine.generators.phrasing.settings import PhrasingSetting, PhrasingSettings
+from llamatron.engine.generators.phrasing import generator as phrasing, model as phrasing_settings
+from llamatron.engine.generators.phrasing.model import PhrasingSetting, PhrasingSettings
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section

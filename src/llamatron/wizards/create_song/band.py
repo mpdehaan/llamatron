@@ -14,7 +14,7 @@ play its notes as written, since the lines were written to sound together.
 """
 
 from llamatron.engine.generators.musician import generator as musician
-from llamatron.engine.generators.musician.settings import MusicianSetting
+from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.user_strings import song_wizard as wizard_text
 from llamatron.wizards.create_song import players
 

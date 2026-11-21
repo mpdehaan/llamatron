@@ -4,7 +4,7 @@
 """The tracker's Hocket pages: the list of hockets and the editor, whose Source track picks a track of the current song."""
 
 from llamatron.engine.generators import hocket as hocket_plugin
-from llamatron.engine.generators.hocket.settings import HocketSetting
+from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.model.schema.file_format import Section
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

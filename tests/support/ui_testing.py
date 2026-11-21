@@ -17,12 +17,12 @@ from unittest import mock
 from llamatron.caching.memory import Memory
 from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
-from llamatron.engine.generators.arp.settings import ArpSetting, written_name
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
-from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
-from llamatron.engine.generators.hocket.settings import HocketSetting
-from llamatron.engine.generators.progression.settings import ProgressionSetting
-from llamatron.engine.generators.step_row_settings import StepRowSetting
+from llamatron.engine.generators.arp.model import ArpSetting, written_name
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
+from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
+from llamatron.engine.generators.hocket.model import HocketSetting
+from llamatron.engine.generators.progression.model import ProgressionSetting
+from llamatron.engine.generators.step_row import StepRowSetting
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, EuclidPart, PatternSetting, Row, SceneSetting, Section, ShapePart

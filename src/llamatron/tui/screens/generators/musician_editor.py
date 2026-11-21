@@ -5,8 +5,8 @@
 """The musician's editor: the instrument, the tracks the chords and the tune are read from, the player's touch, and a heading for each kind of section the song has."""
 
 from llamatron.engine.generators import musician as musician_plugin
-from llamatron.engine.generators.musician import generator as musician, settings as musician_settings, strings as musician_strings
-from llamatron.engine.generators.musician.settings import MusicianSetting
+from llamatron.engine.generators.musician import generator as musician, model as musician_settings, strings as musician_strings
+from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.model.schema import file_format
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, gauge_shown, NameField, NumberField, Toggle

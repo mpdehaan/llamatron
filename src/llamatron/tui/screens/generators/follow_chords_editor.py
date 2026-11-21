@@ -6,7 +6,7 @@
 
 from llamatron.engine.generators import follow_chords as follow_chords_plugin
 from llamatron.engine.generators.follow_chords import strings as follow_chords_strings
-from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
+from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
 from llamatron.tui import keybindings
 from llamatron.tui.screens.shared.field import ChoiceField, NameField
 from llamatron.tui.screens.shared.field_page import FieldPage

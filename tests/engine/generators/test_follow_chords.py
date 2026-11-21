@@ -7,8 +7,8 @@
 import unittest
 
 from llamatron.engine.generators import follow_chords as follow_chords_plugin, progression as progression_plugin
-from llamatron.engine.generators.follow_chords.settings import FollowChordsSetting
-from llamatron.engine.generators.progression.settings import ProgressionSetting
+from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
+from llamatron.engine.generators.progression.model import ProgressionSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting

@@ -16,7 +16,7 @@ pattern editor opens, on that row's list. The Name row and the status line say w
 """
 
 from llamatron.engine.generators import progression as progression_plugin
-from llamatron.engine.generators.progression import settings as progression_settings
+from llamatron.engine.generators.progression import model as progression_settings
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format, limits
 from llamatron.model.values import progressions

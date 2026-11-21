@@ -7,7 +7,7 @@
 from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.generators.arp import generator as arp, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
-from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import new_name, suggested_word

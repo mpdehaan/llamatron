@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
-from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.exporters import exports, midi_messages
 from llamatron.exporters.exports import ExportKind
 from llamatron.model.objects.setlist import new_setlist, Setlist

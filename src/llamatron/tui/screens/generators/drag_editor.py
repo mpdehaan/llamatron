@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Drag editor: a Drag's name, step, amount, row of steps and Restart."""
 
-from llamatron.engine.generators import drag as drag_plugin, step_row_settings
-from llamatron.engine.generators.drag import strings as drag_strings
-from llamatron.engine.generators.step_row_settings import StepRowSetting
+from llamatron.engine.generators import drag as drag_plugin
+from llamatron.engine.generators.drag import model as drag_model, strings as drag_strings
+from llamatron.engine.generators.step_row import StepRowSetting
 from llamatron.tui import keybindings
 from llamatron.tui.screens.generators.drag_steps_editor import DragStepsEditor
 from llamatron.tui.screens.generators.step_row_generator_editor import StepRowGeneratorEditor
@@ -25,4 +25,4 @@ class DragEditor(StepRowGeneratorEditor):
     RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=drag_strings.MSG_LABEL)
 
     def amount_fields(self):
-        return [self.number_field(label=labels.MSG_DRAG_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.settings().get_amount(), default=step_row_settings.DEFAULT_DRAG)]
+        return [self.number_field(label=labels.MSG_DRAG_AMOUNT_LABEL, setting=StepRowSetting.AMOUNT, current=self.settings().get_amount(), default=drag_model.DEFAULT_DRAG)]

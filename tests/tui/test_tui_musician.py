@@ -6,7 +6,7 @@
 
 from llamatron.engine.generators import musician as musician_plugin
 from llamatron.engine.generators.musician import generator as musician, strings as musician_strings
-from llamatron.engine.generators.musician.settings import MusicianSetting
+from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.model.schema.file_format import SectionKind
 from llamatron.tui import keybindings
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog

@@ -19,9 +19,10 @@ import yaml
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
 from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp.generator import along_scale, Arp, ChordOrder, OctaveJump
-from llamatron.engine.generators.arp.settings import ArpSetting, written_name
+from llamatron.engine.generators.arp.generator import Arp, ChordOrder, OctaveJump
+from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.blend import BlendMode
+from llamatron.engine.parts.scale_moves import along_scale
 from llamatron.engine.timing import timing
 from llamatron.engine.timing.timing import control_events, timed_events
 from llamatron.exporters import midi_messages

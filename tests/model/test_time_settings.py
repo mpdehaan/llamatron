@@ -6,9 +6,9 @@
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, drift as drift_plugin
-from llamatron.engine.generators.arp.settings import ArpSetting
+from llamatron.engine.generators.arp.model import ArpSetting
+from llamatron.engine.generators.drift.model import DriftSetting
 from llamatron.engine.generators.drift.play import DriftPlay
-from llamatron.engine.generators.drift.settings import DriftSetting
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import Bars, in_whole_notes, time_length
 from llamatron.model.file.invalid_value import InvalidValue

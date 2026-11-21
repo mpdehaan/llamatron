@@ -8,7 +8,7 @@ generators, the class of its settings, and its words."""
 from llamatron.engine.generators import glide
 from llamatron.engine.generators.glide import strings
 from llamatron.engine.generators.glide.controller import GlideController
-from llamatron.engine.generators.glide.settings import GlideSettings
+from llamatron.engine.generators.glide.model import GlideSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
 PLUGIN = GeneratorPlugin(name=glide.NAME, section=glide.SECTION, settings=GlideSettings, strings=strings, controller=GlideController())

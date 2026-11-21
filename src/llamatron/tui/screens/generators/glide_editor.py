@@ -5,7 +5,7 @@
 
 from llamatron.engine.generators import glide as glide_plugin
 from llamatron.engine.generators.glide import strings as glide_strings
-from llamatron.engine.generators.step_row_settings import StepRowSetting
+from llamatron.engine.generators.step_row import StepRowSetting
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.user_strings import help as help_text, labels, messages
 

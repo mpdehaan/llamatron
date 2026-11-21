@@ -7,8 +7,8 @@
 import unittest
 
 from llamatron.engine.generators import phrasing as phrasing_plugin
-from llamatron.engine.generators.phrasing import generator as phrasing, settings as phrasing_settings
-from llamatron.engine.generators.phrasing.settings import PhrasingSetting
+from llamatron.engine.generators.phrasing import generator as phrasing, model as phrasing_settings
+from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.model.schema.file_format import PatternSetting, Row
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, wizard_limits

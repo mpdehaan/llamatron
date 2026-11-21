@@ -8,7 +8,7 @@ generators, the class of its settings, and its words."""
 from llamatron.engine.generators import strum
 from llamatron.engine.generators.strum import strings
 from llamatron.engine.generators.strum.controller import StrumController
-from llamatron.engine.generators.strum.settings import StrumSettings
+from llamatron.engine.generators.strum.model import StrumSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
 PLUGIN = GeneratorPlugin(name=strum.NAME, section=strum.SECTION, settings=StrumSettings, strings=strings, controller=StrumController())

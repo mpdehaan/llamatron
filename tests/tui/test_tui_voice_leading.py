@@ -4,7 +4,7 @@
 """The tracker's Voice leading: its list page and its editor, with the range shown in the set's octave labels."""
 
 from llamatron.engine.generators import voice_leading as voice_leading_plugin
-from llamatron.engine.generators.voice_leading import settings as voice_leading_settings
+from llamatron.engine.generators.voice_leading import model as voice_leading_settings
 from llamatron.tui import keybindings
 from llamatron.tui.keys import Key
 from llamatron.tui.screens.generators.voice_leading_editor import VoiceLeadingEditor

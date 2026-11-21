@@ -15,6 +15,6 @@ class DragController(GeneratorController):
 
     def moving_row(self, *, settings, place):
         return MovingRow(
-            steps=settings.get_steps(), step=settings.step_length(default_step=place.pattern_step(), bar=place.bar()),
+            steps=settings.step_row().get_steps(), step=settings.step_row().step_length(default_step=place.pattern_step(), bar=place.bar()),
             amount=amount_moved(percent=settings.get_amount(), later=True), offset=place.run_offset(settings.get_restart()),
         )

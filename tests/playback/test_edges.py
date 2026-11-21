@@ -18,8 +18,8 @@ from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.positions import cut_position
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.arp.settings import ArpSetting
-from llamatron.engine.generators.auto_ratchet.settings import AutoRatchetSetting
+from llamatron.engine.generators.arp.model import ArpSetting
+from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.exports import ExportKind
 from llamatron.math.length import Length

@@ -11,7 +11,7 @@ track plays two bars.
 import unittest
 
 from llamatron.engine.generators import swell as swell_plugin
-from llamatron.engine.generators.shape_settings import ShapeSetting
+from llamatron.engine.generators.shape_part import ShapeSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError

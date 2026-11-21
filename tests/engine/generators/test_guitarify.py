@@ -11,9 +11,9 @@ seconds, so 8 milliseconds between strings is 1/250 of a whole note.
 import unittest
 
 from llamatron.engine.generators import guitarify as guitarify_plugin
-from llamatron.engine.generators.guitarify import bars as guitar_bars, generator as guitarify, settings as guitarify_settings
+from llamatron.engine.generators.guitarify import bars as guitar_bars, generator as guitarify, model as guitarify_settings
 from llamatron.engine.generators.guitarify.bars import ready_bar_matching
-from llamatron.engine.generators.guitarify.settings import GuitarifySettings
+from llamatron.engine.generators.guitarify.model import GuitarifySettings
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError

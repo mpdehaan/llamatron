@@ -5,8 +5,8 @@
 """The settings of the euclid generator: their names, their checks and their defaults, as a set file holds them."""
 
 from llamatron.engine.generators import settings_base
-from llamatron.engine.generators.euclid.generator import EuclidMask
 from llamatron.engine.generators.settings_base import GeneratorSettings
+from llamatron.engine.parts.euclidean_mask import EuclidMask
 from llamatron.model.file.checks import Bars, time_length
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import euclid

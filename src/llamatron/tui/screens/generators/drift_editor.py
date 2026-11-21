@@ -4,8 +4,8 @@
 """The Drift editor page: a drift's own settings, then each of its values for version A and version B side by side."""
 
 from llamatron.engine.generators import drift as drift_plugin
-from llamatron.engine.generators.drift import settings as drift_settings, strings as drift_strings
-from llamatron.engine.generators.drift.settings import DriftSetting, versioned
+from llamatron.engine.generators.drift import model as drift_settings, strings as drift_strings
+from llamatron.engine.generators.drift.model import DriftSetting, versioned
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import DriftValue
 from llamatron.model.values import note

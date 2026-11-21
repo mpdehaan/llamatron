@@ -10,7 +10,7 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 
 
 from llamatron.engine.generators import arp as arp_plugin, musician as musician_plugin, progression as progression_plugin
-from llamatron.engine.generators.progression.settings import ProgressionSetting
+from llamatron.engine.generators.progression.model import ProgressionSetting
 from llamatron.importers.writing import add_imported
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.groove import new_groove
