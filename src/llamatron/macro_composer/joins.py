@@ -89,7 +89,7 @@ def stopped(bar):
 
 def with_tail(*, bars, count, tail, eighths):
     """A looped figure written out for a section of so many bars, its last bar ending as the tail says; a build leaves the figure alone."""
-    written = [[dict(note) for note in bars[place % len(bars)]] for place in range(count)]
+    written = [notation.copied_line(bars[place % len(bars)]) for place in range(count)]
     if tail == DROP_OUT:
         written[-1] = dropped_out(bar=written[-1], eighths=eighths)
     elif tail == STOPS:

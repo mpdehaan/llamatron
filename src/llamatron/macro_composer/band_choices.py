@@ -61,7 +61,7 @@ class BandChoices(ChoicesPart):
         """Return what a song keeps of the band, as plain data: only what was chosen."""
         held = {arranger.PICKS: dict(self._ways) or None, arranger.PLAYERS: dict(self._levels) or None, arranger.WITHOUT: list(self._without) or None,
                 wizard_limits.PLAYER_GAUGES_KEPT: {player: dict(places) for player, places in self._own_gauges.items() if places} or None,
-                wizard_limits.PLAYER_ROWS_KEPT: {role: {name: list(row) for name, row in rows.items()} for role, rows in self._rows.items() if rows} or None,
+                wizard_limits.PLAYER_ROWS_KEPT: {role: _rows_copied(rows) for role, rows in self._rows.items() if rows} or None,
                 wizard_limits.BESIDE_KEPT: dict(self._beside) if self._beside is not None else None,
                 wizard_limits.GUITARISTS_KEPT: self._guitarists if self._guitarists != wizard_limits.TWO_GUITARISTS else None}
         return {field: value for field, value in held.items() if value is not None}
@@ -391,9 +391,14 @@ class BandChoices(ChoicesPart):
     def take_kept_player_row(self, *, role, name, values):
         self._choices.player(role).set_row(name=name, values=values)
 
+    def _habits_of(self, *, role, rows):
+        """Return a player's own rows that the player is dealt, each a copy."""
+        dealt = self._choices.player(role).rows()
+        return {name: list(row) for name, row in rows.items() if name in dealt}
+
     def role_habits_of_song(self):
         """The rows the song's players have of their own, for the players the rows are dealt to."""
-        return {role: {name: list(row) for name, row in rows.items() if name in self._choices.player(role).rows()} for role, rows in self._rows.items() if self._choices.player(role).is_in() and self._choices.player(role).rows()}
+        return {role: self._habits_of(role=role, rows=rows) for role, rows in self._rows.items() if self._choices.player(role).is_in() and self._choices.player(role).rows()}
 
     # The musicians: each player's clips are played by a Musician generator, the one the player is given or the person's own.
 
@@ -401,3 +406,7 @@ class BandChoices(ChoicesPart):
         """Return whether the genre's songs give each player a Musician."""
         return self._choices.get_genre() is not None and self._choices.style()[arranger.GENRE] not in band.GENRES_WITHOUT_MUSICIANS
 
+
+def _rows_copied(rows):
+    """Return a player's rows by name, each a copy."""
+    return {name: list(row) for name, row in rows.items()}

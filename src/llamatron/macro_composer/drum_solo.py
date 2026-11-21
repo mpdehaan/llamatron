@@ -138,5 +138,15 @@ def solo_bars(*, bars, seed):
 def solo_hits(*, bars, seed):
     """A solo as each piece's hits through the whole section, a piece that never sounds left out."""
     made = solo_bars(bars=bars, seed=seed)
-    hits = {piece: [hit for bar in made for hit in bar[piece]] for piece in PIECES}
-    return {piece: played for piece, played in hits.items() if any(hit != notation.NONE for hit in played)}
+    hits = {piece: _hits_through(bars=made, piece=piece) for piece in PIECES}
+    return {piece: played for piece, played in hits.items() if _sounds(played)}
+
+
+def _hits_through(*, bars, piece):
+    """Return a piece's hits through every bar of the solo."""
+    return [hit for bar in bars for hit in bar[piece]]
+
+
+def _sounds(hits):
+    """Return whether any of a piece's hits sounds."""
+    return any(hit != notation.NONE for hit in hits)

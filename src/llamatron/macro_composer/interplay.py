@@ -105,7 +105,7 @@ class UnderLead:
         if way == RIFF:
             return [self.riff_line(chords=self.chords_under(chords=chords, tune=tune, count=count)) for count, line in enumerate(tune)]
         if way == DOUBLES:
-            return [[dict(note) for note in line] for line in tune]
+            return [notation.copied_line(line) for line in tune]
         every = 1 if way == ANSWERS else FILL_EVERY
         made = []
         for count, line in enumerate(tune):

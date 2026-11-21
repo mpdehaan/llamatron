@@ -105,4 +105,14 @@ def cut_up(*, bars, cut, dice):
         unlike = [slice_at for slice_at in range(SLICES) if sliced(bars=bars, slice_at=slice_at) != sliced(bars=bars, slice_at=target)]
         if unlike:
             order[target] = dice.choice(unlike)
-    return {piece: [hit for slice_at in order for hit in hits[slice_at * STEPS_IN_SLICE:(slice_at + 1) * STEPS_IN_SLICE]] for piece, hits in bars.items()}
+    return {piece: _reordered(hits=hits, order=order) for piece, hits in bars.items()}
+
+
+def _reordered(*, hits, order):
+    """Return one drum's hits with its slices played in a new order."""
+    return [hit for slice_at in order for hit in _slice_of(hits=hits, slice_at=slice_at)]
+
+
+def _slice_of(*, hits, slice_at):
+    """Return the hits of one slice of a bar."""
+    return hits[slice_at * STEPS_IN_SLICE:(slice_at + 1) * STEPS_IN_SLICE]

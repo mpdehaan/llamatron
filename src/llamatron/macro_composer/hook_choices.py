@@ -95,7 +95,7 @@ class HookChoices(ChoicesPart):
     def _main_hook_kind(self):
         """The kind of section that says the main hook: the first in the form whose plan marks a line as one, or None."""
         sections = self._choices.style()[arranger.SECTIONS]
-        return next((kind for kind in self._choices.get_song_form().section_kinds_in_form() if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(wizard_limits.PLAN, []))), None)
+        return next((kind for kind in self._choices.get_song_form().section_kinds_in_form() if says_hook(sections[kind])), None)
 
     # Where the main hook sits among the lines of its section, which the genre says until a person chooses.
 
@@ -440,4 +440,9 @@ class HookChoices(ChoicesPart):
     def hook_scene(self):
         """Return the place in the form of the first section that says the hook, or None."""
         sections = self._choices.style()[arranger.SECTIONS]
-        return next((place for place, kind in enumerate(self._choices.get_song_form().section_kinds_in_form()) if any(entry.get(melody_writer.HOOK) for entry in sections[kind].get(wizard_limits.PLAN, []))), None)
+        return next((place for place, kind in enumerate(self._choices.get_song_form().section_kinds_in_form()) if says_hook(sections[kind])), None)
+
+
+def says_hook(section):
+    """Return whether a kind of section's plan marks a line as the hook."""
+    return any(entry.get(melody_writer.HOOK) for entry in section.get(wizard_limits.PLAN, []))

@@ -107,7 +107,7 @@ def clamped(velocity):
 
 def kept_rows(rows):
     """Only the rows that say anything, as a set file keeps them."""
-    return {name: values for name, values in rows.items() if any(value not in (None, False) for value in values)}
+    return {name: values for name, values in rows.items() if says_anything(values)}
 
 
 def stress_moves(*, velocity, levels):
@@ -158,7 +158,7 @@ def commonest(values):
 def plainest_velocity(loud):
     """The velocity a tune is written against: the one from which the most notes are plain or a stress, the commonest of those."""
     counts = Counter(value for value in loud if value is not None)
-    said = {base: sum(count for value, count in counts.items() if value == base or value - base in STRESS_OF_MOVE) for base in counts}
+    said = {base: _notes_plain_or_stressed(counts=counts, base=base) for base in counts}
     return max(counts, key=lambda base: (said[base], counts[base]))
 
 
@@ -243,3 +243,38 @@ def drum_hits(*, pattern, velocities=None):
     number = numbers.pop()
     hits = [NONE if degree[place] is None else LOUD if loud[place] == levels[0] else SOFT for place in range(steps)]
     return NAME_OF_DRUM.get(number, number), hits, levels[0], levels[-1]
+
+
+def says_anything(values):
+    """Return whether a row holds any value but nothing and off."""
+    return any(value not in (None, False) for value in values)
+
+
+def _notes_plain_or_stressed(*, counts, base):
+    """Return how many notes are plain or a stress against a velocity, from how many notes there are at each velocity."""
+    return sum(count for value, count in counts.items() if value == base or value - base in STRESS_OF_MOVE)
+
+
+def copied_line(line):
+    """Return a line of notes with each note a copy of its own, to change without changing the line it came from."""
+    return [dict(note) for note in line]
+
+
+def is_silent(lines):
+    """Return whether lines hold nothing but rests."""
+    return all(is_rests(line) for line in lines)
+
+
+def is_rests(line):
+    """Return whether a line holds nothing but rests."""
+    return all(REST in note for note in line)
+
+
+def without_fields(*, entry, fields):
+    """Return an entry, a note or a section, without the fields named."""
+    return {field: value for field, value in entry.items() if field not in fields}
+
+
+def with_fields_only(*, entry, fields):
+    """Return only the fields named of an entry, a note or a section."""
+    return {field: value for field, value in entry.items() if field in fields}

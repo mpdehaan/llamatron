@@ -236,7 +236,7 @@ def bars_of(*, line, eighths):
 
 def single(line):
     """A riff's notes alone, with no chords, as a second player plays the riff under the first."""
-    return [{field: value for field, value in note.items() if field != notation.CHORD} for note in line]
+    return [notation.without_fields(entry=note, fields=(notation.CHORD,)) for note in line]
 
 
 def accent_bars(*, line, eighths):

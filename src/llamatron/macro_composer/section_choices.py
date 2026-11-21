@@ -61,7 +61,9 @@ def chords_as_text(chords):
 
     def typed(chord):
         return marks.get(chord_of(chord).get(tune_notation.ACCIDENTAL), '') + str(chord_of(chord)[tune_notation.DEGREE])
-    return ' '.join(wizard_limits.SHARES_A_BAR.join(typed(half) for half in chord) if shares_a_bar(chord) else typed(chord) for chord in chords)
+    def bar_typed(chord):
+        return wizard_limits.SHARES_A_BAR.join(typed(half) for half in chord) if shares_a_bar(chord) else typed(chord)
+    return ' '.join(bar_typed(chord) for chord in chords)
 
 
 class SectionChoices:

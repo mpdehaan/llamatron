@@ -98,7 +98,8 @@ def held_to(*, character, allowed):
 def gauges_of(levels):
     """The gauges an instrument has in a style: those a field of any of its levels belongs to, in the gauges' order."""
     fields = {field for level in levels.values() for field in level}
-    return [gauge for gauge in GAUGES if any(GAUGE_OF_FIELD.get(field) == gauge for field in fields)]
+    used = {GAUGE_OF_FIELD.get(field) for field in fields}
+    return [gauge for gauge in GAUGES if gauge in used]
 
 
 def blended(*, low, high, share):
@@ -106,7 +107,8 @@ def blended(*, low, high, share):
     if isinstance(low, dict) or isinstance(high, dict):
         low = low or {}
         high = high or {}
-        made = {name: blended(low=low.get(name), high=high.get(name), share=share) for name in [*low, *[name for name in high if name not in low]]}
+        names = dict.fromkeys([*low, *high])
+        made = {name: blended(low=low.get(name), high=high.get(name), share=share) for name in names}
         return {name: value for name, value in made.items() if value}
     return max(0, round((low or 0) + ((high or 0) - (low or 0)) * share))
 

@@ -20,7 +20,7 @@ import copy
 
 from llamatron.composition import limits
 from llamatron.composition.song_file_error import SongFileError
-from llamatron.macro_composer import arranger, interplay as interplay_values, joins as joins_values, song_plan, wizard_limits
+from llamatron.macro_composer import arranger, interplay as interplay_values, joins as joins_values, notation as tune_notation, song_plan, wizard_limits
 from llamatron.macro_composer.arranger import bar_length, forms_of, share_of
 from llamatron.macro_composer.choices_part import ChoicesPart
 from llamatron.macro_composer.section_choices import own_copy_of
@@ -148,7 +148,8 @@ class FormChoices(ChoicesPart):
         """Return the sections of the form chosen, each its kind, worked out once for a form, since a page asks for the sections
         many times a key. A caller that changes a section changes its own copy (own_section_entries)."""
         chosen = self.get_form()
-        return [{arranger.KIND: kind} for kind in next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == chosen), [])]
+        kinds = next((form[arranger.SECTIONS] for form in self._forms() if form[arranger.NAME] == chosen), [])
+        return [{arranger.KIND: kind} for kind in kinds]
 
     def own_section_entries(self):
         """Return the song's own sections to change, starting them from the chosen form the first time."""
@@ -191,7 +192,8 @@ class FormChoices(ChoicesPart):
     def song_sections(self):
         """Return the song's own sections as the arranger reads them, by name: each its kind and what it changes, with the chords and the scene's
         tempo, key and scale a section was given where no plan lays those out by place."""
-        return {name: {**{field: value for field, value in entry.items() if field != wizard_limits.OWN_OF_SECTION}, **self._as_section(place=place, entry=entry)} for place, (name, entry) in enumerate(zip(self.form_sections(), self.section_entries()))}
+        named = zip(self.form_sections(), self.section_entries())
+        return {name: {**tune_notation.without_fields(entry=entry, fields=(wizard_limits.OWN_OF_SECTION,)), **self._as_section(place=place, entry=entry)} for place, (name, entry) in enumerate(named)}
 
     def _own_without_plan(self, entry):
         """What a section was given of its own that a song with no plan can still take: chords, a tempo, the tempo at its end, a key and a scale."""

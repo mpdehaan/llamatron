@@ -171,7 +171,7 @@ def names_apart(*, generators, chains):
     kick drag, and a chain that shares a generator's name takes the word chain, as guitar player chain, which runs the
     Musician guitar player. Every chain's steps and every clip follow."""
     plain = [name for items in generators.values() for name in items]
-    clashing = {name for name in plain if sum(naming.same_name(one=name, other=other) for other in plain) > 1}
+    clashing = {name for name in plain if _times_named(name=name, names=plain) > 1}
     taken = plain + list(chains)
     renamed = {}
     apart = {}
@@ -189,7 +189,7 @@ def names_apart(*, generators, chains):
         if naming.is_taken(name=name, taken=held):
             chains_renamed[name] = naming.unique_name(base=names.MSG_NAMED_FOR_KIND.format(name=name, word=names.MSG_CHAIN_WORD), taken=taken)
             taken.append(chains_renamed[name])
-    return apart, {chains_renamed.get(name, name): [_step_renamed(step=step, renamed=renamed) for step in steps] for name, steps in chains.items()}, chains_renamed
+    return apart, {chains_renamed.get(name, name): _steps_renamed(steps=steps, renamed=renamed) for name, steps in chains.items()}, chains_renamed
 
 
 def _step_renamed(*, step, renamed):
@@ -236,3 +236,13 @@ def composed(*, given, version):
     song[SCENES] = scenes
     data[SONGS] = {given[NAME]: song}
     return data
+
+
+def _times_named(*, name, names):
+    """Return how many of the names are the same name as one, capitals aside."""
+    return sum(naming.same_name(one=name, other=other) for other in names)
+
+
+def _steps_renamed(*, steps, renamed):
+    """Return a chain's steps with each generator they name renamed as renamed says."""
+    return [_step_renamed(step=step, renamed=renamed) for step in steps]

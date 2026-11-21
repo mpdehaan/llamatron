@@ -567,7 +567,7 @@ def one_chord(meter):
 
 def hits_of(marks):
     """A decoration's drum as hits: it says how many steps its bar has and which are accents, loud, soft and ghost notes."""
-    return [next((level for level in (notation.ACCENT, notation.LOUD, notation.SOFT, notation.GHOST) if place in marks.get(level, [])), notation.NONE) for place in range(marks[notation.STEPS])]
+    return [_level_at(marks=marks, place=place) for place in range(marks[notation.STEPS])]
 
 
 def choice_that_fits(*, choices, picks):
@@ -792,7 +792,7 @@ def decorated_figure(*, bars, player, phrase_bars, meter):
     grid = sum(lasts(note) for note in bars[0])
     fitting = [variation for variation in player.get(characters.VARIES, []) if ending_fits(variation=variation, grid=grid, meter=meter)]
     if not fitting or phrase_bars % len(bars):
-        return [[dict(note) for note in bar] for bar in bars]
+        return [notation.copied_line(bar) for bar in bars]
     finest = max([grid] + [variation[melody.GRID] for variation in fitting])
     fitting = [variation for variation in fitting if finest % variation[melody.GRID] == 0]
     phrase = [stretched(notes=bars[count % len(bars)], by=finest // grid) for count in range(phrase_bars)]
@@ -1071,7 +1071,7 @@ class Arrangement:
         bars = 1 if section.get(HELD) else section[BARS]
         written = section.get(CHORDS) or self._chord_entry.get(BY_SECTION, {}).get(section[KIND]) or self._chord_entry[PATTERN]
         # A bar of two chords is kept as its two for the progression, and is its first chord for whatever goes bar by bar.
-        chords = [[chord_of(half) for half in chord] if shared and shares_a_bar(chord) else chord_of(chord) for chord in written]
+        chords = [_bar_of_chords(chord=chord, shared=shared) for chord in written]
         if section.get(LAST_CHORD) is not None and not section.get(EVERY, self._chord_entry.get(EVERY)) and len(chords) <= bars:
             # The section's last bar is set up for what follows: the chords are written out a bar each, and the last bar takes the approach chord.
             chords = [chords[bar % len(chords)] for bar in range(bars - 1)] + [chord_of(section[LAST_CHORD])]
@@ -1326,7 +1326,7 @@ class Arrangement:
         part = composer_text.MSG_PART_BESIDE.format(drawn_in, role[ROLE], way)
         if part not in self._parts:
             lines = self._under.lines(way=way, tune=self._lines_of(at, role=at.tune_role), chords=at.chords, section=drawn_in)
-            if not all(all(notation.REST in note for note in line) for line in lines):
+            if not notation.is_silent(lines):
                 self._parts[part] = tune_part(lines=lines, role=role, meter=self._meter, grid=self._habits[melody.GRID])
                 self._shaped.append(part)
         if part in self._parts:
@@ -1372,7 +1372,7 @@ class Arrangement:
                 self._parts.setdefault(riff_part, {RAW: in_octaves_of(pattern=riff.riff[RIFF_OWN], by=role[notation.OCTAVE] - first_role[notation.OCTAVE], group=role[ROLE])})
             elif riff_part not in self._parts:
                 lines = [riff.notes] if None not in riff_here else [held_bar(eighths=self._riff_eighths, chord=first) if bar is None else riff.split[bar] for bar in riff_here]
-                self._parts[riff_part] = {notation.STEP: EIGHTH, notation.OCTAVE: role[notation.OCTAVE], **voice_of(role), notation.LINES: [[dict(note) for note in (line if first else single(line))] for line in lines]}
+                self._parts[riff_part] = {notation.STEP: EIGHTH, notation.OCTAVE: role[notation.OCTAVE], **voice_of(role), notation.LINES: [notation.copied_line(line if first else single(line)) for line in lines]}
                 self._shaped.append(riff_part)
             riff_chain = composer_text.MSG_PART_OF_SECTION.format(chain, riffs_values.RIFF)
             self._chains[riff_chain] = [dict(FOLLOWS_THE_CHORDS), {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
@@ -1409,7 +1409,7 @@ class Arrangement:
         part = composer_text.MSG_PART_OF_SECTION.format(at.name, role[ROLE])
         if part not in self._parts:
             lines = self._lines_of(at, role=role)
-            if all(all(notation.REST in note for note in line) for line in lines):
+            if notation.is_silent(lines):
                 return
             written = tune_part(lines=lines, role=role, meter=self._meter, grid=self._habits[melody.GRID])
             # A tune that returns note for note, as a chorus's, is the one part each time, where the song's sections are planned.
@@ -1479,3 +1479,15 @@ class Arrangement:
 def arranged(*, style, song):
     """A song's picks as a MacroComposer input."""
     return Arrangement(style=style, song=song).as_input()
+
+
+def _level_at(*, marks, place):
+    """Return how loud a decoration's drum hits at a step: an accent, loud, soft, a ghost note, or none."""
+    return next((level for level in (notation.ACCENT, notation.LOUD, notation.SOFT, notation.GHOST) if place in marks.get(level, [])), notation.NONE)
+
+
+def _bar_of_chords(*, chord, shared):
+    """Return a written bar's chord, or its two chords where two share the bar and the progression keeps them."""
+    if shared and shares_a_bar(chord):
+        return [chord_of(half) for half in chord]
+    return chord_of(chord)

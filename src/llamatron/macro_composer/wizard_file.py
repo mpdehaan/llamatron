@@ -32,7 +32,7 @@ A seed left out is drawn anew at every run, so that each run makes another song 
 
 import os
 
-from llamatron.macro_composer import arranger, song_plan, wizard_limits
+from llamatron.macro_composer import arranger, notation as tune_notation, song_plan, wizard_limits
 from llamatron.macro_composer.wizard_choices import data_laid_over, WizardChoices
 from llamatron.strings import errors
 from llamatron.support import files
@@ -67,9 +67,9 @@ def choices_of(*, data, path, seed=None):
     if written:
         entries = form_entries(form=data[arranger.FORM], path=path)
         del kept[arranger.FORM]
-        kept[wizard_limits.OWN_SECTIONS] = [{field: value for field, value in entry.items() if field in KEPT_OF_SECTION} for entry in entries]
+        kept[wizard_limits.OWN_SECTIONS] = [tune_notation.with_fields_only(entry=entry, fields=KEPT_OF_SECTION) for entry in entries]
         if plan is not None:
-            plan[song_plan.BY_PLACE] = [{field: value for field, value in entry.items() if field not in KEPT_OF_SECTION} for entry in entries]
+            plan[song_plan.BY_PLACE] = [tune_notation.without_fields(entry=entry, fields=KEPT_OF_SECTION) for entry in entries]
     if seed is not None:
         kept[arranger.SEED] = seed
     choices = WizardChoices.from_data(kept)

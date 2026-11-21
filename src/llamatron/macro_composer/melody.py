@@ -479,7 +479,7 @@ class Serial(StepWalk):
 
     def varied_line(self, *, line, dice, entry=None, under=None):
         sounds = [note for note in line if notation.REST not in note]
-        pitches = [{field: note[field] for field in PITCH_FIELDS if field in note} for note in reversed(sounds)]
+        pitches = [pitch_of(note) for note in reversed(sounds)]
         for note, pitch in zip(sounds, pitches):
             for field in PITCH_FIELDS + (notation.STRESS,):
                 note.pop(field, None)
@@ -1320,7 +1320,7 @@ def plan_with_hook_placed(*, plan, placement):
     never lifted, so that the hook keeps the top. A plan of another shape is left as it is."""
     if placement_of(plan) in (None, placement) or placement not in PLACED:
         return plan
-    hook = {field: value for field, value in next(entry for entry in plan if entry.get(HOOK)).items() if field != VARIED}
+    hook = notation.without_fields(entry=next(entry for entry in plan if entry.get(HOOK)), fields=(VARIED,))
     plain = {field: hook[field] for field in (ANSWER,) if field in hook}
     if placement == FIRST_LINES:
         return [dict(hook), {**hook, VARIED: True}, dict(hook), {**plain, LINE: CLOSE_LINE}]
@@ -1341,3 +1341,8 @@ def plan_with_tag(*, plan, lines):
 def has_hook(plan):
     """Whether any line of a section's plan is marked as the section's hook."""
     return any(entry.get(HOOK) for entry in plan)
+
+
+def pitch_of(note):
+    """Return a note's pitch alone: its fields that say the pitch, in PITCH_FIELDS' order."""
+    return {field: note[field] for field in PITCH_FIELDS if field in note}
