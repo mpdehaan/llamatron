@@ -13,17 +13,17 @@ import pathlib
 import re
 import unittest
 
-from llamatron.macro_composer.band_choices import BandChoices
-from llamatron.macro_composer.form_choices import FormChoices
-from llamatron.macro_composer.hook_choices import HookChoices
-from llamatron.macro_composer.kit_choices import KitChoices
-from llamatron.macro_composer.player_choices import PlayerChoices
-from llamatron.macro_composer.riff_choices import RiffChoices
-from llamatron.macro_composer.section_choices import SectionChoices
-from llamatron.macro_composer.solo_choices import SoloChoices
-from llamatron.macro_composer.sound_choices import SoundChoices
-from llamatron.macro_composer.tune_choices import TuneChoices
-from llamatron.macro_composer.wizard_choices import WizardChoices
+from llamatron.song_wizard.band_choices import BandChoices
+from llamatron.song_wizard.form_choices import FormChoices
+from llamatron.song_wizard.hook_choices import HookChoices
+from llamatron.song_wizard.kit_choices import KitChoices
+from llamatron.song_wizard.player_choices import PlayerChoices
+from llamatron.song_wizard.riff_choices import RiffChoices
+from llamatron.song_wizard.section_choices import SectionChoices
+from llamatron.song_wizard.solo_choices import SoloChoices
+from llamatron.song_wizard.sound_choices import SoundChoices
+from llamatron.song_wizard.tune_choices import TuneChoices
+from llamatron.song_wizard.wizard_choices import WizardChoices
 from llamatron.tui.screens import wizard
 
 SETTER_START = 'set_'

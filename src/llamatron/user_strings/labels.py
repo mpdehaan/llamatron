@@ -15,7 +15,7 @@ def register_labels(*, rows, label):
     return {row: label.format(name=name) for name, row in rows.items()}
 
 
-# macro_composer/composer.py
+# song_wizard/composer.py
 # The word for each kind of generator that a generator named for its kind takes, as kick rush (names.MSG_NAMED_FOR_KIND).
 MSG_KIND_WORDS = {
     GeneratorKind.ARP: 'arp', GeneratorKind.AUTO_RATCHET: 'ratchet', GeneratorKind.DRIFT: 'drift', GeneratorKind.PROGRESSION: 'chords',

@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The wizard's Genre branch: the genre and the subgenre, which must be chosen, then the key, the tempo and the song's name, which arrive filled in."""
 
-from llamatron.macro_composer import wizard_limits
-from llamatron.macro_composer.wizard_choices import genre_names, genre_title
 from llamatron.model.values import note
+from llamatron.song_wizard import wizard_limits
+from llamatron.song_wizard.wizard_choices import genre_names, genre_title
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.screens.shared.field import ChoiceField, Field

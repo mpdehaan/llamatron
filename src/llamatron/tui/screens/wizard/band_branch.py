@@ -4,7 +4,7 @@
 
 """The wizard's Band branch: who is in the band, and a branch for each player who is."""
 
-from llamatron.macro_composer import wizard_limits
+from llamatron.song_wizard import wizard_limits
 from llamatron.tui.screens.shared.field import ChoiceField, Field, Toggle
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.tui.screens.wizard.player_branch import PlayerBranch

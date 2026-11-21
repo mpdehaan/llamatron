@@ -133,8 +133,8 @@ flowchart LR
     engine["engine"]
     exporters["exporters"]
     importers["importers"]
-    macro_composer["macro_composer"]
     realtime["realtime"]
+    song_wizard["song_wizard"]
     tutorial["tutorial"]
     visualizers["visualizers"]
     subgraph everywhere ["used by every other part"]
@@ -153,14 +153,11 @@ flowchart LR
     importers --> model
     importers --> playback
     llamatron --> exporters
-    llamatron --> macro_composer
     llamatron --> model
     llamatron --> playback
+    llamatron --> song_wizard
     llamatron --> tui
     llamatron --> visualizers
-    macro_composer --> generators
-    macro_composer --> model
-    macro_composer --> playback
     model --> generators
     playback --> engine
     playback --> generators
@@ -168,14 +165,17 @@ flowchart LR
     realtime --> engine
     realtime --> model
     realtime --> playback
+    song_wizard --> generators
+    song_wizard --> model
+    song_wizard --> playback
     tui --> engine
     tui --> exporters
     tui --> generators
     tui --> importers
-    tui --> macro_composer
     tui --> model
     tui --> playback
     tui --> realtime
+    tui --> song_wizard
     tui --> visualizers
     tutorial --> model
     tutorial --> tui
@@ -192,8 +192,8 @@ flowchart LR
 | `engine` | The Engine: what makes a song into music. clips/ holds the finished clips a song is realized into and the grid that maps |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
-| `macro_composer` | The MacroComposer: a set made from structured data that says what to play. composer.py turns a |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
+| `song_wizard` | The song wizard: a set made from structured data that says what to play. composer.py turns a |
 | `tutorial` | The video tutorial: a plan that rebuilds a set from nothing in the running tracker, key by key, and the runner that presses its keys at a human pace, saying a sentence at each part worth one (internal_tools/make_video_tutorial.py). |
 | `visualizers` | The visualizers: what Arrange's clip area can show in place of the clips while a song plays in real time. |
 | `math` | Math: exact arithmetic for lengths and times, Rationals and the pairs a realization uses, and where random numbers come |

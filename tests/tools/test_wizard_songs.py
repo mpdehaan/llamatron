@@ -11,7 +11,7 @@ import itertools
 import pathlib
 import unittest
 
-from tests.macro_composer.test_wizard_effect import every_choice, fresh
+from tests.song_wizard.test_wizard_effect import every_choice, fresh
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'wizard_songs.py'
 MODULE_NAME = 'wizard_songs_report'

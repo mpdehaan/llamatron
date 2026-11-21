@@ -5,7 +5,7 @@
 
 from rich.text import Text
 
-from llamatron.macro_composer import song_plan, wizard_limits
+from llamatron.song_wizard import song_plan, wizard_limits
 from llamatron.tui import drawing
 from llamatron.tui.drawing import Style
 from llamatron.tui.screens.shared.field import Button, ChoiceField, Field, gauge_shown, NumberField, Toggle

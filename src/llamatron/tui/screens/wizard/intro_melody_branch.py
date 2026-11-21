@@ -14,8 +14,8 @@ the intro's melody is made from the hook and the hook from the chorus.
 
 from rich.text import Text
 
-from llamatron.macro_composer import wizard_limits
 from llamatron.model.file.checks import listed
+from llamatron.song_wizard import wizard_limits
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style

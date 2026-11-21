@@ -6,13 +6,13 @@
 from unittest import mock
 
 from llamatron.caching.memory import StaleAnswer
-from llamatron.macro_composer import arranger, breaks, melody, wizard_limits
-from llamatron.macro_composer.breaks import break_names
-from llamatron.macro_composer.wizard_choices import genre_names, genre_title, WizardChoices
 from llamatron.model.file import version
 from llamatron.model.objects.naming import new_name
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
+from llamatron.song_wizard import arranger, breaks, melody, wizard_limits
+from llamatron.song_wizard.breaks import break_names
+from llamatron.song_wizard.wizard_choices import genre_names, genre_title, WizardChoices
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.app import LlamatronApp
 from llamatron.tui.dialogs import dialog as dialog_values, row_dialog
@@ -30,7 +30,7 @@ from llamatron.tui.screens.wizard import solo_melody_branch, starts
 from llamatron.tui.screens.wizard.hook_picture import picture_of
 from llamatron.tui.screens.wizard.wizard_page import WizardPage
 from llamatron.tui.text import clock
-from llamatron.user_strings import errors, labels as labels_text, legends, macro_composer as composer_text, marks, messages, names
+from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages, names, song_wizard as wizard_text
 from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_of, UITest
 
 # The tree's first branch, by its place from the top.
@@ -825,7 +825,7 @@ class TestWizardKit(WizardTest):
         self.assertIn(drum, choices.get_kit().drums())
         self.assertIsNone(choices.get_kit().piece_note(piece))
         self.assertEqual(self.wizard().cell_field().value(), marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
-        self.assertNotIn(composer_text.MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS])
+        self.assertNotIn(wizard_text.MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS])
         # ENTER on the Note row then keeps the drum, and so does the piece's own drum.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.ENTER)
         self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (drum, None))

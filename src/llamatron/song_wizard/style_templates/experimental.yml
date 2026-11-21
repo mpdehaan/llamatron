@@ -1,0 +1,102 @@
+# A style template: experimental music made by procedures. The song wizard's arranger reads it (src/llamatron/song_wizard/arranger.py).
+#
+# templates   the kinds: each a set of picks to start from, any of which a song may change.
+# traits      what a song picks. Each trait lists its values; share is roughly how many pieces in a hundred use the value.
+# roles       the voices in track order: which trait each plays, how high and how loud. A voice names itself, so that each
+#             reads the piece's row its own way, and may give habits of its own, such as the lengths of its notes.
+# sections    which voices play in each kind of section, and the plan of their lines: which line returns and which is varied.
+# forms       the layouts a piece may take, each with how common it is.
+# melody      the engine the voices' lines are made by and its habits. The serial engine makes a row of every note of the
+#             piece's scale once and builds every line from the row and its forms: backwards, upside down, and both.
+#             A song may add chromatic, for a row of all twelve notes, and leaps, for notes thrown across the octaves.
+#             A voice's loudness and articulation are rows too: how much louder or softer each note is, and how many parts in
+#             four of each note's length sound.
+# No chords and no drums: every voice is a line, and the harmony is whatever the lines make together.
+# No composer or work is named or followed.
+
+name: experimental
+title: Experimental
+genre: Experimental
+feel: down
+phrase_bars: 4
+chord_trait: harmony
+loudness: {drums: 90}
+
+templates:
+  serial synths:  {tempo: 76, high: square lead, middle: glass synth, low: synth bass, harmony: none}
+  serial trio:    {tempo: 76, high: vibraphone, middle: piano, low: cello, harmony: none}
+  serial winds:   {tempo: 66, high: flute, middle: clarinet, low: bass clarinet, harmony: none}
+  serial chords:  {tempo: 70, high: saw lead, middle: glass synth, low: synth bass, chords: warm pad, harmony: none}
+
+traits:
+  tempo: {lowest: 40, usual: 76, highest: 140}
+  high:
+    - {value: square lead, share: 30, sound: square lead}
+    - {value: saw lead, share: 25, sound: saw lead}
+    - {value: vibraphone, share: 20, sound: vibraphone}
+    - {value: flute, share: 15, sound: flute}
+    - {value: violin, share: 10, sound: violin}
+  middle:
+    - {value: glass synth, share: 50, sound: glass synth}
+    - {value: piano, share: 30, sound: piano}
+    - {value: clarinet, share: 20, sound: clarinet}
+  low:
+    - {value: synth bass, share: 50, sound: synth bass}
+    - {value: cello, share: 30, sound: cello}
+    - {value: bass clarinet, share: 20, sound: bass clarinet}
+  chords:
+    - {value: warm pad, share: 50, sound: warm pad}
+    - {value: piano, share: 30, sound: piano}
+    - {value: vibraphone, share: 20, sound: vibraphone}
+  harmony:
+    - {value: none, share: 100, pattern: [1]}
+
+roles:
+  - {role: high, title: high line, player: lead, trait: high, octave: 5, velocity: 92, voice: high, habits: {lengths: [1, 1, 2, 1, 3, 2, 1], span: 5, loudness: [-14, 0, 10, -8, 16, -4, 6], articulation: [4, 2, 4, 1, 4, 3, 2]}}
+  - {role: middle, title: middle line, player: keys, trait: middle, octave: 4, velocity: 84, voice: middle, habits: {lengths: [2, 3, 2, 4, 1, 2, 2], span: 4, loudness: [0, -10, 8, -6, 12, -12, 4], articulation: [4, 4, 2, 4, 3, 4, 2]}}
+  - {role: low, title: low line, player: bass, trait: low, octave: 2, velocity: 88, voice: low, habits: {lengths: [4, 6, 2, 4, 8, 4, 4], span: 3, loudness: [0, 8, -8, 4, -4, 10, -10]}}
+  # Three voices of one name, each taking one of three notes of the row that sound together: chords of the row's neighbours.
+  - {role: chord top, player: keys, trait: chords, octave: 4, velocity: 70, voice: chords, habits: {lengths: [4, 8, 4, 6, 2, 8, 4], span: 4, together: 3, takes: 0}}
+  - {role: chord middle, player: keys, trait: chords, octave: 4, velocity: 70, voice: chords, habits: {lengths: [4, 8, 4, 6, 2, 8, 4], span: 4, together: 3, takes: 1}}
+  - {role: chord bottom, player: keys, trait: chords, octave: 4, velocity: 70, voice: chords, habits: {lengths: [4, 8, 4, 6, 2, 8, 4], span: 4, together: 3, takes: 2}}
+
+sounds: {square lead: 81, saw lead: 82, glass synth: 99, warm pad: 90, synth bass: 39, vibraphone: 12, flute: 74, violin: 41, piano: 1, clarinet: 72, cello: 43, bass clarinet: 72}
+
+sections:
+  alone: {bars: 8, plays: [high], plan: [{line: a}, {line: b}, {line: a, varied: true}, {line: c}]}
+  two: {bars: 8, plays: [high, low], plan: [{line: a}, {line: b}, {line: a, varied: true}, {line: c}]}
+  three:
+    bars: 16
+    plays: [high, middle, low]
+    plan: [{line: a}, {line: b}, {line: a, varied: true}, {line: c}, {line: d}, {line: b, varied: true}, {line: a}, {line: c, varied: true}]
+  thin: {bars: 8, plays: [middle, low], plan: [{line: d}, {line: e}, {line: d, varied: true}, {line: e}]}
+  chords: {bars: 8, plays: [chord top, chord middle, chord bottom], plan: [{line: a}, {line: b}, {line: a, varied: true}, {line: c}]}
+  over chords:
+    bars: 16
+    plays: [high, low, chord top, chord middle, chord bottom]
+    plan: [{line: a}, {line: b}, {line: a, varied: true}, {line: c}, {line: d}, {line: b, varied: true}, {line: a}, {line: c, varied: true}]
+  last: {bars: 8, plays: [high, middle, low], plan: [{line: a}, {line: a, varied: true}, {line: b}, {line: a}]}
+
+forms:
+  serial chords:
+    - {name: chords first, share: 60, sections: [chords, over chords, thin, over chords, chords]}
+    - {name: mosaic, share: 40, sections: [chords, thin, chords, over chords, thin, chords, over chords, chords]}
+  # Forms a listener can hear: the voices gathering, an arch that goes out and comes back by the same sections, a mirror whose
+  # second half is the first in reverse, and a mosaic of short blocks that return.
+  usual:
+    - {name: gathering, share: 30, sections: [alone, two, three, thin, three, last]}
+    - {name: arch, share: 25, sections: [alone, two, three, two, alone]}
+    - {name: mirror, share: 15, sections: [alone, two, thin, three, three, thin, two, alone]}
+    - {name: mosaic, share: 15, sections: [alone, three, alone, thin, three, alone, last]}
+    - {name: short, share: 10, sections: [alone, three, last]}
+    - {name: long, share: 5, sections: [alone, two, three, thin, two, three, alone, last]}
+
+melody:
+  engine: serial
+  grid: 8
+  line_bars: 2
+  span: 4
+  home: {degree: 1}
+  ladder: [{degree: 1}, {degree: 2}, {degree: 3}, {degree: 4}, {degree: 5}, {degree: 6}, {degree: 7}]
+  rhythms: []
+  answer_rhythms: []

@@ -7,7 +7,7 @@ Each constant starts with MSG_.
 """
 
 
-# macro_composer/composer.py
+# song_wizard/composer.py
 # A generator named for its kind where a generator of another kind has its name, as kick rush beside kick drag, a set file
 # listing every generator in one list where no two share a name; each kind's word is in labels.py.
 MSG_NAMED_FOR_KIND = '{name} {word}'

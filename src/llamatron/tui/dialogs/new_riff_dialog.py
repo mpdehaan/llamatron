@@ -12,7 +12,7 @@ chords, the one kind that has gaps between its accents.
 
 from rich.text import Text
 
-from llamatron.macro_composer import riffs, wizard_limits
+from llamatron.song_wizard import riffs, wizard_limits
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.dialogs.dialog import Dialog

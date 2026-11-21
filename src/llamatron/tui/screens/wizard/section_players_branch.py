@@ -11,7 +11,7 @@ riff the player knows. The player the genre gives the melody to rests where anot
 
 import functools
 
-from llamatron.macro_composer import wizard_limits
+from llamatron.song_wizard import wizard_limits
 from llamatron.tui.screens.shared.field import ChoiceField
 from llamatron.tui.screens.wizard.branch import Branch
 from llamatron.user_strings import labels

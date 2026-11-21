@@ -14,7 +14,7 @@ hook and who else plays them is on the Hook panel (hooks_branch.py).
 
 from rich.text import Text
 
-from llamatron.macro_composer import hook_writing, melody, wizard_limits
+from llamatron.song_wizard import hook_writing, melody, wizard_limits
 from llamatron.tui import drawing
 from llamatron.tui.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.tui.drawing import Style

@@ -1,0 +1,425 @@
+# A style template: blues. The song wizard's arranger reads it (src/llamatron/song_wizard/arranger.py).
+#
+# templates   the kinds of blues: each a set of picks to start from, any of which a song may change.
+# traits      what a song picks. Each trait lists its values; share is roughly how many songs in a hundred use the value, so
+#             the commonest is the one recommended; needs says what another trait must be for the value to fit.
+#             A drum value holds its bar, each drum's hits: loud, soft or none. A value a player plays holds its sound and
+#             its figure, bars of notes written over chord one, which a Progression moves through the song's chords.
+# roles       the band in track order, the chords first, then the lead and the backing, the bass, and the drums last: which
+#             trait each plays, how high and how loud.
+# sections    what plays in each kind of section, and the plan of its tune: which line returns and who plays each.
+#             intensity is the most each instrument's player may open up there, 1 to 4, so that a player starts plainly and
+#             saves the most for a chorus or a solo; crash is a crash on the section's first beat; picks are picks the
+#             section changes, such as the cymbal the drummer rides.
+# players     who each instrument's player is in this style, by complexity from 1 (plain) to 4 (the most advanced): what the
+#             player says for people, and how the player decorates the kind's own parts, never replacing them: a drummer's
+#             hits added to every bar (adds) or to some bars of each four-bar phrase (varies), the fill and how often it comes, timing (a
+#             rush or a drag, in hundredths of a step), how uneven the hits are, a strum's width, a lead's range.
+#             A player of a figure, such as the bass, varies bars of each four-bar phrase by ending them with notes
+#             of their own (ends), written on a grid of so many steps to the bar and left out where the figure's grid differs.
+# melody      the habits a tune is sketched by when a song gives none: the notes used, rhythm cells, how far it ranges.
+#             smart holds the smart melody style's seven gauges, each from 1 to 8.
+# Twelve steps to a bar throughout: three to a beat, which is the shuffle. No band, artist or work is named or followed.
+
+name: blues
+title: Blues
+genre: Blues
+feel: swing
+phrase_bars: 4
+loudness: {drums: 104, rim: 92, kick: 110, snare: 108, hat: 76, ride: 80, hat by foot: 70, crash: 100, tom high: 100, tom low: 102}
+
+templates:
+  shuffle:          {meter: 4/4, feel: shuffle, tempo: 120, drums: plain shuffle, bass: boogie, chords: twelve bar quick change, comping: guitar boogie, lead: voice, answers: harmonica}
+  texas shuffle:    {meter: 4/4, feel: shuffle, tempo: 128, drums: both hands shuffle, bass: boogie, chords: twelve bar quick change, comping: guitar stabs on the upbeats, lead: guitar, answers: none}
+  driving shuffle:  {meter: 4/4, feel: shuffle, tempo: 150, drums: driving shuffle, bass: roots, chords: twelve bar, comping: guitar boogie, lead: voice, answers: guitar}
+  slow blues:       {meter: 12/8, feel: triplets, tempo: 60, drums: slow twelve-eight, bass: slow walk, chords: twelve bar slow change, comping: piano triplets, lead: voice, answers: guitar}
+  minor blues:      {meter: 12/8, feel: triplets, tempo: 66, drums: slow twelve-eight, bass: slow walk, chords: minor twelve bar, comping: organ held, lead: guitar, answers: none}
+  jump blues:       {meter: 4/4, feel: swing, tempo: 170, drums: swing ride, bass: walking, chords: twelve bar with two five, comping: horn riffs, lead: voice, answers: saxophone}
+
+traits:
+  meter:
+    - {value: 4/4, share: 70}
+    - {value: 12/8, share: 30}
+  feel:
+    - {value: shuffle, share: 55, needs: {meter: 4/4}}
+    - {value: triplets, share: 30, needs: {meter: 12/8}}
+    - {value: swing, share: 15, needs: {meter: 4/4}}
+  tempo: {lowest: 50, usual: 110, highest: 180}
+  drums:
+    - value: plain shuffle
+      share: 32
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+    - value: both hands shuffle
+      share: 16
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+        snare: [soft, none, soft, loud, none, soft, soft, none, soft, loud, none, soft]
+        ride: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+        hat by foot: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+    - value: driving shuffle
+      share: 14
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, none, soft, loud, none, soft, loud, none, soft, loud, none, soft]
+    - value: snare on the upbeats
+      share: 5
+      needs: {meter: 4/4}
+      bar:
+        kick: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+        snare: [none, none, soft, none, none, soft, none, none, soft, none, none, soft]
+        hat: [loud, none, none, loud, none, none, loud, none, none, loud, none, none]
+    - value: swing ride
+      share: 8
+      needs: {meter: 4/4}
+      bar:
+        kick: [soft, none, none, soft, none, none, soft, none, none, soft, none, none]
+        ride: [loud, none, none, loud, none, soft, loud, none, none, loud, none, soft]
+        hat by foot: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+    - value: slow with ride and rim
+      share: 8
+      needs: {meter: 12/8}
+      bar:
+        kick: [loud, none, none, none, none, soft, loud, none, none, none, none, none]
+        rim: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        ride: [loud, soft, soft, loud, soft, soft, loud, soft, soft, loud, soft, soft]
+    - value: slow and sparse
+      share: 4
+      needs: {meter: 12/8}
+      bar:
+        kick: [loud, none, none, none, none, none, loud, none, none, none, none, none]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, none, none, loud, none, none, loud, none, none, loud, none, soft]
+    - value: slow twelve-eight
+      share: 13
+      needs: {meter: 12/8}
+      bar:
+        kick: [loud, none, none, none, none, none, loud, none, none, none, none, soft]
+        snare: [none, none, none, loud, none, none, none, none, none, loud, none, none]
+        hat: [loud, soft, soft, loud, soft, soft, loud, soft, soft, loud, soft, soft]
+  fills:
+    - value: snare into toms
+      share: 60
+      fill:
+        snare: [none, none, none, loud, none, none, loud, soft, loud, none, none, none]
+        tom high: [none, none, none, none, none, none, none, none, none, loud, loud, none]
+        tom low: [none, none, none, none, none, none, none, none, none, none, none, loud]
+    - value: snare triplet on four
+      share: 30
+      fill:
+        snare: [none, none, none, loud, none, none, none, none, none, loud, loud, loud]
+    - {value: none, share: 10}
+  bass:
+    - value: boogie
+      share: 42
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
+        - [{degree: 7, accidental: flat, steps: 3}, {degree: 6, steps: 3}, {degree: 5, steps: 3}, {degree: 3, steps: 3}]
+    - value: walking
+      share: 22
+      sound: upright bass
+      figure:
+        - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
+        - [{degree: 1, octave: 1, steps: 3}, {degree: 7, accidental: flat, steps: 3}, {degree: 6, steps: 3}, {degree: 5, steps: 3}]
+    - value: slow root and fifth
+      share: 10
+      sound: upright bass
+      figure:
+        - [{degree: 1, steps: 6}, {degree: 5, steps: 5}, {degree: 5, steps: 1}]
+      # Under a solo the second half of the bar moves.
+      by_section:
+        solo:
+          figure:
+            - [{degree: 1, steps: 6}, {degree: 5, steps: 3}, {degree: 6, steps: 2}, {degree: 5, steps: 1}]
+    - value: slow walk
+      share: 12
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 5}, {degree: 1, steps: 1}, {degree: 5, steps: 3}, {degree: 6, steps: 2}, {degree: 5, steps: 1}]
+    - value: roots
+      share: 14
+      sound: bass
+      figure:
+        - [{degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}, {degree: 1, steps: 2}, {degree: 1, steps: 1}]
+      # Under a solo the bass walks.
+      by_section:
+        solo:
+          figure:
+            - [{degree: 1, steps: 3}, {degree: 3, steps: 3}, {degree: 5, steps: 3}, {degree: 6, steps: 3}]
+  chords:
+    - {value: twelve bar, share: 25, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1]}
+    # A list inside a pattern is two chords in one bar, each half of it: the turnaround of the last two bars.
+    - {value: twelve bar quick change, share: 38, pattern: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, [1, 4], [1, 5]]}
+    - {value: twelve bar slow change, share: 12, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]}
+    - {value: twelve bar with two five, share: 12, pattern: [1, 4, 1, 1, 4, 4, 1, 6, 2, 5, [1, 6], [2, 5]]}
+    - {value: minor twelve bar, share: 13, scale_type: minor, pattern: [1, 1, 1, 1, 4, 4, 1, 1, 6, 5, 1, 5]}
+  comping:
+    - value: guitar on the backbeats
+      share: 8
+      sound: guitar
+      figure:
+        - [{rest: 3}, {degree: 1, chord: dom7, steps: 2}, {rest: 4}, {degree: 1, chord: dom7, steps: 2}, {rest: 1}]
+    - value: guitar boogie
+      share: 24
+      sound: guitar
+      figure:
+        - [{degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: M6, steps: 2}, {degree: 1, chord: M6, steps: 1},
+           {degree: 1, chord: pow, steps: 2}, {degree: 1, chord: pow, steps: 1}, {degree: 1, chord: M6, steps: 2}, {degree: 1, chord: M6, steps: 1}]
+    - value: guitar stabs on the upbeats
+      share: 18
+      sound: guitar
+      figure:
+        - [{degree: 1, chord: dom7, steps: 12}]
+      generators:
+        - guitarify: {bar: [nothing, nothing, up, nothing, nothing, up, nothing, nothing, up, nothing, nothing, up], cell: 1/12}
+    - value: piano triplets
+      share: 16
+      sound: piano
+      needs: {meter: 12/8}
+      figure:
+        - [{degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1},
+           {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1},
+           {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 1}]
+    - value: organ held
+      share: 18
+      sound: organ
+      figure:
+        - [{degree: 1, chord: dom7, steps: 12}]
+    - value: horn riffs
+      share: 16
+      sound: horns
+      figure:
+        - [{rest: 2}, {degree: 1, chord: dom7, steps: 1}, {degree: 1, chord: dom7, steps: 3}, {rest: 6}]
+        - [{rest: 2}, {degree: 1, chord: dom7, steps: 1}, {rest: 9}]
+  lead:
+    - {value: voice, share: 65, sound: voice}
+    - {value: guitar, share: 25, sound: lead guitar}
+    - {value: harmonica, share: 6, sound: harmonica}
+    - {value: saxophone, share: 4, sound: saxophone}
+  answers:
+    - {value: guitar, share: 40, sound: lead guitar}
+    - {value: harmonica, share: 22, sound: harmonica}
+    - {value: piano, share: 14, sound: piano}
+    - {value: saxophone, share: 12, sound: saxophone}
+    - {value: none, share: 12}
+
+roles:
+  - {role: comping, title: rhythm, player: rhythm, trait: comping, octave: 4, velocity: 84}
+  - {role: lead, title: singer, titles: {guitar: lead guitar, harmonica: lead harmonica, saxophone: lead saxophone}, player: lead, trait: lead, octave: 4, velocity: 106}
+  - {role: answers, title: answering player, player: session, trait: answers, octave: 4, velocity: 96, answers: true}
+  - {role: bass, player: bass, trait: bass, octave: 2, velocity: 104}
+  - {role: drums, player: drums, drums: [drums]}
+
+players:
+  drums:
+    1:
+      says: 'Kick, snare and hats. The shuffle by the book, the same every bar, with one fill at the end of each chorus.'
+      fill_every: 12
+      uneven: 2
+    2:
+      says: 'A small kit. The shuffle a little behind the beat, a soft kick before every fourth bar, and a snare triplet into each turn.'
+      fill_every: 4
+      varies: [{bars: [4], choices: [{bar: {kick: {steps: 12, soft: [11]}}}]}]
+      fill: [{bar: {snare: {steps: 12, loud: [3, 9, 10, 11]}}}]
+      timing: {snare: {drag: 12}}
+      uneven: 5
+    3:
+      says: 'A larger kit. Quiet snare notes on the upbeats, a soft extra kick in the second bar and the third, and the toms answering at each turn.'
+      fill_every: 4
+      adds: [{bar: {snare: {steps: 12, ghost: [2, 8]}}}]
+      varies:
+        - {bars: [2], choices: [{bar: {kick: {steps: 12, soft: [11]}}}]}
+        - {bars: [3], choices: [{bar: {kick: {steps: 12, soft: [5]}}}]}
+      fill: [{bar: {snare: {steps: 12, loud: [3, 6, 8], soft: [7]}, tom high: {steps: 12, loud: [9, 10]}, tom low: {steps: 12, loud: [11]}}}]
+      timing: {snare: {drag: 8}}
+      uneven: 7
+    4:
+      says: 'A large kit. Quiet snare notes on the upbeats, a small change to the kick, the snare or the hat in the second, third and fourth bars, and a fill of triplets through the whole last bar, far behind the beat. Holds back until the song opens up.'
+      fill_every: 4
+      adds: [{bar: {snare: {steps: 12, ghost: [2, 8]}}}]
+      varies:
+        - {bars: [2], choices: [{bar: {kick: {steps: 12, loud: [11]}, snare: {steps: 12, ghost: [5]}}}]}
+        - {bars: [3], choices: [{bar: {kick: {steps: 12, soft: [8]}, snare: {steps: 12, ghost: [11]}}}]}
+        - {bars: [4], choices: [{bar: {open: {steps: 12, loud: [5]}}}]}
+      fill: [{silences: [hat, ride, hat by foot], bar: {kick: {steps: 12, loud: [0, 6]}, snare: {steps: 12, loud: [0, 1, 2], soft: [3]}, tom high: {steps: 12, loud: [4, 5, 6]}, tom mid: {steps: 12, loud: [7, 8]}, tom low: {steps: 12, loud: [9, 10, 11]}}}]
+      timing: {snare: {drag: 16}, ride: {drag: 6}, hat: {drag: 6}}
+      uneven: 9
+  bass:
+    1: {says: 'Plays the bass part exactly as written, on the beat.'}
+    2:
+      says: 'Plays the bass part leaning back a little, with two notes walking up into each turn.'
+      timing: {drag: 6}
+      varies:
+        - {bars: [4], grid: 12, ends: [{degree: 5, steps: 2}, {degree: 6, steps: 1}]}
+    3:
+      says: 'Jumps an octave on the last beat of the second bar, and walks three notes up through the last two beats of each turn.'
+      varies:
+        - {bars: [2], grid: 12, ends: [{degree: 1, octave: 1, steps: 3}]}
+        - {bars: [4], grid: 12, ends: [{degree: 3, steps: 3}, {degree: 5, steps: 2}, {degree: 6, steps: 1}]}
+    4:
+      says: 'Far behind the beat. Ends the second and third bars with notes of their own, and runs down from the octave in triplets through the last two beats of each turn.'
+      timing: {drag: 14}
+      varies:
+        - {bars: [2], grid: 12, ends: [{degree: 1, octave: 1, steps: 2}, {degree: 5, steps: 1}]}
+        - {bars: [3], grid: 12, ends: [{degree: 6, steps: 2}, {degree: 5, steps: 1}]}
+        - {bars: [4], grid: 12, ends: [{degree: 1, octave: 1, steps: 1}, {degree: 6, steps: 1}, {degree: 5, steps: 1}, {degree: 3, steps: 1}, {degree: 2, steps: 1}, {degree: 1, steps: 1}]}
+  rhythm:
+    1: {says: 'Plays the part exactly as written, tight and even.', guitarify: {spread: 4}}
+    2:
+      says: 'Plays the part with a wider, slightly loose stroke, and adds two strokes into each turn.'
+      guitarify: {spread: 10, loose_timing: 6}
+      varies:
+        - {bars: [4], grid: 12, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 1}]}
+    3:
+      says: 'Plays the part loosely, each stroke spread across the strings, with a stroke pushed in at the end of the second bar and a run of strokes into each turn.'
+      guitarify: {spread: 12, loose_timing: 12}
+      varies:
+        - {bars: [2], grid: 12, ends: [{degree: 1, chord: '3', steps: 1}]}
+        - {bars: [4], grid: 12, ends: [{degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}]}
+    4:
+      says: 'Plays the part with the widest and loosest stroke, extra strokes ending the second and third bars, and strokes climbing an octave into each turn.'
+      guitarify: {spread: 16, loose_timing: 16}
+      varies:
+        - {bars: [2], grid: 12, ends: [{degree: 1, chord: '3', steps: 1}]}
+        - {bars: [3], grid: 12, ends: [{degree: 1, chord: '3', steps: 2}, {degree: 1, chord: '3', steps: 1}]}
+        - {bars: [4], grid: 12, ends: [{degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', steps: 1}, {degree: 1, chord: '3', octave: 1, steps: 1}]}
+  lead:
+    1: {says: 'Few notes, close together, each one sung.', span: 2}
+    2: {says: 'Phrases that leave room, behind the beat.', span: 3, timing: {drag: 10}}
+    3: {says: 'Busy lines over a wide range.', span: 4, busy: true, timing: {drag: 6}}
+    4: {says: 'The widest range and the most notes.', span: 5, busy: true}
+  session:
+    1: {says: 'Answers in few notes.', span: 2}
+    2: {says: 'Answers that leave room.', span: 3, timing: {drag: 8}}
+    3: {says: 'Busy answers.', span: 4}
+    4: {says: 'Answers over the widest range, behind the beat.', span: 5, timing: {drag: 6}}
+
+sounds: {bass: 34, upright bass: 33, guitar: 28, lead guitar: 30, harmonica: 23, piano: 1, organ: 17, horns: 62, saxophone: 67, voice: 54}
+
+sections:
+  intro:
+    intensity: {drums: 1, bass: 2, rhythm: 2, lead: 2, session: 2}
+    bars: 4
+    chords: [5, 4, 1, 5]
+    plays: [drums, bass, comping, answers]
+    plan: [{line: intro, answer: true}, {line: intro, answer: true, varied: true}]
+  # What the band plays after the last tune, where a song ends in stages: the intro's figure again.
+  outro:
+    intensity: {drums: 1, bass: 2, rhythm: 2, lead: 2, session: 2}
+    bars: 4
+    chords: [5, 4, 1, 5]
+    plays: [drums, bass, comping, answers]
+    plan: [{line: intro, answer: true}, {line: intro, answer: true, varied: true}]
+  chorus:
+    intensity: {drums: 3, bass: 3, rhythm: 3, lead: 3, session: 3}
+    bars: 12
+    plays: [drums, bass, comping, lead, answers]
+    plan: [{line: a}, {line: reply, answer: true}, {line: a}, {line: reply, answer: true, varied: true}, {line: b, higher: true}, {line: close, answer: true}]
+  solo:
+    crash: true
+    bars: 12
+    plays: [drums, bass, comping, answers]
+    plan: [{line: s1, answer: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true, varied: true}, {line: s3, answer: true, higher: true},
+           {line: s4, answer: true, higher: true}, {line: s5, answer: true}]
+    shapes:
+      theme and variations: [{line: s1, answer: true}, {line: s1, answer: true, varied: true}, {line: s1, answer: true, higher: true}, {line: s1, answer: true, higher: true, varied: true}, {line: s2, answer: true, higher: true}, {line: s1, answer: true}]
+      climbs: [{line: s1, answer: true}, {line: s2, answer: true}, {line: s3, answer: true, higher: true}, {line: s4, answer: true, higher: true}, {line: s5, answer: true, higher: true}, {line: s6, answer: true, higher: true}]
+      a repeated figure: [{line: r1, answer: true}, {line: r1, answer: true}, {line: r1, answer: true, higher: true}, {line: r1, answer: true, higher: true}, {line: r1, answer: true, varied: true}, {line: r2, answer: true}]
+      at the peak: [{line: p1, answer: true, higher: true}, {line: p1, answer: true, higher: true, varied: true}, {line: p2, answer: true, higher: true}, {line: p2, answer: true, higher: true, varied: true}, {line: p3, answer: true, higher: true}, {line: p1, answer: true}]
+    # A solo is staged: each solo after a song's first takes the next of these shapes, with ideas of its own, so that no two solos are alike.
+    staged: true
+  ending: {held: true, plays: [bass, comping]}
+
+# The forms a song may take when it gives none, each with how common it is; a longer form has more choruses and solos.
+# What the player beside the tune does in each kind of section, with a plan of its own for some subgenres, and how busy, from 0 to 20; a kind
+# the plan leaves out is waited through.
+interplay:
+  busy: 10
+  plan: {chorus: answers every line}
+
+forms:
+  usual:
+    - {name: two solos together, share: 40, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: two solos apart, share: 35, sections: [intro, chorus, chorus, solo, chorus, solo, chorus, ending]}
+    - {name: one solo, share: 25, sections: [intro, chorus, chorus, solo, chorus, ending]}
+  # A chorus is over quickly at speed, so a faster kind has more of them, and a solo is two or three choruses.
+  shuffle:
+    - {name: two solos and a third, share: 45, sections: [intro, chorus, chorus, solo, solo, chorus, solo, chorus, chorus, ending]}
+    - {name: two solos together, share: 35, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: two solos apart, share: 20, sections: [intro, chorus, chorus, solo, chorus, solo, chorus, ending]}
+  texas shuffle:
+    - {name: three solos together, share: 50, sections: [intro, chorus, chorus, solo, solo, solo, chorus, chorus, ending]}
+    - {name: two solos together, share: 30, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: two pairs of solos, share: 20, sections: [intro, chorus, solo, solo, chorus, solo, solo, chorus, ending]}
+  driving shuffle:
+    - {name: two pairs of solos, share: 50, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, solo, solo, chorus, ending]}
+    - {name: two solos together, share: 30, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+    - {name: three solos together, share: 20, sections: [intro, chorus, chorus, solo, solo, solo, chorus, chorus, ending]}
+  slow blues:
+    - {name: one solo, share: 50, sections: [intro, chorus, chorus, solo, chorus, ending]}
+    - {name: two solos together, share: 50, sections: [intro, chorus, chorus, solo, solo, chorus, ending]}
+  minor blues:
+    - {name: one solo, share: 50, sections: [intro, chorus, chorus, solo, chorus, ending]}
+    - {name: two solos together, share: 50, sections: [intro, chorus, chorus, solo, solo, chorus, ending]}
+  jump blues:
+    - {name: two pairs of solos, share: 55, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, solo, solo, chorus, ending]}
+    - {name: two solos together, share: 45, sections: [intro, chorus, chorus, solo, solo, chorus, chorus, ending]}
+
+# What a song that asks for a plan is planned by, as rock's is: the Energy goes chorus by chorus, each one higher than the last,
+# a solo starting a little above the choruses before it, and the last chorus the loudest.
+song_plan:
+  energy: {intro: 5, outro: 6, chorus: 5, solo: 6, ending: 8}
+  growth: 1
+  last_chorus: 9
+  rising: []
+  levels: {drums: [1, 4, 6, 8], bass: [1, 4, 6, 9], rhythm: [1, 4, 6, 9], lead: [1, 3, 6, 9], session: [1, 4, 6, 8]}
+  fills: {small: snare triplet on four, medium: snare triplet on four, big: snare into toms}
+  # A marker ends a phrase inside a section where no fill is played: a stroke or two laid over the bar.
+  marker: {snare: [none, none, none, none, none, none, none, none, none, none, soft, soft]}
+  tails:
+    usual: [stops]
+
+# What a kind says differently from blues as a whole: a slow blues starts lower and climbs further.
+# A solo in a kind the guitar leads, where no player answers a singer: the lead plays the solo, in lines of the lead's own.
+lead_solo: &lead_solo
+  plays: [drums, bass, comping, lead]
+  plan: [{line: s1}, {line: s2, higher: true}, {line: s1, varied: true}, {line: s3, higher: true}, {line: s4, higher: true}, {line: s5}]
+  shapes:
+    theme and variations: [{line: s1}, {line: s1, varied: true}, {line: s1, higher: true}, {line: s1, higher: true, varied: true}, {line: s2, higher: true}, {line: s1}]
+    climbs: [{line: s1}, {line: s2}, {line: s3, higher: true}, {line: s4, higher: true}, {line: s5, higher: true}, {line: s6, higher: true}]
+    a repeated figure: [{line: r1}, {line: r1}, {line: r1, higher: true}, {line: r1, higher: true}, {line: r1, varied: true}, {line: r2}]
+    at the peak: [{line: p1, higher: true}, {line: p1, higher: true, varied: true}, {line: p2, higher: true}, {line: p2, higher: true, varied: true}, {line: p3, higher: true}, {line: p1}]
+
+by_subgenre:
+  texas shuffle:
+    sections: {solo: *lead_solo}
+  slow blues:
+    song_plan: {energy: {intro: 3, chorus: 3, solo: 5}, growth: 2, last_chorus: 9}
+  minor blues:
+    sections: {solo: *lead_solo}
+    song_plan: {energy: {intro: 3, chorus: 3, solo: 5}, growth: 2, last_chorus: 9}
+
+melody:
+  grid: 12
+  line_bars: 2
+  span: 4
+  smart: {moves: 2, steps: 2, after_leap: 2, phrase: 3, leaning: 6, notes: 4, surprise: 3}
+  home: {degree: 5}
+  ladder: [{degree: 1}, {degree: 3, accidental: flat}, {degree: 4}, {degree: 5}, {degree: 7, accidental: flat}]
+  rhythms:
+    - [{rest: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]
+    - [{rest: 3}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 3}, {steps: 6}, {rest: 3}]
+    - [{steps: 3}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]
+    - [{rest: 5}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 6}, {rest: 3}]
+  answer_rhythms:
+    - [{rest: 3}, {steps: 1}, {steps: 2}, {steps: 1}, {steps: 2}, {steps: 3}, {steps: 6}, {rest: 6}]
+    - [{rest: 6}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]
+    - [{rest: 2}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 1}, {steps: 3}, {steps: 3}, {steps: 3}, {steps: 6}, {rest: 3}]
+    - [{rest: 3}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 3}, {steps: 2}, {steps: 1}, {steps: 6}, {rest: 3}]

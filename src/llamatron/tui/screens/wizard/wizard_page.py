@@ -16,14 +16,14 @@ The page knows nothing of any one branch (branch.py): it draws what the branches
 from rich.text import Text
 
 from llamatron.caching.kept import forget_kept, kept_while
-from llamatron.macro_composer import notation, wizard_limits
-from llamatron.macro_composer.wizard_choices import WizardChoices
 from llamatron.model.file import version
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import new_name
 from llamatron.model.schema.file_format import GeneratorKind
 from llamatron.realtime.sender_process import SenderNotStarted
+from llamatron.song_wizard import notation, wizard_limits
+from llamatron.song_wizard.wizard_choices import WizardChoices
 from llamatron.tui import drawing, keybindings, themes
 from llamatron.tui.cursor import key_between, place_of
 from llamatron.tui.dialogs.choice_dialog import ChoiceDialog
@@ -48,7 +48,7 @@ from llamatron.tui.screens.wizard.form_branch import FormBranch
 from llamatron.tui.screens.wizard.genre_branch import GenreBranch
 from llamatron.tui.screens.wizard.subgenre_branch import SubgenreBranch
 from llamatron.tui.text import clock
-from llamatron.user_strings import errors, help as help_text, labels, macro_composer as composer_text, marks, messages, names
+from llamatron.user_strings import errors, help as help_text, labels, marks, messages, names, song_wizard as wizard_text
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
 TREE_WIDTH = 24
@@ -266,7 +266,7 @@ class WizardPage(FieldPage):
 
     def edit_tune_phrasing(self):
         """Open the Phrasing page on the Phrasing the tune's clips run, in a draft of the set the choices make."""
-        name = composer_text.MSG_TUNE_PHRASING_NAME
+        name = wizard_text.MSG_TUNE_PHRASING_NAME
         try:
             setlist, _ = self._choices.made_for_listening()
         except (ValueError, SongFileError) as problem:
