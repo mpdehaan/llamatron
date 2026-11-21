@@ -24,6 +24,8 @@ next event is due and then spins on the clock, since sleep alone is loose on mac
 """
 
 import contextlib
+import ctypes
+import gc
 import multiprocessing
 import sys
 import time
@@ -49,6 +51,15 @@ CLOSE = 'close'
 CLOSE_TIMEOUT_SECONDS = 2.0
 # How long the process may take to import and open its ports before start gives up on it.
 START_TIMEOUT_SECONDS = 10.0
+# Garbage is collected only while no event is due for at least this long, a young collection at a time, and only once this many
+# new objects wait, so that no collection ever stands in front of a note.
+COLLECT_WHEN_FREE_SECONDS = 0.02
+YOUNG_OBJECTS_TO_COLLECT = 700
+YOUNGEST = 0
+# macOS's most urgent quality of service for a thread, which keeps the process on the performance cores (pthread/qos.h).
+DARWIN = 'darwin'
+SYSTEM_LIBRARY = 'libSystem.dylib'
+QOS_CLASS_USER_INTERACTIVE = 0x21
 
 
 class SenderNotStarted(RuntimeError):
@@ -146,6 +157,25 @@ def _silence(*, engine, message):
 FORWARDED = {ADD: _add, FORGET: _forget, STOP_TAG: _stop_tag, STOP_ALL: _stop_all, SILENCE: _silence}
 
 
+def hold_garbage_back():
+    """Freeze every object the process has made so far, its imports and its ports, so that no collection walks them again, and
+    stop Python collecting on its own: the sending loop collects young objects only while no note is due soon."""
+    gc.collect()
+    gc.freeze()
+    gc.disable()
+
+
+def ask_to_be_urgent():
+    """Ask macOS to run the process at its most urgent quality of service, which keeps it on the performance cores under load.
+    Asked once as the process starts; elsewhere, and where the call fails, the process runs as it was."""
+    if sys.platform != DARWIN:
+        return
+    try:
+        ctypes.CDLL(SYSTEM_LIBRARY).pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0)
+    except (OSError, AttributeError):
+        return
+
+
 def run_sender(*, connection, ports, recording):
     """The process: an engine on the real clock, fed by the pipe, sending each event when its time comes."""
     try:
@@ -153,6 +183,8 @@ def run_sender(*, connection, ports, recording):
     except Exception:  # noqa: BLE001, the process boundary: a port that cannot be opened, for whatever reason the library gives, ends the process quietly, and the tracker's side raises SenderNotStarted when the pipe closes without READY, rather than a traceback written over the tracker's screen.
         return
     engine = PlaybackEngine(clock=MonotonicClock(), outputs=outputs)
+    hold_garbage_back()
+    ask_to_be_urgent()
     connection.send(READY)
     started = None
     while True:
@@ -167,6 +199,8 @@ def run_sender(*, connection, ports, recording):
                 engine.send_due()
                 continue
             wait = min(left - SPIN_SECONDS, SLEEP_SLICE_SECONDS)
+        if (wait is None or wait >= COLLECT_WHEN_FREE_SECONDS) and gc.get_count()[YOUNGEST] >= YOUNG_OBJECTS_TO_COLLECT:
+            gc.collect(YOUNGEST)
         try:
             if not connection.poll(wait):
                 continue
