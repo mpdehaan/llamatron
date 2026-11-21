@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The song wizard's choices: what a subgenre fills in, what each setter refuses, the choices kept and read back, and the song made."""
 
+import datetime
 from fractions import Fraction
 import random
 import unittest
@@ -16,6 +17,7 @@ from llamatron.music.note import NoteName
 from llamatron.playback.song_renderer import SongRenderer
 from llamatron.strings import errors, macro_composer as composer_text
 from llamatron.support import version
+from tests.macro_composer.test_wizard_effect import subgenre_of_the_day
 
 A_NAME = 'made'
 NOT_A_CHOICE = 'polka of the spheres'
@@ -240,16 +242,17 @@ def scene_bars_of(choices):
 
 
 class FormLengthsOfAGenre:
-    """Every kind of section of every subgenre of one genre, at every length the wizard offers: a class a genre, since it makes a great many songs."""
+    """Every kind of section of the day's subgenre of one genre, at every length the wizard offers: a class a genre, and one subgenre
+    of each a day, each in turn, since every subgenre every run made a great many songs (test_wizard_effect.subgenre_of_the_day)."""
 
     __slots__ = ()
     GENRE = None
 
-    def test_every_kind_of_section_of_every_subgenre_plays_at_every_length_offered(self):
+    def test_every_kind_of_section_of_the_days_subgenre_plays_at_every_length_offered(self):
         for genre in (self.GENRE,):
             choices = WizardChoices()
             choices.set_genre(genre)
-            for subgenre in choices.subgenres():
+            for subgenre in (subgenre_of_the_day(genre=genre, day=datetime.date.today()),):
                 choices.set_subgenre(subgenre)
                 choices.set_seed(A_SEED)
                 kinds = choices.get_song_form().section_kinds()
