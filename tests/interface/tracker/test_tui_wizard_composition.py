@@ -18,7 +18,7 @@ from llamatron.interface.tracker.screens.wizard import intro_melody_branch, sect
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.model.schema.file_format import Row
 from llamatron.user_strings import errors, labels, marks, messages, names
-from llamatron.wizards.create_song import hook_writing, melody, riffs, song_plan, wizard_limits
+from llamatron.wizards.create_song import hook_writing, melody, riffs, wizard_limits, wizard_names
 from tests.interface.tracker.test_tui_wizard import WizardTest
 from tests.support.ui_testing import key_of
 
@@ -146,7 +146,7 @@ class TestWizardSectionMelody(CompositionTest):
         other = melody.HIGH if choices.genre_height_in(A_KIND) != melody.HIGH else melody.LOW
         await self.press(Key.ENTER)
         await self.pick(other)
-        self.assertEqual(choices.get_section_melody(kind=A_KIND, field=melody.HEIGHT), other)
+        self.assertEqual(choices.get_section_melody(kind=A_KIND, field=wizard_names.MELODY_HEIGHT), other)
         self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
         await self.select_field(labels.MSG_WIZARD_SECTION_BUSY_LABEL)
         self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_VALUE_FROM.format(value=choices.get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
@@ -264,9 +264,9 @@ class TestWizardSectionMelody(CompositionTest):
         self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=labels.MSG_WIZARD_USUAL_MELODY), self.wizard().field().value())
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(choices.get_hook().get_body_gauge(hook_writing.SPACE), usual + 1)
-        self.assertTrue(choices.get_hook().writing_gauge_is_moved(part=hook_writing.BODY_WRITING, name=hook_writing.SPACE))
+        self.assertTrue(choices.get_hook().writing_gauge_is_moved(part=wizard_names.BODY_WRITING, name=hook_writing.SPACE))
         await self.press(keybindings.FieldPage.CLEAR)
-        self.assertFalse(choices.get_hook().writing_gauge_is_moved(part=hook_writing.BODY_WRITING, name=hook_writing.SPACE))
+        self.assertFalse(choices.get_hook().writing_gauge_is_moved(part=wizard_names.BODY_WRITING, name=hook_writing.SPACE))
 
     async def test_no_panel_of_a_kinds_melody_holds_the_hook(self):
         kind, _ = self.choices().get_hook().hook_line_place()
@@ -329,7 +329,7 @@ class TestWizardIntroMelody(CompositionTest):
         self.assertEqual([label for label in self.field_labels() if label.startswith(self.part(intro_melody_branch.FIRST_PART)[:-1])], [self.part(number) for number, _ in enumerate(parts, start=intro_melody_branch.FIRST_PART)])
         last = len(parts)
         await self.open_part(last)
-        fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_IN][song_plan.FADES]
+        fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_IN][wizard_names.SONG_PLAN_FADES]
         for label in (labels.MSG_WIZARD_BARS_LABEL, labels.MSG_WIZARD_PART_MELODY_LABEL, fade):
             self.assertIn(label, self.field_labels())
         # The cursor in the last part marks that part, and the buttons then act on it.
@@ -494,8 +494,8 @@ class TestWizardHooks(CompositionTest):
         await self.select_field(labels.MSG_WIZARD_BEHAVIOR_LABEL)
         self.assertEqual(self.wizard().field().value(), usual)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), [usual if behavior == choices.get_hook().genre_hook_behavior() else behavior for behavior in hook_writing.BEHAVIORS])
-        other = next(behavior for behavior in hook_writing.BEHAVIORS if behavior != choices.get_hook().genre_hook_behavior())
+        self.assertEqual(list(self.app.screen.options), [usual if behavior == choices.get_hook().genre_hook_behavior() else behavior for behavior in wizard_names.BEHAVIORS])
+        other = next(behavior for behavior in wizard_names.BEHAVIORS if behavior != choices.get_hook().genre_hook_behavior())
         await self.pick(other)
         self.assertEqual(choices.get_hook().get_hook_behavior(), other)
         self.assertNotEqual(choices.get_hook().hook_notes(), before)
@@ -505,7 +505,7 @@ class TestWizardHooks(CompositionTest):
 
     async def test_regenerate_asks_first_and_writes_another_hook_with_the_gauges_kept(self):
         choices = self.choices()
-        choices.get_hook().set_hook_gauge(name=hook_writing.HOLD, position=hook_writing.LOWEST)
+        choices.get_hook().set_hook_gauge(name=hook_writing.HOLD, position=wizard_names.HOOK_WRITING_LOWEST)
         await self.press(Key.DOWN, Key.UP)
         before = choices.get_hook().hook_notes()
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
@@ -515,7 +515,7 @@ class TestWizardHooks(CompositionTest):
         self.assertEqual(choices.get_hook().hook_notes(), before)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         self.assertNotEqual(choices.get_hook().hook_notes(), before)
-        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.HOLD), hook_writing.LOWEST)
+        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.HOLD), wizard_names.HOOK_WRITING_LOWEST)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=messages.MSG_WIZARD_HOOK_NAME), self.text())
 
     async def test_the_second_hook_is_switched_on_names_its_kind_of_section_and_has_a_button_of_its_own(self):
@@ -581,16 +581,16 @@ class TestWizardRiffs(CompositionTest):
         await self.press(keybindings.WizardPage.ADD)
         dialog = self.app.screen
         self.assertEqual(dialog.title, labels.MSG_NEW_RIFF_TITLE.format(player=guitar))
-        self.assertNotIn(riffs.RIFF_BETWEEN, dialog.rows())
+        self.assertNotIn(wizard_names.RIFF_BETWEEN, dialog.rows())
         await self.press(Key.DOWN, keybindings.NewRiffDialog.MORE)
-        self.assertEqual(dialog.settings[riffs.RIFF_NOTES], riffs.ACCENT_CHORDS)
-        self.assertIn(riffs.RIFF_BETWEEN, dialog.rows())
+        self.assertEqual(dialog.settings[wizard_names.RIFF_NOTES], wizard_names.ACCENT_CHORDS)
+        self.assertIn(wizard_names.RIFF_BETWEEN, dialog.rows())
         await self.press(Key.DOWN, keybindings.NewRiffDialog.TOGGLE)
-        self.assertEqual(dialog.settings[riffs.RIFF_WITH_CHORDS], riffs.STAYS_HOME)
+        self.assertEqual(dialog.settings[wizard_names.RIFF_WITH_CHORDS], wizard_names.STAYS_HOME)
         await self.press(Key.DOWN, Key.DOWN, keybindings.NewRiffDialog.PRESS)
         riff = choices.get_riffs().riffs_for(THE_GUITAR)[0]
-        self.assertEqual(choices.get_riffs().riff_setting(riff=riff, field=riffs.RIFF_NOTES), riffs.ACCENT_CHORDS)
-        self.assertEqual(choices.get_riffs().riff_setting(riff=riff, field=riffs.RIFF_WITH_CHORDS), riffs.STAYS_HOME)
+        self.assertEqual(choices.get_riffs().riff_setting(riff=riff, field=wizard_names.RIFF_NOTES), wizard_names.ACCENT_CHORDS)
+        self.assertEqual(choices.get_riffs().riff_setting(riff=riff, field=wizard_names.RIFF_WITH_CHORDS), wizard_names.STAYS_HOME)
 
     async def test_escape_in_the_dialog_writes_nothing_and_the_add_row_adds_as_the_key_does(self):
         await self.select_field(self.title(THE_GUITAR))

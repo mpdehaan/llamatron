@@ -7,7 +7,7 @@
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, band, loudness, melody as melody_writer, notation as tune_notation, song_plan, wizard_limits
+from llamatron.wizards.create_song import arranger, band, loudness, melody as melody_writer, notation as tune_notation, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import fits, share_of, values_of
 from llamatron.wizards.create_song.characters import gauges_of
 from llamatron.wizards.create_song.loudness import drum_levels, note_levels, with_own
@@ -125,7 +125,7 @@ class PlayerChoices:
     def _levels_heard(self):
         plain = self._parts_as_written()
         heard = []
-        for level in loudness.LEVELS:
+        for level in wizard_names.LOUDNESS_LEVELS:
             trial = self._choices.copied_for_trial()
             now = trial.player(self._role).loudness_levels()[level]
             tried = now - wizard_limits.LEVEL_TRIAL if now > wizard_limits.MIDDLE_VELOCITY else now + wizard_limits.LEVEL_TRIAL
@@ -145,9 +145,9 @@ class PlayerChoices:
 
     def set_loudness_level(self, *, level, number):
         """Give a player a level of the song's own, a velocity, or give the level back to the genre with None."""
-        is_number = number is None or (isinstance(number, int) and not isinstance(number, bool) and tune_notation.LOWEST_VELOCITY <= number <= tune_notation.HIGHEST_VELOCITY)
-        if not self.has_loudness() or level not in loudness.LEVELS or not is_number:
-            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=tune_notation.LOWEST_VELOCITY, high=tune_notation.HIGHEST_VELOCITY, value=(self._role, level, number)))
+        is_number = number is None or (isinstance(number, int) and not isinstance(number, bool) and wizard_names.LOWEST_VELOCITY <= number <= wizard_names.HIGHEST_VELOCITY)
+        if not self.has_loudness() or level not in wizard_names.LOUDNESS_LEVELS or not is_number:
+            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=wizard_names.LOWEST_VELOCITY, high=wizard_names.HIGHEST_VELOCITY, value=(self._role, level, number)))
         of_players = {player: dict(levels) for player, levels in (self._choices.get_extra(arranger.LOUDNESS) or {}).items()}
         own = of_players.setdefault(self._role, {})
         own.pop(level, None)
@@ -166,7 +166,7 @@ class PlayerChoices:
 
     def _dynamics_are_heard(self):
         made = []
-        for dynamics in (loudness.LEAST_DYNAMICS, loudness.MOST_DYNAMICS):
+        for dynamics in (wizard_names.LEAST_DYNAMICS, wizard_names.MOST_DYNAMICS):
             trial = self._choices.copied_for_trial()
             trial.set_extra(name=arranger.DYNAMICS, value={**(trial.get_extra(arranger.DYNAMICS) or {}), self._role: dynamics})
             made.append(trial.patterns_of_song())
@@ -178,8 +178,8 @@ class PlayerChoices:
     def set_dynamics(self, dynamics):
         """Say how far a player's loud and soft notes lie from the player's normal ones: not at all at the least, as the genre writes them
         in the middle, and twice as far at the most."""
-        if not self.has_loudness() or isinstance(dynamics, bool) or not isinstance(dynamics, int) or not loudness.LEAST_DYNAMICS <= dynamics <= loudness.MOST_DYNAMICS:
-            raise ValueError(errors.ERR_WIZARD_DYNAMICS.format(low=loudness.LEAST_DYNAMICS, high=loudness.MOST_DYNAMICS, value=dynamics))
+        if not self.has_loudness() or isinstance(dynamics, bool) or not isinstance(dynamics, int) or not wizard_names.LEAST_DYNAMICS <= dynamics <= wizard_names.MOST_DYNAMICS:
+            raise ValueError(errors.ERR_WIZARD_DYNAMICS.format(low=wizard_names.LEAST_DYNAMICS, high=wizard_names.MOST_DYNAMICS, value=dynamics))
         of_players = dict(self._choices.get_extra(arranger.DYNAMICS) or {})
         of_players.pop(self._role, None)
         if dynamics != loudness.USUAL_DYNAMICS:
@@ -298,7 +298,7 @@ class PlayerChoices:
 
     def _reacts_is_heard(self):
         made = []
-        for reacts in (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY):
+        for reacts in (wizard_names.LOWEST_ENERGY, wizard_names.HIGHEST_ENERGY):
             trial = self._choices.copied_for_trial()
             trial.plan_extras()[song_plan.REACTS] = {**(trial.plan_extras().get(song_plan.REACTS) or {}), self._person(): reacts}
             made.append(trial.patterns_of_song())
@@ -309,8 +309,8 @@ class PlayerChoices:
 
     def set_reacts(self, reacts):
         """Have the player answer to Energy evenly, at the lowest, or dramatically, at the highest. Two players who are one person answer alike."""
-        if not self.reacts() or isinstance(reacts, bool) or not isinstance(reacts, int) or not song_plan.LOWEST_ENERGY <= reacts <= song_plan.HIGHEST_ENERGY:
-            raise ValueError(errors.ERR_WIZARD_REACTS.format(low=song_plan.LOWEST_ENERGY, high=song_plan.HIGHEST_ENERGY, value=reacts))
+        if not self.reacts() or isinstance(reacts, bool) or not isinstance(reacts, int) or not wizard_names.LOWEST_ENERGY <= reacts <= wizard_names.HIGHEST_ENERGY:
+            raise ValueError(errors.ERR_WIZARD_REACTS.format(low=wizard_names.LOWEST_ENERGY, high=wizard_names.HIGHEST_ENERGY, value=reacts))
         extras = self._choices.plan_extras()
         kept = dict(extras.get(song_plan.REACTS) or {})
         kept.pop(self._person(), None)

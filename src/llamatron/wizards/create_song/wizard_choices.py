@@ -25,7 +25,7 @@ from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note as note_values
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, composer as set_writer, hook_writing, joins as joins_values, line_edits, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits
+from llamatron.wizards.create_song import arranger, composer as set_writer, hook_writing, line_edits, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, chord_of, form_of, picked, share_in, style_in, style_named, style_names, values_of, variant_named, variants_of
 from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.choices_part import kept_until_choices_change, set_each_kept
@@ -328,7 +328,7 @@ class WizardChoices:
         settings = sum(1 for name in own.keys() | untouched.keys() if own.get(name) != untouched.get(name))
         settings += sum(1 for name in wizard_limits.EXTRAS_OF_ONE_GENRE if self._extras.get(name))
         lost = {wizard_limits.LOST_BAND_SETTINGS: settings,
-                wizard_limits.LOST_OWN_CHORDS: sum(1 for entry in self._form_part.section_entries() if entry.get(wizard_limits.OWN_OF_SECTION, {}).get(arranger.CHORDS)),
+                wizard_limits.LOST_OWN_CHORDS: sum(1 for entry in self._form_part.section_entries() if entry.get(wizard_limits.OWN_OF_SECTION, {}).get(wizard_names.ARRANGER_CHORDS)),
                 wizard_limits.LOST_FORM: int(self._form_part.has_own_form() or self._form_part.get_written_form() != usual.get_song_form().get_written_form()),
                 wizard_limits.LOST_TUNE_TAKES: len(self._extras.get(wizard_limits.TUNE_TAKES, {})) + int(self._hook.get_hook_take() != melody_writer.FIRST_HOOK_TAKE),
                 wizard_limits.LOST_RIFFS: self._riffs_part.written_count(by_hand=False)}
@@ -663,8 +663,8 @@ class WizardChoices:
     def _song_melody(self):
         """Return what the song says of its melody over the genre's habits: the smart style's gauges where one was moved, and
         the settings set of the style in use; a setting of another style is kept and says nothing."""
-        said = {hook_writing.HOOK_WRITING: {hook_writing.BEHAVIOR: self._hook.get_hook_behavior(), hook_writing.GAUGES: {name: self._hook.get_hook_gauge(name) for name in hook_writing.HOOK_GAUGES}},
-                hook_writing.BODY_WRITING: {hook_writing.GAUGES: {name: self._hook.get_body_gauge(name) for name in hook_writing.BODY_GAUGES}}}
+        said = {wizard_names.HOOK_WRITING: {hook_writing.BEHAVIOR: self._hook.get_hook_behavior(), hook_writing.GAUGES: {name: self._hook.get_hook_gauge(name) for name in hook_writing.HOOK_GAUGES}},
+                wizard_names.BODY_WRITING: {hook_writing.GAUGES: {name: self._hook.get_body_gauge(name) for name in hook_writing.BODY_GAUGES}}}
         if self._melody in wizard_limits.GAUGED_STYLES and self._gauges:
             said[melody_writer.SMART] = {**{name: self.get_melody_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **self._gauges}
         own = {name: value for name, value in self._melody_settings.items() if name in wizard_limits.MELODY_SETTINGS_OF[self._melody]}
@@ -875,8 +875,8 @@ class WizardChoices:
         by_place = []
         for place, entry in enumerate(self._form_part.section_entries()):
             own = dict(entry.get(wizard_limits.OWN_OF_SECTION) or {})
-            if joins_values.LEAVES in own:
-                own[joins_values.LEAVES] = dict(wizard_limits.LEAVES_AS_JOIN[own[joins_values.LEAVES]])
+            if wizard_names.JOINS_LEAVES in own:
+                own[wizard_names.JOINS_LEAVES] = dict(wizard_limits.LEAVES_AS_JOIN[own[wizard_names.JOINS_LEAVES]])
             if wizard_limits.SHAPE_OF_SECTION in own:
                 # A shape the kind no longer has, as after the section was made another kind, is left as the kind's own.
                 shape = self.style()[arranger.SECTIONS][entry[arranger.KIND]].get(wizard_limits.SHAPES, {}).get(own.pop(wizard_limits.SHAPE_OF_SECTION))
@@ -1054,31 +1054,31 @@ class WizardChoices:
     # What a section of a planned song is given of its own, over the plan and the song: each is None until given, and None gives it back.
 
     def checked_own(self, *, field, value):
-        if field == song_plan.ENERGY and not isinstance(value, bool) and isinstance(value, int) and song_plan.LOWEST_ENERGY <= value <= song_plan.HIGHEST_ENERGY:
+        if field == wizard_names.SONG_PLAN_ENERGY and not isinstance(value, bool) and isinstance(value, int) and wizard_names.LOWEST_ENERGY <= value <= wizard_names.HIGHEST_ENERGY:
             return value
-        if field == joins_values.LEAVES and value in wizard_limits.LEAVES_AS_JOIN:
+        if field == wizard_names.JOINS_LEAVES and value in wizard_limits.LEAVES_AS_JOIN:
             return value
-        if field == song_plan.SETUP and value == song_plan.NOT_AT_ALL:
+        if field == wizard_names.SONG_PLAN_SETUP and value == wizard_names.NOT_AT_ALL:
             return value
-        if field in (song_plan.RISES, song_plan.FADES) and isinstance(value, bool):
+        if field in (wizard_names.SONG_PLAN_RISES, wizard_names.SONG_PLAN_FADES) and isinstance(value, bool):
             return value
         if field == wizard_limits.INTRO_HOOK and isinstance(value, str):
             return value
-        if field == song_plan.FADE_LEVEL and not isinstance(value, bool) and isinstance(value, int) and song_plan.FADED <= value <= song_plan.LOUDEST_FADE_LEVEL:
+        if field == wizard_names.FADE_LEVEL and not isinstance(value, bool) and isinstance(value, int) and wizard_names.FADED <= value <= wizard_names.LOUDEST_FADE_LEVEL:
             return value
-        if field == song_plan.FADE_OVER and not isinstance(value, bool) and isinstance(value, int) and value >= 1:
+        if field == wizard_names.FADE_OVER and not isinstance(value, bool) and isinstance(value, int) and value >= 1:
             return value
         if field == wizard_limits.LINES_OF_SECTION and isinstance(value, dict):
             return {int(count): self._checked_line_own(given) for count, given in value.items() if given}
         if field == wizard_limits.SHAPE_OF_SECTION and isinstance(value, str):
             return value
-        if field == arranger.CHORDS:
+        if field == wizard_names.ARRANGER_CHORDS:
             return chords_from_text(chords_as_text(value) if isinstance(value, list) else value)
-        if field in (song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and limits.MIN_TEMPO <= value <= limits.MAX_TEMPO:
+        if field in (wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE) and not isinstance(value, bool) and isinstance(value, int) and limits.MIN_TEMPO <= value <= limits.MAX_TEMPO:
             return value
-        if field == song_plan.ROOT_OF_PLACE and value in note_values.ROOT_NAMES:
+        if field == wizard_names.ROOT_OF_PLACE and value in note_values.ROOT_NAMES:
             return value
-        if field == song_plan.TYPE_OF_PLACE and value in wizard_limits.SCALE_TYPES:
+        if field == wizard_names.TYPE_OF_PLACE and value in wizard_limits.SCALE_TYPES:
             return value
         raise ValueError(errors.ERR_WIZARD_SECTION_OWN.format(field=field, value=value))
 
@@ -1169,8 +1169,8 @@ class WizardChoices:
         return self.plan_extras().get(song_plan.CONTRAST, song_plan.USUAL_CONTRAST)
 
     def set_contrast(self, contrast):
-        if isinstance(contrast, bool) or not isinstance(contrast, int) or not song_plan.LOWEST_ENERGY <= contrast <= song_plan.HIGHEST_ENERGY:
-            raise ValueError(errors.ERR_WIZARD_CONTRAST.format(low=song_plan.LOWEST_ENERGY, high=song_plan.HIGHEST_ENERGY, value=contrast))
+        if isinstance(contrast, bool) or not isinstance(contrast, int) or not wizard_names.LOWEST_ENERGY <= contrast <= wizard_names.HIGHEST_ENERGY:
+            raise ValueError(errors.ERR_WIZARD_CONTRAST.format(low=wizard_names.LOWEST_ENERGY, high=wizard_names.HIGHEST_ENERGY, value=contrast))
         self.plan_extras()[song_plan.CONTRAST] = contrast
         self.clear_answers()
 
@@ -1402,7 +1402,7 @@ class WizardChoices:
             asks[melody_writer.LINE_BUSY] = wizard_limits.BUSY_POSITIONS[chosen[wizard_limits.MELODY_BUSY]]
         by_kind = {}
         for kind, own in chosen.get(melody_writer.BY_KIND, {}).items():
-            of_kind = {**({melody_writer.HEIGHT: own[melody_writer.HEIGHT]} if own.get(melody_writer.HEIGHT) in melody_writer.HEIGHTS else {}), **({melody_writer.LINE_BUSY: wizard_limits.BUSY_POSITIONS[own[wizard_limits.MELODY_BUSY]]} if own.get(wizard_limits.MELODY_BUSY) in wizard_limits.BUSY_POSITIONS else {})}
+            of_kind = {**({wizard_names.MELODY_HEIGHT: own[wizard_names.MELODY_HEIGHT]} if own.get(wizard_names.MELODY_HEIGHT) in melody_writer.HEIGHTS else {}), **({melody_writer.LINE_BUSY: wizard_limits.BUSY_POSITIONS[own[wizard_limits.MELODY_BUSY]]} if own.get(wizard_limits.MELODY_BUSY) in wizard_limits.BUSY_POSITIONS else {})}
             if of_kind:
                 by_kind[kind] = of_kind
         if by_kind:
@@ -1522,7 +1522,7 @@ class WizardChoices:
         chord_entry = values_of(style=style, trait=self.progression_trait())[picks[self.progression_trait()]]
 
         def chords_of(section):
-            return [chord_of(chord) for chord in section.get(arranger.CHORDS) or chord_entry.get(arranger.BY_SECTION, {}).get(section[arranger.KIND]) or chord_entry[arranger.PATTERN]]
+            return [chord_of(chord) for chord in section.get(wizard_names.ARRANGER_CHORDS) or chord_entry.get(arranger.BY_SECTION, {}).get(section[arranger.KIND]) or chord_entry[arranger.PATTERN]]
         return SongPlan(style=style, song=song, form_names=song[arranger.FORM] if isinstance(song[arranger.FORM], list) else form_of(style=style, song=song, meter=str(picks.get(arranger.METER, arranger.COMMON_TIME)), tempo=self._tempo),
                         tempo=self._tempo, scale_type=self._scale_type, chords_of=chords_of)
 

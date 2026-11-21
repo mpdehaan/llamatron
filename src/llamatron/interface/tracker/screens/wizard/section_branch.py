@@ -9,7 +9,7 @@ from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.schema import limits
 from llamatron.model.values import note
 from llamatron.user_strings import labels, legends, marks, messages
-from llamatron.wizards.create_song import arranger, joins, song_plan, wizard_limits
+from llamatron.wizards.create_song import wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import chords_as_text
 
 # What two sections of one name are told apart by: the section's number in the form and its name.
@@ -19,14 +19,14 @@ FIRST_SECTION_NUMBER = 1
 
 
 # The numbers a section can be given of its own, each with its range, and the choices of each field chosen from a list.
-NUMBERS_OF_SECTION = {song_plan.ENERGY: (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY), song_plan.TEMPO_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO), song_plan.TEMPO_END_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO)}
-CHOICES_OF_SECTION = {joins.LEAVES: list(wizard_limits.LEAVES_AS_JOIN), song_plan.SETUP: [song_plan.NOT_AT_ALL], song_plan.ROOT_OF_PLACE: list(note.ROOT_NAMES), song_plan.TYPE_OF_PLACE: list(wizard_limits.SCALE_TYPES)}
+NUMBERS_OF_SECTION = {wizard_names.SONG_PLAN_ENERGY: (wizard_names.LOWEST_ENERGY, wizard_names.HIGHEST_ENERGY), wizard_names.TEMPO_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO), wizard_names.TEMPO_END_OF_PLACE: (limits.MIN_TEMPO, limits.MAX_TEMPO)}
+CHOICES_OF_SECTION = {wizard_names.JOINS_LEAVES: list(wizard_limits.LEAVES_AS_JOIN), wizard_names.SONG_PLAN_SETUP: [wizard_names.NOT_AT_ALL], wizard_names.ROOT_OF_PLACE: list(note.ROOT_NAMES), wizard_names.TYPE_OF_PLACE: list(wizard_limits.SCALE_TYPES)}
 
 
 # The groups of what a section is given of its own, in the order they show, each with its fields in order.
-OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (arranger.CHORDS, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE)),
-              (labels.MSG_WIZARD_GROUP_SHAPE, (wizard_limits.SHAPE_OF_SECTION, song_plan.RISES, song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER, song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE)),
-              (labels.MSG_WIZARD_GROUP_JOINS, (joins.LEAVES, song_plan.SETUP)))
+OWN_GROUPS = ((labels.MSG_WIZARD_GROUP_HARMONY, (wizard_names.ARRANGER_CHORDS, wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_SHAPE, (wizard_limits.SHAPE_OF_SECTION, wizard_names.SONG_PLAN_RISES, wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER, wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE)),
+              (labels.MSG_WIZARD_GROUP_JOINS, (wizard_names.JOINS_LEAVES, wizard_names.SONG_PLAN_SETUP)))
 
 
 def fade_field(*, branch, place, field):
@@ -43,12 +43,12 @@ def fade_field(*, branch, place, field):
             page.choosing(lambda wanted: choices.section(place).set_own(field=field, value=wanted))(value)
         except ValueError as problem:
             page.refuse(str(problem))
-    if field == song_plan.FADES:
+    if field == wizard_names.SONG_PLAN_FADES:
         return Toggle(label=label, on=bool(own), set=set_own)
     usual = choices.section(place).from_plan(field=field)
-    lowest, highest = (song_plan.FADED, song_plan.LOUDEST_FADE_LEVEL) if field == song_plan.FADE_LEVEL else (FIRST_SECTION_NUMBER, choices.section(place).bars())
+    lowest, highest = (wizard_names.FADED, wizard_names.LOUDEST_FADE_LEVEL) if field == wizard_names.FADE_LEVEL else (FIRST_SECTION_NUMBER, choices.section(place).bars())
     now = usual if own is None else min(own, highest)
-    said = labels.MSG_WIZARD_FADE_VELOCITY.format(value=now) if field == song_plan.FADE_LEVEL else labels.MSG_WIZARD_FADE_ONE_BAR if now == 1 else labels.MSG_WIZARD_FADE_BARS.format(value=now)
+    said = labels.MSG_WIZARD_FADE_VELOCITY.format(value=now) if field == wizard_names.FADE_LEVEL else labels.MSG_WIZARD_FADE_ONE_BAR if now == 1 else labels.MSG_WIZARD_FADE_BARS.format(value=now)
     clear = dict(clear=lambda: set_own(None), clear_what=legends.MSG_TUNE_USUAL_WHAT) if own is not None else {}
     return NumberField(page=page, label=label, number=own, start=usual, shown=said, lowest=lowest, highest=highest, set=set_own, **clear)
 
@@ -83,7 +83,7 @@ class SectionBranch(Branch):
             # A held section, or one whose parts fill only its usual length, shows its bars and takes no key.
             fields.append(Field(label=labels.MSG_WIZARD_BARS_LABEL, value=lambda: choices.section(place).bars()))
         own = choices.section(place).own_fields()
-        fields += [self.own_field(field) for field in own if field == song_plan.ENERGY]
+        fields += [self.own_field(field) for field in own if field == wizard_names.SONG_PLAN_ENERGY]
         plays = choices.section(place).plays()
         usual = choices.section(place).usually_plays()
         players = [Toggle(label=choices.player(role).title(), on=role in plays, set=self.plays_setter(role)) for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
@@ -150,7 +150,7 @@ class SectionBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         place = self._place
-        if field in (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER):
+        if field in (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER):
             return self.fade_field(field)
         own = choices.section(place).own(field=field)
         usual = choices.section(place).from_plan(field=field)
@@ -161,15 +161,15 @@ class SectionBranch(Branch):
         clear = dict(clear=lambda: set_own(None), clear_what=origin) if own is not None else {}
         if field in NUMBERS_OF_SECTION:
             lowest, highest = NUMBERS_OF_SECTION[field]
-            if field == song_plan.ENERGY:
+            if field == wizard_names.SONG_PLAN_ENERGY:
                 # Energy is a gauge, as Contrast and the players' gauges are, the plan's saying so after the number.
                 shown = gauge_shown(place=usual if own is None else own, lowest=lowest, highest=highest, said=shown)
             return NumberField(page=page, label=label, number=own, start=usual, shown=shown, lowest=lowest, highest=highest, set=set_own, **clear)
-        if field == arranger.CHORDS:
+        if field == wizard_names.ARRANGER_CHORDS:
             def ask():
                 page.ask_text(title=messages.MSG_WIZARD_SECTION_CHORDS_PROMPT, value=chords_as_text(own) if own is not None else usual, then=set_own, is_name=True)
             return Field(label=label, value=lambda: shown if own is None else chords_as_text(own), enter=ask, **clear)
-        if field in (song_plan.RISES, song_plan.FADES):
+        if field in (wizard_names.SONG_PLAN_RISES, wizard_names.SONG_PLAN_FADES):
             return Toggle(label=label, on=usual if own is None else own, set=set_own, **clear)
         from_above = labels.MSG_WIZARD_FROM_ORIGIN.format(origin=origin)
         offered = choices.section(place).shapes() if field == wizard_limits.SHAPE_OF_SECTION else CHOICES_OF_SECTION[field]

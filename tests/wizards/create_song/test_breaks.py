@@ -11,7 +11,7 @@ from llamatron.model.file import version
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import InstrumentSetting, Section
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, breaks, characters, notation, wizard_limits
+from llamatron.wizards.create_song import arranger, breaks, characters, notation, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 ROCK = 'rock'
@@ -32,7 +32,7 @@ VERSE = 'verse'
 # A break has at least this many kinds of drum, and a bar of one starts on a kick.
 FEWEST_DRUMS = 3
 A_CUT = 5
-REFUSED_CUTS = (0, breaks.MOST_CUT + 1, True, 'far', 2.5)
+REFUSED_CUTS = (0, wizard_names.MOST_CUT + 1, True, 'far', 2.5)
 PERCUSSION = 'percussion'
 # The first drummer of the rock style plays with no fill and nothing added, so a part of theirs is the break and no more.
 PLAINEST = 1
@@ -75,25 +75,25 @@ class TestBreaks(unittest.TestCase):
                 self.assertEqual(bars[breaks.KICK][0], notation.LOUD)
                 self.assertIn(notation.LOUD, bars[breaks.SNARE])
                 for piece, hits in bars.items():
-                    self.assertIn(piece, notation.KIT)
+                    self.assertIn(piece, wizard_names.NOTATION_KIT)
                     self.assertEqual(len(hits), breaks.STEPS_IN_BAR)
-                    self.assertLessEqual(set(hits), {notation.LOUD, notation.SOFT, notation.NONE})
+                    self.assertLessEqual(set(hits), {notation.LOUD, wizard_names.SOFT, notation.NONE})
         written = list(breaks.BREAKS.values())
         for place, bars in enumerate(written):
             self.assertNotIn(bars, written[:place])
 
     def test_the_least_cut_is_the_break_as_written(self):
         for bars in breaks.BREAKS.values():
-            self.assertEqual(breaks.cut_up(bars=bars, cut=breaks.LEAST_CUT, dice=random.Random(SEED)), bars)
+            self.assertEqual(breaks.cut_up(bars=bars, cut=wizard_names.LEAST_CUT, dice=random.Random(SEED)), bars)
 
     def test_each_further_cut_changes_one_slice_more_and_never_the_first_and_every_drum_is_cut_alike(self):
         for name, bars in breaks.BREAKS.items():
             for seed in SEEDS:
-                for cut in range(breaks.LEAST_CUT, breaks.MOST_CUT + 1):
+                for cut in range(wizard_names.LEAST_CUT, wizard_names.MOST_CUT + 1):
                     made = breaks.cut_up(bars=bars, cut=cut, dice=random.Random(seed))
                     changed = [place for place, (was, now) in enumerate(zip(slices_of(bars), slices_of(made))) if was != now]
                     with self.subTest(name=name, seed=seed, cut=cut):
-                        self.assertEqual(len(changed), cut - breaks.LEAST_CUT)
+                        self.assertEqual(len(changed), cut - wizard_names.LEAST_CUT)
                         self.assertNotIn(0, changed)
                         # A slice of the cut bar is a slice of the break, whole: what the drums played together stays together.
                         for now in slices_of(made):
@@ -140,7 +140,7 @@ class TestSongWithABreak(unittest.TestCase):
         bars = breaks.BREAKS[breaks.TUMBLING]
         uncut = self.bars_of(song=a_song(picks={arranger.BREAK: breaks.TUMBLING}), piece=breaks.KICK)
         self.assertEqual(uncut, [bars[breaks.KICK]] * len(uncut))
-        song = a_song(picks={arranger.BREAK: breaks.TUMBLING, arranger.BREAK_CUT: breaks.MOST_CUT})
+        song = a_song(picks={arranger.BREAK: breaks.TUMBLING, arranger.BREAK_CUT: wizard_names.MOST_CUT})
         snare = self.bars_of(song=song, piece=breaks.SNARE)
         self.assertEqual(len(snare), PHRASE)
         self.assertEqual(snare[0], bars[breaks.SNARE])
@@ -156,7 +156,7 @@ class TestSongWithABreak(unittest.TestCase):
         with_percussion = next(value for value, entry in arranger.values_of(style=self.style, trait=PERCUSSION).items() if entry.get(arranger.BAR))
         piece = next(iter(arranger.values_of(style=self.style, trait=PERCUSSION)[with_percussion][arranger.BAR]))
         parts = self.parts(a_song(picks={arranger.BREAK: breaks.LAZY, PERCUSSION: with_percussion}))
-        self.assertEqual(set(parts) & set(notation.KIT), {piece, *breaks.BREAKS[breaks.LAZY]})
+        self.assertEqual(set(parts) & set(wizard_names.NOTATION_KIT), {piece, *breaks.BREAKS[breaks.LAZY]})
 
     def test_a_break_is_not_played_in_another_meter(self):
         self.assertEqual(self.parts(a_song(template=BALLAD)), self.parts(a_song(template=BALLAD, picks={arranger.BREAK: breaks.TUMBLING})))
@@ -168,7 +168,7 @@ class TestSongWithABreak(unittest.TestCase):
         for cut in REFUSED_CUTS:
             with self.assertRaises(ValueError) as refused:
                 self.parts(a_song(picks={arranger.BREAK: breaks.TUMBLING, arranger.BREAK_CUT: cut}))
-            self.assertEqual(str(refused.exception), errors.ERR_BREAK_CUT.format(breaks.LEAST_CUT, breaks.MOST_CUT, cut))
+            self.assertEqual(str(refused.exception), errors.ERR_BREAK_CUT.format(wizard_names.LEAST_CUT, wizard_names.MOST_CUT, cut))
 
 
 class TestWizardBreak(unittest.TestCase):
@@ -181,7 +181,7 @@ class TestWizardBreak(unittest.TestCase):
         choices = wizard()
         self.assertEqual(choices.get_kit().breaks(), breaks.break_names())
         self.assertIsNone(choices.get_kit().get_break())
-        self.assertEqual(choices.get_kit().get_break_cut(), breaks.LEAST_CUT)
+        self.assertEqual(choices.get_kit().get_break_cut(), wizard_names.LEAST_CUT)
 
     def test_no_break_is_offered_before_a_subgenre_in_another_meter_or_to_a_band_with_no_drums(self):
         self.assertEqual(WizardChoices().get_kit().breaks(), [])
@@ -216,7 +216,7 @@ class TestWizardBreak(unittest.TestCase):
     def test_every_break_and_every_cut_makes_a_song_of_its_own_and_both_are_kept(self):
         made = [patterns_of(wizard())]
         for name in breaks.break_names():
-            for cut in range(breaks.LEAST_CUT, breaks.MOST_CUT + 1):
+            for cut in range(wizard_names.LEAST_CUT, wizard_names.MOST_CUT + 1):
                 choices = wizard()
                 choices.get_kit().set_break(name)
                 choices.get_kit().set_break_cut(cut)
@@ -236,7 +236,7 @@ class TestWizardBreak(unittest.TestCase):
         for cut in REFUSED_CUTS:
             with self.assertRaises(ValueError) as refused:
                 choices.get_kit().set_break_cut(cut)
-            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_BREAK_CUT.format(low=breaks.LEAST_CUT, high=breaks.MOST_CUT, value=cut))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_BREAK_CUT.format(low=wizard_names.LEAST_CUT, high=wizard_names.MOST_CUT, value=cut))
         with self.assertRaises(ValueError):
             wizard(subgenre=BALLAD).get_kit().set_break(breaks.TUMBLING)
 
@@ -270,8 +270,8 @@ class TestKitPieceSounds(unittest.TestCase):
     def test_a_piece_sounds_as_another_drum_of_the_kit_on_the_drum_kit_still(self):
         usual = self.made({})
         made = self.made({breaks.KICK: {arranger.PLAYED_DRUM: COWBELL}})
-        self.assertEqual(self.notes(made=usual, piece=breaks.KICK), {notation.KIT[breaks.KICK]})
-        self.assertEqual(self.notes(made=made, piece=breaks.KICK), {notation.KIT[COWBELL]})
+        self.assertEqual(self.notes(made=usual, piece=breaks.KICK), {wizard_names.NOTATION_KIT[breaks.KICK]})
+        self.assertEqual(self.notes(made=made, piece=breaks.KICK), {wizard_names.NOTATION_KIT[COWBELL]})
         self.assertEqual(made[arranger.TRACKS], usual[arranger.TRACKS])
         self.assertEqual(made[arranger.DRUM_TRACKS], usual[arranger.DRUM_TRACKS])
         self.assertEqual(self.rows(made=made, piece=breaks.SNARE), self.rows(made=usual, piece=breaks.SNARE))

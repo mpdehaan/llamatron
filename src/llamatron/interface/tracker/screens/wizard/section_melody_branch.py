@@ -20,7 +20,7 @@ from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
-from llamatron.wizards.create_song import hook_writing, melody, wizard_limits
+from llamatron.wizards.create_song import wizard_limits, wizard_names
 
 # What a panel of a kind's melody is remembered by, apart from a section of the form with the kind's name.
 MELODY_KEY = 'melody of {kind}'
@@ -56,8 +56,8 @@ class SectionMelodyBranch(Branch):
         if choices.get_hook().is_body_of_hook(kind):
             # The chorus that holds the hook is written around it: where the hook sits among its lines, and the gauges of the lines between.
             fields = [*self.placement_fields(), *(self.body_gauge_field(name) for name in choices.get_hook().body_gauges())]
-        elif melody.HEIGHT in choices.section_melody_fields(kind):
-            fields.append(self.own_field(field=melody.HEIGHT, label=labels.MSG_WIZARD_HEIGHT_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=melody.HEIGHT), usual=choices.genre_height_in(kind), origin=labels.MSG_WIZARD_USUAL_MELODY))
+        elif wizard_names.MELODY_HEIGHT in choices.section_melody_fields(kind):
+            fields.append(self.own_field(field=wizard_names.MELODY_HEIGHT, label=labels.MSG_WIZARD_HEIGHT_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=wizard_names.MELODY_HEIGHT), usual=choices.genre_height_in(kind), origin=labels.MSG_WIZARD_USUAL_MELODY))
         if wizard_limits.MELODY_BUSY in choices.section_melody_fields(kind) and not choices.get_hook().is_body_of_hook(kind):
             fields.append(self.own_field(field=wizard_limits.MELODY_BUSY, label=labels.MSG_WIZARD_SECTION_BUSY_LABEL, ways=choices.section_melody_ways_offered(kind=kind, field=wizard_limits.MELODY_BUSY), usual=choices.get_melody_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
         return fields + self.hook_fields() + self.buttons()
@@ -75,7 +75,7 @@ class SectionMelodyBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         usual = choices.get_hook().genre_hook_behavior()
-        values = list(hook_writing.BEHAVIORS)
+        values = list(wizard_names.BEHAVIORS)
         names = [labels.MSG_WIZARD_VALUE_FROM.format(value=value, origin=labels.MSG_WIZARD_USUAL_MELODY) if value == usual else value for value in values]
         now = choices.get_hook().get_hook_behavior()
         behavior = ChoiceField(page=page, label=labels.MSG_WIZARD_BEHAVIOR_LABEL, choices=values, names=names, current=now, shown=names[values.index(now)], set=page.choosing(choices.get_hook().set_hook_behavior))
@@ -83,11 +83,11 @@ class SectionMelodyBranch(Branch):
 
     def hook_is_set(self):
         choices = self.get_choices()
-        return choices.get_hook().get_hook_behavior() != choices.get_hook().genre_hook_behavior() or any(choices.get_hook().writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name) for name in choices.get_hook().hook_gauges())
+        return choices.get_hook().get_hook_behavior() != choices.get_hook().genre_hook_behavior() or any(choices.get_hook().writing_gauge_is_moved(part=wizard_names.HOOK_WRITING, name=name) for name in choices.get_hook().hook_gauges())
 
     def hook_gauge_field(self, name):
         choices = self.get_choices()
-        return self.writing_gauge_field(label=labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], position=choices.get_hook().get_hook_gauge(name), moved=choices.get_hook().writing_gauge_is_moved(part=hook_writing.HOOK_WRITING, name=name),
+        return self.writing_gauge_field(label=labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name], position=choices.get_hook().get_hook_gauge(name), moved=choices.get_hook().writing_gauge_is_moved(part=wizard_names.HOOK_WRITING, name=name),
                                         set_position=lambda position: choices.get_hook().set_hook_gauge(name=name, position=position))
 
     def placement_fields(self):
@@ -104,7 +104,7 @@ class SectionMelodyBranch(Branch):
 
     def body_gauge_field(self, name):
         choices = self.get_choices()
-        return self.writing_gauge_field(label=labels.MSG_WIZARD_BODY_GAUGE_LABELS[name], position=choices.get_hook().get_body_gauge(name), moved=choices.get_hook().writing_gauge_is_moved(part=hook_writing.BODY_WRITING, name=name),
+        return self.writing_gauge_field(label=labels.MSG_WIZARD_BODY_GAUGE_LABELS[name], position=choices.get_hook().get_body_gauge(name), moved=choices.get_hook().writing_gauge_is_moved(part=wizard_names.BODY_WRITING, name=name),
                                         set_position=lambda position: choices.get_hook().set_body_gauge(name=name, position=position))
 
     def own_field(self, *, field, label, ways, usual, origin):

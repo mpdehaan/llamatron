@@ -8,7 +8,7 @@ import copy
 
 from llamatron.model.schema.file_format import SectionKind
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, wizard_limits
+from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged
 from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
 from llamatron.wizards.create_song.melody import placement_of, plan_with_hook_placed
@@ -277,13 +277,13 @@ class HookChoices(ChoicesPart):
         return hook_writing.hook_ways(self._choices.melody_habits())[0]
 
     def get_hook_behavior(self):
-        return self._writing.get(hook_writing.HOOK_WRITING, {}).get(hook_writing.BEHAVIOR, self.genre_hook_behavior())
+        return self._writing.get(wizard_names.HOOK_WRITING, {}).get(hook_writing.BEHAVIOR, self.genre_hook_behavior())
 
     def set_hook_behavior(self, behavior):
         """Choose the way the hook is written; the genre's own way gives the choice back to the genre."""
-        if behavior not in hook_writing.BEHAVIORS:
-            raise ValueError(errors.ERR_WIZARD_HOOK_BEHAVIOR.format(value=behavior, choices=', '.join(hook_writing.BEHAVIORS)))
-        self._keep_writing(part=hook_writing.HOOK_WRITING, field=hook_writing.BEHAVIOR, value=None if behavior == self.genre_hook_behavior() else behavior)
+        if behavior not in wizard_names.BEHAVIORS:
+            raise ValueError(errors.ERR_WIZARD_HOOK_BEHAVIOR.format(value=behavior, choices=', '.join(wizard_names.BEHAVIORS)))
+        self._keep_writing(part=wizard_names.HOOK_WRITING, field=hook_writing.BEHAVIOR, value=None if behavior == self.genre_hook_behavior() else behavior)
 
     def hook_gauges(self):
         """Return the hook's gauges that change a hook written the way the song's is."""
@@ -293,11 +293,11 @@ class HookChoices(ChoicesPart):
         return hook_writing.hook_ways(self._choices.melody_habits())[1][name]
 
     def get_hook_gauge(self, name):
-        return self._writing.get(hook_writing.HOOK_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_hook_gauge(name))
+        return self._writing.get(wizard_names.HOOK_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_hook_gauge(name))
 
     def set_hook_gauge(self, *, name, position):
         """Move one of the hook's gauges, or give the gauge back to the genre with None."""
-        self._set_writing_gauge(part=hook_writing.HOOK_WRITING, names=hook_writing.HOOK_GAUGES, name=name, position=position, usual=self.genre_hook_gauge)
+        self._set_writing_gauge(part=wizard_names.HOOK_WRITING, names=hook_writing.HOOK_GAUGES, name=name, position=position, usual=self.genre_hook_gauge)
 
     def writes_body(self):
         """Return whether the lines of the chorus that are no hook are written by the body's gauges: where the hook is written and its section has such lines."""
@@ -331,11 +331,11 @@ class HookChoices(ChoicesPart):
         return hook_writing.body_ways(self._choices.melody_habits())[name]
 
     def get_body_gauge(self, name):
-        return self._writing.get(hook_writing.BODY_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_body_gauge(name))
+        return self._writing.get(wizard_names.BODY_WRITING, {}).get(hook_writing.GAUGES, {}).get(name, self.genre_body_gauge(name))
 
     def set_body_gauge(self, *, name, position):
         """Move one of the gauges of the chorus's body, or give the gauge back to the genre with None."""
-        self._set_writing_gauge(part=hook_writing.BODY_WRITING, names=hook_writing.BODY_GAUGES, name=name, position=position, usual=self.genre_body_gauge)
+        self._set_writing_gauge(part=wizard_names.BODY_WRITING, names=hook_writing.BODY_GAUGES, name=name, position=position, usual=self.genre_body_gauge)
 
     def writing_gauge_is_moved(self, *, part, name):
         """Return whether the song moved a gauge of its hook or of its chorus's body from where the genre has it."""
@@ -343,7 +343,7 @@ class HookChoices(ChoicesPart):
 
     def _set_writing_gauge(self, *, part, names, name, position, usual):
         if name not in names or (position is not None and not hook_writing.is_position(position)):
-            raise ValueError(errors.ERR_WIZARD_WRITING_GAUGE.format(name=name, low=hook_writing.LOWEST, high=hook_writing.HIGHEST, value=position))
+            raise ValueError(errors.ERR_WIZARD_WRITING_GAUGE.format(name=name, low=wizard_names.HOOK_WRITING_LOWEST, high=wizard_names.HOOK_WRITING_HIGHEST, value=position))
         gauges = dict(self._writing.get(part, {}).get(hook_writing.GAUGES, {}))
         gauges.pop(name, None)
         if position is not None and position != usual(name):
@@ -361,12 +361,12 @@ class HookChoices(ChoicesPart):
 
     def _set_kept_writing(self, *, kept):
         """Take what a song kept of how its hook and its chorus's body are written, each part through its setter."""
-        hook = kept.get(hook_writing.HOOK_WRITING) or {}
+        hook = kept.get(wizard_names.HOOK_WRITING) or {}
         if hook.get(hook_writing.BEHAVIOR) is not None:
             self.set_hook_behavior(hook[hook_writing.BEHAVIOR])
         for name, position in (hook.get(hook_writing.GAUGES) or {}).items():
             self.set_hook_gauge(name=name, position=position)
-        for name, position in ((kept.get(hook_writing.BODY_WRITING) or {}).get(hook_writing.GAUGES) or {}).items():
+        for name, position in ((kept.get(wizard_names.BODY_WRITING) or {}).get(hook_writing.GAUGES) or {}).items():
             self.set_body_gauge(name=name, position=position)
 
     def new_hook(self):

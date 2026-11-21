@@ -10,7 +10,7 @@ import unittest
 from llamatron.model.file import version
 from llamatron.model.objects.setlist import Setlist
 from llamatron.user_strings import song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, composer, drum_solo, joins, melody, notation, phrasing, song_plan, wizard_limits
+from llamatron.wizards.create_song import arranger, composer, drum_solo, joins, melody, notation, phrasing, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.song_plan import level_at, loudness_at, SongPlan
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
@@ -84,7 +84,7 @@ def planned(given_song):
     chord_entry = arranger.values_of(style=style, trait=arranger.CHORD_TRAIT)[picks[arranger.CHORD_TRAIT]]
 
     def chords_of(section):
-        return [arranger.chord_of(chord) for chord in section.get(arranger.CHORDS) or chord_entry.get(arranger.BY_SECTION, {}).get(section[arranger.KIND]) or chord_entry[arranger.PATTERN]]
+        return [arranger.chord_of(chord) for chord in section.get(wizard_names.ARRANGER_CHORDS) or chord_entry.get(arranger.BY_SECTION, {}).get(section[arranger.KIND]) or chord_entry[arranger.PATTERN]]
     return SongPlan(style=style, song=given_song, form_names=given_song[arranger.FORM], tempo=arranger.tempo_of(style=style, song=given_song, picks=picks), scale_type=MAJOR, chords_of=chords_of)
 
 
@@ -100,23 +100,23 @@ class TestEnergy(unittest.TestCase):
         self.assertGreater(energies[SECOND_VERSE], energies[FORM.index(VERSE)])
         self.assertGreater(energies[FIRST_CHORUS], energies[FORM.index(VERSE)])
         self.assertEqual(energies[LAST_CHORUSES], max(energies))
-        self.assertTrue(all(song_plan.LOWEST_ENERGY <= energy <= song_plan.HIGHEST_ENERGY for energy in energies))
+        self.assertTrue(all(wizard_names.LOWEST_ENERGY <= energy <= wizard_names.HIGHEST_ENERGY for energy in energies))
 
     def test_contrast_pulls_the_sections_apart_and_no_growth_keeps_returns_level(self):
         flat = planned(song(plan={song_plan.CONTRAST: 1})).energies()
-        wide = planned(song(plan={song_plan.CONTRAST: song_plan.HIGHEST_ENERGY})).energies()
+        wide = planned(song(plan={song_plan.CONTRAST: wizard_names.HIGHEST_ENERGY})).energies()
         self.assertLess(max(flat) - min(flat), max(wide) - min(wide))
         level = planned(song(plan={song_plan.GROWTH: 0})).energies()
         self.assertEqual(level[SECOND_VERSE], level[FORM.index(VERSE)])
 
     def test_a_song_gives_a_place_its_own_energy(self):
         by_place = [{} for _ in FORM]
-        by_place[SECOND_VERSE] = {song_plan.ENERGY: song_plan.LOWEST_ENERGY}
-        self.assertEqual(planned(song(plan={song_plan.BY_PLACE: by_place})).energies()[SECOND_VERSE], song_plan.LOWEST_ENERGY)
+        by_place[SECOND_VERSE] = {wizard_names.SONG_PLAN_ENERGY: wizard_names.LOWEST_ENERGY}
+        self.assertEqual(planned(song(plan={song_plan.BY_PLACE: by_place})).energies()[SECOND_VERSE], wizard_names.LOWEST_ENERGY)
 
     def test_loudness_leaves_room_and_a_level_follows_the_change_points(self):
-        self.assertEqual(loudness_at(song_plan.LOWEST_ENERGY), song_plan.QUIETEST)
-        self.assertEqual(loudness_at(song_plan.HIGHEST_ENERGY), song_plan.LOUDEST)
+        self.assertEqual(loudness_at(wizard_names.LOWEST_ENERGY), song_plan.QUIETEST)
+        self.assertEqual(loudness_at(wizard_names.HIGHEST_ENERGY), song_plan.LOUDEST)
         self.assertEqual([level_at(energy=energy, points=(1, 4, 7, 9)) for energy in (1, 3, 4, 8, 10)], [1, 1, 2, 3, 4])
 
 
@@ -177,29 +177,29 @@ class TestJoins(unittest.TestCase):
 
     def test_the_band_stops_before_a_drum_solo_drops_out_once_and_builds_from_a_pre_chorus(self):
         sections = sections_of(song())
-        self.assertEqual(sections[BEFORE_DRUM_SOLO][joins.LEAVES][joins.TAIL], joins.STOPS)
-        self.assertEqual(sections[BEFORE_LAST_CHORUSES][joins.LEAVES][joins.TAIL], joins.DROP_OUT)
-        self.assertEqual(sections[FORM.index(PRE_CHORUS)][joins.LEAVES][joins.TAIL], joins.BUILD)
-        dropped = [section for section in sections if section.get(joins.LEAVES, {}).get(joins.TAIL) == joins.DROP_OUT]
+        self.assertEqual(sections[BEFORE_DRUM_SOLO][wizard_names.JOINS_LEAVES][joins.TAIL], joins.STOPS)
+        self.assertEqual(sections[BEFORE_LAST_CHORUSES][wizard_names.JOINS_LEAVES][joins.TAIL], joins.DROP_OUT)
+        self.assertEqual(sections[FORM.index(PRE_CHORUS)][wizard_names.JOINS_LEAVES][joins.TAIL], joins.BUILD)
+        dropped = [section for section in sections if section.get(wizard_names.JOINS_LEAVES, {}).get(joins.TAIL) == joins.DROP_OUT]
         self.assertEqual(len(dropped), 1)
 
     def test_no_fill_comes_twice_running(self):
         for seed in SEEDS:
-            fills = [section.get(joins.LEAVES, {}).get(joins.FILL_OF_JOIN) for section in sections_of(song(seed=seed))]
+            fills = [section.get(wizard_names.JOINS_LEAVES, {}).get(joins.FILL_OF_JOIN) for section in sections_of(song(seed=seed))]
             for before, after in zip(fills, fills[1:]):
                 if before is not None:
                     self.assertNotEqual(before, after)
 
     def test_a_subgenre_does_only_what_belongs_to_it(self):
-        tails = {section.get(joins.LEAVES, {}).get(joins.TAIL) for section in sections_of(song(template=PUNK, form=[VERSE, CHORUS, VERSE, CHORUS, BRIDGE, CHORUS, ENDING]))}
+        tails = {section.get(wizard_names.JOINS_LEAVES, {}).get(joins.TAIL) for section in sections_of(song(template=PUNK, form=[VERSE, CHORUS, VERSE, CHORUS, BRIDGE, CHORUS, ENDING]))}
         self.assertNotIn(joins.DROP_OUT, tails)
         self.assertNotIn(joins.BUILD, tails)
 
     def test_a_last_bar_is_set_up_for_a_section_that_starts_at_home(self):
-        sections = {VERSE: {arranger.KIND: VERSE, arranger.CHORDS: CHORDS_AT_HOME}, CHORUS: {arranger.KIND: CHORUS, arranger.CHORDS: CHORDS_AT_HOME}}
+        sections = {VERSE: {arranger.KIND: VERSE, wizard_names.ARRANGER_CHORDS: CHORDS_AT_HOME}, CHORUS: {arranger.KIND: CHORUS, wizard_names.ARRANGER_CHORDS: CHORDS_AT_HOME}}
         made = sections_of(song(form=[VERSE, CHORUS, ENDING], sections=sections))
         self.assertEqual(made[0][song_plan.LAST_CHORD], song_plan.APPROACH)
-        by_place = [{song_plan.SETUP: song_plan.NOT_AT_ALL}, {}, {}]
+        by_place = [{wizard_names.SONG_PLAN_SETUP: wizard_names.NOT_AT_ALL}, {}, {}]
         self.assertNotIn(song_plan.LAST_CHORD, sections_of(song(form=[VERSE, CHORUS, ENDING], sections=sections, plan={song_plan.BY_PLACE: by_place}))[0])
         self.assertNotIn(song_plan.LAST_CHORD, sections_of(song(form=[VERSE, CHORUS, ENDING], sections=sections, template=PUNK))[0])
 
@@ -219,7 +219,7 @@ class TestJoins(unittest.TestCase):
         hits = joins.drum_tail(piece=CRASH, plain=[notation.NONE] * EIGHTHS, tail=joins.STOPS, eighths=0)
         self.assertEqual([place for place, hit in enumerate(hits) if hit == notation.LOUD], list(joins.STOP_PLACES))
         build = joins.drum_tail(piece=SNARE, plain=plain, tail=joins.BUILD, eighths=0)
-        self.assertEqual(build, [notation.SOFT] * (EIGHTHS // 2) + [notation.LOUD] * (EIGHTHS // 2))
+        self.assertEqual(build, [wizard_names.SOFT] * (EIGHTHS // 2) + [notation.LOUD] * (EIGHTHS // 2))
         self.assertEqual(joins.drum_tail(piece=KICK, plain=plain, tail=joins.BUILD, eighths=0), plain)
 
     def marker(self):
@@ -253,9 +253,9 @@ class TestJoins(unittest.TestCase):
         big = style[song_plan.PLAN_OF_SONG][arranger.FILLS][song_plan.BIG]
         form = [VERSE, CHORUS, VERSE, BRIDGE, CHORUS]
         # A song with no tail allowed before its last chorus and no rise into it still takes the big fill there.
-        given = {**song(form=form, template=PUNK), song_plan.PLAN_OF_SONG: {**A_LEVEL_PLAN, song_plan.LAST_CHORUS: song_plan.LOWEST_ENERGY}}
+        given = {**song(form=form, template=PUNK), song_plan.PLAN_OF_SONG: {**A_LEVEL_PLAN, song_plan.LAST_CHORUS: wizard_names.LOWEST_ENERGY}}
         made = sections_of(given)
-        self.assertEqual(made[3][joins.LEAVES].get(joins.FILL_OF_JOIN), big)
+        self.assertEqual(made[3][wizard_names.JOINS_LEAVES].get(joins.FILL_OF_JOIN), big)
 
 
 class TestStagedSolos(unittest.TestCase):

@@ -15,7 +15,7 @@ import math
 import random
 
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import hook_kinds, hook_writing, notation, phrasing
+from llamatron.wizards.create_song import hook_kinds, hook_writing, notation, phrasing, wizard_names
 from llamatron.wizards.create_song.operations import backwards, moved, rotated, upside_down
 from llamatron.wizards.create_song.phrasing import breathed, ended_early, is_shorter
 
@@ -94,7 +94,6 @@ REPEATS_SOME = 'some'
 REPEATS_A_LOT = 'a lot'
 REPEATS_WAYS = (REPEATS_A_LITTLE, REPEATS_SOME, REPEATS_A_LOT)
 BY_KIND = 'by_kind'
-HEIGHT = 'height'
 LOW = 'low'
 MIDDLE = 'middle'
 HIGH = 'high'
@@ -810,7 +809,7 @@ class Hooks(Smart):
     def written(self):
         """The hook as a behavior and gauges write it (hook_writing.py), where the habits say so and the bar is counted in
         eighths: the behavior, the gauges, and the bar's lengths and depths; else None."""
-        if hook_writing.HOOK_WRITING not in self._habits or self._grid % hook_writing.UNITS:
+        if wizard_names.HOOK_WRITING not in self._habits or self._grid % hook_writing.UNITS:
             return None
         behavior, gauges = hook_writing.hook_ways(self._habits)
         order = random.Random(WRITING_SEED.format(self._song_seed)).randrange(hook_writing.RHYTHM_DECK)
@@ -977,7 +976,7 @@ class Tags(Hooks):
         top = self.chord_place(chord=under[0], lowest=self._low, highest=max(self._low, self.hook_floor() - TAG_BELOW), toward=self.hook_floor() - TAG_BELOW)
         # The main hook chants where its behavior is a chant, and the tag then rocks between two notes; under any other hook the tag chants.
         written = self.written()
-        chants = written is not None and written[0] == hook_writing.CHANT
+        chants = written is not None and written[0] == wizard_names.CHANT
         contour = hook_kinds.ROCKING if chants else hook_kinds.CHANT
         depths = iter(hook_kinds.depths_of(contour=contour, count=sum(1 for length in lengths if length > 0)))
         last = max(place for place, length in enumerate(lengths) if length > 0)
@@ -1002,7 +1001,7 @@ class Bodies(Hooks):
     __slots__ = ()
 
     def can_write(self):
-        return hook_writing.BODY_WRITING in self._habits and self.written() is not None
+        return wizard_names.BODY_WRITING in self._habits and self.written() is not None
 
     def ceiling(self, gauges):
         """The highest place a line of the body reaches: under the hook's floor, and lower the lower the Lift gauge stands."""

@@ -17,7 +17,7 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row
 from llamatron.user_strings import song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, band, characters, composer, loudness, melody, notation, players
+from llamatron.wizards.create_song import arranger, band, characters, composer, loudness, melody, notation, players, wizard_names
 
 FILE_ENCODING = 'utf-8'
 STYLE_TEMPLATES = arranger.STYLE_TEMPLATES
@@ -339,7 +339,7 @@ class TestArranged(unittest.TestCase):
 
     def chords_written(self, *, given, section):
         """The pattern of the chords track in a section, as the arranger wrote it."""
-        return given[composer.PARTS][wizard_text.MSG_PART_OF_SECTION.format(section, arranger.CHORDS)][composer.RAW]
+        return given[composer.PARTS][wizard_text.MSG_PART_OF_SECTION.format(section, wizard_names.ARRANGER_CHORDS)][composer.RAW]
 
     def test_the_bass_and_the_chords_are_written_over_chord_one_and_follow_the_sections_chords_on_the_chords_track(self):
         given = arranger.arranged(style=self.style, song=a_song())
@@ -374,12 +374,12 @@ class TestArranged(unittest.TestCase):
             self.assertEqual(given[composer.PARTS][play[wizard_text.MSG_CHORDS_TRACK][composer.PART]][composer.RAW], arranger.one_chord(arranger.COMMON_TIME))
 
     def test_a_chord_with_a_sharp_or_a_flat_is_written_as_the_scales_home_chord_moved_there(self):
-        made = arranger.chords_written(progression={arranger.CHORDS: [1, 7], arranger.ACCIDENTALS: [None, FLAT_MARK]}, meter=arranger.COMMON_TIME, scale_type=arranger.MAJOR)
+        made = arranger.chords_written(progression={wizard_names.ARRANGER_CHORDS: [1, 7], arranger.ACCIDENTALS: [None, FLAT_MARK]}, meter=arranger.COMMON_TIME, scale_type=arranger.MAJOR)
         self.assertEqual(made[Row.CHORD], [arranger.SCALE_TRIAD, ChordSymbol.MAJOR])
         self.assertEqual(made[Row.ACCIDENTAL], [None, FLAT_MARK])
 
     def test_chords_longer_than_a_step_can_be_are_left_to_a_progression_on_the_chords_track(self):
-        long = {arranger.CHORDS: [1, 4], arranger.EVERY: limits.MAX_STEP_SIZE * 2}
+        long = {wizard_names.ARRANGER_CHORDS: [1, 4], arranger.EVERY: limits.MAX_STEP_SIZE * 2}
         self.assertIsNone(arranger.chords_written(progression=long, meter=arranger.COMMON_TIME, scale_type=arranger.MAJOR))
         self.assertEqual(arranger.one_chord(arranger.COMMON_TIME)[Row.DEGREE], [arranger.HOME_DEGREE])
 
@@ -391,10 +391,10 @@ class TestArranged(unittest.TestCase):
         self.assertNotIn(arranger.EVERY, whole)
         # A progression that says how long its chords last keeps that, each bar's first chord standing for the bar.
         said = arranger.progression_of(chords=[1, [4, 5]], every=A_WHOLE_BAR)
-        self.assertEqual((said[arranger.CHORDS], said[arranger.EVERY]), ([1, 4], A_WHOLE_BAR))
+        self.assertEqual((said[wizard_names.ARRANGER_CHORDS], said[arranger.EVERY]), ([1, 4], A_WHOLE_BAR))
 
     def test_a_song_whose_bars_hold_two_chords_loads_and_plays_them(self):
-        given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {arranger.CHORDS: [1, [4, 5]]}}))
+        given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {wizard_names.ARRANGER_CHORDS: [1, [4, 5]]}}))
         made = self.chords_written(given=given, section=SOLO)
         self.assertEqual(made[Row.DEGREE], [1, 1, 4, 5])
         self.assertEqual(made[PatternSetting.STEP_SIZE], arranger.half_bar_of(arranger.COMMON_TIME))
@@ -404,11 +404,11 @@ class TestArranged(unittest.TestCase):
         long = [*[1] * (limits.MAX_PROGRESSION_CHORDS // 2), [1, 5]]
         self.assertFalse(arranger.fits_by_halves(long))
         made = arranger.progression_of(chords=long, every=None)
-        self.assertEqual(made[arranger.CHORDS], [1] * len(long))
+        self.assertEqual(made[wizard_names.ARRANGER_CHORDS], [1] * len(long))
         self.assertNotIn(arranger.EVERY, made)
 
     def test_a_sections_own_chords_replace_the_styles(self):
-        given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {arranger.CHORDS: OWN_CHORDS}}))
+        given = arranger.arranged(style=self.style, song=a_song(sections={SOLO: {wizard_names.ARRANGER_CHORDS: OWN_CHORDS}}))
         self.assertEqual(self.chords_written(given=given, section=SOLO)[Row.DEGREE], OWN_CHORDS)
 
     def test_a_strummed_guitar_brings_its_guitarify(self):
@@ -485,7 +485,7 @@ class TestPlayers(unittest.TestCase):
             return part[notation.HITS]
         loud = self.style[arranger.LOUDNESS][drum]
         near = [None if velocity is None else abs(velocity - loud) <= self.uneven(song) for velocity in part[arranger.RAW][notation.VELOCITY]]
-        return [notation.NONE if hit is None else notation.LOUD if hit else notation.SOFT for hit in near]
+        return [notation.NONE if hit is None else notation.LOUD if hit else wizard_names.SOFT for hit in near]
 
     def uneven(self, song):
         return self.style[arranger.PLAYERS][players.DRUMS][song[arranger.PLAYERS][players.DRUMS]].get(characters.UNEVEN, 0)

@@ -13,7 +13,7 @@ from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NumberField
 from llamatron.user_strings import labels, legends, marks
-from llamatron.wizards.create_song import hook_writing
+from llamatron.wizards.create_song import wizard_names
 
 # Where a picker opens, and what stepping picks, before anything is chosen.
 FIRST_CHOICE = 0
@@ -86,9 +86,9 @@ class Branch:
         """Return the field of a gauge of how a melody is written: a number from 0 to 9, stepped or typed, drawn as a horizontal gauge
         with its number, said to be the genre's until the song moves it; Bksp gives a moved gauge back to the genre."""
         page = self.get_page()
-        drawn = marks.MSG_WIZARD_GAUGE_FULL * (position - hook_writing.LOWEST) + marks.MSG_WIZARD_GAUGE_EMPTY * (hook_writing.HIGHEST - position)
+        drawn = marks.MSG_WIZARD_GAUGE_FULL * (position - wizard_names.HOOK_WRITING_LOWEST) + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_names.HOOK_WRITING_HIGHEST - position)
         said = position if moved else labels.MSG_WIZARD_VALUE_FROM.format(value=position, origin=labels.MSG_WIZARD_USUAL_MELODY)
-        return NumberField(page=page, label=label, number=position, shown=marks.MSG_WIZARD_WRITING_GAUGE_SHOWN.format(gauge=drawn, place=said), lowest=hook_writing.LOWEST, highest=hook_writing.HIGHEST,
+        return NumberField(page=page, label=label, number=position, shown=marks.MSG_WIZARD_WRITING_GAUGE_SHOWN.format(gauge=drawn, place=said), lowest=wizard_names.HOOK_WRITING_LOWEST, highest=wizard_names.HOOK_WRITING_HIGHEST,
                            set=page.choosing(set_position), clear=(lambda: page.choosing(set_position)(None)) if moved else None, clear_what=legends.MSG_WIZARD_FROM_GENRE_WHAT)
 
     def refusal(self):

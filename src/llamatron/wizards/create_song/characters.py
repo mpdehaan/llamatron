@@ -35,8 +35,6 @@ GAUGES = (NOTES, VARIETY, TOUCH, LOOSE, FILLS, STRUMMING, RANGE)
 GAUGE_OF_FIELD = {ADDS: NOTES, BUSY: NOTES, VARIES: VARIETY, UNEVEN: TOUCH, TIMING: LOOSE, FILL: FILLS, FILL_EVERY: FILLS, GUITARIFY_OF_PLAYER: STRUMMING, melody.SPAN: RANGE}
 # The fields blended between the levels; how often a fill comes is a number too, of bars, and is taken whole from its level.
 BLENDED = (UNEVEN, TIMING, melody.SPAN)
-LOWEST = 0
-HIGHEST = 20
 # The levels, each a band of a gauge's places, and the place a level's preset stands at, in the middle of its band.
 LEVELS = (1, 2, 3, 4)
 PLACES_IN_BAND = 5

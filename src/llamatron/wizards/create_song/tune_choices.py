@@ -9,7 +9,7 @@ import zlib
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, players as players_values, tune_fit, wizard_limits
+from llamatron.wizards.create_song import arranger, players as players_values, tune_fit, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import bar_length
 from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change
 
@@ -122,7 +122,7 @@ class TuneChoices(ChoicesPart):
             try:
                 place = self.tune_place(kind)
                 if place is not None:
-                    heard[kind] = copy.deepcopy(self._choices.section(place).own(field=arranger.CHORDS) or (self._choices.made_song_plan().chords_at(place) if self._choices.has_song_plan() else self._choices.section(place).chords_at()))
+                    heard[kind] = copy.deepcopy(self._choices.section(place).own(field=wizard_names.ARRANGER_CHORDS) or (self._choices.made_song_plan().chords_at(place) if self._choices.has_song_plan() else self._choices.section(place).chords_at()))
             except (ValueError, KeyError, IndexError, SongFileError):
                 continue
         return heard

@@ -11,7 +11,7 @@ from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.section_branch import SectionBranch
 from llamatron.user_strings import errors, labels, legends, marks, messages
-from llamatron.wizards.create_song import song_plan, wizard_limits
+from llamatron.wizards.create_song import wizard_limits, wizard_names
 
 # Sections are counted from 1, as they are shown.
 FIRST_SECTION_NUMBER = 1
@@ -44,7 +44,7 @@ class FormBranch(Branch):
         # A planned song gives every section an Energy, and from it who plays, how hard, how loud and how each section leaves.
         plan = [Toggle(label=labels.MSG_WIZARD_SONG_PLAN_LABEL, on=choices.has_song_plan(), set=page.choosing(choices.set_song_plan))] if choices.can_have_song_plan() else []
         if choices.has_song_plan():
-            plan.append(NumberField(page=page, label=labels.MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=song_plan.LOWEST_ENERGY, highest=song_plan.HIGHEST_ENERGY), lowest=song_plan.LOWEST_ENERGY, highest=song_plan.HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
+            plan.append(NumberField(page=page, label=labels.MSG_WIZARD_CONTRAST_LABEL, number=choices.get_contrast(), shown=gauge_shown(place=choices.get_contrast(), lowest=wizard_names.LOWEST_ENERGY, highest=wizard_names.HIGHEST_ENERGY), lowest=wizard_names.LOWEST_ENERGY, highest=wizard_names.HIGHEST_ENERGY, set=page.choosing(choices.set_contrast)))
         # How the song starts and ends comes first, since a band settles how to get in and out before the middle is arranged.
         return [*self.stage_fields(), *plan, Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_OWN_FORM if choices.get_song_form().has_own_form() else choices.get_song_form().get_form()),
                 Button(label=labels.MSG_WIZARD_SUGGESTED_FORM_BUTTON, key_name=legends.KeyName.ENTER, enter=self.get_page().pick_suggested_form, enter_what=legends.MSG_WIZARD_SUGGESTED_FORM_WHAT),

@@ -20,7 +20,7 @@ import random
 
 from llamatron.model.schema.file_format import VelocitySetting
 from llamatron.user_strings import song_wizard as wizard_text
-from llamatron.wizards.create_song import hook_writing, joins as joins_values, melody as melody_values
+from llamatron.wizards.create_song import hook_writing, joins as joins_values, melody as melody_values, wizard_names
 
 # The fields of a song's plan, and of the plan a style gives.
 PLAN_OF_SONG = 'song_plan'
@@ -32,11 +32,8 @@ PHRASING = 'phrasing'
 # How the lines breathe, where the song asks: the fields of phrasing.py.
 PHRASING_WAYS = 'phrasing_ways'
 BY_PLACE = 'sections'
-ENERGY = 'energy'
 ENERGY_OF_KIND = 'energy'
 RISING = 'rising'
-# Whether a place of the form rises, where the song says so itself.
-RISES = 'rises'
 LAST_CHORUS = 'last_chorus'
 CHANGE_POINTS = 'levels'
 COMES_IN = 'comes_in'
@@ -48,8 +45,6 @@ NO_PERCUSSION = 'none'
 FILL_SIZES = 'fills'
 TAILS_ALLOWED = 'tails'
 NO_SETUP = 'no_setup'
-SETUP = 'setup'
-NOT_AT_ALL = 'not at all'
 USUAL = 'usual'
 # The fields of a song and of a section, as the arranger reads them.
 FORM = 'form'
@@ -71,12 +66,7 @@ SHAPES = 'shapes'
 LINE = 'line'
 HOOK_LINE = 'hook'
 STAGE_LINE = '{} stage {}'
-# What a place of the form may say of its scene: a tempo, the tempo it reaches by its end, and the root and the type of a scale of its own.
-TEMPO_OF_PLACE = 'tempo'
-TEMPO_END_OF_PLACE = 'tempo_end'
-ROOT_OF_PLACE = 'root'
-TYPE_OF_PLACE = 'type'
-SCENE_FIELDS = (TEMPO_OF_PLACE, TEMPO_END_OF_PLACE, ROOT_OF_PLACE, TYPE_OF_PLACE)
+SCENE_FIELDS = (wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE, wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE)
 SCENE_TEMPO = 'tempo'
 # The tempo a scene's Tempo Ramp In reaches, over the whole scene, from the scene's tempo.
 SCENE_TEMPO_END = 'tempo_in_end'
@@ -103,18 +93,8 @@ SCENE_VELOCITY_IN_START = VelocitySetting.IN_START
 SCENE_VELOCITY_IN_OVER = VelocitySetting.IN_OVER
 SCENE_VELOCITY_OUT_END = VelocitySetting.OUT_END
 SCENE_VELOCITY_OUT_OVER = VelocitySetting.OUT_OVER
-# A section that fades: softer bar by bar to this share of what is written, from all of it where no plan says how loud the section is.
-FADES = 'fades'
-# How soft a fade goes where the section says no level: to silence, a velocity and a share of what is written alike.
-FADED = 0
-UNFADED = 100
-# A fade's own level, the percentage of each note's written velocity a fade in starts from and a fade out ends at, from silence to the notes as written; the bars a fade takes, the whole section where
-# none is said; and whether the fade is a fade in, which a section that opens the song has, where any other fades out.
-FADE_LEVEL = 'fade_level'
-FADE_OVER = 'fade_over'
 FADES_IN = 'fades_in'
-FADE_FIELDS = (FADES, FADE_LEVEL, FADE_OVER, FADES_IN)
-LOUDEST_FADE_LEVEL = UNFADED
+FADE_FIELDS = (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER, FADES_IN)
 
 
 def faded(*, own, loud):
@@ -123,10 +103,10 @@ def faded(*, own, loud):
     there, and a fade out is a ramp out that falls from the section's loudness to the fade's level over the fade's bars, the
     last of the section. A fade that says no bars takes the whole section, which whoever writes the scene knows the bars of."""
     # A fade's level is a percentage of each note's written velocity, as a scene's velocity is.
-    level = own.get(FADE_LEVEL, FADED)
+    level = own.get(wizard_names.FADE_LEVEL, wizard_names.FADED)
     if not own.get(FADES_IN):
-        return {SCENE_VELOCITY: loud, SCENE_VELOCITY_OUT_END: level, **({SCENE_VELOCITY_OUT_OVER: own[FADE_OVER]} if own.get(FADE_OVER) else {})}
-    return {SCENE_VELOCITY: loud, SCENE_VELOCITY_IN_START: level, **({SCENE_VELOCITY_IN_OVER: own[FADE_OVER]} if own.get(FADE_OVER) else {})}
+        return {SCENE_VELOCITY: loud, SCENE_VELOCITY_OUT_END: level, **({SCENE_VELOCITY_OUT_OVER: own[wizard_names.FADE_OVER]} if own.get(wizard_names.FADE_OVER) else {})}
+    return {SCENE_VELOCITY: loud, SCENE_VELOCITY_IN_START: level, **({SCENE_VELOCITY_IN_OVER: own[wizard_names.FADE_OVER]} if own.get(wizard_names.FADE_OVER) else {})}
 CYMBAL = 'cymbal'
 # What a song may say of its fills: the trait that names the fill, the value for none, how often they come and the count for never.
 FILLS_TRAIT = 'fills'
@@ -135,9 +115,6 @@ FILLS_COME = 'fills_come'
 NO_FILLS = 0
 CHORUS = 'chorus'
 MINOR = 'minor'
-# Energy: its limits, the kind's where a style says nothing, the middle that Contrast pulls about, and the usual Contrast and growth.
-LOWEST_ENERGY = 1
-HIGHEST_ENERGY = 10
 USUAL_ENERGY = 6
 MIDDLE_ENERGY = 6
 USUAL_CONTRAST = 5
@@ -172,12 +149,12 @@ APPROACH_IN_MINOR = 7
 
 
 def within(energy):
-    return max(LOWEST_ENERGY, min(HIGHEST_ENERGY, int(round(energy))))
+    return max(wizard_names.LOWEST_ENERGY, min(wizard_names.HIGHEST_ENERGY, int(round(energy))))
 
 
 def loudness_at(energy):
     """How loud a section of an Energy is, as a share of what is written."""
-    return round(QUIETEST + (within(energy) - LOWEST_ENERGY) * (LOUDEST - QUIETEST) / (HIGHEST_ENERGY - LOWEST_ENERGY))
+    return round(QUIETEST + (within(energy) - wizard_names.LOWEST_ENERGY) * (LOUDEST - QUIETEST) / (wizard_names.HIGHEST_ENERGY - wizard_names.LOWEST_ENERGY))
 
 
 def level_at(*, energy, points):
@@ -263,7 +240,7 @@ class SongPlan:
             if place == last_chorus and met[kind] > 1:
                 energy = max(energy, self._of_style.get(LAST_CHORUS, USUAL_LAST_CHORUS))
             energy = MIDDLE_ENERGY + (energy - MIDDLE_ENERGY) * contrast / USUAL_CONTRAST
-            energies.append(within(self._at(place).get(ENERGY, energy)))
+            energies.append(within(self._at(place).get(wizard_names.SONG_PLAN_ENERGY, energy)))
         return energies
 
     def energies(self):
@@ -299,7 +276,7 @@ class SongPlan:
     def _plays(self, place):
         """Who plays in a section: the kind's players, but those who come in only at a higher Energy."""
         comes_in = self._of_style.get(COMES_IN, {})
-        return [role for role in self._sections[place].get(PLAYS, []) if self._energies[place] >= comes_in.get(role, LOWEST_ENERGY)]
+        return [role for role in self._sections[place].get(PLAYS, []) if self._energies[place] >= comes_in.get(role, wizard_names.LOWEST_ENERGY)]
 
     def _cymbal(self, place):
         """The cymbal a section's Energy asks for, or nothing where the style says none."""
@@ -311,12 +288,12 @@ class SongPlan:
 
     def _rises(self, place):
         """Whether a section grows louder through its bars and leaves with a build: a rising kind of the style's, or as the song says of the place."""
-        return bool(self._at(place).get(RISES, self._sections[place][KIND] in self._of_style.get(RISING, [])))
+        return bool(self._at(place).get(wizard_names.SONG_PLAN_RISES, self._sections[place][KIND] in self._of_style.get(RISING, [])))
 
     def _loudness(self, place):
         energy = self._energies[place]
         rising = self._rises(place)
-        if self._at(place).get(FADES):
+        if self._at(place).get(wizard_names.SONG_PLAN_FADES):
             return faded(own=self._at(place), loud=loudness_at(energy))
         if not rising:
             return {SCENE_VELOCITY: loudness_at(energy)}
@@ -389,7 +366,7 @@ class SongPlan:
                     size = OTHER_SIZE[size]
                 if self._fill(size):
                     join = {joins_values.FILL_OF_JOIN: self._fill(size)}
-            if joins_values.LEAVES in self._at(place):
+            if wizard_names.JOINS_LEAVES in self._at(place):
                 # A join the song gives is the whole join, and a drop-out with no length takes the tempo's.
                 join = self._given_join(place)
             joins.append(join)
@@ -397,7 +374,7 @@ class SongPlan:
         return joins
 
     def _given_join(self, place):
-        join = dict(self._at(place)[joins_values.LEAVES] or {})
+        join = dict(self._at(place)[wizard_names.JOINS_LEAVES] or {})
         if FILL_SIZE in join:
             size = join.pop(FILL_SIZE)
             if self._fill(size):
@@ -410,18 +387,18 @@ class SongPlan:
         """The settings of a section's scene the song gives the place: a tempo of its own, one it moves to by its end, and a key or a scale of its own."""
         at = self._at(place)
         settings = {}
-        if TEMPO_OF_PLACE in at:
-            settings[SCENE_TEMPO] = at[TEMPO_OF_PLACE]
-        if TEMPO_END_OF_PLACE in at:
-            settings[SCENE_TEMPO_END] = at[TEMPO_END_OF_PLACE]
-        if ROOT_OF_PLACE in at or TYPE_OF_PLACE in at:
-            settings[SCALE_OF_PLACE] = {ROOT_OF_PLACE: at.get(ROOT_OF_PLACE, self._song[KEY_OF_SONG][ROOT_OF_PLACE]), TYPE_OF_PLACE: at.get(TYPE_OF_PLACE, self._scale_type)}
+        if wizard_names.TEMPO_OF_PLACE in at:
+            settings[SCENE_TEMPO] = at[wizard_names.TEMPO_OF_PLACE]
+        if wizard_names.TEMPO_END_OF_PLACE in at:
+            settings[SCENE_TEMPO_END] = at[wizard_names.TEMPO_END_OF_PLACE]
+        if wizard_names.ROOT_OF_PLACE in at or wizard_names.TYPE_OF_PLACE in at:
+            settings[SCALE_OF_PLACE] = {wizard_names.ROOT_OF_PLACE: at.get(wizard_names.ROOT_OF_PLACE, self._song[KEY_OF_SONG][wizard_names.ROOT_OF_PLACE]), wizard_names.TYPE_OF_PLACE: at.get(wizard_names.TYPE_OF_PLACE, self._scale_type)}
         return settings
 
     def _last_chord(self, place):
         """The chord a section's last bar takes to set up the next, or nothing: a section that rises into one starting at home, or
         that would sit on home into home, ends on the approach chord, where the subgenre sets joins up at all."""
-        if not self._stays(place) or self._at(place).get(SETUP) == NOT_AT_ALL or self._song.get(TEMPLATE) in self._of_style.get(NO_SETUP, []):
+        if not self._stays(place) or self._at(place).get(wizard_names.SONG_PLAN_SETUP) == wizard_names.NOT_AT_ALL or self._song.get(TEMPLATE) in self._of_style.get(NO_SETUP, []):
             return None
         following = self._sections[place + 1]
         if following.get(HELD) or following.get(DRUM_SOLO):
@@ -473,10 +450,10 @@ class SongPlan:
                 cymbal = None if CYMBAL in self._song.get(PICKS, {}) else self._cymbal(place)
                 made[PICKS] = {**section.get(PICKS, {}), **({CYMBAL: cymbal} if cymbal else {})}
                 # Percussion the song chose plays all through; the kind's comes in from an Energy up, usually at the chorus.
-                if PERCUSSION not in self._song.get(PICKS, {}) and energy < self._of_style.get(PERCUSSION_FROM, LOWEST_ENERGY):
+                if PERCUSSION not in self._song.get(PICKS, {}) and energy < self._of_style.get(PERCUSSION_FROM, wizard_names.LOWEST_ENERGY):
                     made[PICKS][PERCUSSION] = NO_PERCUSSION
                 if joins[place] is not None:
-                    made[joins_values.LEAVES] = joins[place]
+                    made[wizard_names.JOINS_LEAVES] = joins[place]
                     inside_every = self._fill_inside_every(place=place)
                     if inside_every and self._fill(SMALL):
                         made[FILL_INSIDE] = self._fill(SMALL)
@@ -493,12 +470,12 @@ class SongPlan:
                 if last_chord is not None:
                     made[LAST_CHORD] = last_chord
                     said.append(wizard_text.MSG_PLAN_SET_UP.format(last_chord))
-            written = self._song.get(MELODY, {}).get(hook_writing.HOOK_WRITING)
+            written = self._song.get(MELODY, {}).get(wizard_names.HOOK_WRITING)
             if not hook_said and written and self._has_hook() and any(entry.get(melody_values.HOOK) for entry in section.get(SECTION_PLAN, [])):
                 said.append(wizard_text.MSG_PLAN_HOOK.format(written[hook_writing.BEHAVIOR]))
                 hook_said = True
             # What the song says of the section itself, and of this place of its form, stands over what the plan worked out.
-            own = {field: value for field, value in self._at(place).items() if field not in (ENERGY, SETUP, joins_values.LEAVES, RISES, *FADE_FIELDS, *SCENE_FIELDS)}
+            own = {field: value for field, value in self._at(place).items() if field not in (wizard_names.SONG_PLAN_ENERGY, wizard_names.SONG_PLAN_SETUP, wizard_names.JOINS_LEAVES, wizard_names.SONG_PLAN_RISES, *FADE_FIELDS, *SCENE_FIELDS)}
             scene = {**made.get(SCENE_SETTINGS, {}), **self._scene_settings(place)}
             sections[name] = {**made, **of_song, **own, **({SCENE_SETTINGS: scene} if scene else {}), SAID_OF_SECTION: ' '.join(said)}
         melody = {**({melody_values.BREATHES: self._given.get(PHRASING_WAYS) or True} if self._given.get(PHRASING, True) else {}), **self._song.get(MELODY, {})}

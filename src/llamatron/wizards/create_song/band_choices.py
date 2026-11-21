@@ -5,7 +5,7 @@
 """The song wizard's choices of the band: who plays, how each plays and how busy each is, the player who answers the tune, a player's gauges, rows, loudness and Musician, and one guitarist or two."""
 
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, band, characters, interplay as interplay_values, wizard_limits
+from llamatron.wizards.create_song import arranger, band, characters, interplay as interplay_values, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import values_of
 from llamatron.wizards.create_song.characters import preset
 from llamatron.wizards.create_song.choices_part import ChoicesPart
@@ -318,8 +318,8 @@ class BandChoices(ChoicesPart):
         return self._beside[wizard_limits.BUSY_BESIDE]
 
     def set_fills_busy(self, busy):
-        if not self.has_fills_busy() or isinstance(busy, bool) or not isinstance(busy, int) or not interplay_values.LEAST_BUSY <= busy <= interplay_values.MOST_BUSY:
-            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=interplay_values.LEAST_BUSY, high=interplay_values.MOST_BUSY, value=busy))
+        if not self.has_fills_busy() or isinstance(busy, bool) or not isinstance(busy, int) or not wizard_names.INTERPLAY_LEAST_BUSY <= busy <= wizard_names.INTERPLAY_MOST_BUSY:
+            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=wizard_names.INTERPLAY_LEAST_BUSY, high=wizard_names.INTERPLAY_MOST_BUSY, value=busy))
         self._beside[wizard_limits.BUSY_BESIDE] = busy
 
     def usual_beside(self):
@@ -344,8 +344,8 @@ class BandChoices(ChoicesPart):
         # Who answers is kept as chosen even where the player cannot answer now, as the solo's player hidden by one guitarist, and answers again once the player can.
         if (by is not None and by not in self.roles()) or (way is not None and way not in interplay_values.WAYS):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=by))
-        if isinstance(busy, bool) or not isinstance(busy, int) or not interplay_values.LEAST_BUSY <= busy <= interplay_values.MOST_BUSY:
-            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=interplay_values.LEAST_BUSY, high=interplay_values.MOST_BUSY, value=busy))
+        if isinstance(busy, bool) or not isinstance(busy, int) or not wizard_names.INTERPLAY_LEAST_BUSY <= busy <= wizard_names.INTERPLAY_MOST_BUSY:
+            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=wizard_names.INTERPLAY_LEAST_BUSY, high=wizard_names.INTERPLAY_MOST_BUSY, value=busy))
         self._beside = {wizard_limits.BY: by, wizard_limits.WAY: way, wizard_limits.BUSY_BESIDE: busy}
 
     # A player's gauges: where each stands, the preset's place until moved.
@@ -362,8 +362,8 @@ class BandChoices(ChoicesPart):
 
 
     def take_kept_player_gauge(self, *, player, gauge, place):
-        if isinstance(place, bool) or not isinstance(place, int) or not characters.LOWEST <= place <= characters.HIGHEST or gauge not in characters.GAUGES or player not in self._levels:
-            raise ValueError(errors.ERR_WIZARD_PLAYER_GAUGE.format(low=characters.LOWEST, high=characters.HIGHEST, value=place))
+        if isinstance(place, bool) or not isinstance(place, int) or not wizard_names.CHARACTERS_LOWEST <= place <= wizard_names.CHARACTERS_HIGHEST or gauge not in characters.GAUGES or player not in self._levels:
+            raise ValueError(errors.ERR_WIZARD_PLAYER_GAUGE.format(low=wizard_names.CHARACTERS_LOWEST, high=wizard_names.CHARACTERS_HIGHEST, value=place))
         own = self._own_gauges.setdefault(player, {})
         own[gauge] = place
         if place == characters.PRESET_PLACE[self._levels[player]]:

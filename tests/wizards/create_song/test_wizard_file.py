@@ -10,7 +10,7 @@ import unittest
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, song_plan, wizard_file, wizard_limits
+from llamatron.wizards.create_song import arranger, song_plan, wizard_file, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 SONG_FILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, 'data', 'wizard_songs')
@@ -67,11 +67,11 @@ class TestSongFile(unittest.TestCase):
         self.assertNotEqual(choices(BASIC).made_setlist(name=FILE_NAME, version=version.VERSION).to_data(), choices({**BASIC, song_plan.PLAN_OF_SONG: False}).made_setlist(name=FILE_NAME, version=version.VERSION).to_data())
 
     def test_a_written_form_is_the_songs_own_and_what_a_place_is_given_goes_to_the_plan(self):
-        form = [VERSE, {KIND: CHORUS, song_plan.ENERGY: AN_ENERGY}, ENDING]
+        form = [VERSE, {KIND: CHORUS, wizard_names.SONG_PLAN_ENERGY: AN_ENERGY}, ENDING]
         made = choices({**BASIC, arranger.FORM: form})
         self.assertTrue(made.get_song_form().has_own_form())
         self.assertEqual([made.section(place).kind() for place in range(len(form))], [VERSE, CHORUS, ENDING])
-        self.assertEqual(made.get_song_extras()[song_plan.PLAN_OF_SONG][song_plan.BY_PLACE], [{}, {song_plan.ENERGY: AN_ENERGY}, {}])
+        self.assertEqual(made.get_song_extras()[song_plan.PLAN_OF_SONG][song_plan.BY_PLACE], [{}, {wizard_names.SONG_PLAN_ENERGY: AN_ENERGY}, {}])
 
     def test_what_the_file_lays_over_the_song_reaches_the_song(self):
         made = choices({**BASIC, wizard_limits.EXTRAS_KEPT: {TEMPO: A_TEMPO}})

@@ -18,22 +18,11 @@ A genre gives a behavior and where each gauge stands, and a song changes any of 
 
 import itertools
 
-from llamatron.wizards.create_song import hook_kinds
+from llamatron.wizards.create_song import hook_kinds, wizard_names
 
-# The habits a style or a song says its hook and its chorus's body are written by.
-HOOK_WRITING = 'hook_writing'
-BODY_WRITING = 'body_writing'
 BEHAVIOR = 'behavior'
 GAUGES = 'gauges'
-# The behaviors of a hook: one or two pitches whose rhythm does the work; up and back; a leap to the top and a fall by step; a
-# short cell, a silence and the cell again; one shape said again a step higher.
-CHANT = 'chant'
-ARCH = 'arch'
-LEAP_AND_FALL = 'leap and fall'
-CALL = 'call'
-LADDER = 'ladder'
-BEHAVIORS = (CHANT, ARCH, LEAP_AND_FALL, CALL, LADDER)
-DEFAULT_BEHAVIOR = ARCH
+DEFAULT_BEHAVIOR = wizard_names.ARCH
 # A hook's gauges.
 CATCHINESS = 'catchiness'
 SIMPLICITY = 'simplicity'
@@ -44,11 +33,11 @@ BOUNCE = 'bounce'
 HOOK_GAUGES = {CATCHINESS: 7, SIMPLICITY: 6, LEAP: 4, HEIGHT: 7, HOLD: 6, BOUNCE: 3}
 # The gauges that change a hook of each behavior: a chant and a ladder have no leap.
 HOOK_GAUGES_OF = {
-    CHANT: (CATCHINESS, SIMPLICITY, HEIGHT, HOLD, BOUNCE),
-    ARCH: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
-    LEAP_AND_FALL: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
-    CALL: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
-    LADDER: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
+    wizard_names.CHANT: (CATCHINESS, SIMPLICITY, HEIGHT, HOLD, BOUNCE),
+    wizard_names.ARCH: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
+    wizard_names.LEAP_AND_FALL: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
+    wizard_names.CALL: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
+    wizard_names.LADDER: (CATCHINESS, SIMPLICITY, LEAP, HEIGHT, HOLD, BOUNCE),
 }
 # The gauges of a chorus's body.
 SAMENESS = 'sameness'
@@ -57,8 +46,6 @@ LIFT = 'lift'
 RESOLVE = 'resolve'
 CALL_AND_ANSWER = 'call_and_answer'
 BODY_GAUGES = {SAMENESS: 6, SPACE: 5, LIFT: 5, RESOLVE: 6, CALL_AND_ANSWER: 6}
-LOWEST = 0
-HIGHEST = 9
 UNITS = hook_kinds.UNITS
 # A hook has this many notes, the fewest where Simplicity is highest.
 FEWEST_NOTES = 3
@@ -110,22 +97,22 @@ ANSWERS_FROM = 5
 
 def share(position):
     """A gauge's position as a share from 0, its lowest, to 1, its highest."""
-    return (position - LOWEST) / (HIGHEST - LOWEST)
+    return (position - wizard_names.HOOK_WRITING_LOWEST) / (wizard_names.HOOK_WRITING_HIGHEST - wizard_names.HOOK_WRITING_LOWEST)
 
 
 def is_position(value):
-    return isinstance(value, int) and not isinstance(value, bool) and LOWEST <= value <= HIGHEST
+    return isinstance(value, int) and not isinstance(value, bool) and wizard_names.HOOK_WRITING_LOWEST <= value <= wizard_names.HOOK_WRITING_HIGHEST
 
 
 def hook_ways(habits):
     """The behavior and the gauges a hook is written by: the defaults, with what the habits say over them."""
-    said = habits.get(HOOK_WRITING) or {}
+    said = habits.get(wizard_names.HOOK_WRITING) or {}
     return said.get(BEHAVIOR, DEFAULT_BEHAVIOR), {**HOOK_GAUGES, **(said.get(GAUGES) or {})}
 
 
 def body_ways(habits):
     """The gauges a chorus's body is written by: the defaults, with what the habits say over them."""
-    return {**BODY_GAUGES, **((habits.get(BODY_WRITING) or {}).get(GAUGES) or {})}
+    return {**BODY_GAUGES, **((habits.get(wizard_names.BODY_WRITING) or {}).get(GAUGES) or {})}
 
 
 def leap_size(gauges):
@@ -202,20 +189,20 @@ def with_leap(*, depths, at, size):
 def depths_for(*, behavior, gauges, count, turn):
     """How far below the hook's top each of its notes sits. A turn is another form of the same behavior, for another take."""
     size = leap_size(gauges)
-    if behavior == CHANT:
+    if behavior == wizard_names.CHANT:
         if gauges[CATCHINESS] >= ONE_PITCH_FROM and not turn % 2:
             return [0] * count
         # One pitch with its neighbour once, before the last note or after the first.
         beside = count - 2 if not turn % 2 else 1
         return [1 if place == beside else 0 for place in range(count)]
-    if behavior == LEAP_AND_FALL:
+    if behavior == wizard_names.LEAP_AND_FALL:
         # From below, a leap to the top, and a fall by step; a leap is at least a skip here.
         return [max(size, SKIP)] + [min(DEEPEST, place) for place in range(count - 1)]
-    if behavior == CALL:
+    if behavior == wizard_names.CALL:
         half = count // 2
         cell = [min(DEEPEST, (half - 1 - place) * (size if place == 0 and half > 1 else STEP)) for place in range(half)]
         return [*cell, *cell] if not turn % 2 else [*cell, *[max(0, depth - 1) for depth in cell]]
-    if behavior == LADDER:
+    if behavior == wizard_names.LADDER:
         cell = LADDER_CELLS[turn % len(LADDER_CELLS)]
         rising = [(cell - 1 - place % cell) - place // cell for place in range(count)]
         lowest = min(rising)
@@ -230,7 +217,7 @@ def depths_for(*, behavior, gauges, count, turn):
 def bar_of(*, behavior, gauges, order, take):
     """A hook's bar at a take: the lengths of its notes and silences, and each note's depth below the top. The order is a
     number of the song's own, which says where among the nearest rhythms its first take starts."""
-    if behavior == CALL:
+    if behavior == wizard_names.CALL:
         lengths = call_rhythm(gauges=gauges)
         turn = take
     else:

@@ -6,7 +6,7 @@
 
 import unittest
 
-from llamatron.wizards.create_song import line_edits, notation, riffs
+from llamatron.wizards.create_song import line_edits, notation, riffs, wizard_names
 from llamatron.wizards.create_song.riffs import heavy_line, riff_line
 
 A_SEED = 11
@@ -78,13 +78,13 @@ class TestHeavyRiff(unittest.TestCase):
                 with self.subTest(seed=seed, gap=gap):
                     self.assertEqual(sum(lasts(note) for note in line), riffs.RIFF_BARS * EIGHTHS)
                     first = line[0]
-                    self.assertEqual((first[notation.DEGREE], first[notation.CHORD], first[notation.LEVEL]), (riffs.HOME[0], riffs.POWER_CHORD, notation.ACCENT))
-                    accents = [at for at, note in places(line) if note.get(notation.LEVEL) == notation.ACCENT]
+                    self.assertEqual((first[notation.DEGREE], first[notation.CHORD], first[notation.LEVEL]), (riffs.HOME[0], riffs.POWER_CHORD, wizard_names.ACCENT))
+                    accents = [at for at, note in places(line) if note.get(notation.LEVEL) == wizard_names.ACCENT]
                     for bar in range(riffs.RIFF_BARS):
                         self.assertIn(bar * EIGHTHS, accents)
                         self.assertTrue(any(at % 2 for at in accents if at // EIGHTHS == bar))
                     # Every accent is a chord, and nothing else is.
-                    self.assertTrue(all((notation.CHORD in note) == (note.get(notation.LEVEL) == notation.ACCENT) for note in line if notation.REST not in note))
+                    self.assertTrue(all((notation.CHORD in note) == (note.get(notation.LEVEL) == wizard_names.ACCENT) for note in line if notation.REST not in note))
 
     def test_half_the_notes_or_more_are_the_root_and_the_last_are_single_notes_that_lead_back(self):
         for seed in range(MANY_SEEDS):
@@ -101,9 +101,9 @@ class TestHeavyRiff(unittest.TestCase):
             muted = heavy_line(seed=seed, take=riffs.FIRST_TAKE, eighths=EIGHTHS, between=riffs.MUTED_ROOTS)
             rests = heavy_line(seed=seed, take=riffs.FIRST_TAKE, eighths=EIGHTHS, between=riffs.RESTS_BETWEEN)
             with self.subTest(seed=seed):
-                self.assertTrue(all(riffs.is_root(note) and note[riffs.GATE] == riffs.MUTED_GATE and note[notation.STEPS] == 1 for note in muted if note.get(notation.LEVEL) == notation.GHOST))
+                self.assertTrue(all(riffs.is_root(note) and note[riffs.GATE] == riffs.MUTED_GATE and note[notation.STEPS] == 1 for note in muted if note.get(notation.LEVEL) == wizard_names.GHOST))
                 self.assertFalse(any(notation.REST in note for note in muted))
-                self.assertFalse(any(note.get(notation.LEVEL) == notation.GHOST for note in rests))
+                self.assertFalse(any(note.get(notation.LEVEL) == wizard_names.GHOST for note in rests))
 
     def test_a_riff_of_one_bar_is_the_last_bar_and_a_gap_empties_the_second_half_of_the_first(self):
         one = heavy_line(seed=A_SEED, take=riffs.FIRST_TAKE, eighths=EIGHTHS, bars=ONE_BAR)
@@ -140,7 +140,7 @@ class TestHeavyRiff(unittest.TestCase):
         bars = riffs.accent_bars(line=line, eighths=EIGHTHS)
         self.assertEqual([len(bar) for bar in bars], [EIGHTHS] * riffs.RIFF_BARS)
         struck = [at for at, hit in enumerate(hit for bar in bars for hit in bar) if hit == notation.LOUD]
-        self.assertEqual(struck, [at for at, note in places(line) if note.get(notation.LEVEL) == notation.ACCENT])
+        self.assertEqual(struck, [at for at, note in places(line) if note.get(notation.LEVEL) == wizard_names.ACCENT])
         self.assertEqual({hit for bar in bars for hit in bar}, {notation.LOUD, notation.NONE})
 
     def test_a_riff_that_stays_plays_over_the_home_chord_where_the_section_is_mostly_at_home(self):

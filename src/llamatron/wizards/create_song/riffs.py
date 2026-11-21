@@ -20,7 +20,7 @@ more are the root. Its first player plays the chords, and whoever plays it besid
 
 import random
 
-from llamatron.wizards.create_song import melody, notation
+from llamatron.wizards.create_song import melody, notation, wizard_names
 
 # What a song says of its riff.
 RIFF = 'riff'
@@ -29,22 +29,13 @@ RIFF_KINDS = 'kinds'
 RIFF_TAKE = 'take'
 RIFF_LINE = 'line'
 FIRST_TAKE = 0
-# How a riff's notes are drawn, what lies between a heavy riff's accents, how many bars it has, what the riff does as the
-# chords change, and what it does under the tune.
-RIFF_NOTES = 'notes'
 SINGLE_NOTES = 'single notes'
-ACCENT_CHORDS = 'chords on the accents'
-NOTES_WAYS = (SINGLE_NOTES, ACCENT_CHORDS)
-RIFF_BETWEEN = 'between'
+NOTES_WAYS = (SINGLE_NOTES, wizard_names.ACCENT_CHORDS)
 MUTED_ROOTS = 'muted roots'
 RESTS_BETWEEN = 'rests'
 BETWEEN_WAYS = (MUTED_ROOTS, RESTS_BETWEEN)
-RIFF_BAR_COUNT = 'bars'
 BAR_COUNTS = (1, 2)
-RIFF_WITH_CHORDS = 'with chords'
-MOVES_WHOLE = 'moves with each chord'
-STAYS_HOME = 'stays on the home chord'
-WITH_CHORDS_WAYS = (MOVES_WHOLE, STAYS_HOME)
+WITH_CHORDS_WAYS = (wizard_names.MOVES_WHOLE, wizard_names.STAYS_HOME)
 RIFF_UNDER_TUNE = 'under the tune'
 IN_FULL = 'in full'
 LEAVES_A_GAP = 'leaves a gap'
@@ -149,10 +140,10 @@ def heavy_bar(*, accents, eighths, between, flattened, tail):
         if at in accents:
             # An accent off the beat rings on through the beat after it, where nothing else starts there.
             steps = 2 if at % 2 and at + 1 < body and at + 1 not in accents else 1
-            bar.append(riff_note(place=accents[at], steps=steps, flattened=flattened, **{notation.CHORD: POWER_CHORD, notation.LEVEL: notation.ACCENT}))
+            bar.append(riff_note(place=accents[at], steps=steps, flattened=flattened, **{notation.CHORD: POWER_CHORD, notation.LEVEL: wizard_names.ACCENT}))
             at += steps
         elif between == MUTED_ROOTS:
-            bar.append(riff_note(place=HOME, steps=1, flattened=flattened, **{GATE: MUTED_GATE, notation.LEVEL: notation.GHOST}))
+            bar.append(riff_note(place=HOME, steps=1, flattened=flattened, **{GATE: MUTED_GATE, notation.LEVEL: wizard_names.GHOST}))
             at += 1
         else:
             if bar and notation.REST in bar[-1]:
@@ -211,9 +202,9 @@ def line_of(*, riff, seed, eighths, flattened=()):
     if riff.get(RIFF_LINE):
         return [dict(note) for note in riff[RIFF_LINE]]
     take = riff.get(RIFF_TAKE, FIRST_TAKE)
-    if riff.get(RIFF_NOTES, SINGLE_NOTES) == SINGLE_NOTES:
-        return riff_line(seed=seed, take=take, eighths=eighths, bars=riff.get(RIFF_BAR_COUNT, RIFF_BARS))
-    return heavy_line(seed=seed, take=take, eighths=eighths, bars=riff.get(RIFF_BAR_COUNT, RIFF_BARS), between=riff.get(RIFF_BETWEEN, MUTED_ROOTS),
+    if riff.get(wizard_names.RIFF_NOTES, SINGLE_NOTES) == SINGLE_NOTES:
+        return riff_line(seed=seed, take=take, eighths=eighths, bars=riff.get(wizard_names.RIFF_BAR_COUNT, RIFF_BARS))
+    return heavy_line(seed=seed, take=take, eighths=eighths, bars=riff.get(wizard_names.RIFF_BAR_COUNT, RIFF_BARS), between=riff.get(wizard_names.RIFF_BETWEEN, MUTED_ROOTS),
                       flattened=flattened, gap=riff.get(RIFF_UNDER_TUNE, IN_FULL) == LEAVES_A_GAP)
 
 
@@ -232,7 +223,7 @@ def accent_bars(*, line, eighths):
     hits = []
     for note in line:
         length = note.get(notation.REST, note.get(notation.STEPS))
-        hits += [notation.LOUD if note.get(notation.LEVEL) == notation.ACCENT else notation.NONE] + [notation.NONE] * (length - 1)
+        hits += [notation.LOUD if note.get(notation.LEVEL) == wizard_names.ACCENT else notation.NONE] + [notation.NONE] * (length - 1)
     return [hits[start:start + eighths] for start in range(0, len(hits), eighths)]
 
 

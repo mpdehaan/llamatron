@@ -9,7 +9,7 @@ import unittest
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import names, song_wizard as wizard_text
-from llamatron.wizards.create_song import riffs, wizard_limits
+from llamatron.wizards.create_song import riffs, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 A_NAME = 'made'
@@ -69,7 +69,7 @@ class TestWizardRiffList(unittest.TestCase):
         before = patterns(choices)
         riff = choices.get_riffs().add_riff(role=THE_GUITAR)
         self.assertEqual(riff, FIRST_RIFF)
-        self.assertEqual(choices.get_riffs().add_riff(role=THE_BASS, settings={riffs.RIFF_BAR_COUNT: ONE_BAR}), SECOND_RIFF)
+        self.assertEqual(choices.get_riffs().add_riff(role=THE_BASS, settings={wizard_names.RIFF_BAR_COUNT: ONE_BAR}), SECOND_RIFF)
         self.assertEqual(choices.get_riffs().riffs_for(THE_GUITAR), [FIRST_RIFF])
         self.assertEqual(choices.get_riffs().riffs_for(THE_BASS), [SECOND_RIFF])
         self.assertEqual(choices.get_riffs().riffs_known_by(THE_GUITAR), [FIRST_RIFF])
@@ -79,7 +79,7 @@ class TestWizardRiffList(unittest.TestCase):
 
     def test_a_riff_is_heard_and_opened_before_anybody_plays_it(self):
         choices = chosen()
-        riff = choices.get_riffs().add_riff(role=THE_GUITAR, settings={riffs.RIFF_NOTES: riffs.ACCENT_CHORDS})
+        riff = choices.get_riffs().add_riff(role=THE_GUITAR, settings={wizard_names.RIFF_NOTES: wizard_names.ACCENT_CHORDS})
         setlist, name, place, role, pattern = choices.get_riffs().riff_heard(riff)
         self.assertEqual(role, THE_GUITAR)
         self.assertEqual(pattern, pattern_of(role=THE_GUITAR, riff=riff))
@@ -128,7 +128,7 @@ class TestWizardRiffList(unittest.TestCase):
 
     def test_a_riff_regenerated_has_other_notes_and_notes_by_hand_are_given_up(self):
         choices = chosen()
-        riff = choices.get_riffs().add_riff(role=THE_GUITAR, settings={riffs.RIFF_NOTES: riffs.SINGLE_NOTES})
+        riff = choices.get_riffs().add_riff(role=THE_GUITAR, settings={wizard_names.RIFF_NOTES: riffs.SINGLE_NOTES})
 
         def notes():
             setlist, _, _, _, pattern = choices.get_riffs().riff_heard(riff)

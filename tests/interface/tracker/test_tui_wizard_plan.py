@@ -8,7 +8,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import limits
 from llamatron.user_strings import errors, labels, marks
-from llamatron.wizards.create_song import arranger, hook_writing, joins, song_plan, wizard_limits
+from llamatron.wizards.create_song import hook_writing, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import chords_as_text
 from tests.interface.tracker.test_tui_wizard import WizardTest
 from tests.support.ui_testing import key_of
@@ -107,19 +107,19 @@ class TestWizardPlan(WizardTest):
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.SIMPLICITY])
         less = key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)
-        for _ in range(usual - hook_writing.LOWEST):
+        for _ in range(usual - wizard_names.HOOK_WRITING_LOWEST):
             await self.press(less)
-        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
+        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), wizard_names.HOOK_WRITING_LOWEST)
         self.assertNotEqual(choices.get_hook().hook_notes(), before)
         await self.press(less)
-        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), hook_writing.LOWEST)
+        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), wizard_names.HOOK_WRITING_LOWEST)
         await self.press(keybindings.FieldPage.CLEAR)
         self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.SIMPLICITY), usual)
         self.assertEqual(choices.get_hook().hook_notes(), before)
 
     async def test_choosing_a_behavior_leaves_only_its_gauges(self):
         await self.choose()
-        self.choices().get_hook().set_hook_behavior(hook_writing.CHANT)
+        self.choices().get_hook().set_hook_behavior(wizard_names.CHANT)
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hook_writing()
         self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.HOLD], self.text())
@@ -159,14 +159,14 @@ class TestWizardSectionOwnFields(WizardTest):
         shown = self.text()
         for label in THE_GROUPS:
             self.assertIn(label, shown)
-        self.assertIn(self.label(song_plan.ENERGY), shown)
-        self.assertNotIn(self.label(song_plan.TEMPO_END_OF_PLACE), shown)
+        self.assertIn(self.label(wizard_names.SONG_PLAN_ENERGY), shown)
+        self.assertNotIn(self.label(wizard_names.TEMPO_END_OF_PLACE), shown)
         self.assertNotIn(marks.MSG_SECTION_SET, shown)
-        choices.section(A_PLACE).set_own(field=song_plan.RISES, value=not choices.section(A_PLACE).from_plan(field=song_plan.RISES))
+        choices.section(A_PLACE).set_own(field=wizard_names.SONG_PLAN_RISES, value=not choices.section(A_PLACE).from_plan(field=wizard_names.SONG_PLAN_RISES))
         await self.press(Key.DOWN, Key.UP)
         self.assertIn(marks.MSG_SECTION_SET, self.text())
         await self.open_every_group()
-        self.assertIn(self.label(song_plan.TEMPO_END_OF_PLACE), self.text())
+        self.assertIn(self.label(wizard_names.TEMPO_END_OF_PLACE), self.text())
 
     async def test_each_field_shows_what_the_section_takes_and_where_from(self):
         choices = self.choices()
@@ -174,7 +174,7 @@ class TestWizardSectionOwnFields(WizardTest):
         shown = self.text()
         for field in choices.section(A_PLACE).own_fields():
             self.assertIn(self.label(field), shown)
-            if field in (song_plan.RISES, song_plan.FADES):
+            if field in (wizard_names.SONG_PLAN_RISES, wizard_names.SONG_PLAN_FADES):
                 # A switch shows on or off and no origin.
                 continue
             self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=choices.section(A_PLACE).from_plan(field=field), origin=labels.MSG_WIZARD_SECTION_ORIGINS[field]), shown)
@@ -182,33 +182,33 @@ class TestWizardSectionOwnFields(WizardTest):
     async def test_energy_steps_from_the_plan_s_and_bksp_gives_it_back(self):
         choices = self.choices()
         usual = choices.energies()[A_PLACE]
-        await self.select_field(self.label(song_plan.ENERGY))
+        await self.select_field(self.label(wizard_names.SONG_PLAN_ENERGY))
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.section(A_PLACE).own(field=song_plan.ENERGY), usual + 1)
-        self.assertNotIn(labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=labels.MSG_WIZARD_SECTION_ORIGINS[song_plan.ENERGY]), self.text())
+        self.assertEqual(choices.section(A_PLACE).own(field=wizard_names.SONG_PLAN_ENERGY), usual + 1)
+        self.assertNotIn(labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=labels.MSG_WIZARD_SECTION_ORIGINS[wizard_names.SONG_PLAN_ENERGY]), self.text())
         await self.press(keybindings.FieldPage.CLEAR)
-        self.assertIsNone(choices.section(A_PLACE).own(field=song_plan.ENERGY))
+        self.assertIsNone(choices.section(A_PLACE).own(field=wizard_names.SONG_PLAN_ENERGY))
 
     async def test_a_way_of_leaving_a_key_and_a_scale_are_chosen_from_a_list(self):
         choices = self.choices()
-        for field in (joins.LEAVES, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE):
+        for field in (wizard_names.JOINS_LEAVES, wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE):
             await self.select_field(self.label(field))
             await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
             self.assertIsNotNone(choices.section(A_PLACE).own(field=field))
 
     async def test_chords_are_typed_and_what_cannot_be_chords_is_said(self):
         choices = self.choices()
-        await self.select_field(self.label(arranger.CHORDS))
+        await self.select_field(self.label(wizard_names.ARRANGER_CHORDS))
         await self.press(Key.ENTER)
         for _ in range(limits.MAX_NAME_LENGTH):
             await self.press(Key.BACKSPACE)
         await self.type(SOME_CHORDS)
         await self.press(Key.ENTER)
-        self.assertEqual(chords_as_text(choices.section(A_PLACE).own(field=arranger.CHORDS)), SOME_CHORDS)
+        self.assertEqual(chords_as_text(choices.section(A_PLACE).own(field=wizard_names.ARRANGER_CHORDS)), SOME_CHORDS)
         await self.press(Key.ENTER)
         await self.type(NOT_A_CHORD)
         await self.press(Key.ENTER)
-        self.assertEqual(chords_as_text(choices.section(A_PLACE).own(field=arranger.CHORDS)), SOME_CHORDS)
+        self.assertEqual(chords_as_text(choices.section(A_PLACE).own(field=wizard_names.ARRANGER_CHORDS)), SOME_CHORDS)
         self.assertIn(errors.ERR_WIZARD_CHORDS.split('{')[0][:A_FEW_WORDS], self.text())
 
     async def test_a_song_with_no_plan_keeps_the_chords_the_tempo_the_key_and_the_scale(self):
@@ -216,8 +216,8 @@ class TestWizardSectionOwnFields(WizardTest):
         await self.press(Key.DOWN, Key.UP)
         await self.open_every_group()
         shown = self.text()
-        self.assertNotIn(self.label(song_plan.ENERGY), shown)
-        for field in (arranger.CHORDS, song_plan.TEMPO_END_OF_PLACE, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE):
+        self.assertNotIn(self.label(wizard_names.SONG_PLAN_ENERGY), shown)
+        for field in (wizard_names.ARRANGER_CHORDS, wizard_names.TEMPO_END_OF_PLACE, wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE):
             self.assertIn(self.label(field), shown)
 
 

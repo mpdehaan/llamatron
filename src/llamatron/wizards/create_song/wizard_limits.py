@@ -10,7 +10,7 @@ field's choices by the same names the choices check a value against. The module 
 
 from llamatron.model.objects.groove import FactoryGroove
 from llamatron.model.schema.file_format import SectionKind
-from llamatron.wizards.create_song import arranger, joins as joins_values, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan
+from llamatron.wizards.create_song import arranger, joins as joins_values, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_names
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'
@@ -199,7 +199,7 @@ MELODY_CHARACTER = 'character'
 MELODY_WAYS = {MELODY_BUSY: (MELODY_SPARSE, MELODY_MEDIUM, MELODY_BUSIEST), MELODY_RANGE: (MELODY_NARROW, MELODY_MEDIUM, MELODY_WIDE), melody_writer.REPEATS: melody_writer.REPEATS_WAYS}
 USUAL_MELODY_WAYS = {MELODY_BUSY: MELODY_MEDIUM, MELODY_RANGE: MELODY_MEDIUM, melody_writer.REPEATS: melody_writer.REPEATS_SOME}
 # Each field of one kind of section's melody with what may be chosen; nothing chosen leaves the height to the genre and the busyness to the song.
-SECTION_MELODY_WAYS = {melody_writer.HEIGHT: melody_writer.HEIGHTS, MELODY_BUSY: MELODY_WAYS[MELODY_BUSY]}
+SECTION_MELODY_WAYS = {wizard_names.MELODY_HEIGHT: melody_writer.HEIGHTS, MELODY_BUSY: MELODY_WAYS[MELODY_BUSY]}
 # Where on the gauges' scale a line asked to be so busy stands.
 MIDDLE_GAUGE = 4
 BUSY_POSITIONS = {MELODY_SPARSE: melody_writer.LOWEST_GAUGE, MELODY_MEDIUM: MIDDLE_GAUGE, MELODY_BUSIEST: melody_writer.HIGHEST_GAUGE}
@@ -227,11 +227,11 @@ MELODY_PART = 'melody'
 # The name of the riff asked for to find who can play one in a kind of section.
 TRIAL_RIFF = 'trial riff'
 # A riff's settings, each with what may be chosen, the first what a riff has until another is chosen.
-RIFF_SETTINGS = {riffs_values.RIFF_NOTES: riffs_values.NOTES_WAYS, riffs_values.RIFF_BAR_COUNT: tuple(reversed(riffs_values.BAR_COUNTS)), riffs_values.RIFF_BETWEEN: riffs_values.BETWEEN_WAYS, riffs_values.RIFF_UNDER_TUNE: riffs_values.UNDER_TUNE_WAYS, riffs_values.RIFF_WITH_CHORDS: riffs_values.WITH_CHORDS_WAYS}
-assert (RIFF_SETTINGS[riffs_values.RIFF_NOTES][0], RIFF_SETTINGS[riffs_values.RIFF_BAR_COUNT][0], RIFF_SETTINGS[riffs_values.RIFF_BETWEEN][0]) == (riffs_values.SINGLE_NOTES, riffs_values.RIFF_BARS, riffs_values.MUTED_ROOTS)
-assert (RIFF_SETTINGS[riffs_values.RIFF_UNDER_TUNE][0], RIFF_SETTINGS[riffs_values.RIFF_WITH_CHORDS][0]) == (riffs_values.IN_FULL, riffs_values.MOVES_WHOLE)
+RIFF_SETTINGS = {wizard_names.RIFF_NOTES: riffs_values.NOTES_WAYS, wizard_names.RIFF_BAR_COUNT: tuple(reversed(riffs_values.BAR_COUNTS)), wizard_names.RIFF_BETWEEN: riffs_values.BETWEEN_WAYS, riffs_values.RIFF_UNDER_TUNE: riffs_values.UNDER_TUNE_WAYS, wizard_names.RIFF_WITH_CHORDS: riffs_values.WITH_CHORDS_WAYS}
+assert (RIFF_SETTINGS[wizard_names.RIFF_NOTES][0], RIFF_SETTINGS[wizard_names.RIFF_BAR_COUNT][0], RIFF_SETTINGS[wizard_names.RIFF_BETWEEN][0]) == (riffs_values.SINGLE_NOTES, riffs_values.RIFF_BARS, riffs_values.MUTED_ROOTS)
+assert (RIFF_SETTINGS[riffs_values.RIFF_UNDER_TUNE][0], RIFF_SETTINGS[wizard_names.RIFF_WITH_CHORDS][0]) == (riffs_values.IN_FULL, wizard_names.MOVES_WHOLE)
 # The settings a new riff is asked for.
-NEW_RIFF_SETTINGS = (riffs_values.RIFF_BAR_COUNT, riffs_values.RIFF_NOTES, riffs_values.RIFF_WITH_CHORDS, riffs_values.RIFF_BETWEEN)
+NEW_RIFF_SETTINGS = (wizard_names.RIFF_BAR_COUNT, wizard_names.RIFF_NOTES, wizard_names.RIFF_WITH_CHORDS, wizard_names.RIFF_BETWEEN)
 INTRO_KIND = 'intro'
 REACTS_ANSWER = 'reacts'
 DYNAMICS_ANSWER = 'dynamics'
@@ -269,9 +269,9 @@ LINE_OWN = 'own'
 PLAY_OF_SCENE = 'play'
 PART = 'part'
 # What a section can be given of its own in any genre, with or without a plan.
-OWN_WITHOUT_PLAN = (arranger.CHORDS, song_plan.TEMPO_OF_PLACE, song_plan.TEMPO_END_OF_PLACE, song_plan.ROOT_OF_PLACE, song_plan.TYPE_OF_PLACE)
+OWN_WITHOUT_PLAN = (wizard_names.ARRANGER_CHORDS, wizard_names.TEMPO_OF_PLACE, wizard_names.TEMPO_END_OF_PLACE, wizard_names.ROOT_OF_PLACE, wizard_names.TYPE_OF_PLACE)
 # What a section that opens or closes the song says of its fade, with or without a plan.
-FADE_OWN = (song_plan.FADES, song_plan.FADE_LEVEL, song_plan.FADE_OVER)
+FADE_OWN = (wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER)
 # The way a section fades: a section that opens the song fades in, one that closes the song fades out, and no other fades.
 FADE_IN = 'in'
 FADE_OUT = 'out'

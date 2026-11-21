@@ -13,7 +13,7 @@ from collections import Counter
 from fractions import Fraction
 
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import composer, notation, shaping
+from llamatron.wizards.create_song import composer, notation, shaping, wizard_names
 from llamatron.wizards.create_song.composer import bars_of, pattern_of, players_of, scene_of, signature_of
 from llamatron.wizards.create_song.notation import drum_hits, kept_rows, NotWritable, tune_lines
 from llamatron.wizards.create_song.shaping import is_compound, role_of, shaped, unshaped
@@ -43,7 +43,7 @@ def written_part(*, pattern, signature, velocities=None):
         drum, hits, loud, soft = drum_hits(pattern=pattern, velocities=velocities)
         part = {notation.DRUM: drum, notation.STEP: step, notation.LOUD: loud}
         if soft != loud:
-            part[notation.SOFT] = soft
+            part[wizard_names.SOFT] = soft
         part[notation.HITS] = hits
         return part
     lines, octave, velocity = tune_lines(pattern=pattern, bar=int(signature / Fraction(step)), velocities=velocities)

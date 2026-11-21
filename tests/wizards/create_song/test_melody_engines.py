@@ -9,7 +9,7 @@ import functools
 import unittest
 
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, composer, hook_writing, melody, notation, operations
+from llamatron.wizards.create_song import arranger, composer, melody, notation, operations, wizard_names
 
 MINOR = 'minor'
 SEED = 9
@@ -273,7 +273,7 @@ def smart_habits(**gauges):
     style = arranger.style_named(ROCK)
     habits = {**style[arranger.MELODY][COMMON_TIME], melody.SMART: {**melody.DEFAULT_GAUGES, **gauges}}
     # These tests hold the hook of a kind and the lines beside it; the written hook and body have tests of their own (test_hook_writing.py).
-    return {field: value for field, value in habits.items() if field not in (hook_writing.HOOK_WRITING, hook_writing.BODY_WRITING)}
+    return {field: value for field, value in habits.items() if field not in (wizard_names.HOOK_WRITING, wizard_names.BODY_WRITING)}
 
 
 def smart_lines(*, seed, habits=None, plan=None, letters=()):

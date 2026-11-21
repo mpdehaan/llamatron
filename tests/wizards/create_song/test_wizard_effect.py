@@ -27,7 +27,7 @@ from llamatron.engine.generators.phrasing import model as phrasing_settings, sch
 from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Row, Section
-from llamatron.wizards.create_song import arranger, breaks, hook_writing, interplay, line_edits, loudness, melody, phrasing, riffs, song_plan, wizard_limits
+from llamatron.wizards.create_song import arranger, interplay, line_edits, melody, phrasing, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
 
 A_NAME = 'a_song'
@@ -206,8 +206,8 @@ def first_sounding_step(line):
 
 def far_end(position):
     """The end of a gauge's scale farther from a position."""
-    middle = (hook_writing.LOWEST + hook_writing.HIGHEST) / 2
-    return hook_writing.LOWEST if position > middle else hook_writing.HIGHEST
+    middle = (wizard_names.HOOK_WRITING_LOWEST + wizard_names.HOOK_WRITING_HIGHEST) / 2
+    return wizard_names.HOOK_WRITING_LOWEST if position > middle else wizard_names.HOOK_WRITING_HIGHEST
 
 
 def every_choice(choices):
@@ -244,7 +244,7 @@ def every_choice(choices):
             if choices.get_kit().breaks():
                 # How far a break is cut up is held under a break, the subgenre's own or the first there is.
                 with_break = first if choices.get_kit().get_break() is not None else both(first=first, then=lambda made: made.get_kit().set_break(made.get_kit().breaks()[0]))
-                for cut in range(breaks.LEAST_CUT, breaks.MOST_CUT + 1):
+                for cut in range(wizard_names.LEAST_CUT, wizard_names.MOST_CUT + 1):
                     if cut != choices.get_kit().get_break_cut():
                         yield BREAK_CUT, cut, lambda made, cut=cut: made.get_kit().set_break_cut(cut), [with_break]
         if len(choices.get_band().roles_in()) > 1:
@@ -285,7 +285,7 @@ def every_choice(choices):
         def filling(made):
             # A genre whose own plan writes the answers plays them as written, so how busy is heard in the fills there.
             made.get_band().set_role_plan(interplay.FILLS)
-        for busy in range(interplay.LEAST_BUSY, interplay.MOST_BUSY + 1):
+        for busy in range(wizard_names.INTERPLAY_LEAST_BUSY, wizard_names.INTERPLAY_MOST_BUSY + 1):
             if busy != choices.get_band().get_fills_busy():
                 yield FILLS_BUSY, busy, lambda made, busy=busy: made.get_band().set_fills_busy(busy), [answering, filling]
     # What every melody of the song shares: each other value of how busy, how wide and how repeated, and each character offered.
@@ -324,7 +324,7 @@ def every_choice(choices):
         def planned(made):
             made.set_song_plan(True)
         yield SONG_PLAN, False, lambda made: made.set_song_plan(False), [nothing_first]
-        for contrast in (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY):
+        for contrast in (wizard_names.LOWEST_ENERGY, wizard_names.HIGHEST_ENERGY):
             yield CONTRAST, contrast, lambda made, contrast=contrast: made.set_contrast(contrast), [planned]
         under_plan = fresh_with_plan(choices)
         if under_plan.counts_in_four():
@@ -335,7 +335,7 @@ def every_choice(choices):
                         yield PHRASING_WAY, (name, value), lambda made, name=name, value=value: made.set_phrasing_way(name=name, value=value), [planned]
     if choices.get_hook().writes_hook():
         # How the hook is written: every other behavior, and each gauge of the song's behavior moved to the end of its scale farther away.
-        for behavior in hook_writing.BEHAVIORS:
+        for behavior in wizard_names.BEHAVIORS:
             if behavior != choices.get_hook().get_hook_behavior():
                 yield HOOK_BEHAVIOR, behavior, lambda made, behavior=behavior: made.get_hook().set_hook_behavior(behavior), [nothing_first]
         for name in choices.get_hook().hook_gauges():
@@ -375,11 +375,11 @@ def every_choice(choices):
             continue
 
         def fades_first(made, place=place):
-            made.section(place).set_own(field=song_plan.FADES, value=True)
+            made.section(place).set_own(field=wizard_names.SONG_PLAN_FADES, value=True)
         yield A_FADE, place, fades_first, [nothing_first]
-        yield A_FADE_LEVEL, place, lambda made, place=place: made.section(place).set_own(field=song_plan.FADE_LEVEL, value=A_VELOCITY), [fades_first]
+        yield A_FADE_LEVEL, place, lambda made, place=place: made.section(place).set_own(field=wizard_names.FADE_LEVEL, value=A_VELOCITY), [fades_first]
         if choices.section(place).fade_way() == wizard_limits.FADE_IN and choices.section(place).bars() > A_BAR:
-            yield A_FADE_OVER, place, lambda made, place=place: made.section(place).set_own(field=song_plan.FADE_OVER, value=A_BAR), [fades_first]
+            yield A_FADE_OVER, place, lambda made, place=place: made.section(place).set_own(field=wizard_names.FADE_OVER, value=A_BAR), [fades_first]
     if choices.intro_parts():
         yield INTRO_PART, None, lambda made: made.add_intro_part(), [nothing_first]
     for field, value in SECTION_OWN_ANYWHERE:
@@ -439,7 +439,7 @@ def every_choice(choices):
         yield OWN_RIFF, kind, lambda made, riff=riff, role=role: made.get_riffs().set_riff_pattern(riff=riff, pattern=first_degree_changed(riff_pattern_of(choices=made, riff=riff))), [played]
         yield A_RIFF, 'regenerated', lambda made, riff=riff: made.get_riffs().regenerate_riff(riff), [played]
         yield A_RIFF, 'deleted', lambda made, riff=riff: made.get_riffs().delete_riff(riff), [played]
-        for field in (riffs.RIFF_BAR_COUNT, riffs.RIFF_NOTES):
+        for field in (wizard_names.RIFF_BAR_COUNT, wizard_names.RIFF_NOTES):
             other = wizard_limits.RIFF_SETTINGS[field][1]
             yield A_RIFF_SETTING, (field, other), lambda made, role=role, kind=kind, field=field, other=other: played(made, role=role, kind=kind, settings={field: other}), [nothing_first]
     # Another take of a tune, for each kind of section that has one.
@@ -465,7 +465,7 @@ def every_choice(choices):
             yield REACTS_TO_ENERGY, role, lambda made, role=role: set_reacts_where_heard(made=made, role=role), [nothing_first]
         # How loud a player is: the player's dynamics at either end, and each level the song plays, moved.
         if choices.player(role).has_dynamics():
-            for dynamics in (loudness.LEAST_DYNAMICS, loudness.MOST_DYNAMICS):
+            for dynamics in (wizard_names.LEAST_DYNAMICS, wizard_names.MOST_DYNAMICS):
                 yield DYNAMICS_OF_PLAYER, (role, dynamics), lambda made, role=role, dynamics=dynamics: made.player(role).set_dynamics(dynamics=dynamics), [nothing_first]
         for level in choices.player(role).loudness_levels_offered():
             yield A_LEVEL, (role, level), lambda made, role=role, level=level: made.player(role).set_loudness_level(level=level, number=another_velocity(made.player(role).loudness_levels()[level])), [nothing_first]
@@ -537,7 +537,7 @@ def another_velocity(velocity):
 def set_reacts_where_heard(*, made, role):
     """Have a player react at the end of the gauge where the song is not the song the band's own reacting makes."""
     usual = made.made_for_listening()[0].to_data()[Section.PATTERNS]
-    for reacts in (song_plan.LOWEST_ENERGY, song_plan.HIGHEST_ENERGY):
+    for reacts in (wizard_names.LOWEST_ENERGY, wizard_names.HIGHEST_ENERGY):
         made.player(role).set_reacts(reacts)
         if made.made_for_listening()[0].to_data()[Section.PATTERNS] != usual:
             return

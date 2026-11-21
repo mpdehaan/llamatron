@@ -49,7 +49,7 @@ FRONT_DOORS = {
                'generators.*', 'generators.*.model', 'generators.*.schema', 'generators.*.strings', 'generators.*.declaration'),
     'exporters': ('exports',),
     'importers': ('midi_import',),
-    'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits'),
+    'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits', 'create_song.wizard_names', 'create_song.wizard_file'),
     # Real-time playback is reached through its door: what the tracker uses, and the words they share.
     'realtime': ('playback_service', 'realtime_names'),
 }

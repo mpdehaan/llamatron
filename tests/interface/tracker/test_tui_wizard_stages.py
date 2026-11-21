@@ -8,7 +8,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.wizard.section_branch import SectionBranch
 from llamatron.user_strings import labels
-from llamatron.wizards.create_song import song_plan, wizard_limits
+from llamatron.wizards.create_song import wizard_limits, wizard_names
 from tests.interface.tracker.test_tui_wizard import WizardTest
 from tests.support.ui_testing import key_of
 
@@ -45,9 +45,9 @@ class TestWizardStages(WizardTest):
         self.assertEqual(choices.section(last).fade_way(), wizard_limits.FADE_OUT)
         branch = SectionBranch(page=self.wizard(), place=last)
         fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_OUT]
-        self.assertEqual([branch.fade_field(field).label for field in choices.section(last).fade_fields()], [fade[song_plan.FADES], fade[song_plan.FADE_LEVEL], fade[song_plan.FADE_OVER]])
+        self.assertEqual([branch.fade_field(field).label for field in choices.section(last).fade_fields()], [fade[wizard_names.SONG_PLAN_FADES], fade[wizard_names.FADE_LEVEL], fade[wizard_names.FADE_OVER]])
         # Until given, the fade takes every bar of the section.
-        self.assertEqual(branch.fade_field(song_plan.FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=choices.section(last).bars()))
+        self.assertEqual(branch.fade_field(wizard_names.FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=choices.section(last).bars()))
 
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
@@ -108,21 +108,21 @@ class TestWizardStages(WizardTest):
         await self.go_to_named_branch(THE_INTRO)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_IN]
-        await self.select_field(fade[song_plan.FADES])
-        self.assertNotIn(fade[song_plan.FADE_LEVEL], [field.label for field in self.app.screen.shown_fields()])
+        await self.select_field(fade[wizard_names.SONG_PLAN_FADES])
+        self.assertNotIn(fade[wizard_names.FADE_LEVEL], [field.label for field in self.app.screen.shown_fields()])
         await self.press(Key.SPACE)
-        self.assertTrue(choices.section(THE_INTRO_PLACE).own(field=song_plan.FADES))
-        self.assertIn(labels.MSG_WIZARD_FADE_VELOCITY.format(value=song_plan.FADED), self.text())
-        await self.select_field(fade[song_plan.FADE_LEVEL])
+        self.assertTrue(choices.section(THE_INTRO_PLACE).own(field=wizard_names.SONG_PLAN_FADES))
+        self.assertIn(labels.MSG_WIZARD_FADE_VELOCITY.format(value=wizard_names.FADED), self.text())
+        await self.select_field(fade[wizard_names.FADE_LEVEL])
         await self.press(keybindings.WizardPage.MORE)
-        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=song_plan.FADE_LEVEL), song_plan.FADED + 1)
-        await self.select_field(fade[song_plan.FADE_OVER])
+        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=wizard_names.FADE_LEVEL), wizard_names.FADED + 1)
+        await self.select_field(fade[wizard_names.FADE_OVER])
         await self.press(keybindings.WizardPage.LESS)
-        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=song_plan.FADE_OVER), choices.section(THE_INTRO_PLACE).bars() - 1)
+        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=wizard_names.FADE_OVER), choices.section(THE_INTRO_PLACE).bars() - 1)
         # A verse has no fade.
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(A_VERSE)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         labels_shown = [field.label for field in self.app.screen.fields()]
-        self.assertNotIn(fade[song_plan.FADES], labels_shown)
-        self.assertNotIn(labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_OUT][song_plan.FADES], labels_shown)
+        self.assertNotIn(fade[wizard_names.SONG_PLAN_FADES], labels_shown)
+        self.assertNotIn(labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_OUT][wizard_names.SONG_PLAN_FADES], labels_shown)

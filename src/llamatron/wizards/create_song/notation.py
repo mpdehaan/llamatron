@@ -24,6 +24,7 @@ from collections import Counter
 from fractions import Fraction
 
 from llamatron.user_strings import errors
+from llamatron.wizards.create_song import wizard_names
 
 # The rows of a pattern, as a set file names them.
 STEPS = 'steps'
@@ -57,32 +58,20 @@ ENDING = 'ending'
 # How far each stress moves a note from the part's velocity.
 STRESSES = {PEAK: 12, ARRIVAL: 8, PICKUP: -8, ENDING: -4}
 STRESS_OF_MOVE = {move: stress for stress, move in STRESSES.items()}
-LOWEST_VELOCITY = 1
-HIGHEST_VELOCITY = 127
 # A line that has run this many bars without a rest ends at the next bar line.
 LONGEST_LINE_IN_BARS = 2
 
 # The fields of a drum's bar and the words for its hits.
 HITS = 'hits'
 LOUD = 'loud'
-SOFT = 'soft'
 NONE = 'none'
-# A stroke louder than the normal one, and one barely heard.
-ACCENT = 'accent'
-GHOST = 'ghost'
 # The named level a note of a tune is played at, where the note says.
 LEVEL = 'level'
 NOTE_NAMES = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B']
 SHARP_MARK = '#'
 SHARPS = [None, SHARP_MARK, None, SHARP_MARK, None, None, SHARP_MARK, None, SHARP_MARK, None, SHARP_MARK, None]
 NOTES_IN_OCTAVE = 12
-# The General MIDI drums a bar may name.
-KIT = {
-    'kick': 36, 'rim': 37, 'snare': 38, 'clap': 39, 'hat': 42, 'hat by foot': 44, 'tom low': 45, 'open': 46, 'tom mid': 47, 'crash': 49, 'tom high': 50, 'ride': 51, 'splash': 55, 'bell': 53, 'tamb': 54,
-    'cowbell': 56, 'conga high': 63, 'conga low': 64, 'timbale': 65, 'maracas': 70, 'claves': 75, 'woodblock': 76, 'shaker': 82,
-}
-NAME_OF_DRUM = {number: name for name, number in KIT.items()}
-
+NAME_OF_DRUM = {number: name for name, number in wizard_names.NOTATION_KIT.items()}
 
 
 class NotWritable(ValueError):
@@ -90,7 +79,7 @@ class NotWritable(ValueError):
 
 
 def clamped(velocity):
-    return max(LOWEST_VELOCITY, min(HIGHEST_VELOCITY, velocity))
+    return max(wizard_names.LOWEST_VELOCITY, min(wizard_names.HIGHEST_VELOCITY, velocity))
 
 
 def kept_rows(rows):
@@ -103,8 +92,8 @@ def stress_moves(*, velocity, levels):
     distances to its accent and its soft note, a lesser stress going two thirds or half the way."""
     if not levels:
         return STRESSES
-    up = levels.get(ACCENT, velocity + STRESSES[PEAK]) - velocity
-    down = levels.get(SOFT, velocity + STRESSES[PICKUP]) - velocity
+    up = levels.get(wizard_names.ACCENT, velocity + STRESSES[PEAK]) - velocity
+    down = levels.get(wizard_names.SOFT, velocity + STRESSES[PICKUP]) - velocity
     return {PEAK: up, ARRIVAL: round(Fraction(up * STRESSES[ARRIVAL], STRESSES[PEAK])), PICKUP: down, ENDING: round(Fraction(down * STRESSES[ENDING], STRESSES[PICKUP]))}
 
 
@@ -118,7 +107,7 @@ def louder_by(*, louder, moves):
 def tune_rows(*, lines, octave, velocity, step_size, levels=None):
     """A tune's lines as a pattern; levels are the part's accent, soft and ghost velocities where the part says them."""
     moves = stress_moves(velocity=velocity, levels=levels)
-    named = {ACCENT: velocity + moves[PEAK], SOFT: velocity + moves[PICKUP], GHOST: (levels or {}).get(GHOST, velocity + moves[PICKUP])}
+    named = {wizard_names.ACCENT: velocity + moves[PEAK], wizard_names.SOFT: velocity + moves[PICKUP], wizard_names.GHOST: (levels or {}).get(wizard_names.GHOST, velocity + moves[PICKUP])}
     rows = {name: [] for name in (DEGREE, ACCIDENTAL, OCTAVE, TIE, VELOCITY) + OTHER_ROWS}
     for line in lines:
         for note in line:
@@ -202,8 +191,8 @@ def tune_lines(*, pattern, bar, velocities=None):
 def drum_rows(*, drum, hits, loud, soft, step_size, accent=None, ghost=None):
     """A drum's bar as a pattern; drum is a name of the kit or a General MIDI note number. An accent with no velocity of its
     own is a loud stroke, and a ghost note with none a soft one."""
-    velocities = {LOUD: loud, SOFT: soft, ACCENT: loud if accent is None else accent, GHOST: soft if ghost is None else ghost}
-    number = KIT.get(drum, drum)
+    velocities = {LOUD: loud, wizard_names.SOFT: soft, wizard_names.ACCENT: loud if accent is None else accent, wizard_names.GHOST: soft if ghost is None else ghost}
+    number = wizard_names.NOTATION_KIT.get(drum, drum)
     name = NOTE_NAMES[number % NOTES_IN_OCTAVE]
     sharp = SHARPS[number % NOTES_IN_OCTAVE]
     on = [hit != NONE for hit in hits]
@@ -229,7 +218,7 @@ def drum_hits(*, pattern, velocities=None):
     if len(numbers) != 1 or not 1 <= len(levels) <= 2:
         raise NotWritable(errors.ERR_NOT_A_BAR)
     number = numbers.pop()
-    hits = [NONE if degree[place] is None else LOUD if loud[place] == levels[0] else SOFT for place in range(steps)]
+    hits = [NONE if degree[place] is None else LOUD if loud[place] == levels[0] else wizard_names.SOFT for place in range(steps)]
     return NAME_OF_DRUM.get(number, number), hits, levels[0], levels[-1]
 
 

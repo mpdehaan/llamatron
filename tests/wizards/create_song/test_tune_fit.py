@@ -8,7 +8,7 @@ from fractions import Fraction
 import unittest
 
 from llamatron.model.schema.file_format import PatternSetting, Row
-from llamatron.wizards.create_song import arranger, tune_fit
+from llamatron.wizards.create_song import tune_fit, wizard_names
 from llamatron.wizards.create_song.tune_fit import chord_at, fitted, move_to_chord, steps_held
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
@@ -89,7 +89,7 @@ class TestWizardFitsTune(unittest.TestCase):
         written = choices.get_tunes().tune_pattern(A_KIND)
         choices.get_tunes().set_tune_pattern(kind=A_KIND, pattern=written)
         before = choices.get_tunes().own_tune_chords()
-        choices.section(choices.get_tunes().tune_place(A_KIND)).set_own(field=arranger.CHORDS, value=OTHER_CHORDS)
+        choices.section(choices.get_tunes().tune_place(A_KIND)).set_own(field=wizard_names.ARRANGER_CHORDS, value=OTHER_CHORDS)
         self.assertNotEqual(choices.get_tunes().own_tune_chords(), before)
         self.assertEqual(choices.get_tunes().tune_pattern(A_KIND), written)
         choices.get_tunes().fit_tune(A_KIND)

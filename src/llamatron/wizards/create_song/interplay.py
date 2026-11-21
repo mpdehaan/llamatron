@@ -9,7 +9,7 @@ the tune's last note of a line has landed, and ends with the line."""
 
 import random
 
-from llamatron.wizards.create_song import melody, notation
+from llamatron.wizards.create_song import melody, notation, wizard_names
 from llamatron.wizards.create_song.melody import chord_notes, nearest_chord_rung, StepWalk
 
 # What a player beside the tune does in a section.
@@ -21,9 +21,6 @@ RIFF = 'plays a riff under the tune'
 WAYS = (WAITS, FILLS, ANSWERS, DOUBLES, RIFF)
 # The ways drawn anew each time a section returns, so that a second verse's fills are not the first's.
 DRAWN_ANEW = (FILLS, ANSWERS)
-# How busy the fills, the answers and the riff are.
-LEAST_BUSY = 0
-MOST_BUSY = 20
 USUAL_BUSY = 8
 # A fill's and a riff's shortest note is this share of a bar, and a fill shorter than this many of them is left out.
 NOTES_IN_BAR = 8
@@ -62,7 +59,7 @@ def steps_in(line):
 def lengths_of(*, steps, unit, busy):
     """The lengths of a fill's notes, in steps: more and shorter notes the busier, the last note taking what is left over."""
     places = steps // unit
-    count = max(1, min(places, round(places * (busy + 1) / (MOST_BUSY + 1))))
+    count = max(1, min(places, round(places * (busy + 1) / (wizard_names.INTERPLAY_MOST_BUSY + 1))))
     each = places // count
     lengths = [each * unit] * count
     lengths[-1] += steps - sum(lengths)

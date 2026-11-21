@@ -8,7 +8,7 @@ import unittest
 
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
-from llamatron.wizards.create_song import melody, wizard_limits
+from llamatron.wizards.create_song import melody, wizard_limits, wizard_names
 from llamatron.wizards.create_song.melody import plan_as_asked
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
@@ -129,13 +129,13 @@ class TestWizardMelodyChoices(unittest.TestCase):
             self.assertEqual(WizardChoices.from_data(choices.to_data()).get_section_melody(kind=A_KIND, field=field), value)
             choices.set_section_melody(kind=A_KIND, field=field, value=None)
             self.assertEqual(patterns(choices), before)
-        self.assertIn(melody.HEIGHT, choices.section_melody_fields(A_KIND))
+        self.assertIn(wizard_names.MELODY_HEIGHT, choices.section_melody_fields(A_KIND))
 
     def test_what_is_no_field_no_value_or_no_kind_with_a_melody_is_refused_and_a_genre_change_forgets_the_choices(self):
         choices = chosen()
         for refused in (lambda: choices.set_melody_way(field=NOT_A_WAY, value=wizard_limits.MELODY_SPARSE), lambda: choices.set_melody_way(field=wizard_limits.MELODY_BUSY, value=NOT_A_WAY),
-                        lambda: choices.set_melody_character(NOT_A_WAY), lambda: choices.set_section_melody(kind=A_KIND_WITH_NO_MELODY, field=melody.HEIGHT, value=melody.HIGH),
-                        lambda: choices.set_section_melody(kind=A_KIND, field=melody.HEIGHT, value=NOT_A_WAY)):
+                        lambda: choices.set_melody_character(NOT_A_WAY), lambda: choices.set_section_melody(kind=A_KIND_WITH_NO_MELODY, field=wizard_names.MELODY_HEIGHT, value=melody.HIGH),
+                        lambda: choices.set_section_melody(kind=A_KIND, field=wizard_names.MELODY_HEIGHT, value=NOT_A_WAY)):
             with self.assertRaises(ValueError):
                 refused()
         choices.set_melody_way(field=wizard_limits.MELODY_BUSY, value=wizard_limits.MELODY_SPARSE)

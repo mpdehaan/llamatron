@@ -11,7 +11,7 @@ theme is drawn from the song's seed, so the same song has the same solo.
 
 import random
 
-from llamatron.wizards.create_song import notation
+from llamatron.wizards.create_song import notation, wizard_names
 
 KICK = 'kick'
 SNARE = 'snare'
@@ -75,7 +75,7 @@ def build_bar(*, theme, fast):
     """The snare on every eighth, or every sixteenth, loud on the theme's strokes and soft between, over a kick on every beat."""
     bar = empty_bar()
     for place in range(0, GRID, 1 if fast else EIGHTH):
-        bar[SNARE][place] = notation.LOUD if place in theme else notation.SOFT
+        bar[SNARE][place] = notation.LOUD if place in theme else wizard_names.SOFT
     for place in BEATS:
         bar[KICK][place] = notation.LOUD
     return bar

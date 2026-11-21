@@ -28,7 +28,7 @@ from llamatron.model.objects.naming import new_name
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages, names, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, breaks, melody, wizard_limits
+from llamatron.wizards.create_song import arranger, melody, wizard_limits, wizard_names
 from llamatron.wizards.create_song.breaks import break_names
 from llamatron.wizards.create_song.wizard_choices import genre_names, genre_title, WizardChoices
 from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_of, UITest
@@ -742,11 +742,11 @@ class TestWizardKit(WizardTest):
         # How far the break is cut up shows under a break chosen: a gauge that is empty for the break as written.
         await self.select_field(labels_text.MSG_WIZARD_BREAK_CUT_LABEL)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_FULL, self.wizard().field().value())
-        await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * breaks.MOST_CUT)
-        self.assertEqual(choices.get_kit().get_break_cut(), breaks.MOST_CUT)
+        await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * wizard_names.MOST_CUT)
+        self.assertEqual(choices.get_kit().get_break_cut(), wizard_names.MOST_CUT)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_EMPTY, self.wizard().field().value())
-        await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * breaks.MOST_CUT)
-        self.assertEqual(choices.get_kit().get_break_cut(), breaks.LEAST_CUT)
+        await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * wizard_names.MOST_CUT)
+        self.assertEqual(choices.get_kit().get_break_cut(), wizard_names.LEAST_CUT)
 
     async def test_a_piece_is_a_row_of_two_cells_and_left_and_right_move_between_them(self):
         await self.open_the_drums()

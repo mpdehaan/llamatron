@@ -8,11 +8,11 @@ and no record's strokes. A break may be cut up: its bar taken as slices, some of
 the cut goes, as a break is rearranged on a sampler.
 """
 
-from llamatron.wizards.create_song import notation
+from llamatron.wizards.create_song import notation, wizard_names
 
 # A bar's hits, sixteen to the bar: loud, soft or none.
 L = notation.LOUD
-S = notation.SOFT
+S = wizard_names.SOFT
 O = notation.NONE
 KICK = 'kick'
 SNARE = 'snare'
@@ -66,9 +66,6 @@ BREAKS = {
         HAT: [L, O, L, O, L, O, L, O, L, O, L, O, L, O, L, O],
     },
 }
-# How far a break is cut up, from as written to every slice but the first open to a swap.
-LEAST_CUT = 1
-MOST_CUT = 8
 # A slice is an eighth note of the bar.
 STEPS_IN_SLICE = 2
 SLICES = STEPS_IN_BAR // STEPS_IN_SLICE
@@ -89,7 +86,7 @@ def cut_up(*, bars, cut, dice):
     first slice left so that the bar still starts as the break does. The least cut is the break as written. Each slice cut
     is a different one, and what takes its place never sounds the same as what was there, so a further cut is always heard."""
     order = list(range(SLICES))
-    for target in dice.sample(range(1, SLICES), cut - LEAST_CUT):
+    for target in dice.sample(range(1, SLICES), cut - wizard_names.LEAST_CUT):
         unlike = [slice_at for slice_at in range(SLICES) if sliced(bars=bars, slice_at=slice_at) != sliced(bars=bars, slice_at=target)]
         if unlike:
             order[target] = dice.choice(unlike)

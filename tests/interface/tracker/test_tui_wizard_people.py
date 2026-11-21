@@ -13,7 +13,7 @@ from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import labels, messages
-from llamatron.wizards.create_song import song_plan, wizard_limits
+from llamatron.wizards.create_song import song_plan, wizard_limits, wizard_names
 from tests.interface.tracker.test_tui_wizard import WizardTest
 from tests.support.ui_testing import key_of
 
@@ -95,7 +95,7 @@ class TestWizardPeople(WizardTest):
         for setter in (player.set_comes_in, player.set_lays_out):
             with self.assertRaises(ValueError):
                 setter(NOT_A_WAY)
-        for reacts in (song_plan.LOWEST_ENERGY - 1, song_plan.HIGHEST_ENERGY + 1, True):
+        for reacts in (wizard_names.LOWEST_ENERGY - 1, wizard_names.HIGHEST_ENERGY + 1, True):
             with self.assertRaises(ValueError):
                 choices.player(THE_BASS).set_reacts(reacts)
 
@@ -103,12 +103,12 @@ class TestWizardPeople(WizardTest):
         choices = self.chosen()
         self.assertEqual(choices.player(THE_DRUMS).get_reacts(), song_plan.USUAL_CONTRAST)
         made = {}
-        for reacts in (song_plan.LOWEST_ENERGY, song_plan.USUAL_CONTRAST, song_plan.HIGHEST_ENERGY):
+        for reacts in (wizard_names.LOWEST_ENERGY, song_plan.USUAL_CONTRAST, wizard_names.HIGHEST_ENERGY):
             choices.player(THE_DRUMS).set_reacts(reacts)
             self.assertEqual(choices.player(THE_DRUMS).get_reacts(), reacts)
             made[reacts] = self.patterns(choices)
-        self.assertNotEqual(made[song_plan.LOWEST_ENERGY], made[song_plan.HIGHEST_ENERGY])
-        self.assertNotEqual(made[song_plan.USUAL_CONTRAST], made[song_plan.HIGHEST_ENERGY])
+        self.assertNotEqual(made[wizard_names.LOWEST_ENERGY], made[wizard_names.HIGHEST_ENERGY])
+        self.assertNotEqual(made[song_plan.USUAL_CONTRAST], made[wizard_names.HIGHEST_ENERGY])
         # With no song plan there is no Energy to answer to, and so nothing for Reacts to change.
         unplanned = self.chosen()
         unplanned.set_song_plan(False)

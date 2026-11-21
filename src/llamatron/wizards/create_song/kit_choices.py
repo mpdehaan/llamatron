@@ -6,7 +6,7 @@
 
 from llamatron.model.schema import limits
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, breaks as breaks_values, characters, notation as tune_notation, wizard_limits
+from llamatron.wizards.create_song import arranger, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, player_of
 from llamatron.wizards.create_song.breaks import break_names
 from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
@@ -150,7 +150,7 @@ class KitChoices(ChoicesPart):
 
     def drums(self):
         """Return the drums of the kit a piece may sound as."""
-        return list(tune_notation.KIT)
+        return list(wizard_names.NOTATION_KIT)
 
     def piece_sound(self, piece):
         """Return what a piece of the kit sounds as: None for its own drum, the name of another drum of the kit, or a General MIDI sound's number."""
@@ -168,7 +168,7 @@ class KitChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
         if sound is None or sound == piece:
             self._piece_sounds.pop(piece, None)
-        elif isinstance(sound, str) and sound in tune_notation.KIT:
+        elif isinstance(sound, str) and sound in wizard_names.NOTATION_KIT:
             self._piece_sounds[piece] = {arranger.PLAYED_DRUM: sound}
         elif not isinstance(sound, (bool, str)) and isinstance(sound, int) and limits.MIN_GM_SOUND <= sound <= limits.MAX_GM_SOUND:
             self._piece_sounds[piece] = {arranger.PLAYED_SOUND: sound, arranger.PLAYED_NOTE: self.piece_note(piece) or wizard_limits.USUAL_PIECE_NOTE}
@@ -216,9 +216,9 @@ class KitChoices(ChoicesPart):
 
     def get_break_cut(self):
         """Return how far the break is cut up, from LEAST_CUT, as written, to MOST_CUT."""
-        return self._break_cut if self._break_cut is not None else self._choices.picks().get(arranger.BREAK_CUT, breaks_values.LEAST_CUT)
+        return self._break_cut if self._break_cut is not None else self._choices.picks().get(arranger.BREAK_CUT, wizard_names.LEAST_CUT)
 
     def set_break_cut(self, position):
-        if isinstance(position, bool) or not isinstance(position, int) or not breaks_values.LEAST_CUT <= position <= breaks_values.MOST_CUT:
-            raise ValueError(errors.ERR_WIZARD_BREAK_CUT.format(low=breaks_values.LEAST_CUT, high=breaks_values.MOST_CUT, value=position))
+        if isinstance(position, bool) or not isinstance(position, int) or not wizard_names.LEAST_CUT <= position <= wizard_names.MOST_CUT:
+            raise ValueError(errors.ERR_WIZARD_BREAK_CUT.format(low=wizard_names.LEAST_CUT, high=wizard_names.MOST_CUT, value=position))
         self._break_cut = position

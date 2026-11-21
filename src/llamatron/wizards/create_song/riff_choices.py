@@ -10,7 +10,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import naming
 from llamatron.model.schema.file_format import PatternSetting
 from llamatron.user_strings import errors, names as names_text, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, notation as tune_notation, riffs as riffs_values, wizard_limits
+from llamatron.wizards.create_song import arranger, notation as tune_notation, riffs as riffs_values, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, in_octaves_of
 from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change
 from llamatron.wizards.create_song.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
@@ -58,7 +58,7 @@ class RiffChoices(ChoicesPart):
 
     def play_alone(self, *, kind, role, riff):
         """Have one riff played, by one player in one kind of section, and no other anywhere, the riff moving with the chords as a riff does until told otherwise."""
-        self._riff_entry(riff).pop(riffs_values.RIFF_WITH_CHORDS, None)
+        self._riff_entry(riff).pop(wizard_names.RIFF_WITH_CHORDS, None)
         self._held[wizard_limits.RIFFS_PLAYED] = {kind: {role: riff}}
 
     # The riffs: figures of a bar or two that a player repeats in place of the accompaniment. A riff is written for one player of

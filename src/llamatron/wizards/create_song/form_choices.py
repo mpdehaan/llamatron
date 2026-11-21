@@ -11,7 +11,7 @@ from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
 from llamatron.user_strings import errors, marks as marks_text
-from llamatron.wizards.create_song import arranger, interplay as interplay_values, joins as joins_values, notation as tune_notation, song_plan, wizard_limits
+from llamatron.wizards.create_song import arranger, interplay as interplay_values, notation as tune_notation, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import bar_length, forms_of, share_of
 from llamatron.wizards.create_song.choices_part import ChoicesPart
 from llamatron.wizards.create_song.section_choices import own_copy_of
@@ -190,17 +190,17 @@ class FormChoices(ChoicesPart):
             return {}
         own = self._own_without_plan(entry)
         settings = {}
-        if song_plan.TEMPO_OF_PLACE in own:
-            settings[song_plan.SCENE_TEMPO] = own[song_plan.TEMPO_OF_PLACE]
-        if song_plan.TEMPO_END_OF_PLACE in own:
-            settings[song_plan.SCENE_TEMPO_END] = own[song_plan.TEMPO_END_OF_PLACE]
-        if song_plan.ROOT_OF_PLACE in own or song_plan.TYPE_OF_PLACE in own:
-            settings[song_plan.SCALE_OF_PLACE] = {song_plan.ROOT_OF_PLACE: own.get(song_plan.ROOT_OF_PLACE, self._choices.get_root()), song_plan.TYPE_OF_PLACE: own.get(song_plan.TYPE_OF_PLACE, self._choices.get_scale_type())}
-        if own.get(song_plan.FADES):
-            settings.update(faded(own=self._choices.section(place).with_fade_way(own=own), loud=song_plan.UNFADED))
+        if wizard_names.TEMPO_OF_PLACE in own:
+            settings[song_plan.SCENE_TEMPO] = own[wizard_names.TEMPO_OF_PLACE]
+        if wizard_names.TEMPO_END_OF_PLACE in own:
+            settings[song_plan.SCENE_TEMPO_END] = own[wizard_names.TEMPO_END_OF_PLACE]
+        if wizard_names.ROOT_OF_PLACE in own or wizard_names.TYPE_OF_PLACE in own:
+            settings[song_plan.SCALE_OF_PLACE] = {wizard_names.ROOT_OF_PLACE: own.get(wizard_names.ROOT_OF_PLACE, self._choices.get_root()), wizard_names.TYPE_OF_PLACE: own.get(wizard_names.TYPE_OF_PLACE, self._choices.get_scale_type())}
+        if own.get(wizard_names.SONG_PLAN_FADES):
+            settings.update(faded(own=self._choices.section(place).with_fade_way(own=own), loud=wizard_names.UNFADED))
         if own.get(wizard_limits.LINES_OF_SECTION):
-            return {wizard_limits.PLAN: self._choices.plan_with_lines(kind=entry[arranger.KIND], plan=None, lines=own[wizard_limits.LINES_OF_SECTION]), **({arranger.CHORDS: copy.deepcopy(own[arranger.CHORDS])} if arranger.CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}
-        return {**({arranger.CHORDS: copy.deepcopy(own[arranger.CHORDS])} if arranger.CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}
+            return {wizard_limits.PLAN: self._choices.plan_with_lines(kind=entry[arranger.KIND], plan=None, lines=own[wizard_limits.LINES_OF_SECTION]), **({wizard_names.ARRANGER_CHORDS: copy.deepcopy(own[wizard_names.ARRANGER_CHORDS])} if wizard_names.ARRANGER_CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}
+        return {**({wizard_names.ARRANGER_CHORDS: copy.deepcopy(own[wizard_names.ARRANGER_CHORDS])} if wizard_names.ARRANGER_CHORDS in own else {}), **({arranger.SCENE_SETTINGS: settings} if settings else {})}
 
     def section_kinds(self):
         """Return the kinds of section the subgenre can play, in the genre's order: a kind nobody of the subgenre's band plays
@@ -338,7 +338,7 @@ class FormChoices(ChoicesPart):
         if way == wizard_limits.DRUMS_FIRST and drums in players and len(players) > 1:
             return [self._stage(kind=kind, plays=[drums]), whole]
         if way == wizard_limits.DRUM_FILL_IN and drums in players and self._choices.has_song_plan():
-            return [self._stage(kind=kind, plays=[drums], own={joins_values.LEAVES: wizard_limits.LEAVES_BIG_FILL})]
+            return [self._stage(kind=kind, plays=[drums], own={wizard_names.JOINS_LEAVES: wizard_limits.LEAVES_BIG_FILL})]
         if way == wizard_limits.ONE_PLAYER_FIRST and len(players) > 1 and players[0] != drums:
             return [self._stage(kind=kind, plays=players[:1]), whole]
         if way == wizard_limits.LAYERS and len(players) > 2:
@@ -360,13 +360,13 @@ class FormChoices(ChoicesPart):
         if way == wizard_limits.OUTRO_THEN_CHORD and held is not None:
             return [self._stage(kind=outro), *chord]
         if way == wizard_limits.SLOWS_DOWN:
-            return [self._stage(kind=outro, own={song_plan.TEMPO_END_OF_PLACE: max(self._choices.get_tempo() * wizard_limits.SLOWED_TO[0] // wizard_limits.SLOWED_TO[1], limits.MIN_TEMPO)}), *chord]
+            return [self._stage(kind=outro, own={wizard_names.TEMPO_END_OF_PLACE: max(self._choices.get_tempo() * wizard_limits.SLOWED_TO[0] // wizard_limits.SLOWED_TO[1], limits.MIN_TEMPO)}), *chord]
         if way == wizard_limits.STRIPS_DOWN and len(players) > 2:
             return [*(self._stage(kind=outro, plays=players[:count]) for count in range(len(players) - 1, 0, -1)), *chord]
         if way == wizard_limits.ONE_PLAYER_ALONE and len(players) > 1:
             return [self._stage(kind=outro, plays=players[:1]), *chord]
         if way == wizard_limits.REPEAT_AND_FADE:
-            return [self._stage(kind=outro, own={song_plan.FADES: True})]
+            return [self._stage(kind=outro, own={wizard_names.SONG_PLAN_FADES: True})]
         return None
 
     def starts(self):

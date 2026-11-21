@@ -24,7 +24,7 @@ from fractions import Fraction
 from llamatron.model.objects import naming
 from llamatron.model.schema import generator_plugins
 from llamatron.user_strings import errors, names
-from llamatron.wizards.create_song import loudness, notation
+from llamatron.wizards.create_song import loudness, notation, wizard_names
 from llamatron.wizards.create_song.notation import drum_rows, tune_rows
 from llamatron.wizards.create_song.shaping import is_compound, role_of, shaped
 
@@ -91,10 +91,10 @@ def pattern_of(part):
     if RAW in part:
         return dict(part[RAW])
     if notation.HITS in part:
-        return drum_rows(drum=part[notation.DRUM], hits=part[notation.HITS], loud=part[notation.LOUD], soft=part.get(notation.SOFT, part[notation.LOUD]), step_size=part.get(notation.STEP, notation.DEFAULT_STEP_SIZE),
-                         accent=part.get(notation.ACCENT), ghost=part.get(notation.GHOST))
+        return drum_rows(drum=part[notation.DRUM], hits=part[notation.HITS], loud=part[notation.LOUD], soft=part.get(wizard_names.SOFT, part[notation.LOUD]), step_size=part.get(notation.STEP, notation.DEFAULT_STEP_SIZE),
+                         accent=part.get(wizard_names.ACCENT), ghost=part.get(wizard_names.GHOST))
     step = part.get(notation.STEP, notation.DEFAULT_STEP_SIZE)
-    levels = {level: part[level] for level in (notation.ACCENT, notation.SOFT, notation.GHOST) if level in part}
+    levels = {level: part[level] for level in (wizard_names.ACCENT, wizard_names.SOFT, wizard_names.GHOST) if level in part}
     return tune_rows(lines=part[notation.LINES], octave=part[notation.OCTAVE], velocity=part[notation.VELOCITY], step_size=step, levels=levels)
 
 

@@ -8,7 +8,7 @@ import unittest
 
 from llamatron.model.file import version
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, interplay, melody, notation, wizard_limits
+from llamatron.wizards.create_song import arranger, interplay, melody, notation, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 ROCK = 'rock'
@@ -77,7 +77,7 @@ class TestRoomInALine(unittest.TestCase):
 
     def test_a_fills_notes_are_more_and_shorter_the_busier_and_fill_the_room(self):
         counts = []
-        for busy in range(interplay.LEAST_BUSY, interplay.MOST_BUSY + 1):
+        for busy in range(wizard_names.INTERPLAY_LEAST_BUSY, wizard_names.INTERPLAY_MOST_BUSY + 1):
             lengths = interplay.lengths_of(steps=A_GRID, unit=1, busy=busy)
             self.assertEqual(sum(lengths), A_GRID)
             counts.append(len(lengths))
@@ -116,10 +116,10 @@ class TestUnderLead(unittest.TestCase):
     def test_an_answer_comes_after_every_line_and_takes_all_the_room_of_a_line_the_tune_is_silent_through(self):
         lines = self.lines(interplay.ANSWERS)
         self.assertTrue(all(sounds_in(line) for line in lines))
-        answered = self.lines(interplay.ANSWERS, tune=[A_LINE, SILENT], busy=interplay.MOST_BUSY)
+        answered = self.lines(interplay.ANSWERS, tune=[A_LINE, SILENT], busy=wizard_names.INTERPLAY_MOST_BUSY)
         self.assertEqual(starts_of(answered[1])[0], 0)
         # A fill, in the same room, lasts no more than half a bar.
-        filled = self.lines(interplay.FILLS, tune=[A_LINE, SILENT], busy=interplay.MOST_BUSY)
+        filled = self.lines(interplay.FILLS, tune=[A_LINE, SILENT], busy=wizard_names.INTERPLAY_MOST_BUSY)
         self.assertEqual(starts_of(filled[1])[0], steps_in(SILENT) - self.habits[melody.GRID] // interplay.FILL_SHARE_OF_BAR)
 
     def test_a_line_with_no_room_is_left_silent(self):
@@ -142,7 +142,7 @@ class TestUnderLead(unittest.TestCase):
 
     def test_how_busy_changes_the_fills_and_the_riff(self):
         for way in (interplay.ANSWERS, interplay.RIFF):
-            self.assertNotEqual(self.lines(way, busy=interplay.LEAST_BUSY), self.lines(way, busy=interplay.MOST_BUSY), way)
+            self.assertNotEqual(self.lines(way, busy=wizard_names.INTERPLAY_LEAST_BUSY), self.lines(way, busy=wizard_names.INTERPLAY_MOST_BUSY), way)
 
 
 class TestArrangedBesideTheTune(unittest.TestCase):
@@ -258,9 +258,9 @@ class TestWizardInterplayChoices(unittest.TestCase):
         choices = wizard()
         verse = place_of(choices=choices, kind=VERSE)
         choices.get_band().set_section_role(place=verse, way=interplay.ANSWERS)
-        choices.get_band().set_fills_busy(interplay.MOST_BUSY)
+        choices.get_band().set_fills_busy(wizard_names.INTERPLAY_MOST_BUSY)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual((again.get_band().section_role(verse), again.get_band().get_fills_busy(), again.get_band().answered_by()), (interplay.ANSWERS, interplay.MOST_BUSY, SOLO))
+        self.assertEqual((again.get_band().section_role(verse), again.get_band().get_fills_busy(), again.get_band().answered_by()), (interplay.ANSWERS, wizard_names.INTERPLAY_MOST_BUSY, SOLO))
         self.assertEqual(made(again), made(choices))
         choices.get_band().set_answered_by(None)
         again = WizardChoices.from_data(choices.to_data())
@@ -281,15 +281,15 @@ class TestWizardInterplayChoices(unittest.TestCase):
             with self.assertRaises(ValueError) as refused:
                 setter(NO_SUCH)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=NO_SUCH))
-        for busy in (interplay.LEAST_BUSY - 1, interplay.MOST_BUSY + 1, True, NO_SUCH):
+        for busy in (wizard_names.INTERPLAY_LEAST_BUSY - 1, wizard_names.INTERPLAY_MOST_BUSY + 1, True, NO_SUCH):
             with self.assertRaises(ValueError) as refused:
                 choices.get_band().set_fills_busy(busy)
-            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_FILLS_BUSY.format(low=interplay.LEAST_BUSY, high=interplay.MOST_BUSY, value=busy))
+            self.assertEqual(str(refused.exception), errors.ERR_WIZARD_FILLS_BUSY.format(low=wizard_names.INTERPLAY_LEAST_BUSY, high=wizard_names.INTERPLAY_MOST_BUSY, value=busy))
 
     def test_every_place_of_fills_busy_makes_a_song_of_its_own(self):
         choices = wizard()
         songs = []
-        for busy in range(interplay.LEAST_BUSY, interplay.MOST_BUSY + 1):
+        for busy in range(wizard_names.INTERPLAY_LEAST_BUSY, wizard_names.INTERPLAY_MOST_BUSY + 1):
             choices.get_band().set_fills_busy(busy)
             song = choices.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()
             self.assertNotIn(song, songs, busy)
