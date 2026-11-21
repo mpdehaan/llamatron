@@ -5,7 +5,7 @@
 
 import unittest
 
-from llamatron.exporters import midi_arrangement
+from llamatron.engine.timing import general_midi
 from llamatron.interface.tracker import drawing, keybindings, note_names, pattern_preview
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.drawing import Box
@@ -260,8 +260,8 @@ class TestSoundDialog(PatternPreviewTest):
         await self.press(Key.ESCAPE)
         self.preview().play_sound(numbers=hits_of(A_DRUM), step_size=sound_trial.HITS_STEP, sound=None, key=A_DRUM)
         self.play_through()
-        self.assertEqual([list(data[:2]) for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [[timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE, A_DRUM]] * sound_trial.HITS)
-        self.assertNotIn(timeline.PROGRAM_CHANGE | midi_arrangement.DRUM_CHANNEL_BYTE, [data[0] for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent])
+        self.assertEqual([list(data[:2]) for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [[timeline.NOTE_ON | general_midi.DRUM_CHANNEL_BYTE, A_DRUM]] * sound_trial.HITS)
+        self.assertNotIn(timeline.PROGRAM_CHANGE | general_midi.DRUM_CHANNEL_BYTE, [data[0] for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent])
 
 
 class TestNoteNames(unittest.TestCase):

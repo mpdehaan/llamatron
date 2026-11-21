@@ -2,7 +2,6 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from enum import auto, Enum
 from fractions import Fraction
 from math import isfinite
 
@@ -12,6 +11,7 @@ from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.math.rational import Rational
 from llamatron.model.values import sound
+from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors
 
@@ -24,14 +24,6 @@ AMOUNT_PRECISION = 1_000_000
 START = Rational(0)
 HALF = 2
 AMOUNT_TYPES = (int, float, Rational, Fraction)
-
-
-class BlendMode(Enum):
-    """Where the target comes in from as Blend moves one clip towards another."""
-
-    LEFT = auto()
-    RIGHT = auto()
-    MIDDLE = auto()
 
 
 def _check_mode(mode):

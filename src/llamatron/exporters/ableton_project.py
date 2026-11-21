@@ -222,9 +222,9 @@ class AbletonProject(WritesOneFile, Exporter):
         self._template = template
 
     @classmethod
-    def for_song(cls, *, directory, grid, name, template=None):
+    def for_song(cls, *, directory, grid, name, resources=None):
         """Return the exporter of a played song as a Live set, built from a template, or the one that comes with the program."""
-        return cls(directory=directory, grid=grid, name=name, template=template or DEFAULT_TEMPLATE)
+        return cls(directory=directory, grid=grid, name=name, template=(resources and resources.template) or DEFAULT_TEMPLATE)
 
     def get_template(self):
         return self._template

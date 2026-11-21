@@ -12,7 +12,6 @@ from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
-from llamatron.engine.generators.blend import BlendMode
 from llamatron.exporters.exports import export_name, ExportKind
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.document_parts import pattern_edits
@@ -29,6 +28,7 @@ from llamatron.model.objects.naming import copy_name, unique_name
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, FileLayout, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
+from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.note import Note, NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, labels as labels_text, marks as marks_text, names as names_text

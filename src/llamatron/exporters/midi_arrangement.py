@@ -18,6 +18,7 @@ hardware and samplers that take one file at a time.
 import mido
 import os
 
+from llamatron.engine.timing.general_midi import general_midi_channels
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters import midi_messages
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles, WritesOneFile
@@ -32,9 +33,6 @@ from llamatron.user_strings import names as names_text
 SONG_FILE = '{name}.mid'
 # The General MIDI file, beside the plain one, so that neither writes over the other.
 GENERAL_MIDI_FILE = '{name}_gm.mid'
-# General MIDI's channels as bytes: drums on channel 10, and every other track on the others in turn, starting again after 16.
-DRUM_CHANNEL_BYTE = 9
-MELODIC_CHANNEL_BYTES = [channel for channel in range(16) if channel != DRUM_CHANNEL_BYTE]
 STEM_FILE = '{name}_stem_{number:03d}-{track}.mid'
 UNNAMED_STEM_FILE = '{name}_stem_{number:03d}.mid'
 # The stems of a song, as a glob pattern that matches nothing a clip export writes, and as shown to people.
@@ -136,15 +134,8 @@ class MidiGeneralMidi(WritesOneFile, _Arrangement):
 
     def channels(self):
         """Return each unmuted track's channel byte, by the track: 9 for drums, and the other channels in turn for the rest."""
-        channels = {}
-        melodic = 0
-        for track in self.sounding_tracks():
-            if track.is_drum():
-                channels[track] = DRUM_CHANNEL_BYTE
-            else:
-                channels[track] = MELODIC_CHANNEL_BYTES[melodic % len(MELODIC_CHANNEL_BYTES)]
-                melodic += 1
-        return channels
+        tracks = self.sounding_tracks()
+        return dict(zip(tracks, general_midi_channels([track.is_drum() for track in tracks])))
 
     def midi_file(self):
         """Return the whole song as a mido file: the tempo track and a track per unmuted track on its channel with its sound, all ending together."""

@@ -8,7 +8,7 @@ from math import ceil
 
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.generators import registry
-from llamatron.engine.generators.blend import Blend
+from llamatron.engine.parts.blend import Blend
 from llamatron.engine.parts.euclidean_mask import EuclidMask
 from llamatron.engine.realizer import pattern_player as pattern_values
 from llamatron.engine.realizer.morph_controls import morph_controls

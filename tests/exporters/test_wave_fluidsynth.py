@@ -30,6 +30,7 @@ from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import file_format
+from llamatron.realtime.devices.fluidsynth import FluidSynthInstallation
 from llamatron.user_strings import errors, labels, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text, UITest
@@ -46,7 +47,9 @@ QUIET_PEAK = 1000
 STEREO = 2
 FAILED = 1
 FLUIDSYNTH_SAYS = 'fluidsynth: error: no audio'
-INSTALLED = 'llamatron.exporters.wave_fluidsynth.installed'
+INSTALLED = 'llamatron.realtime.devices.fluidsynth.installed'
+# Where a stand-in FluidSynth and its SoundFont are said to be, which the stand-in render never looks at.
+STAND_IN_SYNTH = FluidSynthInstallation('fluidsynth', 'soundfont.sf2')
 TRACKER_INSTALLED = 'llamatron.interface.tracker.transport.installed'
 PROGRAM_CHANGE = 'program_change'
 READ_BYTES = 'rb'
@@ -103,12 +106,9 @@ class TestWaveFluidSynth(unittest.TestCase):
         self.addCleanup(scratch.cleanup)
         self.folder = scratch.name
         self.document = song_with_instruments()
-        patcher = mock.patch(INSTALLED, return_value=True)
-        patcher.start()
-        self.addCleanup(patcher.stop)
 
-    def exporter(self):
-        return WaveFluidSynth(directory=self.folder, grid=SongRealizer(self.document.song()).render(), name=NAME)
+    def exporter(self, *, synth=STAND_IN_SYNTH):
+        return WaveFluidSynth(directory=self.folder, grid=SongRealizer(self.document.song()).render(), name=NAME, synth=synth)
 
     def test_the_grid_says_which_tracks_play_through_fluidsynth(self):
         columns = {column.get_name(): column for column in SongRealizer(self.document.song()).render().get_columns()}
@@ -135,8 +135,8 @@ class TestWaveFluidSynth(unittest.TestCase):
         self.assertAlmostEqual(int(numpy.abs(samples.astype(numpy.int32)).max()), peak_sample(), delta=ROUNDING)
 
     def test_fluidsynth_not_installed_or_no_track_through_it_is_refused_before_anything_is_written(self):
-        with mock.patch(INSTALLED, return_value=False), self.assertRaises(ValueError) as refused:
-            self.exporter().export(render=StandInFluidSynth())
+        with self.assertRaises(ValueError) as refused:
+            self.exporter(synth=None).export(render=StandInFluidSynth())
         self.assertEqual(str(refused.exception), errors.ERR_WAV_NEEDS_FLUIDSYNTH)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=None)
         with self.assertRaises(ValueError) as refused:

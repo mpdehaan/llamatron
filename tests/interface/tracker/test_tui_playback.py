@@ -14,7 +14,7 @@ from rich.text import Text
 import unittest
 from unittest import mock
 
-from llamatron.exporters import midi_arrangement
+from llamatron.engine.timing import general_midi
 from llamatron.interface.tracker import batch_stage, keybindings, pattern_preview
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.components.stage_drawing import Rect
@@ -227,22 +227,22 @@ class TestFluidSynthPlayback(PlaybackTest):
     def test_a_drum_track_plays_on_channel_10_and_the_others_in_turn_with_their_sound(self):
         routes = self.transport().routes()
         self.assertEqual(routes[ui_testing.DRUMS].port, fluidsynth.FLUIDSYNTH_PORT)
-        self.assertEqual(routes[ui_testing.DRUMS].channel, midi_arrangement.DRUM_CHANNEL_BYTE)
+        self.assertEqual(routes[ui_testing.DRUMS].channel, general_midi.DRUM_CHANNEL_BYTE)
         self.assertIsNone(routes[ui_testing.DRUMS].program)
-        self.assertEqual(routes[ui_testing.LEAD].channel, midi_arrangement.MELODIC_CHANNEL_BYTES[0])
+        self.assertEqual(routes[ui_testing.LEAD].channel, general_midi.MELODIC_CHANNEL_BYTES[0])
         self.assertEqual(routes[ui_testing.LEAD].program, VIOLIN_PROGRAM)
 
     def test_the_instruments_own_channel_is_ignored_and_a_muted_track_takes_no_channel(self):
-        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_channel, midi_arrangement.MELODIC_CHANNEL_BYTES[5] + 1)
-        self.assertEqual(self.transport().routes()[ui_testing.LEAD].channel, midi_arrangement.MELODIC_CHANNEL_BYTES[0])
+        self.document.change(self.document.get_setlist().get_instrument(FLUID).set_channel, general_midi.MELODIC_CHANNEL_BYTES[5] + 1)
+        self.assertEqual(self.transport().routes()[ui_testing.LEAD].channel, general_midi.MELODIC_CHANNEL_BYTES[0])
         self.document.change(self.document.song().get_track(ui_testing.DRUMS).set_drum, False)
         self.document.change(self.document.get_setlist().get_instrument(DRUM_KIT).set_gm_sound, None)
         routes = self.transport().routes()
-        self.assertEqual([routes[ui_testing.LEAD].channel, routes[ui_testing.DRUMS].channel], midi_arrangement.MELODIC_CHANNEL_BYTES[:2])
+        self.assertEqual([routes[ui_testing.LEAD].channel, routes[ui_testing.DRUMS].channel], general_midi.MELODIC_CHANNEL_BYTES[:2])
         self.assertIsNone(routes[ui_testing.DRUMS].program)
         self.document.change(self.document.song().get_track(ui_testing.LEAD).set_mute, True)
         self.assertNotIn(ui_testing.LEAD, self.transport().routes())
-        self.assertEqual(self.transport().routes()[ui_testing.DRUMS].channel, midi_arrangement.MELODIC_CHANNEL_BYTES[0])
+        self.assertEqual(self.transport().routes()[ui_testing.DRUMS].channel, general_midi.MELODIC_CHANNEL_BYTES[0])
 
     async def test_playing_starts_fluidsynth_first_and_sends_each_tracks_sound_before_its_notes(self):
         self.assertFalse(self.fluidsynth.running)
@@ -251,10 +251,10 @@ class TestFluidSynthPlayback(PlaybackTest):
         self.assertEqual(self.fluidsynth.starts, 1)
         await self.let_time_pass(A_MOMENT)
         sent = [data for _, data in self.outputs[fluidsynth.FLUIDSYNTH_PORT].sent]
-        lead = midi_arrangement.MELODIC_CHANNEL_BYTES[0]
+        lead = general_midi.MELODIC_CHANNEL_BYTES[0]
         self.assertEqual(sent[0], [timeline.PROGRAM_CHANGE | lead, VIOLIN_PROGRAM])
-        self.assertIn([timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE], [data[:1] for data in sent if data[0] & KIND_MASK == timeline.NOTE_ON])
-        self.assertNotIn(timeline.PROGRAM_CHANGE | midi_arrangement.DRUM_CHANNEL_BYTE, [data[0] for data in sent])
+        self.assertIn([timeline.NOTE_ON | general_midi.DRUM_CHANNEL_BYTE], [data[:1] for data in sent if data[0] & KIND_MASK == timeline.NOTE_ON])
+        self.assertNotIn(timeline.PROGRAM_CHANGE | general_midi.DRUM_CHANNEL_BYTE, [data[0] for data in sent])
         # Playing again uses the FluidSynth already running.
         await self.press(keybindings.ArrangePage.STOP_PLAYING, keybindings.ArrangePage.PLAY_SONG)
         self.assertEqual(self.fluidsynth.starts, 1)
@@ -270,7 +270,7 @@ class TestFluidSynthPlayback(PlaybackTest):
     async def test_ctrl_t_silences_fluidsynths_channels_while_it_runs_and_quitting_ends_it(self):
         self.assertEqual(self.transport().channels_in_use(), [])
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
-        self.assertEqual(self.transport().channels_in_use(), sorted([(fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE), (fluidsynth.FLUIDSYNTH_PORT, midi_arrangement.MELODIC_CHANNEL_BYTES[0])]))
+        self.assertEqual(self.transport().channels_in_use(), sorted([(fluidsynth.FLUIDSYNTH_PORT, general_midi.DRUM_CHANNEL_BYTE), (fluidsynth.FLUIDSYNTH_PORT, general_midi.MELODIC_CHANNEL_BYTES[0])]))
         self.transport().close()
         self.assertFalse(self.fluidsynth.running)
         self.assertEqual(self.fluidsynth.stops, 1)
@@ -728,7 +728,7 @@ class TestClipPagePlayback(PlaybackTest):
         self.clock.advance(A_MOMENT)
         preview.tick()
         preview.get_player().get_sender().send_due()
-        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE])
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | general_midi.DRUM_CHANNEL_BYTE])
         await self.press(Key.ESCAPE)
         self.assertIsNone(preview.playing_clip())
 
@@ -825,7 +825,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         # A drum pattern has no scale to say.
         self.assertIn(messages.MSG_LISTENING_TO_PATTERN.format(name=ui_testing.BEAT), self.text())
         await self.let_the_preview_play(A_MOMENT)
-        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | midi_arrangement.DRUM_CHANNEL_BYTE])
+        self.assertEqual([data[0] for data in self.note_ons(fluidsynth.FLUIDSYNTH_PORT)], [timeline.NOTE_ON | general_midi.DRUM_CHANNEL_BYTE])
         self.assertNotIn(SYNTH_PORT, self.outputs)
 
     async def test_without_a_preview_instrument_or_fluidsynth_listen_is_not_offered(self):

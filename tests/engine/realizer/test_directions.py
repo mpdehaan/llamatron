@@ -7,12 +7,12 @@
 from fractions import Fraction
 import unittest
 
-from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.realizer.step_order import StepOrder
 from llamatron.math.random_source import random_source
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, PatternSetting, Row, Section
+from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.note import Note, NoteName, Rest
 from tests.support import song_testing
 from tests.support.rendering import render_data

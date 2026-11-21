@@ -9,7 +9,8 @@ import io
 import os
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
-from llamatron.exporters.exports import earlier_export, export_name, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.exporters.exports import earlier_export, export_name, ExportResources, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.interface.tracker import transport
 from llamatron.model.file.checks import listed
 from llamatron.model.file.ordered_data import same_in_order
 from llamatron.model.file.setlist_reader import file_stem
@@ -208,7 +209,7 @@ class DocumentFiles:
         # Exporters print warnings, which would write over the screen.
         with contextlib.redirect_stdout(io.StringIO()):
             try:
-                make_exporter(kind=to, directory=directory, name=name, grid=grid).export()
+                make_exporter(kind=to, directory=directory, name=name, grid=grid, resources=ExportResources(synth=transport.fluidsynth_installation())).export()
             except (ValueError, OSError) as error:
                 raise SongFileError(str(error)) from error
         return self.export_path(to)

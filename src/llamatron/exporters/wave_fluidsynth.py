@@ -18,7 +18,6 @@ import tempfile
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi
 from llamatron.exporters.wave_level import normalize_wave
-from llamatron.realtime.devices.fluidsynth import fluidsynth_path, installed, soundfont_path
 from llamatron.user_strings import errors, names
 
 WAV_FILE = '{name}.wav'
@@ -32,7 +31,16 @@ RENDER_OPTIONS = ['-n', '-i', '-q', '-r', SAMPLE_RATE, '-F']
 class WaveFluidSynth(MidiGeneralMidi):
     """Exports a ClipGrid as <directory>/<name>.wav: its tracks that play through FluidSynth, played by FluidSynth."""
 
-    __slots__ = ()
+    __slots__ = ('_synth',)
+
+    def __init__(self, *, directory, grid, name, synth=None):
+        """synth says where FluidSynth and its SoundFont are, as its program and soundfont, or is None where it isn't installed."""
+        super().__init__(directory=directory, grid=grid, name=name)
+        self._synth = synth
+
+    @classmethod
+    def for_song(cls, *, directory, grid, name, resources=None):
+        return cls(directory=directory, grid=grid, name=name, synth=resources and resources.synth)
 
     KIND = ExportKind.WAV
     LABEL = names.MSG_WAV_EXPORT_LABEL
@@ -44,7 +52,7 @@ class WaveFluidSynth(MidiGeneralMidi):
 
     def export(self, *, render=subprocess.run):
         """Write the WAV file, unless it already exists, in which case this prints a warning and writes nothing. render runs FluidSynth, which the tests replace."""
-        if not installed():
+        if self._synth is None:
             raise ValueError(errors.ERR_WAV_NEEDS_FLUIDSYNTH)
         if not self.sounding_tracks():
             raise ValueError(errors.ERR_NO_FLUIDSYNTH_TRACKS)
@@ -54,7 +62,7 @@ class WaveFluidSynth(MidiGeneralMidi):
         with tempfile.TemporaryDirectory() as scratch:
             midi = os.path.join(scratch, MIDI_FILE)
             self.midi_file().save(midi)
-            finished = render([fluidsynth_path(), *RENDER_OPTIONS, path, soundfont_path(), midi], capture_output=True, text=True, check=False)
+            finished = render([self._synth.program, *RENDER_OPTIONS, path, self._synth.soundfont, midi], capture_output=True, text=True, check=False)
         if finished.returncode != 0 or not os.path.exists(path):
             raise ValueError(errors.ERR_FLUIDSYNTH_RENDER_FAILED.format(problem=(finished.stderr or finished.stdout).strip()))
         normalize_wave(path)

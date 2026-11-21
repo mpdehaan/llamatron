@@ -41,7 +41,7 @@ VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.
 FRONT_DOORS = {
     # Of the Engine, the Realizer is reached only through the song's realizer; its clips, timing, parts and plugins are open.
-    'engine': ('clips', 'timing', 'parts', 'generators', 'step_effects', 'realizer.song_realizer'),
+    'engine': ('clips', 'timing', 'generators', 'realizer.song_realizer'),
     'exporters': ('exports',),
     'importers': ('midi_import',),
     'wizards': ('create_song.wizard_choices', 'create_song.wizard_limits'),

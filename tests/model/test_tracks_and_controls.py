@@ -21,7 +21,6 @@ from llamatron.engine.clips.control import Control
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.generator import Arp, ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
-from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.parts.scale_moves import along_scale
 from llamatron.engine.timing import timing
 from llamatron.engine.timing.timing import control_events, timed_events
@@ -35,6 +34,7 @@ from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, Section, TrackSetting
 from llamatron.model.values import midi, note as note_values
+from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType

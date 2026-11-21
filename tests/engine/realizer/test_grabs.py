@@ -9,12 +9,12 @@ import unittest
 
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.model import ArpSetting
-from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values import midi, note as note_values
+from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import errors

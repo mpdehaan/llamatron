@@ -22,6 +22,7 @@ from llamatron.user_strings import errors
 FILE_LIST_SEPARATOR = ', '
 
 
+
 class ExportKind:
     """What --to can write, as it's named on the command line."""
 
@@ -64,8 +65,8 @@ class Exporter:
         self._name = name
 
     @classmethod
-    def for_song(cls, *, directory, grid, name, template=None):
-        """Return this kind's exporter of a played song. The template is for a kind that is built from one, and the others have no use for it."""
+    def for_song(cls, *, directory, grid, name, resources=None):
+        """Return this kind's exporter of a played song. resources, an ExportResources or None, are for a kind that is made with them, and the others have no use for them."""
         return cls(directory=directory, grid=grid, name=name)
 
     def get_name(self):

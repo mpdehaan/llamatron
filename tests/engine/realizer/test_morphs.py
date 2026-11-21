@@ -6,11 +6,11 @@
 
 import unittest
 
-from llamatron.engine.generators.blend import BlendMode
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.clip_slot import morph_style_name
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, PatternSetting, Row, SceneSetting, Section, TrackSetting
+from llamatron.model.values.blend_mode import BlendMode
 from tests.support import song_testing
 from tests.support.rendering import render_data, song_from_data
 from tests.support.song_testing import clip, pat, pitches, with_parts

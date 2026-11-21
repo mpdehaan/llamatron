@@ -13,6 +13,8 @@ in a directory, so that it can be replaced or asked about before being written o
 are listed here, and the functions below ask the class of the kind they're given.
 """
 
+from typing import NamedTuple
+
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exporter import ExportKind
@@ -36,9 +38,21 @@ def export_name(*, setlist, song):
     return EXPORT_NAME.format(setlist=setlist, song=song)
 
 
-def make_exporter(*, kind, directory, name, grid, template=None):
-    """Return the exporter for a kind of export, which writes a played grid into a directory, as files named after name, when told to export()."""
-    return EXPORTERS[kind].for_song(directory=directory, grid=grid, name=name, template=template)
+
+class ExportResources(NamedTuple):
+    """What some kinds of export are made with: the Live set a Live export is built from, None for the one that comes with the
+    program, and where FluidSynth and its SoundFont are, as its program and soundfont, for a WAV export, None where it isn't installed."""
+
+    template: object = None
+    synth: object = None
+
+
+
+
+def make_exporter(*, kind, directory, name, grid, resources=None):
+    """Return the exporter for a kind of export, which writes a played grid into a directory, as files named after name, when told to
+    export(), made with the ExportResources a kind needs: a Live set's template, and where FluidSynth is for a WAV."""
+    return EXPORTERS[kind].for_song(directory=directory, grid=grid, name=name, resources=resources)
 
 
 def shown_export_path(*, kind, directory, name):

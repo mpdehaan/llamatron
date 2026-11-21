@@ -141,7 +141,6 @@ flowchart LR
     engine --> model
     exporters --> engine
     exporters --> model
-    exporters --> realtime
     importers --> engine
     importers --> exporters
     importers --> model
@@ -155,8 +154,8 @@ flowchart LR
     llamatron --> exporters
     llamatron --> interface
     llamatron --> model
+    llamatron --> realtime
     llamatron --> wizards
-    model --> engine
     realtime --> engine
     realtime --> model
     wizards --> engine

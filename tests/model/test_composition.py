@@ -20,7 +20,6 @@ from llamatron.engine.generators.arp.generator import Arp, ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings, written_name
 from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
-from llamatron.engine.generators.blend import BlendMode
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.chain import Chain
@@ -34,6 +33,7 @@ from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import Accidental, ClipSlotSetting, Direction, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
+from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.model.values.time_signature import TimeSignature

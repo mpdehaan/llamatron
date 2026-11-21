@@ -29,7 +29,7 @@ import threading
 from typing import NamedTuple
 
 from llamatron.engine.realizer.step_order import walk_order
-from llamatron.exporters import midi_arrangement
+from llamatron.engine.timing.general_midi import general_midi_channels
 from llamatron.interface.tracker.uses import loop_error_lines
 from llamatron.interface.visualizers import heard as heard_values
 from llamatron.interface.visualizers.heard import FrameHearing, HeardNote
@@ -80,6 +80,11 @@ def process_sender(ports):
     """Return the Realtime Sender Process for the ports, the sender every real play uses."""
     return RealtimeMIDISenderProcess(ports=ports)
 
+
+
+def fluidsynth_installation():
+    """Return where FluidSynth and its SoundFont are installed, which a WAV export plays through, or None where they aren't."""
+    return fluidsynth_values.installation()
 
 class Problem:
     """Why nothing can play: a dialog's title and its lines."""
@@ -244,21 +249,21 @@ class Transport:
         """
         setlist = self.document().get_setlist()
         song = self.document().song()
-        routes = {}
-        melodic = 0
+        instruments = {}
         for track in song.get_track_names():
             name = (instead or {}).get(track) or song.get_track(track).get_instrument_name()
-            if not (name and setlist.has_instrument(name) and setlist.get_instrument(name).has_device()):
-                continue
-            instrument = setlist.get_instrument(name)
+            if name and setlist.has_instrument(name) and setlist.get_instrument(name).has_device():
+                instruments[track] = setlist.get_instrument(name)
+        # The tracks through FluidSynth take General MIDI's channels in order: every drum track, and the unmuted others.
+        through_fluidsynth = [track for track, instrument in instruments.items() if instrument.uses_fluidsynth() and (song.get_track(track).is_drum() or not song.get_track(track).is_muted())]
+        channels = dict(zip(through_fluidsynth, general_midi_channels([song.get_track(track).is_drum() for track in through_fluidsynth])))
+        routes = {}
+        for track, instrument in instruments.items():
             if not instrument.uses_fluidsynth():
                 routes[track] = Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
-            elif song.get_track(track).is_drum():
-                routes[track] = Route(fluidsynth_values.FLUIDSYNTH_PORT, midi_arrangement.DRUM_CHANNEL_BYTE, None, keyswitches=False)
-            elif not song.get_track(track).is_muted():
-                sound = instrument.get_gm_sound()
-                routes[track] = Route(fluidsynth_values.FLUIDSYNTH_PORT, midi_arrangement.MELODIC_CHANNEL_BYTES[melodic % len(midi_arrangement.MELODIC_CHANNEL_BYTES)], None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
-                melodic += 1
+            elif track in channels:
+                sound = None if song.get_track(track).is_drum() or instrument.get_gm_sound() is None else instrument.get_gm_sound() - limits.MIN_GM_SOUND
+                routes[track] = Route(fluidsynth_values.FLUIDSYNTH_PORT, channels[track], sound, keyswitches=False)
         return routes
 
     def channels_in_use(self):

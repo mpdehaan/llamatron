@@ -22,6 +22,7 @@ import os
 import shutil
 import subprocess
 import time
+from typing import NamedTuple
 
 from llamatron.realtime.devices.ports import output_port_names_now
 from llamatron.realtime.sender_process.process import SenderNotStarted
@@ -77,6 +78,18 @@ def is_installed():
 
 
 @functools.cache
+class FluidSynthInstallation(NamedTuple):
+    """Where FluidSynth's program and its SoundFont are, which a WAV export plays through."""
+
+    program: str
+    soundfont: str
+
+
+def installation():
+    """Return where FluidSynth and its SoundFont are installed, or None where they aren't."""
+    return FluidSynthInstallation(fluidsynth_path(), soundfont_path()) if installed() else None
+
+
 def installed():
     """Return whether FluidSynth and its SoundFont are installed, looked for once a run (is_installed), since every launch,
     listening page and WAV export asks, and the files do not come and go while the tracker runs."""

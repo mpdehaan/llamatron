@@ -25,6 +25,7 @@ from llamatron.exporters import ableton_project, exports
 from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesManyFiles, WritesOneFile
+from llamatron.exporters.exports import ExportResources
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.model.file import files
@@ -173,12 +174,12 @@ class TestExporter(unittest.TestCase):
         self.assertEqual(Exporter(directory=HERE, grid=self.grid).get_name(), os.path.basename(os.getcwd()))
 
     def test_only_the_live_set_is_built_from_a_template(self):
-        live = AbletonProject.for_song(directory=self.directory, grid=self.grid, name=EXPORT, template=OTHER_TEMPLATE)
+        live = AbletonProject.for_song(directory=self.directory, grid=self.grid, name=EXPORT, resources=ExportResources(template=OTHER_TEMPLATE))
         self.assertEqual(live.get_template(), OTHER_TEMPLATE)
         self.assertEqual(AbletonProject.for_song(directory=self.directory, grid=self.grid, name=EXPORT).get_template(), ableton_project.DEFAULT_TEMPLATE)
         for exporter in (MidiSong, MidiStems, ClipTree):
             with self.subTest(exporter=exporter.__name__):
-                made = exporter.for_song(directory=self.directory, grid=self.grid, name=EXPORT, template=OTHER_TEMPLATE)
+                made = exporter.for_song(directory=self.directory, grid=self.grid, name=EXPORT, resources=ExportResources(template=OTHER_TEMPLATE))
                 self.assertIsInstance(made, exporter)
                 self.assertEqual(made.get_name(), EXPORT)
 

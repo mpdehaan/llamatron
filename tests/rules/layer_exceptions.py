@@ -11,8 +11,6 @@ missing object in the layer below.
 
 ALLOWED = {
     'order': (
-        'model/objects/clip_slot.py imports engine.generators.blend',
-        'exporters/wave_fluidsynth.py imports realtime.devices.fluidsynth',
         'user_strings/labels.py imports model.schema.file_format',
         'user_strings/labels.py imports interface.tracker.keys',
         'user_strings/marks.py imports model.schema.file_format',
@@ -20,12 +18,10 @@ ALLOWED = {
     ),
     'front doors': (
         'cli.py imports wizards.create_song.wizard_file',
-        'exporters/wave_fluidsynth.py imports realtime.devices.fluidsynth',
         'importers/comparison.py imports exporters.midi_arrangement',
         'importers/comparison.py imports exporters.midi_messages',
         'interface/tracker/dialogs/new_riff_dialog.py imports wizards.create_song.riffs',
         'interface/tracker/document_parts/set_edits.py imports importers.writing',
-        'interface/tracker/pattern_preview.py imports exporters.midi_arrangement',
         'interface/tracker/pattern_preview.py imports engine.realizer.step_order',
         'interface/tracker/screens/wizard/branch.py imports wizards.create_song.hook_writing',
         'interface/tracker/screens/wizard/form_branch.py imports wizards.create_song.song_plan',
@@ -42,7 +38,6 @@ ALLOWED = {
         'interface/tracker/screens/wizard/section_melody_branch.py imports wizards.create_song.melody',
         'interface/tracker/screens/wizard/wizard_page.py imports wizards.create_song.notation',
         'interface/tracker/screens/wizard/wizard_page.py imports realtime.sender_process.process',
-        'interface/tracker/transport.py imports exporters.midi_arrangement',
         'interface/tracker/transport.py imports engine.realizer.step_order',
     ),
     'pages': (
