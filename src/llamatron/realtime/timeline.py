@@ -113,9 +113,11 @@ def song_timeline(*, grid, routes):
 def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock):
     """Return one clip's notes and CC values as events, placed at its scene's start and timed by its row's clock, in no particular order, after the route's program change when it has one."""
     events = []
+    # A score counts each clip's events from its scene's start, which is zero, and adding a zero to every moment cost a Rational a moment.
+    starts_at_zero = not scene_start
 
     def at(time, kind, number, value):
-        return Playing(scene_start + time, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag)
+        return Playing(time if starts_at_zero else scene_start + time, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag)
     if route.program is not None:
         events.append(at(Rational(0), PROGRAM_CHANGE, route.program, NO_VELOCITY))
     notes, clip_length = timed_events(clip=clip, scale=scale)

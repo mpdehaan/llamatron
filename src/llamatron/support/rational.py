@@ -63,6 +63,15 @@ def _reduced(*, numerator, denominator):
     return rational
 
 
+def in_lowest_terms(*, numerator, denominator):
+    """Return a Rational from a numerator and a positive denominator already in lowest terms, as a length's pair always is,
+    without working their divisor out again: a render turns about a million pairs into Rationals across the examples."""
+    rational = _new(Rational)
+    rational.numerator = numerator
+    rational.denominator = denominator
+    return rational
+
+
 # How a Rational prints as text, like 3/16.
 TEXT = '{numerator}/{denominator}'
 

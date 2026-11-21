@@ -30,7 +30,7 @@ the methods beside it.
 
 import math
 
-from llamatron.support.rational import Rational
+from llamatron.support.rational import in_lowest_terms, Rational
 
 # No time at all, which is also where a clip starts.
 ZERO = (0, 1)
@@ -69,8 +69,9 @@ class Length:
 
     @staticmethod
     def rational(pair):
-        """Return a pair as a Rational, for whoever wants a number: a clip's own length, an exporter's times and the tests."""
-        return Rational(pair[0], pair[1])
+        """Return a pair as a Rational, for whoever wants a number: a clip's own length, an exporter's times and the tests. A pair
+        is always in lowest terms, so its divisor is not worked out again."""
+        return in_lowest_terms(numerator=pair[0], denominator=pair[1])
 
     @staticmethod
     def add(first, second):

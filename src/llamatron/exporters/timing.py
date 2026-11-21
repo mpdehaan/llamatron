@@ -123,22 +123,30 @@ def timed_events(*, clip, scale, grooved=True):
         if nudge is not None:
             onset = max(onset + nudge.moved(slot_start), ZERO_DELAY)
         following = _what_follows(slots=slots, place=place)
-        strings = [(midi_number, note, ZERO_DELAY, NO_FADING) for midi_number, note in sounding_notes.items()]
-        if strum is not None and len(strings) > 1:
-            strings = _strummed(notes=sounding_notes, strum=strum, time=slot_start, count=strummed, place=place)
+        if strum is not None and len(sounding_notes) > 1:
+            for midi_number, note, delay, fading in _strummed(notes=sounding_notes, strum=strum, time=slot_start, count=strummed, place=place):
+                _add_note(timed=timed, start=min(onset + delay, clip_length), onset=onset, note=note, midi_number=midi_number, fading=fading, following=following, clip_length=clip_length)
             strummed += 1
-        for midi_number, note, delay, fading in strings:
-            start = min(onset + delay, clip_length)
-            end = _glide_end(note=note, end=onset + Length.rational(note[sound.LENGTH]), following=following)
-            end = min(end, clip_length)
+            continue
+        # The plain case, most notes of most songs: nothing is delayed or faded, so nothing is added or worked out for it.
+        start = min(onset, clip_length)
+        for midi_number, note in sounding_notes.items():
+            end = min(_glide_end(note=note, end=onset + Length.rational(note[sound.LENGTH]), following=following), clip_length)
             if end > start:
-                velocity = VELOCITY if note[sound.VELOCITY] is None else note[sound.VELOCITY]
-                timed.append(NoteEvent(start, end, midi_number, _faded(velocity=velocity, fading=fading)))
+                timed.append(NoteEvent(start, end, midi_number, VELOCITY if note[sound.VELOCITY] is None else note[sound.VELOCITY]))
     handed = clip.get_handed()
     if handed:
         timed.extend(_handed_events(notes=handed, groove=groove, nudge=nudge, clip_length=clip_length))
         timed.sort(key=_start_of)
     return timed, clip_length
+
+
+def _add_note(*, timed, start, onset, note, midi_number, fading, following, clip_length):
+    """Add a note that sounds from a start as a NoteEvent, ending its length after the slot's onset, gliding into what follows, cut at the clip's end, and faded by a share of its velocity; a note left with no length is passed over."""
+    end = min(_glide_end(note=note, end=onset + Length.rational(note[sound.LENGTH]), following=following), clip_length)
+    if end > start:
+        velocity = VELOCITY if note[sound.VELOCITY] is None else note[sound.VELOCITY]
+        timed.append(NoteEvent(start, end, midi_number, _faded(velocity=velocity, fading=fading)))
 
 
 def _handed_events(*, notes, groove, nudge, clip_length):
