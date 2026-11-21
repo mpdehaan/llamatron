@@ -182,12 +182,6 @@ class TestFollowChordsSettings(unittest.TestCase):
         setlist.get_songs()[0].rename_item(section=Section.TRACKS, old=CHORDS, new=RENAMED)
         self.assertEqual(setlist.get_generator_settings(kind=GeneratorKind.FOLLOW_CHORDS, name=FOLLOW).get_chords_from(), RENAMED)
 
-    def test_a_track_that_is_not_text_is_refused(self):
-        data = following_data()
-        data[Section.FOLLOW_CHORDS][FOLLOW] = {FollowChordsSetting.CHORDS_FROM: test_registers.OCTAVE}
-        with self.assertRaises(SongFileError):
-            setlist_from_data(data)
-
     def test_the_steps_here_are_a_quarter_each(self):
         self.assertEqual(test_registers.STEP_SIZE, ONE_STEP_EACH)
 

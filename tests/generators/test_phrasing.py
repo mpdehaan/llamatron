@@ -8,21 +8,16 @@ import unittest
 from llamatron.composition import generator_settings
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, PatternSetting, Row, SceneSetting, Section
 from llamatron.composition.generator_settings import PhrasingSetting, PhrasingSettings
-from llamatron.composition.invalid_value import InvalidValue
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
 from llamatron.generators import phrasing
-from llamatron.strings import errors
 from llamatron.support.rational import Rational
 from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
-from tests.support.rendering import render_data, setlist_from_data
-from tests.support.ui_testing import fixed_text
+from tests.support.rendering import render_data
 
 TUNE = 'tune'
 DELIVERY = 'delivery'
 CHAIN = 'sung'
-NOT_A_BREATH = 'gasping'
 EIGHTH = Rational(1, 8)
 QUARTER = Rational(1, 4)
 HALF = Rational(1, 2)
@@ -205,12 +200,3 @@ class TestPhrasingSettings(unittest.TestCase):
         self.assertEqual(settings.get_own(PhrasingSetting.RISE_AND_FALL), phrasing.LITTLE_RISE)
         self.assertEqual(settings.get_own(PhrasingSetting.NOTES), phrasing.NOTES_AS_WRITTEN)
         self.assertEqual(settings.to_data(), {})
-
-    def test_a_wrong_value_is_refused_by_the_setter_and_by_a_file_in_the_same_words(self):
-        settings = PhrasingSettings.new()
-        with self.assertRaises(InvalidValue) as refused:
-            settings.set_setting(name=PhrasingSetting.BREATH, value=NOT_A_BREATH)
-        self.assertIn(fixed_text(errors.ERR_NOT_A_CHOICE), str(refused.exception))
-        with self.assertRaises(SongFileError) as unread:
-            setlist_from_data(phrased_data(settings={PhrasingSetting.BREATH: NOT_A_BREATH}))
-        self.assertIn(fixed_text(errors.ERR_NOT_A_CHOICE), str(unread.exception))

@@ -422,25 +422,6 @@ class TestWhatAFileRefuses(unittest.TestCase):
     def test_accents_that_are_not_true_or_false_are_refused(self):
         self.refused({GuitarifySetting.ACCENTS: [1, 0]})
 
-    def test_an_unknown_tuning_and_single_notes_choice_are_refused(self):
-        self.refused({GuitarifySetting.TUNING: 'banjo'})
-        self.refused({GuitarifySetting.SINGLE_NOTES: 'arpeggio'})
-
-    def test_numbers_out_of_range_are_refused(self):
-        self.refused({GuitarifySetting.POSITION: generator_settings.MAX_GUITAR_FRET + 1})
-        self.refused({GuitarifySetting.CAPO: -1})
-        self.refused({GuitarifySetting.STRINGS: generator_settings.MIN_GUITAR_STRINGS - 1})
-        self.refused({GuitarifySetting.STRINGS: generator_settings.MAX_GUITAR_STRINGS + 1})
-        self.refused({GuitarifySetting.SPREAD: generator_settings.MAX_GUITAR_SPREAD + 1})
-        self.refused({GuitarifySetting.FADE: generator_settings.MAX_GUITAR_PERCENT + 1})
-        self.refused({GuitarifySetting.LOOSE_TIMING: generator_settings.MAX_GUITAR_PERCENT + 1})
-        self.refused({GuitarifySetting.UPSTROKE: generator_settings.MAX_GUITAR_STRINGS + 1})
-
-    def test_a_switch_that_is_not_true_or_false_is_refused(self):
-        self.refused({GuitarifySetting.SHAPE: 'yes'})
-        self.refused({GuitarifySetting.STROKES: 1})
-        self.refused({GuitarifySetting.LET_RING: 'on'})
-
     def test_a_cell_that_is_no_length_is_refused(self):
         self.refused({GuitarifySetting.CELL: 'short'})
 

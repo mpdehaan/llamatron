@@ -29,6 +29,7 @@ from llamatron.music import midi
 from llamatron.music.note import NoteName
 from llamatron.music.scale import ScaleType
 from llamatron.strings import names as names_text
+from tests.support_code.test_llama_data import every_subclass
 
 # The settings the tests of each kind describe, and the messages they refuse with.
 SPEED = 'speed'
@@ -468,13 +469,8 @@ class TestReadingAndSettingAgree(unittest.TestCase):
             change=lambda: synth.set_device(NOT_TEXT),
         )
 
-    def test_a_generator(self):
-        for name, value in [(ArpSetting.OCTAVE_RANGE, arp.MAX_OCTAVE_RANGE + 1), (ArpSetting.ORDER, NOT_A_DIRECTION)]:
-            with self.subTest(name=name):
-                self.assert_same_refusal(
-                    read=lambda: ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, name: value}, where=HERE),
-                    change=lambda: ArpSettings.new().set_setting(name=name, value=value),
-                )
+    def test_a_generators_setting_checked_by_a_function_of_its_own(self):
+        """The rest of every generator's settings are tried by TestEveryGeneratorSettingRefusesAlike, from their descriptions."""
         self.assert_same_refusal(
             read=lambda: AutoRatchetSettings.from_data(data={AutoRatchetSetting.COUNTS: FIRST}, where=HERE),
             change=lambda: AutoRatchetSettings.new().set_setting(name=AutoRatchetSetting.COUNTS, value=FIRST),
@@ -512,6 +508,38 @@ class TestAChoiceKeepsItsFileNames(unittest.TestCase):
         self.assertEqual(register.SETTINGS[RegisterSetting.MAXIMUM].nearest(limits.MAX_REGISTER_VALUE + 1), limits.MAX_REGISTER_VALUE)
         self.assertEqual(ArpSettings.SETTINGS[ArpSetting.OCTAVE_RANGE].nearest(arp.MAX_OCTAVE_RANGE + 1), arp.MAX_OCTAVE_RANGE)
 
+
+
+class TestEveryGeneratorSettingRefusesAlike(unittest.TestCase):
+    """Every setting of every kind of generator refuses, when a file holds it and when the setter is given it, in the same words,
+    each value its description refuses: a value just past each of its limits and one of the wrong type, worked out from the
+    description itself, so that a generator's limits are tested where they are written, once, and a new setting is tested by
+    being described."""
+
+    def test_every_setting_of_every_generator_refuses_alike_what_its_description_refuses(self):
+        kinds = [kind for kind in every_subclass() if issubclass(kind, generator_settings.GeneratorSettings) and kind.SETTINGS]
+        self.assertTrue(kinds)
+        for kind in kinds:
+            for name, description in kind.SETTINGS.items():
+                for value in refused_by(description):
+                    with self.subTest(kind=kind.__name__, name=name, value=value):
+                        with self.assertRaises(InvalidValue) as refused:
+                            kind({}).set_setting(name=name, value=value)
+                        with self.assertRaises(SongFileError) as unreadable:
+                            kind.from_data(data={name: value}, where=HERE)
+                        self.assertTrue(str(unreadable.exception).endswith(str(refused.exception)))
+
+
+def refused_by(description):
+    """Return the values a setting's description refuses that can be worked out from it: one of the wrong type, and a value just
+    past each limit a whole number has; none for a setting checked by a function of its own."""
+    wrong_type = 1 if isinstance(description, (Flag, Text)) else NOT_A_NAME
+    if isinstance(description, Checked):
+        return []
+    if isinstance(description, WholeNumber):
+        limits_passed = [limit + step for limit, step in ((description.get_lowest(), -1), (description.get_highest(), 1)) if limit is not None]
+        return [wrong_type, *limits_passed]
+    return [wrong_type]
 
 if __name__ == '__main__':
     unittest.main()

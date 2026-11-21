@@ -7,9 +7,7 @@ import unittest
 
 from llamatron.composition.file_format import ClipSlotSetting, GeneratorKind, Restart, Row, SceneSetting, Section, TrackSetting
 from llamatron.composition.generator_settings import HocketSetting
-from llamatron.composition.song_file_error import SongFileError
 from llamatron.exporters.timing import timed_events
-from tests.playback import test_registers
 from tests.playback.test_registers import pattern, song
 from tests.support.rendering import render_data, setlist_from_data
 
@@ -124,9 +122,3 @@ class TestTheFile(unittest.TestCase):
         song = setlist.get_songs()[0]
         song.rename_item(section=Section.TRACKS, old=SOURCE, new=TUNE)
         self.assertEqual(setlist.get_generator_settings(kind=GeneratorKind.HOCKET, name=SHARE).get_source(), TUNE)
-
-    def test_a_source_that_is_not_text_is_refused(self):
-        data = hocket_data(melody=[1])
-        data[Section.HOCKETS][SHARE] = {HocketSetting.SOURCE: test_registers.OCTAVE}
-        with self.assertRaises(SongFileError):
-            setlist_from_data(data)

@@ -94,10 +94,6 @@ class TestRushAndDrag(unittest.TestCase):
 
 class TestWhatAFileHolds(unittest.TestCase):
 
-    def test_more_than_half_a_step_is_refused(self):
-        with self.assertRaises(SongFileError):
-            setlist_from_data(through(drag([ON], amount=51)))
-
     def test_a_step_that_is_not_on_or_off_is_refused(self):
         with self.assertRaises(SongFileError):
             setlist_from_data(through(glide(['wobble'])))
