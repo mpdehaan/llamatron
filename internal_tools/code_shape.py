@@ -74,13 +74,21 @@ EXCEPTIONS_START = '\nALLOWED = '
 EXCEPTIONS_REASONS = '\n\nWITH_REASON = '
 
 
+def is_elif(*, parent, child):
+    """Return whether an if is its parent's elif, which stands level with the if rather than inside it: an elif starts where its
+    if does, and an if inside an else is indented."""
+    return isinstance(parent, ast.If) and isinstance(child, ast.If) and parent.orelse == [child] and child.col_offset == parent.col_offset
+
+
 def own_depth(node, *, depth=0):
-    """Return how deep blocks nest inside a function, not counting the functions and classes defined inside it."""
+    """Return how deep blocks nest inside a function, not counting the functions and classes defined inside it, an elif level
+    with its if."""
     deepest = depth
     for child in ast.iter_child_nodes(node):
         if isinstance(child, SCOPES):
             continue
-        deepest = max(deepest, own_depth(child, depth=depth + 1 if isinstance(child, BLOCKS) else depth))
+        deeper = isinstance(child, BLOCKS) and not is_elif(parent=node, child=child)
+        deepest = max(deepest, own_depth(child, depth=depth + 1 if deeper else depth))
     return deepest
 
 
