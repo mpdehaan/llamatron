@@ -13,7 +13,7 @@ from llamatron.model.schema import limits
 from llamatron.user_strings import errors, marks as marks_text
 from llamatron.wizards.create_song import arranger, interplay as interplay_values, notation as tune_notation, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import bar_length, forms_of, share_of
-from llamatron.wizards.create_song.choices_part import ChoicesPart
+from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only
 from llamatron.wizards.create_song.section_choices import own_copy_of
 from llamatron.wizards.create_song.song_plan import faded
 
@@ -52,13 +52,44 @@ class FormChoices(ChoicesPart):
         """Return how the song starts and ends as chosen, which no caller changes."""
         return self._stages
 
-    def kept(self):
-        """Return a copy of the song's own sections and its stages, to put back with restore after a change that fails."""
+    def to_data(self):
+        """Return what a song keeps of the form, as plain data a song file saves: only what was chosen."""
+        held = {
+            arranger.FORM: self._form,
+            wizard_limits.OWN_SECTIONS: self._saved_own_sections(),
+            wizard_limits.STAGES_KEPT: dict(self._stages) or None,
+        }
+        return chosen_only(held)
+
+    def _saved_own_sections(self):
+        """Return a copy of the form's own sections, or None while the form is one the subgenre suggests."""
+        if self._sections is None:
+            return None
+        return [own_copy_of(entry) for entry in self._sections]
+
+    def restore(self, saved):
+        """Restore the form's own sections and how the song starts and ends, as a song kept them, leaving out what no longer fits."""
+        sections = saved.value(wizard_limits.OWN_SECTIONS)
+        if sections:
+            saved.apply(self.set_own_sections, sections=sections)
+        stages = saved.mapping(wizard_limits.STAGES_KEPT)
+        if stages:
+            saved.apply(self.restore_stages, stages=stages)
+
+    def add_picks(self, picks):
+        """Add the song's form to its picks: its own sections where a person changed them, or the form chosen by name."""
+        if self.has_own_form():
+            picks[arranger.FORM] = self.form_sections()
+        else:
+            picks[arranger.FORM] = self.get_form()
+
+    def snapshot(self):
+        """Return a copy of the song's own sections and its stages, to go back to after a change that fails."""
         return copy.deepcopy((self._sections, self._stages))
 
-    def restore(self, kept):
-        """Put back the sections and stages kept before a change the song could not be made with."""
-        self._sections, self._stages = kept
+    def go_back_to(self, snapshot):
+        """Put back the sections and stages of a snapshot taken before a change the song could not be made with."""
+        self._sections, self._stages = snapshot
 
     def get_own_sections(self):
         return self._sections
@@ -537,7 +568,7 @@ class FormChoices(ChoicesPart):
             for entry in self._sections:
                 entry.pop(wizard_limits.BESIDE_KEPT, None)
 
-    def take_kept_stages(self, *, stages):
+    def restore_stages(self, *, stages):
         """Take how a song starts and ends as a song kept it: the sections are the song's already, so only what was chosen is kept, where it is still offered."""
         kept = {field: value for field, value in stages.items() if field in (wizard_limits.START_KEPT, wizard_limits.END_KEPT, wizard_limits.FIRST_PLAYER_KEPT, wizard_limits.SETUP_BARS_KEPT)}
         self._stages = {field: value for field, value in kept.items() if isinstance(value, (str, int)) and not isinstance(value, bool)}

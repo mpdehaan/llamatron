@@ -2,19 +2,19 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The song wizard's choices of the band: who plays, how each plays and how busy each is, the player who answers the tune, a player's gauges, rows, loudness and Musician, and one guitarist or two."""
+"""The song wizard's choices of the band: who plays, how each plays and how busy each is, a player's gauges, rows, loudness and Musician, and one guitarist or two."""
 
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, band, characters, interplay as interplay_values, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, band, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import values_of
 from llamatron.wizards.create_song.characters import preset
-from llamatron.wizards.create_song.choices_part import ChoicesPart
+from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only
 
 
 class BandChoices(ChoicesPart):
-    """What was chosen of the band: each trait's way of playing where one was chosen, how busy each instrument's player is, the gauges and rows a player was given, the players left out, who answers the tune, and how many guitarists."""
+    """What was chosen of the band: each trait's way of playing where one was chosen, how busy each instrument's player is, the gauges and rows a player was given, the players left out, and how many guitarists."""
 
-    __slots__ = ('_ways', '_levels', '_own_gauges', '_rows', '_beside', '_without', '_guitarists')
+    __slots__ = ('_ways', '_levels', '_own_gauges', '_rows', '_without', '_guitarists')
 
     def __init__(self, *, choices):
         ChoicesPart.__init__(self, choices=choices)
@@ -30,34 +30,97 @@ class BandChoices(ChoicesPart):
         self.forget_players()
 
     def forget_players(self):
-        """Forget how busy each player is, the gauges and rows each was given, and who answers the tune."""
+        """Forget how busy each player is, and the gauges and rows each was given."""
         self._levels = {}
         self._own_gauges = {}
         self._rows = {}
-        self._beside = None
 
     def take_usual(self):
-        """Take the band the subgenre usually has: each player at the usual level, with no gauge or row of the player's own, and the usual player beside the tune."""
+        """Take the band the subgenre usually has: each player at the usual level, with no gauge or row of the player's own."""
         self._levels = {player: wizard_limits.USUAL_BUSY for player in self._choices.style().get(arranger.PLAYERS, {})}
         self._own_gauges = {}
         self._rows = {}
-        self._beside = self.usual_beside()
 
     # What a song keeps of the band.
 
     def to_data(self):
-        """Return what a song keeps of the band, as plain data: only what was chosen."""
-        held = {arranger.PICKS: dict(self._ways) or None, arranger.PLAYERS: dict(self._levels) or None, arranger.WITHOUT: list(self._without) or None,
-                wizard_limits.PLAYER_GAUGES_KEPT: {player: dict(places) for player, places in self._own_gauges.items() if places} or None,
-                wizard_limits.PLAYER_ROWS_KEPT: {role: _rows_copied(rows) for role, rows in self._rows.items() if rows} or None,
-                wizard_limits.BESIDE_KEPT: dict(self._beside) if self._beside is not None else None,
-                wizard_limits.GUITARISTS_KEPT: self._guitarists if self._guitarists != wizard_limits.TWO_GUITARISTS else None}
-        return {field: value for field, value in held.items() if value is not None}
+        """Return what a song keeps of the band, as plain data a song file saves: only what was chosen."""
+        guitarists = self._guitarists
+        if guitarists == wizard_limits.TWO_GUITARISTS:
+            guitarists = None
+        held = {
+            arranger.PICKS: dict(self._ways) or None,
+            arranger.PLAYERS: dict(self._levels) or None,
+            arranger.WITHOUT: list(self._without) or None,
+            wizard_limits.PLAYER_GAUGES_KEPT: self._saved_gauges() or None,
+            wizard_limits.PLAYER_ROWS_KEPT: self._saved_rows() or None,
+            wizard_limits.GUITARISTS_KEPT: guitarists,
+        }
+        return chosen_only(held)
+
+    def _saved_gauges(self):
+        """Return the gauges each player has moved from the preset, each a copy, leaving out a player who has moved none."""
+        kept = {}
+        for player, places in self._own_gauges.items():
+            if places:
+                kept[player] = dict(places)
+        return kept
+
+    def _saved_rows(self):
+        """Return the rows each player has of its own, each a copy, leaving out a player who has none."""
+        kept = {}
+        for role, rows in self._rows.items():
+            if rows:
+                kept[role] = _rows_copied(rows)
+        return kept
+
+    def restore(self, saved):
+        """Restore what a song saved of the band: each trait's way, each player's level and gauges, who is left out, how many
+        guitarists play, leaving out whatever no longer fits."""
+        ways = saved.mapping(arranger.PICKS)
+        for trait, value in ways.items():
+            saved.apply(self.set_way, trait=trait, value=value)
+        levels = saved.mapping(arranger.PLAYERS)
+        for player, level in levels.items():
+            saved.apply(self.take_level, player=player, level=level)
+        self._restore_gauges(saved)
+        for role in saved.listing(arranger.WITHOUT):
+            saved.apply(self.restore_without, role=role)
+        guitarists = saved.value(wizard_limits.GUITARISTS_KEPT)
+        if guitarists:
+            saved.apply(self.restore_guitarists, count=guitarists)
+
+    def _restore_gauges(self, saved):
+        """Restore the gauges each player had moved."""
+        gauges = saved.mapping(wizard_limits.PLAYER_GAUGES_KEPT)
+        for player, places in gauges.items():
+            places_kept = saved.as_mapping(places)
+            for gauge, place in places_kept.items():
+                saved.apply(self.restore_player_gauge, player=player, gauge=gauge, place=place)
+
+    def restore_rows(self, saved):
+        """Restore the rows each player had of its own, which only a melody style that deals rows allows."""
+        rows_by_role = saved.mapping(wizard_limits.PLAYER_ROWS_KEPT)
+        for role, rows in rows_by_role.items():
+            rows_kept = saved.as_mapping(rows)
+            for name, values in rows_kept.items():
+                saved.apply(self.restore_player_row, role=role, name=name, values=values)
+
+    def add_picks(self, picks):
+        """Add the band's picks to the song's: each trait's way, each instrument's player, who is left out and the rows the
+        players have of their own."""
+        ways = picks.setdefault(arranger.PICKS, {})
+        ways.update(self._ways)
+        picks[arranger.PLAYERS] = self._players_of_song()
+        picks[arranger.WITHOUT] = self._without_of_song()
+        habits = self._role_habits_of_song()
+        if habits:
+            picks[arranger.ROLE_HABITS] = habits
 
     def counted(self):
         """Return every setting of the band, each under a name of its own, so that two bands can be compared setting by setting."""
         by_name = {(wizard_limits.GENRE_SETTING, name): value for name, value in (
-            (wizard_limits.BESIDE_KEPT, self._beside), (arranger.WITHOUT, sorted(self._without)), (wizard_limits.GUITARISTS_KEPT, self._guitarists))}
+            (arranger.WITHOUT, sorted(self._without)), (wizard_limits.GUITARISTS_KEPT, self._guitarists))}
         for kept_as, held in ((arranger.PICKS, self._ways), (arranger.PLAYERS, self._levels), (wizard_limits.PLAYER_GAUGES_KEPT, self._own_gauges), (wizard_limits.PLAYER_ROWS_KEPT, self._rows)):
             for name, value in held.items():
                 if isinstance(value, dict):
@@ -66,7 +129,7 @@ class BandChoices(ChoicesPart):
                     by_name[(kept_as, name)] = value
         return by_name
 
-    def take_kept_without(self, role):
+    def restore_without(self, role):
         """Leave out a player a kept song left out."""
         self._choices.player(role).set_in(False)
 
@@ -156,7 +219,7 @@ class BandChoices(ChoicesPart):
                 self._without.remove(one[wizard_limits.SOLO_PLAYER])
             self._ways[self.role_named(one[wizard_limits.SOLO_PLAYER])[arranger.TRAIT]] = one[wizard_limits.SOLO_WAY]
 
-    def take_kept_guitarists(self, *, count):
+    def restore_guitarists(self, *, count):
         self.set_guitarists(count)
 
     def roles_shown(self):
@@ -164,7 +227,7 @@ class BandChoices(ChoicesPart):
         hidden = self.one_guitarist()[wizard_limits.SOLO_PLAYER] if self.has_one_guitarist() else None
         return [role for role in self.roles() if role != hidden]
 
-    def without_of_song(self):
+    def _without_of_song(self):
         """Return the players the song leaves out: those left out, and with them the solo of one guitarist who is left out."""
         without = list(self._without)
         if self.has_one_guitarist():
@@ -224,129 +287,11 @@ class BandChoices(ChoicesPart):
         self._own_gauges.pop(player, None)
 
 
-    # The player beside the tune: who answers the player who has the tune, and what the answering player does in each section.
-
-    def _interplay(self):
-        """Return what the genre says of playing beside the tune: a plan of what is done in each kind of section, with a plan of its own for some subgenres, and how busy."""
-        return self._choices.style().get(wizard_limits.INTERPLAY, {}) if self._choices.is_ready() else {}
-
-    def _usual_answerer(self):
-        """Return the player the genre has answer the tune, where the player can play in the subgenre, or None."""
-        role = next((entry[arranger.ROLE] for entry in self._choices.style()[arranger.ROLES] if entry.get(arranger.ANSWERS)), None) if self._choices.is_ready() else None
-        return role if role is not None and role in self.roles_shown() and self._choices.player(role).can_play() else None
 
     def tune_player(self):
         """Return the player who has the tune: the first player of lines who answers nobody and is in the band, or None."""
         return next((role for role in self.roles_in() if self._choices.get_sounds().has_sound(role) and not self.role_named(role).get(arranger.ANSWERS) and self._choices.player(role).plays_lines()), None)
 
-
-    def answerers(self):
-        """Return the players who may answer the tune, by name: the genre's answering player while in the band, and none where the song keeps to
-        what was made before answering could be chosen."""
-        usual = self._usual_answerer()
-        return [] if self._beside is None or usual is None or not self._choices.player(usual).is_in() else [usual]
-
-    def answered_by(self):
-        """Return the player who answers the tune, or None where nobody does."""
-        return self._beside[wizard_limits.BY] if self._beside is not None and self._beside[wizard_limits.BY] in self.answerers() and self._choices.player(self._beside[wizard_limits.BY]).is_in() else None
-
-    def set_answered_by(self, role):
-        """Choose who answers the tune, or nobody with None."""
-        if role is not None and role not in self.answerers():
-            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
-        if self._beside is None:
-            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=role))
-        self._beside[wizard_limits.BY] = role
-
-    def ways_beside(self):
-        """Return what a player beside the tune may do in a section, in order."""
-        return list(interplay_values.WAYS)
-
-    def get_role_plan(self):
-        """Return the one thing the answering player does in every section, or None where the player goes by the genre's plan, section by section."""
-        return self._beside[wizard_limits.WAY] if self._beside is not None else None
-
-    def set_role_plan(self, way):
-        """Have the answering player do one thing in every section, or go by the genre's plan with None. Either drops what single sections were given."""
-        if self.answered_by() is None or (way is not None and way not in interplay_values.WAYS):
-            raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
-        self._beside[wizard_limits.WAY] = way
-        self._choices.get_song_form().forget_section_beside()
-
-    def section_has_role(self, place):
-        """Return whether the answering player has something to choose in a section: somebody answers, and the tune's player plays in the section."""
-        return self.answered_by() is not None and not self._choices.section(place).is_held() and self.tune_player() in self._choices.section(place).plays()
-
-    def planned_role(self, place):
-        """Return what the plan has the answering player do in a section: the one thing chosen for every section, or what the genre's plan
-        says of the section's kind, the subgenre's own plan first, and waiting where the plan says nothing."""
-        if self._beside[wizard_limits.WAY] is not None:
-            return self._beside[wizard_limits.WAY]
-        interplay = self._interplay()
-        kind = self._choices.section(place).entry()[arranger.KIND]
-        plan = {**interplay.get(wizard_limits.PLAN, {}), **interplay.get(wizard_limits.BY_SUBGENRE, {}).get(self._choices.get_subgenre(), {})}
-        return plan.get(kind, interplay_values.WAITS)
-
-    def section_role_is_own(self, place):
-        """Return whether a section was given a role of its own, apart from the plan."""
-        return wizard_limits.BESIDE_KEPT in self._choices.section(place).entry()
-
-    def section_role(self, place):
-        """Return what the answering player does in a section: the section's own choice, or the plan's."""
-        if not self.section_has_role(place):
-            raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
-        return self._choices.section(place).entry().get(wizard_limits.BESIDE_KEPT, self.planned_role(place))
-
-    def set_section_role(self, *, place, way):
-        """Choose what the answering player does in one section, or give the section back to the plan with None."""
-        if not self.section_has_role(place):
-            raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=place))
-        if way is not None and way not in interplay_values.WAYS:
-            raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
-        if way is None and not self.section_role_is_own(place):
-            return
-        entry = self._choices.get_song_form().own_section_entries()[place]
-        entry.pop(wizard_limits.BESIDE_KEPT, None)
-        if way is not None:
-            entry[wizard_limits.BESIDE_KEPT] = way
-
-    def has_fills_busy(self):
-        """Return whether how busy the answering player is can be chosen: somebody answers."""
-        return self.answered_by() is not None
-
-    def get_fills_busy(self):
-        return self._beside[wizard_limits.BUSY_BESIDE]
-
-    def set_fills_busy(self, busy):
-        if not self.has_fills_busy() or isinstance(busy, bool) or not isinstance(busy, int) or not wizard_names.INTERPLAY_LEAST_BUSY <= busy <= wizard_names.INTERPLAY_MOST_BUSY:
-            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=wizard_names.INTERPLAY_LEAST_BUSY, high=wizard_names.INTERPLAY_MOST_BUSY, value=busy))
-        self._beside[wizard_limits.BUSY_BESIDE] = busy
-
-    def usual_beside(self):
-        """Return how a new song starts: answered by the genre's answering player, going by the genre's plan, as busy as the genre says."""
-        return {wizard_limits.BY: self._usual_answerer(), wizard_limits.WAY: None, wizard_limits.BUSY_BESIDE: self._interplay().get(wizard_limits.BUSY_BESIDE, interplay_values.USUAL_BUSY)}
-
-    def beside_of_song(self):
-        """Return the song's player beside the tune, with what the player does in each section of the form in order, or nothing for a song that
-        keeps to what was made before answering could be chosen, and for a genre nobody answers in."""
-        usual = self._usual_answerer()
-        if self._beside is None or usual is None or not self._choices.player(usual).is_in():
-            return {}
-        answered = self.answered_by() is not None
-        ways = [self.section_role(place) if answered and self.section_has_role(place) else interplay_values.WAITS for place in range(len(self._choices.get_song_form().section_entries()))]
-        return {arranger.BESIDE: {arranger.ROLE: usual, arranger.BESIDE_BUSY: self._beside[wizard_limits.BUSY_BESIDE], arranger.BESIDE_WAYS: ways}}
-
-    def take_kept_beside(self, *, kept):
-        usual = self.usual_beside()
-        by = kept.get(wizard_limits.BY)
-        way = kept.get(wizard_limits.WAY)
-        busy = kept.get(wizard_limits.BUSY_BESIDE, usual[wizard_limits.BUSY_BESIDE])
-        # Who answers is kept as chosen even where the player cannot answer now, as the solo's player hidden by one guitarist, and answers again once the player can.
-        if (by is not None and by not in self.roles()) or (way is not None and way not in interplay_values.WAYS):
-            raise ValueError(errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=by))
-        if isinstance(busy, bool) or not isinstance(busy, int) or not wizard_names.INTERPLAY_LEAST_BUSY <= busy <= wizard_names.INTERPLAY_MOST_BUSY:
-            raise ValueError(errors.ERR_WIZARD_FILLS_BUSY.format(low=wizard_names.INTERPLAY_LEAST_BUSY, high=wizard_names.INTERPLAY_MOST_BUSY, value=busy))
-        self._beside = {wizard_limits.BY: by, wizard_limits.WAY: way, wizard_limits.BUSY_BESIDE: busy}
 
     # A player's gauges: where each stands, the preset's place until moved.
 
@@ -356,12 +301,18 @@ class BandChoices(ChoicesPart):
             return None
         return {**preset(self._levels[player]), **self._own_gauges.get(player, {})}
 
-    def players_of_song(self):
+    def _players_of_song(self):
         """Return each instrument's player for the song: a level, or the places of every gauge where one was moved."""
-        return {player: self.character(player) if self._own_gauges.get(player) else level for player, level in self._levels.items()}
+        players = {}
+        for player, level in self._levels.items():
+            if self._own_gauges.get(player):
+                players[player] = self.character(player)
+            else:
+                players[player] = level
+        return players
 
 
-    def take_kept_player_gauge(self, *, player, gauge, place):
+    def restore_player_gauge(self, *, player, gauge, place):
         if isinstance(place, bool) or not isinstance(place, int) or not wizard_names.CHARACTERS_LOWEST <= place <= wizard_names.CHARACTERS_HIGHEST or gauge not in characters.GAUGES or player not in self._levels:
             raise ValueError(errors.ERR_WIZARD_PLAYER_GAUGE.format(low=wizard_names.CHARACTERS_LOWEST, high=wizard_names.CHARACTERS_HIGHEST, value=place))
         own = self._own_gauges.setdefault(player, {})
@@ -376,7 +327,7 @@ class BandChoices(ChoicesPart):
         return wizard_limits.ROW_LIMITS[name]
 
 
-    def take_kept_player_row(self, *, role, name, values):
+    def restore_player_row(self, *, role, name, values):
         self._choices.player(role).set_row(name=name, values=values)
 
     def _habits_of(self, *, role, rows):
@@ -384,9 +335,14 @@ class BandChoices(ChoicesPart):
         dealt = self._choices.player(role).rows()
         return {name: list(row) for name, row in rows.items() if name in dealt}
 
-    def role_habits_of_song(self):
-        """The rows the song's players have of their own, for the players the rows are dealt to."""
-        return {role: self._habits_of(role=role, rows=rows) for role, rows in self._rows.items() if self._choices.player(role).is_in() and self._choices.player(role).rows()}
+    def _role_habits_of_song(self):
+        """Return the rows the song's players have of their own, for the players who play and are dealt rows."""
+        habits = {}
+        for role, rows in self._rows.items():
+            player = self._choices.player(role)
+            if player.is_in() and player.rows():
+                habits[role] = self._habits_of(role=role, rows=rows)
+        return habits
 
     # The musicians: each player's clips are played by a Musician generator, the one the player is given or the person's own.
 

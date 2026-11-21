@@ -437,7 +437,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
     def test_the_hook_is_said_in_the_intro_by_whoever_is_chosen_and_by_nobody_until_then(self):
         choices = chosen()
         players = choices.intro_hook_players()
-        self.assertEqual(players, [choices.get_band().answered_by(), choices.get_band().tune_player()])
+        self.assertEqual(players, [choices.interplay().answered_by(), choices.get_band().tune_player()])
         self.assertIsNone(choices.get_intro_hook())
         for role in players:
             choices.set_intro_hook(role)

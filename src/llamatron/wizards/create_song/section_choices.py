@@ -11,7 +11,7 @@ from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, joins as joins_values, line_edits, melody as melody_writer, notation as tune_notation, phrasing, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, interplay as interplay_values, joins as joins_values, line_edits, melody as melody_writer, notation as tune_notation, phrasing, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import chord_of, fits_by_halves, picked, section_of, shares_a_bar, values_of
 from llamatron.wizards.create_song.choices_part import kept_until_choices_change
 
@@ -297,7 +297,7 @@ class SectionChoices:
         seen = set()
         lines = []
         for count, entry in enumerate(self.plan()):
-            player = self._choices.get_band().answered_by() if entry.get(melody_writer.ANSWER) else self._choices.get_band().tune_player()
+            player = self._choices.interplay().answered_by() if entry.get(melody_writer.ANSWER) else self._choices.get_band().tune_player()
             part = made[arranger.PARTS].get((scene.get(wizard_limits.PLAY_OF_SCENE, {}).get(player) or {}).get(wizard_limits.PART))
             notes = copy.deepcopy(part[tune_notation.LINES][count]) if part is not None and tune_notation.LINES in part and count < len(part[tune_notation.LINES]) else None
             letter = (bool(entry.get(melody_writer.ANSWER)), entry.get(melody_writer.LINE, str(count)))
@@ -356,3 +356,40 @@ class SectionChoices:
             self._choices.get_song_form().restore_own_sections(before)
             self._choices.clear_answers()
             raise ValueError(errors.ERR_WIZARD_SECTION_OWN_UNMADE.format(field=field, value=value, problem=problem)) from None
+
+    def has_own_role(self):
+        """Return whether the section gives the answering player a role of its own, apart from the plan."""
+        return wizard_limits.BESIDE_KEPT in self.entry()
+
+    def has_role(self):
+        """Return whether the answering player has something to choose in the section: somebody answers, and the tune's player
+        plays in the section."""
+        interplay = self._choices.interplay()
+        if interplay.answered_by() is None or self.is_held():
+            return False
+        band = self._choices.get_band()
+        return band.tune_player() in self.plays()
+
+    def role(self):
+        """Return what the answering player does in the section: the section's own choice, or the plan's."""
+        if not self.has_role():
+            raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=self._place))
+        if self.has_own_role():
+            return self.entry()[wizard_limits.BESIDE_KEPT]
+        interplay = self._choices.interplay()
+        return interplay.planned_role(self._place)
+
+    def set_own_role(self, way):
+        """Choose what the answering player does in the section, or give the section back to the plan with None."""
+        if not self.has_role():
+            raise ValueError(errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=self._place))
+        if way is not None and way not in interplay_values.WAYS:
+            raise ValueError(errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=way))
+        if way is None and not self.has_own_role():
+            return
+        form = self._choices.get_song_form()
+        entries = form.own_section_entries()
+        entry = entries[self._place]
+        entry.pop(wizard_limits.BESIDE_KEPT, None)
+        if way is not None:
+            entry[wizard_limits.BESIDE_KEPT] = way

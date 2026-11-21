@@ -510,7 +510,7 @@ class TestWizardBand(WizardTest):
     async def test_the_band_lists_every_player_and_opens_to_a_branch_for_each_who_is_in(self):
         await self.open_the_band()
         choices = self.choices()
-        self.assertTrue(choices.get_band().answerers())
+        self.assertTrue(choices.interplay().answerers())
         self.assertEqual([field.label for field in self.wizard().fields()],
                          [labels_text.MSG_WIZARD_SOUNDS_LABEL, labels_text.MSG_WIZARD_TUNE_LABEL, labels_text.MSG_WIZARD_ANSWERED_BY_LABEL, *(choices.player(role).title() for role in choices.get_band().roles() if choices.player(role).can_play())])
         # The Band starts open: Left closes it and Right opens it to a branch for each player who is in.
@@ -1031,12 +1031,12 @@ class TestWizardInterplay(WizardTest):
         choices.set_genre(A_GENRE_WITH_RHYTHMS)
         choices.set_subgenre(choices.subgenres()[0])
         await self.press(Key.DOWN, Key.UP)
-        self.assertIsNotNone(choices.get_band().answered_by())
+        self.assertIsNotNone(choices.interplay().answered_by())
 
     async def test_the_band_shows_who_has_the_tune_and_nobody_can_be_made_to_answer(self):
         await self.open_rock()
         choices = self.choices()
-        answering = choices.get_band().answered_by()
+        answering = choices.interplay().answered_by()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_TUNE_LABEL)
@@ -1044,17 +1044,17 @@ class TestWizardInterplay(WizardTest):
         await self.select_field(labels_text.MSG_WIZARD_ANSWERED_BY_LABEL)
         self.assertEqual(self.wizard().field().value(), choices.player(answering).title())
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
-        self.assertIsNone(choices.get_band().answered_by())
+        self.assertIsNone(choices.interplay().answered_by())
         self.assertEqual(self.wizard().field().value(), labels_text.MSG_WIZARD_NOBODY)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.get_band().answered_by(), answering)
+        self.assertEqual(choices.interplay().answered_by(), answering)
 
     async def open_the_answering_player(self):
         await self.open_rock()
         choices = self.choices()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         shown = [role for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
-        await self.press(Key.RIGHT, *[Key.DOWN] * (shown.index(choices.get_band().answered_by()) + 1), keybindings.WizardPage.INTO_FIELDS)
+        await self.press(Key.RIGHT, *[Key.DOWN] * (shown.index(choices.interplay().answered_by()) + 1), keybindings.WizardPage.INTO_FIELDS)
 
     async def test_the_answering_player_has_a_role_by_section_or_one_for_every_section_and_fills_busy(self):
         await self.open_the_answering_player()
@@ -1062,18 +1062,18 @@ class TestWizardInterplay(WizardTest):
         await self.select_field(labels_text.MSG_WIZARD_ROLE_LABEL)
         self.assertEqual(self.wizard().field().value(), labels_text.MSG_WIZARD_BY_SECTION)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.get_band().get_role_plan(), choices.get_band().ways_beside()[0])
+        self.assertEqual(choices.interplay().get_role_plan(), choices.interplay().ways_beside()[0])
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
-        self.assertIsNone(choices.get_band().get_role_plan())
+        self.assertIsNone(choices.interplay().get_role_plan())
         await self.select_field(labels_text.MSG_WIZARD_FILLS_BUSY_LABEL)
-        busy = choices.get_band().get_fills_busy()
+        busy = choices.interplay().get_fills_busy()
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.get_band().get_fills_busy(), busy + 1)
+        self.assertEqual(choices.interplay().get_fills_busy(), busy + 1)
         self.assertIn(str(busy + 1), self.wizard().field().value())
 
     async def test_a_player_who_answers_nobody_has_neither_field(self):
         await self.open_the_answering_player()
-        self.choices().get_band().set_answered_by(None)
+        self.choices().interplay().set_answered_by(None)
         await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.INTO_FIELDS)
         labels = [field.label for field in self.wizard().fields()]
         self.assertNotIn(labels_text.MSG_WIZARD_ROLE_LABEL, labels)
@@ -1082,22 +1082,22 @@ class TestWizardInterplay(WizardTest):
     async def test_a_section_shows_the_plans_role_takes_its_own_and_bksp_gives_it_back_to_the_plan(self):
         await self.open_rock()
         choices = self.choices()
-        place = next(place for place in range(len(choices.get_song_form().section_labels())) if choices.get_band().section_has_role(place))
-        label = labels_text.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(choices.get_band().answered_by()).title())
-        planned = choices.get_band().section_role(place)
+        place = next(place for place in range(len(choices.get_song_form().section_labels())) if choices.section(place).has_role())
+        label = labels_text.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(choices.interplay().answered_by()).title())
+        planned = choices.section(place).role()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         await self.press(Key.RIGHT, *[Key.DOWN] * (place + 1), keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(label)
         self.assertEqual(self.wizard().field().value(), marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertTrue(choices.get_band().section_role_is_own(place))
-        self.assertEqual(choices.get_band().section_role(place), choices.get_band().ways_beside()[0])
-        self.assertEqual(self.wizard().field().value(), choices.get_band().ways_beside()[0])
+        self.assertTrue(choices.section(place).has_own_role())
+        self.assertEqual(choices.section(place).role(), choices.interplay().ways_beside()[0])
+        self.assertEqual(self.wizard().field().value(), choices.interplay().ways_beside()[0])
         await self.press(keybindings.WizardPage.CLEAR)
-        self.assertFalse(choices.get_band().section_role_is_own(place))
+        self.assertFalse(choices.section(place).has_own_role())
         self.assertEqual(self.wizard().field().value(), marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
         # A section nobody has the tune in has no such field.
-        without = next(place for place in range(len(choices.get_song_form().section_labels())) if not choices.get_band().section_has_role(place))
+        without = next(place for place in range(len(choices.get_song_form().section_labels())) if not choices.section(place).has_role())
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         await self.press(*[Key.DOWN] * (without + 1), keybindings.WizardPage.INTO_FIELDS)

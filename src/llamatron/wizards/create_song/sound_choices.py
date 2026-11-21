@@ -8,7 +8,7 @@ from llamatron.model.schema import limits
 from llamatron.user_strings import errors, labels as labels_text
 from llamatron.wizards.create_song import arranger, wizard_limits
 from llamatron.wizards.create_song.arranger import values_of
-from llamatron.wizards.create_song.choices_part import ChoicesPart, set_each_kept
+from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only
 
 
 def family_of(sound):
@@ -33,15 +33,24 @@ class SoundChoices(ChoicesPart):
     # What a song keeps of the sounds.
 
     def to_data(self):
-        """Return what a song keeps of the sounds, as plain data: only what was chosen."""
-        held = {wizard_limits.SOUNDS_KEPT: dict(self._sounds) or None, wizard_limits.BAND_SOUNDS_KEPT: self._band_sounds if self._band_sounds != wizard_limits.USUAL_SOUNDS else None}
-        return {field: value for field, value in held.items() if value is not None}
+        """Return what a song keeps of the sounds, as plain data a song file saves: only what was chosen."""
+        band_sounds = self._band_sounds
+        if band_sounds == wizard_limits.USUAL_SOUNDS:
+            band_sounds = None
+        held = {
+            wizard_limits.SOUNDS_KEPT: dict(self._sounds) or None,
+            wizard_limits.BAND_SOUNDS_KEPT: band_sounds,
+        }
+        return chosen_only(held)
 
-    def read(self, data):
-        """Take back what a song kept of the sounds, leaving out whatever is no longer allowed."""
-        set_each_kept([
-            (self._set_kept_band_sounds, [dict(sounds=data[wizard_limits.BAND_SOUNDS_KEPT])] if data.get(wizard_limits.BAND_SOUNDS_KEPT) else []),
-            (self.set_sound, [dict(role=role, sound=sound) for role, sound in (data.get(wizard_limits.SOUNDS_KEPT) or {}).items()])])
+    def restore(self, saved):
+        """Restore what a song saved of the sounds, leaving out whatever is no longer allowed."""
+        band_sounds = saved.value(wizard_limits.BAND_SOUNDS_KEPT)
+        if band_sounds:
+            saved.apply(self._restore_band_sounds, sounds=band_sounds)
+        sounds = saved.mapping(wizard_limits.SOUNDS_KEPT)
+        for role, sound in sounds.items():
+            saved.apply(self.set_sound, role=role, sound=sound)
 
     def counted(self):
         """Return every setting of the sounds, each under a name of its own, so that two bands can be compared setting by setting."""
@@ -74,7 +83,7 @@ class SoundChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_BAND_SOUNDS.format(value=sounds))
         self._band_sounds = sounds
 
-    def _set_kept_band_sounds(self, *, sounds):
+    def _restore_band_sounds(self, *, sounds):
         self.set_band_sounds(sounds)
 
     def band_sound(self, role):
@@ -120,6 +129,21 @@ class SoundChoices(ChoicesPart):
         named = [name for name, number in self._choices.style()[arranger.SOUNDS].items() if number == sound]
         return named[0] if named else labels_text.MSG_GM_SOUNDS[sound - limits.MIN_GM_SOUND]
 
-    def sounds_of_song(self):
-        """Return the sounds the song chooses itself, by player: each player in the band whose sound is not its way's usual one."""
-        return {role: self.get_sound(role) for role in self._choices.get_band().roles_in() if self.has_sound(role) and self._choices.player(role).can_play() and self.get_sound(role) != self._way_sound(role)}
+    def add_picks(self, picks):
+        """Add the sounds the song chooses itself to the song's picks, by player, where there are any."""
+        band = self._choices.get_band()
+        sounds = {}
+        for role in band.roles_in():
+            if self._chooses_own_sound(role):
+                sounds[role] = self.get_sound(role)
+        if sounds:
+            picks[arranger.ROLE_SOUNDS] = sounds
+
+    def _chooses_own_sound(self, role):
+        """Return whether the song chooses a player's sound itself: a player of notes who can play, whose sound is not its way's usual one."""
+        if not self.has_sound(role):
+            return False
+        player = self._choices.player(role)
+        if not player.can_play():
+            return False
+        return self.get_sound(role) != self._way_sound(role)

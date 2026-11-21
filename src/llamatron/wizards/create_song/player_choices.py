@@ -207,7 +207,7 @@ class PlayerChoices:
         """Move a gauge of a player. Players of one instrument, as a lead and a solo, share their gauges."""
         if gauge not in self.gauges():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PLAYER_GAUGE.format(value=gauge))
-        self._band().take_kept_player_gauge(player=self._band().role_named(self._role)[arranger.PLAYER], gauge=gauge, place=place)
+        self._band().restore_player_gauge(player=self._band().role_named(self._role)[arranger.PLAYER], gauge=gauge, place=place)
 
     def preset(self):
         """Return the level of the preset a player is, or None for a player whose gauges were moved from it."""

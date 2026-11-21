@@ -88,7 +88,7 @@ class SectionBranch(Branch):
         usual = choices.section(place).usually_plays()
         players = [Toggle(label=choices.player(role).title(), on=role in plays, set=self.plays_setter(role)) for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
         # The rest in groups, the same on every section and in the order a section is shaped; a group with nothing to offer in this section is left out.
-        groups = [(labels.MSG_WIZARD_GROUP_TUNE, [*self.own_lines_fields(), *([self.role_field()] if choices.get_band().section_has_role(place) else [])], lambda: self.has_own_lines() or self.has_own_role()),
+        groups = [(labels.MSG_WIZARD_GROUP_TUNE, [*self.own_lines_fields(), *([self.role_field()] if choices.section(place).has_role() else [])], lambda: self.has_own_lines() or self.has_own_role()),
                   *[(label, self.own_fields_in(own=own, of_group=of_group), self.own_checker(of_group)) for label, of_group in OWN_GROUPS],
                   (labels.MSG_WIZARD_GROUP_PLAYERS, players, lambda: sorted(plays) != sorted(usual))]
         for label, inside, is_set in groups:
@@ -118,7 +118,7 @@ class SectionBranch(Branch):
 
     def has_own_role(self):
         choices = self.get_choices()
-        return choices.get_band().section_has_role(self._place) and choices.get_band().section_role_is_own(self._place)
+        return choices.section(self._place).has_role() and choices.section(self._place).has_own_role()
 
     def own_fields_in(self, *, own, of_group):
         """Return the fields of a group of a section's own settings that the section offers."""
@@ -188,14 +188,14 @@ class SectionBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         place = self._place
-        ways = choices.get_band().ways_beside()
-        way = choices.get_band().section_role(place)
-        own = choices.get_band().section_role_is_own(place)
-        chosen = page.choosing(lambda picked: choices.get_band().set_section_role(place=place, way=None if picked == labels.MSG_WIZARD_FROM_PLAN else picked))
+        ways = choices.interplay().ways_beside()
+        way = choices.section(place).role()
+        own = choices.section(place).has_own_role()
+        chosen = page.choosing(lambda picked: choices.section(place).set_own_role(None if picked == labels.MSG_WIZARD_FROM_PLAN else picked))
 
         def to_plan():
             chosen(labels.MSG_WIZARD_FROM_PLAN)
-        return ChoiceField(page=page, label=labels.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(choices.get_band().answered_by()).title()), choices=[labels.MSG_WIZARD_FROM_PLAN, *ways],
+        return ChoiceField(page=page, label=labels.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(choices.interplay().answered_by()).title()), choices=[labels.MSG_WIZARD_FROM_PLAN, *ways],
                            current=way if own else labels.MSG_WIZARD_FROM_PLAN, shown=way if own else marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=way), set=chosen,
                            clear=to_plan if own else None, clear_what=legends.MSG_FROM_PLAN_WHAT)
 

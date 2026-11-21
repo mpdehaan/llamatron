@@ -9,7 +9,7 @@ from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, player_of
 from llamatron.wizards.create_song.breaks import break_names
-from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
+from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only, kept_until_choices_change
 
 
 class KitChoices(ChoicesPart):
@@ -36,21 +36,38 @@ class KitChoices(ChoicesPart):
     # What a song keeps of the kit, and what the kit adds to the song made.
 
     def to_data(self):
-        """Return what a song keeps of the kit, as plain data: only what was chosen."""
-        held = {wizard_limits.PIECES_OFF_KEPT: list(self._pieces_off) or None, wizard_limits.FILLS_KEPT: self._fills,
-                wizard_limits.QUIET_NOTES_KEPT: None if self._quiet_notes else False, wizard_limits.BREAK_KEPT: self._break, wizard_limits.BREAK_CUT_KEPT: self._break_cut,
-                wizard_limits.PIECE_SOUNDS_KEPT: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()} or None}
-        return {field: value for field, value in held.items() if value is not None}
+        """Return what a song keeps of the kit, as plain data a song file saves: only what was chosen."""
+        quiet_notes = None
+        if not self._quiet_notes:
+            quiet_notes = False
+        held = {
+            wizard_limits.PIECES_OFF_KEPT: list(self._pieces_off) or None,
+            wizard_limits.FILLS_KEPT: self._fills,
+            wizard_limits.QUIET_NOTES_KEPT: quiet_notes,
+            wizard_limits.BREAK_KEPT: self._break,
+            wizard_limits.BREAK_CUT_KEPT: self._break_cut,
+            wizard_limits.PIECE_SOUNDS_KEPT: self._piece_sounds_copied() or None,
+        }
+        return chosen_only(held)
 
-    def read(self, data):
-        """Take back what a song kept of the kit, leaving out whatever is no longer allowed."""
-        set_each_kept([
-            (self.set_piece_on, [dict(piece=piece, on=False) for piece in data.get(wizard_limits.PIECES_OFF_KEPT) or []]),
-            (self.set_fills, [dict(position=data[wizard_limits.FILLS_KEPT])] if data.get(wizard_limits.FILLS_KEPT) is not None else []),
-            (self.set_quiet_notes, [dict(on=False)] if data.get(wizard_limits.QUIET_NOTES_KEPT) is False else []),
-            (self._set_kept_break, [dict(name=data[wizard_limits.BREAK_KEPT])] if data.get(wizard_limits.BREAK_KEPT) else []),
-            (self._set_kept_piece_sound, [dict(piece=piece, sounds_as=sounds_as) for piece, sounds_as in (data.get(wizard_limits.PIECE_SOUNDS_KEPT) or {}).items()]),
-            (self.set_break_cut, [dict(position=data[wizard_limits.BREAK_CUT_KEPT])] if data.get(wizard_limits.BREAK_CUT_KEPT) is not None else [])])
+    def restore(self, saved):
+        """Restore what a song saved of the kit, leaving out whatever is no longer allowed."""
+        for piece in saved.listing(wizard_limits.PIECES_OFF_KEPT):
+            saved.apply(self.set_piece_on, piece=piece, on=False)
+        fills = saved.value(wizard_limits.FILLS_KEPT)
+        if fills is not None:
+            saved.apply(self.set_fills, position=fills)
+        if saved.value(wizard_limits.QUIET_NOTES_KEPT) is False:
+            saved.apply(self.set_quiet_notes, on=False)
+        break_name = saved.value(wizard_limits.BREAK_KEPT)
+        if break_name:
+            saved.apply(self._restore_break, name=break_name)
+        piece_sounds = saved.mapping(wizard_limits.PIECE_SOUNDS_KEPT)
+        for piece, sounds_as in piece_sounds.items():
+            saved.apply(self._restore_piece_sound, piece=piece, sounds_as=sounds_as)
+        break_cut = saved.value(wizard_limits.BREAK_CUT_KEPT)
+        if break_cut is not None:
+            saved.apply(self.set_break_cut, position=break_cut)
 
     def counted(self):
         """Return every setting of the kit, each under a name of its own, so that two kits can be compared setting by setting."""
@@ -61,16 +78,23 @@ class KitChoices(ChoicesPart):
             by_name.update({(wizard_limits.PIECE_SOUNDS_KEPT, piece, inner): each for inner, each in sounds_as.items()})
         return by_name
 
-    def trait_picks(self):
-        """Return the song's picks of a break and its cut, where either was chosen."""
-        return {**({arranger.BREAK: self._break} if self._break is not None else {}), **({arranger.BREAK_CUT: self._break_cut} if self._break_cut is not None else {})}
+    def add_picks(self, picks):
+        """Add the kit's picks to the song's: a break and its cut, the pieces left out, what a piece sounds as, how often a fill
+        comes and the quiet notes left out, each only where it was chosen."""
+        ways = picks.setdefault(arranger.PICKS, {})
+        self.add_ways(ways)
+        if self._pieces_off:
+            picks[arranger.WITHOUT_PIECES] = list(self._pieces_off)
+        if self._piece_sounds:
+            picks[arranger.PIECE_SOUNDS] = self._piece_sounds_copied()
+        if self._fills is not None:
+            picks[arranger.FILLS_COME] = wizard_limits.FILLS_EVERY[self._fills]
+        if not self._quiet_notes:
+            picks[arranger.QUIET_NOTES] = False
 
-    def song_settings(self):
-        """Return what the kit adds to the song's settings: the pieces left out, what a piece sounds as, how often a fill comes and the quiet notes left out."""
-        return {**({arranger.WITHOUT_PIECES: list(self._pieces_off)} if self._pieces_off else {}),
-                **({arranger.PIECE_SOUNDS: {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}} if self._piece_sounds else {}),
-                **({arranger.FILLS_COME: wizard_limits.FILLS_EVERY[self._fills]} if self._fills is not None else {}),
-                **({} if self._quiet_notes else {arranger.QUIET_NOTES: False})}
+    def _piece_sounds_copied(self):
+        """Return what each piece sounds as where that was chosen, each a copy."""
+        return {piece: dict(sounds_as) for piece, sounds_as in self._piece_sounds.items()}
 
     # The kit's pieces, each switched on or off: a stroke on a piece that is off is left out, never moved to another piece.
 
@@ -183,7 +207,7 @@ class KitChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_PIECE_NOTE.format(low=arranger.LOWEST_NOTE, high=arranger.HIGHEST_NOTE, value=note))
         self._piece_sounds[piece][arranger.PLAYED_NOTE] = note
 
-    def _set_kept_piece_sound(self, *, piece, sounds_as):
+    def _restore_piece_sound(self, *, piece, sounds_as):
         self.set_piece_sound(piece=piece, sound=sounds_as.get(arranger.PLAYED_DRUM, sounds_as.get(arranger.PLAYED_SOUND)))
         if arranger.PLAYED_NOTE in sounds_as:
             self.set_piece_note(piece=piece, note=sounds_as[arranger.PLAYED_NOTE])
@@ -211,7 +235,7 @@ class KitChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_BREAK.format(value=name))
         self._break = arranger.NO_BREAK if name is None else name
 
-    def _set_kept_break(self, *, name):
+    def _restore_break(self, *, name):
         self.set_break(None if name == arranger.NO_BREAK else name)
 
     def get_break_cut(self):
@@ -222,3 +246,10 @@ class KitChoices(ChoicesPart):
         if isinstance(position, bool) or not isinstance(position, int) or not wizard_names.LEAST_CUT <= position <= wizard_names.MOST_CUT:
             raise ValueError(errors.ERR_WIZARD_BREAK_CUT.format(low=wizard_names.LEAST_CUT, high=wizard_names.MOST_CUT, value=position))
         self._break_cut = position
+
+    def add_ways(self, ways):
+        """Add the kit's ways to the song's: a break and its cut, each only where it was chosen."""
+        if self._break is not None:
+            ways[arranger.BREAK] = self._break
+        if self._break_cut is not None:
+            ways[arranger.BREAK_CUT] = self._break_cut

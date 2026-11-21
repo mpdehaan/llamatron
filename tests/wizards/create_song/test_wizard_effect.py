@@ -264,30 +264,30 @@ def every_choice(choices):
         for way in (choices.get_band().song_ways(trait) if trait is not None else []):
             if way != choices.get_band().get_way(trait):
                 yield kind, way, lambda made, trait=trait, way=way: made.get_band().set_way(trait=trait, value=way), firsts
-    if choices.get_band().answered_by() is not None:
+    if choices.interplay().answered_by() is not None:
         # Who answers the tune, the one thing the answering player does in every section, each section's own, and how busy the fills are.
-        yield ANSWERED_BY, None, lambda made: made.get_band().set_answered_by(None), [nothing_first]
-        for way in choices.get_band().ways_beside():
+        yield ANSWERED_BY, None, lambda made: made.interplay().set_answered_by(None), [nothing_first]
+        for way in choices.interplay().ways_beside():
             another = interplay.FILLS if way == interplay.WAITS else interplay.WAITS
-            yield ROLE_PLAN, way, lambda made, way=way: made.get_band().set_role_plan(way), [lambda made, another=another: made.get_band().set_role_plan(another)]
+            yield ROLE_PLAN, way, lambda made, way=way: made.interplay().set_role_plan(way), [lambda made, another=another: made.interplay().set_role_plan(another)]
         kinds_seen = set()
         for place, label in enumerate(choices.get_song_form().section_labels()):
             kind = choices.section(place).kind()
-            if not choices.get_band().section_has_role(place) or kind in kinds_seen:
+            if not choices.section(place).has_role() or kind in kinds_seen:
                 continue
             kinds_seen.add(kind)
-            for way in choices.get_band().ways_beside():
-                if way != choices.get_band().section_role(place):
-                    yield SECTION_ROLE, (label, way), lambda made, place=place, way=way: made.get_band().set_section_role(place=place, way=way), [nothing_first]
+            for way in choices.interplay().ways_beside():
+                if way != choices.section(place).role():
+                    yield SECTION_ROLE, (label, way), lambda made, place=place, way=way: made.section(place).set_own_role(way), [nothing_first]
         def answering(made):
-            made.get_band().set_role_plan(interplay.ANSWERS)
+            made.interplay().set_role_plan(interplay.ANSWERS)
 
         def filling(made):
             # A genre whose own plan writes the answers plays them as written, so how busy is heard in the fills there.
-            made.get_band().set_role_plan(interplay.FILLS)
+            made.interplay().set_role_plan(interplay.FILLS)
         for busy in range(wizard_names.INTERPLAY_LEAST_BUSY, wizard_names.INTERPLAY_MOST_BUSY + 1):
-            if busy != choices.get_band().get_fills_busy():
-                yield FILLS_BUSY, busy, lambda made, busy=busy: made.get_band().set_fills_busy(busy), [answering, filling]
+            if busy != choices.interplay().get_fills_busy():
+                yield FILLS_BUSY, busy, lambda made, busy=busy: made.interplay().set_fills_busy(busy), [answering, filling]
     # What every melody of the song shares: each other value of how busy, how wide and how repeated, and each character offered.
     for field in choices.melodies().melody_fields():
         for value in choices.melodies().melody_ways_offered(field):

@@ -10,7 +10,7 @@ from llamatron.model.schema.file_format import SectionKind
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged
-from llamatron.wizards.create_song.choices_part import ChoicesPart, kept_until_choices_change, set_each_kept
+from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only, kept_until_choices_change
 from llamatron.wizards.create_song.melody import placement_of, plan_with_hook_placed
 
 
@@ -35,24 +35,46 @@ class HookChoices(ChoicesPart):
     # What a song keeps of the hook, and what the hook adds to the song made.
 
     def to_data(self):
-        """Return what a song keeps of the hook, as plain data: only what was chosen."""
-        held = {wizard_limits.HOOK_KEPT: self._hook, wizard_limits.HOOK_TAKE_KEPT: self._hook_take or None, wizard_limits.WRITING_KEPT: copy.deepcopy(self._writing) or None}
-        return {field: value for field, value in held.items() if value is not None}
+        """Return what a song keeps of the hook, as plain data a song file saves: only what was chosen."""
+        held = {
+            wizard_limits.HOOK_KEPT: self._hook,
+            wizard_limits.HOOK_TAKE_KEPT: self._hook_take or None,
+            wizard_limits.WRITING_KEPT: copy.deepcopy(self._writing) or None,
+        }
+        return chosen_only(held)
 
-    def read(self, data):
-        """Take back what a song kept of the hook, leaving out whatever is no longer allowed."""
-        set_each_kept([
-            (self._set_kept_hook, [dict(on=data[wizard_limits.HOOK_KEPT])] if isinstance(data.get(wizard_limits.HOOK_KEPT), bool) else []),
-            (self._set_kept_hook_take, [dict(take=data[wizard_limits.HOOK_TAKE_KEPT])] if data.get(wizard_limits.HOOK_TAKE_KEPT) else []),
-            (self._set_kept_writing, [dict(kept=data[wizard_limits.WRITING_KEPT])] if isinstance(data.get(wizard_limits.WRITING_KEPT), dict) else [])])
+    def restore(self, saved):
+        """Restore what a song saved of the hook, leaving out whatever is no longer allowed."""
+        has_hook = saved.value(wizard_limits.HOOK_KEPT)
+        if isinstance(has_hook, bool):
+            saved.apply(self._restore_hook, on=has_hook)
+        take = saved.value(wizard_limits.HOOK_TAKE_KEPT)
+        if take:
+            saved.apply(self._restore_hook_take, take=take)
+        writing = saved.value(wizard_limits.WRITING_KEPT)
+        if isinstance(writing, dict):
+            saved.apply(self._restore_writing, writing=writing)
 
     def counted(self):
         """Return the hook's setting another genre forgets, under a name of its own, so that two songs can be compared setting by setting."""
         return {(wizard_limits.GENRE_SETTING, wizard_limits.HOOK_KEPT): self._hook}
 
-    def song_settings(self):
-        """Return what the hook adds to the song's settings: whether the song has one, where that was chosen, and which take."""
-        return {**({melody_writer.HOOK: self._hook} if self._hook is not None else {}), **({melody_writer.HOOK_TAKE: self._hook_take} if self._hook_take else {})}
+    def add_picks(self, picks):
+        """Add the hook's picks to the song's: whether the song has one, where that was chosen, and which take."""
+        if self._hook is not None:
+            picks[melody_writer.HOOK] = self._hook
+        if self._hook_take:
+            picks[melody_writer.HOOK_TAKE] = self._hook_take
+
+    def writing_said(self):
+        """Return how the hook's lines are written: the behavior, and the place of every gauge."""
+        gauges = {name: self.get_hook_gauge(name) for name in hook_writing.HOOK_GAUGES}
+        return {hook_writing.BEHAVIOR: self.get_hook_behavior(), hook_writing.GAUGES: gauges}
+
+    def body_writing_said(self):
+        """Return how the lines around the hook are written: the place of every gauge."""
+        gauges = {name: self.get_body_gauge(name) for name in hook_writing.BODY_GAUGES}
+        return {hook_writing.GAUGES: gauges}
 
     # The hook, which a song has or has not, apart from the melody style that writes its other lines.
 
@@ -260,7 +282,7 @@ class HookChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_HOOK)
         self._hook = None if bool(on) == self.usual_hook() else bool(on)
 
-    def _set_kept_hook(self, *, on):
+    def _restore_hook(self, *, on):
         self.set_hook(on)
 
     def get_hook_take(self):
@@ -359,14 +381,14 @@ class HookChoices(ChoicesPart):
             del self._writing[part]
         self._choices.clear_answers()
 
-    def _set_kept_writing(self, *, kept):
-        """Take what a song kept of how its hook and its chorus's body are written, each part through its setter."""
-        hook = kept.get(wizard_names.HOOK_WRITING) or {}
+    def _restore_writing(self, *, writing):
+        """Take what a song saved of how its hook and its chorus's body are written, each part through its setter."""
+        hook = writing.get(wizard_names.HOOK_WRITING) or {}
         if hook.get(hook_writing.BEHAVIOR) is not None:
             self.set_hook_behavior(hook[hook_writing.BEHAVIOR])
         for name, position in (hook.get(hook_writing.GAUGES) or {}).items():
             self.set_hook_gauge(name=name, position=position)
-        for name, position in ((kept.get(wizard_names.BODY_WRITING) or {}).get(hook_writing.GAUGES) or {}).items():
+        for name, position in ((writing.get(wizard_names.BODY_WRITING) or {}).get(hook_writing.GAUGES) or {}).items():
             self.set_body_gauge(name=name, position=position)
 
     def new_hook(self):
@@ -375,7 +397,7 @@ class HookChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_HOOK)
         self._hook_take += 1
 
-    def _set_kept_hook_take(self, *, take):
+    def _restore_hook_take(self, *, take):
         if isinstance(take, bool) or not isinstance(take, int) or take < melody_writer.FIRST_HOOK_TAKE:
             raise ValueError(errors.ERR_WIZARD_HOOK_TAKE.format(value=take))
         self._hook_take = take
@@ -429,6 +451,18 @@ class HookChoices(ChoicesPart):
         """Return the place in the form of the first section that says the hook, or None."""
         sections = self._choices.style()[arranger.SECTIONS]
         return next((place for place, kind in enumerate(self._choices.get_song_form().section_kinds_in_form()) if says_hook(sections[kind])), None)
+
+    def sayers(self):
+        """Return the players who can say the hook: the player who answers the tune and the tune's player, where the song has a hook."""
+        if not self.can_have_hook() or not self.has_hook():
+            return []
+        interplay = self._choices.interplay()
+        band = self._choices.get_band()
+        sayers = []
+        for role in (interplay.answered_by(), band.tune_player()):
+            if role is not None:
+                sayers.append(role)
+        return sayers
 
 
 def says_hook(section):

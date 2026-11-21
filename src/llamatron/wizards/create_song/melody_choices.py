@@ -7,9 +7,9 @@ what each kind of section's melody is chosen to do, a part of the song wizard's 
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, hook_writing, melody as melody_writer, notation as tune_notation, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, melody as melody_writer, notation as tune_notation, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged
-from llamatron.wizards.create_song.choices_part import ChoicesPart, set_each_kept
+from llamatron.wizards.create_song.choices_part import ChoicesPart, chosen_only
 from llamatron.wizards.create_song.riffs import flattened_in
 
 
@@ -45,17 +45,32 @@ class MelodyChoices(ChoicesPart):
         """Let the melody's style go back to the genre's, as another genre or subgenre is chosen."""
         self._melody = None
 
-    def read_style(self, *, data):
-        """Take the melody's style a song kept, leaving it out where it no longer fits."""
-        set_each_kept([(self._set_kept_melody, [dict(style=data[wizard_limits.MELODY_STYLE])] if data.get(wizard_limits.MELODY_STYLE) else [])])
+    def restore(self, saved):
+        """Restore the melody's style, gauges and settings a song kept, leaving out any that no longer fits."""
+        style = saved.value(wizard_limits.MELODY_STYLE)
+        if style:
+            saved.apply(self._restore_melody, style=style)
+        gauges = saved.mapping(wizard_limits.GAUGES_KEPT)
+        for name, position in gauges.items():
+            saved.apply(self.set_melody_gauge, name=name, position=position)
+        settings = saved.mapping(wizard_limits.MELODY_SETTINGS_KEPT)
+        for name, value in settings.items():
+            saved.apply(self._restore_melody_setting, name=name, value=value)
 
-    def read_gauges(self, *, data):
-        """Take the melody's gauges a song kept, leaving out any that no longer fits."""
-        set_each_kept([(self.set_melody_gauge, [dict(name=name, position=position) for name, position in (data.get(wizard_limits.GAUGES_KEPT) or {}).items()])])
+    def to_data(self):
+        """Return what a song keeps of the melody, as plain data a song file saves: only what was chosen."""
+        held = {
+            wizard_limits.MELODY_STYLE: self._melody,
+            wizard_limits.GAUGES_KEPT: dict(self._gauges) or None,
+            wizard_limits.MELODY_SETTINGS_KEPT: dict(self._melody_settings) or None,
+        }
+        return chosen_only(held)
 
-    def read_settings(self, *, data):
-        """Take the melody's settings a song kept, leaving out any that no longer fits."""
-        set_each_kept([(self._set_kept_melody_setting, [dict(name=name, value=value) for name, value in (data.get(wizard_limits.MELODY_SETTINGS_KEPT) or {}).items()])])
+    def add_picks(self, picks):
+        """Add the melody's picks to the song's: the style chosen, and what the song says of its melody."""
+        if self._melody is not None:
+            picks[arranger.MELODY_ENGINE] = self._melody
+        picks[arranger.MELODY] = self._melody_said()
 
     def forget_gauges_and_settings(self):
         """Let go of the gauges and settings chosen, as the band is forgotten."""
@@ -108,9 +123,9 @@ class MelodyChoices(ChoicesPart):
         """Set a setting of the song's melody style, refusing one the style does not have."""
         if name not in self.melody_settings():
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
-        self._set_kept_melody_setting(name=name, value=value)
+        self._restore_melody_setting(name=name, value=value)
 
-    def _set_kept_melody_setting(self, *, name, value):
+    def _restore_melody_setting(self, *, name, value):
         if name in wizard_limits.MELODY_SWITCHES:
             if not isinstance(value, bool):
                 raise ValueError(errors.ERR_WIZARD_MELODY_SWITCH.format(name=name, value=value))
@@ -122,18 +137,41 @@ class MelodyChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_MELODY_SETTING.format(value=name))
         self._melody_settings[name] = value
 
-    def song_melody(self):
-        """Return what the song says of its melody over the genre's habits: the smart style's gauges where one was moved, and
-        the settings set of the style in use; a setting of another style is kept and says nothing."""
-        said = {wizard_names.HOOK_WRITING: {hook_writing.BEHAVIOR: self._choices.get_hook().get_hook_behavior(), hook_writing.GAUGES: {name: self._choices.get_hook().get_hook_gauge(name) for name in hook_writing.HOOK_GAUGES}},
-                wizard_names.BODY_WRITING: {hook_writing.GAUGES: {name: self._choices.get_hook().get_body_gauge(name) for name in hook_writing.BODY_GAUGES}}}
+    def _melody_said(self):
+        """Return what the song says of its melody over the genre's habits: how the hook and the lines around it are written, the
+        smart style's gauges where one was moved, and the settings set of the style in use; a setting of another style is kept
+        and says nothing."""
+        hook = self._choices.get_hook()
+        said = {wizard_names.HOOK_WRITING: hook.writing_said(), wizard_names.BODY_WRITING: hook.body_writing_said()}
         if self._melody in wizard_limits.GAUGED_STYLES and self._gauges:
-            said[melody_writer.SMART] = {**{name: self.get_melody_gauge(name) for name in melody_writer.DEFAULT_GAUGES}, **self._gauges}
-        own = {name: value for name, value in self._melody_settings.items() if name in wizard_limits.MELODY_SETTINGS_OF[self._melody]}
-        evolve = {name: value for name, value in own.items() if name in wizard_limits.EVOLVE_SETTINGS}
+            said[melody_writer.SMART] = self._smart_gauges()
+        evolve = {}
+        for name, value in self._settings_of_style().items():
+            if name in wizard_limits.EVOLVE_SETTINGS:
+                evolve[name] = value
+            else:
+                said[name] = value
         if evolve:
-            said[melody_writer.EVOLVE] = {**melody_writer.DEFAULT_EVOLVE, **self.melody_habits().get(melody_writer.EVOLVE, {}), **evolve}
-        said.update({name: value for name, value in own.items() if name not in wizard_limits.EVOLVE_SETTINGS})
+            said[melody_writer.EVOLVE] = self._evolve_said(evolve)
+        return said
+
+    def _smart_gauges(self):
+        """Return the place of every gauge of the smart style: where it was moved, or where it starts."""
+        gauges = {name: self.get_melody_gauge(name) for name in melody_writer.DEFAULT_GAUGES}
+        gauges.update(self._gauges)
+        return gauges
+
+    def _settings_of_style(self):
+        """Return the settings set of the style in use."""
+        offered = wizard_limits.MELODY_SETTINGS_OF[self._melody]
+        return {name: value for name, value in self._melody_settings.items() if name in offered}
+
+    def _evolve_said(self, evolve):
+        """Return how the melody evolves: the defaults, then the genre's habits, then the settings chosen."""
+        habits = self.melody_habits()
+        said = dict(melody_writer.DEFAULT_EVOLVE)
+        said.update(habits.get(melody_writer.EVOLVE, {}))
+        said.update(evolve)
         return said
 
     def melody_styles(self):
@@ -161,7 +199,7 @@ class MelodyChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_MELODY.format(value=style))
         self._melody = style
 
-    def _set_kept_melody(self, *, style):
+    def _restore_melody(self, *, style):
         self.set_melody(style)
 
     def melody_fields(self):

@@ -34,15 +34,15 @@ class BandBranch(Branch):
         if choices.get_band().offers_one_guitarist() or choices.get_band().has_one_guitarist():
             # One guitarist plays the chords and takes the solo, and is then one player on the screen.
             fields.append(ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_limits.GUITARIST_COUNTS), names=[str(count) for count in wizard_limits.GUITARIST_COUNTS], current=choices.get_band().get_guitarists(), set=self.get_page().choosing(choices.get_band().set_guitarists)))
-        if choices.get_band().answerers():
+        if choices.interplay().answerers():
             # Who has the tune, which is only shown, and who answers that player: one of the players who can, or nobody.
-            answerers = choices.get_band().answerers()
+            answerers = choices.interplay().answerers()
             names = [choices.player(role).title() for role in answerers]
-            by = choices.get_band().answered_by()
+            by = choices.interplay().answered_by()
             fields += [Field(label=labels.MSG_WIZARD_TUNE_LABEL, value=lambda: choices.player(choices.get_tunes().tune_played_by()).title() if choices.get_tunes().tune_played_by() else labels.MSG_WIZARD_NOBODY),
                        ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_ANSWERED_BY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *answerers], names=[labels.MSG_WIZARD_NOBODY, *names],
                                    current=by or labels.MSG_WIZARD_NOBODY, shown=choices.player(by).title() if by else labels.MSG_WIZARD_NOBODY,
-                                   set=self.get_page().choosing(lambda role: choices.get_band().set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]
+                                   set=self.get_page().choosing(lambda role: choices.interplay().set_answered_by(None if role == labels.MSG_WIZARD_NOBODY else role)))]
         return [*fields, *(Toggle(label=choices.player(role).title(), on=choices.player(role).is_in(), set=self.setter_of(role)) for role in choices.get_band().roles_shown() if choices.player(role).can_play())]
 
     def setter_of(self, role):

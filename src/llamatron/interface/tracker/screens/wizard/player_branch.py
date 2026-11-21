@@ -49,7 +49,7 @@ class PlayerBranch(Branch):
             fields += [self.player_gauge_field(gauge) for gauge in choices.player(self._role).gauges()]
         # The rows of numbers the serial style deals to the player's notes, each opened in a window of its own.
         fields += [self.row_field(name) for name in choices.player(self._role).rows()]
-        if choices.get_band().answered_by() == self._role:
+        if choices.interplay().answered_by() == self._role:
             fields += self.beside_fields()
         if not choices.get_sounds().has_sound(self._role):
             # The drums' break comes first, since it takes the place of the kick's, the snare's and the cymbal's own ways.
@@ -173,13 +173,13 @@ class PlayerBranch(Branch):
         how busy the fills are, a number stepped or typed, drawn as a horizontal gauge."""
         choices = self.get_choices()
         page = self.get_page()
-        ways = choices.get_band().ways_beside()
-        busy = choices.get_band().get_fills_busy()
+        ways = choices.interplay().ways_beside()
+        busy = choices.interplay().get_fills_busy()
         gauge = marks.MSG_WIZARD_GAUGE_FULL * busy + marks.MSG_WIZARD_GAUGE_EMPTY * (wizard_names.INTERPLAY_MOST_BUSY - busy)
-        return [ChoiceField(page=page, label=labels.MSG_WIZARD_ROLE_LABEL, choices=[labels.MSG_WIZARD_BY_SECTION, *ways], current=choices.get_band().get_role_plan() or labels.MSG_WIZARD_BY_SECTION,
-                            set=page.choosing(lambda way: choices.get_band().set_role_plan(None if way == labels.MSG_WIZARD_BY_SECTION else way))),
+        return [ChoiceField(page=page, label=labels.MSG_WIZARD_ROLE_LABEL, choices=[labels.MSG_WIZARD_BY_SECTION, *ways], current=choices.interplay().get_role_plan() or labels.MSG_WIZARD_BY_SECTION,
+                            set=page.choosing(lambda way: choices.interplay().set_role_plan(None if way == labels.MSG_WIZARD_BY_SECTION else way))),
                 NumberField(page=page, label=labels.MSG_WIZARD_FILLS_BUSY_LABEL, number=busy, shown=marks.MSG_WIZARD_BUSY_SHOWN.format(gauge=gauge, level=busy, most=wizard_names.INTERPLAY_MOST_BUSY),
-                            lowest=wizard_names.INTERPLAY_LEAST_BUSY, highest=wizard_names.INTERPLAY_MOST_BUSY, set=page.choosing(choices.get_band().set_fills_busy))]
+                            lowest=wizard_names.INTERPLAY_LEAST_BUSY, highest=wizard_names.INTERPLAY_MOST_BUSY, set=page.choosing(choices.interplay().set_fills_busy))]
 
     def piece_row(self, piece):
         """Return the row of a piece of the kit, two cells side by side: whether the piece plays, switched with Space, and what

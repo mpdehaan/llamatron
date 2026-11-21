@@ -22,15 +22,51 @@ def kept_until_choices_change(method):
     return kept
 
 
-def set_each_kept(kept):
-    """Give kept values back through their setters, each a setter and the arguments of every call to it, leaving out what a
-    setter refuses: a song kept by an older version, or edited by hand, may hold a value no longer allowed."""
-    for setter, every in kept:
-        for named in every:
-            try:
-                setter(**named)
-            except (TypeError, ValueError):
-                pass
+def chosen_only(held):
+    """Return what was chosen of held values: every one but those that are None."""
+    return {field: value for field, value in held.items() if value is not None}
+
+
+class SavedChoices:
+    """What a song file saved of the song wizard's choices, read back value by value to restore them.
+
+    A song saved by an older version, or edited by hand, may hold a value no longer allowed, or a value of the wrong kind:
+    each value is read as what it should be, nothing where it is not, and a setter that refuses a value leaves it out."""
+
+    __slots__ = ('_data',)
+
+    def __init__(self, data):
+        self._data = data or {}
+
+    def value(self, field):
+        """Return the value saved under a field, or None where nothing is."""
+        return self._data.get(field)
+
+    def mapping(self, field):
+        """Return the values saved under a field by name, or none where they are not saved by name."""
+        return self.as_mapping(self._data.get(field))
+
+    def listing(self, field):
+        """Return the values saved under a field as a list, or none where they are not a list."""
+        values = self._data.get(field)
+        if isinstance(values, list):
+            return values
+        return []
+
+    @staticmethod
+    def as_mapping(values):
+        """Return values saved by name, or none where they are not saved by name."""
+        if isinstance(values, dict):
+            return values
+        return {}
+
+    @staticmethod
+    def apply(setter, *arguments, **named):
+        """Restore a saved value through its setter, leaving it out where the setter refuses it."""
+        try:
+            setter(*arguments, **named)
+        except (TypeError, ValueError):
+            pass
 
 
 class ChoicesPart:
