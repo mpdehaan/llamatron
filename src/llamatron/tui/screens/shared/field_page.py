@@ -23,35 +23,12 @@ from llamatron.strings import errors, labels as labels_text, legends, marks
 from llamatron.tui import drawing, key_table, keybindings
 from llamatron.tui.components.button_row import button_row
 from llamatron.tui.cursor import Cursor, key_between, NoSuchPlace
-from llamatron.tui.drawing import Box, cursor_mark, padded, Style
+from llamatron.tui.drawing import cursor_mark, Style
 from llamatron.tui.key_table import cursor_moved
 from llamatron.tui.keys import Key
-from llamatron.tui.screens.shared import field as field_values
-from llamatron.tui.screens.shared.field import Button, Cells, Field, Heading, NameField, NumberField, Strip
+from llamatron.tui.screens.shared.field import Button, Cells, Field, Heading, NameField, NumberField
 from llamatron.tui.screens.shared.page import Page
 
-
-# A strip's grid: how far in from the cursor's mark it starts, its label column's and each slot's room, wide enough for -99 with a
-# space either side, and which of its five lines holds the values, where the cursor is.
-STRIP_PAD = '    '
-STRIP_INDENT = len(STRIP_PAD)
-STRIP_LABEL_WIDTH = 7
-STRIP_CELL_WIDTH = 5
-STRIP_VALUE_LINE = 3
-
-
-def slot_style(*, on_cursor, lit):
-    """Return how a slot of a strip is drawn: in reverse video under the cursor, in the draws' light while a song plays, both at once, or plain."""
-    if on_cursor and lit:
-        return Style.DRAW_LIGHT_REVERSED
-    if on_cursor:
-        return Style.REVERSE
-    return Style.DRAW_LIGHT if lit else Style.PLAIN
-
-
-def slot_text(value):
-    """Return a slot's number or value as its cell of a strip shows it, right-justified with a space after it."""
-    return marks.MSG_DRAW_STRIP_CELL.format(value=value)
 
 class FieldPage(Page):
     """Settings in a column, where the keys depend on the setting under the cursor."""
@@ -266,23 +243,11 @@ class FieldPage(Page):
     def keys(self):
         result = [self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True)]
         row = self.field()
+        if row is not None:
+            result += row.row_keys(self)
         field = self.cell_field()
-        if isinstance(row, Cells):
-            result.append(self.bind(self.KEYS.ALONG_CELLS, action=self.move_along_cells, wants_key=True))
         if field is not None:
-            if field.adjust and not isinstance(row, Cells):
-                result.append(self.bind(self.KEYS.MORE, action=lambda: field.adjust(1)))
-                result.append(self.bind(self.KEYS.LESS, action=lambda: field.adjust(-1)))
-            elif field.adjust and isinstance(row, Strip):
-                result.append(self.bind(self.KEYS.SLOT_MORE, action=lambda: field.adjust(1)))
-                result.append(self.bind(self.KEYS.SLOT_LESS, action=lambda: field.adjust(-1)))
-            if field.enter and field.is_toggle():
-                # A toggle answers to Space and Enter alike, like the pattern editor's toggle rows.
-                result.append(self.bind(self.KEYS.TOGGLE, action=field.enter))
-            elif field.enter:
-                result.append(self.bind(self.KEYS.ENTER, action=field.enter, what=field.enter_what))
-            if field.clear:
-                result.append(self.bind(self.KEYS.CLEAR, action=field.clear, what=field.clear_what))
+            result += field.keys(self)
         name = next((item for item in self.every_field() if isinstance(item, NameField)), None)
         if name is not None:
             result.append(self.bind(self.KEYS.RENAME, action=name.rename))
@@ -301,7 +266,7 @@ class FieldPage(Page):
         """
         fields = self.shown_fields()
         self.field()
-        label_width = max((len(self.label_text(field)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
+        label_width = max((len(field.drawn_label(self)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
         cursor = self.cursor.get_place()
         lines = [Text(drawing.NOTHING)]
         selected = 0
@@ -315,16 +280,10 @@ class FieldPage(Page):
                 if place:
                     lines.append(Text(drawing.NOTHING))
             here = place == cursor
-            if isinstance(field, Strip):
-                lines.append(Text(drawing.NOTHING))
-                if here:
-                    selected = len(lines) + STRIP_VALUE_LINE
-                lines += self.strip_lines(strip=field, selected=here, width=width)
-                continue
             if here:
-                selected = len(lines)
-            lines.append(self.field_line(field=field, here=here, label_width=label_width))
-            if self.has_gap_after(place=place, field=field, fields=fields):
+                selected = len(lines) + field.SELECTED_LINE
+            lines += field.lines(page=self, here=here, label_width=label_width, width=width)
+            if field.MAY_LEAVE_A_GAP and self.has_gap_after(place=place, field=field, fields=fields):
                 lines.append(Text(drawing.NOTHING))
         if buttons:
             # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
@@ -339,75 +298,11 @@ class FieldPage(Page):
             lines += [Text(drawing.NOTHING), *remarks]
         return self.window_of_lines(lines=lines, selected=selected, height=height)
 
-    def field_line(self, *, field, here, label_width):
-        """Return one field's line: the cursor's mark, then a heading's name and what it says, or a setting's label and its cells or its value."""
-        line = Text(no_wrap=True)
-        line.append(cursor_mark(here))
-        if isinstance(field, Heading):
-            line.append(self.label_text(field).ljust(label_width), style=Style.BOLD)
-            line.append(padded(field.value()), style=Style.DIM)
-            return line
-        line.append(field.label.ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
-        if isinstance(field, Cells):
-            self.append_cells(line=line, row=field, selected=here)
-            return line
-        line.append(padded(field.value()))
-        # A field whose Enter opens a list of choices shows a dim mark after its value, so that it isn't taken for one that's typed.
-        if field.enter_what == legends.What.CHOOSE:
-            line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
-        return line
-
     def has_gap_after(self, *, place, field, fields):
         """Return whether a blank line follows a setting: a Name that starts the page before its other settings, and the last of a list."""
-        if isinstance(field, (Heading, Cells)):
-            return False
         if place == 0 and field.label == labels_text.MSG_NAME_LABEL and len(fields) > 1 and not isinstance(fields[1], Button):
             return True
         return self.ends_a_list(field)
-
-    def strip_lines(self, *, strip, selected, width):
-        """Return a strip's grid, five lines: its top edge, the slots' numbers, the rule between, the slots' values with the cursor's
-        slot in reverse video, and its bottom edge, as many slots as fit the width, scrolled to keep the cursor's in view."""
-        count = len(strip.cells)
-        shown = max(min((width - STRIP_INDENT - STRIP_LABEL_WIDTH - 2) // (STRIP_CELL_WIDTH + 1), count), 1)
-        self.cell = max(min(self.cell, count - 1), 0)
-        first = max(min(self.cell - shown // 2, count - shown), 0) if selected else 0
-        places = range(first, first + shown)
-        cells = Box.RULE * STRIP_CELL_WIDTH
-        edges = [
-            (Box.TOP_LEFT, Box.TOP_TEE, Box.TOP_RIGHT), (Box.LEFT_TEE, Box.CROSS, Box.RIGHT_TEE), (Box.BOTTOM_LEFT, Box.BOTTOM_TEE, Box.BOTTOM_RIGHT),
-        ]
-        top, rule, bottom = [
-            Text(STRIP_PAD + left + Box.RULE * STRIP_LABEL_WIDTH + tee + tee.join([cells] * shown) + right, style=Style.DIM, no_wrap=True) for left, tee, right in edges
-        ]
-        numbers = Text(STRIP_PAD, no_wrap=True)
-        numbers.append(Box.BAR + padded(labels_text.MSG_DRAW_STRIP_SLOT_ROW).ljust(STRIP_LABEL_WIDTH), style=Style.DIM)
-        values = Text(cursor_mark(selected) + STRIP_PAD[len(cursor_mark(selected)):], no_wrap=True)
-        values.append(Box.BAR + padded(labels_text.MSG_DRAW_STRIP_VALUE_ROW).ljust(STRIP_LABEL_WIDTH), style=Style.DIM)
-        for place in places:
-            numbers.append(Box.BAR, style=Style.DIM)
-            numbers.append(slot_text(place + 1), style=Style.DIM)
-            values.append(Box.BAR, style=Style.DIM)
-            values.append(slot_text(strip.cells[place].value()), style=slot_style(on_cursor=selected and place == self.cell, lit=place == strip.lit))
-        numbers.append(Box.BAR, style=Style.DIM)
-        values.append(Box.BAR, style=Style.DIM)
-        return [top, numbers, rule, values, bottom]
-
-    def append_cells(self, *, line, row, selected):
-        """Draw a row's cells side by side, the cell under the cursor in reverse video as a grid's is, and a cell that opens a list with the picker's mark."""
-        for place, cell in enumerate(row.cells):
-            on_cell = selected and place == min(self.cell, len(row.cells) - 1)
-            line.append(padded(cell.value()), style=Style.REVERSE if on_cell else Style.PLAIN)
-            if cell.enter_what == legends.What.CHOOSE:
-                line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
-            line.append(field_values.CELL_GAP)
-
-    def label_text(self, field):
-        """Return a field's label as drawn: a section's heading with its open or closed mark, any other field's label as it is."""
-        if isinstance(field, Heading):
-            mark = marks.MSG_SECTION_OPEN_MARK if self.is_open(field) else marks.MSG_SECTION_CLOSED_MARK
-            return labels_text.MSG_SECTION_LABEL.format(mark=mark, name=field.label)
-        return field.label
 
     def window_of_lines(self, *, lines, selected, height):
         """Return the lines that fit the height, scrolled so that the selected line shows, a settings page being taller than a console at times."""
