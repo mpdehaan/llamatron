@@ -1,18 +1,6 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
 """MilkDrop, a visualizer mode in the spirit of Ryan Geiss's plugin: a feedback picture that trails and swirls, with the notes drawn new on top.
 
 Each frame the last picture is warped, zoomed in a little and turned about the middle with a swirl

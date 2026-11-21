@@ -1,18 +1,6 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
 """The rules of a function's shape in the program: a body of at most 30 lines, blocks at most three deep, or four with a reason, at
 most five parameters, no reach into another object's private names, no catch of every error but with a reason, at most one
 check that an object is of a class of the program's own, and at most 300 lines of code to a file or a class, files that are lists

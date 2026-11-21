@@ -60,7 +60,7 @@ Everything in `.claude/` is for Claude: it holds what the user doesn't need to r
 
 ## License
 
-The project is licensed under GPLv3, with the full text in `LICENSE`. Every Python file and shell script, including new and empty ones, starts with the standard GPLv3 header, copied from any existing source file, whose first line is `# llamatron: a music program`. Put it above the module docstring, and below a script's `#!` line.
+The project is licensed under GPLv3, with the full text in `LICENSE`, which grants the terms. Every Python file and shell script, including new and empty ones, starts with the short header, three lines, `# llamatron: a music program`, the copyright line and `# SPDX-License-Identifier: GPL-3.0-or-later`, copied from any existing source file (the user's choice of the SPDX form over the 15-line notice). Put it above the module docstring, and below a script's `#!` line.
 
 ## Commands
 

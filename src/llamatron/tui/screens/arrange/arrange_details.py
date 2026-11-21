@@ -1,18 +1,6 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
 """What Arrange shows in its details view: D shows, under each bar, the details that are cluttery while performing but needed to understand how a song is put together.
 
 Every detail is a line of its own under the bar of what holds it, a scene, a clip, or a track's

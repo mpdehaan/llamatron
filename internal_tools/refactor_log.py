@@ -1,18 +1,6 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 """Measure the program after a step of the refactoring and add a row to the log, so that the whole can be read end to end.
 
@@ -45,7 +33,7 @@ TIME_SCRIPT = ROOT / 'internal_tools' / 'time_renders.py'
 PYTHON_FILES = '*.py'
 FILE_ENCODING = 'utf-8'
 # The license header that opens every file, which is no part of the program.
-HEADER_LINES = 15
+HEADER_LINES = 3
 IMPORT_UI = 'import llamatron.tui.app'
 IMPORT_RUNS = 5
 TOTAL_ROW = 'every example'
