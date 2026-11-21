@@ -141,7 +141,9 @@ def bars_work(*, genre, subgenre, kind, bars, plays=None, variant=None):
 
 
 def style_key(choices):
-    """What the style is worked out from: the genre, the subgenre and the kind of song chosen."""
+    """What the style is worked out from: the genre, the subgenre and the kind of song chosen. The answers kept by it, and the
+    picks kept by it with the ways chosen, are made from their keys and nothing else, so they cannot go stale and the tests
+    need not work them out again (support/kept.py)."""
     return (choices._genre, choices._subgenre, choices._variant)
 
 

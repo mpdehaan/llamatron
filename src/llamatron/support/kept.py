@@ -71,6 +71,11 @@ def kept_while(key_of, *, said=None):
     return decorate
 
 
+def as_is(answer):
+    """Return an answer as it is, for kept_while's said where the answer is plain data that compares as it stands."""
+    return answer
+
+
 def kept_for_life(method):
     """Decorate a method of an object nothing changes once it is made, so that its answer for each set of arguments is kept
     for as long as the object lives."""

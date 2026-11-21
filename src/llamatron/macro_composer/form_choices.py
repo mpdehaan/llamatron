@@ -27,7 +27,7 @@ from llamatron.macro_composer.section_choices import own_copy_of
 from llamatron.macro_composer.song_plan import faded
 from llamatron.strings import errors, marks as marks_text
 from llamatron.support import version as version_values
-from llamatron.support.kept import kept_while
+from llamatron.support.kept import as_is, kept_while
 
 
 def form_entries_key(form):
@@ -143,7 +143,7 @@ class FormChoices(ChoicesPart):
             return self._sections
         return self.form_section_entries()
 
-    @kept_while(form_entries_key)
+    @kept_while(form_entries_key, said=as_is)
     def form_section_entries(self):
         """Return the sections of the form chosen, each its kind, worked out once for a form, since a page asks for the sections
         many times a key. A caller that changes a section changes its own copy (own_section_entries)."""
@@ -176,7 +176,7 @@ class FormChoices(ChoicesPart):
             names.append(entry[arranger.KIND] if not place else marks_text.MSG_WIZARD_SECTION_VARIANT.format(kind=entry[arranger.KIND], letter=chr(ord(wizard_limits.FIRST_VARIANT_LETTER) + place)))
         return names
 
-    @kept_while(section_labels_key)
+    @kept_while(section_labels_key, said=as_is)
     def section_labels(self):
         """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
         a dash and the section's count among them, as the tracker numbers every name it makes."""
