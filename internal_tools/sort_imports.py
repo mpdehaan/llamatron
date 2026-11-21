@@ -144,10 +144,14 @@ def sorted_source(*, source, tools):
 def main(*, arguments=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--write', action='store_true', help='rewrite the files; without it, only list them')
+    parser.add_argument('--only', nargs='*', default=None, help='only these files; every file of the project when left out')
     options = parser.parse_args(arguments)
     tools = tool_modules()
     changed = 0
+    only = None if options.only is None else {(ROOT / name).resolve() for name in options.only}
     for path in python_files():
+        if only is not None and path.resolve() not in only:
+            continue
         source = path.read_text(encoding=FILE_ENCODING)
         result = sorted_source(source=source, tools=tools)
         name = path.relative_to(ROOT).as_posix()

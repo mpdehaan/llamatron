@@ -79,6 +79,21 @@ class TestConstantsByModuleTool(unittest.TestCase):
                 return values.HIGH - values.LOW, Kind.ONE
         """)
 
+    def test_modules_known_from_what_the_cache_kept_rewrite_a_file_as_the_parsed_modules_do(self):
+        source = """
+            from llamatron.music.middle import LOWEST, OWN
+
+            def span():
+                return OWN - LOWEST
+        """
+        user = self.module(name=USER, source=source)
+        parsed = [self.module(name=VALUES, source=VALUES_SOURCE), self.module(name=MIDDLE, source=MIDDLE_SOURCE)]
+        kept = [self.tool.kept_module(name=module.name, path=module.path, held=module.record()) for module in parsed]
+        from_kept = self.tool.rewritten(module=user, project=self.tool.Project([*kept, user]))
+        from_parsed = self.tool.rewritten(module=user, project=self.tool.Project([*parsed, user]))
+        self.assertEqual(from_kept, from_parsed)
+        self.assertGreater(from_parsed[1], 0)
+
     def test_an_import_left_with_no_name_is_replaced_by_the_modules(self):
         self.check(moved=1, source="""
             from llamatron.music.values import HIGH

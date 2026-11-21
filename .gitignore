@@ -20,6 +20,8 @@ recordings/
 .test_times.json
 # Which test classes run which source files, made by internal_tools/test_map.sh, and the coverage data it is made from.
 .test_map.json
+# What each module defines and imports, kept by internal_tools/constants_by_module.py so that the commit check reads only changed files.
+.constants_by_module.json
 .test_coverage/
 # Where internal_tools/build_docs.sh installs VitePress and stages the pages; the site itself is web_docs/.
 .docs_site/

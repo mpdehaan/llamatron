@@ -14,9 +14,13 @@ set -e
 cd "$(git rev-parse --show-toplevel)"
 # Two rules are kept by fixers rather than tests: every file's opening imports sorted, and every constant named through its module.
 # What a fixer changes is changed in the working tree, so the check stops for it to be looked at and staged again.
+# Only the Python files changed since the last commit are rewritten, every other file having passed when it was committed.
 before=$(git diff --stat)
-internal_tools/sort_imports.sh --write > /dev/null
-internal_tools/constants_by_module.sh --write > /dev/null
+changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep '\.py$' | sort -u | while read -r file; do [ -f "$file" ] && echo "$file"; done)
+if [ -n "$changed" ]; then
+    internal_tools/sort_imports.sh --write --only $changed > /dev/null
+    internal_tools/constants_by_module.sh --write --only $changed > /dev/null
+fi
 if [ "$(git diff --stat)" != "$before" ]; then
     echo 'check before commit: the fixers changed files, which are to be looked at and staged again:'
     git diff --stat

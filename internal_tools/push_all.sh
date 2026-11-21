@@ -23,6 +23,16 @@ if ! git diff --quiet -- src/llamatron/model/file/version.py; then
     git add src/llamatron/model/file/version.py
     git commit -q -m 'The version is raised for the push.'
 fi
+# The commit check rewrites only the files each commit changed, so once a push both fixers go over every file, and the push stops
+# where they change one, since a change to one module can rarely leave another file breaking a rule.
+before=$(git diff --stat)
+internal_tools/sort_imports.sh --write > /dev/null
+internal_tools/constants_by_module.sh --write > /dev/null
+if [ "$(git diff --stat)" != "$before" ]; then
+    echo 'before the push: the fixers changed files, which are to be looked at and committed first:'
+    git diff --stat
+    exit 1
+fi
 echo 'before the push: running every test'
 internal_tools/test.sh
 internal_tools/rebuild_docs.sh

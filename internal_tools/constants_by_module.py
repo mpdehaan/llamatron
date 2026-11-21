@@ -13,6 +13,7 @@ name of the file, or a built-in, the module is imported as `<module>_values`.
 
     internal_tools/constants_by_module.sh                  # list what would change
     internal_tools/constants_by_module.sh --write          # rewrite the files
+    internal_tools/constants_by_module.sh --write --only a.py b.py   # rewrite only these files, as the commit check does
     internal_tools/constants_by_module.sh --write --from llamatron.music llamatron.support   # only constants those packages define
 
 Nothing is rewritten by matching text: each file's syntax tree says where every import and
@@ -22,6 +23,7 @@ every use is. internal_tools/check_before_commit.sh runs it with --write to keep
 import argparse
 import ast
 import builtins
+import json
 import keyword
 import pathlib
 import sys
@@ -49,6 +51,12 @@ WHY_ASSIGNED = '{name} is also assigned in the file'
 WHY_COMMENT = 'a comment stands inside the import'
 SUMMARY = '{names} names in {files} files'
 CALLABLE = 'callable'
+# What every module defines and imports, by its path, with the file's time and size when read, so that a run that rewrites only a
+# few files reads only the files changed since (ignored by git).
+CACHE_FILE = ROOT / '.constants_by_module.json'
+KEPT_DEFINED = 'defined'
+KEPT_IMPORTED = 'imported'
+KEPT_STAMP = 'stamp'
 CONSTANT = 'constant'
 
 
@@ -78,14 +86,20 @@ class Module:
 
     __slots__ = ('name', 'path', 'source', 'tree', 'defined', 'imported')
 
-    def __init__(self, *, name, path, source):
+    def __init__(self, *, name, path, source=None, defined=None, imported=None):
+        """A module read from its source, parsed, or, without source, known only by what it defines and imports, as kept."""
         self.name = name
         self.path = path
         self.source = source
-        self.tree = ast.parse(source)
-        self.defined = {}
-        self.imported = {}
-        self._read(self.tree.body)
+        self.tree = None if source is None else ast.parse(source)
+        self.defined = {} if defined is None else defined
+        self.imported = {} if imported is None else imported
+        if self.tree is not None:
+            self._read(self.tree.body)
+
+    def record(self):
+        """Return what the module defines and imports, as the cache keeps it."""
+        return {KEPT_DEFINED: self.defined, KEPT_IMPORTED: {name: list(origin) for name, origin in self.imported.items()}}
 
     def _read(self, statements):
         """Note what a run of top-level statements defines and imports, going into the branches of an if or a try."""
@@ -108,6 +122,30 @@ class Module:
                     self._read(handler.body)
 
 
+def kept_module(*, name, path, held):
+    """Return a module as the cache kept it: what it defines and imports, without its source."""
+    imported = {local: tuple(origin) for local, origin in held[KEPT_IMPORTED].items()}
+    return Module(name=name, path=path, defined=held[KEPT_DEFINED], imported=imported)
+
+
+def file_stamp(path):
+    """Return a file's time and size, which change when the file does."""
+    status = path.stat()
+    return [status.st_mtime_ns, status.st_size]
+
+
+def read_cache():
+    """Return what the cache keeps of every module, or nothing where there is no cache or it can't be read."""
+    try:
+        return json.loads(CACHE_FILE.read_text(encoding=FILE_ENCODING))
+    except (OSError, ValueError):
+        return {}
+
+
+def write_cache(kept):
+    CACHE_FILE.write_text(json.dumps(kept), encoding=FILE_ENCODING)
+
+
 class Project:
     """Every module of the project by the name it is imported by, and where each imported name is defined."""
 
@@ -117,8 +155,20 @@ class Project:
         self.modules = {module.name: module for module in modules}
 
     @staticmethod
-    def read():
-        return Project([Module(name=module_name_of(path), path=path, source=path.read_text(encoding=FILE_ENCODING)) for path in python_files()])
+    def read(*, only=None):
+        """Read every module: those to rewrite, every module with only=None, from their source, and the rest from the cache
+        where a file is unchanged since it was kept."""
+        kept = read_cache()
+        modules = []
+        for path in python_files():
+            stamp = file_stamp(path)
+            held = kept.get(str(path))
+            if only is not None and path not in only and held is not None and held[KEPT_STAMP] == stamp:
+                modules.append(kept_module(name=module_name_of(path), path=path, held=held))
+            else:
+                modules.append(Module(name=module_name_of(path), path=path, source=path.read_text(encoding=FILE_ENCODING)))
+        write_cache({str(module.path): {KEPT_STAMP: file_stamp(module.path), **module.record()} for module in modules})
+        return Project(modules)
 
     def origin(self, *, module, name):
         """Return the module that defines a name another imports from a module, whether it is a constant, and what that module calls it, which differs where an import on the way renamed it: (module name, kind, name), or None for a module outside the project."""
@@ -403,11 +453,15 @@ def main(*, arguments=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--write', action='store_true', help='rewrite the files; without it, only say what would change')
     parser.add_argument('--from', dest='prefixes', nargs='*', default=None, help='only the constants these modules or packages define')
+    parser.add_argument('--only', nargs='*', default=None, help='only these files, rewritten; every file of the project when left out')
     options = parser.parse_args(arguments)
-    project = Project.read()
+    only = None if options.only is None else {(ROOT / name).resolve() for name in options.only}
+    project = Project.read(only=only)
     moved = 0
     files = 0
     for module in project.modules.values():
+        if module.tree is None or (only is not None and module.path not in only):
+            continue
         source, count, skipped = rewritten(module=module, project=project, prefixes=options.prefixes)
         for line in skipped:
             print(line)
