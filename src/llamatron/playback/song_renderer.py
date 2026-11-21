@@ -121,7 +121,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -138,6 +138,9 @@ class SongRenderer:
         self._seed = seed
         self._scenes = WrittenScene.write_out(song)
         self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
+        # Whether playing changes the registers, which every scene asks and which looks through every pattern of the set, asked
+        # once, since nothing changes the song while it renders.
+        self._changes_registers = song.changes_registers()
         self._draws = {name: song.get_draw(name) for name in file_format.DRAW_NAMES}
         self._clips = {}
         # Clips played only to record their register changes, with those changes.
@@ -382,7 +385,7 @@ class SongRenderer:
 
     def _song_flags(self):
         """Return what the song as a whole says about how every scene renders: whether anything changes a register, whether a draw holds a value, and whether a scene changes registers."""
-        return (self._song.changes_registers(), self._song.uses_draws(), self._song.scenes_change_registers())
+        return (self._changes_registers, self._song.uses_draws(), self._song.scenes_change_registers())
 
     def _settles_any(self):
         """Return whether any written scene is played to find how long it lasts."""
@@ -781,7 +784,7 @@ class SongRenderer:
         A drift is one process for the song, so it adds once a trigger however many clips name
         it, before every track's change at that moment.
         """
-        if not self._song.changes_registers():
+        if not self._changes_registers:
             return []
         length = self.get_scene_length(scene)
         changes = []
