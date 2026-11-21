@@ -253,9 +253,15 @@ class PatternPlayer:
         cut_at = None
         done = False
         step_draws = played.step_draws if changes_registers else None
-        # Where a step falls in the clip, a Rational, is only worked out for a pattern whose steps ask: one that draws, reads or
-        # changes the registers, grabs or hears a drift.
-        asks_moment = step_draws is not None or stops is not None or restarts is not None or mutes is not None or changes or reads_registers or grab is not None or self._drifts is not None
+        # Where a step falls in the clip, a Rational, is worked out only for a pattern whose steps ask for it, once a pass.
+        asks_moment = any((
+            step_draws is not None,  # a step draws
+            bool(pass_draws) and changes_registers,  # the clip draws as the pass starts
+            stops is not None or restarts is not None or mutes is not None,  # a step's statement reads the registers
+            changes or reads_registers,  # a step changes or reads the registers
+            grab is not None,  # a step grabs
+            self._drifts is not None,  # the clip hears a drift
+        ))
         moment = None
         for slot, step in enumerate(steps):
             if asks_moment:
