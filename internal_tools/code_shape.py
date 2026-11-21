@@ -68,6 +68,7 @@ OWN_NAMES = ('self', 'cls')
 # A named tuple's own methods start with an underscore and are its public face.
 NAMED_TUPLE_METHODS = ('_replace', '_asdict', '_fields', '_make')
 EVERY_ERROR = ('Exception', 'BaseException')
+SLOTS = '__slots__'
 # The built-in types that checking data read from a file or typed by a person asks after, which is not the program's objects.
 BUILT_IN_TYPES = ('bool', 'int', 'float', 'str', 'list', 'tuple', 'dict', 'set', 'frozenset', 'bytes', 'Fraction', 'Rational')
 PLACE = '{path}:{name}'
@@ -148,6 +149,18 @@ def is_private_reach(node):
     return not (isinstance(node.value, ast.Name) and node.value.id in OWN_NAMES)
 
 
+def own_private_names(node):
+    """Return the private names a class has of its own: its slots, what its methods set on self, and its methods, which its own
+    methods may read on another instance of it, as an __eq__ reads the other's."""
+    names = {child.name for child in node.body if isinstance(child, FUNCTIONS)}
+    for child in ast.walk(node):
+        if isinstance(child, ast.Assign) and any(isinstance(target, ast.Name) and target.id == SLOTS for target in child.targets):
+            names.update(element.value for element in ast.walk(child.value) if isinstance(element, ast.Constant) and isinstance(element.value, str))
+        if isinstance(child, ast.Attribute) and isinstance(child.value, ast.Name) and child.value.id in OWN_NAMES:
+            names.add(child.attr)
+    return {name for name in names if name.startswith('_')}
+
+
 def catches_every_error(handler):
     """Return whether an except catches every error: bare, or Exception or BaseException."""
     return handler.type is None or getattr(handler.type, 'id', None) in EVERY_ERROR
@@ -160,6 +173,8 @@ class ShapeFinder(ast.NodeVisitor):
         self.path = path
         self.lines = lines
         self.names = []
+        # The private names of each class the walk is inside, which its own methods may read on another instance of it.
+        self.own = []
         self.found = {rule: [] for rule in RULES}
 
     def place(self):
@@ -169,7 +184,9 @@ class ShapeFinder(ast.NodeVisitor):
         self.names.append(node.name)
         if not is_a_list_file(self.path) and code_lines(self.lines[node.lineno - 1:node.end_lineno]) > MOST_CODE_LINES:
             self.found[BIG_CLASSES].append(self.place())
+        self.own.append(own_private_names(node))
         self.generic_visit(node)
+        self.own.pop()
         self.names.pop()
 
     def visit_FunctionDef(self, node):
@@ -192,7 +209,7 @@ class ShapeFinder(ast.NodeVisitor):
     visit_AsyncFunctionDef = visit_FunctionDef
 
     def visit_Attribute(self, node):
-        if is_private_reach(node):
+        if is_private_reach(node) and not (self.own and node.attr in self.own[-1]):
             reach = REACH.format(place=self.place(), owner=ast.unparse(node.value), name=node.attr)
             if reach not in self.found[PRIVATE]:
                 self.found[PRIVATE].append(reach)

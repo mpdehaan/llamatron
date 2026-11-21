@@ -114,6 +114,14 @@ class RiffChoices(ChoicesPart):
             return []
         return list(self._riff_able_in(kind))
 
+    # The answers that say who can play a riff, which a trial for riffs carries over: kept under the names of the methods that find them.
+    RIFF_ABLE_METHODS = frozenset({_riff_able.__qualname__, _riff_able_in.__qualname__})
+
+    @staticmethod
+    def is_riff_able_answer(key):
+        """Return whether a kept answer's key is one of who can play a riff."""
+        return key[0] in RiffChoices.RIFF_ABLE_METHODS
+
     def riff_place(self, kind):
         """Return the place in the form of the first section of a kind that is played and not one held chord, where a riff of the kind is heard, or None."""
         places = range(len(self._choices.get_song_form().section_labels()))
@@ -397,12 +405,3 @@ class RiffChoices(ChoicesPart):
                 self._held.setdefault(wizard_limits.RIFFS_KNOWN, {}).setdefault(role, []).append(name)
                 for kind in entry.get(riffs_values.RIFF_KINDS, []):
                     self._held.setdefault(wizard_limits.RIFFS_PLAYED, {}).setdefault(kind, {})[role] = name
-
-
-# The answers that say who can play a riff, which a trial for riffs carries over: kept under the names of the methods that find them.
-RIFF_ABLE_METHODS = frozenset({RiffChoices._riff_able.__qualname__, RiffChoices._riff_able_in.__qualname__})
-
-
-def is_riff_able_answer(key):
-    """Return whether a kept answer's key is one of who can play a riff."""
-    return key[0] in RIFF_ABLE_METHODS

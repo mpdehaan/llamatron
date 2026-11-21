@@ -296,9 +296,11 @@ class Note:
             # Outside the MIDI range, the constructor says what is wrong with the note.
             return Note(name=name, octave_number=octave_number, length=self._length, velocity=self._velocity, glide=self._glide)
         # A name half_step chose and a MIDI number in range need no checking, and the rest is this note's own.
-        return note_of_checked_values(
-            name=name, octave_number=octave_number, midi_number=midi_number, length=self._length, velocity=self._velocity, glide=self._glide,
-        )
+        moved = self._clone()
+        moved._name = name
+        moved._octave_number = octave_number
+        moved._midi_number = midi_number
+        return moved
 
     def spelled_half_step(self, n):
         """Return the name and octave number of the note n half steps away, spelled as half_step spells it."""
@@ -330,9 +332,26 @@ class Note:
         change, so a copy takes them as they are: checking them again for every copy was most of
         what a note cost to make, and rendering copies a note whenever it cuts, ties or divides one.
         """
-        return note_of_checked_values(
-            name=self._name, octave_number=self._octave_number, midi_number=self._midi_number, length=length, velocity=velocity, glide=glide,
-        )
+        copied = self._clone()
+        copied._length = length
+        copied._velocity = velocity
+        copied._glide = glide
+        return copied
+
+    def _clone(self):
+        """Return a note the same as this one, made without the constructor checking what this note's own was checked for.
+
+        Every note that skips the constructor is made here, so that the count of objects a render makes
+        (internal_tools/time_renders.py) still counts each one.
+        """
+        note = _new(Note)
+        note._name = self._name
+        note._octave_number = self._octave_number
+        note._length = self._length
+        note._velocity = self._velocity
+        note._glide = self._glide
+        note._midi_number = self._midi_number
+        return note
 
     def to_chord(self, typ):
         """Return a new Chord of the given ChordType with this note as its root.
@@ -357,23 +376,6 @@ class Note:
 
     def __repr__(self):
         return reprs.REPR_NOTE.format(name=self._name, octave_number=self._octave_number, length=self._length, velocity=self._velocity, glide=self._glide)
-
-
-def note_of_checked_values(*, name, octave_number, midi_number, length, velocity, glide):
-    """Return a Note from values that are already checked, without the constructor checking them again.
-
-    Only a Note's own copies call this, each with what it took from a checked note and what it
-    checked itself. Every note that skips the constructor is made here, so that the count of
-    objects a render makes (internal_tools/time_renders.py) still counts each one.
-    """
-    note = _new(Note)
-    note._name = name
-    note._octave_number = octave_number
-    note._length = length
-    note._velocity = velocity
-    note._glide = glide
-    note._midi_number = midi_number
-    return note
 
 
 def _is_velocity(velocity):

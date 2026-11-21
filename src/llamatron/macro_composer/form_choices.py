@@ -30,19 +30,6 @@ from llamatron.support import version as version_values
 from llamatron.support.kept import as_is, kept_while
 
 
-def form_entries_key(form):
-    """What the suggested form's sections are worked out from: the style and the form chosen."""
-    return (*form.style_key(), form._form)
-
-
-def section_labels_key(form):
-    """What the sections' labels are worked out from: the form chosen, while a suggested form is followed, and the song's own
-    sections' kinds once it has its own."""
-    if form._sections is None:
-        return form_entries_key(form)
-    return tuple(entry[arranger.KIND] for entry in form._sections)
-
-
 class FormChoices(ChoicesPart):
     """What was chosen of the song's form: the form suggested by the subgenre, or the song's own sections once a person has
     changed them, and how the song starts and ends, as ways, the first player and the setup's bars."""
@@ -143,7 +130,18 @@ class FormChoices(ChoicesPart):
             return self._sections
         return self.form_section_entries()
 
-    @kept_while(form_entries_key, said=as_is)
+    def _entries_key(self):
+        """What the suggested form's sections are worked out from: the style and the form chosen."""
+        return (*self.style_key(), self._form)
+
+    def _labels_key(self):
+        """What the sections' labels are worked out from: the form chosen, while a suggested form is followed, and the song's own
+        sections' kinds once it has its own."""
+        if self._sections is None:
+            return self._entries_key()
+        return tuple(entry[arranger.KIND] for entry in self._sections)
+
+    @kept_while(_entries_key, said=as_is)
     def form_section_entries(self):
         """Return the sections of the form chosen, each its kind, worked out once for a form, since a page asks for the sections
         many times a key. A caller that changes a section changes its own copy (own_section_entries)."""
@@ -177,7 +175,7 @@ class FormChoices(ChoicesPart):
             names.append(entry[arranger.KIND] if not place else marks_text.MSG_WIZARD_SECTION_VARIANT.format(kind=entry[arranger.KIND], letter=chr(ord(wizard_limits.FIRST_VARIANT_LETTER) + place)))
         return names
 
-    @kept_while(section_labels_key, said=as_is)
+    @kept_while(_labels_key, said=as_is)
     def section_labels(self):
         """Return what each section is shown as, in order: its kind, and where the form has several of a kind, the kind with
         a dash and the section's count among them, as the tracker numbers every name it makes."""

@@ -40,7 +40,7 @@ from llamatron.macro_composer.form_choices import FormChoices
 from llamatron.macro_composer.hook_choices import HookChoices
 from llamatron.macro_composer.kit_choices import KitChoices
 from llamatron.macro_composer.player_choices import PlayerChoices
-from llamatron.macro_composer.riff_choices import is_riff_able_answer, RiffChoices
+from llamatron.macro_composer.riff_choices import RiffChoices
 from llamatron.macro_composer.riffs import flattened_in
 from llamatron.macro_composer.section_choices import chords_as_text, chords_from_text, own_copy_of, SectionChoices
 from llamatron.macro_composer.solo_choices import SoloChoices
@@ -144,7 +144,7 @@ def style_key(choices):
     """What the style is worked out from: the genre, the subgenre and the kind of song chosen. The answers kept by it, and the
     picks kept by it with the ways chosen, are made from their keys and nothing else, so they cannot go stale and the tests
     need not work them out again (support/kept.py)."""
-    return (choices._genre, choices._subgenre, choices._variant)
+    return (choices.get_genre(), choices.get_subgenre(), choices.get_variant())
 
 
 class WizardChoices:
@@ -1442,7 +1442,7 @@ class WizardChoices:
         """A copy of the choices to try something on, which remembers who can play a riff and nothing else."""
         answers = self._answers
         trial = self.copied_for_trial()
-        trial._answers = {key: value for key, value in answers.items() if is_riff_able_answer(key)}
+        trial._answers = {key: value for key, value in answers.items() if RiffChoices.is_riff_able_answer(key)}
         return trial
 
 

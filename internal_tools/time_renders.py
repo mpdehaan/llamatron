@@ -50,7 +50,7 @@ FUNCTIONS_SHOWN = 20
 # Where the program's own files start in a path, so that the profile shows short names.
 PACKAGE_MARK = 'llamatron/'
 # What makes an object: a class's constructor, and the function that makes a note from values already checked.
-CONSTRUCTORS = ('__init__', 'note_of_checked_values')
+CONSTRUCTORS = ('__init__', '_clone')
 HEADING = '{name:34s} {time:>9s} {calls:>9s}'
 ROW = '{name:34s} {time:9.1f} {calls:9d}'
 TOTAL_NAME = 'every example'
