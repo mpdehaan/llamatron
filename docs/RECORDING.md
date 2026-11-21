@@ -4,7 +4,7 @@ This page covers making a video of the tracker playing a set, for YouTube and si
 
 ## Requirements
 
-The recorder needs a MIDI port, a loopback audio device, a Multi-Output Device, Screen Recording permission and Xcode's command line tools. The installing page [Recording](INSTALLING_RECORDING.md) describes setting each up.
+The recorder needs a MIDI port, a loopback audio device, a Multi-Output Device, Screen Recording permission and Xcode's command line tools. The installing page [Recording](INSTALLING_RECORDING.md) describes setting each up, and why the Multi-Output Device is best kept for recording, since it can make the Mac's sound substantially quieter.
 
 ## Takes
 

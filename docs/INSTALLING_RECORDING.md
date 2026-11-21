@@ -28,6 +28,11 @@ This page covers installing and setting up what the demo recorder needs before i
    headphones and **BlackHole 2ch**. Tick **Drift Correction** on BlackHole. In the DAW's audio
    preferences, choose that Multi-Output Device as the output. The DAW now plays into your speakers
    and into BlackHole at once, and the recorder reads BlackHole.
+
+   Playing through the Multi-Output Device can make the Mac's sound substantially quieter, and macOS's volume keys do not
+   reach it. Use it only while recording videos. For composing, when nothing is being recorded, choose your best speakers or
+   headphones as the Mac's output instead, from the sound control in the menu bar at the top right of the screen, and set the
+   DAW's output back to them too.
 4. **Screen Recording permission** for your terminal program. The first take asks for it; after
    allowing it in System Settings under Privacy & Security, quit and reopen the terminal, since the
    permission reaches new processes only.

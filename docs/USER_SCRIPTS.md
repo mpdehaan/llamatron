@@ -32,7 +32,7 @@ Environment:
 
 ### `install_blackhole.sh`
 
-Installs BlackHole 2ch, the loopback audio device the demo recorder records sound from, using Homebrew and asking before installing. Run it once before recording your first video. See [Recording](INSTALLING_RECORDING.md).
+Installs BlackHole 2ch, the loopback audio device the demo recorder records sound from, using Homebrew and asking before installing. Run it once before recording your first video. See [Recording](INSTALLING_RECORDING.md), which also says why the Mac's output is best left on your speakers while you compose, since the Multi-Output Device made for recording can make the sound substantially quieter.
 
 ```
 sh user_scripts/install_blackhole.sh
