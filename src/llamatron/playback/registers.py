@@ -156,6 +156,12 @@ class RegisterTimeline:
             self._values.append(dict(values))
         self._turned = turned.names()
 
+    def reads_as(self, other):
+        """Return whether a clip reading this timeline reads what it would read from another: the same values at every moment,
+        the same registers counting the other way, and the same draws taken and standing where they stand."""
+        return (self._start, self._moments, self._values, self._turned, self._draw_moments, self._taken, _places_of(self._draws)) == (
+            other._start, other._moments, other._values, other._turned, other._draw_moments, other._taken, _places_of(other._draws))
+
     def get_draw_moments(self):
         """Return each moment in the scene at which a draw drew, as (time, the place of every draw's last slot), in time order."""
         return list(self._draw_moments)
@@ -342,3 +348,8 @@ def no_values():
 def _moment_of(change):
     """Return when a change happens, as (time, track place), which is the order changes apply in."""
     return change.time, change.place
+
+
+def _places_of(draws):
+    """Return where the song's draws stand, or None in a song with no draws."""
+    return None if draws is None else draws.places()

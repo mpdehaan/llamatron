@@ -121,7 +121,7 @@ class SongRenderer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers')
+    __slots__ = ('_song', '_seed', '_scenes', '_registers', '_draws', '_clips', '_counted', '_lengths', '_timelines', '_grabbing', '_register_chooser', '_drifts', '_starts', '_strum_seed', '_end_states', '_chord_counts', '_hocket_turns', '_source_turns', '_looping_scenes_go_round', '_following', '_chord_sources', '_tune_sources', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_checkpoints', '_reused', '_kept_clips', '_changes_registers', '_earlier')
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -180,6 +180,8 @@ class SongRenderer:
         self._checkpoints = None if data is None else []
         self._reused = 0
         self._kept_clips = set()
+        # The render clips are kept from while this one plays, in a song whose registers a kept clip reads, and None after.
+        self._earlier = None
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it has none."""
@@ -208,29 +210,53 @@ class SongRenderer:
         grid = ClipGrid(tempo=_whole_if_possible(float(self._song.get_tempo())), time_signature=self._song.get_time_signature())
         tracks = self._add_tracks(grid)
         self._take_over(after)
-        for place, scene in enumerate(self._scenes):
-            if self._checkpoints is not None and place >= self._reused:
-                self._checkpoints.append(SceneCheckpoint(self._register_chooser.getstate(), self._drifts.snapshot()))
-            tempo = None if scene.get_tempo() is None else float(scene.get_tempo())
-            grid_scene = grid.add_row(ClipRow(name=scene.get_name(), tempo=tempo))
-            for name in self._song.get_track_names():
-                clip = self._finished_clip(scene=scene, track=name, tempo=tempo, kept=self.is_clip_kept(scene=scene, track=name))
-                if clip is not None:
-                    grid.set_clip(row=grid_scene, column=tracks[name], clip=clip)
-            tempos = self.tempos_of(scene)
-            if tempos is not None:
-                grid_scene.set_tempo(tempos[0].tempo)
-                grid_scene.set_tempo_changes(tempos[1:])
+        try:
+            for place, scene in enumerate(self._scenes):
+                self._render_scene(grid=grid, tracks=tracks, scene=scene, place=place)
+        finally:
+            # A render keeps no earlier render alive, so that a run of edits holds only the last.
+            self._earlier = None
         return grid
 
-    def _finished_clip(self, *, scene, track, tempo, kept):
+    def _render_scene(self, *, grid, tracks, scene, place):
+        """Add a written-out scene's row to the grid with its finished clips, played or kept."""
+        if place >= self._reused:
+            if self._checkpoints is not None:
+                self._checkpoints.append(SceneCheckpoint(self._register_chooser.getstate(), self._drifts.snapshot()))
+            if self._earlier is not None:
+                self._hold_kept_clips_to_registers(scene)
+        tempo = None if scene.get_tempo() is None else float(scene.get_tempo())
+        grid_scene = grid.add_row(ClipRow(name=scene.get_name(), tempo=tempo))
+        for name in self._song.get_track_names():
+            clip = self._finished_clip(scene=scene, track=name, tempo=tempo)
+            if clip is not None:
+                grid.set_clip(row=grid_scene, column=tracks[name], clip=clip)
+        tempos = self.tempos_of(scene)
+        if tempos is not None:
+            grid_scene.set_tempo(tempos[0].tempo)
+            grid_scene.set_tempo_changes(tempos[1:])
+
+    def _hold_kept_clips_to_registers(self, scene):
+        """Let go of the clips kept for a written scene, and of their tracks' kept clips after it, where the scene's registers
+        come out other than they did in the earlier render, since a finished clip reads them and its generators carry on down
+        its track; the clips counted for the registers stay, since counting reads no register."""
+        number = scene.get_number()
+        kept = {track for track in scene.get_track_names() if (number, track) in self._kept_clips}
+        earlier = self._earlier._timelines.get(number)
+        if not kept or (earlier is not None and self.get_timeline(scene).reads_as(earlier)):
+            return
+        for key in [key for key in self._kept_clips if key[0] >= number and key[1] in kept]:
+            self._kept_clips.discard(key)
+            del self._clips[key]
+            self._chord_counts.pop(key, None)
+        self._end_states = {key: state for key, state in self._end_states.items() if not _finished_from(key=key, number=number, tracks=kept)}
+
+    def _finished_clip(self, *, scene, track, tempo):
         """Return a track's clip in a written-out scene with its groove, strums, nudges, handed notes and keyswitch lead, or None
-        when it plays nothing there; kept, a clip taken from an earlier render, which has them already."""
-        if kept:
-            return self._clips.get((scene.get_number(), track))
+        when it plays nothing there; a clip taken from an earlier render has them already."""
         clip = self.get_clip(scene=scene, track=track)
-        if clip is None:
-            return None
+        if clip is None or self.is_clip_kept(scene=scene, track=track):
+            return clip
         tempo = self._song.get_tempo() if tempo is None else tempo
         # The groove goes on last, so that generators, grabs and lengths never see it.
         clip.set_groove(self._song.groove_at(scene=scene, track=track))
@@ -305,6 +331,11 @@ class SongRenderer:
                 self._clips[key] = after._clips[key]
                 if key in after._chord_counts:
                     self._chord_counts[key] = after._chord_counts[key]
+                if key in after._counted:
+                    self._counted[key] = after._counted[key]
+        if self._changes_registers or self._song.uses_draws():
+            # A kept clip read the scene's registers, which the render holds it to scene by scene (_hold_kept_clips_to_registers).
+            self._earlier = after
         for key, state in after._end_states.items():
             if (key[1], key[2]) in self._kept_clips:
                 self._end_states[key] = state
@@ -358,11 +389,11 @@ class SongRenderer:
         return [step for chain in self.chains_of(scene=scene, track=track) for step in self._song.chain_run(chain).get_steps()]
 
     def _clips_stand_apart(self):
-        """Return whether each track's clips play apart from the other tracks' but where a scene joins them: nothing changes a
-        register and no draw holds a value, so no clip reads what another changes, and no drift draws random numbers in the
-        order the clips first ask for its triggers."""
+        """Return whether each track's clips play apart from the other tracks' but where a scene joins them, or where the
+        registers they read come out otherwise (_hold_kept_clips_to_registers): no drift draws random numbers in the order the
+        clips first ask for its triggers."""
         drifts = self._song.get_setlist().get_generator_names(GeneratorKind.DRIFT)
-        return not any(self._song_flags()) and not any(self._drifts.draws_in_order(name) for name in drifts)
+        return not any(self._drifts.draws_in_order(name) for name in drifts)
 
     def kept_tracks(self, scenes):
         """Return the tracks whose clips were taken from an earlier render in every written-out scene given."""
@@ -1035,6 +1066,13 @@ class SongRenderer:
 def _through_scene(*, entries, count, number_of):
     """Return the entries of what a render worked out whose written scene, which number_of finds in a key, is among the first count."""
     return {key: value for key, value in entries.items() if number_of(key) <= count}
+
+
+def _finished_from(*, key, number, tracks):
+    """Return whether a generator's end state, by its key (counting, written scene number, track, the generator's place), was
+    left by a finished clip of one of the tracks from a written scene on."""
+    counting, scene, track, _place = key
+    return not counting and scene >= number and track in tracks
 
 
 def _first_part(key):

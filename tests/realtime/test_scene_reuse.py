@@ -27,7 +27,7 @@ import random
 import unittest
 
 from llamatron.composition import file_format
-from llamatron.composition.file_format import Row, Section
+from llamatron.composition.file_format import RegisterName, Row, Section
 from llamatron.composition.setlist import Setlist
 from llamatron.music import midi
 from llamatron.realtime.score import Score
@@ -61,6 +61,11 @@ CARRYING_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_set
 CARRYING_BASS = 'bass_line'
 CARRYING_LAST = 'lead_three'
 CARRYING_MIDDLE = 'lead_two'
+# A demo whose patterns add to the registers, and a pattern of its first scene whose last step adds to AX.
+REGISTERS_DEMO = os.path.join(EXAMPLES, 'learning', '22_registers.yml')
+REGISTERS_PATTERN = 'riff_ax'
+REGISTERS_ADD_STEP = 15
+CHANGED_ADD = 3
 # A degree the grabbed track's pattern is changed to, which a grab takes.
 CHANGED_DEGREE = 7
 # A demo whose registers can cut a clip short, so that a scene is played to find how long it lasts.
@@ -214,11 +219,19 @@ class TestScoreTakesClips(unittest.TestCase):
         edited.setlist.get_pattern(CARRYING_MIDDLE).set_value(row=Row.DEGREE, step=0, value=None)
         self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 1)
 
-    def test_a_song_whose_registers_change_keeps_no_clip_apart(self):
-        edited = Edited(LATE_PATTERN_DEMO)
+    def test_in_a_song_whose_registers_change_an_edit_that_leaves_them_alone_keeps_the_other_tracks_clips(self):
+        edited = Edited(REGISTERS_DEMO)
         first = edited.score()
-        self.edit_first_pattern(edited)
-        self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 0)
+        edited.setlist.get_pattern(REGISTERS_PATTERN).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
+        self.assertGreater(edited.score(earlier=first).get_kept_clip_count(), 0)
+
+    def test_an_edit_that_changes_what_a_register_adds_lets_go_of_the_clips_that_read_it(self):
+        edited = Edited(REGISTERS_DEMO)
+        first = edited.score()
+        edited.setlist.get_pattern(REGISTERS_PATTERN).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
+        leaving_registers = edited.score(earlier=first).get_kept_clip_count()
+        edited.setlist.get_pattern(REGISTERS_PATTERN).set_value(row=file_format.REGISTER_ADD_ROWS[RegisterName.AX], step=REGISTERS_ADD_STEP, value=CHANGED_ADD)
+        self.assertLess(edited.score(earlier=first).get_kept_clip_count(), leaving_registers)
 
     def test_a_drift_that_draws_in_the_order_it_is_asked_keeps_no_clip_apart(self):
         edited = Edited(DRIFTING_SET)
