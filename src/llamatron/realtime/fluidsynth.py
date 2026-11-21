@@ -35,7 +35,7 @@ import shutil
 import subprocess
 import time
 
-from llamatron.realtime.outputs import output_port_names
+from llamatron.realtime.outputs import output_port_names_now
 from llamatron.realtime.sender_process import SenderNotStarted
 from llamatron.strings import errors
 
@@ -108,7 +108,7 @@ class FluidSynth:
 
     __slots__ = ('_process', '_port_names', '_start_process', '_now', '_sleep')
 
-    def __init__(self, *, port_names=output_port_names, start_process=None, now=time.monotonic, sleep=time.sleep):
+    def __init__(self, *, port_names=output_port_names_now, start_process=None, now=time.monotonic, sleep=time.sleep):
         """port_names, start_process(words), now and sleep are for the tests, which start no real FluidSynth."""
         self._process = None
         self._port_names = port_names
@@ -120,8 +120,11 @@ class FluidSynth:
         return self._process is not None and self._process.poll() is None
 
     def ensure_running(self):
-        """Start FluidSynth unless it runs, and wait until its port is listed. Return whether it was started now, so that whatever opened the old port opens the new one."""
-        if self.is_running() and FLUIDSYNTH_PORT in self._port_names():
+        """Start FluidSynth unless it runs, and wait until its port is listed. Return whether it was started now, so that whatever opened the old port opens the new one.
+
+        A FluidSynth that runs has its port, which it made as it started, so the ports are listed again only while a new one starts.
+        """
+        if self.is_running():
             return False
         self.stop()
         self._process = self._start_process(command(audio_device=os.environ.get(AUDIO_DEVICE_VARIABLE)))

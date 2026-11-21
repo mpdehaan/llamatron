@@ -39,9 +39,13 @@ MACOS = 'darwin'
 COREMIDI = '/System/Library/Frameworks/CoreMIDI.framework/CoreMIDI'
 CORE_FOUNDATION = '/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation'
 CLIENT_NAME = 'llamatron'
+# Core Foundation's run loop mode for running a thread's run loop once, and the time it waits, none.
+DEFAULT_RUN_LOOP_MODE = 'kCFRunLoopDefaultMode'
+NO_WAIT = 0.0
 # CoreMIDI's names of the properties holding a destination's own name, like Bus 1, and the name shown for it, like IAC Driver Bus 1,
 # which is the name python-rtmidi lists and the set's instruments use.
 NAME_PROPERTIES = ('kMIDIPropertyName', 'kMIDIPropertyDisplayName')
+SHOWN_NAME = 1
 UTF8 = 0x08000100
 NAME_BYTES = 256
 # Room for one packet of one event, with plenty to spare.
@@ -78,6 +82,8 @@ class CoreMidi:
         self.foundation.CFStringCreateWithCString.restype = ctypes.c_void_p
         self.foundation.CFStringCreateWithCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32]
         self.foundation.CFStringGetCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
+        self.foundation.CFRunLoopRunInMode.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_ubyte]
+        self.foundation.CFRunLoopRunInMode.restype = ctypes.c_int32
         for call in (self.midi.MIDIClientCreate, self.midi.MIDIOutputPortCreate, self.midi.MIDISend, self.midi.MIDIPortDispose):
             call.restype = ctypes.c_int32
         self.midi.MIDIGetDestination.restype = ctypes.c_uint32
@@ -120,6 +126,16 @@ class CoreMidi:
 def core_midi():
     """Return the process's CoreMIDI calls and client, made the first time a port opens."""
     return CoreMidi()
+
+
+def destination_names():
+    """Return the name shown for each of the computer's MIDI destinations, the names python-rtmidi lists, or raise OSError when
+    CoreMIDI refuses its client, which python-rtmidi answers by ending the process. The thread's run loop is run once, at once,
+    first, as RtMidi does: CoreMIDI tells a process of a destination another program makes later through a notification the run
+    loop delivers, and without it a destination made after the first listing, such as FluidSynth's, is never seen."""
+    core = core_midi()
+    core.foundation.CFRunLoopRunInMode(ctypes.c_void_p.in_dll(core.foundation, DEFAULT_RUN_LOOP_MODE), NO_WAIT, False)
+    return [core.names_of(core.midi.MIDIGetDestination(place))[SHOWN_NAME] for place in range(core.midi.MIDIGetNumberOfDestinations())]
 
 
 def checked(*, call, status):
