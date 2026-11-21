@@ -18,7 +18,8 @@ its songs, in a folder named after the song:
 - live.xml: the Live set, unzipped, so that it compares as text
 - estimate.txt: how long the tracker estimates the song and each scene lasts
 
-saved.yml is compared without its version line, since saving records the version. Every song
+saved.yml is compared without its version line, since saving records the version, and line by line in any order, since
+the order a set's generator definitions are written in means nothing. Every song
 is exported with the same seed, since a song without one would play differently every time.
 
 Run it from the top folder of the project:
@@ -140,16 +141,18 @@ def files_in(folder):
 
 
 def same_file(*, captured, fresh, path):
-    """Return whether a captured file and its fresh counterpart match, ignoring the version line of a re-saved set."""
+    """Return whether a captured file and its fresh counterpart match, ignoring the version line of a re-saved set and the order
+    its generator definitions are written in, which means nothing."""
     if os.path.basename(path) == SAVED_SONG:
         return without_version_line(os.path.join(captured, path)) == without_version_line(os.path.join(fresh, path))
     return filecmp.cmp(os.path.join(captured, path), os.path.join(fresh, path), shallow=False)
 
 
 def without_version_line(path):
-    """Return a saved set's text without the line that records the version that saved it."""
+    """Return a saved set's lines without the line that records the version that saved it, sorted, so that definitions written
+    in another order compare the same: each generator is one line of the saved set's list, found by its name."""
     with open(path, encoding=FILE_ENCODING) as file:
-        return [line for line in file if not line.startswith(VERSION_LINE_START)]
+        return sorted(line for line in file if not line.startswith(VERSION_LINE_START))
 
 
 def differences(*, captured, fresh):
