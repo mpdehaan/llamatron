@@ -63,19 +63,19 @@ These hold on every page:
 
 ![The main screen, showing minimal_techno](screenshots/main.svg)
 
-The main screen is one block of buttons, the same size in every window. Arrange is the bar across the top. Under it are three rows of three: Songs, Patterns and Scales; Generators, Chains and Grooves; Instruments, Registers and the Real Time switch. A bar under the buttons holds Open, Save, Import, Export, File/Global and Quit. While a song plays, the header shows a play mark and a clock beside the song's length. Press a cell's letter, or move the box with the arrows and press `ENTER`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The box stays where it was when you come back with `ESC`.
+The main screen is one block of buttons, the same size in every window. Arrange is the bar across the top. Under it are three rows of three: Songs, Patterns and Scales; Generators, Draws and Grooves; Instruments, Registers and the Real Time switch. A bar under the buttons holds Open, Save, Import, Export, File/Global and Quit. While a song plays, the header shows a play mark and a clock beside the song's length. Press a cell's letter, or move the box with the arrows and press `ENTER`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The box stays where it was when you come back with `ESC`.
 
 | Key | Page | What it is for |
 | --- | --- | --- |
 | `F` | File/Global | The set's title, author, description, notes and defaults, with New and Save As |
 | `S` | Songs | The songs in the set, and which one is current |
 | `P` | Patterns | The notes, in a grid of steps, shared by every song |
-| `C` | Chains | Lists of generators that clips, scenes and tracks run |
-| `G` | Generators | Every kind of generator |
+| `G` | Generators | Every kind of generator, and the chains of them that clips, scenes and tracks run |
 | `Z` | Scales | The named scales that songs, scenes and clips use |
 | `V` | Grooves | Swing and other timing feels |
 | `I` | Instruments | The MIDI devices and channels, or FluidSynth, that tracks play through in real time |
 | `R` | Registers | AX to DX, four numbers that pattern steps change and use, in the current song |
+| `D` | Draws | AD to DD, four short lists of numbers that pattern steps take from in turn, in the current song |
 | `A` | Arrange | The scenes, tracks and clips of the current song. The cell reads Arrange/Play while Real Time is on, since Arrange then plays the song too |
 | `T` | Real Time | A switch, not a page: `●` when the set plays through its instruments in real time, `○` when not |
 | `O`, `X`, `L` | Open, Export, Load MIDI | On this screen alone, without Ctrl |
@@ -140,7 +140,7 @@ flowchart TD
 
 - **`Ctrl+S` saves** the set. The first time, it asks for a file name, starting from `songs/untitled.yml`, and adds `.yml` if you leave it off; folders are made as needed. A protected set, such as a demo, is never written over: a dialog offers to save a copy under another name, which isn't protected. The File/Global page's Protected setting turns the protection off. Saving writes nothing when the file already holds exactly what it would save, and asks before writing over a file something else has changed since it was opened.
 - **`W` saves as** a new name, on the File/Global page, asking before replacing another file.
-- **`Ctrl+O` opens** a set file. The Open page starts in `examples/`, where folders show with a trailing slash, such as `learning/`: `ENTER` opens a file or goes into a folder, and `../` goes up. Opened again, the page comes back to the folder it last showed, until llamatron is closed. A file that holds values llamatron can't use, such as a velocity of 200 typed in by hand, opens only after a dialog lists each with the value that takes its place: the nearest number allowed, the longest length allowed, or the default. `YES` opens the set with those changes, marked unsaved, and the file stays as it is until you save; `No` opens nothing. Anything else wrong with a file, such as a clip that names a missing pattern, is refused with a message saying where.
+- **`Ctrl+O` opens** a set file. The Open page starts in `examples/`, where folders show with a trailing slash, such as `learning/`: `ENTER` opens a file or goes into a folder, and `../` goes up. Opened again, the page comes back to the folder it last showed, until llamatron is closed. A file that holds values llamatron can't use, such as a velocity of 200 typed in by hand, opens only after a dialog lists each with the value that takes its place: the nearest number allowed, the longest length allowed, or the default. `YES` opens the set with those changes, marked unsaved, and the file stays as it is until you save; `NO` opens nothing. Anything else wrong with a file, such as a clip that names a missing pattern, is refused with a message saying where.
 - **`N` starts** a new set, on the File/Global page, with one song called `untitled` whose first track plays a starter pattern.
 - **`Ctrl+X` exports** the current song, as [Exporting](EXPORTING.md) describes, and **`L` (Load MIDI) imports** a MIDI file as a new song, as [Importing](IMPORTING.md) describes.
 
