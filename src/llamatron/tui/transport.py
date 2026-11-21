@@ -47,7 +47,7 @@ from llamatron.playback.step_order import walk_order
 from llamatron.realtime import fluidsynth as fluidsynth_values, player as player_values
 from llamatron.realtime.engine import MonotonicClock
 from llamatron.realtime.fluidsynth import FluidSynth, is_installed
-from llamatron.realtime.outputs import output_port_names, warm_port_list
+from llamatron.realtime.outputs import output_port_names
 from llamatron.realtime.player import Player
 from llamatron.realtime.score import Score
 from llamatron.realtime.sender_process import RealtimeMIDISenderProcess, SenderNotStarted
@@ -118,9 +118,6 @@ class Transport:
         self._fluidsynth_installed = fluidsynth_is_installed if fluidsynth_installed is None else fluidsynth_installed
         self._clock = MonotonicClock() if clock is None else clock
         self._make_sender = self._process_sender if make_sender is None else make_sender
-        if make_sender is None:
-            # The real transport lists the ports through a client made now, in the background, rather than on the first launch.
-            warm_port_list()
         self._set_timer = set_timer
         self._sender = None
         self._ports = None
