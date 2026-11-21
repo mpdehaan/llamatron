@@ -23,6 +23,8 @@ tuple of its kind and what it carries.
 
 import functools
 import os
+import signal
+import threading
 import time
 
 from llamatron.composition.song_file_error import SongFileError
@@ -61,20 +63,34 @@ def recording_sender(ports, *, recording):
     return RealtimeMIDISenderProcess(ports=ports, recording=recording)
 
 
-def run_playback(*, connection, lead, recording):
+def run_playback(*, connection, lifeline, lead, recording):
     """The render process: a LocalPlayback on the real clock, its player ticking on its own loop, fed by the pipe.
 
     It leads a process group of its own, which the Realtime Sender Process it starts joins, so that the tracker can end both at
-    once however they are stuck (playback_process.end_process_group); and it ends, closing its sender, when the tracker's end of
-    the pipe goes, as when the tracker itself ends."""
+    once however they are stuck (playback_process.end_process_group); it ends, closing its sender, when the tracker's end of
+    the pipe goes, as when the tracker itself ends; and a watcher ends it even while its loop is stuck, should the tracker be
+    killed meanwhile (watch_lifeline)."""
     if hasattr(os, 'setpgrp'):
         os.setpgrp()
+    threading.Thread(target=watch_lifeline, args=(lifeline,), daemon=True).start()
     sender_process.ask_to_be_urgent()
     render = RenderLoop(connection=connection, playback=LocalPlayback(
         make_sender=functools.partial(recording_sender, recording=recording), clock=MonotonicClock(), lead=lead, at_once=False,
     ))
     connection.send((READY,))
     render.run()
+
+
+def watch_lifeline(lifeline):
+    """Wait on the lifeline, the end of a pipe the tracker never writes to, and end the render process the moment the tracker's
+    end goes, as it does however the tracker ends, killed outright included. Waiting on a pipe takes no time and never wakes, so
+    the watcher costs nothing until then. It ends the render process alone, so that the Realtime Sender Process sees its own
+    pipe go and closes as it always does, sending a note off for every note sounding."""
+    try:
+        lifeline.recv()
+    except (EOFError, OSError):
+        pass
+    os.kill(os.getpid(), signal.SIGKILL)
 
 
 class RenderLoop:

@@ -67,7 +67,7 @@ class PlaybackNotStarted(SenderNotStarted):
 class PlaybackProcess:
     """The tracker's side of the render process, answering the transport as a LocalPlayback does."""
 
-    __slots__ = ('_recording', '_lead', '_lock', '_connection', '_process', '_sent', '_latest', '_built', '_status', '_statuses', '_playing', '_ended')
+    __slots__ = ('_recording', '_lead', '_lock', '_connection', '_lifeline', '_process', '_sent', '_latest', '_built', '_status', '_statuses', '_playing', '_ended')
 
     def __init__(self, *, lead, recording=False):
         """lead is how far ahead of now a launch from silence starts; with recording, the Realtime Sender Process records what it would send, which close() hands back."""
@@ -76,6 +76,8 @@ class PlaybackProcess:
         # Sending and starting are done from the screen's thread and from the thread that gets ready under the start screen.
         self._lock = threading.Lock()
         self._connection = None
+        # The end of the lifeline the tracker holds and never writes to (render_process.watch_lifeline).
+        self._lifeline = None
         self._process = None
         # The set's data as last sent, whose parts are compared by identity to find what changed, and as last taken.
         self._sent = {}
@@ -96,7 +98,8 @@ class PlaybackProcess:
     def _spawn(self):
         context = multiprocessing.get_context(sender_process.SPAWN)
         self._connection, far_end = context.Pipe()
-        self._process = context.Process(target=run_playback, kwargs=dict(connection=far_end, lead=self._lead, recording=self._recording))
+        far_lifeline, self._lifeline = context.Pipe(duplex=False)
+        self._process = context.Process(target=run_playback, kwargs=dict(connection=far_end, lifeline=far_lifeline, lead=self._lead, recording=self._recording))
         with sender_process.real_standard_error():
             self._process.start()
         # However the tracker ends, the render process and its sender end too, before Python waits for its child processes.
@@ -188,6 +191,8 @@ class PlaybackProcess:
         end_process_group(self._process)
         self._process.join(CLOSE_SECONDS)
         self._connection.close()
+        # Only once the render process has ended, since its watcher ends it the moment the lifeline goes.
+        self._lifeline.close()
         self._process = None
         return result
 

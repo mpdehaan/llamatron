@@ -21,6 +21,8 @@ played refused as the transport's pages expect."""
 
 import os
 import signal
+import subprocess
+import sys
 import threading
 import time
 import unittest
@@ -54,6 +56,10 @@ CHANGED_DEGREE = 5
 ANOTHER_PATTERN = 'another'
 # Closing asks, waits a second for an answer and a second for the process to end, then ends its group: well under five seconds.
 CLOSING_ALLOWED_SECONDS = 5.0
+# The stand-in for a tracker killed outright, run in an interpreter of its own from the top folder.
+TOP_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+TRACKER_KILLED = os.path.join(TOP_FOLDER, 'tests', 'support', 'tracker_killed.py')
+PYTHON_PATH = 'PYTHONPATH'
 NEVER_QUIET = 'the render process still played after the wait'
 
 
@@ -190,6 +196,18 @@ class TestPlaybackProcess(unittest.TestCase):
         self.assertLess(time.monotonic() - began, CLOSING_ALLOWED_SECONDS)
         # Nothing of the render process's group is left, the Realtime Sender Process included, once the system has reaped what
         # was ended, which it answers for with "not permitted" for a moment.
+        self.assertTrue(group_is_gone(group))
+
+
+class TestKilledTracker(unittest.TestCase):
+    """A tracker killed outright runs nothing of its closing, so the render process's watcher ends it (render_process.watch_lifeline)."""
+
+    def test_a_render_process_and_its_sender_end_when_the_tracker_is_killed(self):
+        tracker = subprocess.Popen([sys.executable, TRACKER_KILLED], stdout=subprocess.PIPE, text=True, cwd=TOP_FOLDER, env={**os.environ, PYTHON_PATH: TOP_FOLDER})
+        self.addCleanup(tracker.wait)
+        group = int(tracker.stdout.readline())
+        os.kill(tracker.pid, signal.SIGKILL)
+        tracker.stdout.close()
         self.assertTrue(group_is_gone(group))
 
 

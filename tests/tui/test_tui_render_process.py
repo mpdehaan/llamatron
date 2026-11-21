@@ -103,8 +103,7 @@ class TestRenderProcessPlayback(PlaybackTest):
         await self.press(*test_tui_playback.CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         os.kill(self.playback.get_process_id(), signal.SIGKILL)
         await self.wait_for(self.shows_the_dialog)
-        self.assertIn(errors.ERR_PLAYBACK_ENDED_TITLE, self.text())
 
     def shows_the_dialog(self):
         """the dialog saying the render process ended never showed"""
-        return isinstance(self.app.screen, MessageDialog)
+        return isinstance(self.app.screen, MessageDialog) and errors.ERR_PLAYBACK_ENDED_TITLE in self.text()
