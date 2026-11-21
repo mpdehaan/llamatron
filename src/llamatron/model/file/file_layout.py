@@ -11,17 +11,23 @@ had before it was made of lists (model/file/migrations/ moves an older file to t
 keep their fixed names, AX to DX, as keys, since they are settings of the song and not things a person names.
 """
 
+from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed as listed_text, reading
+from llamatron.model.file.corrections import Correction
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import generator_plugins
-from llamatron.model.schema.file_format import FileLayout, Section
-from llamatron.user_strings import errors
+from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, Section
+from llamatron.user_strings import errors, messages
 
 # What the objects call the generators a clip, a scene and a track run, and a scene's clips by track.
 OBJECT_CHAINS = 'chains'
 OBJECT_SCENE_TRACKS = 'tracks'
 # A chain with statements keeps its steps under this in the objects' data.
 OBJECT_CHAIN_STEPS = 'steps'
+# The objects' layout's key of the generators whose kind no plugin provides, by name, with their kinds: a key no file can hold.
+GENERATORS_WITHOUT_PLUGIN = 'generators without a plugin'
+# What every clip's, scene's and track's list of the generators and chains it runs is called, one name for the three.
+CHAIN_LISTS = ClipSlotSetting.CHAINS
 LISTED_SECTIONS = (Section.SCALES, Section.PATTERNS, Section.GROOVES, Section.INSTRUMENTS)
 
 
@@ -136,13 +142,16 @@ def _generators_by_kind(items):
     with reading(FileLayout.GENERATORS):
         for name, settings in by_name.items():
             kind = settings.get(FileLayout.KIND)
-            if kind != FileLayout.CHAIN and kind not in generator_plugins.sections_by_name():
+            if kind != FileLayout.CHAIN and kind not in generator_plugins.sections_by_name() and not isinstance(kind, str):
                 raise InvalidValue(errors.ERR_NO_SUCH_KIND.format(name=name, kinds=listed_text([*generator_plugins.sections_by_name(), FileLayout.CHAIN]), value=kind))
             kinds[name] = kind
     read = {}
     for name, settings in by_name.items():
         own = {field: value for field, value in settings.items() if field != FileLayout.KIND}
-        if kinds[name] == FileLayout.CHAIN:
+        if kinds[name] != FileLayout.CHAIN and kinds[name] not in generator_plugins.sections_by_name():
+            # A kind no plugin provides, as from a set made where another plugin was installed: the set asks before dropping it.
+            read.setdefault(GENERATORS_WITHOUT_PLUGIN, {})[name] = kinds[name]
+        elif kinds[name] == FileLayout.CHAIN:
             read.setdefault(Section.CHAINS, {})[name] = _chain_of_file(name=name, settings=own, kinds=kinds)
         else:
             read.setdefault(generator_plugins.sections_by_name()[kinds[name]], {})[name] = own
@@ -196,3 +205,46 @@ def _references_of_file(settings):
     with reading(FileLayout.GENERATORS):
         names = _names_of(settings[FileLayout.GENERATORS])
     return with_key_replaced(settings, old=FileLayout.GENERATORS, new=OBJECT_CHAINS, value=names)
+
+
+class GeneratorWithoutPlugin(Correction):
+    """A generator whose kind no plugin provides, as a set made where another plugin was installed holds: applying it takes the
+    generator out of the set's data with every use of it, each chain's step and each clip's, scene's and track's naming of it,
+    so that saving the set leaves it out.
+
+    holder is the set's data in the objects' layout, found that layout's key of the generators without a plugin, and name and
+    kind the generator's.
+    """
+
+    __slots__ = ()
+
+    def __init__(self, *, holder, key, name, kind):
+        super().__init__(holder=holder, key=key, name=name, found=kind, used=corrections.LEFT_OUT)
+
+    def apply(self):
+        """Take the generator out of the set's data, with each use of it."""
+        without = self._holder[self._key]
+        del without[self._name]
+        if not without:
+            del self._holder[self._key]
+        for chain in (self._holder.get(Section.CHAINS) or {}).values():
+            steps = chain.get(OBJECT_CHAIN_STEPS, []) if isinstance(chain, dict) else chain
+            steps[:] = [step for step in steps if step != {self._found: self._name}]
+        _drop_from_chain_lists(data=self._holder.get(Section.SONGS), name=self._name)
+
+    def described(self):
+        """Return one line saying which generator has no plugin and that it goes, with every use."""
+        return messages.MSG_CORRECTED_NO_PLUGIN.format(name=self._name, kind=self._found)
+
+
+def _drop_from_chain_lists(*, data, name):
+    """Take a name out of every list of chains in a part of a set's data: each clip's, scene's and track's."""
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if key == CHAIN_LISTS and isinstance(value, list):
+                value[:] = [held for held in value if held != name]
+            else:
+                _drop_from_chain_lists(data=value, name=name)
+    elif isinstance(data, list):
+        for value in data:
+            _drop_from_chain_lists(data=value, name=name)

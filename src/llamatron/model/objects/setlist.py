@@ -18,7 +18,7 @@ import copy
 import os
 
 from llamatron.caching.revised import notes_change
-from llamatron.model.file import checks, corrections as corrections_values, files, version as version_values
+from llamatron.model.file import checks, corrections as corrections_values, file_layout, files, version as version_values
 from llamatron.model.file.checks import reading, written_length
 from llamatron.model.file.corrections import Correction
 from llamatron.model.file.invalid_value import InvalidValue
@@ -39,7 +39,7 @@ from llamatron.model.objects.pattern import held_add, Pattern
 from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits as set_limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, Length, settings_held, Text, WholeNumber
 from llamatron.model.values import note
 from llamatron.model.values.scale import ScaleType
@@ -131,6 +131,16 @@ def new_setlist():
 
 
 
+
+
+def _refuse_generators_without_plugin(data):
+    """Refuse a set's data that holds a generator whose kind no plugin provides, offering to take the generator out with every use."""
+    without = data.get(file_layout.GENERATORS_WITHOUT_PLUGIN)
+    if without:
+        name, kind = next(iter(without.items()))
+        correction = file_layout.GeneratorWithoutPlugin(holder=data, key=file_layout.GENERATORS_WITHOUT_PLUGIN, name=name, kind=kind)
+        with reading(FileLayout.GENERATORS):
+            raise InvalidValue(errors.ERR_NO_PLUGIN.format(name=name, kind=kind), correction=correction)
 
 class Setlist(HoldsSections, HoldsSettings):
     """The set the user composes: its settings, named scales, patterns, generators and chains, and its songs.
@@ -262,6 +272,7 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def _read(self, data):
         """Read every setting and section from a set file's data, in the order the file is read: each section can name what the ones before it hold."""
+        _refuse_generators_without_plugin(data)
         self._read_settings(data)
         self._read_scales(data)
         self._read_items(data=data, section=Section.PATTERNS)

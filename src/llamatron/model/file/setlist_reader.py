@@ -12,7 +12,7 @@ objects' data in model/file/file_layout.py.
 import os
 import yaml
 
-from llamatron.model.file import files
+from llamatron.model.file import file_layout, files
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.invalid_value import InvalidValue
@@ -80,7 +80,7 @@ def as_a_set_is_written(*, data, where, allowed):
     if not isinstance(data, dict):
         raise SongFileError(errors.ERR_NOT_A_SETLIST)
     with reading(where):
-        pass_over_unknown(data=data, allowed={*allowed, *sections.setlist_sections(), file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES})
+        pass_over_unknown(data=data, allowed={*allowed, *sections.setlist_sections(), file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES, file_layout.GENERATORS_WITHOUT_PLUGIN})
         _check_generator_names(data)
     return data
 

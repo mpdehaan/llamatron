@@ -1,0 +1,27 @@
+title: Generator without a plugin
+description: a set naming a generator whose kind no plugin provides, through a chain and straight from a clip
+scales:
+  - { name: C Major, root: C, type: major }
+patterns:
+  - name: up
+    steps: 4
+    degree: [1, 2, 3, 4]
+generators:
+  - { name: bells, kind: arp, step: 1/8, order: up }
+  - { name: glitter, kind: shimmer, sparkle: 3 }
+  - { name: bright, kind: chain, generators: [{ name: bells }, { name: glitter }] }
+instruments:
+  - { name: piano, device: "*FluidSynth", gm_sound: 1 }
+songs:
+  - name: shining
+    tempo: 120
+    scale: C Major
+    tracks:
+      - { name: lead, instrument: piano }
+    scenes:
+      - name: first
+        clips:
+          - { track: lead, pattern: up, generators: [{ name: bright }] }
+      - name: second
+        clips:
+          - { track: lead, pattern: up, generators: [{ name: glitter }, { name: bells }] }

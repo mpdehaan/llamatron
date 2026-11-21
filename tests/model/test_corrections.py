@@ -36,6 +36,7 @@ from tests.support.rendering import as_setlist
 SAMPLE_SETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'data', 'sample_sets')
 OUT_OF_RANGE = os.path.join(SAMPLE_SETS, 'out_of_range.yml')
 OUT_OF_RANGE_AND_BROKEN = os.path.join(SAMPLE_SETS, 'out_of_range_and_broken.yml')
+WITHOUT_PLUGIN = os.path.join(SAMPLE_SETS, 'generator_without_plugin.yml')
 READ_BYTES = 'rb'
 # The names in the data the tests build.
 TUNE = 'tune'
@@ -391,6 +392,28 @@ class TestOlderFilesAreCorrectedToo(unittest.TestCase):
         setlist, corrections = Setlist.from_data_corrected(data=as_object_layout(migrated(data)[0]))
         self.assertEqual(corrections[0].get_found(), limits.MAX_OCTAVE + file_format.LIVE_OCTAVE_OFFSET)
         self.assertEqual(setlist.get_default_octave(), limits.MAX_OCTAVE)
+
+
+class TestGeneratorsWithoutAPlugin(unittest.TestCase):
+    """A set naming a generator whose kind no plugin provides opens only once asked, without the generator or any use of it."""
+
+    def test_the_set_is_refused_strictly(self):
+        with self.assertRaises(SongFileError) as refused:
+            Setlist.read_file(WITHOUT_PLUGIN)
+        self.assertIsNotNone(refused.exception.get_correction())
+
+    def test_opened_corrected_the_generator_goes_with_its_chain_step_and_its_clip_naming(self):
+        glitter = 'glitter'
+        bells = 'bells'
+        bright = 'bright'
+        lead = 'lead'
+        setlist, corrections = Setlist.read_file_corrected(WITHOUT_PLUGIN)
+        self.assertEqual([correction.get_name() for correction in corrections], [glitter])
+        self.assertFalse(setlist.has_generator_named(glitter))
+        self.assertEqual([step.name for step in setlist.get_chain(bright).get_steps()], [bells])
+        song = setlist.get_song(setlist.get_song_names()[0])
+        self.assertEqual([scene.get_clip_slot(lead).get_chain_names() for scene in song.get_scenes()], [[bright], [bells]])
+        Setlist.from_data(data=setlist.to_data())
 
 
 class TestTheSampleSets(unittest.TestCase):

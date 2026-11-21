@@ -99,6 +99,7 @@ MSG_PROTECTED_CHOOSE_ANOTHER_NAME = 'Choose another name for the copy.'
 # used, each with an allowed value near it. One line for each, with its place in the file, then the question.
 MSG_CORRECTED = '{where}: {name} {found} becomes {used}'
 MSG_CORRECTED_TO_DEFAULT = '{where}: {name} {found} becomes the default'
+MSG_CORRECTED_NO_PLUGIN = 'generator ({name}): no plugin of kind ({kind}), removed with every use'
 MSG_CORRECTED_SEVERAL = '{where}: {name}, {count} out of range, nearest allowed used'
 MSG_CORRECTIONS_TITLE = 'Values that cannot be used'
 MSG_CORRECTIONS_INTRO = '{file} holds values that cannot be used. Opening the set changes each one:'

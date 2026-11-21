@@ -100,3 +100,4 @@ class Correction:
         if self._used is LEFT_OUT:
             return messages.MSG_CORRECTED_TO_DEFAULT.format(where=self.get_place(), name=self._name, found=self._found)
         return messages.MSG_CORRECTED.format(where=self.get_place(), name=self._name, found=self._found, used=self._used)
+
