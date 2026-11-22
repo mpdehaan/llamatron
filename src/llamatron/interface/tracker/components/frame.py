@@ -37,3 +37,9 @@ class Frame:
 
     def bottom(self, canvas):
         canvas.write(column=self._left, text=Box.DOUBLE_BOTTOM_LEFT + Box.DOUBLE_RULE * self.inner_width() + Box.DOUBLE_BOTTOM_RIGHT, style=self._style)
+
+    def bottom_on_rule(self, canvas):
+        """Draw the frame's sides ending in a rule already drawn on its bottom line, each meeting the rule in a joint, so that the rule
+        runs on unbroken under what the frame holds, as under a track's name on Arrange."""
+        canvas.write(column=self._left, text=Box.DOUBLE_BOTTOM_TEE, style=self._style)
+        canvas.write(column=self._right, text=Box.DOUBLE_BOTTOM_TEE, style=self._style)

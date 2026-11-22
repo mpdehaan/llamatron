@@ -85,6 +85,13 @@ class TestFrame(unittest.TestCase):
         self.assertEqual(frame.inner_width(), 3)
         self.assertEqual([span.style for span in top.text().spans if span.style], [Style.BOLD])
 
+    def test_a_bottom_on_a_rule_leaves_the_rule_and_joins_it_at_each_side(self):
+        frame = Frame(left=1, right=5)
+        rule = Canvas(WIDTH)
+        rule.write(column=0, text=Box.RULE * WIDTH, style=Style.DIM)
+        frame.bottom_on_rule(rule)
+        self.assertEqual(rule.text().plain, Box.RULE + Box.DOUBLE_BOTTOM_TEE + Box.RULE * 3 + Box.DOUBLE_BOTTOM_TEE + Box.RULE * 2)
+
 
 if __name__ == '__main__':
     unittest.main()

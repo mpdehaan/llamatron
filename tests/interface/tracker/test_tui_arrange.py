@@ -164,13 +164,14 @@ class TestArrangePage(UITest):
                 return number
         self.fail(text)
 
-    def assert_framed(self, *, text, height, above=1):
-        """Check that one double-lined frame is drawn around height lines, with text on an inside line and the top edge above lines up."""
+    def assert_framed(self, *, text, height, above=1, bottom=Box.DOUBLE_BOTTOM_LEFT):
+        """Check that one double-lined frame is drawn around height lines, with text on an inside line, the top edge above lines up,
+        and bottom on the line under them."""
         lines = self.grid_lines()
         number = self.line_with(text) - above + 1
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
         self.assertIn(Box.DOUBLE_TOP_LEFT, lines[number - 1])
-        self.assertIn(Box.DOUBLE_BOTTOM_LEFT, lines[number + height])
+        self.assertIn(bottom, lines[number + height])
         left = lines[number - 1].index(Box.DOUBLE_TOP_LEFT)
         right = lines[number - 1].index(Box.DOUBLE_TOP_RIGHT)
         for inside in lines[number:number + height]:
@@ -195,7 +196,12 @@ class TestArrangePage(UITest):
         await self.press(Key.DOWN)
         self.assert_framed(text=legends.What.ADD, height=2, above=2)
         await self.press(Key.UP, Key.UP)
-        self.assert_framed(text=LEAD, height=1)
+        # A track name's frame ends on the header's rule, its sides meeting the rule in joints and the rule running on between them.
+        self.assert_framed(text=LEAD, height=1, bottom=Box.DOUBLE_BOTTOM_TEE)
+        rule = self.grid_lines()[self.line_with(LEAD) + 1]
+        self.assertNotIn(Box.DOUBLE_BOTTOM_LEFT, rule)
+        self.assertEqual(rule.count(Box.DOUBLE_BOTTOM_TEE), 2)
+        self.assertIn(Box.DOUBLE_BOTTOM_TEE + Box.RULE, rule)
         await self.press(Key.DOWN, Key.DOWN, Key.DOWN)
         self.assertTrue(self.page.on_plus_row())
         # The + row's frame starts at the left edge, so the + is looked for just inside it, past the header's own +.

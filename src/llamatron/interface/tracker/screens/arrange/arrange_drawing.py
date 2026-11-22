@@ -480,5 +480,10 @@ class ArrangeDrawing:
             frame.top(lines[top])
             for line in lines[top + 1:top + 1 + inside]:
                 frame.sides(line)
-            frame.bottom(lines[top + 1 + inside])
+            bottom = top + 1 + inside
+            # The corner's and a track name's frames end on the rule under the header, which runs on through them.
+            if bottom == header - 1:
+                frame.bottom_on_rule(lines[bottom])
+            else:
+                frame.bottom(lines[bottom])
         return [line.text() for line in lines]
