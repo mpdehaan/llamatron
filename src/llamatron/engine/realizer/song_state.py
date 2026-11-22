@@ -37,15 +37,25 @@ class SongState:
         to keep where the streams stood as each written scene started, for a later render to take its first scenes from."""
         self._song = song
         self._seed = seed
-        self._takes = {} if takes is None else dict(takes)
+        self._takes = {}
+        if takes is not None:
+            self._takes = dict(takes)
         self._song_places = {id(scene): place for place, scene in enumerate(song.get_scenes())}
         self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
         self._draws = {name: song.get_draw(name) for name in file_format.DRAW_NAMES}
-        self._register_chooser = random_source(None if seed is None else seed * SEED_SONG_FACTOR + REGISTER_SEED_OFFSET)
+        register_seed = None
+        strum_seed = None
+        if seed is not None:
+            register_seed = seed * SEED_SONG_FACTOR + REGISTER_SEED_OFFSET
+            strum_seed = seed * SEED_SONG_FACTOR + STRUM_SEED_OFFSET
+        self._register_chooser = random_source(register_seed)
         self._modulations = Modulations(song=song, seed=seed)
         # What every strum's loose timing draws from, fixed for the render so that every export of it and its playing agree.
-        self._strum_seed = random_source(None if seed is None else seed * SEED_SONG_FACTOR + STRUM_SEED_OFFSET).randrange(STRUM_SEEDS)
-        self._checkpoints = [] if keeps_checkpoints else None
+        strum_chooser = random_source(strum_seed)
+        self._strum_seed = strum_chooser.randrange(STRUM_SEEDS)
+        self._checkpoints = None
+        if keeps_checkpoints:
+            self._checkpoints = []
 
     def get_seed(self):
         """Return the seed this render makes every random choice from, or None for a new take."""
