@@ -60,10 +60,16 @@ def timed_events(*, clip, scale, grooved=True):
     """
     positions = clip.resolved_sounds()
     clip_length = _clip_length(clip=clip, positions=positions)
-    groove = clip.get_groove() if grooved else None
+    groove = None
+    strum = None
+    nudge = None
+    if grooved:
+        groove = clip.get_groove()
+        strum = clip.get_strum()
+        nudge = clip.get_nudge()
     # A strum, like a groove, only changes timing, so a grab reads the notes without it too.
-    strum = clip.get_strum() if grooved else None
-    nudge = clip.get_nudge() if grooved else None
+
+
     if strum is None and nudge is None:
         # Most clips of most songs: placed on whole-number ticks, many times faster than fractions, with the same result.
         timed = ClipTicks(positions=positions, scale=scale, length=clip_length, groove=groove).timed()
@@ -141,7 +147,10 @@ def keyswitch_events(*, clip, clip_length):
         if nudge is not None:
             onset = max(onset + nudge.moved(note.start), ZERO_DELAY)
         end = min(onset + (note.end - note.start), clip_length)
-        start = min(onset if lead is None else max(onset - lead, ZERO_DELAY), clip_length)
+        sent = onset
+        if lead is not None:
+            sent = max(onset - lead, ZERO_DELAY)
+        start = min(sent, clip_length)
         if end > start:
             events.append(NoteEvent(start, end, note.midi_number, defaults.KEYSWITCH_VELOCITY))
     events.sort(key=_start_of)
@@ -189,7 +198,9 @@ def _strummed(*, notes, strum, time, count, place):
     last = max(len(pitches) - 1, 1)
     for string, midi_number in enumerate(pitches):
         if string:
-            loose = Rational(round(chooser.uniform(-strum.loose_timing, strum.loose_timing)), PERCENT) if strum.loose_timing else ZERO_DELAY
+            loose = ZERO_DELAY
+            if strum.loose_timing:
+                loose = Rational(round(chooser.uniform(-strum.loose_timing, strum.loose_timing)), PERCENT)
             delay = delay + strum.gap * (1 + loose)
         result.append((midi_number, notes[midi_number], delay, Rational(string * strum.fade, last * PERCENT)))
     return result
@@ -197,12 +208,16 @@ def _strummed(*, notes, strum, time, count, place):
 
 def _faded(*, velocity, fading):
     """Return a velocity made quieter by a share of itself, never below 1."""
-    return max(round(velocity * (1 - fading)), MIN_FADED_VELOCITY) if fading else velocity
+    if not fading:
+        return velocity
+    return max(round(velocity * (1 - fading)), MIN_FADED_VELOCITY)
 
 
 def _grooved_time(*, time, groove):
     """Return when something at a time plays once the clip's groove has moved it, or the time itself with no groove."""
-    return time if groove is None else groove.moved(time)
+    if groove is None:
+        return time
+    return groove.moved(time)
 
 
 def _slots(*, positions, scale):
@@ -248,7 +263,9 @@ def _clip_length(*, clip, positions):
 def _what_follows(*, slots, place):
     """Return the notes the slot after a place sounds, or none if it's the last."""
     following = place + 1
-    return slots[following][1] if following < len(slots) else {}
+    if following >= len(slots):
+        return {}
+    return slots[following][1]
 
 
 # How often a slide sends a new CC value, in fractions of a whole note, where a format can't ramp.
