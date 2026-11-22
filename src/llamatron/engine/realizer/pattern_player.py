@@ -120,7 +120,7 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
+    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_default_octave', '_default_drum_octave', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
 
     def __init__(self, *, song, scene, scale, track, scale_name=None, modulations=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
@@ -141,6 +141,9 @@ class PatternPlayer:
         # What a step with no velocity typed plays at on this track, and what an accented step adds.
         self._default_velocity = song.default_velocity_of(track)
         self._accent = song.accent_of(track)
+        # The octave a step with none plays in, a drum's and a note's, read once, since the set can't change while a clip plays.
+        self._default_octave = self._setlist.get_default_octave()
+        self._default_drum_octave = self._setlist.get_default_drum_octave()
         # The scene's scale at each octave a note asked for, and its size, built once rather than for every note of every pass, since the scene's scale can't change while a clip plays.
         self._scales_by_octave = {}
         self._scale_size = None
@@ -195,7 +198,7 @@ class PatternPlayer:
         scale its degrees take their notes from, the track's transpose, default velocity and accent, and the song's default octaves."""
         named = None if self._scale_name is None else self._setlist.get_named_scale(self._scale_name)
         scale_of_name = None if named is None else (named.get_root(), named.get_kind())
-        return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._setlist.get_default_octave(), self._setlist.get_default_drum_octave())
+        return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._default_octave, self._default_drum_octave)
 
     def _pass_key(self, *, pattern_name, pattern, played, steps, pass_draws):
         """Return the key a pass is remembered by, or None for a pass that reads what carries between passes or a player that
@@ -390,9 +393,16 @@ class PatternPlayer:
         with the glide of the last slice. They are sounds, the tuples of model/values/sound.py, and
         the length is a pair.
         """
-        default = self._setlist.get_default_drum_octave() if drum else self._setlist.get_default_octave()
-        octave = _value_or(value=values[Row.OCTAVE], default=default)
-        velocity = _clamped_velocity(_value_or(value=velocity, default=self._default_velocity) + velocity_added)
+        # Blanks are filled in with plain ifs rather than a helper, since this runs for every note of every pass.
+        octave = values[Row.OCTAVE]
+        if octave is None:
+            if drum:
+                octave = self._default_drum_octave
+            else:
+                octave = self._default_octave
+        if velocity is None:
+            velocity = self._default_velocity
+        velocity = _clamped_velocity(velocity + velocity_added)
         ratchet = values[Row.RATCHET] or defaults.DEFAULT_RATCHET
         offset = values[Row.RATCHET_OFFSET] or NO_HALF_STEPS
         slices = []
@@ -414,7 +424,9 @@ class PatternPlayer:
             slices.append(Sound.inverted(sound, values[Row.INVERSION]))
         if not heard:
             return [Sound.rest(piece[sound_values.LENGTH]) for piece in slices]
-        probability = _value_or(value=values[Row.PROBABILITY], default=defaults.DEFAULT_PROBABILITY)
+        probability = values[Row.PROBABILITY]
+        if probability is None:
+            probability = defaults.DEFAULT_PROBABILITY
         if effects is not None and effects.probability:
             probability = max(min(probability + effects.probability, limits.MAX_PROBABILITY), limits.MIN_PROBABILITY)
         if probability >= limits.MAX_PROBABILITY or counting:
@@ -694,11 +706,6 @@ def _controls_sent(*, values, time):
         Control(time=time, number=lane, value=values[row], slide=bool(values[Row.SLIDE]))
         for lane, row in enumerate(file_format.CC_ROWS) if values[row] is not None
     ]
-
-
-def _value_or(*, value, default):
-    """Return a step's value, or a default if the step leaves it blank."""
-    return default if value is None else value
 
 
 def _clamped_velocity(velocity):
