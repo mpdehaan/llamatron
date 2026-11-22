@@ -57,7 +57,11 @@ def euclid_values(value):
         return None
     steps = value(EuclidPart.STEPS)
     rotate = value(EuclidPart.ROTATE)
-    return EuclidValues(hits, limits.DEFAULT_EUCLID_STEPS if steps is None else steps, limits.NO_ROTATION if rotate is None else rotate, value(EuclidPart.STEP))
+    if steps is None:
+        steps = limits.DEFAULT_EUCLID_STEPS
+    if rotate is None:
+        rotate = limits.NO_ROTATION
+    return EuclidValues(hits, steps, rotate, value(EuclidPart.STEP))
 
 
 def rhythm(*, hits, steps, rotate=limits.NO_ROTATION):
@@ -73,4 +77,6 @@ def rhythm(*, hits, steps, rotate=limits.NO_ROTATION):
         groups, rest = [groups[place] + rest[place] for place in range(paired)], (groups[paired:] or rest[paired:])
     hits_and_misses = [step for group in groups + rest for step in group]
     shift = rotate % steps
-    return hits_and_misses[-shift:] + hits_and_misses[:-shift] if shift else hits_and_misses
+    if not shift:
+        return hits_and_misses
+    return hits_and_misses[-shift:] + hits_and_misses[:-shift]
