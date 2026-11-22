@@ -8,6 +8,9 @@ from typing import NamedTuple
 
 from llamatron.math.rational import Rational
 
+# How far a step the nudge leaves alone moves.
+NOT_NUDGED = 0
+
 PERCENT = 100
 
 
@@ -21,7 +24,10 @@ class MovingRow(NamedTuple):
 
     def moved(self, time):
         """Return how much later a note starting at a time from the clip's start plays by this row, early being less than nothing."""
-        return self.step * self.amount if self.steps[math.floor((time + self.offset) / self.step) % len(self.steps)] else 0
+        step = math.floor((time + self.offset) / self.step) % len(self.steps)
+        if not self.steps[step]:
+            return NOT_NUDGED
+        return self.step * self.amount
 
 
 class NudgePlan(NamedTuple):
@@ -37,4 +43,6 @@ class NudgePlan(NamedTuple):
 def amount_moved(*, percent, later):
     """Return how far a row moves a note, as a signed share of a step: later for a drag, earlier for a rush."""
     share = Rational(percent, PERCENT)
-    return share if later else -share
+    if later:
+        return share
+    return -share
