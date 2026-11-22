@@ -29,11 +29,10 @@ from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row, SceneSetting, VelocitySetting
 from llamatron.user_strings import errors, labels, song_wizard as wizard_text
 from llamatron.wizards.create_song import band, breaks, characters, drum_solo, interplay, joins, loudness, melody, notation, riffs as riffs_values, shaping, song_plan, wizard_names
-from llamatron.wizards.create_song.breaks import cut_up
 from llamatron.wizards.create_song.characters import character_of, held_to, label_of, level_of
 from llamatron.wizards.create_song.heavy_riffs import flattened_in
 from llamatron.wizards.create_song.interplay import UnderLead
-from llamatron.wizards.create_song.joins import drum_tail, pieces_of_tail, with_tail
+from llamatron.wizards.create_song.joins import with_tail
 from llamatron.wizards.create_song.loudness import drum_levels, in_proportion, note_levels, scaled, spread, with_own
 from llamatron.wizards.create_song.melody import has_hook, plan_as_asked, plan_with_hook_placed, plan_with_tag, sketched
 from llamatron.wizards.create_song.notation import clamped, drum_rows
@@ -616,101 +615,6 @@ def whole(*, value, low, high):
     return not isinstance(value, bool) and isinstance(value, int) and low <= value <= high
 
 
-def drum_parts(*, style, picks, roles, meter, phrase_bars, drummer, section_bars, own_fill=False, seed=0, kit=None, leaves=None, inside=None, over=None):
-    """Each drum the picks play, as a part some bars long: the kind's own bar, decorated as the drummer decorates it, a bar of
-    the bars of each phrase that the drummer varies each a little different, and its last bar the fill. A drummer who says nothing plays the kind's bar
-    and the song's fill at the end of every phrase. Where the picks name a break, the break's bar is the kind's, in place of
-    every way but the percussion's, and each bar of a phrase after the first is the break cut up, its own way, by the seed.
-
-    A section that says what it leaves with is written out whole: its last bar is the join's fill under the join's tail, and
-    the small fill inside comes only as often as the section says.
-
-    over gives a piece bars of its own, bar by bar of the section and round again, as a kick that follows a riff: such a bar
-    is played as given, in place of the kind's bar and all the drummer adds to it, and a bar given as None is the kind's."""
-    bars = {}
-    over = over or {}
-    played_break = break_of(picks=picks, meter=meter)
-    for role in roles:
-        if role.get(DRUMS):
-            for trait in role[DRUMS]:
-                if played_break is None or trait == KEPT_BESIDE_A_BREAK:
-                    bars.update(values_of(style=style, trait=trait)[picks[trait]].get(BAR, {}))
-    cut_bars = {}
-    if played_break is not None:
-        bars.update(played_break)
-        cut = cut_of(picks)
-        for count in range(1, phrase_bars):
-            cut_bars[count] = cut_up(bars=played_break, cut=cut, dice=random.Random(CUT_SEED.format(seed, count)))
-    # A section always ends on the fill, so that it hands over to the next: the part is no longer than divides the section.
-    length = math.gcd(drummer.get(characters.FILL_EVERY, phrase_bars) or phrase_bars, section_bars)
-    fill_every = length
-    if over:
-        # Bars given one by one are the whole section's.
-        length = section_bars
-    fill, silences = choice_that_fits(choices=drummer.get(characters.FILL), picks=picks)
-    if not fill or own_fill:
-        # The fill the song chose itself is played whatever the drummer would play, a song that chose none having none.
-        fill, silences = values_of(style=style, trait=FILLS).get(picks.get(FILLS), {}).get(characters.FILL, {}), []
-    if drummer.get(characters.FILL_EVERY) == 0:
-        fill, silences = {}, []
-    last_fill = {}
-    if leaves is not None:
-        # A planned section: the fill inside is the small one the section names, and the last bar's is the join's.
-        length = section_bars
-        fill_every = length
-        fill, silences = fill_named(style=style, name=(inside or {}).get(FILL_INSIDE)), []
-        last_fill = fill_named(style=style, name=leaves.get(joins.FILL_OF_JOIN))
-    tail = (leaves or {}).get(joins.TAIL)
-    inside_every = (inside or {}).get(FILL_INSIDE_EVERY) or length
-    # A marker is a stroke or two laid over a phrase's last bar where no fill is played.
-    marker = ((inside or {}).get(MARKER) or {}) if leaves is not None else {}
-    marker_every = (inside or {}).get(MARKER_EVERY) or length
-    adds, _ = choice_that_fits(choices=drummer.get(characters.ADDS), picks=picks)
-    varied = []
-    for variation in drummer.get(characters.VARIES, []):
-        more, _ = choice_that_fits(choices=variation[CHOICES], picks=picks)
-        varied.append((variation[BARS], more))
-    parts = {}
-    every = [bars, adds, fill, last_fill, marker, {piece: [notation.NONE] for piece in pieces_of_tail(tail)}] + [more for _, more in varied]
-    every += [{piece: given} for piece, given_bars in over.items() for given in given_bars if given is not None]
-    for piece in list(dict.fromkeys(piece for layer in every for piece in layer)):
-        layers = [layer[piece] for layer in every if piece in layer]
-        grid = math.lcm(*(len(layer) for layer in layers))
-        plain = widened(hits=bars.get(piece, [notation.NONE]), to=grid)
-        if piece in adds:
-            plain = laid_over(bar=plain, more=widened(hits=adds[piece], to=grid))
-        hits = []
-        for bar in range(1, length + 1):
-            if leaves is None and bar % fill_every == 0 and piece in fill:
-                hits += widened(hits=fill[piece], to=grid)
-            elif leaves is None and bar % fill_every == 0 and piece in silences:
-                hits += [notation.NONE] * grid
-            else:
-                played = plain
-                own = over[piece][(bar - 1) % len(over[piece])] if piece in over else None
-                if own is not None:
-                    played = widened(hits=own, to=grid)
-                elif piece in cut_bars.get((bar - 1) % phrase_bars, {}):
-                    played = widened(hits=cut_bars[(bar - 1) % phrase_bars][piece], to=grid)
-                    if piece in adds:
-                        played = laid_over(bar=played, more=widened(hits=adds[piece], to=grid))
-                for which, more in varied if own is None else []:
-                    if piece in more and (bar - 1) % phrase_bars + 1 in which:
-                        played = laid_over(bar=played, more=widened(hits=more[piece], to=grid))
-                if leaves is not None and bar == length and tail is not None:
-                    played = drum_tail(piece=piece, plain=played, tail=tail, eighths=leaves.get(joins.TAIL_EIGHTHS, 0))
-                elif leaves is not None and bar == length and piece in last_fill:
-                    played = widened(hits=last_fill[piece], to=grid)
-                elif leaves is not None and bar != length and bar % inside_every == 0 and piece in fill:
-                    played = widened(hits=fill[piece], to=grid)
-                elif bar != length and bar % marker_every == 0 and bar % inside_every != 0 and piece in marker:
-                    played = laid_over(bar=played, more=widened(hits=marker[piece], to=grid))
-                hits += played
-        # A style as written says a drum's normal stroke alone, and a song's style all four levels.
-        levels = drum_levels(style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS]))
-        parts[piece] = {notation.DRUM: (kit or {}).get(piece, piece), notation.STEP: step_of(meter=meter, grid=grid), **struck(levels=levels, hits=hits), notation.HITS: hits}
-    return parts
-
 
 def fill_named(*, style, name):
     """The fill of a name, each drum's hits, or no fill for no name or a name the style lacks."""
@@ -1046,6 +950,13 @@ class Arrangement:
         for count, name in enumerate(self._form_names, start=1):
             self._write_section(count=count, name=name)
 
+    def _drumming(self):
+        """Return what every section's drums are written from."""
+        # Imported here, since the drums are written with this module's helpers.
+        from llamatron.wizards.create_song.drum_writing import SongDrumming
+        own_fill = FILLS in self._song.get(PICKS, {})
+        return SongDrumming(style=self._style, roles=self._roles, meter=self._meter, phrase_bars=self._phrase_bars, seed=self._song.get(SEED, 0), kit=self._played, own_fill=own_fill)
+
     def riff_made(self, *, riff, name, seed):
         """A riff of the song with its notes, its bars and the players of the band who play it: those of its players whose part is a figure."""
         notes = riff_line_of(riff=riff, seed=seed, eighths=self._riff_eighths, flattened=flattened_in(self._scale_type)) if riff.get(riffs_values.RIFF_ROLES) else []
@@ -1084,6 +995,8 @@ class Arrangement:
 
     def _write_drums(self):
         """Write the drums' parts, a set for each way the form's sections have the drummer play, and say which set each section plays."""
+        # Imported here, since the drums are written with this module's helpers.
+        from llamatron.wizards.create_song.drum_writing import SectionDrums, SectionToDrum
         drum_sets = {}
         usual_drummer = label_of(character_of(self._levels[DRUMS])) if DRUMS in self._levels else None
         self._drums_of = {}
@@ -1117,8 +1030,10 @@ class Arrangement:
                 if drum_solo_here:
                     made = solo_parts(style=self._style, bars=section[BARS], seed=self._song.get(SEED, 0), kit=self._played)
                 else:
-                    made = drum_parts(style=self._style, picks={**self._picks, **changed}, roles=self._roles, meter=self._meter, phrase_bars=self._phrase_bars, drummer=plays, section_bars=section[BARS], own_fill=FILLS in self._song.get(PICKS, {}), seed=self._song.get(SEED, 0), kit=self._played,
-                                      leaves=leaves, inside={FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY), MARKER: section.get(MARKER), MARKER_EVERY: section.get(MARKER_EVERY)}, over=over)
+                    inside = {FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY), MARKER: section.get(MARKER), MARKER_EVERY: section.get(MARKER_EVERY)}
+                    asked = SectionToDrum(picks={**self._picks, **changed}, drummer=plays, bars=section[BARS], leaves=leaves, inside=inside, over=over)
+                    drums = SectionDrums(drumming=self._drumming(), asked=asked)
+                    made = drums.parts()
                 drum_sets[key] = {}
                 for piece, part in made.items():
                     # A piece of the kit switched off is left out: its strokes are never moved to another piece.

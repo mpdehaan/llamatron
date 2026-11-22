@@ -12,6 +12,7 @@ from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import InstrumentSetting, Section
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, breaks, characters, notation, wizard_limits, wizard_names
+from llamatron.wizards.create_song.drum_writing import SectionDrums, SectionToDrum, SongDrumming
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 ROCK = 'rock'
@@ -118,8 +119,10 @@ class TestSongWithABreak(unittest.TestCase):
     def bars_of(self, *, song, piece):
         """A drum's part over a phrase as bars of sixteen hits, from a drummer who adds nothing and plays no fill."""
         picks = arranger.picked(style=self.style, song=song)
-        parts = arranger.drum_parts(style=self.style, picks=picks, roles=self.style[arranger.ROLES], meter=arranger.COMMON_TIME, phrase_bars=PHRASE,
-                                    drummer={characters.FILL_EVERY: 0}, section_bars=PHRASE, seed=song[arranger.SEED])
+        drumming = SongDrumming(style=self.style, roles=self.style[arranger.ROLES], meter=arranger.COMMON_TIME, phrase_bars=PHRASE, seed=song[arranger.SEED])
+        asked = SectionToDrum(picks=picks, drummer={characters.FILL_EVERY: 0}, bars=PHRASE)
+        drums = SectionDrums(drumming=drumming, asked=asked)
+        parts = drums.parts()
         hits = arranger.widened(hits=parts[piece][notation.HITS], to=PHRASE * breaks.STEPS_IN_BAR)
         return [hits[start:start + breaks.STEPS_IN_BAR] for start in range(0, len(hits), breaks.STEPS_IN_BAR)]
 
