@@ -16,6 +16,7 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import is_whole_number_from, pass_over_unknown, reading, time_signature, written_length
 from llamatron.model.file.corrections import Correction
 from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.objects import pattern_munges
 from llamatron.model.objects.conditions import check_statement, draws_read, statement_of
 from llamatron.model.objects.llama_data import HoldsSettings, written_settings
 from llamatron.model.objects.pattern_munges import PatternMunges
@@ -47,11 +48,15 @@ SETTINGS = described(
 )
 # The settings a file's problem with is placed by the setting's name, like "pattern (tune), step_size: ...". The messages of the others name the setting themselves.
 PLACED_BY_NAME = (PatternSetting.STEP_SIZE, PatternSetting.TIME_SIGNATURE, PatternSetting.ENTRY_SIZE)
-# What a rest keeps when a note is cleared from a step: its time, the CC values it sends, and what
-# it adds to the registers. Each row's one description says whether it is such a row (model/schema/row_descriptions.py).
-REST_ROWS = rows_where(lambda row: row.is_kept_by_a_rest())
-# The rows that mean something else in a drum pattern, so they're cleared when a pattern changes kind.
-NOTE_ROWS = rows_where(lambda row: row.changes_with_drums())
+
+
+def _changes_with_drums(row):
+    return row.changes_with_drums()
+
+
+# The rows that mean something else in a drum pattern, so they're cleared when a pattern changes kind. What a rest keeps when a
+# note is cleared from a step is pattern_munges.REST_ROWS.
+NOTE_ROWS = rows_where(_changes_with_drums)
 # A register change of nothing, which is the same as none.
 NO_CHANGE = 0
 # No accidental, as a note name is written.
@@ -416,7 +421,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         """
         self._check_step(step)
         for row in file_format.PATTERN_ROWS:
-            if row not in REST_ROWS and self._rows[row] is not None:
+            if row not in pattern_munges.REST_ROWS and self._rows[row] is not None:
                 self._rows[row][step] = blank_value(row)
         ties = self._rows[Row.TIE]
         later = step + 1
@@ -732,7 +737,9 @@ def _copied_rows(rows):
 
 def own_step_value(value):
     """Return a step's value as a step of its own may hold it: a list, such as a step's keyswitch slots, is copied, so that two steps never share one."""
-    return list(value) if isinstance(value, list) else value
+    if isinstance(value, list):
+        return list(value)
+    return value
 
 
 def blank_value(row):
@@ -749,7 +756,10 @@ def _holds_something(*, row, values):
     if values is None:
         return False
     blank = row_descriptions.ROW_DESCRIPTIONS[row].blank()
-    return any(value is not None and value != blank for value in values)
+    for value in values:
+        if value is not None and value != blank:
+            return True
+    return False
 
 
 def _saved_row(*, row, values):
@@ -784,21 +794,26 @@ def _check_row(*, row, data, steps, drum, where):
 
 def nearest_step_value(*, row, value, drum):
     """Return the allowed value nearest a step's wrong value on a row, or NO_NEAREST_VALUE when the row has no limits or the value isn't a number at all. A blank step stays blank."""
-    return None if value is None else row_descriptions.ROW_DESCRIPTIONS[row].nearest(value, drum=drum)
+    if value is None:
+        return None
+    description = row_descriptions.ROW_DESCRIPTIONS[row]
+    return description.nearest(value, drum=drum)
 
 
 def held_add(*, value, most):
     """Return a step's add on a += row held within most either way, or a blank as it is."""
     if not value or abs(value) <= most:
         return value
-    return most if value > 0 else -most
+    if value > 0:
+        return most
+    return -most
 
 
 def _row_correction(*, data, row, drum):
     """Return the correction that brings every step of a row within the row's limits, or None when a value on the row has no allowed value near it."""
     found = data[row]
     used = [nearest_step_value(row=row, value=value, drum=drum) for value in found]
-    if any(value is corrections.NO_NEAREST_VALUE for value in used):
+    if corrections.NO_NEAREST_VALUE in used:
         return None
     return Correction(holder=data, key=row, name=row, found=found, used=used)
 

@@ -16,7 +16,7 @@ from llamatron.interface.tracker.components.number_row import NumberRow
 from llamatron.model.file import corrections
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects import pattern as pattern_values
+from llamatron.model.objects import pattern as pattern_values, pattern_munges
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, file_format, limits, row_descriptions
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension
@@ -342,7 +342,7 @@ class TestEveryRowIsDescribedOnce(unittest.TestCase):
         register_rows = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values()}
         draw_rows = {*file_format.DRAW_NOTE_ROWS.values(), *file_format.DRAW_VELOCITY_ROWS.values(), *file_format.DRAW_RESET_ROWS.values()}
         note_moves = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.DRAW_NOTE_ROWS.values()}
-        self.assertEqual(set(pattern_values.REST_ROWS), {*file_format.CC_ROWS, Row.SLIDE, *register_rows, *draw_rows, *file_format.STATEMENT_OF_ROW})
+        self.assertEqual(set(pattern_munges.REST_ROWS), {*file_format.CC_ROWS, Row.SLIDE, *register_rows, *draw_rows, *file_format.STATEMENT_OF_ROW})
         self.assertEqual(set(pattern_values.NOTE_ROWS), {Row.DEGREE, Row.ACCIDENTAL, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *note_moves})
         self.assertEqual(set(rows_where(lambda row: not row.is_in_drum_patterns())), {Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *note_moves})
 
