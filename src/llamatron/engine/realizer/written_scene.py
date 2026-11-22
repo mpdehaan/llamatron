@@ -43,7 +43,9 @@ class WrittenScene:
                 name = _scene_name(name=scene.get_name(), number=number)
                 if repeat > 1:
                     name = REPEAT_NAME.format(name=name, repeat=place + FIRST_NUMBER)
-                resets = scene.get_reset_names() if place == FIRST_REPEAT else []
+                resets = []
+                if place == FIRST_REPEAT:
+                    resets = scene.get_reset_names()
                 written.append(cls(
                     number=number, name=name, scale_name=scale, tempo=scene.get_tempo(), scene=scene, resets=resets, first_play=place == FIRST_REPEAT,
                 ))
@@ -96,4 +98,6 @@ class WrittenScene:
 
 def _scene_name(*, name, number):
     """Return a scene's name as text, or one made from its number if it has none."""
-    return str(names.MSG_UNNAMED_SCENE.format(number=number) if name is None else name)
+    if name is None:
+        return names.MSG_UNNAMED_SCENE.format(number=number)
+    return str(name)
