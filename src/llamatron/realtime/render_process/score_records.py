@@ -72,12 +72,20 @@ def _scene_row_times(scene):
 
 def _first_difference(*, kept, again):
     """Return the first key or place at which two records differ."""
-    places = sorted(kept.keys() | again.keys(), key=str) if isinstance(kept, dict) else range(max(len(kept), len(again)))
-    return next((place for place in places if _entry(record=kept, place=place) != _entry(record=again, place=place)), None)
+    if isinstance(kept, dict):
+        places = sorted(kept.keys() | again.keys(), key=str)
+    else:
+        places = range(max(len(kept), len(again)))
+    for place in places:
+        if _entry(record=kept, place=place) != _entry(record=again, place=place):
+            return place
+    return None
 
 
 def _entry(*, record, place):
     """Return what a record holds at a key or a place, or None where it holds nothing."""
     if isinstance(record, dict):
         return record.get(place)
-    return record[place] if place < len(record) else None
+    if place >= len(record):
+        return None
+    return record[place]
