@@ -3,9 +3,9 @@ title: Arrangement demo
 description: The Wellerman
 notes: |
   Arrangement demo: eight parts of The Wellerman built from four note patterns.
-  Run it with: llamatron examples/learning/20_arrangement_shanty.yml --to ableton --replace
+  Run it with: llamatron examples/learning/18_arrangement_shanty.yml --to ableton --replace
 
-  The tune is the same sung setting of The Wellerman as 19_hocket_shanty.yml uses, in A minor at an
+  The tune is the same sung setting of The Wellerman as 17_hocket_shanty.yml uses, in A minor at an
   estimated 100 BPM. The point here is how few patterns an arrangement needs. Only four
   patterns hold notes: melody_verse, melody_chorus, chords_verse and chords_chorus. Every
   other part reuses them, either directly with a track setting, or by grabbing them:

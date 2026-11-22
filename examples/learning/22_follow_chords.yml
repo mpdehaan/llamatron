@@ -6,7 +6,7 @@ notes: |
   play one bar, written over chord I. The song's chords are written in one place, the muted track
   called SILENT Chords, and the Chords generator called follow, in Follow Progression mode, moves a player's notes to
   whatever chord that track plays at that moment in the same scene.
-  Run it with: llamatron examples/learning/24_follow_chords.yml --to ableton --replace
+  Run it with: llamatron examples/learning/22_follow_chords.yml --to ableton --replace
 
   Scene 1, the chords, heard: Am, F, C and G, a bar each, played plainly by the pad so that the
   chords the band will follow are known.

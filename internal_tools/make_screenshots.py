@@ -32,16 +32,16 @@ from llamatron.user_strings import labels
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'
 # minimal_techno has no arpeggiators, so the arpeggiator screens are shown on this one.
-ARP_SONG = ROOT / 'examples' / 'learning' / '12_sailor_arpeggiator.yml'
+ARP_SONG = ROOT / 'examples' / 'learning' / '11_sailor_arpeggiator.yml'
 # The demos whose pages show the advanced settings of scenes, clips, tracks and the newer generators.
-SWELL_SONG = ROOT / 'examples' / 'learning' / '16_bolero_swell.yml'
+SWELL_SONG = ROOT / 'examples' / 'learning' / '14_bolero_swell.yml'
 PROGRESSION_SONG = ROOT / 'examples' / 'learning' / '06_chord_progression_generator.yml'
 # The Chords generator of that song the Chords shots show, in Progression mode.
 SHOWN_PROGRESSION = 'pop'
-HOCKET_SONG = ROOT / 'examples' / 'learning' / '19_hocket_shanty.yml'
+HOCKET_SONG = ROOT / 'examples' / 'learning' / '17_hocket_shanty.yml'
 DRIFT_SONG = ROOT / 'examples' / 'by_genre' / 'rock' / 'volcano.yml'
 DENSITY_SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'edm_density.yml'
-GLIDE_SONG = ROOT / 'examples' / 'learning' / '14_acid_glide.yml'
+GLIDE_SONG = ROOT / 'examples' / 'learning' / '12_acid_glide.yml'
 # The progression demo's bass, a clip with a chain, by its place from the left.
 CHAINED_TRACK_PLACE = 4
 FOLDER = ROOT / 'docs' / 'screenshots'

@@ -3,7 +3,7 @@ title: Chain demo
 description: Simple Gifts
 notes: |
   Chain demo: Simple Gifts on one track, turned from a plain tune into ornaments and arpeggiated triads by chains.
-  Run it with: llamatron examples/learning/17_complex_gifts_chain.yml --to ableton --replace
+  Run it with: llamatron examples/learning/15_complex_gifts_chain.yml --to ableton --replace
 
   The tune is the first strain of Simple Gifts, the Shaker song by Joseph Brackett from 1848,
   in A major at 120 BPM as the flutetunes.com transcription has it, with its two-note pickup

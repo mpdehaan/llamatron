@@ -20,4 +20,4 @@ The source track plays its own pattern as ever, with nothing of the Hocket appli
 
 ## Applying the Generator
 
-[Concepts](../CONCEPTS.md#hocketing) walks through it. `examples/learning/19_hocket_shanty.yml` shows it on The Wellerman, with four voices.
+[Concepts](../CONCEPTS.md#hocketing) walks through it. `examples/learning/17_hocket_shanty.yml` shows it on The Wellerman, with four voices.

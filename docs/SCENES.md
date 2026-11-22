@@ -70,7 +70,7 @@ A clip has the same seven fields on its clip page. Each field a clip sets wins o
 
 A [Shapes](generators/SHAPES.md) generator's Swell, in a clip's chains, scales the same notes again, on top of the scene's and the clip's velocity, so that one Shapes generator can add accents or a shape of its own to many clips.
 
-In `examples/learning/16_bolero_swell.yml`, each scene's Velocity Ramp In starts where the scene before ended, for one long crescendo:
+In `examples/learning/14_bolero_swell.yml`, each scene's Velocity Ramp In starts where the scene before ended, for one long crescendo:
 
 ![A scene's Velocity Ramp In section open](screenshots/scene_swell.svg)
 

@@ -5,7 +5,7 @@ notes: |
   Accents: a funk groove at 100 beats a minute in E minor, written with no velocity typed on any
   step. Every part plays at the Default velocity of its track, and a step whose Accent switch is
   on plays louder by the Accent of the track.
-  Run it with: llamatron examples/learning/28_accents.yml --to ableton --replace
+  Run it with: llamatron examples/learning/26_accents.yml --to ableton --replace
 
   Scene 1, no accents: four bars of the groove with every Accent switch off. Each part plays at
   one loudness, and the groove sounds typed.

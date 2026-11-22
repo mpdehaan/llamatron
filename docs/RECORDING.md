@@ -17,7 +17,7 @@ sh user_scripts/record.sh examples/learning/01_hello_world.yml
 The recorder records the set you name, after asking whether the take shows the clips on Arrange or a visualizer mode over the clip area. `01_hello_world.yml`, three seconds of a C major scale on two tracks, is the best set to record first. Any set, your own or anyone's, can be recorded, with the options described below:
 
 ```
-sh user_scripts/record.sh examples/learning/12_sailor_arpeggiator.yml
+sh user_scripts/record.sh examples/learning/11_sailor_arpeggiator.yml
 sh user_scripts/record.sh my_set.yml --track-assign 1,1,2
 sh user_scripts/record.sh my_set.yml --use-driver "My Synth" --max-seconds 60
 ```
@@ -130,7 +130,7 @@ The recorder runs the tracker with options of the `llamatron` command that make 
 - **`--visualizer NAME`** opens on Arrange with that visualizer mode over the clip area and plays the song from the top, as `--autoplay` does. [Visualizers](VISUALIZERS.md) lists the modes' names.
 - **`--batch-video`**, with `--visualizer`, plays the batch video that Batch Recording describes.
 
-A recording shows the set's name after the opening splash: `DEMO:` and the file's name as words, such as `DEMO: HOCKET SHANTY` for `19_hocket_shanty.yml`, in large light orange capitals that cross the screen from right to left. `--scroll-text WORDS` on `user_scripts/record.sh` shows other words, and `--no-scroll` shows none.
+A recording shows the set's name after the opening splash: `DEMO:` and the file's name as words, such as `DEMO: HOCKET SHANTY` for `17_hocket_shanty.yml`, in large light orange capitals that cross the screen from right to left. `--scroll-text WORDS` on `user_scripts/record.sh` shows other words, and `--no-scroll` shows none.
 
 A recording that plays by itself draws a blue box around the name of the scene that plays, so that the playing scene shows on a small screen, and draws no box around Arrange's cursor; a take performed with `--interactive` keeps the cursor's box and has no blue box. `--announce`, on `user_scripts/record.sh` and `user_scripts/record_all.sh`, also shows each scene's name as the scene starts, such as `SCENE: verse`, in reverse video near the bottom of the screen for eight seconds, where a visualizer mode's name otherwise shows; with `--announce` the modes' names are not shown.
 

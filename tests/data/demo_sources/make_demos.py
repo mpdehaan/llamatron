@@ -347,9 +347,9 @@ def arpeggiator():
         scenes.append({'name': names[name], 'tracks': {
             'chords': {'pattern': 'chords', 'chains': [name]}, 'tune': {'pattern': 'tune'},
         }})
-    write(file_name='12_sailor_arpeggiator.yml', header=[
+    write(file_name='11_sailor_arpeggiator.yml', header=[
         'Arpeggiator demo: one chord pattern played through a different arpeggiator in each scene.',
-        'Run it with: llamatron examples/learning/12_sailor_arpeggiator.yml --to ableton --replace',
+        'Run it with: llamatron examples/learning/11_sailor_arpeggiator.yml --to ableton --replace',
         '',
         'The tune is the verse of What Shall We Do With the Drunken Sailor, a traditional sea shanty,',
         'in D Dorian at 112 BPM as the flutetunes.com transcription has it. The tune track plays it',
@@ -446,9 +446,9 @@ def chain():
         if chain:
             clip_slot['chains'] = [chain]
         scenes.append({'name': name, 'tracks': {'gifts': clip_slot}})
-    write(file_name='17_complex_gifts_chain.yml', header=[
+    write(file_name='15_complex_gifts_chain.yml', header=[
         'Chain demo: Simple Gifts on one track, turned from a plain tune into triads, synthwave and happy metal by chains.',
-        'Run it with: llamatron examples/learning/17_complex_gifts_chain.yml --to ableton --replace',
+        'Run it with: llamatron examples/learning/15_complex_gifts_chain.yml --to ableton --replace',
         '',
         'The tune is the first strain of Simple Gifts, the Shaker song by Joseph Brackett from 1848,',
         'in A major at 120 BPM as the flutetunes.com transcription has it, with its two-note pickup',
@@ -522,10 +522,10 @@ def hocket_shanty():
         scene('Chorus: voices 2 and 4', 'chorus', [2, 4]),
         scene('Verse: voices 3 and 4', 'verse', [3, 4]),
     ]
-    write(file_name='19_hocket_shanty.yml', header=[
+    write(file_name='17_hocket_shanty.yml', header=[
         'Hocket demo: voices take turns playing a melody that a silent track holds, one note each,',
         'called hocketing.',
-        'Run it with: llamatron examples/learning/19_hocket_shanty.yml --to ableton --replace',
+        'Run it with: llamatron examples/learning/17_hocket_shanty.yml --to ableton --replace',
         '',
         'The tune is The Wellerman, a New Zealand whaling song from the 19th century, in A minor as',
         'the sung setting on thesession.org (tune 20383, setting 8) has it, an octave higher. No',
@@ -599,11 +599,11 @@ def arrangement_shanty():
         scene('Verse: pluck arpeggiates the pad', 'verse', ['lead', 'counter', 'pluck', 'bass', 'stomp', 'clap']),
         scene('Chorus: everything', 'chorus', list(tracks)),
     ]
-    write(file_name='20_arrangement_shanty.yml', header=[
+    write(file_name='18_arrangement_shanty.yml', header=[
         'Arrangement demo: eight parts of The Wellerman built from four note patterns.',
-        'Run it with: llamatron examples/learning/20_arrangement_shanty.yml --to ableton --replace',
+        'Run it with: llamatron examples/learning/18_arrangement_shanty.yml --to ableton --replace',
         '',
-        'The tune is the same sung setting of The Wellerman as 19_hocket_shanty.yml uses, in A minor at an',
+        'The tune is the same sung setting of The Wellerman as 17_hocket_shanty.yml uses, in A minor at an',
         'estimated 100 BPM. The point here is how few patterns an arrangement needs. Only four',
         'patterns hold notes: melody_verse, melody_chorus, chords_verse and chords_chorus. Every',
         'other part reuses them, either directly with a track setting, or by grabbing them:',
@@ -672,9 +672,9 @@ def techno_morph():
         scene('Both morph slowly, 16 repeats', bass=morph('bass_walk', 'bass_pulse', 'middle', 16), lead=morph('lead_blip', 'lead_elise', 'right', 16)),
         scene('Elise and walk, settled', bass={'pattern': 'bass_walk', 'loop': True}, lead={'pattern': 'lead_elise', 'repeat': 8}),
     ]
-    write(file_name='18_techno_morph.yml', header=[
+    write(file_name='16_techno_morph.yml', header=[
         'Morph demo: a 16-step minimal techno groove whose parts slowly turn into other patterns.',
-        'Run it with: llamatron examples/learning/18_techno_morph.yml --to ableton --replace',
+        'Run it with: llamatron examples/learning/16_techno_morph.yml --to ableton --replace',
         '',
         'A clip with a repeat above 1 and a morph_to plays its pattern on the first repeat and the',
         'morph_to pattern on the last, moving step by step from one to the other in between. The',

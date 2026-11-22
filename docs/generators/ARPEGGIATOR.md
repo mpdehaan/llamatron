@@ -36,4 +36,4 @@ The offsets editor draws each step's offset as a bar from a zero line, up for a 
 
 ## Applying the Generator
 
-Add the arpeggiator to a chain, as `arp: name`, and give clips that chain. `examples/learning/12_sailor_arpeggiator.yml` plays one chord through it, in every order and octave setting.
+Add the arpeggiator to a chain, as `arp: name`, and give clips that chain. `examples/learning/11_sailor_arpeggiator.yml` plays one chord through it, in every order and octave setting.

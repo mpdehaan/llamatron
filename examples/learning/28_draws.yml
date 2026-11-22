@@ -5,7 +5,7 @@ notes: |
   Draws: four lists of values, AD to DD, that a pattern's steps add to their notes and velocities, a
   value each time a step uses one. Every note in this demo is written as the same C, in a chromatic
   scale: everything that moves is a draw's doing.
-  Run it with: llamatron examples/learning/30_draws.yml
+  Run it with: llamatron examples/learning/28_draws.yml
 
   The draws, on the Draws page:
   - AD is serial, 0 to 11: it deals every slot once a round in a random order, so twelve uses play

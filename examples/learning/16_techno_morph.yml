@@ -3,7 +3,7 @@ title: Morph demo
 description: "a minimal techno groove, morphing"
 notes: |
   Morph demo: a 16-step minimal techno groove whose parts slowly turn into other patterns.
-  Run it with: llamatron examples/learning/18_techno_morph.yml --to ableton --replace
+  Run it with: llamatron examples/learning/16_techno_morph.yml --to ableton --replace
 
   A clip with a repeat above 1 and a morph_to plays its pattern on the first repeat and the
   morph_to pattern on the last, moving step by step from one to the other in between. The

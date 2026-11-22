@@ -25,4 +25,4 @@ Each part is a section, `+ Rush`, `+ Drag`, `+ Shorten` and `+ Glide`, closed un
 
 ## Applying the Generator
 
-Add the Timing generator to a chain, as `timing: name`, or name it on a clip, and give clips that chain. `examples/learning/14_acid_glide.yml` moves an acid line's slides and short notes with rows of 5, 7 and 3 steps, and its drop loosens the drums with a Rush and Drags.
+Add the Timing generator to a chain, as `timing: name`, or name it on a clip, and give clips that chain. `examples/learning/12_acid_glide.yml` moves an acid line's slides and short notes with rows of 5, 7 and 3 steps, and its drop loosens the drums with a Rush and Drags.

@@ -36,11 +36,11 @@ Memory.check_every_answer()
 
 EXAMPLES = os.path.join(os.path.dirname(__file__), '..', '..', 'examples')
 # A demo whose last scene alone plays a pattern of its own, so that an edit to it leaves every scene before.
-LATE_PATTERN_DEMO = os.path.join(EXAMPLES, 'learning', '30_draws.yml')
+LATE_PATTERN_DEMO = os.path.join(EXAMPLES, 'learning', '28_draws.yml')
 # A set whose every scene plays a brownian drift with random degrees, from the song's top, and a pattern of its own.
 DRIFTING_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_sets', 'scene_reuse_drift.yml')
 # A demo with no register and no draw, so that each track's clips play apart, whose bass grabs from its pad in some scenes.
-GRABBING_DEMO = os.path.join(EXAMPLES, 'learning', '20_arrangement_shanty.yml')
+GRABBING_DEMO = os.path.join(EXAMPLES, 'learning', '18_arrangement_shanty.yml')
 GRABBING_TRACK = 'bass'
 GRABBED_TRACK = 'pad'
 # A set whose lead runs an arpeggiator in random order that carries its draws from clip to clip from the song's top, beside a bass in the first
@@ -50,22 +50,22 @@ CARRYING_BASS = 'bass_line'
 CARRYING_LAST = 'lead_three'
 CARRYING_MIDDLE = 'lead_two'
 # A demo whose patterns add to the registers, and a pattern of its first scene whose last step adds to AX.
-REGISTERS_DEMO = os.path.join(EXAMPLES, 'learning', '22_registers.yml')
+REGISTERS_DEMO = os.path.join(EXAMPLES, 'learning', '20_registers.yml')
 REGISTERS_PATTERN = 'riff_ax'
 REGISTERS_ADD_STEP = 15
 CHANGED_ADD = 3
 # A degree the grabbed track's pattern is changed to, which a grab takes.
 CHANGED_DEGREE = 7
 # A demo whose registers can cut a clip short, so that a scene is played to find how long it lasts.
-CUT_SHORT_DEMO = os.path.join(EXAMPLES, 'learning', '27_advanced_conditionals.yml')
+CUT_SHORT_DEMO = os.path.join(EXAMPLES, 'learning', '25_advanced_conditionals.yml')
 # Demos that use what carries from scene to scene: registers, draws, drifts, a hocket, grabs, morphs and generators whose run reaches across scenes.
 FUZZED_DEMOS = (
-    os.path.join(EXAMPLES, 'learning', '18_techno_morph.yml'),
-    os.path.join(EXAMPLES, 'learning', '19_hocket_shanty.yml'),
-    os.path.join(EXAMPLES, 'learning', '20_arrangement_shanty.yml'),
-    os.path.join(EXAMPLES, 'learning', '21_look_ma_no_notes.yml'),
-    os.path.join(EXAMPLES, 'learning', '22_registers.yml'),
-    os.path.join(EXAMPLES, 'learning', '30_draws.yml'),
+    os.path.join(EXAMPLES, 'learning', '16_techno_morph.yml'),
+    os.path.join(EXAMPLES, 'learning', '17_hocket_shanty.yml'),
+    os.path.join(EXAMPLES, 'learning', '18_arrangement_shanty.yml'),
+    os.path.join(EXAMPLES, 'learning', '19_look_ma_no_notes.yml'),
+    os.path.join(EXAMPLES, 'learning', '20_registers.yml'),
+    os.path.join(EXAMPLES, 'learning', '28_draws.yml'),
     os.path.join(EXAMPLES, 'by_genre', 'electronic', 'edm_density.yml'),
     os.path.join(EXAMPLES, 'by_genre', 'rock', 'volcano.yml'),
 )

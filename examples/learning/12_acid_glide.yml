@@ -6,7 +6,7 @@ notes: |
   start to finish, and Timing generators putting its slides and its short notes
   somewhere new each time round. Play it on a synth with glide, or portamento, turned on: a gliding note runs into
   the next one, and the synth slides between the two.
-  Run it with: llamatron examples/learning/14_acid_glide.yml --to ableton --replace
+  Run it with: llamatron examples/learning/12_acid_glide.yml --to ableton --replace
 
   A Timing generator's Glide is a row of steps, each on or off, running from each clip's start at its
   own step: a note starting on a step that's on glides into the next. Its Shorten is the same, a note

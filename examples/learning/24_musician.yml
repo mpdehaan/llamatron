@@ -5,7 +5,7 @@ notes: |
   Musician: a band at 104 beats a minute in G major. Every player has one bar, written over chord
   I, and the song's chords are written once, on the muted track called SILENT Chords. The patterns
   are the same in every scene: only who plays them differs.
-  Run it with: llamatron examples/learning/26_musician.yml --to ableton --replace
+  Run it with: llamatron examples/learning/24_musician.yml --to ableton --replace
 
   Scene 1, as written: each pattern goes through a Chords generator in Follow Progression mode and nothing else. Every
   player plays every note all the time, the lead guitar on top of the tune.

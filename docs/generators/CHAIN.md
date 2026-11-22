@@ -30,4 +30,4 @@ Make a Chain on the Generators page with `A`, choosing Chain under the Chains he
 
 ## Applying the Generator
 
-`examples/learning/17_complex_gifts_chain.yml` runs Chains of arpeggiators on Simple Gifts.
+`examples/learning/15_complex_gifts_chain.yml` runs Chains of arpeggiators on Simple Gifts.

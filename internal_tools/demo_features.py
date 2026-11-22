@@ -5,7 +5,7 @@
 """Print which features each example set uses, to see what the demos underuse.
 
     .venv/bin/python internal_tools/demo_features.py                        # every set in examples/
-    .venv/bin/python internal_tools/demo_features.py examples/learning/19_hocket_shanty.yml  # only the sets named
+    .venv/bin/python internal_tools/demo_features.py examples/learning/17_hocket_shanty.yml  # only the sets named
     .venv/bin/python internal_tools/demo_features.py --csv                  # comma-separated values (sh user_scripts/demo_report.sh --features)
 
 The table has a row for each feature a set file can use, a pattern row, a setting or a section,

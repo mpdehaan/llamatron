@@ -81,4 +81,4 @@ Add the Chords generator to a chain, as `chords: name`, and give clips that chai
 
 - `examples/learning/06_chord_progression_generator.yml` plays three one-bar patterns through five progressions, and `examples/learning/07_blues_chords.yml` is a twelve-bar blues.
 - `examples/learning/05_voice_leading.yml` plays three progressions in root position, inverted by hand with the chord editor's Inv. row, and voice-led; the last scene of `examples/learning/06_chord_progression_generator.yml` voice-leads its pad.
-- `examples/learning/24_follow_chords.yml` plays a band stuck on one chord and then following one muted track, SILENT Chords, one player at a time, with the chords written by hand and then made by a progression.
+- `examples/learning/22_follow_chords.yml` plays a band stuck on one chord and then following one muted track, SILENT Chords, one player at a time, with the chords written by hand and then made by a progression.

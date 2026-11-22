@@ -5,7 +5,7 @@ notes: |
   Phrasing: a slow ballad at 68 beats a minute in A minor. One tune is heard again and again, each
   time through a Phrasing generator that changes one thing, so that each setting can be heard
   alone. The tune's pattern is the same in scenes 1 to 4 and 7: only the chain on its clip differs.
-  Run it with: llamatron examples/learning/25_phrasing.yml --to ableton --replace
+  Run it with: llamatron examples/learning/23_phrasing.yml --to ableton --replace
 
   Scene 1, as written: four lines of two bars, each ending on a note held for a bar. Every note
   is as loud as the next and there is no room for air between the lines.

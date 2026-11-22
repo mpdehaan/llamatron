@@ -57,7 +57,7 @@ def colours_of(line):
     return [(span.style.color.get_truecolor(), span.style.bgcolor.get_truecolor()) for span in line.spans]
 
 
-A_LEARNING_DEMO = 'examples/learning/19_hocket_shanty.yml'
+A_LEARNING_DEMO = 'examples/learning/17_hocket_shanty.yml'
 A_LEARNING_DEMO_NAME = 'Hocket Shanty'
 A_GENRE_DEMO = 'examples/by_genre/ragtime/entertainer.yml'
 A_GENRE_DEMO_NAME = 'Entertainer'

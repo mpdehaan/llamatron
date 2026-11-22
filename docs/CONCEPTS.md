@@ -30,7 +30,7 @@ A section of a song often changes over its length: a build grows denser, a cresc
 2. On the scene's Scene page, open `+ Density` and set Density start to 25 and Density end to 100: the section starts sparse and fills in to a build. `+ Velocity Ramp In` and `+ Velocity Ramp Out` fade the section in and out, and `+ Articulate` does the same as Density for length. See [Scenes](SCENES.md).
 3. To give many sections the same shape and change it in one place, make a Shapes generator instead, and put it in a chain on those scenes. See [Shapes](generators/SHAPES.md).
 
-`examples/by_genre/electronic/edm_density.yml` and `examples/learning/16_bolero_swell.yml` show both ways.
+`examples/by_genre/electronic/edm_density.yml` and `examples/learning/14_bolero_swell.yml` show both ways.
 
 ## Introducing Randomness
 
@@ -50,7 +50,7 @@ A hocket passes a melody between voices, one note each, as singers did in early 
 3. On Generators, add a Hocket, and choose the melody's track on its Source Track field.
 4. Put the Hocket's chain on the voices' clips. The voices take turns at the melody, a note each.
 
-See [Hocket](generators/HOCKET.md). `examples/learning/19_hocket_shanty.yml` does this with four voices.
+See [Hocket](generators/HOCKET.md). `examples/learning/17_hocket_shanty.yml` does this with four voices.
 
 ## Performing
 

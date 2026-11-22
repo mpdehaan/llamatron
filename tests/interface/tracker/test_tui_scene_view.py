@@ -23,7 +23,7 @@ from tests.support.ui_testing import back_key, forward_key, UITest
 
 DENSITY = 'edm_density.yml'
 HALF_TIME = 4
-REGISTERS = '22_registers.yml'
+REGISTERS = '20_registers.yml'
 NOT_WEREWOLVES = 'not_werewolves.yml'
 G_MAJOR = 'G Major'
 # The demo's first scene with the whole verse, whose chords a Progression moves, so they are heard in the notes as played.

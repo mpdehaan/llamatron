@@ -8,7 +8,7 @@
     .venv/bin/python internal_tools/demo_summary.py                          # every set in examples/, as a plain table
     .venv/bin/python internal_tools/demo_summary.py --format ascii           # the same with ruled rows and borders
     .venv/bin/python internal_tools/demo_summary.py --format markdown        # the same as a Markdown table
-    .venv/bin/python internal_tools/demo_summary.py examples/learning/19_hocket_shanty.yml   # only the sets named
+    .venv/bin/python internal_tools/demo_summary.py examples/learning/17_hocket_shanty.yml   # only the sets named
     .venv/bin/python internal_tools/demo_summary.py --write-docs             # put the Markdown table into docs/DEMOS.md
     .venv/bin/python internal_tools/demo_summary.py --check                  # fail if the table in docs/DEMOS.md is out of date
     .venv/bin/python internal_tools/demo_summary.py --csv                    # comma-separated values (sh user_scripts/demo_report.sh)

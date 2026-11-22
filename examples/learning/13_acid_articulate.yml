@@ -5,7 +5,7 @@ notes: |
   Acid articulate: an acid house track at 120 beats a minute in A minor, one squelching bass
   line played the whole way through, whose notes lengthen from short blips into long, gliding,
   joined notes over each scene while its filter opens, with no gate in the pattern changed.
-  Run it with: llamatron examples/learning/15_acid_articulate.yml --to ableton --replace
+  Run it with: llamatron examples/learning/13_acid_articulate.yml --to ableton --replace
 
   Articulate scales how long each note sounds, as a percentage of what the pattern writes, from
   10% to 200%. Shorter leaves a gap before the next note; longer holds a note over the rests

@@ -5,7 +5,7 @@ notes: |
   Pattern lists: a hard rock riff at 120 beats a minute in E minor. A clip can play a list of
   patterns, one after another, as one long pattern. Here four patterns of one bar each, riff-a,
   riff-b, riff-tail and riff-stop, make every section of the song, listed in different orders.
-  Run it with: llamatron examples/learning/29_pattern_lists.yml --to ableton --replace
+  Run it with: llamatron examples/learning/27_pattern_lists.yml --to ableton --replace
 
   Scene 1, the bars: the four bars once, in order, so that each can be heard.
   Scene 2, verse: riff-a three times and riff-b as the answer. The bass lists its own bars the

@@ -5,7 +5,7 @@ notes: |
   Advanced Conditionals: Conditional Execution, statements about the registers that say when a
   clip sits out, when a generator is passed by, and when a step of a pattern is muted, starts its
   pattern over or stops its clip.
-  Run it with: llamatron examples/learning/27_advanced_conditionals.yml
+  Run it with: llamatron examples/learning/25_advanced_conditionals.yml
 
   Scene 1, counting: four tracks, each with one note in a bar, each at a different place in the
   bar. The pattern called every bar adds 1 to AX and 1 to BX on its last step, so AX counts the

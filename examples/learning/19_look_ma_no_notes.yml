@@ -7,7 +7,7 @@ notes: |
   seventh chord on degree 1 that the organ holds a bar at a time, and Chords generators move
   it through the changes; every other part is Grab steps that take the root of whatever chord the
   organ plays, and build on it.
-  Run it with: llamatron examples/learning/21_look_ma_no_notes.yml --to ableton --replace
+  Run it with: llamatron examples/learning/19_look_ma_no_notes.yml --to ableton --replace
 
   The organ's chord is 7 on the Chord row, the scale's seventh chord, so the progression gives
   each chord its own quality: A flat major seventh, F minor seventh, E flat seventh. In the

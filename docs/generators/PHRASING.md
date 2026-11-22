@@ -32,4 +32,4 @@ Notes says how the notes inside a line are joined. With "choppy" each note is cu
 
 ## Applying the Generator
 
-`examples/learning/25_phrasing.yml` plays one tune as written and then with one setting changed in each scene, so that each setting is heard alone, and ends with a verse and a chorus sung with the settings together.
+`examples/learning/23_phrasing.yml` plays one tune as written and then with one setting changed in each scene, so that each setting is heard alone, and ends with a verse and a chorus sung with the settings together.

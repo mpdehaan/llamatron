@@ -5,7 +5,7 @@ notes: |
   Guitarify: an original tour of guitar playing, twenty-one scenes, the first strummed as written
   and the rest by genre, each four bars (the shuffle its full twelve), on seven General MIDI
   guitars and nothing else, one guitar a scene.
-  Run it with: llamatron examples/learning/23_guitarify.yml
+  Run it with: llamatron examples/learning/21_guitarify.yml
 
   Every pattern here is only a row of chords or low notes, one a bar or two a bar. The playing
   is the Guitarify generator's, one for each scene. Its Shape half holds each chord as a hand

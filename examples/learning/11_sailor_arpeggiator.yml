@@ -3,7 +3,7 @@ title: Arpeggiator demo
 description: "one chord, arpeggiated"
 notes: |
   Arpeggiator demo: one chord pattern played through a different arpeggiator in each scene.
-  Run it with: llamatron examples/learning/12_sailor_arpeggiator.yml --to ableton --replace
+  Run it with: llamatron examples/learning/11_sailor_arpeggiator.yml --to ableton --replace
 
   The tune is the verse of What Shall We Do With the Drunken Sailor, a traditional sea shanty,
   in D Dorian at 112 BPM as the flutetunes.com transcription has it. The tune track plays it

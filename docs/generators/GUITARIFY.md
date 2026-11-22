@@ -70,11 +70,11 @@ The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to 
 
 ## Applying the Generator
 
-Add a Guitarify to a chain, as `guitarify: name`, and give clips that chain. A Progression before the Guitarify in the same chain moves one written chord through a song's chords, and the Guitarify then plays each. `examples/learning/23_guitarify.yml` plays twenty short scenes, each a way a guitar is played, from one pattern of chords a scene.
+Add a Guitarify to a chain, as `guitarify: name`, and give clips that chain. A Progression before the Guitarify in the same chain moves one written chord through a song's chords, and the Guitarify then plays each. `examples/learning/21_guitarify.yml` plays twenty short scenes, each a way a guitar is played, from one pattern of chords a scene.
 
 ## Settings by Genre
 
-The Guitarify demo, `examples/learning/23_guitarify.yml`, plays twenty short examples, each a scene of its own on one guitar. The table lists, for each example, the fields of the Guitarify editor that were changed from their defaults, under the editor's two sections, with the values as the editor shows them. An empty cell means every field of that section was left alone. The demo's tracks are named after their guitars, and the tempo is the scene's.
+The Guitarify demo, `examples/learning/21_guitarify.yml`, plays twenty short examples, each a scene of its own on one guitar. The table lists, for each example, the fields of the Guitarify editor that were changed from their defaults, under the editor's two sections, with the values as the editor shows them. An empty cell means every field of that section was left alone. The demo's tracks are named after their guitars, and the tempo is the scene's.
 
 | Genre | Example Name | Guitar | BPM | Shape | Strokes |
 | --- | --- | --- | --- | --- | --- |

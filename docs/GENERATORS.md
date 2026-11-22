@@ -46,7 +46,7 @@ What plays where, among the tracks.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/19_hocket_shanty.yml` |
+| [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/17_hocket_shanty.yml` |
 
 ### Articulation
 
@@ -54,13 +54,13 @@ How each note is played: phrased.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Phrasing](generators/PHRASING.md) | Plays a tune in lines, as a singer would: a breath after each, a rise and fall, notes choppy or flowing | `examples/learning/25_phrasing.yml` |
+| [Phrasing](generators/PHRASING.md) | Plays a tune in lines, as a singer would: a breath after each, a rise and fall, notes choppy or flowing | `examples/learning/23_phrasing.yml` |
 
 ### Band Generators
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Musician](generators/MUSICIAN.md) | Plays a clip as a player of the band would: by the kind of section, round the tune, with the instrument's habits | `examples/learning/26_musician.yml` |
+| [Musician](generators/MUSICIAN.md) | Plays a clip as a player of the band would: by the kind of section, round the tune, with the instrument's habits | `examples/learning/24_musician.yml` |
 
 ### Harmony
 
@@ -68,7 +68,7 @@ Which chords a figure follows.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Chords](generators/CHORDS.md) | Moves a figure through a progression of chords, or to the chords another track plays, and voices each chord nearest the one before | `examples/learning/06_chord_progression_generator.yml`, `examples/learning/24_follow_chords.yml`, `examples/learning/05_voice_leading.yml` |
+| [Chords](generators/CHORDS.md) | Moves a figure through a progression of chords, or to the chords another track plays, and voices each chord nearest the one before | `examples/learning/06_chord_progression_generator.yml`, `examples/learning/22_follow_chords.yml`, `examples/learning/05_voice_leading.yml` |
 
 ### Rhythm
 
@@ -83,7 +83,7 @@ Notes placed early or late, played short or joined.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Timing](generators/TIMING.md) | Plays notes on chosen steps early, late, short or sliding into the next | `examples/learning/14_acid_glide.yml` |
+| [Timing](generators/TIMING.md) | Plays notes on chosen steps early, late, short or sliding into the next | `examples/learning/12_acid_glide.yml` |
 
 ### Transitions
 
@@ -100,8 +100,8 @@ How a chord's notes are laid out and played.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
-| [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
+| [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/11_sailor_arpeggiator.yml` |
+| [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/21_guitarify.yml` |
 
 [About Demos](DEMOS.md) describes every demo, and its table shows which features each one uses.
 

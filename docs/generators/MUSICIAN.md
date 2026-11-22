@@ -71,4 +71,4 @@ A drummer and a percussionist have no Chords from and no Range.
 
 ## Applying the Generator
 
-`examples/learning/26_musician.yml` plays a band's patterns as written and then hands the same patterns to Musicians, through a verse, a chorus and a breakdown, so that what each setting does is heard against the scene before.
+`examples/learning/24_musician.yml` plays a band's patterns as written and then hands the same patterns to Musicians, through a verse, a chorus and a breakdown, so that what each setting does is heard against the scene before.

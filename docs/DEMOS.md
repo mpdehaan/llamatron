@@ -14,7 +14,7 @@ Start llamatron from the project folder and press `Ctrl+O`, or `O` on the main s
 llamatron starts:
 
 ```
-llamatron examples/learning/12_sailor_arpeggiator.yml
+llamatron examples/learning/11_sailor_arpeggiator.yml
 ```
 
 Every set plays in real time as it comes, through FluidSynth, a free software synthesizer, each
@@ -28,7 +28,7 @@ over time, so a demo's video may show an older version of the song or of llamatr
 Or export one straight to a Live set, then open it in Live and put an instrument on each track:
 
 ```
-llamatron examples/learning/12_sailor_arpeggiator.yml --to ableton --replace
+llamatron examples/learning/11_sailor_arpeggiator.yml --to ableton --replace
 ```
 
 Live's scenes keep the demo's scene names, which say what each one shows, and each clip is

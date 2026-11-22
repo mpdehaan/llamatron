@@ -13,24 +13,24 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Ties](#tie): `08_tie.yml`
 - [Grooves](#groove): `09_groove.yml`
 - [Directions](#mtn_king_direction): `10_mtn_king_direction.yml`
-- [Arpeggiator](#sailor_arpeggiator): `12_sailor_arpeggiator.yml`
-- [Glide and Shorten](#acid_glide): `14_acid_glide.yml`
-- [Articulate](#acid_articulate): `15_acid_articulate.yml`
-- [Swell](#bolero_swell): `16_bolero_swell.yml`
-- [Chains](#complex_gifts_chain): `17_complex_gifts_chain.yml`
-- [Morphing](#techno_morph): `18_techno_morph.yml`
-- [Hocketing](#hocket_shanty): `19_hocket_shanty.yml`
-- [Few Patterns](#arrangement_shanty): `20_arrangement_shanty.yml`
-- [Grabbed Parts](#look_ma_no_notes): `21_look_ma_no_notes.yml`
-- [Registers](#registers): `22_registers.yml`
-- [Guitarify](#guitarify): `23_guitarify.yml`
-- [Follow Chords](#follow_chords): `24_follow_chords.yml`
-- [Phrasing](#phrasing): `25_phrasing.yml`
-- [Musician](#musician): `26_musician.yml`
-- [Advanced Conditionals](#advanced_conditionals): `27_advanced_conditionals.yml`
-- [Accents](#accents): `28_accents.yml`
-- [Pattern Lists](#pattern_lists): `29_pattern_lists.yml`
-- [Draws](#draws): `30_draws.yml`
+- [Arpeggiator](#sailor_arpeggiator): `11_sailor_arpeggiator.yml`
+- [Glide and Shorten](#acid_glide): `12_acid_glide.yml`
+- [Articulate](#acid_articulate): `13_acid_articulate.yml`
+- [Swell](#bolero_swell): `14_bolero_swell.yml`
+- [Chains](#complex_gifts_chain): `15_complex_gifts_chain.yml`
+- [Morphing](#techno_morph): `16_techno_morph.yml`
+- [Hocketing](#hocket_shanty): `17_hocket_shanty.yml`
+- [Few Patterns](#arrangement_shanty): `18_arrangement_shanty.yml`
+- [Grabbed Parts](#look_ma_no_notes): `19_look_ma_no_notes.yml`
+- [Registers](#registers): `20_registers.yml`
+- [Guitarify](#guitarify): `21_guitarify.yml`
+- [Follow Chords](#follow_chords): `22_follow_chords.yml`
+- [Phrasing](#phrasing): `23_phrasing.yml`
+- [Musician](#musician): `24_musician.yml`
+- [Advanced Conditionals](#advanced_conditionals): `25_advanced_conditionals.yml`
+- [Accents](#accents): `26_accents.yml`
+- [Pattern Lists](#pattern_lists): `27_pattern_lists.yml`
+- [Draws](#draws): `28_draws.yml`
 <!-- end of the generated index -->
 
 <a id="hello_world"></a>
@@ -216,33 +216,33 @@ forward and the two reverses to pendulum, random and brownian. The demo also sho
 <!-- end of the generated summary of 10_mtn_king_direction -->
 
 <a id="sailor_arpeggiator"></a>
-## Arpeggiator: `12_sailor_arpeggiator.yml`
+## Arpeggiator: `11_sailor_arpeggiator.yml`
 
 The verse of What Shall We Do With the Drunken Sailor, with its chords played through a different
 arpeggiator in every scene: step lengths, orders, octave ranges and jumps, offsets, and then
 combinations of them. The tune plays alongside, plainly, so you can mute it and hear only the
 arpeggio.
 
-[`examples/learning/12_sailor_arpeggiator.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/12_sailor_arpeggiator.yml) · D dorian · 112 BPM · 3:26 · 24 scenes · 2 tracks
+[`examples/learning/11_sailor_arpeggiator.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/11_sailor_arpeggiator.yml) · D dorian · 112 BPM · 3:26 · 24 scenes · 2 tracks
 
 | chords | arps | chains |
 | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) |
-<!-- end of the generated summary of 12_sailor_arpeggiator -->
+<!-- end of the generated summary of 11_sailor_arpeggiator -->
 
 <a id="acid_glide"></a>
-## Glide and Shorten: `14_acid_glide.yml`
+## Glide and Shorten: `12_acid_glide.yml`
 
 Fluid acid techno for a synth with portamento: one sixteen-note acid line from start to finish,
 and Glide and Shorten rows of 5, 7 and 3 steps putting its slides and short notes somewhere new
 each bar, though the line itself never changes.
 
-[`examples/learning/14_acid_glide.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/14_acid_glide.yml) · A minor · 128 BPM · 3:00 · 8 scenes · 4 tracks
+[`examples/learning/12_acid_glide.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/12_acid_glide.yml) · A minor · 128 BPM · 3:00 · 8 scenes · 4 tracks
 
 | chains | feel |
 | :---: | :---: |
 | [✓](../generators/CHAIN.md) | [✓](../generators/TIMING.md) |
-<!-- end of the generated summary of 14_acid_glide -->
+<!-- end of the generated summary of 12_acid_glide -->
 
 **New Features Introduced**
 
@@ -251,18 +251,18 @@ each bar, though the line itself never changes.
 | [✓](../generators/TIMING.md) |
 
 <a id="acid_articulate"></a>
-## Articulate: `15_acid_articulate.yml`
+## Articulate: `13_acid_articulate.yml`
 
 An acid house line played the whole way through, whose notes lengthen from short blips into
 long, gliding, joined notes over each scene while its filter opens, with no gate changed. The demo sets Articulate on the scenes, on the line itself and as a generator that bounces between short
 and long every bar, and a register bound to CC 74 opens the filter as the notes lengthen.
 
-[`examples/learning/15_acid_articulate.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/15_acid_articulate.yml) · A minor · 120 BPM · 3:00 · 9 scenes · 6 tracks
+[`examples/learning/13_acid_articulate.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/13_acid_articulate.yml) · A minor · 120 BPM · 3:00 · 9 scenes · 6 tracks
 
 | chords | chains | ties | CCs | registers | binding | shapes |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../TRACKS.md#track-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
-<!-- end of the generated summary of 15_acid_articulate -->
+<!-- end of the generated summary of 13_acid_articulate -->
 
 **New Features Introduced**
 
@@ -271,7 +271,7 @@ and long every bar, and a register bound to CC 74 opens the filter as the notes 
 | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
 
 <a id="bolero_swell"></a>
-## Swell: `16_bolero_swell.yml`
+## Swell: `14_bolero_swell.yml`
 
 An original piece in three in the manner of Ravel's Bolero: one tune and one snare rhythm,
 nine scenes of one unbroken crescendo from soft to full force, climbing evenly in loudness, without one velocity
@@ -280,12 +280,12 @@ scenes keep the same instruments so that only the loudness climbs, and in the la
 run through a Shapes generator whose Swell accents every downbeat. Use velocity-sensitive instruments to
 hear it.
 
-[`examples/learning/16_bolero_swell.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/16_bolero_swell.yml) · C major · 72 BPM · 3:00 · 9 scenes · 7 tracks
+[`examples/learning/14_bolero_swell.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/14_bolero_swell.yml) · C major · 72 BPM · 3:00 · 9 scenes · 7 tracks
 
 | chords | chains | ties | velocity | shapes |
 | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/SHAPES.md) |
-<!-- end of the generated summary of 16_bolero_swell -->
+<!-- end of the generated summary of 14_bolero_swell -->
 
 **New Features Introduced**
 
@@ -294,33 +294,33 @@ hear it.
 | [✓](../SCENES.md#scene-settings) |
 
 <a id="complex_gifts_chain"></a>
-## Chains: `17_complex_gifts_chain.yml`
+## Chains: `15_complex_gifts_chain.yml`
 
 Simple Gifts on a single track, growing from the plain tune into triads, then synthwave, then happy
 metal, using a few patterns and a chain for each scene. The demo shows that a chain runs its steps in order, each working on what the one before made.
 
-[`examples/learning/17_complex_gifts_chain.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/17_complex_gifts_chain.yml) · A major · 120 BPM · 2:40 · 10 scenes · 1 tracks
+[`examples/learning/15_complex_gifts_chain.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/15_complex_gifts_chain.yml) · A major · 120 BPM · 2:40 · 10 scenes · 1 tracks
 
 | chords | arps | ratchets | chains |
 | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) |
-<!-- end of the generated summary of 17_complex_gifts_chain -->
+<!-- end of the generated summary of 15_complex_gifts_chain -->
 
 <a id="techno_morph"></a>
-## Morphing: `18_techno_morph.yml`
+## Morphing: `16_techno_morph.yml`
 
 A 16-step minimal techno groove whose bass and lead slowly turn into other patterns over 8 or
 16 bars, in each morph style. The lead turns into the opening of Für Elise.
 
-[`examples/learning/18_techno_morph.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/18_techno_morph.yml) · A minor · 126 BPM · 2:17 · 8 scenes · 4 tracks
+[`examples/learning/16_techno_morph.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/16_techno_morph.yml) · A minor · 126 BPM · 2:17 · 8 scenes · 4 tracks
 
 | morphs | CCs |
 | :---: | :---: |
 | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#ccs) |
-<!-- end of the generated summary of 18_techno_morph -->
+<!-- end of the generated summary of 16_techno_morph -->
 
 <a id="hocket_shanty"></a>
-## Hocketing: `19_hocket_shanty.yml`
+## Hocketing: `17_hocket_shanty.yml`
 
 The Wellerman, held by a muted track called SILENT melody, with up to four voices taking turns
 at its notes, one note each, through a Hocket generator that names the melody's track as its
@@ -328,12 +328,12 @@ source. That's called hocketing. One voice plays every note, two alternate, and 
 every fourth note; each voice has a sound of its own, flute, clarinet, oboe and violin, to hear
 the tune pass between them.
 
-[`examples/learning/19_hocket_shanty.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/19_hocket_shanty.yml) · A minor · 100 BPM · 2:14 · 7 scenes · 5 tracks
+[`examples/learning/17_hocket_shanty.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/17_hocket_shanty.yml) · A minor · 100 BPM · 2:14 · 7 scenes · 5 tracks
 
 | chains | hocket |
 | :---: | :---: |
 | [✓](../generators/CHAIN.md) | [✓](../generators/HOCKET.md) |
-<!-- end of the generated summary of 19_hocket_shanty -->
+<!-- end of the generated summary of 17_hocket_shanty -->
 
 **New Features Introduced**
 
@@ -342,22 +342,22 @@ the tune pass between them.
 | [✓](../generators/HOCKET.md) |
 
 <a id="arrangement_shanty"></a>
-## Few Patterns: `20_arrangement_shanty.yml`
+## Few Patterns: `18_arrangement_shanty.yml`
 
 The Wellerman again, with eight parts built from only four note patterns. The harmony is the
 melody patterns transposed on its track, the bass grabs the roots of the pad's chords, and a
 counter-line grabs the melody in its own rhythm. Read this one to see how to set up a song so
 that changing one pattern changes every part that follows it.
 
-[`examples/learning/20_arrangement_shanty.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/20_arrangement_shanty.yml) · A minor · 100 BPM · 2:34 · 8 scenes · 8 tracks
+[`examples/learning/18_arrangement_shanty.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/18_arrangement_shanty.yml) · A minor · 100 BPM · 2:34 · 8 scenes · 8 tracks
 
 | chords | arps | chains | grabs |
 | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) |
-<!-- end of the generated summary of 20_arrangement_shanty -->
+<!-- end of the generated summary of 18_arrangement_shanty -->
 
 <a id="look_ma_no_notes"></a>
-## Grabbed Parts: `21_look_ma_no_notes.yml`
+## Grabbed Parts: `19_look_ma_no_notes.yml`
 
 A gospel song in A flat where the bass, the piano and the lead hold no notes at all. The organ
 holds one seventh chord a bar, moved through the changes by Chords generators, and every
@@ -366,29 +366,29 @@ octave down, the piano's chords from its Chord row, and the lead three ways, fro
 rows, from an arpeggiator and from climbing and falling ratchets. The last chorus goes up a half
 step, and every part follows.
 
-[`examples/learning/21_look_ma_no_notes.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/21_look_ma_no_notes.yml) · Ab major · 76 BPM · 2:57 · 6 scenes · 7 tracks
+[`examples/learning/19_look_ma_no_notes.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/19_look_ma_no_notes.yml) · Ab major · 76 BPM · 2:57 · 6 scenes · 7 tracks
 
 | chords | arps | ratchets | chains | grabs | ties | grooves | key changes | registers | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/CHORDS.md) |
-<!-- end of the generated summary of 21_look_ma_no_notes -->
+<!-- end of the generated summary of 19_look_ma_no_notes -->
 
 <a id="registers"></a>
-## Registers: `22_registers.yml`
+## Registers: `20_registers.yml`
 
 An acid techno riff of five notes, changed bar by bar by the four registers, AX to DX. AX, BX
 and CX each move a different note of the riff, in cycles of 4, 6 and 5 bars, then all three
 at once. Then DX fades the riff, kick and hat out together over six repeats of the last scene.
 
-[`examples/learning/22_registers.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/22_registers.yml) · A minor · 132 BPM · 1:35 · 5 scenes · 3 tracks
+[`examples/learning/20_registers.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/20_registers.yml) · A minor · 132 BPM · 1:35 · 5 scenes · 3 tracks
 
 | registers |
 | :---: |
 | [✓](../REGISTERS.md) |
-<!-- end of the generated summary of 22_registers -->
+<!-- end of the generated summary of 20_registers -->
 
 <a id="guitarify"></a>
-## Guitarify: `23_guitarify.yml`
+## Guitarify: `21_guitarify.yml`
 
 A tour of guitar playing in twenty-one short scenes, each a way a guitar is played, on seven
 General MIDI guitars and nothing else: chords as written strummed in Strum mode, a country bass
@@ -398,12 +398,12 @@ strum, funk scratching, a singer's rolled chords, metal gallops and a twelve bar
 pattern is only a row of chords or low notes, and the Guitarify generator of each scene does the
 playing, so the demo shows what its Strum mode and its Shape and Strokes halves do to the same kind of pattern.
 
-[`examples/learning/23_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/23_guitarify.yml) · G major · 96 BPM · 3:19 · 21 scenes · 7 tracks
+[`examples/learning/21_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/21_guitarify.yml) · G major · 96 BPM · 3:19 · 21 scenes · 7 tracks
 
 | chords | chains | guitarify | key changes | tempo changes | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) | [✓](../generators/GUITARIFY.md) |
-<!-- end of the generated summary of 23_guitarify -->
+<!-- end of the generated summary of 21_guitarify -->
 
 **New Features Introduced**
 
@@ -412,7 +412,7 @@ playing, so the demo shows what its Strum mode and its Shape and Strokes halves 
 | [✓](../generators/GUITARIFY.md) | [✓](../generators/GUITARIFY.md) |
 
 <a id="follow_chords"></a>
-## Follow Chords: `24_follow_chords.yml`
+## Follow Chords: `22_follow_chords.yml`
 
 A song in A minor whose chords are written in one place, a muted track called SILENT Chords. The bass,
 the pad and the arpeggio each play one bar, written over chord I, through a Chords
@@ -421,12 +421,12 @@ first, then the band plays without following and sounds stuck on one chord, then
 alone, then everyone. Later scenes add a tune, change the chords under the same patterns, change
 chord twice a bar, and follow chords that a progression makes on that track.
 
-[`examples/learning/24_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/24_follow_chords.yml) · A minor · 96 BPM · 2:40 · 8 scenes · 8 tracks
+[`examples/learning/22_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/22_follow_chords.yml) · A minor · 96 BPM · 2:40 · 8 scenes · 8 tracks
 
 | chords | chains | follow chords | ties | progressions |
 | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) |
-<!-- end of the generated summary of 24_follow_chords -->
+<!-- end of the generated summary of 22_follow_chords -->
 
 **New Features Introduced**
 
@@ -435,19 +435,19 @@ chord twice a bar, and follow chords that a progression makes on that track.
 | [✓](../generators/CHORDS.md) |
 
 <a id="phrasing"></a>
-## Phrasing: `25_phrasing.yml`
+## Phrasing: `23_phrasing.yml`
 
 A slow ballad in A minor whose tune is heard as written and then through a Phrasing generator with
 one setting changed in each scene: a deep breath after each line, a rise and fall of loudness, choppy
 notes, and flowing notes on the tune written short. The last two scenes are a verse and a chorus sung
 with the settings together.
 
-[`examples/learning/25_phrasing.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/25_phrasing.yml) · A minor · 68 BPM · 3:46 · 8 scenes · 6 tracks
+[`examples/learning/23_phrasing.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/23_phrasing.yml) · A minor · 68 BPM · 3:46 · 8 scenes · 6 tracks
 
 | chords | chains | phrasing | ties |
 | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/PHRASING.md) | [✓](../PATTERNS.md#ties) |
-<!-- end of the generated summary of 25_phrasing -->
+<!-- end of the generated summary of 23_phrasing -->
 
 **New Features Introduced**
 
@@ -456,7 +456,7 @@ with the settings together.
 | [✓](../generators/PHRASING.md) |
 
 <a id="musician"></a>
-## Musician: `26_musician.yml`
+## Musician: `24_musician.yml`
 
 A band in G major whose players each have one bar. The first scene plays every pattern as written,
 all the time. The scenes after it hand the same patterns to Musician generators: in the verse the
@@ -464,12 +464,12 @@ rhythm guitar plays softer, the hi-hat keeps to the beats, the organ sits out an
 plays only where the tune rests; in the chorus everyone plays and the organ holds each chord; in the
 breakdown the bass plays one hit a bar and the rhythm guitar is muted.
 
-[`examples/learning/26_musician.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/26_musician.yml) · G major · 104 BPM · 2:09 · 7 scenes · 9 tracks
+[`examples/learning/24_musician.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/24_musician.yml) · G major · 104 BPM · 2:09 · 7 scenes · 9 tracks
 
 | chords | chains | follow chords | musician | ties |
 | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/CHORDS.md) | [✓](../generators/MUSICIAN.md) | [✓](../PATTERNS.md#ties) |
-<!-- end of the generated summary of 26_musician -->
+<!-- end of the generated summary of 24_musician -->
 
 **New Features Introduced**
 
@@ -478,7 +478,7 @@ breakdown the bass plays one hit a bar and the rhythm guitar is muted.
 | [✓](../generators/MUSICIAN.md) |
 
 <a id="advanced_conditionals"></a>
-## Advanced Conditionals: `27_advanced_conditionals.yml`
+## Advanced Conditionals: `25_advanced_conditionals.yml`
 
 Conditional Execution in six scenes. In the first, four tracks each play one note a bar, each at a
 different place in the bar: one in every bar, one in every second bar, one in every third bar, and
@@ -492,13 +492,13 @@ exactly two and a half times. Before that last scene, two registers show their R
 reverses, so a single note walks up the scale and back down, and one overflows, so a single note
 visits the same five pitches in a shuffled order.
 
-[`examples/learning/27_advanced_conditionals.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/27_advanced_conditionals.yml) · A minor pentatonic · 112 BPM · 3:09 · 6 scenes · 5 tracks
+[`examples/learning/25_advanced_conditionals.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/25_advanced_conditionals.yml) · A minor pentatonic · 112 BPM · 3:09 · 6 scenes · 5 tracks
 
 | chords | chains | guitarify | key changes | tempo changes | registers | conditional execution |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md#conditional-execution) |
 
-[![The Advanced Conditionals demo, 27_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)
+[![The Advanced Conditionals demo, 25_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)
 
 **New Features Introduced**
 
@@ -507,7 +507,7 @@ visits the same five pitches in a shuffled order.
 | [✓](../REGISTERS.md#conditional-execution) |
 
 <a id="accents"></a>
-## Accents: `28_accents.yml`
+## Accents: `26_accents.yml`
 
 A funk groove in E minor with no velocity typed on any step. Each part plays at the Default velocity
 of its track, and a step whose Accent switch is on plays louder by the track's Accent. The first
@@ -516,12 +516,12 @@ accents on a part at a time: the hats on the beat, then off the beat, then a sna
 ghost notes sit under an accented backbeat, then the bass and the keys, then hats accented in
 threes across the beat. The last scene plays the first again, to hear what the switches did.
 
-[`examples/learning/28_accents.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/28_accents.yml) · E minor · 100 BPM · 2:19 · 7 scenes · 5 tracks
+[`examples/learning/26_accents.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/26_accents.yml) · E minor · 100 BPM · 2:19 · 7 scenes · 5 tracks
 
 | chords | accents |
 | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../TRACKS.md) |
-<!-- end of the generated summary of 28_accents -->
+<!-- end of the generated summary of 26_accents -->
 
 **New Features Introduced**
 
@@ -530,7 +530,7 @@ threes across the beat. The last scene plays the first again, to hear what the s
 | [✓](../TRACKS.md) |
 
 <a id="pattern_lists"></a>
-## Pattern Lists: `29_pattern_lists.yml`
+## Pattern Lists: `27_pattern_lists.yml`
 
 A hard rock riff in E minor made of four patterns of one bar each: the main figure, an answer, a
 run up and a stop. Every clip of the riff plays a list of those patterns, as
@@ -541,15 +541,15 @@ fill. The scenes after show Pattern order: alternate, pendulum, and first, then 
 scene sets Step direction, which plays the steps inside each pattern backward while the patterns
 keep their order.
 
-[`examples/learning/29_pattern_lists.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/29_pattern_lists.yml) · E minor · 120 BPM · 2:24 · 8 scenes · 5 tracks
+[`examples/learning/27_pattern_lists.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/27_pattern_lists.yml) · E minor · 120 BPM · 2:24 · 8 scenes · 5 tracks
 
 | chains | guitarify | directions |
 | :---: | :---: | :---: |
 | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
-<!-- end of the generated summary of 29_pattern_lists -->
+<!-- end of the generated summary of 27_pattern_lists -->
 
 <a id="draws"></a>
-## Draws: `30_draws.yml`
+## Draws: `28_draws.yml`
 
 Draws in eleven scenes, every note written as the same C in a chromatic scale, so that everything that moves is a draw. A
 count-in plays C, C#, D and D# from a draw that moves forward. Four scenes deal twelve-tone rows from a serial draw, which plays
@@ -558,12 +558,12 @@ pairs. Four scenes over a bass add two draws on alternate steps, add them togeth
 three. The last two scenes gate notes by draws: a melody that grows as a register counts the bars, and a bell whose rhythm
 comes from a draw that its own condition redraws.
 
-[`examples/learning/30_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/30_draws.yml) · C chromatic · 108 BPM · 2:58 · 11 scenes · 6 tracks
+[`examples/learning/28_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/28_draws.yml) · C chromatic · 108 BPM · 2:58 · 11 scenes · 6 tracks
 
 | registers | draws | conditional execution |
 | :---: | :---: | :---: |
 | [✓](../REGISTERS.md) | [✓](../DRAWS.md) | [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |
-<!-- end of the generated summary of 30_draws -->
+<!-- end of the generated summary of 28_draws -->
 
 **New Features Introduced**
 

@@ -5,7 +5,7 @@ notes: |
   Bolero swell: an original piece in the manner of Ravel's Bolero, at 72 beats a minute in 3/4:
   one tune and one snare rhythm, never changing, starting soft and ending at full
   force, nine scenes of one unbroken crescendo, without one velocity changed in a pattern.
-  Run it with: llamatron examples/learning/16_bolero_swell.yml --to ableton --replace
+  Run it with: llamatron examples/learning/14_bolero_swell.yml --to ableton --replace
 
   A scene's Velocity scales each note's velocity by a percentage, and a scene's Velocity Ramp In
   climbs to it from a start across its bars. The crescendo is a table of the scenes' own

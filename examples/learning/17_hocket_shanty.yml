@@ -4,7 +4,7 @@ description: a hocketed melody
 notes: |
   Hocket demo: voices take turns playing a melody that a silent track holds, one note each,
   called hocketing.
-  Run it with: llamatron examples/learning/19_hocket_shanty.yml --to ableton --replace
+  Run it with: llamatron examples/learning/17_hocket_shanty.yml --to ableton --replace
 
   The tune is The Wellerman, a New Zealand whaling song from the 19th century, in A minor as
   the sung setting on thesession.org (tune 20383, setting 8) has it, an octave higher. No
