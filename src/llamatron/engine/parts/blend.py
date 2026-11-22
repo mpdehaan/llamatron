@@ -121,7 +121,9 @@ class Blend(ClipGenerator):
         start = Length.rational(_closest(edges=edges, time=Length.of(start)))
         end = Length.rational(_closest(edges=edges, time=Length.of(end)))
         if end <= start:
-            return (START, START) if share < total else (START, total)
+            if share < total:
+                return (START, START)
+            return (START, total)
         return start, end
 
     def _sweep(self, *, source, target, total):
