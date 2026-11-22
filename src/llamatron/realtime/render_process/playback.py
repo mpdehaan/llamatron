@@ -120,7 +120,9 @@ class LocalPlayback:
 
     def _takes_for(self, wanted):
         """Return the takes a score of what is wanted plays: the play's, for the seed that plays, and none for a play to come."""
-        return self._takes if self._playing is not None and wanted.seed == self._playing.seed else {}
+        if self._playing is not None and wanted.seed == self._playing.seed:
+            return self._takes
+        return {}
 
     def _retake(self, keys):
         """Give each (scene, track) its next take, for the rest of the play."""
@@ -146,7 +148,10 @@ class LocalPlayback:
             if self._playing is None or wanted.seed != self._playing.seed:
                 self._takes = {}
             built = self.built(wanted)
-            score = built.score if built is not None and built.score is not None else score_of(wanted=wanted, data=self._data, earlier=None)
+            if built is not None and built.score is not None:
+                score = built.score
+            else:
+                score = score_of(wanted=wanted, data=self._data, earlier=None)
             if self._player is None or self._player.get_sender() is not sender:
                 self._player = Player(score=score, sender=sender, now=self._now, lead=self._lead)
             else:
@@ -224,8 +229,13 @@ class LocalPlayback:
         laps = self._player.take_laps()
         if laps:
             self._retake(keys=laps)
-            self.build(self._playing if self._asked is None else self._asked)
-        built = self.built(self._playing) if self._takes else None
+            asked = self._asked
+            if asked is None:
+                asked = self._playing
+            self.build(asked)
+        built = None
+        if self._takes:
+            built = self.built(self._playing)
         if built is not None and built.score is not None and built.score is not self._player.get_score():
             self._player.set_score(built.score)
 
@@ -235,7 +245,9 @@ class LocalPlayback:
         return self._player is not None and self._player.is_playing()
 
     def playing_scenes(self):
-        return [] if self._player is None else self._player.playing_scenes()
+        if self._player is None:
+            return []
+        return self._player.playing_scenes()
 
     def is_clip_playing(self, *, index, track):
         return self._player is not None and self._player.is_clip_playing(scene=index, track=track)
@@ -244,22 +256,35 @@ class LocalPlayback:
         return self._player is not None and self._player.is_track_sounding(track)
 
     def scene_elapsed(self, index):
-        return None if self._player is None else self._player.scene_elapsed(index)
+        if self._player is None:
+            return None
+        return self._player.scene_elapsed(index)
 
     def clip_elapsed(self, *, index, track):
-        return None if self._player is None else self._player.clip_elapsed(scene=index, track=track)
+        if self._player is None:
+            return None
+        return self._player.clip_elapsed(scene=index, track=track)
 
     def repeats_left(self, *, index, track):
-        return None if self._player is None else self._player.repeats_left(scene=index, track=track)
+        if self._player is None:
+            return None
+        return self._player.repeats_left(scene=index, track=track)
 
     def song_position(self):
-        return None if self._player is None else self._player.song_position()
+        if self._player is None:
+            return None
+        return self._player.song_position()
 
     def song_seconds(self):
-        return None if self._player is None else self._player.get_score().song_seconds()
+        if self._player is None:
+            return None
+        score = self._player.get_score()
+        return score.song_seconds()
 
     def seconds_per_quarter(self):
-        return None if self._player is None else self._player.seconds_per_quarter()
+        if self._player is None:
+            return None
+        return self._player.seconds_per_quarter()
 
     def heard(self, *, since):
         """Return the clock's time now and, for each track with a clip running, the notes heard since an earlier time (Player.heard)."""
@@ -277,12 +302,15 @@ class LocalPlayback:
         now, heard = self._player.heard(since=since)
         scenes = tuple(self.playing_scenes())
         plays = [(play.scene, play.track) for play in self._player.running_plays()]
-        first = None if not scenes else self.scene_elapsed(scenes[0])
+        draw_places = {}
+        if scenes:
+            draw_places = self.draw_places(scene=scenes[0], seconds=self.scene_elapsed(scenes[0]))
+        sounding = frozenset(track for _scene, track in plays if self.is_track_sounding(track))
         return Status(
-            at, now, True, scenes, frozenset(plays), frozenset(track for _scene, track in plays if self.is_track_sounding(track)),
+            at, now, True, scenes, frozenset(plays), sounding,
             {scene: self.scene_elapsed(scene) for scene in scenes}, {play: self.clip_elapsed(index=play[0], track=play[1]) for play in plays},
             {play: self.repeats_left(index=play[0], track=play[1]) for play in plays}, self.song_position(), self.song_seconds(),
-            self.seconds_per_quarter(), tuple(heard), {} if first is None else self.draw_places(scene=scenes[0], seconds=first),
+            self.seconds_per_quarter(), tuple(heard), draw_places,
         )
 
     def get_player(self):
