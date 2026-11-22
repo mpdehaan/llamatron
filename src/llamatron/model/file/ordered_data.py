@@ -16,7 +16,17 @@ def same_in_order(*, first, second):
     if first is second:
         return True
     if isinstance(first, dict):
-        return isinstance(second, dict) and list(first) == list(second) and all(same_in_order(first=first[key], second=second[key]) for key in first)
+        if not isinstance(second, dict) or list(first) != list(second):
+            return False
+        for key in first:
+            if not same_in_order(first=first[key], second=second[key]):
+                return False
+        return True
     if isinstance(first, list):
-        return isinstance(second, list) and len(first) == len(second) and all(same_in_order(first=one, second=other) for one, other in zip(first, second))
+        if not isinstance(second, list) or len(first) != len(second):
+            return False
+        for one, other in zip(first, second):
+            if not same_in_order(first=one, second=other):
+                return False
+        return True
     return first == second
