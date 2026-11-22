@@ -19,8 +19,14 @@ from llamatron.model.values import midi
 from llamatron.model.values.chord import movement
 from llamatron.user_strings import errors
 
+
+
+def _is_kept_by_a_rest(row):
+    return row.is_kept_by_a_rest()
+
+
 # What makes a step's note, which a rest holds none of: every row but the ones a rest keeps.
-REST_ROWS = rows_where(lambda row: row.is_kept_by_a_rest())
+REST_ROWS = rows_where(_is_kept_by_a_rest)
 SOUND_ROWS = [row for row in file_format.PATTERN_ROWS if row not in REST_ROWS]
 # The octaves a chord may be moved by when voice leading may move one: none first, so that a tie keeps the octave written.
 OCTAVE_SHIFTS = (0, -1, 1)
@@ -35,33 +41,15 @@ def blank_of(row):
 
 def own_value(value):
     """Return a step's value as another step may hold it, a list copied."""
-    return list(value) if isinstance(value, list) else value
+    if isinstance(value, list):
+        return list(value)
+    return value
 
 
 class PatternMunges:
     """What a Pattern knows about munging its notes."""
 
     __slots__ = ()
-
-    def _held(self, *, row, step):
-        values = self._rows[row]
-        return blank_of(row) if values is None else values[step]
-
-    def _hold(self, *, row, step, value):
-        """Put a value on a step with no check, for a value another step of this pattern already held."""
-        if self._rows[row] is None:
-            if value == blank_of(row):
-                return
-            self._rows[row] = [blank_of(row)] * self.get_steps()
-        self._rows[row][step] = own_value(value)
-
-    def _pitch(self, step):
-        """Return what a step plays, apart from how long and how loud: its degree, octave, sharp or flat and chord."""
-        return [own_value(self._held(row=row, step=step)) for row in file_format.PITCH_ROWS]
-
-    def _written_notes(self):
-        """Return the steps that hold a note of their own, leaving out a step that only grabs one."""
-        return [step for step in range(self.get_steps()) if self._held(row=Row.DEGREE, step=step) is not None]
 
     @notes_change
     def join_repeated_notes(self):
@@ -90,7 +78,10 @@ class PatternMunges:
             if step == start:
                 continue
             for row in SOUND_ROWS:
-                self._hold(row=row, step=step, value=blank_of(row) if row in LENGTH_ROWS else self._held(row=row, step=start))
+                value = blank_of(row)
+                if row not in LENGTH_ROWS:
+                    value = self._held(row=row, step=start)
+                self._hold(row=row, step=step, value=value)
             self._hold(row=Row.GATE, step=start, value=blank_of(Row.GATE))
             self._hold(row=Row.DOT, step=start, value=blank_of(Row.DOT))
 
@@ -100,21 +91,24 @@ class PatternMunges:
         rests = []
         step = 0
         while step < self.get_steps():
-            end = self.tied_end(step) if self.has_sound(step) else step + 1
-            (notes if self.has_sound(step) else rests).append(list(range(step, end)))
+            if self.has_sound(step):
+                end = self.tied_end(step)
+                notes.append(list(range(step, end)))
+            else:
+                end = step + 1
+                rests.append(list(range(step, end)))
             step = end
         is_note = [True] * len(notes) + [False] * len(rests)
         random_source(None).shuffle(is_note)
         notes_left = iter(notes)
         rests_left = iter(rests)
-        self.rearrange([step for note in is_note for step in next(notes_left if note else rests_left)])
-
-    @notes_change
-    def _repitch(self, pitches):
-        """Give the steps that hold a note new pitches, one each, in order."""
-        for step, pitch in zip(self._written_notes(), pitches):
-            for row, value in zip(file_format.PITCH_ROWS, pitch):
-                self._hold(row=row, step=step, value=value)
+        order = []
+        for note in is_note:
+            if note:
+                order.extend(next(notes_left))
+            else:
+                order.extend(next(rests_left))
+        self.rearrange(order)
 
     def randomize_pitches(self):
         """Shuffle which pitch each note plays, leaving the rhythm, the lengths and the loudness where they are."""
@@ -124,7 +118,8 @@ class PatternMunges:
 
     def reverse_pitches(self):
         """Play the pitches in backwards order on the same rhythm."""
-        self._repitch([self._pitch(step) for step in reversed(self._written_notes())])
+        pitches = [self._pitch(step) for step in reversed(self._written_notes())]
+        self._repitch(pitches)
 
     def clear_every(self, every):
         """Make a rest of every so many steps, counting from the first: with 4, the fourth, the eighth and on."""
@@ -154,8 +149,7 @@ class PatternMunges:
             raise InvalidValue(errors.ERR_INVERT_NEEDS_A_NOTE)
 
         def octave_of(note):
-            written = self._held(row=Row.OCTAVE, step=note)
-            return default_octave if written is None else written
+            return self._octave_at(step=note, default_octave=default_octave)
 
         def place(note):
             return octave_of(note) * scale_size + self._held(row=Row.DEGREE, step=note) - limits.MIN_DEGREE
@@ -169,17 +163,6 @@ class PatternMunges:
             if octaves:
                 self._hold(row=Row.OCTAVE, step=note, value=octave_of(note) + octaves)
             self._hold(row=Row.DEGREE, step=note, value=degree)
-
-    def _chord_pitches(self, *, step, scale, default_octave):
-        """Return a step's chord in root position as half steps, the root first and the notes above it in the order the chord is built, or an empty list for a step with no chord."""
-        written = self._held(row=Row.OCTAVE, step=step)
-        octave = default_octave if written is None else written
-        root = (self._held(row=Row.DEGREE, step=step), octave, self._held(row=Row.ACCIDENTAL, step=step))
-        inversion = self._held(row=Row.INVERSION, step=step)
-        self._hold(row=Row.INVERSION, step=step, value=blank_of(Row.INVERSION))
-        tones = self.chord_tones(step=step, octave=octave, scale=scale)
-        self._hold(row=Row.INVERSION, step=step, value=inversion)
-        return [half_steps_of(tone=tone, scale=scale) for tone in (root, *tones)] if tones else []
 
     @notes_change
     def apply_voice_leading(self, *, scale, default_octave, octaves=False):
@@ -198,20 +181,75 @@ class PatternMunges:
             if before is None:
                 before = sorted(inverted(pitches=pitches, inversion=self._held(row=Row.INVERSION, step=step) or 0))
                 continue
-            written = self._held(row=Row.OCTAVE, step=step)
-            octave = default_octave if written is None else written
-            voicings = [(shift, inversion) for shift in (OCTAVE_SHIFTS if octaves else NO_SHIFT) for inversion in (0, *limits.INVERSIONS)]
-            choices = [
-                (movement(pitches=voiced(pitches=pitches, inversion=inversion, shift=shift), before=before), place, inversion, shift)
-                for place, (shift, inversion) in enumerate(voicings)
-                if inversion < len(pitches) and limits.MIN_OCTAVE <= octave + shift <= limits.MAX_OCTAVE
-            ]
-            _, _, inversion, shift = min(choices)
+            octave = self._octave_at(step=step, default_octave=default_octave)
+            inversion, shift = self._nearest_voicing(pitches=pitches, octave=octave, octaves=octaves, before=before)
             self._hold(row=Row.INVERSION, step=step, value=inversion or blank_of(Row.INVERSION))
             if shift:
                 self._hold(row=Row.OCTAVE, step=step, value=octave + shift)
             before = sorted(voiced(pitches=pitches, inversion=inversion, shift=shift))
         return chords
+
+    def _held(self, *, row, step):
+        values = self._rows[row]
+        if values is None:
+            return blank_of(row)
+        return values[step]
+
+    def _hold(self, *, row, step, value):
+        """Put a value on a step with no check, for a value another step of this pattern already held."""
+        if self._rows[row] is None:
+            if value == blank_of(row):
+                return
+            self._rows[row] = [blank_of(row)] * self.get_steps()
+        self._rows[row][step] = own_value(value)
+
+    def _pitch(self, step):
+        """Return what a step plays, apart from how long and how loud: its degree, octave, sharp or flat and chord."""
+        return [own_value(self._held(row=row, step=step)) for row in file_format.PITCH_ROWS]
+
+    def _written_notes(self):
+        """Return the steps that hold a note of their own, leaving out a step that only grabs one."""
+        return [step for step in range(self.get_steps()) if self._held(row=Row.DEGREE, step=step) is not None]
+
+    @notes_change
+    def _repitch(self, pitches):
+        """Give the steps that hold a note new pitches, one each, in order."""
+        for step, pitch in zip(self._written_notes(), pitches):
+            for row, value in zip(file_format.PITCH_ROWS, pitch):
+                self._hold(row=row, step=step, value=value)
+
+    def _chord_pitches(self, *, step, scale, default_octave):
+        """Return a step's chord in root position as half steps, the root first and the notes above it in the order the chord is built, or an empty list for a step with no chord."""
+        octave = self._octave_at(step=step, default_octave=default_octave)
+        root = (self._held(row=Row.DEGREE, step=step), octave, self._held(row=Row.ACCIDENTAL, step=step))
+        inversion = self._held(row=Row.INVERSION, step=step)
+        self._hold(row=Row.INVERSION, step=step, value=blank_of(Row.INVERSION))
+        tones = self.chord_tones(step=step, octave=octave, scale=scale)
+        self._hold(row=Row.INVERSION, step=step, value=inversion)
+        if not tones:
+            return []
+        pitches = []
+        for tone in (root, *tones):
+            pitches.append(half_steps_of(tone=tone, scale=scale))
+        return pitches
+
+    def _octave_at(self, *, step, default_octave):
+        """Return the octave a step's note plays in: its own, or the default where it has none."""
+        written = self._held(row=Row.OCTAVE, step=step)
+        if written is None:
+            return default_octave
+        return written
+
+    def _nearest_voicing(self, *, pitches, octave, octaves, before):
+        """Return the inversion and octave shift that move a chord's pitches least from the chord before, root position and no
+        shift winning a tie, keeping the octave within range."""
+        choices = []
+        for place, (shift, inversion) in enumerate(_voicings(octaves)):
+            if inversion < len(pitches) and limits.MIN_OCTAVE <= octave + shift <= limits.MAX_OCTAVE:
+                moved = movement(pitches=voiced(pitches=pitches, inversion=inversion, shift=shift), before=before)
+                choices.append((moved, place, inversion, shift))
+        _, _, inversion, shift = min(choices)
+        return inversion, shift
 
 
 def half_steps_of(*, tone, scale):
@@ -225,9 +263,27 @@ def half_steps_of(*, tone, scale):
 def inverted(*, pitches, inversion):
     """Return a chord's pitches as an inversion plays them: so many of its first notes an octave up, never all of them."""
     moved = min(inversion, len(pitches) - 1)
-    return [pitch + midi.HALF_STEPS_PER_OCTAVE if place < moved else pitch for place, pitch in enumerate(pitches)]
+    played = []
+    for place, pitch in enumerate(pitches):
+        if place < moved:
+            pitch += midi.HALF_STEPS_PER_OCTAVE
+        played.append(pitch)
+    return played
 
 
 def voiced(*, pitches, inversion, shift):
     """Return a chord's pitches in an inversion, moved so many octaves."""
     return [pitch + shift * midi.HALF_STEPS_PER_OCTAVE for pitch in inverted(pitches=pitches, inversion=inversion)]
+
+
+def _voicings(octaves):
+    """Return every (octave shift, inversion) a chord may be voiced with, no shift and root position first; shifting by an octave
+    only where octaves is true."""
+    shifts = NO_SHIFT
+    if octaves:
+        shifts = OCTAVE_SHIFTS
+    voicings = []
+    for shift in shifts:
+        for inversion in (0, *limits.INVERSIONS):
+            voicings.append((shift, inversion))
+    return voicings
