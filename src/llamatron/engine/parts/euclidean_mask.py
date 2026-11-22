@@ -12,6 +12,9 @@ from llamatron.model.objects.euclid import rhythm
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
 
+# Where a mask starts that carries on from nothing.
+NO_OFFSET = 0
+
 
 class EuclidMask(ClipGenerator):
     """Keeps a clip's notes that start on a hit of a rhythm of so many hits over so many steps, each step as long as step, from the clip's start."""
@@ -22,7 +25,9 @@ class EuclidMask(ClipGenerator):
         self._hits_and_misses = rhythm(hits=hits, steps=steps, rotate=rotate)
         self._step = step
         # How far into its run the clip starts, which a Restart that doesn't start over with the clip sets.
-        self._offset = 0 if continuation is None else continuation.offset
+        self._offset = NO_OFFSET
+        if continuation is not None:
+            self._offset = continuation.offset
 
     def is_hit(self, time):
         """Return whether the step a time from the clip's start falls in is a hit."""
@@ -33,6 +38,8 @@ class EuclidMask(ClipGenerator):
         now = length.ZERO
         for sound in clip.resolved_sounds():
             hit = sound[sound_values.KIND] == sound_values.REST or self.is_hit(Length.rational(now))
-            result.append(sound if hit else Sound.rest(sound[sound_values.LENGTH]))
+            if not hit:
+                sound = Sound.rest(sound[sound_values.LENGTH])
+            result.append(sound)
             now = Length.add(now, sound[sound_values.LENGTH])
         return result, clip.get_length()
