@@ -114,10 +114,12 @@ class GuitarifySettings(HasCells, GeneratorSettings):
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
         cell = time_length(self.get_cell())
+        if isinstance(cell, Bars):
+            cell = bar * cell.count
         return dict(
             shape=self.shapes(), tuning=self.get_tuning(), position=self.get_position(), capo=self.get_capo(), strings=self.get_strings(),
             single_notes=self.get_single_notes(), color=self.get_color(), approach=self.get_approach(), strokes=self.strikes(), bar=self.get_bar(), accents=self.get_accents(),
-            cell=bar * cell.count if isinstance(cell, Bars) else cell, let_ring=self.lets_ring(), spread=self.get_spread(), fade=self.get_fade(),
+            cell=cell, let_ring=self.lets_ring(), spread=self.get_spread(), fade=self.get_fade(),
             loose_timing=self.get_loose_timing(), upstroke=self.get_upstroke() or None, seed=default_seed,
         )
 
@@ -160,7 +162,9 @@ class GuitarifySettings(HasCells, GeneratorSettings):
 
     def set_bar(self, *, strokes, accents, cell=None):
         """Keep the bar's strokes and accents and, where given, its cell's length."""
-        length = self.get_cell() if cell is None else cell
+        length = cell
+        if cell is None:
+            length = self.get_cell()
         self.set_setting(name=GuitarifySetting.BAR, value=list(strokes))
         self.set_setting(name=GuitarifySetting.ACCENTS, value=list(accents))
         self.set_setting(name=GuitarifySetting.CELL, value=length)
