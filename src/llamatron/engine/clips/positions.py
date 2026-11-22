@@ -73,7 +73,9 @@ def piece_of(*, position, offset, length):
         return (kind_left, Length.shorter(Length.subtract(own, offset), length), sound_left)
     if kind == sound_values.CHORD:
         pieces = [piece_of(position=note, offset=offset, length=length) for note in position[sound_values.NOTES] if Length.less(offset, note[sound_values.LENGTH])]
-        return Sound.chord(pieces) if pieces else (sound_values.REST, length)
+        if not pieces:
+            return (sound_values.REST, length)
+        return Sound.chord(pieces)
     return Sound.with_length(position, Length.shorter(Length.subtract(own, offset), length))
 
 
@@ -85,17 +87,25 @@ def sound_from(*, held, offset):
         if not remaining:
             return None
         piece = piece_of(position=sound, offset=offset, length=Length.subtract(Length.longest(remaining), offset))
-        return None if piece[sound_values.KIND] == sound_values.REST else (sound_values.HELD, piece)
+        if piece[sound_values.KIND] == sound_values.REST:
+            return None
+        return (sound_values.HELD, piece)
     parts = []
     start = length_values.ZERO
     for part in held[sound_values.PARTS]:
         end = Length.add(start, part[sound_values.LENGTH])
         if Length.less(offset, end):
-            parts.append(part if Length.at_most(offset, start) else piece_of(position=part, offset=Length.subtract(offset, start), length=Length.subtract(end, offset)))
+            if not Length.at_most(offset, start):
+                part = piece_of(position=part, offset=Length.subtract(offset, start), length=Length.subtract(end, offset))
+            parts.append(part)
         start = end
-    return (sound_values.PHRASE, tuple(parts)) if parts else None
+    if not parts:
+        return None
+    return (sound_values.PHRASE, tuple(parts))
 
 
 def _notes_of(sound):
     """Return the notes of a note or chord."""
-    return sound[sound_values.NOTES] if sound[sound_values.KIND] == sound_values.CHORD else [sound]
+    if sound[sound_values.KIND] == sound_values.CHORD:
+        return sound[sound_values.NOTES]
+    return [sound]
