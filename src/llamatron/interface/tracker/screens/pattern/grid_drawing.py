@@ -150,7 +150,7 @@ class GridDrawing:
             else:
                 line.append(tee, style=Style.DIM)
             if step == boxed:
-                line.append(Box.DOUBLE_RULE * CELL_WIDTH, style=Style.BOLD)
+                line.append(Box.DOUBLE_RULE * CELL_WIDTH, style=Style.SELECTED_EDGE)
             else:
                 line.append(line_character * CELL_WIDTH, style=Style.DIM)
         if boxed is not None and boxed + 1 == last:
@@ -186,7 +186,8 @@ class GridDrawing:
         return self.rule(left=Box.LEFT_TEE, tee=Box.CROSS, beat_tee=Box.DOUBLE_CROSS, right=Box.RIGHT_TEE, first=first, last=last, joints=False)
 
     def append_edge(self, *, line, step, beats, single, double, replaced=None):
-        """Add a step's left edge to a line: a bold double line where the step starts a beat, so the beats stand out as columns, unless a bar runs through it.
+        """Add a step's left edge to a line: a plain double line where the step starts a beat, beside the dim single lines, so the beats stand
+        out as columns, unless a bar runs through it. Never bold, since many fonts draw bold double lines short of the next line.
 
         beats is beat_steps(), which whoever draws the line asks for once rather than once for every step.
         """
@@ -195,7 +196,7 @@ class GridDrawing:
         elif replaced is not None:
             line.append(replaced)
         elif step in beats:
-            line.append(double, style=Style.BOLD)
+            line.append(double, style=Style.PLAIN)
         else:
             line.append(single, style=Style.DIM)
 

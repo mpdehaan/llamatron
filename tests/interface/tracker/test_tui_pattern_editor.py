@@ -520,11 +520,12 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertEqual([self.editor.drawing.starts_a_beat(step) for step in range(4)], [True, True, True, True])
         self.document.change_pattern(self.document.pattern(TUNE).set_time_signature, CUT_TIME)
         self.assertEqual([self.editor.drawing.starts_a_beat(step) for step in range(4)], [True, False, False, False])
-        # The step heading, the one step on a beat and its double left edge are the only bold spans on the numbers line.
+        # The step heading and the one step on a beat are the only bold spans on the numbers line; the beat's double left edge is
+        # plain, since many fonts draw bold double lines short of the next line.
         lines = self.editor.drawing.grid_lines(first=0, last=4)
         head = lines[1]
-        self.assertEqual(len([span for span in head.spans if span.style == Style.BOLD]), 3)
-        # The beat's edge is a bold double line down the block, through single rules, ending in a double bottom tee where the dividers close over the first heading, and the other edges stay single.
+        self.assertEqual(len([span for span in head.spans if span.style == Style.BOLD]), 2)
+        # The beat's edge is a double line down the block, through single rules, ending in a double bottom tee where the dividers close over the first heading, and the other edges stay single.
         self.assertEqual(str(lines[0]).count(Box.DOUBLE_TOP_TEE), 1)
         closing = next(number for number, line in enumerate(lines) if Box.DOUBLE_BOTTOM_TEE in str(line))
         self.assertEqual(str(lines[closing]).count(Box.DOUBLE_BOTTOM_TEE), 1)

@@ -237,7 +237,7 @@ class RollDrawing(GridDrawing):
             elif ghost and notes.covering.get(step) != step:
                 replaced = Text(marks.MSG_GHOST_LINE, style=Style.CHORD_NOTE)
             elif step in cursor_edges:
-                replaced = Text(Box.DOUBLE_BAR, style=Style.BOLD)
+                replaced = Text(Box.DOUBLE_BAR, style=Style.SELECTED_EDGE)
             else:
                 replaced = None
             self.append_edge(line=line, step=step, beats=beats, single=Box.BAR, double=Box.DOUBLE_BAR, replaced=replaced)
@@ -253,7 +253,7 @@ class RollDrawing(GridDrawing):
             else:
                 line.append(marks.MSG_OUT_OF_RANGE_CELL, style=Style.DIM)
         if last in cursor_edges:
-            line.append(Box.DOUBLE_BAR, style=Style.BOLD)
+            line.append(Box.DOUBLE_BAR, style=Style.SELECTED_EDGE)
         else:
             line.append(Box.BAR, style=Style.DIM)
         return line

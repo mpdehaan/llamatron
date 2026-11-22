@@ -44,7 +44,7 @@ A sharp or flat has a row of its own between the two degrees it falls between, l
 
 A note that grabs its pitch from the clip's Grab track shows a `G` inside its bar in reverse video, `▓▓G▓▓`. The `G` is all the roll shows of such a note: a chord on a grabbing note has no thin lines, and the line describing the step says `the grabbed note`, because what is grabbed depends on the other track and isn't known until the song plays.
 
-The cursor's cell stands between two bold double bars, `║▓▓▓▓▓║`, shaded on a note and a reversed blank on an empty cell. The rows outside the octaves of the one track that plays the pattern are dim and marked off with dots. The roll scrolls up and down through the octaves to keep the cursor on screen, and sideways as the rows do.
+The cursor's cell stands between two double bars, `║▓▓▓▓▓║`, shaded on a note and a reversed blank on an empty cell. The rows outside the octaves of the one track that plays the pattern are dim and marked off with dots. The roll scrolls up and down through the octaves to keep the cursor on screen, and sideways as the rows do.
 
 The two lines over the grid show the pattern's settings in aligned columns: Steps, Step size, Drum and Direction, and under them Time, Scale and Entry, the entry size, which is how long a note `Space` draws lasts; `(song's)` marks a value the pattern takes from the song. The labels down the left take the same width in both views, so the step columns stay in place when `Tab` switches views.
 
@@ -93,7 +93,7 @@ Digits build up a number in a cell, so `1` then `2` makes 12. A new number start
 
 A step with no degree or note is empty, which is a rest. The rows that only a note can hold, such as Octave, Velocity and Chord, show a light `/` on an empty step, and their keys leave the legend while the cursor is there. The rows a rest can hold, Tie, CC 1 to 4, Slide and every register row, stay open; Tie shows `/` on a step with a note, which can't take a tie.
 
-Every step lasts the pattern's step size, shown at the top with the number of steps. The header's second line shows the time signature the pattern is drawn in, the song's unless the pattern sets its own through `R` (Reconfigure). A step that starts a beat has a bold number and a bold double line down its left edge, so a 16-step pattern in 4/4 is marked at 1, 5, 9 and 13, and in 6/8 at 1, 7 and 13. The beat marking changes only what is drawn. A step with a note sounds for its gate, which can run on past later steps but stops at the end of the pattern; a new note gets the song's default octave and a blank gate, which lasts one step.
+Every step lasts the pattern's step size, shown at the top with the number of steps. The header's second line shows the time signature the pattern is drawn in, the song's unless the pattern sets its own through `R` (Reconfigure). A step that starts a beat has a bold number and a double line down its left edge, so a 16-step pattern in 4/4 is marked at 1, 5, 9 and 13, and in 6/8 at 1, 7 and 13. The beat marking changes only what is drawn. A step with a note sounds for its gate, which can run on past later steps but stops at the end of the pattern; a new note gets the song's default octave and a blank gate, which lasts one step.
 
 ## Editor Keys
 
