@@ -109,12 +109,16 @@ def sensible_visualizer(value):
 
     A visualizer setting is never refused, since modes come and go and no set should stop opening for one.
     """
-    return value if isinstance(value, str) and value in VISUALIZER_NAMES else None
+    if isinstance(value, str) and value in VISUALIZER_NAMES:
+        return value
+    return None
 
 
 def sensible_hidden_visualizers(value):
     """Return hidden visualizers made sensible: the modes' names in the list, in the modes' order, leaving out anything else, or None for none."""
-    names = value if isinstance(value, list) else []
+    names = []
+    if isinstance(value, list):
+        names = value
     kept = [name for name in VISUALIZER_NAMES if name in names]
     return kept or None
 
